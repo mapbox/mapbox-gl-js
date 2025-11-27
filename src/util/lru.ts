@@ -23,7 +23,6 @@ export class LRUCache<T = object> {
         if (this.cache.has(key)) {
             this.cache.delete(key);
         } else if (this.cache.size === this.capacity) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this.cache.delete(this.cache.keys().next().value);
         }
         this.cache.set(key, value);

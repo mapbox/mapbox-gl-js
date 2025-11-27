@@ -765,16 +765,14 @@ describe('transform', () => {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (p.x === 0.5 && p.y === 0.5)
                     return 0;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 return elevation * this.exaggeration();
             },
             getAtPoint(p) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 return this.getAtPointOrZero(p);
             },
             getForTilePoints(tileID, points) {
                 for (const p of points) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     p[2] = elevation * this.exaggeration();
                 }
                 return true;
@@ -782,7 +780,6 @@ describe('transform', () => {
             getMinElevationBelowMSL: () => 0,
             _exaggeration: 1,
             exaggeration() {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 return this._exaggeration;
             }
         };
@@ -814,16 +811,14 @@ describe('transform', () => {
                 return true;
             },
             getAtPointOrZero(_) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 return elevation * this.exaggeration();
             },
             getAtPoint(_) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 return this.getAtPointOrZero();
             },
             getForTilePoints(tileID, points) {
                 for (const p of points) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     p[2] = elevation * this.exaggeration();
                 }
                 return true;
@@ -831,7 +826,6 @@ describe('transform', () => {
             getMinElevationBelowMSL: () => 0,
             _exaggeration: 1,
             exaggeration() {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 return this._exaggeration;
             },
             getMinMaxForVisibleTiles: () => null
@@ -848,7 +842,6 @@ describe('transform', () => {
                 return scale * (p.x + p.y - 1.0);
             },
             getAtPoint(p) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 return this.getAtPointOrZero(p);
             },
             getForTilePoints(tileID, points) {
@@ -1349,7 +1342,6 @@ describe('transform', () => {
                 return 2760;
             },
             getAtPoint(_) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 return this.getAtPointOrZero();
             },
             getMinMaxForTile(tileID) {

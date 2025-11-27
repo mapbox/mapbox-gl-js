@@ -127,18 +127,13 @@ class CanvasSource extends ImageSource<'canvas'> {
         }
 
         this.play = function () {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             this._playing = true;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             this.map.triggerRepaint();
         };
 
         this.pause = function () {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (this._playing) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 this.prepare();
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 this._playing = false;
             }
         };

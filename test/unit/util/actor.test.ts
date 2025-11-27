@@ -83,11 +83,9 @@ describe('Actor', () => {
     test('#remove unbinds event listener', () => {
         const actor = new Actor({
             addEventListener(type, callback, useCapture) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 this._addEventListenerArgs = [type, callback, useCapture];
             },
             removeEventListener(type, callback, useCapture) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect([type, callback, useCapture]).toEqual(this._addEventListenerArgs);
             }
         }, {}, null);

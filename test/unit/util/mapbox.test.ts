@@ -505,17 +505,14 @@ describe("mapbox", () => {
 
             vi.stubGlobal('localStorage', {
                 data: {},
-                setItem(id, val) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                setItem(this: {data: Record<string, string>}, id: string, val: string) {
                     this.data[id] = String(val);
                 },
-                getItem(id) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                getItem(this: {data: Record<string, string>}, id: string) {
                     return this.data.hasOwnProperty(id) ? this.data[id] : undefined;
                 },
-                removeItem(id) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                    if (this.hasOwnProperty(id)) delete this[id];
+                removeItem(this: {data: Record<string, string>}, id: string) {
+                    if (this.hasOwnProperty(id)) delete this.data[id];
                 }
             });
         });
@@ -768,17 +765,14 @@ describe("mapbox", () => {
                 prevLocalStorage = window.localStorage;
                 vi.stubGlobal('localStorage', {
                     data: {},
-                    setItem(id, val) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    setItem(this: {data: Record<string, string>}, id: string, val: string) {
                         this.data[id] = String(val);
                     },
-                    getItem(id) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                    getItem(this: {data: Record<string, string>}, id: string) {
                         return this.data.hasOwnProperty(id) ? this.data[id] : undefined;
                     },
-                    removeItem(id) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                        if (this.hasOwnProperty(id)) delete this[id];
+                    removeItem(this: {data: Record<string, string>}, id: string) {
+                        if (this.hasOwnProperty(id)) delete this.data[id];
                     }
                 });
             });
@@ -1182,17 +1176,14 @@ describe("mapbox", () => {
             beforeEach(() => {
                 vi.stubGlobal('localStorage', {
                     data: {},
-                    setItem(id, val) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    setItem(this: {data: Record<string, string>}, id: string, val: string) {
                         this.data[id] = String(val);
                     },
-                    getItem(id) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                    getItem(this: {data: Record<string, string>}, id: string) {
                         return this.data.hasOwnProperty(id) ? this.data[id] : undefined;
                     },
-                    removeItem(id) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                        if (this.hasOwnProperty(id)) delete this[id];
+                    removeItem(this: {data: Record<string, string>}, id: string) {
+                        if (this.hasOwnProperty(id)) delete this.data[id];
                     }
                 });
             });

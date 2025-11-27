@@ -26,8 +26,7 @@ describe('MapboxRasterTile', () => {
             const result = await MapboxRasterTile.performDecoding(bufferSlice, task);
             task.complete(null, result);
         } catch (error) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            expect.unreachable(error);
+            expect.unreachable(error as string);
         }
 
         expect(layer.hasDataForBand('the-shard')).toBe(true);

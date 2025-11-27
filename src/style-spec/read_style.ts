@@ -8,8 +8,7 @@ export default function readStyle(style: string | Buffer | StyleSpecification): 
         try {
             return (jsonlint as {parse: (input: string) => StyleSpecification}).parse(style.toString());
         } catch (e) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            throw new ParsingError(e);
+            throw new ParsingError(e as Error);
         }
     }
 

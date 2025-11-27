@@ -564,8 +564,7 @@ class Style extends Evented<MapEvents> {
             try {
                 callback(null, this.setState(json, onFinished));
             } catch (e) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                callback(e, false);
+                callback(e as Error, false);
             }
         };
 

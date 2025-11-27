@@ -28,7 +28,6 @@ try {
         execSync(command).toString();
     }
 } catch (error) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    console.log(error.message);
+    console.log(/** @type {Error} */ (error).message);
     process.exit(1);
 }

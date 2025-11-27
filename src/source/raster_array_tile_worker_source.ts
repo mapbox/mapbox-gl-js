@@ -60,19 +60,16 @@ class RasterArrayWorkerTile {
                 const bufferSlice = buffer.slice(range.firstByte, range.lastByte + 1);
                 const decodingTask = MapboxRasterTile.performDecoding(bufferSlice, task)
                     .then(result => task.complete(null, result))
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    .catch(error => task.complete(error, null));
+                    .catch((error: Error) => task.complete(error, null));
 
                 decodingTasks.push(decodingTask);
             }
 
             Promise.allSettled(decodingTasks)
                 .then(() => callback(null, mrt))
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                .catch(error => callback(error));
+                .catch((error: Error) => callback(error));
         } catch (error) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            callback(error);
+            callback(error as Error);
         }
     }
 }
@@ -140,8 +137,7 @@ class RasterArrayTileWorkerSource implements WorkerSource {
     decodeRasterArray(params: ActorMessages['decodeRasterArray']['params'], callback: ActorMessages['decodeRasterArray']['callback']) {
         MapboxRasterTile.performDecoding(params.buffer, params.task)
             .then(result => callback(null, result))
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            .catch(error => callback(error));
+            .catch((error: Error) => callback(error));
     }
 }
 

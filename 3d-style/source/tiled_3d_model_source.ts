@@ -179,16 +179,14 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
             tile.request = tile.actor.send('reloadTile', params, done.bind(this));
         }
 
-        function done(err?: AJAXError | null, data?: WorkerSourceVectorTileResult | null) {
+        function done(this: Tiled3DModelSource, err?: AJAXError | null, data?: WorkerSourceVectorTileResult | null) {
             if (tile.aborted) return callback(null);
 
             if (err && err.status !== 404) {
                 return callback(err);
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (this.map._refreshExpiredTiles && data) tile.setExpiryData(data);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             tile.loadModelData(data, this.map.painter);
 
             tile.state = 'loaded';

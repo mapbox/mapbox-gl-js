@@ -89,9 +89,10 @@ export function generateFixtureJson(suiteDir, stylePaths, includeImages = false)
             }
             testCases[testName] = testObject;
         } catch (e) {
+            const error = /** @type {Error} */ (e);
             console.log(`Error reading directory: ${dirName}`);
-            console.log(e.message);
-            testCases[testName] = {PARSE_ERROR: true, message: e.message, path: dirName};
+            console.log(error.message);
+            testCases[testName] = {PARSE_ERROR: true, message: error.message, path: dirName};
         }
     }
 

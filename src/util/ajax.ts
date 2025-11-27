@@ -157,13 +157,11 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
             } else {
                 return callback(new AJAXError(response.statusText, response.status, requestParameters.url));
             }
-        }).catch(error => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        }).catch((error: Error) => {
             if (error.name === 'AbortError') {
                 // silence expected AbortError
                 return;
             }
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             callback(new Error(`${error.message} ${requestParameters.url}`));
         });
     };
@@ -185,8 +183,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
             }
             complete = true;
             callback(null, result, response.headers);
-        }).catch(err => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+        }).catch((err: Error) => {
             if (!aborted) callback(new Error(err.message));
         });
     };
@@ -229,8 +226,7 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     data = JSON.parse(xhr.response);
                 } catch (err) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    return callback(err);
+                    return callback(err as Error);
                 }
             }
             const headersObject = new Headers();
@@ -346,7 +342,6 @@ export const getImage = function (
             requestParameters,
             callback,
             cancelled: false,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             cancel() { this.cancelled = true; }
         };
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access

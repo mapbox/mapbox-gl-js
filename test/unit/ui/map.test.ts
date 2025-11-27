@@ -25,20 +25,17 @@ const createElevation = (func, exaggeration) => {
             return true;
         },
         getAtPointOrZero(point, def) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             return this.getAtPoint(point, def) || 0;
         },
         getAtPoint(point, def) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             return func(point) * this.exaggeration() || def;
         },
         getForTilePoints() {
             return false;
         },
         getMinElevationBelowMSL: () => 0,
-
         exaggeration() {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return this._exaggeration;
         }
     };

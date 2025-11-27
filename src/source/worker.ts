@@ -288,8 +288,7 @@ export default class MapWorker {
             this.self.importScripts(params.url);
             callback();
         } catch (e) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            callback(e.toString());
+            callback(e as Error);
         }
     }
 
@@ -324,8 +323,7 @@ export default class MapWorker {
                 }
             }
         } catch (e) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            callback(e.toString());
+            callback(e as Error);
         }
     }
 

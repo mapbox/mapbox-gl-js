@@ -150,13 +150,11 @@ export class StyleExpression {
             }
             return val;
         } catch (e) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            if (!this._warningHistory[e.message]) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                this._warningHistory[e.message] = true;
+            const error = e as Error;
+            if (!this._warningHistory[error.message]) {
+                this._warningHistory[error.message] = true;
                 if (typeof console !== 'undefined') {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    console.warn(`Failed to evaluate expression "${JSON.stringify(this.expression.serialize())}". ${e.message}`);
+                    console.warn(`Failed to evaluate expression "${JSON.stringify(this.expression.serialize())}". ${error.message}`);
                 }
             }
             return this._defaultValue;

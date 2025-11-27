@@ -430,13 +430,13 @@ export function bindAll(fns: Array<string>, context: unknown): void {
  * @private
  */
 export function mapObject<T, U>(
+    this: unknown,
     input: Record<PropertyKey, T>,
     iterator: (value: T, key: PropertyKey, obj: Record<PropertyKey, T>) => U,
     context?: unknown
 ): Record<PropertyKey, U> {
     const output: Record<PropertyKey, U> = {};
     for (const key in input) {
-
         output[key] = iterator.call(context || this, input[key], key, input);
     }
     return output;
@@ -448,6 +448,7 @@ export function mapObject<T, U>(
  * @private
  */
 export function filterObject<T extends Record<PropertyKey, unknown>>(
+    this: unknown,
     input: T,
     iterator: (value: T[keyof T], key: keyof T, obj: T) => boolean,
     context?: unknown

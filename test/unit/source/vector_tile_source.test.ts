@@ -304,7 +304,6 @@ describe('VectorTileSource', () => {
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
                     loadVectorData() {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         this.state = 'loaded';
                         events.push('tileLoaded');
                     },

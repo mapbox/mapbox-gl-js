@@ -60,16 +60,15 @@ export interface GeoJSONIndex {
     getLeaves?: (clusterId: number, limit: number, offset: number) => Array<GeoJSON.Feature>;
 }
 
-function loadGeoJSONTile(params: WorkerSourceVectorTileRequest, callback: LoadVectorDataCallback): undefined {
+function loadGeoJSONTile(this: GeoJSONWorkerSource, params: WorkerSourceVectorTileRequest, callback: LoadVectorDataCallback): undefined {
     const canonical = params.tileID.canonical;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!this._geoJSONIndex) {
         callback(null, null); // we couldn't load the file
         return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const geoJSONTile = this._geoJSONIndex.getTile(canonical.z, canonical.x, canonical.y);
     if (!geoJSONTile) {
         callback(null, null); // nothing in the given tile
@@ -200,8 +199,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                         geojsonvt(data, params.geojsonVtOptions);
 
                 } catch (err) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    return callback(err);
+                    return callback(err as Error);
                 }
 
                 const result: {resourceTiming?: ResourceTiming} = {};
@@ -282,8 +280,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         try {
             callback(null, this._geoJSONIndex.getClusterExpansionZoom(params.clusterId));
         } catch (e) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            callback(e);
+            callback(e as Error);
         }
     }
 
@@ -293,8 +290,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         try {
             callback(null, this._geoJSONIndex.getChildren(params.clusterId));
         } catch (e) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            callback(e);
+            callback(e as Error);
         }
     }
 
@@ -306,8 +302,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         try {
             callback(null, this._geoJSONIndex.getLeaves(params.clusterId, params.limit, params.offset));
         } catch (e) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            callback(e);
+            callback(e as Error);
         }
     }
 }
