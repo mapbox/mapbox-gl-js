@@ -14,7 +14,14 @@
             }, {
                 "hover": true
             }],
-            ["wait"]
+            ["wait"],
+            ["setFeatureState", {
+                "source": "geojson",
+                "id": 2
+            }, {
+                "hover": false,
+                "clicked": true
+            }]
         ]
     }
   },
@@ -85,13 +92,22 @@
       },
       "appearances": [
         {
-          "name": "test",
+          "name": "hover",
           "condition": ["==", ["boolean", ["feature-state", "hover"], false], true],
           "properties": {
             "icon-image": "bakery-12",
             "icon-size": 2,
             "icon-rotate": 90,
             "icon-offset": [10, 10]
+          }
+        },
+        {
+          "name": "clicked",
+          "condition": ["==", ["boolean", ["feature-state", "clicked"], false], true],
+          "properties": {
+            "icon-image": "bank-12",
+            "icon-size": 1,
+            "icon-rotate": 90
           }
         }
       ],

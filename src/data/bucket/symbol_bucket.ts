@@ -1028,14 +1028,7 @@ class SymbolBucket implements Bucket {
                         id: featureData.id
                     };
 
-                    let iconPrimary: ImageVariant | undefined;
-                    if (!featureData.appearanceIcon) {
-                        iconPrimary = this.getCombinedIconPrimary(activeAppearance, layer, evaluationFeature, canonical, availableImages, minimalFeature, iconScaleFactor);
-                        featureData.appearanceIcon = iconPrimary;
-                    } else {
-                        iconPrimary = featureData.appearanceIcon;
-                    }
-
+                    const iconPrimary = this.getCombinedIconPrimary(activeAppearance, layer, evaluationFeature, canonical, availableImages, minimalFeature, iconScaleFactor);
                     if (!iconPrimary) continue;
 
                     const primaryImageSerialized = iconPrimary.toString();
