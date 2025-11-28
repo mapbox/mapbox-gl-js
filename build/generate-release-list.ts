@@ -2,12 +2,6 @@ import fs from 'fs';
 import {Octokit} from '@octokit/rest';
 import crypto from 'crypto';
 
-interface Release {
-    tag_name: string;
-    published_at: string;
-    prerelease: boolean;
-}
-
 interface ReleaseInfo {
     released: string;
     prerelease: boolean;
@@ -36,12 +30,10 @@ function calculateSRIHash(content: string): string {
 }
 
 try {
-    const releases = await octokit.paginate<Release>(
-        octokit.repos.listReleases.endpoint({
-            owner: 'mapbox',
-            repo: 'mapbox-gl-js',
-        }),
-    );
+    const releases = await octokit.paginate('GET /repos/{owner}/{repo}/releases', {
+        owner: 'mapbox',
+        repo: 'mapbox-gl-js',
+    });
 
     releases.forEach((release) => {
         list[release.tag_name] = {
