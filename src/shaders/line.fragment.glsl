@@ -89,6 +89,9 @@ void main() {
 #ifdef RENDER_LINE_GRADIENT
     // For gradient lines, v_uv.xy are the coord specify where the texture will be simpled.
     out_color = texture(u_gradient_image, v_uv.xy);
+#ifdef MULTIPLY_LINE_GRADIENT_COLOR
+    out_color *= color;
+#endif
 #else
     out_color = color;
 #endif
