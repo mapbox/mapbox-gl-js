@@ -210,4 +210,4 @@ export {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type UniformBindings = Record<string, IUniform<any>>;
+export type UniformBindings = Record<PropertyKey, IUniform<any>>;

@@ -1,10 +1,7 @@
 import {
-    prelude,
-    preludeFragPrecisionQualifiers,
-    preludeVertPrecisionQualifiers,
-    preludeCommonSource,
     includeMap,
-    preludeFragExtensions,
+    FRAGMENT_PRELUDE_BLOCK,
+    VERTEX_PRELUDE_BLOCK
 } from '../shaders/shaders';
 import assert from 'assert';
 import VertexArrayObject from './vertex_array_object';
@@ -30,7 +27,7 @@ import type SegmentVector from '../data/segment';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type CullFaceMode from '../gl/cull_face_mode';
-import type {UniformBindings, UniformValues} from './uniform_binding';
+import type {UniformBindings, UniformValues, IUniform} from './uniform_binding';
 import type {BinderUniform} from '../data/program_configuration';
 import type Painter from './painter';
 import type {Segment} from "../data/segment";
@@ -44,7 +41,7 @@ export type DrawMode = WebGL2RenderingContext['POINTS'] | WebGL2RenderingContext
 export type ShaderSource = {
     fragmentSource: string;
     vertexSource: string;
-    usedDefines: Array<DynamicDefinesType>;
+    usedDefines: Set<DynamicDefinesType>;
     vertexIncludes: Array<string>;
     fragmentIncludes: Array<string>;
 };
@@ -76,7 +73,9 @@ const instancingUniforms = (context: Context): InstancingUniformType => ({
 class Program<Us extends UniformBindings> {
     program: WebGLProgram;
     attributes: Record<string, number>;
-    fixedUniforms: Us;
+    fixedUniforms: Readonly<Us>;
+    // Cache fixedUniforms entries to avoid allocations during draw calls
+    fixedUniformsEntries: ReadonlyArray<[string, IUniform<unknown>]>;
     binderUniforms: Array<BinderUniform>;
     failedToCreate: boolean;
     terrainUniforms: TerrainUniformsType | null | undefined;
@@ -88,7 +87,7 @@ class Program<Us extends UniformBindings> {
 
     name: ProgramName;
     configuration: ProgramConfiguration | null | undefined;
-    fixedDefines: DynamicDefinesType[];
+    fixedDefines: ReadonlyArray<DynamicDefinesType>;
 
     // Manually handle instancing by issuing draw calls and replacing gl_InstanceID with uniform
     forceManualRenderingForInstanceIDShaders: boolean;
@@ -100,13 +99,19 @@ class Program<Us extends UniformBindings> {
         defines: DynamicDefinesType[],
         programConfiguration?: ProgramConfiguration | null,
     ): string {
-        let key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}`;
+        const parts: string[] = [name];
+
+        if (programConfiguration) {
+            parts.push(programConfiguration.cacheKey);
+        }
+
         for (const define of defines) {
-            if (source.usedDefines.includes(define)) {
-                key += `/${define}`;
+            if (source.usedDefines.has(define)) {
+                parts.push(define as string);
             }
         }
-        return key;
+
+        return parts.join('/');
     }
 
     constructor(
@@ -124,43 +129,35 @@ class Program<Us extends UniformBindings> {
         this.name = name;
         this.fixedDefines = [...fixedDefines];
 
-        let defines = configuration ? configuration.defines() : [];
-        defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
-        const version = '#version 300 es\n';
+        const configDefines = configuration ? configuration.defines() : [];
+        const defines = configDefines.concat(fixedDefines.map((define) => `#define ${define}`)).join('\n');
+        const definesBlock = `#version 300 es\n${defines}`;
 
-        let fragmentSource = version + defines.concat(
-            preludeFragExtensions,
-            preludeFragPrecisionQualifiers,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            preludeCommonSource,
-            prelude.fragmentSource).join('\n');
+        const fragmentParts = [definesBlock, FRAGMENT_PRELUDE_BLOCK];
         for (const include of source.fragmentIncludes) {
-            fragmentSource += `\n${includeMap[include]}`;
+            fragmentParts.push(includeMap[include]);
         }
-        fragmentSource += `\n${source.fragmentSource}`;
 
-        let vertexSource = version + defines.concat(
-            preludeVertPrecisionQualifiers,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            preludeCommonSource,
-            prelude.vertexSource).join('\n');
+        fragmentParts.push(source.fragmentSource);
+        const fragmentSource = fragmentParts.join('\n');
+
+        const vertexParts = [definesBlock, VERTEX_PRELUDE_BLOCK];
         for (const include of source.vertexIncludes) {
-            vertexSource += `\n${includeMap[include]}`;
+            vertexParts.push(includeMap[include]);
         }
 
-        this.forceManualRenderingForInstanceIDShaders = context.forceManualRenderingForInstanceIDShaders && source.vertexSource.indexOf("gl_InstanceID") !== -1;
+        this.forceManualRenderingForInstanceIDShaders = context.forceManualRenderingForInstanceIDShaders && source.vertexSource.includes('gl_InstanceID');
 
         if (this.forceManualRenderingForInstanceIDShaders) {
-            vertexSource += `\nuniform int u_instanceID;\n`;
+            vertexParts.push('uniform int u_instanceID;');
         }
 
-        vertexSource += `\n${source.vertexSource}`;
+        vertexParts.push(source.vertexSource);
+        let vertexSource = vertexParts.join('\n');
 
         if (this.forceManualRenderingForInstanceIDShaders) {
-            vertexSource = vertexSource.replaceAll("gl_InstanceID", "u_instanceID");
+            vertexSource = vertexSource.replaceAll('gl_InstanceID', 'u_instanceID');
         }
-
-        // Replace
 
         const fragmentShader = (gl.createShader(gl.FRAGMENT_SHADER));
         if (gl.isContextLost()) {
@@ -191,6 +188,7 @@ class Program<Us extends UniformBindings> {
         gl.deleteShader(fragmentShader);
 
         this.fixedUniforms = fixedUniforms(context);
+        this.fixedUniformsEntries = Object.entries(this.fixedUniforms);
         this.binderUniforms = configuration ? configuration.getUniforms(context) : [];
 
         if (this.forceManualRenderingForInstanceIDShaders) {
@@ -199,7 +197,7 @@ class Program<Us extends UniformBindings> {
 
         // Symbol and circle layer are depth (terrain + 3d layers) occluded
         // For the sake of native compatibility depth occlusion goes via terrain uniforms block
-        if (fixedDefines.includes('TERRAIN') || name.indexOf("symbol") !== -1 || name.indexOf("circle") !== -1) {
+        if (fixedDefines.includes('TERRAIN') || name.includes('symbol') || name.includes('circle')) {
             this.terrainUniforms = terrainUniforms(context);
         }
         if (fixedDefines.includes('GLOBE')) {
@@ -363,17 +361,13 @@ class Program<Us extends UniformBindings> {
             return;
         }
 
-        const debugDefines: DynamicDefinesType[] = [...this.fixedDefines];
-        debugDefines.push('DEBUG_WIREFRAME');
+        const debugDefines: DynamicDefinesType[] = [...this.fixedDefines, 'DEBUG_WIREFRAME'];
         const debugProgram = painter.getOrCreateProgram(this.name, {config: this.configuration, defines: debugDefines});
 
         context.program.set(debugProgram.program);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const copyUniformValues = (group: string, pSrc: any, pDst: any) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        const copyUniformValues = (group: string, pSrc: Program<Us>, pDst: Program<UniformBindings>) => {
             if (pSrc[group] && pDst[group]) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 for (const name in pSrc[group]) {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     if (pDst[group][name]) {
@@ -488,8 +482,8 @@ class Program<Us extends UniformBindings> {
         context.setColorMode(colorMode);
         context.setCullFace(cullFaceMode);
 
-        for (const name of Object.keys(this.fixedUniforms)) {
-            this.fixedUniforms[name].set(this.program, name, uniformValues[name]);
+        for (const [name, uniform] of this.fixedUniformsEntries) {
+            uniform.set(this.program, name, uniformValues[name]);
         }
 
         if (configuration) {
@@ -505,6 +499,10 @@ class Program<Us extends UniformBindings> {
 
         this.checkUniforms(layerID, 'RENDER_SHADOWS', this.shadowUniforms);
 
+        const dynamicBuffers = dynamicLayoutBuffers || [];
+        const paintVertexBuffers = configuration ? configuration.getPaintVertexBuffers() : [];
+        const shouldDrawWireframe = drawMode === gl.TRIANGLES && indexBuffer;
+
         const vertexAttribDivisorValue = instanceCount && instanceCount > 0 ? 1 : undefined;
         for (const segment of segments.get()) {
             const vaos = segment.vaos || (segment.vaos = {});
@@ -513,10 +511,10 @@ class Program<Us extends UniformBindings> {
                 context,
                 this,
                 layoutVertexBuffer,
-                configuration ? configuration.getPaintVertexBuffers() : [],
+                paintVertexBuffers,
                 indexBuffer,
                 segment.vertexOffset,
-                dynamicLayoutBuffers ? dynamicLayoutBuffers : [],
+                dynamicBuffers,
                 vertexAttribDivisorValue
             );
 
@@ -555,8 +553,7 @@ class Program<Us extends UniformBindings> {
                     gl.drawArrays(drawMode, segment.vertexOffset, segment.vertexLength);
                 }
             }
-            if (drawMode === gl.TRIANGLES && indexBuffer) {
-                // Handle potential wireframe rendering for current draw call
+            if (shouldDrawWireframe) {
                 this._drawDebugWireframe(painter, depthMode, stencilMode, colorMode, indexBuffer, segment,
                     currentProperties, zoom, configuration, instanceCount);
             }

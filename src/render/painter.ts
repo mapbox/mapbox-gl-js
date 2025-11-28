@@ -1699,7 +1699,7 @@ class Painter {
 
     getOrCreateProgram<T extends ProgramName>(name: T, options?: CreateProgramParams): Program<ProgramUniformsType[T]> {
         this.cache = this.cache || {};
-        const defines = ((options && options.defines) || []);
+        const defines = (options && options.defines) || [];
         const config = options && options.config;
         const overrideFog = options && options.overrideFog;
         const overrideRtt = options && options.overrideRtt;

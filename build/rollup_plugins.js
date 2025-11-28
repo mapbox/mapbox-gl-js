@@ -51,7 +51,7 @@ export const plugins = ({mode, format, minified, production, test, bench, keepCl
             'process.env.UPDATE': JSON.stringify(process.env.UPDATE)
         }
     }) : false,
-    glsl(['./src/shaders/*.glsl', './3d-style/shaders/*.glsl'], production),
+    glsl(['./src/shaders/*.glsl', './3d-style/shaders/*.glsl']),
     minified ? terser({
         ecma: 2020,
         module: true,
@@ -72,30 +72,33 @@ export const plugins = ({mode, format, minified, production, test, bench, keepCl
     }),
 ].filter(Boolean);
 
-// Using this instead of rollup-plugin-string to add minification
-function glsl(include, minify) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+/**
+ * GLSL Shader Transform Plugin
+ * Performs lightweight minification: strips comments, collapses whitespace, and removes unnecessary line breaks.
+ * @param {string[]} include - Array of glob patterns to include
+ * @returns {import('rollup').Plugin} - Rollup plugin object
+ */
+function glsl(include) {
     const filter = createFilter(include);
+
+    const COMMENT_REGEX = /\s*\/\/.*$/gm;
+    const MULTILINE_REGEX = /\n+/g;
+    const INDENT_REGEX = /\n\s+/g;
+    const OPERATOR_REGEX = /\s?([+\-/*=,])\s?/g;
+    const LINEBREAK_REGEX = /([;,{}])\n(?=[^#])/g;
+
     return {
         name: 'glsl',
         transform(code, id) {
             if (!filter(id)) return;
 
-            // barebones GLSL minification
-            if (minify) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                code = code.trim() // strip whitespace at the start/end
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    .replace(/\s*\/\/[^\n]*\n/g, '\n') // strip double-slash comments
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    .replace(/\n+/g, '\n') // collapse multi line breaks
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    .replace(/\n\s+/g, '\n') // strip indentation
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    .replace(/\s?([+-\/*=,])\s?/g, '$1') // strip whitespace around operators
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    .replace(/([;,\{\}])\n(?=[^#])/g, '$1'); // strip more line breaks
-            }
+            // GLSL minification
+            code = code.trim() // strip whitespace at the start/end
+                .replace(COMMENT_REGEX, '') // strip double-slash comments
+                .replace(MULTILINE_REGEX, '\n') // collapse multi line breaks
+                .replace(INDENT_REGEX, '\n') // strip indentation
+                .replace(OPERATOR_REGEX, '$1') // strip whitespace around operators
+                .replace(LINEBREAK_REGEX, '$1'); // strip more line breaks
 
             return {
                 code: `export default ${JSON.stringify(code)};`,
