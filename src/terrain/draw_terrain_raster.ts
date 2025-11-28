@@ -32,6 +32,8 @@ import type Tile from '../source/tile';
 import type {DynamicDefinesType} from '../render/program/program_uniforms';
 import type {GlobeRasterUniformsType} from './globe_raster_program';
 import type {TerrainRasterUniformsType} from './terrain_raster_program';
+import type {UserManagedTexture} from '../render/texture';
+import type Texture from '../render/texture';
 
 export {
     drawTerrainRaster
@@ -194,10 +196,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 vertexMorphing.newMorphing(coord.key, prevDemTile, nextDemTile, now, defaultDuration);
             }
 
-            if (tile.emissiveTexture) {
-                context.activeTexture.set(gl.TEXTURE1);
-                tile.emissiveTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            }
+            bindEmissiveTexture(painter, tile.emissiveTexture);
+
             // Bind the main draped texture
             context.activeTexture.set(gl.TEXTURE0);
             if (tile.texture) {
@@ -256,10 +256,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             if (segment && (topCap || bottomCap)) {
                 const tile = sourceCache.getTile(coord);
 
-                if (tile.emissiveTexture) {
-                    context.activeTexture.set(gl.TEXTURE1);
-                    tile.emissiveTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-                }
+                bindEmissiveTexture(painter, tile.emissiveTexture);
+
                 // Bind the main draped texture
                 context.activeTexture.set(gl.TEXTURE0);
                 if (tile.texture) {
@@ -356,10 +354,8 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                     vertexMorphing.newMorphing(coord.key, prevDemTile, nextDemTile, now, defaultDuration);
                 }
 
-                if (tile.emissiveTexture) {
-                    context.activeTexture.set(gl.TEXTURE1);
-                    tile.emissiveTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-                }
+                bindEmissiveTexture(painter, tile.emissiveTexture);
+
                 // Bind the main draped texture
                 context.activeTexture.set(gl.TEXTURE0);
                 if (tile.texture) {
@@ -410,6 +406,24 @@ function skirtHeight(zoom: number, terrainExaggeration: number, tileSize: number
 function isEdgeTile(cid: CanonicalTileID, renderWorldCopies: boolean): boolean {
     const numTiles = 1 << cid.z;
     return (!renderWorldCopies && (cid.x === 0 || cid.x === numTiles - 1)) || cid.y === 0 || cid.y === numTiles - 1;
+}
+
+function bindEmissiveTexture(painter: Painter, texture: Texture | UserManagedTexture) {
+    // Only bind if 3D lights are enabled
+    if (!painter.style || !painter.style.enable3dLights()) {
+        return;
+    }
+
+    const context = painter.context;
+    const gl = context.gl;
+    // Bind the emissive texture
+    context.activeTexture.set(gl.TEXTURE1);
+    if (texture) {
+        texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+    } else {
+        // Bind an empty texture to avoid WebGL warnings
+        painter.emptyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+    }
 }
 
 export {
