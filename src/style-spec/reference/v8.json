@@ -1833,6 +1833,7 @@
       "type": "boolean",
       "default": true,
       "transition": false,
+      "experimental": true,
       "doc": "If true, the models will be reduced in density based on the zoom level. This is useful for large datasets that may be slow to render.",
       "sdk-support": {
         "basic functionality": {
