@@ -144,6 +144,12 @@ const skip = [
     "render-tests/icon-size/depends-on-coalesce-image",
     "render-tests/appearance/icon-size-depends-on-coalesce-image",
 
+    // Broken in similar way as gl-native https://mapbox.atlassian.net/browse/MAPSNAT-3482
+    "render-tests/appearance/empty-image-in-appearance",
+    "render-tests/appearance/icon-text-fit-vertical/non-existent-image",
+    "render-tests/appearance/icon-text-fit-vertical/zero-icon-size",
+    "render-tests/appearance/non-existent-image-in-appearance",
+
     // Broken in similar way as gl-native https://mapbox.atlassian.net/browse/MAPSNAT-3474
     "render-tests/appearance/icon-text-fit-vertical/other-image",
 

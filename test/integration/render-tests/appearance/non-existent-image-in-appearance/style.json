@@ -1,0 +1,53 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 32,
+      "width": 32
+    }
+  },
+  "camera": {"camera-projection": "orthographic"},
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "bakery-12"
+      },
+      "appearances": [
+        {
+          "name": "test",
+          "condition": true,
+          "properties": {
+            "icon-image": "non-existent-icon",
+            "icon-size": 2,
+            "icon-rotate": 90,
+            "icon-offset": [10, 10]
+          }
+        }
+      ]
+    }
+  ]
+}

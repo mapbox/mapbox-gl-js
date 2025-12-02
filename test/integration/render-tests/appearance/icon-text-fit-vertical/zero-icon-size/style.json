@@ -1,0 +1,54 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 32,
+      "height": 64
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+    "type": "FeatureCollection",
+    "features": [{
+        "type": "Feature",
+        "geometry": {
+            "type": "Point", 
+            "coordinates": [ 0, 0 ]
+        }
+    }]
+      }
+    }
+  },
+  "sprite": "local://sprites/stretch",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "icons",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": "ホテル",
+        "text-font": [
+          "literal",
+          [
+            "NotoCJK"
+          ]
+        ],
+        "text-writing-mode": ["vertical"],
+        "icon-text-fit": "both",
+        "icon-image": "nine-part-content"
+      },
+      "appearances": [
+        {
+          "name": "test",
+          "condition": true,
+          "properties": {
+            "icon-size": 0
+          }
+        }
+      ]
+    }
+  ]
+}
