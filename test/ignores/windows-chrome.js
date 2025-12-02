@@ -57,6 +57,7 @@ const todo = [
     "render-tests/building/faux-facade/feature-state",
     "render-tests/building/faux-facade/shadows-supported",
     "render-tests/building/faux-facade/window-ao",
+    "render-tests/building/faux-facade/overlapping-walls"
 ];
 
 const skip = [
