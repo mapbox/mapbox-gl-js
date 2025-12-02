@@ -59,6 +59,36 @@ test('GeolocateControl error event', async () => {
     });
 });
 
+test('GeolocateControl error event includes GeolocationPositionError constants', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl();
+    map.addControl(geolocate);
+
+    // Directly call _onError with a mock GeolocationPositionError to test
+    // that PERMISSION_DENIED, POSITION_UNAVAILABLE, and TIMEOUT are passed through.
+    // The mock-geolocation library doesn't support these constants.
+    const mockError = {
+        PERMISSION_DENIED: 1,
+        POSITION_UNAVAILABLE: 2,
+        TIMEOUT: 3,
+        code: 1,
+        message: 'User denied Geolocation',
+    } as const satisfies GeolocationPositionError;
+
+    await afterUIChanges((resolve) => {
+        geolocate.on('error', (error) => {
+            expect(error.code).toEqual(1);
+            expect(error.message).toEqual('User denied Geolocation');
+            expect(error.PERMISSION_DENIED).toEqual(1);
+            expect(error.POSITION_UNAVAILABLE).toEqual(2);
+            expect(error.TIMEOUT).toEqual(3);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            resolve();
+        });
+        geolocate._onError(mockError);
+    });
+});
+
 test('GeolocateControl outofmaxbounds event in active lock state', async () => {
     const map = createMap();
     const geolocate = new GeolocateControl();

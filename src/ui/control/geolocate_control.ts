@@ -452,7 +452,13 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             this._userLocationDotMarker.addClassName('mapboxgl-user-location-dot-stale');
         }
 
-        this.fire(new Event('error', error));
+        this.fire(new Event('error', {
+            code: error.code,
+            message: error.message,
+            PERMISSION_DENIED: error.PERMISSION_DENIED,
+            POSITION_UNAVAILABLE: error.POSITION_UNAVAILABLE,
+            TIMEOUT: error.TIMEOUT
+        } as GeolocationPositionError));
 
         this._finish();
     }
