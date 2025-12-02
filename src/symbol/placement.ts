@@ -252,6 +252,7 @@ export class Placement {
     };
     collisionGroups: CollisionGroups;
     prevPlacement: Placement | null | undefined;
+    lastReplacementSourceUpdateTime: number;
     zoomAtLastRecencyCheck: number;
     collisionCircleArrays: Partial<Record<number, CollisionCircleArray>>;
     buildingIndex: BuildingIndex | null | undefined;
@@ -277,6 +278,7 @@ export class Placement {
         }
 
         this.placedOrientations = {};
+        this.lastReplacementSourceUpdateTime = 0;
     }
 
     getBucketParts(results: Array<BucketPart>, styleLayer: TypedStyleLayer, tile: Tile, sortAcrossTiles: boolean, scaleFactor: number = 1) {
@@ -1101,6 +1103,10 @@ export class Placement {
     }
 
     updateLayerOpacities(styleLayer: TypedStyleLayer, tiles: Array<Tile>, layerIndex: number, replacementSource?: ReplacementSource | null) {
+        if (replacementSource) {
+            this.lastReplacementSourceUpdateTime = replacementSource.updateTime;
+        }
+
         const seenCrossTileIDs = new Set();
         for (const tile of tiles) {
             const symbolBucket = tile.getBucket(styleLayer) as SymbolBucket;
@@ -1401,6 +1407,10 @@ export class Placement {
         this.zoomAtLastRecencyCheck = zoom;
 
         return this.commitTime + this.fadeDuration * durationAdjustment > now;
+    }
+
+    isStale(): boolean {
+        return this.stale;
     }
 
     setStale() {

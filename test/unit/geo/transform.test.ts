@@ -2014,4 +2014,241 @@ describe('transform', () => {
         expect(transform.setProjection({name: 'mercator'})).toBeTruthy();
         expect(transform.setProjection()).toBeFalsy();
     });
+
+    describe('equals', () => {
+        const createTransform = () => {
+            const transform = new Transform();
+            transform.resize(500, 500);
+            transform.zoom = 10;
+            transform.center = new LngLat(0, 0);
+            return transform;
+        };
+
+        const createConstantElevation = (elevation) => {
+            return {
+                isDataAvailableAtPoint(_) {
+                    return true;
+                },
+                getAtPointOrZero(_) {
+                    return elevation * this.exaggeration();
+                },
+                getAtPoint(_) {
+                    return this.getAtPointOrZero();
+                },
+                getForTilePoints(tileID, points) {
+                    for (const p of points) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                        p[2] = elevation * this.exaggeration();
+                    }
+                    return true;
+                },
+                exaggeration() {
+                    return this._exaggeration !== undefined ? this._exaggeration : 1;
+                },
+                getMinElevationBelowMSL: () => 0,
+                visibleDemTiles: () => [],
+                _exaggeration: 1
+            };
+        };
+
+        // Category 1: Basic Equality
+        test('returns true for identical transforms', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            expect(transform1.equals(transform2)).toEqual(true);
+        });
+
+        test('returns true when comparing transform to itself', () => {
+            const transform = createTransform();
+            expect(transform.equals(transform)).toEqual(true);
+        });
+
+        // Category 2: Individual Property Differences
+        test('returns false when width differs', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform2.resize(600, 500);
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+
+        test('returns false when height differs', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform2.resize(500, 600);
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+
+        test('returns false when center.lng differs', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform2.center = new LngLat(10, 0);
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+
+        test('returns false when center.lat differs', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform2.center = new LngLat(0, 10);
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+
+        test('returns false when zoom differs', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform2.zoom = 15;
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+
+        test('returns false when bearing differs', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform2.bearing = 45;
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+
+        test('returns false when pitch differs', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform2.pitch = 60;
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+
+        test('returns false when fov differs', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform2.fov = 1.0;
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+
+        test('returns false when projection differs', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform1.setProjection({name: 'mercator'});
+            transform2.setProjection({name: 'globe'});
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+
+        // Category 3: Padding Comparison
+        test('returns true when padding is identical', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform1.padding = {top: 10, bottom: 20, left: 30, right: 40};
+            transform2.padding = {top: 10, bottom: 20, left: 30, right: 40};
+            expect(transform1.equals(transform2)).toEqual(true);
+        });
+
+        test('returns true when padding is default (0,0,0,0)', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            expect(transform1.equals(transform2)).toEqual(true);
+        });
+
+        test('returns false when padding.top differs', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform1.padding = {top: 10, bottom: 20, left: 30, right: 40};
+            transform2.padding = {top: 15, bottom: 20, left: 30, right: 40};
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+
+        test('returns false when padding.bottom differs', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform1.padding = {top: 10, bottom: 20, left: 30, right: 40};
+            transform2.padding = {top: 10, bottom: 25, left: 30, right: 40};
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+
+        test('returns false when padding.left differs', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform1.padding = {top: 10, bottom: 20, left: 30, right: 40};
+            transform2.padding = {top: 10, bottom: 20, left: 35, right: 40};
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+
+        test('returns false when padding.right differs', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform1.padding = {top: 10, bottom: 20, left: 30, right: 40};
+            transform2.padding = {top: 10, bottom: 20, left: 30, right: 45};
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+
+        // Category 4: Elevation Comparison
+        test('returns true when both have no elevation', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            expect(transform1.equals(transform2)).toEqual(true);
+        });
+
+        test('returns false when one has elevation and other does not', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform1.elevation = createConstantElevation(10);
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+
+        test('returns true when both have elevation with same exaggeration', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            const elevation1 = createConstantElevation(10);
+            const elevation2 = createConstantElevation(10);
+            elevation1._exaggeration = 1.5;
+            elevation2._exaggeration = 1.5;
+            transform1.elevation = elevation1;
+            transform2.elevation = elevation2;
+            expect(transform1.equals(transform2)).toEqual(true);
+        });
+
+        test('returns false when both have elevation but exaggeration differs', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            const elevation1 = createConstantElevation(10);
+            const elevation2 = createConstantElevation(10);
+            elevation1._exaggeration = 1.5;
+            elevation2._exaggeration = 2.0;
+            transform1.elevation = elevation1;
+            transform2.elevation = elevation2;
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+
+        // Category 5: Integration Tests
+        test('returns true when all properties match exactly', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+
+            // Set complex state
+            transform1.resize(500, 500);
+            transform2.resize(500, 500);
+            transform1.center = new LngLat(10, 20);
+            transform2.center = new LngLat(10, 20);
+            transform1.zoom = 12;
+            transform2.zoom = 12;
+            transform1.bearing = 45;
+            transform2.bearing = 45;
+            transform1.pitch = 60;
+            transform2.pitch = 60;
+            transform1.padding = {top: 10, bottom: 20, left: 30, right: 40};
+            transform2.padding = {top: 10, bottom: 20, left: 30, right: 40};
+
+            const elevation1 = createConstantElevation(10);
+            const elevation2 = createConstantElevation(10);
+            elevation1._exaggeration = 2.0;
+            elevation2._exaggeration = 2.0;
+            transform1.elevation = elevation1;
+            transform2.elevation = elevation2;
+
+            expect(transform1.equals(transform2)).toEqual(true);
+        });
+
+        test('returns false when multiple properties differ', () => {
+            const transform1 = createTransform();
+            const transform2 = createTransform();
+            transform2.zoom = 15;
+            transform2.bearing = 45;
+            transform2.padding = {top: 10, bottom: 20, left: 30, right: 40};
+            expect(transform1.equals(transform2)).toEqual(false);
+        });
+    });
 });

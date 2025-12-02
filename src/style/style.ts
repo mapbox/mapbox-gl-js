@@ -4153,17 +4153,24 @@ class Style extends Evented<MapEvents> {
         // to start over. When we start over, we do a full placement instead of incremental
         // to prevent starvation.
         // We need to restart placement to keep layer indices in sync.
-        // Also force full placement when fadeDuration === 0 to ensure that newly loaded
-        // tiles will fully display symbols in their first frame
-        forceFullPlacement = forceFullPlacement || this._layerOrderChanged || fadeDuration === 0;
+        forceFullPlacement = forceFullPlacement || this._layerOrderChanged;
 
         if (this._layerOrderChanged) {
             this.fire(new Event('neworder'));
         }
 
-        if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
+        const transformChanged = Boolean(this.placement && !transform.equals(this.placement.transform));
+        const replacementSourceChanged = Boolean(this.placement && ((this.placement.lastReplacementSourceUpdateTime !== 0 && !replacementSource) || this.placement.lastReplacementSourceUpdateTime !== replacementSource.updateTime));
+
+        // Force full placement when fadeDuration === 0 to ensure that newly loaded
+        // tiles will fully display symbols in their first frame.
+        // Make sure to not do this for the static camera, otherwise
+        // we will do expensive full placements on every frame.
+        const fullFrameUpdateRequired = (transformChanged || replacementSourceChanged || symbolBucketsChanged || (this.placement && this.placement.isStale())) && fadeDuration === 0;
+
+        if (forceFullPlacement || !this.pauseablePlacement || fullFrameUpdateRequired || (fadeDuration !== 0 && this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
             const fogState = this.fog && transform.projection.supportsFog ? this.fog.state : null;
-            this.pauseablePlacement = new PauseablePlacement(transform, this._mergedOrder, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState, this._buildingIndex);
+            this.pauseablePlacement = new PauseablePlacement(transform, this._mergedOrder, forceFullPlacement || fadeDuration === 0, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState, this._buildingIndex);
             this._layerOrderChanged = false;
         }
 

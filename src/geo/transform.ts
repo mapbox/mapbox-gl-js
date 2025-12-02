@@ -655,6 +655,25 @@ class Transform {
         this._calcMatrices();
     }
 
+    equals(transform: Transform): boolean {
+        const lastElevation = this.elevation;
+        const newElevation = transform.elevation;
+        const elevationChanged = (lastElevation != null) !== (newElevation != null) ||
+                                 (lastElevation && newElevation && lastElevation.exaggeration() !== newElevation.exaggeration());
+
+        return this.width === transform.width &&
+               this.height === transform.height &&
+               this.center.lng === transform.center.lng &&
+               this.center.lat === transform.center.lat &&
+               this.zoom === transform.zoom &&
+               this.bearing === transform.bearing &&
+               this.pitch === transform.pitch &&
+               this.fov === transform.fov &&
+               this.projection.name === transform.projection.name &&
+               this._edgeInsets.equals(transform.padding) &&
+               !elevationChanged;
+    }
+
     /**
      * Computes a zoom value relative to a map plane that goes through the provided mercator position.
      *
