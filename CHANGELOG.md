@@ -1,30 +1,35 @@
-## 3.17.0-beta.2
+## 3.17.0
+
 
 ### Features and improvements ✨
 
+- Add experimental ESM support.
 - Make `line-emissive-strength` data-driven.
 - Remove experimental flag from the `extra_bounds` property of raster and vector sources.
-- Various performance improvements.
+- Remove experimental flag from `model` layer.
+- Remove experimental flag from `building` layer.
+- Improve vector icons rasterization performance.
+- Improve shadow rendering performance.
+- Improve `building` layer performance.
+- Improve shader initialization performance.
 
 ### Bug fixes 🐞
 
+- Fix polygon rendering for dynamic GeoJSON sources.
+- Fix `raster-array` layers not working on iOS < 18.4.
+- Fix a performance issue for symbol layers with zero fade duration and static camera.
+- Fix occasional WebGL texture warnings when rendering terrain.
 - Fix features not being localized in dynamic filters when a worldview is set.
+- Fix an issue with clipping models on Standard.
+- Fix an issue with models flashing on `setData`.
+- Fix an issue with incorrect scoping of models added during runtime.
+- Fix line patterns not elevating properly on HD roads.
+- Sanitize attributions in `AttributionControl`.
 - Correctly support filtered features in appearances.
 - Fix an issue occuring when expressions are used in appearances.
-
-## 3.17.0-beta.1
-
-### Features and improvements ✨
-
-- Experimental ESM support.
-- Remove experimental flag from model layer.
-- Conflate building parts together as a whole building.
-
-### Bug fixes 🐞
-
-- Fix line patterns not elevating properly on HD roads.
-- Sanitize attributions in AttributionControl.
 - Fix appearance optimization that resulted in wrong appearances being rendered.
+- Fix appearance icons not changing when feature state changed multiple times.
+- Improve TypeScript types.
 
 ## 3.16.0
 
