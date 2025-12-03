@@ -235,7 +235,7 @@ class RasterArrayTile extends Tile implements Tile {
                 return;
             }
 
-            taskInQueue.values().forEach((cb) => cb(null, result));
+            taskInQueue.forEach((cb) => cb(null, result));
             this._taskQueue.delete(taskQueueId);
         };
 
@@ -288,7 +288,7 @@ class RasterArrayTile extends Tile implements Tile {
         }
 
         if (mrtLayer.hasDataForBand(band)) {
-            taskInQueue.values().forEach((cb) => cb(null, null));
+            taskInQueue.forEach((cb) => cb(null, null));
             this._taskQueue.delete(taskQueueId);
             return;
         }
