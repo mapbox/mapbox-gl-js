@@ -17,6 +17,10 @@ in highp vec3 v_uv;
 #ifdef ELEVATED_ROADS
 in highp float v_road_z_offset;
 #endif
+#ifdef VARIABLE_LINE_WIDTH
+in float stub_side;
+#endif
+
 #ifdef RENDER_LINE_DASH
 uniform sampler2D u_dash_image;
 
@@ -77,7 +81,11 @@ void main() {
     // (v_width2.s)
     float blur2 = (u_width_scale * blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
+#ifdef VARIABLE_LINE_WIDTH
+    alpha = mix(alpha, 1.0, stub_side);
+#endif
     alpha = side_z_offset > 0.0 ? 1.0 - alpha : alpha;
+
 #ifdef RENDER_LINE_DASH
     float sdfdist = texture(u_dash_image, v_tex).r;
     float sdfgamma = 1.0 / (2.0 * u_device_pixel_ratio) / dash.z;

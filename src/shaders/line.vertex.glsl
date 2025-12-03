@@ -54,6 +54,9 @@ out highp vec3 v_uv;
 #ifdef ELEVATED_ROADS
 out highp float v_road_z_offset;
 #endif
+#ifdef VARIABLE_LINE_WIDTH
+out float stub_side;
+#endif
 
 #ifdef RENDER_LINE_DASH
 uniform vec2 u_texsize;
@@ -131,9 +134,17 @@ void main() {
     float halfwidth;
 #ifdef VARIABLE_LINE_WIDTH
     bool left = normal.y == 1.0;
-    halfwidth = (u_width_scale * (left ? a_z_offset_width.y : a_z_offset_width.z)) / 2.0;
+    float left_width = a_z_offset_width.y;
+    float right_width = a_z_offset_width.z;
+    bool zero_right_width = right_width == 0.0 ;
+    halfwidth = (u_width_scale * (left ? left_width : right_width)) / 2.0;
     a_z_offset += left ? side_z_offset : 0.0;
     v_normal = side_z_offset > 0.0 && left ? vec2(0.0) : v_normal;
+    // If the right width is 0, we are rendering an asymmetric line with a stub side
+    // We should disable antialiasing and blur on this side to be able to stich two lines together
+    stub_side = zero_right_width ? -normal.y : 0.0;
+    v_normal = !left && zero_right_width ? vec2(0.0) : v_normal;
+    ANTIALIASING = !left && zero_right_width ? 0.0 : ANTIALIASING;
 #else
     halfwidth = (u_width_scale * width) / 2.0;
 #endif
