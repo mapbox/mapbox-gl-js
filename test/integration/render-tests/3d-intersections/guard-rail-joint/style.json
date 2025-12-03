@@ -8,12 +8,12 @@
         }
     },
     "center": [
-        -122.164266,
-        37.44291
+        139.7593067,
+        35.6524213
     ],
-    "zoom": 22,
-    "pitch": 56.89,
-    "bearing": 296.02,
+    "zoom": 20.13,
+    "pitch": 40,
+    "bearing": -129,
     "sources": {
         "hd-roads": {
             "type": "vector",

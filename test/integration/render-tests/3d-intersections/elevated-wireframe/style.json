@@ -3,19 +3,19 @@
     "metadata": {
         "test": {
             "mapMode": "static",
-            "allowed": 0.00055,
+            "allowed": 0.001,
             "showLayers3DWireframe": true,
             "showElevatedStructuresWireframe": true,
             "spriteFormat": "raster"
         }
     },
     "center": [
-        -122.1646,
-        37.443
+        139.7627,
+        35.6638
     ],
-    "zoom": 20.29,
-    "pitch": 56.89,
-    "bearing": 13.09,
+    "zoom": 19.5,
+    "pitch": 45,
+    "bearing": 120,
     "sources": {
         "hd-roads": {
             "type": "vector",
