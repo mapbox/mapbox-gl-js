@@ -184,12 +184,14 @@ function outputFeature(feature: InternalFeature, z2: number, tx: number, ty: num
     const tileGeom = [];
 
     if (type === 1) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        transformPoints(geometry as number[], z2, tx, ty, tileGeom);
-    } else {
+        transformPoints(geometry as number[], z2, tx, ty, tileGeom as [number, number][]);
+    } else if (type === 2) {
         for (const ring of geometry) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            transformAndClipLine(ring as number[], z2, tx, ty, tileGeom);
+            transformAndClipLine(ring as number[], z2, tx, ty, tileGeom as [number, number][][]);
+        }
+    } else if (type === 3) {
+        for (const ring of geometry) {
+            transformAndClipPolygon(ring as number[], z2, tx, ty, tileGeom as [number, number][][]);
         }
     }
 
@@ -209,7 +211,7 @@ function transformPoints(line: number[], z2: number, tx: number, ty: number, out
     }
 }
 
-function transformAndClipLine(line: number[], z2: number, tx: number, ty: number, out: [number, number][]) {
+function transformAndClipLine(line: number[], z2: number, tx: number, ty: number, out: [number, number][][]) {
     const min = -PAD_PX;
     const max = EXTENT + PAD_PX;
     let part;
@@ -272,6 +274,66 @@ function transformAndClipLine(line: number[], z2: number, tx: number, ty: number
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         part.push([x1, y1]);
     }
+}
+
+function transformAndClipPolygon(input: number[], z2: number, tx: number, ty: number, out: [number, number][][]) {
+    const minX = (tx - PAD) / z2;
+    const minY = (ty - PAD) / z2;
+    const maxX = (tx + 1 + PAD) / z2;
+    const maxY = (ty + 1 + PAD) / z2;
+
+    function bitCode(x, y) {
+        let code = 0;
+
+        if (x < minX) code |= 1; // left
+        else if (x > maxX) code |= 2; // right
+
+        if (y < minY) code |= 4; // top
+        else if (y > maxY) code |= 8; // bottom
+
+        return code;
+    }
+
+    let clipped: number[] = [];
+
+    // clip against each side of the clip rectangle
+    for (let edge = 1; edge <= 8; edge *= 2) {
+        let x0 = input[input.length - 2];
+        let y0 = input[input.length - 1];
+        let prevInside = !(bitCode(x0, y0) & edge);
+
+        for (let i = 0; i < input.length; i += 2) {
+            const x1 = input[i];
+            const y1 = input[i + 1];
+            const inside = !(bitCode(x1, y1) & edge);
+
+            // if segment goes through the clip window, add an intersection
+            if (inside !== prevInside) {
+                if (edge & 8) clipped.push(x0 + (x1 - x0) * (maxY - y0) / (y1 - y0), maxY); // bottom
+                else if (edge & 4) clipped.push(x0 + (x1 - x0) * (minY - y0) / (y1 - y0), minY); // top
+                else if (edge & 2) clipped.push(maxX, y0 + (y1 - y0) * (maxX - x0) / (x1 - x0)); // right
+                else if (edge & 1) clipped.push(minX, y0 + (y1 - y0) * (minX - x0) / (x1 - x0)); // left
+            }
+
+            if (inside) clipped.push(x1, y1); // add a point if it's inside
+
+            x0 = x1;
+            y0 = y1;
+            prevInside = inside;
+        }
+
+        input = clipped;
+
+        if (!input.length || edge === 8) break;
+        clipped = [];
+    }
+
+    const ring: [number, number][] = [];
+    for (let i = 0; i < clipped.length; i += 2) ring.push([
+        Math.round(EXTENT * (clipped[i] * z2 - tx)),
+        Math.round(EXTENT * (clipped[i + 1] * z2 - ty))
+    ]);
+    out.push(ring);
 }
 
 // rewind a polygon ring to a given winding order (clockwise or anti-clockwise)
