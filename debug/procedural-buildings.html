@@ -25,29 +25,45 @@
             left: 10px;
             z-index: 1000;
         }
+
+        .tp-dfwv {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            z-index: 1000;
+        }
     </style>
 </head>
 
 <body>
     <div id="map"></div>
-    <script src="../dist/mapbox-gl-dev.js"></script>
     <script type="module">
+        // This page uses the esm build of Mapbox GL JS,
+        // so need to run 'npm run start-esm' to serve it.
+        import mapbox from '../dist/esm-dev/mapbox-gl.js';
+        import {Pane} from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js';
         import {getAccessToken} from './access_token_generated.js';
     
-        mapboxgl.accessToken = getAccessToken();
+        mapbox.accessToken = getAccessToken();
 
-        var map = window.map = new mapboxgl.Map({
+        var map = window.map = new mapbox.Map({
             container: 'map',
             devtools: true,
             zoom: 18,
             center: [11.576073, 48.135578],
             pitch: 54,
             bearing: -55.2,
-            style: 'mapbox://styles/mapbox/standard',
+            style: 'mapbox://styles/mapbox-map-design/standard-rc',
+            config: {
+                basemap: {
+                    show3dFacades: true
+                }
+            },
             hash: true
         });
 
-        var dbgTrackedParams = map._tp;
+        const buildingDebugPane = new Pane();
+        buildingDebugPane.title = "Procedural Buildings";
 
         var params = {
             ambientColor: [255, 255, 255],
@@ -58,8 +74,46 @@
             sunPolarAngle: 50,
             castShadows: true,
             shadowIntensity: 1.0,
-            lightPreset: "day"
+            lightPreset: "day",
+            show3dObjects: true,
+            show3dBuildings: true,
+            show3dFacades: true,
+            show3dLandmarks: true
         };
+
+        const lightFolder = buildingDebugPane.addFolder({
+            title: 'Sun',
+            expanded: true,
+        });
+
+        lightFolder.addBinding(params, "sunBearing", { label: "Bearing Angle", min: 0, max: 360 }).on('change', function (ev) {
+            updateSunLight();
+        });
+
+        lightFolder.addBinding(params, "sunPolarAngle", { label: "Polar Angle", min: 0, max: 90 }).on('change', function (ev) {
+            updateSunLight();
+        });
+
+        const buildingFolder = buildingDebugPane.addFolder({
+            title: 'Buildings',
+            expanded: true,
+        });
+
+        buildingFolder.addBinding(params, "show3dObjects", { label: "Show 3D Objects" }).on('change', function (ev) {
+            map.setConfigProperty("basemap", "show3dObjects", params.show3dObjects);
+        });
+
+        buildingFolder.addBinding(params, "show3dBuildings", { label: "Show 3D Buildings" }).on('change', function (ev) {
+            map.setConfigProperty("basemap", "show3dBuildings", params.show3dBuildings);
+        });
+
+        buildingFolder.addBinding(params, "show3dLandmarks", { label: "Show 3D Landmarks" }).on('change', function (ev) {
+            map.setConfigProperty("basemap", "show3dLandmarks", params.show3dLandmarks);
+        });
+        
+        buildingFolder.addBinding(params, "show3dFacades", { label: "Show 3D Facades" }).on('change', function (ev) {
+            map.setConfigProperty("basemap", "show3dFacades", params.show3dFacades);
+        });
 
         function updateSunLight() {
             map.setLights([
@@ -89,18 +143,30 @@
             map.triggerRepaint();
         };
 
-        map.on('load', () => {
-            map.showTileBoundaries = true;
-        });
-
         map.on('style.load', () => {
-            map.addImport({id: 'procedural-buildings', url: 'procedural-buildings.standard.fragment.json'});
+            // Store the original style so we can restore it - e.g. if someone
+            // changed the lighting using one of the other debug options.
+            let styleLights = map.getLights();
+            
+            lightFolder.addBinding(params, "lightPreset", {
+                label: "Light Preset",
+                options: {
+                    Dawn: "dawn",
+                    Day: "day",
+                    Dusk: "dusk",
+                    Night: "night",
+                }
+            }, () => {
+            }).on('change', function (ev) {
+                map.setLights(styleLights);
+                map.setConfigProperty("basemap", "lightPreset", params.lightPreset);
+            });
         });
 
         let selectedBuilding = null;
         map.addInteraction('place-click', {
             type: 'click',
-            target: { featuresetId: 'buildings', importId: 'procedural-buildings' },
+            target: { featuresetId: 'buildings', importId: 'basemap' },
             handler: ({ feature }) => {
                 console.log(feature.id);
 
