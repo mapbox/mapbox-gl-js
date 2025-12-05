@@ -225,7 +225,7 @@ export class Elevation {
      * @param {vec3} dir The ray direction.
      * @param {number} exaggeration The terrain exaggeration.
     */
-    raycast(_position: vec3, _dir: vec3, _exaggeration: number): number | null | undefined {
+    raycast(position: vec3, dir: vec3, exaggeration: number): number | null | undefined {
         throw new Error('Pure virtual method called.');
     }
 
@@ -238,7 +238,7 @@ export class Elevation {
      * 3D MercatorCoordinate's of intersection in its first 3 components, and elevation in meter in its 4th coordinate.
      * Otherwise returns null.
      */
-    pointCoordinate(_screenPoint: Point): vec4 | null | undefined {
+    pointCoordinate(screenPoint: Point): vec4 | null | undefined {
         throw new Error('Pure virtual method called.');
     }
 

@@ -55,11 +55,12 @@ type Context = OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
 
 let canvas: HTMLCanvasElement | OffscreenCanvas | null = null;
 let context: Context;
+
 /**
  * Renders a uSVG icon to an ImageData object.
  *
  * @param icon uSVG icon.
- * @param transform Transformation matrix.
+ * @param options Rasterization options.
  * @returns ImageData object.
  */
 export function renderIcon(icon: Icon, options: RasterizationOptions): ImageData {

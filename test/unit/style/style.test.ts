@@ -80,7 +80,7 @@ describe('Style', () => {
     /**
      * @note Currently we cannot mock workers
      * @see https://github.com/vitest-dev/vitest/issues/4033
-     * @todo Test with @vitest/web-worker
+     * @todo Test with `@vitest/web-worker`
      */
     test.skip('loads plugin immediately if already registered', async () => {
         clearRTLTextPlugin();

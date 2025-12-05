@@ -4,15 +4,8 @@ import Point from '@mapbox/point-geometry';
 
 import type Tile from '../source/tile';
 import type LngLat from '../geo/lng_lat';
-import type BoxZoomHandler from './handler/box_zoom';
-import type DragPanHandler from './handler/shim/drag_pan';
-import type DragRotateHandler from './handler/shim/drag_rotate';
-import type ScrollZoomHandler from './handler/scroll_zoom';
-import type DoubleClickZoomHandler from './handler/shim/dblclick_zoom';
-import type TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate';
 import type {Map as MapboxMap} from './map';
 import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
-import type {OverscaledTileID} from '../source/tile_id';
 import type {EventData, EventOf} from '../util/evented';
 import type {SourceSpecification} from '../style-spec/types';
 
@@ -1625,7 +1618,7 @@ export type MapEvents = {
 /**
  * Utility type that represents all possible Map event types.
  */
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
 export type MapEventType = keyof MapEvents & string;
 
 /**

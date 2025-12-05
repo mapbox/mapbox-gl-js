@@ -10,7 +10,7 @@ import type Feature from '../util/vectortile_to_geojson';
 import type {FeatureFilter} from '../style-spec/feature_filter/index';
 import type {Map as MapboxMap} from './map';
 import type {FilterSpecification} from '../style-spec/types';
-import type {TargetDescriptor, FeaturesetDescriptor} from '../util/vectortile_to_geojson';
+import type {TargetDescriptor} from '../util/vectortile_to_geojson';
 import type {MapEvents, MapInteractionEventType, MapMouseEvent} from './events';
 
 /**

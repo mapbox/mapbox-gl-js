@@ -22,7 +22,7 @@ export default tseslint.config(
     ...config,
     tseslint.configs.recommendedTypeChecked,
     importX.flatConfigs.recommended,
-    jsdoc.configs['flat/recommended'],
+    jsdoc.configs['flat/recommended-typescript'],
 
     // Settings
     {
@@ -145,6 +145,7 @@ export default tseslint.config(
             '@typescript-eslint/method-signature-style': 'error',
             '@typescript-eslint/consistent-type-exports': 'error',
             '@typescript-eslint/consistent-type-imports': 'error',
+            '@typescript-eslint/no-redundant-type-constituents': 'off',
             '@typescript-eslint/restrict-template-expressions': ['off', {
                 allowNever: true,
             }],
@@ -241,21 +242,18 @@ export default tseslint.config(
             // Disable JSDoc rules that are not relevant to public APIs.
             'jsdoc/check-alignment': 'off',
             'jsdoc/check-line-alignment': 'off',
-            'jsdoc/check-param-names': 'off',
             'jsdoc/multiline-blocks': 'off',
             'jsdoc/no-defaults': 'off',
-            'jsdoc/no-multi-asterisks': 'off',
             'jsdoc/no-types': 'off',
-            'jsdoc/require-description-complete-sentence': 'off',
             'jsdoc/require-jsdoc': 'off',
             'jsdoc/require-param-description': 'off',
-            'jsdoc/require-param-type': 'off',
             'jsdoc/require-param': 'off',
             'jsdoc/require-returns-check': 'off',
             'jsdoc/require-returns-description': 'off',
-            'jsdoc/require-returns-type': 'off',
             'jsdoc/require-returns': 'off',
             'jsdoc/tag-lines': 'off',
+            'jsdoc/reject-any-type': 'off',
+            'jsdoc/reject-function-type': 'off'
         }
     },
 

@@ -55,7 +55,7 @@ import type SourceCache from '../source/source_cache';
 import type {MapEventType, MapEventOf} from './events';
 import type {PointLike} from '../types/point-like';
 import type {FeatureState} from '../style-spec/expression/index';
-import type {RequestParameters, AJAXError} from '../util/ajax';
+import type {AJAXError} from '../util/ajax';
 import type {RequestTransformFunction} from '../util/mapbox';
 import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
@@ -104,7 +104,6 @@ import type {Callback} from '../types/callback';
 import type {Interaction} from './interactions';
 import type {SpriteFormat} from '../render/image_manager';
 import type {PitchRotateKey} from './handler_manager';
-import type {CanvasSourceOptions} from '../source/canvas_source';
 import type {CustomSourceInterface} from '../source/custom_source';
 import type {RasterQueryParameters, RasterQueryResult} from '../source/raster_array_tile_source';
 

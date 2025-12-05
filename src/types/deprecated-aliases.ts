@@ -11,7 +11,7 @@ import type {
 } from '../source/source_types';
 
 /**
- * List of type aliases for partial backwards compatibility with @types/mapbox-gl.
+ * List of type aliases for partial backwards compatibility with `@types/mapbox-gl`.
  * https://github.com/DefinitelyTyped/DefinitelyTyped/blob/5a4218ff5d0efa72761f5e740e501666e22261e0/types/mapbox-gl/index.d.ts
  */
 

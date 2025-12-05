@@ -31,7 +31,6 @@ import {getZoomAdjustment} from '../geo/projection/adjustments';
 import type Tile from '../source/tile';
 import type Transform from '../geo/transform';
 import type HandlerManager from './handler_manager';
-import type BoxZoomHandler from './handler/box_zoom';
 import type {TaskID} from '../util/task_queue';
 import type {Callback} from '../types/callback';
 import type {MapEvents} from './events';

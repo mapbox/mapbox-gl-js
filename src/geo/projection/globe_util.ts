@@ -659,7 +659,7 @@ export function isLngLatBehindGlobe(tr: Transform, lngLat: LngLat): boolean {
 /**
  * Check if poles are visible inside the current viewport
  *
- * @param {Transform} transform The current map transform.
+ * @param {Transform} tr The current map transform.
  * @returns {[boolean, boolean]} A tuple of booleans [northInViewport, southInViewport]
  */
 export function polesInViewport(tr: Transform): [boolean, boolean] {
