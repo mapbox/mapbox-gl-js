@@ -6,7 +6,7 @@ import type {LngLatLike} from '../geo/lng_lat';
 import type {CanonicalTileID} from '../source/tile_id';
 
 const DEFAULT_MIN_ZOOM = 0;
-const DEFAULT_MAX_ZOOM = 25.5;
+const DEFAULT_MAX_ZOOM = 28;
 /**
  * The circumference at a line of latitude in meters.
  * @private

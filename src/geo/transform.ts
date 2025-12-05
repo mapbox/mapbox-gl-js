@@ -37,7 +37,7 @@ import type {FeatureDistanceData} from '../style-spec/feature_filter/index';
 
 const NUM_WORLD_COPIES = 3;
 export const DEFAULT_MIN_ZOOM = 0;
-export const DEFAULT_MAX_ZOOM = 25.5;
+export const DEFAULT_MAX_ZOOM = 28;
 export const MIN_LOD_PITCH = 60.0;
 
 type RayIntersectionResult = {
