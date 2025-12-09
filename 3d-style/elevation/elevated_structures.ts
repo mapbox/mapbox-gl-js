@@ -1,6 +1,6 @@
 import assert from 'assert';
 import Point from "@mapbox/point-geometry";
-import {ElevationPolygons, ElevationPortalGraph, type ElevationPortalEdge, type ElevationPortalType, type LeveledPolygon} from "./elevation_graph";
+import {ElevationPortalGraph, type ElevationPortalEdge, type ElevationPortalType} from "./elevation_graph";
 import {vec2, vec3} from "gl-matrix";
 import {tileToMeter} from '../../src/geo/mercator_coordinate';
 import EXTENT from '../../src/style-spec/data/extent';
@@ -167,7 +167,6 @@ export class ElevatedStructures {
     shadowCasterSegments: SegmentVector | undefined;
 
     unevaluatedPortals = new ElevationPortalGraph();
-    portalPolygons = new ElevationPolygons();
 
     // Tracks the rail/tunnel mesh same-feature vertex sections
     // (within ElevatedStructure::vertexPositions).
@@ -276,60 +275,62 @@ export class ElevatedStructures {
         }
     }
 
-    addPortalCandidates(id: number, polygon: Point[][], isTunnel: boolean, elevation: ElevationFeature, zLevel: number) {
-        if (polygon.length === 0) return;
-
-        const leveledPoly: LeveledPolygon = {geometry: polygon, zLevel};
-        this.portalPolygons.add(id, leveledPoly);
+    addPortalCandidates(id: number, polygons: Point[][][], isTunnel: boolean, elevation: ElevationFeature, zLevel: number) {
+        if (polygons.length === 0) return;
 
         const pointsEqual = (a: Point, b: Point) => a.x === b.x && a.y === b.y;
 
-        // Each edge of the exterior ring is a potential portal
-        const exterior = polygon[0];
-        assert(exterior.length > 1 && pointsEqual(exterior[0], exterior[exterior.length - 1]));
-
         this.vertexHashLookup.clear();
 
-        let prevEdgeHash = ElevatedStructures.computeEdgeHash(exterior[exterior.length - 2], exterior[exterior.length - 1]);
-
-        for (let i = 0; i < exterior.length - 1; i++) {
-            const a = exterior[i + 0];
-            const b = exterior[i + 1];
-
-            const vavb = vec2.fromValues(b.x - a.x, b.y - a.y);
-            const length = vec2.length(vavb);
-
-            if (length === 0) continue;
-
-            let type: ElevationPortalType = 'unevaluated';
-
-            // "Entrance" portals are entry & exit points for the polygons
-            // from ground level
-            const ha = elevation.pointElevation(a);
-            const hb = elevation.pointElevation(b);
-            const onGround = Math.abs(ha) < 0.01 && Math.abs(hb) < 0.01;
-
-            if (onGround) {
-                type = 'entrance';
-            } else {
-                // Portals on tile borders describes connectivity between tiles
-                if (this.isOnBorder(a.x, b.x) || this.isOnBorder(a.y, b.y)) {
-                    type = 'border';
-                }
+        for (const polygon of polygons) {
+            if (polygon.length === 0) {
+                continue;
             }
+            // Each edge of the exterior ring is a potential portal
+            const exterior = polygon[0];
+            assert(exterior.length > 1 && pointsEqual(exterior[0], exterior[exterior.length - 1]));
 
-            const edgeHash = ElevatedStructures.computeEdgeHash(a, b);
-            this.unevaluatedPortals.portals.push({
-                connection: {a: id, b: undefined}, va: a, vb: b, vab: vavb, length, hash: edgeHash, isTunnel, type
-            });
+            let prevEdgeHash = ElevatedStructures.computeEdgeHash(exterior[exterior.length - 2], exterior[exterior.length - 1]);
 
-            // Construct a lookup table where vertex position maps to hashes of edges it's connected to
-            const posHash = ElevatedStructures.computePosHash(a);
+            for (let i = 0; i < exterior.length - 1; i++) {
+                const a = exterior[i + 0];
+                const b = exterior[i + 1];
 
-            assert(!this.vertexHashLookup.has(posHash));
-            this.vertexHashLookup.set(posHash, {prev: prevEdgeHash, next: edgeHash});
+                const vavb = vec2.fromValues(b.x - a.x, b.y - a.y);
+                const length = vec2.length(vavb);
 
-            prevEdgeHash = edgeHash;
+                if (length === 0) continue;
+
+                let type: ElevationPortalType = 'unevaluated';
+
+                // "Entrance" portals are entry & exit points for the polygons
+                // from ground level
+                const ha = elevation.pointElevation(a);
+                const hb = elevation.pointElevation(b);
+                const onGround = Math.abs(ha) < 0.01 && Math.abs(hb) < 0.01;
+
+                if (onGround) {
+                    type = 'entrance';
+                } else {
+                    // Portals on tile borders describes connectivity between tiles
+                    if (this.isOnBorder(a.x, b.x) || this.isOnBorder(a.y, b.y)) {
+                        type = 'border';
+                    }
+                }
+
+                const edgeHash = ElevatedStructures.computeEdgeHash(a, b);
+                this.unevaluatedPortals.portals.push({
+                    connection: {a: id, b: undefined}, va: a, vb: b, vab: vavb, length, hash: edgeHash, isTunnel, type
+                });
+
+                // Construct a lookup table where vertex position maps to hashes of edges it's connected to
+                const posHash = ElevatedStructures.computePosHash(a);
+
+                assert(!this.vertexHashLookup.has(posHash));
+                this.vertexHashLookup.set(posHash, {prev: prevEdgeHash, next: edgeHash});
+
+                prevEdgeHash = edgeHash;
+            }
         }
     }
 

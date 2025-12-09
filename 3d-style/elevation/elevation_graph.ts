@@ -24,30 +24,6 @@ export interface ElevationPortalEdge {
     type: ElevationPortalType;
 }
 
-export type LeveledPolygon = {
-    geometry: Point[][];
-    zLevel: number;
-};
-
-export class ElevationPolygons {
-    polygons: Map<number, Array<LeveledPolygon>> = new Map();
-
-    add(key: number, ...values: LeveledPolygon[]) {
-        const poly = this.polygons.get(key);
-        if (!poly) {
-            this.polygons.set(key, values);
-        } else {
-            poly.push(...values);
-        }
-    }
-
-    merge(elevationPolygons: ElevationPolygons) {
-        for (const [key, value] of elevationPolygons.polygons) {
-            this.add(key, ...value);
-        }
-    }
-}
-
 export class ElevationPortalGraph {
     portals: ElevationPortalEdge[] = [];
 
@@ -136,4 +112,3 @@ export class ElevationPortalGraph {
 }
 
 register(ElevationPortalGraph, 'ElevationPortalGraph');
-register(ElevationPolygons, "ElevationPolygons");

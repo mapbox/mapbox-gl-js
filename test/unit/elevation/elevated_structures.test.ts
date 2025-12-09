@@ -11,18 +11,18 @@ import type {Bounds} from '../../../src/style-spec/util/geometry_util';
 describe('ElevatedStructures', () => {
     test('#getUnevaluatedPortals', () => {
         // Entry & exit ramps and a tunnel section
-        const leftRamp: Point[][] = [
+        const leftRamp: Point[][][] = [[
             [new Point(1, 1), new Point(3, 1), new Point(3, 4), new Point(1, 4), new Point(1, 1)]
-        ];
+        ]];
 
-        const middleRamp: Point[][] = [
+        const middleRamp: Point[][][] = [[
             [new Point(3, 1), new Point(6, 1), new Point(6, 4), new Point(3, 4), new Point(3, 1)],
             [new Point(4, 2), new Point(4, 3), new Point(5, 3), new Point(5, 2), new Point(4, 2)]
-        ];
+        ]];
 
-        const rightRamp: Point[][] = [
+        const rightRamp: Point[][][] = [[
             [new Point(6, 1), new Point(8, 1), new Point(8, 4), new Point(6, 4), new Point(6, 1)]
-        ];
+        ]];
 
         // Mock elevation feature
         const vertices: Vertex[] = [
