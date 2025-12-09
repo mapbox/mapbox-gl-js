@@ -37,7 +37,7 @@
     "gl-matrix": "^3.4.4",
     "grid-index": "^1.1.0",
     "kdbush": "^4.0.2",
-    "martinez-polygon-clipping": "^0.7.4",
+    "martinez-polygon-clipping": "^0.8.1",
     "murmurhash-js": "^1.0.0",
     "pbf": "^4.0.1",
     "potpack": "^2.0.0",
