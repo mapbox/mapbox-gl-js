@@ -1,6 +1,7 @@
 {
   "version": 8,
   "metadata": {
+    "test-purpose": "Verify that icon-text-fit works correctly when text properties (size, offset, rotate) change via appearance. Layout has size:20/offset:[0,0]/rotate:0, appearance has size:28/offset:[1,-1]/rotate:15.",
     "test": {
       "width": 200,
       "height": 150,
@@ -40,6 +41,8 @@
       "layout": {
         "text-field": "ASDF",
         "text-size": 20,
+        "text-offset": [0, 0],
+        "text-rotate": 0,
         "text-anchor": "center",
         "text-font": [ "Open Sans Semibold", "Arial Unicode MS Bold" ],
         "text-allow-overlap": true,
@@ -54,7 +57,10 @@
           "name": "test",
           "condition": [">=", ["zoom"], 1],
           "properties": {
-            "icon-image": "fifteen-part"
+            "icon-image": "fifteen-part",
+            "text-size": 28,
+            "text-offset": [1, -1],
+            "text-rotate": 15
           }
         }
       ]

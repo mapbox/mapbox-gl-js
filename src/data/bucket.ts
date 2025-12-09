@@ -22,6 +22,7 @@ import type {ElevationFeature} from '../../3d-style/elevation/elevation_feature'
 import type {ImageId, StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {StyleModelMap} from '../style/style_mode';
 import type {GlobalProperties} from '../style-spec/expression';
+import type ImageManager from '../render/image_manager';
 
 export type BucketParameters<Layer extends TypedStyleLayer> = {
     index: number;
@@ -137,7 +138,7 @@ export interface Bucket {
      */
     destroy: (reload?: boolean) => void;
     updateFootprints: (id: UnwrappedTileID, footprints: Array<TileFootprint>) => void;
-    updateAppearances: (canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties) => void;
+    updateAppearances: (canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties, imageManager?: ImageManager) => void;
 }
 
 export function deserialize(input: Array<Bucket>, style: Style): Record<string, Bucket> {

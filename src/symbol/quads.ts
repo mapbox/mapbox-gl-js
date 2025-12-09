@@ -296,12 +296,14 @@ export function getGlyphQuads(
     feature: Feature,
     imageMap: StyleImageMap<StringifiedImageVariant>,
     allowVerticalPlacement: boolean,
+    textRotate?: number,
 ): Array<SymbolQuad> {
     const quads = [];
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (shaping.positionedLines.length === 0) return quads;
 
-    const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}) * Math.PI / 180;
+    const textRotateValue = textRotate !== undefined ? textRotate : layer.layout.get('text-rotate').evaluate(feature, {});
+    const textRotateRadians = textRotateValue * Math.PI / 180;
     const rotateOffset = getRotateOffset(textOffset);
 
     let shapingHeight = Math.abs(shaping.top - shaping.bottom);
@@ -467,7 +469,7 @@ export function getGlyphQuads(
                 br = new Point(tl.x + paddedHeight, tl.y - paddedWidth);
             }
 
-            if (textRotate) {
+            if (textRotateRadians) {
                 let center: Point;
                 if (!alongLine) {
                     if (useRotateOffset) {
@@ -478,10 +480,10 @@ export function getGlyphQuads(
                 } else {
                     center = new Point(0, 0);
                 }
-                tl._rotateAround(textRotate, center);
-                tr._rotateAround(textRotate, center);
-                bl._rotateAround(textRotate, center);
-                br._rotateAround(textRotate, center);
+                tl._rotateAround(textRotateRadians, center);
+                tr._rotateAround(textRotateRadians, center);
+                bl._rotateAround(textRotateRadians, center);
+                br._rotateAround(textRotateRadians, center);
             }
 
             const pixelOffsetTL = new Point(0, 0);

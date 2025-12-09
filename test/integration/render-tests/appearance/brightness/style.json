@@ -7,8 +7,6 @@
       "height": 64,
       "width": 64,
       "operations": [
-            ["wait"],
-            ["setPitch", 45],
             ["wait"]
         ]
     }
@@ -60,20 +58,29 @@
     }
   },
   "sprite": "local://sprites/sprite",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
       "id": "icon",
       "type": "symbol",
       "source": "geojson",
       "layout": {
-        "icon-image": "bank-12"
+        "icon-image": "bank-12",
+        "text-field": "Test",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": 12,
+        "text-offset": [0, 0],
+        "text-rotate": 0
       },
       "appearances": [
         {
           "name": "test",
           "condition": [">=", ["measure-light", "brightness"], 0.5],
           "properties": {
-            "icon-image": "bakery-12"
+            "icon-image": "bakery-12",
+            "text-size": 20,
+            "text-offset": [1, 1],
+            "text-rotate": 30
           }
         }
       ]

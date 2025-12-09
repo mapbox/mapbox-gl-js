@@ -28,14 +28,23 @@
       "layout": {
         "icon-image": "nine-part",
         "icon-allow-overlap": true,
-        "icon-ignore-placement": true
+        "icon-ignore-placement": true,
+        "text-allow-overlap": true,
+        "text-field": "Text",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": 14,
+        "text-offset": [0, 0],
+        "text-rotate": 0
       },
       "appearances": [
         {
           "name": "test",
           "condition": [">=", ["zoom"], 1],
           "properties": {
-            "icon-image": "nine-part-content"
+            "icon-image": "nine-part-content",
+            "text-size": 22,
+            "text-offset": [0.5, -0.5],
+            "text-rotate": 20
           }
         }
       ]

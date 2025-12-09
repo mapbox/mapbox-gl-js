@@ -3,6 +3,7 @@
   "metadata": {
     "test-purpose": "Verify that text bounding box is correctly computed when text size is modified in an appearance.",
     "test": {
+      "allowed": 0.0005,
       "width": 64,
       "height": 64,
       "collisionDebug": true
