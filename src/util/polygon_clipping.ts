@@ -262,16 +262,42 @@ export function polygonSubdivision(subjectPolygon: Point[][], subdivisionEdges: 
         polygons = martinez.diff(polygons, clipGeometry) as martinez.MultiPolygon;
     }
 
-    return fromMultiPolygon(polygons, 1 / scale);
+    // Snap to grid of 128 in 32bit space to eliminate martinez precision errors.
+    // This corresponds to ~0.002 tile units (128 / 65536) after scaling back.
+    return fromMultiPolygon(polygons, 1 / scale, 128);
 }
 
 function toMultiPolygon(polygon: Point[][], scale: number = 1.0): martinez.MultiPolygon {
     return [polygon.map(ring => ring.map(p => [p.x * scale, p.y * scale]))];
 }
 
-function fromMultiPolygon(geometry: martinez.MultiPolygon, scale: number = 1.0): Point[][][] {
+/**
+ * Converts martinez MultiPolygon geometry back to Point arrays.
+ *
+ * @param {martinez.MultiPolygon} geometry - The martinez MultiPolygon to convert
+ * @param {number} scale - Scale factor to apply to coordinates (default 1.0)
+ * @param {number} [gridSize] - Optional grid size for snapping coordinates before scaling.
+ *                              When provided, coordinates are rounded to the nearest multiple
+ *                              of this value before scaling. This helps eliminate floating-point
+ *                              precision errors from the martinez library, ensuring that adjacent
+ *                              polygon edges that should share vertices end up with identical
+ *                              coordinates after conversion.
+ * @returns {Point[][][]}
+ * @private
+ */
+function fromMultiPolygon(geometry: martinez.MultiPolygon, scale: number = 1.0, gridSize?: number): Point[][][] {
     return geometry.map(poly => poly.map((ring, index) => {
-        const r = ring.map(p => new Point(p[0] * scale, p[1] * scale).round());
+        const r = ring.map(p => {
+            let x = p[0];
+            let y = p[1];
+
+            if (gridSize) {
+                x = Math.round(x / gridSize) * gridSize;
+                y = Math.round(y / gridSize) * gridSize;
+            }
+
+            return new Point(x * scale, y * scale)._round();
+        });
         if (index > 0) {
             // Reverse holes
             r.reverse();

@@ -564,4 +564,63 @@ describe('polygon subdivision', () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[7][0]).toEqualRing([new Point(90, 47), new Point(100, 50), new Point(100, 60), new Point(90, 58), new Point(90, 47)]);
     });
+
+    test('grid snapping to fix precision issues', () => {
+        // Real-world polygon that caused precision issues without grid snapping fix.
+        // The martinez library can produce nearly-coincident vertices that should be
+        // identical, causing rendering artifacts.
+        const subject = [
+            new Point(1569, 3677), new Point(1737, 3023), new Point(1825, 2634),
+            new Point(1952, 1864), new Point(2077, 728), new Point(2111, -1),
+            new Point(4966, -1), new Point(4960, 192), new Point(4843, 1624),
+            new Point(4681, 2642), new Point(4455, 3748), new Point(4278, 4475),
+            new Point(1569, 3677)
+        ];
+
+        const edges = new MockEdgeIterator([
+            [new Point(3959, -8562), new Point(868, -7651)],
+            [new Point(4357, -7209), new Point(1246, -6374)],
+            [new Point(4703, -5781), new Point(1546, -5138)],
+            [new Point(4945, -4322), new Point(1752, -3891)],
+            [new Point(5013, -2859), new Point(1970, -2624)],
+            [new Point(5086, -1399), new Point(2035, -1346)],
+            [new Point(5063, 67), new Point(2014, -69)],
+            [new Point(4954, 1538), new Point(1921, 1195)],
+            [new Point(4730, 3006), new Point(1731, 2437)],
+            [new Point(4440, 4288), new Point(1463, 3611)]
+        ]);
+
+        const result = polygonSubdivision([subject], edges);
+
+        expect(result.length).toBe(5);
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        expect(result[0][0]).toEqualRing([
+            new Point(1569, 3677), new Point(1579, 3637), new Point(4330, 4263),
+            new Point(4278, 4475), new Point(1569, 3677)
+        ]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        expect(result[1][0]).toEqualRing([
+            new Point(1579, 3637), new Point(1737, 3023), new Point(1825, 2634),
+            new Point(1854, 2460), new Point(4611, 2983), new Point(4455, 3748),
+            new Point(4330, 4263), new Point(1579, 3637)
+        ]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        expect(result[2][0]).toEqualRing([
+            new Point(1854, 2460), new Point(1952, 1864), new Point(2024, 1207),
+            new Point(4851, 1526), new Point(4843, 1624), new Point(4681, 2642),
+            new Point(4611, 2983), new Point(1854, 2460)
+        ]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        expect(result[3][0]).toEqualRing([
+            new Point(2024, 1207), new Point(2077, 728), new Point(2111, -1),
+            new Point(3539, -1), new Point(4964, 63), new Point(4960, 192),
+            new Point(4851, 1526), new Point(2024, 1207)
+        ]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        expect(result[4][0]).toEqualRing([
+            new Point(3539, -1), new Point(4966, -1), new Point(4964, 63),
+            new Point(3539, -1)
+        ]);
+    });
 });
