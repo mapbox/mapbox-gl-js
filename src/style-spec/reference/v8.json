@@ -1828,6 +1828,21 @@
             "vector"
           ]
         }]
+    },
+    "model-allow-density-reduction": {
+      "type": "boolean",
+      "default": true,
+      "transition": false,
+      "experimental": true,
+      "doc": "If true, the models will be reduced in density based on the zoom level. This is useful for large datasets that may be slow to render.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0"
+        }
+      },
+      "property-type": "data-constant"
     }
   },
   "layout_clip": {

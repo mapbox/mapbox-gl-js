@@ -1,0 +1,39 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512
+    }
+  },
+  "center": [
+    -122.402822,
+    37.78503
+  ],
+  "zoom": 16,
+  "pitch": 10,
+  "sources": {
+    "trees": {
+      "type": "geojson",
+      "data": "local://data/trees-dense.geojson"
+    }
+  },
+  "models": {
+    "tree-diffuse": "local://models/tree-no-material.glb"
+  },
+  "layers": [
+    {
+      "id": "tree-layer-diffuse",
+      "type": "model",
+      "source": "trees",
+      "layout": {
+        "model-id": "tree-diffuse",
+        "model-allow-density-reduction": false
+      },
+      "paint": {
+        "model-scale": [ 10, 10, 10],
+        "model-translation": [0, 0, 100]
+      }
+    }
+  ]
+}
