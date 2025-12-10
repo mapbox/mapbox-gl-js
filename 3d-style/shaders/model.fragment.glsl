@@ -4,6 +4,10 @@
 
 uniform float u_opacity;
 
+#ifdef DITHERED_DISCARD
+uniform float u_dithered_discard_threshold;
+#endif
+
 uniform vec3 u_lightcolor;
 uniform vec3 u_lightpos;
 uniform float u_lightintensity;
@@ -545,6 +549,27 @@ vec4 finalColor;
     color *= opacity;
     finalColor = vec4(color, opacity);
 #endif // !DIFFUSE_SHADED
+
+#ifdef DITHERED_DISCARD
+    // fade in/out using discard and 4x4 Bayer matrix for dithering
+    // creates a smooth transition without alpha blending
+    // if u_dithered_discard_threshold == 1 or -1, the model gets fully rendered, at 0 it is fully discarded
+    // values between 0 and +1/-1 get partically discarded, using the ditherValue or the negated dither value as the threshold
+    // this allows to cross-fade between two models
+    if (abs(u_dithered_discard_threshold) < 1.0) {
+
+        // Get dither value for pixel at coordinate using "Interleaved gradient noise"
+        float ditherValue = fract(52.9829189 * fract(0.06711056 * gl_FragCoord.x + 0.00583715 * gl_FragCoord.y));
+
+        // Fade in: discard if threshold < ditherValue
+        // Fade out: discard if -threshold < 1.0 - ditherValue
+        // Use mix to select values without branching
+        float compareValue = mix(1.0 - ditherValue, ditherValue, step(0.0, u_dithered_discard_threshold));
+        if (abs(u_dithered_discard_threshold) < compareValue) {
+            discard;
+        }
+    }
+#endif
 
 #ifdef FOG
     finalColor = fog_dither(fog_apply_premultiplied(finalColor, v_fog_pos, v_position_height.w));
