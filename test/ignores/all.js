@@ -147,6 +147,9 @@ const skip = [
     // Broken in similar way as gl-native https://mapbox.atlassian.net/browse/MAPSNAT-3474
     "render-tests/appearance/icon-text-fit-vertical/other-image",
 
+    // Broken - https://mapbox.atlassian.net/browse/GLJS-1583
+    "render-tests/appearance/line-placement/icon-appears-below",
+
     // Broken in similar way as gl-native https://mapbox.atlassian.net/browse/MAPSNAT-3462
     "render-tests/appearance/no-icon-size-in-appearance-non-default-layout-icon-size",
 

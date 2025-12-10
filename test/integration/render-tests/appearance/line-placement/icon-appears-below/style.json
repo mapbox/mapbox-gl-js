@@ -1,0 +1,68 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 64
+    }
+  },
+  "camera": {"camera-projection": "orthographic"},
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -40,
+                  0
+                ],
+                [
+                  40,
+                  0
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "line-color": "orange"
+    },
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": "·",
+        "text-font": [ "Open Sans Semibold", "Arial Unicode MS Bold" ],
+        "text-size": 13,
+        "symbol-placement": "line",
+        "symbol-spacing": 50,
+        "icon-image": "bank-12"
+      },
+      "appearances": [
+        {
+          "name": "icon-below-the-line",
+          "condition": true,
+          "properties": {
+            "icon-offset": [0, 10]
+          }
+        }
+      ]
+    }
+  ]
+}
