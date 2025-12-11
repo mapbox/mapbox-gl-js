@@ -97,9 +97,6 @@ void main() {
 #ifdef RENDER_LINE_GRADIENT
     // For gradient lines, v_uv.xy are the coord specify where the texture will be simpled.
     out_color = texture(u_gradient_image, v_uv.xy);
-#ifdef MULTIPLY_LINE_GRADIENT_COLOR
-    out_color *= color;
-#endif
 #else
     out_color = color;
 #endif
@@ -119,7 +116,12 @@ void main() {
         highp float start_transition = max(0.0, min(1.0, (line_progress - trim_start) / max(u_trim_fade_range[0], 1.0e-9)));
         highp float end_transition = max(0.0, min(1.0, (trim_end - line_progress) / max(u_trim_fade_range[1], 1.0e-9)));
         highp float transition_factor = min(start_transition, end_transition);
+#ifdef LINE_GRADIENT_AS_TRIM_COLOR
+        out_color = mix(color, out_color, transition_factor);
+#else
         out_color = mix(out_color, u_trim_color, transition_factor);
+#endif
+        
         trim_alpha = 1.0 - transition_factor;
     }
 #endif
