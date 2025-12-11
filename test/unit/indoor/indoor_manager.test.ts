@@ -176,6 +176,6 @@ const indoorStyle = {
 describe('IndoorManager', () => {
     test('created with map', () => {
         const map = createMap({interactive: true, style: indoorStyle});
-        expect(map.indoor).toEqual(undefined);
+        expect(map.style.indoorManager).toBeDefined();
     });
 });

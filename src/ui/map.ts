@@ -18,7 +18,6 @@ import {
     postAddedAppearanceEvent
 } from '../util/mapbox';
 import Style from '../style/style';
-import IndoorManager from '../style/indoor_manager';
 import EvaluationParameters from '../style/evaluation_parameters';
 import Painter from '../render/painter';
 import Transform from '../geo/transform';
@@ -106,6 +105,7 @@ import type {SpriteFormat} from '../render/image_manager';
 import type {PitchRotateKey} from './handler_manager';
 import type {CustomSourceInterface} from '../source/custom_source';
 import type {RasterQueryParameters, RasterQueryResult} from '../source/raster_array_tile_source';
+import type {IndoorTileOptions} from '../style/indoor_data';
 
 export type ControlPosition = 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left';
 
@@ -436,9 +436,7 @@ const defaultOptions = {
  */
 export class Map extends Camera {
     style?: Style;
-    indoor: IndoorManager;
     painter: Painter;
-
     _container: HTMLElement;
     _missingCSSCanary: HTMLElement;
     _canvasContainer: HTMLElement;
@@ -788,7 +786,6 @@ export class Map extends Camera {
             }
             this._postStyleLoadEvent();
             this._postStyleWithAppearanceEvent();
-            this._setupIndoor();
         });
 
         this.on('data', (event) => {
@@ -4125,19 +4122,18 @@ export class Map extends Camera {
      * map._selectIndoorFloor('floor-1');
      */
     _selectIndoorFloor(floorId: string) {
-        this.indoor.selectFloor(floorId);
+        this.style.indoorManager.selectFloor(floorId);
     }
 
     _setIndoorActiveFloorsVisibility(activeFloorsVisible: boolean) {
-        this.indoor.setActiveFloorsVisibility(activeFloorsVisible);
+        this.style.indoorManager.setActiveFloorsVisibility(activeFloorsVisible);
     }
 
     _addIndoorControl() {
         if (!this._indoorControl) {
             this._indoorControl = new IndoorControl();
+            this.addControl(this._indoorControl, 'right');
         }
-
-        this.addControl(this._indoorControl, 'right');
     }
 
     _removeIndoorControl() {
@@ -4145,6 +4141,14 @@ export class Map extends Camera {
             return;
         }
         this.removeControl(this._indoorControl);
+        this._indoorControl = null;
+    }
+
+    getIndoorTileOptions(source: string, scope: string): IndoorTileOptions | null {
+        if (!this.style.isIndoorEnabled()) {
+            return null;
+        }
+        return this.style.indoorManager.getIndoorTileOptions(source, scope);
     }
 
     _updateContainerDimensions() {
@@ -4181,27 +4185,6 @@ export class Map extends Camera {
                 'Please ensure your page includes mapbox-gl.css, as described ' +
                 'in https://www.mapbox.com/mapbox-gl-js/api/.');
         }
-    }
-
-    _setupIndoor() {
-        if (!this.style.isIndoorEnabled()) {
-            return;
-        }
-
-        this.indoor = new IndoorManager(this.style);
-
-        this.on('load', () => {
-            this._addIndoorControl();
-            this.indoor._updateUI(this.transform.zoom, this.transform.center, this.transform.getBounds());
-
-            this.on('move', () => {
-                this.indoor._updateUI(this.transform.zoom, this.transform.center, this.transform.getBounds());
-            });
-
-            this.on('idle', () => {
-                this.indoor._updateUI(this.transform.zoom, this.transform.center, this.transform.getBounds());
-            });
-        });
     }
 
     _setupContainer() {
@@ -4900,9 +4883,6 @@ export class Map extends Camera {
         this._domRenderTaskQueue.clear();
         if (this.style) {
             this.style.destroy();
-        }
-        if (this.indoor) {
-            this.indoor.destroy();
         }
         this.painter.destroy();
         if (this.handlers) this.handlers.destroy();

@@ -37,12 +37,13 @@
             bearing: -15,
             pitch: 50,
             center: [24.941915, 60.171768],
-            hash: true,
-            style: style
+            hash: true
         });
 
         map.addControl(new mapboxgl.NavigationControl());
         map.addControl(new mapboxgl.AttributionControl());
+
+        map.setStyle(style);
     </script>
 </body>
 

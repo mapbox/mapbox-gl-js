@@ -845,6 +845,12 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     width: 50px;
     height: 50px;
     font-weight: bold;
+    text-align: center;
+    line-height: normal;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .mapboxgl-ctrl button.mapboxgl-ctrl-level-button:first-child {

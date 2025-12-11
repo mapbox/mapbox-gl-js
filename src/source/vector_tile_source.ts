@@ -273,7 +273,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             tessellationStep: this.map._tessellationStep,
             scaleFactor: this.map.getScaleFactor(),
             worldview: this.map.getWorldview() || this.worldviewDefault,
-            indoor: this.map.indoor ? this.map.indoor.getIndoorTileOptions(this.id, this.scope) : null
+            indoor: this.map.getIndoorTileOptions(this.id, this.scope)
         };
 
         // If we request a Mapbox URL, use the `worldview` param in the WorkerTile

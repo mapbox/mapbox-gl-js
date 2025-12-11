@@ -26,7 +26,9 @@ class IndoorControl implements IControl {
     onAdd(map: Map): HTMLElement {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-group');
-        this._map.indoor.on('selector-update', (controlModel: IndoorControlModel) => this._onIndoorUpdate(controlModel));
+        if (this._map.style) {
+            this._map.style.indoorManager.on('selector-update', (controlModel: IndoorControlModel) => this._onIndoorUpdate(controlModel));
+        }
         return this._container;
     }
 
@@ -52,8 +54,8 @@ class IndoorControl implements IControl {
             this._container.remove();
         }
 
-        if (this._map && this._map.indoor) {
-            this._map.indoor.off('selector-update', this._onIndoorUpdate);
+        if (this._map && this._map.style) {
+            this._map.style.indoorManager.off('selector-update', this._onIndoorUpdate);
             this._map = null;
         }
     }

@@ -67,6 +67,7 @@ import {TargetFeature} from '../util/vectortile_to_geojson';
 import {loadIconset} from './load_iconset';
 import {ImageId} from '../style-spec/expression/types/image_id';
 import {ImageProvider} from '../render/image_provider';
+import IndoorManager from './indoor_manager';
 
 import type {PropertyValidatorOptions} from '../style-spec/validate/validate_property';
 import type Tile from '../source/tile';
@@ -276,6 +277,7 @@ class Style extends Evented<MapEvents> {
     imageManager: ImageManager;
     glyphManager: GlyphManager;
     modelManager: ModelManager;
+    indoorManager: IndoorManager;
     ambientLight: Lights<Ambient> | null | undefined;
     directionalLight: Lights<Directional> | null | undefined;
     light: Light;
@@ -413,6 +415,8 @@ class Style extends Evented<MapEvents> {
         this._changes = options.styleChanges || new StyleChanges();
 
         this._hasDataDrivenEmissive = false;
+
+        this.indoorManager = new IndoorManager(this);
 
         if (options.dispatcher) {
             this.dispatcher = options.dispatcher;
@@ -888,6 +892,7 @@ class Style extends Evented<MapEvents> {
                 this._loadImports(json.imports, validate)
                     .then(() => {
                         this._reloadImports();
+                        this._setupIndoor();
                         this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
                     })
                     .catch((e) => {
@@ -897,6 +902,7 @@ class Style extends Evented<MapEvents> {
                     });
             } else {
                 this._reloadImports();
+                this._setupIndoor();
                 this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
             }
         };
@@ -2466,7 +2472,7 @@ class Style extends Evented<MapEvents> {
     }
 
     setIndoorData(mapId: string, params: ActorMessages['setIndoorData']['params']) {
-        this.map.indoor.setIndoorData(params);
+        this.indoorManager.setIndoorData(params);
     }
 
     updateIndoorDependentLayers() {
@@ -3220,6 +3226,7 @@ class Style extends Evented<MapEvents> {
             fog: this.stylesheet.fog,
             snow: this.stylesheet.snow,
             rain: this.stylesheet.rain,
+            indoor: this.stylesheet.indoor,
             center: this.stylesheet.center,
             'color-theme': this.stylesheet['color-theme'],
             zoom: this.stylesheet.zoom,
@@ -4016,6 +4023,7 @@ class Style extends Evented<MapEvents> {
         delete this.terrain;
         delete this.ambientLight;
         delete this.directionalLight;
+        this.indoorManager.destroy();
 
         // Shared managers should be removed only on removing the root style
         if (this.isRootStyle()) {
@@ -4613,6 +4621,25 @@ class Style extends Evented<MapEvents> {
 
     _clearWorkerCaches() {
         this.dispatcher.broadcast('clearCaches');
+    }
+
+    _setupIndoor() {
+        this.indoorManager.on('buildings-appeared', () => {
+            this.map._addIndoorControl();
+        });
+
+        this.indoorManager.on('buildings-disappeared', () => {
+            this.map._removeIndoorControl();
+        });
+
+        const updateUI = () => {
+            this.indoorManager._updateUI(this.map.transform.zoom, this.map.transform.center, this.map.transform.getBounds());
+        };
+
+        this.map.on('move', updateUI);
+        this.map.on('idle', updateUI);
+
+        updateUI();
     }
 
     destroy() {

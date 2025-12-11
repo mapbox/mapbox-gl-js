@@ -98,6 +98,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
         const closestBuilding = (closestBuildingId && buildings) ? buildings[closestBuildingId] : undefined;
 
         if (!closestBuilding) {
+            this.fire(new Event('buildings-disappeared', {}));
             this.fire(new Event('selector-update', {
                 selectedFloorId: null,
                 activeFloorsVisible: this._activeFloorsVisible,
@@ -106,6 +107,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
             return;
         }
 
+        this.fire(new Event('buildings-appeared', {}));
         let buildingActiveFloorId: string | null = null;
         for (const floorId of closestBuilding.floorIds) {
             if (this._activeFloors && this._activeFloors.has(floorId)) {

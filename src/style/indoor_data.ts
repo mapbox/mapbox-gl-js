@@ -16,6 +16,8 @@ export type IndoorFloor = {
 
 export type IndoorEvents = {
     'selector-update': IndoorControlModel;
+    'buildings-appeared': Record<string, never>;
+    'buildings-disappeared': Record<string, never>;
 };
 
 export type IndoorControlFloor = {
