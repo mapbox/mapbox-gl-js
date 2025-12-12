@@ -18,6 +18,7 @@ import type {StylePropertySpecification} from '../../style-spec/style-spec';
 
 export type LayoutProps = {
     "line-cap": DataDrivenProperty<"butt" | "round" | "square">;
+    "line-collapse": DataConstantProperty<boolean>;
     "line-join": DataDrivenProperty<"bevel" | "round" | "miter" | "none">;
     "line-miter-limit": DataConstantProperty<number>;
     "line-round-limit": DataConstantProperty<number>;
@@ -31,6 +32,7 @@ export type LayoutProps = {
 let layout: Properties<LayoutProps>;
 export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "line-cap": new DataDrivenProperty(styleSpec["layout_line"]["line-cap"]),
+    "line-collapse": new DataConstantProperty(styleSpec["layout_line"]["line-collapse"]),
     "line-join": new DataDrivenProperty(styleSpec["layout_line"]["line-join"]),
     "line-miter-limit": new DataConstantProperty(styleSpec["layout_line"]["line-miter-limit"]),
     "line-round-limit": new DataConstantProperty(styleSpec["layout_line"]["line-round-limit"]),
