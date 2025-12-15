@@ -27,4 +27,8 @@ export class StubMap extends Evented {
     }
 
     getWorldview() {}
+
+    getIndoorTileOptions(source: string, scope: string) {
+        return null;
+    }
 }

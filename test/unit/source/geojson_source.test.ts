@@ -260,7 +260,8 @@ describe('GeoJSONSource#update', () => {
             getScaleFactor() {
                 return 1;
             },
-            getWorldview: () => undefined
+            getWorldview: () => undefined,
+            getIndoorTileOptions: (source, scope) => null
         });
 
         await new Promise(resolve => {
@@ -296,7 +297,8 @@ describe('GeoJSONSource#update', () => {
                 getScaleFactor() {
                     return 1;
                 },
-                getWorldview: () => undefined
+                getWorldview: () => undefined,
+                getIndoorTileOptions: (source, scope) => null
             });
 
             source.on('data', (e) => {
@@ -316,7 +318,8 @@ describe('GeoJSONSource#serialize', () => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             transformRequest: (url) => { return {url}; }
         },
-        getWorldview: () => undefined
+        getWorldview: () => undefined,
+        getIndoorTileOptions: () => null
     };
     test('serialize source with inline data', () => {
         const source = new GeoJSONSource('id', {data: hawkHill}, mockDispatcher);

@@ -28,6 +28,7 @@ function createSource(options, {transformCallback, customAccessToken} = {}) {
     source.onAdd({
         getWorldview() { },
         getScaleFactor() { return 1; },
+        getIndoorTileOptions: () => null,
         transform: {showCollisionBoxes: false},
         _getMapId: () => 1,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

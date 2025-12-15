@@ -892,7 +892,6 @@ class Style extends Evented<MapEvents> {
                 this._loadImports(json.imports, validate)
                     .then(() => {
                         this._reloadImports();
-                        this._setupIndoor();
                         this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
                     })
                     .catch((e) => {
@@ -902,7 +901,6 @@ class Style extends Evented<MapEvents> {
                     });
             } else {
                 this._reloadImports();
-                this._setupIndoor();
                 this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
             }
         };
@@ -4621,25 +4619,6 @@ class Style extends Evented<MapEvents> {
 
     _clearWorkerCaches() {
         this.dispatcher.broadcast('clearCaches');
-    }
-
-    _setupIndoor() {
-        this.indoorManager.on('buildings-appeared', () => {
-            this.map._addIndoorControl();
-        });
-
-        this.indoorManager.on('buildings-disappeared', () => {
-            this.map._removeIndoorControl();
-        });
-
-        const updateUI = () => {
-            this.indoorManager._updateUI(this.map.transform.zoom, this.map.transform.center, this.map.transform.getBounds());
-        };
-
-        this.map.on('move', updateUI);
-        this.map.on('idle', updateUI);
-
-        updateUI();
     }
 
     destroy() {

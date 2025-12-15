@@ -28,7 +28,6 @@ import LngLat, {LngLatBounds} from '../geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import AttributionControl from './control/attribution_control';
 import LogoControl from './control/logo_control';
-import IndoorControl from './control/indoor_control';
 import {supported} from '@mapbox/mapbox-gl-supported';
 import {RGBAImage} from '../util/image';
 import {Event, ErrorEvent} from '../util/evented';
@@ -4127,21 +4126,6 @@ export class Map extends Camera {
 
     _setIndoorActiveFloorsVisibility(activeFloorsVisible: boolean) {
         this.style.indoorManager.setActiveFloorsVisibility(activeFloorsVisible);
-    }
-
-    _addIndoorControl() {
-        if (!this._indoorControl) {
-            this._indoorControl = new IndoorControl();
-            this.addControl(this._indoorControl, 'right');
-        }
-    }
-
-    _removeIndoorControl() {
-        if (!this._indoorControl) {
-            return;
-        }
-        this.removeControl(this._indoorControl);
-        this._indoorControl = null;
     }
 
     getIndoorTileOptions(source: string, scope: string): IndoorTileOptions | null {

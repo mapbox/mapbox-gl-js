@@ -1,6 +1,7 @@
 import {bindAll} from '../util/util';
 import {Event, Evented} from '../util/evented';
 import LngLat from '../geo/lng_lat';
+import IndoorControl from '../ui/control/indoor_control';
 
 import type {IndoorBuilding, IndoorData, IndoorEvents, IndoorState, IndoorTileOptions} from './indoor_data';
 import type Style from './style';
@@ -11,6 +12,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
     _selectedFloorId: string | null;
     _closestBuildingId: string | null;
     _buildings: Record<string, IndoorBuilding> | null;
+    _indoorControl: IndoorControl | null;
 
     _activeFloors: Set<string> | null;
     _indoorState: IndoorState | null;
@@ -20,16 +22,29 @@ export default class IndoorManager extends Evented<IndoorEvents> {
         super();
         this._style = style;
         this._buildings = {};
+        this._indoorControl = null;
         this._activeFloors = new Set();
         this._activeFloorsVisible = true;
         this._indoorState = {selectedFloorId: null, lastActiveFloors: null, activeFloorsVisible: true};
         bindAll(['_updateUI'], this);
+
+        const setupObservers = () => {
+            if (this._style.isIndoorEnabled()) {
+                this._style.map.on('load', this._updateUI);
+                this._style.map.on('move', this._updateUI);
+                this._style.map.on('idle', this._updateUI);
+                this._updateUI();
+            }
+        };
+
+        this._style.on('style.load', setupObservers);
     }
 
     destroy() {
         this._buildings = {};
         this._activeFloors = new Set();
         this._indoorState = null;
+        this._removeIndoorControl();
     }
 
     selectFloor(floorId: string | null) {
@@ -84,8 +99,24 @@ export default class IndoorManager extends Evented<IndoorEvents> {
         };
     }
 
-    _updateUI(zoom: number, mapCenter: LngLat, mapBounds: LngLatBounds) {
-        const closestBuildingId = findClosestBuildingId(this._buildings, mapCenter, mapBounds, zoom);
+    _addIndoorControl() {
+        if (!this._indoorControl) {
+            this._indoorControl = new IndoorControl();
+            this._style.map.addControl(this._indoorControl, 'right');
+        }
+    }
+
+    _removeIndoorControl() {
+        if (!this._indoorControl) {
+            return;
+        }
+        this._indoorControl.onRemove();
+        this._indoorControl = null;
+    }
+
+    _updateUI() {
+        const transform = this._style.map.transform;
+        const closestBuildingId = findClosestBuildingId(this._buildings, transform.center, transform.getBounds(), transform.zoom);
         if (closestBuildingId !== this._closestBuildingId) {
             this._closestBuildingId = closestBuildingId;
             this._updateIndoorSelector();
@@ -98,7 +129,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
         const closestBuilding = (closestBuildingId && buildings) ? buildings[closestBuildingId] : undefined;
 
         if (!closestBuilding) {
-            this.fire(new Event('buildings-disappeared', {}));
+            this._removeIndoorControl();
             this.fire(new Event('selector-update', {
                 selectedFloorId: null,
                 activeFloorsVisible: this._activeFloorsVisible,
@@ -107,7 +138,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
             return;
         }
 
-        this.fire(new Event('buildings-appeared', {}));
+        this._addIndoorControl();
         let buildingActiveFloorId: string | null = null;
         for (const floorId of closestBuilding.floorIds) {
             if (this._activeFloors && this._activeFloors.has(floorId)) {
