@@ -2,7 +2,7 @@ import {Evented, ErrorEvent, Event} from '../../src/util/evented';
 import {ResourceType} from '../../src/util/ajax';
 import Model, {type MaterialOverride, type NodeOverride} from '../data/model';
 import convertModel from './model_loader';
-import {loadGLTF} from '../util/loaders';
+import {loadGLTF, type GLTF} from '../util/loaders';
 import Color from '../../src/style-spec/util/color';
 import {makeFQID} from '../../src/util/fqid';
 import LngLat from '../../src/geo/lng_lat';
@@ -16,7 +16,7 @@ import type {ModelMaterialOverrideSpecification, ModelNodeOverrideSpecification,
 
 type ModelSourceModelInfo = {
     modelSpec: ModelSourceModelSpecification;
-    model: Model;
+    model: Model | null;
 };
 
 /**
@@ -69,7 +69,6 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
     uri: string;
     models: Array<Model>;
     _options: ModelSourceSpecification;
-    _loaded: boolean;
 
     onRemove: undefined;
     abortTile: undefined;
@@ -88,56 +87,62 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         this.id = id;
         this.type = 'model';
         this.models = [];
-        this._loaded = false;
         this._options = options;
         this._modelsInfo = new Map();
     }
 
-    load(): void {
-        const modelPromises = [];
+    private loadGLTFFromURI(uri: string): Promise<void | GLTF> {
+        return loadGLTF(this.map._requestManager.transformRequest(uri, ResourceType.Model).url);
+    }
 
+    load(): void {
         for (const modelId in this._options.models) {
             const modelSpec = this._options.models[modelId];
 
             const modelInfo = this._modelsInfo.get(modelId);
             if (modelInfo) {
-                // Update model
-                const model = modelInfo.model;
-                model.position = modelSpec.position != null ? new LngLat(modelSpec.position[0], modelSpec.position[1]) : new LngLat(0, 0);
-                model.orientation = modelSpec.orientation != null ? modelSpec.orientation : [0, 0, 0];
                 modelInfo.modelSpec = modelSpec;
-                ModelSource.applyModelSpecification(model, modelSpec);
-                model.computeBoundsAndApplyParent();
-                this.models.push(model);
-            } else {
-                const modelPromise = loadGLTF(this.map._requestManager.transformRequest(modelSpec.uri, ResourceType.Model).url).then(gltf => {
-                    if (!gltf) return;
-                    const nodes = convertModel(gltf);
-                    const model = new Model(modelId, modelSpec.uri, modelSpec.position, modelSpec.orientation, nodes);
+                // Update model if loaded
+                const model = modelInfo.model;
+                if (model) {
+                    model.position = modelSpec.position != null ? new LngLat(modelSpec.position[0], modelSpec.position[1]) : new LngLat(0, 0);
+                    model.orientation = modelSpec.orientation != null ? modelSpec.orientation : [0, 0, 0];
                     ModelSource.applyModelSpecification(model, modelSpec);
                     model.computeBoundsAndApplyParent();
                     this.models.push(model);
-                    this._modelsInfo.set(modelId, {
-                        modelSpec,
-                        model
-                    });
+                }
+            } else {
+                // Model neither currently loading nor already loaded
+                this._modelsInfo.set(modelId, {modelSpec, model: null});
+                this.loadGLTFFromURI(modelSpec.uri).then(gltf => {
+                    if (!gltf) return;
+                    // Check if model is still active
+                    const modelInfo = this._modelsInfo.get(modelId);
+                    if (!modelInfo) return;
+
+                    const nodes = convertModel(gltf);
+                    const modelSpec = modelInfo.modelSpec;
+                    const model = new Model(modelId, modelSpec.uri, modelSpec.position, modelSpec.orientation, nodes);
+                    ModelSource.applyModelSpecification(model, modelSpec);
+                    model.computeBoundsAndApplyParent();
+
+                    this.models.push(model);
+                    modelInfo.model = model;
+
+                    // If all models are loaded, fire data event
+                    if (this.loaded()) {
+                        this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
+                    }
                 }).catch((err) => {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     this.fire(new ErrorEvent(new Error(`Could not load model ${modelId} from ${modelSpec.uri}: ${err.message}`)));
                 });
-
-                modelPromises.push(modelPromise);
             }
         }
-
-        Promise.allSettled(modelPromises).then(() => {
-            this._loaded = true;
+        // Fire data event if all models are already loaded (i.e model source is empty or there are not more requests pending)
+        if (this.loaded()) {
             this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
-        }).catch((err) => {
-            this._loaded = true;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            this.fire(new ErrorEvent(new Error(`Could not load models: ${err.message}`)));
-        });
+        }
     }
 
     private static applyModelSpecification(model: Model, modelSpec: ModelSourceModelSpecification) {
@@ -242,7 +247,13 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
     }
 
     loaded(): boolean {
-        return this._loaded;
+        // Empty source is considered loaded
+        if (this._modelsInfo.size === 0) return true;
+        // If all info entries have a valid model, the source is considered fully loaded
+        for (const info of this._modelsInfo.values()) {
+            if (info.model === null || info.model === undefined) return false;
+        }
+        return true;
     }
 
     getModels(): Array<Model> {
@@ -264,7 +275,6 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         this.map.style.clearSource(fqid);
         this.models = [];
         this._modelsInfo.clear();
-        this._loaded = false;
         this.load();
     }
 
@@ -300,7 +310,6 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         }
         this._modelsInfo = updatedModelsInfo;
         this._options.models = modelSpecs;
-        this._loaded = false;
         this.load();
     }
 }
