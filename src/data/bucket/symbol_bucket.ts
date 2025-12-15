@@ -675,8 +675,14 @@ class SymbolBucket implements Bucket {
         evaluationFeature: EvaluationFeature,
         canonical: CanonicalTileID,
         availableImages: Array<ImageId>,
-        iconScaleFactor: number
+        iconScaleFactor: number,
+        layoutIconSize: number
     ): number {
+        // If appearance doesn't define icon-size, use layout value
+        if (!activeAppearance.hasProperty('icon-size')) {
+            return layoutIconSize * iconScaleFactor;
+        }
+
         let effectiveIconSize = 1;
         const unevaluatedIconSize = activeAppearance.getUnevaluatedProperties()._values['icon-size'];
         const iconSizeData = getSizeData(this.zoom, unevaluatedIconSize, this.worldview);
@@ -980,7 +986,9 @@ class SymbolBucket implements Bucket {
         }
 
         if (icon) {
-            const unevaluatedIconSize = unevaluatedProperties._values['icon-size'] || layer._unevaluatedLayout._values['icon-size'];
+            const unevaluatedIconSize = appearance.hasProperty('icon-size') ?
+                unevaluatedProperties._values['icon-size'] :
+                layer._unevaluatedLayout._values['icon-size'];
             const iconSizeData = getSizeData(this.zoom, unevaluatedIconSize, this.worldview);
             const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor, this.worldview);
             iconPrimary = imageVariant.iconPrimary;
@@ -1055,7 +1063,8 @@ class SymbolBucket implements Bucket {
                     evaluationFeature,
                     canonical,
                     availableImages,
-                    iconScaleFactor
+                    iconScaleFactor,
+                    layoutIconSize
                 );
                 const newSizeX = 0; // Unused in appearances
                 const newSizeY = (Math.min(MAX_PACKED_SIZE, Math.round(effectiveIconSize * SIZE_PACK_FACTOR)) << 1) + 1; // pack isAppearance flag in lowest bit

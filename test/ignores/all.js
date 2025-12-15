@@ -156,9 +156,6 @@ const skip = [
     // Broken - https://mapbox.atlassian.net/browse/GLJS-1583
     "render-tests/appearance/line-placement/icon-appears-below",
 
-    // Broken in similar way as gl-native https://mapbox.atlassian.net/browse/MAPSNAT-3462
-    "render-tests/appearance/no-icon-size-in-appearance-non-default-layout-icon-size",
-
     // Mapbox-gl-js does not support tile-mode
     "render-tests/icon-text-fit/text-variable-anchor-tile-map-mode",
     "render-tests/map-mode/tile",
