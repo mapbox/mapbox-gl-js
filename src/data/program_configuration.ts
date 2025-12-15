@@ -375,7 +375,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const minColor = packColor(min.toPremultipliedRenderColor(lut));
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            const maxColor = packColor(min.toPremultipliedRenderColor(lut));
+            const maxColor = packColor(max.toPremultipliedRenderColor(lut));
             for (let i = start; i < end; i++) {
                 this.paintVertexArray.emplace(i, minColor[0], minColor[1], maxColor[0], maxColor[1]);
             }
