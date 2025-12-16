@@ -51,13 +51,6 @@ function getSourceErrors(source: SourceSpecification, i: number): Array<Validati
     const errors: ValidationError[] = [];
 
     /*
-     * Inlined sources are not supported by the Mapbox Styles API, so only
-     * "type", "url", and "tileSize", "promoteId" properties are valid
-     */
-    const sourceKeys = ['type', 'url', 'tileSize', 'promoteId'];
-    errors.push(...getAllowedKeyErrors(source, sourceKeys, 'source'));
-
-    /*
      * "type" is required and must be one of "vector", "raster", "raster-dem", "raster-array"
      */
     if (!acceptedSourceTypes.has(String(source.type) as SourceSpecification['type'])) {
