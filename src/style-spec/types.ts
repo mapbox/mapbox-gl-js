@@ -581,7 +581,11 @@ export type DirectionalLightSpecification = {
          */
         "shadow-quality"?: PropertyValueSpecification<number>,
         "shadow-intensity"?: PropertyValueSpecification<number>,
-        "shadow-intensity-transition"?: TransitionSpecification
+        "shadow-intensity-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "shadow-draw-before-layer"?: string
     },
     "type": "directional"
 };

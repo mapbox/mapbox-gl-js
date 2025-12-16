@@ -1248,10 +1248,7 @@ class Painter {
         this.currentLayer = 0;
         this.firstLightBeamLayer = Number.MAX_SAFE_INTEGER;
 
-        let shadowLayers = 0;
-        if (shadowRenderer) {
-            shadowLayers = shadowRenderer.getShadowCastingLayerCount();
-        }
+        const groundShadowLayerIndex = shadowRenderer ? shadowRenderer.getGroundShadowLayerIndex() : -1;
 
         let terrainDepthCopied = false;
 
@@ -1342,7 +1339,7 @@ class Painter {
             this.renderLayer(this, sourceCache, layer, coordsForTranslucentLayer(layer, sourceCache));
 
             // Render ground shadows after the last shadow caster layer
-            if (!this.terrain && shadowRenderer && shadowLayers > 0 && layer.hasShadowPass() && --shadowLayers === 0) {
+            if (!this.terrain && shadowRenderer && this.currentLayer === groundShadowLayerIndex) {
                 // Draw ground shadow mask
                 {
                     this.clearStencil();

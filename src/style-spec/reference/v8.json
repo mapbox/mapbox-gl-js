@@ -593,6 +593,19 @@
           "ios": "11.0.0"
         }
       }
+    },
+    "shadow-draw-before-layer": {
+      "type": "string",
+      "property-type": "data-constant",
+      "doc": "Specify a layer before which shadows are drawn on the ground. If not specified, shadows are drawn after the last 3D layer. This property does not affect shadows on terrain.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.18.0",
+          "android": "11.18.0",
+          "ios": "11.18.0"
+        }
+      },
+      "experimental": true
     }
   },
   "properties_light_ambient": {

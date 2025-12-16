@@ -20,6 +20,7 @@ export type LightProps = {
     "cast-shadows": DataConstantProperty<boolean>;
     "shadow-quality": DataConstantProperty<number>;
     "shadow-intensity": DataConstantProperty<number>;
+    "shadow-draw-before-layer": DataConstantProperty<string>;
 };
 
 let properties: Properties<LightProps>;
@@ -31,4 +32,5 @@ export const getProperties = (): Properties<LightProps> => properties || (proper
     "cast-shadows": new DataConstantProperty(styleSpec["properties_light_directional"]["cast-shadows"]),
     "shadow-quality": new DataConstantProperty(styleSpec["properties_light_directional"]["shadow-quality"]),
     "shadow-intensity": new DataConstantProperty(styleSpec["properties_light_directional"]["shadow-intensity"]),
+    "shadow-draw-before-layer": new DataConstantProperty(styleSpec["properties_light_directional"]["shadow-draw-before-layer"]),
 }));

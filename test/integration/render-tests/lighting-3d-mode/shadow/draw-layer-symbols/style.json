@@ -1,0 +1,115 @@
+{
+  "version": 8,
+   "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.0005
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.2
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 1.0,
+        "direction": [330, 70],
+        "cast-shadows": true,
+        "shadow-intensity": 1.0,
+        "shadow-draw-before-layer": "test"
+      }
+    }
+  ],
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "composite": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://models/vector/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1" : {
+          "uri": "local://models//low-poly-car.gltf",
+          "position": [11.58187, 48.13106],
+          "orientation": [0, 0, 0]
+        }
+      }
+    }
+  },
+  "pitch": 56,
+  "zoom": 16.9,
+  "bearing": 15,
+  "center": [
+    11.582,
+    48.1303
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#eeeeee"
+      }
+    },
+    {
+      "type": "fill-extrusion",
+      "paint": {
+        "fill-extrusion-height": ["number", ["get", "height"]],
+        "fill-extrusion-base": ["number", ["get", "min_height"]],
+        "fill-extrusion-color": "white"
+      },
+      "source-layer": "building",
+      "filter": [
+        "==",
+        [
+          "get",
+          "extrude"
+        ],
+        "true"
+      ],
+      "source": "composite",
+      "id": "3d-buildings1"
+    },
+    {
+      "id": "test",
+      "type": "symbol",
+      "source": "composite",
+      "source-layer": "poi_label",
+      "layout": {
+        "icon-image": "circle-12",
+        "text-field": "ABC DEF",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-offset": [0, 1]
+      },
+      "paint": {
+        "text-halo-color": "white",
+        "text-halo-width": 3
+      }
+    },
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model",
+      "paint": {
+        "model-opacity" : 1.0,
+        "model-scale": [10, 10, 10],
+        "model-rotation": [0, 0, -30]
+      }
+    }
+  ]
+}
