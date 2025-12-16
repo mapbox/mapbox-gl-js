@@ -79,6 +79,9 @@ void main() {
     // Calculate the antialiasing fade factor. This is either when fading in
     // the line in case of an offset line (v_width2.t) or when fading out
     // (v_width2.s)
+#ifdef VARIABLE_LINE_WIDTH
+    blur = mix(blur, 0.0, stub_side);
+#endif
     float blur2 = (u_width_scale * blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
 #ifdef VARIABLE_LINE_WIDTH
@@ -133,6 +136,7 @@ void main() {
     }
 
 #ifdef RENDER_LINE_BORDER
+#ifndef VARIABLE_LINE_WIDTH
     float edgeBlur = ((border_width * u_width_scale) + 1.0 / u_device_pixel_ratio);
     float alpha2 = clamp(min(dist - (v_width2.t - edgeBlur), v_width2.s - dist) / edgeBlur, 0.0, 1.0);
     if (alpha2 < 1.) {
@@ -150,6 +154,7 @@ void main() {
             out_color = mix(border_color * trim_alpha, out_color, smoothAlpha);
         }
     }
+#endif
 #endif
 
 #ifdef LIGHTING_3D_MODE

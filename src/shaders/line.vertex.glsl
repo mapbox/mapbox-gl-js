@@ -128,6 +128,8 @@ void main() {
     normal.y = normal.y * 2.0 - 1.0;
     v_normal = normal;
 
+    offset = -1.0 * offset * u_width_scale;
+
     // these transformations used to be applied in the JS and native code bases.
     // moved them into the shader for clarity and simplicity.
     gapwidth = gapwidth / 2.0;
@@ -136,10 +138,17 @@ void main() {
     bool left = normal.y == 1.0;
     float left_width = a_z_offset_width.y;
     float right_width = a_z_offset_width.z;
-    bool zero_right_width = right_width == 0.0 ;
     halfwidth = (u_width_scale * (left ? left_width : right_width)) / 2.0;
     a_z_offset += left ? side_z_offset : 0.0;
     v_normal = side_z_offset > 0.0 && left ? vec2(0.0) : v_normal;
+
+    // Variable width is used as an offset for non-zero border_widths case.
+    // Then the width of the visible part is defined by border_width.
+    offset = border_width > 0.0 ? (left_width + right_width) * u_width_scale * 0.5 : offset;
+    halfwidth = border_width > 0.0 ? border_width * u_width_scale * 0.5 : halfwidth;
+
+    bool zero_right_width = border_width == 0.0 && right_width == 0.0;
+
     // If the right width is 0, we are rendering an asymmetric line with a stub side
     // We should disable antialiasing and blur on this side to be able to stich two lines together
     stub_side = zero_right_width ? -normal.y : 0.0;
@@ -148,7 +157,6 @@ void main() {
 #else
     halfwidth = (u_width_scale * width) / 2.0;
 #endif
-    offset = -1.0 * offset * u_width_scale;
 
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
     float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + (halfwidth == 0.0 ? 0.0 : ANTIALIASING);
