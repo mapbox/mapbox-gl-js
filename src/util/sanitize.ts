@@ -11,11 +11,11 @@ export function sanitizeLinks(html: string): string {
     const doc = parser.parseFromString(html, 'text/html');
     const elements = Array.from(doc.body.querySelectorAll('*'));
 
-    elements.forEach(el => {
+    elements.reverse().forEach(el => {
         const text = el.textContent || '';
 
         if (el.tagName !== 'A') {
-            el.replaceWith(doc.createTextNode(text));
+            el.replaceWith(...el.childNodes);
             return;
         }
 

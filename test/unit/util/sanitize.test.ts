@@ -152,5 +152,14 @@ describe('sanitize', () => {
 
             expect(result).toBe(text);
         });
+
+        test('preserves links nested in other elements', () => {
+            const nested = '<div>Please click <a href="https://google.com">here</a></div>';
+            const result = sanitizeLinks(nested);
+
+            expect(result).toContain('<a');
+            expect(result).toContain('href="https://google.com"');
+            expect(result).toContain('>here</a>');
+        });
     });
 });
