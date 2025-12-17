@@ -73,7 +73,6 @@ import type {PropertyValidatorOptions} from '../style-spec/validate/validate_pro
 import type Tile from '../source/tile';
 import type GeoJSONSource from '../source/geojson_source';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
-import type Painter from '../render/painter';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {
     ColorThemeSpecification,
@@ -341,7 +340,6 @@ class Style extends Evented<MapEvents> {
     _rtlTextPluginCallback: (state: {pluginStatus: string; pluginURL: string | null | undefined}) => void;
     _changes: StyleChanges;
     _optionsChanged: boolean;
-    _layerOrderChanged: boolean;
     _availableImages: ImageId[];
     _availableModels: StyleModelMap;
     _markersNeedUpdate: boolean;
@@ -2717,7 +2715,7 @@ class Style extends Evented<MapEvents> {
         }
 
         this._order.splice(index, 0, id);
-        this._layerOrderChanged = true;
+        this._handleLayerOrderChange();
         this._layers[id] = layer;
 
         const sourceCache = this.getOwnLayerSourceCache(layer);
@@ -2794,7 +2792,7 @@ class Style extends Evented<MapEvents> {
         this._order.splice(newIndex, 0, id);
 
         this._changes.setDirty();
-        this._layerOrderChanged = true;
+        this._handleLayerOrderChange();
 
         this.mergeLayers();
     }
@@ -2821,7 +2819,7 @@ class Style extends Evented<MapEvents> {
         delete this._layers[id];
 
         this._changes.setDirty();
-        this._layerOrderChanged = true;
+        this._handleLayerOrderChange();
 
         this._configDependentLayers.delete(layer.fqid);
         this._indoorDependentLayers.delete(layer.fqid);
@@ -4117,17 +4115,40 @@ class Style extends Evented<MapEvents> {
         }
     }
 
+    _handleLayerOrderChange() {
+        this._requestFullLabelPlacement();
+        this.fire(new Event('neworder'));
+    }
+
+    _requestFullLabelPlacement() {
+        if (!this.pauseablePlacement) {
+            this.pauseablePlacement = new PauseablePlacement();
+        }
+
+        // Anything that changes our "in progress" layer and tile indices requires us
+        // to start over. When we start over, we do a full placement instead of incremental
+        // to prevent starvation.
+        // We need to restart placement to keep layer indices in sync.
+        this.pauseablePlacement.requestFullPlacement();
+    }
+
+    _setLabelPlacementStale() {
+        if (this.placement) {
+            this.placement.setStale();
+        }
+    }
+
     _updatePlacement(
-        painter: Painter,
         transform: Transform,
         showCollisionBoxes: boolean,
         fadeDuration: number,
         crossSourceCollisions: boolean,
         replacementSource: ReplacementSource,
-        forceFullPlacement: boolean = false,
-    ): {
-        needsRerender: boolean;
-    } {
+    ): boolean {
+        if (!this.pauseablePlacement) {
+            this.pauseablePlacement = new PauseablePlacement();
+        }
+
         let symbolBucketsChanged = false;
         let placementCommitted = false;
 
@@ -4156,16 +4177,6 @@ class Style extends Evented<MapEvents> {
         }
         this.crossTileSymbolIndex.pruneUnusedLayers(this._mergedOrder);
 
-        // Anything that changes our "in progress" layer and tile indices requires us
-        // to start over. When we start over, we do a full placement instead of incremental
-        // to prevent starvation.
-        // We need to restart placement to keep layer indices in sync.
-        forceFullPlacement = forceFullPlacement || this._layerOrderChanged;
-
-        if (this._layerOrderChanged) {
-            this.fire(new Event('neworder'));
-        }
-
         const transformChanged = Boolean(this.placement && !transform.equals(this.placement.transform));
         const replacementSourceChanged = Boolean(this.placement && ((this.placement.lastReplacementSourceUpdateTime !== 0 && !replacementSource) || this.placement.lastReplacementSourceUpdateTime !== replacementSource.updateTime));
 
@@ -4175,19 +4186,12 @@ class Style extends Evented<MapEvents> {
         // we will do expensive full placements on every frame.
         const fullFrameUpdateRequired = (transformChanged || replacementSourceChanged || symbolBucketsChanged || (this.placement && this.placement.isStale())) && fadeDuration === 0;
 
-        if (forceFullPlacement || !this.pauseablePlacement || fullFrameUpdateRequired || (fadeDuration !== 0 && this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
+        if (this.pauseablePlacement.isFullPlacementRequested() || !this.pauseablePlacement.placement || fullFrameUpdateRequired || (fadeDuration !== 0 && this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
             const fogState = this.fog && transform.projection.supportsFog ? this.fog.state : null;
-            this.pauseablePlacement = new PauseablePlacement(transform, this._mergedOrder, forceFullPlacement || fadeDuration === 0, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState, this._buildingIndex);
-            this._layerOrderChanged = false;
+            this.pauseablePlacement = this.pauseablePlacement.startNewPlacement(transform, this._mergedOrder, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState, this._buildingIndex);
         }
 
-        if (this.pauseablePlacement.isDone()) {
-            // the last placement finished running, but the next one hasn’t
-            // started yet because of the `stillRecent` check immediately
-            // above, so mark it stale to ensure that we request another
-            // render frame
-            this.placement.setStale();
-        } else {
+        if (!this.pauseablePlacement.isDone()) {
             this.pauseablePlacement.continuePlacement(this._mergedOrder, this._mergedLayers, layerTiles, layerTilesInYOrder, this.map.painter.scaleFactor);
 
             if (this.pauseablePlacement.isDone()) {
@@ -4216,8 +4220,7 @@ class Style extends Evented<MapEvents> {
         }
 
         // needsRender is false when we have just finished a placement that didn't change the visibility of any symbols
-        const needsRerender = !this.pauseablePlacement.isDone() || this.placement.hasTransitions(browser.now());
-        return {needsRerender};
+        return !this.pauseablePlacement.isDone() || this.placement.isStale() || this.placement.hasTransitions(browser.now());
     }
 
     _releaseSymbolFadeTiles() {

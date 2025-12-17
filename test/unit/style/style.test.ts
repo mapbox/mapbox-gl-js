@@ -2004,7 +2004,7 @@ test('Style defers expensive methods', async () => {
     style.update({});
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(style.fire.mock.calls[0][0].type).toEqual('data');
+    expect(style.fire.mock.calls[0][0].type).toEqual('neworder');
 
     // called per source
     expect(style.reloadSource).toHaveBeenCalledTimes(2);
@@ -2796,4 +2796,64 @@ test('Occlusion ordering & draped layers', async () => {
         makeFQID('symbol-occlusion-2'),
         makeFQID('symbol-occlusion-3'),
     ]);
+});
+
+describe('Style#_updatePlacement', () => {
+    test('does not re-trigger placement on repaint with fadeDuration: 0 when nothing changed', async () => {
+        const map = new StubMap();
+        // Mock painter with scaleFactor (required by _updatePlacement)
+        // @ts-expect-error - painter is not part of StubMap but required for _updatePlacement
+        map.painter = {scaleFactor: 1};
+
+        // Mock replacement source with updateTime (required by _updatePlacement)
+        const replacementSource = {updateTime: 0};
+
+        const style = new Style(map);
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {"type": "FeatureCollection", "features": []}
+                }
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson"
+            }]
+        });
+
+        await waitFor(style, 'style.load');
+
+        const tr = map.transform;
+        tr.resize(512, 512);
+
+        // Compile the style layers before calling _updatePlacement
+        style.update({zoom: tr.zoom, fadeDuration: 0});
+
+        // First call to _updatePlacement - initializes placement
+        style._updatePlacement(tr, false, 0, false, replacementSource);
+
+        // Placement should be done after first call with fadeDuration: 0
+        expect(style.pauseablePlacement.isDone()).toBeTruthy();
+
+        // Spy on placement methods AFTER initial placement
+        const startNewPlacementSpy = vi.spyOn(style.pauseablePlacement, 'startNewPlacement');
+        const continuePlacementSpy = vi.spyOn(style.pauseablePlacement, 'continuePlacement');
+
+        // Second call to _updatePlacement - should NOT trigger new placement
+        style._updatePlacement(tr, false, 0, false, replacementSource);
+
+        // Assert placement methods were NOT called
+        expect(startNewPlacementSpy).not.toHaveBeenCalled();
+        expect(continuePlacementSpy).not.toHaveBeenCalled();
+
+        // Third call to _updatePlacement - verify consistent behavior
+        style._updatePlacement(tr, false, 0, false, replacementSource);
+
+        // Assert placement methods STILL were not called (verifies it's not a one-time skip)
+        expect(startNewPlacementSpy).not.toHaveBeenCalled();
+        expect(continuePlacementSpy).not.toHaveBeenCalled();
+    });
 });

@@ -72,21 +72,34 @@ class PauseablePlacement {
     _forceFullPlacement: boolean;
     _showCollisionBoxes: boolean;
     _inProgressLayer: LayerPlacement | null | undefined;
+    _fadeDuration: number;
 
-    constructor(transform: Transform, order: Array<string>,
-                forceFullPlacement: boolean,
-                showCollisionBoxes: boolean,
-                fadeDuration: number,
-                crossSourceCollisions: boolean,
-                prevPlacement?: Placement,
-                fogState?: FogState | null,
-                buildingIndex?: BuildingIndex | null
-    ) {
+    startNewPlacement(
+        transform: Transform,
+        order: Array<string>,
+        showCollisionBoxes: boolean,
+        fadeDuration: number,
+        crossSourceCollisions: boolean,
+        prevPlacement?: Placement,
+        fogState?: FogState | null,
+        buildingIndex?: BuildingIndex | null
+    ): PauseablePlacement {
         this.placement = new Placement(transform, fadeDuration, crossSourceCollisions, prevPlacement, fogState, buildingIndex);
         this._currentPlacementIndex = order.length - 1;
-        this._forceFullPlacement = forceFullPlacement;
+        this._forceFullPlacement = false;
         this._showCollisionBoxes = showCollisionBoxes;
+        this._fadeDuration = fadeDuration;
         this._done = false;
+        this._inProgressLayer = null;
+        return this;
+    }
+
+    requestFullPlacement(): void {
+        this._forceFullPlacement = true;
+    }
+
+    isFullPlacementRequested(): boolean {
+        return this._forceFullPlacement;
     }
 
     isDone(): boolean {
@@ -98,7 +111,7 @@ class PauseablePlacement {
 
         const shouldPausePlacement = () => {
             const elapsedTime = browser.now() - startTime;
-            return this._forceFullPlacement ? false : elapsedTime > 2;
+            return this.isFullPlacementRequested() || this._fadeDuration === 0 ? false : elapsedTime > 2;
         };
 
         while (this._currentPlacementIndex >= 0) {
@@ -143,6 +156,7 @@ class PauseablePlacement {
             this._currentPlacementIndex--;
         }
         PerformanceUtils.recordPlacementTime(browser.now() - startTime);
+        this._forceFullPlacement = false;
         this._done = true;
     }
 

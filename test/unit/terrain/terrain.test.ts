@@ -290,7 +290,6 @@ describe('Elevation', () => {
         test('disable terrain', async () => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain).toBeTruthy();
-            await waitFor(map, "idle");
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setTerrain(null);
             await waitFor(map, "render");

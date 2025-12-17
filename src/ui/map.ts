@@ -466,7 +466,6 @@ export class Map extends Camera {
     _styleDirty?: boolean;
     _sourcesDirty?: boolean;
     _placementDirty?: boolean;
-    _scaleFactorChanged?: boolean;
     _loaded: boolean;
     _fullyLoaded: boolean; // accounts for placement finishing as well
     _trackResize: boolean;
@@ -638,7 +637,6 @@ export class Map extends Camera {
         this._containerHeight = 0;
         this._showParseStatus = true;
         this._precompilePrograms = options.precompilePrograms;
-        this._scaleFactorChanged = false;
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevationExaggeration = 0;
@@ -1239,7 +1237,9 @@ export class Map extends Camera {
         this.painter.scaleFactor = scaleFactor;
         DevTools.refresh();
 
-        this._scaleFactorChanged = true;
+        if (this.style) {
+            this.style._setLabelPlacementStale();
+        }
 
         this.style._updateFilteredLayers((layer) => layer.type === 'symbol');
         this._update(true);
@@ -4257,6 +4257,12 @@ export class Map extends Camera {
         this.painter = new Painter(gl, this._contextCreateOptions, this.transform, this._scaleFactor, this._worldview);
         this.on('data', (event) => {
             if (event.dataType === 'source') {
+                const elevationSource = this.transform.elevation ? this.transform.elevation._source() : null;
+                // Force a new label placement when a DEM source was updated,
+                // to ensure that labels are placed according to the updated terrain.
+                if (elevationSource && event.sourceCacheId === elevationSource.id && this.style) {
+                    this.style._setLabelPlacementStale();
+                }
                 this.painter.setTileLoadedFlag(true);
             }
         });
@@ -4488,12 +4494,8 @@ export class Map extends Camera {
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
         }
 
-        const updatePlacementResult = this.style && this.style._updatePlacement(this.painter, this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions, this.painter.replacementSource, this._scaleFactorChanged);
-        if (this._scaleFactorChanged) {
-            this._scaleFactorChanged = false;
-        }
-        if (updatePlacementResult) {
-            this._placementDirty = updatePlacementResult.needsRerender;
+        if (this.style) {
+            this._placementDirty = this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions, this.painter.replacementSource);
         }
 
         // Actually draw

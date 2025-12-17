@@ -1393,8 +1393,7 @@ export class Placement {
     }
 
     hasTransitions(now: number): boolean {
-        return this.stale ||
-            now - this.lastPlacementChangeTime < this.fadeDuration;
+        return now - this.lastPlacementChangeTime < this.fadeDuration;
     }
 
     stillRecent(now: number, zoom: number): boolean {
