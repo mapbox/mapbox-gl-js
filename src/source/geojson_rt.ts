@@ -333,7 +333,7 @@ function transformAndClipPolygon(input: number[], z2: number, tx: number, ty: nu
         Math.round(EXTENT * (clipped[i] * z2 - tx)),
         Math.round(EXTENT * (clipped[i + 1] * z2 - ty))
     ]);
-    out.push(ring);
+    if (ring.length) out.push(ring);
 }
 
 // rewind a polygon ring to a given winding order (clockwise or anti-clockwise)

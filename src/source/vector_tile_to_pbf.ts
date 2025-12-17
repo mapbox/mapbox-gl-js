@@ -113,6 +113,7 @@ function writeGeometry(feature: Feature, pbf: Pbf) {
 
     } else {
         for (const ring of geometry) {
+            if (ring.length === 0) continue;
             pbf.writeVarint(command(1, 1));
             const lineCount = ring.length - (type === 3 ? 1 : 0); // do not write polygon closing path as lineto
             for (let i = 0; i < lineCount; i++) {
