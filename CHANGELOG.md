@@ -1,5 +1,22 @@
-## 3.17.0
+## 3.18.0-beta.1
 
+### Features and improvements ✨
+
+* Add support for `text-rotate`, `text-size`, and `text-offset` properties in appearances.
+* Add `shadow-draw-before-layer` property to directional light, allowing control over shadow draw order in the layer stack.
+* Add `model-allow-density-reduction` property to model layers. (h/t @JoshuaJMoore)
+
+### Bug fixes 🐞
+
+* Fix an error when querying multipolygons in `dynamic: true` mode.
+* Fix `AttributionControl` links sanitization.
+* Fix appearances with no `icon-size` using the default value instead of the layout-defined one.
+* Fix updates to model source via `ModelSource.setModels` while models are still loading.
+* Fix polygon clipping precision errors causing rendering artifacts in elevated structures.
+* Preserve featuresets in `map.getStyle()` output.
+* Expose TypeScript types from `@mapbox/mapbox-gl-style-spec` for direct imports.
+
+## 3.17.0
 
 ### Features and improvements ✨
 
