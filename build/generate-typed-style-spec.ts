@@ -79,9 +79,7 @@ function tsType(property, overrideFn?: (any) => string) {
         return `PropertyValueSpecification<${baseType}>`;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     } else if (property.expression) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (property.type === 'enum') return `${baseType} | ExpressionSpecification`;
-        return `ExpressionSpecification`;
+        return `${baseType} | ExpressionSpecification`;
     } else {
         return baseType;
     }

@@ -1902,7 +1902,6 @@ const skyPaint: NonNullable<mapboxgl.SkyPaint> = {
     "sky-atmosphere-sun": eitherType([0], expression),
     // @ts-expect-error - incompatible
     "sky-atmosphere-sun-intensity": eitherType(0, expression),
-    // @ts-expect-error - incompatible
     "sky-gradient": eitherType("#000", expression),
     // @ts-expect-error - incompatible
     "sky-gradient-center": eitherType([0], expression),
