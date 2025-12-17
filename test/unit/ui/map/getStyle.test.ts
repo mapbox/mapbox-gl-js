@@ -174,4 +174,22 @@ describe('Map#getStyle', () => {
         map.setStyle(style, {diff: false});
         expect(map.style && map.style !== previousStyle).toBeTruthy();
     });
+
+    test('returns the style with featuresets', async () => {
+        const style = createStyle();
+        style['featuresets'] = {
+            'my-featureset': {
+                'selectors': [{'layer': 'background'}]
+            }
+        };
+        style['layers'] = [{'id': 'background', 'type': 'background'}];
+        const map = createMap({style});
+
+        await waitFor(map, 'load');
+        expect(map.getStyle().featuresets).toEqual({
+            'my-featureset': {
+                'selectors': [{'layer': 'background'}]
+            }
+        });
+    });
 });

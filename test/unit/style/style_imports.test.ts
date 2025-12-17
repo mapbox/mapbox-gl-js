@@ -3339,7 +3339,8 @@ test('Style#serialize', async () => {
         sources: {'mapbox-dem': {type: 'raster-dem', tiles: ['http://example.com/{z}/{x}/{y}.png']}},
         terrain: {source: 'mapbox-dem', exaggeration: 1.5},
         projection: {name: 'globe'},
-        transition: {duration: 900, delay: 200}
+        transition: {duration: 900, delay: 200},
+        featuresets: {'test-featureset': {selectors: [{layer: 'background'}]}}
     });
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -3359,6 +3360,7 @@ test('Style#serialize', async () => {
             expect(serialized.terrain).toBeFalsy();
             expect(serialized.projection).toBeFalsy();
             expect(serialized.transition).toBeFalsy();
+            expect(serialized.featuresets).toBeFalsy();
             expect(serialized.sources).toEqual({});
 
             resolve();

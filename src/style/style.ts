@@ -3215,6 +3215,7 @@ class Style extends Evented<MapEvents> {
             metadata: this.stylesheet.metadata,
             fragment: this.stylesheet.fragment,
             iconsets: this.stylesheet.iconsets,
+            featuresets: this.stylesheet.featuresets,
             imports: this._serializeImports(),
             schema: this.stylesheet.schema,
             camera: this.stylesheet.camera,
