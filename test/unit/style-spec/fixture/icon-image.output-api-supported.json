@@ -28,6 +28,10 @@
     "line": 29
   },
   {
+    "message": "source.data: Unsupported property \"data\"",
+    "line": 6
+  },
+  {
     "message": "sources[0].type: Expected one of [vector, raster, raster-dem, raster-array, model, batched-model]",
     "line": 5
   },

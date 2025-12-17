@@ -68,11 +68,23 @@
     "line": 126
   },
   {
+    "message": "source.data: Unsupported property \"data\"",
+    "line": 14
+  },
+  {
     "message": "sources[2].type: Expected one of [vector, raster, raster-dem, raster-array, model, batched-model]",
     "line": 13
   },
   {
     "message": "sources[2].url: Expected a valid Mapbox tileset url"
+  },
+  {
+    "message": "source.data: Unsupported property \"data\"",
+    "line": 18
+  },
+  {
+    "message": "source.lineMetrics: Unsupported property \"lineMetrics\"",
+    "line": 19
   },
   {
     "message": "sources[3].type: Expected one of [vector, raster, raster-dem, raster-array, model, batched-model]",
