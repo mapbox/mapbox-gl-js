@@ -1,9 +1,9 @@
-import type {ExpressionSpecification, StylePropertySpecification} from '../style-spec';
+import type {PropertyExpressionSpecification, StylePropertySpecification} from '../style-spec';
 
-type ExpressionParameter = ExpressionSpecification['parameters'][number];
+type ExpressionParameter = PropertyExpressionSpecification['parameters'][number];
 
 function expressionHasParameter(
-    expression: ExpressionSpecification | null | undefined,
+    expression: PropertyExpressionSpecification | null | undefined,
     parameter: ExpressionParameter,
 ): boolean {
     return !!expression && !!expression.parameters && expression.parameters.indexOf(parameter) > -1;

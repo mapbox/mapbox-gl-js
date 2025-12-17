@@ -17,6 +17,8 @@ import {eachSource, eachLayer, eachProperty} from './visit';
 import validate from './validate_style';
 import validateMapboxApiSupported from './validate_mapbox_api_supported';
 
+export type * from './types';
+
 type ExpressionType = 'data-driven' | 'color-ramp' | 'data-constant' | 'constant';
 
 type ExpressionParameter =
@@ -32,7 +34,7 @@ type ExpressionParameter =
     | 'distance-from-center'
     | 'raster-particle-speed';
 
-export type ExpressionSpecification = {
+export type PropertyExpressionSpecification = {
     interpolated: boolean,
     parameters?: ExpressionParameter[],
     relaxZoomRestriction?: boolean
@@ -43,7 +45,7 @@ export type ArrayPropertySpecification =
         type: 'array';
         'property-type': ExpressionType;
         value: 'enum';
-        expression?: ExpressionSpecification,
+        expression?: PropertyExpressionSpecification,
         transition?: boolean,
         default?: string[],
         length?: number,
@@ -59,7 +61,7 @@ export type ArrayPropertySpecification =
         type: 'array';
         'property-type': ExpressionType;
         value: 'number';
-        expression?: ExpressionSpecification;
+        expression?: PropertyExpressionSpecification;
         transition?: boolean;
         default?: number[];
         minimum?: number;
@@ -77,7 +79,7 @@ export type ArrayPropertySpecification =
         type: 'array';
         'property-type': ExpressionType;
         value: 'string';
-        expression?: ExpressionSpecification;
+        expression?: PropertyExpressionSpecification;
         transition?: boolean;
         default?: string[];
         length?: number;
@@ -94,7 +96,7 @@ export type ArrayPropertySpecification =
 export type BooleanPropertySpecification = {
     type: 'boolean';
     'property-type': ExpressionType;
-    expression?: ExpressionSpecification;
+    expression?: PropertyExpressionSpecification;
     transition?: boolean;
     default?: boolean;
     overridable?: boolean;
@@ -108,7 +110,7 @@ export type BooleanPropertySpecification = {
 export type ColorPropertySpecification = {
     type: 'color';
     'property-type': ExpressionType;
-    expression?: ExpressionSpecification;
+    expression?: PropertyExpressionSpecification;
     transition?: boolean;
     default?: string;
     'use-theme'?: boolean;
@@ -123,7 +125,7 @@ export type ColorPropertySpecification = {
 export type EnumPropertySpecification = {
     type: 'enum';
     'property-type': ExpressionType;
-    expression?: ExpressionSpecification;
+    expression?: PropertyExpressionSpecification;
     transition?: boolean;
     default?: string;
     values?: {[_: string]: unknown};
@@ -137,7 +139,7 @@ export type EnumPropertySpecification = {
 export type FormattedPropertySpecification = {
     type: 'formatted';
     'property-type': ExpressionType;
-    expression?: ExpressionSpecification;
+    expression?: PropertyExpressionSpecification;
     transition?: boolean;
     default?: string;
     tokens?: boolean;
@@ -150,7 +152,7 @@ export type FormattedPropertySpecification = {
 export type NumberPropertySpecification = {
     type: 'number';
     'property-type': ExpressionType;
-    expression?: ExpressionSpecification;
+    expression?: PropertyExpressionSpecification;
     transition?: boolean;
     default?: number;
     minimum?: number;
@@ -167,7 +169,7 @@ export type NumberPropertySpecification = {
 export type ResolvedImagePropertySpecification = {
     type: 'resolvedImage';
     'property-type': ExpressionType;
-    expression?: ExpressionSpecification;
+    expression?: PropertyExpressionSpecification;
     transition?: boolean;
     default?: string;
     tokens?: boolean;
@@ -181,7 +183,7 @@ export type ResolvedImagePropertySpecification = {
 export type StringPropertySpecification = {
     type: 'string';
     'property-type': ExpressionType;
-    expression?: ExpressionSpecification;
+    expression?: PropertyExpressionSpecification;
     transition?: boolean;
     default?: string;
     tokens?: boolean;
