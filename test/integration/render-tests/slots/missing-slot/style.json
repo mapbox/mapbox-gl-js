@@ -1,0 +1,60 @@
+{
+  "comment": "We should generate warning but display layers as if slot was not set",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 24,
+      "height": 24
+    }
+  },
+  "sources": {
+    "red": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        }
+      }
+    },
+    "green": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "red",
+      "source": "red",
+      "slot": "slot",
+      "type": "circle",
+      "paint": {
+        "circle-color": "#ff0000",
+        "circle-radius": 10
+      }
+    },
+    {
+      "id": "green",
+      "source": "green",
+      "type": "circle",
+      "slot": "slot",
+      "paint": {
+        "circle-color": "#008000"
+      }
+    }
+  ]
+}

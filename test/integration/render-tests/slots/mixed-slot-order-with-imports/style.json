@@ -1,0 +1,93 @@
+{
+  "comment": "Style with inner slot is being imported before outer one, but we still need to position data correctly",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 24,
+      "height": 24
+    }
+  },
+  "imports": [
+    {
+      "id": "inner",
+      "url": "http://some.url",
+      "data": {
+        "version": 8,
+        "layers": [
+          {
+            "id": "background",
+            "type": "background",
+            "paint": {
+              "background-color": "white"
+            }
+          },
+          {
+            "id": "inner",
+            "slot": "outer",
+            "type": "slot"
+          },
+          {
+            "id": "red",
+            "type": "slot"
+          }
+        ]
+      }
+    },
+    {
+      "id": "outer",
+      "url": "http://some.other.url",
+      "data": {
+        "version": 8,
+        "layers": [
+          {
+            "id": "outer",
+            "type": "slot"
+          }
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "red": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        }
+      }
+    },
+    "green": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "green",
+      "source": "green",
+      "type": "circle",
+      "slot": "inner",
+      "paint": {
+        "circle-color": "#008000"
+      }
+    },
+    {
+      "id": "red",
+      "source": "red",
+      "slot": "red",
+      "type": "circle",
+      "paint": {
+        "circle-color": "#ff0000",
+        "circle-radius": 10
+      }
+    }
+  ]
+}

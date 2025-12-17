@@ -1,0 +1,64 @@
+{
+  "comment": "Slot is missing: we should print a warning, but still be able to process data",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 24,
+      "height": 24
+    }
+  },
+  "sources": {
+    "red": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        }
+      }
+    },
+    "green": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "red",
+      "source": "red",
+      "type": "circle",
+      "paint": {
+        "circle-color": "#ff0000",
+        "circle-radius": 10
+      }
+    },
+    {
+      "id": "green",
+      "source": "green",
+      "type": "circle",
+      "slot": "inner",
+      "paint": {
+        "circle-color": "#008000"
+      }
+    },
+    {
+      "id": "inner",
+      "slot": "outer",
+      "type": "slot"
+    }
+  ]
+}

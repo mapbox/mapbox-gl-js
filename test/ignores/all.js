@@ -285,7 +285,11 @@ const skip = [
     // Ignore procedural buiding clip layer render tests for now.
     "render-tests/building/clip-layer/default",
     "render-tests/building/clip-layer/lower-order-clipping-skipped",
-    "render-tests/building/clip-layer/with-FE-and-landmarks"
+    "render-tests/building/clip-layer/with-FE-and-landmarks",
+
+    // Not implemented, https://mapbox.atlassian.net/browse/GLJS-1591
+    "render-tests/slots/inner-slot-before-outer",
+    "render-tests/slots/mixed-slot-order-with-imports",
 ];
 
 export default {todo, skip};
