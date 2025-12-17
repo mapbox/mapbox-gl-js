@@ -525,6 +525,7 @@ export type ImageSourceSpecification = {
 
 export type ModelSourceSpecification = {
     "type": "model" | "batched-model",
+    "url"?: string,
     "maxzoom"?: number,
     "minzoom"?: number,
     "tiles"?: Array<string>,

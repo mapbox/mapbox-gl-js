@@ -1441,6 +1441,10 @@
        },
       "doc": "Type of model source to be added. From single models to represent 2D layers to 3D tiled models covering a wide area."
     },
+    "url": {
+      "type": "string",
+      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`. Required if `tiles` is not provided."
+    },
     "maxzoom": {
       "type": "number",
       "default": 18,
