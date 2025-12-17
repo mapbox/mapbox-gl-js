@@ -482,7 +482,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
 
             let buildingId: number | null = null;
             if (feature.properties && feature.properties.hasOwnProperty('building_id')) {
-                buildingId = feature.properties['building_id'] as number;
+                buildingId = Number(feature.properties['building_id']);
                 if (disabledBuildings.has(buildingId)) {
                     continue;
                 }

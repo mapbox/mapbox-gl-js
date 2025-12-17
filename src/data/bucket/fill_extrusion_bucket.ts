@@ -905,7 +905,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         const centroid = new PartData();
         centroid.buildingId = featureId;
         if (feature.properties && feature.properties.hasOwnProperty('building_id')) {
-            centroid.buildingId = feature.properties['building_id'] as number;
+            centroid.buildingId = Number(feature.properties['building_id']);
         }
 
         const base = this.layers[0].paint.get('fill-extrusion-base').evaluate(feature, {}, canonical);
