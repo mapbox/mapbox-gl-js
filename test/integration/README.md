@@ -68,7 +68,7 @@ During a test run, the test harness will use Mapbox GL JS to create an `actual.p
 After the test(s) have run, you can view the render test results in
 
 ```
-open ./test/integration/render-tests/vitest/render-tests.html
+open ./test/integration/render-tests/render-tests.html
 ```
 
 or for query tests in:
