@@ -8,6 +8,7 @@ uniform highp float u_floor_width_scale;
 uniform float u_alpha_discard_threshold;
 uniform highp vec2 u_trim_offset;
 uniform highp vec2 u_trim_fade_range;
+uniform highp vec2 u_trim_gradient_mix_range;
 uniform lowp vec4 u_trim_color;
 
 in vec2 v_width2;
@@ -119,12 +120,14 @@ void main() {
         highp float start_transition = max(0.0, min(1.0, (line_progress - trim_start) / max(u_trim_fade_range[0], 1.0e-9)));
         highp float end_transition = max(0.0, min(1.0, (trim_end - line_progress) / max(u_trim_fade_range[1], 1.0e-9)));
         highp float transition_factor = min(start_transition, end_transition);
-#ifdef LINE_GRADIENT_AS_TRIM_COLOR
-        out_color = mix(color, out_color, transition_factor);
-#else
-        out_color = mix(out_color, u_trim_color, transition_factor);
+        highp float gradient_trim_color_mix_factor = 0.0;
+#ifdef RENDER_LINE_GRADIENT
+        gradient_trim_color_mix_factor = smoothstep(u_trim_gradient_mix_range.x, u_trim_gradient_mix_range.y, line_progress);
 #endif
-        
+        highp vec4 trim_color = mix(u_trim_color, out_color, gradient_trim_color_mix_factor);
+        // Note: if u_trim_gradient_mix_range.x < 1.0 the non-trimmed part will use the non-gradient color
+        // This sets the usage of line-gradient as a trim-color
+        out_color = mix(u_trim_gradient_mix_range.x < 1.0 ? color : out_color, trim_color, transition_factor);
         trim_alpha = 1.0 - transition_factor;
     }
 #endif
