@@ -26,6 +26,7 @@ export type LineUniformsType = {
     ['u_alpha_discard_threshold']: Uniform1f;
     ['u_trim_offset']: Uniform2f;
     ['u_trim_fade_range']: Uniform2f;
+    ['u_trim_gradient_mix_range']: Uniform2f;
     ['u_trim_color']: Uniform4f;
     ['u_zbias_factor']: Uniform1f;
     ['u_tile_to_meter']: Uniform1f;
@@ -45,6 +46,7 @@ export type LinePatternUniformsType = {
     ['u_alpha_discard_threshold']: Uniform1f;
     ['u_trim_offset']: Uniform2f;
     ['u_trim_fade_range']: Uniform2f;
+    ['u_trim_gradient_mix_range']: Uniform2f;
     ['u_trim_color']: Uniform4f;
     ['u_zbias_factor']: Uniform1f;
     ['u_tile_to_meter']: Uniform1f;
@@ -69,6 +71,7 @@ const lineUniforms = (context: Context): LineUniformsType => ({
     'u_alpha_discard_threshold': new Uniform1f(context),
     'u_trim_offset': new Uniform2f(context),
     'u_trim_fade_range': new Uniform2f(context),
+    'u_trim_gradient_mix_range': new Uniform2f(context),
     'u_trim_color': new Uniform4f(context),
     'u_zbias_factor': new Uniform1f(context),
     'u_tile_to_meter': new Uniform1f(context),
@@ -88,6 +91,7 @@ const linePatternUniforms = (context: Context): LinePatternUniformsType => ({
     'u_alpha_discard_threshold': new Uniform1f(context),
     'u_trim_offset': new Uniform2f(context),
     'u_trim_fade_range': new Uniform2f(context),
+    'u_trim_gradient_mix_range': new Uniform2f(context),
     'u_trim_color': new Uniform4f(context),
     'u_zbias_factor': new Uniform1f(context),
     'u_tile_to_meter': new Uniform1f(context),
@@ -134,6 +138,7 @@ const lineUniformValues = (
         'u_alpha_discard_threshold': 0.0,
         'u_trim_offset': trimOffset,
         'u_trim_fade_range': layer.paint.get('line-trim-fade-range'),
+        'u_trim_gradient_mix_range': [1.0, 1.0],
         'u_trim_color': layer.paint.get('line-trim-color').toPremultipliedRenderColor(ignoreLut ? null : layer.lut).toArray01(),
         'u_zbias_factor': zbiasFactor,
         'u_tile_to_meter': tileToMeter(tile.tileID.canonical, 0.0),
@@ -176,6 +181,7 @@ const linePatternUniformValues = (
         'u_alpha_discard_threshold': 0.0,
         'u_trim_offset': trimOffset,
         'u_trim_fade_range': layer.paint.get('line-trim-fade-range'),
+        'u_trim_gradient_mix_range': [1.0, 1.0],
         'u_trim_color': layer.paint.get('line-trim-color').toPremultipliedRenderColor(ignoreLut ? null : layer.lut).toArray01(),
         'u_zbias_factor': zbiasFactor,
         'u_tile_to_meter': tileToMeter(tile.tileID.canonical, 0.0),
