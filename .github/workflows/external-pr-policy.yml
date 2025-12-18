@@ -1,0 +1,38 @@
+name: External PR Policy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  block-merge:
+    name: PR Policy Check (Merge Blocked)
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Post guidance comment
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          comment-tag: external-pr-policy
+          message: |
+            Hey, @${{ github.event.pull_request.user.login }} 👋 Thanks for your contribution to Mapbox GL JS!
+
+            **Important**: This repository does not accept direct merges. All changes go through our internal review process.
+
+            **What happens next:**
+            1. A team member will review your PR here first
+            2. If it looks good, they will import it to our internal repository for further review
+            3. If approved, changes will be synced back here via our release process
+
+            Please respond to any review comments on this PR. For more details, see [CONTRIBUTING.md](https://github.com/mapbox/mapbox-gl-js/blob/main/CONTRIBUTING.md).
+
+      - name: Block direct merge
+        run: |
+          echo "::error title=Direct Merge Blocked::This repository does not accept direct PR merges."
+          echo ""
+          echo "All changes to Mapbox GL JS must go through internal review."
+          echo "A team member will review your PR and import it if approved."
+          echo ""
+          echo "See CONTRIBUTING.md for details on our contribution process."
+          exit 1
