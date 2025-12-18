@@ -407,6 +407,9 @@ function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, 
 
 // Configure a fade out effect for elevated raster layers when they're close to the camera
 function cutoffParamsForElevation(tr: Transform): [number, number, number, number] {
+    if (tr.isOrthographic) {
+        return [0, 0, 0, 0];
+    }
     const near = tr._nearZ;
     const far = tr.projection.farthestPixelDistance(tr);
     const zRange = far - near;
