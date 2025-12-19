@@ -19,7 +19,7 @@ in vec3 a_z_offset_width;
 // Includes in order: a_uv_x, a_split_index, a_line_progress
 // to reduce attribute count on older devices.
 // Only line-gradient and line-trim-offset will requires a_packed info.
-#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
+#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET) || defined(RENDER_LINE_CURVE)
 in highp vec3 a_packed;
 #endif
 
@@ -33,6 +33,14 @@ uniform vec2 u_units_to_pixels;
 uniform lowp float u_device_pixel_ratio;
 uniform float u_width_scale;
 uniform highp float u_floor_width_scale;
+
+#ifdef RENDER_LINE_CURVE
+uniform vec3 u_curve_point_a;
+uniform vec3 u_curve_point_b;
+uniform vec3 u_curve_point_c;
+uniform vec3 u_curve_point_d;
+uniform vec3 u_curve_point_e;
+#endif
 
 #ifdef ELEVATED
 uniform lowp float u_zbias_factor;
@@ -94,6 +102,59 @@ out highp float v_depth;
 #pragma mapbox: define lowp vec4 border_color
 #pragma mapbox: define lowp float emissive_strength
 
+#ifdef RENDER_LINE_CURVE
+
+vec4 curveWeights(float curve_seg) {
+    return vec4(
+        1.0 - step(0.5, abs(curve_seg)),
+        1.0 - step(0.5, abs(curve_seg - 1.0)),
+        1.0 - step(0.5, abs(curve_seg - 2.0)),
+        1.0 - step(0.5, abs(curve_seg - 3.0))
+    );
+}
+
+vec3 catmullRom(vec3 p0, vec3 p1, vec3 p2, vec3 p3, float t) {
+    float t2 = t * t;
+    float t3 = t2 * t;
+    return 0.5 * (
+        2.0 * p1 +
+        (-p0 + p2) * t +
+        (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * t2 +
+        (-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3
+    );
+}
+
+vec2 catmullRomTangent(vec2 p0, vec2 p1, vec2 p2, vec2 p3, float t) {
+    float t2 = t * t;
+    return 0.5 * (
+        (-p0 + p2) +
+        (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * 2.0 * t +
+        (-p0 + 3.0 * p1 - 3.0 * p2 + p3) * 3.0 * t2
+    );
+}
+
+struct CurveResult {
+    vec3 point;      // x, y, elevation
+    vec2 tangent;    // tangent direction
+};
+
+CurveResult calculateCurve(float tl, vec4 w) {
+    vec3 pA0 = u_curve_point_a - (u_curve_point_b - u_curve_point_a);
+    vec3 pE3 = u_curve_point_e + (u_curve_point_e - u_curve_point_d);
+    vec3 p0 = w.x * pA0 + w.y * u_curve_point_a + w.z * u_curve_point_b + w.w * u_curve_point_c;
+    vec3 p1 = w.x * u_curve_point_a + w.y * u_curve_point_b + w.z * u_curve_point_c + w.w * u_curve_point_d;
+    vec3 p2 = w.x * u_curve_point_b + w.y * u_curve_point_c + w.z * u_curve_point_d + w.w * u_curve_point_e;
+    vec3 p3 = w.x * u_curve_point_c + w.y * u_curve_point_d + w.z * u_curve_point_e + w.w * pE3;
+    vec3 point = catmullRom(p0, p1, p2, p3, tl);
+    vec2 tangent = catmullRomTangent(p0.xy, p1.xy, p2.xy, p3.xy, tl) * 4.0;
+    CurveResult result;
+    result.point = point;
+    result.tangent = tangent;
+    return result;
+}
+
+#endif
+
 void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize lowp float floorwidth
@@ -113,6 +174,11 @@ void main() {
     a_z_offset = a_z_offset_width.x;
 #endif
 
+    highp float line_progress = 0.0;
+#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET) || defined(RENDER_LINE_CURVE)
+    line_progress = a_packed[2];
+#endif
+
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
     float ANTIALIASING = 1.0 / u_device_pixel_ratio / 2.0;
@@ -126,16 +192,29 @@ void main() {
     // We store these in the least significant bit of a_pos_normal
     mediump vec2 normal = a_pos_normal - 2.0 * pos;
     normal.y = normal.y * 2.0 - 1.0;
+
     v_normal = normal;
 
     offset = -1.0 * offset * u_width_scale;
+    bool left = normal.y == 1.0;
+
+#ifdef RENDER_LINE_CURVE
+    float curve_progress = clamp(line_progress, 0.0, 0.999999) * 4.0;
+    float curve_progress_local = fract(curve_progress);
+    float curve_segment = floor(curve_progress);
+    vec4 curve_w = curveWeights(curve_segment);
+    CurveResult curve = calculateCurve(curve_progress_local, curve_w);
+    pos = curve.point.xy * 8192.0;
+    a_extrude = length(a_extrude) * normalize(curve.tangent);
+    a_extrude = left ? vec2(-a_extrude.y, a_extrude.x) : vec2(a_extrude.y, -a_extrude.x);
+    a_z_offset += curve.point.z;
+#endif
 
     // these transformations used to be applied in the JS and native code bases.
     // moved them into the shader for clarity and simplicity.
     gapwidth = gapwidth / 2.0;
     float halfwidth;
 #ifdef VARIABLE_LINE_WIDTH
-    bool left = normal.y == 1.0;
     float left_width = a_z_offset_width.y;
     float right_width = a_z_offset_width.z;
     halfwidth = (u_width_scale * (left ? left_width : right_width)) / 2.0;
@@ -249,7 +328,6 @@ void main() {
 #if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
     highp float a_uv_x = a_packed[0];
     float a_split_index = a_packed[1];
-    highp float line_progress = a_packed[2];
 #ifdef RENDER_LINE_GRADIENT
     highp float texel_height = 1.0 / u_image_height;
     highp float half_texel_height = 0.5 * texel_height;
