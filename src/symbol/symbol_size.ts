@@ -7,6 +7,7 @@ import type {PropertyValue, PossiblyEvaluatedPropertyValue} from '../style/prope
 import type {InterpolationType} from '../style-spec/expression/definitions/interpolate';
 import type {CanonicalTileID} from '../source/tile_id';
 import type {SymbolFeature} from '../data/bucket/symbol_bucket';
+import type {ImageId} from '../style-spec/expression/types/image_id';
 
 export const SIZE_PACK_FACTOR = 128;
 
@@ -47,7 +48,8 @@ export function getRasterizedIconSize(
     canonical: CanonicalTileID,
     zoom: number,
     feature: SymbolFeature,
-    worldview: string | undefined
+    worldview: string | undefined,
+    availableImages?: ImageId[]
 ) {
     if (sizeData.kind === 'camera') {
         return sizeData.maxSize;
@@ -55,16 +57,16 @@ export function getRasterizedIconSize(
 
     if (sizeData.kind === 'composite') {
         const maxZoomSize = unevaluatedIconSize
-            .possiblyEvaluate(new EvaluationParameters(sizeData.maxZoom, {worldview}), canonical)
-            .evaluate(feature, {}, canonical);
+            .possiblyEvaluate(new EvaluationParameters(sizeData.maxZoom, {worldview}), canonical, availableImages)
+            .evaluate(feature, {}, canonical, availableImages);
         const minZoomSize = unevaluatedIconSize
-            .possiblyEvaluate(new EvaluationParameters(sizeData.minZoom, {worldview}), canonical)
-            .evaluate(feature, {}, canonical);
+            .possiblyEvaluate(new EvaluationParameters(sizeData.minZoom, {worldview}), canonical, availableImages)
+            .evaluate(feature, {}, canonical, availableImages);
 
         return Math.max(maxZoomSize, minZoomSize);
     }
 
-    return unevaluatedIconSize.possiblyEvaluate(new EvaluationParameters(zoom, {worldview})).evaluate(feature, {}, canonical);
+    return unevaluatedIconSize.possiblyEvaluate(new EvaluationParameters(zoom, {worldview}), canonical, availableImages).evaluate(feature, {}, canonical, availableImages);
 }
 
 // For {text,icon}-size, get the bucket-level data that will be needed by
@@ -72,12 +74,13 @@ export function getRasterizedIconSize(
 export function getSizeData(
     tileZoom: number,
     value: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>,
-    worldview: string | undefined
+    worldview: string | undefined,
+    availableImages?: ImageId[]
 ): SizeData {
     const {expression} = value;
 
     if (expression.kind === 'constant') {
-        const layoutSize: number = expression.evaluate(new EvaluationParameters(tileZoom + 1, {worldview}));
+        const layoutSize: number = expression.evaluate(new EvaluationParameters(tileZoom + 1, {worldview}), undefined, undefined, undefined, availableImages);
         return {kind: 'constant', layoutSize};
 
     } else if (expression.kind === 'source') {
@@ -106,8 +109,8 @@ export function getSizeData(
 
         // for camera functions, also save off the function values
         // evaluated at the covering zoom levels
-        const minSize: number = expression.evaluate(new EvaluationParameters(minZoom, {worldview}));
-        const maxSize: number = expression.evaluate(new EvaluationParameters(maxZoom, {worldview}));
+        const minSize: number = expression.evaluate(new EvaluationParameters(minZoom, {worldview}), undefined, undefined, undefined, availableImages);
+        const maxSize: number = expression.evaluate(new EvaluationParameters(maxZoom, {worldview}), undefined, undefined, undefined, availableImages);
 
         return {kind: 'camera', minZoom, maxZoom, minSize, maxSize, interpolationType};
     }

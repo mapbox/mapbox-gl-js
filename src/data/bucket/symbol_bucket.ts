@@ -582,9 +582,9 @@ class SymbolBucket implements Bucket {
         this.worldview = options.worldview;
         this.localizable = options.localizable;
 
-        this.textSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['text-size'], this.worldview);
+        this.textSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['text-size'], this.worldview, options.availableImages);
 
-        this.iconSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['icon-size'], this.worldview);
+        this.iconSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['icon-size'], this.worldview, options.availableImages);
 
         const layout = this.layers[0].layout;
         const sortKey = layout.get('symbol-sort-key');
@@ -685,7 +685,7 @@ class SymbolBucket implements Bucket {
 
         let effectiveIconSize = 1;
         const unevaluatedIconSize = activeAppearance.getUnevaluatedProperties()._values['icon-size'];
-        const iconSizeData = getSizeData(this.zoom, unevaluatedIconSize, this.worldview);
+        const iconSizeData = getSizeData(this.zoom, unevaluatedIconSize, this.worldview, availableImages);
         const sizeValue = evaluateSizeForZoom(iconSizeData, currentZoom);
         if (iconSizeData.kind === 'constant' || iconSizeData.kind === 'camera') {
             effectiveIconSize = sizeValue.uSize;
@@ -896,7 +896,7 @@ class SymbolBucket implements Bucket {
 
             if (icon) {
                 const unevaluatedLayoutValues = symbolLayer._unevaluatedLayout._values;
-                const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, this.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor, this.worldview);
+                const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, this.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor, this.worldview, availableImages);
                 addImageVariantToIcons(iconPrimary);
 
                 if (iconSecondary) {
@@ -989,8 +989,8 @@ class SymbolBucket implements Bucket {
             const unevaluatedIconSize = appearance.hasProperty('icon-size') ?
                 unevaluatedProperties._values['icon-size'] :
                 layer._unevaluatedLayout._values['icon-size'];
-            const iconSizeData = getSizeData(this.zoom, unevaluatedIconSize, this.worldview);
-            const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor, this.worldview);
+            const iconSizeData = getSizeData(this.zoom, unevaluatedIconSize, this.worldview, availableImages);
+            const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor, this.worldview, availableImages);
             iconPrimary = imageVariant.iconPrimary;
         }
 
@@ -1160,7 +1160,8 @@ class SymbolBucket implements Bucket {
         layoutMinZoomSize: number,
         layoutMaxZoomSize: number,
         layoutTextSizeMinZoom: number,
-        layoutTextSizeMaxZoom: number
+        layoutTextSizeMaxZoom: number,
+        availableImages?: Array<ImageId>
     ): {vertexOffsetDelta: number; hasChanges: boolean} {
         const hasHorizontalText = symbolInstance.numHorizontalGlyphVertices > 0;
         const hasVerticalText = symbolInstance.numVerticalGlyphVertices > 0;
@@ -1185,7 +1186,7 @@ class SymbolBucket implements Bucket {
             let minZoom = layoutTextSizeMinZoom;
             let maxZoom = layoutTextSizeMaxZoom;
             if (activeAppearance.hasProperty('text-size')) {
-                textSizeData = getSizeData(this.zoom, unevaluatedTextSize, this.worldview);
+                textSizeData = getSizeData(this.zoom, unevaluatedTextSize, this.worldview, availableImages);
                 minZoom = this.textSizeData.kind === 'composite' ? this.textSizeData.minZoom : 0;
                 maxZoom = this.textSizeData.kind === 'composite' ? this.textSizeData.maxZoom : 0;
             }
@@ -1558,7 +1559,8 @@ class SymbolBucket implements Bucket {
                     minZoom,
                     maxZoom,
                     textSizeDataMinZoom,
-                    textSizeDataMaxZoom
+                    textSizeDataMaxZoom,
+                    availableImages
                 );
                 textVertexOffset += textResult.vertexOffsetDelta;
                 hasTextChanges = hasTextChanges || textResult.hasChanges;
@@ -1566,7 +1568,7 @@ class SymbolBucket implements Bucket {
 
             if (hasIconData) {
                 const layoutIconOffset = layout.get('icon-offset').evaluate(evaluationFeature, featureStateForThis, canonical);
-                const layoutIconSize = layout.get('icon-size').evaluate(evaluationFeature, featureStateForThis, canonical);
+                const layoutIconSize = layout.get('icon-size').evaluate(evaluationFeature, featureStateForThis, canonical, availableImages);
                 const layoutIconRotate = layout.get('icon-rotate').evaluate(evaluationFeature, featureStateForThis, canonical);
                 const iconResult = this.updateSymbolInstanceIconVertices(
                     symbolInstance,

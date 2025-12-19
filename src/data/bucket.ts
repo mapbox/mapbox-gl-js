@@ -40,6 +40,7 @@ export type BucketParameters<Layer extends TypedStyleLayer> = {
     styleDefinedModelURLs: StyleModelMap;
     worldview: string | undefined;
     localizable: boolean;
+    availableImages: ImageId[];
 };
 
 export type ImageDependenciesMap = Map<StringifiedImageId, Array<ImageVariant>>;

@@ -254,7 +254,8 @@ class WorkerTile {
                     tessellationStep: this.tessellationStep,
                     styleDefinedModelURLs: availableModels,
                     worldview: this.worldview,
-                    localizable
+                    localizable,
+                    availableImages
                 });
 
                 assert(this.tileTransform.projection.name === this.projection.name);
@@ -330,7 +331,8 @@ class WorkerTile {
                                     this.scaleFactor,
                                     this.pixelRatio,
                                     iconRasterizationTasks,
-                                    this.worldview);
+                                    this.worldview,
+                                    availableImages);
                         }
                     }
 

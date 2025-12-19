@@ -310,7 +310,8 @@ export function performSymbolLayout(bucket: SymbolBucket,
                              scaleFactor: number = 1,
                              pixelRatio: number,
                              imageRasterizationTasks: ImageRasterizationTasks,
-                             worldview: string | undefined): SymbolBucketData {
+                             worldview: string | undefined,
+                             availableImages?: ImageId[]): SymbolBucketData {
     bucket.createArrays();
 
     const tileSize = 512 * bucket.overscaling;
@@ -344,13 +345,13 @@ export function performSymbolLayout(bucket: SymbolBucket,
     if (bucket.iconSizeData.kind === 'composite') {
         const {minZoom, maxZoom} = bucket.iconSizeData;
         sizes.compositeIconSizes = [
-            unevaluatedIconSize.possiblyEvaluate(new EvaluationParameters(minZoom, {worldview}), canonical),
-            unevaluatedIconSize.possiblyEvaluate(new EvaluationParameters(maxZoom, {worldview}), canonical)
+            unevaluatedIconSize.possiblyEvaluate(new EvaluationParameters(minZoom, {worldview}), canonical, availableImages),
+            unevaluatedIconSize.possiblyEvaluate(new EvaluationParameters(maxZoom, {worldview}), canonical, availableImages)
         ];
     }
 
     sizes.layoutTextSize = unevaluatedTextSize.possiblyEvaluate(new EvaluationParameters(tileZoom + 1, {worldview}), canonical);
-    sizes.layoutIconSize = unevaluatedIconSize.possiblyEvaluate(new EvaluationParameters(tileZoom + 1, {worldview}), canonical);
+    sizes.layoutIconSize = unevaluatedIconSize.possiblyEvaluate(new EvaluationParameters(tileZoom + 1, {worldview}), canonical, availableImages);
     sizes.textMaxSize = unevaluatedTextSize.possiblyEvaluate(new EvaluationParameters(18, {worldview}), canonical);
 
     const symbolPlacement = layout.get('symbol-placement');
@@ -366,7 +367,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
         const layoutTextSizeThisZoom = textSize.evaluate(feature, {}, canonical) * sizes.textScaleFactor;
         const layoutTextSize = sizes.layoutTextSize.evaluate(feature, {}, canonical) * sizes.textScaleFactor;
-        const layoutIconSize = sizes.layoutIconSize.evaluate(feature, {}, canonical) * sizes.iconScaleFactor;
+        const layoutIconSize = sizes.layoutIconSize.evaluate(feature, {}, canonical, availableImages) * sizes.iconScaleFactor;
 
         const shapedTextOrientations: ShapedTextOrientations = {
             horizontal: {},
@@ -474,7 +475,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
         let iconAnchor: SymbolAnchor;
         const iconTextFit = layout.get('icon-text-fit').evaluate(feature, {}, canonical);
         if (feature.icon && feature.icon.hasPrimary()) {
-            const icons = getScaledImageVariant(feature.icon, bucket.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, bucket.zoom, feature, pixelRatio, sizes.iconScaleFactor, worldview);
+            const icons = getScaledImageVariant(feature.icon, bucket.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, bucket.zoom, feature, pixelRatio, sizes.iconScaleFactor, worldview, availableImages);
             iconPrimary = icons.iconPrimary;
             iconSecondary = icons.iconSecondary;
             const primaryImageSerialized = iconPrimary.toString();
@@ -532,7 +533,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
         shapedIcon = defaultShapedIcon;
 
         const {iconBBox, iconVerticalBBox, textBBox, textVerticalBBox} = mergeAppearancesBboxes(bucket, shapedIcon, verticallyShapedIcon,
-            layout, feature, canonical, layoutIconSize, iconOffset, sizes, imagePositions, iconAnchor, shapedTextOrientations, layoutTextSize, textOffset);
+            layout, feature, canonical, layoutIconSize, iconOffset, sizes, imagePositions, iconAnchor, shapedTextOrientations, layoutTextSize, textOffset, availableImages);
 
         featureData.push({
             feature,
@@ -572,7 +573,7 @@ function getLayoutProperties(layout: PossiblyEvaluated<LayoutProps>, feature: Sy
 
 function mergeAppearancesBboxes(bucket: SymbolBucket, shapedIcon: PositionedIcon, verticallyShapedIcon: PositionedIcon, layout: PossiblyEvaluated<LayoutProps>,
     feature: SymbolFeature, canonical: CanonicalTileID, layoutIconSize: number, iconOffset: [number, number], sizes: Sizes, imagePositions: ImagePositionMap,
-    iconAnchor: SymbolAnchor, shapedTextOrientations: ShapedTextOrientations, layoutTextSize: number, textOffset: [number, number]
+    iconAnchor: SymbolAnchor, shapedTextOrientations: ShapedTextOrientations, layoutTextSize: number, textOffset: [number, number], availableImages: ImageId[]
 ) {
     const symbolLayer = bucket.layers[0];
     const appearances = symbolLayer.appearances;
@@ -621,7 +622,7 @@ function mergeAppearancesBboxes(bucket: SymbolBucket, shapedIcon: PositionedIcon
 
         if (appearance.hasIconProperties()) {
             updateIconBoundingBoxes(iconBBoxes, bucket, symbolLayer, appearance, feature, canonical, iconOffset, baseIconRotate,
-                layoutIconSize, sizes, shapedIcon, imagePositions, iconScaleFactor, iconAnchor);
+                layoutIconSize, sizes, shapedIcon, imagePositions, iconScaleFactor, iconAnchor, availableImages);
         }
 
         if (appearance.hasTextProperties()) {
@@ -636,7 +637,7 @@ function mergeAppearancesBboxes(bucket: SymbolBucket, shapedIcon: PositionedIcon
 // Updates the icon bounding boxes with the appearance ones
 function updateIconBoundingBoxes(input : {iconBBox: SymbolBoundingBox | null, iconVerticalBBox: SymbolBoundingBox | null}, bucket: SymbolBucket, symbolLayer: SymbolStyleLayer, appearance: SymbolAppearance, feature: SymbolFeature, canonical: CanonicalTileID,
     iconOffset: [number, number], baseIconRotate: number, layoutIconSize: number, sizes: Sizes, shapedIcon: PositionedIcon, imagePositions: ImagePositionMap, iconScaleFactor: number,
-    iconAnchor: SymbolAnchor) {
+    iconAnchor: SymbolAnchor, availableImages: ImageId[]) {
 
     const {appearanceIconOffset, appearanceIconRotate, appearanceIconSize} = getAppearanceIconValues(appearance, symbolLayer, feature, canonical, iconOffset, baseIconRotate, layoutIconSize, sizes.iconScaleFactor);
 
@@ -645,7 +646,7 @@ function updateIconBoundingBoxes(input : {iconBBox: SymbolBoundingBox | null, ic
 
     let imagePositionToUse: ImagePosition = null;
     if (appearance.hasProperty('icon-image')) {
-        imagePositionToUse = getAppearanceImagePosition(bucket, symbolLayer, appearance, feature, canonical, imagePositions, iconScaleFactor);
+        imagePositionToUse = getAppearanceImagePosition(bucket, symbolLayer, appearance, feature, canonical, imagePositions, iconScaleFactor, availableImages);
     } else if (shapedIcon) {
         imagePositionToUse = shapedIcon.imagePrimary;
     }
@@ -694,14 +695,14 @@ export function getAppearanceIconValues(appearance: SymbolAppearance, symbolLaye
 }
 
 function getAppearanceImagePosition(bucket: SymbolBucket, symbolLayer: SymbolStyleLayer, appearance: SymbolAppearance, feature: SymbolFeature, canonical: CanonicalTileID,
-    imagePositions: ImagePositionMap, iconScaleFactor: number) {
+    imagePositions: ImagePositionMap, iconScaleFactor: number, availableImages: ImageId[]) {
     let imagePositionToUse: ImagePosition = null;
-    const appearanceIconImage = symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-image', feature, canonical, []);
+    const appearanceIconImage = symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-image', feature, canonical, availableImages);
     if (appearanceIconImage) {
         const icon = bucket.getResolvedImageFromTokens(appearanceIconImage as string);
         const unevaluatedIconSize = appearance.getUnevaluatedProperty('icon-size') as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
-        const iconSizeData = getSizeData(bucket.zoom, unevaluatedIconSize, bucket.worldview);
-        const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, bucket.zoom, feature, bucket.pixelRatio, iconScaleFactor, bucket.worldview);
+        const iconSizeData = getSizeData(bucket.zoom, unevaluatedIconSize, bucket.worldview, availableImages);
+        const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, bucket.zoom, feature, bucket.pixelRatio, iconScaleFactor, bucket.worldview, availableImages);
         imagePositionToUse = imagePositions.get(imageVariant.iconPrimary.toString());
     }
     return imagePositionToUse;
@@ -768,16 +769,16 @@ function scaleShapedIconImage(outImagePosition: ImagePosition, image: StyleImage
     outImagePosition = imagePosition;
 }
 
-function scaleImageVariant(image: ImageVariant | null, iconSizeData: SizeData, iconSize: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>, tileID: CanonicalTileID, zoom: number, feature: SymbolFeature, pixelRatio: number, iconScaleFactor: number, worldview: string | undefined) {
+function scaleImageVariant(image: ImageVariant | null, iconSizeData: SizeData, iconSize: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>, tileID: CanonicalTileID, zoom: number, feature: SymbolFeature, pixelRatio: number, iconScaleFactor: number, worldview: string | undefined, availableImages?: ImageId[]) {
     if (!image) return undefined;
-    const iconSizeFactor = getRasterizedIconSize(iconSizeData, iconSize, tileID, zoom, feature, worldview);
+    const iconSizeFactor = getRasterizedIconSize(iconSizeData, iconSize, tileID, zoom, feature, worldview, availableImages);
     const scaleFactor = iconSizeFactor * iconScaleFactor * pixelRatio;
     return image.scaleSelf(scaleFactor);
 }
 
-export function getScaledImageVariant(icon: ResolvedImage, iconSizeData: SizeData, iconSize: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>, tileID: CanonicalTileID, zoom: number, feature: SymbolFeature, pixelRatio: number, iconScaleFactor: number, worldview: string | undefined) {
-    const iconPrimary = scaleImageVariant(icon.getPrimary(), iconSizeData, iconSize, tileID, zoom, feature, pixelRatio, iconScaleFactor, worldview);
-    const iconSecondary = scaleImageVariant(icon.getSecondary(), iconSizeData, iconSize, tileID, zoom, feature, pixelRatio, iconScaleFactor, worldview);
+export function getScaledImageVariant(icon: ResolvedImage, iconSizeData: SizeData, iconSize: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>, tileID: CanonicalTileID, zoom: number, feature: SymbolFeature, pixelRatio: number, iconScaleFactor: number, worldview: string | undefined, availableImages?: ImageId[]) {
+    const iconPrimary = scaleImageVariant(icon.getPrimary(), iconSizeData, iconSize, tileID, zoom, feature, pixelRatio, iconScaleFactor, worldview, availableImages);
+    const iconSecondary = scaleImageVariant(icon.getSecondary(), iconSizeData, iconSize, tileID, zoom, feature, pixelRatio, iconScaleFactor, worldview, availableImages);
     return {iconPrimary, iconSecondary};
 }
 
@@ -1372,18 +1373,17 @@ function addSymbol(bucket: SymbolBucket,
         // to prevent vertex buffer overflow during appearance updates
         const maxQuadCount = calculateMaxIconQuadCount(bucket, iconQuads, verticalIconQuads,
             layer.layout, feature, canonical, bucket.iconAtlasPositions,
-            hasIconTextFit);
+            hasIconTextFit, availableImages);
         numIconVertices = maxQuadCount * 4;
 
-        const evaluatedIconSize = layer.layout.get('icon-size').evaluate(feature, {}, canonical);
-        const minZoomSize = sizes.compositeIconSizes ? sizes.compositeIconSizes[0].evaluate(feature, {}, canonical) : 0;
-        const maxZoomSize = sizes.compositeIconSizes ? sizes.compositeIconSizes[1].evaluate(feature, {}, canonical) : 0;
+        const evaluatedIconSize = layer.layout.get('icon-size').evaluate(feature, {}, canonical, availableImages);
+        const minZoomSize = sizes.compositeIconSizes ? sizes.compositeIconSizes[0].evaluate(feature, {}, canonical, availableImages) : 0;
+        const maxZoomSize = sizes.compositeIconSizes ? sizes.compositeIconSizes[1].evaluate(feature, {}, canonical, availableImages) : 0;
         const iconSizeData = getSizeDataFromKind(bucket.layerIds[0], bucket.iconSizeData, evaluatedIconSize, sizes.iconScaleFactor, minZoomSize, maxZoomSize);
 
         bucket.addSymbols(
             bucket.icon,
             iconQuads,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             iconSizeData,
             iconOffset,
             iconAlongLine,
@@ -1410,7 +1410,6 @@ function addSymbol(bucket: SymbolBucket,
             bucket.addSymbols(
                 bucket.icon,
                 verticalIconQuads,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 iconSizeData,
                 iconOffset,
                 iconAlongLine,
@@ -1568,6 +1567,7 @@ function calculateMaxIconQuadCount(
     canonical: CanonicalTileID,
     imagePositions: ImagePositionMap,
     hasIconTextFit: boolean,
+    availableImages: ImageId[],
 ): number {
     const symbolLayer = bucket.layers[0];
     const appearances = symbolLayer.appearances;
@@ -1593,7 +1593,7 @@ function calculateMaxIconQuadCount(
         const iconImageProperty = unevaluatedProperties._values['icon-image'].value !== undefined;
 
         if (iconImageProperty) {
-            const appearanceIconImage = symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-image', feature, canonical, []);
+            const appearanceIconImage = symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-image', feature, canonical, availableImages);
             if (appearanceIconImage) {
                 const icon = bucket.getResolvedImageFromTokens(appearanceIconImage as string);
                 if (icon) {
@@ -1602,8 +1602,8 @@ function calculateMaxIconQuadCount(
                     // areas, which is what we need but unfortunately, since imagePositions stores the
                     // position by the stringified sized icon we need to compute it
                     const unevaluatedIconSize = unevaluatedProperties._values['icon-size'];
-                    const iconSizeData = getSizeData(bucket.zoom, unevaluatedIconSize, bucket.worldview);
-                    const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, bucket.zoom, feature, bucket.pixelRatio, iconScaleFactor, bucket.worldview);
+                    const iconSizeData = getSizeData(bucket.zoom, unevaluatedIconSize, bucket.worldview, availableImages);
+                    const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, bucket.zoom, feature, bucket.pixelRatio, iconScaleFactor, bucket.worldview, availableImages);
                     const imagePosition = imagePositions.get(imageVariant.iconPrimary.toString());
                     maxQuadCount = Math.max(maxQuadCount, getIconQuadsNumber(imagePosition, hasIconTextFit));
                 }
