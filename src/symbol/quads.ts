@@ -177,7 +177,7 @@ export function getIconQuads(
         return {tl, tr, bl, br, texPrimary: subRect, texSecondary: subRectB, writingMode: undefined, glyphOffset: [0, 0], sectionIndex: 0, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY, isSDF: isSDFIcon};
     };
 
-    if (!hasIconTextFit || (!image.stretchX && !image.stretchY)) {
+    if (!image.stretchX && !image.stretchY) {
         quads.push(makeBox(
             {fixed: 0, stretch: -1},
             {fixed: 0, stretch: -1},
@@ -208,7 +208,7 @@ export function getIconQuadsNumber(image: ImagePosition, hasIconTextFit: boolean
     const stretchX = image.stretchX || [[0, imageWidth]];
     const stretchY = image.stretchY || [[0, imageHeight]];
 
-    if (!hasIconTextFit || (!image.stretchX && !image.stretchY)) {
+    if (!image.stretchX && !image.stretchY) {
         return 1;
     }
 

@@ -137,9 +137,6 @@ const skip = [
     // Current behavior is arbitrary
     "render-tests/geojson/inline-linestring-fill",
 
-    // Broken in similar way as gl-native https://mapbox.atlassian.net/browse/MAPSNAT-3407
-    "render-tests/icon-size/small-stretch-area",
-
     // Broken in similar way as gl-native https://mapbox.atlassian.net/browse/MAPSNAT-3482
     "render-tests/appearance/empty-image-in-appearance",
     "render-tests/appearance/icon-text-fit-vertical/non-existent-image",
