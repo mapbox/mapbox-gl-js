@@ -39,7 +39,7 @@ import Point from '@mapbox/point-geometry';
 import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
 import {waitForBuildingGen, getBuildingGen} from '../../util/loaders';
-import {footprintTrianglesIntersect, regionsEquals, ReplacementOrderBuilding, type Region, type ReplacementSource} from '../../source/replacement_source';
+import {footprintTrianglesIntersect, regionsEquals, type Region, type ReplacementSource} from '../../source/replacement_source';
 import TriangleGridIndex from '../../../src/util/triangle_grid_index';
 import earcut from 'earcut';
 import assert from 'assert';
@@ -1365,7 +1365,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
 
         // Hide all centroids that are overlapping with footprints from the replacement source
         for (const region of this.activeReplacements) {
-            if ((region.order <= ReplacementOrderBuilding)) continue; // fill-extrusions always get removed. This will be separated (similar to symbol and model) in future.
+            if ((region.order < layerIndex)) continue;
 
             // Apply slight padding to footprints. This reduces false positives where two adjacent lines
             // would be reported overlapping due to limited precision (16 bit) of tile units.
