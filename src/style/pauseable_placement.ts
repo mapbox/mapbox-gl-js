@@ -102,6 +102,17 @@ class PauseablePlacement {
         return this._forceFullPlacement;
     }
 
+    setStale(): void {
+        if (this.placement) {
+            this.placement.stale = true;
+        }
+    }
+
+    isStale(): boolean {
+        if (!this.placement) return false;
+        return this.placement.stale;
+    }
+
     isDone(): boolean {
         return this._done;
     }

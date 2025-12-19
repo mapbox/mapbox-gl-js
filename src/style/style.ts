@@ -4180,13 +4180,15 @@ class Style extends Evented<MapEvents> {
         const transformChanged = Boolean(this.placement && !transform.equals(this.placement.transform));
         const replacementSourceChanged = Boolean(this.placement && ((this.placement.lastReplacementSourceUpdateTime !== 0 && !replacementSource) || this.placement.lastReplacementSourceUpdateTime !== replacementSource.updateTime));
 
+        const isDonePlacementConsideredStale = transformChanged || replacementSourceChanged || symbolBucketsChanged;
         // Force full placement when fadeDuration === 0 to ensure that newly loaded
         // tiles will fully display symbols in their first frame.
         // Make sure to not do this for the static camera, otherwise
         // we will do expensive full placements on every frame.
-        const fullFrameUpdateRequired = (transformChanged || replacementSourceChanged || symbolBucketsChanged || (this.placement && this.placement.isStale())) && fadeDuration === 0;
+        const newImmediatePlacementRequired = (isDonePlacementConsideredStale || this.pauseablePlacement.isStale()) && fadeDuration === 0;
+        const newNormalPlacementRequired = this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom) && fadeDuration !== 0;
 
-        if (this.pauseablePlacement.isFullPlacementRequested() || !this.pauseablePlacement.placement || fullFrameUpdateRequired || (fadeDuration !== 0 && this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
+        if (this.pauseablePlacement.isFullPlacementRequested() || !this.pauseablePlacement.placement || newImmediatePlacementRequired || newNormalPlacementRequired) {
             const fogState = this.fog && transform.projection.supportsFog ? this.fog.state : null;
             this.pauseablePlacement = this.pauseablePlacement.startNewPlacement(transform, this._mergedOrder, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState, this._buildingIndex);
         }
@@ -4203,8 +4205,10 @@ class Style extends Evented<MapEvents> {
                 // since the placement gets split over multiple frames it is possible
                 // these buckets were processed before they were changed and so the
                 // placement is already stale while it is in progress
-                this.pauseablePlacement.placement.setStale();
+                this.pauseablePlacement.setStale();
             }
+        } else if (isDonePlacementConsideredStale && fadeDuration !== 0) {
+            this.pauseablePlacement.setStale();
         }
 
         if (placementCommitted || symbolBucketsChanged) {
