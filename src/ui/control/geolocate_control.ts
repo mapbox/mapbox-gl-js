@@ -19,16 +19,20 @@ export type GeolocateControlOptions = {
     showUserLocation?: boolean;
     showUserHeading?: boolean;
     geolocation?: Geolocation;
+    showButton?: boolean;
 };
 
-type DeviceOrientationEvent = {
-    absolute: boolean;
-    alpha: number;
-    beta: number;
-    gamma: number;
-    requestPermission: Promise<string>;
-    webkitCompassHeading?: number;
+declare global {
+    interface DeviceOrientationEvent {
+        readonly webkitCompassHeading?: number;
+    }
+}
+
+type DeviceOrientationEventStatic = typeof DeviceOrientationEvent & {
+    requestPermission?: () => Promise<'granted' | 'denied' | 'prompt'>;
 };
+
+type WatchState = 'OFF' | 'ACTIVE_LOCK' | 'WAITING_ACTIVE' | 'ACTIVE_ERROR' | 'BACKGROUND' | 'BACKGROUND_ERROR';
 
 const defaultOptions = {
     positionOptions: {
@@ -42,7 +46,8 @@ const defaultOptions = {
     trackUserLocation: false,
     showAccuracyCircle: true,
     showUserLocation: true,
-    showUserHeading: false
+    showUserHeading: false,
+    showButton: true
 };
 
 type GeolocateControlEvents = {
@@ -82,6 +87,7 @@ type GeolocateControlEvents = {
  * @param {Object} [options.showUserLocation=true] By default a dot will be shown on the map at the user's location. Set to `false` to disable.
  * @param {Object} [options.showUserHeading=false] If `true` an arrow will be drawn next to the user location dot indicating the device's heading. This only has affect when `trackUserLocation` is `true`.
  * @param {Object} [options.geolocation=window.navigator.geolocation] `window.navigator.geolocation` by default; you can provide an object with the same shape to customize geolocation handling.
+ * @param {boolean} [options.showButton=true] If `false`, the control button will be hidden. The user location dot can still be shown by setting `showUserLocation` to `true` and calling {@link GeolocateControl#trigger} programmatically.
  *
  * @example
  * map.addControl(new mapboxgl.GeolocateControl({
@@ -91,6 +97,16 @@ type GeolocateControlEvents = {
  *     trackUserLocation: true,
  *     showUserHeading: true
  * }));
+ *
+ * @example
+ * // Tracking without visible button - call trigger() to start
+ * const geolocate = new mapboxgl.GeolocateControl({
+ *     trackUserLocation: true,
+ *     showUserLocation: true,
+ *     showButton: false
+ * });
+ * map.addControl(geolocate);
+ * geolocate.trigger();
  * @see [Example: Locate the user](https://www.mapbox.com/mapbox-gl-js/example/locate-user/)
  */
 class GeolocateControl extends Evented<GeolocateControlEvents> implements IControl {
@@ -102,7 +118,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
     _geolocateButton: HTMLButtonElement;
     _geolocationWatchID: number;
     _timeoutId?: number;
-    _watchState: 'OFF' | 'ACTIVE_LOCK' | 'WAITING_ACTIVE' | 'ACTIVE_ERROR' | 'BACKGROUND' | 'BACKGROUND_ERROR';
+    _watchState: WatchState;
     _lastKnownPosition?: GeolocationPosition;
     _userLocationDotMarker: Marker;
     _accuracyCircleMarker: Marker;
@@ -475,6 +491,10 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
 
         this._setup = true;
 
+        if (!this.options.showButton) {
+            this._container.style.display = 'none';
+        }
+
         // when the camera is changed (and it's not as a result of the Geolocation Control) change
         // the watch mode to background watch, so that the marker is updated but not the camera.
         if (this.options.trackUserLocation) {
@@ -588,7 +608,8 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             }
 
             // incoming state setup
-            switch (this._watchState) {
+            // assert WatchState type to prevent TypeScript from narrowing after first switch
+            switch (this._watchState as WatchState) {
             case 'WAITING_ACTIVE':
                 this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
                 this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active');
@@ -596,16 +617,13 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             case 'ACTIVE_LOCK':
                 this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active');
                 break;
-                // @ts-expect-error - TS2678 - Type '"ACTIVE_ERROR"' is not comparable to type '"OFF" | "ACTIVE_LOCK" | "WAITING_ACTIVE"'.
             case 'ACTIVE_ERROR':
                 this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
                 this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
                 break;
-                // @ts-expect-error - TS2678 - Type '"BACKGROUND"' is not comparable to type '"OFF" | "ACTIVE_LOCK" | "WAITING_ACTIVE"'.
             case 'BACKGROUND':
                 this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background');
                 break;
-                // @ts-expect-error - TS2678 - Type '"BACKGROUND_ERROR"' is not comparable to type '"OFF" | "ACTIVE_LOCK" | "WAITING_ACTIVE"'.
             case 'BACKGROUND_ERROR':
                 this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
                 this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background-error');
@@ -656,28 +674,18 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
 
     _addDeviceOrientationListener() {
         const addListener = () => {
-            if ('ondeviceorientationabsolute' in window) {
-                // @ts-expect-error - TS2769 - No overload matches this call.
-                window.addEventListener('deviceorientationabsolute', this._onDeviceOrientation);
-            } else {
-                // @ts-expect-error - TS2769 - No overload matches this call.
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                window.addEventListener('deviceorientation', this._onDeviceOrientation);
-            }
+            const eventName = 'ondeviceorientationabsolute' in window ?
+                'deviceorientationabsolute' :
+                'deviceorientation';
+
+            window.addEventListener(eventName, this._onDeviceOrientation);
         };
 
-        // @ts-expect-error - TS2339 - Property 'requestPermission' does not exist on type '{ new (type: string, eventInitDict?: DeviceMotionEventInit): DeviceMotionEvent; prototype: DeviceMotionEvent; }'.
-        if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === 'function') {
-            // @ts-expect-error - TS2339 - Property 'requestPermission' does not exist on type '{ new (type: string, eventInitDict?: DeviceOrientationEventInit): DeviceOrientationEvent; prototype: DeviceOrientationEvent; }'.
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            DeviceOrientationEvent.requestPermission()
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        if (typeof (DeviceOrientationEvent as DeviceOrientationEventStatic).requestPermission === 'function') {
+            (DeviceOrientationEvent as DeviceOrientationEventStatic).requestPermission()
                 .then(response => {
-                    if (response === 'granted') {
-                        addListener();
-                    }
+                    if (response === 'granted') addListener();
                 })
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 .catch(console.error);
         } else {
             addListener();
@@ -687,9 +695,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
     _clearWatch() {
         this.options.geolocation.clearWatch(this._geolocationWatchID);
 
-        // @ts-expect-error - TS2769 - No overload matches this call.
         window.removeEventListener('deviceorientation', this._onDeviceOrientation);
-        // @ts-expect-error - TS2769 - No overload matches this call.
         window.removeEventListener('deviceorientationabsolute', this._onDeviceOrientation);
 
         this._geolocationWatchID = undefined;
