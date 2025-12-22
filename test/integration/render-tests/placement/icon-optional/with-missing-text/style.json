@@ -1,0 +1,63 @@
+{
+  "version": 8,
+   "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256
+    }
+  },
+  "zoom": 2,
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "test": {
+      "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [-5, 5]
+              }
+            },
+            {
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [5, 0]
+              }
+            },
+            {
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [-5, -5]
+              }
+            }
+          ]
+        }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "test",
+      "type": "symbol",
+      "source": "test",
+      "layout": {
+        "icon-image": "building-12",
+        "icon-optional": true,
+        "icon-allow-overlap": true,
+        "icon-anchor": "bottom"
+      }
+    }
+  ]
+}

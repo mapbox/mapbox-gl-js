@@ -243,7 +243,7 @@ const skip = [
     "render-tests/background-pattern/image-update/delayed/different-size-with-color-theme",
 
     // https://mapbox.atlassian.net/browse/GLJS-1295
-    "render-tests/placement/icon-optional",
+    "render-tests/placement/icon-optional/basic",
     "render-tests/placement/text-optional/basic",
     "render-tests/placement/text-optional/text-variable-anchor",
     // limit number of holes experimental for native
