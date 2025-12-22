@@ -1139,7 +1139,6 @@ class SymbolBucket implements Bucket {
             featureData.isUsingAppearanceIconVertexData = false;
             return {vertexOffsetDelta: layoutNumVertices, hasChanges: true};
         }
-        console.log('Not updating');
         return {vertexOffsetDelta: symbolInstance.numIconVertices, hasChanges: false};
     }
 
