@@ -1258,6 +1258,39 @@ describe('Style#moveLayer', () => {
         style.moveLayer('b', 'b');
         expect(style._order).toEqual(['a', 'b', 'c']);
     });
+
+    test('Throws a warning when layers have different slots', async () => {
+        const style = new Style(new StubMap());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(createStyleJSON({
+            layers: [
+                {id: 'a', type: 'background', slot: 'main'},
+                {id: 'b', type: 'background', slot: 'aux'}
+            ]
+        }));
+
+        await waitFor(style, "style.load");
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        style.moveLayer('b', 'a');
+        expect(warnSpy).toHaveBeenCalledOnce();
+        expect(warnSpy).toHaveBeenCalledWith('Layer with id "a" has a different slot. Layers can only be rearranged within the same slot.');
+        expect(style._order).toEqual(['a', 'b']);
+    });
+
+    test('Does not throw warning when layer has not a slot', async () => {
+        const style = new Style(new StubMap());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(createStyleJSON({
+            layers: [
+                {id: 'a', type: 'background', slot: 'main'},
+                {id: 'b', type: 'background'}
+            ]
+        }));
+
+        await waitFor(style, "style.load");
+        style.moveLayer('b', 'a');
+        expect(style._order).toEqual(['b', 'a']);
+    });
 });
 
 describe('Style#setPaintProperty', () => {

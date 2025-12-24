@@ -9,19 +9,6 @@
         [
           "addLayer",
           {
-            "id": "red",
-            "source": "red",
-            "type": "circle",
-            "slot": "slot",
-            "paint": {
-              "circle-color": "#ff0000",
-              "circle-radius": 10
-            }
-          }
-        ],
-        [
-          "addLayer",
-          {
             "id": "green",
             "source": "green",
             "type": "circle",
@@ -31,9 +18,17 @@
           }
         ],
         [
-          "moveLayer",
-          "green",
-          "red"
+          "addLayer",
+          {
+            "id": "red",
+            "source": "red",
+            "type": "circle",
+            "slot": "slot",
+            "paint": {
+              "circle-color": "#ff0000",
+              "circle-radius": 10
+            }
+          }
         ]
       ]
     }

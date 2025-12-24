@@ -2710,7 +2710,7 @@ class Style extends Evented<MapEvents> {
             // or it has the same slot as the 'before' layer,
             // then we can insert the new layer before the existing one.
             const beforeLayer = this._layers[before];
-            if (layer.slot === beforeLayer.slot) index = beforeIndex;
+            if (!layer.slot || layer.slot === beforeLayer.slot) index = beforeIndex;
             else warnOnce(`Layer with id "${before}" has a different slot. Layers can only be rearranged within the same slot.`);
         }
 
@@ -2785,7 +2785,7 @@ class Style extends Evented<MapEvents> {
             // or it has the same slot as the 'before' layer,
             // then we can insert the new layer before the existing one.
             const beforeLayer = this._layers[before];
-            if (layer.slot === beforeLayer.slot) newIndex = beforeIndex;
+            if (!layer.slot || layer.slot === beforeLayer.slot) newIndex = beforeIndex;
             else warnOnce(`Layer with id "${before}" has a different slot. Layers can only be rearranged within the same slot.`);
         }
 
