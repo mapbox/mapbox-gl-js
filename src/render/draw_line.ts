@@ -133,6 +133,11 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         definesValues.push("VARIABLE_LINE_WIDTH");
     }
 
+    const offset = layer.paint.get('line-offset').value;
+    if (offset.kind !== 'constant' && offset.isLineProgressConstant === false) {
+        definesValues.push("VARIABLE_LINE_OFFSET");
+    }
+
     if (isDraping) {
         if (painter.emissiveMode === 'dual-source-blending' && !constantEmissiveStrength) {
             definesValues.push('DUAL_SOURCE_BLENDING');
