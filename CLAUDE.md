@@ -8,6 +8,12 @@ Mapbox GL JS is a JavaScript library for interactive, customizable vector maps o
 
 ## Workflow
 - Make changes as concise as possible, ensure they are minimal and fully justified
+- Read and understand relevant files before proposing code edits. If the user references a specific file/path, inspect it before explaining or proposing fixes.
+- Understand WHY code exists before changing it. GL JS handles browser quirks, performance hacks, and WebGL state subtleties. Non-obvious patterns often exist for a reason—check git blame when in doubt.
+- Avoid over-engineering. Only make changes that are directly requested or clearly necessary.
+  - Don't add features, refactor code, or make "improvements" beyond what was asked
+  - Don't create helpers or abstractions until you see repetition
+  - Straightforward repetition beats unclear abstraction
 - Always run `npm run tsc` and `npm run lint` when you're done making a series of code changes
 - Run `npm run codegen` if you modify style properties or the style specification (regenerates style code, struct arrays, and TypeScript types)
 - Run `npm run test-typings` after modifying public API types or the style specification
@@ -130,10 +136,11 @@ test/
 - Always use named exports, default exports are forbidden
 - Modules export classes or functions (no namespace objects)
 - JSDoc comments for all public APIs
-- Don't use `!.` for non-null assertions
-- Don't use `?.` or `??` operators for optional chaining
-- No async/await - use Promises instead
+- Don't use `!.` for non-null assertions (hides potential null issues)
+- Don't use `?.` or `??` operators (hides null handling, harder to debug)
+- No async/await - use Promises instead (keeps control flow explicit)
 - Use `assert` for invariants
+- Break complex expressions into named variables, especially WebGL math
 
 ## TypeScript
 
