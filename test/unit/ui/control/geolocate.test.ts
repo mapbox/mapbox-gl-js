@@ -711,3 +711,267 @@ test('GeolocateControl showButton false with trigger() starts tracking', async (
         mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30, timestamp: 40});
     });
 });
+
+test('GeolocateControl followUserLocation false does not update camera', async () => {
+    const map = createMap();
+    const initialCenter = map.getCenter();
+    const geolocate = new GeolocateControl({
+        followUserLocation: false,
+        showUserLocation: true
+    });
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        geolocate.on('geolocate', (position) => {
+            expect(position.coords.latitude).toEqual(10);
+            expect(position.coords.longitude).toEqual(20);
+            // Camera should not have moved
+            expect(map.getCenter().lat).toEqual(initialCenter.lat);
+            expect(map.getCenter().lng).toEqual(initialCenter.lng);
+            // But marker should be on the map
+            expect(geolocate._userLocationDotMarker._map).toBeTruthy();
+            resolve();
+        });
+        geolocate.trigger();
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30, timestamp: 40});
+    });
+});
+
+test('GeolocateControl followUserLocation false with trackUserLocation true does not update camera', async () => {
+    const map = createMap();
+    const initialCenter = map.getCenter();
+    const geolocate = new GeolocateControl({
+        followUserLocation: false,
+        trackUserLocation: true,
+        showUserLocation: true
+    });
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        geolocate.on('geolocate', (position) => {
+            expect(position.coords.latitude).toEqual(10);
+            // Camera should not have moved
+            expect(map.getCenter().lat).toEqual(initialCenter.lat);
+            expect(map.getCenter().lng).toEqual(initialCenter.lng);
+            // But marker should be on the map
+            expect(geolocate._userLocationDotMarker._map).toBeTruthy();
+            resolve();
+        });
+        geolocate.trigger();
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30, timestamp: 40});
+    });
+});
+
+test('GeolocateControl followUserLocation false does not update camera on subsequent positions', async () => {
+    const map = createMap();
+    const initialCenter = map.getCenter();
+    const geolocate = new GeolocateControl({
+        followUserLocation: false,
+        trackUserLocation: true,
+        showUserLocation: true
+    });
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        let updateCount = 0;
+
+        geolocate.on('geolocate', () => {
+            updateCount++;
+            // Camera should never move, even after multiple position updates
+            expect(map.getCenter().lat).toEqual(initialCenter.lat);
+            expect(map.getCenter().lng).toEqual(initialCenter.lng);
+            // But marker should be on the map
+            expect(geolocate._userLocationDotMarker._map).toBeTruthy();
+
+            if (updateCount < 3) {
+                // Send next position update
+                mockGeolocation.change({latitude: updateCount * 20, longitude: updateCount * 30, accuracy: 50});
+            } else if (updateCount === 3) {
+                resolve();
+            } else {
+                throw new Error(`Unexpected geolocate event count: ${updateCount}`);
+            }
+        });
+
+        geolocate.trigger();
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+});
+
+test('GeolocateControl followUserLocation true by default updates camera', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({
+        showUserLocation: true,
+        fitBoundsOptions: {
+            linear: true,
+            duration: 0
+        }
+    });
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        const click = new window.Event('click');
+
+        map.once('moveend', () => {
+            expect(lngLatAsFixed(map.getCenter(), 4)).toEqual({lat: "10.0000", lng: "20.0000"});
+            resolve();
+        });
+        geolocate._geolocateButton.dispatchEvent(click);
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+});
+
+test('GeolocateControl setFollowUserLocation enables camera following', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true,
+        showUserLocation: true,
+        followUserLocation: false,
+        fitBoundsOptions: {
+            linear: true,
+            duration: 0
+        }
+    });
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        geolocate.once('geolocate', () => {
+            // Camera should not have moved initially
+            expect(geolocate._watchState).toEqual('BACKGROUND');
+
+            // Enable camera following
+            map.once('moveend', () => {
+                expect(lngLatAsFixed(map.getCenter(), 4)).toEqual({lat: "10.0000", lng: "20.0000"});
+                expect(geolocate._watchState).toEqual('ACTIVE_LOCK');
+                resolve();
+            });
+            geolocate.setFollowUserLocation(true);
+        });
+        geolocate.trigger();
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+});
+
+test('GeolocateControl setFollowUserLocation disables camera following', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true,
+        showUserLocation: true,
+        fitBoundsOptions: {
+            linear: true,
+            duration: 0
+        }
+    });
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        geolocate.once('geolocate', () => {
+            expect(geolocate._watchState).toEqual('ACTIVE_LOCK');
+
+            // Disable camera following
+            geolocate.setFollowUserLocation(false);
+            expect(geolocate._watchState).toEqual('BACKGROUND');
+            expect(geolocate.options.followUserLocation).toEqual(false);
+            resolve();
+        });
+        geolocate.trigger();
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+});
+
+test('GeolocateControl setFollowUserLocation returns this for chaining', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true
+    });
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        const result = geolocate.setFollowUserLocation(false);
+        expect(result).toBe(geolocate);
+        resolve();
+    });
+});
+
+test('GeolocateControl setFollowUserLocation fires trackuserlocationend when disabling', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true,
+        showUserLocation: true,
+        fitBoundsOptions: {
+            linear: true,
+            duration: 0
+        }
+    });
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        geolocate.once('geolocate', () => {
+            geolocate.once('trackuserlocationend', () => {
+                resolve();
+            });
+            geolocate.setFollowUserLocation(false);
+        });
+        geolocate.trigger();
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+});
+
+test('GeolocateControl setFollowUserLocation fires trackuserlocationstart when enabling', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true,
+        showUserLocation: true,
+        followUserLocation: false
+    });
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        geolocate.once('geolocate', () => {
+            geolocate.once('trackuserlocationstart', () => {
+                resolve();
+            });
+            geolocate.setFollowUserLocation(true);
+        });
+        geolocate.trigger();
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+});
+
+test('GeolocateControl button click centers camera even when followUserLocation is false', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true,
+        showUserLocation: true,
+        followUserLocation: false,
+        fitBoundsOptions: {
+            linear: true,
+            duration: 0
+        }
+    });
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        const click = new window.Event('click');
+
+        geolocate.once('geolocate', () => {
+            // Initially in BACKGROUND state since followUserLocation is false
+            expect(geolocate._watchState).toEqual('BACKGROUND');
+
+            // Camera should not have moved
+            const initialCenter = map.getCenter();
+            expect(initialCenter.lat).not.toBeCloseTo(10, 1);
+
+            // Click button - explicit user action should center camera
+            map.once('moveend', () => {
+                expect(lngLatAsFixed(map.getCenter(), 4)).toEqual({lat: "10.0000", lng: "20.0000"});
+                expect(geolocate._watchState).toEqual('ACTIVE_LOCK');
+                resolve();
+            });
+            geolocate._geolocateButton.dispatchEvent(click);
+        });
+
+        geolocate._geolocateButton.dispatchEvent(click);
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+});

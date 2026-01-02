@@ -9,17 +9,18 @@ import {mercatorZfromAltitude} from '../../geo/mercator_coordinate';
 
 import type {Map, IControl} from '../map';
 import type {MapEventOf} from '../events';
-import type {AnimationOptions, CameraOptions} from '../camera';
+import type {EasingOptions} from '../camera';
 
 export type GeolocateControlOptions = {
     positionOptions?: PositionOptions;
-    fitBoundsOptions?: AnimationOptions & CameraOptions;
+    fitBoundsOptions?: EasingOptions;
     trackUserLocation?: boolean;
     showAccuracyCircle?: boolean;
     showUserLocation?: boolean;
     showUserHeading?: boolean;
     geolocation?: Geolocation;
     showButton?: boolean;
+    followUserLocation?: boolean;
 };
 
 declare global {
@@ -47,7 +48,8 @@ const defaultOptions = {
     showAccuracyCircle: true,
     showUserLocation: true,
     showUserHeading: false,
-    showButton: true
+    showButton: true,
+    followUserLocation: true
 };
 
 type GeolocateControlEvents = {
@@ -80,14 +82,15 @@ type GeolocateControlEvents = {
  *
  * @implements {IControl}
  * @param {Object} [options]
- * @param {Object} [options.positionOptions={enableHighAccuracy: false, timeout: 6000}] A Geolocation API [PositionOptions](https://developer.mozilla.org/en-US/docs/Web/API/PositionOptions) object.
- * @param {Object} [options.fitBoundsOptions={maxZoom: 15}] A {@link Map#fitBounds} options object to use when the map is panned and zoomed to the user's location. The default is to use a `maxZoom` of 15 to limit how far the map will zoom in for very accurate locations.
- * @param {Object} [options.trackUserLocation=false] If `true` the `GeolocateControl` becomes a toggle button and when active the map will receive updates to the user's location as it changes.
- * @param {Object} [options.showAccuracyCircle=true] By default, if `showUserLocation` is `true`, a transparent circle will be drawn around the user location indicating the accuracy (95% confidence level) of the user's location. Set to `false` to disable. Always disabled when `showUserLocation` is `false`.
- * @param {Object} [options.showUserLocation=true] By default a dot will be shown on the map at the user's location. Set to `false` to disable.
- * @param {Object} [options.showUserHeading=false] If `true` an arrow will be drawn next to the user location dot indicating the device's heading. This only has affect when `trackUserLocation` is `true`.
- * @param {Object} [options.geolocation=window.navigator.geolocation] `window.navigator.geolocation` by default; you can provide an object with the same shape to customize geolocation handling.
+ * @param {PositionOptions} [options.positionOptions={enableHighAccuracy: false, timeout: 6000}] A Geolocation API [PositionOptions](https://developer.mozilla.org/en-US/docs/Web/API/PositionOptions) object.
+ * @param {EasingOptions} [options.fitBoundsOptions={maxZoom: 15}] A {@link Map#fitBounds} options object to use when the map is panned and zoomed to the user's location. The default is to use a `maxZoom` of 15 to limit how far the map will zoom in for very accurate locations.
+ * @param {boolean} [options.trackUserLocation=false] If `true` the `GeolocateControl` becomes a toggle button and when active the map will receive updates to the user's location as it changes.
+ * @param {boolean} [options.showAccuracyCircle=true] By default, if `showUserLocation` is `true`, a transparent circle will be drawn around the user location indicating the accuracy (95% confidence level) of the user's location. Set to `false` to disable. Always disabled when `showUserLocation` is `false`.
+ * @param {boolean} [options.showUserLocation=true] By default a dot will be shown on the map at the user's location. Set to `false` to disable.
+ * @param {boolean} [options.showUserHeading=false] If `true` an arrow will be drawn next to the user location dot indicating the device's heading. This only has affect when `trackUserLocation` is `true`.
+ * @param {Geolocation} [options.geolocation=window.navigator.geolocation] `window.navigator.geolocation` by default; you can provide an object with the same shape to customize geolocation handling.
  * @param {boolean} [options.showButton=true] If `false`, the control button will be hidden. The user location dot can still be shown by setting `showUserLocation` to `true` and calling {@link GeolocateControl#trigger} programmatically.
+ * @param {boolean} [options.followUserLocation=true] If `true`, the camera centers on the user's location. If `false`, the location dot will be shown without moving the camera. Clicking the control still centers on the user's location.
  *
  * @example
  * map.addControl(new mapboxgl.GeolocateControl({
@@ -104,6 +107,16 @@ type GeolocateControlEvents = {
  *     trackUserLocation: true,
  *     showUserLocation: true,
  *     showButton: false
+ * });
+ * map.addControl(geolocate);
+ * geolocate.trigger();
+ *
+ * @example
+ * // Show user location without moving the camera
+ * const geolocate = new mapboxgl.GeolocateControl({
+ *     trackUserLocation: true,
+ *     showUserLocation: true,
+ *     followUserLocation: false
  * });
  * map.addControl(geolocate);
  * geolocate.trigger();
@@ -282,10 +295,18 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             case 'WAITING_ACTIVE':
             case 'ACTIVE_LOCK':
             case 'ACTIVE_ERROR':
-                this._watchState = 'ACTIVE_LOCK';
+                // Remove all possible "from" classes first
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active-error');
-                this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active');
+
+                // If followUserLocation is false, go directly to BACKGROUND since camera won't follow
+                if (!this.options.followUserLocation) {
+                    this._watchState = 'BACKGROUND';
+                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background');
+                } else {
+                    this._watchState = 'ACTIVE_LOCK';
+                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active');
+                }
                 break;
             case 'BACKGROUND':
             case 'BACKGROUND_ERROR':
@@ -304,9 +325,12 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             this._updateMarker(position);
         }
 
-        // if in normal mode (not watch mode), or if in watch mode and the state is active watch
-        // then update the camera
-        if (!this.options.trackUserLocation || this._watchState === 'ACTIVE_LOCK') {
+        // Update camera in one-time mode, or when actively locked in watch mode
+        const isOneTimeMode = !this.options.trackUserLocation;
+        const isActivelyTracking = this._watchState === 'ACTIVE_LOCK';
+        const shouldFollowUser = this.options.followUserLocation;
+
+        if (shouldFollowUser && (isOneTimeMode || isActivelyTracking)) {
             this._updateCamera(position);
         }
 
@@ -598,8 +622,10 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             case 'BACKGROUND':
                 this._watchState = 'ACTIVE_LOCK';
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
-                // set camera to last known location
-                if (this._lastKnownPosition) this._updateCamera(this._lastKnownPosition);
+                // Button click is explicit user action - always center on their location
+                if (this._lastKnownPosition) {
+                    this._updateCamera(this._lastKnownPosition);
+                }
 
                 this.fire(new Event('trackuserlocationstart'));
                 break;
@@ -670,6 +696,52 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
         }
 
         return true;
+    }
+
+    /**
+     * Sets whether the camera follows the user's location.
+     *
+     * Fires {@link GeolocateControl#trackuserlocationstart} when enabling,
+     * {@link GeolocateControl#trackuserlocationend} when disabling.
+     *
+     * @param {boolean} [follow] Whether to follow the user's location.
+     * @returns {GeolocateControl} `this`.
+     * @example
+     * geolocate.setFollowUserLocation(false); // stop following
+     * geolocate.setFollowUserLocation(true);  // resume and center
+     */
+    setFollowUserLocation(follow?: boolean): this {
+        this.options.followUserLocation = follow != null ? follow : defaultOptions.followUserLocation;
+
+        if (this.options.trackUserLocation && this._watchState !== 'OFF') {
+            if (this.options.followUserLocation) {
+                // Enabling: center camera and transition to ACTIVE_LOCK if in BACKGROUND
+                if (this._watchState === 'BACKGROUND' || this._watchState === 'BACKGROUND_ERROR') {
+                    this._watchState = 'ACTIVE_LOCK';
+                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
+                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background-error');
+                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active');
+
+                    if (this._lastKnownPosition) {
+                        this._updateCamera(this._lastKnownPosition);
+                    }
+
+                    this.fire(new Event('trackuserlocationstart'));
+                }
+            } else {
+                // Disabling: transition to BACKGROUND if in ACTIVE_LOCK
+                if (this._watchState === 'ACTIVE_LOCK' || this._watchState === 'ACTIVE_ERROR') {
+                    this._watchState = 'BACKGROUND';
+                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
+                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active-error');
+                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background');
+
+                    this.fire(new Event('trackuserlocationend'));
+                }
+            }
+        }
+
+        return this;
     }
 
     _addDeviceOrientationListener() {
