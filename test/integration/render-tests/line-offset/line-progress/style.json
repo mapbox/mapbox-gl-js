@@ -1,0 +1,61 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256
+    }
+  },
+  "zoom": 2,
+  "sources": {
+    "line": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-20, 0],
+            [20, 0]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "reference-line",
+      "type": "line",
+      "source": "line",
+      "paint": {
+        "line-width": 40,
+        "line-color": "#cccccc"
+      }
+    },
+    {
+      "id": "variable-offset-line",
+      "type": "line",
+      "source": "line",
+      "paint": {
+        "line-width": 4,
+        "line-color": "#ff0000",
+        "line-offset": [
+          "interpolate",
+          ["linear"],
+          ["line-progress"],
+          0, -20,
+          1, 20
+        ]
+      }
+    }
+  ]
+}
