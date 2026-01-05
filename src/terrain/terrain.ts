@@ -5,6 +5,7 @@ import Tile from '../source/tile';
 import posAttributes from '../data/pos_attributes';
 import {TriangleIndexArray, PosArray} from '../data/array_types';
 import SegmentVector from '../data/segment';
+import {aabbRayIntersect, triangleRayIntersect, bilinearLerp} from '../data/dem_tree';
 import Texture from '../render/texture';
 import {Uniform1i, Uniform1f, Uniform2f, Uniform3f, UniformMatrix4f} from '../render/uniform_binding';
 import {prepareDEMTexture} from '../render/draw_hillshade';
@@ -1031,8 +1032,23 @@ export class Terrain extends Elevation {
         if (!this._visibleDemTiles)
             return null;
 
-        // Perform initial raycasts against root nodes of the available dem tiles
-        // and use this information to sort them from closest to furthest.
+        // Check if we're overzoomed (display zoom > DEM source maxzoom)
+        // In this case, proxy tile raycast provides more accurate results
+        const sourceCache = this._source();
+        const isOverZoomed = sourceCache && this.painter.transform.zoom > sourceCache.getSource().maxzoom;
+
+        if (isOverZoomed && this.proxyCoords && this.proxyCoords.length > 0) {
+            const result = this._raycastWithProxyTiles(pos, dir, exaggeration);
+            if (result != null) {
+                return result;
+            }
+        }
+
+        const defaultRaycast = this._raycastWithDemTree(pos, dir, exaggeration)
+        return defaultRaycast;
+    }
+
+    _raycastWithDemTree(pos: vec3, dir: vec3, exaggeration: number): number | null | undefined {
         const preparedTiles = this._visibleDemTiles.filter(tile => tile.dem).map(tile => {
             const id = tile.tileID;
             const tiles = 1 << id.overscaledZ;
@@ -1072,6 +1088,269 @@ export class Terrain extends Elevation {
         }
 
         return null;
+    }
+
+    // Raycast using proxy tiles - matches rendered mesh exactly
+    // This implementation matches the rendered terrain mesh by using proxy tile coordinates and
+    // the same DEM sampling transformation as the shader.
+    _raycastWithProxyTiles(pos: vec3, dir: vec3, exaggeration: number): number | null | undefined {
+        // Prepare proxy tiles with their DEM tile info and bounds
+        const preparedTiles: Array<{
+            minx: number;
+            miny: number;
+            maxx: number;
+            maxy: number;
+            t: number;
+            demTile: Tile;
+            demTl: [number, number];
+            demScale: number;
+        }> = [];
+
+        for (const proxyTileID of this.proxyCoords) {
+            const demTile = this.terrainTileForTile[proxyTileID.key];
+            if (!demTile || !demTile.dem)
+                continue;
+
+            const proxyId = proxyTileID.canonical;
+            const demId = demTile.tileID.canonical;
+
+            // Calculate DEM sampling parameters (same as _prepareDemTileUniforms)
+            const demScale = Math.pow(2, demId.z - proxyId.z);
+            const demTl: [number, number] = [
+                (proxyId.x * demScale) % 1,
+                (proxyId.y * demScale) % 1
+            ];
+
+            // Compute proxy tile boundaries in mercator coordinates
+            const proxyTiles = 1 << proxyId.z;
+            const minx = proxyId.x / proxyTiles + proxyTileID.wrap;
+            const maxx = (proxyId.x + 1) / proxyTiles + proxyTileID.wrap;
+            const miny = proxyId.y / proxyTiles;
+            const maxy = (proxyId.y + 1) / proxyTiles;
+
+            const tree = demTile.dem.tree;
+            // Quick AABB test against the proxy tile bounds with max elevation
+            // Use generous padding to account for interpolation, exaggeration, and precision issues
+            // The DEM tree only samples corners, so peaks between samples can exceed the stored maximum
+            // Similar to `const t = tree.raycastRoot(minx, miny, maxx, maxy, pos, dir,exaggeration)`
+            // but with additional padding applied to both elevation min and max to ensure peaks can be hit
+            const baseMax = tree.maximums[0] * exaggeration;
+            // A small padding value is used with bounding boxes
+            // Use both fixed padding and percentage-based padding to handle all elevation ranges
+            const aabbSkirtPadding = 500;
+            // Add to max elevation to extend the elevation to capture peaks
+            const maxElevation = baseMax + aabbSkirtPadding;
+            // Extend the bottom below sea level
+            const boundsMin: vec3 = [minx, miny, -aabbSkirtPadding];
+            const boundsMax: vec3 = [maxx, maxy, maxElevation];
+
+            const t = aabbRayIntersect(boundsMin, boundsMax, pos, dir);
+            // only push hits to save on sorting
+            if(typeof t !== 'number') continue;
+
+            preparedTiles.push({
+                minx, miny, maxx, maxy,
+                t,
+                demTile,
+                demTl,
+                demScale,
+            });
+        }
+
+        // Sort by distance
+        preparedTiles.sort((a, b) => {
+            return a.t - b.t;
+        });
+
+        // Raycast against each proxy tile's terrain mesh
+        for (const obj of preparedTiles) {
+            const t = this._raycastProxyTile(
+                obj.minx, obj.miny, obj.maxx, obj.maxy,
+                obj.demTile, obj.demTl, obj.demScale,
+                pos, dir, exaggeration, obj.t
+            );
+
+            if (t != null)
+                return t;
+        }
+
+        return null;
+    }
+
+    // Raycast against a single proxy tile's terrain mesh.
+    // Uses the same DEM sampling as the shader to match rendered geometry exactly.
+    _raycastProxyTile(
+        minx: number,
+        miny: number,
+        maxx: number,
+        maxy: number,
+        demTile: Tile,
+        demTl: [number, number],
+        demScale: number,
+        pos: vec3,
+        dir: vec3,
+        exaggeration: number,
+        tEnter: number,
+    ): number | null {
+        const dem = demTile.dem;
+        if (!dem) return null;
+
+        // Pre-compute constants for elevation sampling to avoid redundant calculations
+        const demSize = dem.dim;
+        const demSizeTimesScale = demSize * demScale;
+        // Match shader's tileUvToDemSample:
+        // vec2 pos = dem_size * (uv * dem_scale + dem_tl) + 1.0;
+        // The +1.0 accounts for the 1px border in DEM textures
+        const demTlScaledX = demSize * demTl[0] + 1.0;
+        const demTlScaledY = demSize * demTl[1] + 1.0;
+
+        // Sample elevation at a UV coordinate within the proxy tile (0-1),
+        // using the same transformation as the shader (_prelude_terrain.vertex.glsl)
+        const sampleElevation = (u: number, v: number): number => {
+            const posX = demSizeTimesScale * u + demTlScaledX;
+            const posY = demSizeTimesScale * v + demTlScaledY;
+
+            // Integer and fractional parts for bilinear interpolation
+            const ix = Math.floor(posX);
+            const iy = Math.floor(posY);
+            const fx = posX - ix;
+            const fy = posY - iy;
+
+            // dem.get() adds 1 internally for border, so subtract 1 from shader's position
+            // Shader samples at (ix, ix+1) in full texture coords (with border)
+            // dem.get expects coords in [-1, dim] range for inner data
+            const x0 = Math.max(-1, Math.min(ix - 1, demSize));
+            const x1 = Math.max(-1, Math.min(ix, demSize));
+            const y0 = Math.max(-1, Math.min(iy - 1, demSize));
+            const y1 = Math.max(-1, Math.min(iy, demSize));
+
+            const tl = dem.get(x0, y0);
+            const tr = dem.get(x1, y0);
+            const bl = dem.get(x0, y1);
+            const br = dem.get(x1, y1);
+
+            // Bilinear interpolation (same as shader)
+            // mix(mix(tl, tr, f.x), mix(bl, br, f.x), f.y)
+            return bilinearLerp(tl, tr, bl, br, fx, fy) * exaggeration;
+        };
+
+        // Use a grid matching GRID_DIM (128) for the raycast
+        // This matches the rendered terrain mesh resolution
+        const gridSize = GRID_DIM;
+        const cellWidth = (maxx - minx) / gridSize;
+        const cellHeight = (maxy - miny) / gridSize;
+        const uvStep = 1.0 / gridSize;
+
+        const hasXComponent = Math.abs(dir[0]) > 1e-10;
+        const hasYComponent = Math.abs(dir[1]) > 1e-10;
+
+        // Ensure tEnter is non-negative (ray starts at origin or further)
+        tEnter = Math.max(0, tEnter);
+
+        // Starting point on the ray (clamped to tile entry)
+        const startX = pos[0] + dir[0] * tEnter;
+        const startY = pos[1] + dir[1] * tEnter;
+
+        // Convert to grid coordinates
+        let i = Math.floor((startX - minx) / cellWidth);
+        let j = Math.floor((startY - miny) / cellHeight);
+        i = Math.max(0, Math.min(gridSize - 1, i));
+        j = Math.max(0, Math.min(gridSize - 1, j));
+
+        // Step direction
+        const stepI = dir[0] >= 0 ? 1 : -1;
+        const stepJ = dir[1] >= 0 ? 1 : -1;
+
+        // Distance along ray to cross one cell
+        const tDeltaI = hasXComponent ? Math.abs(cellWidth / dir[0]) : Number.MAX_VALUE;
+        const tDeltaJ = hasYComponent ? Math.abs(cellHeight / dir[1]) : Number.MAX_VALUE;
+
+        // Distance to next cell boundary
+        let tMaxI: number, tMaxJ: number;
+        if (hasXComponent) {
+            const nextBoundX = minx + (dir[0] >= 0 ? (i + 1) : i) * cellWidth;
+            tMaxI = tEnter + (nextBoundX - startX) / dir[0];
+        } else {
+            tMaxI = Number.MAX_VALUE;
+        }
+        if (hasYComponent) {
+            const nextBoundY = miny + (dir[1] >= 0 ? (j + 1) : j) * cellHeight;
+            tMaxJ = tEnter + (nextBoundY - startY) / dir[1];
+        } else {
+            tMaxJ = Number.MAX_VALUE;
+        }
+
+        // Helper to test a cell
+        const testCell = (ci: number, cj: number): number | null => {
+            const u0 = ci * uvStep;
+            const u1 = (ci + 1) * uvStep;
+            const v0 = cj * uvStep;
+            const v1 = (cj + 1) * uvStep;
+
+            const e00 = sampleElevation(u0, v0);
+            const e10 = sampleElevation(u1, v0);
+            const e01 = sampleElevation(u0, v1);
+            const e11 = sampleElevation(u1, v1);
+
+            const cellMinX = minx + ci * cellWidth;
+            const cellMaxX = minx + (ci + 1) * cellWidth;
+            const cellMinY = miny + cj * cellHeight;
+            const cellMaxY = miny + (cj + 1) * cellHeight;
+
+            // Triangle 1: (1,0) -> (0,0) -> (0,1)
+            const t0 = triangleRayIntersect(
+                cellMaxX, cellMinY, e10,
+                cellMinX, cellMinY, e00,
+                cellMinX, cellMaxY, e01,
+                pos, dir
+            );
+
+            // Triangle 2: (0,1) -> (1,1) -> (1,0)
+            const t1 = triangleRayIntersect(
+                cellMinX, cellMaxY, e01,
+                cellMaxX, cellMaxY, e11,
+                cellMaxX, cellMinY, e10,
+                pos, dir
+            );
+
+            let result: number | null = null;
+            if (t0 != null && t0 >= 0) result = t0;
+            if (t1 != null && t1 >= 0 && (result == null || t1 < result)) result = t1;
+            return result;
+        };
+
+        // Traverse grid using DDA, testing cells in order along the ray
+        let closestT: number | null = null;
+        const maxSteps = gridSize * 2; // Safety limit
+
+        for (let step = 0; step < maxSteps; step++) {
+            const hit = testCell(i, j);
+            if (hit != null && (closestT == null || hit < closestT)) {
+                closestT = hit;
+            }
+
+            // Move to next cell
+            if (tMaxI < tMaxJ) {
+                i += stepI;
+                tMaxI += tDeltaI;
+            } else {
+                j += stepJ;
+                tMaxJ += tDeltaJ;
+            }
+
+            // Check if we've exited the grid
+            if (i < 0 || i >= gridSize || j < 0 || j >= gridSize) {
+                break;
+            }
+
+            // Early termination: if we've found a hit and the ray has traveled
+            // past that hit point in XY space, we can't find a closer hit
+            if (closestT != null && Math.min(tMaxI, tMaxJ) > closestT) {
+                break;
+            }
+        }
+
+        return closestT;
     }
 
     _createFBO(): FBO {
