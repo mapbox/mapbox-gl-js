@@ -1044,7 +1044,7 @@ export class Terrain extends Elevation {
             }
         }
 
-        const defaultRaycast = this._raycastWithDemTree(pos, dir, exaggeration)
+        const defaultRaycast = this._raycastWithDemTree(pos, dir, exaggeration);
         return defaultRaycast;
     }
 
@@ -1146,7 +1146,7 @@ export class Terrain extends Elevation {
 
             const t = aabbRayIntersect(boundsMin, boundsMax, pos, dir);
             // only push hits to save on sorting
-            if(typeof t !== 'number') continue;
+            if (typeof t !== 'number') continue;
 
             preparedTiles.push({
                 minx, miny, maxx, maxy,
