@@ -1,6 +1,8 @@
-import {test, beforeAll, beforeEach, expect, vi, createMap} from '../../../util/vitest';
+import {test, describe, beforeAll, beforeEach, afterEach, expect, vi, createMap} from '../../../util/vitest';
 import GeolocateControl from '../../../../src/ui/control/geolocate_control';
 import {mockGeolocation} from '../../../util/mock_geolocation';
+
+import type {GeolocateControlOptions} from '../../../../src/ui/control/geolocate_control';
 
 beforeAll(() => {
     mockGeolocation.use();
@@ -973,5 +975,135 @@ test('GeolocateControl button click centers camera even when followUserLocation 
 
         geolocate._geolocateButton.dispatchEvent(click);
         mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+});
+
+describe('GeolocateControl geolocation timeout', () => {
+    const DEFAULT_TIMEOUT_MS = 6000;
+    const CUSTOM_TIMEOUT_MS = 3000;
+
+    async function setupGeolocationTimeoutTest(controlOptions: GeolocateControlOptions = {}) {
+        vi.useFakeTimers();
+        const map = createMap();
+        const geolocate = new GeolocateControl({
+            trackUserLocation: true,
+            ...controlOptions
+        });
+        map.addControl(geolocate);
+        // Flush pending microtasks from control setup
+        await vi.advanceTimersByTimeAsync(0);
+        const errorHandler = vi.fn();
+        geolocate.on('error', errorHandler);
+        return {map, geolocate, errorHandler};
+    }
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    test('triggers error when no response', async () => {
+        const {geolocate, errorHandler} = await setupGeolocationTimeoutTest();
+
+        geolocate.trigger();
+
+        await vi.advanceTimersByTimeAsync(DEFAULT_TIMEOUT_MS);
+
+        expect(errorHandler).toHaveBeenCalledTimes(1);
+        const error = errorHandler.mock.calls[0][0] as GeolocationPositionError;
+        expect(error.code).toEqual(3); // TIMEOUT
+        expect(error.message).toEqual('Geolocation request timed out');
+    });
+
+    test('respects custom positionOptions.timeout', async () => {
+        const {errorHandler, geolocate} = await setupGeolocationTimeoutTest({
+            positionOptions: {timeout: CUSTOM_TIMEOUT_MS}
+        });
+
+        geolocate.trigger();
+
+        // Advance less than custom timeout
+        await vi.advanceTimersByTimeAsync(CUSTOM_TIMEOUT_MS - 1000);
+        expect(errorHandler).not.toHaveBeenCalled();
+
+        // Advance past custom timeout
+        await vi.advanceTimersByTimeAsync(1000);
+        expect(errorHandler).toHaveBeenCalledTimes(1);
+        const error = errorHandler.mock.calls[0][0] as GeolocationPositionError;
+        expect(error.code).toEqual(3);
+    });
+
+    test('cleared on success', async () => {
+        const {geolocate, errorHandler} = await setupGeolocationTimeoutTest();
+
+        geolocate.trigger();
+
+        // Send success before timeout
+        await vi.advanceTimersByTimeAsync(CUSTOM_TIMEOUT_MS);
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+
+        // Advance well past the timeout
+        await vi.advanceTimersByTimeAsync(DEFAULT_TIMEOUT_MS);
+
+        expect(errorHandler).not.toHaveBeenCalled();
+    });
+
+    test('cleared on error', async () => {
+        const {geolocate, errorHandler} = await setupGeolocationTimeoutTest();
+
+        geolocate.trigger();
+
+        // Send error before timeout
+        await vi.advanceTimersByTimeAsync(CUSTOM_TIMEOUT_MS);
+        mockGeolocation.changeError({code: 2, message: 'position unavailable'});
+
+        // Advance well past the timeout
+        await vi.advanceTimersByTimeAsync(DEFAULT_TIMEOUT_MS);
+
+        // Only one error (the explicit one, not the timeout)
+        expect(errorHandler).toHaveBeenCalledTimes(1);
+        const error = errorHandler.mock.calls[0][0] as GeolocationPositionError;
+        expect(error.code).toEqual(2);
+    });
+
+    test('cleared on remove', async () => {
+        const {map, geolocate, errorHandler} = await setupGeolocationTimeoutTest();
+
+        geolocate.trigger();
+
+        // Remove control before timeout
+        await vi.advanceTimersByTimeAsync(CUSTOM_TIMEOUT_MS);
+        map.removeControl(geolocate);
+
+        // Advance well past the timeout
+        await vi.advanceTimersByTimeAsync(DEFAULT_TIMEOUT_MS);
+
+        expect(errorHandler).not.toHaveBeenCalled();
+    });
+
+    test('no timeout when positionOptions.timeout is 0', async () => {
+        const {geolocate, errorHandler} = await setupGeolocationTimeoutTest({
+            positionOptions: {timeout: 0}
+        });
+
+        geolocate.trigger();
+
+        // Advance a very long time
+        await vi.advanceTimersByTimeAsync(60000);
+
+        expect(errorHandler).not.toHaveBeenCalled();
+    });
+
+    test('works in one-time mode', async () => {
+        const {geolocate, errorHandler} = await setupGeolocationTimeoutTest({
+            trackUserLocation: false
+        });
+
+        geolocate.trigger();
+
+        await vi.advanceTimersByTimeAsync(DEFAULT_TIMEOUT_MS);
+
+        expect(errorHandler).toHaveBeenCalledTimes(1);
+        const error = errorHandler.mock.calls[0][0] as GeolocationPositionError;
+        expect(error.code).toEqual(3); // TIMEOUT
     });
 });

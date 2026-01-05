@@ -131,6 +131,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
     _geolocateButton: HTMLButtonElement;
     _geolocationWatchID: number;
     _timeoutId?: number;
+    _requestTimeoutId?: number;
     _watchState: WatchState;
     _lastKnownPosition?: GeolocationPosition;
     _userLocationDotMarker: Marker;
@@ -173,6 +174,8 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
     }
 
     onRemove() {
+        this._clearRequestTimeout();
+
         // clear the geolocation watch if exists
         if (this._geolocationWatchID !== undefined) {
             this.options.geolocation.clearWatch(this._geolocationWatchID);
@@ -274,6 +277,8 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             // control has since been removed
             return;
         }
+
+        this._clearRequestTimeout();
 
         if (this._isOutOfMapMaxBounds(position)) {
             this._setErrorState();
@@ -420,6 +425,8 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             return;
         }
 
+        this._clearRequestTimeout();
+
         if (this.options.trackUserLocation) {
             if (error.code === 1) {
                 // PERMISSION_DENIED
@@ -460,6 +467,25 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
     _finish() {
         if (this._timeoutId) { clearTimeout(this._timeoutId); }
         this._timeoutId = undefined;
+    }
+
+    // Workaround for browsers that fail to call geolocation callbacks (https://github.com/mapbox/mapbox-gl-js/issues/12531)
+    _startRequestTimeout() {
+        this._clearRequestTimeout();
+        const timeout = this.options.positionOptions.timeout;
+        if (!timeout) return;
+
+        this._requestTimeoutId = window.setTimeout(() => {
+            const error = {code: 3, message: 'Geolocation request timed out'} as GeolocationPositionError;
+            this._onError(error);
+        }, timeout);
+    }
+
+    _clearRequestTimeout() {
+        if (this._requestTimeoutId !== undefined) {
+            clearTimeout(this._requestTimeoutId);
+            this._requestTimeoutId = undefined;
+        }
     }
 
     _setupUI(supported: boolean) {
@@ -683,12 +709,16 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
                 this._geolocationWatchID = this.options.geolocation.watchPosition(
                     this._onSuccess, this._onError, positionOptions);
 
+                this._startRequestTimeout();
+
                 if (this.options.showUserHeading) {
                     this._addDeviceOrientationListener();
                 }
             }
         } else {
             this.options.geolocation.getCurrentPosition(this._onSuccess, this._onError, this.options.positionOptions);
+
+            this._startRequestTimeout();
 
             // This timeout ensures that we still call finish() even if
             // the user declines to share their location in Firefox
@@ -765,6 +795,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
     }
 
     _clearWatch() {
+        this._clearRequestTimeout();
         this.options.geolocation.clearWatch(this._geolocationWatchID);
 
         window.removeEventListener('deviceorientation', this._onDeviceOrientation);
