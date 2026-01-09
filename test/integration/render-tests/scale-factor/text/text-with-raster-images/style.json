@@ -1,0 +1,52 @@
+{
+  "_comment": "Applying text scale factor (clipped to 1.5) to images within text-field, not image-related one",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "spriteFormat": "raster",
+      "width": 128,
+      "height": 128,
+      "scaleFactor": 3
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/standard",
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "GeometryCollection",
+        "geometries": [
+          {
+            "type": "Point",
+            "coordinates": [0, 0]
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "images",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-size": 20,
+        "text-field": ["format", ["image", "london-overground"], " > ", ["image", "london-underground"]],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size-scale-range": [1, 1.5],
+        "icon-size-scale-range": [1, 3]
+      }
+    }
+  ]
+}
