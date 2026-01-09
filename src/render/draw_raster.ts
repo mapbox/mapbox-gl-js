@@ -525,7 +525,7 @@ function configureRaster(
 
         let tex = layer.colorRampTexture;
         if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA8);
-        tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+        tex.bind(resampling, gl.CLAMP_TO_EDGE);
     }
 
     if (mrt) {
