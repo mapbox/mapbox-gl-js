@@ -144,7 +144,7 @@ describe('Elevation', () => {
         });
     });
 
-    test('style diff / remove dem source cache', () => {
+    describe('Throws error if style update tries to remove terrain DEM source', () => {
         let map: any;
 
         beforeAll(async () => {
@@ -154,13 +154,11 @@ describe('Elevation', () => {
             await waitFor(map, 'render');
         });
 
-        describe('Throws error if style update tries to remove terrain DEM source', () => {
-            test('remove source', () => {
-                const stub = vi.spyOn(console, 'error');
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                map.removeSource('mapbox-dem');
-                expect(stub.calledOnce).toBeTruthy();
-            });
+        test('remove source', () => {
+            const stub = vi.spyOn(console, 'error').mockImplementation(() => {});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            map.removeSource('mapbox-dem');
+            expect(stub).toHaveBeenCalledOnce();
         });
     });
 
