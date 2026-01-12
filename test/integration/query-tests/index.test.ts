@@ -1,5 +1,5 @@
 // eslint-disable-next-line import-x/extensions
-import {server} from '@vitest/browser/context';
+import {server} from 'vitest/browser';
 import ignoresAll from '../../ignores/all.js';
 import ignoreWindowsChrome from '../../ignores/windows-chrome.js';
 import ignoreMacChrome from '../../ignores/mac-chrome.js';

@@ -1,5 +1,4 @@
-// eslint-disable-next-line import-x/extensions
-import {server} from '@vitest/browser/context';
+import {server} from 'vitest/browser';
 import {test, assert, afterEach, afterAll} from 'vitest';
 import ignoresAll from '../../ignores/all.js';
 import ignoreWindowsChrome from '../../ignores/windows-chrome.js';
@@ -13,8 +12,6 @@ import {integrationTests} from 'virtual:integration-tests';
 import {getStatsHTML, updateHTML} from '../../util/html_generator';
 import {mapboxgl} from '../lib/mapboxgl.js';
 import {sendFragment} from '../lib/utils';
-
-const errors = [];
 
 function getEnvironmentParams() {
     let timeout = 30000;
@@ -100,7 +97,6 @@ type TestMetadata = {
     name: string;
     minDiff: number;
     status: string;
-    errors: Error[];
     actual?: string;
     expected?: string;
     expectedPath?: string;
@@ -109,7 +105,7 @@ type TestMetadata = {
 
 let reportFragment: string | undefined;
 
-const getTest = (renderTestName) => async () => {
+const getTest = (renderTestName: string) => async () => {
     let errorMessage: string | undefined;
     try {
         const renderTest = integrationTests[renderTestName];
@@ -136,7 +132,6 @@ const getTest = (renderTestName) => async () => {
             name: renderTestName,
             minDiff: Math.round(100000 * minDiff) / 100000,
             status: pass ? 'passed' : 'failed',
-            errors
         };
 
         if (minDiffImage && expectedIndex !== -1 && (import.meta.env.VITE_CI === 'false' || !pass)) {
@@ -169,7 +164,6 @@ const getTest = (renderTestName) => async () => {
             name: renderTestName,
             status: 'failed',
             error,
-            errors: []
         });
 
         errorMessage = `Render test ${renderTestName} failed with error: ${error}`;

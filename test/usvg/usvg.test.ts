@@ -1,5 +1,5 @@
 import Pbf from 'pbf';
-import {server, page} from '@vitest/browser/context';
+import {server, page} from 'vitest/browser';
 import pixelmatch from 'pixelmatch';
 import {describe, test, expect, afterEach, afterAll, onTestFailed, onTestFinished} from 'vitest';
 import {readIconSet} from '../../src/data/usvg/usvg_pb_decoder';

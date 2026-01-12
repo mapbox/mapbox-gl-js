@@ -1,4 +1,4 @@
-import {server} from '@vitest/browser/context';
+import {server} from 'vitest/browser';
 
 export async function readArrayBuffer(path: string) {
     const data = await server.commands.readFile(path, 'binary');

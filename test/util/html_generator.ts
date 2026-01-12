@@ -34,17 +34,6 @@ const generateResultHTML = template(`
             <pre><%- r.error.stack %></pre>
           </p>
       <% } %>
-      <% if (r.errors && r.errors.length !== 0) { %>
-          <p style="color: red">
-            <strong>Errors:</strong>
-            <dl>
-                <% r.errors.forEach(function(error) { %>
-                    <dt><%- error.message %></dt>
-                    <dd><pre><%- error.stack %></pre></dd>
-                <% }); %>
-            </dl>
-          </p>
-      <% } %>
     </div>
   </div>
 `);
