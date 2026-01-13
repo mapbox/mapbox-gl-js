@@ -96,6 +96,7 @@ export function queryRenderedFeatures(
     availableImages: ImageId[],
     transform: Transform,
     visualizeQueryGeometry: boolean = false,
+    scope: string | undefined = undefined
 ): QueryResult {
     const sourceCacheTransform = query.sourceCache.transform;
     const tileResults = query.sourceCache.tilesIn(queryGeometry, query.has3DLayers, visualizeQueryGeometry);
@@ -110,6 +111,7 @@ export function queryRenderedFeatures(
             transform,
             sourceCacheTransform,
             visualizeQueryGeometry,
+            scope
         );
 
         if (Object.keys(queryResults).length) {

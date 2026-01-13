@@ -524,6 +524,7 @@ class Tile {
         transform: Transform,
         sourceCacheTransform: Transform,
         visualizeQueryGeometry: boolean,
+        scope: string | undefined
     ): QueryResult {
         Debug.run(() => {
             if (visualizeQueryGeometry) {
@@ -558,7 +559,8 @@ class Tile {
                 availableImages,
                 tileTransform: this.tileTransform,
                 worldview: this.worldview,
-                queryRadius: maxFeatureQueryRadius
+                queryRadius: maxFeatureQueryRadius,
+                scope
             }
         );
     }

@@ -41,6 +41,7 @@ type QueryParameters = {
     availableImages: ImageId[];
     worldview: string | undefined;
     queryRadius?: number;
+    scope?: string | undefined
 };
 
 type FeatureIndices = FeatureIndexStruct | {
@@ -176,7 +177,7 @@ class FeatureIndex {
                 }
 
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                return styleLayer.queryIntersectsFeature(tilespaceGeometry, feature, featureState, featureGeometry, this.z, transform, pixelPosMatrix, elevationHelper, layoutVertexArrayOffset);
+                return styleLayer.queryIntersectsFeature(tilespaceGeometry, feature, featureState, featureGeometry, this.z, transform, pixelPosMatrix, elevationHelper, layoutVertexArrayOffset, params.scope);
             };
 
             this.loadMatchingFeature(

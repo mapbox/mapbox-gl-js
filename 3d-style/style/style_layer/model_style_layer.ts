@@ -29,6 +29,7 @@ import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
 import type {ProgramName} from '../../../src/render/program';
 import type {QueryResult} from '../../../src/source/query_features';
 import type SourceCache from '../../../src/source/source_cache';
+import type {DEMSampler} from '../../../src/terrain/elevation';
 
 class ModelStyleLayer extends StyleLayer {
     override type: 'model';
@@ -167,6 +168,10 @@ class ModelStyleLayer extends StyleLayer {
         geometry: Array<Array<Point>>,
         zoom: number,
         transform: Transform,
+        pixelPosMatrix: Float32Array,
+        elevationHelper: DEMSampler | null | undefined,
+        layoutVertexArrayOffset: number,
+        scope: string | undefined
     ): number | boolean {
         if (!this.modelManager) return false;
         const modelManager = this.modelManager;
@@ -179,7 +184,7 @@ class ModelStyleLayer extends StyleLayer {
                 (feature.properties && feature.properties.hasOwnProperty("id")) ? (feature.properties["id"] as string | number) : undefined;
             if (instances.idToFeaturesIndex.hasOwnProperty(featureId)) {
                 const modelFeature = instances.features[instances.idToFeaturesIndex[featureId]];
-                const model = modelManager.getModel(modelId, this.scope);
+                const model = modelManager.getModel(modelId, scope || this.scope);
                 if (!model) return false;
 
                 let matrix: mat4 = [];

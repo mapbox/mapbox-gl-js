@@ -482,6 +482,7 @@ class StyleLayer extends Evented {
         _pixelPosMatrix: Float32Array,
         _elevationHelper: DEMSampler | null | undefined,
         _layoutVertexArrayOffset: number,
+        scope: string | undefined
         // @ts-expect-error - TS2355 - A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
     ): boolean | number {}
 }

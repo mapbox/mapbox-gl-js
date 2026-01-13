@@ -73,6 +73,7 @@ class BuildingStyleLayer extends StyleLayer {
         pixelPosMatrix: Float32Array,
         elevationHelper: DEMSampler | null | undefined,
         layoutVertexArrayOffset: number,
+        scope: string | undefined
     ): boolean | number {
         let height = this.layout.get('building-height').evaluate(feature, featureState);
         const base = this.layout.get('building-base').evaluate(feature, featureState);

@@ -3524,6 +3524,7 @@ class Style extends Evented<MapEvents> {
                 this._availableImages,
                 transform,
                 showQueryGeometry,
+                this.getActualScope()
             );
 
             if (Object.keys(queryResult).length) queryResults.push(queryResult);
