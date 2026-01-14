@@ -102,6 +102,10 @@ class RasterStyleLayer extends StyleLayer {
         this.colorRampTexture = null;
         this._curRampRange = [start, end];
     }
+
+    override is3D(terrainEnabled?: boolean): boolean {
+        return this.paint.get('raster-elevation') > 0;
+    }
 }
 
 export default RasterStyleLayer;

@@ -1,0 +1,204 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.001
+    }
+  },
+  "zoom": 2.35,
+  "center": [
+    -99.48,
+    38.42
+  ],
+  "pitch": 0,
+  "fog": {
+    "star-intensity": 0
+  },
+  "camera": {
+    "camera-projection": "orthographic"
+  },
+  "projection": {
+    "name": "mercator"
+  },
+  "sprite": "local://sprites/standard",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "image": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/1-1-0.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "cities": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "New York",
+              "pop": 8336817
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -74.006,
+                40.7128
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "Los Angeles",
+              "pop": 3979576
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -118.2437,
+                34.0522
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "Chicago",
+              "pop": 2693976
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -87.6298,
+                41.8781
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "Houston",
+              "pop": 2320268
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -95.3698,
+                29.7604
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "Denver",
+              "pop": 727211
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -104.9903,
+                39.7392
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "Seattle",
+              "pop": 737015
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -122.3321,
+                47.6062
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "Miami",
+              "pop": 467963
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -80.1918,
+                25.7617
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "grey"
+      }
+    },
+    {
+      "id": "image",
+      "type": "raster",
+      "source": "image",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-opacity": 0.5,
+        "raster-elevation": 10000.0
+      }
+    },
+    {
+      "id": "city-circles",
+      "type": "circle",
+      "source": "cities",
+      "paint": {
+        "circle-radius": 12,
+        "circle-color": "#ff3333",
+        "circle-stroke-color": "#ffffff",
+        "circle-stroke-width": 3,
+        "circle-opacity": 1
+      }
+    },
+    {
+      "id": "city-labels",
+      "type": "symbol",
+      "source": "cities",
+      "slot": "top",
+      "layout": {
+        "text-field": [
+          "get",
+          "name"
+        ],
+        "text-size": 12,
+        "text-offset": [
+          0,
+          1.5
+        ],
+        "text-anchor": "top",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-color": "#ffffff",
+        "text-halo-color": "#000000",
+        "text-halo-width": 1
+      }
+    }
+  ]
+}
