@@ -1,29 +1,24 @@
-## 3.18.0-beta.2
+## 3.18.0
 
 ### Features and improvements ✨
 
+- Add `scaleFactor` support for images within `text-field`.
 - Add `showButton` option to `GeolocateControl` that allows hiding the control button.
 - Add `followUserLocation` option and `setFollowUserLocation` method to `GeolocateControl` to control whether the map follows the user's location.
 - Improve `GeolocateControl` timeout handling.
-
-### Bug fixes 🐞
-
-- Fix stretchable icons without `icon-text-fit` rendering with an incorrect size.
-- Fix `icon-size` not working correctly with `coalesce` expressions.
-- Fix render cut off for elevated raster-layer rendering in ortho projection range.
-- Fix symbol placement with optional and missing parts.
-- Expose all error properties for `GeolocateControl` error event (h/t @lucavb).
-
-## 3.18.0-beta.1
-
-### Features and improvements ✨
-
 - Add support for `text-rotate`, `text-size`, and `text-offset` properties in appearances.
 - Add `shadow-draw-before-layer` property to directional light, allowing control over shadow draw order in the layer stack.
 - Add `model-allow-density-reduction` property to model layers. (h/t @JoshuaJMoore)
 
 ### Bug fixes 🐞
 
+- Fix interaction handlers not working on model layers.
+- Fix stretchable icons without `icon-text-fit` rendering with an incorrect size.
+- Fix `icon-size` not working correctly with `coalesce` expressions.
+- Fix `raster-color` interpolation when using `nearest` `raster-resampling`.
+- Fix render cut off for elevated raster-layer rendering in ortho projection range.
+- Fix symbol placement with optional and missing parts.
+- Expose all error properties for `GeolocateControl` error event (h/t @lucavb).
 - Fix an error when querying multipolygons in `dynamic: true` mode.
 - Fix `AttributionControl` links sanitization.
 - Fix appearances with no `icon-size` using the default value instead of the layout-defined one.
