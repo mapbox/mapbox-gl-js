@@ -15,7 +15,10 @@
             if (e.data.type === 'load') {
                 const map = new mapboxgl.Map({
                     container: 'map',
-                    style: e.data.payload
+                    style: e.data.payload,
+                    center: [-74.006, 40.7128], // NYC
+                    zoom: 16,
+                    pitch: 60
                 });
 
                 map.once('load', () => {
