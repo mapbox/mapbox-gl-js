@@ -29,7 +29,7 @@ import type {CollisionBoxArray} from '../data/array_types';
 import type {StyleImage, StyleImageMap} from '../style/style_image';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {GlyphPositions} from '../render/glyph_atlas';
-import type {PossiblyEvaluated, PossiblyEvaluatedPropertyValue, PropertyValue} from '../style/properties';
+import type {Layout, PossiblyEvaluated, PossiblyEvaluatedPropertyValue, PropertyValue} from '../style/properties';
 import type Projection from '../geo/projection/projection';
 import type {vec3} from 'gl-matrix';
 import type {LayoutProps} from '../style/style_layer/symbol_style_layer_properties';
@@ -1372,7 +1372,7 @@ function addSymbol(bucket: SymbolBucket,
         // Calculate maximum quads needed across layout icon and all appearance variants
         // to prevent vertex buffer overflow during appearance updates
         const maxQuadCount = calculateMaxIconQuadCount(bucket, iconQuads, verticalIconQuads,
-            layer.layout, feature, canonical, bucket.iconAtlasPositions,
+            layer.layout, layer._unevaluatedLayout, feature, canonical, bucket.iconAtlasPositions,
             hasIconTextFit, availableImages);
         numIconVertices = maxQuadCount * 4;
 
@@ -1563,6 +1563,7 @@ function calculateMaxIconQuadCount(
     iconQuads: Array<SymbolQuad>,
     verticalIconQuads: Array<SymbolQuad> | undefined,
     layout: PossiblyEvaluated<LayoutProps>,
+    unevaluatedLayout: Layout<LayoutProps>,
     feature: SymbolFeature,
     canonical: CanonicalTileID,
     imagePositions: ImagePositionMap,
@@ -1601,11 +1602,15 @@ function calculateMaxIconQuadCount(
                     // different sized versions of the same icon have the same number of stretchable
                     // areas, which is what we need but unfortunately, since imagePositions stores the
                     // position by the stringified sized icon we need to compute it
-                    const unevaluatedIconSize = unevaluatedProperties._values['icon-size'];
+                    const unevaluatedIconSize = appearance.hasProperty('icon-size') ?
+                        unevaluatedProperties._values['icon-size'] :
+                        unevaluatedLayout._values['icon-size'];
                     const iconSizeData = getSizeData(bucket.zoom, unevaluatedIconSize, bucket.worldview, availableImages);
                     const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, bucket.zoom, feature, bucket.pixelRatio, iconScaleFactor, bucket.worldview, availableImages);
                     const imagePosition = imagePositions.get(imageVariant.iconPrimary.toString());
-                    maxQuadCount = Math.max(maxQuadCount, getIconQuadsNumber(imagePosition, hasIconTextFit));
+                    if (imagePosition) {
+                        maxQuadCount = Math.max(maxQuadCount, getIconQuadsNumber(imagePosition, hasIconTextFit));
+                    }
                 }
             }
         }
