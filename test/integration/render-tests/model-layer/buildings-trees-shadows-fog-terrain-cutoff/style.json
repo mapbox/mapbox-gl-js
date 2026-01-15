@@ -6,12 +6,6 @@
       "height": 1024,
       "width": 1024,
       "operations": [
-        ["wait"],
-        ["setTerrain", {
-          "source": "rgbterrain",
-          "exaggeration": 1.0
-        }],
-        ["wait"],
         ["wait"]
       ]
     }
@@ -55,7 +49,7 @@
   },
   "terrain": {
     "source": "rgbterrain",
-    "exaggeration": 0.5
+    "exaggeration": 1.0
   },
   "sources": {
     "rgbterrain": {
