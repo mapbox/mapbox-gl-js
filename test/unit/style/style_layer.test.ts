@@ -207,6 +207,20 @@ describe('StyleLayer#setLayoutProperty', () => {
         layer.setLayoutProperty('visibility', 'none');
         expect(layer.getLayoutProperty('visibility')).toEqual('none');
     });
+
+    test('updates visibility for clip layer', () => {
+        const layer = createStyleLayer({
+            id: 'clip',
+            type: 'clip',
+            source: 'composite',
+            layout: {
+                visibility: 'none'
+            }
+        });
+
+        expect(layer.getLayoutProperty('visibility')).toEqual('none');
+        expect(layer.isHidden(0)).toBeTruthy();
+    });
 });
 
 describe('StyleLayer#serialize', () => {

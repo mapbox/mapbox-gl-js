@@ -1904,6 +1904,30 @@
         "interpolated": false
       },
       "property-type": "data-constant"
+    },
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+          "doc": "The layer is shown."
+        },
+        "none": {
+          "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.18.0",
+          "android": "11.18.0",
+          "ios": "11.18.0"
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-constant"
     }
   },
   "layout_fill": {

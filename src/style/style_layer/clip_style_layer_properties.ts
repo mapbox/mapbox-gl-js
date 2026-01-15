@@ -19,11 +19,13 @@ import type {StylePropertySpecification} from '../../style-spec/style-spec';
 export type LayoutProps = {
     "clip-layer-types": DataConstantProperty<Array<"model" | "symbol">>;
     "clip-layer-scope": DataConstantProperty<Array<string>>;
+    "visibility": DataConstantProperty<"visible" | "none">;
 };
 let layout: Properties<LayoutProps>;
 export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "clip-layer-types": new DataConstantProperty(styleSpec["layout_clip"]["clip-layer-types"]),
     "clip-layer-scope": new DataConstantProperty(styleSpec["layout_clip"]["clip-layer-scope"]),
+    "visibility": new DataConstantProperty(styleSpec["layout_clip"]["visibility"]),
 }));
 
 export type PaintProps = {};

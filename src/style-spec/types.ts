@@ -1533,7 +1533,8 @@ export type ClipLayerSpecification = {
     "filter"?: FilterSpecification,
     "layout"?: {
         "clip-layer-types"?: Array<"model" | "symbol"> | ExpressionSpecification,
-        "clip-layer-scope"?: Array<string> | ExpressionSpecification
+        "clip-layer-scope"?: Array<string> | ExpressionSpecification,
+        "visibility"?: "visible" | "none" | ExpressionSpecification
     },
     /**
      * @experimental This property is experimental and subject to change in future versions.

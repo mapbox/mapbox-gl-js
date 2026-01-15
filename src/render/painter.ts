@@ -938,15 +938,22 @@ class Painter {
                         // This order is later used by fill-extrusion and instanced tree's rendering code to know
                         // how to deal with landmarks.
                             order = layerIdx;
-                            for (const mask of layer.layout.get('clip-layer-types')) {
-                                clipMask |= (mask === 'model' ? LayerTypeMask.Model : (mask === 'symbol' ? LayerTypeMask.Symbol : LayerTypeMask.FillExtrusion));
-                            }
-                            for (const scope of layer.layout.get('clip-layer-scope')) {
-                                clipScope.push(scope);
-                            }
                             if (layer.isHidden(this.transform.zoom)) {
                                 addToSources = false;
                             } else {
+                                // Hidden layers may not have been recalculated this frame, so `layer.layout`
+                                // can be undefined. Only access evaluated layout when we know the clip layer
+                                // is active for this frame.
+                                if (!layer.layout) {
+                                    addToSources = false;
+                                    continue;
+                                }
+                                for (const mask of layer.layout.get('clip-layer-types')) {
+                                    clipMask |= (mask === 'model' ? LayerTypeMask.Model : (mask === 'symbol' ? LayerTypeMask.Symbol : LayerTypeMask.FillExtrusion));
+                                }
+                                for (const scope of layer.layout.get('clip-layer-scope')) {
+                                    clipScope.push(scope);
+                                }
                                 clippingActiveThisFrame = true;
                             }
                         }

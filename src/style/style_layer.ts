@@ -218,7 +218,7 @@ class StyleLayer extends Evented {
 
     possiblyEvaluateVisibility() {
         if (!this._unevaluatedLayout._values.visibility) {
-            // Early return for layers which don't have a visibility property, like clip-layer
+            // Early return for layers which don't have a visibility property.
             return;
         }
         // @ts-expect-error - TS2322 - Type 'unknown' is not assignable to type '"none" | "visible"'. | TS2345 - Argument of type '{ zoom: number; }' is not assignable to parameter of type 'EvaluationParameters'.
