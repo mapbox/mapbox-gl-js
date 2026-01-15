@@ -124,7 +124,10 @@ class IndoorControl implements IControl {
                 this._map._selectIndoorFloor(floor.id);
             });
 
-            this._setButtonTitle(levelButton, floor.zIndex.toString());
+            const floorName = (floor.name || '').trim();
+            const zIndexText = floor.zIndex.toString();
+            const buttonTitle = floorName ? Array.from(floorName).slice(0, 3).join('') : zIndexText;
+            this._setButtonTitle(levelButton, buttonTitle);
 
             if (this._model && floor.id === this._model.selectedFloorId && showSelectedFloor) {
                 levelButton.classList.add('mapboxgl-ctrl-level-button-selected');

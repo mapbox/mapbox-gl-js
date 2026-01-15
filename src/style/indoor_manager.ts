@@ -147,11 +147,16 @@ export default class IndoorManager extends Evented<IndoorEvents> {
             }
         }
 
-        const floors = Array.from(closestBuilding.floorIds).map((floorId) => ({
-            id: floorId,
-            name: closestBuilding.floors[floorId].name,
-            zIndex: closestBuilding.floors[floorId].zIndex,
-        })).sort((a, b) => b.zIndex - a.zIndex);
+        // Dedupe floors by zIndex before sending to the control:
+        // we should only show one floor per zIndex for a given building.
+        const floors = Array.from(closestBuilding.floorIds)
+            .map((floorId) => ({
+                id: floorId,
+                name: closestBuilding.floors[floorId].name,
+                zIndex: closestBuilding.floors[floorId].zIndex,
+            }))
+            .sort((a, b) => b.zIndex - a.zIndex)
+            .filter((floor, idx, arr) => idx === 0 || floor.zIndex !== arr[idx - 1].zIndex);
 
         this.fire(new Event('selector-update', {
             selectedFloorId: buildingActiveFloorId,
