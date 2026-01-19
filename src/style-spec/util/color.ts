@@ -129,6 +129,11 @@ export abstract class RenderColor {
                 b = b * (N - 1);
             }
 
+            // Clamp to valid range [0, N-1] to prevent out-of-bounds access
+            r = Math.max(0, Math.min(N - 1, r));
+            g = Math.max(0, Math.min(N - 1, g));
+            b = Math.max(0, Math.min(N - 1, b));
+
             // Determine boundary values for the cube the color is in.
             const r0 = Math.floor(r);
             const g0 = Math.floor(g);
@@ -151,9 +156,6 @@ export abstract class RenderColor {
             const i5 = (r1 + g0 * N2 + b1 * N) * 4;
             const i6 = (r1 + g1 * N2 + b0 * N) * 4;
             const i7 = (r1 + g1 * N2 + b1 * N) * 4;
-            if (i0 < 0 || i7 >= data.length) {
-                throw new Error("out of range");
-            }
 
             // Trilinear interpolation.
             this.r = lerp(

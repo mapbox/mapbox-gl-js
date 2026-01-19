@@ -482,8 +482,9 @@ class Tile {
     }
 
     prepare(imageManager: ImageManager, painter: Painter | null | undefined, scope: string) {
-        if (this.imageAtlas && this.imageAtlasTexture) {
-            this.imageAtlas.patchUpdatedImages(imageManager, this.imageAtlasTexture, scope);
+        if (this.imageAtlas && this.imageAtlasTexture && painter) {
+            const lut = painter.style.getLut(scope);
+            this.imageAtlas.patchUpdatedImages(imageManager, this.imageAtlasTexture, scope, lut);
         }
 
         if (!painter || !this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData) {

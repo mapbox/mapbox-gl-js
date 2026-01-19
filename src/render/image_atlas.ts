@@ -197,7 +197,7 @@ export default class ImageAtlas {
         }
     }
 
-    patchUpdatedImages(imageManager: ImageManager, texture: Texture, scope: string) {
+    patchUpdatedImages(imageManager: ImageManager, texture: Texture, scope: string, lut?: LUT | null) {
         this.haveRenderCallbacks = this.haveRenderCallbacks.filter(id => imageManager.hasImage(id, scope));
         imageManager.dispatchRenderCallbacks(this.haveRenderCallbacks, scope);
 
@@ -215,7 +215,7 @@ export default class ImageAtlas {
                 const imageVariant = ImageVariant.parse(id);
                 if (ImageId.isEqual(imageVariant.id, imageId)) {
                     const image = imageManager.getImage(imageId, scope);
-                    this.patchUpdatedImage(this.patternPositions.get(id), image, texture, this.lut);
+                    this.patchUpdatedImage(this.patternPositions.get(id), image, texture, lut || this.lut);
                 }
             }
         }
@@ -242,4 +242,4 @@ export default class ImageAtlas {
 }
 
 register(ImagePosition, 'ImagePosition');
-register(ImageAtlas, 'ImageAtlas');
+register(ImageAtlas, 'ImageAtlas', {omit: ['lut']});
