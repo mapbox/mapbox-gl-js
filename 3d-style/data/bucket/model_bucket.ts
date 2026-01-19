@@ -15,6 +15,7 @@ import {LayerTypeMask} from '../../../3d-style/util/conflation';
 import {isValidUrl} from '../../../src/style-spec/validate/validate_model';
 import {type FeatureState, type GlobalProperties} from '../../../src/style-spec/expression/index';
 import Point from '@mapbox/point-geometry';
+import {ElevationFeatures, type ElevationFeature} from '../../elevation/elevation_feature';
 
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
 import type {ReplacementSource, Region} from '../../../3d-style/source/replacement_source';
@@ -64,6 +65,7 @@ class PerModelAttributes {
     instancedDataArray: InstanceVertexArray;
     instancedDataBuffer: VertexBuffer;
     instancesEvaluatedElevation: Array<number>; // Gets added to DEM elevation of the instance to produce value in instancedDataArray.
+    instancesRoadElevation: Array<number> | undefined;
 
     features: Array<ModelFeature>;
     idToFeaturesIndex: Partial<Record<string | number, number>>; // via this.features, enable lookup instancedDataArray based on feature ID.
@@ -230,6 +232,10 @@ class ModelBucket implements Bucket {
         const needGeometry = this.layers[0]._featureFilter.needGeometry;
         this.lookup = new Uint8Array(this.lookupDim * this.lookupDim);
 
+        // Only use elevation features when model-elevation-reference is set to hd-road-markup
+        const usesHdRoadMarkupElevation = this.layers[0].paint.get('model-elevation-reference') === 'hd-road-markup';
+        const elevationFeatures = usesHdRoadMarkupElevation ? options.elevationFeatures : undefined;
+
         for (const {feature, id, index, sourceLayerIndex} of features) {
             // use non numeric id, if in properties, too.
             const featureId = (id != null) ? id :
@@ -249,7 +255,7 @@ class ModelBucket implements Bucket {
                 patterns: {}
             };
 
-            const modelId = this.addFeature(bucketFeature, bucketFeature.geometry, evaluationFeature);
+            const modelId = this.addFeature(bucketFeature, bucketFeature.geometry, evaluationFeature, elevationFeatures, canonical);
 
             if (modelId) {
                 // Since 3D model geometry extends over footprint or point geometry, it is important
@@ -442,6 +448,8 @@ class ModelBucket implements Bucket {
         feature: BucketFeature,
         geometry: Array<Array<Point>>,
         evaluationFeature: EvaluationFeature,
+        elevationFeatures?: ElevationFeature[],
+        canonical?: CanonicalTileID
     ): string {
         const layer = this.layers[0];
         const modelIdProperty = layer.layout.get('model-id');
@@ -474,6 +482,13 @@ class ModelBucket implements Bucket {
         const instancedDataArray = perModelVertexArray.instancedDataArray;
 
         const modelFeature = new ModelFeature(evaluationFeature, instancedDataArray.length);
+
+        // Query elevation feature once per feature
+        let tiledElevation: ElevationFeature | undefined;
+        if (elevationFeatures) {
+            tiledElevation = ElevationFeatures.getElevationFeature(feature, elevationFeatures);
+        }
+
         for (const geometries of geometry) {
             for (const point of geometries) {
                 if (point.x < 0 || point.x >= EXTENT || point.y < 0 || point.y >= EXTENT) {
@@ -493,6 +508,14 @@ class ModelBucket implements Bucket {
                 this.instanceCount++;
                 const i = instancedDataArray.length;
                 instancedDataArray.resize(i + 1);
+
+                if (elevationFeatures) {
+                    if (!perModelVertexArray.instancesRoadElevation) {
+                        perModelVertexArray.instancesRoadElevation = [];
+                    }
+                    const roadElevation = tiledElevation ? tiledElevation.pointElevation(new Point(point.x, point.y)) : 0;
+                    perModelVertexArray.instancesRoadElevation.push(roadElevation);
+                }
                 perModelVertexArray.instancesEvaluatedElevation.push(0);
                 instancedDataArray.float32[i * 16] = point.x;
                 instancedDataArray.float32[i * 16 + 1] = point.y;
@@ -575,7 +598,8 @@ class ModelBucket implements Bucket {
             // Elements [4..6]: translation evaluated for the feature.
             va[offset + 4] = translation[0];
             va[offset + 5] = translation[1];
-            va[offset + 6] = translation[2] + terrainElevationContribution;
+            const roadElevationContribution = perModelVertexArray.instancesRoadElevation ? perModelVertexArray.instancesRoadElevation[instanceOffset] : 0;
+            va[offset + 6] = translation[2] + roadElevationContribution + terrainElevationContribution;
             // Elements [7..16] Instance modelMatrix holds combined rotation and scale 3x3,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             va[offset + 7]  = rotationScaleYZFlip[0];
