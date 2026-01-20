@@ -1694,7 +1694,7 @@ class Painter {
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
         if (this._fogVisible && !rtt && (overrideFog === undefined || overrideFog)) {
-            defines.push('FOG', 'FOG_DITHERING');
+            defines.push('FOG');
         }
         if (rtt) defines.push('RENDER_TO_TEXTURE');
         if (this._showOverdrawInspector) defines.push('OVERDRAW_INSPECTOR');
