@@ -1,3 +1,16 @@
+## 3.18.1
+
+### Features and improvements ✨
+
+- Add support for `visibility` property in clip layers.
+- Improve `raster-color` precision for fine-grained value ranges.
+
+### Bug fixes 🐞
+
+- Fix color interpolation throwing errors in edge cases.
+- Fix appearances with no `icon-size`.
+- Fix disappearing symbols when used with elevated raster layers.
+
 ## 3.18.0
 
 ### Features and improvements ✨
