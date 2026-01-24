@@ -664,4 +664,142 @@ describe('Interaction', () => {
             dispatchEvent(map, 'click', point);
         }).not.toThrowError();
     });
+
+    describe('featureNamespace validation', () => {
+        test('warns when same featureset has selectors with different featureNamespace for same source', async () => {
+            const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+            const styleWithConflictingNamespace = {
+                "version": 8,
+                "sources": {
+                    "geojson": {
+                        "type": "geojson",
+                        "data": {
+                            "type": "FeatureCollection",
+                            "features": [
+                                {
+                                    "type": "Feature",
+                                    "id": 1,
+                                    "properties": {"foo": "bar"},
+                                    "geometry": {"type": "Point", "coordinates": [0, 0]}
+                                }
+                            ]
+                        }
+                    }
+                },
+                "featuresets": {
+                    "test-featureset-conflict": {
+                        "selectors": [
+                            {
+                                "layer": "circle-1",
+                                "featureNamespace": "A",
+                                "properties": {"name": ["get", "foo"]}
+                            },
+                            {
+                                "layer": "circle-1",
+                                "featureNamespace": "B",
+                                "properties": {"name": ["get", "foo"]}
+                            }
+                        ]
+                    }
+                },
+                "layers": [
+                    {
+                        "id": "background",
+                        "type": "background"
+                    },
+                    {
+                        "id": "circle-1",
+                        "type": "circle",
+                        "source": "geojson"
+                    }
+                ]
+            };
+
+            const map = createMap({
+                style: styleWithConflictingNamespace,
+                zoom: 10,
+                center: [0, 0],
+            });
+
+            await waitFor(map, 'load');
+
+            expect(warnSpy).toHaveBeenCalledWith(
+                expect.stringContaining('featureNamespace B of featureset test-featureset-conflict\'s selector is not associated to the same source, skip this selector')
+            );
+
+            warnSpy.mockRestore();
+        });
+
+        test('no warning when different featuresets have different featureNamespace for same source', async () => {
+            const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+            const styleWithSeparateFeaturesets = {
+                "version": 8,
+                "sources": {
+                    "geojson": {
+                        "type": "geojson",
+                        "data": {
+                            "type": "FeatureCollection",
+                            "features": [
+                                {
+                                    "type": "Feature",
+                                    "id": 1,
+                                    "properties": {"foo": "bar"},
+                                    "geometry": {"type": "Point", "coordinates": [0, 0]}
+                                }
+                            ]
+                        }
+                    }
+                },
+                "featuresets": {
+                    "featureset-alpha": {
+                        "selectors": [
+                            {
+                                "layer": "circle-1",
+                                "featureNamespace": "A",
+                                "properties": {"name": ["get", "foo"]}
+                            }
+                        ]
+                    },
+                    "featureset-beta": {
+                        "selectors": [
+                            {
+                                "layer": "circle-1",
+                                "featureNamespace": "B",
+                                "properties": {"name": ["get", "foo"]}
+                            }
+                        ]
+                    }
+                },
+                "layers": [
+                    {
+                        "id": "background",
+                        "type": "background"
+                    },
+                    {
+                        "id": "circle-1",
+                        "type": "circle",
+                        "source": "geojson"
+                    }
+                ]
+            };
+
+            const map = createMap({
+                style: styleWithSeparateFeaturesets,
+                zoom: 10,
+                center: [0, 0],
+            });
+
+            await waitFor(map, 'load');
+
+            // Should not warn about featureNamespace conflicts across different featuresets
+            const featureNamespaceWarnings = warnSpy.mock.calls.filter(
+                call => typeof call[0] === 'string' && call[0].includes('featureNamespace')
+            );
+            expect(featureNamespaceWarnings).toHaveLength(0);
+
+            warnSpy.mockRestore();
+        });
+    });
 });

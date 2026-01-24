@@ -2370,12 +2370,12 @@ class Style extends Evented<MapEvents> {
     setFeaturesetSelectors(featuresets?: FeaturesetsSpecification) {
         if (!featuresets) return;
 
-        const sourceInfoMap: {[sourceInfo: string]: string} = {};
         // Helper to create consistent keys
         const createKey = (sourceId: string, sourcelayerId: string = '') => `${sourceId}::${sourcelayerId}`;
 
         this._featuresetSelectors = {};
         for (const featuresetId in featuresets) {
+            const sourceInfoMap: {[sourceInfo: string]: string} = {};
             const featuresetSelectors: FeaturesetSelector[] = this._featuresetSelectors[featuresetId] = [];
             for (const selector of featuresets[featuresetId].selectors) {
                 if (selector.featureNamespace) {
