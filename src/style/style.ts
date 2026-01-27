@@ -1790,7 +1790,7 @@ class Style extends Evented<MapEvents> {
 
         for (const layerId of this._mergedOrder) {
             const layer = this._mergedLayers[layerId];
-            if (layer.visibility !== 'none') layer.recalculate(parameters, this._availableImages);
+            if (layer.visibility !== 'none' || layer.hasTransition()) layer.recalculate(parameters, this._availableImages);
             if (!layer.isHidden(parameters.zoom)) {
                 const sourceCache = this.getLayerSourceCache(layer);
                 if (sourceCache) {
