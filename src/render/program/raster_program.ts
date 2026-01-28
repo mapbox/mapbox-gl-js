@@ -9,11 +9,20 @@ import {
 } from '../uniform_binding';
 import {computeRasterColorMix, computeRasterColorOffset} from '../raster';
 import {COLOR_RAMP_RES} from '../../style/style_layer/raster_style_layer';
-import {contrastFactor, saturationFactor} from '../../util/util';
+import {contrastFactor, saturationFactor, clamp} from '../../util/util';
 
+import type Painter from '../painter';
 import type Context from '../../gl/context';
 import type {UniformValues} from '../uniform_binding';
 import type RasterStyleLayer from '../../style/style_layer/raster_style_layer';
+
+const lerp = (a: number, b: number, t: number) => { return (1 - t) * a + t * b; };
+
+function computeZBiasFactor(painter: Painter) {
+    const terrainExaggeration = Math.min(painter.terrain ? painter.terrain.exaggeration() : 0.0, 2.0);
+    const bias = painter.transform.pitch < 15.0 ? lerp(0.07, 0.7, clamp((14.0 - painter.transform.zoom) / (14.0 - 9.0), 0.0, 1.0)) : 0.07;
+    return bias * terrainExaggeration;
+}
 
 export type RasterUniformsType = {
     ['u_matrix']: UniformMatrix4f;
@@ -43,9 +52,10 @@ export type RasterUniformsType = {
     ['u_texture_offset']: Uniform2f;
     ['u_texture_res']: Uniform2f;
     ['u_emissive_strength']: Uniform1f;
+    ['u_zbias_factor']: Uniform1f;
 };
 
-export type RasterDefinesType = 'RASTER_COLOR' | 'RENDER_CUTOFF' | 'RASTER_ARRAY' | 'RASTER_ARRAY_LINEAR';
+export type RasterDefinesType = 'RASTER_COLOR' | 'RENDER_CUTOFF' | 'RASTER_ARRAY' | 'RASTER_ARRAY_LINEAR' | 'ELEVATION_REFERENCE_GROUND';
 
 const rasterUniforms = (context: Context): RasterUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
@@ -74,10 +84,12 @@ const rasterUniforms = (context: Context): RasterUniformsType => ({
     'u_color_ramp': new Uniform1i(context),
     'u_texture_offset': new Uniform2f(context),
     'u_texture_res': new Uniform2f(context),
-    'u_emissive_strength': new Uniform1f(context)
+    'u_emissive_strength': new Uniform1f(context),
+    'u_zbias_factor': new Uniform1f(context)
 });
 
 const rasterUniformValues = (
+    painter: Painter,
     matrix: Float32Array,
     normalizeMatrix: Float32Array,
     globeMatrix: Float32Array,
@@ -136,10 +148,12 @@ const rasterUniformValues = (
         tileSize / (tileSize + 2 * buffer)
     ],
     'u_texture_res': [tileSize + 2 * buffer, tileSize + 2 * buffer],
-    'u_emissive_strength': emissiveStrength
+    'u_emissive_strength': emissiveStrength,
+    'u_zbias_factor': computeZBiasFactor(painter)
 });
 
 const rasterPoleUniformValues = (
+    painter: Painter,
     matrix: Float32Array,
     normalizeMatrix: Float32Array,
     globeMatrix: Float32Array,
@@ -157,6 +171,7 @@ const rasterPoleUniformValues = (
     colorRange: [number, number],
     emissiveStrength: number,
 ): UniformValues<RasterUniformsType> => (rasterUniformValues(
+    painter,
     matrix,
     normalizeMatrix,
     globeMatrix,

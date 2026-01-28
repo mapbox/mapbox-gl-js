@@ -10387,7 +10387,7 @@
     },
     "raster-elevation": {
       "type": "number",
-      "doc": "Specifies an uniform elevation from the ground, in meters.",
+      "doc": "Defines an uniform elevation from the base specified in raster-elevation-reference, in meters.",
       "default": 0,
       "minimum": 0,
       "transition": true,
@@ -10404,6 +10404,32 @@
         "parameters": [
           "zoom"
         ]
+      },
+      "property-type": "data-constant"
+    },
+    "raster-elevation-reference": {
+      "type": "enum",
+      "doc": "Selects the base of raster-elevation.",
+      "values": {
+        "sea": {
+          "doc": "Use this mode to elevate raster layers relative to the sea level."
+        },
+        "ground": {
+          "doc": "Use this mode to elevate raster layers relative to the ground's height below them."
+        }
+      },
+      "default": "sea",
+      "transition": false,
+      "experimental": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.19.0",
+          "android": "11.19.0",
+          "ios": "11.19.0"
+        }
+      },
+      "expression": {
+        "interpolated": false
       },
       "property-type": "data-constant"
     }
@@ -10537,7 +10563,7 @@
     },
     "raster-particle-elevation": {
       "type": "number",
-      "doc": "Specifies an uniform elevation from the ground, in meters.",
+      "doc": "Defines an uniform elevation from sea level, in meters.",
       "default": 0,
       "minimum": 0,
       "transition": true,

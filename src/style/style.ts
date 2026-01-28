@@ -4088,10 +4088,13 @@ class Style extends Evented<MapEvents> {
         const sourcesForBuildingLayers: Set<string> = new Set();
         // Find sources with elevated layers
         const sourcesWithElevatedLayers: Set<string> = new Set();
+        const sourcesWithRasterElevatedOverTerrain: Set<string> = new Set();
         for (const id in this._mergedLayers) {
             const layer = this._mergedLayers[id];
             if (layer.type === 'building') {
                 sourcesForBuildingLayers.add(layer.source);
+            } else if (layer.type === 'raster' && layer.paint && layer.paint.get('raster-elevation-reference') === 'ground') {
+                sourcesWithRasterElevatedOverTerrain.add(layer.source);
             }
             if (layer.hasElevation() && !sourcesWithElevatedLayers.has(layer.source)) {
                 sourcesWithElevatedLayers.add(layer.source);
@@ -4101,6 +4104,7 @@ class Style extends Evented<MapEvents> {
         for (const id in this._mergedSourceCaches) {
             const sourceCache = this._mergedSourceCaches[id];
             const elevatedLayers = sourcesWithElevatedLayers.has(sourceCache._source.id);
+            sourceCache._isRasterElevatedOverTerrain = sourcesWithRasterElevatedOverTerrain.has(sourceCache._source.id);
             if (sourcesForBuildingLayers.has(sourceCache._source.id)) {
                 sourceCache._source.reparseOverscaled = false;
             }

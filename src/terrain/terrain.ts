@@ -57,6 +57,7 @@ import type {LineUniformsType, LinePatternUniformsType} from '../render/program/
 import type {CollisionUniformsType} from '../render/program/collision_program';
 import type {GlobeRasterUniformsType} from './globe_raster_program';
 import type {TerrainRasterUniformsType} from './terrain_raster_program';
+import type {RasterUniformsType} from '../render/program/raster_program';
 import type {
     FillExtrusionDepthUniformsType,
     FillExtrusionPatternUniformsType
@@ -96,6 +97,7 @@ type ElevationUniformsType =
     | HeatmapUniformsType
     | LinePatternUniformsType
     | LineUniformsType
+    | RasterUniformsType
     | SymbolUniformsType
     | TerrainRasterUniformsType;
 
@@ -637,7 +639,7 @@ export class Terrain extends Elevation {
             this._setupProxiedCoordsForOrtho(sourceCache, sourcesCoords[fqid], previousProxyToSource);
             if (sourceCache.usedForTerrain) continue;
             const coordinates = sourcesCoords[fqid];
-            if (sourceCache.getSource().reparseOverscaled) {
+            if (sourceCache.getSource().reparseOverscaled || sourceCache._isRasterElevatedOverTerrain) {
                 // Do this for layers that are not rasterized to proxy tile.
                 this._assignTerrainTiles(coordinates);
             }

@@ -1,0 +1,88 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 300,
+      "width": 512,
+      "allowed": 0.00224,
+      "operations": [
+        ["wait"]
+      ]
+    }
+  },
+  "center": [-113.325848, 35.966518],
+  "zoom": 12.17,
+  "pitch": 47.5,
+  "bearing": -89.3,
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "sprite": "local://sprites/standard",
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.2
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "cast-shadows" : true,
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.8
+      }
+    }
+  ],
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 12,
+      "tileSize": 256
+    },
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "image": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/const/13-4095-4095.color.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "image",
+      "type": "raster",
+      "source": "image",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-opacity": 0.7,
+        "raster-elevation": 1,
+        "raster-elevation-reference": "ground",
+        "raster-emissive-strength": 1
+      }
+    }
+  ]
+}

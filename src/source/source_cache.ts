@@ -52,6 +52,7 @@ class SourceCache extends Evented {
     _maxTileCacheSize?: number;
     _paused: boolean;
     _isRaster: boolean;
+    _isRasterElevatedOverTerrain: boolean;
     _shouldReloadOnResume: boolean;
     _coveredTiles: Partial<Record<number | string, boolean>>;
     transform: Transform;
@@ -114,6 +115,7 @@ class SourceCache extends Evented {
             this._source.type === 'raster-dem' || this._source.type === 'raster-array' ||
             // @ts-expect-error - TS2339 - Property '_dataType' does not exist on type 'VideoSource | ImageSource | CanvasSource | CustomSource<ImageBitmap | HTMLCanvasElement | HTMLImageElement | ImageData>'.
             (this._source.type === 'custom' && this._source._dataType === 'raster');
+        this._isRasterElevatedOverTerrain = false;
     }
 
     onAdd(map: MapboxMap) {

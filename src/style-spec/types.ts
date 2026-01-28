@@ -1246,7 +1246,11 @@ export type RasterLayerSpecification = {
          * @experimental This property is experimental and subject to change in future versions.
          */
         "raster-elevation"?: PropertyValueSpecification<number>,
-        "raster-elevation-transition"?: TransitionSpecification
+        "raster-elevation-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "raster-elevation-reference"?: "sea" | "ground" | ExpressionSpecification
     },
     /**
      * @experimental This property is experimental and subject to change in future versions.
