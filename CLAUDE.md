@@ -138,7 +138,6 @@ test/
 - JSDoc comments for all public APIs
 - Don't use `!.` for non-null assertions (hides potential null issues)
 - Don't use `?.` or `??` operators (hides null handling, harder to debug)
-- No async/await - use Promises instead (keeps control flow explicit)
 - Use `assert` for invariants
 - Break complex expressions into named variables, especially WebGL math
 

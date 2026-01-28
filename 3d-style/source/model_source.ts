@@ -114,34 +114,41 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
             } else {
                 // Model neither currently loading nor already loaded
                 this._modelsInfo.set(modelId, {modelSpec, model: null});
-                this.loadGLTFFromURI(modelSpec.uri).then(gltf => {
-                    if (!gltf) return;
-                    // Check if model is still active
-                    const modelInfo = this._modelsInfo.get(modelId);
-                    if (!modelInfo) return;
-
-                    const nodes = convertModel(gltf);
-                    const modelSpec = modelInfo.modelSpec;
-                    const model = new Model(modelId, modelSpec.uri, modelSpec.position, modelSpec.orientation, nodes);
-                    ModelSource.applyModelSpecification(model, modelSpec);
-                    model.computeBoundsAndApplyParent();
-
-                    this.models.push(model);
-                    modelInfo.model = model;
-
-                    // If all models are loaded, fire data event
-                    if (this.loaded()) {
-                        this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
-                    }
-                }).catch((err) => {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    this.fire(new ErrorEvent(new Error(`Could not load model ${modelId} from ${modelSpec.uri}: ${err.message}`)));
-                });
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                this.loadModel(modelId, modelSpec);
             }
         }
-        // Fire data event if all models are already loaded (i.e model source is empty or there are not more requests pending)
+        // Fire data event if all models are already loaded (i.e model source is empty or there are no more requests pending)
         if (this.loaded()) {
             this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
+        }
+    }
+
+    private async loadModel(modelId: string, modelSpec: ModelSourceModelSpecification): Promise<void> {
+        try {
+            const gltf = await this.loadGLTFFromURI(modelSpec.uri);
+            if (!gltf) return;
+
+            // Check if model is still active
+            const modelInfo = this._modelsInfo.get(modelId);
+            if (!modelInfo) return;
+
+            const nodes = convertModel(gltf);
+            const currentModelSpec = modelInfo.modelSpec;
+            const model = new Model(modelId, currentModelSpec.uri, currentModelSpec.position, currentModelSpec.orientation, nodes);
+            ModelSource.applyModelSpecification(model, currentModelSpec);
+            model.computeBoundsAndApplyParent();
+
+            this.models.push(model);
+            modelInfo.model = model;
+
+            // If all models are loaded, fire data event
+            if (this.loaded()) {
+                this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
+            }
+        } catch (err) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            this.fire(new ErrorEvent(new Error(`Could not load model ${modelId} from ${modelSpec.uri}: ${(err as Error).message}`)));
         }
     }
 

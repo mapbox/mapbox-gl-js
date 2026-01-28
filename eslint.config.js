@@ -112,18 +112,6 @@ export default tseslint.config(
                     selector: 'ObjectExpression > SpreadElement',
                     message: 'Spread syntax is not allowed for object assignments. Use Object.assign() or other methods instead.',
                 }, {
-                    selector: 'AwaitExpression',
-                    message: 'Async/await syntax is not allowed.',
-                }, {
-                    selector: 'FunctionDeclaration[async=true]',
-                    message: 'Async function declarations are not allowed.',
-                }, {
-                    selector: 'FunctionExpression[async=true]',
-                    message: 'Async function expressions are not allowed.',
-                }, {
-                    selector: 'ArrowFunctionExpression[async=true]',
-                    message: 'Async arrow functions are not allowed.',
-                }, {
                     selector: 'ClassProperty[value]',
                     message: 'ClassProperty values are not allowed.',
                 }, {
