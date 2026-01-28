@@ -1566,7 +1566,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
     showCentroid(borderCentroidData: BorderCentroidData) {
         const c = this.centroidData[borderCentroidData.centroidDataIndex];
-        c.flags &= ~HIDDEN_BY_REPLACEMENT;
+        c.flags &= HIDDEN_BY_REPLACEMENT;
         c.centroidXY.x = 0;
         c.centroidXY.y = 0;
         this.writeCentroidToBuffer(c);

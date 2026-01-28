@@ -1,0 +1,200 @@
+{
+  "version": 8,
+   "metadata": {
+    "test": {
+      "allowed": 0.00154,
+      "width": 512,
+      "height": 512,
+      "debug": true,
+      "operations": [
+        ["wait"],
+        [
+          "addSource",
+          "eraser",
+          {
+            "type": "geojson",
+            "maxzoom": 14,
+            "data": {
+              "type": "FeatureCollection",
+              "features": [
+                {
+                  "type": "Feature",
+                  "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                      [
+                        [
+                          -157.92600779195274,
+                          21.341941343290916
+                        ],
+                        [
+                          -157.91797550482153,
+                          21.341047443455746
+                        ],
+                        [
+                          -157.91872098959996,
+                          21.3345038655
+                        ],
+                        [
+                          -157.91848310419996,
+                          21.3341645199
+                        ],
+                        [
+                          -157.91029843959998,
+                          21.3328320538
+                        ],
+                        [
+                          -157.9105821302,
+                          21.331357833899993
+                        ],
+                        [
+                          -157.90968337269996,
+                          21.3302523502
+                        ],
+                        [
+                          -157.91378252579995,
+                          21.3278046585
+                        ],
+                        [
+                          -157.92938628859994,
+                          21.327854769499993
+                        ],
+                        [
+                          -157.9291823668,
+                          21.3339016093
+                        ],
+                        [
+                          -157.9272551422,
+                          21.334814034399997
+                        ],
+                        [
+                          -157.92600779195274,
+                          21.341941343290916
+                        ]
+                      ]
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        ["wait"],
+        [
+          "addLayer",
+          {
+            "id": "eraser",
+            "type": "clip",
+            "source": "eraser",
+            "layout": {
+              "clip-layer-types": [
+                "symbol",
+                "model"
+              ]
+            }
+          }
+        ],
+        ["wait"],
+        [
+          "addLayer",
+          {
+            "id": "eraserd",
+            "type": "fill",
+            "source": "eraser",
+            "paint": {
+              "fill-color": "rgba(255, 0, 0, 0.1)"
+            }
+          }
+        ],
+        ["wait"]
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment"
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "cast-shadows": true,
+        "intensity": 0.8599999904632569,
+        "direction": [
+          311.9219970703125,
+          82.37799835205078  
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "composite": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    }
+  },
+  "zoom": 16.32,
+  "pitch": 67,
+  "bearing": 165.2,
+  "center": [
+    -157.924486,
+    21.335822
+  ],
+  "layers": [
+    {
+      "type": "background",
+      "paint": {
+        "background-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          11.0,
+          [
+            "rgba",
+            239.00001525878907,
+            233.00001525878907,
+            225.00001525878907,
+            1.0
+          ],
+          13.0,
+          [
+            "rgba",
+            230.00001525878907,
+            228.00001525878907,
+            224.00001525878907,
+            1.0
+          ]
+        ]
+      },
+      "id": "land"
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "composite",
+      "source-layer": "building",
+      "minzoom": 15,
+      "filter": [
+        "all",
+        [ "==", [ "get", "extrude" ], "true" ],
+        [ "==", [ "get", "underground" ], "false" ]
+      ],
+      "paint": {
+        "fill-extrusion-color": "white",
+        "fill-extrusion-height": [
+          "get",
+          "height"
+        ],
+        "fill-extrusion-opacity": 1.0
+      }
+    }
+  ]
+}
