@@ -99,6 +99,7 @@ type GradientTexture = {
 type LineProgressFeatures = {
     zOffset: number;
     variableWidth: number;
+    variableOffset: number;
 };
 
 interface Subsegment {
@@ -121,6 +122,7 @@ class LineBucket implements Bucket {
     lineClips: LineClips | null | undefined;
     zOffsetValue: PossiblyEvaluatedValue<number>;
     variableWidthValue: PossiblyEvaluatedValue<number>;
+    variableOffsetValue: PossiblyEvaluatedValue<number>;
     lineFeature: BucketFeature;
 
     e1: number;
@@ -453,6 +455,15 @@ class LineBucket implements Bucket {
         const lineWidth = paint.get('line-width').value;
         if (lineWidth.kind !== 'constant' && lineWidth.isLineProgressConstant === false) {
             this.variableWidthValue = lineWidth;
+        }
+
+        // Check layers for variable offset
+        for (const layer of this.layers) {
+            const lineOffset = layer.paint.get('line-offset').value;
+            if (lineOffset.kind !== 'constant' && lineOffset.isLineProgressConstant === false) {
+                this.variableOffsetValue = lineOffset;
+                break;
+            }
         }
 
         if (this.elevationType === 'road') {
@@ -1019,7 +1030,7 @@ class LineBucket implements Bucket {
 
     evaluateLineProgressFeatures(distance: number): LineProgressFeatures | null {
         assert(distance >= 0);
-        if (!this.variableWidthValue && this.elevationType !== 'offset') {
+        if (!this.variableWidthValue && !this.variableOffsetValue && this.elevationType !== 'offset') {
             return null;
         }
         this.evaluationGlobals.lineProgress = 0;
@@ -1032,14 +1043,20 @@ class LineBucket implements Bucket {
         if (this.variableWidthValue && this.variableWidthValue.kind !== 'constant') {
             variableWidth = this.variableWidthValue.evaluate(this.evaluationGlobals, this.lineFeature) || 0.0;
         }
+
+        let variableOffset = 0.0;
+        if (this.variableOffsetValue && this.variableOffsetValue.kind !== 'constant') {
+            variableOffset = this.variableOffsetValue.evaluate(this.evaluationGlobals, this.lineFeature) || 0.0;
+        }
+
         if (this.elevationType !== 'offset') {
-            return {zOffset: 0.0, variableWidth};
+            return {zOffset: 0.0, variableWidth, variableOffset};
         }
         if (this.zOffsetValue.kind === 'constant') {
-            return {zOffset: this.zOffsetValue.value, variableWidth};
+            return {zOffset: this.zOffsetValue.value, variableWidth, variableOffset};
         }
         const zOffset: number = this.zOffsetValue.evaluate(this.evaluationGlobals, this.lineFeature) || 0.0;
-        return {zOffset, variableWidth};
+        return {zOffset, variableWidth, variableOffset};
     }
 
     /**
@@ -1181,7 +1198,7 @@ class LineBucket implements Bucket {
             this.zOffsetVertexArray.emplaceBack(
                 lineProgressFeatures.zOffset,
                 lineProgressFeatures.variableWidth,
-                lineProgressFeatures.variableWidth
+                lineProgressFeatures.variableOffset
             );
         }
         assert(this.zOffsetVertexArray.length === this.layoutVertexArray.length || this.elevationType !== 'offset');

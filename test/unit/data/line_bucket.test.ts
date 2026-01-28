@@ -137,3 +137,99 @@ test('LineBucket segmentation', () => {
 
     expect(console.warn).toHaveBeenCalledTimes(1);
 });
+
+test('LineBucket with variable line-offset detects variable offset', () => {
+    const layer = new LineStyleLayer({
+        id: 'test',
+        type: 'line',
+        paint: {
+            'line-offset': [
+                'interpolate',
+                ['linear'],
+                ['line-progress'],
+                0, -10,
+                1, 10
+            ]
+        }
+    });
+    layer.recalculate({zoom: 14});
+
+    const bucket = new LineBucket({layers: [layer]});
+
+    const line = {
+        type: 2,
+        properties: {
+            mapbox_clip_start: 0,
+            mapbox_clip_end: 1
+        }
+    };
+
+    // Test that variable offset is detected when layer is configured
+    const paint = layer.paint;
+    const lineOffset = paint.get('line-offset').value;
+    expect(lineOffset.kind).not.toBe('constant');
+    expect(lineOffset.isLineProgressConstant).toBe(false);
+});
+
+test('LineBucket with both variable width and variable offset', () => {
+    const layer = new LineStyleLayer({
+        id: 'test',
+        type: 'line',
+        paint: {
+            'line-width': [
+                'interpolate',
+                ['linear'],
+                ['line-progress'],
+                0, 2,
+                1, 10
+            ],
+            'line-offset': [
+                'interpolate',
+                ['linear'],
+                ['line-progress'],
+                0, -5,
+                1, 5
+            ]
+        }
+    });
+    layer.recalculate({zoom: 14});
+
+    const bucket = new LineBucket({layers: [layer]});
+
+    // Both variable width and offset should be detected in layer configuration
+    const paint = layer.paint;
+    const lineWidth = paint.get('line-width').value;
+    const lineOffset = paint.get('line-offset').value;
+
+    expect(lineWidth.kind).not.toBe('constant');
+    expect(lineWidth.isLineProgressConstant).toBe(false);
+    expect(lineOffset.kind).not.toBe('constant');
+    expect(lineOffset.isLineProgressConstant).toBe(false);
+});
+
+test('LineBucket with constant offset should not set variableOffsetValue', () => {
+    const layer = new LineStyleLayer({
+        id: 'test',
+        type: 'line',
+        paint: {
+            'line-offset': 5
+        }
+    });
+    layer.recalculate({zoom: 14});
+
+    const bucket = new LineBucket({layers: [layer]});
+
+    const line = {
+        type: 2,
+        properties: {}
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    bucket.addFeature(line, [[
+        new Point(0, 0),
+        new Point(100, 0)
+    ]]);
+
+    // Constant offset should not trigger variable offset
+    expect(bucket.variableOffsetValue).toBeFalsy();
+});

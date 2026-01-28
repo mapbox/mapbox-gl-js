@@ -5295,7 +5295,7 @@
         }
       },
       "line-progress": {
-        "doc": "Returns the progress along a gradient line. Can only be used in the `line-gradient` and `line-z-offset` properties.",
+        "doc": "Returns the progress along a gradient line. Can only be used in the `line-gradient`, `line-z-offset`, and `line-offset` properties.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
@@ -8498,7 +8498,8 @@
           "zoom",
           "feature",
           "feature-state",
-          "measure-light"
+          "measure-light",
+          "line-progress"
         ]
       },
       "property-type": "data-driven"
