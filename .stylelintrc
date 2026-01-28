@@ -13,7 +13,7 @@
       "ignoreSelectors": [":-webkit-full-screen"]
     }],
     "property-no-vendor-prefix": [true, {
-      "ignoreProperties": ["user-select"]
+      "ignoreProperties": ["/^-webkit-user-select$/", "/^-webkit-tap-highlight-color$/"]
     }]
   }
 }
