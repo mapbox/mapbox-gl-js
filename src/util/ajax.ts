@@ -29,9 +29,7 @@ const ResourceType = {
 
 export {ResourceType};
 
-if (typeof Object.freeze == 'function') {
-    Object.freeze(ResourceType);
-}
+Object.freeze(ResourceType);
 
 /**
  * A `RequestParameters` object to be returned from Map.options.transformRequest callbacks.
@@ -247,22 +245,11 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
 }
 
 export const makeRequest = function (requestParameters: RequestParameters, callback: ResponseCallback<unknown>): Cancelable {
-    // We're trying to use the Fetch API if possible. However, in some situations we can't use it:
-    // - Safari exposes AbortController, but it doesn't work actually abort any requests in
-    //   older versions (see https://bugs.webkit.org/show_bug.cgi?id=174980#c2). In this case,
-    //   we dispatch the request to the main thread so that we can get an accurate referrer header.
-    // - Requests for resources with the file:// URI scheme don't work with the Fetch API either. In
-    //   this case we unconditionally use XHR on the current thread since referrers don't matter.
-    if (!isFileURL(requestParameters.url)) {
-        if (self.fetch && self.Request && self.AbortController && Request.prototype.hasOwnProperty('signal')) {
-            return makeFetchRequest(requestParameters, callback);
-        }
-        if (isWorker(self) && self.worker.actor) {
-            const queueOnMainThread = true;
-            return self.worker.actor.send('getResource', requestParameters, callback, undefined, queueOnMainThread);
-        }
+    // file:// URLs don't work with the Fetch API, use XHR instead
+    if (isFileURL(requestParameters.url)) {
+        return makeXMLHttpRequest(requestParameters, callback);
     }
-    return makeXMLHttpRequest(requestParameters, callback);
+    return makeFetchRequest(requestParameters, callback);
 };
 
 export const getJSON = function (requestParameters: RequestParameters, callback: ResponseCallback<unknown>): Cancelable {
@@ -290,24 +277,6 @@ function sameOrigin(url: string) {
     return a.protocol === location.protocol && a.host === location.host;
 }
 
-const transparentPngUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQYV2NgAAIAAAUAAarVyFEAAAAASUVORK5CYII=';
-
-function arrayBufferToImage(data: ArrayBuffer, callback: Callback<HTMLImageElement>) {
-    const img: HTMLImageElement = new Image();
-    img.onload = () => {
-        callback(null, img);
-        URL.revokeObjectURL(img.src);
-        // prevent image dataURI memory leak in Safari;
-        // but don't free the image immediately because it might be uploaded in the next frame
-        // https://github.com/mapbox/mapbox-gl-js/issues/10226
-        img.onload = null;
-        requestAnimationFrame(() => { img.src = transparentPngUrl; });
-    };
-    img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
-    const blob: Blob = new Blob([new Uint8Array(data)], {type: 'image/png'});
-    img.src = data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
-}
-
 function arrayBufferToImageBitmap(data: ArrayBuffer, callback: Callback<ImageBitmap>) {
     const blob: Blob = new Blob([new Uint8Array(data)], {type: 'image/png'});
     createImageBitmap(blob).then((imgBitmap) => {
@@ -327,7 +296,7 @@ resetImageRequestQueue();
 
 export const getImage = function (
     requestParameters: RequestParameters,
-    callback: ResponseCallback<HTMLImageElement | ImageBitmap>,
+    callback: ResponseCallback<ImageBitmap>,
 ): Cancelable {
     if (webpSupported.supported) {
         if (!requestParameters.headers) {
@@ -378,11 +347,7 @@ export const getImage = function (
         if (err) {
             callback(err);
         } else if (data) {
-            if (self.createImageBitmap) {
-                arrayBufferToImageBitmap(data, (err, imgBitmap) => callback(err, imgBitmap, headers));
-            } else {
-                arrayBufferToImage(data, (err, img) => callback(err, img, headers));
-            }
+            arrayBufferToImageBitmap(data, (err, imgBitmap) => callback(err, imgBitmap, headers));
         }
     });
 

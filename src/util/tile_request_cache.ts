@@ -47,25 +47,6 @@ export function cacheClose() {
     sharedCache = undefined;
 }
 
-let responseConstructorSupportsReadableStream;
-function prepareBody(response: Response, callback: (body?: Blob | ReadableStream | null) => void) {
-    if (responseConstructorSupportsReadableStream === undefined) {
-        try {
-            new Response(new ReadableStream());
-            responseConstructorSupportsReadableStream = true;
-        } catch (e) {
-            // Edge
-            responseConstructorSupportsReadableStream = false;
-        }
-    }
-
-    if (responseConstructorSupportsReadableStream) {
-        callback(response.body);
-    } else {
-        response.blob().then(callback).catch((e: Error) => warnOnce(e.message));
-    }
-}
-
 // https://fetch.spec.whatwg.org/#null-body-status
 function isNullBodyStatus(status: Response["status"]): boolean {
     if (status === 200 || status === 404) {
@@ -111,15 +92,13 @@ export function cachePut(request: Request, response: Response, requestTime: numb
         strippedURL = setQueryParameters(strippedURL, {range});
     }
 
-    prepareBody(response, body => {
-        const clonedResponse = new Response(isNullBodyStatus(response.status) ? null : body, options);
+    const clonedResponse = new Response(isNullBodyStatus(response.status) ? null : response.body, options);
 
-        cacheOpen();
-        if (sharedCache == null) return;
-        sharedCache
-            .then(cache => cache.put(strippedURL, clonedResponse))
-            .catch((e: Error) => warnOnce(e.message));
-    });
+    cacheOpen();
+    if (sharedCache == null) return;
+    sharedCache
+        .then(cache => cache.put(strippedURL, clonedResponse))
+        .catch((e: Error) => warnOnce(e.message));
 }
 
 export function cacheGet(
