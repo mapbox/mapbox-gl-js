@@ -2809,7 +2809,7 @@ export class Map extends Camera {
      */
     loadImage(url: string, callback: Callback<ImageBitmap | HTMLImageElement | ImageData>) {
         getImage(this._requestManager.transformRequest(url, ResourceType.Image), (err, img) => {
-            callback(err, img instanceof HTMLImageElement ? browser.getImageData(img) : img);
+            callback(err, img);
         });
     }
 

@@ -8,7 +8,6 @@ import boundsAttributes from '../data/bounds_attributes';
 import SegmentVector from '../data/segment';
 import Texture, {UserManagedTexture} from '../render/texture';
 import MercatorCoordinate, {MAX_MERCATOR_LATITUDE} from '../geo/mercator_coordinate';
-import browser from '../util/browser';
 import tileTransform, {getTilePoint} from '../geo/projection/tile_transform';
 import {GLOBE_VERTEX_GRID_SIZE} from '../geo/projection/globe_constants';
 import {mat3, vec3} from 'gl-matrix';
@@ -246,7 +245,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
     dispatcher: Dispatcher;
     map: Map;
     texture: Texture | UserManagedTexture | null;
-    image: HTMLImageElement | ImageBitmap | ImageData;
+    image: ImageBitmap | ImageData;
     tileID?: CanonicalTileID;
     onNorthPole: boolean;
     onSouthPole: boolean;
@@ -317,11 +316,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (image) {
-                if (image instanceof HTMLImageElement) {
-                    this.image = browser.getImageData(image);
-                } else {
-                    this.image = image;
-                }
+                this.image = image;
                 this._dirty = true;
                 this.width = this.image.width;
                 this.height = this.image.height;

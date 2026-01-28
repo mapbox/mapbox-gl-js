@@ -24,7 +24,7 @@ export default function (
     requestManager: RequestManager,
     callback: Callback<StyleImages>,
 ): Cancelable {
-    let json: SpriteData | undefined, image: HTMLImageElement | ImageBitmap | undefined, error: Error | undefined;
+    let json: SpriteData | undefined, image: ImageBitmap | undefined, error: Error | undefined;
     const format = browser.devicePixelRatio > 1 ? '@2x' : '';
 
     let jsonRequest: Cancelable | null | undefined = getJSON(requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON), (err?: Error | null, data?: object) => {

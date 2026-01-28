@@ -8,7 +8,6 @@ import type {LoadGeoJSONRequest} from '../source/geojson_source';
 import type {LoadGeoJSONResult} from '../source/geojson_worker_source';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {PluginState} from '../source/rtl_text_plugin';
-import type {RequestParameters} from './ajax';
 import type {StyleImageMap} from '../style/style_image';
 import type {TDecodingResult, TProcessingBatch} from '../data/mrt/types';
 import type {WorkerPerformanceMetrics} from './performance';
@@ -73,11 +72,6 @@ export type ActorMessages = {
     'getImages': {
         params: {images: ImageId[]; scope: string; source: string; tileID: OverscaledTileID; type: 'icons' | 'patterns'};
         callback: ActorCallback<StyleImageMap<StringifiedImageId>>;
-    };
-
-    'getResource': {
-        params: RequestParameters;
-        callback: ActorCallback<unknown>;
     };
 
     'getWorkerPerformanceMetrics': {

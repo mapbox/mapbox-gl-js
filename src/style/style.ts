@@ -12,7 +12,7 @@ import Fog from './fog';
 import Snow from './snow';
 import Rain from './rain';
 import {pick, clone, deepEqual, filterObject, cartesianPositionToSpherical, warnOnce} from '../util/util';
-import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax';
+import {getJSON, getReferrer, ResourceType} from '../util/ajax';
 import {isMapboxURL} from '../util/mapbox_url';
 import {stripQueryParameters} from '../util/url';
 import browser from '../util/browser';
@@ -4559,10 +4559,6 @@ class Style extends Evented<MapEvents> {
 
     getGlyphs(mapId: string, params: ActorMessages['getGlyphs']['params'], callback: ActorMessages['getGlyphs']['callback']) {
         this.glyphManager.getGlyphs(params.stacks, callback);
-    }
-
-    getResource(mapId: string, params: ActorMessages['getResource']['params'], callback: ActorMessages['getResource']['callback']): Cancelable {
-        return makeRequest(params, callback);
     }
 
     getOwnSourceCache(source: string): SourceCache | undefined {
