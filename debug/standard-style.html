@@ -74,7 +74,7 @@ mapboxgl.accessToken = getAccessToken();
         const defaultStyle = styles[1];
 
         const params = window.params = {style: defaultStyle, accessToken: mapboxgl.accessToken};
-        const arrayToOptions = (arr) => arr.reduce((acc, item) => ({...acc, [item]: item}), {});
+        const arrayToOptions = (arr) => Object.fromEntries(arr.map(item => [item, item]));
 
         const map = window.map = new mapboxgl.Map({
             container: 'map',
@@ -105,15 +105,122 @@ mapboxgl.accessToken = getAccessToken();
                 const folder = pane.addFolder({title: fragmentName, expanded: true});
                 dynamicFolders.push(folder);
 
-                // Render configuration binding
-                const schema = fragment.schema || {};
-                for (const config in schema) {
-                    const meta = schema[config];
-                    const label = meta.metadata ? meta.metadata['mapbox:title'] : "";
+                // Parse mapbox:auxiliary into normalized conditions array
+                const parseAuxiliary = (aux) => {
+                    if (!aux || aux.length === 0) return null;
+                    const conditions = Array.isArray(aux[0]) ? aux : [aux];
+                    return conditions.map(([parent, value]) => ({parent, value}));
+                };
+
+                // Check if all conditions are met
+                const evaluateConditions = (conditions) => {
+                    return conditions.every(({parent, value}) => params[parent] === value);
+                };
+
+                const bindings = new Map();
+
+                // Helper to add a config binding
+                const addConfigBinding = (targetFolder, config, meta) => {
+                    const label = meta.metadata ? meta.metadata['mapbox:title'] : config;
                     const options = meta.values && Array.isArray(meta.values) ? arrayToOptions(meta.values) : undefined;
                     params[config] = meta.default;
-                    const configBinding = folder.addBinding(params, config, {label, options});
+                    const configBinding = targetFolder.addBinding(params, config, {label, options});
                     configBinding.on('change', (e) => map.setConfigProperty(id, config, e.value));
+                    bindings.set(config, configBinding);
+                    return configBinding;
+                };
+
+                const configGroups = fragment.metadata && fragment.metadata["mapbox:configGroups"];
+                const schema = fragment.schema || {};
+
+                // Collect interactivity configs from featuresets
+                const featuresets = fragment.featuresets || {};
+                const interactivityConfigs = new Set();
+                for (const fs of Object.values(featuresets)) {
+                    const states = fs.metadata && fs.metadata['mapbox:states'] || [];
+                    for (const state of states) {
+                        if (state.importConfigs) {
+                            state.importConfigs.forEach(c => interactivityConfigs.add(c));
+                        }
+                    }
+                }
+
+                if (configGroups && configGroups.length > 0) {
+                    const groupedProps = new Set(configGroups.flatMap(g => g.properties));
+
+                    // Render grouped properties in sub-folders
+                    for (const group of configGroups) {
+                        const groupFolder = folder.addFolder({title: group.name, expanded: true});
+                        for (const config of group.properties) {
+                            if (schema[config]) {
+                                addConfigBinding(groupFolder, config, schema[config]);
+                            }
+                        }
+                    }
+
+                    // Render remaining ungrouped in "Other" folder
+                    const otherConfigs = Object.keys(schema).filter(c =>
+                        !groupedProps.has(c) && !interactivityConfigs.has(c)
+                    );
+                    if (otherConfigs.length > 0) {
+                        const otherFolder = folder.addFolder({title: 'Other', expanded: true});
+                        for (const config of otherConfigs) {
+                            addConfigBinding(otherFolder, config, schema[config]);
+                        }
+                    }
+
+                    // Render Interactivity section grouped by featureset > state
+                    if (interactivityConfigs.size > 0) {
+                        const interactivityFolder = folder.addFolder({title: 'Interactivity', expanded: true});
+                        for (const [fsId, fs] of Object.entries(featuresets)) {
+                            const states = (fs.metadata && fs.metadata['mapbox:states']) || [];
+                            const statesWithConfigs = states.filter(s => s.importConfigs && s.importConfigs.length > 0);
+                            if (statesWithConfigs.length === 0) continue;
+
+                            const fsTitle = (fs.metadata && fs.metadata['mapbox:title']) || fsId;
+                            const fsFolder = interactivityFolder.addFolder({title: fsTitle, expanded: false});
+
+                            for (const state of statesWithConfigs) {
+                                const stateFolder = fsFolder.addFolder({title: state.id, expanded: true});
+                                for (const config of state.importConfigs) {
+                                    if (schema[config]) {
+                                        addConfigBinding(stateFolder, config, schema[config]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Fallback: flat list
+                    for (const config in schema) {
+                        addConfigBinding(folder, config, schema[config]);
+                    }
+                }
+
+                // Set up auxiliary visibility logic
+                for (const config in schema) {
+                    const meta = schema[config];
+                    const auxiliary = meta.metadata && meta.metadata["mapbox:auxiliary"];
+                    const conditions = parseAuxiliary(auxiliary);
+                    if (!conditions) continue;
+
+                    const binding = bindings.get(config);
+                    if (!binding) continue;
+
+                    // Set initial hidden state
+                    binding.hidden = !evaluateConditions(conditions);
+
+                    // Subscribe to parent changes
+                    for (const {parent} of conditions) {
+                        const parentBinding = bindings.get(parent);
+                        if (!parentBinding) {
+                            console.warn(`Auxiliary config "${config}" references unknown parent "${parent}"`);
+                            continue;
+                        }
+                        parentBinding.on('change', () => {
+                            binding.hidden = !evaluateConditions(conditions);
+                        });
+                    }
                 }
             }
         });
