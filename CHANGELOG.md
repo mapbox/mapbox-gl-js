@@ -1,3 +1,20 @@
+## 3.19.0-beta.1
+
+### Features and improvements ✨
+
+- Fix z-fighting for elevated raster layers.
+- Add `raster-elevation-reference` paint property to elevate raster layers relative to ground instead of sea level.
+- Add `line-elevation-ground-scale` layout property to scale elevated lines with terrain exaggeration.
+- Use native async/await when loading models. **Note**: Please ensure GL JS is excluded from transpilation in your build setup.
+- Explicitly state minimum supported browser versions in `browserslist`.
+
+### Bug fixes 🐞
+
+- Fix regressions in `NavigationControl`.
+- Fix namespace conflicts in different featuresets' selectors.
+- Recalculate layers with `visibility: none` in case properties were changed.
+- Fix bug in border update logic of `fill-extrusion` layer, overriding clip layer's behaviour.
+
 ## 3.18.1
 
 ### Features and improvements ✨
