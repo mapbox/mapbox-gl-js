@@ -2838,6 +2838,38 @@
         ]
       },
       "property-type": "data-constant"
+    },
+    "line-elevation-ground-scale": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "Controls how much the elevation of lines with `line-elevation-reference` set to `sea` scales with terrain exaggeration. A value of 0 keeps the line at a fixed altitude above sea level. A value of 1 scales the elevation proportionally with terrain exaggeration.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.19.0",
+          "android": "11.19.0",
+          "ios": "11.19.0"
+        },
+        "data-driven styling": {
+          "js": "3.19.0",
+          "android": "11.19.0",
+          "ios": "11.19.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "line-progress"
+        ]
+      },
+      "requires": [
+        "line-z-offset"
+      ],
+      "transition": true,
+      "property-type": "data-driven"
     }
   },
   "layout_symbol": {

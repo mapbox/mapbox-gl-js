@@ -274,7 +274,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
                 programConfiguration.updatePaintBuffers();
             }
 
-            if (elevated && !elevationFromSea) {
+            if (elevated) {
                 assert(painter.terrain);
                 painter.terrain.setupElevationDraw(tile, program);
             }
@@ -287,7 +287,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
                 program.draw(painter, gl.TRIANGLES, depthMode,
                     stencilMode, colorMode, CullFaceMode.disabled, uniformValues,
                     layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
-                    layer.paint, painter.transform.zoom, programConfiguration, [bucket.layoutVertexBuffer2, bucket.patternVertexBuffer, bucket.zOffsetVertexBuffer]);
+                    layer.paint, painter.transform.zoom, programConfiguration, [bucket.layoutVertexBuffer2, bucket.patternVertexBuffer, bucket.zOffsetVertexBuffer, bucket.elevationGroundScaleVertexBuffer]);
                 if (lineOpacityForOcclusion != null) {
                     lineOpacityForOcclusion.value = lineOpacity; //restore
                 }

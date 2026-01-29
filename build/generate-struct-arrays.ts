@@ -145,7 +145,7 @@ createStructArrayType('raster_bounds', boundsAttributes);
 
 import {circleAttributes, circleAttributesExt, circleGlobeAttributesExt} from '../src/data/bucket/circle_attributes';
 import {fillLayoutAttributes, fillLayoutAttributesExt, intersectionsAttributes, intersectionNormalAttributes as intersectionsNormalAttributes} from '../src/data/bucket/fill_attributes';
-import {lineLayoutAttributes, lineZOffsetAttributes} from '../src/data/bucket/line_attributes';
+import {lineLayoutAttributes, lineZOffsetAttributes, lineElevationGroundScaleAttributes} from '../src/data/bucket/line_attributes';
 import lineAttributesExt from '../src/data/bucket/line_attributes_ext';
 import lineAttributesPattern from '../src/data/bucket/line_attributes_pattern';
 import {patternAttributes} from '../src/data/bucket/pattern_attributes';
@@ -282,6 +282,9 @@ createStructArrayType('line_strip_index', createLayout([
 
 // line z offset extension
 createStructArrayType('line_z_offset_ext', lineZOffsetAttributes);
+
+// line elevation ground scale
+createStructArrayType('line_elevation_ground_scale', lineElevationGroundScaleAttributes);
 
 // skybox vertex array
 createStructArrayType(`skybox_vertex`, skyboxAttributes);

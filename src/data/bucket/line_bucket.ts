@@ -3,8 +3,9 @@ import {
     LineExtLayoutArray,
     LinePatternLayoutArray,
     LineZOffsetExtArray,
+    LineElevationGroundScaleArray,
 } from '../array_types';
-import {members as layoutAttributes, lineZOffsetAttributes} from './line_attributes';
+import {members as layoutAttributes, lineZOffsetAttributes, lineElevationGroundScaleAttributes} from './line_attributes';
 import {members as layoutAttributesExt} from './line_attributes_ext';
 import {members as layoutAttributesPattern} from './line_attributes_pattern';
 import SegmentVector from '../segment';
@@ -99,6 +100,7 @@ type GradientTexture = {
 type LineProgressFeatures = {
     zOffset: number;
     variableWidth: number;
+    elevationGroundScale: number;
 };
 
 interface Subsegment {
@@ -121,6 +123,7 @@ class LineBucket implements Bucket {
     lineClips: LineClips | null | undefined;
     zOffsetValue: PossiblyEvaluatedValue<number>;
     variableWidthValue: PossiblyEvaluatedValue<number>;
+    elevationGroundScaleValue: PossiblyEvaluatedValue<number>;
     lineFeature: BucketFeature;
 
     e1: number;
@@ -155,6 +158,9 @@ class LineBucket implements Bucket {
     zOffsetVertexArray: LineZOffsetExtArray;
     zOffsetVertexBuffer: VertexBuffer;
 
+    elevationGroundScaleVertexArray: LineElevationGroundScaleArray;
+    elevationGroundScaleVertexBuffer: VertexBuffer;
+
     indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
 
@@ -172,6 +178,7 @@ class LineBucket implements Bucket {
     evaluationGlobals = {'zoom': 0, 'lineProgress': undefined};
 
     elevationType: ElevationType = 'none';
+    isSeaLevelReference: boolean = false;
     heightRange: Range | undefined;
 
     worldview: string;
@@ -203,6 +210,7 @@ class LineBucket implements Bucket {
         this.segments = new SegmentVector();
         this.maxLineLength = 0;
         this.zOffsetVertexArray = new LineZOffsetExtArray();
+        this.elevationGroundScaleVertexArray = new LineElevationGroundScaleArray();
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         // A vector tile is usually rendered over 128x128 terrain grid. Half of that frequency (step is EXTENT / 64)
         // should be enough since line elevation over terrain samples neighboring points.
@@ -238,6 +246,7 @@ class LineBucket implements Bucket {
             if (this.elevationType === 'offset' && elevationReference === 'none') {
                 warnOnce(`line-elevation-reference: ground is used for the layer ${this.layerIds[0]} because non-zero line-z-offset value was found.`);
             }
+            this.isSeaLevelReference = elevationReference === 'sea';
         }
 
         const crossSlope = this.layers[0].layout.get('line-cross-slope');
@@ -397,6 +406,10 @@ class LineBucket implements Bucket {
                 this.zOffsetVertexBuffer = context.createVertexBuffer(this.zOffsetVertexArray, lineZOffsetAttributes.members, true);
             }
 
+            if (!this.elevationGroundScaleVertexBuffer && this.elevationGroundScaleVertexArray.length > 0) {
+                this.elevationGroundScaleVertexBuffer = context.createVertexBuffer(this.elevationGroundScaleVertexArray, lineElevationGroundScaleAttributes.members, true);
+            }
+
             this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
             this.indexBuffer = context.createIndexBuffer(this.indexArray);
         }
@@ -408,6 +421,9 @@ class LineBucket implements Bucket {
         if (!this.layoutVertexBuffer) return;
         if (this.zOffsetVertexBuffer) {
             this.zOffsetVertexBuffer.destroy();
+        }
+        if (this.elevationGroundScaleVertexBuffer) {
+            this.elevationGroundScaleVertexBuffer.destroy();
         }
         this.layoutVertexBuffer.destroy();
         this.indexBuffer.destroy();
@@ -453,6 +469,14 @@ class LineBucket implements Bucket {
         const lineWidth = paint.get('line-width').value;
         if (lineWidth.kind !== 'constant' && lineWidth.isLineProgressConstant === false) {
             this.variableWidthValue = lineWidth;
+        }
+
+        // Only set elevationGroundScaleValue for sea level reference lines with non-default value
+        if (this.isSeaLevelReference) {
+            const elevationGroundScaleExpr = layout.get('line-elevation-ground-scale').value;
+            if (elevationGroundScaleExpr.kind !== 'constant' || elevationGroundScaleExpr.value !== 0) {
+                this.elevationGroundScaleValue = elevationGroundScaleExpr;
+            }
         }
 
         if (this.elevationType === 'road') {
@@ -1032,14 +1056,25 @@ class LineBucket implements Bucket {
         if (this.variableWidthValue && this.variableWidthValue.kind !== 'constant') {
             variableWidth = this.variableWidthValue.evaluate(this.evaluationGlobals, this.lineFeature) || 0.0;
         }
+        const elevationGroundScale = this.evaluateElevationGroundScale();
         if (this.elevationType !== 'offset') {
-            return {zOffset: 0.0, variableWidth};
+            return {zOffset: 0.0, variableWidth, elevationGroundScale};
         }
         if (this.zOffsetValue.kind === 'constant') {
-            return {zOffset: this.zOffsetValue.value, variableWidth};
+            return {zOffset: this.zOffsetValue.value, variableWidth, elevationGroundScale};
         }
         const zOffset: number = this.zOffsetValue.evaluate(this.evaluationGlobals, this.lineFeature) || 0.0;
-        return {zOffset, variableWidth};
+        return {zOffset, variableWidth, elevationGroundScale};
+    }
+
+    evaluateElevationGroundScale(): number {
+        if (!this.elevationGroundScaleValue) {
+            return 0.0;
+        }
+        if (this.elevationGroundScaleValue.kind === 'constant') {
+            return this.elevationGroundScaleValue.value;
+        }
+        return this.elevationGroundScaleValue.evaluate(this.evaluationGlobals, this.lineFeature) || 0.0;
     }
 
     /**
@@ -1183,6 +1218,11 @@ class LineBucket implements Bucket {
                 lineProgressFeatures.variableWidth,
                 lineProgressFeatures.variableWidth
             );
+        }
+        // Populate elevationGroundScaleVertexArray only when the property is used
+        if (this.elevationGroundScaleValue) {
+            const elevationGroundScale = lineProgressFeatures ? lineProgressFeatures.elevationGroundScale : this.evaluateElevationGroundScale();
+            this.elevationGroundScaleVertexArray.emplaceBack(elevationGroundScale);
         }
         assert(this.zOffsetVertexArray.length === this.layoutVertexArray.length || this.elevationType !== 'offset');
     }

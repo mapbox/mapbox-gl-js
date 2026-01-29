@@ -15,6 +15,9 @@ in vec4 a_data;
 #if defined(ELEVATED) || defined(ELEVATED_ROADS)
 in vec3 a_z_offset_width;
 #endif
+#ifdef ELEVATED
+in float a_elevation_ground_scale;
+#endif
 // Includes in order: a_uv_x, a_split_index, a_line_progress
 // to reduce attribute count on older devices.
 // Only line-trim-offset will requires a_packed info.
@@ -155,11 +158,12 @@ void main() {
     vec2 offsetTile = offset2 * u_pixels_to_tile_units;
     vec2 offset_pos = pos + offsetTile;
     float ele = 0.0;
+    float scaled_z_offset = a_z_offset * mix(1.0, u_exaggeration, a_elevation_ground_scale);
 #ifdef CROSS_SLOPE_VERTICAL
     // Vertical line
     // The least significant bit of a_pos_normal.y hold 1 if it's on top, 0 for bottom
     float top = a_pos_normal.y - 2.0 * floor(a_pos_normal.y * 0.5);
-    float line_height = 2.0 * u_tile_to_meter * outset * top * u_pixels_to_tile_units[1][1] + a_z_offset;
+    float line_height = 2.0 * u_tile_to_meter * outset * top * u_pixels_to_tile_units[1][1] + scaled_z_offset;
     ele = sample_elevation(offset_pos) + line_height;
     // Ignore projected extrude for vertical lines
     projected_extrude = vec4(0);
@@ -170,14 +174,14 @@ void main() {
     float ele1 = max(sample_elevation(offset_pos + extrude), sample_elevation(offset_pos + extrude / 2.0));
     float ele2 = max(sample_elevation(offset_pos - extrude), sample_elevation(offset_pos - extrude / 2.0));
     float ele_max = max(ele0, max(ele1, ele2));
-    ele = ele_max + a_z_offset;
+    ele = ele_max + scaled_z_offset;
 #else // CROSS_SLOPE_HORIZONTAL
     // Line follows terrain slope
     float ele0 = sample_elevation(offset_pos);
     float ele1 = max(sample_elevation(offset_pos + extrude), sample_elevation(offset_pos + extrude / 2.0));
     float ele2 = max(sample_elevation(offset_pos - extrude), sample_elevation(offset_pos - extrude / 2.0));
     float ele_max = max(ele0, 0.5 * (ele1 + ele2));
-    ele = ele_max - ele0 + ele1 + a_z_offset;
+    ele = ele_max - ele0 + ele1 + scaled_z_offset;
 #endif // CROSS_SLOPE_HORIZONTAL
 #endif // CROSS_SLOPE_VERTICAL
     gl_Position = u_matrix * vec4(offset_pos, ele, 1.0) + projected_extrude;

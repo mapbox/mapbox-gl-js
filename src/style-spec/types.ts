@@ -716,7 +716,9 @@ export type LineLayerSpecification = {
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
-        "line-width-unit"?: PropertyValueSpecification<"pixels" | "meters">
+        "line-width-unit"?: PropertyValueSpecification<"pixels" | "meters">,
+        "line-elevation-ground-scale"?: DataDrivenPropertyValueSpecification<number>,
+        "line-elevation-ground-scale-transition"?: TransitionSpecification
     },
     "paint"?: {
         "line-opacity"?: DataDrivenPropertyValueSpecification<number>,

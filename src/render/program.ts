@@ -197,7 +197,7 @@ class Program<Us extends UniformBindings> {
 
         // Symbol and circle layer are depth (terrain + 3d layers) occluded
         // For the sake of native compatibility depth occlusion goes via terrain uniforms block
-        if (fixedDefines.includes('TERRAIN') || name.includes('symbol') || name.includes('circle')) {
+        if (fixedDefines.includes('TERRAIN') || fixedDefines.includes('ELEVATED') || name.includes('symbol') || name.includes('circle')) {
             this.terrainUniforms = terrainUniforms(context);
         }
         if (fixedDefines.includes('GLOBE')) {
