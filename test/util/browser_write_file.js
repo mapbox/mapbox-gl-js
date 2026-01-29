@@ -1,4 +1,3 @@
-/* eslint-env browser */
 /* eslint-disable import-x/no-commonjs */
 /* global WorkerGlobalScope */
 

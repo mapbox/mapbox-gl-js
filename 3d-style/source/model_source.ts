@@ -147,7 +147,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
                 this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
             }
         } catch (err) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             this.fire(new ErrorEvent(new Error(`Could not load model ${modelId} from ${modelSpec.uri}: ${(err as Error).message}`)));
         }
     }

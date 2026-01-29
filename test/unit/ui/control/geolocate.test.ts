@@ -84,7 +84,7 @@ test('GeolocateControl error event includes GeolocationPositionError constants',
             expect(error.PERMISSION_DENIED).toEqual(1);
             expect(error.POSITION_UNAVAILABLE).toEqual(2);
             expect(error.TIMEOUT).toEqual(3);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
             resolve();
         });
         geolocate._onError(mockError);
