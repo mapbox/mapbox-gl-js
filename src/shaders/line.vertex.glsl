@@ -221,8 +221,17 @@ void main() {
     float left_width = a_z_offset_width.y;
     float right_width = a_z_offset_width.z;
     halfwidth = (u_width_scale * (left ? left_width : right_width)) / 2.0;
-    a_z_offset += left ? side_z_offset : 0.0;
-    v_normal = side_z_offset > 0.0 && left ? vec2(0.0) : v_normal;
+
+    if (side_z_offset != 0.0) {
+        // Lift the side of the line asymmetrically, based on the sign of side_z_offset
+        float left_f = step(1.0, normal.y);
+        float is_negative = step(side_z_offset, 0.0);
+        float apply = mix(1.0 - left_f, left_f, is_negative);
+
+        a_extrude *= apply;
+        a_z_offset += abs(side_z_offset) * apply;
+        v_normal *= left_f;
+    }
 
     // Variable width is used as an offset for non-zero border_widths case.
     // Then the width of the visible part is defined by border_width.
