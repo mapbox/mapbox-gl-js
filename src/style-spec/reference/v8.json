@@ -3221,7 +3221,6 @@
       "minimum": [0.1, 0.1],
       "maximum": [10, 10],
       "experimental": true,
-      "private": true,
       "expression": {
         "interpolated": false
       },
@@ -3738,7 +3737,6 @@
       "minimum": [0.1, 0.1],
       "maximum": [10, 10],
       "experimental": true,
-      "private": true,
       "expression": {
         "interpolated": false
       },

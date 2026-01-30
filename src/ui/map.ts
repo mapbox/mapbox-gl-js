@@ -399,6 +399,11 @@ const defaultOptions = {
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings such as control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  * see [`src/ui/default_locale.js`](https://github.com/mapbox/mapbox-gl-js/blob/main/src/ui/default_locale.js) for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
+ * @param {number} [options.scaleFactor=1] The scale factor for text and icon sizes in symbol layers.
+ * A value greater than `1` increases label sizes, useful for improving accessibility or adjusting
+ * for high-density displays. The scale factor is clamped per-layer by `text-size-scale-range`
+ * and `icon-size-scale-range` style properties.
+ * This option is experimental and may change in future releases.
  * @param {'raster' | 'icon_set' | 'auto'} [options.spriteFormat='auto'] The format of the image sprite to use. If set to `'auto'`, vector iconset will be used for all mapbox-hosted sprites and raster sprite for all custom URLs.
  * @param {ProjectionSpecification} [options.projection='mercator'] The [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) the map should be rendered in.
  * Supported projections are:
@@ -1209,28 +1214,57 @@ export class Map extends Camera {
     getMaxPitch(): number { return this.transform.maxPitch; }
 
     /**
-     * Returns the map's current scale factor.
+     * Returns the map's current scale factor for symbol sizing.
      *
-     * @returns {number} Returns the map's scale factor.
-     * @private
+     * The scale factor multiplies text and icon sizes in symbol layers, useful for
+     * accessibility or adapting to different display densities.
+     * This method is experimental and may change in future releases.
+     *
+     * @memberof Map#
+     * @returns {number} The map's current scale factor (default `1`).
+     * @experimental
      *
      * @example
      * const scaleFactor = map.getScaleFactor();
+     *
+     * @see {@link Map#setScaleFactor}
+     * @see [text-size-scale-range](https://docs.mapbox.com/style-spec/reference/layers/#layout-symbol-text-size-scale-range)
      */
     getScaleFactor(): number {
         return this._scaleFactor;
     }
 
     /**
-     * Sets the map's scale factor.
+     * Sets the map's scale factor for symbol sizing.
      *
-     * @param {number} scaleFactor The scale factor to set.
+     * The scale factor multiplies text and icon sizes in symbol layers. This is useful for
+     * improving accessibility (larger labels for users with vision impairments) or adjusting
+     * label sizes for different display densities.
+     *
+     * The effective scale factor for each symbol layer is clamped to that layer's
+     * `text-size-scale-range` and `icon-size-scale-range` properties,
+     * allowing fine-grained control over which layers scale and by how much.
+     *
+     * Calling this method triggers a re-layout of symbol layers whose effective scale factor changed.
+     * This method is experimental and may change in future releases.
+     *
+     * @memberof Map#
+     * @param {number} scaleFactor The scale factor to apply (default `1`). Values greater
+     * than `1` increase sizes; values less than `1` decrease sizes.
      * @returns {Map} Returns itself to allow for method chaining.
-     * @private
+     * @experimental
      *
      * @example
-     *
+     * // Increase map labels for accessibility (clamped by text-size-scale-range)
      * map.setScaleFactor(2);
+     *
+     * @example
+     * // Reset to default size
+     * map.setScaleFactor(1);
+     *
+     * @see {@link Map#getScaleFactor}
+     * @see [text-size-scale-range](https://docs.mapbox.com/style-spec/reference/layers/#layout-symbol-text-size-scale-range)
+     * @see [icon-size-scale-range](https://docs.mapbox.com/style-spec/reference/layers/#layout-symbol-icon-size-scale-range)
      */
     setScaleFactor(scaleFactor: number): this {
         this._scaleFactor = scaleFactor;
