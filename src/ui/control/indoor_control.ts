@@ -20,16 +20,29 @@ class IndoorControl implements IControl {
     _model: IndoorControlModel | null;
 
     constructor() {
-        bindAll(['_onIndoorUpdate'], this);
+        bindAll(['_onIndoorUpdate', '_onStyleData'], this);
     }
 
     onAdd(map: Map): HTMLElement {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-group');
-        if (this._map.style) {
-            this._map.style.indoorManager.on('selector-update', (controlModel: IndoorControlModel) => this._onIndoorUpdate(controlModel));
-        }
+        this._container.style.display = 'none';
+        this._map.on('styledata', this._onStyleData);
+        this._updateConnection();
         return this._container;
+    }
+
+    _onStyleData() {
+        this._updateConnection();
+    }
+
+    _updateConnection() {
+        if (this._map && this._map.style && this._map.style.indoorManager) {
+            const manager = this._map.style.indoorManager;
+            manager.off('selector-update', this._onIndoorUpdate);
+            manager.on('selector-update', this._onIndoorUpdate);
+            this._onIndoorUpdate(manager.getControlState());
+        }
     }
 
     _createButton(className: string, fn: (e: Event) => unknown): HTMLButtonElement {
@@ -53,15 +66,17 @@ class IndoorControl implements IControl {
         if (this._container) {
             this._container.remove();
         }
-
-        if (this._map && this._map.style) {
-            this._map.style.indoorManager.off('selector-update', this._onIndoorUpdate);
+        if (this._map) {
+            this._map.off('styledata', this._onStyleData);
+            if (this._map.style) {
+                this._map.style.indoorManager.off('selector-update', this._onIndoorUpdate);
+            }
             this._map = null;
         }
     }
 
     getDefaultPosition(): ControlPosition {
-        return 'right';
+        return 'top-right';
     }
 
     _onIndoorUpdate(model: IndoorControlModel | null) {
@@ -70,16 +85,12 @@ class IndoorControl implements IControl {
             this._container.style.display = 'none';
             return;
         }
-
         const oldModel = this._model;
         this._model = model;
         this._container.style.display = 'inline-block';
-        this._container.style.borderRadius = '8px';
-
         if (oldModel) {
             Array.from(this._container.children).forEach(child => child.remove());
         }
-
         if (model.floors.length > 0) {
             this.addBuildingsToggleButton();
             this.addCurrentFloors(model.floors, model.activeFloorsVisible);
@@ -95,15 +106,11 @@ class IndoorControl implements IControl {
             }
         });
         DOM.create('span', `mapboxgl-ctrl-icon`, buildingsButton).setAttribute('aria-hidden', 'true');
-
         buildingsButton.classList.add('mapboxgl-ctrl-level-button', 'mapboxgl-ctrl-buildings-toggle');
-
         if (this._model && !this._model.activeFloorsVisible) {
             buildingsButton.classList.add('mapboxgl-ctrl-level-button-selected');
         }
-
         this._container.append(buildingsButton);
-        this._createSeparator();
     }
 
     _updateBuildingsButtonState() {
@@ -128,11 +135,9 @@ class IndoorControl implements IControl {
             const zIndexText = floor.zIndex.toString();
             const buttonTitle = floorName ? Array.from(floorName).slice(0, 3).join('') : zIndexText;
             this._setButtonTitle(levelButton, buttonTitle);
-
             if (this._model && floor.id === this._model.selectedFloorId && showSelectedFloor) {
                 levelButton.classList.add('mapboxgl-ctrl-level-button-selected');
             }
-
             this._container.append(levelButton);
 
             // Add separator after each button except the last one
@@ -142,5 +147,4 @@ class IndoorControl implements IControl {
         }
     }
 }
-
 export default IndoorControl;
