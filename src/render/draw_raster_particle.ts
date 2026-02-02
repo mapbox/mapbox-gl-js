@@ -27,7 +27,7 @@ import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
 import rasterFade from './raster_fade';
 import assert from 'assert';
 import {RGBAImage} from '../util/image';
-import {smoothstep} from '../util/util';
+import {smoothstep, esgtsaHash} from '../util/util';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_constants';
 
 import type Transform from '../geo/transform';
@@ -58,20 +58,12 @@ function drawRasterParticle(painter: Painter, sourceCache: SourceCache, layer: R
 function createPositionRGBAData(textureDimension: number): Uint8Array {
     const numParticles = textureDimension * textureDimension;
     const RGBAPositions = new Uint8Array(4 * numParticles);
-    // Hash function from https://www.shadertoy.com/view/XlGcRh
-    const esgtsa = function (s: number): number {
-        s |= 0;
-        s = Math.imul(s ^ 2747636419, 2654435769);
-        s = Math.imul(s ^ (s >>> 16), 2654435769);
-        s = Math.imul(s ^ (s >>> 16), 2654435769);
-        return (s >>> 0) / 4294967296;
-    };
     // Pack random positions in [0, 1] into RGBA pixels. Matches the GLSL
     // `pack_pos_to_rgba` behavior.
     const invScale = 1.0 / RASTER_PARTICLE_POS_SCALE;
     for (let i = 0; i < numParticles; i++) {
-        const x = invScale * (esgtsa(2 * i + 0) + RASTER_PARTICLE_POS_OFFSET);
-        const y = invScale * (esgtsa(2 * i + 1) + RASTER_PARTICLE_POS_OFFSET);
+        const x = invScale * (esgtsaHash(2 * i + 0) + RASTER_PARTICLE_POS_OFFSET);
+        const y = invScale * (esgtsaHash(2 * i + 1) + RASTER_PARTICLE_POS_OFFSET);
 
         const rx = x;
         const ry = (x * 255.0) % 1;

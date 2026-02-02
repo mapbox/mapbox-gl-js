@@ -9,7 +9,7 @@ import {mat4, quat, vec3, vec4} from 'gl-matrix';
 import {getMetersPerPixelAtLatitude, mercatorZfromAltitude, tileToMeter} from '../../src/geo/mercator_coordinate';
 import TextureSlots from './texture_slots';
 import {convertModelMatrixForGlobe} from '../util/model_util';
-import {clamp, warnOnce} from '../../src/util/util';
+import {clamp, warnOnce, esgtsaHash} from '../../src/util/util';
 import assert from 'assert';
 import {DEMSampler} from '../../src/terrain/elevation';
 import {Aabb} from '../../src/util/primitives';
@@ -21,6 +21,11 @@ import {pointInFootprint} from '../../3d-style/source/replacement_source';
 import Point from '@mapbox/point-geometry';
 import LngLat from '../../src/geo/lng_lat';
 import {tileToLngLat} from '../style/style_layer/model_style_layer';
+import SegmentVector from '../../src/data/segment';
+import {PosArray, TriangleIndexArray} from '../../src/data/array_types';
+import posAttributes from '../../src/data/pos_attributes';
+import {debugUniformValues} from '../../src/render/program/debug_program';
+import Color from '../../src/style-spec/util/color';
 
 import type Program from '../../src/render/program';
 import type Transform from '../../src/geo/transform';
@@ -57,6 +62,8 @@ type SortedMesh = {
     modelOpacity: number;
     materialOverride?: MaterialOverride;
     modelColor?: [number, number, number, number];
+    node: ModelNode;
+    modelMatrix: mat4;
 };
 
 type SortedNode = {
@@ -313,7 +320,7 @@ function prepareMeshes(painter: Painter, node: ModelNode, modelMatrix: mat4, pro
             if (materialOverride && materialOverride.opacity <= 0) continue;
 
             if (mesh.material.alphaMode !== 'BLEND') {
-                const opaqueMesh: SortedMesh = {mesh, depth: 0.0, modelIndex, worldViewProjection, nodeModelMatrix, isLightMesh, materialOverride, modelOpacity, modelColor: modelColorMix};
+                const opaqueMesh: SortedMesh = {mesh, depth: 0.0, modelIndex, worldViewProjection, nodeModelMatrix, isLightMesh, materialOverride, modelOpacity, modelColor: modelColorMix, node, modelMatrix};
                 opaqueMeshes.push(opaqueMesh);
                 continue;
             }
@@ -321,7 +328,7 @@ function prepareMeshes(painter: Painter, node: ModelNode, modelMatrix: mat4, pro
             const centroidPos = vec3.transformMat4([], mesh.centroid, worldViewProjection);
             // Filter meshes behind the camera if in perspective mode
             if (!transform.isOrthographic && centroidPos[2] <= 0.0) continue;
-            const transparentMesh: SortedMesh = {mesh, depth: centroidPos[2], modelIndex, worldViewProjection, nodeModelMatrix, isLightMesh, materialOverride, modelOpacity, modelColor: modelColorMix};
+            const transparentMesh: SortedMesh = {mesh, depth: centroidPos[2], modelIndex, worldViewProjection, nodeModelMatrix, isLightMesh, materialOverride, modelOpacity, modelColor: modelColorMix, node, modelMatrix};
             transparentMeshes.push(transparentMesh);
         }
     }
@@ -345,6 +352,82 @@ function drawShadowCaster(mesh: Mesh, matrix: mat4, painter: Painter, layer: Mod
     program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
         uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
         undefined, undefined);
+}
+
+function getOrCreateFootprintMesh(painter: Painter, node: ModelNode) {
+    if (node.footprintDebugMesh) return node.footprintDebugMesh;
+    if (!node.footprint) return null;
+
+    const context = painter.context;
+    const vertices = node.footprint.vertices;
+    const indices = node.footprint.indices;
+
+    const vertexArray = new PosArray();
+    vertexArray.reserve(vertices.length);
+    for (const v of vertices) {
+        vertexArray.emplaceBack(v.x, v.y);
+    }
+
+    const indexArray = new TriangleIndexArray();
+    indexArray.reserve(indices.length);
+    for (let i = 0; i < indices.length; i += 3) {
+        indexArray.emplaceBack(indices[i], indices[i + 1], indices[i + 2]);
+    }
+
+    const vertexBuffer = context.createVertexBuffer(vertexArray, posAttributes.members);
+    const indexBuffer = context.createIndexBuffer(indexArray);
+    const segments = SegmentVector.simpleSegment(0, 0, vertices.length, indices.length);
+
+    // Generate a deterministic color based on the node ID or name
+    const idStr = node.id || node.name || 'footprint';
+    let seed: number;
+
+    const numericId = parseInt(idStr, 10);
+    if (!isNaN(numericId)) {
+        seed = numericId;
+    } else {
+        seed = stringHash(idStr);
+    }
+
+    const r = esgtsaHash(seed);
+    const g = esgtsaHash(seed + 1);
+    const b = esgtsaHash(seed + 2);
+
+    node.footprintDebugMesh = {
+        vertexBuffer,
+        indexBuffer,
+        segments,
+        color: new Color(r, g, b, 0.5)
+    };
+
+    return node.footprintDebugMesh;
+}
+
+function stringHash(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = (((hash << 5) - hash) + str.charCodeAt(i)) | 0;
+    }
+    return hash;
+}
+
+function drawFootprint(painter: Painter, layer: ModelStyleLayer, node: ModelNode, mvpMatrix: mat4) {
+    const mesh = getOrCreateFootprintMesh(painter, node);
+    if (!mesh) return;
+
+    const context = painter.context;
+    const gl = context.gl;
+
+    const program = painter.getOrCreateProgram('debug');
+
+    const color = mesh.color;
+    const depthMode = DepthMode.disabled;
+    // We bind the empty (transparent) texture to ensure no overlay is drawn.
+    context.activeTexture.set(gl.TEXTURE0);
+    painter.emptyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+    program.draw(painter, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.alphaBlended, CullFaceMode.disabled,
+        debugUniformValues(mvpMatrix, color.toPremultipliedRenderColor(null)), '$debug',
+        mesh.vertexBuffer, mesh.indexBuffer, mesh.segments);
 }
 
 // Evaluate feature state for node names
@@ -521,6 +604,35 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         // Finish the render pass
         cleanup();
         return;
+    }
+
+    if (painter._debugParams.show3DModelFootprints) {
+        const proj = painter.transform.projMatrix;
+        const footprints = new Map<string, {node: ModelNode, mvp: mat4}>();
+
+        const addFootprint = (node: ModelNode, matrix: mat4) => {
+            if (node.footprint) {
+                const id = node.id || node.name || 'footprint';
+                if (!footprints.has(id)) {
+                    const mvp = mat4.multiply([] as unknown as mat4, proj, matrix);
+                    footprints.set(id, {node, mvp});
+                }
+            }
+        };
+
+        for (const opaqueMesh of opaqueMeshes) {
+            addFootprint(opaqueMesh.node, opaqueMesh.modelMatrix);
+        }
+        for (const transparentMesh of transparentMeshes) {
+            addFootprint(transparentMesh.node, transparentMesh.modelMatrix);
+        }
+
+        const sortedIds = Array.from(footprints.keys()).sort();
+
+        for (const id of sortedIds) {
+            const {node, mvp} = footprints.get(id);
+            drawFootprint(painter, layer, node, mvp);
+        }
     }
 
     drawSortedMeshes(painter, layer, transparentMeshes, opaqueMeshes, modelParametersVector);
@@ -981,6 +1093,9 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
 
     const stats = layer.getLayerRenderingStats();
     const drawTiles = function () {
+        // Keyed by ID to deduplicate footprints across tiles
+        const footprints = new Map<string, {node: ModelNode, mvp: mat4}>();
+
         let start, end, step;
         // When front cutoff is enabled the tiles are iterated in back to front order
         if (frontCutoffEnabled) {
@@ -1136,6 +1251,13 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 const nodeInfo = sortedNode.nodeInfo;
                 const node = nodeInfo.node;
 
+                if (painter._debugParams.show3DModelFootprints && node.footprint) {
+                    const id = node.id || node.name || 'footprint';
+                    if (!footprints.has(id)) {
+                        footprints.set(id, {node, mvp: sortedNode.wvpForTile});
+                    }
+                }
+
                 let lightingMatrix = mat4.multiply([], zScaleMatrix, sortedNode.tileModelMatrix);
                 mat4.multiply(lightingMatrix, negCameraPosMatrix, lightingMatrix);
                 const normalMatrix = mat4.invert([], lightingMatrix);
@@ -1272,6 +1394,14 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         undefined, dynamicBuffers);
                 }
+            }
+        }
+
+        if (painter._debugParams.show3DModelFootprints && footprints.size > 0) {
+            const sortedIds = Array.from(footprints.keys()).sort();
+            for (const id of sortedIds) {
+                const {node, mvp} = footprints.get(id);
+                drawFootprint(painter, layer, node, mvp);
             }
         }
     };

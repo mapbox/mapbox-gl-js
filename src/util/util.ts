@@ -898,4 +898,16 @@ export function easeIn(x: number) {
     return x * x * x * x * x;
 }
 
+/**
+ * Hash function from https://www.shadertoy.com/view/XlGcRh
+ * Matches gl-native's esgtsaHash in mbgl/util/random.hpp
+ */
+export function esgtsaHash(s: number): number {
+    s = s >>> 0; // Ensure unsigned 32-bit integer
+    s = Math.imul(s ^ 2747636419, 2654435769) >>> 0;
+    s = Math.imul(s ^ (s >>> 16), 2654435769) >>> 0;
+    s = Math.imul(s ^ (s >>> 16), 2654435769) >>> 0;
+    return s / 4294967296;
+}
+
 export {deepEqual};

@@ -133,6 +133,12 @@ export type ModelNode = {
     anchor: vec2;
     hidden: boolean;
     isGeometryBloom: boolean;
+    footprintDebugMesh?: {
+        vertexBuffer: VertexBuffer;
+        indexBuffer: IndexBuffer;
+        segments: SegmentVector;
+        color: Color;
+    };
 };
 
 export const ModelTraits = {
@@ -495,6 +501,11 @@ export function destroyBuffers(node: ModelNode) {
                 destroyTextures(mesh.material);
             }
         }
+    }
+    if (node.footprintDebugMesh) {
+        node.footprintDebugMesh.vertexBuffer.destroy();
+        node.footprintDebugMesh.indexBuffer.destroy();
+        node.footprintDebugMesh.segments.destroy();
     }
     if (node.children) {
         for (const child of node.children) {

@@ -250,6 +250,7 @@ class Painter {
         continousRedraw: boolean;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         enabledLayers: any;
+        show3DModelFootprints: boolean;
     };
 
     _timeStamp: number;
@@ -294,6 +295,7 @@ class Painter {
             showTerrainProxyTiles: false,
             fpsWindow: 30,
             continousRedraw: false,
+            show3DModelFootprints: false,
             enabledLayers: {
             }
         };
@@ -306,6 +308,9 @@ class Painter {
         }
 
         DevTools.addParameter(this._debugParams, 'showTerrainProxyTiles', 'Terrain', {}, () => {
+            this.style.map.triggerRepaint();
+        });
+        DevTools.addParameter(this._debugParams, 'show3DModelFootprints', 'Debug', {}, () => {
             this.style.map.triggerRepaint();
         });
         DevTools.addParameter(this._debugParams, 'forceEnablePrecipitation', 'Precipitation');
