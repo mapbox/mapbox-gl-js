@@ -38,11 +38,12 @@ uniform float u_width_scale;
 uniform highp float u_floor_width_scale;
 
 #ifdef RENDER_LINE_CURVE
-uniform vec3 u_curve_point_a;
-uniform vec3 u_curve_point_b;
-uniform vec3 u_curve_point_c;
-uniform vec3 u_curve_point_d;
-uniform vec3 u_curve_point_e;
+// Encodes curve control points in 3x3 matrices for x, y, z
+// Note: Could be replaced with an uniform array once Metal support is implemented
+uniform mat3 u_curve_points_x;
+uniform mat3 u_curve_points_y;
+uniform mat3 u_curve_points_z;
+uniform float u_curve_point_count;
 #endif
 
 #ifdef ELEVATED
@@ -107,13 +108,15 @@ out highp float v_depth;
 
 #ifdef RENDER_LINE_CURVE
 
-vec4 curveWeights(float curve_seg) {
-    return vec4(
-        1.0 - step(0.5, abs(curve_seg)),
-        1.0 - step(0.5, abs(curve_seg - 1.0)),
-        1.0 - step(0.5, abs(curve_seg - 2.0)),
-        1.0 - step(0.5, abs(curve_seg - 3.0))
-    );
+vec3 getCurvePoint(int index) {
+    int row = index / 3;
+    int col = index - row * 3;
+
+    float x = u_curve_points_x[row][col];
+    float y = u_curve_points_y[row][col];
+    float z = u_curve_points_z[row][col];
+
+    return vec3(x, y, z);
 }
 
 vec3 catmullRom(vec3 p0, vec3 p1, vec3 p2, vec3 p3, float t) {
@@ -141,15 +144,29 @@ struct CurveResult {
     vec2 tangent;    // tangent direction
 };
 
-CurveResult calculateCurve(float tl, vec4 w) {
-    vec3 pA0 = u_curve_point_a - (u_curve_point_b - u_curve_point_a);
-    vec3 pE3 = u_curve_point_e + (u_curve_point_e - u_curve_point_d);
-    vec3 p0 = w.x * pA0 + w.y * u_curve_point_a + w.z * u_curve_point_b + w.w * u_curve_point_c;
-    vec3 p1 = w.x * u_curve_point_a + w.y * u_curve_point_b + w.z * u_curve_point_c + w.w * u_curve_point_d;
-    vec3 p2 = w.x * u_curve_point_b + w.y * u_curve_point_c + w.z * u_curve_point_d + w.w * u_curve_point_e;
-    vec3 p3 = w.x * u_curve_point_c + w.y * u_curve_point_d + w.z * u_curve_point_e + w.w * pE3;
-    vec3 point = catmullRom(p0, p1, p2, p3, tl);
-    vec2 tangent = catmullRomTangent(p0.xy, p1.xy, p2.xy, p3.xy, tl) * 4.0;
+CurveResult calculateCurve(float line_progress) {
+    float curve_progress = line_progress * (u_curve_point_count - 1.0);
+    float curve_progress_local = fract(curve_progress);
+    float curve_segment = floor(curve_progress);
+    int seg = int(curve_segment);
+
+    vec3 p1 = getCurvePoint(seg);
+    vec3 p2 = getCurvePoint(seg + 1);
+
+    float is_first_seg = step(curve_segment, 0.5);
+    vec3 p0_extrapolated = p1 - (p2 - p1);
+    vec3 p0_fetched = getCurvePoint(max(seg - 1, 0));
+    vec3 p0 = mix(p0_fetched, p0_extrapolated, is_first_seg);
+
+    int last_seg = int(u_curve_point_count) - 2;
+    float is_last_seg = step(float(last_seg) - 0.5, curve_segment);
+    vec3 p3_extrapolated = p2 + (p2 - p1);
+    vec3 p3_fetched = getCurvePoint(min(seg + 2, int(u_curve_point_count) - 1));
+    vec3 p3 = mix(p3_fetched, p3_extrapolated, is_last_seg);
+
+    vec3 point = catmullRom(p0, p1, p2, p3, curve_progress_local);
+    vec2 tangent = catmullRomTangent(p0.xy, p1.xy, p2.xy, p3.xy, curve_progress_local) * (u_curve_point_count - 1.0);
+
     CurveResult result;
     result.point = point;
     result.tangent = tangent;
@@ -202,11 +219,7 @@ void main() {
     bool left = normal.y == 1.0;
 
 #ifdef RENDER_LINE_CURVE
-    float curve_progress = clamp(line_progress, 0.0, 0.999999) * 4.0;
-    float curve_progress_local = fract(curve_progress);
-    float curve_segment = floor(curve_progress);
-    vec4 curve_w = curveWeights(curve_segment);
-    CurveResult curve = calculateCurve(curve_progress_local, curve_w);
+    CurveResult curve = calculateCurve(line_progress);
     pos = curve.point.xy * 8192.0;
     a_extrude = length(a_extrude) * normalize(curve.tangent);
     a_extrude = left ? vec2(-a_extrude.y, a_extrude.x) : vec2(a_extrude.y, -a_extrude.x);
