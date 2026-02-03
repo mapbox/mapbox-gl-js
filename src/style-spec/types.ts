@@ -700,13 +700,7 @@ export type LineLayerSpecification = {
         "line-miter-limit"?: PropertyValueSpecification<number>,
         "line-round-limit"?: PropertyValueSpecification<number>,
         "line-sort-key"?: DataDrivenPropertyValueSpecification<number>,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "line-z-offset"?: DataDrivenPropertyValueSpecification<number>,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "line-elevation-reference"?: "none" | "sea" | "ground" | "hd-road-markup" | ExpressionSpecification,
         /**
          * @experimental This property is experimental and subject to change in future versions.

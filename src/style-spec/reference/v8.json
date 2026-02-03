@@ -2701,8 +2701,7 @@
     },
     "line-z-offset": {
       "type": "number",
-      "experimental": true,
-      "doc": "Vertical offset from ground, in meters. Defaults to 0. This is an experimental property with some known issues:\n * Not supported for globe projection at the moment \n * Elevated line discontinuity is possible on tile borders with terrain enabled \n * Rendering artifacts can happen near line joins and line caps depending on the line styling \n * Rendering artifacts relating to `line-opacity` and `line-blur` \n * Elevated line visibility is determined by layer order \n * Z-fighting issues can happen with intersecting elevated lines \n * Elevated lines don't cast shadows",
+      "doc": "Vertical offset from ground, in meters. Not supported for globe projection at the moment.",
       "default": 0,
       "requires": [
         "line-elevation-reference"
@@ -2747,7 +2746,6 @@
         }
       },
       "default": "none",
-      "experimental": true,
       "transition": false,
       "sdk-support": {
         "basic functionality": {
