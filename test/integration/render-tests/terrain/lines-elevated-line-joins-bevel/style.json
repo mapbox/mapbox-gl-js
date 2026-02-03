@@ -1,0 +1,126 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 300,
+      "width": 1024
+    }
+  },
+  "center": [
+    84.703432,
+    27.787983
+  ],
+  "zoom": 15.35,
+  "pitch": 34,
+  "bearing": 79.2,
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "sprite": "local://sprites/standard",
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.2
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "cast-shadows": true,
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.7
+      }
+    }
+  ],
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 14,
+      "tileSize": 512
+    },
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 18,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "road-street",
+      "type": "line",
+      "metadata": {
+        "mapbox:group": "roads & transit network"
+      },
+      "source": "mapbox",
+      "source-layer": "road",
+      "minzoom": 13,
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "street",
+            "street_limited"
+          ],
+          true,
+          false
+        ],
+        [
+          "match",
+          [
+            "get",
+            "structure"
+          ],
+          [
+            "none",
+            "ford"
+          ],
+          true,
+          false
+        ],
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "LineString"
+        ]
+      ],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "bevel",
+        "line-z-offset": 0.1,
+        "line-elevation-reference": "ground"
+      },
+      "paint": {
+        "line-occlusion-opacity": 0.5,
+        "line-emissive-strength": 0.35,
+        "line-gap-width": 0,
+        "line-width": 20,
+        "line-color": "red",
+        "line-blur": 0,
+        "line-opacity": 1
+      }
+    }
+  ]
+}

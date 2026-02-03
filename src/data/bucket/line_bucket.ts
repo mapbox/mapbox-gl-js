@@ -86,6 +86,11 @@ const COS_STRAIGHT_CORNER = Math.cos(5 * (Math.PI / 180));
 // Angle per triangle for approximating round line joins.
 const DEG_PER_TRIANGLE = 20;
 
+// Multiplier for sharpCornerOffset to determine the threshold distance where
+// cap scaling begins for elevated bevel joins. Caps are scaled down linearly
+// when segment length is below this threshold to prevent overlap artifacts.
+const CAP_SCALE_THRESHOLD_FACTOR = 4.0;
+
 type LineClips = {
     start: number;
     end: number;
@@ -130,6 +135,7 @@ class LineBucket implements Bucket {
     e2: number;
 
     patternJoinNone: boolean;
+    currentLineJoinType: string;
     segmentStart: number;
     segmentStartf32: number;
     segmentPoints: Array<number>;
@@ -630,6 +636,7 @@ class LineBucket implements Bucket {
 
         const joinNone = join === 'none';
         this.patternJoinNone = this.hasPattern && joinNone;
+        this.currentLineJoinType = join;
         this.segmentStart = 0;
         this.segmentStartf32 = 0;
         this.segmentPoints = [];
@@ -906,12 +913,28 @@ class LineBucket implements Bucket {
                 this.addCurrentVertex(currentVertex, joinNormal.mult(-1), 0, 0, segment, lineProgressFeatures);
 
             } else if (currentJoin === 'bevel' || currentJoin === 'fakeround') {
-                if (lineProgressFeatures != null && prevVertex) {
-                    // Close previous segment with butt
-                    this.addCurrentVertex(currentVertex, endNormal ? endNormal : prevNormal, -1, -1, segment, lineProgressFeatures);
+                const dist = currentVertex.dist(prevVertex);
+
+                // Special handling for elevated bevel joins only
+                const isElevatedBevel = this.elevationType === 'offset' &&
+                                       currentJoin === 'bevel' &&
+                                       this.currentLineJoinType !== 'round' &&
+                                       !this.patternJoinNone;
+
+                // For elevated bevel joins at close corners, scale down rotation to prevent overlap
+                let capScale = 1.0;
+                if (isElevatedBevel && lineProgressFeatures != null && prevVertex && nextVertex) {
+                    const widthThreshold = CAP_SCALE_THRESHOLD_FACTOR * sharpCornerOffset;
+                    if (dist < widthThreshold) {
+                        capScale = Math.max(0.0, dist / widthThreshold);
+                    }
                 }
 
-                const dist = currentVertex.dist(prevVertex);
+                if (lineProgressFeatures != null && prevVertex) {
+                    // Close previous segment with butt
+                    this.addCurrentVertex(currentVertex, endNormal ? endNormal : prevNormal, -capScale, -capScale, segment, lineProgressFeatures);
+                }
+
                 const skipStraightEdges = dist <= 2 * sharpCornerOffset && currentJoin !== 'bevel';
                 const join = joinNormal.mult(lineTurnsLeft ? 1.0 : -1.0);
                 join._mult(miterLength);
@@ -961,7 +984,7 @@ class LineBucket implements Bucket {
 
                 if (lineProgressFeatures != null && nextVertex) {
                     // Start next segment with a butt
-                    this.addCurrentVertex(currentVertex, startNormal ? startNormal : nextNormal, 1, 1, segment, lineProgressFeatures);
+                    this.addCurrentVertex(currentVertex, startNormal ? startNormal : nextNormal, capScale, capScale, segment, lineProgressFeatures);
                 }
             } else if (currentJoin === 'butt') {
                 this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment, lineProgressFeatures); // butt cap
@@ -1022,6 +1045,21 @@ class LineBucket implements Bucket {
             const stepY = (to.y - from.y) / steps;
             const stepZ = (to.z - from.z) / steps;
             const stepW = (to.w - from.w) / steps;
+
+            // Calculate perpendicular normal directly from segment direction for interior vertices
+            const dx = to.x - from.x;
+            const dy = to.y - from.y;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            // Degenerate segment, skip tessellation
+            if (len === 0) return;
+
+            const perpX = -dy / len;
+            const perpY = dx / len;
+            const interiorLeftX = perpX;
+            const interiorLeftY = perpY;
+            const interiorRightX = -perpX;
+            const interiorRightY = -perpY;
+
             for (let i = 1; i < steps; ++i) {
                 from.x += stepX;
                 from.y += stepY;
@@ -1030,13 +1068,15 @@ class LineBucket implements Bucket {
                 stepsDistance += stepW;
                 const lpf = this.evaluateLineProgressFeatures(this.prevDistance + stepsDistance);
                 this.scaledDistance = (this.prevDistance + stepsDistance) / this.totalDistance;
-                this.addHalfVertex(from, leftX, leftY, round, false, endLeft, segment, lpf);
-                this.addHalfVertex(from, rightX, rightY, round, true, -endRight, segment, lpf);
+                // Use perpendicular extrusion for interior vertices
+                this.addHalfVertex(from, interiorLeftX, interiorLeftY, round, false, 0, segment, lpf);
+                this.addHalfVertex(from, interiorRightX, interiorRightY, round, true, 0, segment, lpf);
             }
         }
         this.lineSoFar = to.w;
         this.scaledDistance = scaledDistance;
         const lpf = this.evaluateLineProgressFeatures(this.distance);
+
         this.addHalfVertex(to, leftX, leftY, round, false, endLeft, segment, lpf);
         this.addHalfVertex(to, rightX, rightY, round, true, -endRight, segment, lpf);
     }
@@ -1097,8 +1137,9 @@ class LineBucket implements Bucket {
 
         if (lineProgressFeatures != null) {
             const dropOutOfBounds = this.elevationType === 'offset';
-            const boundsMin = -10;
-            const boundsMax = EXTENT + 10;
+            const clipMargin = this.elevationType === 'offset' ? 2 : 10;
+            const boundsMin = -clipMargin;
+            const boundsMax = EXTENT + clipMargin;
             const zOffset = lineProgressFeatures.zOffset;
             const vertex = new Point4D(p.x, p.y, zOffset, this.lineSoFar);
             // tesellated chunks outside tile borders are not added.
