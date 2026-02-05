@@ -1,4 +1,3 @@
-import {getTileBBox} from '@mapbox/whoots-js';
 import assert from 'assert';
 import {register} from '../util/web_worker_transfer';
 
@@ -35,7 +34,6 @@ export class CanonicalTileID {
 
     // given a list of urls, choose a url template and return a tile URL
     url(urls: Array<string>, scheme?: string | null): string {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         const bbox = getTileBBox(this.x, this.y, this.z);
         const quadkey = getQuadkey(this.z, this.x, this.y);
 
@@ -45,7 +43,6 @@ export class CanonicalTileID {
             .replace(/{x}/g, String(this.x))
             .replace(/{y}/g, String(scheme === 'tms' ? (Math.pow(2, this.z) - this.y - 1) : this.y))
             .replace('{quadkey}', quadkey)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             .replace('{bbox-epsg-3857}', bbox);
     }
 
@@ -206,6 +203,16 @@ function getQuadkey(z: number, x: number, y: number) {
         quadkey += ((x & mask ? 1 : 0) + (y & mask ? 2 : 0));
     }
     return quadkey;
+}
+
+function getTileBBox(x: number, y: number, z: number) {
+    const z2 = 2 ** z;
+    const worldSize = 2 * Math.PI * 6378137;
+    const minX = worldSize * (x / z2 - 0.5);
+    const minY = worldSize * (0.5 - (y + 1) / z2);
+    const maxX = minX + worldSize / z2;
+    const maxY = minY + worldSize / z2;
+    return `${minX},${minY},${maxX},${maxY}`;
 }
 
 // For all four borders: 0 - left, 1, right, 2 - top, 3 - bottom

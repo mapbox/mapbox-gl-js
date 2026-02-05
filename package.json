@@ -24,7 +24,6 @@
     "@mapbox/tiny-sdf": "^2.0.6",
     "@mapbox/unitbezier": "^0.0.1",
     "@mapbox/vector-tile": "^2.0.4",
-    "@mapbox/whoots-js": "^3.1.0",
     "@types/geojson": "^7946.0.16",
     "@types/geojson-vt": "^3.2.5",
     "@types/mapbox__point-geometry": "^0.1.4",
