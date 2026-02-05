@@ -4,7 +4,8 @@
     "test": {
       "collisionDebug": true,
       "debug": true,
-      "mapMode": "tile"
+      "mapMode": "tile",
+      "allowed": 0.0002
     }
   },
   "center": [

@@ -11,7 +11,7 @@ uniform highp vec2 u_trim_fade_range;
 uniform highp vec2 u_trim_gradient_mix_range;
 uniform lowp vec4 u_trim_color;
 
-in vec2 v_width2;
+in vec4 v_width2_dilute;
 in vec2 v_normal;
 in float v_gamma_scale;
 in highp vec3 v_uv;
@@ -75,16 +75,17 @@ void main() {
     #pragma mapbox: initialize lowp float emissive_strength
 
     // Calculate the distance of the pixel from the line in pixels.
-    float dist = length(v_normal) * v_width2.s;
+    float dist = length(v_normal) * v_width2_dilute.x;
 
     // Calculate the antialiasing fade factor. This is either when fading in
-    // the line in case of an offset line (v_width2.t) or when fading out
-    // (v_width2.s)
+    // the line in case of an offset line (v_width2_dilute.y) or when fading out
+    // (v_width2_dilute.x)
 #ifdef VARIABLE_LINE_WIDTH
     blur = mix(blur, 0.0, stub_side);
 #endif
+    float diluted_opacity = opacity * v_width2_dilute.z;
     float blur2 = (u_width_scale * blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
-    float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
+    float alpha = clamp(min(dist - (v_width2_dilute.y - blur2), v_width2_dilute.x - dist) / blur2, 0.0, 1.0);
 #ifdef VARIABLE_LINE_WIDTH
     alpha = mix(alpha, 1.0, stub_side);
 #endif
@@ -141,7 +142,7 @@ void main() {
 #ifdef RENDER_LINE_BORDER
 #ifndef VARIABLE_LINE_WIDTH
     float edgeBlur = ((border_width * u_width_scale) + 1.0 / u_device_pixel_ratio);
-    float alpha2 = clamp(min(dist - (v_width2.t - edgeBlur), v_width2.s - dist) / edgeBlur, 0.0, 1.0);
+    float alpha2 = clamp(min(dist - (v_width2_dilute.y - edgeBlur), v_width2_dilute.x - dist) / edgeBlur, 0.0, 1.0);
     if (alpha2 < 1.) {
         float smoothAlpha = smoothstep(0.6, 1.0, alpha2);
         if (border_color.a == 0.0) {
@@ -156,6 +157,7 @@ void main() {
         } else {
             out_color = mix(border_color * trim_alpha, out_color, smoothAlpha);
         }
+        out_color *= v_width2_dilute.w;
     }
 #endif
 #endif
@@ -176,7 +178,7 @@ void main() {
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif
 
-    out_color *= (alpha * opacity);
+    out_color *= (alpha * diluted_opacity);
 
 #ifdef INDICATOR_CUTOUT
     out_color = applyCutout(out_color, v_z_offset);

@@ -2,7 +2,8 @@
   "version": 8,
   "metadata": {
     "test": {
-      "showOverdrawInspector": true
+      "showOverdrawInspector": true,
+      "allowed":  0.0003
     }
   },
   "center": [

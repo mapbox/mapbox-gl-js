@@ -60,7 +60,7 @@ float sample_elevation(vec2 apos) {
 #endif
 
 out vec2 v_normal;
-out vec2 v_width2;
+out vec4 v_width2_dilute; // xy fow width, z for dilute of whole line w for dilute of border
 out float v_gamma_scale;
 out highp vec3 v_uv;
 #ifdef ELEVATED_ROADS
@@ -230,6 +230,8 @@ void main() {
     // moved them into the shader for clarity and simplicity.
     gapwidth = gapwidth / 2.0;
     float halfwidth;
+    float dilute_scale = 1.0;
+    float dilute_border_scale = 1.0;
 #ifdef VARIABLE_LINE_WIDTH
     float left_width = a_z_offset_width.y;
     float right_width = a_z_offset_width.z;
@@ -283,7 +285,7 @@ void main() {
     vec2 projected_extrude_xy = projected_extrude.xy;
 #ifdef ELEVATED_ROADS
     v_road_z_offset = a_z_offset;
-    gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, a_z_offset, 1.0) + projected_extrude;
+    gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, a_z_offset, 1.0);
 #else
 #ifdef ELEVATED
     vec2 offsetTile = offset2 * u_pixels_to_tile_units;
@@ -321,9 +323,46 @@ void main() {
     gl_Position.z -= (gl_Position.w * zbias);
     gl_Position = mix(gl_Position, AWAY, hidden);
 #else // ELEVATED
-    gl_Position = mix(u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0) + projected_extrude, AWAY, hidden);
+    gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0);
 #endif // ELEVATED
 #endif // ELEVATED_ROADS
+
+#ifndef ELEVATED
+#ifndef VARIABLE_LINE_WIDTH
+#ifndef RENDER_TO_TEXTURE
+    // Scale up sub-pixel extrusions of inner line width to ensure minimum half-pixel visibility
+    float base_w = gl_Position.w;
+    vec2 screen_width = abs(projected_extrude.xy / base_w * u_units_to_pixels);
+    float max_extrude_component = max(screen_width.x, screen_width.y);
+    if (base_w > 0.0 && max_extrude_component > 0.0001) {
+        float min_pixel = 1.05; // u_units_to_pixels is [2 / width, 2 / height], not using half pixel for halfwidth here
+        if (max_extrude_component < min_pixel) {
+            vec2 abs_pos = abs(gl_Position.xy);
+            float is_out = max(abs_pos.x, abs_pos.y) / base_w;
+            // smoothly disable dilute for a very long lines outside viewport (2.5 -> 4.5)
+            // bump width here and reduce opacity in fragment shader by dilute_scale factor
+            dilute_scale = mix(max_extrude_component / min_pixel, 1.0, smoothstep(2.5, 4.5, is_out));
+            projected_extrude /= dilute_scale;
+        }
+        else
+        {
+#ifdef RENDER_LINE_BORDER
+            // if line is wide enough, reduce opacity of thin borders only - no change of border width
+            float border_ratio = (border_width * u_width_scale + ANTIALIASING) / outset;
+            screen_width *= border_ratio;
+            float max_border_component = max(screen_width.x, screen_width.y);
+            dilute_border_scale = min(1.0, max_border_component / min_pixel);
+#endif
+        }
+    }
+#endif
+#endif
+#ifdef ELEVATED_ROADS
+    gl_Position = gl_Position + projected_extrude;
+#else
+    gl_Position = mix(gl_Position + projected_extrude, AWAY, hidden);
+#endif
+#endif
 
 #ifdef ELEVATED_ROADS
 #ifdef RENDER_SHADOWS
@@ -371,7 +410,7 @@ void main() {
     v_tex = vec2(a_linesofar * scale / (floorwidth * u_floor_width_scale), (-normal.y * height + dash.x + 0.5) / u_texsize.y);
 #endif
 
-    v_width2 = vec2(outset, inset);
+    v_width2_dilute = vec4(outset, inset, dilute_scale, dilute_border_scale);
 
 #ifdef FOG
     v_fog_pos = fog_position(pos);
