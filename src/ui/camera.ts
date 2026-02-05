@@ -225,7 +225,12 @@ class Camera extends Evented<MapEvents> {
         //addAssertions(this);
     }
 
-    /** @section Camera */
+    /**
+     * @section {Camera}
+     * @method
+     * @instance
+     * @memberof Map
+     */
 
     /**
      * Returns the map's geographical centerpoint.
@@ -819,7 +824,12 @@ class Camera extends Evented<MapEvents> {
         return extendedAABB;
     }
 
-    /** @section Querying features */
+    /**
+     * @section {Querying features}
+     * @method
+     * @instance
+     * @memberof Map
+     */
 
     /**
      * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` relative to mean sea-level.
