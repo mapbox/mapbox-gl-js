@@ -37,7 +37,7 @@ class MipLevel {
     }
 }
 
-function aabbRayIntersect(min: vec3, max: vec3, pos: vec3, dir: vec3): number | null | undefined {
+export function aabbRayIntersect(min: vec3, max: vec3, pos: vec3, dir: vec3): number | null | undefined {
     let tMin = 0;
     let tMax = Number.MAX_VALUE;
 
@@ -69,7 +69,7 @@ function aabbRayIntersect(min: vec3, max: vec3, pos: vec3, dir: vec3): number | 
     return tMin;
 }
 
-function triangleRayIntersect(
+export function triangleRayIntersect(
     ax: number,
     ay: number,
     az: number,
@@ -390,7 +390,7 @@ export default class DemMinMaxQuadTree {
     }
 }
 
-function bilinearLerp(p00: number, p10: number, p01: number, p11: number, x: number, y: number): number {
+export function bilinearLerp(p00: number, p10: number, p01: number, p11: number, x: number, y: number): number {
     return interpolate(
         interpolate(p00, p01, y),
         interpolate(p10, p11, y),
