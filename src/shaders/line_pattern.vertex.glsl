@@ -15,7 +15,7 @@ in vec4 a_data;
 #if defined(ELEVATED) || defined(ELEVATED_ROADS)
 in vec3 a_z_offset_width;
 #endif
-#ifdef ELEVATED
+#ifdef ELEVATION_GROUND_SCALE
 in float a_elevation_ground_scale;
 #endif
 // Includes in order: a_uv_x, a_split_index, a_line_progress
@@ -158,7 +158,10 @@ void main() {
     vec2 offsetTile = offset2 * u_pixels_to_tile_units;
     vec2 offset_pos = pos + offsetTile;
     float ele = 0.0;
-    float scaled_z_offset = a_z_offset * mix(1.0, u_exaggeration, a_elevation_ground_scale);
+    float scaled_z_offset = a_z_offset;
+#ifdef ELEVATION_GROUND_SCALE
+    scaled_z_offset = a_z_offset * mix(1.0, u_exaggeration, a_elevation_ground_scale);
+#endif
 #ifdef CROSS_SLOPE_VERTICAL
     // Vertical line
     // The least significant bit of a_pos_normal.y hold 1 if it's on top, 0 for bottom

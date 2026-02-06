@@ -186,6 +186,10 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
                 defines.push('LINE_PATTERN_TRANSITION');
             }
 
+            if (bucket.elevationGroundScaleVertexBuffer) {
+                defines.push('ELEVATION_GROUND_SCALE');
+            }
+
             const affectedByFog = painter.isTileAffectedByFog(coord);
             const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines, overrideFog: affectedByFog});
 
