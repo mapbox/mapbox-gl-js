@@ -2,7 +2,8 @@ import * as DOM from '../../util/dom';
 import {bindAll} from '../../util/util';
 
 import type {Map, ControlPosition, IControl} from '../map';
-import type {IndoorControlModel, IndoorControlFloor} from '../../style/indoor_data';
+import type {IndoorControlModel} from '../../style/indoor_data';
+const VISIBLE_FLOORS = 3;
 
 /**
  * An `IndoorControl` control presents the map's indoor floors.
@@ -18,11 +19,12 @@ class IndoorControl implements IControl {
     _map: Map | null;
     _container: HTMLElement | null;
     _model: IndoorControlModel | null;
+    _visibleFloorStart: number;
 
     constructor() {
-        bindAll(['_onIndoorUpdate', '_onStyleData'], this);
+        bindAll(['_onIndoorUpdate', '_onStyleData', '_scrollUp', '_scrollDown'], this);
+        this._visibleFloorStart = 0;
     }
-
     onAdd(map: Map): HTMLElement {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-group');
@@ -31,11 +33,9 @@ class IndoorControl implements IControl {
         this._updateConnection();
         return this._container;
     }
-
     _onStyleData() {
         this._updateConnection();
     }
-
     _updateConnection() {
         if (this._map && this._map.style && this._map.style.indoorManager) {
             const manager = this._map.style.indoorManager;
@@ -44,24 +44,16 @@ class IndoorControl implements IControl {
             this._onIndoorUpdate(manager.getControlState());
         }
     }
-
     _createButton(className: string, fn: (e: Event) => unknown): HTMLButtonElement {
         const a = DOM.create('button', className, this._container);
         a.type = 'button';
         a.addEventListener('click', fn);
         return a;
     }
-
-    _createSeparator(): HTMLElement {
-        return DOM.create('div', 'mapboxgl-ctrl-separator', this._container);
-    }
-
     _setButtonTitle(button: HTMLButtonElement, title: string) {
-        if (!this._map) return;
         button.setAttribute('aria-label', title);
         button.textContent = title;
     }
-
     onRemove() {
         if (this._container) {
             this._container.remove();
@@ -74,11 +66,9 @@ class IndoorControl implements IControl {
             this._map = null;
         }
     }
-
     getDefaultPosition(): ControlPosition {
         return 'top-right';
     }
-
     _onIndoorUpdate(model: IndoorControlModel | null) {
         if (!model || !model.floors) {
             this._model = model;
@@ -88,62 +78,84 @@ class IndoorControl implements IControl {
         const oldModel = this._model;
         this._model = model;
         this._container.style.display = 'inline-block';
-        if (oldModel) {
-            Array.from(this._container.children).forEach(child => child.remove());
-        }
-        if (model.floors.length > 0) {
-            this.addBuildingsToggleButton();
-            this.addCurrentFloors(model.floors, model.activeFloorsVisible);
-            this._updateBuildingsButtonState();
-        }
-    }
 
-    addBuildingsToggleButton() {
-        const buildingsButton = this._createButton('mapboxgl-ctrl-buildings-toggle', () => {
-            const map = this._map;
-            if (this._model && map) {
-                map._setIndoorActiveFloorsVisibility(!this._model.activeFloorsVisible);
-            }
-        });
-        DOM.create('span', `mapboxgl-ctrl-icon`, buildingsButton).setAttribute('aria-hidden', 'true');
-        buildingsButton.classList.add('mapboxgl-ctrl-level-button', 'mapboxgl-ctrl-buildings-toggle');
-        if (this._model && !this._model.activeFloorsVisible) {
-            buildingsButton.classList.add('mapboxgl-ctrl-level-button-selected');
-        }
-        this._container.append(buildingsButton);
-    }
+        const floorsChanged = !oldModel || oldModel.floors.length !== model.floors.length || oldModel.floors.some((f, i) => f.id !== model.floors[i].id);
 
-    _updateBuildingsButtonState() {
-        const buildingsButton = this._container.querySelector('.mapboxgl-ctrl-buildings-toggle');
-        if (buildingsButton && this._model) {
-            if (!this._model.activeFloorsVisible) {
-                buildingsButton.classList.add('mapboxgl-ctrl-level-button-selected');
-            } else {
-                buildingsButton.classList.remove('mapboxgl-ctrl-level-button-selected');
+        if (floorsChanged) {
+            this._visibleFloorStart = 0;
+        }
+
+        if (model.selectedFloorId) {
+            const selectedIndex = model.floors.findIndex(f => f.id === model.selectedFloorId);
+            if (selectedIndex !== -1) {
+                if (selectedIndex < this._visibleFloorStart) {
+                    this._visibleFloorStart = selectedIndex;
+                } else if (selectedIndex >= this._visibleFloorStart + VISIBLE_FLOORS) {
+                    this._visibleFloorStart = selectedIndex - (VISIBLE_FLOORS - 1);
+                }
             }
         }
+
+        this._render();
     }
 
-    addCurrentFloors(floors: Array<IndoorControlFloor>, showSelectedFloor: boolean) {
-        for (let i = 0; i < floors.length; i++) {
-            const floor = floors[i];
+    _render() {
+        if (!this._container || !this._model || !this._model.floors) return;
+
+        this._container.innerHTML = '';
+        const floors = this._model.floors;
+        const totalFloors = floors.length;
+
+        if (totalFloors > VISIBLE_FLOORS) {
+            const upButton = this._createButton('mapboxgl-ctrl-arrow-up', this._scrollUp);
+            if (this._visibleFloorStart === 0) {
+                upButton.disabled = true;
+            }
+            DOM.create('span', 'mapboxgl-ctrl-icon', upButton).setAttribute('aria-hidden', 'true');
+            this._container.appendChild(upButton);
+        }
+
+        const visibleFloors = floors.slice(this._visibleFloorStart, this._visibleFloorStart + VISIBLE_FLOORS);
+        visibleFloors.forEach(floor => {
             const levelButton = this._createButton('mapboxgl-ctrl-level-button', () => {
-                this._map._selectIndoorFloor(floor.id);
+                if (this._model && this._model.selectedFloorId === floor.id) return;
+                if (this._map) {
+                    this._map._setIndoorActiveFloorsVisibility(true);
+                    this._map._selectIndoorFloor(floor.id);
+                }
             });
-
             const floorName = (floor.name || '').trim();
             const zIndexText = floor.zIndex.toString();
             const buttonTitle = floorName ? Array.from(floorName).slice(0, 3).join('') : zIndexText;
             this._setButtonTitle(levelButton, buttonTitle);
-            if (this._model && floor.id === this._model.selectedFloorId && showSelectedFloor) {
+
+            if (this._model && floor.id === this._model.selectedFloorId) {
                 levelButton.classList.add('mapboxgl-ctrl-level-button-selected');
             }
-            this._container.append(levelButton);
+            this._container.appendChild(levelButton);
+        });
 
-            // Add separator after each button except the last one
-            if (i < floors.length - 1) {
-                this._createSeparator();
+        if (totalFloors > VISIBLE_FLOORS) {
+            const downButton = this._createButton('mapboxgl-ctrl-arrow-down', this._scrollDown);
+            if (this._visibleFloorStart + VISIBLE_FLOORS >= totalFloors) {
+                downButton.disabled = true;
             }
+            DOM.create('span', 'mapboxgl-ctrl-icon', downButton).setAttribute('aria-hidden', 'true');
+            this._container.appendChild(downButton);
+        }
+    }
+
+    _scrollUp() {
+        if (this._visibleFloorStart > 0) {
+            this._visibleFloorStart--;
+            this._render();
+        }
+    }
+
+    _scrollDown() {
+        if (this._model && this._model.floors && this._visibleFloorStart + VISIBLE_FLOORS < this._model.floors.length) {
+            this._visibleFloorStart++;
+            this._render();
         }
     }
 }

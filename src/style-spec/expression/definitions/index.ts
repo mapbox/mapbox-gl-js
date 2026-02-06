@@ -270,8 +270,9 @@ CompoundExpression.register(expressions, {
         BooleanType,
         varargs(StringType),
         (ctx, args) => {
-            const hasActiveFloors = ctx.globals.activeFloors && ctx.globals.activeFloors.size > 0;
+            const hasActiveFloors = ctx.globals && ctx.globals.activeFloors && ctx.globals.activeFloors.size > 0;
             if (!hasActiveFloors) { return false; }
+            if (args.length === 0) { return true; }
             const floorIds: Set<string> = ctx.globals.activeFloors;
             return args.some(arg => {
                 const value = arg.evaluate(ctx) as string;
