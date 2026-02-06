@@ -11,6 +11,7 @@
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
   },
   "dependencies": {
+    "@mapbox/core-tiles": "^6.4.0",
     "@mapbox/geojson-rewind": "^0.5.2",
     "@mapbox/jsonlint-lines-primitives": "^2.0.2",
     "@mapbox/mapbox-gl-supported": "^2.0.1",
@@ -27,6 +28,7 @@
     "kdbush": "^3.0.0",
     "murmurhash-js": "^1.0.0",
     "pbf": "^3.2.1",
+    "pmtiles": "^2.7.2",
     "potpack": "^2.0.0",
     "quickselect": "^2.0.0",
     "rw": "^1.3.3",
@@ -119,7 +121,7 @@
     "build-token": "node build/generate-access-token-script.js",
     "build-benchmarks": "BENCHMARK_VERSION=${BENCHMARK_VERSION:-\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\"} rollup -c bench/versions/rollup_config_benchmarks.js",
     "watch-benchmarks": "BENCHMARK_VERSION=${BENCHMARK_VERSION:-\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\"} rollup -c bench/rollup_config_benchmarks.js -w",
-    "start-server": "st --no-cache -H 0.0.0.0 --port 9966 --index index.html .",
+    "start-server": "st --no-cache -H 0.0.0.0 --port 9967 --index index.html .",
     "start": "run-p build-token watch-css watch-dev watch-benchmarks start-server",
     "start-debug": "run-p build-token watch-css watch-dev start-server",
     "start-bench": "run-p build-token watch-benchmarks start-server",

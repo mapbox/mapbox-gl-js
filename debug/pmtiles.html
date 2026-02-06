@@ -22,70 +22,157 @@
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
-<script type='module'>
-// eslint-disable-next-line import/extensions
-import {PMTiles} from 'https://unpkg.com/pmtiles@2.7.2/dist/index.mjs';
+<script src="./pmtiles-lib.js"></script>
+<script src="./pmtiles-s3-loader.js"></script>
+<script src="./pmtiles-sharded-source.bundle.js"></script>
+<script>
+    // The pmtiles library is now available as window.pmtilesLib
+    window.addEventListener('load', async function() {
+        console.log('=== PMTiles Loader Starting ===');
 
-const pmtiles = window.pmtilesInstance = new PMTiles('https://protomaps.github.io/PMTiles/protomaps(vector)ODbL_firenze.pmtiles');
-const {centerLon, centerLat, maxZoom} = await pmtiles.getHeader();
-
-const map = window.map = new mapboxgl.Map({
-    container: 'map',
-    center: [centerLon, centerLat],
-    zoom: maxZoom - 2,
-    style: 'mapbox://styles/mapbox/light-v10',
-    hash: true
-});
-
-map.addControl(new mapboxgl.NavigationControl());
-
-map.on('load', () => {
-    map.addSource('firenze', {
-        type: 'vector',
-        maxzoom: maxZoom,
-        async loadTile({z, x, y}, {signal}) {
-            const response = await pmtiles.getZxy(z, x, y, signal);
-            if (!response) return null;
-            return response.data;
+        // Check if pmtiles is available
+        if (!window.pmtilesLib) {
+            console.error('PMTiles library not loaded');
+            return;
         }
-    });
 
-    map.addLayer({
-        id: 'firenze-landuse',
-        type: 'fill',
-        source: 'firenze',
-        'source-layer': 'landuse',
-        paint: {
-            'fill-color': 'steelblue'
+        console.log('✓ PMTiles library loaded', typeof window.pmtilesLib);
+
+        // Check URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        let s3Path = urlParams.get('s3'); // Format: s3://bucket-name/path/{z}/{x}/{y}
+        const tilesetId = urlParams.get('tilesetId');
+        const jobId = urlParams.get('jobId');
+        const shardingConfig = urlParams.get('sharding') || 'v1'; // Sharding config version
+        const httpUrl = urlParams.get('pmtiles'); // Format: https://...
+
+        // If tilesetId and jobId are provided, construct the S3 path
+        if (tilesetId && jobId && !s3Path) {
+            s3Path = `s3://tilestream-tilesets-staging/pmtiles/${tilesetId}/${jobId}/{z}/{x}/{y}`;
+            console.log('Constructed S3 path from tilesetId and jobId:', s3Path);
         }
-    }, 'road-label');
 
-    map.addLayer({
-        id: 'roads',
-        type: 'line',
-        source: 'firenze',
-        'source-layer': 'roads',
-    }, 'road-label');
+        console.log('URL Parameters:', {
+            tilesetId,
+            jobId,
+            s3Path,
+            shardingConfig,
+            httpUrl
+        });
 
-    map.addSource('mapbox-dem', {
-        type: 'raster-dem',
-        url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-        tileSize: 512
-    });
+        // S3 Proxy URL (run: node debug/s3-proxy.cjs)
+        const S3_PROXY_URL = 'http://127.0.0.1:9968';
+        console.log('S3 Proxy URL:', S3_PROXY_URL);
 
-    document.getElementById('terrain-checkbox').onclick = function () {
-        map.setTerrain(this.checked ? {source: 'mapbox-dem'} : null);
-    };
+        // Initialize PMTiles
+        let pmtiles;
 
-    document.getElementById('tile-boundaries-checkbox').onclick = function () {
-        map.showTileBoundaries = this.checked;
-    };
+        console.log('Initializing PMTiles source...');
+        if (s3Path && s3Path.includes('{z}')) {
+            console.log('→ Using sharded PMTiles from S3:', s3Path);
+            pmtiles = new ShardedPMTiles.ShardedPMTilesSource({
+                baseUrl: s3Path,
+                shardingConfig,
+                proxyUrl: S3_PROXY_URL
+            });
+        } else if (s3Path) {
+            console.log('→ Using single PMTiles file from S3:', s3Path);
+            const s3Source = new S3ProxySource(s3Path, S3_PROXY_URL);
+            pmtiles = new window.pmtilesLib.PMTiles(s3Source);
+        } else if (httpUrl) {
+            console.log('→ Using HTTP URL:', httpUrl);
+            pmtiles = new window.pmtilesLib.PMTiles(httpUrl);
+        } else {
+            console.log('→ Using local file: /debug/firenze.pmtiles');
+            pmtiles = new window.pmtilesLib.PMTiles('/debug/firenze.pmtiles');
+        }
 
-    document.getElementById('custom-source-checkbox').onclick = function () {
-        map.setLayoutProperty('custom-source', 'visibility', this.checked ? 'visible' : 'none');
-    };
-});
+        // Store globally for debugging
+        window.pmtiles = pmtiles;
 
+        console.log('Fetching PMTiles header...');
+        const header = await pmtiles.getHeader();
+        console.log('✓ PMTiles header loaded:', {
+            centerLon: header.centerLon,
+            centerLat: header.centerLat,
+            maxZoom: header.maxZoom
+        });
+
+        const map = window.map = new mapboxgl.Map({
+            container: 'map',
+            center: [header.centerLon, header.centerLat],
+            zoom: header.maxZoom - 2,
+            style: 'mapbox://styles/mapbox/light-v10',
+            hash: true
+        });
+
+        map.addControl(new mapboxgl.NavigationControl());
+
+        console.log('Initializing Mapbox GL map...');
+
+        map.on('load', () => {
+            console.log('✓ Map loaded, adding PMTiles source...');
+
+            map.addSource('firenze', {
+                type: 'vector',
+                maxzoom: header.maxZoom,
+                async loadTile({z, x, y}, {signal}) {
+                    console.log(`🗺️  Loading tile: ${z}/${x}/${y}`);
+
+                    // If using sharded source, log which shard this tile maps to
+                    if (pmtiles.shardingScheme) {
+                        const [shardZ, shardX, shardY] = pmtiles.shardingScheme.getShardZXY(z, x, y);
+                        console.log(`   → Mapped to shard: ${shardZ}/${shardX}/${shardY}`);
+                    }
+
+                    const response = await pmtiles.getZxy(z, x, y, signal);
+                    if (!response) {
+                        console.warn(`⚠️  No data for tile ${z}/${x}/${y}`);
+                        return null;
+                    }
+                    const dataSize = response.data.byteLength || response.data.length;
+                    console.log(`✓ Tile loaded: ${z}/${x}/${y}, size: ${dataSize} bytes`);
+                    return response.data;
+                }
+            });
+
+            map.addLayer({
+                id: 'firenze-landuse',
+                type: 'fill',
+                source: 'firenze',
+                'source-layer': 'landuse',
+                paint: {
+                    'fill-color': 'steelblue'
+                }
+            }, 'road-label');
+
+            map.addLayer({
+                id: 'roads',
+                type: 'line',
+                source: 'firenze',
+                'source-layer': 'roads',
+            }, 'road-label');
+
+            map.addSource('mapbox-dem', {
+                type: 'raster-dem',
+                url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                tileSize: 512
+            });
+
+            document.getElementById('terrain-checkbox').onclick = function () {
+                map.setTerrain(this.checked ? {source: 'mapbox-dem'} : null);
+            };
+
+            document.getElementById('tile-boundaries-checkbox').onclick = function () {
+                map.showTileBoundaries = this.checked;
+            };
+
+            document.getElementById('custom-source-checkbox').onclick = function () {
+                map.setLayoutProperty('custom-source', 'visibility', this.checked ? 'visible' : 'none');
+            };
+        });
+
+    }); // End load event listener
 </script>
 </body>
 </html>
