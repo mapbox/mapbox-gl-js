@@ -119,7 +119,7 @@ vec3 get_shade_info(in vec3 v,
     out_emissive = 1.0;
 #else
     if (x_major) {
-        out_normal = sign(v.x) * tbn[0];
+        out_normal = -sign(v.x) * tbn[0];
     } else if (y_major) {
         out_normal = vec3(0.0, 0.0, -sign(v.y));
     } else if (z_major) {
@@ -208,7 +208,7 @@ void main() {
     shadowed_lighting_factor = shadowed_light_factor_normal(xy_flipped_normal, v_pos_light_view_0, v_pos_light_view_1, 1.0 / gl_FragCoord.w);
 #endif // RENDER_CUTOFF
 #else
-    shadowed_lighting_factor = dot(xy_flipped_normal, u_lighting_directional_dir);
+    shadowed_lighting_factor = max(0.0, dot(xy_flipped_normal, u_lighting_directional_dir));
 #endif
     color.rgb = apply_lighting_linear(color.rgb, xy_flipped_normal, shadowed_lighting_factor);
     color.rgb = linearTosRGB(color.rgb);
