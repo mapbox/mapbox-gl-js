@@ -38,5 +38,5 @@ export type IndoorTileOptions = {
 export type IndoorState = {
     activeFloorsVisible: boolean;
     selectedFloorId: string | null;
-    lastActiveFloors: Set<string> | null;
+    activeFloors: Set<string>;
 };

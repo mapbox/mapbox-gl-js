@@ -12,15 +12,13 @@ export default class IndoorManager extends Evented<IndoorEvents> {
     _buildings: Record<string, IndoorBuilding> | null;
     _activeFloors: Set<string> | null;
     _indoorState: IndoorState | null;
-    _activeFloorsVisible: boolean;
+
     constructor(style: Style) {
         super();
         this._style = style;
         this._buildings = {};
-
         this._activeFloors = new Set();
-        this._activeFloorsVisible = true;
-        this._indoorState = {selectedFloorId: null, lastActiveFloors: null, activeFloorsVisible: true};
+        this._indoorState = {selectedFloorId: null, activeFloorsVisible: false, activeFloors: this._activeFloors};
         bindAll(['_updateUI'], this);
         const setupObservers = () => {
             if (this._style.isIndoorEnabled()) {
@@ -38,16 +36,14 @@ export default class IndoorManager extends Evented<IndoorEvents> {
         this._indoorState = null;
     }
     selectFloor(floorId: string | null) {
-        if (floorId === this._selectedFloorId && this._activeFloorsVisible) {
+        if (floorId === this._selectedFloorId && this._indoorState && this._indoorState.activeFloorsVisible) {
             return;
         }
         this._selectedFloorId = floorId;
-        this._activeFloorsVisible = true;
-        this._updateActiveFloors();
+        this._updateActiveFloors(true);
     }
     setActiveFloorsVisibility(activeFloorsVisible: boolean) {
-        this._activeFloorsVisible = activeFloorsVisible;
-        this._updateActiveFloors();
+        this._updateActiveFloors(activeFloorsVisible);
         this._updateIndoorSelector();
     }
     /// Fan in data sent from different tiles and sources and merge it into the one state
@@ -72,21 +68,28 @@ export default class IndoorManager extends Evented<IndoorEvents> {
         this._updateIndoorSelector();
     }
     getIndoorTileOptions(sourceId: string, scope: string): IndoorTileOptions | null {
-        const sourceLayers = this._style.getIndoorSourceLayers(sourceId, scope);
-        if (!sourceLayers || !this._indoorState) {
+        if (!this._indoorState) {
             return null;
         }
-        return {
-            sourceLayers,
-            indoorState: this._indoorState
-        };
+        const sourceLayers = this._style.getIndoorSourceLayers(sourceId, scope);
+        const indoorState = this._indoorState;
+        return {sourceLayers, indoorState};
     }
     _updateUI() {
         const transform = this._style.map.transform;
         const closestBuildingId = findClosestBuildingId(this._buildings, transform.center, transform.getBounds(), transform.zoom);
         if (closestBuildingId !== this._closestBuildingId) {
+            const previousBuildingId = this._closestBuildingId;
             this._closestBuildingId = closestBuildingId;
             this._updateIndoorSelector();
+            const buildingDisappeared = !closestBuildingId && this._indoorState;
+            const buildingAppeared = !previousBuildingId && this._indoorState;
+
+            if (buildingDisappeared || buildingAppeared) {
+                this._indoorState.activeFloors = buildingAppeared ? this._activeFloors : new Set();
+                this._indoorState.activeFloorsVisible = !!buildingAppeared;
+                this._style.updateIndoorDependentLayers();
+            }
         }
     }
     getControlState() {
@@ -96,7 +99,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
         if (!closestBuilding) {
             return {
                 selectedFloorId: null,
-                activeFloorsVisible: this._activeFloorsVisible,
+                activeFloorsVisible: this._indoorState ? this._indoorState.activeFloorsVisible : false,
                 floors: []
             };
         }
@@ -119,7 +122,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
             .filter((floor, idx, arr) => idx === 0 || floor.zIndex !== arr[idx - 1].zIndex);
         return {
             selectedFloorId: buildingActiveFloorId,
-            activeFloorsVisible: this._activeFloorsVisible,
+            activeFloorsVisible: this._indoorState ? this._indoorState.activeFloorsVisible : false,
             floors
         };
     }
@@ -129,10 +132,10 @@ export default class IndoorManager extends Evented<IndoorEvents> {
     // Update previous state and pass it to tiles
     // Resolve active floors to construct new set based on data from tiles
     // Tiles will resolve individual subsets of activeFloors and send it in setIndoorData
-    _updateActiveFloors() {
+    _updateActiveFloors(visible: boolean) {
         const lastActiveFloors = this._activeFloors;
         this._activeFloors = new Set();
-        this._indoorState = {selectedFloorId: this._selectedFloorId, lastActiveFloors, activeFloorsVisible: this._activeFloorsVisible};
+        this._indoorState = {selectedFloorId: this._selectedFloorId, activeFloorsVisible: visible, activeFloors: lastActiveFloors};
         this._style.updateIndoorDependentLayers();
     }
 }

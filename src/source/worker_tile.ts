@@ -21,7 +21,7 @@ import {ElevationFeatures} from '../../3d-style/elevation/elevation_feature';
 import {HD_ELEVATION_SOURCE_LAYER, PROPERTY_ELEVATION_ID} from '../../3d-style/elevation/elevation_constants';
 import {ElevationPortalGraph} from '../../3d-style/elevation/elevation_graph';
 import {ImageId} from '../style-spec/expression/types/image_id';
-import {parseIndoorData} from '../render/indoor_parser';
+import {parseActiveFloors} from '../render/indoor_parser';
 
 import type {VectorTile} from '@mapbox/vector-tile';
 import type {CanonicalTileID} from './tile_id';
@@ -140,9 +140,7 @@ class WorkerTile {
         };
 
         if (this.indoor) {
-            const activeFloorsVisible = this.indoor.indoorState.activeFloorsVisible;
-            const indoorData = parseIndoorData(data, this.indoor, actor);
-            options.activeFloors = activeFloorsVisible ? indoorData.activeFloors : undefined;
+            options.activeFloors = parseActiveFloors(data, this.indoor, actor);
         }
 
         const asyncBucketLoads: Promise<unknown>[] = [];

@@ -120,7 +120,6 @@ class IndoorControl implements IControl {
             const levelButton = this._createButton('mapboxgl-ctrl-level-button', () => {
                 if (this._model && this._model.selectedFloorId === floor.id) return;
                 if (this._map) {
-                    this._map._setIndoorActiveFloorsVisibility(true);
                     this._map._selectIndoorFloor(floor.id);
                 }
             });
