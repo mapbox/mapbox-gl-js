@@ -297,6 +297,7 @@ export function getGlyphQuads(
     imageMap: StyleImageMap<StringifiedImageVariant>,
     allowVerticalPlacement: boolean,
     textRotate?: number,
+    textSizeFactor: number = 1,
 ): Array<SymbolQuad> {
     const quads = [];
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -336,6 +337,11 @@ export function getGlyphQuads(
                 isSDF = false;
                 pixelRatio = image.pixelRatio;
                 rectBuffer = ICON_PADDING / pixelRatio;
+                // For raster images (not vector/usvg), adjust pixelRatio by textSizeFactor
+                // to render at the correct physical size
+                if (!image.usvg) {
+                    pixelRatio = pixelRatio / textSizeFactor;
+                }
             }
 
             const rotateVerticalGlyph = (alongLine || allowVerticalPlacement) && positionedGlyph.vertical;

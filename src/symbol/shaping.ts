@@ -130,14 +130,14 @@ class TaggedString {
         this.imageSectionID = null;
     }
 
-    static fromFeature(text: Formatted, defaultFontStack: string, pixelRatio: number): TaggedString {
+    static fromFeature(text: Formatted, defaultFontStack: string, pixelRatio: number, textSizeFactor: number = 1): TaggedString {
         const result = new TaggedString();
         for (let i = 0; i < text.sections.length; i++) {
             const section = text.sections[i];
             if (!section.image) {
                 result.addTextSection(section, defaultFontStack);
             } else {
-                result.addImageSection(section, pixelRatio);
+                result.addImageSection(section, pixelRatio, textSizeFactor);
             }
         }
         return result;
@@ -209,14 +209,16 @@ class TaggedString {
         }
     }
 
-    addImageSection(section: FormattedSection, pixelRatio: number) {
+    addImageSection(section: FormattedSection, pixelRatio: number, textSizeFactor: number = 1) {
         const image = section.image ? section.image.getPrimary() : null;
         if (!image) {
             warnOnce(`Can't add FormattedSection with an empty image.`);
             return;
         }
 
-        image.scaleSelf(pixelRatio);
+        // Scale image by both pixelRatio and textSizeFactor
+        // This ensures the correct sized image is requested from the atlas
+        image.scaleSelf(pixelRatio * textSizeFactor);
         const nextImageSectionCharCode = this.getNextImageSectionCharCode();
         if (!nextImageSectionCharCode) {
             warnOnce(`Reached maximum number of images ${PUAend - PUAbegin + 2}`);
@@ -270,9 +272,10 @@ function shapeText(
     allowVerticalPlacement: boolean,
     layoutTextSize: number,
     layoutTextSizeThisZoom: number,
-    pixelRatio: number = 1
+    pixelRatio: number = 1,
+    textSizeFactor: number = 1
 ): Shaping {
-    const logicalInput = TaggedString.fromFeature(text, defaultFontStack, pixelRatio);
+    const logicalInput = TaggedString.fromFeature(text, defaultFontStack, pixelRatio, textSizeFactor);
 
     if (writingMode === WritingMode.vertical) {
         logicalInput.verticalizePunctuation(allowVerticalPlacement);
@@ -280,7 +283,7 @@ function shapeText(
 
     let lines: Array<TaggedString> = [];
 
-    const lineBreaks = determineLineBreaks(logicalInput, spacing, maxWidth, glyphMap, imagePositions, layoutTextSize);
+    const lineBreaks = determineLineBreaks(logicalInput, spacing, maxWidth, glyphMap, imagePositions, layoutTextSize, textSizeFactor);
 
     const {processBidirectionalText, processStyledBidirectionalText} = rtlTextPlugin;
     if (processBidirectionalText && logicalInput.sections.length === 1) {
@@ -323,7 +326,7 @@ function shapeText(
         hasBaseline: false
     };
 
-    shapeLines(shaping, glyphMap, glyphPositions, imagePositions, lines, lineHeight, textAnchor, textJustify, writingMode, spacing, allowVerticalPlacement, layoutTextSizeThisZoom);
+    shapeLines(shaping, glyphMap, glyphPositions, imagePositions, lines, lineHeight, textAnchor, textJustify, writingMode, spacing, allowVerticalPlacement, layoutTextSizeThisZoom, textSizeFactor);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (isEmpty(positionedLines)) return undefined;
 
@@ -373,6 +376,7 @@ function getGlyphAdvance(
     imagePositions: ImagePositionMap,
     spacing: number,
     layoutTextSize: number,
+    textSizeFactor: number = 1,
 ): number {
     if (!section.image) {
         const positions = glyphMap[section.fontStack];
@@ -382,7 +386,7 @@ function getGlyphAdvance(
     } else {
         const imagePosition = imagePositions.get(section.image.toString());
         if (!imagePosition) return 0;
-        return imagePosition.displaySize[0] * section.scale * ONE_EM / layoutTextSize + spacing;
+        return imagePosition.displaySize[0] * textSizeFactor * section.scale * ONE_EM / layoutTextSize + spacing;
     }
 }
 
@@ -391,12 +395,13 @@ function determineAverageLineWidth(logicalInput: TaggedString,
                                    maxWidth: number,
                                    glyphMap: GlyphMap,
                                    imagePositions: ImagePositionMap,
-                                   layoutTextSize: number) {
+                                   layoutTextSize: number,
+                                   textSizeFactor: number = 1) {
     let totalWidth = 0;
 
     for (let index = 0; index < logicalInput.length(); index++) {
         const section = logicalInput.getSection(index);
-        totalWidth += getGlyphAdvance(logicalInput.getCodePoint(index), section, glyphMap, imagePositions, spacing, layoutTextSize);
+        totalWidth += getGlyphAdvance(logicalInput.getCodePoint(index), section, glyphMap, imagePositions, spacing, layoutTextSize, textSizeFactor);
     }
 
     const lineCount = Math.max(1, Math.ceil(totalWidth / maxWidth));
@@ -499,12 +504,13 @@ function determineLineBreaks(
     glyphMap: GlyphMap,
     imagePositions: ImagePositionMap,
     layoutTextSize: number,
+    textSizeFactor: number = 1,
 ): Array<number> {
     if (!logicalInput)
         return [];
 
     const potentialLineBreaks = [];
-    const targetWidth = determineAverageLineWidth(logicalInput, spacing, maxWidth, glyphMap, imagePositions, layoutTextSize);
+    const targetWidth = determineAverageLineWidth(logicalInput, spacing, maxWidth, glyphMap, imagePositions, layoutTextSize, textSizeFactor);
 
     const hasServerSuggestedBreakpoints = logicalInput.text.indexOf("\u200b") >= 0;
 
@@ -513,7 +519,7 @@ function determineLineBreaks(
     for (let i = 0; i < logicalInput.length(); i++) {
         const section = logicalInput.getSection(i);
         const codePoint = logicalInput.getCodePoint(i);
-        if (!whitespace[codePoint]) currentX += getGlyphAdvance(codePoint, section, glyphMap, imagePositions, spacing, layoutTextSize);
+        if (!whitespace[codePoint]) currentX += getGlyphAdvance(codePoint, section, glyphMap, imagePositions, spacing, layoutTextSize, textSizeFactor);
 
         // Ideographic characters, spaces, and word-breaking punctuation that often appear without
         // surrounding spaces.
@@ -588,7 +594,8 @@ function shapeLines(shaping: Shaping,
                     writingMode: Orientation,
                     spacing: number,
                     allowVerticalPlacement: boolean,
-                    layoutTextSizeThisZoom: number) {
+                    layoutTextSizeThisZoom: number,
+                    textSizeFactor: number = 1) {
 
     let x = 0;
     let y = 0;
@@ -711,20 +718,23 @@ function shapeLines(shaping: Shaping,
                 shaping.iconsInText = shaping.iconsInText || true;
                 rect = imagePosition.paddedRect;
                 const size = imagePosition.displaySize;
+                // Apply textSizeFactor to image dimensions for proper scaling
+                const scaledWidth = size[0] * textSizeFactor;
+                const scaledHeight = size[1] * textSizeFactor;
                 // If needed, allow to set scale factor for an image using
                 // alias "image-scale" that could be alias for "font-scale"
                 // when FormattedSection is an image section.
                 sectionScale = sectionScale * ONE_EM / layoutTextSizeThisZoom;
 
-                metrics = {width: size[0],
-                    height: size[1],
+                metrics = {width: scaledWidth,
+                    height: scaledHeight,
                     left: 0,
                     top: -GLYPH_PBF_BORDER,
-                    advance: vertical ? size[1] : size[0],
+                    advance: vertical ? scaledHeight : scaledWidth,
                     localGlyph: false};
 
                 if (!hasBaseline) {
-                    glyphOffset = SHAPING_DEFAULT_OFFSET + lineMaxScale * ONE_EM - size[1] * sectionScale;
+                    glyphOffset = SHAPING_DEFAULT_OFFSET + lineMaxScale * ONE_EM - scaledHeight * sectionScale;
                 } else {
                     // Based on node-fontnik: 'top = heightAboveBaseline - Ascender'(it is not valid for locally
                     // generated glyph). Since the top is a constant: glyph's borderSize. So if we set image glyph with
@@ -739,7 +749,7 @@ function shapeLines(shaping: Shaping,
 
                 // Difference between height of an image and one EM at max line scale.
                 // Pushes current line down if an image size is over 1 EM at max line scale.
-                const offset = (vertical ? size[0] : size[1]) * sectionScale - ONE_EM * lineMaxScale;
+                const offset = (vertical ? scaledWidth : scaledHeight) * sectionScale - ONE_EM * lineMaxScale;
                 if (offset > 0 && offset > lineOffset) {
                     lineOffset = offset;
                 }

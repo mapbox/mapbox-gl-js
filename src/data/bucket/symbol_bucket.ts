@@ -745,6 +745,8 @@ class SymbolBucket implements Bucket {
         const iconImage = layout.get('icon-image');
         const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
         const iconScaleFactor = clamp(options.scaleFactor || 1, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
+        const [textSizeScaleRangeMin, textSizeScaleRangeMax] = layout.get('text-size-scale-range');
+        const textScaleFactor = clamp(options.scaleFactor || 1, textSizeScaleRangeMin, textSizeScaleRangeMax);
         const hasText =
 
             (textField.value.kind !== 'constant' ||
@@ -927,7 +929,7 @@ class SymbolBucket implements Bucket {
                         const sectionStack: Record<number, boolean> = stacks[sectionFont] = stacks[sectionFont] || {};
                         this.calculateGlyphDependencies(section.text, sectionStack, textAlongLine, this.allowVerticalPlacement, doesAllowVerticalWritingMode);
                     } else {
-                        const imagePrimary = section.image.getPrimary().scaleSelf(this.pixelRatio);
+                        const imagePrimary = section.image.getPrimary().scaleSelf(this.pixelRatio * textScaleFactor);
                         const imagePrimaryId = imagePrimary.id.toString();
                         const primaryIcons = icons.get(imagePrimaryId) || [];
                         primaryIcons.push(imagePrimary);

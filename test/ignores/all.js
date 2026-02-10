@@ -282,10 +282,6 @@ const skip = [
     // Not implemented, https://mapbox.atlassian.net/browse/GLJS-1591
     "render-tests/slots/inner-slot-before-outer",
     "render-tests/slots/mixed-slot-order-with-imports",
-
-    // Not implemented in GL JS
-    "render-tests/scale-factor/text/text-with-raster-images",
-    "render-tests/scale-factor/text/text-with-vector-images",
 ];
 
 export default {todo, skip};
