@@ -1,3 +1,19 @@
+## 3.19.0-beta.2
+
+### Features and improvements ✨
+
+- Promote elevated lines properties to stable: `line-z-offset` and `line-elevation-reference`.
+- Add experimental `text-size-scale-range` and `icon-size-scale-range` style properties.
+- Add experimental `Map#setScaleFactor`/`Map#getScaleFactor` methods for controlling symbol layer scaling.
+- Apply global scale factor to images within `text-field`.
+
+### Bug fixes 🐞
+
+- Fix `RasterArrayTileSource#reload()` not working correctly.
+- Add request cancellation support to the `ModelSource`.
+- Fix flickering of aliased thin lines.
+- Fix elevated line bevel join artifacts at sharp corners.
+
 ## 3.19.0-beta.1
 
 ### Features and improvements ✨
