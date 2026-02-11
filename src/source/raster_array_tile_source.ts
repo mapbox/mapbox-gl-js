@@ -189,21 +189,18 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         // Don't mark tile as reloading if it was empty.
         if (tile.state !== 'empty') tile.state = 'reloading';
 
-        // Fetch data for band and then repaint once data is acquired.
+        // Fetch data for band and then repaint
         tile.fetchBandForRender(sourceLayer, layerId, band, (error, data) => {
             if (error) {
                 tile.state = 'errored';
                 this.fire(new ErrorEvent(error));
-                this.triggerRepaint(tile);
-                return;
-            }
-
-            if (data) {
+            } else if (data) {
                 tile._isHeaderLoaded = true;
                 tile.setTexturePerLayer(layerId, data, this.map.painter);
                 tile.state = 'loaded';
-                this.triggerRepaint(tile);
             }
+
+            this.triggerRepaint(tile);
         });
     }
 

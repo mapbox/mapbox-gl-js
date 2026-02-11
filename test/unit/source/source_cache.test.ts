@@ -701,6 +701,7 @@ describe('SourceCache#update', () => {
         });
 
         sourceCache._source.type = 'raster';
+        sourceCache._supportsFading = true;
         await new Promise(resolve => {
             eventedParent.on('data', (e) => {
                 if (e.sourceDataType === 'metadata') {
@@ -747,6 +748,7 @@ describe('SourceCache#update', () => {
         });
 
         sourceCache._source.type = 'raster';
+        sourceCache._supportsFading = true;
         await new Promise(resolve => {
             eventedParent.on('data', (e) => {
                 if (e.sourceDataType === 'metadata') {
@@ -792,6 +794,7 @@ describe('SourceCache#update', () => {
         });
 
         sourceCache._source.type = 'raster';
+        sourceCache._supportsFading = true;
 
         await new Promise(resolve => {
             eventedParent.on('data', (e) => {
@@ -829,6 +832,7 @@ describe('SourceCache#update', () => {
         });
 
         sourceCache._source.type = 'raster';
+        sourceCache._supportsFading = true;
 
         await new Promise(resolve => {
             eventedParent.on('data', (e) => {
@@ -871,6 +875,7 @@ describe('SourceCache#update', () => {
         });
 
         sourceCache._source.type = 'raster';
+        sourceCache._supportsFading = true;
 
         await new Promise(resolve => {
             eventedParent.on('data', (e) => {
@@ -2234,3 +2239,32 @@ describe('shadow caster tiles', () => {
     });
 });
 
+describe('SourceCache#hasTransition', () => {
+    test('returns true for raster-array source with fading tile', () => {
+        const {sourceCache} = createSourceCache({
+            type: 'raster-array',
+            hasTransition: () => false
+        });
+
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+        const tile = new Tile(tileID, 512, 0);
+        tile.fadeEndTime = browser.now() + 300;
+        sourceCache._tiles[tileID.key] = tile;
+
+        expect(sourceCache.hasTransition()).toBe(true);
+    });
+
+    test('returns false for raster-array source when fade is complete', () => {
+        const {sourceCache} = createSourceCache({
+            type: 'raster-array',
+            hasTransition: () => false
+        });
+
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+        const tile = new Tile(tileID, 512, 0);
+        tile.fadeEndTime = browser.now() - 300;
+        sourceCache._tiles[tileID.key] = tile;
+
+        expect(sourceCache.hasTransition()).toBe(false);
+    });
+});
