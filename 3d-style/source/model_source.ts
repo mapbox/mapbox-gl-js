@@ -69,8 +69,8 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
     uri: string;
     models: Array<Model>;
     _options: ModelSourceSpecification;
+    _abortController: AbortController | null;
 
-    onRemove: undefined;
     abortTile: undefined;
     unloadTile: undefined;
     hasTile: undefined;
@@ -89,67 +89,82 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         this.models = [];
         this._options = options;
         this._modelsInfo = new Map();
+        this._abortController = null;
     }
 
-    private loadGLTFFromURI(uri: string): Promise<void | GLTF> {
-        return loadGLTF(this.map._requestManager.transformRequest(uri, ResourceType.Model).url);
-    }
-
-    load(): void {
-        for (const modelId in this._options.models) {
-            const modelSpec = this._options.models[modelId];
-
-            const modelInfo = this._modelsInfo.get(modelId);
-            if (modelInfo) {
-                modelInfo.modelSpec = modelSpec;
-                // Update model if loaded
-                const model = modelInfo.model;
-                if (model) {
-                    model.position = modelSpec.position != null ? new LngLat(modelSpec.position[0], modelSpec.position[1]) : new LngLat(0, 0);
-                    model.orientation = modelSpec.orientation != null ? modelSpec.orientation : [0, 0, 0];
-                    ModelSource.applyModelSpecification(model, modelSpec);
-                    model.computeBoundsAndApplyParent();
-                    this.models.push(model);
-                }
-            } else {
-                // Model neither currently loading nor already loaded
-                this._modelsInfo.set(modelId, {modelSpec, model: null});
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                this.loadModel(modelId, modelSpec);
-            }
-        }
-        // Fire data event if all models are already loaded (i.e model source is empty or there are no more requests pending)
-        if (this.loaded()) {
-            this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
+    private cancelModelRequests() {
+        if (this._abortController) {
+            this._abortController.abort();
+            this._abortController = null;
         }
     }
 
-    private async loadModel(modelId: string, modelSpec: ModelSourceModelSpecification): Promise<void> {
+    private loadGLTFFromURI(uri: string, signal?: AbortSignal): Promise<GLTF> {
+        return loadGLTF(this.map._requestManager.transformRequest(uri, ResourceType.Model).url, signal);
+    }
+
+    private async loadModel(modelId: string, modelSpec: ModelSourceModelSpecification, signal: AbortSignal): Promise<void> {
         try {
-            const gltf = await this.loadGLTFFromURI(modelSpec.uri);
-            if (!gltf) return;
+            const gltf = await this.loadGLTFFromURI(modelSpec.uri, signal);
+            if (signal.aborted) return;
 
-            // Check if model is still active
             const modelInfo = this._modelsInfo.get(modelId);
-            if (!modelInfo) return;
+            if (!modelInfo) return; // source modified during async gap
 
             const nodes = convertModel(gltf);
-            const currentModelSpec = modelInfo.modelSpec;
-            const model = new Model(modelId, currentModelSpec.uri, currentModelSpec.position, currentModelSpec.orientation, nodes);
-            ModelSource.applyModelSpecification(model, currentModelSpec);
+            const currentSpec = modelInfo.modelSpec;
+            const model = new Model(modelId, currentSpec.uri, currentSpec.position, currentSpec.orientation, nodes);
+            ModelSource.applyModelSpecification(model, currentSpec);
             model.computeBoundsAndApplyParent();
 
             this.models.push(model);
             modelInfo.model = model;
+        } catch (err: unknown) {
+            if (err instanceof Error && err.name === 'AbortError') return;
+            const message = err instanceof Error ? err.message : 'Unknown error';
+            this.fire(new ErrorEvent(new Error(`Could not load model ${modelId} from ${modelSpec.uri}: ${message}`)));
+        }
+    }
 
-            // If all models are loaded, fire data event
+    async load(): Promise<void> {
+        if (!this._abortController) {
+            this._abortController = new AbortController();
+        }
+        const signal = this._abortController.signal;
+
+        const loadPromises: Promise<void>[] = [];
+
+        for (const modelId in this._options.models) {
+            const modelSpec = this._options.models[modelId];
+
+            const existingInfo = this._modelsInfo.get(modelId);
+            if (existingInfo && existingInfo.model) {
+                existingInfo.modelSpec = modelSpec;
+                const model = existingInfo.model;
+                model.position = modelSpec.position != null ? new LngLat(modelSpec.position[0], modelSpec.position[1]) : new LngLat(0, 0);
+                model.orientation = modelSpec.orientation != null ? modelSpec.orientation : [0, 0, 0];
+                ModelSource.applyModelSpecification(model, modelSpec);
+                model.computeBoundsAndApplyParent();
+                this.models.push(model);
+            } else if (!existingInfo) {
+                this._modelsInfo.set(modelId, {modelSpec, model: null});
+                loadPromises.push(this.loadModel(modelId, modelSpec, signal));
+            } else {
+                existingInfo.modelSpec = modelSpec;
+            }
+        }
+
+        if (loadPromises.length === 0) {
             if (this.loaded()) {
                 this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
             }
-        } catch (err) {
-
-            this.fire(new ErrorEvent(new Error(`Could not load model ${modelId} from ${modelSpec.uri}: ${(err as Error).message}`)));
+            return;
         }
+
+        await Promise.allSettled(loadPromises);
+
+        if (signal.aborted) return; // new load will fire data event
+        this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
     }
 
     private static applyModelSpecification(model: Model, modelSpec: ModelSourceModelSpecification) {
@@ -246,6 +261,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
 
     onAdd(map: MapboxMap) {
         this.map = map;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.load();
     }
 
@@ -278,11 +294,17 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
     }
 
     reload() {
+        this.cancelModelRequests();
         const fqid = makeFQID(this.id, this.scope);
         this.map.style.clearSource(fqid);
         this.models = [];
         this._modelsInfo.clear();
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.load();
+    }
+
+    onRemove(_map: MapboxMap) {
+        this.cancelModelRequests();
     }
 
     /**
@@ -300,23 +322,32 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
      * });
      */
     setModels(modelSpecs: ModelSourceModelsSpecification) {
-        // Mimic behavior of native `ModelSource::updateModelData` implementation
         this.models = [];
 
-        // Only preserve model info entries for ids present in new model specification
         const updatedModelsInfo = new Map<string, ModelSourceModelInfo>();
         for (const modelId in modelSpecs) {
             const modelSpec = modelSpecs[modelId];
-            if (this._modelsInfo.has(modelId)) {
-                const entry = this._modelsInfo.get(modelId);
-                // Only preserve if uri did not change
-                if (entry && entry.modelSpec.uri === modelSpec.uri) {
-                    updatedModelsInfo.set(modelId, entry);
-                }
+            const entry = this._modelsInfo.get(modelId);
+            if (entry && entry.modelSpec.uri === modelSpec.uri) {
+                updatedModelsInfo.set(modelId, entry);
             }
         }
+
+        // Only cancel requests when models are actually removed or URIs change.
+        // Property-only updates (position, orientation) are high-frequency (animation)
+        // and should not restart in-flight model loads.
+        const modelsChanged = this._modelsInfo.size !== updatedModelsInfo.size;
+        if (modelsChanged) {
+            this.cancelModelRequests();
+            // Remove pending entries - their cancelled requests won't complete
+            for (const [id, info] of updatedModelsInfo) {
+                if (!info.model) updatedModelsInfo.delete(id);
+            }
+        }
+
         this._modelsInfo = updatedModelsInfo;
         this._options.models = modelSpecs;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.load();
     }
 }

@@ -263,6 +263,29 @@ export const getArrayBuffer = function (
     return makeRequest(Object.assign(requestParameters, {type: 'arrayBuffer'}), callback);
 };
 
+export async function makeAsyncRequest<T>(
+    requestParameters: RequestParameters,
+    signal?: AbortSignal
+): Promise<T> {
+    if (signal && signal.aborted) {
+        throw new DOMException('Aborted', 'AbortError');
+    }
+
+    return new Promise((resolve, reject) => {
+        const cancelable = makeRequest(requestParameters, (err, data) => {
+            if (err) reject(err);
+            else resolve(data as T);
+        });
+
+        if (signal) {
+            signal.addEventListener('abort', () => {
+                cancelable.cancel();
+                reject(new DOMException('Aborted', 'AbortError'));
+            }, {once: true});
+        }
+    });
+}
+
 export const postData = function (requestParameters: RequestParameters, callback: ResponseCallback<string>): Cancelable {
     return makeRequest(Object.assign(requestParameters, {method: 'POST'}), callback);
 };

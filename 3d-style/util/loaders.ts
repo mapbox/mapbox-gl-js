@@ -11,6 +11,7 @@ import assert from 'assert';
 import {DracoDecoderModule} from './draco_decoder_gltf';
 import {MeshoptDecoder} from './meshopt_decoder';
 import {PerformanceUtils} from '../../src/util/performance';
+import {makeAsyncRequest} from '../../src/util/ajax';
 
 import type {vec3, mat4, quat} from 'gl-matrix';
 import type {BuildingGen} from './building_gen';
@@ -356,8 +357,8 @@ function resolveUrl(url: string, baseUrl?: string) {
     return (new URL(url, baseUrl)).href;
 }
 
-async function loadBuffer(buffer: {uri: string; byteLength: number}, gltf: GLTF, index: number, baseUrl?: string): Promise<void> {
-    const response = await fetch(resolveUrl(buffer.uri, baseUrl));
+async function loadBuffer(buffer: {uri: string; byteLength: number}, gltf: GLTF, index: number, baseUrl?: string, signal?: AbortSignal): Promise<void> {
+    const response = await fetch(resolveUrl(buffer.uri, baseUrl), {signal});
     const arrayBuffer = await response.arrayBuffer();
     assert(arrayBuffer.byteLength >= buffer.byteLength);
     gltf.buffers[index] = arrayBuffer;
@@ -369,10 +370,10 @@ function getGLTFBytes(gltf: GLTF, bufferViewIndex: number): Uint8Array<ArrayBuff
     return new Uint8Array<ArrayBuffer>(buffer, bufferView.byteOffset || 0, bufferView.byteLength);
 }
 
-async function loadImage(img: {uri?: string; bufferView?: number; mimeType: string}, gltf: GLTF, index: number, baseUrl?: string): Promise<void> {
+async function loadImage(img: {uri?: string; bufferView?: number; mimeType: string}, gltf: GLTF, index: number, baseUrl?: string, signal?: AbortSignal): Promise<void> {
     if (img.uri) {
         const uri = resolveUrl(img.uri, baseUrl);
-        const response = await fetch(uri);
+        const response = await fetch(uri, {signal});
         const blob = await response.blob();
         const imageBitmap = await createImageBitmap(blob);
         gltf.images[index] = imageBitmap;
@@ -384,7 +385,7 @@ async function loadImage(img: {uri?: string; bufferView?: number; mimeType: stri
     }
 }
 
-export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 0, baseUrl?: string): Promise<GLTF | void> {
+export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 0, baseUrl?: string, signal?: AbortSignal): Promise<GLTF> {
     const startTime = PerformanceUtils.now();
 
     const gltf: GLTF = {json: null, images: [], buffers: []};
@@ -420,13 +421,15 @@ export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 
         for (let i = 0; i < buffers.length; i++) {
             const buffer = buffers[i];
             if (buffer.uri) {
-                bufferLoads.push(loadBuffer(buffer, gltf, i, baseUrl));
+                bufferLoads.push(loadBuffer(buffer, gltf, i, baseUrl, signal));
             } else if (!gltf.buffers[i]) {
                 gltf.buffers[i] = null;
             }
         }
         await Promise.all(bufferLoads);
     }
+
+    if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
 
     const assetLoads: Promise<unknown>[] = [];
     const dracoUsed = extensionsUsed && extensionsUsed.includes(DRACO_EXT);
@@ -440,13 +443,15 @@ export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 
     }
     if (images) {
         for (let i = 0; i < images.length; i++) {
-            assetLoads.push(loadImage(images[i], gltf, i, baseUrl));
+            assetLoads.push(loadImage(images[i], gltf, i, baseUrl, signal));
         }
     }
 
     if (assetLoads.length) {
         await Promise.all(assetLoads);
     }
+
+    if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
 
     if (dracoUsed && meshes) {
         for (const {primitives} of meshes) {
@@ -467,13 +472,12 @@ export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 
     return gltf;
 }
 
-export async function loadGLTF(url: string): Promise<GLTF | void> {
-    const response = await fetch(url);
-    const buffer = await response.arrayBuffer();
-    return decodeGLTF(buffer, 0, url);
+export async function loadGLTF(url: string, signal?: AbortSignal): Promise<GLTF> {
+    const buffer = await makeAsyncRequest<ArrayBuffer>({url, type: 'arrayBuffer'}, signal);
+    return decodeGLTF(buffer, 0, url, signal);
 }
 
-export function load3DTile(data: ArrayBuffer): Promise<GLTF | void> {
+export function load3DTile(data: ArrayBuffer): Promise<GLTF> {
     const magic = new Uint32Array(data, 0, 1)[0];
     let gltfOffset = 0;
     if (magic !== MAGIC_GLTF) {

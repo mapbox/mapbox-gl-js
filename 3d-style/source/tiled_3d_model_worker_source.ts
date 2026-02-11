@@ -71,7 +71,6 @@ class Tiled3dWorkerTile {
 
         load3DTile(data)
             .then(gltf => {
-                if (!gltf) return callback(new Error('Could not parse tile'));
                 const hasMapboxMeshFeatures: boolean = (gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('MAPBOX_mesh_features')) ||
                                             (gltf.json.asset.extras && gltf.json.asset.extras['MAPBOX_mesh_features']);
 

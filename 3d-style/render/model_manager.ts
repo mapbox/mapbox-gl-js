@@ -46,8 +46,6 @@ class ModelManager extends Evented {
     loadModel(id: string, url: string): Promise<Model | null | undefined> {
         return loadGLTF(this.requestManager.transformRequest(url, ResourceType.Model).url)
             .then(gltf => {
-                if (!gltf) return;
-
                 const nodes = convertModel(gltf);
                 const model = new Model(id, url, undefined, undefined, nodes);
                 model.computeBoundsAndApplyParent();
