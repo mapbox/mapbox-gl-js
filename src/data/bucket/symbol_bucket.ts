@@ -2080,7 +2080,14 @@ class SymbolBucket implements Bucket {
 
         // The current approach to sorting doesn't sort across segments so don't try.
         // Sorting within segments separately seemed not to be worth the complexity.
-        if (this.text.segments.get().length > 1 || this.icon.segments.get().length > 1) return;
+        if (this.text.segments.get().length > 1 || this.icon.segments.get().length > 1) {
+            // Disable sorting if there are multiple segments as the current approach doesn't sort within segments.
+            //
+            // Note: Force-disabling is a good practice here to prevent sorting logic that is unsupported in this
+            // particular case.
+            this.sortFeaturesByY = false;
+            return;
+        }
 
         // If the symbols are allowed to overlap sort them by their vertical screen position.
         // The index array buffer is rewritten to reference the (unchanged) vertices in the
