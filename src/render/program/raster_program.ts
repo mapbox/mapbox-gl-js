@@ -19,7 +19,7 @@ import type RasterStyleLayer from '../../style/style_layer/raster_style_layer';
 const lerp = (a: number, b: number, t: number) => { return (1 - t) * a + t * b; };
 
 function computeZBiasFactor(painter: Painter) {
-    const terrainExaggeration = Math.min(painter.terrain ? painter.terrain.exaggeration() : 0.0, 2.0);
+    const terrainExaggeration =  painter.terrain ? painter.terrain.exaggeration() : 1.0;
     const bias = painter.transform.pitch < 15.0 ? lerp(0.07, 0.7, clamp((14.0 - painter.transform.zoom) / (14.0 - 9.0), 0.0, 1.0)) : 0.07;
     return bias * terrainExaggeration;
 }

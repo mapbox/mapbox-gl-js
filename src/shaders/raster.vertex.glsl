@@ -51,14 +51,14 @@ void main() {
     v_fog_pos = fog_position((u_normalize_matrix * vec4(a_globe_pos, 1.0)).xyz);
 #endif // FOG
 #else // else GLOBE_POLES
-    float w = 1.0 + dot(a_texture_pos, u_perspective_transform);
+vec4 world_pos;
+#ifdef PROJECTION_GLOBE_VIEW
     // We are using Int16 for texture position coordinates to give us enough precision for
     // fractional coordinates. We use 8192 to scale the texture coordinates in the buffer
     // as an arbitrarily high number to preserve adequate precision when rendering.
     // This is also the same value as the EXTENT we are using for our tile buffer pos coordinates,
     // so math for modifying either is consistent.
     uv = a_texture_pos / 8192.0;
-#ifdef PROJECTION_GLOBE_VIEW
 
     vec3 decomposed_pos_and_skirt = decomposeToPosAndSkirt(a_pos);
     vec3 latLng = u_grid_matrix * vec3(decomposed_pos_and_skirt.xy, 1.0);
@@ -100,9 +100,7 @@ void main() {
     globe_pos += normalize(globe_pos) * ele * GLOBE_UPSCALE;
     vec4 globe_world_pos = u_globe_matrix * vec4(globe_pos, 1.0);
 
-    vec4 interpolated_pos = vec4(mix(globe_world_pos.xyz, merc_world_pos.xyz, u_zoom_transition) * w, w);
-
-    gl_Position = u_matrix * interpolated_pos;
+    world_pos = vec4(mix(globe_world_pos.xyz, merc_world_pos.xyz, u_zoom_transition), 1.0);
 #ifdef FOG
     v_fog_pos = fog_position((u_normalize_matrix * vec4(globe_pos, 1.0)).xyz);
 #endif // FOG
@@ -115,12 +113,16 @@ void main() {
     decodedPos = decomposedPosAndSkirt.xy;
     uv = decodedPos / 8192.0;
     ele = elevation(decodedPos) - skirt;
+#else // else ELEVATION_REFERENCE_GROUND
+    uv = a_texture_pos / 8192.0;
 #endif // ELEVATION_REFERENCE_GROUND
-    gl_Position = u_matrix * vec4(decodedPos * w, (u_raster_elevation + ele) * w, w);
+    world_pos = vec4(decodedPos, (u_raster_elevation + ele), 1.0);
 #ifdef FOG
     v_fog_pos = fog_position(decodedPos);
 #endif // FOG
 #endif // else PROJECTION_GLOBE_VIEW
+    float w = 1.0 + dot(uv*EXTENT, u_perspective_transform);
+    gl_Position = u_matrix * world_pos * w;
 #endif // else GLOBE_POLES
 
     v_pos0 = uv;

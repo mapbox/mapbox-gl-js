@@ -4,18 +4,27 @@
     "test": {
       "height": 300,
       "width": 512,
-      "allowed": 0.00224,
+      "allowed": 0.0013,
       "operations": [
-        ["wait"]
+        [
+          "wait"
+        ]
       ]
     }
   },
-  "center": [-113.325848, 35.966518],
-  "zoom": 12.17,
-  "pitch": 47.5,
-  "bearing": -89.3,
+  "projection": {
+    "name": "globe"
+  }, 
+  "center": [
+    -107.616,
+    41.166
+  ],
+  "zoom": 5.18,
+  "pitch": 32.0,
+  "bearing": -100.5,
   "terrain": {
-    "source": "rgbterrain"
+    "source": "rgbterrain",
+    "exaggeration": 100.0
   },
   "sprite": "local://sprites/standard",
   "lights": [
@@ -31,7 +40,7 @@
       "type": "directional",
       "id": "test_directional",
       "properties": {
-        "cast-shadows" : true,
+        "cast-shadows": true,
         "color": "rgba(255, 255, 255, 1)",
         "intensity": 0.8
       }
@@ -41,10 +50,10 @@
     "rgbterrain": {
       "type": "raster-dem",
       "tiles": [
-        "local://tiles/{z}-{x}-{y}.terrain.png"
+        "local://tiles/{z}-{x}-{y}.terrain.512.png"
       ],
       "maxzoom": 12,
-      "tileSize": 256
+      "tileSize": 512
     },
     "satellite": {
       "type": "raster",
@@ -79,7 +88,7 @@
       "paint": {
         "raster-fade-duration": 0,
         "raster-opacity": 0.7,
-        "raster-elevation": 1,
+        "raster-elevation": 10.0,
         "raster-elevation-reference": "ground",
         "raster-emissive-strength": 1
       }
