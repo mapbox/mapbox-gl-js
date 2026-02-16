@@ -10,6 +10,8 @@ import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type Actor from '../util/actor';
 import type {Callback} from '../types/callback';
+import type {GeoJSONWorkerOptions} from './geojson_worker_source';
+import type {GeoJSONSourceSpecification, PromoteIdSpecification, FilterSpecification} from '../style-spec/types';
 import type {Cancelable} from '../types/cancelable';
 import type {RequestParameters} from '../util/ajax';
 import type {MapSourceDataEvent} from '../ui/events';
@@ -264,6 +266,48 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             this._data = data;
         }
         this._updateWorkerData(true);
+        return this;
+    }
+
+    /**
+     * Sets filter for the GeoJSON data source and re-renders the map.
+     *
+     * @param {FilterSpecification} filter A FilterSpecification type for the filter expression.
+     * @returns {GeoJSONSource} Returns itself to allow for method chaining.
+     * @example
+     * map.addSource('source_id', {
+     *     type: 'geojson',
+     *     data: {
+     *         "type": "FeatureCollection",
+     *         "features": [{
+     *             "type": "Feature",
+     *             "properties": {"name": "Null Island"},
+     *             "geometry": {
+     *                 "type": "Point",
+     *                 "coordinates": [ 0, 0 ]
+     *             }
+     *         },
+     *         {
+     *             "type": "Feature",
+     *             "properties": {"name": "Another Island"},
+     *             "geometry": {
+     *                 "type": "Point",
+     *                 "coordinates": [ 1, 1 ]
+     *             }
+     *         }]
+     *     }
+     * });
+     * const geojsonSource = map.getSource('source_id');
+     * // Update the filter after the GeoJSON source was created
+     * geojsonSource.setFilter([
+     *     "==",
+     *     ["get", "name"],
+     *     "Another Island"
+     * ]);
+     */
+    setFilter(filter?: FilterSpecification): this {
+        this.workerOptions = extend({filter}, this.workerOptions);
+        this._updateWorkerData();
         return this;
     }
 
