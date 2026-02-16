@@ -39,7 +39,7 @@ export const plugins = ({mode, format, minified, production, test, bench, keepCl
     }),
     (production && !bench) ? strip({
         sourceMap: true,
-        functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*', 'DevTools.*'],
+        functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*', 'DevTools.*', 'StyleBOMUtils.*'],
         include: ['**/*.ts']
     }) : false,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call

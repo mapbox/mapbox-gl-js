@@ -68,6 +68,7 @@ import {loadIconset} from './load_iconset';
 import {ImageId} from '../style-spec/expression/types/image_id';
 import {ImageProvider} from '../render/image_provider';
 import IndoorManager from './indoor_manager';
+import {StyleBOMUtils} from './style_bom_utils';
 
 import type {PropertyValidatorOptions} from '../style-spec/validate/validate_property';
 import type Tile from '../source/tile';
@@ -128,6 +129,9 @@ import type {StyleModelMap} from './style_mode';
 import type {TypedStyleLayer} from './style_layer/typed_style_layer';
 import type {LngLatLike} from '../geo/lng_lat';
 import type {RasterQueryParameters, RasterQueryResult} from '../source/raster_array_tile_source';
+import type {StyleBOM} from './style_bom_utils';
+
+export type {StyleBOMEntry, StyleBOM} from './style_bom_utils';
 
 export type QueryRenderedFeaturesParams = {
     layers?: string[];
@@ -4628,6 +4632,17 @@ class Style extends Evented<MapEvents> {
 
     _clearWorkerCaches() {
         this.dispatcher.broadcast('clearCaches');
+    }
+
+    /**
+     * Returns the Bill of Materials (BOM) for this style, containing information
+     * about all styles and tilesets used by this style and its imports.
+     *
+     * @private
+     * @returns {StyleBOM} Array of BOM entries with style URLs, tileset URLs, and modified dates.
+     */
+    getBOMObject(): StyleBOM {
+        return StyleBOMUtils.getBOMObject(this);
     }
 
     destroy() {
