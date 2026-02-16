@@ -162,6 +162,7 @@ export async function renderMap(style, options, currentTestName) {
             forceManualRenderingForInstanceIDShaders: options.forceManualRenderingForInstanceIDShaders,
         },
         worldview: options.worldview,
+        maxZoom: options.maxZoom,
         transformRequest,
         testMode: true
     });

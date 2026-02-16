@@ -13,7 +13,8 @@
           "source": "rgbterrain"
         }],
         ["wait"]
-      ]
+      ],
+      "maxZoom": 11.5
     }
   },
   "center": [-113.26903, 35.9654],

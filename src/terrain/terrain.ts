@@ -103,7 +103,10 @@ type ElevationUniformsType =
 
 class MockSourceCache extends SourceCache {
     constructor(map: Map) {
-        const sourceSpec: SourceSpecification = {type: 'raster-dem', maxzoom: map.transform.maxZoom};
+        const sourceSpec: SourceSpecification = {
+            type: 'raster-dem',
+            maxzoom: Math.ceil(map.transform.maxZoom)
+        };
         const source = createSource('mock-dem', sourceSpec, map.style.dispatcher, map.style);
 
         super('mock-dem', source, false);
@@ -138,7 +141,7 @@ class ProxySourceCache extends SourceCache {
 
         const source = createSource('proxy', {
             type: 'geojson',
-            maxzoom: map.transform.maxZoom
+            maxzoom: Math.ceil(map.transform.maxZoom)
         }, map.style.dispatcher, map.style);
 
         super('proxy', source, false);
