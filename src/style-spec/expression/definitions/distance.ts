@@ -135,10 +135,10 @@ function latFromMercatorY(y: number): number {
     return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
 }
 
-function getLngLatPoint(coord: Point, canonical: CanonicalTileID): [number, number] {
+export function getLngLatPoint(coord: Point, canonical: CanonicalTileID, extent: number = EXTENT): [number, number] {
     const tilesAtZoom = Math.pow(2, canonical.z);
-    const x = (coord.x / EXTENT + canonical.x) / tilesAtZoom;
-    const y = (coord.y / EXTENT + canonical.y) / tilesAtZoom;
+    const x = (coord.x / extent + canonical.x) / tilesAtZoom;
+    const y = (coord.y / extent + canonical.y) / tilesAtZoom;
     return [lngFromMercatorX(x), latFromMercatorY(y)];
 }
 

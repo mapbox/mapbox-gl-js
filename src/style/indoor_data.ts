@@ -1,3 +1,5 @@
+import type {Polygon, MultiPolygon} from 'geojson';
+
 export type IndoorData = {
     buildings: Record<string, IndoorBuilding>;
     activeFloors: Set<string>;
@@ -12,6 +14,11 @@ export type IndoorBuilding = {
 export type IndoorFloor = {
     name: string;
     zIndex: number;
+    connections?: Set<string>;
+    conflicts?: Set<string>;
+    isDefault?: boolean;
+    buildings?: Set<string>;
+    geometry?: Polygon | MultiPolygon;
 };
 
 export type IndoorEvents = {

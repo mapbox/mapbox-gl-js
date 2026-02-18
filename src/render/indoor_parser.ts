@@ -1,50 +1,33 @@
 import {warnOnce} from "../util/util";
+import {getLngLatPoint} from "../style-spec/expression/definitions/distance";
+import {IndoorActiveFloorStrategy} from "../style/indoor_active_floor_strategy";
 
 import type {VectorTile, VectorTileFeature} from "@mapbox/vector-tile";
 import type {IndoorBuilding, IndoorData, IndoorTileOptions} from "../style/indoor_data";
 import type Actor from "../util/actor";
+import type {CanonicalTileID} from "../source/tile_id";
+import type {Polygon, MultiPolygon} from "geojson";
 
-export function parseActiveFloors(data: VectorTile, indoorTileOptions: IndoorTileOptions, actor: Actor): Set<string> | undefined {
+export function parseActiveFloors(data: VectorTile, indoorTileOptions: IndoorTileOptions, actor: Actor, tileID: CanonicalTileID): Set<string> | undefined {
     const activeFloorsVisible = indoorTileOptions.indoorState.activeFloorsVisible;
     if (!indoorTileOptions.sourceLayers) {
         return activeFloorsVisible ? indoorTileOptions.indoorState.activeFloors : undefined;
     }
     const sourceLayers = calculateIndoorSourceLayers(indoorTileOptions.sourceLayers, new Set(Object.keys(data.layers)));
     const indoorState = indoorTileOptions.indoorState;
-    const indoorData = parseData(data, sourceLayers, indoorState.activeFloors, indoorState.selectedFloorId);
+    const indoorData = parseData(data, sourceLayers, indoorState.activeFloors, indoorState.selectedFloorId, tileID);
     actor.send('setIndoorData', indoorData);
     return activeFloorsVisible ? indoorData.activeFloors : undefined;
 }
 
-// This function is used to parse the indoor data from the vector tile
-// And resolve set of currently active floors based on lastActiveFloors and selectedFloorId
-// 1. Parse the indoor data from the vector tile
-// 2. selectedFloorId will be used to determine if the floor is active (either directly or via connected_floor_ids)
-// 3. if lastActiveFloors is provided, we will also add floors from that set that are not conflicting with the new active floors from step 2
-// 4. we also add default floors that are not conflicting with the new active floors from steps 2 and 3
-// ResolveD data will be passed to the bucket and emitted to indoor manager to create new indoorState
 function parseData(
     data: VectorTile,
     sourceLayers: Set<string>,
     lastActiveFloors: Set<string>,
-    selectedFloorId: string
+    selectedFloorId: string,
+    tileID: CanonicalTileID
 ): IndoorData {
-    const newActiveFloors = new Set<string>();
-    const allFloors = new Set<string>();
-    const allDefaultFloors = new Set<string>();
-
-    const floorIdToConflicts = new Map<string, Set<string>>();
     const buildings: Record<string, IndoorBuilding> = {};
-
-    // If any active floor lists candidate as conflict, or candidate lists any active as conflict
-    const conflictsWithActive = (candidateId: string): boolean => {
-        const candidateConflicts = floorIdToConflicts.get(candidateId) || new Set<string>();
-        for (const activeId of newActiveFloors) {
-            const activeConflicts = floorIdToConflicts.get(activeId) || new Set<string>();
-            if (activeConflicts.has(candidateId) || candidateConflicts.has(activeId)) return true;
-        }
-        return false;
-    };
 
     for (const layerId of sourceLayers) {
         const sourceLayer = data.layers[layerId];
@@ -59,52 +42,21 @@ function parseData(
             if (isValidBuildingFeature(feature)) {
                 const {id, center} = parseBuilding(feature);
                 upsertBuilding(buildings, id, center);
-                newActiveFloors.add(id);
                 continue;
             }
 
             // Next step: Introduce better logging in case of invalid feature with valid type
             if (isValidFloorFeature(feature)) {
-                const {id, isDefault, connections, conflicts, buildings: buildingIds, name, zIndex} = parseFloor(feature);
-                assignFloorToBuildings(buildings, buildingIds, id, {name, zIndex});
-
-                floorIdToConflicts.set(id, conflicts);
-
-                const isActiveFloor = (id === selectedFloorId) || connections.has(selectedFloorId);
-                if (isActiveFloor) {
-                    newActiveFloors.add(id);
-                }
-
-                allFloors.add(id);
-                if (isDefault) {
-                    allDefaultFloors.add(id);
-                }
+                const floor = parseFloor(feature, tileID);
+                assignFloorToBuildings(buildings, floor.buildings, floor.id, floor);
             }
         }
     }
 
-    // Add last active floors that still exist and don't conflict with current active floors
-    if (lastActiveFloors) {
-        for (const lastActiveFloorId of lastActiveFloors) {
-            // lastActiveFloors may contain floors that are not in the current tile data, so we need to check if they exist and skip if they don't
-            if (!allFloors.has(lastActiveFloorId)) continue;
-            if (!conflictsWithActive(lastActiveFloorId)) {
-                newActiveFloors.add(lastActiveFloorId);
-            }
-        }
-    }
-
-    // Add default floors that don't conflict with the active floors
-    for (const defaultFloorId of allDefaultFloors) {
-        if (newActiveFloors.has(defaultFloorId)) continue;
-        if (!conflictsWithActive(defaultFloorId)) {
-            newActiveFloors.add(defaultFloorId);
-        }
-    }
-
+    const activeFloors = IndoorActiveFloorStrategy.calculate(buildings, selectedFloorId, lastActiveFloors);
     return {
         buildings,
-        activeFloors: newActiveFloors
+        activeFloors
     };
 }
 
@@ -128,7 +80,7 @@ function assignFloorToBuildings(
     buildings: Record<string, IndoorBuilding>,
     buildingIds: Set<string>,
     floorId: string,
-    floor: {name: string, zIndex: number}
+    floor: {name: string, zIndex: number, connections: Set<string>, conflicts: Set<string>, isDefault: boolean, buildings: Set<string>}
 ): void {
     for (const buildingId of buildingIds) {
         upsertBuilding(buildings, buildingId);
@@ -143,7 +95,7 @@ function parseBuilding(feature: VectorTileFeature): {id: string, center: [number
     return {id, center};
 }
 
-function parseFloor(feature: VectorTileFeature): {id: string, isDefault: boolean, connections: Set<string>, conflicts: Set<string>, buildings: Set<string>, zIndex: number, name: string} {
+function parseFloor(feature: VectorTileFeature, tileID: CanonicalTileID): {id: string, isDefault: boolean, connections: Set<string>, conflicts: Set<string>, buildings: Set<string>, zIndex: number, name: string, geometry: Polygon | MultiPolygon | undefined} {
     const id = feature.properties.id.toString();
     const isDefault = feature.properties.is_default ?
         feature.properties.is_default as boolean :
@@ -159,8 +111,23 @@ function parseFloor(feature: VectorTileFeature): {id: string, isDefault: boolean
         new Set();
     const name = feature.properties.name.toString();
     const zIndex = feature.properties.z_index as number;
+    const geometry = extractGeometry(feature, tileID);
+    return {id, isDefault, connections, conflicts, buildings, name, zIndex, geometry};
+}
 
-    return {id, isDefault, connections, conflicts, buildings, name, zIndex};
+function extractGeometry(feature: VectorTileFeature, tileID: CanonicalTileID): Polygon | MultiPolygon | undefined {
+    const geometry = feature.loadGeometry();
+    if (!geometry || geometry.length === 0) return undefined;
+
+    const coordinates = geometry.map(ring => {
+        return ring.map(p => {
+            return getLngLatPoint(p, tileID, feature.extent);
+        });
+    });
+    if (coordinates.length === 0) return undefined;
+
+    // Just construct a Polygon with the first ring as exterior.
+    return {type: 'Polygon', coordinates: [coordinates[0]]};
 }
 
 function hasRequiredProperties(feature: VectorTileFeature, requiredProps: string[]): boolean {

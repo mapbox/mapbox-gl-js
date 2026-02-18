@@ -140,7 +140,7 @@ class WorkerTile {
         };
 
         if (this.indoor) {
-            options.activeFloors = parseActiveFloors(data, this.indoor, actor);
+            options.activeFloors = parseActiveFloors(data, this.indoor, actor, this.canonical);
         }
 
         const asyncBucketLoads: Promise<unknown>[] = [];
@@ -233,7 +233,7 @@ class WorkerTile {
                 if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
                 if (layer.visibility === 'none') continue;
 
-                recalculateLayers(family, this.zoom, options.brightness, availableImages, this.worldview);
+                recalculateLayers(family, this.zoom, options.brightness, availableImages, this.worldview, options.activeFloors);
 
                 // @ts-expect-error: Type 'TypedStyleLayer' doesn't have a 'createBucket' method in all of its subtypes
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
@@ -317,7 +317,7 @@ class WorkerTile {
                     for (const key in buckets) {
                         const bucket = buckets[key];
                         if (bucket instanceof SymbolBucket) {
-                            recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages, this.worldview);
+                            recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages, this.worldview, options.activeFloors);
                             symbolLayoutData[key] =
                             performSymbolLayout(bucket,
                                     glyphMap,
@@ -358,7 +358,7 @@ class WorkerTile {
                         (bucket instanceof LineBucket ||
                             bucket instanceof FillBucket ||
                             bucket instanceof FillExtrusionBucket)) {
-                        recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages, this.worldview);
+                        recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages, this.worldview, options.activeFloors);
                         const imagePositions: SpritePositions = Object.fromEntries(imageAtlas.patternPositions);
                         bucket.addFeatures(options, this.tileID.canonical, imagePositions, availableImages, this.tileTransform, this.brightness);
                     }
@@ -531,9 +531,9 @@ class WorkerTile {
     }
 }
 
-function recalculateLayers(layers: ReadonlyArray<TypedStyleLayer>, zoom: number, brightness: number, availableImages: ImageId[], worldview: string | undefined) {
+function recalculateLayers(layers: ReadonlyArray<TypedStyleLayer>, zoom: number, brightness: number, availableImages: ImageId[], worldview: string | undefined, activeFloors: Set<string> | undefined) {
     // Layers are shared and may have been used by a WorkerTile with a different zoom.
-    const parameters = new EvaluationParameters(zoom, {brightness, worldview});
+    const parameters = new EvaluationParameters(zoom, {brightness, worldview, activeFloors});
     for (const layer of layers) {
         layer.recalculate(parameters, availableImages);
     }
