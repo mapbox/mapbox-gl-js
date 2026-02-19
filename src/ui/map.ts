@@ -992,7 +992,7 @@ export class Map extends Camera {
      * @example
      * const bounds = map.getBounds();
      */
-    getBounds(): LngLatBounds | null {
+    getBounds(): LngLatBounds {
         return this.transform.getBounds();
     }
 
