@@ -60,7 +60,7 @@ export function cachePut(request: Request, response: Response, requestTime: numb
     cacheOpen();
     if (sharedCache == null) return;
 
-    const cacheControl = parseCacheControl(response.headers.get('Cache-Control') || '');
+    const cacheControl = parseCacheControl(response.headers.get('cache-control') || '');
     if (cacheControl['no-store']) return;
 
     const options: ResponseOptions = {
@@ -75,7 +75,7 @@ export function cachePut(request: Request, response: Response, requestTime: numb
         options.headers.set('Expires', new Date(requestTime + cacheControl['max-age'] * 1000).toUTCString());
     }
 
-    const expires = options.headers.get('Expires');
+    const expires = options.headers.get('expires');
     if (!expires) return;
 
     const timeUntilExpiry = new Date(expires).getTime() - requestTime;
@@ -137,8 +137,8 @@ export function cacheGet(
 
 function isFresh(response: Response) {
     if (!response) return false;
-    const expires = new Date(response.headers.get('Expires') || 0);
-    const cacheControl = parseCacheControl(response.headers.get('Cache-Control') || '');
+    const expires = new Date(response.headers.get('expires') || 0);
+    const cacheControl = parseCacheControl(response.headers.get('cache-control') || '');
     return Number(expires) > Date.now() && !cacheControl['no-cache'];
 }
 

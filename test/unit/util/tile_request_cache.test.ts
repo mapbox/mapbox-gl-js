@@ -60,9 +60,9 @@ describe('tile_request_cache', () => {
         const cachedResponse = {
             headers: {get: vi.fn().mockImplementation((name) => {
                 switch (name) {
-                case 'Expires':
+                case 'expires':
                     return '2300-01-01';
-                case 'Cache-Control':
+                case 'cache-control':
                     return null;
                 }
             })},

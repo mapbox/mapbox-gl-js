@@ -2,7 +2,7 @@
 // @ts-nocheck
 import Point from '@mapbox/point-geometry';
 import {describe, test, expect} from '../../util/vitest';
-import {mapValue, degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle, _resetSafariCheckForTest, isSafariWithAntialiasingBug} from '../../../src/util/util';
+import {mapValue, degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, getExpiryDataFromHeaders, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle, _resetSafariCheckForTest, isSafariWithAntialiasingBug} from '../../../src/util/util';
 
 const EPSILON = 1e-8;
 
@@ -365,6 +365,35 @@ describe('util', () => {
             });
 
             expect(parseCacheControl('max-age=null')).toEqual({});
+        });
+    });
+
+    describe('getExpiryDataFromHeaders', () => {
+        test('returns undefined values when responseHeaders is undefined', () => {
+            expect(getExpiryDataFromHeaders(undefined)).toEqual({
+                cacheControl: undefined,
+                expires: undefined
+            });
+        });
+
+        test('reads cache headers from a Fetch API Headers object', () => {
+            const headers = new Headers();
+            headers.set('Cache-Control', 'max-age=60');
+            headers.set('Expires', 'Thu, 01 Jan 2099 00:00:00 GMT');
+
+            const result = getExpiryDataFromHeaders(headers);
+            expect(result.cacheControl).toBe('max-age=60');
+            expect(result.expires).toBe('Thu, 01 Jan 2099 00:00:00 GMT');
+        });
+
+        test('reads cache headers from a Map serialized via Headers.entries()', () => {
+            const headers = new Headers();
+            headers.set('Cache-Control', 'max-age=30');
+            headers.set('Expires', 'Thu, 01 Jan 2099 00:00:00 GMT');
+
+            const result = getExpiryDataFromHeaders(new Map(headers.entries()));
+            expect(result.cacheControl).toBe('max-age=30');
+            expect(result.expires).toBe('Thu, 01 Jan 2099 00:00:00 GMT');
         });
     });
 

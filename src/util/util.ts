@@ -668,8 +668,8 @@ export function parseCacheControl(cacheControl: string): Record<string, number> 
 
 export function getExpiryDataFromHeaders(responseHeaders: Headers | Map<string, string> | undefined) {
     if (!responseHeaders) return {cacheControl: undefined, expires: undefined};
-    const cacheControl = responseHeaders.get('Cache-Control');
-    const expires = responseHeaders.get('Expires');
+    const cacheControl = responseHeaders.get('cache-control');
+    const expires = responseHeaders.get('expires');
     return {cacheControl, expires};
 }
 
