@@ -5,41 +5,31 @@ import type {TypedStyleLayer} from './style_layer/typed_style_layer';
 import type {LayerSpecification} from '../style-spec/types';
 import type {ConfigOptions} from './properties';
 
-export type LayerConfigs = {
-    [_: string]: LayerSpecification;
-};
+export type LayerConfigs = Record<string, LayerSpecification>;
 
 export type Family<Layer extends TypedStyleLayer> = Array<Layer>;
 
 class StyleLayerIndex {
     scope: string;
-    familiesBySource: {
-        [source: string]: {
-            [sourceLayer: string]: Array<Family<TypedStyleLayer>>;
-        };
-    };
-    keyCache: {
-        [source: string]: string;
-    };
+    familiesBySource: Record<string, Record<string, Array<Family<TypedStyleLayer>>>>;
+    keyCache: Record<string, string>;
 
     _layerConfigs: LayerConfigs;
-    _layers: {
-        [_: string]: TypedStyleLayer;
-    };
+    _layers: Record<string, TypedStyleLayer>;
     _options: ConfigOptions | null | undefined;
 
     constructor(layerConfigs?: Array<LayerSpecification> | null) {
-        this.keyCache = {};
-        this._layers = {};
-        this._layerConfigs = {};
+        this.keyCache = Object.create(null) as Record<string, string>;
+        this._layers = Object.create(null) as Record<string, TypedStyleLayer>;
+        this._layerConfigs = Object.create(null) as LayerConfigs;
         if (layerConfigs) {
             this.replace(layerConfigs);
         }
     }
 
     replace(layerConfigs: Array<LayerSpecification>, options?: ConfigOptions | null) {
-        this._layerConfigs = {};
-        this._layers = {};
+        this._layerConfigs = Object.create(null) as LayerConfigs;
+        this._layers = Object.create(null) as Record<string, TypedStyleLayer>;
         this.update(layerConfigs, [], options);
     }
 
@@ -60,7 +50,7 @@ class StyleLayerIndex {
             delete this._layers[id];
         }
 
-        this.familiesBySource = {};
+        this.familiesBySource = Object.create(null) as StyleLayerIndex['familiesBySource'];
 
         const groups = groupByLayout(Object.values(this._layerConfigs), this.keyCache);
 
@@ -75,7 +65,7 @@ class StyleLayerIndex {
             const sourceId = layer.source || '';
             let sourceGroup = this.familiesBySource[sourceId];
             if (!sourceGroup) {
-                sourceGroup = this.familiesBySource[sourceId] = {};
+                sourceGroup = this.familiesBySource[sourceId] = Object.create(null) as Record<string, Array<Family<TypedStyleLayer>>>;
             }
 
             const sourceLayerId = layer.sourceLayer || '_geojsonTileLayer';

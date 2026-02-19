@@ -69,7 +69,7 @@ export default function groupByLayout(
         [id: string]: string;
     },
 ): Array<Array<LayerSpecification>> {
-    const groups: Record<string, LayerSpecification[]> = {};
+    const groups = Object.create(null) as Record<string, LayerSpecification[]>;
 
     for (let i = 0; i < layers.length; i++) {
         const layer = layers[i];
