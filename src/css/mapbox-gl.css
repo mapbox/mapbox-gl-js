@@ -258,6 +258,23 @@
     background-size: 18px 18px;
 }
 
+.mapboxgl-ctrl button.mapboxgl-ctrl-indoor-toggle .mapboxgl-ctrl-icon {
+    background-image: svg-load("svg/mapboxgl-ctrl-buidling.svg", fill: #333);
+    background-size: 18px 18px;
+}
+
+@media (-ms-high-contrast: active) {
+    .mapboxgl-ctrl button.mapboxgl-ctrl-indoor-toggle .mapboxgl-ctrl-icon {
+        background-image: svg-load("svg/mapboxgl-ctrl-buidling.svg", fill: #fff);
+    }
+}
+
+@media (-ms-high-contrast: black-on-white) {
+    .mapboxgl-ctrl button.mapboxgl-ctrl-indoor-toggle .mapboxgl-ctrl-icon {
+        background-image: svg-load("svg/mapboxgl-ctrl-buidling.svg", fill: #000);
+    }
+}
+
 
 @svg-load ctrl-geolocate url("svg/mapboxgl-ctrl-geolocate.svg") {
     fill: #333;

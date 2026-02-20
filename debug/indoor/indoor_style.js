@@ -14,7 +14,7 @@ const indoorLayers = [{
         "source": "indoor-source",
         "source-layer": "indoor_structure",
         "minzoom": 15.0,
-        "filter": isSelectedFloorBase(),
+        "filter": ["is-active-floor"],
         "layout": {
             "clip-layer-types": ["model", "symbol"]
         }

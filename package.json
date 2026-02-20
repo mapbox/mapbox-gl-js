@@ -196,7 +196,7 @@
       ]
     },
     {
-      "limit": "5.41 kb",
+      "limit": "5.54 kb",
       "gzip": true,
       "path": "dist/mapbox-gl.css"
     }
