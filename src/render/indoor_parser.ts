@@ -91,7 +91,9 @@ function assignFloorToBuildings(
 
 function parseBuilding(feature: VectorTileFeature): {id: string, center: [number, number]} {
     const id = feature.properties.id.toString();
-    const center = feature.properties.center.toString().split(";").map(Number) as [number, number];
+    const lon = feature.properties.center_lon as number || 0;
+    const lat = feature.properties.center_lat as number || 0;
+    const center: [number, number] = [lon, lat];
     return {id, center};
 }
 
@@ -106,8 +108,8 @@ function parseFloor(feature: VectorTileFeature, tileID: CanonicalTileID): {id: s
     const conflicts: Set<string> = feature.properties.conflicted_floor_ids ?
         new Set(feature.properties.conflicted_floor_ids.toString().split(";")) :
         new Set();
-    const buildings: Set<string> = feature.properties.building_ids ?
-        new Set(feature.properties.building_ids.toString().split(";")) :
+    const buildings: Set<string> = feature.properties.structure_ids ?
+        new Set(feature.properties.structure_ids.toString().split(";")) :
         new Set();
     const name = feature.properties.name.toString();
     const zIndex = feature.properties.z_index as number;
@@ -136,7 +138,7 @@ function hasRequiredProperties(feature: VectorTileFeature, requiredProps: string
 
 function isValidBuildingFeature(feature: VectorTileFeature): boolean {
     return hasRequiredProperties(feature, ['type', 'id', 'name']) &&
-            feature.properties.type === "building";
+            feature.properties.type === "structure";
 }
 
 function isValidFloorFeature(feature: VectorTileFeature): boolean {
