@@ -1,0 +1,127 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "allowed": 0.00025
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.1
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.2,
+        "cast-shadows": true,
+        "shadow-intensity": 1.0,
+        "shadow-draw-before-layer": "route"
+      }
+    }
+  ],
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    },
+    "routeLine": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                [
+                  -74.01353809183067,
+                  40.71571768191035
+                ],
+                [
+                  -74.01179608924573,
+                  40.71612412610099
+                ],
+                [
+                  -74.01344510236835,
+                  40.71649532729748
+                ]
+              ],
+              "type": "LineString"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "pitch": 36.50,
+  "zoom": 17.00,
+  "bearing": 20,
+  "center": [
+    -74.0125,
+    40.7158
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightyellow",
+          "line-width": 10,
+          "line-emissive-strength": 1.0
+      }
+    },
+    {
+      "id": "route",
+      "type": "line",
+      "source": "routeLine",
+      "layout": {
+        "line-elevation-reference": "hd-road-markup",
+        "line-z-offset": 0.01
+      },
+      "paint": {
+          "line-color": "lightblue",
+          "line-width": 20,
+          "line-emissive-strength": 1.0
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "mapbox",
+      "source-layer": "building",
+      "paint": {
+        "fill-extrusion-color": "white",
+        "fill-extrusion-height": ["get", "height"]
+      }
+    }
+  ]
+}
