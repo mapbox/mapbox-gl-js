@@ -166,6 +166,7 @@ void main() {
     out_color = apply_lighting_with_emission_ground(out_color, emissive_strength);
 #ifdef RENDER_SHADOWS
     float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    light = mix(light, 1.0, emissive_strength);
 #ifdef ELEVATED_ROADS
     out_color.rgb *= mix(v_road_z_offset != 0.0 ? u_ground_shadow_factor : vec3(1.0), vec3(1.0), light);
 #else
