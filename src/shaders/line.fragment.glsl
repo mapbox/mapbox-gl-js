@@ -10,6 +10,7 @@ uniform highp vec2 u_trim_offset;
 uniform highp vec2 u_trim_fade_range;
 uniform highp vec2 u_trim_gradient_mix_range;
 uniform lowp vec4 u_trim_color;
+uniform bool u_emissive_in_shadows;
 
 in vec4 v_width2_dilute;
 in vec2 v_normal;
@@ -166,7 +167,7 @@ void main() {
     out_color = apply_lighting_with_emission_ground(out_color, emissive_strength);
 #ifdef RENDER_SHADOWS
     float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
-    light = mix(light, 1.0, emissive_strength);
+    light = u_emissive_in_shadows ? mix(light, 1.0, emissive_strength) : light;
 #ifdef ELEVATED_ROADS
     out_color.rgb *= mix(v_road_z_offset != 0.0 ? u_ground_shadow_factor : vec3(1.0), vec3(1.0), light);
 #else
