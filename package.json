@@ -112,7 +112,8 @@
     "vitest": "^4.0.6"
   },
   "overrides": {
-    "minimatch": "^10.2.2"
+    "minimatch": "^10.2.2",
+    "serialize-javascript": "^7.0.3"
   },
   "scripts": {
     "build-dev": "rollup -c --environment BUILD:dev",
