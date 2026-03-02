@@ -101,12 +101,12 @@ out highp float v_depth;
 #ifdef USE_PAINT_PROPERTIES_UBO
 /// UBO-based paint property declarations.
 
-/// Maximum size of UBO (uniform buffer object) in bytes.
+/// Maximum size of UBO (uniform buffer object).
 ///
 /// Specs guarantees a minimum of 16KB, but some devices support larger UBOs,
 /// and this value can be set at runtime based on device capabilities.
-#ifndef MAX_UBO_SIZE_DWORDS
-#define MAX_UBO_SIZE_DWORDS 4096u
+#ifndef MAX_UBO_SIZE_VEC4
+#define MAX_UBO_SIZE_VEC4 1024u
 #endif
 
 /// Symbol paint properties header size (in vec4 units).
@@ -147,10 +147,10 @@ struct PropertyType {
 };
 
 struct SymbolPropertyHeader {
-    /// Size of a data-driven block (in dwords).
+    /// Size of a data-driven block (in vec4 units).
     ///
     /// Size of the data-driven block should be aligned to vec4.
-    uint dataDrivenBlockSizeDwords;
+    uint dataDrivenBlockSizeVec4;
     /// Property types and aligned block offsets for each property.
     PropertyType fill_np_color;
     PropertyType halo_np_color;
@@ -169,8 +169,8 @@ uniform float u_zoom;
 ///
 /// Note: "spp" prefix (Symbol Paint Properties) is needed to avoid name conflicts
 /// with pragma-based paint property declarations.
-uniform highp vec4 u_spp_fill_np_color;
-uniform highp vec4 u_spp_halo_np_color;
+uniform lowp vec4 u_spp_fill_np_color;
+uniform lowp vec4 u_spp_halo_np_color;
 uniform lowp float u_spp_opacity;
 uniform lowp float u_spp_halo_width;
 uniform lowp float u_spp_halo_blur;
@@ -194,20 +194,20 @@ layout(std140) uniform SymbolPaintPropertiesHeaderUniform {
 layout(std140) uniform SymbolPaintPropertiesUniform {
     /// Buffer contains vec4 aligned data-driven blocks (a single block per feature,
     /// multiple blocks for multiple features).
-    vec4 u_properties[MAX_UBO_SIZE_DWORDS / DWORDS_PER_VEC4];
+    vec4 u_properties[MAX_UBO_SIZE_VEC4];
 };
 
 layout(std140) uniform SymbolPaintPropertiesIndexUniform {
     /// Maps each feature index to its corresponding data-driven block index within
     /// the u_properties uniform buffer.
-    uvec4 u_block_indices[MAX_UBO_SIZE_DWORDS / DWORDS_PER_VEC4];
+    uvec4 u_block_indices[MAX_UBO_SIZE_VEC4];
 };
 
 /// Symbol paint properties need to be interpolated and passed to the fragment shader.
 out lowp float opacity;
 #ifdef RENDER_SDF
-out highp vec4 fill_np_color;
-out highp vec4 halo_np_color;
+out lowp vec4 fill_np_color;
+out lowp vec4 halo_np_color;
 out lowp float halo_width;
 out lowp float halo_blur;
 #endif
@@ -229,7 +229,7 @@ SymbolPropertyHeader readSymbolPropertiesHeader() {
     uint dataDrivenMask = u_header[0][0];
     uint zoomDependentMask = u_header[0][1];
     // Read block sizes:
-    header.dataDrivenBlockSizeDwords = u_header[0][2];
+    header.dataDrivenBlockSizeVec4 = u_header[0][2];
     // Read property types and block offsets:
     header.fill_np_color        = getPropertyType(0u, dataDrivenMask, zoomDependentMask, u_header[0][3]);
     header.halo_np_color        = getPropertyType(1u, dataDrivenMask, zoomDependentMask, u_header[1][0]);
@@ -255,15 +255,14 @@ vec2 readVec2(vec4 slot, uint propertyOffsetDwords) {
 }
 
 /// Calculate the feature's data-driven block offset in u_properties uniform buffer (vec4-indexed).
-uint getDataDrivenBlockOffsetVec4(uint dataDrivenBlockSizeDwords) {
+uint getDataDrivenBlockOffsetVec4(uint dataDrivenBlockSizeVec4) {
     uint featureIndex = uint(a_feature_index);
     uint blockIndex = u_block_indices[featureIndex / DWORDS_PER_VEC4][featureIndex % DWORDS_PER_VEC4];
-    // Header sizes are in dwords, so divide by DWORDS_PER_VEC4 to get vec4 index.
-    return (blockIndex * dataDrivenBlockSizeDwords) / DWORDS_PER_VEC4;
+    return blockIndex * dataDrivenBlockSizeVec4;
 }
 
-vec4 readColorProperty(PropertyType propertyType, uint dataDrivenBlockSizeDwords) {
-    uint blockOffsetVec4 = getDataDrivenBlockOffsetVec4(dataDrivenBlockSizeDwords);
+vec4 readColorProperty(PropertyType propertyType, uint dataDrivenBlockSizeVec4) {
+    uint blockOffsetVec4 = getDataDrivenBlockOffsetVec4(dataDrivenBlockSizeVec4);
     vec4 color = readVec4(blockOffsetVec4, propertyType.offsetDwords);
     if (propertyType.isZoomDependent) {
         color = unpack_mix_color(color, u_zoom);
@@ -274,8 +273,8 @@ vec4 readColorProperty(PropertyType propertyType, uint dataDrivenBlockSizeDwords
     return color;
 }
 
-float readFloatProperty(PropertyType propertyType, uint dataDrivenBlockSizeDwords) {
-    uint blockOffsetVec4 = getDataDrivenBlockOffsetVec4(dataDrivenBlockSizeDwords);
+float readFloatProperty(PropertyType propertyType, uint dataDrivenBlockSizeVec4) {
+    uint blockOffsetVec4 = getDataDrivenBlockOffsetVec4(dataDrivenBlockSizeVec4);
     vec4 slot = readVec4(blockOffsetVec4, propertyType.offsetDwords);
     float value;
     if (propertyType.isZoomDependent) {
@@ -289,16 +288,16 @@ float readFloatProperty(PropertyType propertyType, uint dataDrivenBlockSizeDword
 
 SymbolPaintProperties readSymbolPaintProperties() {
     SymbolPropertyHeader header = readSymbolPropertiesHeader();
-    uint sizeDwords = header.dataDrivenBlockSizeDwords;
+    uint sizeVec4 = header.dataDrivenBlockSizeVec4;
     SymbolPaintProperties props;
-    props.fill_np_color        = header.fill_np_color.isDataDriven     ? readColorProperty(header.fill_np_color, sizeDwords)     : u_spp_fill_np_color;
-    props.halo_np_color        = header.halo_np_color.isDataDriven     ? readColorProperty(header.halo_np_color, sizeDwords)     : u_spp_halo_np_color;
-    props.opacity              = header.opacity.isDataDriven           ? readFloatProperty(header.opacity, sizeDwords)           : u_spp_opacity;
-    props.halo_width           = header.halo_width.isDataDriven        ? readFloatProperty(header.halo_width, sizeDwords)        : u_spp_halo_width;
-    props.halo_blur            = header.halo_blur.isDataDriven         ? readFloatProperty(header.halo_blur, sizeDwords)         : u_spp_halo_blur;
-    props.emissive_strength    = header.emissive_strength.isDataDriven ? readFloatProperty(header.emissive_strength, sizeDwords) : u_spp_emissive_strength;
-    props.occlusion_opacity    = header.occlusion_opacity.isDataDriven ? readFloatProperty(header.occlusion_opacity, sizeDwords) : u_spp_occlusion_opacity;
-    props.z_offset             = header.z_offset.isDataDriven          ? readFloatProperty(header.z_offset, sizeDwords)          : u_spp_z_offset;
+    props.fill_np_color        = header.fill_np_color.isDataDriven     ? readColorProperty(header.fill_np_color, sizeVec4)     : u_spp_fill_np_color;
+    props.halo_np_color        = header.halo_np_color.isDataDriven     ? readColorProperty(header.halo_np_color, sizeVec4)     : u_spp_halo_np_color;
+    props.opacity              = header.opacity.isDataDriven           ? readFloatProperty(header.opacity, sizeVec4)           : u_spp_opacity;
+    props.halo_width           = header.halo_width.isDataDriven        ? readFloatProperty(header.halo_width, sizeVec4)        : u_spp_halo_width;
+    props.halo_blur            = header.halo_blur.isDataDriven         ? readFloatProperty(header.halo_blur, sizeVec4)         : u_spp_halo_blur;
+    props.emissive_strength    = header.emissive_strength.isDataDriven ? readFloatProperty(header.emissive_strength, sizeVec4) : u_spp_emissive_strength;
+    props.occlusion_opacity    = header.occlusion_opacity.isDataDriven ? readFloatProperty(header.occlusion_opacity, sizeVec4) : u_spp_occlusion_opacity;
+    props.z_offset             = header.z_offset.isDataDriven          ? readFloatProperty(header.z_offset, sizeVec4)          : u_spp_z_offset;
     return props;
 }
 

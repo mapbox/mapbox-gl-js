@@ -57,8 +57,8 @@ uniform highp sampler3D u_lutTexture;
 
 in lowp float opacity;
 #ifdef RENDER_SDF
-in highp vec4 fill_np_color;
-in highp vec4 halo_np_color;
+in lowp vec4 fill_np_color;
+in lowp vec4 halo_np_color;
 in lowp float halo_width;
 in lowp float halo_blur;
 #endif
@@ -85,14 +85,8 @@ void main() {
 
 #ifdef RENDER_SDF
     ///  Pre-multiply colors by alpha.
-    vec4 fill_color = vec4(fill_np_color.r * fill_np_color.a,
-                           fill_np_color.g * fill_np_color.a,
-                           fill_np_color.b * fill_np_color.a,
-                           fill_np_color.a);
-    vec4 halo_color = vec4(halo_np_color.r * halo_np_color.a,
-                           halo_np_color.g * halo_np_color.a,
-                           halo_np_color.b * halo_np_color.a,
-                           halo_np_color.a);
+    vec4 fill_color = vec4(fill_np_color.rgb * fill_np_color.a, fill_np_color.a);
+    vec4 halo_color = vec4(halo_np_color.rgb * halo_np_color.a, halo_np_color.a);
 #endif
 
 #else
