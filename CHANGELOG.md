@@ -1,3 +1,9 @@
+## 3.19.1
+
+### Bug fixes 🐞
+
+- Removed the unused `@types/mapbox__point-geometry` package that was causing some Typescript builds to fail
+
 ## 3.19.0
 
 ### Features and improvements ✨
