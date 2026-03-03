@@ -242,6 +242,26 @@ SymbolPropertyHeader readSymbolPropertiesHeader() {
     return header;
 }
 
+/// Returns the component of a uvec4 at the given index.
+///
+/// Implemented with explicit swizzles to avoid old Adreno driver bugs with
+/// dynamic vector component indexing.
+uint uvec4At(uvec4 v, uint index) {
+    return (index == 0u) ? v.x :
+           (index == 1u) ? v.y :
+           (index == 2u) ? v.z : v.w;
+}
+
+/// Returns the component of a vec4 at the given index.
+///
+/// Implemented with explicit swizzles to avoid old Adreno driver bugs with
+/// dynamic vector component indexing.
+float vec4At(vec4 v, uint index) {
+    return (index == 0u) ? v.x :
+           (index == 1u) ? v.y :
+           (index == 2u) ? v.z : v.w;
+}
+
 vec4 readVec4(uint baseOffsetVec4, uint propertyOffsetDwords) {
     return u_properties[baseOffsetVec4 + propertyOffsetDwords / DWORDS_PER_VEC4];
 }
@@ -250,14 +270,21 @@ float readFloat(vec4 slot, uint propertyOffsetDwords) {
     return slot[propertyOffsetDwords % DWORDS_PER_VEC4];
 }
 
+uint readUint(uvec4 slot, uint offset) {
+    return slot[offset % DWORDS_PER_VEC4];
+}
+
 vec2 readVec2(vec4 slot, uint propertyOffsetDwords) {
-    return vec2(slot[propertyOffsetDwords % DWORDS_PER_VEC4], slot[propertyOffsetDwords % DWORDS_PER_VEC4 + 1u]);
+    float x = vec4At(slot, propertyOffsetDwords % DWORDS_PER_VEC4);
+    float y = vec4At(slot, propertyOffsetDwords % DWORDS_PER_VEC4 + 1u);
+    return vec2(x, y);
 }
 
 /// Calculate the feature's data-driven block offset in u_properties uniform buffer (vec4-indexed).
 uint getDataDrivenBlockOffsetVec4(uint dataDrivenBlockSizeVec4) {
     uint featureIndex = uint(a_feature_index);
-    uint blockIndex = u_block_indices[featureIndex / DWORDS_PER_VEC4][featureIndex % DWORDS_PER_VEC4];
+    uvec4 slot = u_block_indices[featureIndex / DWORDS_PER_VEC4];
+    uint blockIndex = uvec4At(slot, featureIndex % DWORDS_PER_VEC4);
     return blockIndex * dataDrivenBlockSizeVec4;
 }
 
