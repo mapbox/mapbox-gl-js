@@ -67,8 +67,8 @@ test('worker sources should be scoped', () => {
 
     _self.registerWorkerSource('sourceType', function () {} as unknown as WorkerSourceConstructor);
 
-    const a = worker.getWorkerSource(999, 'sourceType', 'sourceId', 'scope1');
-    const b = worker.getWorkerSource(999, 'sourceType', 'sourceId', 'scope2');
+    const a = worker.getWorkerSource(999, {type: 'sourceType', source: 'sourceId', scope: 'scope1', uid: 0});
+    const b = worker.getWorkerSource(999, {type: 'sourceType', source: 'sourceId', scope: 'scope2', uid: 0});
 
     expect(a).not.toBe(b);
 });

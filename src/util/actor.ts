@@ -186,7 +186,7 @@ class Actor {
                 // task.type == sourcetype.method
                 const keys = task.type.split('.');
                 const {source, scope} = params as {source: string; scope: string};
-                const workerSource = this.parent.getWorkerSource(task.sourceMapId, keys[0], source, scope);
+                const workerSource = this.parent.getWorkerSource(task.sourceMapId, {type: keys[0], source, scope, uid: 0});
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 workerSource[keys[1]](params, done);
             } else {

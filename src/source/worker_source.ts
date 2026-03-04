@@ -28,6 +28,16 @@ import type {IndoorTileOptions} from '../style/indoor_data.js';
 import type {Cancelable} from '../types/cancelable';
 
 /**
+ * Source types that can instantiate a {@link WorkerSource} in {@link MapWorker}.
+ */
+export type WorkerSourceType =
+    | 'vector'
+    | 'geojson'
+    | 'raster-dem'
+    | 'raster-array'
+    | 'batched-model';
+
+/**
  * The parameters passed to the {@link MapWorker#getWorkerSource}.
  */
 export type WorkerSourceRequest = {
