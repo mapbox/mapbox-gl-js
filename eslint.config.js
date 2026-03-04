@@ -120,6 +120,9 @@ export default tseslint.config(
                 }, {
                     selector: 'ChainExpression',
                     message: 'Optional chaining is now allowed.',
+                }, {
+                    selector: 'MemberExpression[object.type=\'MetaProperty\'][property.name=\'url\']',
+                    message: 'import.meta.url is not available in the UMD bundle.',
                 }
             ],
         }
@@ -289,7 +292,9 @@ export default tseslint.config(
         files: [
             'test/**',
             'build/**',
-            'rollup.*'
+            'rollup.*',
+            'src/style-spec/test.js',
+            'src/style-spec/rollup.config.js',
         ],
 
         rules: {
