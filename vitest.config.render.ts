@@ -1,7 +1,7 @@
 import {mergeConfig, defineConfig} from 'vitest/config';
 import {existsSync} from 'fs';
 import baseConfig from './vitest.config.base';
-import {integrationTests, setupIntegrationTestsMiddlewares} from './vitest.config.common';
+import {integrationTests, setupIntegrationTestsMiddlewares, serveDistPlugin} from './vitest.config.common';
 
 const isCI = process.env.CI === 'true';
 
@@ -33,6 +33,7 @@ export default mergeConfig(baseConfig, defineConfig({
     },
     plugins: [
         setupIntegrationTestsMiddlewares({reportPath: 'test/integration/render-tests/render-tests.html'}),
-        integrationTests({suiteDirs, includeImages: true})
+        integrationTests({suiteDirs, includeImages: true}),
+        serveDistPlugin(),
     ],
 }));

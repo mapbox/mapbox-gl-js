@@ -113,3 +113,14 @@ export function setupIntegrationTestsMiddlewares({reportPath}: {reportPath: stri
         }
     };
 }
+
+// Serve pre-built dist bundles as-is, bypassing Vite's transformMiddleware
+export function serveDistPlugin(): Plugin {
+    return {
+        name: 'serve-dist',
+        configureServer(server) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
+            server.middlewares.use('/dist', serveStatic(resolve(__dirname, 'dist')));
+        },
+    };
+}

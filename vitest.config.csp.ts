@@ -1,6 +1,7 @@
 import {defineConfig, mergeConfig} from 'vitest/config';
 import baseConfig from './vitest.config.base';
 import {playwright} from '@vitest/browser-playwright';
+import {serveDistPlugin} from './vitest.config.common';
 
 const isCI = process.env.CI === 'true';
 
@@ -17,6 +18,7 @@ export default mergeConfig(baseConfig, defineConfig({
         testTimeout: 10_000,
     },
     publicDir: 'test/integration/csp-tests/',
+    plugins: [serveDistPlugin()],
     server: {
         headers: {
             'Allow-CSP-From': '*',
