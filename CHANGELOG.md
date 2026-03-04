@@ -1,4 +1,4 @@
-## 3.20.0-rc
+## 3.20.0-rc.1
 
 ### Features and improvements ✨
 
