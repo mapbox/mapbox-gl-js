@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import {fileURLToPath} from 'url';
 import {readFile} from 'node:fs/promises';
+import {transformSync} from 'esbuild';
+import browserslistToEsbuild from 'browserslist-to-esbuild';
 import {plugins} from './build/rollup_plugins.js';
 import banner from './build/banner.js';
 
@@ -25,6 +27,9 @@ function buildType(build, minified) {
 }
 
 const outputFile = buildType(BUILD, MINIFY);
+
+const bundlePreludeSource = fs.readFileSync(fileURLToPath(new URL('./rollup/bundle_prelude.js', import.meta.url)), 'utf8');
+const bundlePrelude = production ? transformSync(bundlePreludeSource, {target: browserslistToEsbuild(), minify: true}).code : bundlePreludeSource;
 
 export default ({watch}) => {
     return [{
@@ -58,7 +63,7 @@ export default ({watch}) => {
             format: 'umd',
             sourcemap: production ? true : 'inline',
             indent: false,
-            intro: fs.readFileSync(fileURLToPath(new URL('./rollup/bundle_prelude.js', import.meta.url)), 'utf8'),
+            intro: bundlePrelude,
             banner
         },
         treeshake: false,

@@ -1,21 +1,40 @@
-/* eslint-disable */
+// UMD bundle prelude
+//
+// Rollup's first pass splits GL JS into three AMD chunks:
+//
+//   1. shared  — define(['exports'], (exports) => { ... })
+//      Common dependencies. We pass an empty object for 'exports'.
+//
+//   2. worker  — define(['./shared'], (shared) => { ... })
+//      Worker script. Stringified into a Blob URL; never called on main thread.
+//
+//   3. main    — define(['./shared'], (shared) => { ... return mapboxgl })
+//      Main GL JS module. Returns mapboxgl.
+//
+// The chunk order is fixed (shared → worker → main) and deps are statically
+// known, so we hardcode argument positions and ignore the deps arrays entirely.
 
-var shared, worker, mapboxgl;
-// define gets called three times: one for each chunk. we rely on the order
-// they're imported to know which is which
+let shared, worker, mapboxgl;
+
 function define(_, chunk) {
-if (!shared) {
-    shared = chunk;
-} else if (!worker) {
-    worker = chunk;
-} else {
-    var workerBundleString = "self.onerror = function() { console.error('An error occurred while parsing the WebWorker bundle. This is most likely due to improper transpilation by Babel; please see https://docs.mapbox.com/mapbox-gl-js/guides/install/#transpiling'); }; var sharedChunk = {}; (" + shared + ")(sharedChunk); (" + worker + ")(sharedChunk); self.onerror = null;"
+    if (!shared) {
+        shared = chunk;
+    } else if (!worker) {
+        worker = chunk;
+    } else {
+        const sharedChunk = {};
+        shared(sharedChunk);
+        mapboxgl = chunk(sharedChunk);
 
-    var sharedChunk = {};
-    shared(sharedChunk);
-    mapboxgl = chunk(sharedChunk);
-    if (typeof window !== 'undefined' && window && window.URL && window.URL.createObjectURL) {
-        mapboxgl.workerUrl = window.URL.createObjectURL(new Blob([workerBundleString], { type: 'text/javascript' }));
+        const workerBundleString =
+            "self.onerror = function() { console.error('An error occurred while parsing the WebWorker bundle. This is most likely due to improper transpilation by Babel; please see https://docs.mapbox.com/mapbox-gl-js/guides/install/#transpiling'); }; " +
+            "var sharedChunk = {}; " +
+            "(" + shared + ")(sharedChunk); " +
+            "(" + worker + ")(sharedChunk); " +
+            "self.onerror = null;";
+
+        if (typeof window !== 'undefined' && window && window.URL && window.URL.createObjectURL) {
+            mapboxgl.workerUrl = window.URL.createObjectURL(new Blob([workerBundleString], {type: 'text/javascript'}));
+        }
     }
-}
 }
