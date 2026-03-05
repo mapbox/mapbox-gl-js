@@ -3,6 +3,7 @@ import ImageAtlas, {ImageAtlasCache, ImageAtlasReference, sortImagesMap} from '.
 import {AtlasContentDescriptor} from '../../../src/render/atlas_content_descriptor';
 import {RGBAImage} from '../../../src/util/image';
 import {ImageVariant} from '../../../src/style-spec/expression/types/image_variant';
+import Color from '../../../src/style-spec/util/color';
 import Context from '../../../src/gl/context';
 
 import type {StyleImage, StyleImageMap} from '../../../src/style/style_image';
@@ -371,6 +372,32 @@ describe('ImageAtlasCache', () => {
         const descriptor = new AtlasContentDescriptor(icons, patterns, versions, null);
         const cachedAtlas = cache.findCachedAtlas(descriptor);
         expect(cachedAtlas).toBeUndefined();
+    });
+
+    test('findCachedAtlas does not match atlas with same image names but different LUT-applied color params', () => {
+        // Simulate the setImportColorTheme bug (GLJS-1673): old atlas was built with red-LUT colors (pink),
+        // new tile re-parses with BW-LUT colors (grey). Same base image name "attraction",
+        // but different color params — must NOT return the old atlas.
+        const pinkColor = new Color(0.956, 0.482, 0.796, 1); // red-LUT applied
+        const greyColor = new Color(0.651, 0.651, 0.651, 1); // BW-LUT applied
+
+        const oldVariantId = new ImageVariant('attraction', {params: {background: pinkColor}}).toString();
+        const newVariantId = new ImageVariant('attraction', {params: {background: greyColor}}).toString();
+
+        const oldIcons: StyleImageMap<StringifiedImageVariant> = new Map([[oldVariantId, createMockImage('attraction')]]);
+        const newIcons: StyleImageMap<StringifiedImageVariant> = new Map([[newVariantId, createMockImage('attraction')]]);
+        const patterns: StyleImageMap<StringifiedImageVariant> = new Map();
+        const versions: Map<string, number> = new Map([['attraction', 1]]);
+
+        // Cache atlas built with old (pink) params
+        const oldAtlas = new ImageAtlas(oldIcons, patterns, null, versions);
+        cache.getOrCache(oldAtlas);
+
+        // New tile requests the same image name but with new (grey) params
+        const newDescriptor = new AtlasContentDescriptor(newIcons, patterns, versions, null);
+        const result = cache.findCachedAtlas(newDescriptor);
+
+        expect(result).toBeUndefined();
     });
 
     test('destroyTextures preserves cache but destroys textures', () => {

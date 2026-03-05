@@ -45,8 +45,11 @@ function addDescriptors(images: Map<StringifiedImageVariant, StyleImage>, imageV
         const imageId = imageVariant.id.toString();
         const version = imageVersions.get(imageId) || 0;
 
+        // Use the full stringified variant (including color params) as the descriptor id.
+        // This ensures atlases built with different LUT-applied colors are never treated
+        // as matching, even if the base image name and scale are identical.
         descriptors.push({
-            id: imageId,
+            id,
             version,
             sx: imageVariant.sx,
             sy: imageVariant.sy
