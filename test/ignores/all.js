@@ -30,9 +30,6 @@ const todo = [
     // "https://github.com/mapbox/mapbox-gl-js/issues/10365"
     "render-tests/terrain/symbol-draping/style.json",
 
-    // Requires complete landmark rendering support such as shadows and materials
-    "render-tests/model-layer/landmark-conflation-buckingham",
-
     // https://mapbox.atlassian.net/browse/MAPS3D-987
     "render-tests/model-layer/landmark-shadows-terrain",
 
