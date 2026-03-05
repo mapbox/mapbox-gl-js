@@ -18,6 +18,7 @@ import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
 import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
+import type {TileJSON} from '../types/tilejson';
 import type Actor from '../util/actor';
 import type {LoadVectorTileResult} from './load_vector_tile';
 import type {WorkerSourceVectorTileRequest, WorkerSourceVectorTileResult} from './worker_source';
@@ -132,27 +133,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
 
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
-                Object.assign(this, tileJSON);
-
-                this.hasWorldviews = !!tileJSON.worldview_options;
-                if (tileJSON.worldview_default) {
-                    this.worldviewDefault = tileJSON.worldview_default;
-                }
-
-                if (tileJSON.vector_layers) {
-                    this.vectorLayers = tileJSON.vector_layers;
-                    this.vectorLayerIds = [];
-                    this.localizableLayerIds = new Set();
-                    for (const layer of tileJSON.vector_layers) {
-                        this.vectorLayerIds.push(layer.id);
-                        // Check if the layer source is localizable
-                        if (tileJSON.worldview && tileJSON.worldview[layer.source]) {
-                            this.localizableLayerIds.add(layer.id);
-                        }
-                    }
-                }
-
-                this.tileBounds = TileBounds.fromTileJSON(tileJSON);
+                this._setTileJSON(tileJSON);
                 postTurnstileEvent(tileJSON.tiles, this.map._requestManager._customAccessToken);
 
                 // `content` is included here to prevent a race condition where `Style#updateSources` is called
@@ -164,6 +145,30 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
 
             if (callback) callback(err);
         });
+    }
+
+    _setTileJSON(tileJSON: TileJSON) {
+        Object.assign(this, tileJSON);
+
+        this.hasWorldviews = !!tileJSON.worldview_options;
+        if (tileJSON.worldview_default) {
+            this.worldviewDefault = tileJSON.worldview_default;
+        }
+
+        if (tileJSON.vector_layers) {
+            this.vectorLayers = tileJSON.vector_layers;
+            this.vectorLayerIds = [];
+            this.localizableLayerIds = new Set();
+            for (const layer of tileJSON.vector_layers) {
+                this.vectorLayerIds.push(layer.id);
+                // Check if the layer source is localizable
+                if (tileJSON.worldview && tileJSON.worldview[layer.source]) {
+                    this.localizableLayerIds.add(layer.id);
+                }
+            }
+        }
+
+        this.tileBounds = TileBounds.fromTileJSON(tileJSON);
     }
 
     loaded(): boolean {
