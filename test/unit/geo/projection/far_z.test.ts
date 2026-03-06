@@ -38,6 +38,24 @@ describe('FarZ', () => {
         expect(farthestPixelDistanceOnPlane(tr, pixelsPerMeter).toFixed(3)).toBe("909.000");
     });
 
+    test('farthestPixelDistanceOnPlane extends far plane in orthographic mode', () => {
+        const tr = new Transform();
+        tr.resize(256, 128);
+        tr._orthographicProjectionAtLowPitch = true;
+
+        const mercator = getProjection({name: 'mercator'});
+        const pixelsPerMeter = mercator.pixelsPerMeter(tr.center.lat, tr.worldSize);
+
+        // Without the -10m road elevation extension this would be 192 * 1.01
+        const baseOrthoDistance = 192 * 1.01;
+        const orthoDistance = farthestPixelDistanceOnPlane(tr, pixelsPerMeter);
+        expect(orthoDistance).toBeGreaterThan(baseOrthoDistance);
+
+        // Non-orthographic should not include the road elevation extension
+        tr._orthographicProjectionAtLowPitch = false;
+        expect(farthestPixelDistanceOnPlane(tr, pixelsPerMeter)).toBe(baseOrthoDistance);
+    });
+
     test('farthestPixelDistanceOnSphere', () => {
         const tr = new Transform();
         tr.resize(100, 100);

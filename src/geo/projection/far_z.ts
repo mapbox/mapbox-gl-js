@@ -12,9 +12,13 @@ export function farthestPixelDistanceOnPlane(tr: Transform, pixelsPerMeter: numb
 
     // Adjust distance to MSL by the minimum possible elevation visible on screen,
     // this way the far plane is pushed further in the case of negative elevation.
-    const minElevationInPixels = tr.elevation ?
-        tr.elevation.getMinElevationBelowMSL() * pixelsPerMeter :
-        0;
+    const demMinElev = tr.elevation ?
+        tr.elevation.getMinElevationBelowMSL() * pixelsPerMeter : 0;
+    // Road elevation adjustment only needed for orthographic where far plane
+    // is proportional to viewport height and can clip underground geometry.
+    // Use a fixed -10m extension which is sufficient for typical road tunnels.
+    const roadMinElev = tr.isOrthographic ? -10 * pixelsPerMeter : 0;
+    const minElevationInPixels = Math.min(demMinElev, roadMinElev);
     const cameraToSeaLevelDistance = ((tr._camera.position[2] * tr.worldSize) - minElevationInPixels) / Math.cos(tr._pitch);
     const topHalfSurfaceDistance = Math.sin(fovAboveCenter) * cameraToSeaLevelDistance / Math.sin(Math.max(Math.PI / 2.0 - tr._pitch - fovAboveCenter, 0.01));
 
