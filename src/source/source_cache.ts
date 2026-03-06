@@ -9,11 +9,11 @@ import browser from '../util/browser';
 import {OverscaledTileID} from './tile_id';
 import SourceFeatureState from './source_state';
 import {mercatorXfromLng} from '../geo/mercator_coordinate';
+import {isHttpNotFound} from '../util/ajax';
 
 import type {CanonicalTileID} from './tile_id';
 import type Context from '../gl/context';
 import type {vec3} from 'gl-matrix';
-import type {AJAXError} from '../util/ajax';
 import type {ISource, Source} from './source';
 import type {SourceSpecification} from '../style-spec/types';
 import type {Map as MapboxMap} from '../ui/map';
@@ -274,13 +274,12 @@ class SourceCache extends Evented {
         this._loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
     }
 
-    _tileLoaded(tile: Tile, id: number, previousState: TileState, err?: AJAXError | null, data?: LoadVectorTileResult | null) {
+    _tileLoaded(tile: Tile, id: number, previousState: TileState, err?: Error | null, data?: LoadVectorTileResult | null) {
         if (err) {
             tile.state = 'errored';
-            if (err.status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
-            // If the requested tile is missing, try to load the parent tile
-            // to use it as an overscaled tile instead of the missing one.
-            else {
+            if (isHttpNotFound(err)) {
+                // If the requested tile is missing, try to load the parent tile
+                // to use it as an overscaled tile instead of the missing one.
                 // Fire a `data` event with an `error` source data type to trigger map render
                 this._source.fire(new Event('data', {dataType: 'source', sourceDataType: 'error', sourceId: this._source.id, tile}));
 
@@ -297,6 +296,8 @@ class SourceCache extends Evented {
                 } else {
                     this.update(this.transform);
                 }
+            } else {
+                this._source.fire(new ErrorEvent(err, {tile}));
             }
             return;
         }

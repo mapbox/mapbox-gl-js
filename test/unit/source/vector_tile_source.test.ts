@@ -509,6 +509,39 @@ describe('VectorTileSource', () => {
         }
     });
 
+    test('non-AJAX error propagates through loadTile callback', async () => {
+        const source = createSource({
+            tiles: ["http://example.com/{z}/{x}/{y}.pbf"]
+        });
+
+        source.dispatcher = wrapDispatcher({
+            send(type, params, cb) {
+                // Simulate a non-AJAX error (no .status property)
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                setTimeout(() => cb(new Error('parse failed'), null), 0);
+                source.dispatcher = mockDispatcher;
+                return 1;
+            }
+        });
+
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            const tile = {
+                tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                state: 'loading',
+                loadVectorData() {},
+                setExpiryData() {}
+            };
+            await new Promise((resolve) => {
+                source.loadTile(tile, (err) => {
+                    expect(err).toBeTruthy();
+                    expect(err.message).toEqual('parse failed');
+                    resolve();
+                });
+            });
+        }
+    });
+
     test('prefers TileJSON tiles, if both URL and tiles options are set', async () => {
         mockFetch({
             '/source.json': () => new Response(JSON.stringify(sourceFixture))

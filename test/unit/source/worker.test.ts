@@ -1,4 +1,5 @@
 import {describe, test, expect} from '../../util/vitest';
+import {mockFetch} from '../../util/network';
 import '../../../src/util/worker_pool_factory';
 import MapWorker from '../../../src/source/worker';
 
@@ -11,6 +12,10 @@ const _self = {
 
 describe('load tile', () => {
     test('calls callback on error', () => {
+        mockFetch({
+            '/error': () => Promise.resolve(new Response('', {status: 500, statusText: 'Internal Server Error'}))
+        });
+
         const worker = new MapWorker(_self);
         worker.setProjection(0, {name: 'mercator'});
         worker.loadTile(0, {

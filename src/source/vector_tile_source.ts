@@ -3,7 +3,7 @@ import {getExpiryDataFromHeaders, pick} from '../util/util';
 import loadTileJSON from './load_tilejson';
 import {postTurnstileEvent} from '../util/mapbox';
 import TileBounds from './tile_bounds';
-import {AJAXError, ResourceType} from '../util/ajax';
+import {ResourceType} from '../util/ajax';
 import browser from '../util/browser';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
 import {DedupedRequest, loadVectorTile} from './load_vector_tile';
@@ -335,9 +335,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             if (tile.aborted)
                 return callback(null);
 
-            if (err && err instanceof AJAXError && err.status !== 404) {
-                return callback(err);
-            }
+            if (err) return callback(err);
 
             if (data && data.resourceTiming)
                 tile.resourceTiming = data.resourceTiming;

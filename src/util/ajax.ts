@@ -93,6 +93,10 @@ export class AJAXError extends Error {
     }
 }
 
+export function isHttpNotFound(err: Error): boolean {
+    return typeof err === 'object' && err !== null && 'status' in err && err.status === 404;
+}
+
 // Ensure that we're sending the correct referrer from blob URL worker bundles.
 // For files loaded from the local file system, `location.origin` will be set
 // to the string(!) "null" (Firefox), or "file://" (Chrome, Safari, Edge, IE),

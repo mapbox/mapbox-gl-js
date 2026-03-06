@@ -1,6 +1,6 @@
 import {VectorTile} from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
-import {getArrayBuffer} from '../util/ajax';
+import {getArrayBuffer, isHttpNotFound} from '../util/ajax';
 
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
@@ -14,19 +14,21 @@ export type LoadVectorTileResult = {
 };
 
 /**
- * @callback LoadVectorDataCallback
- * @param error
- * @param vectorTile
+ * Callback for vector tile data loading with a three-state contract:
+ * - `(null, data)` — tile has data, render normally
+ * - `(null, null)` — tile intentionally empty, render as empty (e.g. HTTP 404 on a sparse tileset)
+ * - `(err)` — real error, propagate further (e.g. network error, invalid tile data)
+ *
  * @private
  */
-export type LoadVectorDataCallback = Callback<LoadVectorTileResult | null | undefined>;
+export type LoadVectorDataCallback = Callback<LoadVectorTileResult | null>;
 
 export type LoadVectorData = (params: WorkerSourceVectorTileRequest, callback: LoadVectorDataCallback) => Cancelable['cancel'];
 
 type VectorDataRequest = (callback: LoadVectorDataCallback) => Cancelable['cancel'];
 
 type DedupedRequestEntry = {
-    result?: [Error | null, LoadVectorTileResult];
+    result?: [Error | null, LoadVectorTileResult | null];
     cancel?: Cancelable['cancel'];
     callbacks?: LoadVectorDataCallback[];
 };
@@ -58,7 +60,7 @@ export class DedupedRequest {
         entry.callbacks.push(callback);
 
         if (!entry.cancel) {
-            entry.cancel = request((err: Error, result: LoadVectorTileResult) => {
+            entry.cancel = request((err: Error | null, result: LoadVectorTileResult | null) => {
                 entry.result = [err, result];
                 for (const cb of entry.callbacks) {
                     if (this.scheduler) {
@@ -98,7 +100,13 @@ export function loadVectorTile(
     const makeRequest: VectorDataRequest = (callback: LoadVectorDataCallback) => {
         const request = getArrayBuffer(params.request, (err?: Error | null, data?: ArrayBuffer | null, responseHeaders?: Headers) => {
             if (err) {
-                callback(err);
+                // HTTP 404 on a sparse tileset: the tile intentionally doesn't exist.
+                // Convert to empty result — no parent fallback for HTTP sources.
+                if (isHttpNotFound(err)) {
+                    callback(null, null);
+                } else {
+                    callback(err);
+                }
             } else if (data) {
                 callback(null, {
                     rawData: data,
@@ -109,7 +117,7 @@ export function loadVectorTile(
         });
         return () => {
             request.cancel();
-            callback();
+            callback(null, null);
         };
     };
 
