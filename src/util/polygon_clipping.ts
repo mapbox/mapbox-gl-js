@@ -221,7 +221,7 @@ export function clip(subjectPolygon: Point[][], clipRing: Point[]): Point[][][] 
     return fromMultiPolygon(polygons);
 }
 
-export function polygonSubdivision(subjectPolygon: Point[][], subdivisionEdges: EdgeIterator): Point[][][] {
+export function polygonSubdivision(subjectPolygon: Point[][], subdivisionEdges: EdgeIterator, edgeExtension: number = 0): Point[][][] {
     // Perform clipping temporarily in a 32bit space where few unit wide polygons are just
     // lines when scaled back to 16bit.
     const scale = 1 << 16;
@@ -233,15 +233,20 @@ export function polygonSubdivision(subjectPolygon: Point[][], subdivisionEdges: 
     for (; subdivisionEdges.valid(); subdivisionEdges.next()) {
         const [a, b] = subdivisionEdges.get();
 
-        const ax = a.x * scale;
-        const ay = a.y * scale;
-        const bx = b.x * scale;
-        const by = b.y * scale;
+        let ax = a.x * scale;
+        let ay = a.y * scale;
+        let bx = b.x * scale;
+        let by = b.y * scale;
 
         const dx = bx - ax;
         const dy = by - ay;
         const len = Math.hypot(dx, dy);
         if (len === 0) continue;
+
+        ax -= dx * edgeExtension;
+        ay -= dy * edgeExtension;
+        bx += dx * edgeExtension;
+        by += dy * edgeExtension;
 
         // Expand the polygon towards the perpendicular vector by few units
         const shiftX = Math.trunc(dy / len * 3.0);

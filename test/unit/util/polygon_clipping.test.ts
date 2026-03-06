@@ -565,6 +565,24 @@ describe('polygon subdivision', () => {
         expect(result[7][0]).toEqualRing([new Point(90, 47), new Point(100, 50), new Point(100, 60), new Point(90, 58), new Point(90, 47)]);
     });
 
+    test('short subdivision edge extended to cross polygon', () => {
+        // Regression test: edge endpoints are inside the polygon boundary.
+        // Without edge extension, the strip would not fully cross the polygon,
+        // causing martinez.diff() to produce invalid output.
+        const subject = [new Point(0, 0), new Point(100, 0), new Point(100, 40), new Point(0, 40), new Point(0, 0)];
+
+        const edges = new MockEdgeIterator([
+            [new Point(50, 2), new Point(50, 38)]
+        ]);
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        const result = polygonSubdivision(convertToCollection(subject), edges, 0.15);
+
+        expect(result.length).toBe(2);
+        expect(result[0].length).toBe(1);
+        expect(result[1].length).toBe(1);
+    });
+
     test('grid snapping to fix precision issues', () => {
         // Real-world polygon that caused precision issues without grid snapping fix.
         // The martinez library can produce nearly-coincident vertices that should be

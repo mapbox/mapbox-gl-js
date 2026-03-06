@@ -13,7 +13,7 @@ import loadGeometry from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import {EdgeIterator, ElevationFeatures, ElevationFeatureSampler, type ElevationFeature, type Range} from '../../../3d-style/elevation/elevation_feature';
-import {ELEVATION_CLIP_MARGIN, MARKUP_ELEVATION_BIAS, PROPERTY_ELEVATION_ROAD_BASE_Z_LEVEL} from '../../../3d-style/elevation/elevation_constants';
+import {ELEVATION_CLIP_MARGIN, MARKUP_ELEVATION_BIAS, PROPERTY_ELEVATION_ROAD_BASE_Z_LEVEL, SUBDIVISION_EDGE_EXTENSION} from '../../../3d-style/elevation/elevation_constants';
 import {ElevatedStructures, type FeatureInfo} from '../../../3d-style/elevation/elevated_structures';
 import Point from '@mapbox/point-geometry';
 import {tileToMeter} from '../../geo/mercator_coordinate';
@@ -512,7 +512,7 @@ class FillBucket implements Bucket {
         const clippedPolygons: Point[][][] = [];
 
         for (const poly of polygons) {
-            const clippedPoly = polygonSubdivision(poly, new EdgeIterator(elevation, metersToTile));
+            const clippedPoly = polygonSubdivision(poly, new EdgeIterator(elevation, metersToTile), SUBDIVISION_EDGE_EXTENSION);
             clippedPolygons.push(...clippedPoly);
         }
 

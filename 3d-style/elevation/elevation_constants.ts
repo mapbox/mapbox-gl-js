@@ -14,4 +14,9 @@ export const ELEVATION_CLIP_MARGIN = 1;
 
 export const MARKUP_ELEVATION_BIAS = 0.05;
 
+// Fraction to extend subdivision edge endpoints in each direction to ensure the
+// strip fully crosses the road polygon. Without this, tight ramp geometry can
+// produce edges that don't span the full polygon width, causing invalid clipping output.
+export const SUBDIVISION_EDGE_EXTENSION = 0.1;
+
 export type ElevationType = 'none' | 'road' | 'offset';
