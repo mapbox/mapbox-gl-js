@@ -1,3 +1,9 @@
+## 3.20.0-rc.2
+
+### Bug fixes 🐞
+
+- Fix icons disappearing when changing the color theme.
+
 ## 3.20.0-rc.1
 
 ### Features and improvements ✨
