@@ -1,0 +1,63 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [["wait"], ["wait"]],
+      "queryGeometry": [
+        [0, 0],
+        [512, 200]
+      ]
+    }
+  },
+  "zoom": 17,
+  "center": [
+    -122.464761,
+    37.753219
+  ],
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    },
+    "eraser": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-122.470, 37.748],
+            [-122.460, 37.748],
+            [-122.460, 37.758],
+            [-122.470, 37.758],
+            [-122.470, 37.748]
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "mapbox",
+      "source-layer": "building",
+      "paint": {
+        "fill-extrusion-color": "gray",
+        "fill-extrusion-height": ["get", "height"]
+      }
+    },
+    {
+      "id": "eraser",
+      "type": "clip",
+      "source": "eraser",
+      "layout": {
+        "clip-layer-types": ["symbol", "model"]
+      }
+    }
+  ]
+}

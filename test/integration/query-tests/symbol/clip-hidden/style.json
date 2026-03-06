@@ -1,0 +1,66 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [["wait"], ["wait"], ["wait"]],
+      "queryGeometry": [
+        [0, 0],
+        [512, 512]
+      ]
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-122.464761, 37.753219]
+        }
+      }
+    },
+    "eraser": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-122.470, 37.748],
+            [-122.460, 37.748],
+            [-122.460, 37.758],
+            [-122.470, 37.758],
+            [-122.470, 37.748]
+          ]
+        ]
+      }
+    }
+  },
+  "zoom": 17,
+  "center": [-122.464761, 37.753219],
+  "layers": [
+    {
+      "id": "symbols",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "rocket-12",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      }
+    },
+    {
+      "id": "eraser",
+      "type": "clip",
+      "source": "eraser",
+      "layout": {
+        "clip-layer-types": ["symbol"]
+      }
+    }
+  ]
+}

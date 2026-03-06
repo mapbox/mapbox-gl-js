@@ -33,6 +33,7 @@ import {earthRadius} from '../../geo/lng_lat';
 import {Aabb} from '../../util/primitives';
 import {dropBufferConnectionLines, createLineWallGeometry} from '../../geo/line_geometry';
 import {PerformanceUtils} from '../../util/performance';
+import {LayerTypeMask, type TileFootprint} from '../../../3d-style/util/conflation';
 
 import type {Elevation} from '../../terrain/elevation';
 import type {FillExtrusionGroundRadiusLayoutArray} from '../array_types';
@@ -58,7 +59,6 @@ import type {SpritePositions} from '../../util/image';
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
-import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {WallGeometry} from '../../geo/line_geometry';
 import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
 import type {ImageId} from '../../style-spec/expression/types/image_id';
@@ -90,7 +90,10 @@ const QUAD_TRIS = 2;
 const TILE_REGIONS = 4;
 
 const HIDDEN_CENTROID: Point = new Point(0, 1);
+// Hidden by replacement is used when we use landmarks
 export const HIDDEN_BY_REPLACEMENT: number = 0x80000000;
+// Hidden by clip is used when fill extrusions are clipped by a clip layer
+export const HIDDEN_BY_CLIP: number = 0x40000000;
 
 // Also declared in _prelude_terrain.vertex.glsl
 // Used to scale most likely elevation values to fit well in an uint16
@@ -1566,7 +1569,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
     showCentroid(borderCentroidData: BorderCentroidData) {
         const c = this.centroidData[borderCentroidData.centroidDataIndex];
-        c.flags &= HIDDEN_BY_REPLACEMENT;
+        c.flags &= (HIDDEN_BY_REPLACEMENT | HIDDEN_BY_CLIP);
         c.centroidXY.x = 0;
         c.centroidXY.y = 0;
         this.writeCentroidToBuffer(c);
@@ -1578,7 +1581,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         const vertexArrayBounds = data.vertexCount + data.vertexArrayOffset;
         assert(vertexArrayBounds <= this.centroidVertexArray.length);
         assert(this.centroidVertexArray.length === this.layoutVertexArray.length);
-        const c = data.flags & HIDDEN_BY_REPLACEMENT ? HIDDEN_CENTROID : data.centroidXY;
+        const c = data.flags & HIDDEN_BY_REPLACEMENT || data.flags & HIDDEN_BY_CLIP ? HIDDEN_CENTROID : data.centroidXY;
         // All the vertex data is the same, use the first to exit early if it is not needed to re-write all.
         const firstX = this.centroidVertexArray.geta_centroid_pos0(offset);
         const firstY = this.centroidVertexArray.geta_centroid_pos1(offset);
@@ -1623,7 +1626,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             this.createCentroidsBuffer();
         } else {
             for (const centroid of this.centroidData) {
-                centroid.flags &= ~HIDDEN_BY_REPLACEMENT;
+                centroid.flags &= ~(HIDDEN_BY_REPLACEMENT | HIDDEN_BY_CLIP);
             }
         }
 
@@ -1642,6 +1645,9 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                     if (centroid.flags & HIDDEN_BY_REPLACEMENT) {
                         continue;
                     }
+                    if (centroid.flags & HIDDEN_BY_CLIP) {
+                        continue;
+                    }
                     if (region.min.x > centroid.max.x || centroid.min.x > region.max.x) {
                         continue;
                     } else if (region.min.y > centroid.max.y || centroid.min.y > region.max.y) {
@@ -1654,6 +1660,10 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             } else {
                 for (const centroid of this.centroidData) {
                     if (centroid.flags & HIDDEN_BY_REPLACEMENT) {
+                        continue;
+                    }
+
+                    if (centroid.flags & HIDDEN_BY_CLIP) {
                         continue;
                     }
 
@@ -1687,7 +1697,13 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                                 seg.indexCount,
                                 -seg.vertexOffset,
                                 -padding)) {
-                            centroid.flags |= HIDDEN_BY_REPLACEMENT;
+                            // Landmark and building replacements don't define which layers to clip.
+                            // We can use clipMask to check if it's a clip region or not.
+                            if (region.clipMask !== LayerTypeMask.None) {
+                                centroid.flags |= HIDDEN_BY_CLIP;
+                            } else {
+                                centroid.flags |= HIDDEN_BY_REPLACEMENT;
+                            }
                             break;
                         }
                     }

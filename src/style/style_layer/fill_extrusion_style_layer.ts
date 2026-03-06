@@ -1,5 +1,5 @@
 import StyleLayer from '../style_layer';
-import FillExtrusionBucket, {ELEVATION_SCALE, ELEVATION_OFFSET, fillExtrusionHeightLift, resampleFillExtrusionPolygonsForGlobe} from '../../data/bucket/fill_extrusion_bucket';
+import FillExtrusionBucket, {ELEVATION_SCALE, ELEVATION_OFFSET, fillExtrusionHeightLift, resampleFillExtrusionPolygonsForGlobe, HIDDEN_BY_CLIP} from '../../data/bucket/fill_extrusion_bucket';
 import {polygonIntersectsPolygon, polygonIntersectsMultiPolygon} from '../../util/intersection_tests';
 import {translateDistance, tilespaceTranslate} from '../query_utils';
 import {getLayoutProperties, getPaintProperties} from './fill_extrusion_style_layer_properties';
@@ -94,14 +94,18 @@ class FillExtrusionStyleLayer extends StyleLayer {
         const terrainVisible = elevationHelper && transform.elevation;
         const exaggeration = transform.elevation ? transform.elevation.exaggeration() : 1;
         const bucket = queryGeometry.tile.getBucket(this);
-        if (terrainVisible && bucket instanceof FillExtrusionBucket) {
-            const centroidVertexArray = bucket.centroidVertexArray;
+        if (bucket instanceof FillExtrusionBucket) {
+            const centroidData = bucket.centroidData.find(d => layoutVertexArrayOffset >= d.vertexArrayOffset && layoutVertexArrayOffset < d.vertexArrayOffset + d.vertexCount);
+            if (centroidData && (centroidData.flags & HIDDEN_BY_CLIP)) return false;
+            if (terrainVisible) {
+                const centroidVertexArray = bucket.centroidVertexArray;
 
-            // See FillExtrusionBucket#encodeCentroid(), centroid is inserted at vertexOffset + 1
-            const centroidOffset = layoutVertexArrayOffset + 1;
-            if (centroidOffset < centroidVertexArray.length) {
-                centroid[0] = centroidVertexArray.geta_centroid_pos0(centroidOffset);
-                centroid[1] = centroidVertexArray.geta_centroid_pos1(centroidOffset);
+                // See FillExtrusionBucket#encodeCentroid(), centroid is inserted at vertexOffset + 1
+                const centroidOffset = layoutVertexArrayOffset + 1;
+                if (centroidOffset < centroidVertexArray.length) {
+                    centroid[0] = centroidVertexArray.geta_centroid_pos0(centroidOffset);
+                    centroid[1] = centroidVertexArray.geta_centroid_pos1(centroidOffset);
+                }
             }
         }
 

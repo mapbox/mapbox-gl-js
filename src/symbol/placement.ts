@@ -1179,6 +1179,9 @@ export class Placement {
             bucket.updateReplacement(coord, replacementSource);
         }
 
+        // Reset clipped state for this bucket so stale entries from a previous frame are cleared.
+        this.collisionIndex.clearClippedSymbolsForBucket(bucket.bucketInstanceId);
+
         for (let s = 0; s < bucket.symbolInstances.length; s++) {
             const symbolInstance = bucket.symbolInstances.get(s);
             const {
@@ -1238,6 +1241,10 @@ export class Placement {
 
                     if (clippedSymbol) break;
                 }
+            }
+
+            if (clippedSymbol) {
+                this.collisionIndex.markSymbolAsClipped(bucket.bucketInstanceId, symbolInstance.featureIndex);
             }
 
             if (hasText) {

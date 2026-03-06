@@ -74,6 +74,9 @@ class CollisionIndex {
     gridRightBoundary: number;
     gridBottomBoundary: number;
     fogState: FogState | null | undefined;
+    // Tracks (bucketInstanceId -> set of featureIndexes) for symbols hidden by clip regions.
+    // Used to exclude them from queryRenderedFeatures results.
+    clippedSymbols: Map<number, Set<number>>;
 
     constructor(
         transform: Transform,
@@ -92,6 +95,20 @@ class CollisionIndex {
         this.gridRightBoundary = transform.width + 2 * viewportPadding;
         this.gridBottomBoundary = transform.height + 2 * viewportPadding;
         this.fogState = fogState;
+        this.clippedSymbols = new Map();
+    }
+
+    clearClippedSymbolsForBucket(bucketInstanceId: number) {
+        this.clippedSymbols.delete(bucketInstanceId);
+    }
+
+    markSymbolAsClipped(bucketInstanceId: number, featureIndex: number) {
+        let clipped = this.clippedSymbols.get(bucketInstanceId);
+        if (!clipped) {
+            clipped = new Set();
+            this.clippedSymbols.set(bucketInstanceId, clipped);
+        }
+        clipped.add(featureIndex);
     }
 
     placeCollisionBox(
@@ -451,6 +468,14 @@ class CollisionIndex {
             }
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (seenFeatures[featureKey.bucketInstanceId][featureKey.featureIndex]) {
+                continue;
+            }
+
+            // Skip symbols hidden by a clip region — they are invisible and should not be queried.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+            const clippedForBucket = this.clippedSymbols.get(featureKey.bucketInstanceId);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+            if (clippedForBucket && clippedForBucket.has(featureKey.featureIndex)) {
                 continue;
             }
 
