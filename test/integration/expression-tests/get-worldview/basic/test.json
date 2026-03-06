@@ -1,7 +1,8 @@
 {
     "expression": ["worldview"],
     "inputs": [
-      [{"worldview": "AD"}, {}]
+      [{"worldview": "AD"}, {}],
+      [{}, {}]
     ],
     "expected": {
       "compiled": {
@@ -10,7 +11,7 @@
         "isZoomConstant": true,
         "type": "string"
       },
-      "outputs": ["AD"],
+      "outputs": ["AD", ""],
       "serialized": ["worldview"]
     }
   }
