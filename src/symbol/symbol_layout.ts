@@ -834,7 +834,9 @@ function reconcileImagePosition(shapedIcon: PositionedIcon, atlasIconPositions: 
     if (!shapedIcon) return;
 
     const primaryImagePosition = atlasIconPositions.get(iconPrimary.toString());
-    shapedIcon.imagePrimary = primaryImagePosition;
+    if (primaryImagePosition) {
+        shapedIcon.imagePrimary = primaryImagePosition;
+    }
     if (iconSecondary) {
         const secondaryImagePosition = atlasIconPositions.get(iconSecondary.toString());
         shapedIcon.imageSecondary = secondaryImagePosition;
