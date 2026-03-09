@@ -25,6 +25,7 @@ jobs:
         npm run codegen
         git add -A && git diff --staged --exit-code
     - run: npm run tsc
+    - run: npm run tsc:strict
     - run: npm run test-style-spec
     - run: npm run test-expressions
     - run: npm run lint

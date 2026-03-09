@@ -48,7 +48,7 @@ npm-debug.log
 # https://github.com/vitejs/vite/issues/9470
 vitest.config.js.*
 
-tsconfig.tsbuildinfo
+*.tsbuildinfo
 bundle-analysis.html
 
 # tmp usvg ignores
