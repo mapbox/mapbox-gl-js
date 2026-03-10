@@ -188,20 +188,20 @@ layout(std140) uniform SymbolPaintPropertiesHeaderUniform {
     /// - Mask for which properties are zoom-dependent (32-bit bitmask, 1 bit per property)
     /// - Size of a data-driven single block
     /// - Offsets for each property in a data-driven block
-    uvec4 u_header[SPP_HEADER_SIZE_VEC4];
-};
+    uvec4 header[SPP_HEADER_SIZE_VEC4];
+} u_spp_header;
 
 layout(std140) uniform SymbolPaintPropertiesUniform {
     /// Buffer contains vec4 aligned data-driven blocks (a single block per feature,
     /// multiple blocks for multiple features).
-    vec4 u_properties[MAX_UBO_SIZE_VEC4];
-};
+    vec4 properties[MAX_UBO_SIZE_VEC4];
+} u_spp_properties;
 
 layout(std140) uniform SymbolPaintPropertiesIndexUniform {
     /// Maps each feature index to its corresponding data-driven block index within
     /// the u_properties uniform buffer.
-    uvec4 u_block_indices[MAX_UBO_SIZE_VEC4];
-};
+    uvec4 block_indices[MAX_UBO_SIZE_VEC4];
+} u_spp_index;
 
 /// Symbol paint properties need to be interpolated and passed to the fragment shader.
 out lowp float opacity;
@@ -226,19 +226,19 @@ PropertyType getPropertyType(uint propertyIndex, uint dataDrivenMask, uint zoomD
 SymbolPropertyHeader readSymbolPropertiesHeader() {
     SymbolPropertyHeader header;
     // Read masks:
-    uint dataDrivenMask = u_header[0][0];
-    uint zoomDependentMask = u_header[0][1];
+    uint dataDrivenMask = u_spp_header.header[0][0];
+    uint zoomDependentMask = u_spp_header.header[0][1];
     // Read block sizes:
-    header.dataDrivenBlockSizeVec4 = u_header[0][2];
+    header.dataDrivenBlockSizeVec4 = u_spp_header.header[0][2];
     // Read property types and block offsets:
-    header.fill_np_color        = getPropertyType(0u, dataDrivenMask, zoomDependentMask, u_header[0][3]);
-    header.halo_np_color        = getPropertyType(1u, dataDrivenMask, zoomDependentMask, u_header[1][0]);
-    header.opacity              = getPropertyType(2u, dataDrivenMask, zoomDependentMask, u_header[1][1]);
-    header.halo_width           = getPropertyType(3u, dataDrivenMask, zoomDependentMask, u_header[1][2]);
-    header.halo_blur            = getPropertyType(4u, dataDrivenMask, zoomDependentMask, u_header[1][3]);
-    header.emissive_strength    = getPropertyType(5u, dataDrivenMask, zoomDependentMask, u_header[2][0]);
-    header.occlusion_opacity    = getPropertyType(6u, dataDrivenMask, zoomDependentMask, u_header[2][1]);
-    header.z_offset             = getPropertyType(7u, dataDrivenMask, zoomDependentMask, u_header[2][2]);
+    header.fill_np_color        = getPropertyType(0u, dataDrivenMask, zoomDependentMask, u_spp_header.header[0][3]);
+    header.halo_np_color        = getPropertyType(1u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][0]);
+    header.opacity              = getPropertyType(2u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][1]);
+    header.halo_width           = getPropertyType(3u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][2]);
+    header.halo_blur            = getPropertyType(4u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][3]);
+    header.emissive_strength    = getPropertyType(5u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][0]);
+    header.occlusion_opacity    = getPropertyType(6u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][1]);
+    header.z_offset             = getPropertyType(7u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][2]);
     return header;
 }
 
@@ -263,7 +263,7 @@ float vec4At(vec4 v, uint index) {
 }
 
 vec4 readVec4(uint baseOffsetVec4, uint propertyOffsetDwords) {
-    return u_properties[baseOffsetVec4 + propertyOffsetDwords / DWORDS_PER_VEC4];
+    return u_spp_properties.properties[baseOffsetVec4 + propertyOffsetDwords / DWORDS_PER_VEC4];
 }
 
 float readFloat(vec4 slot, uint propertyOffsetDwords) {
@@ -283,7 +283,7 @@ vec2 readVec2(vec4 slot, uint propertyOffsetDwords) {
 /// Calculate the feature's data-driven block offset in u_properties uniform buffer (vec4-indexed).
 uint getDataDrivenBlockOffsetVec4(uint dataDrivenBlockSizeVec4) {
     uint featureIndex = uint(a_feature_index);
-    uvec4 slot = u_block_indices[featureIndex / DWORDS_PER_VEC4];
+    uvec4 slot = u_spp_index.block_indices[featureIndex / DWORDS_PER_VEC4];
     uint blockIndex = uvec4At(slot, featureIndex % DWORDS_PER_VEC4);
     return blockIndex * dataDrivenBlockSizeVec4;
 }

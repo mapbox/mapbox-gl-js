@@ -83,10 +83,12 @@ void main() {
 #ifdef USE_PAINT_PROPERTIES_UBO
     /// UBO-based paint property initializations.
 
+    vec4 fill_color;
+    vec4 halo_color;
 #ifdef RENDER_SDF
     ///  Pre-multiply colors by alpha.
-    vec4 fill_color = vec4(fill_np_color.rgb * fill_np_color.a, fill_np_color.a);
-    vec4 halo_color = vec4(halo_np_color.rgb * halo_np_color.a, halo_np_color.a);
+    fill_color = vec4(fill_np_color.rgb * fill_np_color.a, fill_np_color.a);
+    halo_color = vec4(halo_np_color.rgb * halo_np_color.a, halo_np_color.a);
 #endif
 
 #else
