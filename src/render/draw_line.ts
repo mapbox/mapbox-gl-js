@@ -141,6 +141,9 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
     }
 
+    // Cache line-width evaluation per bucket zoom for dash anchoring to avoid evaluating per tile.
+    const floorwidthByZoom: Record<number, number> = {};
+
     const renderTiles = (coords: OverscaledTileID[], baseDefines: DynamicDefinesType[], depthMode: DepthMode, stencilMode3D: StencilMode, elevated: boolean, firstPass: boolean) => {
         for (const coord of coords) {
             const tile = sourceCache.getTile(coord);
@@ -225,6 +228,25 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             const matrix = isDraping ? coord.projMatrix : null;
             const lineWidthScale = unitInMeters ? (1.0 / bucket.tileToMeter) / pixelsToTileUnits(tile, 1, painter.transform.zoom) : 1.0;
             const lineFloorWidthScale = unitInMeters ? (1.0 / bucket.tileToMeter) / pixelsToTileUnits(tile, 1, Math.floor(painter.transform.zoom)) : 1.0;
+
+            // Avoid dash flickering while loading ideal tiles on zoom level traversal.
+            // Override the floorwidth paint property to use width evaluated at bucket zoom
+            // instead of camera zoom. This ensures stable dash texture coordinates when an
+            // overscaled lower-zoom tile is temporarily rendered. Restore after draw.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            const widthProperty: {value: {kind: string; value: number}} | null = dasharray ? (layer.paint as any)._values['line-floorwidth'] : null;
+            let savedFloorwidth: number | undefined;
+            if (widthProperty && widthProperty.value.kind === 'constant') {
+                const bz = bucket.zoom;
+                if (!(bz in floorwidthByZoom)) {
+                    floorwidthByZoom[bz] = Math.max(0.01, layer.widthExpression().evaluate({zoom: bz}));
+                }
+                savedFloorwidth = widthProperty.value.value;
+                const floorZoom = Math.floor(painter.transform.zoom);
+                const zoomDiff = floorZoom - tile.tileID.overscaledZ;
+                widthProperty.value.value = floorwidthByZoom[bz] * Math.pow(2, zoomDiff);
+            }
+
             const uniformValues: UniformValues<LineUniformsType | LinePatternUniformsType> = image ?
                 linePatternUniformValues(painter, tile, layer, matrix, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd], groundShadowFactor, patternTransition) :
                 lineUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd], groundShadowFactor);
@@ -328,6 +350,10 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
                     uniformValues['u_alpha_discard_threshold'] = 0.0;
                 }
                 renderLine(elevated ? stencilMode3D : painter.stencilModeForClipping(coord));
+            }
+            // Restore floorwidth paint property after draw
+            if (savedFloorwidth !== undefined) {
+                widthProperty.value.value = savedFloorwidth;
             }
         }
     };
