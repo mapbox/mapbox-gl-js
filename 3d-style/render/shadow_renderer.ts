@@ -230,7 +230,11 @@ export class ShadowRenderer {
             if (layer.hasShadowPass() && !layer.isHidden(transform.zoom)) {
                 lastShadowLayer = layerIdx;
             }
-            if (drawBeforeLayer && drawBeforeLayer === layerId) {
+            // If drawBeforeLayer is specified, ground shadows will be rendered right before that layer.
+            // Check the exact match for the layer id or a match for a layer with the specific slot.
+            // Slots themselves are not included in layerRenderItems but if we have at least one layer
+            // which has a matching slot, then we will use that layer as the target.
+            if (drawBeforeLayer && (drawBeforeLayer === layerId || drawBeforeLayer === layer.slot)) {
                 // There should be no need to render shadows before the first layer, and it's not supported
                 this._drawShadowAfterLayer = layerIdx > 0 ? layerIdx - 1 : 0;
             }
