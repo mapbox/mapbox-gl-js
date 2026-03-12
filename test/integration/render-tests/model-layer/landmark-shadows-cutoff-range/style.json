@@ -383,7 +383,7 @@
       "id": "road-label"
     },
     {
-      "minzoom": 14.0,
+      "minzoom": 14.6,
       "type": "model",
       "source": "file-system-tiles",
       "paint": {
