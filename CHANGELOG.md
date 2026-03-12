@@ -1,10 +1,4 @@
-## 3.20.0-rc.2
-
-### Bug fixes 🐞
-
-- Fix icons disappearing when changing the color theme.
-
-## 3.20.0-rc.1
+## 3.20.0
 
 ### Features and improvements ✨
 
@@ -12,6 +6,7 @@
 
 ### Bug fixes 🐞
 
+- Fix icons disappearing when changing the color theme.
 - Fix display of symbols added via the Appearances runtime API.
 
 ## 3.19.1
