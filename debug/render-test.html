@@ -25,7 +25,7 @@
 
         function transformRequest(url, resourceTypeEnum) {
             const req = baseTransformRequest(url, resourceTypeEnum);
-            return {url: req.url.replace(location.origin, `${location.origin}/test/integration/`)};
+            return {url: req.url.replace(location.origin, `${location.origin}/test/integration`)};
         }
 
         async function fetchStyle() {

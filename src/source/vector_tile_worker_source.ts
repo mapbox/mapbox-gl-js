@@ -18,7 +18,9 @@ import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type Scheduler from '../util/scheduler';
 import type {TaskMetadata} from '../util/scheduler';
-import type {LoadVectorData} from './load_vector_tile';
+import type {LoadVectorData, LoadVectorDataCallback} from './load_vector_tile';
+import type {Cancelable} from '../types/cancelable';
+import type {TileProvider} from './tile_provider';
 import type {ImageId} from '../style-spec/expression/types/image_id';
 import type {StyleModelMap} from '../style/style_mode';
 
@@ -36,6 +38,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
     availableImages: ImageId[];
     availableModels: StyleModelMap;
     loadVectorData: LoadVectorData;
+    tileProvider?: TileProvider<ArrayBuffer>;
     loading: Record<number, WorkerTile>;
     loaded: Record<number, WorkerTile>;
     deduped: DedupedRequest;
@@ -46,13 +49,14 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
     /**
      * @private
      */
-    constructor({actor, layerIndex, availableImages, availableModels, isSpriteLoaded, loadTileData, brightness}: WorkerSourceOptions) {
+    constructor({actor, layerIndex, availableImages, availableModels, isSpriteLoaded, tileProvider, brightness}: WorkerSourceOptions) {
         super();
         this.actor = actor;
         this.layerIndex = layerIndex;
         this.availableImages = availableImages;
         this.availableModels = availableModels;
-        this.loadVectorData = (loadTileData as LoadVectorData) || loadVectorTile;
+        this.loadVectorData = loadVectorTile;
+        this.tileProvider = tileProvider;
         this.loading = {};
         this.loaded = {};
         this.deduped = new DedupedRequest(actor.scheduler);
@@ -62,9 +66,50 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
     }
 
     /**
+     * Loads tile data using the provider if available, otherwise falls back to loadVectorData.
+     * @private
+     */
+    loadTileData(params: WorkerSourceVectorTileRequest, callback: LoadVectorDataCallback): Cancelable['cancel'] {
+        if (!this.tileProvider) {
+            return this.loadVectorData(params, callback);
+        }
+
+        const controller = new AbortController();
+        const {z, x, y} = params.tileID.canonical;
+
+        this.tileProvider.loadTile({z, x, y}, {request: params.request, signal: controller.signal})
+            .then(response => {
+                if (controller.signal.aborted) return;
+
+                // Produce a 404 error so SourceCache triggers parent tile lookup for the missing tile
+                if (response == null) {
+                    const err: Error & {status?: number} = new Error('Tile not found');
+                    err.status = 404;
+                    return callback(err);
+                }
+
+                // Intentionally empty tile
+                if (response.data === null) {
+                    return callback(null, null);
+                }
+
+                const headers = new Map<string, string>();
+                if (response.expires) headers.set('expires', response.expires);
+                if (response.cacheControl) headers.set('cache-control', response.cacheControl);
+
+                callback(null, {rawData: response.data, responseHeaders: headers});
+            })
+            .catch(err => {
+                if (controller.signal.aborted) return;
+                callback(err instanceof Error ? err : new Error(String(err)));
+            });
+
+        return () => controller.abort();
+    }
+
+    /**
      * Implements {@link WorkerSource#loadTile}. Delegates to
-     * {@link VectorTileWorkerSource#loadVectorData} (which by default expects
-     * a `params.url` property) for fetching and producing a VectorTile object.
+     * {@link VectorTileWorkerSource#loadTileData} for fetching raw tile data.
      * @private
      */
     loadTile(params: WorkerSourceVectorTileRequest, callback: WorkerSourceVectorTileCallback) {
@@ -74,7 +119,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
         const perf = requestParam && requestParam.collectResourceTiming;
 
         const workerTile = this.loading[uid] = new WorkerTile(params);
-        workerTile.abort = this.loadVectorData(params, (err, response) => {
+        workerTile.abort = this.loadTileData(params, (err, response) => {
             const aborted = !this.loading[uid];
 
             delete this.loading[uid];

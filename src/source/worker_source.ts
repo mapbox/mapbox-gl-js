@@ -25,7 +25,7 @@ import type {ImageId} from '../style-spec/expression/types/image_id';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 import type {StyleModelMap} from '../style/style_mode';
 import type {IndoorTileOptions} from '../style/indoor_data.js';
-import type {Cancelable} from '../types/cancelable';
+import type {TileProvider} from './tile_provider';
 
 /**
  * Source types that can instantiate a {@link WorkerSource} in {@link MapWorker}.
@@ -205,15 +205,13 @@ export interface WorkerSource {
     removeSource?: (params: {source: string}, callback: Callback<void>) => void;
 }
 
-export type WorkerSourceLoadTileData = (params: WorkerSourceTileRequest, callback: Callback<unknown>) => Cancelable['cancel'];
-
 export type WorkerSourceOptions = {
     actor: Actor;
     layerIndex: StyleLayerIndex;
     availableImages: ImageId[];
     availableModels: StyleModelMap;
     isSpriteLoaded: boolean;
-    loadTileData?: WorkerSourceLoadTileData;
+    tileProvider?: TileProvider<ArrayBuffer>;
     brightness?: number;
     worldview?: string;
 };

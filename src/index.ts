@@ -20,6 +20,7 @@ import config from './util/config';
 import {Debug} from './util/debug';
 import {isSafari} from './util/util';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
+import {addTileProvider} from './source/tile_provider';
 import WorkerPool from './util/worker_pool';
 import WorkerClass from './util/worker_class';
 import {prewarm, clearPrewarmedResources} from './util/worker_pool_factory';
@@ -53,6 +54,7 @@ export type {StyleImageInterface} from './style/style_image';
 export type {CustomLayerInterface} from './style/style_layer/custom_style_layer';
 export type {CustomSourceInterface} from './source/custom_source';
 export type {CanvasSourceSpecification} from './source/canvas_source';
+export type {TileProvider, TileDataResponse} from './source/tile_provider';
 
 export type {Anchor} from './ui/anchor';
 export type {PopupOptions} from './ui/popup';
@@ -85,6 +87,7 @@ const exported = {
     supported,
     setRTLTextPlugin,
     getRTLTextPluginStatus,
+    addTileProvider,
     Map,
     NavigationControl,
     GeolocateControl,

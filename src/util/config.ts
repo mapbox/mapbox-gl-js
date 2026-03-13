@@ -22,6 +22,7 @@ type Config = {
     DEFAULT_STYLE: string;
     GLYPHS_URL: string;
     TILES3D_URL_PREFIX: string;
+    TILE_PROVIDER_URLS: Record<string, string>;
 };
 
 const config: Config = {
@@ -78,6 +79,7 @@ const config: Config = {
     BUILDING_GEN_URL: 'https://api.mapbox.com/mapbox-gl-js/building-gen/building_gen_v1.2.4.wasm',
     GLYPHS_URL: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
     TILES3D_URL_PREFIX: '3dtiles/v1',
+    TILE_PROVIDER_URLS: {} as Record<string, string>,
 };
 
 export default config;

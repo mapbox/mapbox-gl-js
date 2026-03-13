@@ -117,8 +117,9 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     /**
      * @private
      */
-    constructor({actor, layerIndex, availableImages, availableModels, isSpriteLoaded, brightness}: WorkerSourceOptions) {
-        super({actor, layerIndex, availableImages, availableModels, isSpriteLoaded, loadTileData: loadGeoJSONTile, brightness});
+    constructor(options: WorkerSourceOptions) {
+        super(options);
+        this.loadVectorData = loadGeoJSONTile;
         this._dynamicIndex = new GeoJSONRT();
     }
 

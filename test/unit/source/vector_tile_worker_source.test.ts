@@ -42,11 +42,12 @@ test('VectorTileWorkerSource#abortTile aborts pending request', () => {
 });
 
 test('VectorTileWorkerSource#abortTile aborts pending async request', () => {
-    const source = new VectorTileWorkerSource({actor, layerIndex: new StyleLayerIndex(), availableImages: [], availableModels: [], isSpriteLoaded: true, loadTileData: (params, cb) => {
+    const source = new VectorTileWorkerSource({actor, layerIndex: new StyleLayerIndex(), availableImages: [], availableModels: [], isSpriteLoaded: true});
+    source.loadVectorData = (params, cb) => {
         setTimeout(() => {
             cb(null, {});
         }, 0);
-    }});
+    };
 
     source.loadTile({
         uid: 0,
@@ -225,7 +226,8 @@ test('VectorTileWorkerSource#loadTile forwards cache headers from response heade
         type: 'fill'
     }]);
 
-    const source = new VectorTileWorkerSource({actor, layerIndex, availableImages: [], availableModels: [], isSpriteLoaded: true, loadTileData: loadVectorData});
+    const source = new VectorTileWorkerSource({actor, layerIndex, availableImages: [], availableModels: [], isSpriteLoaded: true});
+    source.loadVectorData = loadVectorData;
 
     source.loadTile({
         source: 'source',
@@ -278,7 +280,8 @@ test('VectorTileWorkerSource provides resource timing information', () => {
         type: 'fill'
     }]);
 
-    const source = new VectorTileWorkerSource({actor, layerIndex, availableImages: [], availableModels: [], isSpriteLoaded: true, loadTileData: loadVectorData});
+    const source = new VectorTileWorkerSource({actor, layerIndex, availableImages: [], availableModels: [], isSpriteLoaded: true});
+    source.loadVectorData = loadVectorData;
 
     vi.spyOn(perf, 'getEntriesByName').mockImplementation(() => { return [exampleResourceTiming]; });
 

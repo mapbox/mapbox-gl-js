@@ -11,22 +11,25 @@ const _self = {
 } as unknown as Worker;
 
 describe('load tile', () => {
-    test('calls callback on error', () => {
+    test('calls callback on error', async () => {
         mockFetch({
             '/error': () => Promise.resolve(new Response('', {status: 500, statusText: 'Internal Server Error'}))
         });
 
         const worker = new MapWorker(_self);
         worker.setProjection(0, {name: 'mercator'});
-        worker.loadTile(0, {
-            type: 'vector',
-            source: 'vector',
-            scope: 'scope',
-            uid: 0,
-            tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0}} as OverscaledTileID,
-            request: {url: '/error'}
-        }, (err) => {
-            expect(err).toBeTruthy();
+        await new Promise<void>((resolve) => {
+            worker.loadTile(0, {
+                type: 'vector',
+                source: 'vector',
+                scope: 'scope',
+                uid: 0,
+                tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0}} as OverscaledTileID,
+                request: {url: '/error'}
+            }, (err) => {
+                expect(err).toBeTruthy();
+                resolve();
+            });
         });
     });
 });
