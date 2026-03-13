@@ -73,6 +73,8 @@ class WorkerTile {
     brightness: number;
     scaleFactor: number;
     indoor: IndoorTileOptions | null;
+    maxUniformBufferBindings: number | null | undefined;
+    maxUniformBlockSizeDwords: number | null | undefined;
 
     status: 'parsing' | 'done';
     data: VectorTile;
@@ -254,7 +256,9 @@ class WorkerTile {
                     styleDefinedModelURLs: availableModels,
                     worldview: this.worldview,
                     localizable,
-                    availableImages
+                    availableImages,
+                    maxUniformBufferBindings: this.maxUniformBufferBindings,
+                    maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords
                 });
 
                 assert(this.tileTransform.projection.name === this.projection.name);

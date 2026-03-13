@@ -70,7 +70,8 @@ export type DynamicDefinesType =
     | HillshadeDefinesType
     | TerrainDepthAccessDefinesType
     | ModelDefinesType
-    | BuildingDefinesType;
+    | BuildingDefinesType
+    | `MAX_UBO_SIZE_VEC4 ${number}u`;
 
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,

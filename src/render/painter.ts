@@ -1703,6 +1703,7 @@ class Painter {
         }
         if (rtt) defines.push('RENDER_TO_TEXTURE');
         if (this._showOverdrawInspector) defines.push('OVERDRAW_INSPECTOR');
+
         return defines;
     }
 

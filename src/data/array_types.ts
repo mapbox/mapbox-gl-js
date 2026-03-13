@@ -1701,6 +1701,7 @@ export {
     StructArrayLayout4f16 as CollisionVertexExtArray,
     StructArrayLayout3ui6 as QuadTriangleArray,
     StructArrayLayout1f4 as ZOffsetVertexArray,
+    StructArrayLayout1f4 as SymbolFeatureIdArray,
     StructArrayLayout6f24 as SymbolOrientationArray,
     StructArrayLayout5f20 as GlobeVertexArray,
     StructArrayLayout5f20 as AtmosphereVertexArray,

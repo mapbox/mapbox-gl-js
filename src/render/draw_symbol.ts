@@ -386,6 +386,15 @@ function drawLayerSymbols(
             return groundShadowFactor;
         };
 
+        const setUBODefines = (defines: DynamicDefinesType[]) => {
+            defines.push('USE_PAINT_PROPERTIES_UBO');
+            // MAX_UBO_SIZE_VEC4: number of vec4 slots available for u_properties / u_block_indices.
+            // = (maxUniformBlockSize - headerBytes) / 16, expressed as vec4 units.
+            const uboSizeDwords = Math.floor(painter.context.maxUniformBlockSize / 4);
+            const maxUBOSizeVec4 = Math.floor(uboSizeDwords / 4) - 3; // subtract 3-vec4 header
+            defines.push(`MAX_UBO_SIZE_VEC4 ${maxUBOSizeVec4}u`);
+        };
+
         const setOcclusionDefines = (defines: DynamicDefinesType[]) => {
             // Globe or orthographic - no depth occlusion needed
             if (!tr.depthOcclusionForSymbolsAndCircles) {
@@ -471,8 +480,9 @@ function drawLayerSymbols(
                 baseDefines.push('ELEVATED_ROADS');
             }
 
-            const programConfiguration = bucket.icon.programConfigurations.get(layer.id);
-            const program = painter.getOrCreateProgram('symbol', {config: programConfiguration, defines: baseDefines});
+            setUBODefines(baseDefines);
+
+            const program = painter.getOrCreateProgram('symbol', {defines: baseDefines});
 
             const texSize: [number, number] = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
             const sizeData = bucket.iconSizeData;
@@ -585,8 +595,9 @@ function drawLayerSymbols(
 
             setOcclusionDefines(baseDefines);
 
-            const programConfiguration = bucket.text.programConfigurations.get(layer.id);
-            const program = painter.getOrCreateProgram('symbol', {config: programConfiguration, defines: baseDefines});
+            setUBODefines(baseDefines);
+
+            const program = painter.getOrCreateProgram('symbol', {defines: baseDefines});
 
             let texSizeIcon: [number, number] = [0, 0];
             let atlasTextureIcon: Texture | null = null;
@@ -777,9 +788,42 @@ function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, lay
     const context = painter.context;
     const gl = context.gl;
     const dynamicBuffers = [buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer, buffers.iconTransitioningVertexBuffer, buffers.globeExtVertexBuffer, buffers.zOffsetVertexBuffer, buffers.orientationVertexBuffer];
-    program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-        uniformValues, layer.id, buffers.layoutVertexBuffer,
-        buffers.indexBuffer, segments, layer.paint,
-        painter.transform.zoom, buffers.programConfigurations.get(layer.id), dynamicBuffers,
-        instanceCount);
+
+    if (buffers.featureIdBuffer) {
+        dynamicBuffers.push(buffers.featureIdBuffer);
+    }
+
+    // Set constant paint property uniforms (u_spp_*) for UBO mode.
+    // These are evaluated at the current render zoom so camera (zoom-only) expressions
+    // are up-to-date every frame without requiring a UBO rewrite.
+    if (buffers.uboBinder) {
+        // 'layer' is omitted from worker→main serialization (see register() in symbol_property_binder_ubo.ts).
+        // Reassign the current style layer before any evaluation so paint values are up-to-date.
+        buffers.uboBinder.layer = layer;
+        const renderZoom = painter.transform.zoom;
+        const brightness = painter.style.getBrightness ? painter.style.getBrightness() : null;
+        const cv = buffers.uboBinder.getConstantUniformValues(renderZoom, brightness);
+        uniformValues['u_spp_fill_np_color']     = cv.fill_np_color;
+        uniformValues['u_spp_halo_np_color']     = cv.halo_np_color;
+        uniformValues['u_spp_opacity']           = cv.opacity;
+        uniformValues['u_spp_halo_width']        = cv.halo_width;
+        uniformValues['u_spp_halo_blur']         = cv.halo_blur;
+        uniformValues['u_spp_emissive_strength'] = cv.emissive_strength;
+        uniformValues['u_spp_occlusion_opacity'] = cv.occlusion_opacity;
+        uniformValues['u_spp_z_offset']          = cv.z_offset;
+    }
+
+    const {batchIndices, batchSegments} = buffers.getBatchGrouping(segments);
+
+    for (const batchIndex of batchIndices) {
+        const batchSegmentVector = batchSegments.get(batchIndex);
+        if (buffers.uboBinder) {
+            buffers.uboBinder.bind(context, program.program, batchIndex);
+        }
+        program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+            uniformValues, layer.id, buffers.layoutVertexBuffer,
+            buffers.indexBuffer, batchSegmentVector, layer.paint,
+            painter.transform.zoom, null, dynamicBuffers,
+            instanceCount);
+    }
 }

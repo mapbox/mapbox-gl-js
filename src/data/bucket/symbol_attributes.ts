@@ -25,6 +25,10 @@ export const zOffsetAttributes: StructArrayLayout = createLayout([
     {name: 'a_auto_z_offset', components: 1, type: 'Float32'}
 ], 4);
 
+export const featureIdAttributes: StructArrayLayout = createLayout([
+    {name: 'a_feature_index', components: 1, type: 'Float32'}
+], 4);
+
 export const orientationAttributes: StructArrayLayout = createLayout([
     {name: 'a_x_axis', components: 3, type: 'Float32'},
     {name: 'a_y_axis', components: 3, type: 'Float32'}

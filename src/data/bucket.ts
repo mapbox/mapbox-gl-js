@@ -41,6 +41,8 @@ export type BucketParameters<Layer extends TypedStyleLayer> = {
     worldview: string | undefined;
     localizable: boolean;
     availableImages: ImageId[];
+    maxUniformBufferBindings?: number | null;
+    maxUniformBlockSizeDwords?: number | null;
 };
 
 export type ImageDependenciesMap = Map<StringifiedImageId, Array<ImageVariant>>;
@@ -125,7 +127,8 @@ export interface Bucket {
         imagePositions: SpritePositions,
         layers: ReadonlyArray<TypedStyleLayer>,
         isBrightnessChanged: boolean,
-        brightness?: number | null
+        brightness?: number | null,
+        canonical?: CanonicalTileID
     ) => void;
     isEmpty: () => boolean;
     upload: (context: Context, canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties) => void;

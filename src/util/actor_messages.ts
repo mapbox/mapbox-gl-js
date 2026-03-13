@@ -145,6 +145,11 @@ export type ActorMessages = {
         callback: ActorCallback<void>;
     };
 
+    'setContextParams': {
+        params: {maxBindingPoints: number; maxUniformBlockSizeDwords: number};
+        callback: ActorCallback<void>;
+    };
+
     'setWorldview': {
         params: string;
         callback: ActorCallback<void>;

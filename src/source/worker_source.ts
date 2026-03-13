@@ -214,6 +214,8 @@ export type WorkerSourceOptions = {
     tileProvider?: TileProvider<ArrayBuffer>;
     brightness?: number;
     worldview?: string;
+    maxUniformBufferBindings?: number;
+    maxUniformBlockSizeDwords?: number;
 };
 
 export interface WorkerSourceConstructor {

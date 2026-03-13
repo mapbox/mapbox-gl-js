@@ -185,12 +185,12 @@
   ],
   "size-limit": [
     {
-      "limit": "460 kb",
+      "limit": "465 kb",
       "gzip": true,
       "path": "dist/mapbox-gl.js"
     },
     {
-      "limit": "460 kb",
+      "limit": "465 kb",
       "gzip": true,
       "path": [
         "dist/esm-min/mapbox-gl.js",

@@ -44,12 +44,14 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
     deduped: DedupedRequest;
     isSpriteLoaded: boolean;
     scheduler?: Scheduler | null;
-    brightness?: number;
+    brightness?: number | null;
+    maxUniformBufferBindings?: number | null;
+    maxUniformBlockSizeDwords?: number | null;
 
     /**
      * @private
      */
-    constructor({actor, layerIndex, availableImages, availableModels, isSpriteLoaded, tileProvider, brightness}: WorkerSourceOptions) {
+    constructor({actor, layerIndex, availableImages, availableModels, isSpriteLoaded, tileProvider, brightness, maxUniformBufferBindings, maxUniformBlockSizeDwords}: WorkerSourceOptions) {
         super();
         this.actor = actor;
         this.layerIndex = layerIndex;
@@ -63,6 +65,8 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
         this.isSpriteLoaded = isSpriteLoaded;
         this.scheduler = actor.scheduler;
         this.brightness = brightness;
+        this.maxUniformBufferBindings = maxUniformBufferBindings;
+        this.maxUniformBlockSizeDwords = maxUniformBlockSizeDwords;
     }
 
     /**
@@ -119,6 +123,8 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
         const perf = requestParam && requestParam.collectResourceTiming;
 
         const workerTile = this.loading[uid] = new WorkerTile(params);
+        workerTile.maxUniformBufferBindings = this.maxUniformBufferBindings;
+        workerTile.maxUniformBlockSizeDwords = this.maxUniformBlockSizeDwords;
         workerTile.abort = this.loadTileData(params, (err, response) => {
             const aborted = !this.loading[uid];
 

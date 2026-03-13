@@ -211,6 +211,7 @@ import {
     glyphOffset,
     lineVertex,
     zOffsetAttributes,
+    featureIdAttributes,
     orientationAttributes,
 } from '../src/data/bucket/symbol_attributes';
 
@@ -230,6 +231,7 @@ createStructArrayType('symbol_instance', symbolInstance, true);
 createStructArrayType('glyph_offset', glyphOffset, true);
 createStructArrayType('symbol_line_vertex', lineVertex, true);
 createStructArrayType('z_offset_vertex', zOffsetAttributes);
+createStructArrayType('symbol_feature_id', featureIdAttributes);
 createStructArrayType('symbol_orientation', orientationAttributes);
 
 import globeAttributes from '../src/terrain/globe_attributes';

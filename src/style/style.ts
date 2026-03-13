@@ -427,6 +427,16 @@ class Style extends Evented<MapEvents> {
             this.dispatcher = new Dispatcher(getWorkerPool(), this);
         }
 
+        // Send UBO limits to workers so they can size batches correctly for this device.
+        if (this.map.painter && this.map.painter.context) {
+            const maxBindingPoints = this.map.painter.context.maxUniformBufferBindings;
+            const maxUniformBlockSizeDwords = Math.floor(this.map.painter.context.maxUniformBlockSize / 4);
+            this.dispatcher.broadcast('setContextParams', {
+                maxBindingPoints,
+                maxUniformBlockSizeDwords
+            });
+        }
+
         if (options.imageManager) {
             this.imageManager = options.imageManager;
         } else {

@@ -33,6 +33,8 @@ export type ContextOptions = {
 class Context {
     gl: WebGL2RenderingContext;
     maxTextureSize: number;
+    maxUniformBlockSize: number;
+    maxUniformBufferBindings: number;
 
     clearColor: ClearColor;
     clearDepth: ClearDepth;
@@ -158,6 +160,11 @@ class Context {
         this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query_webgl2');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+        // Query UBO limits for dynamic sizing (WebGL2 minimum: 16KB, 36 binding points)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        this.maxUniformBlockSize = gl.getParameter(gl.MAX_UNIFORM_BLOCK_SIZE);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        this.maxUniformBufferBindings = gl.getParameter(gl.MAX_UNIFORM_BUFFER_BINDINGS);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.extBlendFuncExtended = gl.getExtension('WEBGL_blend_func_extended');
     }

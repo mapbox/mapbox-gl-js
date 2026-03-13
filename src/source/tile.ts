@@ -179,6 +179,8 @@ class Tile {
     _globeTileDebugTextBuffer: VertexBuffer | null | undefined;
     _lastUpdatedBrightness: number | null | undefined;
     _hasAppearances: boolean | null;
+    _lastAvailableImagesCount: number;
+    _firstPrepareComplete: boolean;
 
     worldview: string | undefined;
 
@@ -203,6 +205,8 @@ class Tile {
         if (painter && painter.style) {
             this._lastUpdatedBrightness = painter.style.getBrightness();
         }
+        this._lastAvailableImagesCount = 0;
+        this._firstPrepareComplete = false;
 
         // Counts the number of times a response was already expired when
         // received. We're using this to add a delay when making a new request
@@ -498,16 +502,41 @@ class Tile {
             return;
         }
         const brightness = painter.style.getBrightness();
+        const availableImages = painter.style.listImages();
+        const currentImagesCount = availableImages.length;
+
+        // Check for paint property updates
+        const updatedPaintProps = painter.style._changes.getUpdatedPaintProperties();
+        const hasPaintUpdate = Object.keys(this.buckets).some(id => {
+            const bucket = this.buckets[id];
+            return bucket.layers.some(layer => updatedPaintProps.has(layer.fqid));
+        });
+
+        // Check for transitions (e.g., opacity animations)
+        const hasTransition = Object.keys(this.buckets).some(id => {
+            const bucket = this.buckets[id];
+            return bucket.layers.some(layer => layer.hasTransition && layer.hasTransition());
+        });
+
+        // Track image count changes (only after first prepare to avoid sprite loading false positives)
+        const hasImageCountChanged = this._firstPrepareComplete && currentImagesCount !== this._lastAvailableImagesCount;
+
         if (this._hasAppearances === null) {
             this._hasAppearances = this.hasAppearances(painter);
         }
-        if (!this._lastUpdatedBrightness && !brightness && !this._hasAppearances) {
+
+        // Update tracking state BEFORE early returns to ensure consistent state
+        const isBrightnessChanged = this._lastUpdatedBrightness !== brightness;
+        this._lastAvailableImagesCount = currentImagesCount;
+        this._firstPrepareComplete = true;
+
+        if (!this._lastUpdatedBrightness && !brightness && !this._hasAppearances && !hasPaintUpdate && !hasTransition && !hasImageCountChanged) {
             return;
         }
-        if (!this._hasAppearances && this._lastUpdatedBrightness && brightness && Math.abs(this._lastUpdatedBrightness - brightness) < 0.001) {
+        if (!this._hasAppearances && !hasPaintUpdate && !hasTransition && !hasImageCountChanged && this._lastUpdatedBrightness && brightness && Math.abs(this._lastUpdatedBrightness - brightness) < 0.001) {
             return;
         }
-        this.updateBuckets(painter, this._lastUpdatedBrightness !== brightness);
+        this.updateBuckets(painter, isBrightnessChanged, undefined, hasImageCountChanged || hasPaintUpdate || hasTransition, updatedPaintProps, availableImages);
         this._lastUpdatedBrightness = brightness;
     }
 
@@ -686,7 +715,8 @@ class Tile {
             return;
         }
 
-        this.updateBuckets(painter, false, states);
+        const availableImages = painter.style.listImages();
+        this.updateBuckets(painter, false, states, undefined, undefined, availableImages);
     }
 
     hasAppearances(painter: Painter) {
@@ -699,12 +729,14 @@ class Tile {
         return false;
     }
 
-    updateBuckets(painter: Painter, isBrightnessChanged?: boolean, states?: LayerFeatureStates) {
+    updateBuckets(painter: Painter, isBrightnessChanged?: boolean, states?: LayerFeatureStates, needsSymbolUBOUpdate?: boolean, updatedPaintProps?: Set<string>, availableImages?: ImageId[]) {
         if (!this.latestFeatureIndex) return;
         if (!painter.style) return;
 
-        const availableImages = painter.style.listImages();
+        const images = availableImages || painter.style.listImages();
         const brightness = painter.style.getBrightness();
+
+        const paintProps = updatedPaintProps || new Set<string>();
 
         for (const id in this.buckets) {
             if (!painter.style.hasLayer(id)) continue;
@@ -715,8 +747,13 @@ class Tile {
             const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
             const sourceCache = painter.style.getLayerSourceCache(bucketLayer);
 
+            const hasPaintUpdate = bucket.layers.some(layer => paintProps.has(layer.fqid));
+
+            // Get fresh layer reference for UBO updates when paint properties or images changed.
+            const freshLayerFromStyle = ((needsSymbolUBOUpdate || hasPaintUpdate) && bucket instanceof SymbolBucket) ? painter.style.getOwnLayer(id) : undefined;
+
             let sourceLayerStates: FeatureStates = (states && states[sourceLayerId]) || {};
-            if (!states) { // only fetch the full state if it's not an incremental state update
+            if (sourceCache && !states) { // only fetch the full state if it's not an incremental state update
                 sourceLayerStates = sourceCache._state.getState(sourceLayerId, undefined) as FeatureStates;
             }
 
@@ -724,10 +761,51 @@ class Tile {
             const withStateUpdates = Object.keys(sourceLayerStates).length > 0 && !isBrightnessChanged;
             bucket.hasAppearances = bucket.layers.some(layer => layer.appearances && layer.appearances.length > 0);
             const layers = withStateUpdates ? bucket.stateDependentLayers : bucket.layers;
-            if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged) {
+            if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged || hasPaintUpdate || needsSymbolUBOUpdate) {
                 const vtLayers = this.latestFeatureIndex.loadVTLayers();
                 const sourceLayer = vtLayers[sourceLayerId];
-                bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
+                bucket.update(sourceLayerStates, sourceLayer, images, imagePositions, layers, isBrightnessChanged, brightness, this.tileID.canonical);
+
+                // Handle UBO updates for paint/image property changes in symbol buckets.
+                // Skip when isBrightnessChanged: bucket.update() already called updateDynamicExpressions.
+                if ((needsSymbolUBOUpdate || hasPaintUpdate) && !isBrightnessChanged && bucket instanceof SymbolBucket && freshLayerFromStyle && freshLayerFromStyle.type === 'symbol') {
+                    const symbolBucket = bucket;
+
+                    // Re-evaluate all features with fresh paint properties or new images
+                    // TypeScript narrows freshLayerFromStyle to SymbolStyleLayer based on .type check
+                    if (symbolBucket.text && symbolBucket.text.uboBinder) {
+                        symbolBucket.text.uboBinder.updateDynamicExpressions(
+                            freshLayerFromStyle,
+                            sourceLayer,
+                            this.tileID.canonical,
+                            images,
+                            sourceLayerStates,
+                            brightness
+                        );
+                    }
+                    if (symbolBucket.icon && symbolBucket.icon.uboBinder) {
+                        symbolBucket.icon.uboBinder.updateDynamicExpressions(
+                            freshLayerFromStyle,
+                            sourceLayer,
+                            this.tileID.canonical,
+                            images,
+                            sourceLayerStates,
+                            brightness
+                        );
+                    }
+                }
+
+                // Upload updated UBO data for symbol buckets
+                if (bucket instanceof SymbolBucket) {
+                    const symbolBucket = bucket;
+                    const context = painter.context;
+                    if (symbolBucket.text && symbolBucket.text.uboBinder) {
+                        symbolBucket.text.uboBinder.upload(context);
+                    }
+                    if (symbolBucket.icon && symbolBucket.icon.uboBinder) {
+                        symbolBucket.icon.uboBinder.upload(context);
+                    }
+                }
             }
             if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged || bucket.hasAppearances) {
                 const globalProperties = {
@@ -736,7 +814,7 @@ class Tile {
                     brightness: painter.style.getBrightness() || 0,
                     worldview: painter.worldview
                 };
-                bucket.updateAppearances(this.tileID.canonical, sourceLayerStates, availableImages, globalProperties, painter.imageManager);
+                bucket.updateAppearances(this.tileID.canonical, sourceLayerStates, images, globalProperties, painter.imageManager);
             }
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
                 if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.uploadPending()) {

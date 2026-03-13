@@ -53,7 +53,9 @@ export default class MapWorker {
     referrer: string | null | undefined;
     dracoUrl: string | null | undefined;
     meshoptUrl: string | null | undefined;
-    brightness: number | undefined;
+    brightness: number | null | undefined;
+    maxUniformBufferBindings: number | null | undefined;
+    maxUniformBlockSizeDwords: number | null | undefined;
     imageRasterizer: ImageRasterizer;
     worldview: string | undefined;
     rtlPluginParsingListeners: Array<Callback<boolean>>;
@@ -203,6 +205,12 @@ export default class MapWorker {
 
     setBrightness(mapId: number, brightness: ActorMessages['setBrightness']['params'], callback: ActorMessages['setBrightness']['callback']) {
         this.brightness = brightness;
+        callback();
+    }
+
+    setContextParams(mapId: number, params: ActorMessages['setContextParams']['params'], callback: ActorMessages['setContextParams']['callback']) {
+        this.maxUniformBufferBindings = params.maxBindingPoints;
+        this.maxUniformBlockSizeDwords = params.maxUniformBlockSizeDwords;
         callback();
     }
 
@@ -430,7 +438,9 @@ export default class MapWorker {
                 isSpriteLoaded: this.isSpriteLoaded[mapId][scope],
                 tileProvider,
                 brightness: this.brightness,
-                worldview: this.worldview
+                worldview: this.worldview,
+                maxUniformBufferBindings: this.maxUniformBufferBindings,
+                maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords,
             });
         }
 
