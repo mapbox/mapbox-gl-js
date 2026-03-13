@@ -463,6 +463,7 @@ class LineBucket implements Bucket {
         const join = layout.get('line-join').evaluate(feature, {});
 
         const cap = layout.get('line-cap').evaluate(feature, {});
+        const collapse = layout.get('line-collapse') || false;
         const miterLimit = layout.get('line-miter-limit');
         const roundLimit = layout.get('line-round-limit');
         this.lineClips = this.lineFeatureClips(feature);
@@ -487,7 +488,7 @@ class LineBucket implements Bucket {
 
         if (this.elevationType === 'road') {
             const vertexOffset = this.layoutVertexArray.length;
-            const added = this.addElevatedRoadFeature(feature, geometry, canonical, elevationFeatures, join, cap, miterLimit, roundLimit);
+            const added = this.addElevatedRoadFeature(feature, geometry, canonical, elevationFeatures, join, cap, collapse, miterLimit, roundLimit);
 
             if (!added) {
                 // Feature is not elevated but is rendered as part of (road) elevated bucket.
@@ -505,7 +506,7 @@ class LineBucket implements Bucket {
                     };
 
                     const multiLineMetricsIndex = hasMapboxLineMetrics && info.parentIndex > 0 ? info.parentIndex : null;
-                    this.addLine(line, feature, canonical, join, cap, miterLimit, roundLimit, subseg, multiLineMetricsIndex);
+                    this.addLine(line, feature, canonical, join, cap, collapse, miterLimit, roundLimit, subseg, multiLineMetricsIndex);
                 }
 
                 this.fillNonElevatedRoadSegment(vertexOffset);
@@ -514,7 +515,7 @@ class LineBucket implements Bucket {
             for (let i = 0; i < geometry.length; i++) {
                 const line = geometry[i];
                 const multiLineMetricsIndex = hasMapboxLineMetrics && i > 0 ? i : null;
-                this.addLine(line, feature, canonical, join, cap, miterLimit, roundLimit, undefined, multiLineMetricsIndex);
+                this.addLine(line, feature, canonical, join, cap, collapse, miterLimit, roundLimit, undefined, multiLineMetricsIndex);
             }
         }
 
@@ -541,7 +542,7 @@ class LineBucket implements Bucket {
         return [clipped, linesInfo];
     }
 
-    private addElevatedRoadFeature(feature: BucketFeature, geometry: Array<Array<Point>>, canonical: CanonicalTileID, elevationFeatures: ElevationFeature[] | undefined, join: string, cap: string, miterLimit: number, roundLimit: number): boolean {
+    private addElevatedRoadFeature(feature: BucketFeature, geometry: Array<Array<Point>>, canonical: CanonicalTileID, elevationFeatures: ElevationFeature[] | undefined, join: string, cap: string, collapse: boolean, miterLimit: number, roundLimit: number): boolean {
         interface ElevatedGeometry {
             geometry: Point[];
             elevation: ElevationFeature;
@@ -567,7 +568,7 @@ class LineBucket implements Bucket {
         for (const elevated of elevatedGeometry) {
             const vertexOffset = this.layoutVertexArray.length;
 
-            this.addLine(elevated.geometry, feature, canonical, join, cap, miterLimit, roundLimit);
+            this.addLine(elevated.geometry, feature, canonical, join, cap, collapse, miterLimit, roundLimit);
 
             // Populate height information for each vertex
             const sampler = new ElevationFeatureSampler(canonical, elevated.elevationTileID);
@@ -623,7 +624,7 @@ class LineBucket implements Bucket {
         }
     }
 
-    addLine(vertices: Array<Point>, feature: BucketFeature, canonical: CanonicalTileID, join: string, cap: string, miterLimit: number, roundLimit: number, subsegment?: Subsegment, multiLineMetricsIndex?: number) {
+    addLine(vertices: Array<Point>, feature: BucketFeature, canonical: CanonicalTileID, join: string, cap: string, collapse: boolean, miterLimit: number, roundLimit: number, subsegment?: Subsegment, multiLineMetricsIndex?: number) {
         this.distance = 0;
         this.prevDistance = 0;
         this.scaledDistance = 0;
@@ -689,7 +690,7 @@ class LineBucket implements Bucket {
             this.updateScaledDistance();
         }
 
-        const isPolygon = vectorTileFeatureTypes[feature.type] === 'Polygon';
+        let isPolygon = vectorTileFeatureTypes[feature.type] === 'Polygon';
 
         // If the line has duplicate vertices at the ends, adjust start/length to remove them.
         let len = vertices.length;
@@ -702,7 +703,21 @@ class LineBucket implements Bucket {
         }
 
         // Ignore invalid geometry.
-        if (len < (isPolygon ? 3 : 2)) return;
+        const count = len - first;
+        if (count < (isPolygon ? 3 : 2)) {
+            if (count === 0 || !collapse) {
+                return;
+            }
+            // Allow lines/polygons to collapse to points
+            if (count === 1) {
+                if (len < vertices.length) {
+                    len++;
+                } else if (first > 0) {
+                    first--;
+                }
+                isPolygon = false;
+            }
+        }
 
         if (join === 'bevel') miterLimit = 1.05;
 
@@ -739,8 +754,14 @@ class LineBucket implements Bucket {
                 (isPolygon ? vertices[first + 1] : undefined) : // if it's a polygon, treat the last vertex like the first
                 vertices[i + 1]; // just the next vertex
 
-            // if two consecutive vertices exist, skip the current one
-            if (nextVertex && vertices[i].equals(nextVertex)) continue;
+            // if two consecutive vertices exist,
+            // skip the current one if collapse to point is not allowed or the line has more than 2 vertices.
+            const nextEqualsCurrent = nextVertex && vertices[i].equals(nextVertex);
+            if (nextEqualsCurrent) {
+                if (!collapse || len > 2) {
+                    continue;
+                }
+            }
 
             if (nextNormal) prevNormal = nextNormal;
             if (currentVertex) prevVertex = currentVertex;
@@ -751,7 +772,13 @@ class LineBucket implements Bucket {
             // Calculate the normal towards the next vertex in this line. In case
             // there is no next vertex, pretend that the line is continuing straight,
             // meaning that we are just using the previous normal.
-            nextNormal = nextVertex ? nextVertex.sub(currentVertex)._unit()._perp() : prevNormal;
+            // Fallback to a horizontal vector if there is no previous normal,
+            // (i.e. when a single line is collapsing to a point)
+            if (nextEqualsCurrent || !nextVertex) {
+                nextNormal = prevNormal || new Point(1, 0);
+            } else {
+                nextNormal = nextVertex.sub(currentVertex)._unit()._perp();
+            }
 
             // If we still don't have a previous normal, this is the beginning of a
             // non-closed line, so we're doing a straight "join".

@@ -2583,6 +2583,26 @@
       },
       "property-type": "data-driven"
     },
+    "line-collapse": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If true, consecutive identical vertices may collapse to a point.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "N/A yet",
+          "android": "N/A",
+          "ios": "N/A",
+          "macos": "N/A"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
     "line-join": {
       "type": "enum",
       "values": {
