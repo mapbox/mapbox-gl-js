@@ -18,7 +18,7 @@
       ]
     },
     "trees": {
-      "minzoom": 14.5,
+      "minzoom": 14,
       "type": "geojson",
       "data": "local://data/trees.geojson"
     }

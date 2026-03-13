@@ -2,10 +2,11 @@
   "version": 8,
    "metadata": {
     "test": {
-      "allowed": 0.00154,
+      "allowed": 0.00195,
       "width": 512,
       "height": 512,
       "operations": [
+        ["setPadding", {"top": 256, "left": 0, "bottom": 0, "right": 0}],
         ["wait"],
         ["wait"],
         ["wait"]
@@ -46,7 +47,7 @@
       ]
     }
   },
-  "zoom": 16.8,
+  "zoom": 16.4,
   "pitch": 65,
   "center": [
     11.574606,
@@ -89,7 +90,7 @@
       "type": "building",
       "source": "composite",
       "source-layer": "procedural_buildings",
-      "minzoom": 15.5,
+      "minzoom": 15,
       "layout": {
         "building-roof-shape": "parapet",
         "building-height": [
@@ -122,10 +123,11 @@
       }
     },
     {
-      "minzoom": 14.5,
+      "minzoom": 14,
       "type": "model",
       "source": "file-system-tiles",
       "paint": {
+        "model-cutoff-fade-range": 0.9,
         "model-color-mix-intensity": [
           "match",
           [

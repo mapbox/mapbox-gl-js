@@ -45,10 +45,10 @@
     }
   },
   "pitch": 70,
-  "zoom": 16,
+  "zoom": 15.9,
   "bearing": 180,
   "center": [
-    11.5745, 48.149
+    11.5749, 48.150
   ],
   "layers": [
     {
@@ -383,7 +383,7 @@
       "id": "road-label"
     },
     {
-      "minzoom": 14.6,
+      "minzoom": 14,
       "type": "model",
       "source": "file-system-tiles",
       "paint": {
