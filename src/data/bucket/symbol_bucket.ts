@@ -41,7 +41,7 @@ import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
 import {evaluateSizeForFeature, evaluateSizeForZoom, getSizeData, SIZE_PACK_FACTOR} from '../../symbol/symbol_size';
-import {computeFontScale, getAppearanceIconValues, getAppearanceTextValues, getScaledImageVariant, getSizeDataFromKind, MAX_PACKED_SIZE} from '../../symbol/symbol_layout';
+import {computeFontScale, getAppearanceIconValues, getAppearanceTextValues, getScaledImageVariant, packSizeForVertex, MAX_PACKED_SIZE} from '../../symbol/symbol_layout';
 import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Formatted from '../../style-spec/expression/types/formatted';
@@ -58,6 +58,7 @@ import {clamp} from '../../util/util';
 import {tileToMeter} from '../../geo/mercator_coordinate';
 import {type CollisionBoxArray, type CollisionBox, type SymbolInstance, SymbolOrientationArray} from '../array_types';
 import {type SymbolQuad, getIconQuads, getGlyphQuads} from '../../symbol/quads';
+import {FeatureAppearances, UNINITIALIZED_APPEARANCE_INDEX} from './feature_appearances';
 
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type Anchor from '../../symbol/anchor';
@@ -95,21 +96,68 @@ import type SymbolAppearance from '../../style/appearance';
 import type {AppearanceProps} from '../../style/appearance_properties';
 import type {FeatureState, GlobalProperties} from '../../style-spec/expression';
 import type ImageManager from '../../render/image_manager';
+import type {AppearanceUpdateResult} from './feature_appearances';
 
 export type AppearanceFeatureData = {
+    // Identity — set during populate() on the worker thread, never mutated afterwards.
     id?: string | number | null;
     properties: Record<PropertyKey, unknown>;
     usesAppearanceIconAsPlaceholder: boolean;
+
+    // Cached vertex snapshots — written on first appearance activation, restored on deactivation.
+    layoutBasedIconVertexData: Uint16Array;
+    layoutBasedTextVertexData: Uint16Array;
+
+    // Mutable render state — updated every frame by updateAppearances() on the main thread.
     isUsingAppearanceIconVertexData: boolean;
     isUsingAppearanceTextVertexData: boolean;
-    layoutBasedIconVertexData: number[];
-    layoutBasedTextVertexData: number[];
-    activeAppearance: SymbolAppearance | null;
+    // Index into layer.appearances[]; -1 means no appearance is active (default rendering).
+    // Initialized to UNINITIALIZED_APPEARANCE_INDEX — ensures the first updateAppearances() call
+    // always runs the full update path (so placeholder icons get zeroed, etc.).
+    activeAppearanceIndex: number;
+
+    // Layout dependencies — written during worker-thread layout (addTextVertices), read on main thread.
     textShaping?: Shaping;
     iconTextFitPadding?: [number, number, number, number];
     fontScale?: number;
     textScaleFactor?: number;
-    appearanceIcon?: ImageVariant;
+};
+
+// Per-frame context passed to updateSymbolInstanceIconVertices.
+// Groups the parameters that are fixed for the entire updateAppearances() call
+// or evaluated once per feature from layout, separating them from per-instance
+// identifiers (symbolInstance, featureData, activeAppearance, evaluationFeature, vertexOffset).
+type AppearanceIconUpdateContext = {
+    // Shared fields (same order in both context types)
+    canonical: CanonicalTileID;
+    layer: SymbolStyleLayer;
+    featureState: FeatureState;
+    availableImages: Array<ImageId>;
+    // Icon-specific fields
+    globalProperties: GlobalProperties;
+    iconScaleFactor: number;
+    layoutIconOffset: [number, number];
+    layoutIconSize: number;
+    layoutIconRotate: number;
+};
+
+// Per-frame context passed to updateSymbolInstanceTextVertices.
+type AppearanceTextUpdateContext = {
+    // Shared fields (same order in both context types)
+    canonical: CanonicalTileID;
+    layer: SymbolStyleLayer;
+    featureState: FeatureState;
+    availableImages: Array<ImageId>;
+    // Text-specific fields
+    textScaleFactor: number;
+    imageMap: Map<StringifiedImageVariant, StyleImage>;
+    layoutTextOffset: [number, number];
+    layoutTextSize: number;
+    layoutTextRotate: number;
+    layoutMinZoomSize: number;
+    layoutMaxZoomSize: number;
+    layoutTextSizeMinZoom: number;
+    layoutTextSizeMaxZoom: number;
 };
 
 export type SingleCollisionBox = {
@@ -249,6 +297,10 @@ function containsRTLText(formattedText: Formatted): boolean {
     return false;
 }
 
+// Number of uint16 values per vertex in SymbolLayoutArray.
+// Layout: [tileAnchorX, tileAnchorY, ox, oy, tx, ty, aSizeX, aSizeY, pixelOffsetX, pixelOffsetY, minFontScaleX, minFontScaleY]
+const SYMBOL_VERTEX_STRIDE = 12;
+
 export class SymbolBuffers {
     layoutVertexArray: SymbolLayoutArray;
     layoutVertexBuffer: VertexBuffer;
@@ -364,31 +416,28 @@ export class SymbolBuffers {
         return {batchIndices, batchSegments};
     }
 
-    getSymbolVertexData(offset, numVertices) {
-        const data: number[] = [];
+    // Returns a copy of [numVertices] vertices starting at [offset] as a Uint16Array snapshot.
+    // Use restoreSymbolVertexData to write it back.
+    snapshotSymbolVertexData(offset: number, numVertices: number): Uint16Array {
         assert(offset >= 0 && offset < this.layoutVertexArray.length, 'Invalid vertex offset');
+        const start = offset * SYMBOL_VERTEX_STRIDE;
+        return this.layoutVertexArray.uint16.slice(start, start + numVertices * SYMBOL_VERTEX_STRIDE);
+    }
 
-        const uint16Array = this.layoutVertexArray.uint16;
-
-        // SymbolLayoutArray has 12 uint16 values per vertex: [tileAnchorX, tileAnchorY, ox, oy, tx, ty, ...]
-        // Position offsets (ox, oy) are at indices 2 and 3
-        // Texture coordinates (tx, ty) are at indices 4 and 5
-        // Icon size (aSizeY) is at 7, and we pack the last bit with isAppearanceIcon flag
-        // pixel offsets are at 8 and 9
-        for (let i = 0; i < numVertices; ++i) {
-            const baseOffset = (offset + i) * 12;
-            data.push(...uint16Array.slice(baseOffset, baseOffset + 12));
-        }
-        return data;
+    // Writes a snapshot (produced by snapshotSymbolVertexData) back into the vertex array at [offset].
+    restoreSymbolVertexData(offset: number, snapshot: Uint16Array) {
+        assert(
+            offset >= 0 && offset * SYMBOL_VERTEX_STRIDE + snapshot.length <= this.layoutVertexArray.uint16.length,
+            'Invalid restore offset'
+        );
+        this.layoutVertexArray.uint16.set(snapshot, offset * SYMBOL_VERTEX_STRIDE);
     }
 
     updateSymbolVertexData(vertexIndex: number, anchorX: number, anchorY: number, newOx: number, newOy: number, newTx: number, newTy: number, newSizeX: number, newSizeY: number, pixelOffsetX: number, pixelOffsetY: number, minFontScaleX: number, minFontScaleY: number) {
         assert(vertexIndex >= 0 && vertexIndex < this.layoutVertexArray.length, 'Invalid vertex start index');
 
         const uint16Array = this.layoutVertexArray.uint16;
-
-        // Update vertex data in place
-        const baseOffset = vertexIndex * 12;
+        const baseOffset = vertexIndex * SYMBOL_VERTEX_STRIDE;
         uint16Array[baseOffset] = anchorX;
         uint16Array[baseOffset + 1] = anchorY;
         uint16Array[baseOffset + 2] = newOx;
@@ -585,8 +634,7 @@ class SymbolBucket implements Bucket {
     glyphOffsetArray: GlyphOffsetArray;
     lineVertexArray: SymbolLineVertexArray;
     features: Array<SymbolFeature>;
-    appearanceFeatureData: Array<AppearanceFeatureData>;
-    featureToAppearanceIndex: {[key: number]: number}; // Maps between filtered feature indexes and appearance feature data indexes
+    featureAppearanceData: Map<number, AppearanceFeatureData>;
     symbolInstances: SymbolInstanceArray;
     hasAnySecondaryIcon: boolean;
     collisionArrays: Array<CollisionArrays>;
@@ -643,7 +691,7 @@ class SymbolBucket implements Bucket {
     maxUniformBlockSizeDwords: number | null | undefined;
     iconAtlasPositions: ImagePositionMap;
     hasAppearances: boolean | null;
-    lastActiveApperance: number | null;
+    featureAppearances: FeatureAppearances | null;
 
     constructor(options: BucketParameters<SymbolStyleLayer>) {
         this.collisionBoxArray = options.collisionBoxArray;
@@ -710,8 +758,8 @@ class SymbolBucket implements Bucket {
         this.replacementUpdateTime = 0;
         this.hasAnySecondaryIcon = false;
         this.hasAppearances = null;
-        this.lastActiveApperance = null;
-        this.featureToAppearanceIndex = {};
+        this.featureAppearances = null;
+        this.featureAppearanceData = new Map();
     }
 
     hasAnyAppearanceProperty(properties: keyof AppearanceProps | (keyof AppearanceProps)[]): boolean {
@@ -723,11 +771,12 @@ class SymbolBucket implements Bucket {
 
         const propertiesToCheck = Array.isArray(properties) ? properties : [properties];
         return appearances.some(appearance => {
-            return propertiesToCheck.some(propertyName => {
-                const property = appearance.getProperty(propertyName);
-                return property !== undefined && property !== null;
-            });
+            return propertiesToCheck.some(propertyName => appearance.hasProperty(propertyName));
         });
+    }
+
+    getAppearanceFeatureData(featureIndex: number): AppearanceFeatureData | undefined {
+        return this.featureAppearanceData.get(featureIndex);
     }
 
     createArrays() {
@@ -781,7 +830,7 @@ class SymbolBucket implements Bucket {
         }
 
         let effectiveIconSize = 1;
-        const unevaluatedIconSize = activeAppearance.getUnevaluatedProperties()._values['icon-size'];
+        const unevaluatedIconSize = activeAppearance.getUnevaluatedProperty('icon-size') as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
         const iconSizeData = getSizeData(this.zoom, unevaluatedIconSize, this.worldview, availableImages);
         const sizeValue = evaluateSizeForZoom(iconSizeData, currentZoom);
         if (iconSizeData.kind === 'constant' || iconSizeData.kind === 'camera') {
@@ -864,7 +913,7 @@ class SymbolBucket implements Bucket {
         const symbolSortKey = layout.get('symbol-sort-key');
 
         this.features = [];
-        this.appearanceFeatureData = [];
+        this.featureAppearanceData = new Map();
 
         if (!hasText && !hasIcon && !hasAppearanceIcons) {
             return;
@@ -978,19 +1027,18 @@ class SymbolBucket implements Bucket {
                 sortKey
             };
             this.features.push(symbolFeature);
-            this.featureToAppearanceIndex[index] = this.appearanceFeatureData.length;
 
             // Store minimal data needed for appearance evaluation
             // Use the promoted ID from IndexedFeature (resolved in worker thread) instead of raw feature.id
-            this.appearanceFeatureData.push({
+            this.featureAppearanceData.set(index, {
                 id, // This is already the promoted ID from IndexedFeature
                 properties: feature.properties,
                 usesAppearanceIconAsPlaceholder: usesAppearanceIconAsFallback,
                 isUsingAppearanceIconVertexData: false,
                 isUsingAppearanceTextVertexData: false,
-                layoutBasedIconVertexData: [],
-                layoutBasedTextVertexData: [],
-                activeAppearance: null
+                layoutBasedIconVertexData: new Uint16Array(0),
+                layoutBasedTextVertexData: new Uint16Array(0),
+                activeAppearanceIndex: UNINITIALIZED_APPEARANCE_INDEX
             });
 
             if (icon) {
@@ -1074,9 +1122,7 @@ class SymbolBucket implements Bucket {
     ): ImageVariant | undefined {
         let icon: ResolvedImage;
         let iconPrimary: ImageVariant;
-        const unevaluatedProperties = appearance.getUnevaluatedProperties();
-        const hasIconImage = unevaluatedProperties._values['icon-image'].value !== undefined;
-        if (hasIconImage) {
+        if (appearance.hasProperty('icon-image')) {
             const resolvedTokens = layer.getAppearanceValueAndResolveTokens(appearance, 'icon-image', evaluationFeature, canonical, availableImages);
             icon = this.getResolvedImageFromTokens(resolvedTokens as string);
         } else {
@@ -1085,9 +1131,9 @@ class SymbolBucket implements Bucket {
         }
 
         if (icon) {
-            const unevaluatedIconSize = appearance.hasProperty('icon-size') ?
-                unevaluatedProperties._values['icon-size'] :
-                layer._unevaluatedLayout._values['icon-size'];
+            const unevaluatedIconSize = (appearance.hasProperty('icon-size') ?
+                appearance.getUnevaluatedProperty('icon-size') :
+                layer._unevaluatedLayout._values['icon-size']) as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
             const iconSizeData = getSizeData(this.zoom, unevaluatedIconSize, this.worldview, availableImages);
             const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor, this.worldview, availableImages);
             iconPrimary = imageVariant.iconPrimary;
@@ -1099,27 +1145,21 @@ class SymbolBucket implements Bucket {
     private updateSymbolInstanceIconVertices(
         symbolInstance: SymbolInstance,
         featureData: AppearanceFeatureData,
-        activeAppearance: SymbolAppearance | null,
+        activeAppearanceIndex: number,
         evaluationFeature: EvaluationFeature,
         vertexOffset: number,
-        canonical: CanonicalTileID,
-        availableImages: Array<ImageId>,
-        globalProperties: GlobalProperties,
-        layer: SymbolStyleLayer,
-        iconScaleFactor: number,
-        featureState: FeatureState,
-        layoutIconOffset: [number, number],
-        layoutIconSize: number,
-        layoutIconRotate: number,
+        ctx: AppearanceIconUpdateContext,
     ): {vertexOffsetDelta: number; hasChanges: boolean} {
+        const {canonical, availableImages, globalProperties, layer, iconScaleFactor, featureState, layoutIconOffset, layoutIconSize, layoutIconRotate} = ctx;
         if (symbolInstance.placedIconSymbolIndex < 0) {
             return {vertexOffsetDelta: 0, hasChanges: false};
         }
 
-        if (featureData.activeAppearance === activeAppearance) {
+        if (featureData.activeAppearanceIndex === activeAppearanceIndex) {
             return {vertexOffsetDelta: symbolInstance.numIconVertices, hasChanges: false};
         }
 
+        const activeAppearance = activeAppearanceIndex >= 0 ? layer.appearances[activeAppearanceIndex] : null;
         if (activeAppearance) {
             const minimalFeature: SymbolFeature = {
                 sortKey: undefined,
@@ -1174,7 +1214,7 @@ class SymbolBucket implements Bucket {
                 // Store the layout-based vertex data to restore it later if it's the first time we use an appearance for this feature
                 if (!featureData.isUsingAppearanceIconVertexData) {
                     featureData.isUsingAppearanceIconVertexData = true;
-                    featureData.layoutBasedIconVertexData = this.icon.getSymbolVertexData(vertexOffset, symbolInstance.numIconVertices);
+                    featureData.layoutBasedIconVertexData = this.icon.snapshotSymbolVertexData(vertexOffset, symbolInstance.numIconVertices);
                 }
 
                 // Update vertex data - only update as many quads as were allocated during layout
@@ -1214,33 +1254,19 @@ class SymbolBucket implements Bucket {
                 return {vertexOffsetDelta: symbolInstance.numIconVertices, hasChanges: true};
             }
         } else if (featureData.usesAppearanceIconAsPlaceholder) {
-            // For features that use the placeholder icon without active appearances, hide the icon by setting texture coordinates to zero
-            // This effectively makes the icon invisible while preserving the vertex buffer structure
-            if (this.layers[0].appearances && this.layers[0].appearances.length > 0) {
-                // Only hide if there are appearances but none are active (this means we had a placeholder)
-                this.icon.updateSymbolVertexData(vertexOffset, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-                this.icon.updateSymbolVertexData(vertexOffset + 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-                this.icon.updateSymbolVertexData(vertexOffset + 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-                this.icon.updateSymbolVertexData(vertexOffset + 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-                return {vertexOffsetDelta: symbolInstance.numIconVertices, hasChanges: true};
-            }
+            // Hide the placeholder icon when no appearance is active: zero out texture coordinates
+            // so the quad is invisible while the vertex buffer structure is preserved.
+            // usesAppearanceIconAsPlaceholder can only be true when appearances existed at populate() time.
+            this.icon.updateSymbolVertexData(vertexOffset, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            this.icon.updateSymbolVertexData(vertexOffset + 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            this.icon.updateSymbolVertexData(vertexOffset + 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            this.icon.updateSymbolVertexData(vertexOffset + 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            return {vertexOffsetDelta: symbolInstance.numIconVertices, hasChanges: true};
         } else if (featureData.isUsingAppearanceIconVertexData) {
-            // If there are no active appearances but there were before, the vertex data will
-            // still point to the active appearance. We need to reset it to use the layout icon
-            const numItemsPerVertex = 12;
-            const layoutNumVertices = featureData.layoutBasedIconVertexData.length / numItemsPerVertex;
-            for (let i = 0; i < layoutNumVertices; ++i) {
-                const base = i * numItemsPerVertex;
-                this.icon.updateSymbolVertexData(vertexOffset + i, featureData.layoutBasedIconVertexData[base + 0],
-                    featureData.layoutBasedIconVertexData[base + 1], featureData.layoutBasedIconVertexData[base + 2],
-                    featureData.layoutBasedIconVertexData[base + 3], featureData.layoutBasedIconVertexData[base + 4],
-                    featureData.layoutBasedIconVertexData[base + 5], featureData.layoutBasedIconVertexData[base + 6],
-                    featureData.layoutBasedIconVertexData[base + 7], featureData.layoutBasedIconVertexData[base + 8],
-                    featureData.layoutBasedIconVertexData[base + 9], featureData.layoutBasedIconVertexData[base + 10],
-                    featureData.layoutBasedIconVertexData[base + 11]);
-            }
+            // No active appearance but vertex buffer still holds appearance data — restore original layout vertices.
+            this.icon.restoreSymbolVertexData(vertexOffset, featureData.layoutBasedIconVertexData);
             featureData.isUsingAppearanceIconVertexData = false;
-            return {vertexOffsetDelta: layoutNumVertices, hasChanges: true};
+            return {vertexOffsetDelta: featureData.layoutBasedIconVertexData.length / SYMBOL_VERTEX_STRIDE, hasChanges: true};
         }
         return {vertexOffsetDelta: symbolInstance.numIconVertices, hasChanges: false};
     }
@@ -1248,23 +1274,12 @@ class SymbolBucket implements Bucket {
     private updateSymbolInstanceTextVertices(
         symbolInstance: SymbolInstance,
         featureData: AppearanceFeatureData,
-        activeAppearance: SymbolAppearance | null,
+        activeAppearanceIndex: number,
         evaluationFeature: EvaluationFeature,
         vertexOffset: number,
-        canonical: CanonicalTileID,
-        layer: SymbolStyleLayer,
-        textScaleFactor: number,
-        imageMap: Map<StringifiedImageVariant, StyleImage>,
-        featureState: FeatureState,
-        layoutTextOffset: [number, number],
-        layoutTextSize: number,
-        layoutTextRotate: number,
-        layoutMinZoomSize: number,
-        layoutMaxZoomSize: number,
-        layoutTextSizeMinZoom: number,
-        layoutTextSizeMaxZoom: number,
-        availableImages?: Array<ImageId>
+        ctx: AppearanceTextUpdateContext,
     ): {vertexOffsetDelta: number; hasChanges: boolean} {
+        const {canonical, layer, textScaleFactor, imageMap, featureState, layoutTextOffset, layoutTextSize, layoutTextRotate, layoutMinZoomSize, layoutMaxZoomSize, layoutTextSizeMinZoom, layoutTextSizeMaxZoom, availableImages} = ctx;
         const hasHorizontalText = symbolInstance.numHorizontalGlyphVertices > 0;
         const hasVerticalText = symbolInstance.numVerticalGlyphVertices > 0;
         const hasText = hasHorizontalText || hasVerticalText;
@@ -1273,10 +1288,11 @@ class SymbolBucket implements Bucket {
             return {vertexOffsetDelta: hasText ? symbolInstance.numHorizontalGlyphVertices + symbolInstance.numVerticalGlyphVertices : 0, hasChanges: false};
         }
 
-        if (featureData.activeAppearance === activeAppearance) {
+        if (featureData.activeAppearanceIndex === activeAppearanceIndex) {
             return {vertexOffsetDelta: symbolInstance.numHorizontalGlyphVertices + symbolInstance.numVerticalGlyphVertices, hasChanges: false};
         }
 
+        const activeAppearance = activeAppearanceIndex >= 0 ? layer.appearances[activeAppearanceIndex] : null;
         if (activeAppearance && featureData.textShaping) {
             // Get appearance-based text properties and fallback to layout ones
             const {appearanceTextOffset: textOffset, appearanceTextRotate: textRotate, appearanceTextSize: textSizeValue} = getAppearanceTextValues(activeAppearance, layer, evaluationFeature as SymbolFeature, canonical, layoutTextOffset, layoutTextRotate, layoutTextSize);
@@ -1326,7 +1342,7 @@ class SymbolBucket implements Bucket {
             // Calculate size vertex data with appearance text-size
             const minZoomSize = textSizeValue && textSizeData.kind === 'composite' ? unevaluatedTextSize.possiblyEvaluate(new EvaluationParameters(minZoom, {}), canonical).evaluate(evaluationFeature, featureState, canonical) : layoutMinZoomSize;
             const maxZoomSize = textSizeValue && textSizeData.kind === 'composite' ? unevaluatedTextSize.possiblyEvaluate(new EvaluationParameters(maxZoom, {}), canonical).evaluate(evaluationFeature, featureState, canonical) : layoutMaxZoomSize;
-            const textSizeDataKind = getSizeDataFromKind(activeAppearance.name, textSizeData, textSizeValue, textScaleFactor, minZoomSize, maxZoomSize);
+            const textSizeDataKind = packSizeForVertex(activeAppearance.name, textSizeData, textSizeValue, textScaleFactor, minZoomSize, maxZoomSize);
             const textSizeY = Array.isArray(textSizeDataKind) ? textSizeDataKind[1] : textSizeValue;
             const symbolSizeX = 0; // Not used in appearances
             const symbolSizeY = (Math.min(MAX_PACKED_SIZE, Math.round(textSizeY * SIZE_PACK_FACTOR)) << 1) + 1; // Appearance flag
@@ -1334,7 +1350,7 @@ class SymbolBucket implements Bucket {
             // Store the layout-based vertex data to restore it later if it's the first time we use an appearance for this feature
             if (!featureData.isUsingAppearanceTextVertexData) {
                 featureData.isUsingAppearanceTextVertexData = true;
-                featureData.layoutBasedTextVertexData = this.text.getSymbolVertexData(vertexOffset, symbolInstance.numHorizontalGlyphVertices + symbolInstance.numVerticalGlyphVertices);
+                featureData.layoutBasedTextVertexData = this.text.snapshotSymbolVertexData(vertexOffset, symbolInstance.numHorizontalGlyphVertices + symbolInstance.numVerticalGlyphVertices);
             }
 
             // Update vertex data for text quads
@@ -1355,27 +1371,10 @@ class SymbolBucket implements Bucket {
 
             return {vertexOffsetDelta: symbolInstance.numHorizontalGlyphVertices + symbolInstance.numVerticalGlyphVertices, hasChanges: true};
         } else if (featureData.isUsingAppearanceTextVertexData) {
-            // If there are no active appearances but there were before, restore layout-based vertex data
-            const numItemsPerVertex = 12;
-            const layoutNumVertices = featureData.layoutBasedTextVertexData.length / numItemsPerVertex;
-            for (let i = 0; i < layoutNumVertices; ++i) {
-                const base = i * numItemsPerVertex;
-                this.text.updateSymbolVertexData(vertexOffset + i,
-                    featureData.layoutBasedTextVertexData[base + 0],
-                    featureData.layoutBasedTextVertexData[base + 1],
-                    featureData.layoutBasedTextVertexData[base + 2],
-                    featureData.layoutBasedTextVertexData[base + 3],
-                    featureData.layoutBasedTextVertexData[base + 4],
-                    featureData.layoutBasedTextVertexData[base + 5],
-                    featureData.layoutBasedTextVertexData[base + 6],
-                    featureData.layoutBasedTextVertexData[base + 7],
-                    featureData.layoutBasedTextVertexData[base + 8],
-                    featureData.layoutBasedTextVertexData[base + 9],
-                    featureData.layoutBasedTextVertexData[base + 10],
-                    featureData.layoutBasedTextVertexData[base + 11]);
-            }
+            // No active appearance but vertex buffer still holds appearance data — restore original layout vertices.
+            this.text.restoreSymbolVertexData(vertexOffset, featureData.layoutBasedTextVertexData);
             featureData.isUsingAppearanceTextVertexData = false;
-            return {vertexOffsetDelta: layoutNumVertices, hasChanges: true};
+            return {vertexOffsetDelta: featureData.layoutBasedTextVertexData.length / SYMBOL_VERTEX_STRIDE, hasChanges: true};
         } else {
             return {vertexOffsetDelta: symbolInstance.numHorizontalGlyphVertices + symbolInstance.numVerticalGlyphVertices, hasChanges: false};
         }
@@ -1636,10 +1635,10 @@ class SymbolBucket implements Bucket {
         this.uploaded = true;
     }
 
-    updateAppearances(canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties, imageManager?: ImageManager) {
+    updateAppearances(canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties, imageManager?: ImageManager, featureStateChanged: boolean = false) {
         // Note: featureState can be undefined or {} for features without feature-state
         // Appearances can activate based on zoom/pitch alone without feature-state
-        if (!canonical || !availableImages || !this.appearanceFeatureData) {
+        if (!canonical || !availableImages || !this.featureAppearanceData) {
             return false;
         }
         // Ensure featureState is at least an empty object for property evaluation
@@ -1654,6 +1653,17 @@ class SymbolBucket implements Bucket {
 
         const layer = this.layers[0];
         const layout = layer.layout;
+
+        // Create or recreate FeatureAppearances when the layer's appearances change structurally.
+        if (!this.featureAppearances ||
+            this.featureAppearances.appearancesVersion !== layer.appearancesVersion) {
+            this.featureAppearances = new FeatureAppearances(layer.appearances, layer.appearancesVersion);
+        }
+
+        const appearanceUpdateResult: AppearanceUpdateResult = this.featureAppearances.update(
+            globalProperties, featureStateChanged
+        );
+        if (appearanceUpdateResult.kind === 'no-changes') return false;
 
         // Prepare icon parameters
         let iconScaleFactor = 1;
@@ -1688,8 +1698,7 @@ class SymbolBucket implements Bucket {
 
         for (let s = 0; s < this.symbolInstances.length; s++) {
             const symbolInstance = this.symbolInstances.get(s);
-            const appearanceFeatureDataIndex = this.featureToAppearanceIndex[symbolInstance.featureIndex];
-            const featureData = appearanceFeatureDataIndex !== undefined ? this.appearanceFeatureData[appearanceFeatureDataIndex] : undefined;
+            const featureData = this.getAppearanceFeatureData(symbolInstance.featureIndex);
             if (!featureData) continue;
 
             const featureId = featureData.id;
@@ -1703,66 +1712,61 @@ class SymbolBucket implements Bucket {
                 geometry: [] // Geometry doesn't matter
             };
 
-            const activeAppearance = layer.appearances && layer.appearances.find(a => a.isActive({globals: globalProperties, feature: evaluationFeature, canonical, featureState: featureStateForThis}));
+            let activeAppearanceIndex: number;
+            if (appearanceUpdateResult.kind === 'all-features') {
+                activeAppearanceIndex = appearanceUpdateResult.appearanceIndex;
+            } else {
+                // 'per-feature': evaluate conditions with feature context
+                const found = layer.appearances ? layer.appearances.findIndex(a => a.isActive({globals: globalProperties, feature: evaluationFeature, canonical, featureState: featureStateForThis})) : -1;
+                activeAppearanceIndex = found >= 0 ? found : -1;
+            }
 
             if (hasTextData) {
                 const layoutTextSizeExpression = layout.get('text-size');
-                const layoutTextOffset = layout.get('text-offset').evaluate(evaluationFeature, featureStateForThis, canonical);
-                const layoutTextSize = layoutTextSizeExpression.evaluate(evaluationFeature, featureStateForThis, canonical);
-                const layoutTextRotate = layout.get('text-rotate').evaluate(evaluationFeature, featureStateForThis, canonical);
                 const textSizeDataMinZoom = this.textSizeData.kind === 'composite' ? this.textSizeData.minZoom : 0;
                 const textSizeDataMaxZoom = this.textSizeData.kind === 'composite' ? this.textSizeData.maxZoom : 0;
-                const minZoom = layoutTextSizeExpression.evaluate(evaluationFeature, {zoom: textSizeDataMinZoom}, canonical);
-                const maxZoom = layoutTextSizeExpression.evaluate(evaluationFeature, {zoom: textSizeDataMaxZoom}, canonical);
-                const textResult = this.updateSymbolInstanceTextVertices(
-                    symbolInstance,
-                    featureData,
-                    activeAppearance,
-                    evaluationFeature,
-                    textVertexOffset,
+                const textCtx: AppearanceTextUpdateContext = {
                     canonical,
                     layer,
+                    featureState: featureStateForThis,
+                    availableImages,
                     textScaleFactor,
                     imageMap,
-                    featureStateForThis,
-                    layoutTextOffset,
-                    layoutTextSize,
-                    layoutTextRotate,
-                    minZoom,
-                    maxZoom,
-                    textSizeDataMinZoom,
-                    textSizeDataMaxZoom,
-                    availableImages
+                    layoutTextOffset: layout.get('text-offset').evaluate(evaluationFeature, featureStateForThis, canonical),
+                    layoutTextSize: layoutTextSizeExpression.evaluate(evaluationFeature, featureStateForThis, canonical),
+                    layoutTextRotate: layout.get('text-rotate').evaluate(evaluationFeature, featureStateForThis, canonical),
+                    layoutMinZoomSize: layoutTextSizeExpression.evaluate(evaluationFeature, {zoom: textSizeDataMinZoom}, canonical),
+                    layoutMaxZoomSize: layoutTextSizeExpression.evaluate(evaluationFeature, {zoom: textSizeDataMaxZoom}, canonical),
+                    layoutTextSizeMinZoom: textSizeDataMinZoom,
+                    layoutTextSizeMaxZoom: textSizeDataMaxZoom,
+                };
+                const textResult = this.updateSymbolInstanceTextVertices(
+                    symbolInstance, featureData, activeAppearanceIndex, evaluationFeature, textVertexOffset, textCtx
                 );
                 textVertexOffset += textResult.vertexOffsetDelta;
                 hasTextChanges = hasTextChanges || textResult.hasChanges;
             }
 
             if (hasIconData) {
-                const layoutIconOffset = layout.get('icon-offset').evaluate(evaluationFeature, featureStateForThis, canonical);
-                const layoutIconSize = layout.get('icon-size').evaluate(evaluationFeature, featureStateForThis, canonical, availableImages);
-                const layoutIconRotate = layout.get('icon-rotate').evaluate(evaluationFeature, featureStateForThis, canonical);
-                const iconResult = this.updateSymbolInstanceIconVertices(
-                    symbolInstance,
-                    featureData,
-                    activeAppearance,
-                    evaluationFeature,
-                    iconVertexOffset,
+                const iconCtx: AppearanceIconUpdateContext = {
                     canonical,
+                    layer,
+                    featureState: featureStateForThis,
                     availableImages,
                     globalProperties,
-                    layer,
                     iconScaleFactor,
-                    featureStateForThis,
-                    layoutIconOffset,
-                    layoutIconSize,
-                    layoutIconRotate
+                    layoutIconOffset: layout.get('icon-offset').evaluate(evaluationFeature, featureStateForThis, canonical),
+                    layoutIconSize: layout.get('icon-size').evaluate(evaluationFeature, featureStateForThis, canonical, availableImages),
+                    layoutIconRotate: layout.get('icon-rotate').evaluate(evaluationFeature, featureStateForThis, canonical),
+                };
+                const iconResult = this.updateSymbolInstanceIconVertices(
+                    symbolInstance, featureData, activeAppearanceIndex, evaluationFeature, iconVertexOffset, iconCtx
                 );
                 iconVertexOffset += iconResult.vertexOffsetDelta;
                 hasIconChanges = hasIconChanges || iconResult.hasChanges;
             }
 
-            featureData.activeAppearance = activeAppearance;
+            featureData.activeAppearanceIndex = activeAppearanceIndex;
         }
 
         // Update GPU buffers if there were changes

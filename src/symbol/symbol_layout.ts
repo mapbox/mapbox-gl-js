@@ -667,6 +667,11 @@ function updateIconBoundingBoxes(input : {iconBBox: SymbolBoundingBox | null, ic
     }
 }
 
+// --- Appearance property evaluation helpers ---
+// Used by both the worker-thread layout phase and main-thread updateAppearances().
+// Not moved to appearance.ts because they depend on SymbolStyleLayer for token resolution,
+// which would create a circular import.
+
 export function getAppearanceIconValues(appearance: SymbolAppearance, symbolLayer: SymbolStyleLayer, feature: SymbolFeature,
     canonical: CanonicalTileID, iconOffset: [number, number], baseIconRotate: number, layoutIconSize: number, iconScaleFactor: number) {
     const appearanceIconOffsetValue = appearance.hasProperty('icon-offset') ?
@@ -977,14 +982,12 @@ function addFeature(bucket: SymbolBucket,
 
     // Store text shaping data for icon-text-fit and text appearance updates
     const hasTextAppearances = bucket.hasAnyAppearanceProperty(['text-size', 'text-offset', 'text-rotate']);
-    if ((iconTextFit !== 'none' || hasTextAppearances) && bucket.appearanceFeatureData && bucket.featureToAppearanceIndex[feature.index] < bucket.appearanceFeatureData.length) {
-        const featureData = bucket.appearanceFeatureData[bucket.featureToAppearanceIndex[feature.index]];
-        if (featureData) {
-            featureData.textShaping = defaultShaping;
-            featureData.iconTextFitPadding = layout.get('icon-text-fit-padding').evaluate(feature, {}, canonical);
-            featureData.fontScale = fontScale;
-            featureData.textScaleFactor = sizes.textScaleFactor;
-        }
+    const featureData = bucket.getAppearanceFeatureData(feature.index);
+    if ((iconTextFit !== 'none' || hasTextAppearances) && featureData) {
+        featureData.textShaping = defaultShaping;
+        featureData.iconTextFitPadding = layout.get('icon-text-fit-padding').evaluate(feature, {}, canonical);
+        featureData.fontScale = fontScale;
+        featureData.textScaleFactor = sizes.textScaleFactor;
     }
     const isGlobe = projection.name === 'globe';
 
@@ -1130,7 +1133,7 @@ function addTextVertices(bucket: SymbolBucket,
     const evaluatedTextSize = layer.layout.get('text-size').evaluate(feature, {}, canonical);
     const minZoomSize = sizes.compositeTextSizes ? sizes.compositeTextSizes[0].evaluate(feature, {}, canonical) : 0;
     const maxZoomSize = sizes.compositeTextSizes ? sizes.compositeTextSizes[1].evaluate(feature, {}, canonical) : 0;
-    const textSizeData = getSizeDataFromKind(bucket.layerIds[0], bucket.textSizeData, evaluatedTextSize, sizes.textScaleFactor, minZoomSize, maxZoomSize);
+    const textSizeData = packSizeForVertex(bucket.layerIds[0], bucket.textSizeData, evaluatedTextSize, sizes.textScaleFactor, minZoomSize, maxZoomSize);
 
     bucket.addSymbols(
         bucket.text,
@@ -1161,7 +1164,7 @@ function addTextVertices(bucket: SymbolBucket,
     return glyphQuads.length * 4;
 }
 
-export function getSizeDataFromKind(layerId: string, inputSizeData: SizeData, evaluatedTextSize: number, textScaleFactor: number,
+export function packSizeForVertex(layerId: string, inputSizeData: SizeData, evaluatedTextSize: number, textScaleFactor: number,
     minZoomSize: number, maxZoomSize: number
 ) {
     const sizeData = inputSizeData;
@@ -1380,7 +1383,7 @@ function addSymbol(bucket: SymbolBucket,
         const evaluatedIconSize = layer.layout.get('icon-size').evaluate(feature, {}, canonical, availableImages);
         const minZoomSize = sizes.compositeIconSizes ? sizes.compositeIconSizes[0].evaluate(feature, {}, canonical, availableImages) : 0;
         const maxZoomSize = sizes.compositeIconSizes ? sizes.compositeIconSizes[1].evaluate(feature, {}, canonical, availableImages) : 0;
-        const iconSizeData = getSizeDataFromKind(bucket.layerIds[0], bucket.iconSizeData, evaluatedIconSize, sizes.iconScaleFactor, minZoomSize, maxZoomSize);
+        const iconSizeData = packSizeForVertex(bucket.layerIds[0], bucket.iconSizeData, evaluatedIconSize, sizes.iconScaleFactor, minZoomSize, maxZoomSize);
 
         bucket.addSymbols(
             bucket.icon,
@@ -1591,10 +1594,7 @@ function calculateMaxIconQuadCount(
 
     // Check each appearance that has an icon to find maximum quad count needed
     for (const appearance of appearances) {
-        const unevaluatedProperties = appearance.getUnevaluatedProperties();
-        const iconImageProperty = unevaluatedProperties._values['icon-image'].value !== undefined;
-
-        if (iconImageProperty) {
+        if (appearance.hasProperty('icon-image')) {
             const appearanceIconImage = symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-image', feature, canonical, availableImages);
             if (appearanceIconImage) {
                 const icon = bucket.getResolvedImageFromTokens(appearanceIconImage as string);
@@ -1603,9 +1603,9 @@ function calculateMaxIconQuadCount(
                     // different sized versions of the same icon have the same number of stretchable
                     // areas, which is what we need but unfortunately, since imagePositions stores the
                     // position by the stringified sized icon we need to compute it
-                    const unevaluatedIconSize = appearance.hasProperty('icon-size') ?
-                        unevaluatedProperties._values['icon-size'] :
-                        unevaluatedLayout._values['icon-size'];
+                    const unevaluatedIconSize = (appearance.hasProperty('icon-size') ?
+                        appearance.getUnevaluatedProperty('icon-size') :
+                        unevaluatedLayout._values['icon-size']) as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
                     const iconSizeData = getSizeData(bucket.zoom, unevaluatedIconSize, bucket.worldview, availableImages);
                     const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, bucket.zoom, feature, bucket.pixelRatio, iconScaleFactor, bucket.worldview, availableImages);
                     const imagePosition = imagePositions.get(imageVariant.iconPrimary.toString());

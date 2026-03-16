@@ -814,7 +814,8 @@ class Tile {
                     brightness: painter.style.getBrightness() || 0,
                     worldview: painter.worldview
                 };
-                bucket.updateAppearances(this.tileID.canonical, sourceLayerStates, images, globalProperties, painter.imageManager);
+                const featureStateChanged = withStateUpdates && bucket.stateDependentLayers.length !== 0;
+                bucket.updateAppearances(this.tileID.canonical, sourceLayerStates, images, globalProperties, painter.imageManager, featureStateChanged);
             }
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
                 if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.uploadPending()) {

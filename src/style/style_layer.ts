@@ -70,6 +70,7 @@ class StyleLayer extends Evented {
     expressionDependencies: LayerExpressionDependencies;
     iconImageUseTheme: string | null | undefined;
     appearances: Array<SymbolAppearance>;
+    appearancesVersion: number;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _unevaluatedLayout: Layout<any>;
@@ -108,6 +109,7 @@ class StyleLayer extends Evented {
         this.options = options;
         this.iconImageUseTheme = iconImageUseTheme;
         this.appearances = new Array<SymbolAppearance>();
+        this.appearancesVersion = 0;
 
         this._featureFilter = {filter: () => true, needGeometry: false, needFeature: false};
         this._filterCompiled = false;
@@ -214,6 +216,7 @@ class StyleLayer extends Evented {
         appearances.forEach(a => {
             this.appearances.push(new SymbolAppearance(a.condition, a.name, a.properties as AppearanceProps, this.scope, this.options, this.iconImageUseTheme));
         });
+        this.appearancesVersion++;
     }
 
     possiblyEvaluateVisibility() {

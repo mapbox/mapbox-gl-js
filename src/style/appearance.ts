@@ -24,8 +24,12 @@ class SymbolAppearance {
     name?: string;
     properties?: PossiblyEvaluated<AppearanceProps>;
     unevaluatedLayout?: Layout<AppearanceProps>;
+    private readonly _conditionSpec: AppearanceSpecification["condition"];
+    private readonly _propertiesSpec: AppearanceProps | undefined;
 
     constructor(condition: AppearanceSpecification["condition"], name: string | undefined, properties: AppearanceProps | undefined, scope: string, options: ConfigOptions, iconImageUseTheme: string) {
+        this._conditionSpec = condition;
+        this._propertiesSpec = properties;
 
         const conditionSpec = (latest['appearance'] as Record<string, unknown>)['condition'] as StylePropertySpecification;
 

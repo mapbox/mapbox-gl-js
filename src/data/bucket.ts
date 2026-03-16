@@ -142,7 +142,7 @@ export interface Bucket {
      */
     destroy: (reload?: boolean) => void;
     updateFootprints: (id: UnwrappedTileID, footprints: Array<TileFootprint>) => void;
-    updateAppearances: (canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties, imageManager?: ImageManager) => void;
+    updateAppearances: (canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties, imageManager?: ImageManager, featureStateChanged?: boolean) => void;
 }
 
 export function deserialize(input: Array<Bucket>, style: Style): Record<string, Bucket> {
