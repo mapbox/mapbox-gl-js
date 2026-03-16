@@ -78,6 +78,14 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
     afterUpdate: undefined;
     _clear: undefined;
 
+    /**
+     * Constructs a new RasterTileSource.
+     *
+     * @param id The unique source ID.
+     * @param options The RasterSourceSpecification or compatible options object.
+     * @param dispatcher Dispatcher for worker communication.
+     * @param eventedParent Parent Evented object to bubble events.
+     */
     constructor(id: string, options: RasterSourceSpecification | RasterDEMSourceSpecification | RasterArraySourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
@@ -96,13 +104,20 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
         Object.assign(this, pick(options, ['url', 'scheme', 'tileSize']));
     }
 
+    /**
+     * Loads the TileJSON for this source.
+     *
+     * @param callback Optional callback invoked once the source is loaded or an error occurs.
+     */
     load(callback?: Callback<undefined>) {
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
+
         const worldview = this.map.getWorldview();
         this._tileJSONRequest = loadTileJSON(this._options, this.map._requestManager, null, worldview, (err, tileJSON) => {
             this._tileJSONRequest = null;
             this._loaded = true;
+
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
@@ -113,12 +128,13 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
                     this.rasterLayerIds = this.rasterLayers.map(layer => layer.id);
                 }
 
+                // Compute tile bounds to check if tiles exist for requested coordinates
                 this.tileBounds = TileBounds.fromTileJSON(tileJSON);
+
+                // Send analytics event for TileJSON usage
                 postTurnstileEvent(tileJSON.tiles);
 
-                // `content` is included here to prevent a race condition where `Style#updateSources` is called
-                // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives
-                // ref: https://github.com/mapbox/mapbox-gl-js/pull/4347#discussion_r104418088
+                // Fire metadata and content events to ensure map updates correctly
                 this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
                 this.fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
             }
@@ -127,20 +143,19 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
         });
     }
 
+    /** Returns true if the TileJSON has been loaded. */
     loaded(): boolean {
         return this._loaded;
     }
 
+    /** Called when the source is added to the map. */
     onAdd(map: Map) {
         this.map = map;
         this.load();
     }
 
     /**
-     * Reloads the source data and re-renders the map.
-     *
-     * @example
-     * map.getSource('source-id').reload();
+     * Reloads the source data and triggers a map re-render.
      */
     reload() {
         this.cancelTileJSONRequest();
@@ -149,19 +164,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
     }
 
     /**
-     * Sets the source `tiles` property and re-renders the map.
-     *
-     * @param {string[]} tiles An array of one or more tile source URLs, as in the TileJSON spec.
-     * @returns {RasterTileSource} Returns itself to allow for method chaining.
-     * @example
-     * map.addSource('source-id', {
-     *     type: 'raster',
-     *     tiles: ['https://some_end_point.net/{z}/{x}/{y}.png'],
-     *     tileSize: 256
-     * });
-     *
-     * // Set the endpoint associated with a raster tile source.
-     * map.getSource('source-id').setTiles(['https://another_end_point.net/{z}/{x}/{y}.png']);
+     * Sets the `tiles` property and reloads the source.
      */
     setTiles(tiles: Array<string>): this {
         this._options.tiles = tiles;
@@ -171,18 +174,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
     }
 
     /**
-     * Sets the source `url` property and re-renders the map.
-     *
-     * @param {string} url A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`.
-     * @returns {RasterTileSource} Returns itself to allow for method chaining.
-     * @example
-     * map.addSource('source-id', {
-     *     type: 'raster',
-     *     url: 'mapbox://mapbox.satellite'
-     * });
-     *
-     * // Update raster tile source to a new URL endpoint
-     * map.getSource('source-id').setUrl('mapbox://mapbox.satellite');
+     * Sets the `url` property and reloads the source.
      */
     setUrl(url: string): this {
         this.url = url;
@@ -192,21 +184,28 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
         return this;
     }
 
+    /** Called when the source is removed from the map. Cancels any pending TileJSON request. */
     onRemove(_: Map) {
         this.cancelTileJSONRequest();
     }
 
+    /** Returns a serializable representation of the source options. */
     serialize(): RasterSourceSpecification | RasterDEMSourceSpecification | RasterArraySourceSpecification {
         return Object.assign({}, this._options);
     }
 
+    /** Returns true if the given tileID is within this source's bounds. */
     hasTile(tileID: OverscaledTileID): boolean {
         return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
 
+    /**
+     * Loads a raster tile image, sets it as the tile texture, and updates tile state.
+     */
     loadTile(tile: Tile, callback: Callback<undefined>) {
         const use2x = browser.devicePixelRatio >= 2;
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), use2x, this.tileSize);
+
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), (error, data, responseHeaders) => {
             delete tile.request;
 
@@ -224,6 +223,8 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
 
             const expiryData = getExpiryDataFromHeaders(responseHeaders);
             if (this.map._refreshExpiredTiles) tile.setExpiryData(expiryData);
+
+            // Set the loaded image as the tile's texture
             tile.setTexture(data, this.map.painter);
             tile.state = 'loaded';
 
@@ -232,6 +233,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
         });
     }
 
+    /** Aborts a tile request if it's in progress. */
     abortTile(tile: Tile, callback?: Callback<undefined>) {
         if (tile.request) {
             tile.request.cancel();
@@ -240,14 +242,13 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
         if (callback) callback();
     }
 
+    /**
+     * Unloads a tile from memory.
+     * Preserves the texture in the cache if possible to reduce memory allocations.
+     */
     unloadTile(tile: Tile, callback?: Callback<undefined>) {
-        // Cache the tile texture to avoid re-allocating Textures if they'll just be reloaded
         if (tile.texture && tile.texture instanceof Texture) {
-            // Clean everything else up owned by the tile, but preserve the texture.
-            // Destroy first to prevent racing with the texture cache being popped.
             tile.destroy(false);
-
-            // Save the texture to the cache
             if (tile.texture && tile.texture instanceof Texture) {
                 this.map.painter.saveTileTexture(tile.texture);
             }
@@ -258,10 +259,12 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
         if (callback) callback();
     }
 
+    /** Raster sources do not have transitions, so always returns false. */
     hasTransition(): boolean {
         return false;
     }
 
+    /** Cancels any pending TileJSON request. */
     cancelTileJSONRequest() {
         if (!this._tileJSONRequest) return;
         this._tileJSONRequest.cancel();
