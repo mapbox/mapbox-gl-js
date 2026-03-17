@@ -125,7 +125,7 @@
             "green"]
         ],
         "model-color-mix-intensity": 0.2,
-        "model-cutoff-fade-range": 0.2
+        "model-cutoff-fade-range": 0.5
       }
     },
     {

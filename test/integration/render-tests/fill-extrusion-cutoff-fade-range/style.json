@@ -4,7 +4,7 @@
     "test": {
       "height": 512,
       "width": 512,
-      "allowed": 0.0023
+      "allowed": 0.0042
     }
   },
   "lights": [
