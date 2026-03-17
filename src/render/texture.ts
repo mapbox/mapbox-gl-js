@@ -37,6 +37,12 @@ type EmptyImage = {
 
 export type TextureImage = RGBAImage | AlphaImage | Float32Image | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageData | EmptyImage | ImageBitmap;
 
+export type TextureUpdateOptions = {
+    premultiply?: boolean;
+    position?: {x: number; y: number;};
+    recreateWhenResize?: boolean;
+};
+
 class Texture {
     context: Context;
     size: [number, number];
@@ -60,17 +66,18 @@ class Texture {
         this.update(image, {premultiply: options && options.premultiply});
     }
 
-    update(image: TextureImage, options?: {premultiply?: boolean; position?: {x: number; y: number;}} | null) {
+    update(image: TextureImage, options?: TextureUpdateOptions | null) {
         const srcWidth = (image && image instanceof HTMLVideoElement && image.width === 0) ? image.videoWidth : image.width;
         const srcHeight = (image && image instanceof HTMLVideoElement && image.height === 0) ? image.videoHeight : image.height;
         const {context} = this;
         const {gl} = context;
         const {x, y} = options && options.position ? options.position : {x: 0, y: 0};
+        const recreateWhenResize = options && options.recreateWhenResize !== undefined ? options.recreateWhenResize : true;
 
         const width = x + srcWidth;
         const height = y + srcHeight;
 
-        if (this.size && (this.size[0] !== width || this.size[1] !== height)) {
+        if (this.size && (this.size[0] !== width || this.size[1] !== height) && recreateWhenResize) {
             gl.bindTexture(gl.TEXTURE_2D, null);
             gl.deleteTexture(this.texture);
             this.texture = gl.createTexture();
