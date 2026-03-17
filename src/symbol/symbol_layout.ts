@@ -1,5 +1,5 @@
 import Anchor from './anchor';
-import {getAnchors, getCenterAnchor} from './get_anchors';
+import {getAnchors, getCenterAnchor, getStartAnchor, getEndAnchor} from './get_anchors';
 import {shapeText, shapeIcon, WritingMode, fitIconToText, isPositionedIcon, getPositionedIconSize, isFullyStretchableX, isFullyStretchableY} from './shaping';
 import {getGlyphQuads, getIconQuads, getIconQuadsNumber, type SymbolQuad} from './quads';
 import {warnOnce, degToRad, clamp} from '../util/util';
@@ -296,7 +296,7 @@ export type SymbolBucketData = {
     sizes: Sizes,
     hasAnySecondaryIcon: boolean,
     textAlongLine: boolean,
-    symbolPlacement: "point" | "line" | "line-center"
+    symbolPlacement: "point" | "line" | "line-center" | "line-start" | "line-end"
 };
 
 export function performSymbolLayout(bucket: SymbolBucket,
@@ -958,7 +958,7 @@ function addFeature(bucket: SymbolBucket,
                     iconTextFit: "none" | "width" | "height" | "both",
                     iconOffset: [number, number],
                     textAlongLine: boolean,
-                    symbolPlacement: "point" | "line" | "line-center",
+                    symbolPlacement: "point" | "line" | "line-center" | "line-start" | "line-end",
                     iconCollisionBounds?: SymbolBoundingBox | null,
                     iconVerticalCollisionBounds?: SymbolBoundingBox | null,
                     textCollisionBounds?: SymbolBoundingBox | null,
@@ -979,6 +979,15 @@ function addFeature(bucket: SymbolBucket,
     const fontScale = computeFontScale(layoutTextSize, sizes.textScaleFactor);
 
     const defaultShaping = getDefaultHorizontalShaping(shapedTextOrientations.horizontal) || shapedTextOrientations.vertical;
+
+    // For line-start/line-end placement, shift textOffset along the line so that
+    // all glyph offsets end up with the same sign (all positive for line-start,
+    // all negative for line-end). Centered text has glyph offsets ranging from
+    // negative to positive, but endpoint anchors can only traverse inward.
+    if (defaultShaping && (symbolPlacement === 'line-start' || symbolPlacement === 'line-end')) {
+        const shift = symbolPlacement === 'line-start' ? -defaultShaping.left : -defaultShaping.right;
+        textOffset = [textOffset[0] + shift, textOffset[1]];
+    }
 
     // Store text shaping data for icon-text-fit and text appearance updates
     const hasTextAppearances = bucket.hasAnyAppearanceProperty(['text-size', 'text-offset', 'text-rotate']);
@@ -1065,6 +1074,40 @@ function addFeature(bucket: SymbolBucket,
         for (const line of feature.geometry) {
             if (line.length > 1) {
                 const anchor = getCenterAnchor(
+                    line,
+                    textMaxAngle,
+                    shapedTextOrientations.vertical || defaultShaping,
+                    shapedIcon,
+                    glyphSize,
+                    textMaxBoxScale);
+                if (anchor) {
+                    addSymbolAtAnchor(line, anchor, canonical);
+                }
+            }
+        }
+    } else if (symbolPlacement === 'line-start') {
+        // No clipping, multiple lines per feature are allowed
+        // "lines" with only one point are ignored as in clipLines
+        for (const line of feature.geometry) {
+            if (line.length > 1) {
+                const anchor = getStartAnchor(
+                    line,
+                    textMaxAngle,
+                    shapedTextOrientations.vertical || defaultShaping,
+                    shapedIcon,
+                    glyphSize,
+                    textMaxBoxScale);
+                if (anchor) {
+                    addSymbolAtAnchor(line, anchor, canonical);
+                }
+            }
+        }
+    } else if (symbolPlacement === 'line-end') {
+        // No clipping, multiple lines per feature are allowed
+        // "lines" with only one point are ignored as in clipLines
+        for (const line of feature.geometry) {
+            if (line.length > 1) {
+                const anchor = getEndAnchor(
                     line,
                     textMaxAngle,
                     shapedTextOrientations.vertical || defaultShaping,
