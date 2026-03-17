@@ -3214,6 +3214,13 @@ class Style extends Evented<MapEvents> {
         return Object.assign({}, this.stylesheet.transition);
     }
 
+    setWorldview(worldview: string | undefined | null) {
+        if (worldview === this._worldview) return;
+        this._worldview = worldview;
+        this.dispatcher.broadcast('setWorldview', this._worldview);
+        this.reloadSources();
+    }
+
     serialize(): StyleSpecification {
         this._checkLoaded();
 

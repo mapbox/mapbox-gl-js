@@ -1411,7 +1411,7 @@ export class Map extends Camera {
 
         this._worldview = worldview;
         this._styleDirty = true;
-        this.style.reloadSources();
+        this.style.setWorldview(worldview);
 
         return this;
     }
