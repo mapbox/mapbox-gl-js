@@ -55,15 +55,15 @@ uniform highp sampler3D u_lutTexture;
 #ifdef USE_PAINT_PROPERTIES_UBO
 /// UBO-based paint property declarations.
 
-in lowp float opacity;
+in lowp float v_opacity;
 #ifdef RENDER_SDF
-in lowp vec4 fill_np_color;
-in lowp vec4 halo_np_color;
-in lowp float halo_width;
-in lowp float halo_blur;
+in lowp vec4 v_fill_np_color;
+in lowp vec4 v_halo_np_color;
+in lowp float v_halo_width;
+in lowp float v_halo_blur;
 #endif
 #ifdef LIGHTING_3D_MODE
-in lowp float emissive_strength;
+in lowp float v_emissive_strength;
 #endif
 
 #else
@@ -83,12 +83,21 @@ void main() {
 #ifdef USE_PAINT_PROPERTIES_UBO
     /// UBO-based paint property initializations.
 
-    vec4 fill_color;
-    vec4 halo_color;
+    lowp float opacity = v_opacity;
+    lowp vec4 fill_color = vec4(0.0);
+    lowp vec4 halo_color = vec4(0.0);
+    lowp float halo_width = 0.0;
+    lowp float halo_blur = 0.0;
 #ifdef RENDER_SDF
     ///  Pre-multiply colors by alpha.
-    fill_color = vec4(fill_np_color.rgb * fill_np_color.a, fill_np_color.a);
-    halo_color = vec4(halo_np_color.rgb * halo_np_color.a, halo_np_color.a);
+    fill_color = vec4(v_fill_np_color.rgb * v_fill_np_color.a, v_fill_np_color.a);
+    halo_color = vec4(v_halo_np_color.rgb * v_halo_np_color.a, v_halo_np_color.a);
+    halo_width = v_halo_width;
+    halo_blur = v_halo_blur;
+#endif
+    lowp float emissive_strength = 0.0;
+#ifdef LIGHTING_3D_MODE
+    emissive_strength = v_emissive_strength;
 #endif
 
 #else

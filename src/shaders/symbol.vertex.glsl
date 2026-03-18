@@ -211,15 +211,15 @@ layout(std140) uniform SymbolPaintPropertiesIndexUniform {
 } u_spp_index;
 
 /// Symbol paint properties need to be interpolated and passed to the fragment shader.
-out lowp float opacity;
+out lowp float v_opacity;
 #ifdef RENDER_SDF
-out lowp vec4 fill_np_color;
-out lowp vec4 halo_np_color;
-out lowp float halo_width;
-out lowp float halo_blur;
+out lowp vec4 v_fill_np_color;
+out lowp vec4 v_halo_np_color;
+out lowp float v_halo_width;
+out lowp float v_halo_blur;
 #endif
 #ifdef LIGHTING_3D_MODE
-out lowp float emissive_strength;
+out lowp float v_emissive_strength;
 #endif
 
 PropertyType getPropertyType(uint propertyIndex, uint dataDrivenMask, uint zoomDependentMask, uint offsetDwords) {
@@ -375,15 +375,16 @@ void main() {
     /// UBO-based paint property initializations.
 
     SymbolPaintProperties paint_properties = readSymbolPaintProperties();
-    opacity = paint_properties.opacity;
+    lowp float opacity = paint_properties.opacity;
+    v_opacity = opacity;
 #ifdef RENDER_SDF
-    fill_np_color = paint_properties.fill_np_color;
-    halo_np_color = paint_properties.halo_np_color;
-    halo_width = paint_properties.halo_width;
-    halo_blur = paint_properties.halo_blur;
+    v_fill_np_color = paint_properties.fill_np_color;
+    v_halo_np_color = paint_properties.halo_np_color;
+    v_halo_width = paint_properties.halo_width;
+    v_halo_blur = paint_properties.halo_blur;
 #endif
 #ifdef LIGHTING_3D_MODE
-    emissive_strength = paint_properties.emissive_strength;
+    v_emissive_strength = paint_properties.emissive_strength;
 #endif
     lowp float occlusion_opacity = paint_properties.occlusion_opacity;
     lowp float z_offset = paint_properties.z_offset;
