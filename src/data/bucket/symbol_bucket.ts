@@ -1732,7 +1732,7 @@ class SymbolBucket implements Bucket {
                     availableImages,
                     textScaleFactor,
                     imageMap,
-                    layoutTextOffset: layout.get('text-offset').evaluate(evaluationFeature, featureStateForThis, canonical),
+                    layoutTextOffset: layout.get('text-offset').evaluate(evaluationFeature, featureStateForThis, canonical).map(v => v * ONE_EM) as [number, number],
                     layoutTextSize: layoutTextSizeExpression.evaluate(evaluationFeature, featureStateForThis, canonical),
                     layoutTextRotate: layout.get('text-rotate').evaluate(evaluationFeature, featureStateForThis, canonical),
                     layoutMinZoomSize: layoutTextSizeExpression.evaluate(evaluationFeature, {zoom: textSizeDataMinZoom}, canonical),

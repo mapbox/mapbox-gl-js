@@ -1,0 +1,49 @@
+{
+  "version": 8,
+  "metadata": {
+    "test-purpose": "Verify that the text bounding box correctly wraps the text when text-offset is set in the layout (not the appearance). Before the fix, the bbox was double-offset: once by shapeText (which bakes the offset into coordinates) and once by getUpdateSymbolBoundingBox (which added it again as a translation).",
+    "test": {
+      "width": 256,
+      "height": 256,
+      "collisionDebug": true
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "rgba(255, 255, 255, 1)"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": "Hello",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-offset": [0, 2]
+      },
+      "appearances": [{
+        "condition": true,
+        "properties": {
+          "text-size": 20
+        }
+      }]
+    }
+  ]
+}

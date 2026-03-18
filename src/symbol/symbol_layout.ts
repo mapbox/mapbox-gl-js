@@ -111,12 +111,15 @@ function scaleBoundingBox(bbox: SymbolBoundingBox, scale: number): void {
 }
 
 /**
- * Rotate a SymbolBoundingBox by the given angle in degrees
+ * Rotate a SymbolBoundingBox by the given angle in degrees around the given center.
+ * For text, pass the text offset as the center so rotation matches evaluateBoxCollisionFeature.
+ * For icons, omit center to rotate around the symbol anchor (0, 0).
  */
-function rotateBoundingBox(bbox: SymbolBoundingBox, rotateDegrees: number): void {
+function rotateBoundingBox(bbox: SymbolBoundingBox, rotateDegrees: number, center?: [number, number]): void {
     if (!rotateDegrees) return;
 
     const rotateRadians = degToRad(rotateDegrees);
+    const rotateCenter = new Point(center ? center[0] : 0, center ? center[1] : 0);
 
     // Create the four corners of the bounding box
     const tl = new Point(bbox.left, bbox.top);
@@ -124,11 +127,10 @@ function rotateBoundingBox(bbox: SymbolBoundingBox, rotateDegrees: number): void
     const bl = new Point(bbox.left, bbox.bottom);
     const br = new Point(bbox.right, bbox.bottom);
 
-    const center = new Point(0, 0);
-    tl._rotateAround(rotateRadians, center);
-    tr._rotateAround(rotateRadians, center);
-    bl._rotateAround(rotateRadians, center);
-    br._rotateAround(rotateRadians, center);
+    tl._rotateAround(rotateRadians, rotateCenter);
+    tr._rotateAround(rotateRadians, rotateCenter);
+    bl._rotateAround(rotateRadians, rotateCenter);
+    br._rotateAround(rotateRadians, rotateCenter);
 
     // Take the envelope of the rotated geometry
     bbox.left = Math.min(tl.x, tr.x, bl.x, br.x);
@@ -138,20 +140,37 @@ function rotateBoundingBox(bbox: SymbolBoundingBox, rotateDegrees: number): void
 }
 
 /**
- * Updates an icon bounding box by calculating the bounds from a positioned icon,
- * applying transformations, and merging with the existing bounding box.
+ * Computes a bounding box from a shaped icon or text shaping, applies transformations,
+ * and merges with the existing bounding box.
+ *
+ * For text: shaped.top/bottom/left/right already include the text-offset (since shapeText
+ * bakes it in via translate). Pass the text-offset as rotateCenter so rotation matches the
+ * behavior of evaluateBoxCollisionFeature (which also rotates around the text-offset point).
+ * Do NOT pass textOffset as an additional translation — it's already included in the shaping.
+ *
+ * For appearance text with a different text-offset: pass offsetDelta to shift the bbox from
+ * the base text-offset position to the appearance text-offset position. Compute it as:
+ *   offsetDelta = appearanceTextOffset - baseTextOffset * textSizeScale
+ * This accounts for the fact that the base shaping's baked-in offset also gets scaled.
+ *
+ * For icons: omit rotateCenter to rotate around the symbol anchor (0, 0).
+ *
+ * For icons with appearances: pass scale = appearanceIconSize / layoutIconSize so the
+ * merged bbox stays in displaySize units (the placement system applies iconSize at runtime).
  */
 function getUpdateSymbolBoundingBox(
     shaped: PositionedIcon | Shaping,
     existingBBox: SymbolBoundingBox | null | undefined,
     rotate: number,
     scale?: number,
-    textOffset?: [number, number]
+    rotateCenter?: [number, number],
+    offsetDelta?: [number, number]
 ): SymbolBoundingBox {
     // Extract collision padding if available (only for PositionedIcon)
     const collisionPadding = isPositionedIcon(shaped) && shaped.collisionPadding ? shaped.collisionPadding : [0, 0, 0, 0];
 
-    // Calculate bounding box from shaped icon or text
+    // Calculate bounding box from shaped icon or text.
+    // Note: for text, shaped.top/bottom/left/right already include the text-offset.
     const top = shaped.top - collisionPadding[1];
     const bottom = shaped.bottom + collisionPadding[3];
     const left = shaped.left - collisionPadding[0];
@@ -169,15 +188,17 @@ function getUpdateSymbolBoundingBox(
         scaleBoundingBox(newBBox, scale);
     }
 
-    if (rotate) {
-        rotateBoundingBox(newBBox, rotate);
+    // Apply offset delta after scaling: shifts bbox from base text-offset position
+    // to appearance text-offset position when the appearance uses a different offset.
+    if (offsetDelta) {
+        newBBox.left += offsetDelta[0];
+        newBBox.right += offsetDelta[0];
+        newBBox.top += offsetDelta[1];
+        newBBox.bottom += offsetDelta[1];
     }
 
-    if (textOffset) {
-        newBBox.left += textOffset[0];
-        newBBox.right += textOffset[0];
-        newBBox.top += textOffset[1];
-        newBBox.bottom += textOffset[1];
+    if (rotate) {
+        rotateBoundingBox(newBBox, rotate, rotateCenter);
     }
 
     // Merge with existing bounding box or return the new one
@@ -597,13 +618,17 @@ function mergeAppearancesBboxes(bucket: SymbolBucket, shapedIcon: PositionedIcon
     };
     const {baseIconRotate, baseTextRotate, iconScaleFactor} = getLayoutProperties(layout, feature, canonical);
 
-    // Compute the base bbox using layout properties
+    // Compute the base bbox using layout properties.
+    // Icons: no pre-scaling — keep coordinates in displaySize units so the placement system
+    // can apply iconSize scaling at runtime (same as the no-appearances code path).
+    // Text: pass textOffset as the rotation center (matching evaluateBoxCollisionFeature).
+    // The shaping already has textOffset baked in, so do NOT add it as a translation.
     if (shapedIcon) {
-        iconBBoxes.iconBBox = getUpdateSymbolBoundingBox(shapedIcon, iconBBoxes.iconBBox, baseIconRotate, layoutIconSize);
+        iconBBoxes.iconBBox = getUpdateSymbolBoundingBox(shapedIcon, iconBBoxes.iconBBox, baseIconRotate);
 
         if (verticallyShapedIcon) {
             const verticalIconRotate = baseIconRotate + 90.0;
-            iconBBoxes.iconVerticalBBox = getUpdateSymbolBoundingBox(verticallyShapedIcon, iconBBoxes.iconVerticalBBox, verticalIconRotate, layoutIconSize);
+            iconBBoxes.iconVerticalBBox = getUpdateSymbolBoundingBox(verticallyShapedIcon, iconBBoxes.iconVerticalBBox, verticalIconRotate);
         }
     }
 
@@ -657,13 +682,17 @@ function updateIconBoundingBoxes(input : {iconBBox: SymbolBoundingBox | null, ic
         }
     }
 
-    // Add this appearance's contribution to the unified bounding boxes
+    // Add this appearance's contribution to the unified bounding boxes.
+    // Scale by appearanceIconSize / layoutIconSize so the bbox stays in displaySize units:
+    // the placement system multiplies by iconSize at runtime, so pre-scaling by the full
+    // appearanceIconSize would cause the collision box to be double-scaled.
+    const iconSizeRatio = layoutIconSize > 0 ? appearanceIconSize / layoutIconSize : 1;
     if (appearanceShapedIcon) {
-        input.iconBBox = getUpdateSymbolBoundingBox(appearanceShapedIcon, input.iconBBox, appearanceIconRotate, appearanceIconSize);
+        input.iconBBox = getUpdateSymbolBoundingBox(appearanceShapedIcon, input.iconBBox, appearanceIconRotate, iconSizeRatio !== 1 ? iconSizeRatio : undefined);
     }
     if (appearanceVerticallyShapedIcon) {
         const verticalAppearanceIconRotate = appearanceIconRotate + 90.0;
-        input.iconVerticalBBox = getUpdateSymbolBoundingBox(appearanceVerticallyShapedIcon, input.iconVerticalBBox, verticalAppearanceIconRotate, appearanceIconSize);
+        input.iconVerticalBBox = getUpdateSymbolBoundingBox(appearanceVerticallyShapedIcon, input.iconVerticalBBox, verticalAppearanceIconRotate, iconSizeRatio !== 1 ? iconSizeRatio : undefined);
     }
 }
 
@@ -704,7 +733,12 @@ function getAppearanceImagePosition(bucket: SymbolBucket, symbolLayer: SymbolSty
     const appearanceIconImage = symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-image', feature, canonical, availableImages);
     if (appearanceIconImage) {
         const icon = bucket.getResolvedImageFromTokens(appearanceIconImage as string);
-        const unevaluatedIconSize = appearance.getUnevaluatedProperty('icon-size') as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
+        // Use the appearance's icon-size if defined, otherwise fall back to the layout's icon-size.
+        // This must match getCombinedIconPrimary's logic (used when building iconDependencies),
+        // so that the image variant key matches what was stored in iconPositions.
+        const unevaluatedIconSize = (appearance.hasProperty('icon-size') ?
+            appearance.getUnevaluatedProperty('icon-size') :
+            symbolLayer._unevaluatedLayout._values['icon-size']) as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
         const iconSizeData = getSizeData(bucket.zoom, unevaluatedIconSize, bucket.worldview, availableImages);
         const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, bucket.zoom, feature, bucket.pixelRatio, iconScaleFactor, bucket.worldview, availableImages);
         imagePositionToUse = imagePositions.get(imageVariant.iconPrimary.toString());
@@ -718,14 +752,25 @@ function updateTextBoundingBoxes(input: {textBBox: SymbolBoundingBox | null, tex
     // Calculate scale ratio between appearance text size and base text size
     const textSizeScale = appearanceTextSize / layoutTextSize;
 
+    // When the appearance uses a different text-offset, the bbox must shift from the layout
+    // shaping's baked-in textOffset to the appearance textOffset.
+    // The collision debug box is rendered with scale = layoutSize/ONE_EM, while the actual text
+    // renders with scale = appearanceSize/ONE_EM. For them to align, the delta shift must also
+    // be scaled by textSizeScale: offsetDelta = (appearanceTextOffset - textOffset) * textSizeScale.
+    const offsetDelta: [number, number] = [
+        (appearanceTextOffset[0] - textOffset[0]) * textSizeScale,
+        (appearanceTextOffset[1] - textOffset[1]) * textSizeScale
+    ];
+    const hasOffsetDelta = offsetDelta[0] !== 0 || offsetDelta[1] !== 0;
+
     // Add this appearance's text contribution to the unified bounding boxes
     if (defaultHorizontalShaping) {
-        input.textBBox = getUpdateSymbolBoundingBox(defaultHorizontalShaping, input.textBBox, appearanceTextRotate, textSizeScale, appearanceTextOffset);
+        input.textBBox = getUpdateSymbolBoundingBox(defaultHorizontalShaping, input.textBBox, appearanceTextRotate, textSizeScale, appearanceTextOffset, hasOffsetDelta ? offsetDelta : undefined);
     }
 
     if (defaultVerticalShaping) {
         const verticalAppearanceTextRotate = appearanceTextRotate + 90.0;
-        input.textVerticalBBox = getUpdateSymbolBoundingBox(defaultVerticalShaping, input.textVerticalBBox, verticalAppearanceTextRotate, textSizeScale, appearanceTextOffset);
+        input.textVerticalBBox = getUpdateSymbolBoundingBox(defaultVerticalShaping, input.textVerticalBBox, verticalAppearanceTextRotate, textSizeScale, appearanceTextOffset, hasOffsetDelta ? offsetDelta : undefined);
     }
 }
 
