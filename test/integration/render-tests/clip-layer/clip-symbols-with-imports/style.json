@@ -1,0 +1,184 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128
+    }
+  },
+  "zoom": 4.2,
+  "imports": [
+    {
+      "id": "basemap",
+      "data": {
+        "version": 8,
+        "imports": [
+          {
+            "id": "basemap",
+            "data": {
+              "version": 8,
+              "sprite": "local://sprites/sprite",
+              "sources": {
+                "points": {
+                  "type": "geojson",
+                  "data": {
+                    "type": "GeometryCollection",
+                    "geometries": [
+                      {
+                        "type": "Point",
+                        "coordinates": [2, -2]
+                      },
+                      {
+                        "type": "Point",
+                        "coordinates": [1, -1]
+                      },
+                      {
+                        "type": "Point",
+                        "coordinates": [-1, 1]
+                      },
+                      {
+                        "type": "Point",
+                        "coordinates": [-2, 2]
+                      }
+                    ]
+                  }
+                }
+              },
+              "layers": [
+                {
+                  "id": "background",
+                  "type": "background",
+                  "paint": {
+                    "background-color": "white"
+                  }
+                },
+                {
+                  "id": "symbol",
+                  "type": "symbol",
+                  "source": "points",
+                  "layout": {
+                    "icon-image": "building-12",
+                    "icon-padding": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "sprite": "local://sprites/sprite",
+        "sources": {
+          "clip": {
+            "type": "geojson",
+            "data": {
+              "type": "Polygon",
+              "coordinates": [[[-1.5, -1.5], [-1.5, 1.5], [1.5, 1.5], [1.5, -1.5], [-1.5, -1.5]]]
+            }
+          },
+          "points": {
+            "type": "geojson",
+            "data": {
+              "type": "GeometryCollection",
+              "geometries": [
+                {
+                  "type": "Point",
+                  "coordinates": [-1, -1]
+                },
+                {
+                  "type": "Point",
+                  "coordinates": [0, 0]
+                },
+                {
+                  "type": "Point",
+                  "coordinates": [1, 1]
+                }
+              ]
+            }
+          }
+        },
+        "layers": [
+          {
+            "id": "symbol",
+            "type": "symbol",
+            "source": "points",
+            "layout": {
+              "icon-image": "rocket-12",
+              "icon-padding": 0
+            }
+          },
+          {
+            "id": "clip-fill",
+            "type": "fill",
+            "source": "clip",
+            "paint": {
+              "fill-color": "rgba(0, 255, 0, 0.1)"
+            }
+          },
+          {
+            "id": "clip",
+            "type": "clip",
+            "source": "clip",
+            "layout": {
+              "clip-layer-types": ["symbol"],
+              "_comment": "This layer should remove inner two images from immediately imported style, but not images from this style",
+              "clip-layer-scope": ["basemap"]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "clip": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [[[-0.5, -0.5], [-0.5, 0.5], [0.5, 0.5], [0.5, -0.5], [-0.5, -0.5]]]
+      }
+    },
+    "clip2": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [[[1.5, -1.5], [1.5, -2.5], [2.5, -2.5], [2.5, -1.5], [1.5, -1.5]]]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "clip-fill",
+      "type": "fill",
+      "source": "clip",
+      "paint": {
+        "fill-color": "rgba(0, 0, 255, 0.1)"
+      }
+    },
+    {
+      "id": "clip-fill2",
+      "type": "fill",
+      "source": "clip2",
+      "paint": {
+        "fill-color": "rgba(255, 0, 0, 0.1)"
+      }
+    },
+    {
+      "id": "clip",
+      "type": "clip",
+      "source": "clip",
+      "layout": {
+        "clip-layer-types": ["symbol"],
+        "_comment": "This layer should remove the center image from immediately imported style",
+        "clip-layer-scope": ["basemap"]
+      }
+    },
+    {
+      "id": "clip2",
+      "type": "clip",
+      "source": "clip2",
+      "layout": {
+        "clip-layer-types": ["symbol"],
+        "_comment": "This layer should remove the bottom right image from the most nested style, because if we want to remove something from an import, we should remove from its imports too",
+        "clip-layer-scope": ["basemap"]
+      }
+    }
+  ]
+}

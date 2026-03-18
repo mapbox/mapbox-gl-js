@@ -282,6 +282,12 @@ const skip = [
     // Not implemented, https://mapbox.atlassian.net/browse/GLJS-1591
     "render-tests/slots/inner-slot-before-outer",
     "render-tests/slots/mixed-slot-order-with-imports",
+
+    // https://mapbox.atlassian.net/browse/GLJS-1696
+    "render-tests/imports/nested-imports",
+
+    // https://mapbox.atlassian.net/browse/GLJS-1698
+    "render-tests/clip-layer/clip-symbols-with-imports"
 ];
 
 export default {todo, skip};
