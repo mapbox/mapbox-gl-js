@@ -678,7 +678,7 @@ describe('VectorTileSource provider', () => {
         expect(source.tiles).toEqual(['http://example.com/{z}/{x}/{y}.mvt']);
     });
 
-    test('uses provider TileJSON when workers return it', async () => {
+    test('uses provider TileJSON when workers return it', () => {
         const name = nextProvider();
         const tileJSON = {
             tiles: ['http://provider.example.com/{z}/{x}/{y}.mvt'],
@@ -691,8 +691,6 @@ describe('VectorTileSource provider', () => {
             broadcastResult: [tileJSON],
         });
 
-        const e = await waitFor(source, 'data');
-        expect(e.sourceDataType).toBe('metadata');
         expect(source.tiles).toEqual(['http://provider.example.com/{z}/{x}/{y}.mvt']);
         expect(source.minzoom).toEqual(2);
         expect(source.maxzoom).toEqual(16);

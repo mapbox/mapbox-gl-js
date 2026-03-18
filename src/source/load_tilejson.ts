@@ -61,9 +61,66 @@ function getInlinedTileJSON(data?: TileJSON, language?: string, worldview?: stri
 }
 
 /**
+ * Merges matching variant properties into the TileJSON.
+ * Currently only supports the "meshopt" capability.
+ * Throws on malformed variant data.
  * @private
  */
-export default function (
+export function mergeVariants(tileJSON: Partial<TileJSON>): Partial<TileJSON> {
+    if (!tileJSON.variants) return tileJSON;
+    if (!Array.isArray(tileJSON.variants)) {
+        throw new Error("variants must be an array");
+    }
+    for (const variant of tileJSON.variants) {
+        if (variant == null || typeof variant !== 'object' || variant.constructor !== Object) {
+            throw new Error("variant must be an object");
+        }
+        if (!Array.isArray(variant.capabilities)) {
+            throw new Error("capabilities must be an array");
+        }
+        // In this version we only support meshopt; check there are no other capabilities
+        // so future TileJSONs with more capabilities won't break existing SDKs
+        if (variant.capabilities.length === 1 && variant.capabilities[0] === "meshopt") {
+            return Object.assign(tileJSON, variant);
+        }
+    }
+    return tileJSON;
+}
+
+/**
+ * Post-processes raw TileJSON: merges variants, picks relevant fields,
+ * and canonicalizes tile URLs. Does not mutate `options`.
+ * Returns an Error if variant data is malformed.
+ * @private
+ */
+export function processTileJSON(options: Options, tileJSON: Partial<TileJSON>, requestManager: RequestManager): TileJSON | Error {
+    try {
+        tileJSON = mergeVariants(tileJSON);
+    } catch (e) {
+        return new Error('Failed to process TileJSON variants', {cause: e});
+    }
+
+    const result: TileJSON = pick(
+        // explicit source options take precedence over TileJSON
+        Object.assign({}, tileJSON as TileJSON, options),
+        ['tilejson', 'tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'extra_bounds', 'scheme', 'tileSize', 'encoding', 'vector_layers', 'raster_layers', 'worldview_options', 'worldview_default', 'worldview']
+    );
+
+    // Prefer TileJSON tiles when both url and tiles are set.
+    // In loadTileJSON, options.tiles is already deleted before this runs.
+    // This handles callers (like _loadWithProvider) that don't mutate options.
+    if (options.url && tileJSON.tiles && options.tiles) {
+        result.tiles = tileJSON.tiles;
+    }
+
+    result.tiles = requestManager.canonicalizeTileset(result, options.url);
+    return result;
+}
+
+/**
+ * @private
+ */
+export default function loadTileJSON(
     options: Options,
     requestManager: RequestManager,
     language: string | null | undefined,
@@ -74,36 +131,14 @@ export default function (
         if (err) {
             return callback(err);
         } else if (tileJSON) {
-            // Prefer TileJSON tiles, if both URL and tiles options are set
+            // Prefer TileJSON tiles: delete from options so serialize() reflects the change.
+            // processTileJSON also handles this for callers that don't mutate options.
             if (options.url && tileJSON.tiles && options.tiles) delete options.tiles;
-            // check if we have variants and merge with the original TileJson
-            if (tileJSON.variants) {
-                if (!Array.isArray(tileJSON.variants)) {
-                    return callback(new Error("variants must be an array"));
-                }
-                for (const variant of tileJSON.variants) {
-                    if (variant == null || typeof variant !== 'object' || variant.constructor !== Object) {
-                        return callback(new Error("variant must be an object"));
-                    }
-                    if (!Array.isArray(variant.capabilities)) {
-                        return callback(new Error("capabilities must be an array"));
-                    }
-                    // in this version we only support meshopt, we check there is no more different capabilities
-                    // so future tileJsons with more capabilities won't break existing sdk's
-                    if (variant.capabilities.length === 1 && variant.capabilities[0] === "meshopt") {
-                        tileJSON = Object.assign(tileJSON, variant);
-                        break;
-                    }
-                }
+
+            const result = processTileJSON(options, tileJSON, requestManager);
+            if (result instanceof Error) {
+                return callback(result);
             }
-
-            const result: TileJSON = pick(
-                // explicit source options take precedence over TileJSON
-                Object.assign({}, tileJSON as TileJSON, options),
-                ['tilejson', 'tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'extra_bounds', 'scheme', 'tileSize', 'encoding', 'vector_layers', 'raster_layers', 'worldview_options', 'worldview_default', 'worldview']
-            );
-
-            result.tiles = requestManager.canonicalizeTileset(result, options.url);
             callback(null, result);
         }
     };

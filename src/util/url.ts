@@ -1,3 +1,13 @@
+export function getURLExtension(url: string): string {
+    try {
+        const lastSegment = new URL(url).pathname.split('/').pop() || '';
+        const dotIndex = lastSegment.lastIndexOf('.');
+        return dotIndex >= 0 ? lastSegment.slice(dotIndex + 1) : '';
+    } catch {
+        return '';
+    }
+}
+
 export function setQueryParameters(
     url: string,
     params: {

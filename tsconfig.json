@@ -34,7 +34,10 @@
       "node",
       "geojson",
       "offscreencanvas"
-    ]
+    ],
+    "paths": {
+      "mapbox-gl": ["./src/index.ts"]
+    }
   },
   "include": [
     "./src/**/*",

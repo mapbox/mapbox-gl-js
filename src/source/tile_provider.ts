@@ -1,4 +1,7 @@
 import config from '../util/config';
+import browser from '../util/browser';
+import {warnOnce} from '../util/util';
+import {getURLExtension} from '../util/url';
 
 import type {TileJSON} from '../types/tilejson';
 import type {RequestParameters} from '../util/ajax';
@@ -85,5 +88,35 @@ export function addTileProvider(name: string, url: string): void {
         throw new Error('TileProvider name and URL are required');
     }
 
-    config.TILE_PROVIDER_URLS[name] = url;
+    config.TILE_PROVIDER_URLS[name] = browser.resolveURL(url);
+}
+
+/**
+ * Resolves a tile provider by explicit name or by auto-detecting from a source URL extension.
+ * Returns the provider name and resolved module URL, or null if no provider applies.
+ *
+ * @private
+ */
+export function resolveTileProvider(options: SourceSpecification & {provider?: string}): {name: string; url: string} | null {
+    if ('provider' in options && !options.provider) return null;
+
+    let name = options.provider;
+    if (!name && 'url' in options && options.url) {
+        name = getURLExtension(options.url);
+    }
+
+    if (!name) return null;
+
+    const rawUrl = config.TILE_PROVIDER_URLS[name];
+    if (!rawUrl) return null;
+
+    let url: string;
+    try {
+        url = new URL(rawUrl, config.API_URL).href;
+    } catch (e) {
+        warnOnce(`TileProvider "${name}" has an invalid URL: "${rawUrl}"`);
+        return null;
+    }
+
+    return {name, url};
 }

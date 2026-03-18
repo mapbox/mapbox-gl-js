@@ -55,6 +55,7 @@ export type {CustomLayerInterface} from './style/style_layer/custom_style_layer'
 export type {CustomSourceInterface} from './source/custom_source';
 export type {CanvasSourceSpecification} from './source/canvas_source';
 export type {TileProvider, TileDataResponse} from './source/tile_provider';
+export type {TileJSON} from './types/tilejson';
 
 export type {Anchor} from './ui/anchor';
 export type {PopupOptions} from './ui/popup';
