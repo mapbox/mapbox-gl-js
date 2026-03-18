@@ -108,6 +108,9 @@ const todo = [
 ];
 
 const skip = [
+    // Validate stacked underground 3D road geometry and shadows (gl-native only)
+    "render-tests/3d-intersections/stacked-underground-roads",
+
     // Pattern should be seamless across tile edges
     // https://github.com/mapbox/mapbox-gl-js/issues/11221
     "render-tests/background-pattern/projected",
