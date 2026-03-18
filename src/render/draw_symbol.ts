@@ -389,9 +389,8 @@ function drawLayerSymbols(
         const setUBODefines = (defines: DynamicDefinesType[]) => {
             defines.push('USE_PAINT_PROPERTIES_UBO');
             // MAX_UBO_SIZE_VEC4: number of vec4 slots available for u_properties / u_block_indices.
-            // = (maxUniformBlockSize - headerBytes) / 16, expressed as vec4 units.
             const uboSizeDwords = Math.floor(painter.context.maxUniformBlockSize / 4);
-            const maxUBOSizeVec4 = Math.floor(uboSizeDwords / 4) - 3; // subtract 3-vec4 header
+            const maxUBOSizeVec4 = Math.floor(uboSizeDwords / 4);
             defines.push(`MAX_UBO_SIZE_VEC4 ${maxUBOSizeVec4}u`);
         };
 

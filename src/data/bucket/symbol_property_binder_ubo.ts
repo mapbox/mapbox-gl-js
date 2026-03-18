@@ -480,7 +480,7 @@ export class SymbolPropertyBinderUBO {
         // Build header on first feature
         if (!this.cachedHeader) {
             this.cachedHeader = this.buildHeader();
-            const propsDwords = this.uboSizeDwords - SymbolPropertiesUBO.HEADER_DWORDS;
+            const propsDwords = this.uboSizeDwords;
             const max = SymbolPropertiesUBO.getMaxFeatureCount(this.cachedHeader, propsDwords);
             this.maxFeaturesPerBatch = isFinite(max) ? max : Number.MAX_SAFE_INTEGER;
         }

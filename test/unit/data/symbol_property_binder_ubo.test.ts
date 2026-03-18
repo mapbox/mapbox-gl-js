@@ -110,8 +110,8 @@ describe('SymbolPropertiesUBO', () => {
 
     test('propertiesData array has correct size', () => {
         const ubo = new SymbolPropertiesUBO();
-        // 1021 vec4s = 4084 floats
-        expect(ubo.propertiesData.length).toEqual(4084);
+        // 1024 vec4s = 4096 floats
+        expect(ubo.propertiesData.length).toEqual(4096);
     });
 
     test('headerData array has correct size', () => {
@@ -293,7 +293,7 @@ describe('SymbolPropertyBinderUBO', () => {
             const canonical = new CanonicalTileID(0, 0, 0);
 
             // Fill exactly one batch
-            const maxPerBatch = 1021;
+            const maxPerBatch = 1024;
             for (let i = 0; i < maxPerBatch; i++) {
                 binder.populateUBO(createTestFeature({opacity: i / maxPerBatch}, `feature-${i}`), i, canonical, []);
             }
@@ -313,7 +313,7 @@ describe('SymbolPropertyBinderUBO', () => {
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
             const canonical = new CanonicalTileID(0, 0, 0);
 
-            const maxPerBatch = 1021;
+            const maxPerBatch = 1024;
             // Fill up to the last entry of batch 0
             for (let i = 0; i < maxPerBatch - 1; i++) {
                 binder.populateUBO(createTestFeature({opacity: i / maxPerBatch}, `feature-${i}`), i, canonical, []);
@@ -598,7 +598,7 @@ describe('SymbolPropertyBinderUBO', () => {
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
             const canonical = new CanonicalTileID(0, 0, 0);
 
-            // Create two batches worth of features (1021 per batch → need 1018+)
+            // Create two batches worth of features (1024 per batch)
             for (let i = 0; i < 1100; i++) {
                 binder.populateUBO(createTestFeature({opacity: i / 1100}, `feature-${i}`), i, canonical, []);
             }

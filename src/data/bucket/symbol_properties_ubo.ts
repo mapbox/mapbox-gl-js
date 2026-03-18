@@ -51,7 +51,7 @@ export class SymbolPropertiesUBO {
     static readonly HEADER_DWORDS = 12; // 3 uvec4s (never changes)
     static readonly HEADER_BYTES = 48;  // HEADER_DWORDS * 4
 
-    propsDwords: number;           // dword count for u_properties (uboSizeDwords - HEADER_DWORDS)
+    propsDwords: number;           // dword count for u_properties
     totalBytes: number;            // byte size of each of properties / block-indices buffers
     headerData: Uint32Array;       // 12 uint32s (3 uvec4s)
     propertiesData: Float32Array;  // propsDwords floats — data-driven blocks only
@@ -68,7 +68,7 @@ export class SymbolPropertiesUBO {
         this.propertiesBuffer = null;
         this.blockIndicesBuffer = null;
         this.context = context || null;
-        this.propsDwords = uboSizeDwords - SymbolPropertiesUBO.HEADER_DWORDS;
+        this.propsDwords = uboSizeDwords;
         this.totalBytes = this.propsDwords * 4;
         this.headerData = new Uint32Array(SymbolPropertiesUBO.HEADER_DWORDS);
         this.propertiesData = new Float32Array(this.propsDwords);
