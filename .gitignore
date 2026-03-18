@@ -38,6 +38,7 @@ tests-to-run.txt
 .eslintcache
 src/style-spec/dist/index.cjs
 src/style-spec/dist/index.d.ts
+packages/pmtiles-provider/dist/
 _batfish_site
 _batfish_tmp
 _site

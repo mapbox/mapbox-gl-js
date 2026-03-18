@@ -44,6 +44,7 @@
     "./test/**/*",
     "./build/**/*",
     "./3d-style/**/*",
+    "./packages/**/*",
     "./*.config.*"
   ],
   "exclude": [
@@ -59,6 +60,7 @@
     "./test/build/webpack/**/*",
     "./test/build/typings/**/*",
     "./test/build/style-spec.test.js",
+    "./packages/pmtiles-provider/dist",
     "./test/build/browserify-test-fixture.js"
   ]
 }

@@ -1,0 +1,30 @@
+{
+  "name": "@mapbox/mapbox-gl-pmtiles-provider",
+  "version": "0.0.1",
+  "description": "PMTiles provider for Mapbox GL JS",
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mapbox/mapbox-gl-js.git"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "dist/mapbox-gl-pmtiles-provider.js",
+  "module": "dist/mapbox-gl-pmtiles-provider.js",
+  "exports": {
+    ".": {
+      "import": "./dist/mapbox-gl-pmtiles-provider.js"
+    }
+  },
+  "scripts": {
+    "build": "rollup -c rollup.config.ts",
+    "watch": "rollup -c rollup.config.ts --watch",
+    "test": "vitest --run"
+  },
+  "dependencies": {
+    "pmtiles": "4.4.0"
+  },
+  "files": [
+    "dist/"
+  ]
+}

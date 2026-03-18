@@ -23,6 +23,8 @@
         import {applyOperations} from '../test/integration/lib/operation-handlers.js';
         import {transformRequest as baseTransformRequest} from '../test/integration/lib/transform-request.js';
 
+        mapboxgl.addTileProvider('pmtiles', `${location.origin}/packages/pmtiles-provider/dist/mapbox-gl-pmtiles-provider.js`);
+
         function transformRequest(url, resourceTypeEnum) {
             const req = baseTransformRequest(url, resourceTypeEnum);
             return {url: req.url.replace(location.origin, `${location.origin}/test/integration`)};

@@ -79,7 +79,9 @@ const config: Config = {
     BUILDING_GEN_URL: 'https://api.mapbox.com/mapbox-gl-js/building-gen/building_gen_v1.2.4.wasm',
     GLYPHS_URL: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
     TILES3D_URL_PREFIX: '3dtiles/v1',
-    TILE_PROVIDER_URLS: {} as Record<string, string>,
+    TILE_PROVIDER_URLS: Object.assign(Object.create(null) as Record<string, string>, {
+        pmtiles: `/mapbox-gl-js/mapbox-gl-pmtiles-provider-v0.0.1.js`,
+    }),
 };
 
 export default config;

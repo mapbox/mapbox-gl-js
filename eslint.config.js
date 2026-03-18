@@ -293,8 +293,10 @@ export default tseslint.config(
             'test/**',
             'build/**',
             'rollup.*',
+            'eslint.config.js',
             'src/style-spec/test.js',
             'src/style-spec/rollup.config.js',
+            'packages/pmtiles-provider/rollup.config.ts',
         ],
 
         rules: {

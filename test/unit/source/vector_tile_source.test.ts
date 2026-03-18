@@ -697,3 +697,118 @@ describe('VectorTileSource provider', () => {
     });
 
 });
+
+describe('VectorTileSource provider autodetection', () => {
+    const savedApiUrl = config.API_URL;
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+        delete config.TILE_PROVIDER_URLS['pmtiles'];
+        config.API_URL = savedApiUrl;
+    });
+
+    function createAutodetectSource(
+        options: Record<string, unknown>,
+        overrides: {broadcastResult?: unknown[]} = {},
+    ) {
+        const {broadcastResult} = overrides;
+        const broadcastSpy = vi.fn((_type: string, _data: unknown, cb?: (err: null, result: unknown[]) => void) => {
+            if (cb) cb(null, broadcastResult !== undefined ? broadcastResult : [null]);
+        });
+        const dispatcher = {
+            getActor() { return {send() {}}; },
+            ready: true,
+            broadcast: broadcastSpy,
+        };
+
+        const source = new VectorTileSource(
+            'id',
+            ({type: 'vector' as const, ...options}) as unknown as ConstructorParameters<typeof VectorTileSource>[1],
+            dispatcher as unknown as ConstructorParameters<typeof VectorTileSource>[2],
+            options.eventedParent as ConstructorParameters<typeof VectorTileSource>[3],
+        );
+
+        source.onAdd({
+            _language: null,
+            getWorldview() {},
+            getScaleFactor() { return 1; },
+            getIndoorTileOptions: () => null,
+            transform: {showCollisionBoxes: false},
+            _getMapId: () => 1,
+            _requestManager: new RequestManager(),
+            style: {
+                clearSource: () => {},
+                getLut: () => null,
+                getBrightness: () => 0.0,
+            },
+        } as unknown as Parameters<typeof source.onAdd>[0]);
+
+        return {source, broadcastSpy, dispatcher};
+    }
+
+    test('autodetects provider from .pmtiles URL extension', () => {
+        config.TILE_PROVIDER_URLS['pmtiles'] = '/mapbox-gl-js/mock-provider.js';
+
+        const {broadcastSpy} = createAutodetectSource({
+            url: 'https://example.com/tiles.pmtiles',
+        });
+
+        expect(broadcastSpy).toHaveBeenCalledWith(
+            'loadTileProvider',
+            expect.objectContaining({name: 'pmtiles'}),
+            expect.any(Function)
+        );
+    });
+
+    test('does not autodetect when provider is false', () => {
+        config.TILE_PROVIDER_URLS['pmtiles'] = '/mapbox-gl-js/mock-provider.js';
+
+        const {broadcastSpy} = createAutodetectSource({
+            url: 'https://example.com/tiles.pmtiles',
+            provider: false,
+        });
+
+        expect(broadcastSpy).not.toHaveBeenCalled();
+    });
+
+    test('does not autodetect when provider is explicitly set', () => {
+        config.TILE_PROVIDER_URLS['pmtiles'] = '/mapbox-gl-js/mock-provider.js';
+        config.TILE_PROVIDER_URLS['custom'] = 'https://example.com/custom.js';
+
+        const {broadcastSpy} = createAutodetectSource({
+            url: 'https://example.com/tiles.pmtiles',
+            provider: 'custom',
+        });
+
+        expect(broadcastSpy).toHaveBeenCalledWith(
+            'loadTileProvider',
+            expect.objectContaining({name: 'custom', url: 'https://example.com/custom.js'}),
+            expect.any(Function)
+        );
+        delete config.TILE_PROVIDER_URLS['custom'];
+    });
+
+    test('does not autodetect when URL has no matching extension', () => {
+        const {broadcastSpy} = createAutodetectSource({
+            url: 'https://example.com/tilejson.json',
+        });
+
+        expect(broadcastSpy).not.toHaveBeenCalled();
+    });
+
+    test('resolves relative provider URL against API_URL', () => {
+        config.TILE_PROVIDER_URLS['pmtiles'] = '/mapbox-gl-js/mock-provider.js';
+        config.API_URL = 'https://api.mapbox.cn';
+
+        const {broadcastSpy} = createAutodetectSource({
+            url: 'https://example.com/tiles.pmtiles',
+        });
+
+        expect(broadcastSpy).toHaveBeenCalledWith(
+            'loadTileProvider',
+            expect.objectContaining({url: 'https://api.mapbox.cn/mapbox-gl-js/mock-provider.js'}),
+            expect.any(Function)
+        );
+    });
+
+});
