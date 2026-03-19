@@ -46,4 +46,5 @@ export type IndoorState = {
     activeFloorsVisible: boolean;
     selectedFloorId: string | null;
     activeFloors: Set<string>;
+    needsUpdate?: boolean;
 };

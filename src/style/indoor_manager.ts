@@ -7,6 +7,16 @@ import {IndoorActiveFloorStrategy} from './indoor_active_floor_strategy';
 import type {IndoorBuilding, IndoorData, IndoorEvents, IndoorState, IndoorTileOptions, IndoorFloor} from './indoor_data';
 import type Style from './style';
 
+export function setsEqual(a: Set<string> | null, b: Set<string> | null): boolean {
+    if (a === b) return true;
+    if (!a || !b) return false;
+    if (a.size !== b.size) return false;
+    for (const item of a) {
+        if (!b.has(item)) return false;
+    }
+    return true;
+}
+
 export default class IndoorManager extends Evented<IndoorEvents> {
     _style: Style;
     _selectedFloorId: string | null;
@@ -15,30 +25,41 @@ export default class IndoorManager extends Evented<IndoorEvents> {
     _activeFloors: Set<string> | null;
     _indoorState: IndoorState | null;
     _buildingDetectionStrategy: ViewportIntersectionStrategy;
+    _initialLoadDone: boolean;
 
     constructor(style: Style) {
         super();
         this._style = style;
         this._buildings = {};
         this._activeFloors = new Set();
-        this._indoorState = {selectedFloorId: null, activeFloorsVisible: false, activeFloors: this._activeFloors};
+        this._closestBuildingId = null;
+        this._indoorState = {selectedFloorId: null, activeFloorsVisible: true, activeFloors: this._activeFloors};
         this._buildingDetectionStrategy = new ViewportIntersectionStrategy();
+        this._initialLoadDone = false;
         bindAll(['_updateUI'], this);
         const setupObservers = () => {
             if (this._style.isIndoorEnabled()) {
-                this._style.map.on('load', this._updateUI);
+                this._style.map.on('load', () => {
+                    this._initialLoadDone = true;
+                    if (this._indoorState && this._indoorState.needsUpdate) {
+                        this._indoorState.needsUpdate = false;
+                        this._style.updateIndoorDependentLayers();
+                    }
+                    this._updateUI();
+                });
                 this._style.map.on('move', this._updateUI);
                 this._style.map.on('idle', this._updateUI);
-                this._updateUI();
             }
         };
         this._style.on('style.load', setupObservers);
     }
+
     destroy() {
         this._buildings = {};
         this._activeFloors = new Set();
         this._indoorState = null;
     }
+
     selectFloor(floorId: string | null) {
         if (floorId === this._selectedFloorId && this._indoorState && this._indoorState.activeFloorsVisible) {
             return;
@@ -46,12 +67,12 @@ export default class IndoorManager extends Evented<IndoorEvents> {
         this._selectedFloorId = floorId;
         this._recalculateActiveFloors();
     }
+
     setActiveFloorsVisibility(activeFloorsVisible: boolean) {
         this._updateActiveFloors(activeFloorsVisible);
         this._updateIndoorSelector();
     }
-    /// Fan in data sent from different tiles and sources and merge it into the one state
-    /// Both buildings and active floors updates are additive-only
+
     setIndoorData(indoorData: IndoorData) {
         let changed = false;
         for (const [id, building] of Object.entries(indoorData.buildings)) {
@@ -71,10 +92,120 @@ export default class IndoorManager extends Evented<IndoorEvents> {
                 changed = true;
             }
         }
-        if (changed) {
+        if (changed && this._initialLoadDone) {
             this._recalculateActiveFloors();
+            this._updateIndoorSelector();
         }
-        // Next step: Add debouncing to prevent excessive selector updates, though not visible
+    }
+
+    getIndoorTileOptions(sourceId: string, scope: string): IndoorTileOptions | null {
+        if (!this._indoorState) {
+            return null;
+        }
+        const sourceLayers = this._style.getIndoorSourceLayers(sourceId, scope);
+        const indoorState = this._indoorState;
+        return {sourceLayers, indoorState};
+    }
+
+    getControlState() {
+        const buildings = this._buildings;
+        const closestBuildingId = this._closestBuildingId;
+        const closestBuilding = (closestBuildingId && buildings) ? buildings[closestBuildingId] : undefined;
+        if (!closestBuilding) {
+            return {
+                selectedFloorId: null,
+                activeFloorsVisible: this._indoorState ? this._indoorState.activeFloorsVisible : false,
+                floors: []
+            };
+        }
+        let buildingActiveFloorId: string | null = null;
+        for (const floorId of closestBuilding.floorIds) {
+            if (this._activeFloors && this._activeFloors.has(floorId)) {
+                buildingActiveFloorId = floorId;
+                break;
+            }
+        }
+        const floors = Array.from(closestBuilding.floorIds)
+            .map((floorId) => ({
+                id: floorId,
+                name: closestBuilding.floors[floorId].name,
+                zIndex: closestBuilding.floors[floorId].zIndex,
+            }))
+            .sort((a, b) => b.zIndex - a.zIndex)
+            .filter((floor, idx, arr) => idx === 0 || floor.zIndex !== arr[idx - 1].zIndex);
+        return {
+            selectedFloorId: buildingActiveFloorId,
+            activeFloorsVisible: this._indoorState ? this._indoorState.activeFloorsVisible : false,
+            floors
+        };
+    }
+
+    _updateUI() {
+        if (!this._initialLoadDone) return;
+
+        const transform = this._style.map.transform;
+        const closestBuildingId = this._buildingDetectionStrategy.findClosestBuilding(
+            this._buildings,
+            transform.center,
+            transform.zoom,
+            transform.getBounds(),
+            this._makeViewportPolygon()
+        );
+
+        if (closestBuildingId !== this._closestBuildingId) {
+            const previousBuildingId = this._closestBuildingId;
+            this._closestBuildingId = closestBuildingId;
+            this._onBuildingTransition(previousBuildingId, closestBuildingId);
+            this._updateIndoorSelector();
+        }
+    }
+
+    _onBuildingTransition(previousId: string | null, currentId: string | null) {
+        if (!this._indoorState) return;
+
+        const disappeared = !currentId && !!previousId;
+        const appeared = !!currentId && !previousId;
+
+        if (disappeared) {
+            this._indoorState.activeFloors = new Set();
+            this._indoorState.activeFloorsVisible = false;
+            this._style.updateIndoorDependentLayers();
+        } else if (appeared) {
+            this._recalculateActiveFloors();
+            this._updateActiveFloors(true);
+        }
+    }
+
+    _updateIndoorSelector() {
+        this.fire(new Event('selector-update', this.getControlState()));
+    }
+
+    _updateActiveFloors(visible: boolean) {
+        this._indoorState = {selectedFloorId: this._selectedFloorId, activeFloorsVisible: visible, activeFloors: this._activeFloors};
+        if (!this._initialLoadDone) {
+            this._indoorState.needsUpdate = true;
+            return;
+        }
+        this._style.updateIndoorDependentLayers();
+    }
+
+    _recalculateActiveFloors() {
+        if (!this._buildings) return;
+
+        const newActiveFloors = IndoorActiveFloorStrategy.calculate(
+            this._buildings,
+            this._selectedFloorId,
+            this._activeFloors
+        );
+
+        // Skip expensive style update if active floors haven't changed
+        if (setsEqual(newActiveFloors, this._activeFloors)) {
+            return;
+        }
+
+        this._activeFloors = newActiveFloors;
+        const visible = this._indoorState ? this._indoorState.activeFloorsVisible : false;
+        this._updateActiveFloors(visible);
         this._updateIndoorSelector();
     }
 
@@ -99,81 +230,6 @@ export default class IndoorManager extends Evented<IndoorEvents> {
             (target.geometry.coordinates as number[][][][]).push(...source.geometry.coordinates);
         }
     }
-    getIndoorTileOptions(sourceId: string, scope: string): IndoorTileOptions | null {
-        if (!this._indoorState) {
-            return null;
-        }
-        const sourceLayers = this._style.getIndoorSourceLayers(sourceId, scope);
-        const indoorState = this._indoorState;
-        return {sourceLayers, indoorState};
-    }
-    _updateUI() {
-        const transform = this._style.map.transform;
-        const closestBuildingId = this._buildingDetectionStrategy.findClosestBuilding(
-            this._buildings,
-            transform.center,
-            transform.zoom,
-            transform.getBounds(),
-            this._makeViewportPolygon()
-        );
-        if (closestBuildingId !== this._closestBuildingId) {
-            const previousBuildingId = this._closestBuildingId;
-            this._closestBuildingId = closestBuildingId;
-            this._updateIndoorSelector();
-            const buildingDisappeared = !closestBuildingId && this._indoorState;
-            const buildingAppeared = !previousBuildingId && this._indoorState;
-
-            if (buildingDisappeared || buildingAppeared) {
-                this._indoorState.activeFloors = buildingAppeared ? this._activeFloors : new Set();
-                this._indoorState.activeFloorsVisible = !!buildingAppeared;
-                this._style.updateIndoorDependentLayers();
-            }
-        }
-    }
-    getControlState() {
-        const buildings = this._buildings;
-        const closestBuildingId = this._closestBuildingId;
-        const closestBuilding = (closestBuildingId && buildings) ? buildings[closestBuildingId] : undefined;
-        if (!closestBuilding) {
-            return {
-                selectedFloorId: null,
-                activeFloorsVisible: this._indoorState ? this._indoorState.activeFloorsVisible : false,
-                floors: []
-            };
-        }
-        let buildingActiveFloorId: string | null = null;
-        for (const floorId of closestBuilding.floorIds) {
-            if (this._activeFloors && this._activeFloors.has(floorId)) {
-                buildingActiveFloorId = floorId;
-                break;
-            }
-        }
-        // Dedupe floors by zIndex before sending to the control:
-        // we should only show one floor per zIndex for a given building.
-        const floors = Array.from(closestBuilding.floorIds)
-            .map((floorId) => ({
-                id: floorId,
-                name: closestBuilding.floors[floorId].name,
-                zIndex: closestBuilding.floors[floorId].zIndex,
-            }))
-            .sort((a, b) => b.zIndex - a.zIndex)
-            .filter((floor, idx, arr) => idx === 0 || floor.zIndex !== arr[idx - 1].zIndex);
-        return {
-            selectedFloorId: buildingActiveFloorId,
-            activeFloorsVisible: this._indoorState ? this._indoorState.activeFloorsVisible : false,
-            floors
-        };
-    }
-    _updateIndoorSelector() {
-        this.fire(new Event('selector-update', this.getControlState()));
-    }
-    // Update previous state and pass it to tiles
-    // Resolve active floors to construct new set based on data from tiles
-    // Tiles will resolve individual subsets of activeFloors and send it in setIndoorData
-    _updateActiveFloors(visible: boolean) {
-        this._indoorState = {selectedFloorId: this._selectedFloorId, activeFloorsVisible: visible, activeFloors: this._activeFloors};
-        this._style.updateIndoorDependentLayers();
-    }
 
     _makeViewportPolygon() {
         const transform = this._style.map.transform;
@@ -186,20 +242,5 @@ export default class IndoorManager extends Evented<IndoorEvents> {
             transform.pointLocation(new Point(0, height))
         ];
         return corners.map(c => new Point(c.lng, c.lat));
-    }
-
-    _recalculateActiveFloors() {
-        if (!this._buildings) return;
-
-        const newActiveFloors = IndoorActiveFloorStrategy.calculate(
-            this._buildings,
-            this._selectedFloorId,
-            this._activeFloors
-        );
-
-        this._activeFloors = newActiveFloors;
-        const visible = this._indoorState ? this._indoorState.activeFloorsVisible : false;
-        this._updateActiveFloors(visible);
-        this._updateIndoorSelector();
     }
 }
