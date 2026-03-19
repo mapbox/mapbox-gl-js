@@ -182,7 +182,10 @@
     "codegen": "tsx ./build/generate-style-code.ts && tsx ./build/generate-struct-arrays.ts && tsx ./build/generate-typed-style-spec.ts",
     "tsc": "tsc --project tsconfig.json",
     "tsc:strict": "tsc -p tsconfig.strictNullChecks.json",
-    "publish-alpha": "./build/publish_alpha.sh"
+    "publish-release": "./build/publish.ts",
+    "publish-cdn": "./build/publish-cdn.ts",
+    "publish-alpha": "./build/publish-alpha.ts",
+    "bump-version": "./build/bump-version.ts"
   },
   "files": [
     "dist/mapbox-gl*",
