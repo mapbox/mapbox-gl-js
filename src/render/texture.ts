@@ -4,8 +4,8 @@ import assert from 'assert';
 import type Context from '../gl/context';
 import type {RGBAImage, AlphaImage} from '../util/image';
 
-export type TextureFormat = WebGL2RenderingContext['RGBA8' | 'DEPTH_COMPONENT16' | 'DEPTH24_STENCIL8' | 'R8' | 'R32F'];
-export type TextureType = WebGL2RenderingContext['UNSIGNED_BYTE' | 'UNSIGNED_SHORT' | 'UNSIGNED_INT_24_8' | 'FLOAT'];
+export type TextureFormat = WebGL2RenderingContext['RGBA8' | 'RGBA16F' | 'DEPTH_COMPONENT16' | 'DEPTH24_STENCIL8' | 'R8' | 'R32F'];
+export type TextureType = WebGL2RenderingContext['UNSIGNED_BYTE' | 'UNSIGNED_SHORT' | 'UNSIGNED_INT_24_8' | 'FLOAT' | 'HALF_FLOAT'];
 export type TextureFilter = WebGL2RenderingContext['LINEAR' | 'NEAREST_MIPMAP_NEAREST' | 'LINEAR_MIPMAP_NEAREST' | 'NEAREST_MIPMAP_LINEAR' | 'LINEAR_MIPMAP_LINEAR' | 'NEAREST'];
 export type TextureWrap = WebGL2RenderingContext['REPEAT' | 'CLAMP_TO_EDGE' | 'MIRRORED_REPEAT'];
 export type TextureCompareMode = WebGL2RenderingContext['LESS' | 'LEQUAL' | 'EQUAL' | 'GEQUAL' | 'GREATER' | 'NOTEQUAL' | 'ALWAYS' | 'NEVER'];
@@ -13,6 +13,7 @@ export type TextureCompareMode = WebGL2RenderingContext['LESS' | 'LEQUAL' | 'EQU
 function _getLegacyFormat(format: TextureFormat): number {
     switch (format) {
     case WebGL2RenderingContext['RGBA8']: return WebGL2RenderingContext['RGBA'];
+    case WebGL2RenderingContext['RGBA16F']: return WebGL2RenderingContext['RGBA'];
     case WebGL2RenderingContext['DEPTH_COMPONENT16']: return WebGL2RenderingContext['DEPTH_COMPONENT'];
     case WebGL2RenderingContext['DEPTH24_STENCIL8']: return WebGL2RenderingContext['DEPTH_STENCIL'];
     case WebGL2RenderingContext['R8']: return WebGL2RenderingContext['RED'];
@@ -22,6 +23,7 @@ function _getLegacyFormat(format: TextureFormat): number {
 function _getType(format: TextureFormat): TextureType {
     switch (format) {
     case WebGL2RenderingContext['RGBA8']: return WebGL2RenderingContext['UNSIGNED_BYTE'];
+    case WebGL2RenderingContext['RGBA16F']: return WebGL2RenderingContext['HALF_FLOAT'];
     case WebGL2RenderingContext['DEPTH_COMPONENT16']: return WebGL2RenderingContext['UNSIGNED_SHORT'];
     case WebGL2RenderingContext['DEPTH24_STENCIL8']: return WebGL2RenderingContext['UNSIGNED_INT_24_8'];
     case WebGL2RenderingContext['R8']: return WebGL2RenderingContext['UNSIGNED_BYTE'];

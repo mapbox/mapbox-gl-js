@@ -755,7 +755,11 @@ export type LineLayerSpecification = {
         "line-border-color-transition"?: TransitionSpecification,
         "line-border-color-use-theme"?: PropertyValueSpecification<string>,
         "line-occlusion-opacity"?: PropertyValueSpecification<number>,
-        "line-occlusion-opacity-transition"?: TransitionSpecification
+        "line-occlusion-opacity-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "line-blend-mode"?: PropertyValueSpecification<"default" | "multiply" | "additive">
     },
     /**
      * @experimental This property is experimental and subject to change in future versions.

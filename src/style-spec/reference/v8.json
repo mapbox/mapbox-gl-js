@@ -2222,7 +2222,7 @@
       },
       "default": "visible",
       "doc": "Whether this layer is displayed.",
-      "private": true,      
+      "private": true,
       "sdk-support": {
         "basic functionality": {
           "js": "3.16.0",
@@ -8222,7 +8222,7 @@
     },
     "building-cutoff-fade-range": {
       "type": "number",
-      "private": true,      
+      "private": true,
       "default": 0.0,
       "minimum": 0.0,
       "maximum": 1.0,
@@ -8893,6 +8893,30 @@
         ]
       },
       "transition": true,
+      "property-type": "data-constant"
+    },
+    "line-blend-mode": {
+      "type": "enum",
+      "values": {
+        "default": { "doc": "Normal non-blended rendering mode." },
+        "multiply": { "doc": "Line features are composited using multiply blending." },
+        "additive": { "doc": "Line features are composited using additive density accumulation with tone mapping." }
+      },
+      "doc": "Controls the blend mode used for rendering line features.",
+      "default": "default",
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.21.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
       "property-type": "data-constant"
     }
   },

@@ -1,8 +1,10 @@
 import {ColorAttachment, DepthRenderbufferAttachment, DepthTextureAttachment} from './value';
+import Texture from '../render/texture';
 import assert from 'assert';
 
 import type Context from './context';
 import type {DepthBufferType} from './types';
+import type {TextureFormat} from '../render/texture';
 
 class Framebuffer {
     context: Context;
@@ -13,6 +15,7 @@ class Framebuffer {
     colorAttachment1: ColorAttachment;
     depthAttachment: DepthRenderbufferAttachment | DepthTextureAttachment;
     depthAttachmentType: DepthBufferType | null | undefined;
+    _stencilRbo: WebGLRenderbuffer | null | undefined;
 
     constructor(context: Context, width: number, height: number, numColorAttachments: number, depthType?: DepthBufferType | null) {
         this.context = context;
@@ -38,6 +41,45 @@ class Framebuffer {
                 this.depthAttachment = new DepthTextureAttachment(context, fbo);
             }
         }
+    }
+
+    static createWithTexture(
+        context: Context,
+        existingFbo: Framebuffer | null,
+        width: number,
+        height: number,
+        attachStencil?: boolean
+    ): Framebuffer {
+        const gl = context.gl;
+
+        context.activeTexture.set(gl.TEXTURE1);
+        context.viewport.set([0, 0, width, height]);
+
+        if (existingFbo && existingFbo.width === width && existingFbo.height === height) {
+            gl.bindTexture(gl.TEXTURE_2D, existingFbo.colorAttachment0.get());
+            context.bindFramebuffer.set(existingFbo.framebuffer);
+            return existingFbo;
+        }
+
+        if (existingFbo) {
+            existingFbo.destroy();
+        }
+
+        const format: TextureFormat = context.extRenderToTextureHalfFloat ? context.gl.RGBA16F : context.gl.RGBA8;
+        const texture = new Texture(context, {width, height, data: null}, format);
+        texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+
+        const fbo = context.createFramebuffer(width, height, 1, null);
+        fbo.colorAttachment0.set(texture.texture);
+
+        if (attachStencil) {
+            const stencilRbo = context.createRenderbuffer(gl.DEPTH24_STENCIL8, width, height);
+            context.bindFramebuffer.set(fbo.framebuffer);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, stencilRbo);
+            fbo._stencilRbo = stencilRbo;
+        }
+
+        return fbo;
     }
 
     createColorAttachment(context: Context, idx: number) {
@@ -83,6 +125,11 @@ class Framebuffer {
                 const texture = this.depthAttachment.get();
                 if (texture) gl.deleteTexture(texture);
             }
+        }
+
+        if (this._stencilRbo) {
+            gl.deleteRenderbuffer(this._stencilRbo);
+            this._stencilRbo = null;
         }
 
         gl.deleteFramebuffer(this.framebuffer);

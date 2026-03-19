@@ -1,5 +1,7 @@
+import Color from '../style-spec/util/color';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
+import ColorMode from '../gl/color_mode';
 import StencilMode from '../gl/stencil_mode';
 import Texture from './texture';
 import {
@@ -7,6 +9,7 @@ import {
     linePatternUniformValues,
     lineDefinesValues
 } from './program/line_program';
+import {lineBlendCompositeUniformValues, LINE_BLEND_MODE_MULTIPLY, LINE_BLEND_MODE_ADDITIVE} from './program/line_blend_composite_program';
 import browser from '../util/browser';
 import {clamp, nextPowerOfTwo, warnOnce} from '../util/util';
 import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
@@ -15,6 +18,7 @@ import EXTENT from '../style-spec/data/extent';
 import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import assert from 'assert';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
+import Framebuffer from '../gl/framebuffer';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -54,13 +58,38 @@ export function prepare(layer: LineStyleLayer, sourceCache: SourceCache, painter
 }
 
 export default function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>) {
-    if (painter.renderPass !== 'translucent') return;
-
     const opacity = layer.paint.get('line-opacity');
     const width = layer.paint.get('line-width');
 
     if (opacity.constantOr(1) === 0 || width.constantOr(1) === 0) return;
 
+    const blendMode = layer.paint.get('line-blend-mode');
+    const isDraping = painter.terrain && painter.terrain.renderingToTexture;
+
+    if (blendMode !== 'default' && painter.transform.projection.name !== 'globe') {
+        if (isDraping) {
+            renderLineBlendDraped(painter, sourceCache, layer, coords, blendMode);
+            return;
+        }
+        // Non-draped blend: fullscreen offscreen FBO + composite path.
+        if (painter.renderPass === 'offscreen') {
+            renderLineToFbo(painter, sourceCache, layer, coords, blendMode);
+            return;
+        }
+        if (painter.renderPass === 'translucent') {
+            compositeLineFbo(painter, layer, blendMode);
+            return;
+        }
+        return;
+    }
+
+    if (painter.renderPass !== 'translucent') return;
+
+    drawLineTiles(painter, sourceCache, layer, coords);
+}
+
+function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>, colorModeOverride?: Readonly<ColorMode>, forceDrapingMatrix?: boolean) {
+    const width = layer.paint.get('line-width');
     const constantEmissiveStrength = layer.paint.get('line-emissive-strength').isConstant();
     assert(painter.emissiveMode !== 'constant' || constantEmissiveStrength);
     const emissiveStrengthForDrapedLayers = layer.paint.get('line-emissive-strength').constantOr(0.0);
@@ -80,8 +109,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const hasCrossSlope = crossSlope !== undefined;
     const crossSlopeHorizontal = crossSlope < 1.0;
 
-    const colorMode = painter.colorModeForDrapableLayerRenderPass(constantEmissiveStrength ? emissiveStrengthForDrapedLayers : null);
-    const isDraping = painter.terrain && painter.terrain.renderingToTexture;
+    const colorMode = colorModeOverride ? colorModeOverride : painter.colorModeForDrapableLayerRenderPass(constantEmissiveStrength ? emissiveStrengthForDrapedLayers : null);
+    const isDraping = (painter.terrain && painter.terrain.renderingToTexture) || forceDrapingMatrix;
     const pixelRatio = isDraping ? 1.0 : browser.devicePixelRatio;
 
     const dasharrayProperty = layer.paint.get('line-dasharray');
@@ -419,3 +448,150 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         painter.layersWithOcclusionOpacity.push(painter.currentLayer);
     }
 }
+
+type BlendMode = 'additive' | 'multiply';
+const blendModeSetup: Record<BlendMode, {clearColor: Color, colorMode: ColorMode, compositeUniformValue: number}> = {
+    'additive': {
+        clearColor: new Color(0, 0, 0, 0),
+        colorMode: ColorMode.additive,
+        compositeUniformValue: LINE_BLEND_MODE_ADDITIVE,
+    },
+    'multiply': {
+        clearColor: new Color(1, 1, 1, 1),
+        colorMode: ColorMode.multiply,
+        compositeUniformValue: LINE_BLEND_MODE_MULTIPLY,
+    }
+};
+
+function renderLineToFbo(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>, blendMode: BlendMode) {
+    const context = painter.context;
+
+    const width = Math.ceil(painter.width);
+    const height = Math.ceil(painter.height);
+    layer.lineBlendFbo = Framebuffer.createWithTexture(context, layer.lineBlendFbo, width, height, true);
+    layer.lineBlendStencil = layer.lineBlendFbo._stencilRbo;
+
+    context.clear({color: blendModeSetup[blendMode].clearColor, depth: 1, stencil: 0});
+
+    const savedStencilSource = painter.currentStencilSource;
+    const savedStencilIDs = painter._tileClippingMaskIDs;
+    const savedNextStencilID = painter.nextStencilID;
+    painter.currentStencilSource = undefined;
+    painter._tileClippingMaskIDs = {};
+    painter.nextStencilID = 1;
+    painter._renderTileClippingMasks(layer, sourceCache, coords);
+
+    const savedRenderPass = painter.renderPass;
+    painter.renderPass = 'translucent';
+
+    drawLineTiles(painter, sourceCache, layer, coords, blendModeSetup[blendMode].colorMode);
+
+    painter.renderPass = savedRenderPass;
+
+    painter.currentStencilSource = savedStencilSource;
+    painter._tileClippingMaskIDs = savedStencilIDs;
+    painter.nextStencilID = savedNextStencilID;
+
+    context.viewport.set([0, 0, painter.width, painter.height]);
+}
+
+function compositeLineFbo(painter: Painter, layer: LineStyleLayer, blendMode: BlendMode) {
+    const context = painter.context;
+    const gl = context.gl;
+
+    const fbo = layer.lineBlendFbo;
+    if (!fbo) return;
+
+    context.activeTexture.set(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment0.get());
+
+    // For additive mode, per-line opacity is already accumulated
+    const opacity = blendMode === 'additive' ? 1.0 : layer.paint.get('line-opacity').constantOr(1);
+
+    // For additive, use existing alpha-blend path via colorModeForDrapableLayerRenderPass.
+    const colorMode = blendMode === 'additive' ?
+        painter.colorModeForDrapableLayerRenderPass(layer.paint.get('line-emissive-strength').constantOr(0.0)) :
+        blendModeSetup[blendMode].colorMode;
+
+    painter.getOrCreateProgram('lineBlendComposite').draw(painter, gl.TRIANGLES,
+        DepthMode.disabled, StencilMode.disabled, colorMode, CullFaceMode.disabled,
+        lineBlendCompositeUniformValues(0, opacity, blendModeSetup[blendMode].compositeUniformValue),
+        layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer,
+        painter.viewportSegments, layer.paint, painter.transform.zoom);
+}
+
+function renderLineBlendDraped(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>, blendMode: BlendMode) {
+    if (painter.renderPass !== 'translucent') return;
+
+    const context = painter.context;
+    const gl = context.gl;
+    const terrain = painter.terrain;
+    if (!terrain) return;
+
+    const drapeFbo = context.bindFramebuffer.current;
+
+    const isMrt = painter.emissiveMode === 'mrt-fallback';
+
+    const drapeWidth = terrain.drapeBufferSize[0];
+    const drapeHeight = terrain.drapeBufferSize[1];
+    layer.lineBlendDrapeFbo = Framebuffer.createWithTexture(context, layer.lineBlendDrapeFbo, drapeWidth, drapeHeight, true);
+    layer.lineBlendDrapeStencil = layer.lineBlendDrapeFbo._stencilRbo;
+
+    if (isMrt) {
+        gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+    }
+
+    context.clear({color: blendModeSetup[blendMode].clearColor, depth: 1, stencil: 0});
+
+    const savedStencilSource = painter.currentStencilSource;
+    const savedStencilIDs = painter._tileClippingMaskIDs;
+    const savedNextStencilID = painter.nextStencilID;
+    painter.currentStencilSource = undefined;
+    painter._tileClippingMaskIDs = {};
+    painter.nextStencilID = 1;
+
+    const savedTerrain = painter._terrain;
+    painter._terrain = null;
+    painter._renderTileClippingMasks(layer, sourceCache, coords);
+
+    // Force draping matrix since we temporarily set painter._terrain = null
+    // but still need terrain-style projection for globe/terrain rendering
+    drawLineTiles(painter, sourceCache, layer, coords, blendModeSetup[blendMode].colorMode, true);
+
+    painter._terrain = savedTerrain;
+
+    painter.currentStencilSource = savedStencilSource;
+    painter._tileClippingMaskIDs = savedStencilIDs;
+    painter.nextStencilID = savedNextStencilID;
+
+    context.bindFramebuffer.set(drapeFbo);
+
+    if (isMrt) {
+        gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
+    }
+
+    const bufferSize = terrain.drapeBufferSize;
+    context.viewport.set([0, 0, bufferSize[0], bufferSize[1]]);
+
+    const fbo = layer.lineBlendDrapeFbo;
+    if (!fbo) return;
+
+    context.activeTexture.set(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment0.get());
+
+    const opacity = blendMode === 'additive' ? 1.0 : layer.paint.get('line-opacity').constantOr(1);
+    const emissiveStrength = layer.paint.get('line-emissive-strength').constantOr(0.0);
+
+    const drapeColorMode = blendMode === 'additive' ?
+        painter.colorModeForDrapableLayerRenderPass(emissiveStrength) :
+        blendModeSetup[blendMode].colorMode;
+
+    painter.getOrCreateProgram('lineBlendComposite').draw(painter, gl.TRIANGLES,
+        DepthMode.disabled, StencilMode.disabled,
+        drapeColorMode,
+        CullFaceMode.disabled,
+        lineBlendCompositeUniformValues(0, opacity, blendModeSetup[blendMode].compositeUniformValue),
+        layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer,
+        painter.viewportSegments, layer.paint, painter.transform.zoom);
+}
+

@@ -212,5 +212,5 @@ export {
     fillOutlinePatternUniformValues,
     elevatedStructuresDepthUniformValues,
     elevatedStructuresUniformValues,
-    elevatedStructuresDepthReconstructUniformValues
+    elevatedStructuresDepthReconstructUniformValues,
 };

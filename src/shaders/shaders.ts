@@ -37,6 +37,8 @@ import fillOutlinePatternFrag from './fill_outline_pattern.fragment.glsl';
 import fillOutlinePatternVert from './fill_outline_pattern.vertex.glsl';
 import fillPatternFrag from './fill_pattern.fragment.glsl';
 import fillPatternVert from './fill_pattern.vertex.glsl';
+import lineBlendCompositeFrag from './line_blend_composite.fragment.glsl';
+import lineBlendCompositeVert from './line_blend_composite.vertex.glsl';
 import fillExtrusionFrag from './fill_extrusion.fragment.glsl';
 import fillExtrusionVert from './fill_extrusion.vertex.glsl';
 import fillExtrusionPatternFrag from './fill_extrusion_pattern.fragment.glsl';
@@ -189,6 +191,7 @@ export default {
     fillOutline: compile(fillOutlineFrag, fillOutlineVert),
     fillOutlinePattern: compile(fillOutlinePatternFrag, fillOutlinePatternVert),
     fillPattern: compile(fillPatternFrag, fillPatternVert),
+    lineBlendComposite: compile(lineBlendCompositeFrag, lineBlendCompositeVert),
     fillExtrusion: compile(fillExtrusionFrag, fillExtrusionVert),
     fillExtrusionDepth: compile(fillExtrusionDepthFrag, fillExtrusionDepthVert),
     fillExtrusionPattern: compile(fillExtrusionPatternFrag, fillExtrusionPatternVert),

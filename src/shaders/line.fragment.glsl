@@ -182,6 +182,20 @@ void main() {
 
     out_color *= (alpha * diluted_opacity);
 
+#ifdef LINE_BLEND_MULTIPLY
+    // In multiply blend mode the FBO accumulates per-line multiply factors using
+    // ColorMode.multiply ([DST_COLOR, ZERO]).  Each fragment must therefore output
+    // the factor by which the background should be scaled for this line at this
+    // coverage level:
+    //   factor = 1 - a*(1 - C)  (lerp between 1=no-op and C=full multiply)
+    // out_color is premultiplied: out_color.rgb = C*a, out_color.a = a, so:
+    //   factor.rgb = out_color.rgb + (1.0 - out_color.a)
+    // Output alpha=1 so the DST_COLOR blend sees a solid factor with no alpha scaling.
+    glFragColor = vec4(out_color.rgb + (1.0 - out_color.a), 1.0);
+    HANDLE_WIREFRAME_DEBUG;
+    return;
+#endif
+
 #ifdef INDICATOR_CUTOUT
     out_color = applyCutout(out_color, v_z_offset);
 #endif

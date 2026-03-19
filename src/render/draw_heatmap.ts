@@ -9,10 +9,9 @@ import {
     heatmapTextureUniformValues
 } from './program/heatmap_program';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
+import Framebuffer from '../gl/framebuffer';
 
 import type Painter from './painter';
-import type Context from '../gl/context';
-import type Framebuffer from '../gl/framebuffer';
 import type SourceCache from '../source/source_cache';
 import type HeatmapStyleLayer from '../style/style_layer/heatmap_style_layer';
 import type HeatmapBucket from '../data/bucket/heatmap_bucket';
@@ -36,8 +35,9 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         // Turn on additive blending for kernels, which is a key aspect of kernel density estimation formula
         const colorMode = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]);
         const resolutionScaling = painter.transform.projection.name === 'globe' ? 0.5 : 0.25;
-
-        bindFramebuffer(context, painter, layer, resolutionScaling);
+        const width = painter.width * resolutionScaling;
+        const height = painter.height * resolutionScaling;
+        layer.heatmapFbo = Framebuffer.createWithTexture(context, layer.heatmapFbo, width, height);
 
         context.clear({color: Color.transparent});
 
@@ -86,45 +86,6 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         painter.context.setColorMode(painter.colorModeForRenderPass());
         renderTextureToMap(painter, layer);
     }
-}
-
-function bindFramebuffer(context: Context, painter: Painter, layer: HeatmapStyleLayer, scaling: number) {
-    const gl = context.gl;
-    const width = painter.width * scaling;
-    const height = painter.height * scaling;
-
-    context.activeTexture.set(gl.TEXTURE1);
-    context.viewport.set([0, 0, width, height]);
-
-    let fbo = layer.heatmapFbo;
-
-    if (!fbo || (fbo && (fbo.width !== width || fbo.height !== height))) {
-        if (fbo) { fbo.destroy(); }
-
-        const texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-        fbo = layer.heatmapFbo = context.createFramebuffer(width, height, 1, null);
-
-        bindTextureToFramebuffer(context, painter, texture, fbo, width, height);
-
-    } else {
-        gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment0.get());
-        context.bindFramebuffer.set(fbo.framebuffer);
-    }
-}
-
-function bindTextureToFramebuffer(context: Context, painter: Painter, texture: WebGLTexture | null | undefined, fbo: Framebuffer, width: number, height: number) {
-    const gl = context.gl;
-    // Use the higher precision half-float texture where available (producing much smoother looking heatmaps);
-    // Otherwise, fall back to a low precision texture
-    const type = context.extRenderToTextureHalfFloat ? gl.HALF_FLOAT : gl.UNSIGNED_BYTE;
-    gl.texImage2D(gl.TEXTURE_2D, 0, context.extRenderToTextureHalfFloat ? gl.RGBA16F : gl.RGBA, width, height, 0, gl.RGBA, type, null);
-    fbo.colorAttachment0.set(texture);
 }
 
 function renderTextureToMap(painter: Painter, layer: HeatmapStyleLayer) {

@@ -1,5 +1,6 @@
 import {fillExtrusionDepthUniforms, fillExtrusionUniforms, fillExtrusionPatternUniforms, fillExtrusionGroundEffectUniforms} from './fill_extrusion_program';
 import {fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms, elevatedStructuresDepthUniforms, elevatedStructuresUniforms, elevatedStructuresDepthReconstructUniforms} from './fill_program';
+import {lineBlendCompositeUniforms} from './line_blend_composite_program';
 import {buildingUniforms, buildingBloomUniforms, buildingDepthUniforms, type BuildingDefinesType} from '../../../3d-style/render/program/building_program';
 import {circleUniforms} from './circle_program';
 import {collisionUniforms, collisionCircleUniforms, type CollisionDebugDefinesType} from './collision_program';
@@ -81,6 +82,7 @@ export const programUniforms = {
     fillPattern: fillPatternUniforms,
     fillOutline: fillOutlineUniforms,
     fillOutlinePattern: fillOutlinePatternUniforms,
+    lineBlendComposite: lineBlendCompositeUniforms,
     building: buildingUniforms,
     buildingBloom: buildingBloomUniforms,
     buildingDepth: buildingDepthUniforms,
