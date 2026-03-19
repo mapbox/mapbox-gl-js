@@ -2,12 +2,17 @@
 #include "_prelude_shadow.vertex.glsl"
 
 in vec3 a_pos_3f;
-in vec3 a_normal_3;
-in vec3 a_centroid_3;
-in float a_flood_light_wall_radius_1i16;
+in ivec3 a_normal_3;
+in ivec3 a_centroid_3;
 
-in vec4 a_faux_facade_data;
-in vec2 a_faux_facade_vertical_range;
+#ifdef FLOOD_LIGHT
+in int a_flood_light_wall_radius_1i16;
+#endif
+
+#ifdef BUILDING_FAUX_FACADE
+in uvec4 a_faux_facade_data;
+in uvec2 a_faux_facade_vertical_range;
+#endif
 
 uniform mat4 u_matrix;
 uniform mat4 u_normal_matrix;
@@ -59,39 +64,40 @@ mat3 get_tbn(in vec3 normal) {
     return mat3(tangent, bitangent, normal);
 }
 #endif
-#pragma mapbox: define-attribute-vertex-shader-only highp vec2 part_color_emissive
-#pragma mapbox: define-attribute-vertex-shader-only highp vec2 faux_facade_color_emissive
+#pragma mapbox: define-attribute-vertex-shader-only highp uvec2 part_color_emissive
+#pragma mapbox: define-attribute-vertex-shader-only highp uvec2 faux_facade_color_emissive
 
 void main() {
-    #pragma mapbox: initialize-attribute-custom highp vec2 part_color_emissive
-    #pragma mapbox: initialize-attribute-custom highp vec2 faux_facade_color_emissive
+    #pragma mapbox: initialize-attribute-custom highp uvec2 part_color_emissive
+    #pragma mapbox: initialize-attribute-custom highp uvec2 faux_facade_color_emissive
 
 #ifdef FLOOD_LIGHT
-    v_flood_radius = (a_flood_light_wall_radius_1i16 / MAX_INT_16 * FLOOD_LIGHT_MAX_RADIUS_METER);
+    v_flood_radius = (float(a_flood_light_wall_radius_1i16) / MAX_INT_16 * FLOOD_LIGHT_MAX_RADIUS_METER);
     v_has_flood_light = step(0.0, v_flood_radius);
 #endif
 
-    vec4 color_emissive = decode_color(part_color_emissive);
+    vec4 color_emissive = decode_color(vec2(part_color_emissive));
     v_color = vec4(sRGBToLinear(color_emissive.rgb), color_emissive.a);
 
-    vec3 a_normal_3f = a_normal_3 / MAX_INT_16;
+    vec3 a_normal_3f = vec3(a_normal_3) / MAX_INT_16;
     v_normal = vec3(u_normal_matrix * vec4(a_normal_3f, 0.0));
 
     float hidden = 0.0;
     float depth_offset = 0.0;
 #ifdef BUILDING_FAUX_FACADE
-    v_faux_facade = a_faux_facade_data.x;
+    vec4 faux_facade_data = vec4(a_faux_facade_data);
+    v_faux_facade = faux_facade_data.x;
     if (v_faux_facade > 0.0) {
-        v_faux_facade_ed = a_faux_facade_data.x  * u_tile_to_meter;
+        v_faux_facade_ed = faux_facade_data.x  * u_tile_to_meter;
 
-        float window_x_perc = floor(a_faux_facade_data.y / TWO_POW_8);
-        float window_y_perc = a_faux_facade_data.y - TWO_POW_8 * window_x_perc;
+        float window_x_perc = floor(faux_facade_data.y / TWO_POW_8);
+        float window_y_perc = faux_facade_data.y - TWO_POW_8 * window_x_perc;
         vec2 window_perc = vec2(window_x_perc, window_y_perc) / MAX_UINT_8;
 
-        v_faux_facade_floor = (a_faux_facade_data.zw / MAX_UINT_16 * EXTENT) * u_tile_to_meter;
+        v_faux_facade_floor = (faux_facade_data.zw / MAX_UINT_16 * EXTENT) * u_tile_to_meter;
         v_faux_facade_window = window_perc * v_faux_facade_floor;
 
-        v_faux_facade_range = (a_faux_facade_vertical_range / MAX_UINT_16 * EXTENT) * u_tile_to_meter;
+        v_faux_facade_range = (vec2(a_faux_facade_vertical_range) / MAX_UINT_16 * EXTENT) * u_tile_to_meter;
 
         v_aspect = v_faux_facade_window.x / v_faux_facade_window.y;
 
@@ -100,11 +106,10 @@ void main() {
         v_tbn_1 = tbn[1];
         v_tbn_2 = tbn[2];
 
-        v_faux_color_emissive = decode_color(faux_facade_color_emissive);
+        v_faux_color_emissive = decode_color(vec2(faux_facade_color_emissive));
         v_faux_color_emissive.rgb = sRGBToLinear(v_faux_color_emissive.rgb);
 
-        float height = a_centroid_3.z;
-        depth_offset = min(1000.0, height) * 0.0000002;
+        depth_offset = min(1000.0, float(a_centroid_3.z)) * 0.0000002;
     }
 #endif
     v_pos = a_pos_3f;

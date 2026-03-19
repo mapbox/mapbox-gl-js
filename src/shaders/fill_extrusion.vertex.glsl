@@ -13,16 +13,16 @@ uniform lowp float u_opacity;
 uniform float u_edge_radius;
 uniform float u_width_scale;
 
-in vec4 a_pos_normal_ed;
-in vec2 a_centroid_pos;
+in ivec4 a_pos_normal_ed;
+in uvec2 a_centroid_pos;
 
 #ifdef RENDER_WALL_MODE
-in vec3 a_join_normal_inside;
+in ivec3 a_join_normal_inside;
 #endif
 
 #ifdef PROJECTION_GLOBE_VIEW
-in vec3 a_pos_3;         // Projected position on the globe
-in vec3 a_pos_normal_3;  // Surface normal at the position
+in ivec3 a_pos_3;         // Projected position on the globe
+in ivec3 a_pos_normal_3;  // Surface normal at the position
 
 uniform mat4 u_inv_rot_matrix;
 uniform vec2 u_merc_center;
@@ -101,13 +101,14 @@ void main() {
     base *= u_vertical_scale;
     height *= u_vertical_scale;
     
-    vec4 pos_nx = floor(a_pos_normal_ed * 0.5);
+    vec4 pos_normal_ed = vec4(a_pos_normal_ed);
+    vec4 pos_nx = floor(pos_normal_ed * 0.5);
     // The least significant bits of a_pos_normal_ed hold:
     // x is 1 if it's on top, 0 for ground.
     // y is 1 if the normal points up, and 0 if it points to side.
     // z is sign of ny: 1 for positive, 0 for values <= 0.
     // w marks edge's start, 0 is for edge end, edgeDistance increases from start to end.
-    vec4 top_up_ny_start = a_pos_normal_ed - 2.0 * pos_nx;
+    vec4 top_up_ny_start = pos_normal_ed - 2.0 * pos_nx;
     vec3 top_up_ny = top_up_ny_start.xyz;
 
     float x_normal = pos_nx.z / 8192.0;
@@ -125,7 +126,7 @@ void main() {
 
     vec2 centroid_pos = vec2(0.0);
 #if defined(HAS_CENTROID) || defined(TERRAIN)
-    centroid_pos = a_centroid_pos;
+    centroid_pos = vec2(a_centroid_pos);
 #endif
 
     float ele = 0.0;
@@ -150,8 +151,8 @@ void main() {
     // If t > 0 (top) we always add the lift, otherwise (ground) we only add it if base height is > 0
     float lift = float((t + base) > 0.0) * u_height_lift;
     h += lift;
-    vec3 globe_normal = normalize(mix(a_pos_normal_3 / 16384.0, u_up_dir, u_zoom_transition));
-    vec3 globe_pos = a_pos_3 + globe_normal * (u_tile_up_scale * h);
+    vec3 globe_normal = normalize(mix(vec3(a_pos_normal_3) / 16384.0, u_up_dir, u_zoom_transition));
+    vec3 globe_pos = vec3(a_pos_3) + globe_normal * (u_tile_up_scale * h);
     vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, pos.xy, u_tile_id, u_merc_center) + u_up_dir * u_tile_up_scale * pos.z;
     pos = mix_globe_mercator(globe_pos, merc_pos, u_zoom_transition);
 #endif
@@ -183,9 +184,10 @@ void main() {
     float hidden = float((centroid_pos.x == 0.0 && centroid_pos.y == 1.0) || (cutoff == 0.0 && centroid_pos.x != 0.0) || (color.a == 0.0));
 
 #ifdef RENDER_WALL_MODE
-    vec2 wall_offset = u_width_scale * line_width * (a_join_normal_inside.xy / EXTENT);
-    scaled_pos.xy += (1.0 - a_join_normal_inside.z) * wall_offset * 0.5;
-    scaled_pos.xy -= a_join_normal_inside.z * wall_offset * 0.5;
+    vec3 join_normal_inside = vec3(a_join_normal_inside);
+    vec2 wall_offset = u_width_scale * line_width * (join_normal_inside.xy / EXTENT);
+    scaled_pos.xy += (1.0 - join_normal_inside.z) * wall_offset * 0.5;
+    scaled_pos.xy -= join_normal_inside.z * wall_offset * 0.5;
 #endif
     gl_Position = mix(u_matrix * vec4(scaled_pos, 1), AWAY, hidden);
     h = h - ele;

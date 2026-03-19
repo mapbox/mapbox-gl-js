@@ -313,7 +313,7 @@ function drawElevatedStructures(params: DrawFillParams) {
 
             const dynamicDefines: DynamicDefinesType[] = [];
             if (renderWithShadows) {
-                dynamicDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
+                dynamicDefines.push('RENDER_SHADOWS', 'NORMAL_OFFSET');
             }
             const program = painter.getOrCreateProgram(programName, {config: programConfiguration, overrideFog: affectedByFog, defines: dynamicDefines});
 
@@ -406,7 +406,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, multip
                 dynamicBuffers.push(bufferData.elevatedLayoutVertexBuffer);
             }
             if (renderWithShadows) {
-                dynamicDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
+                dynamicDefines.push('RENDER_SHADOWS', 'NORMAL_OFFSET');
             }
             if (isDraping && multipleRenderTargets) {
                 dynamicDefines.push('USE_MRT1');
@@ -542,8 +542,8 @@ function drawShadows(params: DrawFillParams) {
         const uniformValues = elevatedStructuresDepthUniformValues(tileMatrix, 0.0);
 
         program.draw(painter, gl.TRIANGLES, shadowRenderer.getShadowPassDepthMode(),
-            StencilMode.disabled, shadowRenderer.getShadowPassColorMode(), CullFaceMode.disabled, uniformValues,
-            layer.id, elevatedStructures.vertexBuffer, elevatedStructures.indexBuffer, elevatedStructures.shadowCasterSegments,
+            StencilMode.disabled, ColorMode.disabled, CullFaceMode.disabled, uniformValues, layer.id,
+            elevatedStructures.vertexBuffer, elevatedStructures.indexBuffer, elevatedStructures.shadowCasterSegments,
             layer.paint, painter.transform.zoom, programConfiguration);
     }
 }

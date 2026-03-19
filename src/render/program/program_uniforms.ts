@@ -41,7 +41,6 @@ export type TerrainDepthAccessDefinesType = 'DEPTH_D24' | 'DEPTH_OCCLUSION';
 
 type GlobalDefinesType =
     | 'DEBUG_WIREFRAME'
-    | 'DEPTH_TEXTURE'
     | 'FOG'
     | 'GLOBE'
     | 'LIGHTING_3D_ALPHA_EMISSIVENESS'

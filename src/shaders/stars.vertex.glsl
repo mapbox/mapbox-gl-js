@@ -5,7 +5,7 @@ in vec2 a_uv;
 // Per-star size multiplier
 in float a_size_scale;
 // Per-star transparency multiplier
-in float a_fade_opacity;
+in float a_opacity;
 
 // mvp
 uniform mat4 u_matrix;
@@ -23,7 +23,7 @@ out mediump float v_intensity;
 void main() {
     v_uv = a_uv;
 
-    v_intensity = a_fade_opacity * u_intensity_multiplier;
+    v_intensity = a_opacity * u_intensity_multiplier;
 
     vec3 pos = a_pos_3f;
 

@@ -209,7 +209,6 @@ class Painter {
     nextStencilID: number;
     id: string;
     _showOverdrawInspector: boolean;
-    _shadowMapDebug: boolean;
     cache: Record<string, Program<UniformBindings>>;
     symbolFadeChange: number;
     gpuTimers: GPUTimers;
@@ -1687,9 +1686,6 @@ class Painter {
                     defines.push('LIGHTING_3D_MODE');
                 }
             }
-        }
-        if (this.renderPass === 'shadow') {
-            if (!this._shadowMapDebug) defines.push('DEPTH_TEXTURE');
         }
         if (this.terrainRenderModeElevated()) {
             defines.push('TERRAIN');

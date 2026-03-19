@@ -258,17 +258,10 @@ export class ShadowRenderer {
         if (this._cascades.length === 0 || shadowParameters.shadowMapResolution !== this._cascades[0].texture.size[0]) {
             this._cascades = [];
             for (let i = 0; i < shadowParameters.cascadeCount; ++i) {
-                const useColor = painter._shadowMapDebug;
-
                 const gl = context.gl;
-                const fbo = context.createFramebuffer(width, height, useColor ? 1 : 0, 'texture');
+                const fbo = context.createFramebuffer(width, height, 0, 'texture');
                 const depthTexture = new Texture(context, {width, height, data: null}, gl.DEPTH_COMPONENT16);
                 fbo.depthAttachment.set(depthTexture.texture);
-
-                if (useColor) {
-                    const colorTexture = new Texture(context, {width, height, data: null}, gl.RGBA8);
-                    fbo.colorAttachment0.set(colorTexture.texture);
-                }
 
                 this._cascades.push({
                     framebuffer: fbo,
@@ -424,7 +417,7 @@ export class ShadowRenderer {
         if (cutoffParams.shouldRenderCutoff) {
             baseDefines.push('RENDER_CUTOFF');
         }
-        baseDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
+        baseDefines.push('RENDER_SHADOWS');
         if (this.useNormalOffset) {
             baseDefines.push('NORMAL_OFFSET');
         }
@@ -450,10 +443,6 @@ export class ShadowRenderer {
                 painter.tileExtentSegments, null, painter.transform.zoom,
                 null, null);
         }
-    }
-
-    getShadowPassColorMode(): Readonly<ColorMode> {
-        return this.painter._shadowMapDebug ? ColorMode.unblended : ColorMode.disabled;
     }
 
     getShadowPassDepthMode(): Readonly<DepthMode> {

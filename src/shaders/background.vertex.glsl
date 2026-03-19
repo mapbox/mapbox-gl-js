@@ -1,7 +1,7 @@
 #include "_prelude_fog.vertex.glsl"
 #include "_prelude_lighting.glsl"
 
-in vec2 a_pos;
+in ivec2 a_pos;
 
 uniform mat4 u_matrix;
 uniform mediump float u_emissive_strength;
@@ -21,7 +21,7 @@ void main() {
     v_color = apply_lighting_with_emission_ground(u_color, u_emissive_strength);
 #endif
 #ifdef FOG
-    v_fog_pos = fog_position(a_pos);
+    v_fog_pos = fog_position(vec2(a_pos));
 #endif
 #endif
 }

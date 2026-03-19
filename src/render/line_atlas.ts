@@ -205,9 +205,12 @@ class LineAtlas {
 
         this.nextRow += height;
 
+        const lengthInt = Math.floor(length);
+        const lengthFract = Math.round((length - lengthInt) * 65535);
+
         const pos = {
             tl: [y, n],
-            br: [length, 0]
+            br: [lengthInt, lengthFract]
         } as SpritePosition;
         this.positions[key] = pos;
         return pos;

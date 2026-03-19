@@ -52,11 +52,6 @@ vec2 unpack_float(const float packedValue) {
     return vec2(v0, packedIntValue - v0 * 256);
 }
 
-vec2 unpack_opacity(const float packedOpacity) {
-    int intOpacity = int(packedOpacity) / 2;
-    return vec2(float(intOpacity) / 127.0, mod(packedOpacity, 2.0));
-}
-
 // To minimize the number of attributes needed, we encode a 4-component
 // color into a pair of floats (i.e. a vec2) as follows:
 // [ floor(color.r * 255) * 256 + color.g * 255,
@@ -136,10 +131,10 @@ const vec4 AWAY = vec4(-1000.0, -1000.0, -1000.0, 1); // Normalized device coord
 
 // Handle skirt flag for terrain & globe shaders
 const float skirtOffset = 24575.0;
-vec3 decomposeToPosAndSkirt(vec2 posWithComposedSkirt)
+vec3 decomposeToPosAndSkirt(ivec2 posWithComposedSkirt)
 {
-    float skirt = float(posWithComposedSkirt.x >= skirtOffset);
-    vec2 pos = posWithComposedSkirt - vec2(skirt * skirtOffset, 0.0);
+    float skirt = float(float(posWithComposedSkirt.x) >= skirtOffset);
+    vec2 pos = vec2(posWithComposedSkirt) - vec2(skirt * skirtOffset, 0.0);
     return vec3(pos, skirt);
 }
 

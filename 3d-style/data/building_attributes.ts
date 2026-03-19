@@ -35,7 +35,7 @@ export const buildingBloomAttenuationAttributes: StructArrayLayout = createLayou
 ]);
 
 export const buildingFloodLightWallRadiusAttributes: StructArrayLayout = createLayout([
-    {name: 'a_flood_light_wall_radius_1i16',  components: 1, type: 'Uint16'}
+    {name: 'a_flood_light_wall_radius_1i16',  components: 1, type: 'Int16'}
 ]);
 
 export const {members, size, alignment} = buildingPositionAttributes;

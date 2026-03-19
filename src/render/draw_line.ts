@@ -166,7 +166,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
                 if (directionalLight && ambientLight) {
                     groundShadowFactor = calculateGroundShadowFactor(painter.style, directionalLight, ambientLight);
                 }
-                defines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
+                defines.push('RENDER_SHADOWS', 'NORMAL_OFFSET');
             }
 
             const programConfiguration = bucket.programConfigurations.get(layer.id);

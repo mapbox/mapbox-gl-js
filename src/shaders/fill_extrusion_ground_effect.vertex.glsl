@@ -1,8 +1,8 @@
 #include "_prelude_fog.vertex.glsl"
 
-in highp vec4 a_pos_end;
-in highp float a_angular_offset_factor;
-in highp float a_hidden_by_landmark;
+in highp ivec4 a_pos_end;
+in highp int a_angular_offset_factor;
+in highp uint a_hidden_by_landmark;
 
 #ifdef SDF_SUBPASS
 out highp vec2 v_pos;
@@ -33,19 +33,19 @@ const float NORM = 32767.0;
 void main() {
     #pragma mapbox: initialize highp float flood_light_ground_radius
 
-    vec2 p = a_pos_end.xy;
-    vec2 q = floor(a_pos_end.zw * 0.5);
-    vec2 start_bottom = a_pos_end.zw - q * 2.0;
+    vec4 pos_end = vec4(a_pos_end);
+    vec2 p = pos_end.xy;
+    vec2 q = floor(pos_end.zw * 0.5);
+    vec2 start_bottom = pos_end.zw - q * 2.0;
 
-    float fl_ground_radius = flood_light_ground_radius;
-    fl_ground_radius = abs(flood_light_ground_radius);
+    float fl_ground_radius = abs(flood_light_ground_radius);
     float direction = flood_light_ground_radius < 0.0 ? -1.0 : 1.0;
     float flood_radius_tile = fl_ground_radius * u_meter_to_tile;
     vec2 v = normalize(q - p);
     float ao_radius = u_ao.y / 3.5; // adjust AO radius slightly
     float effect_radius = mix(flood_radius_tile, ao_radius, u_ao_pass) + u_edge_radius;
 
-    float angular_offset_factor = a_angular_offset_factor / NORM * TANGENT_CUTOFF;
+    float angular_offset_factor = float(a_angular_offset_factor) / NORM * TANGENT_CUTOFF;
     float angular_offset = direction * angular_offset_factor * effect_radius;
 
     float top = 1.0 - start_bottom.y;
@@ -76,7 +76,7 @@ void main() {
 
     float hidden_by_landmark = 0.0;
 #ifdef HAS_CENTROID
-    hidden_by_landmark = a_hidden_by_landmark;
+    hidden_by_landmark = float(a_hidden_by_landmark);
 #endif
 
     float isFloodlit = float(fl_ground_radius > 0.0 && u_flood_light_intensity > 0.0);

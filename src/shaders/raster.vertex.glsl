@@ -24,8 +24,8 @@ uniform lowp float u_zbias_factor;
 in vec3 a_globe_pos;
 in vec2 a_uv;
 #else
-in vec2 a_pos;
-in vec2 a_texture_pos;
+in ivec2 a_pos;
+in uvec2 a_texture_pos;
 #endif
 
 out vec2 v_pos0;
@@ -45,7 +45,7 @@ void main() {
     ele += elevation(uv * EXTENT);
 #endif
     globe_pos += normalize(globe_pos) * ele * GLOBE_UPSCALE;
-    gl_Position = u_matrix * u_globe_matrix * vec4(globe_pos    , 1.0);
+    gl_Position = u_matrix * u_globe_matrix * vec4(globe_pos, 1.0);
 
 #ifdef FOG
     v_fog_pos = fog_position((u_normalize_matrix * vec4(a_globe_pos, 1.0)).xyz);
@@ -53,13 +53,13 @@ void main() {
 #else // else GLOBE_POLES
 vec4 world_pos;
 #ifdef PROJECTION_GLOBE_VIEW
+    vec2 texture_pos = vec2(a_texture_pos);
     // We are using Int16 for texture position coordinates to give us enough precision for
     // fractional coordinates. We use 8192 to scale the texture coordinates in the buffer
     // as an arbitrarily high number to preserve adequate precision when rendering.
     // This is also the same value as the EXTENT we are using for our tile buffer pos coordinates,
     // so math for modifying either is consistent.
-    uv = a_texture_pos / 8192.0;
-
+    uv = texture_pos / 8192.0;
     vec3 decomposed_pos_and_skirt = decomposeToPosAndSkirt(a_pos);
     vec3 latLng = u_grid_matrix * vec3(decomposed_pos_and_skirt.xy, 1.0);
     float mercatorY = mercatorYfromLat(latLng[0]);
@@ -106,7 +106,7 @@ vec4 world_pos;
 #endif // FOG
 #else // else PROJECTION_GLOBE_VIEW
     float ele = 0.0;
-    vec2 decodedPos = a_pos;
+    vec2 decodedPos = vec2(a_pos);
 #ifdef ELEVATION_REFERENCE_GROUND
     vec3 decomposedPosAndSkirt = decomposeToPosAndSkirt(a_pos);
     float skirt = decomposedPosAndSkirt.z;
@@ -114,7 +114,7 @@ vec4 world_pos;
     uv = decodedPos / 8192.0;
     ele = elevation(decodedPos) - skirt;
 #else // else ELEVATION_REFERENCE_GROUND
-    uv = a_texture_pos / 8192.0;
+    uv = vec2(a_texture_pos) / 8192.0;
 #endif // ELEVATION_REFERENCE_GROUND
     world_pos = vec4(decodedPos, (u_raster_elevation + ele), 1.0);
 #ifdef FOG

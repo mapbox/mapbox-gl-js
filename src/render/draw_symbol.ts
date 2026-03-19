@@ -472,7 +472,7 @@ function drawLayerSymbols(
             }
 
             if (renderWithShadows) {
-                baseDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
+                baseDefines.push('RENDER_SHADOWS', 'NORMAL_OFFSET');
             }
 
             if (renderElevatedRoads && iconPitchWithMap && !painter.terrain && bucket.icon.orientationVertexBuffer) {
@@ -585,7 +585,7 @@ function drawLayerSymbols(
             baseDefines.push('RENDER_SDF');
 
             if (renderWithShadows) {
-                baseDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
+                baseDefines.push('RENDER_SHADOWS', 'NORMAL_OFFSET');
             }
 
             if (renderElevatedRoads && textPitchWithMap && !painter.terrain && bucket.text.orientationVertexBuffer) {

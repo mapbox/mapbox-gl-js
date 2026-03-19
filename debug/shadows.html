@@ -127,9 +127,6 @@ var map = window.map = new mapboxgl.Map({
     hash: true,
 });
 
-// Enable shadow map rendering to color texture as well
-map.painter._shadowMapDebug = true;
-
 map.on('load', () => {
     map.addSource('mapbox-dem', {
         'type': 'raster-dem',

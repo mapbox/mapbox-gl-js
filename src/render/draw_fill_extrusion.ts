@@ -104,9 +104,8 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             }
         }
         const depthMode = shadowRenderer.getShadowPassDepthMode();
-        const colorMode = shadowRenderer.getShadowPassColorMode();
 
-        drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, conflateLayer);
+        drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, ColorMode.disabled, conflateLayer);
     } else if (painter.renderPass === 'translucent') {
 
         const noPattern = !layer.paint.get('fill-extrusion-pattern').constantOr(1);
@@ -382,7 +381,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         }
 
         if (!isShadowPass) {
-            baseDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
+            baseDefines.push('RENDER_SHADOWS');
             if (shadowRenderer.useNormalOffset) {
                 baseDefines.push('NORMAL_OFFSET');
             }
@@ -435,7 +434,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
         if (!bucket.centroidVertexBuffer) {
             const attrIndex = program.getAttributeLocation(gl, 'a_centroid_pos');
-            if (attrIndex !== -1) gl.vertexAttrib2f(attrIndex, 0, 0);
+            if (attrIndex !== -1) gl.vertexAttribI4ui(attrIndex, 0, 0, 0, 0);
         }
 
         if (!isShadowPass && shadowRenderer) {

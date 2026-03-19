@@ -499,6 +499,7 @@ export class SymbolBuffers {
 
     destroy() {
         if (!this.layoutVertexBuffer) return;
+
         this.layoutVertexBuffer.destroy();
         this.indexBuffer.destroy();
         this.programConfigurations.destroy();

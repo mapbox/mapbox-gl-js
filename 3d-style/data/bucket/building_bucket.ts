@@ -847,9 +847,9 @@ export class BuildingBucket implements BucketWithGroundEffect {
                 }
 
                 if (mesh.buildingPart === BUILDING_PART_WALL) {
-                    building.layoutFloodLightDataArray.uint16.fill(floodLightWallRadiusNormalized, partVertexOffset, partVertexOffset + partVertexCount);
+                    building.layoutFloodLightDataArray.int16.fill(floodLightWallRadiusNormalized, partVertexOffset, partVertexOffset + partVertexCount);
                 } else {
-                    building.layoutFloodLightDataArray.uint16.fill(0, partVertexOffset, partVertexOffset + partVertexCount);
+                    building.layoutFloodLightDataArray.int16.fill(0, partVertexOffset, partVertexOffset + partVertexCount);
                 }
 
                 if (hasFauxFacade) {

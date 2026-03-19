@@ -16,16 +16,16 @@ uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
 
-in vec4 a_pos_normal_ed;
-in vec2 a_centroid_pos;
+in ivec4 a_pos_normal_ed;
+in uvec2 a_centroid_pos;
 
 #ifdef RENDER_WALL_MODE
-in vec3 a_join_normal_inside;
+in ivec3 a_join_normal_inside;
 #endif
 
 #ifdef PROJECTION_GLOBE_VIEW
-in vec3 a_pos_3;         // Projected position on the globe
-in vec3 a_pos_normal_3;  // Surface normal at the position
+in ivec3 a_pos_3;         // Projected position on the globe
+in ivec3 a_pos_normal_3;  // Surface normal at the position
 
 uniform mat4 u_inv_rot_matrix;
 uniform vec2 u_merc_center;
@@ -55,9 +55,9 @@ out vec3 v_normal;
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
 #pragma mapbox: define highp vec4 color
-#pragma mapbox: define mediump vec4 pattern
+#pragma mapbox: define mediump uvec4 pattern
 #ifdef FILL_EXTRUSION_PATTERN_TRANSITION
-#pragma mapbox: define mediump vec4 pattern_b
+#pragma mapbox: define mediump uvec4 pattern_b
 #endif
 #pragma mapbox: define highp float pixel_ratio
 #pragma mapbox: define highp float line_width
@@ -69,28 +69,29 @@ void main() {
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
     #pragma mapbox: initialize highp vec4 color
-    #pragma mapbox: initialize mediump vec4 pattern
+    #pragma mapbox: initialize mediump uvec4 pattern
     #ifdef FILL_EXTRUSION_PATTERN_TRANSITION
-    #pragma mapbox: initialize mediump vec4 pattern_b
+    #pragma mapbox: initialize mediump uvec4 pattern_b
     #endif
     #pragma mapbox: initialize highp float pixel_ratio
     #pragma mapbox: initialize highp float line_width
 
-    vec2 pattern_tl = pattern.xy;
-    vec2 pattern_br = pattern.zw;
+    vec2 pattern_tl = vec2(pattern.xy);
+    vec2 pattern_br = vec2(pattern.zw);
 
-    vec4 pos_nx = floor(a_pos_normal_ed * 0.5);
-    // The least significant bits of a_pos_normal_ed.xy hold:
+    vec4 pos_normal_ed = vec4(a_pos_normal_ed);
+    vec4 pos_nx = floor(pos_normal_ed * 0.5);
+    // The least significant bits of a_pos_normal_ed hold:
     // x is 1 if it's on top, 0 for ground.
     // y is 1 if the normal points up, and 0 if it points to side.
     // z is sign of ny: 1 for positive, 0 for values <= 0.
     // w marks edge's start, 0 is for edge end, edgeDistance increases from start to end.
-    mediump vec4 top_up_ny_start = a_pos_normal_ed - 2.0 * pos_nx;
+    mediump vec4 top_up_ny_start = pos_normal_ed - 2.0 * pos_nx;
     mediump vec3 top_up_ny = top_up_ny_start.xyz;
 
     float x_normal = pos_nx.z / 8192.0;
     vec3 normal = top_up_ny.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
-    float edgedistance = a_pos_normal_ed.w;
+    float edgedistance = pos_normal_ed.w;
 
     vec2 display_size = (pattern_br - pattern_tl) / pixel_ratio;
 
@@ -102,7 +103,7 @@ void main() {
 
     vec2 centroid_pos = vec2(0.0);
 #if defined(HAS_CENTROID) || defined(TERRAIN)
-    centroid_pos = a_centroid_pos;
+    centroid_pos = vec2(a_centroid_pos);
 #endif
 
     float ele = 0.0;
@@ -126,16 +127,17 @@ void main() {
     // If t > 0 (top) we always add the lift, otherwise (ground) we only add it if base height is > 0
     float lift = float((t + base) > 0.0) * u_height_lift;
     h += lift;
-    vec3 globe_normal = normalize(mix(a_pos_normal_3 / 16384.0, u_up_dir, u_zoom_transition));
-    vec3 globe_pos = a_pos_3 + globe_normal * (u_tile_up_scale * (p.z + lift));
+    vec3 globe_normal = normalize(mix(vec3(a_pos_normal_3) / 16384.0, u_up_dir, u_zoom_transition));
+    vec3 globe_pos = vec3(a_pos_3) + globe_normal * (u_tile_up_scale * (p.z + lift));
     vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, p.xy, u_tile_id, u_merc_center) + u_up_dir * u_tile_up_scale * p.z;
     p = mix_globe_mercator(globe_pos, merc_pos, u_zoom_transition);
 #endif
 
 #ifdef RENDER_WALL_MODE
-    vec2 wall_offset = u_width_scale * line_width * (a_join_normal_inside.xy / EXTENT);
-    p.xy += (1.0 - a_join_normal_inside.z) * wall_offset * 0.5;
-    p.xy -= a_join_normal_inside.z * wall_offset * 0.5;
+    vec3 join_normal_inside = vec3(a_join_normal_inside);
+    vec2 wall_offset = u_width_scale * line_width * (join_normal_inside.xy / EXTENT);
+    p.xy += (1.0 - join_normal_inside.z) * wall_offset * 0.5;
+    p.xy -= join_normal_inside.z * wall_offset * 0.5;
 #endif
     float hidden = float((centroid_pos.x == 0.0 && centroid_pos.y == 1.0) || (color.a == 0.0));
     gl_Position = mix(u_matrix * vec4(p, 1), AWAY, hidden);

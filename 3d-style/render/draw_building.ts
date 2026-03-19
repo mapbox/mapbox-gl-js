@@ -336,7 +336,6 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
         ];
 
         const depthMode = shadowRenderer.getShadowPassDepthMode();
-        const colorMode = shadowRenderer.getShadowPassColorMode();
 
         drawTiles({
             painter,
@@ -344,7 +343,7 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
             layer,
             coords,
             defines: definesForPass,
-            blendMode: colorMode,
+            blendMode: ColorMode.disabled,
             depthMode,
             opacity,
             verticalScale,
@@ -361,7 +360,7 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
         ];
 
         if (receiveShadowsEnabled) {
-            definesForPass = definesForPass.concat("RENDER_SHADOWS", "DEPTH_TEXTURE");
+            definesForPass = definesForPass.concat("RENDER_SHADOWS");
         }
 
         if (painter.shadowRenderer && painter.shadowRenderer.useNormalOffset) {

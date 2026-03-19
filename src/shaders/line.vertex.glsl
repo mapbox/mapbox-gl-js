@@ -10,8 +10,8 @@
 // #define scale 63.0
 #define EXTRUDE_SCALE 0.015873016
 
-in vec2 a_pos_normal;
-in vec4 a_data;
+in ivec2 a_pos_normal;
+in uvec4 a_data;
 #if defined(ELEVATED) || defined(ELEVATED_ROADS) || defined(VARIABLE_LINE_WIDTH)
 in vec3 a_z_offset_width;
 #endif
@@ -95,7 +95,7 @@ out highp float v_depth;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float floorwidth
-#pragma mapbox: define lowp vec4 dash
+#pragma mapbox: define mediump uvec4 dash
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define mediump float gapwidth
@@ -178,7 +178,7 @@ CurveResult calculateCurve(float line_progress) {
 void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize lowp float floorwidth
-    #pragma mapbox: initialize lowp vec4 dash
+    #pragma mapbox: initialize mediump uvec4 dash
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize mediump float gapwidth
@@ -203,14 +203,15 @@ void main() {
     // Retina devices need a smaller distance to avoid aliasing.
     float ANTIALIASING = 1.0 / u_device_pixel_ratio / 2.0;
 
-    vec2 a_extrude = a_data.xy - 128.0;
-    float a_direction = mod(a_data.z, 4.0) - 1.0;
-    vec2 pos = floor(a_pos_normal * 0.5);
+    vec2 a_extrude = vec2(a_data.xy) - 128.0;
+    float a_direction = float(a_data.z & 3u) - 1.0;
+    vec2 pos_normal = vec2(a_pos_normal);
+    vec2 pos = floor(pos_normal * 0.5);
 
     // x is 1 if it's a round cap, 0 otherwise
     // y is 1 if the normal points up, and -1 if it points down
     // We store these in the least significant bit of a_pos_normal
-    mediump vec2 normal = a_pos_normal - 2.0 * pos;
+    mediump vec2 normal = pos_normal - 2.0 * pos;
     normal.y = normal.y * 2.0 - 1.0;
 
     v_normal = normal;
@@ -298,7 +299,7 @@ void main() {
 #ifdef CROSS_SLOPE_VERTICAL
     // Vertical line
     // The least significant bit of a_pos_normal.y hold 1 if it's on top, 0 for bottom
-    float top = a_pos_normal.y - 2.0 * floor(a_pos_normal.y * 0.5);
+    float top = pos_normal.y - 2.0 * floor(pos_normal.y * 0.5);
     float line_height = 2.0 * u_tile_to_meter * outset * top * u_pixels_to_tile_units[1][1] + scaled_z_offset;
     ele = sample_elevation(offset_pos) + line_height;
     // Ignore projected extrude for vertical lines
@@ -407,10 +408,11 @@ void main() {
 #endif
 
 #ifdef RENDER_LINE_DASH
-    float scale = dash.z == 0.0 ? 0.0 : u_tile_units_to_pixels / dash.z;
-    float height = dash.y;
+    vec4 dashf = vec4(dash);
+    float totalLength = dashf.z + dashf.w / 65535.0;
+    float scale = totalLength == 0.0 ? 0.0 : u_tile_units_to_pixels / totalLength;
 
-    v_tex = vec2(a_linesofar * scale / (floorwidth * u_floor_width_scale), (-normal.y * height + dash.x + 0.5) / u_texsize.y);
+    v_tex = vec2(a_linesofar * scale / (floorwidth * u_floor_width_scale), (-normal.y * dashf.y + dashf.x + 0.5) / u_texsize.y);
 #endif
 
     v_width2_dilute = vec4(outset, inset, dilute_scale, dilute_border_scale);

@@ -52,7 +52,7 @@ float luminance(vec3 c) {
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float floorwidth
-#pragma mapbox: define lowp vec4 dash
+#pragma mapbox: define mediump uvec4 dash
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define mediump float side_z_offset
@@ -67,7 +67,7 @@ float linearstep(float edge0, float edge1, float x) {
 void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize lowp float floorwidth
-    #pragma mapbox: initialize lowp vec4 dash
+    #pragma mapbox: initialize mediump uvec4 dash
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize mediump float side_z_offset
@@ -94,7 +94,7 @@ void main() {
 
 #ifdef RENDER_LINE_DASH
     float sdfdist = texture(u_dash_image, v_tex).r;
-    float sdfgamma = 1.0 / (2.0 * u_device_pixel_ratio) / dash.z;
+    float sdfgamma = 1.0 / (2.0 * u_device_pixel_ratio) / float(dash.z);
     float scaled_floorwidth = (floorwidth * u_floor_width_scale);
     alpha *= linearstep(0.5 - sdfgamma / scaled_floorwidth, 0.5 + sdfgamma / scaled_floorwidth, sdfdist);
 #endif

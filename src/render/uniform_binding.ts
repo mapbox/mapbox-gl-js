@@ -100,6 +100,22 @@ class Uniform3f extends Uniform<[number, number, number]> implements IUniform<[n
     }
 }
 
+class Uniform4ui extends Uniform<[number, number, number, number]> implements IUniform<[number, number, number, number]> {
+    constructor(context: Context) {
+        super(context);
+        this.current = [0, 0, 0, 0];
+    }
+
+    override set(program: WebGLProgram, name: string, v: [number, number, number, number]): void {
+        if (!this.fetchUniformLocation(program, name)) return;
+        if (v[0] !== this.current[0] || v[1] !== this.current[1] ||
+            v[2] !== this.current[2] || v[3] !== this.current[3]) {
+            this.current = v;
+            this.gl.uniform4ui(this.location, v[0], v[1], v[2], v[3]);
+        }
+    }
+}
+
 class Uniform4f extends Uniform<[number, number, number, number]> implements IUniform<[number, number, number, number]> {
     constructor(context: Context) {
         super(context);
@@ -202,6 +218,7 @@ export {
     Uniform1f,
     Uniform2f,
     Uniform3f,
+    Uniform4ui,
     Uniform4f,
     UniformColor,
     UniformMatrix2f,

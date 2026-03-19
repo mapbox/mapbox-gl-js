@@ -4,7 +4,7 @@
 uniform mat4 u_matrix;
 uniform float u_skirt_height;
 
-in vec2 a_pos;
+in ivec2 a_pos;
 
 out vec2 v_pos0;
 

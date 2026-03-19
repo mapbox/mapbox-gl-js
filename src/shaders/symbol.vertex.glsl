@@ -3,22 +3,22 @@
 
 #define USING_APPEARANCE 1.0
 
-in vec4 a_pos_offset;
-in vec4 a_tex_size;
-in vec4 a_pixeloffset;
+in ivec4 a_pos_offset;
+in uvec4 a_tex_size;
+in ivec4 a_pixeloffset;
 in vec4 a_projected_pos;
-in float a_fade_opacity;
+in uint a_fade_opacity;
 
 #ifdef Z_OFFSET
 in float a_auto_z_offset;
 #endif
 #ifdef PROJECTION_GLOBE_VIEW
-in vec3 a_globe_anchor;
+in ivec3 a_globe_anchor;
 in vec3 a_globe_normal;
 #endif
 
 #ifdef ICON_TRANSITION
-in vec2 a_texb;
+in uvec2 a_texb;
 #endif
 
 #ifdef OCCLUSION_QUERIES
@@ -342,6 +342,10 @@ SymbolPaintProperties readSymbolPaintProperties() {
 
 #endif // USE_PAINT_PROPERTIES_UBO
 
+vec2 unpack_opacity(uint packedOpacity) {
+    return vec2(float(packedOpacity / 2u) / 127.0, float(packedOpacity & 1u));
+}
+
 void main() {
 
 #ifdef USE_PAINT_PROPERTIES_UBO
@@ -375,17 +379,17 @@ void main() {
 
 #endif // USE_PAINT_PROPERTIES_UBO
 
-    vec2 a_pos = a_pos_offset.xy;
-    vec2 a_offset = a_pos_offset.zw;
+    vec2 a_pos = vec2(a_pos_offset.xy);
+    vec2 a_offset = vec2(a_pos_offset.zw);
 
-    vec2 a_tex = a_tex_size.xy;
-    vec2 a_size = a_tex_size.zw;
+    vec2 a_tex = vec2(a_tex_size.xy);
+    vec2 a_size = vec2(a_tex_size.zw);
 
     float a_size_min = floor(a_size[0] * 0.5);
     float a_size_max =  floor(a_size[1] * 0.5);
     float a_apperance = a_size[1] - 2.0 * a_size_max;
-    vec2 a_pxoffset = a_pixeloffset.xy;
-    vec2 a_min_font_scale = a_pixeloffset.zw / 256.0;
+    vec2 a_pxoffset = vec2(a_pixeloffset.xy);
+    vec2 a_min_font_scale = vec2(a_pixeloffset.zw) / 256.0;
 
     highp float segment_angle = -a_projected_pos[3];
     float size;
@@ -415,7 +419,7 @@ void main() {
     vec3 world_pos_globe;
 #ifdef PROJECTION_GLOBE_VIEW
     mercator_pos = mercator_tile_position(u_inv_rot_matrix, tile_anchor, u_tile_id, u_merc_center);
-    world_pos_globe = a_globe_anchor + h;
+    world_pos_globe = vec3(a_globe_anchor) + h;
     world_pos = mix_globe_mercator(world_pos_globe, mercator_pos, u_zoom_transition);
 
     vec4 ecef_point = u_tile_matrix * vec4(world_pos, 1.0);
@@ -459,7 +463,7 @@ void main() {
 #ifdef PROJECTION_GLOBE_VIEW
         // Use x-axis of the label plane for displacement (x_axis = cross(normal, vec3(0, -1, 0)))
         vec3 displacement = vec3(a_globe_normal.z, 0, -a_globe_normal.x);
-        offsetprojected_point = u_matrix * vec4(a_globe_anchor + displacement, 1);
+        offsetprojected_point = u_matrix * vec4(vec3(a_globe_anchor) + displacement, 1);
         vec4 projected_point_globe = u_matrix * vec4(world_pos_globe, 1);
         a = projected_point_globe.xy / projected_point_globe.w;
 #else
@@ -557,7 +561,7 @@ void main() {
     v_tex_a_icon = a_tex / u_texsize_icon;
 #endif
 #ifdef ICON_TRANSITION
-    v_tex_b = a_texb / u_texsize;
+    v_tex_b = vec2(a_texb) / u_texsize;
 #endif
 
 #ifdef RENDER_SHADOWS

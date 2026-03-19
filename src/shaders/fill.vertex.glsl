@@ -1,7 +1,7 @@
 #include "_prelude_fog.vertex.glsl"
 #include "_prelude_shadow.vertex.glsl"
 
-in vec2 a_pos;
+in ivec2 a_pos;
 #ifdef ELEVATED_ROADS
 in float a_road_z_offset;
 out highp float v_road_z_offset;
@@ -52,7 +52,7 @@ void main() {
 #endif
 
 #ifdef FOG
-    v_fog_pos = fog_position(a_pos);
+    v_fog_pos = fog_position(vec2(a_pos));
 #endif
 #ifdef INDICATOR_CUTOUT
     v_z_offset = z_offset;

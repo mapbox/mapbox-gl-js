@@ -7,7 +7,7 @@ in vec3 a_pos_3f;
 #pragma mapbox: define-attribute highp vec2 uv_2f
 #pragma mapbox: define-attribute highp vec3 color_3f
 #pragma mapbox: define-attribute highp vec4 color_4f
-#pragma mapbox: define-attribute-vertex-shader-only highp vec4 pbr
+#pragma mapbox: define-attribute-vertex-shader-only highp uvec4 pbr
 #pragma mapbox: define-attribute-vertex-shader-only highp vec3 heightBasedEmissiveStrength
 
 // pbr
@@ -70,7 +70,7 @@ void main() {
     #pragma mapbox: initialize-attribute highp vec2 uv_2f
     #pragma mapbox: initialize-attribute highp vec3 color_3f
     #pragma mapbox: initialize-attribute highp vec4 color_4f
-    #pragma mapbox: initialize-attribute-custom highp vec4 pbr
+    #pragma mapbox: initialize-attribute-custom highp uvec4 pbr
     #pragma mapbox: initialize-attribute-custom highp vec3 heightBasedEmissiveStrength
 
     highp mat4 normal_matrix;
@@ -118,9 +118,9 @@ void main() {
 #endif
     v_position_height.w = a_pos_3f.z;
 #ifdef HAS_ATTRIBUTE_a_pbr
-    vec4 albedo_c = decode_color(pbr.xy);
+    vec4 albedo_c = decode_color(vec2(pbr.xy));
 
-    vec2 e_r_m = unpack_float(pbr.z);
+    vec2 e_r_m = unpack_float(float(pbr.z));
     vec2 r_m =  unpack_float(e_r_m.y * 16.0);
     r_m.r = r_m.r * 16.0;
 
@@ -134,7 +134,7 @@ void main() {
     v_height_based_emission_params.x = heightBasedRelativeIntepolation;
     v_height_based_emission_params.y = heightBasedEmissiveStrength.z;
 
-    vec2 emissionMultiplierValues = unpack_float(pbr.w) / 256.0;
+    vec2 emissionMultiplierValues = unpack_float(float(pbr.w)) / 256.0;
 
     v_height_based_emission_params.z = emissionMultiplierValues.x;
     v_height_based_emission_params.w = emissionMultiplierValues.y - emissionMultiplierValues.x;

@@ -163,7 +163,7 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
 
     const shadowRenderer = painter.shadowRenderer;
     if (shadowRenderer) {
-        definesValues.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
+        definesValues.push('RENDER_SHADOWS');
         if (shadowRenderer.useNormalOffset) {
             definesValues.push('NORMAL_OFFSET');
         }
@@ -343,13 +343,11 @@ function drawShadowCaster(mesh: Mesh, matrix: mat4, painter: Painter, layer: Mod
     const shadowRenderer = painter.shadowRenderer;
     if (!shadowRenderer) return;
     const depthMode = shadowRenderer.getShadowPassDepthMode();
-    const colorMode = shadowRenderer.getShadowPassColorMode();
     const shadowMatrix = shadowRenderer.calculateShadowPassMatrixFromMatrix(matrix);
     const uniformValues = modelDepthUniformValues(shadowMatrix);
-    const definesValues = (painter._shadowMapDebug) ? [] : ['DEPTH_TEXTURE'];
-    const program = painter.getOrCreateProgram('modelDepth', {defines: (definesValues as DynamicDefinesType[])});
+    const program = painter.getOrCreateProgram('modelDepth');
     const context = painter.context;
-    program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
+    program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.disabled, CullFaceMode.disabled,
         uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
         undefined, undefined);
 }
@@ -957,7 +955,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Model
             if (isShadowPass && shadowRenderer) {
                 program = painter.getOrCreateProgram('modelDepth', {defines: (definesValues as DynamicDefinesType[])});
                 uniformValues = modelDepthUniformValues(renderData.shadowTileMatrix, renderData.shadowTileMatrix, Float32Array.from(node.globalMatrix));
-                colorMode = shadowRenderer.getShadowPassColorMode();
+                colorMode = ColorMode.disabled;
             } else {
 
                 const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';

@@ -1,6 +1,6 @@
 in vec2 a_pos_2f;
 in float a_radius;
-in vec2 a_flags;
+in ivec2 a_flags;
 
 uniform mat4 u_matrix;
 uniform mat4 u_inv_matrix;
@@ -27,12 +27,11 @@ vec3 toTilePosition(vec2 screenPos) {
 void main() {
     vec2 quadCenterPos = a_pos_2f;
     float radius = a_radius;
-    float collision = a_flags.x;
-    float vertexIdx = a_flags.y;
+    int vertexIdx = a_flags.y;
 
     vec2 quadVertexOffset = vec2(
-        mix(-1.0, 1.0, float(vertexIdx >= 2.0)),
-        mix(-1.0, 1.0, float(vertexIdx >= 1.0 && vertexIdx <= 2.0)));
+        mix(-1.0, 1.0, float(vertexIdx >= 2)),
+        mix(-1.0, 1.0, float(vertexIdx >= 1 && vertexIdx <= 2)));
 
     vec2 quadVertexExtent = quadVertexOffset * radius;
 
@@ -53,7 +52,7 @@ void main() {
     v_radius = radius;
     v_extrude = quadVertexExtent * padding_factor;
     v_perspective_ratio = collision_perspective_ratio;
-    v_collision = collision;
+    v_collision = float(a_flags.x);
 
     gl_Position = vec4(clipPos.xyz / clipPos.w, 1.0) + vec4(quadVertexExtent * padding_factor / u_viewport_size * 2.0, 0.0, 0.0);
 }

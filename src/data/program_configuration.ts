@@ -12,7 +12,7 @@ import FeaturePositionMap from './feature_position_map';
 import {
     Uniform1f,
     UniformColor,
-    Uniform4f
+    Uniform4ui
 } from '../render/uniform_binding';
 import assert from 'assert';
 
@@ -232,9 +232,11 @@ class PatternConstantBinder implements UniformBinder {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getBinding(context: Context, name: string): IUniform<any> {
-        return name === 'u_pattern' || name === 'u_pattern_b' || name === 'u_dash' ?
-            new Uniform4f(context) :
-            new Uniform1f(context);
+        if (name === 'u_pattern' || name === 'u_pattern_b' || name === 'u_dash') {
+            return new Uniform4ui(context);
+        } else {
+            return new Uniform1f(context);
+        }
     }
 }
 
