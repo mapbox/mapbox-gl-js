@@ -104,6 +104,16 @@ test('loadTileData with provider - {data: null} produces empty tile callback', a
     expect(callback).toHaveBeenCalledWith(null, null);
 });
 
+test('loadTileData with provider - rejection propagates as Error', async () => {
+    const source = makeSource(vi.fn().mockRejectedValue(new Error('network failure')));
+    const callback = vi.fn();
+    source.loadTileData(makeParams(), callback);
+    await vi.waitFor(() => expect(callback).toHaveBeenCalled());
+    const err = callback.mock.calls[0][0] as Error;
+    expect(err).toBeInstanceOf(Error);
+    expect(err.message).toBe('network failure');
+});
+
 test('loadTileData with provider - cancellation aborts and ignores settlement', async () => {
     let resolve: (value: TileDataResponse<ArrayBuffer>) => void = (_v) => {};
     const loadTile = vi.fn()

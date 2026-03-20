@@ -58,6 +58,7 @@ jobs:
     - run: npm run build -w vite-build-test
     - run: npm run build -w webpack-build-test
     - run: npm run size
+    - run: npm run build-pmtiles
     - run: npm run prepare-release-pages
       if: ${{ always() }}
 

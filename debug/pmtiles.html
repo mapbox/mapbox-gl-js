@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body,
+        #map {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+
+    <script src="../dist/mapbox-gl-dev.js"></script>
+    <script type="module">
+        import {getAccessToken} from './access_token_generated.js';
+        const accessToken = getAccessToken();
+        mapboxgl.accessToken = accessToken;
+
+        mapboxgl.addTileProvider('pmtiles', new URL('../packages/pmtiles-provider/dist/mapbox-gl-pmtiles-provider.js', import.meta.url).href);
+
+        const style = await fetch(`https://api.mapbox.com/styles/v1/mapbox/light-v11?access_token=${accessToken}`).then(response => response.json());
+
+        style.sources = {
+            composite: {
+                type: 'vector',
+                url: new URL('../test/integration/tiles/streets-v8-z0-z3.pmtiles', location.href).href
+            }
+        };
+
+        const map = window.map = new mapboxgl.Map({
+            container: 'map',
+            zoom: 1,
+            center: [0, 20],
+            hash: true,
+            style
+        });
+    </script>
+</body>
+
+</html>

@@ -36,6 +36,29 @@ describe('pmtiles_provider', () => {
             spy.mockRestore();
         });
 
+        test('loadTile returns data with cache headers', async () => {
+            const {default: PMTilesProvider} = await import('../src/pmtiles_provider');
+            const {PMTiles} = await import('pmtiles');
+            const data = new ArrayBuffer(16);
+            const spy = vi.spyOn(PMTiles.prototype, 'getZxy').mockResolvedValue({
+                data, cacheControl: 'max-age=300', expires: 'Thu, 01 Jan 2099 00:00:00 GMT',
+            });
+            const provider = new PMTilesProvider({type: 'vector', url: 'http://example.com/test.pmtiles'});
+            const result = await provider.loadTile({z: 1, x: 0, y: 0}, {signal: new AbortController().signal});
+            expect(result).toEqual({data, cacheControl: 'max-age=300', expires: 'Thu, 01 Jan 2099 00:00:00 GMT'});
+            spy.mockRestore();
+        });
+
+        test('loadTile propagates getZxy errors', async () => {
+            const {default: PMTilesProvider} = await import('../src/pmtiles_provider');
+            const {PMTiles} = await import('pmtiles');
+            const spy = vi.spyOn(PMTiles.prototype, 'getZxy').mockRejectedValue(new Error('network error'));
+            const provider = new PMTilesProvider({type: 'vector', url: 'http://example.com/test.pmtiles'});
+            await expect(provider.loadTile({z: 0, x: 0, y: 0}, {signal: new AbortController().signal}))
+                .rejects.toThrow('network error');
+            spy.mockRestore();
+        });
+
         test('getZxy returns null → loadTile returns null', async () => {
             const {default: PMTilesProvider} = await import('../src/pmtiles_provider');
             const {PMTiles} = await import('pmtiles');

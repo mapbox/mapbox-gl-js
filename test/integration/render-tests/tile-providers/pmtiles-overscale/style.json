@@ -4,17 +4,18 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.005
+      "allowed": 0.005,
+      "debug": true
     }
   },
-  "center": [-74.0115, 40.7143],
-  "zoom": 16.00,
+  "center": [10, 48],
+  "zoom": 6,
   "pitch": 0,
-  "bearing": 320,
+  "bearing": 0,
   "sources": {
     "pmtiles": {
       "type": "vector",
-      "url": "local://tiles/vector.pmtiles"
+      "url": "local://tiles/streets-v8-z0-z3.pmtiles"
     }
   },
   "layers": [
@@ -22,7 +23,7 @@
       "id": "background",
       "type": "background",
       "paint": {
-        "background-color": "#ededed"
+        "background-color": "#fff"
       }
     },
     {
@@ -35,24 +36,23 @@
       }
     },
     {
+      "id": "admin",
+      "type": "line",
+      "source": "pmtiles",
+      "source-layer": "admin",
+      "paint": {
+        "line-color": "#9e9e9e",
+        "line-width": 1
+      }
+    },
+    {
       "id": "road",
       "type": "line",
       "source": "pmtiles",
       "source-layer": "road",
       "paint": {
-        "line-color": "#fff",
-        "line-width": 2
-      }
-    },
-    {
-      "id": "building",
-      "type": "fill-extrusion",
-      "source": "pmtiles",
-      "source-layer": "building",
-      "paint": {
-        "fill-extrusion-color": "#ddd",
-        "fill-extrusion-height": ["get", "height"],
-        "fill-extrusion-opacity": 1.0
+        "line-color": "#bbb",
+        "line-width": 1
       }
     }
   ]
