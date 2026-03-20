@@ -74,7 +74,7 @@ export type ExpiryData = {
 // a tile bounds outline used for getting reprojected tile geometry in non-mercator projections
 const BOUNDS_FEATURE = (() => {
     return {
-        type: 2,
+        type: 2 as const,
         extent: EXTENT,
         loadGeometry() {
             return [[
@@ -903,7 +903,6 @@ class Tile {
         if (!projection || projection.name === 'mercator' || this._tileDebugBuffer) return;
 
         // reproject tile outline with adaptive resampling
-        // @ts-expect-error - TS2345 - Argument of type '{ type: number; extent: number; loadGeometry(): Point[][]; }' is not assignable to parameter of type 'FeatureWithGeometry'.
         const boundsLine = loadGeometry(BOUNDS_FEATURE, this.tileID.canonical, this.tileTransform)[0];
 
         // generate vertices for debugging tile boundaries
@@ -926,7 +925,6 @@ class Tile {
         if (this._tileBoundsBuffer || !projection || projection.name === 'mercator') return;
 
         // reproject tile outline with adaptive resampling
-        // @ts-expect-error - TS2345 - Argument of type '{ type: number; extent: number; loadGeometry(): Point[][]; }' is not assignable to parameter of type 'FeatureWithGeometry'.
         const boundsLine = loadGeometry(BOUNDS_FEATURE, this.tileID.canonical, this.tileTransform)[0];
 
         let boundsVertices, boundsIndices;

@@ -616,6 +616,9 @@ export function cartesianPositionToSpherical(x: number, y: number, z: number): [
  * @private
  * @returns {boolean}
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const WorkerGlobalScope: (new (...args: any[]) => any) | undefined;
+
 export function isWorker(scope?: unknown): scope is Worker {
     if (typeof self === 'undefined' && scope === undefined) {
         return false;
@@ -623,7 +626,6 @@ export function isWorker(scope?: unknown): scope is Worker {
 
     // Check if WorkerGlobalScope isn't available
     // This is a global that's only present in browser worker environments
-    // @ts-expect-error - TS2304: Cannot find name 'WorkerGlobalScope'
     if (typeof WorkerGlobalScope === 'undefined') {
         return false;
     }
@@ -632,7 +634,6 @@ export function isWorker(scope?: unknown): scope is Worker {
     const contextToCheck = scope !== undefined ? scope : self;
 
     // Final check if context is a WorkerGlobalScope
-    // @ts-expect-error - TS2304: Cannot find name 'WorkerGlobalScope'
     return contextToCheck instanceof WorkerGlobalScope;
 }
 

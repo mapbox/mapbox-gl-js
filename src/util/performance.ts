@@ -132,7 +132,7 @@ export const PerformanceUtils = {
                   end?: string | number,
                   trackName?: string) {
         if ((grpMask & performanceUtilsGroupsMask) === 0) return;
-        // @ts-expect-error: TS2554 Chrome extension of console.timeStamp
+        // @ts-expect-error - Chrome DevTools extension: console.timeStamp accepts extra args for performance tracing
         console.timeStamp(label, start, end !== undefined ? end : performance.now(), trackNameOrDefault());
     },
 

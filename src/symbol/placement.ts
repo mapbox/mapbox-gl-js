@@ -1117,11 +1117,10 @@ export class Placement {
             this.lastReplacementSourceUpdateTime = replacementSource.updateTime;
         }
 
-        const seenCrossTileIDs = new Set();
+        const seenCrossTileIDs = new Set<number>();
         for (const tile of tiles) {
             const symbolBucket = tile.getBucket(styleLayer) as SymbolBucket;
             if (symbolBucket && tile.latestFeatureIndex && styleLayer.fqid === symbolBucket.layerIds[0]) {
-                // @ts-expect-error - TS2345 - Argument of type 'Set<unknown>' is not assignable to parameter of type 'Set<number>'.
                 this.updateBucketOpacities(symbolBucket, seenCrossTileIDs, tile, tile.collisionBoxArray, layerIndex, replacementSource, tile.tileID, styleLayer.scope);
                 if (symbolBucket.elevationType === 'offset' && this.buildingIndex) {
                     this.buildingIndex.updateZOffset(symbolBucket, tile.tileID);

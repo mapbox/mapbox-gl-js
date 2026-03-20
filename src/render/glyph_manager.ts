@@ -51,7 +51,7 @@ type Entry = {
     glyphs: StyleGlyphs;
     requests: {[range: number]: Array<Callback<GlyphRange>>};
     ranges: {[range: number]: boolean | null};
-    tinySDF?: TinySDF;
+    tinySDF?: TinySDF & {fontWeight: FontWeight};
     ascender?: number;
     descender?: number;
 };
@@ -225,7 +225,7 @@ class GlyphManager {
 
         let tinySDF = entry.tinySDF;
         if (!tinySDF) {
-            let fontWeight = '400';
+            let fontWeight: FontWeight = '400';
             if (/bold/i.test(stack)) {
                 fontWeight = '900';
             } else if (/medium/i.test(stack)) {
@@ -237,17 +237,15 @@ class GlyphManager {
             const fontSize = 24 * SDF_SCALE;
             const buffer = 3 * SDF_SCALE;
             const radius = 8 * SDF_SCALE;
-            tinySDF = entry.tinySDF = new GlyphManager.TinySDF({fontFamily, fontWeight, fontSize, buffer, radius});
-            // @ts-expect-error - TS2339 - Property 'fontWeight' does not exist on type 'TinySDF'.
+            tinySDF = entry.tinySDF = new GlyphManager.TinySDF({fontFamily, fontWeight, fontSize, buffer, radius}) as Entry['tinySDF'];
             tinySDF.fontWeight = fontWeight;
         }
 
-        // @ts-expect-error - TS2339 - Property 'fontWeight' does not exist on type 'TinySDF'.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (this.localGlyphs[tinySDF.fontWeight][id]) {
-            // @ts-expect-error - TS2339 - Property 'fontWeight' does not exist on type 'TinySDF'.
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-            return this.localGlyphs[tinySDF.fontWeight][id];
+        const weight = tinySDF.fontWeight;
+
+        if (this.localGlyphs[weight][id]) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            return this.localGlyphs[weight][id];
         }
 
         const char = String.fromCodePoint(id);
@@ -271,9 +269,7 @@ class GlyphManager {
         */
         const baselineAdjustment = 27;
 
-        // @ts-expect-error - TS2339 - Property 'fontWeight' does not exist on type 'TinySDF'.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const glyph = this.localGlyphs[tinySDF.fontWeight][id] = {
+        const glyph = this.localGlyphs[weight][id] = {
             id,
             bitmap: new AlphaImage({width, height}, data),
             metrics: {

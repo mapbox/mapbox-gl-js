@@ -906,11 +906,11 @@ class SourceCache extends Evented {
 
         const expiryTimeout = tile.getExpiryTimeout();
         if (expiryTimeout) {
-            // @ts-expect-error - TS2322 - Type 'Timeout' is not assignable to type 'number'.
+            // Browser setTimeout returns number; cast needed because TS sees Node's Timeout type
             this._timers[id] = setTimeout(() => {
                 this._reloadTile(id, 'expired');
                 delete this._timers[id];
-            }, expiryTimeout);
+            }, expiryTimeout) as unknown as number;
         }
     }
 
@@ -934,8 +934,7 @@ class SourceCache extends Evented {
             return;
 
         if ((tile.hasData() && tile.state !== 'reloading') || tile.state === 'empty') {
-            // @ts-expect-error - TS2345 - Argument of type 'number | void' is not assignable to parameter of type 'number'.
-            this._cache.add(tile.tileID, tile, tile.getExpiryTimeout());
+            this._cache.add(tile.tileID, tile, tile.getExpiryTimeout() as number | undefined);
         } else {
             tile.aborted = true;
             this._abortTile(tile);

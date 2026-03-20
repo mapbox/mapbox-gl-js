@@ -67,7 +67,7 @@ class CompoundExpression implements Expression {
         const type = Array.isArray(definition) ?
             definition[0] : definition.type;
 
-        const availableOverloads = Array.isArray(definition) ?
+        const availableOverloads: Array<[Signature, Evaluate]> = Array.isArray(definition) ?
             [[definition[1], definition[2]]] :
             definition.overloads;
 
@@ -93,13 +93,10 @@ class CompoundExpression implements Expression {
             let argParseFailed = false;
             for (let i = 1; i < args.length; i++) {
                 const arg = args[i];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const expectedType = Array.isArray(params) ?
                     params[i - 1] :
-                // @ts-expect-error - TS2339 - Property 'type' does not exist on type 'Varargs | Evaluate'.
                     params.type;
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const parsed = signatureContext.parse(arg, 1 + parsedArgs.length, expectedType);
                 if (!parsed) {
                     argParseFailed = true;
@@ -121,16 +118,12 @@ class CompoundExpression implements Expression {
             }
 
             for (let i = 0; i < parsedArgs.length; i++) {
-                // @ts-expect-error - TS2339 - Property 'type' does not exist on type 'Varargs | Evaluate'.
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const expected = Array.isArray(params) ? params[i] : params.type;
                 const arg = parsedArgs[i];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 signatureContext.concat(i + 1).checkSubtype(expected, arg.type);
             }
 
             if (signatureContext.errors.length === 0) {
-                // @ts-expect-error - TS2345 - Argument of type 'Signature | Evaluate' is not assignable to parameter of type 'Evaluate'.
                 return new CompoundExpression(op, type, evaluate, parsedArgs, overloadIndex);
             }
         }

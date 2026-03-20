@@ -267,8 +267,7 @@ class CollisionIndex {
             lineOffsetX,
             lineOffsetY,
             (renderElevatedRoads && symbol.flipState === 1), // FlipState.flipRequired
-            // @ts-expect-error - TS2345 - Argument of type 'vec4' is not assignable to parameter of type 'vec3'.
-            labelPlaneAnchorPoint,
+            labelPlaneAnchorPoint as [number, number, number],
             tileUnitAnchorPoint,
             symbol,
             lineVertexArray,

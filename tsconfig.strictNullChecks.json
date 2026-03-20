@@ -24,6 +24,7 @@
     "./src/style-spec/expression/runtime_error.ts",
     "./src/style-spec/expression/types.ts",
     "./src/style-spec/expression/types/collator.ts",
+    "./src/style-spec/expression/types/image_id.ts",
     "./src/style-spec/format.ts",
     "./src/style-spec/reference/latest.ts",
     "./src/style-spec/types.ts",
@@ -57,6 +58,7 @@
     "./src/util/evented.ts",
     "./src/util/fqid.ts",
     "./src/util/is_char_in_unicode_block.ts",
+    "./src/util/is_wasm_simd_supported.ts",
     "./src/util/mapbox_url.ts",
     "./src/util/object.ts",
     "./src/util/resolve_tokens.ts",
@@ -64,8 +66,8 @@
     "./src/util/sku_token.ts",
     "./src/util/task_queue.ts",
     "./src/util/throttle.ts",
-    "./src/util/worker_class.ts",
     "./src/util/throttled_invoker.ts",
-    "./src/util/is_wasm_simd_supported.ts"
+    "./src/util/worker_class.ts",
+    "./src/style-spec/deref.ts"
   ]
 }

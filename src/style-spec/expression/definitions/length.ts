@@ -17,16 +17,18 @@ class Length implements Expression {
     }
 
     static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Length | null | undefined {
-        if (args.length !== 2)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Length'.
-            return context.error(`Expected 1 argument, but found ${args.length - 1} instead.`);
+        if (args.length !== 2) {
+            context.error(`Expected 1 argument, but found ${args.length - 1} instead.`);
+            return null;
+        }
 
         const input = context.parse(args[1], 1);
         if (!input) return null;
 
-        if (input.type.kind !== 'array' && input.type.kind !== 'string' && input.type.kind !== 'value')
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Length'.
-            return context.error(`Expected argument of type string or array, but found ${toString(input.type)} instead.`);
+        if (input.type.kind !== 'array' && input.type.kind !== 'string' && input.type.kind !== 'value') {
+            context.error(`Expected argument of type string or array, but found ${toString(input.type)} instead.`);
+            return null;
+        }
 
         return new Length(input);
     }
@@ -53,8 +55,7 @@ class Length implements Expression {
     }
 
     serialize(): SerializedExpression {
-        const serialized = ["length"];
-        // @ts-expect-error - TS2345 - Argument of type 'SerializedExpression' is not assignable to parameter of type 'string'.
+        const serialized: Array<SerializedExpression> = ["length"];
         this.eachChild(child => { serialized.push(child.serialize()); });
         return serialized;
     }

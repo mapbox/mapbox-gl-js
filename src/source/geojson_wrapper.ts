@@ -47,10 +47,8 @@ class FeatureWrapper implements VectorTileFeature {
         // vector tile spec only supports integer values for feature ids --
         // allowing non-integer values here results in a non-compliant PBF
         // that causes an exception when it is parsed with vector-tile-js
-        // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'number'.
-        if ('id' in feature && !isNaN(feature.id)) {
-            // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'string'.
-            this.id = parseInt(feature.id, 10);
+        if ('id' in feature && !isNaN(feature.id as number)) {
+            this.id = parseInt(feature.id as string, 10);
         }
     }
 

@@ -212,14 +212,14 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
             this.tileBounds = new TileBounds(this._implementation.bounds, this.minzoom, this.maxzoom);
         }
 
-        // @ts-expect-error - TS2339 - Property 'update' does not exist on type 'CustomSourceInterface<T>'.
-        implementation.update = this._update.bind(this);
-
-        // @ts-expect-error - TS2339 - Property 'clearTiles' does not exist on type 'CustomSourceInterface<T>'.
-        implementation.clearTiles = this._clearTiles.bind(this);
-
-        // @ts-expect-error - TS2339 - Property 'coveringTiles' does not exist on type 'CustomSourceInterface<T>'.
-        implementation.coveringTiles = this._coveringTiles.bind(this);
+        const impl = implementation as CustomSourceInterface<T> & {
+            update: () => void;
+            clearTiles: () => void;
+            coveringTiles: () => {z: number; x: number; y: number}[];
+        };
+        impl.update = this._update.bind(this);
+        impl.clearTiles = this._clearTiles.bind(this);
+        impl.coveringTiles = this._coveringTiles.bind(this);
 
         Object.assign(this, pick(implementation, ['dataType', 'scheme', 'minzoom', 'maxzoom', 'tileSize', 'attribution', 'minTileCacheSize', 'maxTileCacheSize']));
     }
