@@ -15,7 +15,13 @@ import rasterParticleTextureFrag from '../../src/shaders/raster_particle_texture
 import rasterParticleTextureVert from '../../src/shaders/raster_particle_texture.vertex.glsl';
 import rasterParticleUpdateFrag from '../../src/shaders/raster_particle_update.fragment.glsl';
 import rasterParticleUpdateVert from '../../src/shaders/raster_particle_update.vertex.glsl';
-import {compile} from '../../src/shaders/shaders';
+import preludeRasterParticleFrag from '../../src/shaders/_prelude_raster_particle.glsl';
+import {compile, includeMap} from '../../src/shaders/shaders';
+
+// Register raster particle prelude in includeMap when HD module loads
+if (!includeMap['_prelude_raster_particle.glsl']) {
+    includeMap['_prelude_raster_particle.glsl'] = preludeRasterParticleFrag;
+}
 
 export default {
     building: compile(buildingFrag, buildingVert),
@@ -26,3 +32,7 @@ export default {
     rasterParticleTexture: compile(rasterParticleTextureFrag, rasterParticleTextureVert),
     rasterParticleUpdate: compile(rasterParticleUpdateFrag, rasterParticleUpdateVert),
 };
+
+export const preludeShaders = {
+    preludeRasterParticle: compile(preludeRasterParticleFrag, ''),
+} as const;

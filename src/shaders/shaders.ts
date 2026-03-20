@@ -63,7 +63,6 @@ import preludeFogVert from './_prelude_fog.vertex.glsl';
 import preludeFogFrag from './_prelude_fog.fragment.glsl';
 import preludeLighting from './_prelude_lighting.glsl';
 import preludeRasterArrayFrag from './_prelude_raster_array.glsl';
-import preludeRasterParticleFrag from './_prelude_raster_particle.glsl';
 import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
 import globeFrag from './globe_raster.fragment.glsl';
@@ -115,8 +114,7 @@ export const includeMap: Record<string, string> = {
     '_prelude_fog.fragment.glsl': preludeFogFrag,
     '_prelude_shadow.fragment.glsl': preludeShadowFrag,
     '_prelude_lighting.glsl': preludeLighting,
-    '_prelude_raster_array.glsl': preludeRasterArrayFrag,
-    '_prelude_raster_particle.glsl': preludeRasterParticleFrag
+    '_prelude_raster_array.glsl': preludeRasterArrayFrag
 };
 
 // Populated during precompilation
@@ -136,7 +134,6 @@ export const preludeShaders = {
     preludeFog: compile(preludeFogFrag, preludeFogVert),
     preludeShadow: compile(preludeShadowFrag, preludeShadowVert),
     preludeRasterArray: compile(preludeRasterArrayFrag, ''),
-    preludeRasterParticle: compile(preludeRasterParticleFrag, ''),
     preludeLighting: compile(preludeLighting, preludeLighting),
     preludePrecisionQualifiers: compile(preludeFragPrecisionQualifiers, preludeVertPrecisionQualifiers),
     prelude: compile(preludeFrag, preludeVert),
