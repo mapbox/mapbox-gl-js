@@ -64,6 +64,8 @@
     "./src/util/sku_token.ts",
     "./src/util/task_queue.ts",
     "./src/util/throttle.ts",
-    "./src/util/throttled_invoker.ts"
+    "./src/util/worker_class.ts",
+    "./src/util/throttled_invoker.ts",
+    "./src/util/is_wasm_simd_supported.ts"
   ]
 }

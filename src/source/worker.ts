@@ -13,6 +13,7 @@ import {Event} from '../util/evented';
 import {getProjection} from '../geo/projection/index';
 import {ImageRasterizer} from '../render/image_rasterizer';
 import {isWorker} from '../util/util';
+import config from '../util/config';
 import {loadTileProvider} from './tile_provider_worker';
 
 import type Projection from '../geo/projection/projection';
@@ -51,8 +52,6 @@ export default class MapWorker {
     defaultProjection: Projection;
     isSpriteLoaded: WorkerScopeRegistry<boolean>;
     referrer: string | null | undefined;
-    dracoUrl: string | null | undefined;
-    meshoptUrl: string | null | undefined;
     brightness: number | null | undefined;
     maxUniformBufferBindings: number | null | undefined;
     maxUniformBlockSizeDwords: number | null | undefined;
@@ -354,8 +353,8 @@ export default class MapWorker {
         }
     }
 
-    setDracoUrl(mapId: number, dracoUrl: ActorMessages['setDracoUrl']['params']) {
-        this.dracoUrl = dracoUrl;
+    setConfig(mapId: number, updates: ActorMessages['setConfig']['params']) {
+        Object.assign(config, updates);
     }
 
     getAvailableImages(mapId: number, scope: string): ImageId[] {

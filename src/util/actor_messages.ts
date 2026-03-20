@@ -18,6 +18,7 @@ import type {AtlasContentDescriptor} from '../render/atlas_content_descriptor';
 import type {ImagePositionMap} from '../render/image_atlas';
 import type {TileJSON} from '../types/tilejson';
 import type {RequestParameters} from './ajax';
+
 /**
  * Message registry maps message types to their data and result types.
  */
@@ -155,8 +156,14 @@ export type ActorMessages = {
         callback: ActorCallback<void>;
     };
 
-    'setDracoUrl': {
-        params: string;
+    'setConfig': {
+        params: {
+            API_URL?: string;
+            DRACO_URL?: string;
+            MESHOPT_URL?: string;
+            MESHOPT_SIMD_URL?: string;
+            BUILDING_GEN_URL?: string;
+        };
         callback: ActorCallback<void>;
     };
 
@@ -172,11 +179,6 @@ export type ActorMessages = {
 
     'setModels': {
         params: {models: StyleModelMap; scope: string;};
-        callback: ActorCallback<void>;
-    };
-
-    'setMeshoptUrl': {
-        params: string;
         callback: ActorCallback<void>;
     };
 

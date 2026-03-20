@@ -16,7 +16,7 @@ import LngLat, {LngLatBounds} from './geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from './geo/mercator_coordinate';
 import {Evented} from './util/evented';
-import config from './util/config';
+import config, {getDracoUrl, getMeshoptUrl, getBuildingGenUrl} from './util/config';
 import {Debug} from './util/debug';
 import {isSafari} from './util/util';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
@@ -27,7 +27,6 @@ import {prewarm, clearPrewarmedResources} from './util/worker_pool_factory';
 import {clearTileCache} from './util/tile_request_cache';
 import {WorkerPerformanceUtils} from './util/worker_performance_utils';
 import {FreeCameraOptions} from './ui/free_camera';
-import {getDracoUrl, setDracoUrl, setMeshoptUrl, getMeshoptUrl} from '../3d-style/util/loaders';
 import browser from './util/browser';
 
 import type {Class} from './types/class';
@@ -308,15 +307,42 @@ const exported = {
     },
 
     set dracoUrl(url: string) {
-        setDracoUrl(url);
+        config.DRACO_URL = browser.resolveURL(url);
     },
 
+    /**
+     * Gets and sets the URL for the Meshopt decoder WASM module.
+     * By default, this is loaded from the Mapbox API CDN relative to
+     * [`baseApiUrl`](https://docs.mapbox.com/mapbox-gl-js/api/properties/#baseapiurl).
+     * The SIMD-optimized variant is automatically selected when supported.
+     *
+     * @var {string} meshoptUrl
+     * @returns {string} The current Meshopt WASM URL.
+     */
     get meshoptUrl(): string {
         return getMeshoptUrl();
     },
 
     set meshoptUrl(url: string) {
-        setMeshoptUrl(url);
+        const resolved = browser.resolveURL(url);
+        config.MESHOPT_URL = resolved;
+        config.MESHOPT_SIMD_URL = resolved;
+    },
+
+    /**
+     * Gets and sets the URL for the building generation WASM module (building_gen.wasm).
+     * By default, this is loaded from the Mapbox API CDN relative to
+     * [`baseApiUrl`](https://docs.mapbox.com/mapbox-gl-js/api/properties/#baseapiurl).
+     *
+     * @var {string} buildingGenUrl
+     * @returns {string} The current building generation WASM URL.
+     */
+    get buildingGenUrl(): string {
+        return getBuildingGenUrl();
+    },
+
+    set buildingGenUrl(url: string) {
+        config.BUILDING_GEN_URL = browser.resolveURL(url);
     },
 
     /**

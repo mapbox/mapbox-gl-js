@@ -16,6 +16,7 @@ import {getJSON, getReferrer, ResourceType} from '../util/ajax';
 import {isMapboxURL} from '../util/mapbox_url';
 import {stripQueryParameters} from '../util/url';
 import browser from '../util/browser';
+import {getBroadcastableConfig} from '../util/config';
 import Dispatcher from '../util/dispatcher';
 import Lights from '../../3d-style/style/lights';
 import {getProperties as getAmbientProps} from '../../3d-style/style/ambient_light_properties';
@@ -490,6 +491,7 @@ class Style extends Evented<MapEvents> {
         this._initialConfig = options.initialConfig;
 
         this.dispatcher.broadcast('setReferrer', getReferrer());
+        this.dispatcher.broadcast('setConfig', getBroadcastableConfig());
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
