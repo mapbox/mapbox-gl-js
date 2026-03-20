@@ -11613,6 +11613,24 @@
           "ios": "11.10.0"
         }
       }
+    },
+    "model-ignore-line-cutout": {
+      "type": "boolean",
+      "doc": "When set to true, the layer is not going to be affected by the line cutout effect.",
+      "default": false,
+      "transition": false,
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-constant",
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.21.0",
+          "ios": "11.21.0"
+        }
+      }
     }
   },
   "transition": {
