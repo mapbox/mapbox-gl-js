@@ -49,14 +49,6 @@ import linePatternFrag from './line_pattern.fragment.glsl';
 import linePatternVert from './line_pattern.vertex.glsl';
 import rasterFrag from './raster.fragment.glsl';
 import rasterVert from './raster.vertex.glsl';
-import rasterParticleFrag from './raster_particle.fragment.glsl';
-import rasterParticleVert from './raster_particle.vertex.glsl';
-import rasterParticleDrawFrag from './raster_particle_draw.fragment.glsl';
-import rasterParticleDrawVert from './raster_particle_draw.vertex.glsl';
-import rasterParticleTextureFrag from './raster_particle_texture.fragment.glsl';
-import rasterParticleTextureVert from './raster_particle_texture.vertex.glsl';
-import rasterParticleUpdateFrag from './raster_particle_update.fragment.glsl';
-import rasterParticleUpdateVert from './raster_particle_update.vertex.glsl';
 import symbolFrag from './symbol.fragment.glsl';
 import symbolVert from './symbol.vertex.glsl';
 import skyboxFrag from './skybox.fragment.glsl';
@@ -198,10 +190,6 @@ export default {
     line: compile(lineFrag, lineVert),
     linePattern: compile(linePatternFrag, linePatternVert),
     raster: compile(rasterFrag, rasterVert),
-    rasterParticle: compile(rasterParticleFrag, rasterParticleVert),
-    rasterParticleDraw: compile(rasterParticleDrawFrag, rasterParticleDrawVert),
-    rasterParticleTexture: compile(rasterParticleTextureFrag, rasterParticleTextureVert),
-    rasterParticleUpdate: compile(rasterParticleUpdateFrag, rasterParticleUpdateVert),
     symbol: compile(symbolFrag, symbolVert),
     terrainRaster: compile(terrainRasterFrag, terrainRasterVert),
     terrainDepth: compile(terrainDepthFrag, terrainDepthVert),
