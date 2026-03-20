@@ -31,7 +31,6 @@ import fillExtrusion from './draw_fill_extrusion';
 import {HD, prepareHD} from '../../modules/hd_main';
 import hillshade from './draw_hillshade';
 import raster, {prepare as prepareRaster} from './draw_raster';
-import rasterParticle, {prepare as prepareRasterParticle} from './draw_raster_particle';
 import background from './draw_background';
 import {default as drawDebug, drawDebugPadding, drawDebugQueryGeometry} from './draw_debug';
 import custom from './draw_custom';
@@ -53,8 +52,6 @@ import {WireframeDebugCache} from './wireframe_cache';
 import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers';
 import Framebuffer from '../gl/framebuffer';
 import {OcclusionParams} from './occlusion_params';
-import {Rain} from '../precipitation/draw_rain';
-import {Snow} from '../precipitation/draw_snow';
 import {PerformanceUtils} from '../util/performance';
 
 import type ImageManager from './image_manager';
@@ -144,7 +141,7 @@ const draw: Record<string, DrawStyleLayer> = {
     'fill-extrusion': fillExtrusion,
     hillshade,
     raster,
-    'raster-particle': rasterParticle,
+    'raster-particle': null,
     background,
     sky,
     custom,
@@ -155,7 +152,7 @@ const prepare = {
     line: prepareLine,
     model: modelPrepare,
     raster: prepareRaster,
-    'raster-particle': prepareRasterParticle
+    'raster-particle': null
 };
 
 const depthPrepass = {
@@ -167,7 +164,9 @@ const groundShadowMask = {
 
 async function setupHD() {
     await prepareHD();
-    draw.building = HD.drawBuilding;
+    draw.building = HD.building.draw;
+    draw['raster-particle'] = HD.particles.draw;
+    prepare['raster-particle'] = HD.particles.prepare;
 }
 
 /**
@@ -230,8 +229,8 @@ class Painter {
     loadTimeStamps: Array<number>;
     _backgroundTiles: Record<number, Tile>;
     _atmosphere: Atmosphere | null | undefined;
-    _rain?: Rain;
-    _snow?: Snow;
+    _rain?: InstanceType<typeof HD.precipitation.Rain>;
+    _snow?: InstanceType<typeof HD.precipitation.Snow>;
     replacementSource: ReplacementSource;
     conflationActive: boolean;
     firstLightBeamLayer: number;
@@ -1093,16 +1092,21 @@ class Painter {
         const snow = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.snow);
         const rain = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.rain);
 
-        if (snow && !this._snow) {
-            this._snow = new Snow(this);
+        // Load HD for precipitation functionality
+        if ((snow || rain) && (!HD.precipitation || !HD.precipitation.Rain || !HD.precipitation.Snow)) {
+            void prepareHD();
+        }
+
+        if (snow && !this._snow && HD.precipitation && HD.precipitation.Snow) {
+            this._snow = new HD.precipitation.Snow(this);
         }
         if (!snow && this._snow) {
             this._snow.destroy();
             delete this._snow;
         }
 
-        if (rain && !this._rain) {
-            this._rain = new Rain(this);
+        if (rain && !this._rain && HD.precipitation && HD.precipitation.Rain) {
+            this._rain = new HD.precipitation.Rain(this);
         }
         if (!rain && this._rain) {
             this._rain.destroy();
@@ -1731,7 +1735,7 @@ class Painter {
         const globalDefines = this.currentGlobalDefines(name, overrideFog, overrideRtt);
         const allDefines = globalDefines.concat(defines);
 
-        const shaderSource = shaders[name as keyof typeof shaders] || HD.shaders[name as keyof typeof HD.shaders];
+        const shaderSource = shaders[name as keyof typeof shaders] || (HD.shaders && HD.shaders[name as keyof typeof HD.shaders]) || (HD.precipitationShaders && HD.precipitationShaders[name as keyof typeof HD.precipitationShaders]);
         const key = Program.cacheKey(shaderSource, name, allDefines, config);
 
         if (!this.cache[key]) {
