@@ -644,12 +644,12 @@ function mergeAppearancesBboxes(bucket: SymbolBucket, shapedIcon: PositionedIcon
 
     for (const appearance of appearances) {
 
-        if (appearance.hasIconProperties()) {
+        if (appearance.hasIconLayoutProperties()) {
             updateIconBoundingBoxes(iconBBoxes, bucket, symbolLayer, appearance, feature, canonical, iconOffset, baseIconRotate,
                 layoutIconSize, sizes, shapedIcon, imagePositions, iconScaleFactor, iconAnchor, availableImages);
         }
 
-        if (appearance.hasTextProperties()) {
+        if (appearance.hasTextLayoutProperties()) {
             updateTextBoundingBoxes(textBBoxes, symbolLayer, appearance, feature, canonical, textOffset, baseTextRotate,
                 layoutTextSize, defaultHorizontalShaping, shapedTextOrientations.vertical);
         }
@@ -669,7 +669,7 @@ function updateIconBoundingBoxes(input : {iconBBox: SymbolBoundingBox | null, ic
     let appearanceVerticallyShapedIcon: PositionedIcon | null = null;
 
     let imagePositionToUse: ImagePosition = null;
-    if (appearance.hasProperty('icon-image')) {
+    if (appearance.hasLayoutProperty('icon-image')) {
         imagePositionToUse = getAppearanceImagePosition(bucket, symbolLayer, appearance, feature, canonical, imagePositions, iconScaleFactor, availableImages);
     } else if (shapedIcon) {
         imagePositionToUse = shapedIcon.imagePrimary;
@@ -703,21 +703,21 @@ function updateIconBoundingBoxes(input : {iconBBox: SymbolBoundingBox | null, ic
 
 export function getAppearanceIconValues(appearance: SymbolAppearance, symbolLayer: SymbolStyleLayer, feature: SymbolFeature,
     canonical: CanonicalTileID, iconOffset: [number, number], baseIconRotate: number, layoutIconSize: number, iconScaleFactor: number) {
-    const appearanceIconOffsetValue = appearance.hasProperty('icon-offset') ?
+    const appearanceIconOffsetValue = appearance.hasLayoutProperty('icon-offset') ?
         symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-offset', feature, canonical, []) :
         null;
     const appearanceIconOffset = (appearanceIconOffsetValue && Array.isArray(appearanceIconOffsetValue)) ?
         appearanceIconOffsetValue as unknown as [number, number] :
         iconOffset;
 
-    const appearanceIconRotateValue = appearance.hasProperty('icon-rotate') ?
+    const appearanceIconRotateValue = appearance.hasLayoutProperty('icon-rotate') ?
         symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-rotate', feature, canonical, []) :
         null;
     const appearanceIconRotate = (typeof appearanceIconRotateValue === 'number') ?
         appearanceIconRotateValue :
         baseIconRotate;
 
-    const appearanceIconSizeValue = appearance.hasProperty('icon-size') ?
+    const appearanceIconSizeValue = appearance.hasLayoutProperty('icon-size') ?
         symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-size', feature, canonical, []) :
         null;
     const appearanceIconSize = (typeof appearanceIconSizeValue === 'number') ?
@@ -736,8 +736,8 @@ function getAppearanceImagePosition(bucket: SymbolBucket, symbolLayer: SymbolSty
         // Use the appearance's icon-size if defined, otherwise fall back to the layout's icon-size.
         // This must match getCombinedIconPrimary's logic (used when building iconDependencies),
         // so that the image variant key matches what was stored in iconPositions.
-        const unevaluatedIconSize = (appearance.hasProperty('icon-size') ?
-            appearance.getUnevaluatedProperty('icon-size') :
+        const unevaluatedIconSize = (appearance.hasLayoutProperty('icon-size') ?
+            appearance.getUnevaluatedLayoutProperty('icon-size') :
             symbolLayer._unevaluatedLayout._values['icon-size']) as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
         const iconSizeData = getSizeData(bucket.zoom, unevaluatedIconSize, bucket.worldview, availableImages);
         const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, bucket.zoom, feature, bucket.pixelRatio, iconScaleFactor, bucket.worldview, availableImages);
@@ -776,21 +776,21 @@ function updateTextBoundingBoxes(input: {textBBox: SymbolBoundingBox | null, tex
 
 export function getAppearanceTextValues(appearance: SymbolAppearance, symbolLayer: SymbolStyleLayer, feature: SymbolFeature,
     canonical: CanonicalTileID, textOffset: [number, number], baseTextRotate: number, layoutTextSize: number) {
-    const appearanceTextOffsetValue = appearance.hasProperty('text-offset') ?
+    const appearanceTextOffsetValue = appearance.hasLayoutProperty('text-offset') ?
         symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'text-offset', feature, canonical, []) :
         null;
     const appearanceTextOffset = (appearanceTextOffsetValue && Array.isArray(appearanceTextOffsetValue)) ?
         [appearanceTextOffsetValue[0] * ONE_EM, appearanceTextOffsetValue[1] * ONE_EM] as [number, number] :
         textOffset;
 
-    const appearanceTextRotateValue = appearance.hasProperty('text-rotate') ?
+    const appearanceTextRotateValue = appearance.hasLayoutProperty('text-rotate') ?
         symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'text-rotate', feature, canonical, []) :
         null;
     const appearanceTextRotate = (typeof appearanceTextRotateValue === 'number') ?
         appearanceTextRotateValue :
         baseTextRotate;
 
-    const appearanceTextSizeValue = appearance.hasProperty('text-size') ?
+    const appearanceTextSizeValue = appearance.hasLayoutProperty('text-size') ?
         symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'text-size', feature, canonical, []) :
         null;
     const appearanceTextSize = (typeof appearanceTextSizeValue === 'number') ?
@@ -1026,7 +1026,7 @@ function addFeature(bucket: SymbolBucket,
     const defaultShaping = getDefaultHorizontalShaping(shapedTextOrientations.horizontal) || shapedTextOrientations.vertical;
 
     // Store text shaping data for icon-text-fit and text appearance updates
-    const hasTextAppearances = bucket.hasAnyAppearanceProperty(['text-size', 'text-offset', 'text-rotate']);
+    const hasTextAppearances = bucket.hasAnyAppearanceLayoutProperty(['text-size', 'text-offset', 'text-rotate']);
     const featureData = bucket.getAppearanceFeatureData(feature.index);
     if ((iconTextFit !== 'none' || hasTextAppearances) && featureData) {
         featureData.textShaping = defaultShaping;
@@ -1639,7 +1639,7 @@ function calculateMaxIconQuadCount(
 
     // Check each appearance that has an icon to find maximum quad count needed
     for (const appearance of appearances) {
-        if (appearance.hasProperty('icon-image')) {
+        if (appearance.hasLayoutProperty('icon-image')) {
             const appearanceIconImage = symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-image', feature, canonical, availableImages);
             if (appearanceIconImage) {
                 const icon = bucket.getResolvedImageFromTokens(appearanceIconImage as string);
@@ -1648,8 +1648,8 @@ function calculateMaxIconQuadCount(
                     // different sized versions of the same icon have the same number of stretchable
                     // areas, which is what we need but unfortunately, since imagePositions stores the
                     // position by the stringified sized icon we need to compute it
-                    const unevaluatedIconSize = (appearance.hasProperty('icon-size') ?
-                        appearance.getUnevaluatedProperty('icon-size') :
+                    const unevaluatedIconSize = (appearance.hasLayoutProperty('icon-size') ?
+                        appearance.getUnevaluatedLayoutProperty('icon-size') :
                         unevaluatedLayout._values['icon-size']) as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
                     const iconSizeData = getSizeData(bucket.zoom, unevaluatedIconSize, bucket.worldview, availableImages);
                     const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, bucket.zoom, feature, bucket.pixelRatio, iconScaleFactor, bucket.worldview, availableImages);

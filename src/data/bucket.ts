@@ -81,6 +81,11 @@ export type BucketFeature = {
     sortKey?: number;
 };
 
+export type AppearanceUpdateResult = {
+    hasLayoutChanges: boolean,
+    hasUboChanges: boolean
+};
+
 /**
  * The `Bucket` interface is the single point of knowledge about turning vector
  * tiles into WebGL buffers.
@@ -142,7 +147,7 @@ export interface Bucket {
      */
     destroy: (reload?: boolean) => void;
     updateFootprints: (id: UnwrappedTileID, footprints: Array<TileFootprint>) => void;
-    updateAppearances: (canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties, imageManager?: ImageManager, featureStateChanged?: boolean) => void;
+    updateAppearances: (canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties, imageManager?: ImageManager, featureStateChanged?: boolean) => AppearanceUpdateResult;
 }
 
 export function deserialize(input: Array<Bucket>, style: Style): Record<string, Bucket> {

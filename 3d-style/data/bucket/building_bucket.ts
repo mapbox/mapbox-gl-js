@@ -358,6 +358,10 @@ export class BuildingBucket implements BucketWithGroundEffect {
     }
 
     updateAppearances(_canonical?: CanonicalTileID, _featureState?: FeatureStates, _availableImages?: Array<ImageId>, _globalProperties?: GlobalProperties) {
+        return {
+            hasLayoutChanges: false,
+            hasUboChanges: false
+        };
     }
 
     prepare(): Promise<unknown> {

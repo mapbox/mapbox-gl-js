@@ -9442,6 +9442,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "icon-occlusion-opacity": {
@@ -9475,6 +9476,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "icon-emissive-strength": {
@@ -9507,6 +9509,7 @@
           "feature-state"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "text-emissive-strength": {
@@ -9539,6 +9542,7 @@
           "feature-state"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "icon-color": {
@@ -9571,6 +9575,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "icon-halo-color": {
@@ -9603,6 +9608,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "icon-halo-width": {
@@ -9636,6 +9642,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "icon-halo-blur": {
@@ -9669,6 +9676,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "icon-translate": {
@@ -9680,6 +9688,7 @@
         0
       ],
       "transition": true,
+      "appearance": true,
       "units": "pixels",
       "doc": "Distance that the icon's anchor is moved from its original placement. Positive values indicate right and down, while negative values indicate left and up.",
       "requires": [
@@ -9787,6 +9796,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "text-occlusion-opacity": {
@@ -9820,6 +9830,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "text-color": {
@@ -9853,6 +9864,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "text-halo-color": {
@@ -9885,6 +9897,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "text-halo-width": {
@@ -9918,6 +9931,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "text-halo-blur": {
@@ -9951,6 +9965,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "text-translate": {
@@ -9962,6 +9977,7 @@
         0
       ],
       "transition": true,
+      "appearance": true,
       "units": "pixels",
       "doc": "Distance that the text's anchor is moved from its original placement. Positive values indicate right and down, while negative values indicate left and up.",
       "requires": [
@@ -10096,6 +10112,7 @@
       "minimum": 0,
       "transition": true,
       "experimental": true,
+      "appearance": true,
       "sdk-support": {
         "basic functionality": {
           "js": "3.7.0",

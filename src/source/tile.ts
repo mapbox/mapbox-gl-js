@@ -815,7 +815,16 @@ class Tile {
                     worldview: painter.worldview
                 };
                 const featureStateChanged = withStateUpdates && bucket.stateDependentLayers.length !== 0;
-                bucket.updateAppearances(this.tileID.canonical, sourceLayerStates, images, globalProperties, painter.imageManager, featureStateChanged);
+                const result = bucket.updateAppearances(this.tileID.canonical, sourceLayerStates, images, globalProperties, painter.imageManager, featureStateChanged);
+                if (result && result.hasUboChanges) {
+                    const context = painter.context;
+                    if (bucket instanceof SymbolBucket && bucket.text && bucket.text.uboBinder) {
+                        bucket.text.uboBinder.upload(context);
+                    }
+                    if (bucket instanceof SymbolBucket && bucket.icon && bucket.icon.uboBinder) {
+                        bucket.icon.uboBinder.upload(context);
+                    }
+                }
             }
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
                 if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.uploadPending()) {

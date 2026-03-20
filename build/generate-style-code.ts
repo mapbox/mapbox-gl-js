@@ -180,7 +180,8 @@ const layerPropertiesJs = ejs.compile(fs.readFileSync('src/style/style_layer/lay
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 const layerPropertiesJs3Dstyle = ejs.compile(fs.readFileSync('src/style/style_layer/layer_properties.js.ejs', 'utf8'), {strict: true});
 
-const appearanceProperties = [];
+const appearanceLayoutProperties = [];
+const appearancePaintProperties = [];
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
 const layers = Object.keys(spec.layer.type.values).map((type) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -208,7 +209,7 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (layoutSpec[name].appearance) {
-            appearanceProperties.push({
+            appearanceLayoutProperties.push({
                 src: `layout_${type}`,
                 srcSection: 'layout',
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -231,7 +232,7 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (paintSpec[name].appearance) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            appearanceProperties.push({
+            appearancePaintProperties.push({
                 src: `paint_${type}`,
                 srcSection: 'paint',
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -260,11 +261,28 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
     return {type, layoutProperties, paintProperties};
 });
 
+// Add -use-theme counterparts for color paint appearance properties
+// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+for (const prop of [...appearancePaintProperties]) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (prop.type === 'color') {
+        appearancePaintProperties.push({
+            'type': 'string',
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            'type_': prop.type_,
+            'default': 'default',
+            'property-type': 'data-driven',
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            'name': `${prop.name}-use-theme`
+        });
+    }
+}
+
 // Appearances
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 const appearancePropertiesJs = ejs.compile(fs.readFileSync('src/style/appearance_properties.js.ejs', 'utf8'), {strict: true});
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
-fs.writeFileSync(`src/style/appearance_properties.ts`, appearancePropertiesJs(appearanceProperties));
+fs.writeFileSync(`src/style/appearance_properties.ts`, appearancePropertiesJs({layoutProperties: appearanceLayoutProperties, paintProperties: appearancePaintProperties}));
 
 for (const layer of layers) {
     let srcDir = '../..';

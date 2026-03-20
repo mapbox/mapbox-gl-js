@@ -763,7 +763,7 @@ class SymbolBucket implements Bucket {
         this.featureAppearanceData = new Map();
     }
 
-    hasAnyAppearanceProperty(properties: keyof AppearanceProps | (keyof AppearanceProps)[]): boolean {
+    hasAnyAppearanceLayoutProperty(properties: keyof AppearanceProps | (keyof AppearanceProps)[]): boolean {
         const layer = this.layers[0];
         const appearances = layer.getAppearances();
         if (!appearances || appearances.length === 0) {
@@ -772,7 +772,7 @@ class SymbolBucket implements Bucket {
 
         const propertiesToCheck = Array.isArray(properties) ? properties : [properties];
         return appearances.some(appearance => {
-            return propertiesToCheck.some(propertyName => appearance.hasProperty(propertyName));
+            return propertiesToCheck.some(propertyName => appearance.hasLayoutProperty(propertyName));
         });
     }
 
@@ -826,12 +826,12 @@ class SymbolBucket implements Bucket {
         layoutIconSize: number
     ): number {
         // If appearance doesn't define icon-size, use layout value
-        if (!activeAppearance.hasProperty('icon-size')) {
+        if (!activeAppearance.hasLayoutProperty('icon-size')) {
             return layoutIconSize * iconScaleFactor;
         }
 
         let effectiveIconSize = 1;
-        const unevaluatedIconSize = activeAppearance.getUnevaluatedProperty('icon-size') as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
+        const unevaluatedIconSize = activeAppearance.getUnevaluatedLayoutProperty('icon-size') as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
         const iconSizeData = getSizeData(this.zoom, unevaluatedIconSize, this.worldview, availableImages);
         const sizeValue = evaluateSizeForZoom(iconSizeData, currentZoom);
         if (iconSizeData.kind === 'constant' || iconSizeData.kind === 'camera') {
@@ -909,7 +909,7 @@ class SymbolBucket implements Bucket {
         // and null returned because icon-image wasn't defined is to check whether or not iconImage.parameters is an empty object
 
         const hasIcon = iconImage.value.kind !== 'constant' || !!iconImage.value.value || Object.keys(iconImage.parameters).length > 0;
-        const hasAppearanceIcons = this.hasAnyAppearanceProperty('icon-image');
+        const hasAppearanceIcons = this.hasAnyAppearanceLayoutProperty('icon-image');
 
         const symbolSortKey = layout.get('symbol-sort-key');
 
@@ -996,7 +996,7 @@ class SymbolBucket implements Bucket {
             if (!icon && hasAppearanceIcons) {
                 const appearances = symbolLayer.getAppearances();
                 for (const appearance of appearances) {
-                    const iconImage = appearance.getProperty('icon-image');
+                    const iconImage = appearance.getLayoutProperty('icon-image');
                     if (iconImage) {
                         const resolvedTokens = symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-image', evaluationFeature, canonical, availableImages);
                         if (resolvedTokens) {
@@ -1056,7 +1056,7 @@ class SymbolBucket implements Bucket {
             const appearances = symbolLayer.getAppearances();
             if (appearances.length !== 0) {
                 appearances.forEach(a => {
-                    const iconImage = a.getProperty('icon-image');
+                    const iconImage = a.getLayoutProperty('icon-image');
                     if (!iconImage) return;
                     const iconPrimary = this.getCombinedIconPrimary(a, symbolLayer, evaluationFeature, canonical, availableImages, symbolFeature, iconScaleFactor);
                     if (!iconPrimary) return;
@@ -1123,7 +1123,7 @@ class SymbolBucket implements Bucket {
     ): ImageVariant | undefined {
         let icon: ResolvedImage;
         let iconPrimary: ImageVariant;
-        if (appearance.hasProperty('icon-image')) {
+        if (appearance.hasLayoutProperty('icon-image')) {
             const resolvedTokens = layer.getAppearanceValueAndResolveTokens(appearance, 'icon-image', evaluationFeature, canonical, availableImages);
             icon = this.getResolvedImageFromTokens(resolvedTokens as string);
         } else {
@@ -1132,8 +1132,8 @@ class SymbolBucket implements Bucket {
         }
 
         if (icon) {
-            const unevaluatedIconSize = (appearance.hasProperty('icon-size') ?
-                appearance.getUnevaluatedProperty('icon-size') :
+            const unevaluatedIconSize = (appearance.hasLayoutProperty('icon-size') ?
+                appearance.getUnevaluatedLayoutProperty('icon-size') :
                 layer._unevaluatedLayout._values['icon-size']) as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
             const iconSizeData = getSizeData(this.zoom, unevaluatedIconSize, this.worldview, availableImages);
             const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor, this.worldview, availableImages);
@@ -1300,11 +1300,11 @@ class SymbolBucket implements Bucket {
 
             // Recompute fontScale with appearance data so it will be correctly used during icon update later
             featureData.fontScale = computeFontScale(textSizeValue, featureData.textScaleFactor);
-            const unevaluatedTextSize = activeAppearance.getUnevaluatedProperty('text-size') as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
+            const unevaluatedTextSize = activeAppearance.getUnevaluatedLayoutProperty('text-size') as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
             let textSizeData = this.textSizeData;
             let minZoom = layoutTextSizeMinZoom;
             let maxZoom = layoutTextSizeMaxZoom;
-            if (activeAppearance.hasProperty('text-size')) {
+            if (activeAppearance.hasLayoutProperty('text-size')) {
                 textSizeData = getSizeData(this.zoom, unevaluatedTextSize, this.worldview, availableImages);
                 minZoom = this.textSizeData.kind === 'composite' ? this.textSizeData.minZoom : 0;
                 maxZoom = this.textSizeData.kind === 'composite' ? this.textSizeData.maxZoom : 0;
@@ -1639,8 +1639,9 @@ class SymbolBucket implements Bucket {
     updateAppearances(canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties, imageManager?: ImageManager, featureStateChanged: boolean = false) {
         // Note: featureState can be undefined or {} for features without feature-state
         // Appearances can activate based on zoom/pitch alone without feature-state
+        const noChanges = {hasLayoutChanges: false, hasUboChanges: false};
         if (!canonical || !availableImages || !this.featureAppearanceData) {
-            return false;
+            return noChanges;
         }
         // Ensure featureState is at least an empty object for property evaluation
         const states = featureState || {};
@@ -1649,7 +1650,7 @@ class SymbolBucket implements Bucket {
         const hasTextData = this.text.layoutVertexArray && this.text.layoutVertexArray.length > 0 && this.text.layoutVertexArray.arrayBuffer;
 
         if (!hasIconData && !hasTextData) {
-            return false;
+            return noChanges;
         }
 
         const layer = this.layers[0];
@@ -1664,12 +1665,13 @@ class SymbolBucket implements Bucket {
         const appearanceUpdateResult: AppearanceUpdateResult = this.featureAppearances.update(
             globalProperties, featureStateChanged
         );
-        if (appearanceUpdateResult.kind === 'no-changes') return false;
+        if (appearanceUpdateResult.kind === 'no-changes') return noChanges;
 
         // Prepare icon parameters
         let iconScaleFactor = 1;
         let iconVertexOffset = 0;
         let hasIconChanges = false;
+        let hasUboChanges = false;
         if (hasIconData) {
             const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
             iconScaleFactor = clamp(1, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
@@ -1721,6 +1723,7 @@ class SymbolBucket implements Bucket {
                 const found = layer.appearances ? layer.appearances.findIndex(a => a.isActive({globals: globalProperties, feature: evaluationFeature, canonical, featureState: featureStateForThis})) : -1;
                 activeAppearanceIndex = found >= 0 ? found : -1;
             }
+            const appearanceChanged = featureData.activeAppearanceIndex !== activeAppearanceIndex;
 
             if (hasTextData) {
                 const layoutTextSizeExpression = layout.get('text-size');
@@ -1767,6 +1770,25 @@ class SymbolBucket implements Bucket {
                 hasIconChanges = hasIconChanges || iconResult.hasChanges;
             }
 
+            if (appearanceChanged) {
+                const vtFeatureIndex = symbolInstance.featureIndex;
+                const brightness = globalProperties ? globalProperties.brightness : null;
+                const fState = featureStateForThis || {};
+                const activeAppearance = activeAppearanceIndex >= 0 ? layer.appearances[activeAppearanceIndex] : null;
+                if (this.text.uboBinder) {
+                    // updateDynamicExpressions/updateFeatures, which set the layer, may not have
+                    // been called for zoom/pitch-only condition changes so we do it here
+                    this.text.uboBinder.layer = layer;
+                    hasUboChanges = this.text.uboBinder.updateFeaturePaintForAppearance(vtFeatureIndex, evaluationFeature, fState, canonical, availableImages, brightness, activeAppearance) || hasUboChanges;
+                }
+                if (this.icon.uboBinder) {
+                    // updateDynamicExpressions/updateFeatures, which set the layer, may not have
+                    // been called for zoom/pitch-only condition changes so we do it here
+                    this.icon.uboBinder.layer = layer;
+                    hasUboChanges = this.icon.uboBinder.updateFeaturePaintForAppearance(vtFeatureIndex, evaluationFeature, fState, canonical, availableImages, brightness, activeAppearance) || hasUboChanges;
+                }
+            }
+
             featureData.activeAppearanceIndex = activeAppearanceIndex;
         }
 
@@ -1783,7 +1805,7 @@ class SymbolBucket implements Bucket {
             }
         }
 
-        return hasIconChanges || hasTextChanges;
+        return {hasLayoutChanges: hasIconChanges || hasTextChanges, hasUboChanges};
     }
 
     destroyDebugData() {

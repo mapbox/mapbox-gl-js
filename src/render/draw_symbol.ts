@@ -492,9 +492,15 @@ function drawLayerSymbols(
 
             const glCoordMatrix = symbolProjection.getGlCoordMatrix(tileMatrix, tile.tileID.canonical, iconPitchWithMap, iconRotateWithMap, tr, bucket.getProjection(), s);
 
-            const uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, iconTranslate, iconTranslateAnchor, true);
+            // When icon-translate is per-feature (appearances define it), the translate is stored
+            // in the UBO and applied per-vertex in the shader. The matrix must have no translate.
+            const iconTranslateDataDriven = !!(bucket.icon.uboBinder && bucket.icon.uboBinder.cachedHeader &&
+                (bucket.icon.uboBinder.cachedHeader.dataDrivenMask & (1 << 8)));
+            const effectiveIconTranslate: [number, number] = iconTranslateDataDriven ? [0, 0] : iconTranslate;
 
-            const matrix = painter.translatePosMatrix(tileMatrix, tile, iconTranslate, iconTranslateAnchor);
+            const uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, effectiveIconTranslate, iconTranslateAnchor, true);
+
+            const matrix = painter.translatePosMatrix(tileMatrix, tile, effectiveIconTranslate, iconTranslateAnchor);
             const uLabelPlaneMatrix = projectedPosOnLabelSpace ? identityMat4 : labelPlaneMatrixRendering;
             const rotateInShader = iconRotateWithMap && !iconPitchWithMap && !alongLine;
 
@@ -620,9 +626,15 @@ function drawLayerSymbols(
             // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
             const glCoordMatrix = symbolProjection.getGlCoordMatrix(tileMatrix, tile.tileID.canonical, textPitchWithMap, textRotateWithMap, tr, bucket.getProjection(), s);
 
-            const uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, textTranslate, textTranslateAnchor, true);
+            // When text-translate is per-feature (appearances define it), the translate is stored
+            // in the UBO and applied per-vertex in the shader. The matrix must have no translate.
+            const textTranslateDataDriven = !!(bucket.text.uboBinder && bucket.text.uboBinder.cachedHeader &&
+                (bucket.text.uboBinder.cachedHeader.dataDrivenMask & (1 << 8)));
+            const effectiveTextTranslate: [number, number] = textTranslateDataDriven ? [0, 0] : textTranslate;
 
-            const matrix = painter.translatePosMatrix(tileMatrix, tile, textTranslate, textTranslateAnchor);
+            const uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, effectiveTextTranslate, textTranslateAnchor, true);
+
+            const matrix = painter.translatePosMatrix(tileMatrix, tile, effectiveTextTranslate, textTranslateAnchor);
             const uLabelPlaneMatrix = projectedPosOnLabelSpace ? identityMat4 : labelPlaneMatrixRendering;
 
             // Line label rotation happens in `updateLineLabels`
@@ -810,6 +822,19 @@ function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, lay
         uniformValues['u_spp_emissive_strength'] = cv.emissive_strength;
         uniformValues['u_spp_occlusion_opacity'] = cv.occlusion_opacity;
         uniformValues['u_spp_z_offset']          = cv.z_offset;
+        // Compute translate-anchor rotation for per-feature translate (appearances).
+        // When translate is data-driven (bit 8 of dataDrivenMask), u_coord_matrix has no translate
+        // baked in (set to [0,0] in drawLayerSymbols). The shader applies per-feature translate
+        // from the UBO rotated by this uniform.
+        const isText = buffers.uboBinder.isText;
+        const translateAnchor = isText ?
+            layer.paint.get('text-translate-anchor') :
+            layer.paint.get('icon-translate-anchor');
+        const hasPerFeatureTranslate = !!(buffers.uboBinder.cachedHeader &&
+            (buffers.uboBinder.cachedHeader.dataDrivenMask & (1 << 8)));
+        const rotAngle = hasPerFeatureTranslate && translateAnchor === 'map' ?
+            painter.transform.angle : 0;
+        uniformValues['u_spp_translate_rotation'] = [Math.cos(rotAngle), Math.sin(rotAngle)];
     }
 
     const {batchIndices, batchSegments} = buffers.getBatchGrouping(segments);

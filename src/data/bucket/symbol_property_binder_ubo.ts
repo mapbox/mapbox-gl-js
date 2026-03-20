@@ -14,6 +14,8 @@ import type {ImageId} from '../../style-spec/expression/types/image_id';
 import type Context from '../../gl/context';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {FormattedSection} from '../../style-spec/expression/types/formatted';
+import type {AppearancePaintProps} from '../../style/appearance_properties';
+import type SymbolAppearance from '../../style/appearance';
 
 // WebGL2 minimum guaranteed value for MAX_UNIFORM_BUFFER_BINDINGS (OpenGL ES 3.0.6 table 6.33)
 const WEBGL2_MIN_UNIFORM_BUFFER_BINDINGS = 24;
@@ -88,6 +90,7 @@ type PropDef = {
     name: string;
     useThemeName: string | null;
     isColor: boolean;
+    isVec2?: boolean; // translate is a [number, number] vec2 property
 };
 
 /**
@@ -159,6 +162,9 @@ export class SymbolPropertyBinderUBO {
     cachedConstantRenderZoom: number | null;
     cachedConstantBrightness: number | null | undefined;
 
+    // Tracks current active appearance per vtFeatureIndex (main-thread only, excluded from serialization).
+    activeAppearanceByVtIndex: Map<number, SymbolAppearance | null>;
+
     uboSizeDwords: number;
 
     constructor(layer: SymbolStyleLayer, zoom: number, lut: LUT | null, isText: boolean, worldview: string = '', maxUniformBufferBindings?: number | null, uboSizeDwords?: number | null) {
@@ -188,12 +194,15 @@ export class SymbolPropertyBinderUBO {
         this.cachedConstantUniforms = null;
         this.cachedConstantRenderZoom = null;
         this.cachedConstantBrightness = undefined;
+
+        this.activeAppearanceByVtIndex = new Map();
     }
 
     /**
      * Returns an ordered list of property definitions for text or icon.
      * Order determines bit index: 0=fill_color, 1=halo_color, 2=opacity,
-     * 3=halo_width, 4=halo_blur, 5=emissive_strength, 6=occlusion_opacity, 7=z_offset.
+     * 3=halo_width, 4=halo_blur, 5=emissive_strength, 6=occlusion_opacity, 7=z_offset,
+     * 8=translate (GL JS-specific, vec2, uses previously-unused h[11] header slot).
      */
     private _getPropDefs(): PropDef[] {
         const p = this.isText ? 'text' : 'icon';
@@ -206,6 +215,7 @@ export class SymbolPropertyBinderUBO {
             {name: `${p}-emissive-strength`, useThemeName: null,                          isColor: false},
             {name: `${p}-occlusion-opacity`, useThemeName: null,                          isColor: false},
             {name: 'symbol-z-offset',        useThemeName: null,                          isColor: false},
+            {name: `${p}-translate`,         useThemeName: null,                          isColor: false, isVec2: true},
         ];
     }
 
@@ -223,13 +233,18 @@ export class SymbolPropertyBinderUBO {
         let zoomDependentMask = 0;
         let cameraMask = 0;
         let dataDrivenOffset = 0;
-        const offsets: [number, number, number, number, number, number, number, number] = [0, 0, 0, 0, 0, 0, 0, 0];
+        const offsets: [number, number, number, number, number, number, number, number, number] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-        for (let i = 0; i < 8; i++) {
-            const {name, isColor} = propDefs[i];
+        for (let i = 0; i < 9; i++) {
+            const {name, isColor, isVec2} = propDefs[i];
             const prop = paint.get(name as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<unknown> | undefined;
 
-            const isDataDriven = prop ? !prop.isConstant() : false;
+            // DataConstantProperty returns a plain value (no isConstant method) — treat as constant.
+            const layerIsDataDriven = prop && typeof prop.isConstant === 'function' ? !prop.isConstant() : false;
+            // If any appearance defines this property, it must be in the UBO so per-feature values can differ.
+            const appearanceForceDataDriven =
+                this._appearancesHavePaintProperties(name as keyof AppearancePaintProps);
+            const isDataDriven = layerIsDataDriven || appearanceForceDataDriven;
             const isZoomDep = !!(prop && prop.value && (prop.value as {kind?: string}).kind === 'composite');
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
@@ -242,12 +257,32 @@ export class SymbolPropertyBinderUBO {
                 dataDrivenMask |= (1 << i);
                 if (isZoomDep) zoomDependentMask |= (1 << i);
 
-                // Colors must be vec4-aligned within the data-driven block
-                if (isColor && dataDrivenOffset % 4 !== 0) {
-                    dataDrivenOffset = (dataDrivenOffset + 3) & ~3;
+                if (isColor) {
+                    // Colors must be vec4-aligned within the data-driven block.
+                    if (dataDrivenOffset % 4 !== 0) {
+                        dataDrivenOffset = (dataDrivenOffset + 3) & ~3;
+                    }
+                    offsets[i] = dataDrivenOffset;
+                    dataDrivenOffset += 4;
+                } else if (isVec2) {
+                    if (isZoomDep) {
+                        // zoom-dep translate needs 4 floats [tx_min, ty_min, tx_max, ty_max], vec4-aligned.
+                        if (dataDrivenOffset % 4 !== 0) {
+                            dataDrivenOffset = (dataDrivenOffset + 3) & ~3;
+                        }
+                        offsets[i] = dataDrivenOffset;
+                        dataDrivenOffset += 4;
+                    } else {
+                        // non-zoom translate needs 2 floats [tx, ty] within the same vec4.
+                        // Ensure offset%4 != 3 (y would overflow to next vec4).
+                        if (dataDrivenOffset % 4 === 3) dataDrivenOffset++;
+                        offsets[i] = dataDrivenOffset;
+                        dataDrivenOffset += 2;
+                    }
+                } else {
+                    offsets[i] = dataDrivenOffset;
+                    dataDrivenOffset += isZoomDep ? 2 : 1;
                 }
-                offsets[i] = dataDrivenOffset;
-                dataDrivenOffset += isColor ? 4 : (isZoomDep ? 2 : 1);
             } else {
                 if (isCamera) cameraMask |= (1 << i);
                 // Constant properties use u_spp_* uniforms — offset is unused, leave at 0.
@@ -284,22 +319,25 @@ export class SymbolPropertyBinderUBO {
         canonical: CanonicalTileID,
         availableImages: ImageId[],
         brightness?: number | null,
-        formattedSection?: FormattedSection
+        formattedSection?: FormattedSection,
+        activeAppearance?: SymbolAppearance | null
     ): Array<PropertyValue | null> {
         const {params, paramsNext} = this._getCachedParams(brightness);
         const ctx: EvaluationContext = {feature, featureState, canonical, availableImages, params, paramsNext, formattedSection};
         const header = this.cachedHeader;
         const propDefs = this.propDefs;
-        const result: Array<PropertyValue | null> = new Array<PropertyValue | null>(8).fill(null);
+        const result: Array<PropertyValue | null> = new Array<PropertyValue | null>(9).fill(null);
 
-        for (let i = 0; i < 8; i++) {
-            const {name, useThemeName, isColor} = propDefs[i];
+        for (let i = 0; i < 9; i++) {
+            const {name, useThemeName, isColor, isVec2} = propDefs[i];
             const isZoomDep = !!(header && (header.zoomDependentMask & (1 << i)) !== 0);
 
             if (isColor) {
-                result[i] = this._evaluateColorValue(name, useThemeName, ctx, brightness, isZoomDep);
+                result[i] = this._evaluateColorValue(name, useThemeName, ctx, brightness, isZoomDep, activeAppearance);
+            } else if (isVec2) {
+                result[i] = this._evaluateTranslateValue(name, isZoomDep, ctx, activeAppearance);
             } else {
-                result[i] = this._evaluateFloatValue(name, isZoomDep, ctx);
+                result[i] = this._evaluateFloatValue(name, isZoomDep, ctx, activeAppearance);
             }
         }
 
@@ -316,11 +354,24 @@ export class SymbolPropertyBinderUBO {
         useThemeName: string | null,
         ctx: EvaluationContext,
         brightness?: number | null,
-        isZoomDep?: boolean
+        isZoomDep?: boolean,
+        activeAppearance?: SymbolAppearance | null
     ): [number, number, number, number] {
         const paint = this.layer.paint;
-        const prop = paint.get(propName as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<Color> | undefined;
-        const useThemeProp = useThemeName ? (paint.get(useThemeName as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<string> | undefined) : undefined;
+
+        // Appearance overrides the color property.
+        const appearanceName = propName as keyof AppearancePaintProps;
+        const useAppearanceProp = activeAppearance && activeAppearance.hasPaintProperty(appearanceName);
+        const prop = useAppearanceProp ?
+            activeAppearance.paintProperties.get(appearanceName) as PossiblyEvaluatedPropertyValue<Color> | undefined :
+            paint.get(propName as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<Color> | undefined;
+
+        // Use-theme: prefer appearance's value when it defines the color, fall back to layer's.
+        const appearanceUseThemeName = useThemeName as keyof AppearancePaintProps;
+        const useAppearanceTheme = useThemeName && activeAppearance && activeAppearance.hasPaintProperty(appearanceUseThemeName);
+        const useThemeProp = useAppearanceTheme ?
+            activeAppearance.paintProperties.get(appearanceUseThemeName) as PossiblyEvaluatedPropertyValue<string> | undefined :
+            (useThemeName ? paint.get(useThemeName as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<string> | undefined : undefined);
 
         if (!prop) {
             return [0, 0, 0, 1];
@@ -372,11 +423,18 @@ export class SymbolPropertyBinderUBO {
     private _evaluateFloatValue(
         propName: string,
         isZoomDep: boolean,
-        ctx: EvaluationContext
+        ctx: EvaluationContext,
+        activeAppearance?: SymbolAppearance | null
     ): number | [number, number] {
         const paint = this.layer.paint;
-        const prop = paint.get(propName as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<number> | undefined;
         const defaultVal = propName.endsWith('opacity') ? 1.0 : 0.0;
+
+        // Appearance overrides the float property.
+        const appearanceName = propName as keyof AppearancePaintProps;
+        const useAppearanceProp = activeAppearance && activeAppearance.hasPaintProperty(appearanceName);
+        const prop = useAppearanceProp ?
+            activeAppearance.paintProperties.get(appearanceName) as PossiblyEvaluatedPropertyValue<number> | undefined :
+            paint.get(propName as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<number> | undefined;
 
         if (!prop) return defaultVal;
 
@@ -402,6 +460,51 @@ export class SymbolPropertyBinderUBO {
     }
 
     /**
+     * Evaluate a translate property ([number, number]) and return it in UBO-ready format.
+     * Non-zoom: [tx, ty]. Zoom-dep: [tx_min, ty_min, tx_max, ty_max].
+     */
+    private _evaluateTranslateValue(
+        propName: string,
+        isZoomDep: boolean,
+        ctx: EvaluationContext,
+        activeAppearance?: SymbolAppearance | null
+    ): [number, number] | [number, number, number, number] {
+        const paint = this.layer.paint;
+        const appearanceName = propName as keyof AppearancePaintProps;
+        const useAppearanceProp = activeAppearance && activeAppearance.hasPaintProperty(appearanceName);
+        const prop = useAppearanceProp ?
+            activeAppearance.paintProperties.get(appearanceName) as unknown as PossiblyEvaluatedPropertyValue<[number, number]> | undefined :
+            paint.get(propName as keyof typeof paint._values) as unknown as PossiblyEvaluatedPropertyValue<[number, number]> | undefined;
+
+        if (!prop) return [0, 0];
+
+        // translate is a DataConstantProperty at the layer level (not data-driven), so paint.get()
+        // returns the raw [number, number] value directly — no isConstant() wrapper.
+        // The appearance path uses DataDrivenProperty and goes through the branches below.
+        if (typeof prop.isConstant !== 'function') {
+            return (prop as unknown as [number, number]) || [0, 0];
+        }
+
+        if (prop.isConstant()) {
+            return prop.constantOr([0, 0]);
+        }
+
+        const minVal: [number, number] = prop.property.evaluate(
+            prop.value, ctx.params, ctx.feature, ctx.featureState,
+            ctx.canonical, ctx.availableImages, prop.iconImageUseTheme, ctx.formattedSection
+        ) || [0, 0];
+
+        if (isZoomDep) {
+            const maxVal: [number, number] = prop.property.evaluate(
+                prop.value, ctx.paramsNext, ctx.feature, ctx.featureState,
+                ctx.canonical, ctx.availableImages, prop.iconImageUseTheme, ctx.formattedSection
+            ) || [0, 0];
+            return [minVal[0], minVal[1], maxVal[0], maxVal[1]];
+        }
+        return minVal;
+    }
+
+    /**
      * Gets or creates cached EvaluationParameters for the current zoom and brightness.
      */
     private _getCachedParams(brightness?: number | null): {params: EvaluationParameters; paramsNext: EvaluationParameters} {
@@ -415,15 +518,27 @@ export class SymbolPropertyBinderUBO {
     }
 
     /**
-     * Check if all symbol properties are constant (no expressions, no feature-state).
+     * Returns true if any appearance defines paint properties.
+     * When propName is provided, checks that specific property.
+     * When omitted, checks whether any icon/text paint property (as appropriate) is defined.
      */
+    private _appearancesHavePaintProperties(propName?: keyof AppearancePaintProps): boolean {
+        const appearances = this.layer.getAppearances();
+        if (propName !== undefined) {
+            return appearances.some(a => a.hasPaintProperty(propName));
+        }
+        return this.isText ?
+            appearances.some(a => a.hasTextPaintProperties()) :
+            appearances.some(a => a.hasIconPaintProperties());
+    }
+
     private _checkIfAllPropertiesAreConstant(layer: SymbolStyleLayer, isText: boolean): boolean {
         const paint = layer.paint;
         const prefix = isText ? 'text' : 'icon';
         const props = [
             `${prefix}-color`, `${prefix}-halo-color`, `${prefix}-opacity`,
             `${prefix}-halo-width`, `${prefix}-halo-blur`, `${prefix}-emissive-strength`,
-            `${prefix}-occlusion-opacity`, 'symbol-z-offset',
+            `${prefix}-occlusion-opacity`, 'symbol-z-offset', `${prefix}-translate`,
         ];
         for (const propName of props) {
             const prop = paint.get(propName as keyof typeof paint._values);
@@ -431,6 +546,8 @@ export class SymbolPropertyBinderUBO {
                 return false;
             }
         }
+        // Appearances can override paint properties per-feature, so deduplication is unsafe.
+        if (this._appearancesHavePaintProperties()) return false;
         return true;
     }
 
@@ -441,7 +558,7 @@ export class SymbolPropertyBinderUBO {
     private _hashDataDrivenValues(values: Array<PropertyValue | null>, header: SymbolPropertyHeader): string {
         if (header.dataDrivenMask === 0) return ''; // All constant — single entry
         const parts: string[] = [];
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 9; i++) {
             if ((header.dataDrivenMask & (1 << i)) === 0) continue;
             const v = values[i];
             if (v === null || v === undefined) {
@@ -585,7 +702,8 @@ export class SymbolPropertyBinderUBO {
                     geometry: []
                 };
 
-                const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness);
+                const activeAppearance = this.activeAppearanceByVtIndex ? this.activeAppearanceByVtIndex.get(range.vtFeatureIndex) : undefined;
+                const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, undefined, activeAppearance);
                 if (!this.ubos[range.batchIndex]) continue;
                 this.ubos[range.batchIndex].writeDataDrivenBlock(allValues, range.localFeatureIndex, header);
             }
@@ -628,10 +746,46 @@ export class SymbolPropertyBinderUBO {
                 geometry: []
             };
 
-            const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness);
+            const activeAppearance = this.activeAppearanceByVtIndex ? this.activeAppearanceByVtIndex.get(range.vtFeatureIndex) : undefined;
+            const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, undefined, activeAppearance);
             if (!this.ubos[range.batchIndex]) continue;
             this.ubos[range.batchIndex].writeDataDrivenBlock(allValues, range.localFeatureIndex, header);
         }
+    }
+
+    /**
+     * Update UBO paint values for a single feature when its active appearance changes.
+     * Called from updateAppearances() in symbol_bucket.ts whenever a feature's active
+     * appearance transitions. Stores the appearance so updateDynamicExpressions/updateFeatures
+     * also evaluate with the correct appearance.
+     */
+    updateFeaturePaintForAppearance(
+        vtFeatureIndex: number,
+        feature: Feature,
+        featureState: FeatureState,
+        canonical: CanonicalTileID,
+        availableImages: ImageId[],
+        brightness: number | null | undefined,
+        activeAppearance: SymbolAppearance | null | undefined
+    ): boolean {
+        if (!this.layer) return false;
+        // activeAppearanceByVtIndex is omitted from serialization and must be lazily re-initialized
+        // on deserialized instances (worker → main thread transfer).
+        if (!this.activeAppearanceByVtIndex) this.activeAppearanceByVtIndex = new Map();
+        this.activeAppearanceByVtIndex.set(vtFeatureIndex, activeAppearance || null);
+        if (!this.cachedHeader) return false;
+        const header = this.cachedHeader;
+        if (header.dataDrivenMask === 0) return false; // All constant — nothing per-feature to write
+
+        let wrote = false;
+        for (const range of this.allFeatures) {
+            if (range.vtFeatureIndex !== vtFeatureIndex) continue;
+            const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, undefined, activeAppearance);
+            if (!this.ubos[range.batchIndex]) continue;
+            this.ubos[range.batchIndex].writeDataDrivenBlock(allValues, range.localFeatureIndex, header);
+            wrote = true;
+        }
+        return wrote;
     }
 
     /**
@@ -756,4 +910,4 @@ export class SymbolPropertyBinderUBO {
 // 'layer' is omitted because SymbolStyleLayer is not serializable. It must be re-assigned on
 // the main thread before any main-thread method (getConstantUniformValues, bind, etc.) is called.
 // See draw_symbol.ts: `buffers.uboBinder.layer = layer` before drawSymbolElements().
-register(SymbolPropertyBinderUBO, 'SymbolPropertyBinderUBO', {omit: ['layer', 'cachedParams', 'cachedParamsNext', 'cachedBrightness', 'propertyHashToUBOIndex', 'cachedConstantUniforms', 'cachedConstantRenderZoom', 'cachedConstantBrightness']});
+register(SymbolPropertyBinderUBO, 'SymbolPropertyBinderUBO', {omit: ['layer', 'cachedParams', 'cachedParamsNext', 'cachedBrightness', 'propertyHashToUBOIndex', 'cachedConstantUniforms', 'cachedConstantRenderZoom', 'cachedConstantBrightness', 'activeAppearanceByVtIndex']});

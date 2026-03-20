@@ -60,6 +60,8 @@ export type SymbolUniformsType = {
     ['u_spp_emissive_strength']: Uniform1f;
     ['u_spp_occlusion_opacity']: Uniform1f;
     ['u_spp_z_offset']: Uniform1f;
+    // [cos(angle), sin(angle)] for translate-anchor rotation; identity [1,0] for viewport anchor.
+    ['u_spp_translate_rotation']: Uniform2f;
 };
 
 export type SymbolDefinesType =
@@ -119,6 +121,7 @@ const symbolUniforms = (context: Context): SymbolUniformsType => ({
     'u_spp_emissive_strength': new Uniform1f(context),
     'u_spp_occlusion_opacity': new Uniform1f(context),
     'u_spp_z_offset': new Uniform1f(context),
+    'u_spp_translate_rotation': new Uniform2f(context),
 });
 
 const identityMatrix = mat4.create();
@@ -199,6 +202,7 @@ const symbolUniformValues = (
         'u_spp_emissive_strength': 0.0,
         'u_spp_occlusion_opacity': 1.0,
         'u_spp_z_offset': 0.0,
+        'u_spp_translate_rotation': [1.0, 0.0] as [number, number], // identity: no rotation
     };
 
     if (projection.name === 'globe') {

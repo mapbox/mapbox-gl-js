@@ -5,8 +5,8 @@ import type Context from '../../gl/context';
 /**
  * Describes how paint properties are laid out in the UBO.
  *
- * Property order (bit index 0-7): fill_color, halo_color, opacity,
- * halo_width, halo_blur, emissive_strength, occlusion_opacity, z_offset.
+ * Property order (bit index 0-8): fill_color, halo_color, opacity,
+ * halo_width, halo_blur, emissive_strength, occlusion_opacity, z_offset, translate.
  *
  * dataDrivenMask      – bitmask: 1 = property goes in per-feature data-driven block
  * zoomDependentMask   – bitmask: 1 = property uses zoom interpolation (composite kind)
@@ -14,13 +14,16 @@ import type Context from '../../gl/context';
  * dataDrivenBlockSizeVec4 – size of data-driven block in vec4 units (0 when dataDrivenMask=0)
  * offsets[i]          – dword offset of property i within the data-driven block
  *                       (only meaningful for properties with the dataDrivenMask bit set)
+ *
+ * Properties 0-7 are GL Native-aligned (3 uvec4 header). Property 8 (translate) is GL JS-specific
+ * and uses the previously-unused h[11] slot in the 3-uvec4 header.
  */
 export type SymbolPropertyHeader = {
     dataDrivenMask: number;
     zoomDependentMask: number;
     cameraMask: number;
     dataDrivenBlockSizeVec4: number;
-    offsets: [number, number, number, number, number, number, number, number];
+    offsets: [number, number, number, number, number, number, number, number, number];
 };
 
 /**
@@ -32,6 +35,9 @@ export type SymbolPropertyHeader = {
  * Floats (property indices 2-7):
  *   non-zoom → single number
  *   zoom-dep → [min, max]
+ * Vec2 (property index 8, translate):
+ *   non-zoom → [tx, ty]
+ *   zoom-dep → [tx_min, ty_min, tx_max, ty_max] (vec4-aligned in the data block)
  */
 export type PropertyValue = number | [number, number] | [number, number, number, number];
 
@@ -133,7 +139,7 @@ export class SymbolPropertiesUBO {
         h[8]  = header.offsets[5]; // emissive_strength
         h[9]  = header.offsets[6]; // occlusion_opacity
         h[10] = header.offsets[7]; // z_offset
-        h[11] = 0;                  // unused
+        h[11] = header.offsets[8]; // translate (GL JS-specific, uses previously-unused slot)
     }
 
     /**
@@ -149,7 +155,7 @@ export class SymbolPropertiesUBO {
         if (base + dataDrivenBlockSizeDwords > this.propertiesData.length) {
             throw new Error(`UBO write out of bounds: feature index ${featureIndex} exceeds propertiesData capacity`);
         }
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 9; i++) {
             if ((header.dataDrivenMask & (1 << i)) === 0) continue;
             if (values[i] === null || values[i] === undefined) continue;
             this._writeProperty(base + header.offsets[i], i, values[i], header.zoomDependentMask);
@@ -177,8 +183,10 @@ export class SymbolPropertiesUBO {
     private _writeProperty(dwordOffset: number, propIdx: number, value: PropertyValue, zoomDependentMask: number): void {
         const pd = this.propertiesData;
         // Property order is fixed by the GL Native contract: 0=fill_color, 1=halo_color (colors),
-        // 2-7=floats. This must stay in sync with _getPropDefs() in symbol_property_binder_ubo.ts.
+        // 2-7=floats. Property 8 (translate) is GL JS-specific: a vec2.
+        // This must stay in sync with _getPropDefs() in symbol_property_binder_ubo.ts.
         const isColor = propIdx < 2;
+        const isVec2 = propIdx === 8; // translate: [tx, ty] non-zoom or [tx_min, ty_min, tx_max, ty_max] zoom-dep
         const isZoomDep = (zoomDependentMask & (1 << propIdx)) !== 0;
 
         if (isColor) {
@@ -187,6 +195,18 @@ export class SymbolPropertiesUBO {
             pd[dwordOffset + 1] = v[1];
             pd[dwordOffset + 2] = v[2];
             pd[dwordOffset + 3] = v[3];
+        } else if (isVec2 && isZoomDep) {
+            // zoom-dep translate: [tx_min, ty_min, tx_max, ty_max], vec4-aligned
+            const v = value as [number, number, number, number];
+            pd[dwordOffset]     = v[0]; // tx_min
+            pd[dwordOffset + 1] = v[1]; // ty_min
+            pd[dwordOffset + 2] = v[2]; // tx_max
+            pd[dwordOffset + 3] = v[3]; // ty_max
+        } else if (isVec2) {
+            // non-zoom translate: [tx, ty], 2-aligned (both within same vec4)
+            const v = value as [number, number];
+            pd[dwordOffset]     = v[0]; // tx
+            pd[dwordOffset + 1] = v[1]; // ty
         } else if (isZoomDep) {
             const v = value as [number, number];
             pd[dwordOffset]     = v[0]; // min

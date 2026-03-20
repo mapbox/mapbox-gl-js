@@ -196,7 +196,7 @@
   ],
   "size-limit": [
     {
-      "limit": "465 kb",
+      "limit": "466 kb",
       "gzip": true,
       "path": "dist/mapbox-gl.js"
     },

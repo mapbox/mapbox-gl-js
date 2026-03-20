@@ -129,6 +129,9 @@ struct SymbolPaintProperties {
     float emissive_strength;
     float occlusion_opacity;
     float z_offset;
+    /// Per-feature translate in label-plane (viewport pixel) units, before anchor rotation.
+    /// Rotated by u_spp_translate_rotation and added to pos before u_coord_matrix multiply.
+    vec2 translate;
 };
 
 struct PropertyType {
@@ -160,6 +163,8 @@ struct SymbolPropertyHeader {
     PropertyType emissive_strength;
     PropertyType occlusion_opacity;
     PropertyType z_offset;
+    /// GL JS-specific: per-feature translate (vec2, uses previously-unused h[2][3] slot).
+    PropertyType translate;
 };
 
 /// Zoom interpolation factor for zoom-dependent paint properties.
@@ -177,6 +182,8 @@ uniform lowp float u_spp_halo_blur;
 uniform lowp float u_spp_emissive_strength;
 uniform lowp float u_spp_occlusion_opacity;
 uniform lowp float u_spp_z_offset;
+/// [cos(angle), sin(angle)] for translate-anchor rotation; [1,0] = no rotation (viewport anchor).
+uniform lowp vec2 u_spp_translate_rotation;
 
 /// Per-feature index used to look up the feature's data-driven paint property block in
 /// the u_properties uniform buffer.
@@ -239,6 +246,7 @@ SymbolPropertyHeader readSymbolPropertiesHeader() {
     header.emissive_strength    = getPropertyType(5u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][0]);
     header.occlusion_opacity    = getPropertyType(6u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][1]);
     header.z_offset             = getPropertyType(7u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][2]);
+    header.translate            = getPropertyType(8u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][3]);
     return header;
 }
 
@@ -300,6 +308,20 @@ vec4 readColorProperty(PropertyType propertyType, uint dataDrivenBlockSizeVec4) 
     return color;
 }
 
+/// Read a vec2 property (translate) from the UBO.
+/// Non-zoom: 2 consecutive floats [tx, ty] within the same vec4 (offset%4 <= 2).
+/// Zoom-dep: 4 floats [tx_min, ty_min, tx_max, ty_max] at a vec4-aligned offset.
+vec2 readVec2Property(PropertyType propertyType, uint dataDrivenBlockSizeVec4) {
+    uint blockOffsetVec4 = getDataDrivenBlockOffsetVec4(dataDrivenBlockSizeVec4);
+    vec4 slot = readVec4(blockOffsetVec4, propertyType.offsetDwords);
+    if (propertyType.isZoomDependent) {
+        vec2 minVal = slot.xy;
+        vec2 maxVal = slot.zw;
+        return mix(minVal, maxVal, u_zoom);
+    }
+    return readVec2(slot, propertyType.offsetDwords);
+}
+
 float readFloatProperty(PropertyType propertyType, uint dataDrivenBlockSizeVec4) {
     uint blockOffsetVec4 = getDataDrivenBlockOffsetVec4(dataDrivenBlockSizeVec4);
     vec4 slot = readVec4(blockOffsetVec4, propertyType.offsetDwords);
@@ -325,6 +347,7 @@ SymbolPaintProperties readSymbolPaintProperties() {
     props.emissive_strength    = header.emissive_strength.isDataDriven ? readFloatProperty(header.emissive_strength, sizeVec4) : u_spp_emissive_strength;
     props.occlusion_opacity    = header.occlusion_opacity.isDataDriven ? readFloatProperty(header.occlusion_opacity, sizeVec4) : u_spp_occlusion_opacity;
     props.z_offset             = header.z_offset.isDataDriven          ? readFloatProperty(header.z_offset, sizeVec4)          : u_spp_z_offset;
+    props.translate            = header.translate.isDataDriven          ? readVec2Property(header.translate, sizeVec4)           : vec2(0.0);
     return props;
 }
 
@@ -549,6 +572,22 @@ void main() {
 #endif // ELEVATED_ROADS
 #endif
     gl_Position = mix(u_coord_matrix * vec4(pos, 1.0), AWAY, hidden);
+
+#ifdef USE_PAINT_PROPERTIES_UBO
+    // Apply per-feature translate (in label-plane / viewport-pixel units).
+    // Rotate by u_spp_translate_rotation to handle translate-anchor (identity for viewport anchor).
+    // Adding (u_coord_matrix * vec4(rotated_tr, 0, 0)).xy to gl_Position is equivalent to
+    // shifting pos.xy by rotated_tr before the u_coord_matrix multiply.
+    {
+        vec2 tr = paint_properties.translate;
+        vec2 rotated_tr = vec2(
+            u_spp_translate_rotation.x * tr.x - u_spp_translate_rotation.y * tr.y,
+            u_spp_translate_rotation.y * tr.x + u_spp_translate_rotation.x * tr.y
+        );
+        gl_Position.xy += (u_coord_matrix * vec4(rotated_tr, 0.0, 0.0)).xy;
+    }
+#endif
+
     float gamma_scale = gl_Position.w;
 
     // Cast to float is required to fix a rendering error in Swiftshader

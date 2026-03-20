@@ -21,7 +21,7 @@ describe('SymbolPropertiesUBO', () => {
             zoomDependentMask: 0,
             cameraMask: 0,
             dataDrivenBlockSizeVec4: 0,
-            offsets: [0, 0, 0, 0, 0, 0, 0, 0],
+            offsets: [0, 0, 0, 0, 0, 0, 0, 0, 0],
         };
     }
 
@@ -35,7 +35,7 @@ describe('SymbolPropertiesUBO', () => {
         //   h[1] = zoomDependentMask
         //   h[2] = dataDrivenBlockSizeVec4
         //   h[3..10] = offsets[0..7]
-        //   h[11] = 0 (unused)
+        //   h[11] = offsets[8] (translate)
         expect(ubo.headerData[0]).toEqual(0);   // dataDrivenMask
         expect(ubo.headerData[1]).toEqual(0);   // zoomDependentMask
         expect(ubo.headerData[2]).toEqual(0);   // dataDrivenBlockSizeVec4 (all-constant → 0)
@@ -56,7 +56,7 @@ describe('SymbolPropertiesUBO', () => {
             zoomDependentMask: 0,
             cameraMask: 0,
             dataDrivenBlockSizeVec4: 1,   // 1 vec4 = 4 dwords for the DD block
-            offsets: [0, 0, 0, 0, 0, 0, 0, 0], // opacity DD offset = 0 (only DD prop)
+            offsets: [0, 0, 0, 0, 0, 0, 0, 0, 0], // opacity DD offset = 0 (only DD prop)
         };
         ubo.writeHeader(header);
 
@@ -76,11 +76,11 @@ describe('SymbolPropertiesUBO', () => {
             zoomDependentMask: 0,
             cameraMask: 0,
             dataDrivenBlockSizeVec4: 1,
-            offsets: [0, 0, 0, 0, 0, 0, 0, 0],
+            offsets: [0, 0, 0, 0, 0, 0, 0, 0, 0],
         };
         ubo.writeHeader(header);
 
-        const ddValues: Array<PropertyValue | null> = new Array<PropertyValue | null>(8).fill(null);
+        const ddValues: Array<PropertyValue | null> = new Array<PropertyValue | null>(9).fill(null);
         ddValues[2] = 1.0; // opacity = 1.0 for feature 1
 
         ubo.writeDataDrivenBlock(ddValues, 1, header);
@@ -98,7 +98,7 @@ describe('SymbolPropertiesUBO', () => {
             zoomDependentMask: 0,
             cameraMask: 0,
             dataDrivenBlockSizeVec4: 1,
-            offsets: [0, 0, 0, 0, 0, 0, 0, 0],
+            offsets: [0, 0, 0, 0, 0, 0, 0, 0, 0],
         };
         expect(SymbolPropertiesUBO.getMaxFeatureCount(header)).toEqual(1021);
     });

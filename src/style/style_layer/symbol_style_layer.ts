@@ -193,11 +193,11 @@ class SymbolStyleLayer extends StyleLayer {
         canonical: CanonicalTileID,
         availableImages: ImageId[],
     ) {
-        const property = appearance.getProperty(name) as unknown as PossiblyEvaluatedPropertyValue<LayoutProps[T]>;
+        const property = appearance.getLayoutProperty(name) as unknown as PossiblyEvaluatedPropertyValue<LayoutProps[T]>;
         if (!property) return;
 
         const value = property.evaluate(feature, {}, canonical, availableImages);
-        const unevaluated = appearance.getUnevaluatedProperties()._values[name];
+        const unevaluated = appearance.getUnevaluatedLayoutProperties()._values[name];
         if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value) && value && typeof value === 'string') {
             return resolveTokens(feature.properties, value);
         }
