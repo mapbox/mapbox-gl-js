@@ -2,7 +2,7 @@
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import Point from '@mapbox/point-geometry';
-import {getAnchors, getCenterAnchor} from '../../../src/symbol/get_anchors';
+import {getAnchors, getCenterAnchor, getStartAnchor, getEndAnchor} from '../../../src/symbol/get_anchors';
 
 const TILE_EXTENT = 4096;
 
@@ -115,5 +115,21 @@ describe('getAnchors', () => {
         const line = [new Point(1, 1), new Point(1, 3), new Point(3, 3)];
         const anchor = getCenterAnchor(line, Math.PI / 4, shapedText, shapedIcon, glyphSize, 1);
         expect(anchor).toBeFalsy();
+    });
+
+    test('getStartAnchor', () => {
+        const line = [new Point(1, 1), new Point(1, 3), new Point(3, 6), new Point(4, 7)];
+        const anchor = getStartAnchor(line, Math.PI, shapedText, shapedIcon, glyphSize, 1);
+        expect(anchor).toEqual(
+            {x: 1, y: 1, z: 0.0, angle: -1.5707963267948966, segment: 0}
+        );
+    });
+
+    test('getEndAnchor', () => {
+        const line = [new Point(1, 1), new Point(1, 3), new Point(3, 6), new Point(4, 7)];
+        const anchor = getEndAnchor(line, Math.PI, shapedText, shapedIcon, glyphSize, 1);
+        expect(anchor).toEqual(
+            {x: 4, y: 7, z: 0.0, angle: 0.7853981633974483, segment: 2}
+        );
     });
 });

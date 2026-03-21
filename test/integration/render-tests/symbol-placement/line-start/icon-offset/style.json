@@ -1,0 +1,75 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "description": "icon-offset should apply correctly with line-start symbol placement",
+      "height": 256,
+      "width": 256
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [-30, -30],
+                [0, 0],
+                [30, 30]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [-30, 10],
+                [0, -10],
+                [-30, -50]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/standard",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": 2,
+        "line-color": "#ccc"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-placement": "line-start",
+        "icon-image": "information",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "icon-offset": [10, -10]
+      }
+    }
+  ]
+}
