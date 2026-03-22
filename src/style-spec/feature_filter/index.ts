@@ -347,10 +347,8 @@ function convertFilter(filter?: Array<any> | null): unknown {
         op === '>=' ? convertComparisonOp(filter[1], filter[2], op) :
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         op === 'any' ? convertDisjunctionOp(filter.slice(1)) :
-        // @ts-expect-error - TS2769 - No overload matches this call.
-        op === 'all' ? ['all'].concat(filter.slice(1).map(convertFilter)) :
-        // @ts-expect-error - TS2769 - No overload matches this call.
-        op === 'none' ? ['all'].concat(filter.slice(1).map(convertFilter).map(convertNegation)) :
+        op === 'all' ? (['all'] as unknown[]).concat(filter.slice(1).map(convertFilter)) :
+        op === 'none' ? (['all'] as unknown[]).concat(filter.slice(1).map(convertFilter).map(convertNegation)) :
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         op === 'in' ? convertInOp(filter[1], filter.slice(2)) :
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -380,8 +378,7 @@ function convertComparisonOp(property: string, value: any, op: string) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertDisjunctionOp(filters: Array<Array<any>>) {
-// @ts-expect-error - TS2769 - No overload matches this call.
-    return ['any'].concat(filters.map(convertFilter));
+    return (['any'] as unknown[]).concat(filters.map(convertFilter));
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

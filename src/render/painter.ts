@@ -71,7 +71,7 @@ import type {LightsUniformsType} from '../../3d-style/render/lights';
 import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id';
 import type {ProgramName} from './program';
 import type {ProgramUniformsType, DynamicDefinesType} from './program/program_uniforms';
-import type {Source} from '../source/source';
+import type {Source, ISource} from '../source/source';
 import type {UniformBindings} from './uniform_binding';
 import type {CrossTileID, VariableOffset} from '../symbol/placement';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
@@ -848,8 +848,7 @@ class Painter {
                 sourceCache.prepare(this.context);
                 PerformanceUtils.measureLowOverhead(PerformanceUtils.GROUP_RENDERING, `prepare: ${sourceCache.id.toString()}`, sourceCachePrepareStartTime, undefined);
 
-                // @ts-expect-error - TS2339 - Property 'usedInConflation' does not exist on type 'Source'.
-                if (sourceCache.getSource().usedInConflation) {
+                if ((sourceCache.getSource() as ISource).usedInConflation) {
                     ++conflationSourcesOrLayersInStyle;
                 }
             }
@@ -922,8 +921,7 @@ class Painter {
                     const layerIdx = conflationLayerIndicesInStyle[i];
                     const sourceCache = this.style.getLayerSourceCache(layer);
 
-                    // @ts-expect-error - TS2339 - Property 'usedInConflation' does not exist on type 'Source'.
-                    if (!sourceCache || !sourceCache.used || (!sourceCache.getSource().usedInConflation && layer.type !== 'clip' && layer.type !== 'building')) {
+                    if (!sourceCache || !sourceCache.used || (!(sourceCache.getSource() as ISource).usedInConflation && layer.type !== 'clip' && layer.type !== 'building')) {
                         continue;
                     }
 

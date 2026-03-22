@@ -11,6 +11,7 @@ import type {Callback} from '../types/callback';
 import type {OverscaledTileID} from './tile_id';
 import type {ISource, SourceEvents} from './source';
 import type {AJAXError} from '../util/ajax';
+import type {Cancelable} from '../types/cancelable';
 import type {TextureImage} from '../render/texture';
 
 type DataType = 'raster';
@@ -266,8 +267,7 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
         const controller = new AbortController();
         const signal = controller.signal;
 
-        // @ts-expect-error - TS2741 - Property 'cancel' is missing in type 'Promise<void | Awaited<T>>' but required in type 'Cancelable'.
-        tile.request = Promise
+        const request = Promise
             .resolve(this._implementation.loadTile({x, y, z}, {signal}))
 
             .then(tileLoaded.bind(this))
@@ -276,9 +276,10 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
                 if (error.name === 'AbortError') return;
                 tile.state = 'errored';
                 callback(error);
-            });
+            }) as Promise<void> & Cancelable;
 
-        tile.request.cancel = () => controller.abort();
+        request.cancel = () => controller.abort();
+        tile.request = request;
 
         function tileLoaded(this: CustomSource<T>, data?: T | null) {
             delete tile.request;

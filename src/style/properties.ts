@@ -434,7 +434,7 @@ type PropertyValues<Props> = {
  *
  * @private
  */
-type PropertyValueSpecifications<Props> = Partial<{
+export type PropertyValueSpecifications<Props> = Partial<{
     [Key in keyof Props]: Props[Key] extends Property<infer T, unknown> ?
         PropertyValueSpecification<T extends Color ? string : T> :
         never;

@@ -3,7 +3,7 @@ import {Transitionable, PossiblyEvaluated} from '../../src/style/properties';
 
 import type EvaluationParameters from '../../src/style/evaluation_parameters';
 import type {LightsSpecification} from '../../src/style-spec/types';
-import type {TransitionParameters, ConfigOptions, Properties, Transitioning} from '../../src/style/properties';
+import type {TransitionParameters, ConfigOptions, Properties, PropertyValueSpecifications, Transitioning} from '../../src/style/properties';
 import type {LightProps as FlatLightProps} from './flat_light_properties';
 import type {LightProps as AmbientLightProps} from './ambient_light_properties';
 import type {LightProps as DirectionalLightProps} from './directional_light_properties';
@@ -24,14 +24,12 @@ class Lights<P extends LightProps> extends Evented {
         this.properties = new PossiblyEvaluated(properties);
 
         this._transitionable = new Transitionable(properties, scope, new Map(configOptions));
-        // @ts-expect-error - TS2345 - Argument of type '{ color?: PropertyValueSpecification<string>; "color-transition"?: TransitionSpecification; intensity?: PropertyValueSpecification<number>; "intensity-transition"?: TransitionSpecification; } | { ...; } | { ...; }' is not assignable to parameter of type 'PropertyValueSpecifications<P>'.
-        this._transitionable.setTransitionOrValue(options.properties);
+        this._transitionable.setTransitionOrValue(options.properties as PropertyValueSpecifications<P>);
         this._transitioning = this._transitionable.untransitioned();
     }
 
     updateConfig(configOptions?: ConfigOptions | null) {
-        // @ts-expect-error - TS2345 - Argument of type '{ color?: PropertyValueSpecification<string>; "color-transition"?: TransitionSpecification; intensity?: PropertyValueSpecification<number>; "intensity-transition"?: TransitionSpecification; } | { ...; } | { ...; }' is not assignable to parameter of type 'PropertyValueSpecifications<P>'.
-        this._transitionable.setTransitionOrValue(this._options.properties, new Map(configOptions));
+        this._transitionable.setTransitionOrValue(this._options.properties as PropertyValueSpecifications<P>, new Map(configOptions));
     }
 
     updateTransitions(parameters: TransitionParameters) {
@@ -53,14 +51,12 @@ class Lights<P extends LightProps> extends Evented {
 
     set(options: LightsSpecification, configOptions?: ConfigOptions | null) {
         this._options = options;
-        // @ts-expect-error - TS2345 - Argument of type '{ color?: PropertyValueSpecification<string>; "color-transition"?: TransitionSpecification; intensity?: PropertyValueSpecification<number>; "intensity-transition"?: TransitionSpecification; } | { ...; } | { ...; }' is not assignable to parameter of type 'PropertyValueSpecifications<P>'.
-        this._transitionable.setTransitionOrValue(options.properties, configOptions);
+        this._transitionable.setTransitionOrValue(options.properties as PropertyValueSpecifications<P>, configOptions);
     }
 
     shadowsEnabled(): boolean {
         if (!this.properties) return false;
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type 'keyof P'.
-        return this.properties.get('cast-shadows') === true;
+        return this.properties.get('cast-shadows' as keyof P) === true;
     }
 }
 

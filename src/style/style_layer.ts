@@ -183,17 +183,15 @@ class StyleLayer extends Evented {
 
     getLayoutProperty<T extends keyof LayoutSpecification>(name: T): LayoutSpecification[T] | undefined {
         if (name === 'visibility') {
-            // @ts-expect-error - TS2590 - Expression produces a union type that is too complex to represent.
-            return this.visibility;
+            return this.visibility as LayoutSpecification[T];
         }
 
-        return this._unevaluatedLayout.getValue(name);
+        return this._unevaluatedLayout.getValue(name) as LayoutSpecification[T] | undefined;
     }
 
     setLayoutProperty<T extends keyof LayoutSpecification>(name: string, value: LayoutSpecification[T]): void {
         if (this.type === 'custom' && name === 'visibility') {
-            // @ts-expect-error - TS2590 - Expression produces a union type that is too complex to represent.
-            this.visibility = value;
+            this.visibility = value as 'visible' | 'none' | undefined;
             return;
         }
 

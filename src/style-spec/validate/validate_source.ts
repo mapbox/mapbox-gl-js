@@ -164,12 +164,10 @@ function validatePromoteId({key, value}: PromoteIdValidatorOptions) {
             expression.value.forEach((err) => {
                 errors.push(new ValidationError(`${key}${err.key}`, null, `${err.message}`));
             });
+            return errors;
         }
 
-        // @ts-expect-error - TS2339: Property 'expression' does not exist on type 'ParsingError[] | StyleExpression'.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const parsed = expression.value.expression;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const onlyFeatureDependent = isConstant.isGlobalPropertyConstant(parsed, ['zoom', 'heatmap-density', 'line-progress', 'raster-value', 'sky-radial-progress', 'accumulated', 'is-supported-script', 'pitch', 'distance-from-center', 'measure-light', 'raster-particle-speed']);
         if (!onlyFeatureDependent) {
             errors.push(new ValidationError(`${key}`, null, 'promoteId expression should be only feature dependent'));

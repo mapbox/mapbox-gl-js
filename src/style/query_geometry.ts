@@ -192,13 +192,8 @@ export class QueryGeometry {
         const cameraPolygon = polygonizeBounds(min, max, buffer);
 
         const camPos = this.cameraPoint.clone();
-        // @ts-expect-error - TS2365 - Operator '+' cannot be applied to types 'boolean' and 'boolean'.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const column = (camPos.x > min.x) + (camPos.x > max.x);
-        // @ts-expect-error - TS2365 - Operator '+' cannot be applied to types 'boolean' and 'boolean'.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const row = (camPos.y > min.y) + (camPos.y > max.y);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const column = Number(camPos.x > min.x) + Number(camPos.x > max.x);
+        const row = Number(camPos.y > min.y) + Number(camPos.y > max.y);
         const sector = row * 3 + column;
 
         switch (sector) {
