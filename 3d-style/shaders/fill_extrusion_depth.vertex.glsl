@@ -38,13 +38,12 @@ void main() {
     base *= u_vertical_scale;
     height *= u_vertical_scale;
 
-    vec3 pos_normal = vec3(a_pos_normal_ed.xyz);
-    vec3 pos_nx = floor(pos_normal * 0.5);
+    vec3 top_up_ny = vec3(a_pos_normal_ed.xyz & 1);
+    vec3 pos_nx = vec3(a_pos_normal_ed.xyz >> 1);
     // The least significant bits of a_pos_normal_ed.xyz hold:
     // x is 1 if it's on top, 0 for ground.
     // y is 1 if the normal points up, and 0 if it points to side.
     // z is sign of ny: 1 for positive, 0 for values <= 0.
-    mediump vec3 top_up_ny = pos_normal - 2.0 * pos_nx;
 
     base = max(0.0, base);
     height = max(0.0, top_up_ny.y == 0.0 && top_up_ny.x == 1.0 ? height - u_edge_radius : height);

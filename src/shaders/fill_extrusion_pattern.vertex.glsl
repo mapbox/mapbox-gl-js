@@ -17,7 +17,10 @@ uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
 
 in ivec4 a_pos_normal_ed;
+
+#if defined(HAS_CENTROID) || defined(TERRAIN)
 in uvec2 a_centroid_pos;
+#endif
 
 #ifdef RENDER_WALL_MODE
 in ivec3 a_join_normal_inside;
@@ -79,26 +82,24 @@ void main() {
     vec2 pattern_tl = vec2(pattern.xy);
     vec2 pattern_br = vec2(pattern.zw);
 
-    vec4 pos_normal_ed = vec4(a_pos_normal_ed);
-    vec4 pos_nx = floor(pos_normal_ed * 0.5);
+    vec4 top_up_ny_start = vec4(a_pos_normal_ed & 1);
+    vec4 pos_nx = vec4(a_pos_normal_ed >> 1);
     // The least significant bits of a_pos_normal_ed hold:
     // x is 1 if it's on top, 0 for ground.
     // y is 1 if the normal points up, and 0 if it points to side.
     // z is sign of ny: 1 for positive, 0 for values <= 0.
     // w marks edge's start, 0 is for edge end, edgeDistance increases from start to end.
-    mediump vec4 top_up_ny_start = pos_normal_ed - 2.0 * pos_nx;
-    mediump vec3 top_up_ny = top_up_ny_start.xyz;
 
     float x_normal = pos_nx.z / 8192.0;
-    vec3 normal = top_up_ny.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
-    float edgedistance = pos_normal_ed.w;
+    vec3 normal = top_up_ny_start.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny_start.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
+    float edgedistance = float(a_pos_normal_ed.w);
 
     vec2 display_size = (pattern_br - pattern_tl) / pixel_ratio;
 
     base = max(0.0, base);
     height = max(0.0, height);
 
-    float t = top_up_ny.x;
+    float t = top_up_ny_start.x;
     float z = t > 0.0 ? height : base;
 
     vec2 centroid_pos = vec2(0.0);
@@ -180,7 +181,7 @@ void main() {
     y_ground += y_ground * 5.0 / max(3.0, top_height);
 #endif
     v_ao = vec3(mix(concave, -concave, start), y_ground, h - ele);
-    NdotL *= (1.0 + 0.05 * (1.0 - top_up_ny.y) * u_ao[0]); // compensate sides faux ao shading contribution
+    NdotL *= (1.0 + 0.05 * (1.0 - top_up_ny_start.y) * u_ao[0]); // compensate sides faux ao shading contribution
 
 #ifdef PROJECTION_GLOBE_VIEW
     top_height += u_height_lift;

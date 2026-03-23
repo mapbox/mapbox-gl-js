@@ -14,7 +14,10 @@ uniform float u_edge_radius;
 uniform float u_width_scale;
 
 in ivec4 a_pos_normal_ed;
+
+#if defined(HAS_CENTROID) || defined(TERRAIN)
 in uvec2 a_centroid_pos;
+#endif
 
 #ifdef RENDER_WALL_MODE
 in ivec3 a_join_normal_inside;
@@ -101,18 +104,16 @@ void main() {
     base *= u_vertical_scale;
     height *= u_vertical_scale;
     
-    vec4 pos_normal_ed = vec4(a_pos_normal_ed);
-    vec4 pos_nx = floor(pos_normal_ed * 0.5);
+    vec4 top_up_ny_start = vec4(a_pos_normal_ed & 1);
+    vec4 pos_nx = vec4(a_pos_normal_ed >> 1);
     // The least significant bits of a_pos_normal_ed hold:
     // x is 1 if it's on top, 0 for ground.
     // y is 1 if the normal points up, and 0 if it points to side.
     // z is sign of ny: 1 for positive, 0 for values <= 0.
     // w marks edge's start, 0 is for edge end, edgeDistance increases from start to end.
-    vec4 top_up_ny_start = pos_normal_ed - 2.0 * pos_nx;
-    vec3 top_up_ny = top_up_ny_start.xyz;
 
     float x_normal = pos_nx.z / 8192.0;
-    vec3 normal = top_up_ny.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
+    vec3 normal = top_up_ny_start.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny_start.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
 #if defined(ZERO_ROOF_RADIUS) || defined(RENDER_SHADOWS) || defined(LIGHTING_3D_MODE)
     v_normal = normal;
 #endif
@@ -120,9 +121,9 @@ void main() {
     base = max(0.0, base);
 
     float attr_height = height;
-    height = max(0.0, top_up_ny.y == 0.0 && top_up_ny.x == 1.0 ? height - u_edge_radius : height);
+    height = max(0.0, top_up_ny_start.y == 0.0 && top_up_ny_start.x == 1.0 ? height - u_edge_radius : height);
 
-    float t = top_up_ny.x;
+    float t = top_up_ny_start.x;
 
     vec2 centroid_pos = vec2(0.0);
 #if defined(HAS_CENTROID) || defined(TERRAIN)
@@ -141,11 +142,10 @@ void main() {
     float h_height = is_flat_height ? max(c_ele + height, ele + base + 2.0) : ele + height;
     float h_base = is_flat_base ? max(c_ele + base, ele + base) : ele + (base == 0.0 ? -5.0 : base);
     h = t > 0.0 ? max(h_base, h_height) : h_base;
-    pos = vec3(pos_nx.xy, h);
 #else
     h = t > 0.0 ? height : base;
-    pos = vec3(pos_nx.xy, h);
 #endif
+    pos = vec3(pos_nx.xy, h);
 
 #ifdef PROJECTION_GLOBE_VIEW
     // If t > 0 (top) we always add the lift, otherwise (ground) we only add it if base height is > 0
@@ -247,7 +247,7 @@ void main() {
     y_ground += y_ground * 5.0 / max(3.0, top_height);
 #endif // TERRAIN
     v_ao = vec2(mix(concave, -concave, start), y_ground);
-    NdotL *= (1.0 + 0.05 * (1.0 - top_up_ny.y) * u_ao[0]); // compensate sides faux ao shading contribution
+    NdotL *= (1.0 + 0.05 * (1.0 - top_up_ny_start.y) * u_ao[0]); // compensate sides faux ao shading contribution
 
 #ifdef PROJECTION_GLOBE_VIEW
     top_height += u_height_lift;
@@ -258,7 +258,7 @@ void main() {
 #ifdef LIGHTING_3D_MODE
 
 #ifdef FLOOD_LIGHT
-    float is_wall = 1.0 - float(t > 0.0 && top_up_ny.y > 0.0);
+    float is_wall = 1.0 - float(t > 0.0 && top_up_ny_start.y > 0.0);
     v_has_floodlight = float(flood_light_wall_radius > 0.0 && is_wall > 0.0);
     v_flood_radius = flood_light_wall_radius * u_vertical_scale;
 #endif // FLOOD_LIGHT
