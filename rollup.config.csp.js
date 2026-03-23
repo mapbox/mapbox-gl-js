@@ -18,7 +18,7 @@ const config = (input, file, format) => ({
         banner
     },
     treeshake: {preset: 'recommended', moduleSideEffects: (id) => !id.endsWith('devtools.ts')},
-    plugins: plugins({minified: true, production: true, keepClassNames: true, test: false, bench: false, mode: 'production'})
+    plugins: plugins({minified: true, production: true, keepClassNames: true, test: false, mode: 'production'})
 });
 
 export default [

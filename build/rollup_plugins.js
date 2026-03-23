@@ -13,18 +13,17 @@ import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
 
 /**
  * Common set of plugins/transformations shared across different rollup
- * builds (umd and esm mapboxgl bundles, style-spec package, benchmarks bundle)
+ * builds (umd and esm mapboxgl bundles, style-spec package bundle)
  *
  * @param {Object} options
- * @param {string | 'dev' | 'bench' | 'production'} [options.mode] - build mode
+ * @param {string | 'dev' | 'production'} [options.mode] - build mode
  * @param {string | 'esm' | 'umd'} [options.format] - output format
  * @param {boolean} [options.minified] - whether to minify the output
  * @param {boolean} [options.production] - whether this is a production build
  * @param {boolean} [options.test] - whether this is a test build
- * @param {boolean} [options.bench] - whether this is a benchmark build
  * @param {boolean} [options.keepClassNames] - whether to keep class names during minification
  */
-export const plugins = ({mode, format, minified, production, test, bench, keepClassNames}) => [
+export const plugins = ({mode, format, minified, production, test, keepClassNames}) => [
     minifyStyleSpec(),
     esbuild({
         target: browserslistToEsbuild(),
@@ -37,13 +36,13 @@ export const plugins = ({mode, format, minified, production, test, bench, keepCl
     json({
         exclude: 'src/style-spec/reference/v8.json'
     }),
-    (production && !bench) ? strip({
+    production ? strip({
         sourceMap: true,
         functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*', 'DevTools.*', 'StyleBOMUtils.*'],
         include: ['**/*.ts']
     }) : false,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    production || bench ? unassert({include: ['*.js', '**/*.js', '*.ts', '**/*.ts']}) : false,
+    production ? unassert({include: ['*.js', '**/*.js', '*.ts', '**/*.ts']}) : false,
     test ? replace({
         preventAssignment: true,
         values: {

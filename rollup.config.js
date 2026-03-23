@@ -9,16 +9,12 @@ import banner from './build/banner.js';
 
 const {BUILD, MINIFY} = process.env;
 const minified = MINIFY === 'true';
-const bench = BUILD === 'bench';
-const production = BUILD === 'production' || bench;
+const production = BUILD === 'production';
 
 function buildType(build, minified) {
     switch (build) {
     case 'production':
-        if (minified) return 'dist/mapbox-gl.js';
-        return 'dist/mapbox-gl-unminified.js';
-    case 'bench':
-        return 'dist/mapbox-gl-bench.js';
+        return 'dist/mapbox-gl.js';
     case 'dev':
         return 'dist/mapbox-gl-dev.js';
     default:
@@ -65,7 +61,7 @@ export default ({watch}) => {
         },
         onwarn: production ? onwarn : false,
         treeshake: production ? {preset: 'recommended', moduleSideEffects: (id) => !id.endsWith('devtools.ts')} : false,
-        plugins: [preserveDynamicImport()].concat(plugins({minified, production, bench, test: false, keepClassNames: false, mode: BUILD}))
+        plugins: [preserveDynamicImport()].concat(plugins({minified, production, test: false, keepClassNames: false, mode: BUILD}))
     }, {
         // Next, bundle together the three "chunks" produced in the previous pass
         // into a single, final bundle. See rollup/bundle_prelude.js and
