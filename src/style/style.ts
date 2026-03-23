@@ -1439,13 +1439,14 @@ class Style extends Evented<MapEvents> {
      * @fires Map.event:data Fires `data` with `{dataType: 'style'}` to indicate that sprite loading is complete.
      */
     _loadIconset(url: string) {
-        // If the sprite is not a mapbox URL, we load
-        // raster sprite if icon_set is not specified explicitly.
+        // For non-Mapbox URLs, automatically fall back to raster sprite loading.
+        // 'raster' and 'icon_set' are reserved for internal/test use only.
         if ((!isMapboxURL(url) && this.map._spriteFormat !== 'icon_set') || this.map._spriteFormat === 'raster') {
             this._loadSprite(url);
             return;
         }
 
+        // At runtime _spriteFormat is always 'auto'
         const isFallbackExists = this.map._spriteFormat === 'auto';
 
         this._spriteRequest = loadIconset(url, this.map._requestManager, (err, images) => {

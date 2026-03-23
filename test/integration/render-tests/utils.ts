@@ -144,7 +144,6 @@ export async function renderMap(style, options, currentTestName) {
         interactive: false,
         attributionControl: false,
         preserveDrawingBuffer: true,
-        spriteFormat: options.spriteFormat,
         scaleFactor: options.scaleFactor || 1,
         fadeDuration: options.fadeDuration || 0,
         localIdeographFontFamily: options.localIdeographFontFamily || false,
@@ -166,6 +165,10 @@ export async function renderMap(style, options, currentTestName) {
         transformRequest,
         testMode: true
     });
+
+    if (options.spriteFormat && mapRef.current) {
+        mapRef.current._spriteFormat = options.spriteFormat;
+    }
 
     if (options.forceEmissiveFallback && mapRef.current) {
         mapRef.current.painter._forceEmissiveMode = true;

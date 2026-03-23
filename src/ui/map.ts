@@ -213,7 +213,6 @@ export type MapOptions = {
     performanceMetricsCollection?: boolean;
     tessellationStep?: number;
     scaleFactor?: number;
-    spriteFormat?: SpriteFormat;
     pitchRotateKey?: PitchRotateKey;
 };
 
@@ -274,7 +273,6 @@ const defaultOptions = {
     testMode: false,
     precompilePrograms: true,
     scaleFactor: 1.0,
-    spriteFormat: 'auto',
 } satisfies Omit<MapOptions, 'container'>;
 
 /**
@@ -405,7 +403,6 @@ const defaultOptions = {
  * for high-density displays. The scale factor is clamped per-layer by `text-size-scale-range`
  * and `icon-size-scale-range` style properties.
  * This option is experimental and may change in future releases.
- * @param {'raster' | 'icon_set' | 'auto'} [options.spriteFormat='auto'] The format of the image sprite to use. If set to `'auto'`, vector iconset will be used for all mapbox-hosted sprites and raster sprite for all custom URLs.
  * @param {ProjectionSpecification} [options.projection='mercator'] The [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) the map should be rendered in.
  * Supported projections are:
  * * [Albers](https://en.wikipedia.org/wiki/Albers_projection) equal-area conic projection as `albers`
@@ -687,7 +684,7 @@ export class Map extends Camera {
             this.setMaxBounds(options.maxBounds);
         }
 
-        this._spriteFormat = options.spriteFormat;
+        this._spriteFormat = 'auto';
 
         bindAll([
             '_onWindowOnline',

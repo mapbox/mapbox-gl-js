@@ -47,7 +47,7 @@ export type ImageRasterizationWorkerTasks = Map<StringifiedImageVariant, ImageRa
 
 export type RasterizedImageMap = Map<StringifiedImageVariant, RGBAImage>;
 
-export type SpriteFormat = 'auto' | 'raster' | 'icon_set';
+export type SpriteFormat = 'auto' | 'icon_set' | 'raster';
 
 type ImageRequestor = {
     ids: ImageId[];

@@ -111,9 +111,12 @@
             attributionControl: false,
             performanceMetricsCollection: false,
             scaleFactor,
-            spriteFormat: options.spriteFormat || 'auto',
             maxZoom: options.maxZoom
         });
+
+        if (options.spriteFormat) {
+            map._spriteFormat = options.spriteFormat;
+        }
 
         map.removeControl(map._logoControl);
 
