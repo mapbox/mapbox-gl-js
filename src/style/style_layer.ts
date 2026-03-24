@@ -222,8 +222,7 @@ class StyleLayer extends Evented {
             // Early return for layers which don't have a visibility property.
             return;
         }
-        // @ts-expect-error - TS2322 - Type 'unknown' is not assignable to type '"none" | "visible"'. | TS2345 - Argument of type '{ zoom: number; }' is not assignable to parameter of type 'EvaluationParameters'.
-        this.visibility = this._unevaluatedLayout._values.visibility.possiblyEvaluate({zoom: 0});
+        this.visibility = this._unevaluatedLayout._values.visibility.possiblyEvaluate({zoom: 0} as EvaluationParameters) as 'visible' | 'none' | undefined;
     }
 
     getPaintProperty<T extends keyof PaintSpecification>(name: T): PaintSpecification[T] | undefined {
@@ -474,8 +473,7 @@ class StyleLayer extends Evented {
         transform: Transform
     ) : QueryResult { return {}; }
 
-    // @ts-expect-error - TS2355 - A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
-    queryRadius(_bucket: Bucket): number {}
+    queryRadius(_bucket: Bucket): number | undefined { return undefined; }
 
     queryIntersectsFeature(
         _queryGeometry: TilespaceQueryGeometry,
@@ -488,8 +486,7 @@ class StyleLayer extends Evented {
         _elevationHelper: DEMSampler | null | undefined,
         _layoutVertexArrayOffset: number,
         scope: string | undefined
-        // @ts-expect-error - TS2355 - A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
-    ): boolean | number {}
+    ): boolean | number | undefined { return undefined; }
 }
 
 export default StyleLayer;

@@ -238,7 +238,7 @@ class WorkerTile {
 
                 recalculateLayers(family, this.zoom, options.brightness, availableImages, this.worldview, options.activeFloors);
 
-                // @ts-expect-error: Type 'TypedStyleLayer' doesn't have a 'createBucket' method in all of its subtypes
+                // @ts-expect-error - not all TypedStyleLayer subtypes have createBucket, but only bucket-producing layers reach here
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                 const bucket: Bucket = buckets[layer.id] = layer.createBucket({
                     index: featureIndex.bucketLayerIDs.length,

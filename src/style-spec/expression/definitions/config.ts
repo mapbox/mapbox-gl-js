@@ -146,9 +146,8 @@ class Config implements Expression {
             }
         }
 
-        // @ts-expect-error - TS2367 - This comparison appears to be unintentional because the types 'string' and 'Type' have no overlap.
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        if ((type && type !== this.type) || (result !== undefined && !typeEquals(typeOf(result), this.type))) {
+        if ((type && type !== (this.type as unknown as string)) || (result !== undefined && !typeEquals(typeOf(result), this.type))) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             result = coerceValue(this.type.kind, result);
         }

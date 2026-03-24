@@ -302,7 +302,6 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                     assert(buffer);
                     assert(indexBuffer);
                     assert(segments);
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 
                     // Workaround for missing texture pos attribute in the vertex buffer. In this case tex coord is
                     // calculated using the grid matrix in the shader. The issue should be fixed so that the shader does

@@ -51,7 +51,7 @@ type FeatureIndices = FeatureIndexStruct | {
     layoutVertexArrayOffset: number;
 };
 
-type IntersectionTest = (feature: VectorTileFeature, styleLayer: TypedStyleLayer, featureState: FeatureState, layoutVertexArrayOffset: number) => boolean | number;
+type IntersectionTest = (feature: VectorTileFeature, styleLayer: TypedStyleLayer, featureState: FeatureState, layoutVertexArrayOffset: number) => boolean | number | undefined;
 
 class FeatureIndex {
     tileID: OverscaledTileID;

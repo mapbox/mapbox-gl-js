@@ -801,8 +801,7 @@ export class Placement {
                     placeTextForPlacementModes(placeHorizontal, placeVertical);
 
                     if (placed) {
-                        // @ts-expect-error - placeText is boolean, box is number[]
-                        placeText = placed.box;
+                        placeText = placed.box as unknown as boolean;
                         offscreen = placed.offscreen;
                         textOccluded = placed.occluded;
                     }

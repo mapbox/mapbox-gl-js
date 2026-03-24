@@ -312,7 +312,7 @@ class Tile {
             const bucket = this.buckets[id];
             const layer = painter.style.getOwnLayer(id);
             if (!layer) continue;
-            const queryRadius = layer.queryRadius(bucket);
+            const queryRadius = layer.queryRadius(bucket) || 0;
             this.queryPadding = Math.max(this.queryPadding, queryRadius);
         }
 
@@ -833,7 +833,7 @@ class Tile {
             }
             const layer = painter && painter.style && painter.style.getOwnLayer(id);
             if (layer) {
-                this.queryPadding = Math.max(this.queryPadding, layer.queryRadius(bucket));
+                this.queryPadding = Math.max(this.queryPadding, layer.queryRadius(bucket) || 0);
             }
         }
     }
