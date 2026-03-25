@@ -96,6 +96,29 @@ class GlyphManager {
         this.url = url;
     }
 
+    prefetchRange(stack: string, range: number): void {
+        const url = this.url || config.GLYPHS_URL;
+        if (!url) return;
+        let entry = this.entries[stack];
+        if (!entry) {
+            entry = this.entries[stack] = {glyphs: {}, requests: {}, ranges: {}};
+        }
+        if (entry.ranges[range] || entry.requests[range]) return; // already done or in-flight
+        entry.requests[range] = [];
+        GlyphManager.loadGlyphRange(stack, range, url, this.requestManager, (err, response?: GlyphRange) => {
+            if (response) {
+                entry.ascender = response.ascender;
+                entry.descender = response.descender;
+                for (const id in response.glyphs) {
+                    if (!this._doesCharSupportLocalGlyph(+id)) entry.glyphs[+id] = response.glyphs[+id];
+                }
+                entry.ranges[range] = true;
+            }
+            for (const cb of entry.requests[range] || []) cb(err, response);
+            delete entry.requests[range];
+        });
+    }
+
     getGlyphs(glyphs: FontStacks, callback: Callback<GlyphMap>) {
         const all: Array<{id: number, stack: FontStack}> = [];
 

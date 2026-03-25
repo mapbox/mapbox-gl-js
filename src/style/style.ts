@@ -667,7 +667,12 @@ class Style extends Evented<MapEvents> {
             const waitForStyle = new Promise((resolve) => {
                 style.once('style.import.load', resolve);
                 style.once('error', resolve);
-            }).then(() => this.mergeAll());
+            }).then(() => {
+                this.mergeAll();
+                // Fire a data event so that updateSources() runs after _mergedLayers is populated,
+                // ensuring tile fetches start promptly once merged state is ready.
+                this.fire(new Event('data', {dataType: 'style'}));
+            });
             waitForStyles.push(waitForStyle);
 
             // Load empty style if one of the ancestors was already
@@ -680,7 +685,16 @@ class Style extends Evented<MapEvents> {
             // Use previously cached style JSON if the import data is not set.
             const json = importSpec.data || this.importsCache.get(importSpec.url);
             if (json) {
-                style.loadJSON(json, {validate});
+                if (importSpec.data) {
+                    // Data is already in memory — use a microtask instead of RAF to avoid ~16ms delay.
+                    // loadJSON() schedules _load() via browser.frame() (RAF) which introduces an
+                    // unnecessary animation frame delay when the data is already available.
+                    style.fire(new Event('dataloading', {dataType: 'style'}));
+                    style.globalId = style._getGlobalId(json);
+                    queueMicrotask(() => style._load(json, validate));
+                } else {
+                    style.loadJSON(json, {validate});
+                }
 
                 // Don't expose global ID for internal style to ensure
                 // that we don't send in telemetry Standard style as import
@@ -807,13 +821,17 @@ class Style extends Evented<MapEvents> {
         }
 
         this._loaded = true;
+
+        // Issue TileJSON requests immediately, before the expensive deep clone of the full style JSON.
+        // addSource() does not depend on this.stylesheet, so it's safe to call here.
+        // By the time TileJSON responses arrive (~100ms), clone() will have long since completed.
+        for (const id in json.sources) {
+            this.addSource(id, json.sources[id], {validate: false, isInitialLoad: true});
+        }
+
         this.stylesheet = clone(json);
 
         const proceedWithStyleLoad = () => {
-            for (const id in json.sources) {
-                this.addSource(id, json.sources[id], {validate: false, isInitialLoad: true});
-            }
-
             if (json.iconsets) {
                 for (const id in json.iconsets) {
                     this.addIconset(id, json.iconsets[id]);
@@ -864,6 +882,25 @@ class Style extends Evented<MapEvents> {
 
                 if (sourceCache && styleLayer.canCastShadows() && shadowsEnabled) {
                     sourceCache.castsShadows = true;
+                }
+            }
+
+            // Pre-warm glyph range 0 (codepoints 0-255, ASCII/Latin) for all constant font stacks.
+            // This fires the HTTP requests before any tiles arrive, eliminating the first step
+            // of the waterfall staircase (tiles → workers discover text → getGlyphs IPC → HTTP).
+            if (this.glyphManager.url) {
+                const fontStacks = new Set<string>();
+                for (const id in this._layers) {
+                    const layer = this._layers[id];
+                    if (layer.type === 'symbol' && layer.layout) {
+                        const fonts = layer.layout.get('text-font');
+                        if (fonts && fonts.value && fonts.value.kind === 'constant') {
+                            fontStacks.add(fonts.value.value.join(','));
+                        }
+                    }
+                }
+                for (const stack of fontStacks) {
+                    this.glyphManager.prefetchRange(stack, 0);
                 }
             }
 
