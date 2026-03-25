@@ -18,7 +18,7 @@ in uvec2 a_centroid_pos;
 #endif
 
 #ifdef RENDER_WALL_MODE
-in ivec3 a_join_normal_inside;
+in ivec4 a_join_normal_inside;
 #endif
 
 #pragma mapbox: define highp float base

@@ -2,8 +2,8 @@
 #include "_prelude_shadow.vertex.glsl"
 
 in vec3 a_pos_3f;
-in ivec3 a_normal_3;
-in ivec3 a_centroid_3;
+in ivec4 a_normal_3;
+in ivec4 a_centroid_3;
 
 #ifdef FLOOD_LIGHT
 in int a_flood_light_wall_radius_1i16;

@@ -3,7 +3,7 @@
 
 in ivec2 a_pos;
 in float a_height;
-in ivec3 a_pos_normal_3;
+in ivec4 a_pos_normal_3;
 
 uniform mat4 u_matrix;
 
