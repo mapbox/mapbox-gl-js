@@ -782,13 +782,10 @@ class Camera extends Evented<MapEvents> {
         const padB = options.padding.bottom || 0;
         const padT = options.padding.top || 0;
 
-        const halfScreenPadX = (padL + padR) * 0.5;
-        const halfScreenPadY = (padT + padB) * 0.5;
-
-        const top = halfScreenPadY;
-        const left = halfScreenPadX;
-        const right = halfScreenPadX;
-        const bottom = halfScreenPadY;
+        const top = padT;
+        const left = padL;
+        const right = padR;
+        const bottom = padB;
 
         const width = tr.width - (left + right);
         const height = tr.height - (top + bottom);
