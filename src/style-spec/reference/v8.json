@@ -2207,6 +2207,22 @@
         "interpolated": false
       },
       "property-type": "constant"
+    },
+    "source-max-zoom": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 24,
+      "private": true,
+      "experimental": true,
+      "doc": "The maximum zoom level at which to load and parse source tiles for this layer. When set, tiles are never loaded or re-parsed above this zoom level. At higher zoom levels, the renderer reuses tiles from this zoom level without creating overscaled variants. This reduces the number of tiles parsed and prevents tile-border artifacts for layers like fill-extrusion.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.21.0",
+          "android": "11.21.0",
+          "ios": "11.21.0"
+        }
+      },
+      "property-type": "constant"
     }
   },
   "layout_building": {
@@ -7908,6 +7924,30 @@
       },
       "property-type": "data-constant"
     },
+    "fill-extrusion-front-cutoff": {
+      "type": "array",
+      "private": true,
+      "experimental": true,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": false,
+      "expression": {
+        "interpolated": true,
+        "parameters": ["zoom", "pitch"]
+      },
+      "length": 3,
+      "default": [0.0, 0.0, 1.0],
+      "minimum": [0.0, 0.0, 0.0],
+      "maximum": [1.0, 1.0, 1.0],
+      "doc": "An array for configuring the fade-out effect for the front cutoff of content on pitched map views. It contains three values: start, range and final opacity. The start parameter defines the point at which the fade-out effect begins, with smaller values causing the effect to start earlier. The range parameter specifies how long the fade-out effect will last. A value of 0.0 for range makes content disappear immediately without a fade-out effect. The final opacity determines content opacity at the end of the fade-out effect. A value of 1.0 for final opacity means that the cutoff is completely disabled.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.21.0",
+          "android": "11.21.0",
+          "ios": "11.21.0"
+        }
+      }
+    },
     "fill-extrusion-emissive-strength": {
       "type": "number",
       "default": 0,
@@ -8239,6 +8279,30 @@
         }
       },
       "property-type": "data-constant"
+    },
+    "building-front-cutoff": {
+      "type": "array",
+      "private": true,
+      "experimental": true,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": false,
+      "expression": {
+        "interpolated": true,
+        "parameters": ["zoom", "pitch"]
+      },
+      "length": 3,
+      "default": [0.0, 0.0, 1.0],
+      "minimum": [0.0, 0.0, 0.0],
+      "maximum": [1.0, 1.0, 1.0],
+      "doc": "An array for configuring the fade-out effect for the front cutoff of content on pitched map views. It contains three values: start, range and final opacity. The start parameter defines the point at which the fade-out effect begins, with smaller values causing the effect to start earlier. The range parameter specifies how long the fade-out effect will last. A value of 0.0 for range makes content disappear immediately without a fade-out effect. The final opacity determines content opacity at the end of the fade-out effect. A value of 1.0 for final opacity means that the cutoff is completely disabled.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.21.0",
+          "android": "11.21.0",
+          "ios": "11.21.0"
+        }
+      }
     },
     "building-flood-light-color": {
       "property-type": "data-constant",

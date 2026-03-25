@@ -19,11 +19,13 @@ import type {StylePropertySpecification} from '../../style-spec/style-spec';
 export type LayoutProps = {
     "visibility": DataConstantProperty<"visible" | "none">;
     "fill-extrusion-edge-radius": DataConstantProperty<number>;
+    "source-max-zoom": DataConstantProperty<number>;
 };
 let layout: Properties<LayoutProps>;
 export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "visibility": new DataConstantProperty(styleSpec["layout_fill-extrusion"]["visibility"]),
     "fill-extrusion-edge-radius": new DataConstantProperty(styleSpec["layout_fill-extrusion"]["fill-extrusion-edge-radius"]),
+    "source-max-zoom": new DataConstantProperty(styleSpec["layout_fill-extrusion"]["source-max-zoom"]),
 }));
 
 export type PaintProps = {
@@ -51,6 +53,7 @@ export type PaintProps = {
     "fill-extrusion-vertical-scale": DataConstantProperty<number>;
     "fill-extrusion-rounded-roof": DataConstantProperty<boolean>;
     "fill-extrusion-cutoff-fade-range": DataConstantProperty<number>;
+    "fill-extrusion-front-cutoff": DataConstantProperty<[number, number, number]>;
     "fill-extrusion-emissive-strength": DataDrivenProperty<number>;
     "fill-extrusion-line-width": DataDrivenProperty<number>;
     "fill-extrusion-cast-shadows": DataConstantProperty<boolean>;
@@ -84,6 +87,7 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "fill-extrusion-vertical-scale": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-vertical-scale"]),
     "fill-extrusion-rounded-roof": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-rounded-roof"]),
     "fill-extrusion-cutoff-fade-range": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-cutoff-fade-range"]),
+    "fill-extrusion-front-cutoff": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-front-cutoff"]),
     "fill-extrusion-emissive-strength": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-emissive-strength"]),
     "fill-extrusion-line-width": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-line-width"]),
     "fill-extrusion-cast-shadows": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-cast-shadows"]),
