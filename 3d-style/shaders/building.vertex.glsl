@@ -115,7 +115,7 @@ void main() {
     v_pos = a_pos_3f;
 
 #ifdef RENDER_CUTOFF
-    vec4 ground = u_matrix * vec4(a_centroid_3, 1.0);
+    vec4 ground = u_matrix * vec4(a_centroid_3.xyz, 1.0);
     v_cutoff_opacity = cutoff_opacity(u_cutoff_params, ground.z);
     hidden = float(v_cutoff_opacity == 0.0);
     v_pos.z *= v_cutoff_opacity;
