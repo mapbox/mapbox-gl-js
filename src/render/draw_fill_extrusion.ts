@@ -19,7 +19,7 @@ import {
 import Point from '@mapbox/point-geometry';
 import {neighborCoord} from '../source/tile_id';
 import assert from 'assert';
-import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
+import {mercatorXfromLng, mercatorYfromLat, getMetersPerPixelAtLatitude} from '../geo/mercator_coordinate';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
 import Color from '../style-spec/util/color';
 import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
@@ -961,6 +961,10 @@ export function frustumCullShadowCaster(id: OverscaledTileID, bucketMaxHeight: n
             height += minmax.max;
         }
     }
+    // Convert height from meters to world pixels to match the tile AABB coordinate space
+    const zoom = transform.scaleZoom(ws);
+    height /= getMetersPerPixelAtLatitude(transform.center.lat, zoom);
+
     const shadowDir = [...shadowRenderer.shadowDirection] as vec3;
     shadowDir[2] = -shadowDir[2];
 
@@ -973,7 +977,6 @@ export function frustumCullShadowCaster(id: OverscaledTileID, bucketMaxHeight: n
     // These are used for computing remaining separating axes for the intersection test
     const edges: vec3[] = [XAxis, YAxis, ZAxis, shadowDir, [shadowDir[0], 0, shadowDir[2]], [0, shadowDir[1], shadowDir[2]]];
     const isGlobe = transform.projection.name === 'globe';
-    const zoom = transform.scaleZoom(ws);
     const cameraFrustum = Frustum.fromInvProjectionMatrix(transform.invProjMatrix, transform.worldSize, zoom, !isGlobe);
     const cascadeFrustum = shadowRenderer.getCurrentCascadeFrustum();
     if (cameraFrustum.intersectsPrecise(tileShadowVolume.vertices, tileShadowVolume.planes, edges) === 0) {
