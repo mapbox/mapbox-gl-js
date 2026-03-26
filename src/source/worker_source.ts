@@ -145,9 +145,15 @@ export type WorkerSourceVectorTileResult = {
 
 export type WorkerSourceDEMTileRequest = WorkerSourceTileRequest & {
     type: 'raster-dem';
-    rawImageData: ImageData | ImageBitmap;
     encoding: DEMSourceEncoding;
-    padding: number;
+    request: RequestParameters;
+};
+
+export type WorkerSourceDEMTileResult = {
+    dem: DEMData;
+    borderReady: boolean;
+    expires?: string;
+    cacheControl?: string;
 };
 
 export type WorkerSourceRasterArrayTileRequest = WorkerSourceTileRequest & {
@@ -159,7 +165,7 @@ export type WorkerSourceRasterArrayTileRequest = WorkerSourceTileRequest & {
 };
 
 export type WorkerSourceVectorTileCallback = Callback<WorkerSourceVectorTileResult>;
-export type WorkerSourceDEMTileCallback = Callback<DEMData>;
+export type WorkerSourceDEMTileCallback = Callback<WorkerSourceDEMTileResult>;
 export type WorkerSourceRasterArrayTileCallback = ResponseCallback<MapboxRasterTile>;
 export type WorkerSourceRasterArrayDecodingCallback = Callback<TDecodingResult[]>;
 export type WorkerSourceImageRaserizeCallback = Callback<RasterizedImageMap>;
