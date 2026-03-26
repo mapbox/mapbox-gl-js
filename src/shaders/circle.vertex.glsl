@@ -15,8 +15,8 @@ uniform highp float u_camera_to_center_distance;
 in ivec2 a_pos;
 
 #ifdef PROJECTION_GLOBE_VIEW
-in ivec3 a_pos_3;         // Projected position on the globe
-in ivec3 a_pos_normal_3;  // Surface normal at the position
+in ivec4 a_pos_3;         // Projected position on the globe
+in ivec4 a_pos_normal_3;  // Surface normal at the position
 
 // Uniforms required for transition between globe and mercator
 uniform mat4 u_inv_rot_matrix;

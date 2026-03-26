@@ -2,7 +2,7 @@
 
 in ivec2 a_pos;
 #ifdef PROJECTION_GLOBE_VIEW
-in ivec3 a_pos_3;
+in ivec4 a_pos_3;
 #endif
 out vec2 v_uv;
 
