@@ -13,7 +13,7 @@ in uint a_fade_opacity;
 in float a_auto_z_offset;
 #endif
 #ifdef PROJECTION_GLOBE_VIEW
-in ivec4 a_globe_anchor;
+in ivec3 a_globe_anchor;
 in vec3 a_globe_normal;
 #endif
 

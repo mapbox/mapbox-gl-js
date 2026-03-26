@@ -23,12 +23,12 @@ in uvec2 a_centroid_pos;
 #endif
 
 #ifdef RENDER_WALL_MODE
-in ivec4 a_join_normal_inside;
+in ivec3 a_join_normal_inside;
 #endif
 
 #ifdef PROJECTION_GLOBE_VIEW
-in ivec4 a_pos_3;         // Projected position on the globe
-in ivec4 a_pos_normal_3;  // Surface normal at the position
+in ivec3 a_pos_3;         // Projected position on the globe
+in ivec3 a_pos_normal_3;  // Surface normal at the position
 
 uniform mat4 u_inv_rot_matrix;
 uniform vec2 u_merc_center;
