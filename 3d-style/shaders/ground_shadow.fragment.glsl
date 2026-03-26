@@ -25,6 +25,9 @@ void main() {
 #ifdef INDICATOR_CUTOUT
     shadow = mix(shadow, vec3(1.0), 1.0 - applyCutout(vec4(1.0), 0.0).r);
 #endif
+#ifdef FEATURE_CUTOUT
+    shadow = mix(shadow, vec3(1.0), get_cutout_factors(gl_FragCoord).y);
+#endif
 
     glFragColor = vec4(shadow, 1.0);
 }

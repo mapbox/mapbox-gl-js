@@ -134,7 +134,7 @@ float flood_radiance = 0.0;
 #endif
 
 #ifdef FEATURE_CUTOUT
-    color = apply_feature_cutout(color, gl_FragCoord);
+    color = apply_feature_cutout(color, gl_FragCoord, get_cutout_factors(gl_FragCoord).x);
 #endif
 
     glFragColor = color;

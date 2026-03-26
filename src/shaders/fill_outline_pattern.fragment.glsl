@@ -65,16 +65,22 @@ void main() {
     out_color = out_color * (1.0 - u_pattern_transition) + color_b * u_pattern_transition;
 #endif
 
+    vec2 cutout_factors = vec2(0.0);
+#ifdef FEATURE_CUTOUT
+    cutout_factors = get_cutout_factors(gl_FragCoord);
+#endif
+
 #ifdef LIGHTING_3D_MODE
     out_color = apply_lighting_with_emission_ground(out_color, u_emissive_strength);
 #ifdef RENDER_SHADOWS
     float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    light = mix(light, 1.0, cutout_factors.y);
     out_color.rgb *= mix(u_ground_shadow_factor, vec3(1.0), light);
 #endif // RENDER_SHADOWS
 #endif // LIGHTING_3D_MODE
 
 #ifdef FEATURE_CUTOUT
-    out_color = apply_feature_cutout(out_color, gl_FragCoord);
+    out_color = apply_feature_cutout(out_color, gl_FragCoord, cutout_factors.x);
 #endif
 
 #ifdef FOG

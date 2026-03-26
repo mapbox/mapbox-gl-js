@@ -128,6 +128,11 @@ void main() {
     }
 #endif
 
+    vec2 cutout_factors = vec2(0.0);
+#ifdef FEATURE_CUTOUT
+    cutout_factors = get_cutout_factors(gl_FragCoord);
+#endif
+
 #ifdef RENDER_SDF
     float EDGE_GAMMA = 0.105 / u_device_pixel_ratio;
 
@@ -176,6 +181,7 @@ void main() {
         out_color = apply_lighting_with_emission_ground(out_color, emissive_strength);
         #ifdef RENDER_SHADOWS
             float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
+            light = mix(light, 1.0, cutout_factors.y);
             #ifdef TERRAIN
                 out_color.rgb *= mix(u_ground_shadow_factor, vec3(1.0), light);
             #else
@@ -189,7 +195,7 @@ void main() {
 #endif
 
 #ifdef FEATURE_CUTOUT
-    out_color = apply_feature_cutout(out_color, gl_FragCoord);
+    out_color = apply_feature_cutout(out_color, gl_FragCoord, cutout_factors.x);
 #endif
 
     glFragColor = out_color;
