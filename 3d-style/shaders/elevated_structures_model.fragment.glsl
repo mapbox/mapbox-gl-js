@@ -34,6 +34,12 @@ uniform float u_emissive_strength;
 void main() {
     #pragma mapbox: initialize highp vec4 structure_color
     vec3 color = structure_color.xyz;
+
+    vec2 cutout_factors = vec2(0.0);
+#ifdef FEATURE_CUTOUT
+    cutout_factors = get_cutout_factors(gl_FragCoord);
+#endif
+
 #ifdef LIGHTING_3D_MODE
     vec3 normal = normalize(v_normal);
     vec3 transformed_normal = vec3(-normal.xy, normal.z);
@@ -44,8 +50,9 @@ void main() {
     emissive_strength = 0.0;
     vec3 emissive_color = compute_view_dependent_emissive_color(ndotl, emissive_strength, color.xyz);
 #ifdef RENDER_SHADOWS
-    float shadowed_lighting_factor = shadowed_light_factor_normal(transformed_normal, v_pos_light_view_0, v_pos_light_view_1, v_depth);
-    color.rgb = apply_lighting(color.rgb, transformed_normal, shadowed_lighting_factor);
+    float light = shadowed_light_factor_normal(transformed_normal, v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    light = mix(light, 1.0, cutout_factors.y);
+    color.rgb = apply_lighting(color.rgb, transformed_normal, light);
 #else // RENDER_SHADOWS
     color = apply_lighting(color, transformed_normal);
 #endif // RENDER_SHADOWS
@@ -68,7 +75,7 @@ void main() {
 #endif
 
 #ifdef FEATURE_CUTOUT
-    out_color = apply_feature_cutout(out_color, gl_FragCoord);
+    out_color = apply_feature_cutout(out_color, gl_FragCoord, cutout_factors.x);
 #endif
 
     glFragColor = out_color;

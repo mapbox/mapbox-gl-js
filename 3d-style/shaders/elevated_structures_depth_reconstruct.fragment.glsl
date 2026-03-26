@@ -8,7 +8,7 @@ void main() {
         discard;
 #else
 #ifdef FEATURE_CUTOUT
-    apply_feature_cutout(vec4(0.0, 0.0, 0.0, 1.0), gl_FragCoord);
+    apply_feature_cutout(vec4(0.0, 0.0, 0.0, 1.0), gl_FragCoord, get_cutout_factors(gl_FragCoord).x);
 #endif
 #endif
     glFragColor = vec4(1.0, 0.0, 0.0, 1.0);

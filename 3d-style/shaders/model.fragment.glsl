@@ -584,7 +584,7 @@ vec4 finalColor;
 #endif
 
 #ifdef FEATURE_CUTOUT
-    finalColor = apply_feature_cutout(finalColor, gl_FragCoord);
+    finalColor = apply_feature_cutout(finalColor, gl_FragCoord, get_cutout_factors(gl_FragCoord).x);
 #endif
 
     glFragColor = finalColor;
