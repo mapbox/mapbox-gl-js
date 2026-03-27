@@ -580,7 +580,7 @@ export class GroundEffect {
     }
 
     updateHiddenByLandmark(data: PartData) {
-        const hide = !!(data.flags & HIDDEN_BY_REPLACEMENT);
+        const hide = !!((data.flags & HIDDEN_BY_REPLACEMENT) || (data.flags & HIDDEN_BY_CLIP));
         this.updateHiddenByLandmarkRange(data.groundVertexArrayOffset, data.groundVertexCount, hide);
     }
 
