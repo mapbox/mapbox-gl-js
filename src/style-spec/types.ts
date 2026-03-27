@@ -788,7 +788,7 @@ export type SymbolLayerSpecification = {
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {
-        "symbol-placement"?: PropertyValueSpecification<"point" | "line" | "line-center">,
+        "symbol-placement"?: PropertyValueSpecification<"point" | "line" | "line-center" | "line-start" | "line-end">,
         "symbol-spacing"?: PropertyValueSpecification<number>,
         "symbol-avoid-edges"?: PropertyValueSpecification<boolean>,
         "symbol-sort-key"?: DataDrivenPropertyValueSpecification<number>,
