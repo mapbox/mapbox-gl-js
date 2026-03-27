@@ -1480,18 +1480,20 @@ describe("mapbox", () => {
             });
         });
 
-        test('no API is sent when API_URL unavailable', async () => {
+        test('no API is sent when API_URL unavailable', () => {
             config.API_URL = null;
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             sessionAPI.getSession(1, skuToken, () => {});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(window.server.requests.length).toEqual(0);
+        });
 
-            await new Promise((resolve) => {
-                setTimeout(() => {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    expect(window.server.requests.length).toEqual(0);
-                    resolve();
-                }, 0);
-            });
+        test('no session request is sent when API_URL is not a Mapbox host', () => {
+            config.API_URL = 'http://localhost:8080';
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            sessionAPI.getSessionAPI(1, skuToken, config.ACCESS_TOKEN, () => {});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(window.server.requests.length).toEqual(0);
         });
 
         test('send a new request when access token changes', async () => {

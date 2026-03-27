@@ -306,6 +306,22 @@ function parseAccessToken(accessToken?: string | null): {u?: string} | null {
     }
 }
 
+/**
+ * Telemetry is disabled when no events endpoint is configured (the events
+ * endpoint is only available for standard Mapbox API hosts, so self-hosted
+ * deployments that set a custom base API URL will have no endpoint) or when
+ * no access token is available.
+ * @private
+ */
+function isTelemetryEnabled(customAccessToken?: string | null): boolean {
+    if (!config.EVENTS_URL) return false;
+
+    const token = customAccessToken || config.ACCESS_TOKEN;
+    if (!token) return false;
+
+    return true;
+}
+
 type TelemetryEventType = 'appUserTurnstile' | 'map.load' | 'map.auth' | 'gljs.performance' | 'style.load' | 'metrics';
 
 export class TelemetryEvent {
@@ -453,11 +469,8 @@ export class PerformanceEvent extends TelemetryEvent {
     }
 
     postPerformanceEvent(customAccessToken: string | null | undefined, performanceData: LivePerformanceData) {
-        if (config.EVENTS_URL) {
-            if (customAccessToken || config.ACCESS_TOKEN) {
-                this.queueRequest({timestamp: Date.now(), performanceData}, customAccessToken);
-            }
-        }
+        if (!isTelemetryEnabled(customAccessToken)) return;
+        this.queueRequest({timestamp: Date.now(), performanceData}, customAccessToken);
     }
 
     override processRequests(customAccessToken?: string | null) {
@@ -602,9 +615,7 @@ export class StyleLoadEvent extends TelemetryEvent {
             importedStyles,
         } = input;
 
-        if (!config.EVENTS_URL || !(customAccessToken || config.ACCESS_TOKEN)) {
-            return;
-        }
+        if (!isTelemetryEnabled(customAccessToken)) return;
 
         const mapInstanceId = this.getMapInstanceId(map);
         const payload: StyleLoadEventPayload = {
@@ -658,10 +669,7 @@ class MetricsEvent extends TelemetryEvent {
     }
 
     postMetricsEvent(customAccessToken: string | null | undefined) {
-
-        if (!config.EVENTS_URL || !(customAccessToken || config.ACCESS_TOKEN)) {
-            return;
-        }
+        if (!isTelemetryEnabled(customAccessToken)) return;
 
         if (!this.anonId) {
             this.fetchEventData();
@@ -731,7 +739,7 @@ export class MapSessionAPI extends TelemetryEvent {
         this.skuToken = skuToken;
         this.errorCb = callback;
 
-        if (config.SESSION_PATH && config.API_URL) {
+        if (config.EVENTS_URL && config.SESSION_PATH && config.API_URL) {
             if (customAccessToken || config.ACCESS_TOKEN) {
                 this.queueRequest({id: mapId, timestamp: Date.now()}, customAccessToken);
             } else {
@@ -772,11 +780,10 @@ export class TurnstileEvent extends TelemetryEvent {
     }
 
     postTurnstileEvent(tileUrls: Array<string>, customAccessToken?: string | null) {
+        if (!isTelemetryEnabled(customAccessToken)) return;
         //Enabled only when Mapbox Access Token is set and a source uses
         // mapbox tiles.
-        if (config.EVENTS_URL &&
-            config.ACCESS_TOKEN &&
-            Array.isArray(tileUrls) &&
+        if (Array.isArray(tileUrls) &&
             tileUrls.some(url => isMapboxURL(url) || isMapboxHTTPURL(url))) {
             this.queueRequest(Date.now(), customAccessToken);
         }

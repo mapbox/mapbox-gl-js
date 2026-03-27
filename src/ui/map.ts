@@ -4809,21 +4809,29 @@ export class Map extends Camera {
     * and the Mapbox Terms of Service are available at https://www.mapbox.com/tos/
     ******************************************************************************/
 
+    _revokeAuth() {
+        const gl = this.painter.context.gl;
+        storeAuthState(gl, false);
+
+        if (this._logoControl instanceof LogoControl) {
+            this._logoControl._updateLogo();
+        }
+
+        if (gl) {
+            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+        }
+
+        if (!this._silenceAuthErrors) {
+            this.fire(new ErrorEvent(new Error('A valid Mapbox access token is required to use Mapbox GL JS. To create an account or a new access token, visit https://account.mapbox.com/')));
+        }
+    }
+
     _authenticate() {
         getMapSessionAPI(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, (err: AJAXError) => {
             if (err) {
                 // throwing an error here will cause the callback to be called again unnecessarily
                 if (err.message === AUTH_ERR_MSG || err.status === 401) {
-                    const gl = this.painter.context.gl;
-                    storeAuthState(gl, false);
-                    if (this._logoControl instanceof LogoControl) {
-                        this._logoControl._updateLogo();
-                    }
-                    if (gl) gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-
-                    if (!this._silenceAuthErrors) {
-                        this.fire(new ErrorEvent(new Error('A valid Mapbox access token is required to use Mapbox GL JS. To create an account or a new access token, visit https://account.mapbox.com/')));
-                    }
+                    this._revokeAuth();
                 }
             }
         });
