@@ -1,4 +1,5 @@
 import browser from '../util/browser';
+import {makeFQID} from '../util/fqid';
 import {mat4} from 'gl-matrix';
 import SourceCache from '../source/source_cache';
 import EXTENT from '../style-spec/data/extent';
@@ -954,7 +955,7 @@ class Painter {
                                     clipMask |= (mask === 'model' ? LayerTypeMask.Model : (mask === 'symbol' ? LayerTypeMask.Symbol : LayerTypeMask.FillExtrusion));
                                 }
                                 for (const scope of layer.layout.get('clip-layer-scope')) {
-                                    clipScope.push(scope);
+                                    clipScope.push(makeFQID(scope, layer.scope));
                                 }
                                 clippingActiveThisFrame = true;
                             }

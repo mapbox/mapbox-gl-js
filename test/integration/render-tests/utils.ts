@@ -67,9 +67,7 @@ export function parseOptions(currentFixture, style) {
     }
 
     if (options.spriteFormat === 'icon_set') {
-        if (style.sprite && !style.sprite.endsWith('.pbf')) {
-            style.sprite += '.pbf';
-        }
+        addSpriteIconSetExtension(style);
 
         if (options.operations && options.operations.length) {
             options.operations.forEach(op => {
@@ -80,17 +78,22 @@ export function parseOptions(currentFixture, style) {
                 }
             });
         }
-
-        if (currentFixture.style.imports && currentFixture.style.imports.length) {
-            currentFixture.style.imports.forEach(imp => {
-                if (!imp.data) return;
-                if (imp.data.sprite && !imp.data.sprite.endsWith('.pbf')) {
-                    imp.data.sprite += '.pbf';
-                }
-            });
-        }
     }
     return options;
+}
+
+function addSpriteIconSetExtension(style) {
+    if (style.sprite && !style.sprite.endsWith('.pbf')) {
+        style.sprite += '.pbf';
+    }
+
+    if (style.imports && style.imports.length) {
+        style.imports.forEach(imp => {
+            if (!imp.data) return;
+            addSpriteIconSetExtension(imp.data);
+        });
+    }
+    
 }
 
 async function setupLayout(options) {
