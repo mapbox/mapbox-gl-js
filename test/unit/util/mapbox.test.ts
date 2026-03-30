@@ -557,6 +557,81 @@ describe("mapbox", () => {
         });
     });
 
+    describe('self-hosted telemetry suppression', () => {
+        function makeExpirationToken(expiration: number): string {
+            const header = btoa(JSON.stringify({typ: 'JWT', alg: 'ES256'}));
+            const payload = btoa(JSON.stringify({atlas: expiration}));
+            return `${header}.${payload}.signature`;
+        }
+
+        test('PerformanceEvent does not send telemetry for self-hosted deployment', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            window.useFakeXMLHttpRequest();
+            config.API_URL = 'http://localhost:8080';
+            const event = new mapbox.PerformanceEvent();
+            event.postPerformanceEvent(makeExpirationToken(1774345201000), {
+                width: 100,
+                height: 100,
+                interactionRange: [0, 0],
+                projection: 'mercator'
+            });
+            expect(event.queue.length).toEqual(0);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(window.server.requests.length).toEqual(0);
+        });
+
+        test('StyleLoadEvent does not send telemetry for self-hosted deployment', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            window.useFakeXMLHttpRequest();
+            config.API_URL = 'http://localhost:8080';
+            const event = new mapbox.StyleLoadEvent();
+            event.postStyleLoadEvent(makeExpirationToken(1774345201000), {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                map: {} as any,
+                style: 'mapbox://styles/mapbox/streets-v12',
+                importedStyles: []
+            });
+            expect(event.queue.length).toEqual(0);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(window.server.requests.length).toEqual(0);
+        });
+
+        test('MetricsEvent does not send telemetry for self-hosted deployment', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            window.useFakeXMLHttpRequest();
+            config.API_URL = 'http://localhost:8080';
+            mapbox.postStyleWithAppearanceEvent(makeExpirationToken(1774345201000));
+            expect(mapbox.styleWithAppearanceEvent.queue.length).toEqual(0);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(window.server.requests.length).toEqual(0);
+        });
+
+        test('MapLoadEvent does not send for self-hosted deployment', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            window.useFakeXMLHttpRequest();
+            config.API_URL = 'http://localhost:8080';
+            const event = new mapbox.MapLoadEvent();
+            const callback = vi.fn();
+            event.postMapLoadEvent(1, 'sku', makeExpirationToken(1774345201000), callback);
+            expect(event.queue.length).toEqual(0);
+            expect(callback).not.toHaveBeenCalled();
+        });
+
+        test('telemetry is suppressed for self-hosted deployment with expiration of 0', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            window.useFakeXMLHttpRequest();
+            config.API_URL = 'http://localhost:8080';
+            const event = new mapbox.PerformanceEvent();
+            event.postPerformanceEvent(makeExpirationToken(0), {
+                width: 100,
+                height: 100,
+                interactionRange: [0, 0],
+                projection: 'mercator'
+            });
+            expect(event.queue.length).toEqual(0);
+        });
+    });
+
     describe('PerformanceEvent', () => {
         let event: any;
 
@@ -1512,6 +1587,48 @@ describe("mapbox", () => {
                 expect(req.method).toEqual('GET');
                 resolve();
             });
+        });
+    });
+
+    describe('parseAccessToken', () => {
+        test('parses a token with expiration field', () => {
+            const header = btoa(JSON.stringify({typ: 'JWT', alg: 'ES256'}));
+            const payload = btoa(JSON.stringify({atlas: 1774345201000}));
+            const token = `${header}.${payload}.signature`;
+            const result = mapbox.parseAccessToken(token);
+            if (!result) throw new Error('expected non-null result');
+            expect(result.atlas).toEqual(1774345201000);
+            expect(result.u).toBeUndefined();
+        });
+
+        test('parses a token with user field', () => {
+            const header = btoa(JSON.stringify({typ: 'JWT', alg: 'ES256'}));
+            const payload = btoa(JSON.stringify({u: 'user123'}));
+            const token = `${header}.${payload}.signature`;
+            const result = mapbox.parseAccessToken(token);
+            if (!result) throw new Error('expected non-null result');
+            expect(result.u).toEqual('user123');
+            expect(result.atlas).toBeUndefined();
+        });
+
+        test('returns null for null input', () => {
+            expect(mapbox.parseAccessToken(null)).toBeNull();
+        });
+
+        test('returns null for empty string', () => {
+            expect(mapbox.parseAccessToken('')).toBeNull();
+        });
+
+        test('returns null for non-JWT string', () => {
+            expect(mapbox.parseAccessToken('not-a-jwt')).toBeNull();
+        });
+
+        test('returns null for two-part token', () => {
+            expect(mapbox.parseAccessToken('a.b')).toBeNull();
+        });
+
+        test('returns null for invalid base64 payload', () => {
+            expect(mapbox.parseAccessToken('a.!!!.c')).toBeNull();
         });
     });
 });

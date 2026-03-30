@@ -287,7 +287,7 @@ function formatUrl(obj: UrlObject): string {
 
 const telemEventKey = 'mapbox.eventData';
 
-function parseAccessToken(accessToken?: string | null): {u?: string} | null {
+export function parseAccessToken(accessToken?: string | null): {u?: string; atlas?: number} | null {
     if (!accessToken) {
         return null;
     }
@@ -298,8 +298,7 @@ function parseAccessToken(accessToken?: string | null): {u?: string} | null {
     }
 
     try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const jsonData: {u?: string} = JSON.parse(b64DecodeUnicode(parts[1]));
+        const jsonData = JSON.parse(b64DecodeUnicode(parts[1])) as {u?: string; atlas?: number};
         return jsonData;
     } catch (e) {
         return null;

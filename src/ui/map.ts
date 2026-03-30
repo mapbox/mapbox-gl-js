@@ -5,6 +5,7 @@ import * as DOM from '../util/dom';
 import {getImage, ResourceType} from '../util/ajax';
 import {
     RequestManager,
+    parseAccessToken,
     mapSessionAPI,
     mapLoadEvent,
     getMapSessionAPI,
@@ -515,6 +516,7 @@ export class Map extends Camera {
     _precompilePrograms: boolean;
     _interactions: InteractionSet;
     _scaleFactor: number;
+    _tokenExpiration?: number;
 
     // `_useExplicitProjection` indicates that a projection is set by a call to map.setProjection()
     _useExplicitProjection: boolean;
@@ -655,6 +657,8 @@ export class Map extends Camera {
         this._scaleFactor = options.scaleFactor;
 
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
+        const tokenData = parseAccessToken(options.accessToken || config.ACCESS_TOKEN);
+        if (tokenData && 'atlas' in tokenData && typeof tokenData.atlas === 'number') this._tokenExpiration = tokenData.atlas;
         this._silenceAuthErrors = !!options.testMode;
         if (options.contextCreateOptions) {
             this._contextCreateOptions = Object.assign({}, options.contextCreateOptions);
@@ -4809,6 +4813,10 @@ export class Map extends Camera {
     * and the Mapbox Terms of Service are available at https://www.mapbox.com/tos/
     ******************************************************************************/
 
+    _isTokenExpired() {
+        return this._tokenExpiration != null && Date.now() > this._tokenExpiration;
+    }
+
     _revokeAuth() {
         const gl = this.painter.context.gl;
         storeAuthState(gl, false);
@@ -4835,6 +4843,8 @@ export class Map extends Camera {
                 }
             }
         });
+
+        if (this._isTokenExpired()) this._revokeAuth();
 
         postMapLoadEvent(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, () => {});
     }
