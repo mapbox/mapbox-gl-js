@@ -170,7 +170,7 @@
     "test-expressions": "tsx ./test/expression.test.ts",
     "test-typings": "tsx ./build/generate-typed-style-spec.ts && npm run tsc",
     "test-style-spec": "npm test --workspace src/style-spec",
-    "prepublishOnly": "run-s build-dev build-prod-min build-esm-prod-min build-csp build-css build-style-spec build-dts",
+    "prepublishOnly": "NO_DIST_SOURCEMAPS=true run-s build-dev build-prod-min build-esm-prod-min build-csp build-css build-style-spec build-dts",
     "print-release-url": "node build/print-release-url.js",
     "size": "size-limit",
     "check-size": "tsx build/check-size.ts",
