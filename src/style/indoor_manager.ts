@@ -92,9 +92,8 @@ export default class IndoorManager extends Evented<IndoorEvents> {
                 changed = true;
             }
         }
-        if (changed && this._initialLoadDone) {
+        if (changed) {
             this._recalculateActiveFloors();
-            this._updateIndoorSelector();
         }
     }
 
@@ -141,8 +140,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
     }
 
     _updateUI() {
-        if (!this._initialLoadDone) return;
-
+        this._initialLoadDone = true;
         const transform = this._style.map.transform;
         const closestBuildingId = this._buildingDetectionStrategy.findClosestBuilding(
             this._buildings,
