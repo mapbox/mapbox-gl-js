@@ -1,6 +1,6 @@
 #include "_prelude_terrain.vertex.glsl"
 
-in ivec3 a_pos;
+in ivec4 a_pos;
 in ivec2 a_anchor_pos;
 in ivec2 a_extrude;
 in uvec2 a_placed;
