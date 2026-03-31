@@ -126,6 +126,7 @@ export type SetStyleOptions = {
     };
     localFontFamily: StyleOptions['localFontFamily'];
     localIdeographFontFamily: StyleOptions['localIdeographFontFamily'];
+    useServerFontComposition?: StyleOptions['useServerFontComposition'];
 };
 
 type Listener<T extends MapEventType> = (event: MapEventOf<T>) => void;
@@ -211,6 +212,7 @@ export type MapOptions = {
     fadeDuration?: number;
     localFontFamily?: string;
     localIdeographFontFamily?: string;
+    useServerFontComposition?: boolean;
     performanceMetricsCollection?: boolean;
     tessellationStep?: number;
     scaleFactor?: number;
@@ -265,6 +267,7 @@ const defaultOptions = {
     maxTileCacheSize: null,
     localIdeographFontFamily: 'sans-serif',
     localFontFamily: null,
+    useServerFontComposition: true,
     transformRequest: null,
     accessToken: null,
     fadeDuration: 300,
@@ -495,6 +498,7 @@ export class Map extends Camera {
     _mapId: number;
     _localIdeographFontFamily: string;
     _localFontFamily?: string;
+    _useServerFontComposition?: boolean;
     _requestManager: RequestManager;
     _locale: Partial<typeof defaultLocale>;
     _removed: boolean;
@@ -739,13 +743,15 @@ export class Map extends Camera {
 
         this._localFontFamily = options.localFontFamily;
         this._localIdeographFontFamily = options.localIdeographFontFamily;
+        this._useServerFontComposition = options.useServerFontComposition;
 
         if (options.style || !options.testMode) {
             const style = options.style || config.DEFAULT_STYLE;
             this.setStyle(style, {
                 config: options.config,
                 localFontFamily: this._localFontFamily,
-                localIdeographFontFamily: this._localIdeographFontFamily
+                localIdeographFontFamily: this._localIdeographFontFamily,
+                useServerFontComposition: this._useServerFontComposition
             });
         }
 
@@ -2336,7 +2342,7 @@ export class Map extends Camera {
      * });
      */
     setStyle(style: StyleSpecification | string | null, options?: SetStyleOptions): this {
-        options = Object.assign({}, {localIdeographFontFamily: this._localIdeographFontFamily, localFontFamily: this._localFontFamily}, options);
+        options = Object.assign({}, {localIdeographFontFamily: this._localIdeographFontFamily, localFontFamily: this._localFontFamily, useServerFontComposition: this._useServerFontComposition}, options);
 
         const diffNeeded =
             options.diff !== false &&

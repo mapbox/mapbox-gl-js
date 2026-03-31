@@ -1,4 +1,4 @@
-import {loadGlyphRange} from '../style/load_glyph_range';
+import {GlyphLoader} from '../style/glyph_loader';
 import TinySDF from '@mapbox/tiny-sdf';
 import isChar from '../util/is_char_in_unicode_block';
 import config from '../util/config';
@@ -73,12 +73,11 @@ class GlyphManager {
     // into the glyphs based soley on font weight
     localGlyphs: Record<FontWeight, GlyphRange>;
     url: string;
+    glyphLoader: GlyphLoader;
 
-    // exposed as statics to enable stubbing in unit tests
-    static loadGlyphRange: typeof loadGlyphRange;
     static TinySDF: Class<TinySDF>;
 
-    constructor(requestManager: RequestManager, localGlyphMode: number, localFontFamily?: string) {
+    constructor(requestManager: RequestManager, localGlyphMode: number, localFontFamily?: string, useServerFontComposition?: boolean) {
         this.requestManager = requestManager;
         this.localGlyphMode = localGlyphMode;
         this.localFontFamily = localFontFamily;
@@ -90,6 +89,7 @@ class GlyphManager {
             '500': {},
             '900': {}
         };
+        this.glyphLoader = new GlyphLoader({useServerFontComposition});
     }
 
     setURL(url: string) {
@@ -105,7 +105,7 @@ class GlyphManager {
         }
         if (entry.ranges[range] || entry.requests[range]) return; // already done or in-flight
         entry.requests[range] = [];
-        GlyphManager.loadGlyphRange(stack, range, url, this.requestManager, (err, response?: GlyphRange) => {
+        this.glyphLoader.loadGlyphRange(stack, range, url, this.requestManager, (err, response?: GlyphRange) => {
             if (response) {
                 entry.ascender = response.ascender;
                 entry.descender = response.descender;
@@ -171,7 +171,7 @@ class GlyphManager {
             let requests = entry.requests[range];
             if (!requests) {
                 requests = entry.requests[range] = [];
-                GlyphManager.loadGlyphRange(stack, range, url, this.requestManager,
+                this.glyphLoader.loadGlyphRange(stack, range, url, this.requestManager,
                     (err, response?: GlyphRange) => {
                         if (response) {
                             entry.ascender = response.ascender;
@@ -308,7 +308,6 @@ class GlyphManager {
     }
 }
 
-GlyphManager.loadGlyphRange = loadGlyphRange;
 GlyphManager.TinySDF = TinySDF;
 
 export type {GlyphRange};

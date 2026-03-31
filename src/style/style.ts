@@ -224,6 +224,7 @@ export type StyleOptions = {
     validate?: boolean;
     localFontFamily?: string | null | undefined;
     localIdeographFontFamily?: string;
+    useServerFontComposition?: boolean;
     dispatcher?: Dispatcher;
     imageManager?: ImageManager;
     glyphManager?: GlyphManager;
@@ -453,7 +454,8 @@ class Style extends Evented<MapEvents> {
                 options.localFontFamily ?
                     LocalGlyphMode.all :
                     (options.localIdeographFontFamily ? LocalGlyphMode.ideographs : LocalGlyphMode.none),
-                options.localFontFamily || options.localIdeographFontFamily);
+                options.localFontFamily || options.localIdeographFontFamily,
+                options.useServerFontComposition);
         }
 
         if (options.modelManager) {

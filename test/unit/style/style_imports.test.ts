@@ -7,7 +7,7 @@ import Style from '../../../src/style/style';
 import Transform from '../../../src/geo/transform';
 import StyleLayer from '../../../src/style/style_layer';
 import VectorTileSource from '../../../src/source/vector_tile_source';
-import GlyphManager from '../../../src/render/glyph_manager';
+import {GlyphLoader} from '../../../src/style/glyph_loader';
 import {Event} from '../../../src/util/evented';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import {makeFQID} from '../../../src/util/fqid';
@@ -2519,7 +2519,7 @@ describe('Glyphs', () => {
         }));
 
         await waitFor(style, "style.load");
-        vi.spyOn(GlyphManager, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate) => {
+        vi.spyOn(GlyphLoader.prototype, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate) => {
             expect(urlTemplate).toEqual('mapbox://fonts/mapbox/{fontstack}/{range}.pbf');
             expect(style.serialize().glyphs).toEqual(undefined);
         });
@@ -2543,7 +2543,7 @@ describe('Glyphs', () => {
         }));
 
         await waitFor(style, "style.load");
-        vi.spyOn(GlyphManager, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate) => {
+        vi.spyOn(GlyphLoader.prototype, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate) => {
             expect(urlTemplate).toEqual('mapbox://fonts/foo/{fontstack}/{range}.pbf');
         });
 
@@ -2565,7 +2565,7 @@ describe('Glyphs', () => {
         }));
 
         await waitFor(style, "style.load");
-        vi.spyOn(GlyphManager, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate) => {
+        vi.spyOn(GlyphLoader.prototype, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate) => {
             expect(urlTemplate).toEqual('mapbox://fonts/bar/{fontstack}/{range}.pbf');
         });
 
