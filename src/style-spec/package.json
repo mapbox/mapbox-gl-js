@@ -44,7 +44,6 @@
     "gl-style-composite": "./bin/gl-style-composite.js"
   },
   "dependencies": {
-    "@mapbox/jsonlint-lines-primitives": "~2.0.2",
     "@mapbox/point-geometry": "^1.1.0",
     "@mapbox/unitbezier": "^0.0.1",
     "cheap-ruler": "^4.0.0",
