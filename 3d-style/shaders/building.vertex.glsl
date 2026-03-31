@@ -18,9 +18,21 @@ uniform mat4 u_matrix;
 uniform mat4 u_normal_matrix;
 uniform highp float u_tile_to_meter;
 
+#ifdef RENDER_FRONT_CUTOFF
+uniform vec3 u_front_cutoff_params; // [start, range, opacity]
+out float v_front_cutoff_opacity;
+#endif
+
+#ifdef INDICATOR_CUTOUT
+#ifdef FEATURE_CUTOUT
+out vec4 v_ground_roof;
+#endif
+#endif
+
 out vec4 v_color;
 out vec3 v_normal;
 out highp vec3 v_pos;
+
 
 #ifdef BUILDING_FAUX_FACADE
 out lowp float v_faux_facade;
@@ -84,6 +96,12 @@ void main() {
 
     float hidden = 0.0;
     float depth_offset = 0.0;
+
+    // Decode centroid position and span from packed attribute.
+    // Encoding: cx_encoded = clamp(cx, 0, 8191) * 4 + spanXbits (2 bits per axis)
+    vec2 centroid_xy = vec2(a_centroid_3.xy >> 2);
+    vec2 spanBits = vec2(a_centroid_3.xy & 3);
+
 #ifdef BUILDING_FAUX_FACADE
     vec4 faux_facade_data = vec4(a_faux_facade_data);
     v_faux_facade = faux_facade_data.x;
@@ -114,8 +132,20 @@ void main() {
 #endif
     v_pos = a_pos_3f;
 
+#if defined(RENDER_CUTOFF) || defined(RENDER_FRONT_CUTOFF)
+    float halfSpanX = spanBits.x * 10.0 / u_tile_to_meter;
+    float halfSpanY = spanBits.y * 10.0 / u_tile_to_meter;
+    vec2 screenUpInTile = vec2(u_matrix[0][1], u_matrix[1][1]);
+    vec2 spanOffset = vec2(halfSpanX, halfSpanY) * sign(screenUpInTile);
+    vec2 cutoff_highestCorner = centroid_xy + spanOffset;
+    vec2 cutoff_lowestCorner = centroid_xy - spanOffset;
+#endif
+
+#if defined(RENDER_CUTOFF) || defined(RENDER_FRONT_CUTOFF)
+    vec4 ground = u_matrix * vec4(centroid_xy, 0.0, 1.0);
+#endif
+
 #ifdef RENDER_CUTOFF
-    vec4 ground = u_matrix * vec4(a_centroid_3.xyz, 1.0);
     v_cutoff_opacity = cutoff_opacity(u_cutoff_params, ground.z);
     hidden = float(v_cutoff_opacity == 0.0);
     v_pos.z *= v_cutoff_opacity;
@@ -135,6 +165,27 @@ void main() {
     v_fog_pos = fog_position(v_pos);
 #endif
 
+#ifdef RENDER_FRONT_CUTOFF
+    v_front_cutoff_opacity = 1.0;
+    {
+        hidden = max(hidden, float(ground.w <= 0.0));
+        float ndc_y = ground.y / max(ground.w, 0.001);
+        float threshold = u_front_cutoff_params.x * 2.0 - 1.0;
+        float range_ndc = u_front_cutoff_params.y * 2.0;
+        hidden = max(hidden, float(ndc_y < threshold - range_ndc));
+        float t = clamp((ndc_y - (threshold - range_ndc)) / max(range_ndc, 0.001), 0.0, 1.0);
+        v_front_cutoff_opacity = mix(u_front_cutoff_params.z, 1.0, t);
+    }
+#endif
+
     gl_Position = mix(u_matrix * vec4(v_pos, 1), AWAY, hidden);
     gl_Position.z -= depth_offset * gl_Position.w;
+
+#ifdef INDICATOR_CUTOUT
+#ifdef FEATURE_CUTOUT
+    vec4 ic_ground = u_matrix * vec4(v_pos.xy, 0.0, 1.0);
+    vec4 ic_roof = u_matrix * vec4(v_pos.xy, v_pos.z, 1.0);
+    v_ground_roof = vec4(ic_ground.xy / ic_ground.w, ic_roof.xy / ic_roof.w);
+#endif
+#endif
 }

@@ -42,6 +42,11 @@ uniform int u_base_type;
 
 uniform highp float u_vertical_scale;
 
+#ifdef RENDER_FRONT_CUTOFF
+uniform vec3 u_front_cutoff_params; // [start, range, opacity]
+out float v_front_cutoff_opacity;
+#endif
+
 out vec4 v_color;
 out vec4 v_flat;
 
@@ -73,6 +78,12 @@ out float v_has_floodlight;
 #endif
 
 out float v_height;
+
+#ifdef INDICATOR_CUTOUT
+#ifdef FEATURE_CUTOUT
+out vec4 v_ground_roof;
+#endif
+#endif
 
 // linear to sRGB approximation
 vec3 linearTosRGB(vec3 color) {
@@ -138,7 +149,9 @@ void main() {
     bool is_flat_height = centroid_pos.x != 0.0 && u_height_type == 1;
     bool is_flat_base = centroid_pos.x != 0.0 && u_base_type == 1;
     ele = elevation(pos_nx.xy);
-    c_ele = is_flat_height || is_flat_base ? (centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos)) : ele;
+    // Elevation is in centroid_pos.x when y==0 (old encoding) or when y&7==7 (border elevation+position encoding)
+    bool is_elevation_encoded = centroid_pos.y == 0.0 || (centroid_pos.y > 0.0 && (int(centroid_pos.y) & 7) == 7);
+    c_ele = is_flat_height || is_flat_base ? (is_elevation_encoded ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos)) : ele;
     float h_height = is_flat_height ? max(c_ele + height, ele + base + 2.0) : ele + height;
     float h_base = is_flat_base ? max(c_ele + base, ele + base) : ele + (base == 0.0 ? -5.0 : base);
     h = t > 0.0 ? max(h_base, h_height) : h_base;
@@ -159,16 +172,41 @@ void main() {
 
     float cutoff = 1.0;
     vec3 scaled_pos = pos;
+
+#if defined(RENDER_CUTOFF) || defined(RENDER_FRONT_CUTOFF)
+    vec2 centroid_decoded = pos.xy;
+    bool isBorderCentroid = false;
+    if (centroid_pos.x > 0.0 && centroid_pos.y > 0.0) {
+        int iy = int(centroid_pos.y);
+        int spanYbits = iy & 7;
+        if (spanYbits == 7) {
+            // Border elevation+position encoding: no span available
+            isBorderCentroid = true;
+            int borderID = (iy >> 3) & 3;
+            float coordAlongBorder = float(iy >> 5) * 4.0;
+            if (borderID == 0) centroid_decoded = vec2(0.0, coordAlongBorder);
+            else if (borderID == 1) centroid_decoded = vec2(EXTENT, coordAlongBorder);
+            else if (borderID == 2) centroid_decoded = vec2(coordAlongBorder, 0.0);
+            else centroid_decoded = vec2(coordAlongBorder, EXTENT);
+        } else {
+            centroid_decoded = floor(centroid_pos / 8.0);
+        }
+    }
+#endif
+
+#if defined(RENDER_CUTOFF) || defined(RENDER_FRONT_CUTOFF)
+    vec4 ground = u_matrix * vec4(centroid_decoded, ele, 1.0);
+#endif
+
 #ifdef RENDER_CUTOFF
-    vec3 centroid_random = vec3(centroid_pos.xy, centroid_pos.x + centroid_pos.y + 1.0);
-    vec3 ground_pos = centroid_pos.x == 0.0 ? pos.xyz : (centroid_random / 8.0);
-    vec4 ground = u_matrix * vec4(ground_pos.xy, ele, 1.0);
 #ifdef CLIP_ZERO_TO_ONE
     cutoff = cutoff_opacity(u_cutoff_params, ground.z * 2.0 - ground.w);
 #else
     cutoff = cutoff_opacity(u_cutoff_params, ground.z);
 #endif
     if (centroid_pos.y != 0.0 && centroid_pos.x != 0.0) {
+        vec3 centroid_random = vec3(centroid_pos.xy, centroid_pos.x + centroid_pos.y + 1.0);
+        vec3 ground_pos = centroid_random / 8.0;
         vec3 g = floor(ground_pos);
         vec3 mod_ = centroid_random - g * 8.0;
         float seed = min(1.0, 0.1 * (min(3.5, max(mod_.x + mod_.y, 0.2 * attr_height)) * 0.35 + mod_.z));
@@ -182,6 +220,21 @@ void main() {
     scaled_pos.z = mix(c_ele, h, cutoff_scale);
 #endif
     float hidden = float((centroid_pos.x == 0.0 && centroid_pos.y == 1.0) || (cutoff == 0.0 && centroid_pos.x != 0.0) || (color.a == 0.0));
+
+#ifdef RENDER_FRONT_CUTOFF
+    v_front_cutoff_opacity = 1.0;
+    if (centroid_pos.x > 0.0 && centroid_pos.y > 0.0) {
+        hidden = max(hidden, float(ground.w <= 0.0));
+        float ndc_y = ground.y / max(ground.w, 0.001);
+        float threshold = u_front_cutoff_params.x * 2.0 - 1.0;
+        float range_ndc = u_front_cutoff_params.y * 2.0;
+        if (!isBorderCentroid) {
+            hidden = max(hidden, float(ndc_y < threshold - range_ndc));
+        }
+        float t = clamp((ndc_y - (threshold - range_ndc)) / max(range_ndc, 0.001), 0.0, 1.0);
+        v_front_cutoff_opacity = mix(u_front_cutoff_params.z, 1.0, t);
+    }
+#endif
 
 #ifdef RENDER_WALL_MODE
     vec3 join_normal_inside = vec3(a_join_normal_inside);
@@ -288,4 +341,13 @@ void main() {
 #ifdef FOG
     v_fog_pos = fog_position(pos);
 #endif
+
+#ifdef INDICATOR_CUTOUT
+#ifdef FEATURE_CUTOUT
+    vec4 pos_ground = u_matrix * vec4(pos.xy, ele, 1.0);
+    vec4 pos_roof = u_matrix * vec4(pos.xy, ele + height, 1.0);
+    v_ground_roof = vec4(pos_ground.xy / pos_ground.w, pos_roof.xy / pos_roof.w);
+#endif
+#endif
+
 }

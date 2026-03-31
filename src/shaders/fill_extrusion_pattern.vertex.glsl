@@ -115,7 +115,9 @@ void main() {
     bool is_flat_height = centroid_pos.x != 0.0 && u_height_type == 1;
     bool is_flat_base = centroid_pos.x != 0.0 && u_base_type == 1;
     ele = elevation(pos_nx.xy);
-    c_ele = is_flat_height || is_flat_base ? (centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos)) : ele;
+    // Elevation is in centroid_pos.x when y==0 (old encoding) or when y&7==7 (border elevation+position encoding)
+    bool is_elevation_encoded = centroid_pos.y == 0.0 || (centroid_pos.y > 0.0 && int(centroid_pos.y) - (int(centroid_pos.y) / 8) * 8 == 7);
+    c_ele = is_flat_height || is_flat_base ? (is_elevation_encoded ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos)) : ele;
     float h_height = is_flat_height ? max(c_ele + height, ele + base + 2.0) : ele + height;
     float h_base = is_flat_base ? max(c_ele + base, ele + base) : ele + (base == 0.0 ? -5.0 : base);
     h = t > 0.0 ? max(h_base, h_height) : h_base;

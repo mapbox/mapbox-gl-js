@@ -1,6 +1,6 @@
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
-import {mat4} from 'gl-matrix';
+import {mat4, vec4} from 'gl-matrix';
 import {pointInFootprint, skipClipping, transformPointToTile} from '../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../3d-style/util/conflation';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
@@ -258,12 +258,14 @@ export class Placement {
     zoomAtLastRecencyCheck: number;
     collisionCircleArrays: Partial<Record<number, CollisionCircleArray>>;
     buildingIndex: BuildingIndex | null | undefined;
+    frontCutoffStart: number;
 
     constructor(transform: Transform, fadeDuration: number, crossSourceCollisions: boolean, prevPlacement?: Placement, fogState?: FogState | null, buildingIndex?: BuildingIndex | null) {
         this.transform = transform.clone();
         this.projection = transform.projection.name;
         this.collisionIndex = new CollisionIndex(this.transform, fogState);
         this.buildingIndex = buildingIndex;
+        this.frontCutoffStart = 0;
         this.placements = {};
         this.opacities = {};
         this.variableOffsets = {};
@@ -608,6 +610,19 @@ export class Placement {
             }
 
             const symbolZOffsetValue = symbolZOffset.evaluate(feature, {});
+
+            const totalZOffset = (symbolInstance.zOffset || 0) + (symbolZOffsetValue || 0);
+            if (totalZOffset > 0 && this.frontCutoffStart > 0) {
+                const threshold = this.frontCutoffStart * 2.0 - 1.0;
+                const groundPos = [symbolInstance.tileAnchorX, symbolInstance.tileAnchorY, 0, 1] as [number, number, number, number];
+                const projected = vec4.transformMat4(vec4.create(), groundPos, posMatrix);
+                const ndcY = projected[1] / projected[3];
+                if (ndcY < threshold) {
+                    this.placements[crossTileID] = new JointPlacement(false, false, false, true);
+                    seenCrossTileIDs.add(crossTileID);
+                    return;
+                }
+            }
 
             if (seenCrossTileIDs.has(crossTileID)) return;
             if (holdingForFade) {

@@ -42,6 +42,7 @@ import {
 } from '../source/source';
 import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures, shouldSkipFeatureVariant} from '../source/query_features';
 import SourceCache from '../source/source_cache';
+import {RenderSourceType} from '../source/tile';
 import BuildingIndex from '../source/building_index';
 import styleSpec from '../style-spec/reference/latest';
 import {getGlobalWorkerPool as getWorkerPool} from '../util/worker_pool_factory';
@@ -321,6 +322,7 @@ class Style extends Evented<MapEvents> {
     _mergedSourceCaches: Record<string, SourceCache>;
     _mergedOtherSourceCaches: Record<string, SourceCache>;
     _mergedSymbolSourceCaches: Record<string, SourceCache>;
+    _mergedFillExtrusionSourceCaches: Record<string, SourceCache>;
     _clipLayerPresent: boolean;
 
     _featuresetSelectors: Record<string, Array<FeaturesetSelector>>;
@@ -339,6 +341,9 @@ class Style extends Evented<MapEvents> {
         [_: string]: SourceCache;
     };
     _symbolSourceCaches: {
+        [_: string]: SourceCache;
+    };
+    _fillExtrusionSourceCaches: {
         [_: string]: SourceCache;
     };
     _loaded: boolean;
@@ -408,6 +413,7 @@ class Style extends Evented<MapEvents> {
         this._mergedSourceCaches = {};
         this._mergedOtherSourceCaches = {};
         this._mergedSymbolSourceCaches = {};
+        this._mergedFillExtrusionSourceCaches = {};
         this._clipLayerPresent = false;
         this._hasAppearances = false;
 
@@ -469,6 +475,7 @@ class Style extends Evented<MapEvents> {
         this._sourceCaches = {};
         this._otherSourceCaches = {};
         this._symbolSourceCaches = {};
+        this._fillExtrusionSourceCaches = {};
         this._loaded = false;
         this._precompileDone = false;
         this._shouldPrecompile = false;
@@ -1166,6 +1173,7 @@ class Style extends Evented<MapEvents> {
         const mergedSourceCaches: Record<string, SourceCache> = {};
         const mergedOtherSourceCaches: Record<string, SourceCache> = {};
         const mergedSymbolSourceCaches: Record<string, SourceCache> = {};
+        const mergedFillExtrusionSourceCaches: Record<string, SourceCache> = {};
 
         this.forEachFragmentStyle((style: Style) => {
             for (const id in style._sourceCaches) {
@@ -1182,11 +1190,17 @@ class Style extends Evented<MapEvents> {
                 const fqid = makeFQID(id, style.scope);
                 mergedSymbolSourceCaches[fqid] = style._symbolSourceCaches[id];
             }
+
+            for (const id in style._fillExtrusionSourceCaches) {
+                const fqid = makeFQID(id, style.scope);
+                mergedFillExtrusionSourceCaches[fqid] = style._fillExtrusionSourceCaches[id];
+            }
         });
 
         this._mergedSourceCaches = mergedSourceCaches;
         this._mergedOtherSourceCaches = mergedOtherSourceCaches;
         this._mergedSymbolSourceCaches = mergedSymbolSourceCaches;
+        this._mergedFillExtrusionSourceCaches = mergedFillExtrusionSourceCaches;
     }
 
     mergeIndoor() {
@@ -1845,6 +1859,9 @@ class Style extends Evented<MapEvents> {
             sourceCache.tileCoverLift = 0.0;
         }
 
+        // Track effective max-source-zoom per fill-extrusion source cache
+        const feSourceMaxZooms: Record<string, number | null> = {};
+
         for (const layerId of this._mergedOrder) {
             const layer = this._mergedLayers[layerId];
             if (layer.visibility !== 'none' || layer.hasTransition()) layer.recalculate(parameters, this._availableImages);
@@ -1854,6 +1871,18 @@ class Style extends Evented<MapEvents> {
                     sourceCache.used = true;
                     // Select the highest elevation across all layers that are rendered with this source
                     sourceCache.tileCoverLift = Math.max(sourceCache.tileCoverLift, layer.tileCoverLift());
+                }
+            }
+
+            // Accumulate source-max-zoom for fill-extrusion layers
+            if (layer.type === 'fill-extrusion') {
+                const fqid = makeFQID(layer.source, layer.scope);
+                if (fqid in this._mergedFillExtrusionSourceCaches) {
+                    const maxSourceZoom = layer.layout && layer.layout.get('source-max-zoom');
+                    if (maxSourceZoom !== undefined && maxSourceZoom !== null) {
+                        const prev = feSourceMaxZooms[fqid];
+                        feSourceMaxZooms[fqid] = prev == null ? maxSourceZoom : Math.min(prev, maxSourceZoom);
+                    }
                 }
             }
 
@@ -1870,6 +1899,11 @@ class Style extends Evented<MapEvents> {
 
         if (this._shouldPrecompile) {
             this._precompileDone = true;
+        }
+
+        // Apply accumulated source-max-zoom overrides
+        for (const fqid in this._mergedFillExtrusionSourceCaches) {
+            this._mergedFillExtrusionSourceCaches[fqid].setMaxzoomOverride(feSourceMaxZooms[fqid] != null ? feSourceMaxZooms[fqid] : null);
         }
 
         if (this.terrain && layersUpdated) {
@@ -2169,17 +2203,28 @@ class Style extends Evented<MapEvents> {
             sourceId: sourceInstance.id
         }));
 
-        const addSourceCache = (onlySymbols: boolean) => {
-            const sourceCacheId = (onlySymbols ? 'symbol:' : 'other:') + sourceInstance.id;
+        const addSourceCache = (renderSourceType?: RenderSourceType) => {
+            const prefix = renderSourceType === RenderSourceType.Symbol ? 'symbol:' :
+                renderSourceType === RenderSourceType.FillExtrusion ? 'fill-extrusion:' : 'other:';
+            const sourceCacheId = prefix + sourceInstance.id;
             const sourceCacheFQID = makeFQID(sourceCacheId, this.scope);
-            const sourceCache = this._sourceCaches[sourceCacheId] = new SourceCache(sourceCacheFQID, sourceInstance, onlySymbols);
-            (onlySymbols ? this._symbolSourceCaches : this._otherSourceCaches)[sourceInstance.id] = sourceCache;
+            const sourceCache = this._sourceCaches[sourceCacheId] = new SourceCache(sourceCacheFQID, sourceInstance, renderSourceType);
+            if (renderSourceType === RenderSourceType.Symbol) {
+                this._symbolSourceCaches[sourceInstance.id] = sourceCache;
+            } else if (renderSourceType === RenderSourceType.FillExtrusion) {
+                this._fillExtrusionSourceCaches[sourceInstance.id] = sourceCache;
+            } else {
+                this._otherSourceCaches[sourceInstance.id] = sourceCache;
+            }
             sourceCache.onAdd(this.map);
         };
 
-        addSourceCache(false);
+        addSourceCache(RenderSourceType.Other);
         if (source.type === 'vector' || source.type === 'geojson') {
-            addSourceCache(true);
+            addSourceCache(RenderSourceType.Symbol);
+            if (source.type === 'vector') {
+                addSourceCache(RenderSourceType.FillExtrusion);
+            }
         }
 
         if (sourceInstance.onAdd)
@@ -2232,6 +2277,7 @@ class Style extends Evented<MapEvents> {
         }
         delete this._otherSourceCaches[id];
         delete this._symbolSourceCaches[id];
+        delete this._fillExtrusionSourceCaches[id];
         this.mergeSources();
 
         source.setEventedParent(null);
@@ -3599,7 +3645,7 @@ class Style extends Evented<MapEvents> {
         if (this.placement) {
             for (const sourceCacheId in queries) {
                 // Skip non-symbol source caches
-                if (!queries[sourceCacheId].sourceCache._onlySymbols) continue;
+                if (queries[sourceCacheId].sourceCache._renderSourceType !== RenderSourceType.Symbol) continue;
 
                 const queryResult = queryRenderedSymbols(
                     queryGeometryStruct.screenGeometry,
@@ -4261,6 +4307,17 @@ class Style extends Evented<MapEvents> {
         if (this.pauseablePlacement.isFullPlacementRequested() || !this.pauseablePlacement.placement || newImmediatePlacementRequired || newNormalPlacementRequired) {
             const fogState = this.fog && transform.projection.supportsFog ? this.fog.state : null;
             this.pauseablePlacement = this.pauseablePlacement.startNewPlacement(transform, this._mergedOrder, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState, this._buildingIndex);
+            if (this.map.painter) {
+                const raw = this.map.painter.maxFrontCutoffRawStart;
+                if (raw > 0) {
+                    const pitchDeg = transform.pitch * 180 / Math.PI;
+                    if (pitchDeg >= 15) {
+                        const t = Math.min(1, Math.max(0, (pitchDeg - 15) / 5));
+                        const pitchBlend = t * t * (3 - 2 * t);
+                        this.pauseablePlacement.placement.frontCutoffStart = -0.5 * (1 - pitchBlend) + raw * pitchBlend;
+                    }
+                }
+            }
         }
 
         if (!this.pauseablePlacement.isDone()) {
@@ -4531,9 +4588,9 @@ class Style extends Evented<MapEvents> {
 
     getLayerSourceCache(layer: TypedStyleLayer): SourceCache | undefined {
         const fqid = makeFQID(layer.source, layer.scope);
-        return layer.type === 'symbol' ?
-            this._mergedSymbolSourceCaches[fqid] :
-            this._mergedOtherSourceCaches[fqid];
+        if (layer.type === 'symbol') return this._mergedSymbolSourceCaches[fqid];
+        if (layer.type === 'fill-extrusion') return this._mergedFillExtrusionSourceCaches[fqid] || this._mergedOtherSourceCaches[fqid];
+        return this._mergedOtherSourceCaches[fqid];
     }
 
     /**
@@ -4553,6 +4610,9 @@ class Style extends Evented<MapEvents> {
         }
         if (this._mergedSymbolSourceCaches[fqid]) {
             sourceCaches.push(this._mergedSymbolSourceCaches[fqid]);
+        }
+        if (this._mergedFillExtrusionSourceCaches[fqid]) {
+            sourceCaches.push(this._mergedFillExtrusionSourceCaches[fqid]);
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return sourceCaches;
@@ -4650,9 +4710,9 @@ class Style extends Evented<MapEvents> {
     }
 
     getOwnLayerSourceCache(layer: TypedStyleLayer): SourceCache | undefined {
-        return layer.type === 'symbol' ?
-            this._symbolSourceCaches[layer.source] :
-            this._otherSourceCaches[layer.source];
+        if (layer.type === 'symbol') return this._symbolSourceCaches[layer.source];
+        if (layer.type === 'fill-extrusion') return this._fillExtrusionSourceCaches[layer.source] || this._otherSourceCaches[layer.source];
+        return this._otherSourceCaches[layer.source];
     }
 
     getOwnSourceCaches(source: string): Array<SourceCache> {
@@ -4662,6 +4722,9 @@ class Style extends Evented<MapEvents> {
         }
         if (this._symbolSourceCaches[source]) {
             sourceCaches.push(this._symbolSourceCaches[source]);
+        }
+        if (this._fillExtrusionSourceCaches[source]) {
+            sourceCaches.push(this._fillExtrusionSourceCaches[source]);
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return sourceCaches;

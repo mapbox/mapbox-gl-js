@@ -175,7 +175,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                 // Defer tile parsing until sprite is ready. Style emits 'spriteLoaded' event, which triggers the 'isSpriteLoaded' event here.
                 this.once('isSpriteLoaded', () => {
                     if (this.scheduler) {
-                        const metadata: TaskMetadata = {type: 'parseTile', isSymbolTile: params.isSymbolTile, zoom: params.tileZoom};
+                        const metadata: TaskMetadata = {type: 'parseTile', renderSourceType: params.renderSourceType, zoom: params.tileZoom};
                         this.scheduler.add(parseTile, metadata);
                     } else {
                         parseTile();

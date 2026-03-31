@@ -8,7 +8,7 @@ import StencilMode from '../../src/gl/stencil_mode';
 import {getMetersPerPixelAtLatitude} from '../../src/geo/mercator_coordinate';
 import {Debug} from '../../src/util/debug';
 import {DevTools} from '../../src/ui/devtools';
-import {drawGroundEffect as fillExtrusionDrawGroundEffect, GroundEffectProperties, frustumCullShadowCaster} from '../../src/render/draw_fill_extrusion';
+import {drawGroundEffect as fillExtrusionDrawGroundEffect, GroundEffectProperties, frustumCullShadowCaster, computeFrontCutoffParams} from '../../src/render/draw_fill_extrusion';
 import Color from '../../src/style-spec/util/color';
 import ColorMode from '../../src/gl/color_mode';
 import {PerformanceUtils} from '../../src/util/performance';
@@ -53,6 +53,14 @@ function drawTiles(params: DrawParams) {
     const cutoffParams = getCutoffParams(painter, layer.paint.get('building-cutoff-fade-range'));
     if (cutoffParams.shouldRenderCutoff) {
         defines = defines.concat('RENDER_CUTOFF');
+    }
+
+    const frontCutoffArray = layer.paint.get('building-front-cutoff');
+    const frontCutoffEnabled = frontCutoffArray[2] < 1.0 && !painter.terrain;
+    const frontCutoffParams = computeFrontCutoffParams(painter.transform.pitch, frontCutoffArray, !!painter.terrain);
+    if (frontCutoffEnabled) {
+        defines = defines.concat('RENDER_FRONT_CUTOFF');
+        painter.maxFrontCutoffRawStart = Math.max(painter.maxFrontCutoffRawStart, frontCutoffArray[0]);
     }
 
     if (params.floodLightIntensity > 0.0) {
@@ -120,7 +128,7 @@ function drawTiles(params: DrawParams) {
                 mercCameraPos.z * tiles * EXTENT
             ];
 
-            uniformValues = buildingUniformValues(matrix, normalMatrix, params.opacity, params.facadeAOIntensity, cameraPos, bucket.tileToMeter, params.facadeEmissiveChance, params.floodLightColor, params.floodLightIntensity);
+            uniformValues = buildingUniformValues(matrix, normalMatrix, params.opacity, params.facadeAOIntensity, cameraPos, bucket.tileToMeter, params.facadeEmissiveChance, params.floodLightColor, params.floodLightIntensity, frontCutoffParams);
 
             programWithoutFacades =  painter.getOrCreateProgram('building',
                 {config: programConfiguration, defines, overrideFog: false});
@@ -225,7 +233,7 @@ class DrawBuildingsDebugParams {
     }
 }
 
-function drawGroundEffect(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, coords: Array<OverscaledTileID>, aoPass: boolean, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: [number, number, number], attenuationFactor: number, replacementActive: boolean, renderNeighbors: boolean) {
+function drawGroundEffect(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, coords: Array<OverscaledTileID>, aoPass: boolean, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: [number, number, number], attenuationFactor: number, replacementActive: boolean, renderNeighbors: boolean, frontCutoffParams?: [number, number, number]) {
     const lerp = (a: number, b: number, t: number) => { return (1 - t) * a + t * b; };
 
     const gl = painter.context.gl;
@@ -242,7 +250,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: Building
         const stencilSdfPass = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
         const colorSdfPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true], gl.MIN);
 
-        fillExtrusionDrawGroundEffect(groundEffectProps, painter, source, layer, coords, depthMode, stencilSdfPass, colorSdfPass, CullFaceMode.disabled, aoPass, 'sdf', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, false);
+        fillExtrusionDrawGroundEffect(groundEffectProps, painter, source, layer, coords, depthMode, stencilSdfPass, colorSdfPass, CullFaceMode.disabled, aoPass, 'sdf', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, false, undefined, frontCutoffParams);
     }
 
     {
@@ -250,7 +258,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: Building
         const stencilColorPass = showOverdraw ? StencilMode.disabled : new StencilMode({func: gl.EQUAL, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.DECR, gl.DECR);
         const colorColorPass = showOverdraw ? painter.colorModeForRenderPass() : new ColorMode([gl.ONE_MINUS_DST_ALPHA, gl.DST_ALPHA, gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]);
 
-        fillExtrusionDrawGroundEffect(groundEffectProps, painter, source, layer, coords, depthMode, stencilColorPass, colorColorPass, CullFaceMode.disabled, aoPass, 'color', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, false);
+        fillExtrusionDrawGroundEffect(groundEffectProps, painter, source, layer, coords, depthMode, stencilColorPass, colorColorPass, CullFaceMode.disabled, aoPass, 'color', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, false, undefined, frontCutoffParams);
     }
 }
 
@@ -422,11 +430,14 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
             floodLightColor
         });
 
+        const geFrontCutoffArray = layer.paint.get('building-front-cutoff');
+        const geFrontCutoffParams = computeFrontCutoffParams(painter.transform.pitch, geFrontCutoffArray, !!painter.terrain);
+
         if (aoEnabled) {
-            drawGroundEffect(painter, source, layer, coords, true, opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, aoGroundAttenuation, conflateLayer, false);
+            drawGroundEffect(painter, source, layer, coords, true, opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, aoGroundAttenuation, conflateLayer, false, geFrontCutoffParams);
         }
         if (floodLightEnabled) {
-            drawGroundEffect(painter, source, layer, coords, false, opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, floodLightGroundAttenuation, conflateLayer, false);
+            drawGroundEffect(painter, source, layer, coords, false, opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, floodLightGroundAttenuation, conflateLayer, false, geFrontCutoffParams);
         }
     } else if (painter.renderPass === 'light-beam' && drawLayer) {
         const definesForPass: Array<DynamicDefinesType> = [

@@ -22,6 +22,7 @@ import type {TDecodingResult} from '../data/mrt/types';
 import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
 import type {RasterizedImageMap} from '../render/image_manager';
 import type {ImageId} from '../style-spec/expression/types/image_id';
+import type {RenderSourceType} from './tile';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 import type {StyleModelMap} from '../style/style_mode';
 import type {IndoorTileOptions} from '../style/indoor_data.js';
@@ -84,7 +85,7 @@ export type WorkerSourceVectorTileRequest = WorkerSourceTileRequest & {
         cacheControl?: string;
     };
     extraShadowCaster?: boolean;
-    isSymbolTile?: boolean | null;
+    renderSourceType?: RenderSourceType | null;
     partial?: boolean;
     tessellationStep?: number // test purpose only;
     worldview?: string | null;
@@ -112,7 +113,7 @@ export type WorkerSourceTiled3dModelRequest = WorkerSourceTileRequest & {
     zoom: number;
     data?: unknown;
     extraShadowCaster?: boolean;
-    isSymbolTile?: boolean | null;
+    renderSourceType?: RenderSourceType | null;
     partial?: boolean;
     request?: RequestParameters;
     tessellationStep?: number // test purpose only;

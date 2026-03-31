@@ -109,7 +109,7 @@ class MockSourceCache extends SourceCache {
         };
         const source = createSource('mock-dem', sourceSpec, map.style.dispatcher, map.style);
 
-        super('mock-dem', source, false);
+        super('mock-dem', source, null);
 
         source.setEventedParent(this);
 
@@ -144,7 +144,7 @@ class ProxySourceCache extends SourceCache {
             maxzoom: Math.ceil(map.transform.maxZoom)
         }, map.style.dispatcher, map.style);
 
-        super('proxy', source, false);
+        super('proxy', source, null);
 
         source.setEventedParent(this);
 

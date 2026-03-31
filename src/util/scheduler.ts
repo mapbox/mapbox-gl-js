@@ -1,12 +1,13 @@
 import ThrottledInvoker from './throttled_invoker';
 import {bindAll, isWorker} from './util';
 import {PerformanceUtils} from './performance';
+import {RenderSourceType} from '../source/tile';
 
 import type {Cancelable} from '../types/cancelable';
 
 export type TaskMetadata = {
     type: 'message' | 'maybePrepare' | 'parseTile';
-    isSymbolTile?: boolean;
+    renderSourceType?: RenderSourceType | null;
     zoom?: number;
 };
 
@@ -115,13 +116,14 @@ class Scheduler {
     }
 }
 
-function getPriority({type, isSymbolTile, zoom}: TaskMetadata): number {
+function getPriority({type, renderSourceType, zoom}: TaskMetadata): number {
     zoom = zoom || 0;
+    const isSymbol = renderSourceType === RenderSourceType.Symbol;
     if (type === 'message') return 0;
-    if (type === 'maybePrepare' && !isSymbolTile) return 100 - zoom;
-    if (type === 'parseTile' && !isSymbolTile) return 200 - zoom;
-    if (type === 'parseTile' && isSymbolTile) return 300 - zoom;
-    if (type === 'maybePrepare' && isSymbolTile) return 400 - zoom;
+    if (type === 'maybePrepare' && !isSymbol) return 100 - zoom;
+    if (type === 'parseTile' && !isSymbol) return 200 - zoom;
+    if (type === 'parseTile' && isSymbol) return 300 - zoom;
+    if (type === 'maybePrepare' && isSymbol) return 400 - zoom;
     return 500;
 }
 

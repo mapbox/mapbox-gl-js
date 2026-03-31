@@ -1,0 +1,46 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 760,
+      "height": 688,
+      "allowed": 0.005,
+      "operations": [
+        ["setPadding", {"top": 300, "left": 0, "bottom": 0, "right": 0}],
+        [
+          "setStyle",
+          "local://styles/standard-hd.json"
+        ],
+        ["wait"],
+        [
+          "addSource",
+          "test-dem",
+          {
+            "type": "raster-dem",
+            "tiles": [
+              "local://tiles/hd/dem-{z}-{x}-{y}.webp"
+            ],
+            "maxzoom": 14,
+            "tileSize": 256
+          }
+        ],
+        [
+          "setTerrain",
+          {
+            "source": "test-dem",
+            "exaggeration": 0.001
+          }
+        ],
+        ["wait"],
+        ["wait"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [-73.976335, 40.764099],
+  "zoom": 19.33,
+  "bearing": 314.02,
+  "pitch": 55.70,
+  "sources": {},
+  "layers": []
+}

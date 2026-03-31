@@ -25,6 +25,7 @@ uniform highp float u_dynamic_offset;
 
 uniform highp vec2 u_ao;
 
+
 #pragma mapbox: define highp float flood_light_ground_radius
 
 const float TANGENT_CUTOFF = 4.0;

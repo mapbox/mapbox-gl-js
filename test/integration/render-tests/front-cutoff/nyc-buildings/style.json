@@ -1,0 +1,25 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1024,
+      "height": 768,
+      "allowed": 0.005,
+      "operations": [
+        [
+          "setStyle",
+          "local://styles/standard-hd.json"
+        ],
+        ["wait"],
+        ["wait"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [-73.976486, 40.762959],
+  "zoom": 17.37,
+  "bearing": 220.31,
+  "pitch": 34.79,
+  "sources": {},
+  "layers": []
+}

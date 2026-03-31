@@ -28,6 +28,17 @@ import {transitionTileAABBinECEF, globeNormalizeECEF, tileCoordToECEF, globeToMe
 import {vec3, mat4} from 'gl-matrix';
 
 import type RasterParticleState from '../render/raster_particle_state';
+/**
+ * Which render source partition this tile is parsed for.
+ * Mirrors C++ RenderVectorSource splits in vector_source_factory.cpp.
+ * Undefined/null = no filtering (single source, all layers).
+ */
+export const RenderSourceType = {
+    Other: 0,
+    Symbol: 1,
+    FillExtrusion: 2,
+} as const;
+export type RenderSourceType = typeof RenderSourceType[keyof typeof RenderSourceType];
 import type FeatureIndex from '../data/feature_index';
 import type {Bucket} from '../data/bucket';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
@@ -134,7 +145,7 @@ class Tile {
     vtLayers: {
         [_: string]: VectorTileLayer;
     };
-    isSymbolTile: boolean | null | undefined;
+    renderSourceType: RenderSourceType | null | undefined;
     isExtraShadowCaster: boolean | null | undefined;
     isRaster: boolean | null | undefined;
     _tileTransform: TileTransform;

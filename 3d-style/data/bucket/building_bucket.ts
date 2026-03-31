@@ -840,13 +840,20 @@ export class BuildingBucket implements BucketWithGroundEffect {
                     building.layoutColorArray.uint16[(partVertexOffset + v) * 2 + 1] = c2;
                 }
 
-                const cx = Math.floor(centroid.x);
-                const cy = Math.floor(centroid.y);
+                const cx = Math.min(8191, Math.max(0, Math.floor(centroid.x)));
+                const cy = Math.min(8191, Math.max(0, Math.floor(centroid.y)));
                 const ch = Math.floor(height);
+                // Encode span (2 bits per axis) into lower bits of cx/cy: encoded = cx * 4 + spanBits
+                // Each span bit represents ~20 meters; max 3 bits = ~60m
+                const spanBucketMeters = 20;
+                const spanX = Math.min(3, Math.round((bboxMax.x - bboxMin.x) * this.tileToMeter / spanBucketMeters));
+                const spanY = Math.min(3, Math.round((bboxMax.y - bboxMin.y) * this.tileToMeter / spanBucketMeters));
+                const cxEncoded = cx * 4 + spanX;
+                const cyEncoded = cy * 4 + spanY;
                 for (let v = 0; v < partVertexCount; ++v) {
                     const idx = (partVertexOffset + v) * 3;
-                    building.layoutCentroidArray.int16[idx] = cx;
-                    building.layoutCentroidArray.int16[idx + 1] = cy;
+                    building.layoutCentroidArray.int16[idx] = cxEncoded;
+                    building.layoutCentroidArray.int16[idx + 1] = cyEncoded;
                     building.layoutCentroidArray.int16[idx + 2] = ch;
                 }
 

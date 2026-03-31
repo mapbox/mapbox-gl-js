@@ -282,6 +282,10 @@ const skip = [
     // Not implemented, https://mapbox.atlassian.net/browse/GLJS-1591
     "render-tests/slots/inner-slot-before-outer",
     "render-tests/slots/mixed-slot-order-with-imports",
+
+    // gl-native only: indicator cutout with front cutoff
+    "render-tests/front-cutoff/indicator-cutout",
+    "render-tests/front-cutoff/indicator-cutout-transparency",
 ];
 
 export default {todo, skip};
