@@ -690,6 +690,7 @@ class SymbolBucket implements Bucket {
     localizable: boolean;
     maxUniformBufferBindings: number | null | undefined;
     maxUniformBlockSizeDwords: number | null | undefined;
+    disableSymbolUBO: boolean | null | undefined;
     iconAtlasPositions: ImagePositionMap;
     hasAppearances: boolean | null;
     featureAppearances: FeatureAppearances | null;
@@ -720,6 +721,7 @@ class SymbolBucket implements Bucket {
         this.localizable = options.localizable;
         this.maxUniformBufferBindings = options.maxUniformBufferBindings;
         this.maxUniformBlockSizeDwords = options.maxUniformBlockSizeDwords;
+        this.disableSymbolUBO = options.disableSymbolUBO;
 
         this.textSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['text-size'], this.worldview, options.availableImages);
 
@@ -792,8 +794,10 @@ class SymbolBucket implements Bucket {
             })
         );
 
-        this.text.uboBinder = new SymbolPropertyBinderUBO(this.layers[0], this.zoom, this.lut, true, '', this.maxUniformBufferBindings, this.maxUniformBlockSizeDwords);
-        this.icon.uboBinder = new SymbolPropertyBinderUBO(this.layers[0], this.zoom, this.lut, false, '', this.maxUniformBufferBindings, this.maxUniformBlockSizeDwords);
+        if (!this.disableSymbolUBO) {
+            this.text.uboBinder = new SymbolPropertyBinderUBO(this.layers[0], this.zoom, this.lut, true, '', this.maxUniformBufferBindings, this.maxUniformBlockSizeDwords);
+            this.icon.uboBinder = new SymbolPropertyBinderUBO(this.layers[0], this.zoom, this.lut, false, '', this.maxUniformBufferBindings, this.maxUniformBlockSizeDwords);
+        }
 
         this.glyphOffsetArray = new GlyphOffsetArray();
         this.lineVertexArray = new SymbolLineVertexArray();

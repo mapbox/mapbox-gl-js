@@ -43,6 +43,7 @@ export type BucketParameters<Layer extends TypedStyleLayer> = {
     availableImages: ImageId[];
     maxUniformBufferBindings?: number | null;
     maxUniformBlockSizeDwords?: number | null;
+    disableSymbolUBO?: boolean | null;
 };
 
 export type ImageDependenciesMap = Map<StringifiedImageId, Array<ImageVariant>>;

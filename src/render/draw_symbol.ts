@@ -387,6 +387,7 @@ function drawLayerSymbols(
         };
 
         const setUBODefines = (defines: DynamicDefinesType[]) => {
+            if (painter.context.disableSymbolUBO) return;
             defines.push('USE_PAINT_PROPERTIES_UBO');
             // MAX_UBO_SIZE_VEC4: number of vec4 slots available for u_properties / u_block_indices.
             const uboSizeDwords = Math.floor(painter.context.maxUniformBlockSize / 4);
@@ -481,7 +482,8 @@ function drawLayerSymbols(
 
             setUBODefines(baseDefines);
 
-            const program = painter.getOrCreateProgram('symbol', {defines: baseDefines});
+            const programConfig = context.disableSymbolUBO ? bucket.icon.programConfigurations.get(layer.id) : null;
+            const program = painter.getOrCreateProgram('symbol', {config: programConfig, defines: baseDefines});
 
             const texSize: [number, number] = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
             const sizeData = bucket.iconSizeData;
@@ -602,7 +604,8 @@ function drawLayerSymbols(
 
             setUBODefines(baseDefines);
 
-            const program = painter.getOrCreateProgram('symbol', {defines: baseDefines});
+            const programConfig = context.disableSymbolUBO ? bucket.text.programConfigurations.get(layer.id) : null;
+            const program = painter.getOrCreateProgram('symbol', {config: programConfig, defines: baseDefines});
 
             let texSizeIcon: [number, number] = [0, 0];
             let atlasTextureIcon: Texture | null = null;
@@ -804,6 +807,8 @@ function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, lay
         dynamicBuffers.push(buffers.featureIdBuffer);
     }
 
+    const programConfiguration = buffers.uboBinder ? null : buffers.programConfigurations.get(layer.id);
+
     // Set constant paint property uniforms (u_spp_*) for UBO mode.
     // These are evaluated at the current render zoom so camera (zoom-only) expressions
     // are up-to-date every frame without requiring a UBO rewrite.
@@ -847,7 +852,7 @@ function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, lay
         program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, buffers.layoutVertexBuffer,
             buffers.indexBuffer, batchSegmentVector, layer.paint,
-            painter.transform.zoom, null, dynamicBuffers,
+            painter.transform.zoom, programConfiguration, dynamicBuffers,
             instanceCount);
     }
 }
