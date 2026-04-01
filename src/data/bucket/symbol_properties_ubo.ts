@@ -15,8 +15,6 @@ import type Context from '../../gl/context';
  * offsets[i]          – dword offset of property i within the data-driven block
  *                       (only meaningful for properties with the dataDrivenMask bit set)
  *
- * Properties 0-7 are GL Native-aligned (3 uvec4 header). Property 8 (translate) is GL JS-specific
- * and uses the previously-unused h[11] slot in the 3-uvec4 header.
  */
 export type SymbolPropertyHeader = {
     dataDrivenMask: number;
@@ -139,7 +137,7 @@ export class SymbolPropertiesUBO {
         h[8]  = header.offsets[5]; // emissive_strength
         h[9]  = header.offsets[6]; // occlusion_opacity
         h[10] = header.offsets[7]; // z_offset
-        h[11] = header.offsets[8]; // translate (GL JS-specific, uses previously-unused slot)
+        h[11] = header.offsets[8]; // translate
     }
 
     /**
@@ -183,7 +181,7 @@ export class SymbolPropertiesUBO {
     private _writeProperty(dwordOffset: number, propIdx: number, value: PropertyValue, zoomDependentMask: number): void {
         const pd = this.propertiesData;
         // Property order is fixed by the GL Native contract: 0=fill_color, 1=halo_color (colors),
-        // 2-7=floats. Property 8 (translate) is GL JS-specific: a vec2.
+        // 2-7=floats, 8=translate (vec2).
         // This must stay in sync with _getPropDefs() in symbol_property_binder_ubo.ts.
         const isColor = propIdx < 2;
         const isVec2 = propIdx === 8; // translate: [tx, ty] non-zoom or [tx_min, ty_min, tx_max, ty_max] zoom-dep

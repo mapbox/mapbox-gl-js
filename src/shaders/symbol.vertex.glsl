@@ -163,7 +163,6 @@ struct SymbolPropertyHeader {
     PropertyType emissive_strength;
     PropertyType occlusion_opacity;
     PropertyType z_offset;
-    /// GL JS-specific: per-feature translate (vec2, uses previously-unused h[2][3] slot).
     PropertyType translate;
 };
 
@@ -347,7 +346,7 @@ SymbolPaintProperties readSymbolPaintProperties() {
     props.emissive_strength    = header.emissive_strength.isDataDriven ? readFloatProperty(header.emissive_strength, sizeVec4) : u_spp_emissive_strength;
     props.occlusion_opacity    = header.occlusion_opacity.isDataDriven ? readFloatProperty(header.occlusion_opacity, sizeVec4) : u_spp_occlusion_opacity;
     props.z_offset             = header.z_offset.isDataDriven          ? readFloatProperty(header.z_offset, sizeVec4)          : u_spp_z_offset;
-    props.translate            = header.translate.isDataDriven          ? readVec2Property(header.translate, sizeVec4)           : vec2(0.0);
+    props.translate            = header.translate.isDataDriven         ? readVec2Property(header.translate, sizeVec4)          : vec2(0.0);
     return props;
 }
 

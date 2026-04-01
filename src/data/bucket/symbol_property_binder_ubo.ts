@@ -211,7 +211,7 @@ export class SymbolPropertyBinderUBO {
      * Returns an ordered list of property definitions for text or icon.
      * Order determines bit index: 0=fill_color, 1=halo_color, 2=opacity,
      * 3=halo_width, 4=halo_blur, 5=emissive_strength, 6=occlusion_opacity, 7=z_offset,
-     * 8=translate (GL JS-specific, vec2, uses previously-unused h[11] header slot).
+     * 8=translate.
      */
     private _getPropDefs(): PropDef[] {
         const p = this.isText ? 'text' : 'icon';
