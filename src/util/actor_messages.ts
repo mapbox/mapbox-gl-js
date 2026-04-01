@@ -147,7 +147,7 @@ export type ActorMessages = {
     };
 
     'setContextParams': {
-        params: {maxBindingPoints: number; maxUniformBlockSizeDwords: number};
+        params: {maxBindingPoints: number; maxUniformBlockSizeDwords: number; disableSymbolUBO?: boolean};
         callback: ActorCallback<void>;
     };
 

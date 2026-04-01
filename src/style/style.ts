@@ -440,7 +440,8 @@ class Style extends Evented<MapEvents> {
             const maxUniformBlockSizeDwords = Math.floor(this.map.painter.context.maxUniformBlockSize / 4);
             this.dispatcher.broadcast('setContextParams', {
                 maxBindingPoints,
-                maxUniformBlockSizeDwords
+                maxUniformBlockSizeDwords,
+                disableSymbolUBO: this.map.painter.context.disableSymbolUBO
             });
         }
 

@@ -55,6 +55,7 @@ export default class MapWorker {
     brightness: number | null | undefined;
     maxUniformBufferBindings: number | null | undefined;
     maxUniformBlockSizeDwords: number | null | undefined;
+    disableSymbolUBO: boolean | null | undefined;
     imageRasterizer: ImageRasterizer;
     worldview: string | undefined;
     rtlPluginParsingListeners: Array<Callback<boolean>>;
@@ -210,6 +211,7 @@ export default class MapWorker {
     setContextParams(mapId: number, params: ActorMessages['setContextParams']['params'], callback: ActorMessages['setContextParams']['callback']) {
         this.maxUniformBufferBindings = params.maxBindingPoints;
         this.maxUniformBlockSizeDwords = params.maxUniformBlockSizeDwords;
+        this.disableSymbolUBO = params.disableSymbolUBO;
         callback();
     }
 
@@ -440,6 +442,7 @@ export default class MapWorker {
                 worldview: this.worldview,
                 maxUniformBufferBindings: this.maxUniformBufferBindings,
                 maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords,
+                disableSymbolUBO: this.disableSymbolUBO,
             });
         }
 

@@ -47,11 +47,12 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
     brightness?: number | null;
     maxUniformBufferBindings?: number | null;
     maxUniformBlockSizeDwords?: number | null;
+    disableSymbolUBO?: boolean | null;
 
     /**
      * @private
      */
-    constructor({actor, layerIndex, availableImages, availableModels, isSpriteLoaded, tileProvider, brightness, maxUniformBufferBindings, maxUniformBlockSizeDwords}: WorkerSourceOptions) {
+    constructor({actor, layerIndex, availableImages, availableModels, isSpriteLoaded, tileProvider, brightness, maxUniformBufferBindings, maxUniformBlockSizeDwords, disableSymbolUBO}: WorkerSourceOptions) {
         super();
         this.actor = actor;
         this.layerIndex = layerIndex;
@@ -67,6 +68,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
         this.brightness = brightness;
         this.maxUniformBufferBindings = maxUniformBufferBindings;
         this.maxUniformBlockSizeDwords = maxUniformBlockSizeDwords;
+        this.disableSymbolUBO = disableSymbolUBO;
     }
 
     /**
@@ -125,6 +127,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
         const workerTile = this.loading[uid] = new WorkerTile(params);
         workerTile.maxUniformBufferBindings = this.maxUniformBufferBindings;
         workerTile.maxUniformBlockSizeDwords = this.maxUniformBlockSizeDwords;
+        workerTile.disableSymbolUBO = this.disableSymbolUBO;
         workerTile.abort = this.loadTileData(params, (err, response) => {
             const aborted = !this.loading[uid];
 
