@@ -9,6 +9,16 @@ in vec4 v_color;
 in highp vec3 v_normal;
 in highp vec3 v_pos;
 
+#ifdef RENDER_FRONT_CUTOFF
+in float v_front_cutoff_opacity;
+#endif
+
+#ifdef INDICATOR_CUTOUT
+#ifdef FEATURE_CUTOUT
+in vec4 v_ground_roof;
+#endif
+#endif
+
 #ifdef BUILDING_FAUX_FACADE
 in lowp float v_faux_facade;
 in highp float v_faux_facade_ed;
@@ -226,7 +236,28 @@ void main() {
     color *= u_opacity;
 
 #ifdef INDICATOR_CUTOUT
+#ifdef FEATURE_CUTOUT
+    {
+        float ditherOpacity = cutoutGroundRoofOpacity(v_ground_roof);
+        if (ditherOpacity < 1.0) {
+            int index = (int(gl_FragCoord.x) % 4) * 4 + (int(gl_FragCoord.y) % 4);
+            if (ditherOpacity < DITHER_THRESHOLDS[index]) {
+                discard;
+            }
+        }
+    }
+#else
     color = applyCutout(color, v_pos.z);
+#endif
+#endif
+
+#ifdef RENDER_FRONT_CUTOFF
+    if (v_front_cutoff_opacity < 1.0) {
+        int index = (int(gl_FragCoord.x) % 4) * 4 + (int(gl_FragCoord.y) % 4);
+        if (v_front_cutoff_opacity < DITHER_THRESHOLDS[index]) {
+            discard;
+        }
+    }
 #endif
 
 #ifdef FEATURE_CUTOUT

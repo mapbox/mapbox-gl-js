@@ -270,6 +270,7 @@ class Painter {
     _clippingActiveLastFrame: boolean;
 
     scaleFactor: number;
+    maxFrontCutoffRawStart: number;
 
     worldview: string;
 
@@ -367,6 +368,7 @@ class Painter {
         this._clippingActiveLastFrame = false;
 
         this.scaleFactor = scaleFactor;
+        this.maxFrontCutoffRawStart = 0;
 
         this.worldview = worldview;
 
@@ -983,6 +985,7 @@ class Painter {
         this.minCutoffZoom = 0.0;
         // The longest cutoff range will be used for cutting shadows if any layer has non-zero cutoffRange
         this.longestCutoffRange = 0.0;
+        this.maxFrontCutoffRawStart = 0;
         this.opaquePassCutoff = Infinity;
         this._lastOcclusionLayer = -1;
         this.layersWithOcclusionOpacity = [];

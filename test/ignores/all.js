@@ -287,7 +287,11 @@ const skip = [
     "render-tests/imports/nested-imports",
 
     // https://mapbox.atlassian.net/browse/GLJS-1698
-    "render-tests/clip-layer/clip-symbols-with-imports"
+    "render-tests/clip-layer/clip-symbols-with-imports",
+
+    // gl-native only: indicator cutout with front cutoff
+    "render-tests/front-cutoff/indicator-cutout",
+    "render-tests/front-cutoff/indicator-cutout-transparency"
 ];
 
 export default {todo, skip};

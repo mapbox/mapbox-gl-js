@@ -152,7 +152,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
             source: this.id,
             scope: this.scope,
             showCollisionBoxes: this.map.showCollisionBoxes,
-            isSymbolTile: tile.isSymbolTile,
+            renderSourceType: tile.renderSourceType,
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
             pixelRatio: browser.devicePixelRatio,
             promoteId: this.promoteId,

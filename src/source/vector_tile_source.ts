@@ -335,7 +335,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             pixelRatio: browser.devicePixelRatio,
             showCollisionBoxes: this.map.showCollisionBoxes,
             promoteId: this.promoteId,
-            isSymbolTile: tile.isSymbolTile,
+            renderSourceType: tile.renderSourceType,
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
             extraShadowCaster: tile.isExtraShadowCaster,
             tessellationStep: this.map._tessellationStep,

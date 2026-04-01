@@ -22,6 +22,7 @@ export type FillExtrusionDefinesType =
     | 'FAUX_AO'
     | 'FLOOD_LIGHT'
     | 'HAS_CENTROID'
+    | 'RENDER_FRONT_CUTOFF'
     | 'RENDER_WALL_MODE'
     | 'SDF_SUBPASS'
     | 'ZERO_ROOF_RADIUS'
@@ -56,6 +57,7 @@ export type FillExtrusionUniformsType = {
     ['u_vertical_scale']: Uniform1f;
     ['u_flood_light_intensity']: Uniform1f;
     ['u_ground_shadow_factor']: Uniform3f;
+    ['u_front_cutoff_params']: Uniform3f;
 };
 
 export type FillExtrusionDepthUniformsType = {
@@ -132,7 +134,8 @@ const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => (
     'u_flood_light_color': new Uniform3f(context),
     'u_vertical_scale': new Uniform1f(context),
     'u_flood_light_intensity': new Uniform1f(context),
-    'u_ground_shadow_factor': new Uniform3f(context)
+    'u_ground_shadow_factor': new Uniform3f(context),
+    'u_front_cutoff_params': new Uniform3f(context)
 });
 
 const fillExtrusionDepthUniforms = (context: Context): FillExtrusionDepthUniformsType => ({
@@ -185,7 +188,7 @@ const fillExtrusionGroundEffectUniforms = (context: Context): FillExtrusionGroun
     'u_edge_radius': new Uniform1f(context),
     'u_fb': new Uniform1i(context),
     'u_fb_size': new Uniform1f(context),
-    'u_dynamic_offset': new Uniform1f(context)
+    'u_dynamic_offset': new Uniform1f(context),
 });
 
 const identityMatrix = mat4.create();
@@ -209,6 +212,7 @@ const fillExtrusionUniformValues = (
     verticalScale: number,
     floodLightIntensity: number,
     groundShadowFactor: [number, number, number],
+    frontCutoffParams: [number, number, number] = [0, 0, 1],
 ): UniformValues<FillExtrusionUniformsType> => {
     const light = painter.style.light;
     const _lp = light.properties.get('position');
@@ -248,6 +252,7 @@ const fillExtrusionUniformValues = (
         'u_vertical_scale': verticalScale,
         'u_flood_light_intensity': floodLightIntensity,
         'u_ground_shadow_factor': groundShadowFactor,
+        'u_front_cutoff_params': frontCutoffParams,
     };
 
     if (tr.projection.name === 'globe') {
@@ -329,7 +334,7 @@ const fillExtrusionGroundEffectUniformValues = (
         'u_edge_radius': edgeRadius,
         'u_fb': 0,
         'u_fb_size': fbSize,
-        'u_dynamic_offset': 1
+        'u_dynamic_offset': 1,
     };
     return uniformValues;
 };

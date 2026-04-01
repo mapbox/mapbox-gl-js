@@ -1,6 +1,6 @@
 import assert from 'assert';
 import Point from '@mapbox/point-geometry';
-import Tile from './tile';
+import Tile, {RenderSourceType} from './tile';
 import RasterArrayTile from './raster_array_tile';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import TileCache from './tile_cache';
@@ -63,7 +63,8 @@ class SourceCache extends Evented {
     tileCoverLift: number;
     _state: SourceFeatureState;
     _loadedParentTiles: Partial<Record<number | string, Tile | null | undefined>>;
-    _onlySymbols: boolean | null | undefined;
+    _renderSourceType: RenderSourceType | null | undefined;
+    _maxzoomOverride: number | null;
     _shadowCasterTiles: {
         [_: number]: boolean;
     };
@@ -71,10 +72,11 @@ class SourceCache extends Evented {
     static maxUnderzooming: number;
     static maxOverzooming: number;
 
-    constructor(id: string, source: Source, onlySymbols?: boolean) {
+    constructor(id: string, source: Source, renderSourceType?: RenderSourceType | null) {
         super();
         this.id = id;
-        this._onlySymbols = onlySymbols;
+        this._renderSourceType = renderSourceType;
+        this._maxzoomOverride = null;
 
         source.on('data', (e: {dataType?: string; sourceDataType?: string}) => {
             // this._sourceLoaded signifies that the TileJSON is loaded if applicable.
@@ -169,8 +171,12 @@ class SourceCache extends Evented {
         if (this.transform) this.update(this.transform);
     }
 
+    setMaxzoomOverride(maxzoom: number | null) {
+        this._maxzoomOverride = maxzoom;
+    }
+
     _loadTile(tile: Tile, callback: Callback<undefined>): void {
-        tile.isSymbolTile = this._onlySymbols;
+        tile.renderSourceType = this._renderSourceType;
         tile.isExtraShadowCaster = this._shadowCasterTiles[tile.tileID.key];
         return this._source.loadTile(tile, callback);
     }
@@ -551,6 +557,10 @@ class SourceCache extends Evented {
         let idealTileIDs: OverscaledTileID[];
 
         let maxZoom = this._source.maxzoom;
+        // Apply max-source-zoom override (prevents loading tiles above this zoom)
+        if (this._maxzoomOverride !== null) {
+            maxZoom = Math.min(maxZoom, this._maxzoomOverride);
+        }
         const terrain = this.map && this.map.painter ? this.map.painter._terrain : null;
         const sourceUsedForTerrain = terrain && terrain.sourceCache === this;
         if (sourceUsedForTerrain && terrain.attenuationRange()) {
@@ -560,6 +570,9 @@ class SourceCache extends Evented {
                 maxZoom = demMaxZoom;
             }
         }
+
+        // When maxzoom override is set, prevent overscaling (don't create overscaledZ > canonical.z tiles)
+        const reparseOverscaled = this._maxzoomOverride !== null ? false : this._source.reparseOverscaled;
 
         if (!this.used && !this.usedForTerrain) {
             idealTileIDs = [];
@@ -575,7 +588,7 @@ class SourceCache extends Evented {
                 minzoom: this._source.minzoom,
                 maxzoom: maxZoom,
                 roundZoom: this._source.roundZoom && !updateForTerrain,
-                reparseOverscaled: this._source.reparseOverscaled,
+                reparseOverscaled,
                 isTerrainDEM: this.usedForTerrain,
                 calculateQuadrantVisibility: isBatchedModelType
             });
@@ -593,7 +606,7 @@ class SourceCache extends Evented {
                 minzoom: this._source.minzoom,
                 maxzoom: maxZoom,
                 roundZoom: this._source.roundZoom && !updateForTerrain,
-                reparseOverscaled: this._source.reparseOverscaled,
+                reparseOverscaled,
                 isTerrainDEM: this.usedForTerrain,
                 calculateQuadrantVisibility: isBatchedModelType
             });
@@ -613,7 +626,7 @@ class SourceCache extends Evented {
                 tileSize: tileSize || this._source.tileSize,
                 roundZoom: this._source.roundZoom && !updateForTerrain
             });
-            const idealZoom = Math.min(coveringZoom, this._source.maxzoom);
+            const idealZoom = Math.min(coveringZoom, maxZoom);
 
             if (isBatchedModelType) {
                 const batchedModelTileIDs = transform.extendTileCover(idealTileIDs, idealZoom);
@@ -715,7 +728,7 @@ class SourceCache extends Evented {
         // Construct a cache of loaded parents
         this._updateLoadedParentTileCache();
 
-        if (this._onlySymbols && this._source.afterUpdate) {
+        if (this._renderSourceType === RenderSourceType.Symbol && this._source.afterUpdate) {
             this._source.afterUpdate();
         }
     }

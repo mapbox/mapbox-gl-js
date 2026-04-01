@@ -59,7 +59,6 @@ type GroundEffectSubpassType = 'clear' | 'sdf' | 'color' | 'emissive';
 
 function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>) {
     const perfStartTime = PerformanceUtils.now();
-
     const opacity = layer.paint.get('fill-extrusion-opacity');
     const context = painter.context;
     const gl = context.gl;
@@ -339,6 +338,13 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const baseAlignment = layer.paint.get('fill-extrusion-base-alignment');
 
     const cutoffParams = getCutoffParams(painter, layer.paint.get('fill-extrusion-cutoff-fade-range'));
+    const frontCutoffArray = layer.paint.get('fill-extrusion-front-cutoff');
+    const frontCutoffParams = computeFrontCutoffParams(tr.pitch, frontCutoffArray, !!painter.terrain);
+    const frontCutoffEnabled = frontCutoffParams[2] < 1.0;
+    if (frontCutoffEnabled) {
+        painter.maxFrontCutoffRawStart = Math.max(painter.maxFrontCutoffRawStart, frontCutoffArray[0]);
+    }
+
     const baseDefines: DynamicDefinesType[] = [];
     if (isGlobeProjection) {
         baseDefines.push('PROJECTION_GLOBE_VIEW');
@@ -359,6 +365,9 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     }
     if (cutoffParams.shouldRenderCutoff) {
         baseDefines.push('RENDER_CUTOFF');
+    }
+    if (frontCutoffEnabled) {
+        baseDefines.push('RENDER_FRONT_CUTOFF');
     }
     if (wallMode) {
         baseDefines.push('RENDER_WALL_MODE');
@@ -475,7 +484,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             } else {
                 uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineWidthScale, coord,
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    heightLift, heightAlignment, baseAlignment, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity, groundShadowFactor);
+                    heightLift, heightAlignment, baseAlignment, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity, groundShadowFactor, frontCutoffParams);
             }
         }
 
@@ -540,7 +549,21 @@ export interface BucketWithGroundEffect extends Bucket {
     projection: ProjectionSpecification;
 }
 
-export function drawGroundEffect<StyleLayerType extends TypedStyleLayer>(props: GroundEffectProperties, painter: Painter, source: SourceCache, layer: StyleLayerType, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, cullFaceMode: CullFaceMode, aoPass: boolean, subpass: GroundEffectSubpassType, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: [number, number, number], attenuation: number, replacementActive: boolean, renderNeighbors: boolean, framebufferCopyTexture?: Texture | null) {
+export function computeFrontCutoffParams(pitchRad: number, frontCutoffArray: [number, number, number], terrainActive: boolean): [number, number, number] {
+    const frontCutoffEnabled = frontCutoffArray[2] < 1.0 && !terrainActive;
+    if (!frontCutoffEnabled) return [0, 0, 1];
+    const pitchDeg = pitchRad * 180 / Math.PI;
+    if (pitchDeg < 15) return [-0.5, frontCutoffArray[1], frontCutoffArray[2]];
+    const t = Math.min(1, Math.max(0, (pitchDeg - 15) / 5));
+    const pitchBlend = t * t * (3 - 2 * t);
+    return [
+        -0.5 * (1 - pitchBlend) + frontCutoffArray[0] * pitchBlend,
+        frontCutoffArray[1],
+        frontCutoffArray[2]
+    ];
+}
+
+export function drawGroundEffect<StyleLayerType extends TypedStyleLayer>(props: GroundEffectProperties, painter: Painter, source: SourceCache, layer: StyleLayerType, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, cullFaceMode: CullFaceMode, aoPass: boolean, subpass: GroundEffectSubpassType, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: [number, number, number], attenuation: number, replacementActive: boolean, renderNeighbors: boolean, framebufferCopyTexture?: Texture | null, frontCutoffParams?: [number, number, number]) {
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
@@ -704,6 +727,15 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
         return new Point(Math.ceil((height + ELEVATION_OFFSET) * ELEVATION_SCALE), 0);
     };
 
+    // Encode both elevation (in x) and border position (in y) for border-crossing buildings.
+    // y uses marker y&7==7: bits 0-2=7, bits 3-4=borderID, bits 5-15=coord/4
+    const encodeBorderElevationWithPosition = (height: number, borderIndex: number, coordAlongBorder: number) => {
+        const x = Math.ceil((height + ELEVATION_OFFSET) * ELEVATION_SCALE);
+        const coord = Math.floor(Math.max(0, Math.min(EXTENT - 1, coordAlongBorder)) / 4);
+        const y = (coord << 5) | ((borderIndex & 0x3) << 3) | 7;
+        return new Point(x, y);
+    };
+
     const getLoadedBucket = (nid: OverscaledTileID) => {
         const minzoom = source.getSource().minzoom;
         const getBucket = (key: number) => {
@@ -822,44 +854,117 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
             }
             bucket.borderDoneWithNeighborZ[i] = nBucket.canonical.z;
             nBucket.borderDoneWithNeighborZ[j] = bucket.canonical.z;
+            continue;
         }
 
+        // Try building_id-based matching first
+        const neighborBuildingIdMap: Map<number, number> = new Map();
+        const matchedByBuildingIdA: Set<number> = new Set();
+        const matchedByBuildingIdB: Set<number> = new Set();
+        for (let bi = 0; bi < b.length; bi++) {
+            const nPartB = nBucket.featuresOnBorder[b[bi]];
+            if (nPartB.buildingId !== undefined) {
+                neighborBuildingIdMap.set(nPartB.buildingId, bi);
+            }
+        }
+
+        // Match border features by building_id
         for (const ia of a) {
+            const partA = bucket.featuresOnBorder[ia];
+            const centroidA = bucket.centroidData[partA.centroidDataIndex];
+            if (partA.buildingId === undefined) continue;
+
+            const bi = neighborBuildingIdMap.get(partA.buildingId);
+            if (bi === undefined) continue;
+
+            const partB = nBucket.featuresOnBorder[b[bi]];
+            const centroidB = nBucket.centroidData[partB.centroidDataIndex];
+
+            matchedByBuildingIdA.add(ia);
+            matchedByBuildingIdB.add(bi);
+
+            if (reconcileReplacementState) {
+                reconcileReplacement(centroidA, centroidB);
+            }
+
+            // Average both tiles' centroid positions along the border for consistent front cutoff.
+            // Fall back to BorderCentroidData's own centroid when groupCentroidPos is unset
+            // (features without building_id property that are stitched by feature ID).
+            const posA = (centroidA.groupCentroidPos.x !== 0 || centroidA.groupCentroidPos.y !== 0) ?
+                centroidA.groupCentroidPos : partA.centroid();
+            const posB = (centroidB.groupCentroidPos.x !== 0 || centroidB.groupCentroidPos.y !== 0) ?
+                centroidB.groupCentroidPos : partB.centroid();
+            const coordAlongBorder = (i < 2) ?
+                Math.round((posA.y + posB.y) / 2) :
+                Math.round((posA.x + posB.x) / 2);
+            const moreThanOneBorderIntersected = partA.intersectsCount() > 1 || partB.intersectsCount() > 1;
+
+            {
+                let height = 0;
+                if (neighborDEMTile && neighborDEMTile.dem && !moreThanOneBorderIntersected) {
+                    const span = projectCombinedSpanToBorder[i](centroidA, centroidB);
+                    const edge = (i % 2) ? EXTENT - 1 : 0;
+                    height = flatBase(span[0], Math.min(EXTENT - 1, span[1]), edge, neighborDEMTile, nid, i < 2, span[2]);
+                }
+                // Each half encodes its own border index so the shader reconstructs
+                // the correct tile-local position that maps to the same world point.
+                centroidA.centroidXY = encodeBorderElevationWithPosition(height, i, coordAlongBorder);
+                centroidB.centroidXY = encodeBorderElevationWithPosition(height, j, coordAlongBorder);
+            }
+            bucket.writeCentroidToBuffer(centroidA);
+            nBucket.writeCentroidToBuffer(centroidB);
+
+            // Propagate the same encoded centroid to all parts of this building,
+            // including hidden border children that weren't directly matched.
+            if (partA.buildingId !== undefined) {
+                for (const part of bucket.centroidData) {
+                    if (part.buildingId === partA.buildingId && part !== centroidA) {
+                        part.centroidXY = centroidA.centroidXY;
+                        bucket.writeCentroidToBuffer(part);
+                    }
+                }
+                for (const part of nBucket.centroidData) {
+                    if (part.buildingId === partA.buildingId && part !== centroidB) {
+                        part.centroidXY = centroidB.centroidXY;
+                        nBucket.writeCentroidToBuffer(part);
+                    }
+                }
+            }
+        }
+
+        // Fallback: geometric overlap matching for parts NOT matched by building_id
+        for (const ia of a) {
+            if (matchedByBuildingIdA.has(ia)) continue;
+
             const partA = bucket.featuresOnBorder[ia];
             const centroidA = bucket.centroidData[partA.centroidDataIndex];
             assert(partA.borders);
             const partABorderRange = partA.borders[i];
 
             // Find all nBucket parts that share the border overlap
-            let partB;
+            /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any */
+            let partB: any;
             while (ib < b.length) {
+                if (matchedByBuildingIdB.has(ib)) { ib++; continue; }
                 // Pass all that are before the overlap
                 partB = nBucket.featuresOnBorder[b[ib]];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 assert(partB.borders);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                const partBBorderRange = (partB.borders)[j];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                const partBBorderRange = (partB.borders)[j] as [number, number];
                 if (partBBorderRange[1] > partABorderRange[0] + error ||
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     partBBorderRange[0] > partABorderRange[0] - error) {
                     break;
                 }
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 nBucket.showCentroid(partB);
                 ib++;
             }
 
             if (partB && ib < b.length) {
-                const saveIb = ib;
+                let saveIb = ib;
                 let count = 0;
                 while (true) {
-                    // Collect all parts overlapping parts on the edge, to make sure it is only one.
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    if (matchedByBuildingIdB.has(ib)) { if (++ib === b.length) break; partB = nBucket.featuresOnBorder[b[ib]]; continue; }
                     assert(partB.borders);
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                    const partBBorderRange = (partB.borders)[j];
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    const partBBorderRange = (partB.borders)[j] as [number, number];
                     if (partBBorderRange[0] > partABorderRange[1] - error) {
                         break;
                     }
@@ -869,57 +974,43 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                     }
                     partB = nBucket.featuresOnBorder[b[ib]];
                 }
+                // Find first non-matched saveIb
+                while (saveIb < b.length && matchedByBuildingIdB.has(saveIb)) saveIb++;
+                if (saveIb >= b.length) { bucket.showCentroid(partA); continue; }
                 partB = nBucket.featuresOnBorder[b[saveIb]];
                 let doReconcile = false;
                 if (count >= 1) {
-                    // if it can be concluded that it is the piece of the same feature,
-                    // use it, even following features (inner details) overlap on border edge.
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     assert(partB.borders);
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                    const partBBorderRange = (partB.borders)[j];
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    const partBBorderRange = (partB.borders)[j] as [number, number];
                     if (Math.abs(partABorderRange[0] - partBBorderRange[0]) < error &&
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         Math.abs(partABorderRange[1] - partBBorderRange[1]) < error) {
                         count = 1;
-                        // In some cases count could be 1 but a different feature, here we make sure
-                        // we are reconciling the same feature
                         doReconcile = true;
                         ib = saveIb + 1;
                     }
                 } else if (count === 0) {
-                    // No B for A, show it, no flat roofs.
                     bucket.showCentroid(partA);
                     continue;
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 const centroidB = nBucket.centroidData[partB.centroidDataIndex];
                 if (reconcileReplacementState && doReconcile) {
                     reconcileReplacement(centroidA, centroidB);
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 const moreThanOneBorderIntersected = partA.intersectsCount() > 1 || partB.intersectsCount() > 1;
                 if (count > 1) {
-                    ib = saveIb;    // rewind unprocessed ib so that it is processed again for the next ia.
+                    ib = saveIb;
                     centroidA.centroidXY = centroidB.centroidXY = new Point(0, 0);
                 } else if (neighborDEMTile && neighborDEMTile.dem && !moreThanOneBorderIntersected) {
-                    // If any of a or b crosses more than one tile edge, don't support flat roof.
-                    // Now we have 1-1 matching of parts in both tiles that share the edge. Calculate flat base
-                    // elevation as average of three points: 2 are edge points (combined span projected to border) and
-                    // one is point of span that has maximum offset to border.
                     const span = projectCombinedSpanToBorder[i](centroidA, centroidB);
                     const edge = (i % 2) ? EXTENT - 1 : 0;
-
                     const height = flatBase(span[0], Math.min(EXTENT - 1, span[1]), edge, neighborDEMTile, nid, i < 2, span[2]);
                     centroidA.centroidXY = centroidB.centroidXY = encodeHeightAsCentroid(height);
-                }  else if (moreThanOneBorderIntersected) {
+                } else if (moreThanOneBorderIntersected) {
                     centroidA.centroidXY = centroidB.centroidXY = new Point(0, 0);
                 } else {
                     centroidA.centroidXY = bucket.encodeBorderCentroid(partA);
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     centroidB.centroidXY = nBucket.encodeBorderCentroid(partB);
                 }
 
@@ -928,6 +1019,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
             } else {
                 bucket.showCentroid(partA);
             }
+            /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any */
         }
 
         bucket.borderDoneWithNeighborZ[i] = nBucket.canonical.z;

@@ -14,9 +14,10 @@ export type BuildingUniformsType = {
     ['u_facade_emissive_chance']: Uniform1f;
     ['u_flood_light_color']: Uniform3f;
     ['u_flood_light_intensity']: Uniform1f;
+    ['u_front_cutoff_params']: Uniform3f;
 };
 
-export type BuildingDefinesType = 'DEBUG_SHOW_NORMALS' | 'HAS_ATTRIBUTE_a_part_color_emissive' | 'HAS_ATTRIBUTE_a_bloom_attenuation' | 'BUILDING_FAUX_FACADE' | 'HAS_ATTRIBUTE_a_faux_facade_color_emissive';
+export type BuildingDefinesType = 'DEBUG_SHOW_NORMALS' | 'HAS_ATTRIBUTE_a_part_color_emissive' | 'HAS_ATTRIBUTE_a_bloom_attenuation' | 'BUILDING_FAUX_FACADE' | 'HAS_ATTRIBUTE_a_faux_facade_color_emissive' | 'RENDER_FRONT_CUTOFF';
 
 const buildingUniforms = (context: Context): BuildingUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
@@ -28,9 +29,10 @@ const buildingUniforms = (context: Context): BuildingUniformsType => ({
     'u_facade_emissive_chance': new Uniform1f(context),
     'u_flood_light_color': new Uniform3f(context),
     'u_flood_light_intensity': new Uniform1f(context),
+    'u_front_cutoff_params': new Uniform3f(context),
 });
 
-const buildingUniformValues = (matrix: mat4, normalMatrix: mat4, opacity: number, aoIntensity: number, cameraPos: [number, number, number], tileToMeter: number, emissiveChance: number, floodLightColor: [number, number, number], floodLightIntensity: number): UniformValues<BuildingUniformsType> => {
+const buildingUniformValues = (matrix: mat4, normalMatrix: mat4, opacity: number, aoIntensity: number, cameraPos: [number, number, number], tileToMeter: number, emissiveChance: number, floodLightColor: [number, number, number], floodLightIntensity: number, frontCutoffParams: [number, number, number] = [0, 0, 1]): UniformValues<BuildingUniformsType> => {
     const uniformValues = {
         'u_matrix': matrix as Float32Array,
         'u_normal_matrix': normalMatrix as Float32Array,
@@ -41,6 +43,7 @@ const buildingUniformValues = (matrix: mat4, normalMatrix: mat4, opacity: number
         'u_facade_emissive_chance': emissiveChance,
         'u_flood_light_color': floodLightColor,
         'u_flood_light_intensity': floodLightIntensity,
+        'u_front_cutoff_params': frontCutoffParams,
     };
 
     return uniformValues;
