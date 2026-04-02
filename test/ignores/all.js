@@ -286,6 +286,7 @@ const skip = [
     // gl-native only: indicator cutout with front cutoff
     "render-tests/front-cutoff/indicator-cutout",
     "render-tests/front-cutoff/indicator-cutout-transparency",
+    "render-tests/front-cutoff/indicator-cutout-2x-pixelratio"
 ];
 
 export default {todo, skip};
