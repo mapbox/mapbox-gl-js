@@ -7,9 +7,10 @@ import browserslistToEsbuild from 'browserslist-to-esbuild';
 import {plugins} from './build/rollup_plugins.js';
 import banner from './build/banner.js';
 
-const {BUILD, MINIFY} = process.env;
+const {BUILD, MINIFY, NO_DIST_SOURCEMAPS} = process.env;
 const minified = MINIFY === 'true';
 const production = BUILD === 'production';
+const disableDistSourcemaps = NO_DIST_SOURCEMAPS === 'true';
 
 function buildType(build, minified) {
     switch (build) {
@@ -71,7 +72,8 @@ export default ({watch}) => {
             name: 'mapboxgl',
             file: outputFile,
             format: 'umd',
-            sourcemap: production ? true : 'inline',
+            // Allows publish/build scripts to suppress distributable sourcemaps.
+            sourcemap: disableDistSourcemaps ? false : production ? true : 'inline',
             indent: false,
             intro: bundlePrelude,
             banner

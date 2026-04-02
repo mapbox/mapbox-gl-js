@@ -1,6 +1,9 @@
 import {plugins} from './build/rollup_plugins.js';
 import banner from './build/banner.js';
 
+const {NO_DIST_SOURCEMAPS} = process.env;
+const disableDistSourcemaps = NO_DIST_SOURCEMAPS === 'true';
+
 // a config for generating a special GL JS bundle with static web worker code (in a separate file)
 // https://github.com/mapbox/mapbox-gl-js/issues/6058
 
@@ -13,7 +16,8 @@ const config = (input, file, format) => ({
         file,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         format,
-        sourcemap: true,
+        // Allows publish/build scripts to suppress distributable sourcemaps.
+        sourcemap: !disableDistSourcemaps,
         indent: false,
         banner
     },

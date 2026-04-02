@@ -1,8 +1,9 @@
 import {plugins} from './build/rollup_plugins.js';
 
-const {BUILD, MINIFY} = process.env;
+const {BUILD, MINIFY, NO_DIST_SOURCEMAPS} = process.env;
 const minified = MINIFY === 'true';
 const production = BUILD === 'production';
+const disableDistSourcemaps = NO_DIST_SOURCEMAPS === 'true';
 
 export default () => [
     {
@@ -26,7 +27,8 @@ export default () => [
             exports: 'named',
             minifyInternalExports: true,
             externalLiveBindings: false,
-            sourcemap: true,
+            // Allows publish/build scripts to suppress distributable sourcemaps.
+            sourcemap: !disableDistSourcemaps,
         },
         treeshake: production ? {
             preset: 'smallest',
