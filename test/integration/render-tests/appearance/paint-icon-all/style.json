@@ -1,0 +1,135 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.001,
+      "spriteFormat": "raster",
+      "height": 64,
+      "width": 64,
+      "operations": [
+        ["wait"],
+        ["setFeatureState", {
+          "source": "geojson",
+          "id": 1
+        }, {
+          "state-1": true
+        }],
+        ["setFeatureState", {
+          "source": "geojson",
+          "id": 2
+        }, {
+          "state-3": true
+        }],
+        ["setFeatureState", {
+          "source": "geojson",
+          "id": 3
+        }, {
+          "state-5": true
+        }]
+      ]
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "id": 1,
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-15, 15]
+            }
+          },
+          {
+            "id": 2,
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [0, 0]
+            }
+          },
+          {
+            "id": 3,
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [15, -15]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "icon-image": "dot.sdf",
+        "symbol-elevation-reference": "sea"
+      },
+      "paint": {
+        "icon-color": "black",
+        "icon-halo-color": "black",
+        "icon-halo-width": 1.0,
+        "icon-halo-blur": 0.0,
+        "icon-opacity": 1.0,
+        "icon-emissive-strength": 1.0,
+        "icon-occlusion-opacity": 0.0,
+        "symbol-z-offset": 0
+      },
+      "appearances": [
+        {
+          "name": "state-1",
+          "condition": ["==", ["boolean", ["feature-state", "state-1"], false], true],
+          "properties": {
+            "icon-color": "blue",
+            "icon-opacity": 0.25
+          }
+        },
+        {
+          "name": "state-2",
+          "condition": ["==", ["boolean", ["feature-state", "state-2"], false], true],
+          "properties": {
+            "icon-occlusion-opacity": 1.0
+          }
+        },
+        {
+          "name": "state-3",
+          "condition": ["==", ["boolean", ["feature-state", "state-3"], false], true],
+          "properties": {
+            "icon-color": "red",
+            "icon-halo-color": "green",
+            "icon-halo-width": 2.0,
+            "icon-halo-blur": 2.0
+          }
+        },
+        {
+          "name": "state-4",
+          "condition": ["==", ["boolean", ["feature-state", "state-4"], false], true],
+          "properties": {
+            "icon-emissive-strength": 0.0
+          }
+        },
+        {
+          "name": "state-5",
+          "condition": ["==", ["boolean", ["feature-state", "state-5"], false], true],
+          "properties": {
+            "icon-color": "yellow",
+            "symbol-z-offset": 1000000
+          }
+        }
+      ]
+    }
+  ]
+}

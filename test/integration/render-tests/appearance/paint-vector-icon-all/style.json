@@ -1,0 +1,94 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.0001,
+      "height": 64,
+      "width": 64,
+      "operations": [
+        ["wait"],
+        ["setFeatureState", {
+          "source": "geojson",
+          "id": 1
+        }, {
+          "state-1": true
+        }],
+        ["setFeatureState", {
+          "source": "geojson",
+          "id": 2
+        }, {
+          "state-2": true
+        }]
+      ]
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "id": 1,
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-10, 0]
+            }
+          },
+          {
+            "id": 2,
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [10, 0]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "town-12"
+      },
+      "paint": {
+        "icon-opacity": 1.0,
+        "icon-emissive-strength": 1.0,
+        "icon-occlusion-opacity": 0.0,
+        "symbol-z-offset": 0
+      },
+      "appearances": [
+        {
+          "name": "state-1",
+          "condition": ["==", ["boolean", ["feature-state", "state-1"], false], true],
+          "properties": {
+            "icon-opacity": 0.25
+          }
+        },
+        {
+            "name": "state-2",
+            "condition": ["==", ["boolean", ["feature-state", "state-2"], false], true],
+            "properties": {
+              "symbol-z-offset": 1500000.0
+            }
+        },
+        {
+            "name": "state-3",
+            "condition": ["==", ["boolean", ["feature-state", "state-3"], false], true],
+            "properties": {
+              "icon-emissive-strength": 0.5,
+              "icon-occlusion-opacity": 0.5
+            }
+        }
+      ]
+    }
+  ]
+}

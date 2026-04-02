@@ -1,0 +1,134 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.001,
+      "height": 128,
+      "width": 128,
+      "operations": [
+        ["wait"],
+        ["setFeatureState", {
+          "source": "geojson",
+          "id": 1
+        }, {
+          "state-1": true
+        }],
+        ["setFeatureState", {
+          "source": "geojson",
+          "id": 2
+        }, {
+          "state-3": true
+        }],
+        ["setFeatureState", {
+          "source": "geojson",
+          "id": 3
+        }, {
+          "state-5": true
+        }]
+      ]
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "id": 1,
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-30, 30]
+            }
+          },
+          {
+            "id": 2,
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [0, 0]
+            }
+          },
+          {
+            "id": 3,
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [30, -30]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": "A",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": 28,
+        "symbol-elevation-reference": "sea"
+      },
+      "paint": {
+        "text-color": "black",
+        "text-halo-color": "black",
+        "text-halo-width": 1.0,
+        "text-halo-blur": 0.0,
+        "text-opacity": 1.0,
+        "text-emissive-strength": 1.0,
+        "text-occlusion-opacity": 0.0,
+        "symbol-z-offset": 0
+      },
+      "appearances": [
+        {
+          "name": "state-1",
+          "condition": ["==", ["boolean", ["feature-state", "state-1"], false], true],
+          "properties": {
+            "text-color": "blue",
+            "text-opacity": 0.25
+          }
+        },
+        {
+          "name": "state-2",
+          "condition": ["==", ["boolean", ["feature-state", "state-2"], false], true],
+          "properties": {
+            "text-occlusion-opacity": 1.0
+          }
+        },
+        {
+          "name": "state-3",
+          "condition": ["==", ["boolean", ["feature-state", "state-3"], false], true],
+          "properties": {
+            "text-color": "red",
+            "text-halo-color": "green",
+            "text-halo-width": 2.0,
+            "text-halo-blur": 2.0
+          }
+        },
+        {
+          "name": "state-4",
+          "condition": ["==", ["boolean", ["feature-state", "state-4"], false], true],
+          "properties": {
+            "text-emissive-strength": 0.0
+          }
+        },
+        {
+          "name": "state-5",
+          "condition": ["==", ["boolean", ["feature-state", "state-5"], false], true],
+          "properties": {
+            "text-color": "yellow",
+            "symbol-z-offset": 1000000
+          }
+        }
+      ]
+    }
+  ]
+}

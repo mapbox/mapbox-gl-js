@@ -1,0 +1,105 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.001,
+      "spriteFormat": "raster",
+      "height": 64,
+      "width": 64,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setFeatureState",
+          {
+            "source": "geojson",
+            "id": 1
+          },
+          {
+            "hover": true
+          }
+        ]
+      ]
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "id": 0,
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -10,
+                10
+              ]
+            }
+          },
+          {
+            "id": 1,
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                10,
+                10
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-allow-overlap": true,
+        "icon-image": "dot.sdf",
+        "text-field": "O",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-offset": [
+          0,
+          2
+        ]
+      },
+      "paint": {
+        "icon-color": "black",
+        "text-color": "black"
+      },
+      "appearances": [
+        {
+          "name": "hover",
+          "condition": [
+            "==",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            true
+          ],
+          "properties": {
+            "icon-color": ["step", ["id"], "blue", 1, "red"],
+            "text-color": ["step", ["id"], "blue", 1, "red"]
+          }
+        }
+      ]
+    }
+  ]
+}
