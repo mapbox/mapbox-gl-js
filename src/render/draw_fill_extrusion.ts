@@ -961,6 +961,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
             if (partB && ib < b.length) {
                 let saveIb = ib;
                 let count = 0;
+                // Collect all overlapping parts on the edge, to make sure it is only one.
                 while (true) {
                     if (matchedByBuildingIdB.has(ib)) { if (++ib === b.length) break; partB = nBucket.featuresOnBorder[b[ib]]; continue; }
                     assert(partB.borders);
@@ -980,15 +981,20 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                 partB = nBucket.featuresOnBorder[b[saveIb]];
                 let doReconcile = false;
                 if (count >= 1) {
+                    // If it can be concluded that it is the piece of the same feature,
+                    // use it, even if following features (inner details) overlap on border edge.
                     assert(partB.borders);
                     const partBBorderRange = (partB.borders)[j] as [number, number];
                     if (Math.abs(partABorderRange[0] - partBBorderRange[0]) < error &&
                         Math.abs(partABorderRange[1] - partBBorderRange[1]) < error) {
                         count = 1;
+                        // In some cases count could be 1 but a different feature, here we make sure
+                        // we are reconciling the same feature
                         doReconcile = true;
                         ib = saveIb + 1;
                     }
                 } else if (count === 0) {
+                    // No B for A, show it, no flat roofs.
                     bucket.showCentroid(partA);
                     continue;
                 }
@@ -1000,9 +1006,13 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
 
                 const moreThanOneBorderIntersected = partA.intersectsCount() > 1 || partB.intersectsCount() > 1;
                 if (count > 1) {
-                    ib = saveIb;
+                    ib = saveIb; // rewind unprocessed ib so that it is processed again for the next ia
                     centroidA.centroidXY = centroidB.centroidXY = new Point(0, 0);
                 } else if (neighborDEMTile && neighborDEMTile.dem && !moreThanOneBorderIntersected) {
+                    // If any of a or b crosses more than one tile edge, don't support flat roof.
+                    // Now we have 1-1 matching of parts in both tiles that share the edge. Calculate flat base
+                    // elevation as average of three points: 2 are edge points (combined span projected to border) and
+                    // one is point of span that has maximum offset to border.
                     const span = projectCombinedSpanToBorder[i](centroidA, centroidB);
                     const edge = (i % 2) ? EXTENT - 1 : 0;
                     const height = flatBase(span[0], Math.min(EXTENT - 1, span[1]), edge, neighborDEMTile, nid, i < 2, span[2]);

@@ -91,7 +91,9 @@ const QUAD_TRIS = 2;
 const TILE_REGIONS = 4;
 
 const HIDDEN_CENTROID: Point = new Point(0, 1);
+// Hidden by replacement is used when we use landmarks
 export const HIDDEN_BY_REPLACEMENT: number = 0x80000000;
+// Hidden by clip is used when fill extrusions are clipped by a clip layer
 export const HIDDEN_BY_CLIP: number = 0x40000000;
 
 // Also declared in _prelude_terrain.vertex.glsl
@@ -1782,6 +1784,8 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                                 seg.indexCount,
                                 -seg.vertexOffset,
                                 -padding)) {
+                            // Landmark and building replacements don't define which layers to clip.
+                            // We can use clipMask to check if it's a clip region or not.
                             if (region.clipMask !== LayerTypeMask.None) {
                                 centroid.flags |= HIDDEN_BY_CLIP | HIDDEN_BY_REPLACEMENT;
                             } else {

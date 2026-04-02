@@ -334,11 +334,12 @@ void main() {
 #ifndef ELEVATED
 #ifndef VARIABLE_LINE_WIDTH
 #ifndef RENDER_TO_TEXTURE
-    // Scale up sub-pixel extrusions of inner line width to ensure minimum half-pixel visibility
+    // Scale up sub-pixel extrusions of inner line width to ensure minimum half-pixel visibility.
+    // Only apply when line width >= 1px — lines intentionally styled < 1px should not be diluted.
     float base_w = gl_Position.w;
     vec2 screen_width = abs(projected_extrude.xy / base_w * u_units_to_pixels);
     float max_extrude_component = max(screen_width.x, screen_width.y);
-    if (base_w > 0.0 && max_extrude_component > 0.0001) {
+    if (width >= 1.0 && base_w > 0.0 && max_extrude_component > 0.0001) {
         float min_pixel = 1.05; // u_units_to_pixels is [2 / width, 2 / height], not using half pixel for halfwidth here
         if (max_extrude_component < min_pixel) {
             vec2 abs_pos = abs(gl_Position.xy);
