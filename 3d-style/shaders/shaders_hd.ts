@@ -2,6 +2,12 @@
 /// <reference path="../../src/types/glsl.d.ts" />
 
 import buildingFrag from './building.fragment.glsl';
+import snowFrag from '../../src/shaders/snow_particle.fragment.glsl';
+import snowVert from '../../src/shaders/snow_particle.vertex.glsl';
+import rainFrag from '../../src/shaders/rain_particle.fragment.glsl';
+import rainVert from '../../src/shaders/rain_particle.vertex.glsl';
+import vignetteFrag from '../../src/shaders/vignette.fragment.glsl';
+import vignetteVert from '../../src/shaders/vignette.vertex.glsl';
 import buildingVert from './building.vertex.glsl';
 import buildingBloomFrag from './building_bloom.fragment.glsl';
 import buildingBloomVert from './building_bloom.vertex.glsl';
@@ -31,6 +37,9 @@ export default {
     rasterParticleDraw: compile(rasterParticleDrawFrag, rasterParticleDrawVert),
     rasterParticleTexture: compile(rasterParticleTextureFrag, rasterParticleTextureVert),
     rasterParticleUpdate: compile(rasterParticleUpdateFrag, rasterParticleUpdateVert),
+    snowParticle: compile(snowFrag, snowVert),
+    rainParticle: compile(rainFrag, rainVert),
+    vignette: compile(vignetteFrag, vignetteVert),
 };
 
 export const preludeShaders = {

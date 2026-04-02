@@ -1735,7 +1735,7 @@ class Painter {
         const globalDefines = this.currentGlobalDefines(name, overrideFog, overrideRtt);
         const allDefines = globalDefines.concat(defines);
 
-        const shaderSource = shaders[name as keyof typeof shaders] || (HD.shaders && HD.shaders[name as keyof typeof HD.shaders]) || (HD.precipitationShaders && HD.precipitationShaders[name as keyof typeof HD.precipitationShaders]);
+        const shaderSource = shaders[name as keyof typeof shaders] || (HD.shaders && HD.shaders[name as keyof typeof HD.shaders]);
         const key = Program.cacheKey(shaderSource, name, allDefines, config);
 
         if (!this.cache[key]) {

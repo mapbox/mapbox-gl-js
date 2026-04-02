@@ -1,4 +1,4 @@
-import {drawBuilding, drawRasterParticle, prepareRasterParticle, shaders, Rain, Snow, precipitationShaders} from './hd_main_imports';
+import {drawBuilding, drawRasterParticle, prepareRasterParticle, shaders, Rain, Snow} from './hd_main_imports';
 
 export const HD = {
     building: {
@@ -13,7 +13,6 @@ export const HD = {
         Snow,
     },
     shaders,
-    precipitationShaders
 };
 
 export async function prepareHD() { return Promise.resolve(); }

@@ -3,4 +3,3 @@ export {default as drawRasterParticle, prepare as prepareRasterParticle} from '.
 export {default as shaders} from '../3d-style/shaders/shaders_hd';
 export {Rain} from '../src/precipitation/draw_rain';
 export {Snow} from '../src/precipitation/draw_snow';
-export {default as precipitationShaders} from '../src/shaders/shaders_precipitation';
