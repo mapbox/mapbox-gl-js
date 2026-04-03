@@ -20,7 +20,7 @@ import type ResolvedImage from '../../style-spec/expression/types/resolved_image
 import type {StylePropertySpecification} from '../../style-spec/style-spec';
 
 export type LayoutProps = {
-    "symbol-placement": DataConstantProperty<"point" | "line" | "line-center">;
+    "symbol-placement": DataConstantProperty<"point" | "line" | "line-center" | "line-start" | "line-end">;
     "symbol-spacing": DataConstantProperty<number>;
     "symbol-avoid-edges": DataConstantProperty<boolean>;
     "symbol-sort-key": DataDrivenProperty<number>;

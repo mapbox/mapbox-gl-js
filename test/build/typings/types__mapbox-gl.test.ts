@@ -1730,7 +1730,7 @@ const linePaint: NonNullable<mapboxgl.LinePaint> = {
 };
 
 const symbolLayout: mapboxgl.SymbolLayout = {
-    "symbol-placement": eitherType("point", "line", "line-center"),
+    "symbol-placement": eitherType("point", "line", "line-center", "line-start", "line-end"),
     "symbol-spacing": eitherType(0, expression),
     "symbol-avoid-edges": false,
     "symbol-z-order": eitherType("viewport-y", "source"),
