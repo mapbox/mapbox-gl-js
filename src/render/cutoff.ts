@@ -76,7 +76,7 @@ export const getCutoffParams = (painter: Painter, cutoffFadeRange: number): Cuto
         };
     }
 
-    const zRange = tr._farZ - tr._nearZ;
+    const zRange = Math.max(tr._farZ - tr._nearZ, 1.0);
     const fadeRangePixels = cutoffFadeRange * tr.height * FADE_RANGE_HEIGHT_SCALE;
 
     // Half-rate exponential zoom scaling: grows with zoom but stays bounded

@@ -166,7 +166,7 @@ export class SymbolPropertiesUBO {
      * Maximum number of features that fit in one UBO batch given a header.
      * Returns Infinity when dataDrivenBlockSizeVec4 is 0 (all properties constant).
      */
-    static getMaxFeatureCount(header: SymbolPropertyHeader, propsDwords: number = 4096 - SymbolPropertiesUBO.HEADER_DWORDS): number {
+    static getMaxFeatureCount(header: SymbolPropertyHeader, propsDwords: number = 4096): number {
         const dataDrivenBlockSizeDwords = header.dataDrivenBlockSizeVec4 * 4;
         if (dataDrivenBlockSizeDwords === 0) return Infinity;
         return Math.floor(propsDwords / dataDrivenBlockSizeDwords);

@@ -91,8 +91,8 @@ describe('SymbolPropertiesUBO', () => {
 
     test('getMaxFeatureCount returns correct value', () => {
         // dataDrivenBlockSizeVec4=1 → dataDrivenBlockSizeDwords=4
-        // propsDwords = 4096 - 12 (HEADER_DWORDS) = 4084
-        // maxFeatures = floor(4084 / 4) = 1021
+        // propsDwords = 4096
+        // maxFeatures = floor(4096 / 4) = 1024
         const header: SymbolPropertyHeader = {
             dataDrivenMask: 0b00000100,
             zoomDependentMask: 0,
@@ -100,7 +100,7 @@ describe('SymbolPropertiesUBO', () => {
             dataDrivenBlockSizeVec4: 1,
             offsets: [0, 0, 0, 0, 0, 0, 0, 0, 0],
         };
-        expect(SymbolPropertiesUBO.getMaxFeatureCount(header)).toEqual(1021);
+        expect(SymbolPropertiesUBO.getMaxFeatureCount(header)).toEqual(1024);
     });
 
     test('getMaxFeatureCount returns Infinity when all constant', () => {
