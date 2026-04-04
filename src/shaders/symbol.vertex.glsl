@@ -275,11 +275,11 @@ vec4 readVec4(uint baseOffsetVec4, uint propertyOffsetDwords) {
 }
 
 float readFloat(vec4 slot, uint propertyOffsetDwords) {
-    return slot[propertyOffsetDwords % DWORDS_PER_VEC4];
+    return vec4At(slot, propertyOffsetDwords % DWORDS_PER_VEC4);
 }
 
 uint readUint(uvec4 slot, uint offset) {
-    return slot[offset % DWORDS_PER_VEC4];
+    return uvec4At(slot, offset % DWORDS_PER_VEC4);
 }
 
 vec2 readVec2(vec4 slot, uint propertyOffsetDwords) {
