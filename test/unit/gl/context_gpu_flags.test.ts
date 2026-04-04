@@ -33,6 +33,26 @@ describe('Context GPU flags', () => {
         return gl;
     }
 
+    /**
+     * Returns a WebGL2 context where WEBGL_debug_renderer_info is
+     * unavailable (getExtension returns null), so Context.renderer
+     * stays undefined.
+     */
+    function createGLWithoutRendererInfo(): WebGL2RenderingContext {
+        const el = window.document.createElement('canvas');
+        const gl = el.getContext('webgl2');
+        if (!gl) throw new Error('WebGL2 context unavailable — cannot run GPU flag tests');
+
+        const origGetExtension = gl.getExtension.bind(gl);
+
+        gl.getExtension = ((name: string) => {
+            if (name === 'WEBGL_debug_renderer_info') return null;
+            return origGetExtension(name);
+        }) as typeof gl.getExtension;
+
+        return gl;
+    }
+
     describe('disableSymbolUBO', () => {
         test('enabled when forceDisableSymbolUBO option is set', () => {
             const gl = createGLWithRenderer('Generic Desktop GPU');
@@ -56,6 +76,18 @@ describe('Context GPU flags', () => {
             const gl = createGLWithRenderer('ANGLE (Apple, Apple M2 Max, OpenGL 4.1)');
             const context = new Context(gl);
             expect(context.disableSymbolUBO).toBe(false);
+        });
+
+        test('disabled when WEBGL_debug_renderer_info is unavailable', () => {
+            const gl = createGLWithoutRendererInfo();
+            const context = new Context(gl);
+            expect(context.disableSymbolUBO).toBeFalsy();
+        });
+
+        test('forceDisableSymbolUBO still works without renderer info', () => {
+            const gl = createGLWithoutRendererInfo();
+            const context = new Context(gl, {forceDisableSymbolUBO: true});
+            expect(context.disableSymbolUBO).toBe(true);
         });
     });
 });
