@@ -22,6 +22,8 @@ function createPainterFixture(overrides: Record<string, unknown> = {}) {
 }
 
 describe('getCutoffParams', () => {
+    // -- early-exit paths --
+
     test('returns shouldRenderCutoff false when cutoffFadeRange is zero', () => {
         const painter = createPainterFixture();
         const result = getCutoffParams(painter as never, 0);
@@ -49,6 +51,8 @@ describe('getCutoffParams', () => {
         const result = getCutoffParams(painter as never, 0.5);
         expect(result.shouldRenderCutoff).toBe(false);
     });
+
+    // -- zero/negative zRange guard --
 
     test('returns finite cutoff params when zRange is near zero', () => {
         const painter = createPainterFixture({
@@ -86,9 +90,37 @@ describe('getCutoffParams', () => {
         expect(Number.isFinite(params[3])).toBe(true);
     });
 
+    // -- active cutoff invariants --
+
     test('returns shouldRenderCutoff true at high pitch with valid fade range', () => {
         const painter = createPainterFixture();
         const result = getCutoffParams(painter as never, 0.5);
         expect(result.shouldRenderCutoff).toBe(true);
+    });
+
+    test('all u_cutoff_params components are finite when cutoff is active', () => {
+        const painter = createPainterFixture();
+        const result = getCutoffParams(painter as never, 0.5);
+        const params = result.uniformValues['u_cutoff_params'];
+        for (let i = 0; i < 4; i++) {
+            expect(Number.isFinite(params[i])).toBe(true);
+        }
+    });
+
+    test('relativeCutoffFadeDistance <= relativeCutoffDistance', () => {
+        const painter = createPainterFixture();
+        const result = getCutoffParams(painter as never, 0.5);
+        const params = result.uniformValues['u_cutoff_params'];
+        // params[2] = relativeCutoffDistance, params[3] = relativeCutoffFadeDistance
+        expect(params[3]).toBeLessThanOrEqual(params[2]);
+    });
+
+    test('normalized depth values are non-negative when cutoff is active', () => {
+        const painter = createPainterFixture();
+        const result = getCutoffParams(painter as never, 0.5);
+        const params = result.uniformValues['u_cutoff_params'];
+        // params[2] = relativeCutoffDistance, params[3] = relativeCutoffFadeDistance
+        expect(params[2]).toBeGreaterThanOrEqual(0);
+        expect(params[3]).toBeGreaterThanOrEqual(0);
     });
 });
