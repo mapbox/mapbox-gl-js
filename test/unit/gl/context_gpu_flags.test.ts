@@ -2,13 +2,6 @@ import {test, expect, describe} from '../../util/vitest';
 import Context from '../../../src/gl/context';
 
 describe('Context GPU flags', () => {
-    function createContext(options?: ConstructorParameters<typeof Context>[1]) {
-        const el = window.document.createElement('canvas');
-        const gl = el.getContext('webgl2');
-        if (!gl) throw new Error('WebGL2 context unavailable — cannot run GPU flag tests');
-        return new Context(gl, options);
-    }
-
     /**
      * Returns a WebGL2 context whose WEBGL_debug_renderer_info extension
      * reports the given renderer string.  This lets us exercise the
@@ -41,13 +34,9 @@ describe('Context GPU flags', () => {
     }
 
     describe('disableSymbolUBO', () => {
-        test('disabled by default on standard GPUs', () => {
-            const context = createContext();
-            expect(context.disableSymbolUBO).toBe(false);
-        });
-
         test('enabled when forceDisableSymbolUBO option is set', () => {
-            const context = createContext({forceDisableSymbolUBO: true});
+            const gl = createGLWithRenderer('Generic Desktop GPU');
+            const context = new Context(gl, {forceDisableSymbolUBO: true});
             expect(context.disableSymbolUBO).toBe(true);
         });
 

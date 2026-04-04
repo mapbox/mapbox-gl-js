@@ -162,6 +162,7 @@ export async function renderMap(style, options, currentTestName) {
             extTextureFloatLinearForceOff: options.textureFloatLinear === undefined ? false : !options.textureFloatLinear,
             // ordinary instancing is enabled by default, manual is disabled
             forceManualRenderingForInstanceIDShaders: options.forceManualRenderingForInstanceIDShaders,
+            forceDisableSymbolUBO: options.forceDisableSymbolUBO,
         },
         worldview: options.worldview,
         maxZoom: options.maxZoom,
