@@ -1,3 +1,12 @@
+## 3.21.1
+
+### Bug fixes 🐞
+
+- Fix map crashes on Android Pixel devices (Adreno GPUs) during zoom/pan interactions caused by symbol UBO dynamic indexing.
+- Fix `readFloat`/`readUint` in the symbol vertex shader to use Adreno-safe explicit swizzle helpers instead of direct bracket indexing.
+- Fix stale default in `getMaxFeatureCount` that could cause incorrect symbol batching limits.
+- Guard against potential division by zero in the cutoff fade-range calculation on mobile viewports.
+
 ## 3.20.0-rc.1
 
 ### Features and improvements ✨
