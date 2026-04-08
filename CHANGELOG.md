@@ -1,4 +1,4 @@
-## 3.20.0-rc.1
+## 3.21.0
 
 ### Features and improvements ✨
 
@@ -18,6 +18,7 @@
 - Fix an issue when rendering stacked underground 3D roads.
 - Fix line dashes with non-integer total array lengths.
 - Fix various rendering issues when using `*-cutoff-fade-range` properties.
+- Fix `clip` layer not clipping `fill-extrusion` ambient occlusion.
 
 ## Breaking changes ⚠️
 
