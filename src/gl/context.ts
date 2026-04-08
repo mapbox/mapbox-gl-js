@@ -153,10 +153,7 @@ class Context {
         // Force manual rendering for instanced draw calls having gl_InstanceID usage in the shader for PowerVR adapters
         this.forceManualRenderingForInstanceIDShaders = (options && !!options.forceManualRenderingForInstanceIDShaders) || (this.renderer && this.renderer.indexOf("PowerVR") !== -1);
 
-        // Disable symbol UBO batching for PowerVR GPUs. PowerVR drivers do not correctly handle
-        // dynamic (non-uniform) indexing into UBO arrays, which is technically undefined behavior
-        // in GLSL ES 3.00. The fallback uses pragma-based paint properties.
-        this.disableSymbolUBO = (options && !!options.forceDisableSymbolUBO) || (this.renderer && this.renderer.indexOf("PowerVR") !== -1);
+        this.disableSymbolUBO = (options && !!options.forceDisableSymbolUBO);
 
         if (!this.options.extTextureFloatLinearForceOff) {
             this.extTextureFloatLinear = gl.getExtension('OES_texture_float_linear');
@@ -168,8 +165,9 @@ class Context {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
         // Query UBO limits for dynamic sizing (WebGL2 minimum: 16KB, 36 binding points)
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        this.maxUniformBlockSize = gl.getParameter(gl.MAX_UNIFORM_BLOCK_SIZE);
+        // Cap it to a max of 32KB to avoid allocating big UBO buffers
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        this.maxUniformBlockSize = Math.min(gl.getParameter(gl.MAX_UNIFORM_BLOCK_SIZE), 32 * 1024);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.maxUniformBufferBindings = gl.getParameter(gl.MAX_UNIFORM_BUFFER_BINDINGS);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
