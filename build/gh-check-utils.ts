@@ -11,16 +11,21 @@ const repo = process.env.REPO_NAME;
 export async function createCheck(sha: string, checkName: string, title: string, summary: string, conclusion: 'success' | 'failure' = 'success') {
     const githubNotifier = new Octokit({auth: process.env.GITHUB_NOTIFIER_TOKEN});
 
-    await githubNotifier.checks.create({
-        owner,
-        repo,
-        name: checkName,
-        head_sha: sha,
-        output: {title, summary},
-        status: 'completed' as const,
-        conclusion,
-        completed_at: new Date().toISOString()
-    });
+    try {
+        await githubNotifier.checks.create({
+            owner,
+            repo,
+            name: checkName,
+            head_sha: sha,
+            output: {title, summary},
+            status: 'completed' as const,
+            conclusion,
+            completed_at: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error(`Failed to create check "${checkName}" for ${sha}: ${(error as Error).message}`);
+        throw error;
+    }
 }
 
 /**
@@ -28,9 +33,8 @@ export async function createCheck(sha: string, checkName: string, title: string,
  */
 export async function getCheckSummary(sha: string, checkName: string): Promise<string | undefined> {
     const githubReader = new Octokit({auth: process.env.GITHUB_READER_TOKEN});
-
     const {data: checks} = await githubReader.checks.listForRef({owner, repo, ref: sha});
     const run = checks.check_runs.find(run => run.name === checkName);
-    if (!run) return;
+    if (!run) return undefined;
     return run.output.summary;
 }

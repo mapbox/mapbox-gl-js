@@ -27,11 +27,15 @@ const priorCommit = process.env.PRIOR_COMMIT_SHA;
 
 // Fetch prior sizes
 const priorSizes: Record<string, Size> = {};
-const priorSummary = await getCheckSummary(priorCommit, CHECK_NAME);
-if (priorSummary) {
-    const sizes = JSON.parse(priorSummary) as Size[];
-    for (const size of sizes) {
-        priorSizes[size.name] = size;
+if (priorCommit) {
+    const priorSummary = await getCheckSummary(priorCommit, CHECK_NAME);
+    if (!priorSummary) {
+        console.warn(`No prior size data found for check "${CHECK_NAME}" at ${priorCommit}, proceeding without comparison`);
+    } else {
+        const sizes = JSON.parse(priorSummary) as Size[];
+        for (const size of sizes) {
+            priorSizes[size.name] = size;
+        }
     }
 }
 
@@ -40,11 +44,13 @@ const newSizes = getSizes();
 for (const size of newSizes) {
     passed = passed && size.passed;
     const priorSize = priorSizes[size.name]?.size;
-    const diff = priorSize ? size.size - priorSize : 0;
     const formattedSize = formatSize(size.size);
-    if (diff === 0) {
+    if (!priorSize) {
+        size.formattedDiff = `No prior data (${formattedSize})`;
+    } else if (size.size === priorSize) {
         size.formattedDiff = `No changes (${formattedSize})`;
     } else {
+        const diff = size.size - priorSize;
         const percent = (diff / priorSize) * 100;
         size.formattedDiff = `${diff >= 0 ? '+' : ''}${formatSize(diff)} ${percent.toFixed(3)}% (${formattedSize})`;
     }

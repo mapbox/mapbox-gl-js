@@ -57,14 +57,22 @@ const currentSha = process.env.COMMIT_SHA || execSync('git rev-parse HEAD').toSt
 const priorCommit = process.env.PRIOR_COMMIT_SHA;
 
 // Fetch prior suppressions
-const priorSuppressions: number | undefined = await getCheckSummary(priorCommit, CHECK_NAME).then(summary => (summary ? JSON.parse(summary) as number : undefined));
+let priorSuppressions: number | undefined;
+if (priorCommit) {
+    const priorSummary = await getCheckSummary(priorCommit, CHECK_NAME);
+    if (!priorSummary) {
+        console.warn(`No prior suppressions data found for check "${CHECK_NAME}" at ${priorCommit}, proceeding without comparison`);
+    } else {
+        priorSuppressions = JSON.parse(priorSummary) as number;
+    }
+}
 
 // Calculate new suppressions
 const newSuppressions: number = await getSuppressions();
 
 let message = '';
-if (!priorSuppressions) {
-    message = `First check (${newSuppressions} total)`;
+if (priorSuppressions === undefined) {
+    message = `No prior data (${newSuppressions} total)`;
 } else if (newSuppressions > priorSuppressions) {
     const diff = newSuppressions - priorSuppressions;
     message = `+${diff} suppression${diff > 1 ? 's' : ''} (now ${newSuppressions} total)`;
