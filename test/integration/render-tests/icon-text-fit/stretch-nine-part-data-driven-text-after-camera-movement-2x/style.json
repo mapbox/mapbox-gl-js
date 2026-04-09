@@ -1,0 +1,73 @@
+{
+  "_comment": "Testing fix for MAPSNAT-3783",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128,
+      "pixelRatio": 2,
+      "allowed": 0.002,
+      "operations": [
+        ["wait"],
+        ["setCameraPosition", [10, 10, 6]],
+        ["wait"]
+      ]
+    }
+  },
+  "zoom": 6,
+  "sources": {
+    "test_source": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [0, 0]
+            },
+            "properties": {
+              "name": "Point zero"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [10, 10]
+            },
+            "properties": {
+              "name": "Point ten"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/stretch",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "test_source",
+      "layout": {
+        "text-field": ["get", "name"],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "icon-image": "nine-part",
+        "icon-text-fit": "both"
+      }
+    }
+  ]
+}
