@@ -5,7 +5,7 @@ import {
     readPackageVersion,
     prompt,
     execSilent,
-} from './publish-utils.js';
+} from './publish-utils.ts';
 
 type IncrementType = 'major' | 'minor' | 'patch';
 

@@ -1,3 +1,12 @@
+## 3.22.0-rc1
+
+### Bug fixes 🐞
+
+- Fix a crash on PowerVR devices.
+- Fix nested scopes support in clip layers.
+- Skip sub-pixel line dilution for intentionally thin lines.
+- Skip map-sessions request when `baseApiUrl` is not a Mapbox host.
+
 ## 3.21.0
 
 ### Features and improvements ✨
