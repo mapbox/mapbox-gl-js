@@ -83,7 +83,6 @@ export default class IndoorManager extends Evented<IndoorEvents> {
                         this._mergeFloors(this._buildings[id].floors[floorId], building.floors[floorId]);
                     } else {
                         this._buildings[id].floors[floorId] = building.floors[floorId];
-                        this._buildings[id].floorIds.add(floorId);
                         changed = true;
                     }
                 }
@@ -92,9 +91,8 @@ export default class IndoorManager extends Evented<IndoorEvents> {
                 changed = true;
             }
         }
-        if (changed && this._initialLoadDone) {
+        if (changed) {
             this._recalculateActiveFloors();
-            this._updateIndoorSelector();
         }
     }
 
@@ -141,7 +139,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
     }
 
     _updateUI() {
-        if (!this._initialLoadDone) return;
+        this._initialLoadDone = true;
 
         const transform = this._style.map.transform;
         const closestBuildingId = this._buildingDetectionStrategy.findClosestBuilding(
