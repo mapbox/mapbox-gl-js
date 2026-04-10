@@ -94,7 +94,7 @@ void main() {
 
 #ifdef RENDER_LINE_DASH
     float sdfdist = texture(u_dash_image, v_tex).r;
-    float sdfgamma = 1.0 / (2.0 * u_device_pixel_ratio) / float(dash.z);
+    float sdfgamma = 1.0 / (2.0 * u_device_pixel_ratio) / (float(dash.z) + float(dash.w) / 65535.0);
     float scaled_floorwidth = (floorwidth * u_floor_width_scale);
     alpha *= linearstep(0.5 - sdfgamma / scaled_floorwidth, 0.5 + sdfgamma / scaled_floorwidth, sdfdist);
 #endif
