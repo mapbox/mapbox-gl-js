@@ -3,9 +3,10 @@ import {
     LineExtLayoutArray,
     LinePatternLayoutArray,
     LineZOffsetExtArray,
+    LineElevationIdColArray,
     LineElevationGroundScaleArray,
 } from '../array_types';
-import {members as layoutAttributes, lineZOffsetAttributes, lineElevationGroundScaleAttributes} from './line_attributes';
+import {members as layoutAttributes, lineZOffsetAttributes, lineElevationIdColAttributes, lineElevationGroundScaleAttributes} from './line_attributes';
 import {members as layoutAttributesExt} from './line_attributes_ext';
 import {members as layoutAttributesPattern} from './line_attributes_pattern';
 import SegmentVector from '../segment';
@@ -29,7 +30,7 @@ import '../../render/line_atlas';
 import {number as interpolate} from '../../style-spec/util/interpolate';
 import Point from "@mapbox/point-geometry";
 import {ELEVATION_CLIP_MARGIN, MARKUP_ELEVATION_BIAS, type ElevationType} from '../../../3d-style/elevation/elevation_constants';
-import {ElevationFeatures, ElevationFeatureSampler, type Range, type ElevationFeature, EdgeIterator} from '../../../3d-style/elevation/elevation_feature';
+import {ElevationFeatures, ElevationFeatureSampler, elevationIdDebugColor, type Range, type ElevationFeature, EdgeIterator} from '../../../3d-style/elevation/elevation_feature';
 
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id';
@@ -163,6 +164,8 @@ class LineBucket implements Bucket {
 
     zOffsetVertexArray: LineZOffsetExtArray;
     zOffsetVertexBuffer: VertexBuffer;
+    elevationIdColVertexArray: LineElevationIdColArray;
+    elevationIdColVertexBuffer: VertexBuffer;
 
     elevationGroundScaleVertexArray: LineElevationGroundScaleArray;
     elevationGroundScaleVertexBuffer: VertexBuffer;
@@ -186,6 +189,7 @@ class LineBucket implements Bucket {
     elevationType: ElevationType = 'none';
     isSeaLevelReference: boolean = false;
     heightRange: Range | undefined;
+    showElevationIdDebug: boolean = false;
 
     worldview: string;
     hasAppearances: boolean | null;
@@ -216,6 +220,7 @@ class LineBucket implements Bucket {
         this.segments = new SegmentVector();
         this.maxLineLength = 0;
         this.zOffsetVertexArray = new LineZOffsetExtArray();
+        this.elevationIdColVertexArray = new LineElevationIdColArray();
         this.elevationGroundScaleVertexArray = new LineElevationGroundScaleArray();
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         // A vector tile is usually rendered over 128x128 terrain grid. Half of that frequency (step is EXTENT / 64)
@@ -238,6 +243,7 @@ class LineBucket implements Bucket {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
+        this.showElevationIdDebug = options.showElevationIdDebug;
         this.hasPattern = hasPattern('line', this.layers, this.pixelRatio, options);
         const lineSortKey = this.layers[0].layout.get('line-sort-key');
 
@@ -415,6 +421,9 @@ class LineBucket implements Bucket {
             if (!this.zOffsetVertexBuffer && this.zOffsetVertexArray.length > 0) {
                 this.zOffsetVertexBuffer = context.createVertexBuffer(this.zOffsetVertexArray, lineZOffsetAttributes.members, true);
             }
+            if (!this.elevationIdColVertexBuffer && this.elevationIdColVertexArray.length > 0) {
+                this.elevationIdColVertexBuffer = context.createVertexBuffer(this.elevationIdColVertexArray, lineElevationIdColAttributes.members, true);
+            }
 
             if (!this.elevationGroundScaleVertexBuffer && this.elevationGroundScaleVertexArray.length > 0) {
                 this.elevationGroundScaleVertexBuffer = context.createVertexBuffer(this.elevationGroundScaleVertexArray, lineElevationGroundScaleAttributes.members, true);
@@ -431,6 +440,9 @@ class LineBucket implements Bucket {
         if (!this.layoutVertexBuffer) return;
         if (this.zOffsetVertexBuffer) {
             this.zOffsetVertexBuffer.destroy();
+        }
+        if (this.elevationIdColVertexBuffer) {
+            this.elevationIdColVertexBuffer.destroy();
         }
         if (this.elevationGroundScaleVertexBuffer) {
             this.elevationGroundScaleVertexBuffer.destroy();
@@ -577,6 +589,7 @@ class LineBucket implements Bucket {
             const sampler = new ElevationFeatureSampler(canonical, elevated.elevationTileID);
 
             if (elevated.elevation) {
+                const col = this.showElevationIdDebug ? elevationIdDebugColor(elevated.elevation.id) : null;
                 for (let i = vertexOffset; i < this.layoutVertexArray.length; i++) {
                     const point = new Point(this.layoutVertexArray.int16[i * 6] >> 1, this.layoutVertexArray.int16[i * 6 + 1] >> 1);
 
@@ -584,6 +597,11 @@ class LineBucket implements Bucket {
                     this.updateHeightRange(height);
 
                     this.zOffsetVertexArray.emplaceBack(height, 0.0, 0.0);
+                    if (col) {
+                        this.elevationIdColVertexArray.emplaceBack(col[0], col[1], col[2]);
+                    } else if (this.showElevationIdDebug) {
+                        this.elevationIdColVertexArray.emplaceBack(0.0, 0.0, 0.0);
+                    }
                 }
             } else {
                 this.fillNonElevatedRoadSegment(vertexOffset);
@@ -615,6 +633,9 @@ class LineBucket implements Bucket {
     private fillNonElevatedRoadSegment(vertexOffset: number) {
         for (let i = vertexOffset; i < this.layoutVertexArray.length; i++) {
             this.zOffsetVertexArray.emplaceBack(0, 0, 0);
+            if (this.showElevationIdDebug) {
+                this.elevationIdColVertexArray.emplaceBack(0, 0, 0);
+            }
         }
     }
 
@@ -1263,6 +1284,9 @@ class LineBucket implements Bucket {
                 lineProgressFeatures.variableWidth,
                 lineProgressFeatures.variableWidth
             );
+            if (this.showElevationIdDebug) {
+                this.elevationIdColVertexArray.emplaceBack(0.0, 0.0, 0.0);
+            }
         }
         // Populate elevationGroundScaleVertexArray only when the property is used
         if (this.elevationGroundScaleValue) {

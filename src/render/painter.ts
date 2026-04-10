@@ -251,6 +251,7 @@ class Painter {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         enabledLayers: any;
         show3DModelFootprints: boolean;
+        showElevationIdDebug: boolean;
     };
 
     _timeStamp: number;
@@ -297,6 +298,7 @@ class Painter {
             fpsWindow: 30,
             continousRedraw: false,
             show3DModelFootprints: false,
+            showElevationIdDebug: false,
             enabledLayers: {
             }
         };
@@ -313,6 +315,13 @@ class Painter {
         });
         DevTools.addParameter(this._debugParams, 'show3DModelFootprints', 'Debug', {}, () => {
             this.style.map.triggerRepaint();
+        });
+        DevTools.addParameter(this._debugParams, 'showElevationIdDebug', 'Debug', {}, () => {
+            if (this._debugParams.showElevationIdDebug) {
+                this.style._reloadSources();
+            } else {
+                this.style.map._update();
+            }
         });
         DevTools.addParameter(this._debugParams, 'forceEnablePrecipitation', 'Precipitation');
         DevTools.addParameter(this._debugParams, 'fpsWindow', 'FPS', {min: 1, max: 100, step: 1});

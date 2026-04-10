@@ -59,6 +59,7 @@ export type PopulateParameters = {
     lineAtlas: LineAtlas;
     brightness: number | null | undefined;
     scaleFactor: number;
+    showElevationIdDebug: boolean;
     elevationFeatures: ElevationFeature[] | undefined;
     activeFloors: Set<string> | undefined;
 };

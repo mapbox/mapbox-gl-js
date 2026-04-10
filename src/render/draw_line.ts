@@ -162,6 +162,10 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
         definesValues.push("VARIABLE_LINE_WIDTH");
     }
 
+    if (painter._debugParams.showElevationIdDebug) {
+        definesValues.push('DEBUG_ELEVATION_ID');
+    }
+
     if (isDraping) {
         if (painter.emissiveMode === 'dual-source-blending' && !constantEmissiveStrength) {
             definesValues.push('DUAL_SOURCE_BLENDING');
@@ -342,7 +346,7 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                 program.draw(painter, gl.TRIANGLES, depthMode,
                     stencilMode, colorMode, CullFaceMode.disabled, uniformValues,
                     layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
-                    layer.paint, painter.transform.zoom, programConfiguration, [bucket.layoutVertexBuffer2, bucket.patternVertexBuffer, bucket.zOffsetVertexBuffer, bucket.elevationGroundScaleVertexBuffer]);
+                    layer.paint, painter.transform.zoom, programConfiguration, [bucket.layoutVertexBuffer2, bucket.patternVertexBuffer, bucket.zOffsetVertexBuffer, bucket.elevationIdColVertexBuffer, bucket.elevationGroundScaleVertexBuffer]);
                 if (lineOpacityForOcclusion != null) {
                     lineOpacityForOcclusion.value = lineOpacity; //restore
                 }

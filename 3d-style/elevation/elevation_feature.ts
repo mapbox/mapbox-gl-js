@@ -9,6 +9,7 @@ import {MARKUP_ELEVATION_BIAS, PROPERTY_ELEVATION_ID} from "./elevation_constant
 import EXTENT from "../../src/style-spec/data/extent";
 import Point from "@mapbox/point-geometry";
 import {number as interpolate} from '../../src/style-spec/util/interpolate';
+import {mulberry32} from '../../src/style-spec/util/random';
 
 import type {VectorTileLayer} from "@mapbox/vector-tile";
 import type {CanonicalTileID} from "../../src/source/tile_id";
@@ -490,3 +491,9 @@ export class ElevationFeatureSampler {
 }
 
 register(ElevationFeature, 'ElevationFeature');
+
+export function elevationIdDebugColor(id: number): [number, number, number] {
+    if (id === 0) return [0, 0, 0];
+    const rng = mulberry32(id);
+    return [rng(), rng(), rng()];
+}

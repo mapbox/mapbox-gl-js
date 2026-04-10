@@ -5164,6 +5164,18 @@ export class Map extends Camera {
         this._update();
     }
 
+    get showElevationIdDebug(): boolean { return this.painter ? this.painter._debugParams.showElevationIdDebug : false; }
+    set showElevationIdDebug(value: boolean) {
+        if (!this.painter || this.painter._debugParams.showElevationIdDebug === value) return;
+        this.painter._debugParams.showElevationIdDebug = value;
+        DevTools.refresh();
+        if (this.style && value) {
+            this.style._reloadSources();
+        } else {
+            this._update();
+        }
+    }
+
     /**
      * Gets and sets a Boolean indicating whether the speedindex metric calculation is on or off
      *
@@ -5218,7 +5230,7 @@ export class Map extends Camera {
         if (this.style && value) {
             // When we turn collision boxes on we have to generate them for existing tiles
             // When we turn them off, there's no cost to leaving existing boxes in place
-            this.style._generateCollisionBoxes();
+            this.style._reloadSources();
         } else {
             // Otherwise, call an update to remove collision boxes
             this._update();

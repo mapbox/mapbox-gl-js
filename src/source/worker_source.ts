@@ -76,6 +76,7 @@ export type WorkerSourceVectorTileRequest = WorkerSourceTileRequest & {
     promoteId: PromoteIdSpecification | null | undefined;
     scaleFactor: number;
     showCollisionBoxes: boolean;
+    showElevationIdDebug: boolean;
     tileSize: number;
     tileZoom: number;
     zoom: number;

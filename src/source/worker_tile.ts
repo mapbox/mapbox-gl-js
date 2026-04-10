@@ -63,6 +63,7 @@ class WorkerTile {
     promoteId: PromoteIdSpecification | null | undefined;
     overscaling: number;
     showCollisionBoxes: boolean;
+    showElevationIdDebug: boolean;
     collectResourceTiming: boolean;
     renderSourceType: RenderSourceType | null | undefined;
     extraShadowCaster: boolean | null | undefined;
@@ -100,6 +101,7 @@ class WorkerTile {
         this.scope = params.scope;
         this.overscaling = this.tileID.overscaleFactor();
         this.showCollisionBoxes = params.showCollisionBoxes;
+        this.showElevationIdDebug = params.showElevationIdDebug;
         this.collectResourceTiming = params.request ? params.request.collectResourceTiming : false;
         this.promoteId = params.promoteId;
         this.renderSourceType = params.renderSourceType;
@@ -140,6 +142,7 @@ class WorkerTile {
             availableImages,
             brightness: this.brightness,
             scaleFactor: this.scaleFactor,
+            showElevationIdDebug: this.showElevationIdDebug,
             elevationFeatures: undefined,
             activeFloors: undefined
         };
@@ -571,6 +574,7 @@ class WorkerTile {
     updateParameters(params: WorkerSourceVectorTileRequest) {
         this.scaleFactor = params.scaleFactor;
         this.showCollisionBoxes = params.showCollisionBoxes;
+        this.showElevationIdDebug = params.showElevationIdDebug;
         this.projection = params.projection;
         this.brightness = params.brightness;
         this.tileTransform = tileTransform(params.tileID.canonical, params.projection);

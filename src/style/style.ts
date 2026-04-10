@@ -4224,7 +4224,7 @@ class Style extends Evented<MapEvents> {
         }
     }
 
-    _generateCollisionBoxes() {
+    _reloadSources() {
         for (const id in this._sourceCaches) {
             const sourceCache = this._sourceCaches[id];
             sourceCache.resume();
