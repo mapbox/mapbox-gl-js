@@ -15,6 +15,14 @@ in uvec4 a_data;
 #if defined(ELEVATED) || defined(ELEVATED_ROADS) || defined(VARIABLE_LINE_WIDTH)
 in vec3 a_z_offset_width;
 #endif
+#ifdef DEBUG_ELEVATION_ID
+in vec3 a_elevation_id_col;
+#endif
+
+#ifdef DEBUG_ELEVATION_ID
+out vec3 v_elevation_id_col;
+#endif
+
 #ifdef ELEVATION_GROUND_SCALE
 in float a_elevation_ground_scale;
 #endif
@@ -192,6 +200,9 @@ void main() {
     float a_z_offset;
 #if defined(ELEVATED) || defined(ELEVATED_ROADS)
     a_z_offset = a_z_offset_width.x;
+#endif
+#ifdef DEBUG_ELEVATION_ID
+    v_elevation_id_col = a_elevation_id_col;
 #endif
 
     highp float line_progress = 0.0;

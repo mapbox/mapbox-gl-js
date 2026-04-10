@@ -29,6 +29,10 @@ uniform sampler2D u_dash_image;
 in vec2 v_tex;
 #endif
 
+#ifdef DEBUG_ELEVATION_ID
+in vec3 v_elevation_id_col;
+#endif
+
 #ifdef RENDER_LINE_GRADIENT
 uniform sampler2D u_gradient_image;
 #endif
@@ -220,6 +224,10 @@ void main() {
 
 #ifdef OVERDRAW_INSPECTOR
     glFragColor = vec4(1.0);
+#endif
+
+#ifdef DEBUG_ELEVATION_ID
+    glFragColor = vec4(v_elevation_id_col, 1.0);
 #endif
 
     HANDLE_WIREFRAME_DEBUG;
