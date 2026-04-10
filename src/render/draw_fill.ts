@@ -182,7 +182,7 @@ export function drawDepthPrepass(painter: Painter, sourceCache: SourceCache, lay
         if (!bucket) continue;
 
         const elevatedStructures = bucket.elevatedStructures;
-        if (!elevatedStructures) {
+        if (!elevatedStructures || !elevatedStructures.depthSegments) {
             continue;
         }
 
@@ -248,7 +248,7 @@ export function drawGroundShadowMask(painter: Painter, sourceCache: SourceCache,
         if (!bucket) continue;
 
         const elevatedStructures = bucket.elevatedStructures;
-        if (!elevatedStructures || elevatedStructures.depthSegments.segments[0].primitiveLength === 0) {
+        if (!elevatedStructures || !elevatedStructures.depthSegments || elevatedStructures.depthSegments.segments[0].primitiveLength === 0) {
             continue;
         }
 

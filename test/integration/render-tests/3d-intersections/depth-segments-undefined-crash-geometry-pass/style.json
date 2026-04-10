@@ -1,0 +1,64 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "mapMode": "static",
+            "allowed": 0.001
+        }
+    },
+    "center": [0, 0],
+    "zoom": 18,
+    "pitch": 45,
+    "sources": {
+        "hd-roads": {
+            "type": "vector",
+            "tileSize": 512,
+            "maxzoom": 18,
+            "tiles": [
+                "local://tiles/3d-intersections-geometry-crash/{z}-{x}-{y}.mvt"
+            ]
+        }
+    },
+    "lights": [
+        {
+            "id": "ambient",
+            "type": "ambient",
+            "properties": {
+                "color": "hsl(0, 0%, 100%)",
+                "intensity": 0.8
+            }
+        },
+        {
+            "id": "directional",
+            "type": "directional",
+            "properties": {
+                "direction": ["literal", [180, 20]],
+                "color": "hsl(0, 0%, 100%)",
+                "intensity": 0.2,
+                "cast-shadows": false
+            }
+        }
+    ],
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "rgb(234, 243, 240)"
+            }
+        },
+        {
+            "id": "road-base",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_polygon",
+            "filter": ["==", ["get", "class"], "road"],
+            "layout": {
+                "fill-elevation-reference": "hd-road-base"
+            },
+            "paint": {
+                "fill-color": "hsl(212, 25%, 71%)"
+            }
+        }
+    ]
+}
