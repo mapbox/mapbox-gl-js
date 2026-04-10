@@ -11,11 +11,14 @@ uniform highp vec2 u_trim_fade_range;
 uniform highp vec2 u_trim_gradient_mix_range;
 uniform lowp vec4 u_trim_color;
 uniform bool u_emissive_in_shadows;
+uniform bool u_clip_to_tile_borders;
 
 in vec4 v_width2_dilute;
 in vec2 v_normal;
 in float v_gamma_scale;
 in highp vec3 v_uv;
+in vec2 v_tile_pos;
+
 #ifdef ELEVATED_ROADS
 in highp float v_road_z_offset;
 #endif
@@ -229,6 +232,12 @@ void main() {
 #ifdef DEBUG_ELEVATION_ID
     glFragColor = vec4(v_elevation_id_col, 1.0);
 #endif
+
+    if (u_clip_to_tile_borders) {
+        if (v_tile_pos.x > 1.0 || v_tile_pos.y > 1.0 || v_tile_pos.x < 0.0 || v_tile_pos.y < 0.0) {
+            discard;
+        }
+    }
 
     HANDLE_WIREFRAME_DEBUG;
 }
