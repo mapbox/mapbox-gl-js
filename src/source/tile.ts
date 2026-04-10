@@ -778,8 +778,13 @@ class Tile {
                 bucket.update(sourceLayerStates, sourceLayer, images, imagePositions, layers, isBrightnessChanged, brightness, this.tileID.canonical);
 
                 // Handle UBO updates for paint/image property changes in symbol buckets.
-                // Skip when isBrightnessChanged: bucket.update() already called updateDynamicExpressions.
-                if ((needsSymbolUBOUpdate || hasPaintUpdate) && !isBrightnessChanged && bucket instanceof SymbolBucket && freshLayerFromStyle && freshLayerFromStyle.type === 'symbol') {
+                // Normally skipped when isBrightnessChanged because bucket.update() calls updateDynamicExpressions.
+                // Exception: when all data-driven properties are light-constant, bucket.update() skips the
+                // brightness re-evaluation, so we must handle any concurrent paint/image updates here instead.
+                const brightnessUpdateSkipped = isBrightnessChanged && bucket instanceof SymbolBucket &&
+                    ((bucket.text.uboBinder ? bucket.text.uboBinder.isLightConstant : true) ||
+                     (bucket.icon.uboBinder ? bucket.icon.uboBinder.isLightConstant : true));
+                if ((needsSymbolUBOUpdate || hasPaintUpdate) && (!isBrightnessChanged || brightnessUpdateSkipped) && bucket instanceof SymbolBucket && freshLayerFromStyle && freshLayerFromStyle.type === 'symbol') {
                     const symbolBucket = bucket;
 
                     // Re-evaluate all features with fresh paint properties or new images

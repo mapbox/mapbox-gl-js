@@ -167,6 +167,13 @@ export class SymbolPropertyBinderUBO {
 
     uboSizeDwords: number;
 
+    // True when no data-driven property uses measure-light expressions.
+    // When true, updateDynamicExpressions can be skipped on brightness-only changes.
+    isLightConstant: boolean;
+
+    // Scratch buffer to avoid allocations on evaluateAllProperties
+    _evalResult: Array<PropertyValue | null>;
+
     constructor(layer: SymbolStyleLayer, zoom: number, lut: LUT | null, isText: boolean, worldview: string = '', maxUniformBufferBindings?: number | null, uboSizeDwords?: number | null) {
         this.layer = layer;
         this.zoom = zoom;
@@ -196,6 +203,8 @@ export class SymbolPropertyBinderUBO {
         this.cachedConstantBrightness = undefined;
 
         this.activeAppearanceByVtIndex = new Map();
+        this.isLightConstant = true; // updated in buildHeader()
+        this._evalResult = new Array<PropertyValue | null>(9).fill(null);
     }
 
     /**
@@ -233,6 +242,7 @@ export class SymbolPropertyBinderUBO {
         let zoomDependentMask = 0;
         let cameraMask = 0;
         let dataDrivenOffset = 0;
+        let allDataDrivenLightConstant = true;
         const offsets: [number, number, number, number, number, number, number, number, number] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
         for (let i = 0; i < 9; i++) {
@@ -256,6 +266,10 @@ export class SymbolPropertyBinderUBO {
             if (isDataDriven) {
                 dataDrivenMask |= (1 << i);
                 if (isZoomDep) zoomDependentMask |= (1 << i);
+                // Check if this data-driven expression depends on light/brightness.
+                // Same pattern as program_configuration.ts:313-314.
+                const expr = prop && prop.value as {isLightConstant?: boolean} | undefined;
+                if (expr && expr.isLightConstant === false) allDataDrivenLightConstant = false;
 
                 if (isColor) {
                     // Colors must be vec4-aligned within the data-driven block.
@@ -293,6 +307,8 @@ export class SymbolPropertyBinderUBO {
         const dataDrivenBlockSizeDwords = dataDrivenOffset === 0 ? 0 : (dataDrivenOffset + 3) & ~3;
         const dataDrivenBlockSizeVec4 = dataDrivenBlockSizeDwords / 4;
 
+        this.isLightConstant = allDataDrivenLightConstant;
+
         return {dataDrivenMask, zoomDependentMask, cameraMask, dataDrivenBlockSizeVec4, offsets};
     }
 
@@ -326,7 +342,8 @@ export class SymbolPropertyBinderUBO {
         const ctx: EvaluationContext = {feature, featureState, canonical, availableImages, params, paramsNext, formattedSection};
         const header = this.cachedHeader;
         const propDefs = this.propDefs;
-        const result: Array<PropertyValue | null> = new Array<PropertyValue | null>(9).fill(null);
+        if (!this._evalResult) this._evalResult = new Array<PropertyValue | null>(9).fill(null);
+        const result = this._evalResult;
 
         for (let i = 0; i < 9; i++) {
             const {name, useThemeName, isColor, isVec2} = propDefs[i];
@@ -728,6 +745,10 @@ export class SymbolPropertyBinderUBO {
         // Layer changed — constant uniform values may have new paint property values.
         this.cachedConstantUniforms = null;
         if (!this.cachedHeader) return;
+        // Skip per-feature re-evaluation when no data-driven properties: constant properties
+        // are read from this.layer at draw time via getConstantUniformValues(), which was
+        // already invalidated above.
+        if (this.cachedHeader.dataDrivenMask === 0) return;
         const header = this.cachedHeader;
 
         for (const range of this.allFeatures) {
@@ -910,4 +931,4 @@ export class SymbolPropertyBinderUBO {
 // 'layer' is omitted because SymbolStyleLayer is not serializable. It must be re-assigned on
 // the main thread before any main-thread method (getConstantUniformValues, bind, etc.) is called.
 // See draw_symbol.ts: `buffers.uboBinder.layer = layer` before drawSymbolElements().
-register(SymbolPropertyBinderUBO, 'SymbolPropertyBinderUBO', {omit: ['layer', 'cachedParams', 'cachedParamsNext', 'cachedBrightness', 'propertyHashToUBOIndex', 'cachedConstantUniforms', 'cachedConstantRenderZoom', 'cachedConstantBrightness', 'activeAppearanceByVtIndex']});
+register(SymbolPropertyBinderUBO, 'SymbolPropertyBinderUBO', {omit: ['layer', 'cachedParams', 'cachedParamsNext', 'cachedBrightness', 'propertyHashToUBOIndex', 'cachedConstantUniforms', 'cachedConstantRenderZoom', 'cachedConstantBrightness', 'activeAppearanceByVtIndex', '_evalResult']});

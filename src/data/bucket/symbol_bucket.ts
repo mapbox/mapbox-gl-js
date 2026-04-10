@@ -1386,15 +1386,21 @@ class SymbolBucket implements Bucket {
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null, canonical?: CanonicalTileID) {
-        // Traditional attribute-based updates
-        this.text.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, this.worldview);
-        this.icon.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, this.worldview);
+        // Traditional attribute-based updates, skipped when UBO is active
+        if (!this.text.uboBinder) {
+            this.text.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, this.worldview);
+        }
+        if (!this.icon.uboBinder) {
+            this.icon.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, this.worldview);
+        }
 
         // UBO-based updates
         if (canonical) {
-            // Update all features when brightness or other dynamic expressions change
+            // Update all features when brightness or other dynamic expressions change.
+            // Skip when all data-driven properties are light-constant: brightness doesn't affect
+            // stored UBO values in that case (constant uniforms handle the rendering adjustment).
             if (isBrightnessChanged) {
-                if (this.text.uboBinder) {
+                if (this.text.uboBinder && !this.text.uboBinder.isLightConstant) {
                     this.text.uboBinder.updateDynamicExpressions(
                         layers[0] as SymbolStyleLayer,
                         vtLayer,
@@ -1405,7 +1411,7 @@ class SymbolBucket implements Bucket {
                     );
                 }
 
-                if (this.icon.uboBinder) {
+                if (this.icon.uboBinder && !this.icon.uboBinder.isLightConstant) {
                     this.icon.uboBinder.updateDynamicExpressions(
                         layers[0] as SymbolStyleLayer,
                         vtLayer,
@@ -1928,7 +1934,9 @@ class SymbolBucket implements Bucket {
             this.glyphOffsetArray.emplaceBack(glyphOffset[0]);
 
             if (i === quads.length - 1 || sectionIndex !== quads[i + 1].sectionIndex) {
-                arrays.programConfigurations.populatePaintArrays(layoutVertexArray.length, feature, feature.index, {}, availableImages, canonical, brightness, sections && sections[sectionIndex], this.worldview);
+                if (!arrays.uboBinder) {
+                    arrays.programConfigurations.populatePaintArrays(layoutVertexArray.length, feature, feature.index, {}, availableImages, canonical, brightness, sections && sections[sectionIndex], this.worldview);
+                }
 
                 if (arrays.uboBinder && arrays.featureIdArray) {
                     const uboIndex = arrays.uboBinder.populateUBO(
