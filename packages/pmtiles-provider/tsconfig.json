@@ -13,6 +13,7 @@
     "lib": ["ESNext", "WebWorker"],
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
+    "types": [],
     "paths": {
       "mapbox-gl": ["../../src/index.ts"]
     }

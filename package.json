@@ -106,7 +106,7 @@
     "stylelint-config-standard": "^40.0.0",
     "tsx": "^4.20.3",
     "tweakpane": "^4.0.5",
-    "typescript": "^5.9.2",
+    "typescript": "^6.0.2",
     "typescript-eslint": "^8.48.1",
     "vite-plugin-arraybuffer": "^0.1.0",
     "vitest": "^4.0.6"
