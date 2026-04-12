@@ -21,12 +21,14 @@ class Case implements Expression {
     }
 
     static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Case | null | undefined {
-        if (args.length < 4)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Case'.
-            return context.error(`Expected at least 3 arguments, but found only ${args.length - 1}.`);
-        if (args.length % 2 !== 0)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Case'.
-            return context.error(`Expected an odd number of arguments.`);
+        if (args.length < 4) {
+            context.error(`Expected at least 3 arguments, but found only ${args.length - 1}.`);
+            return null;
+        }
+        if (args.length % 2 !== 0) {
+            context.error(`Expected an odd number of arguments.`);
+            return null;
+        }
 
         let outputType: Type | null | undefined;
         if (context.expectedType && context.expectedType.kind !== 'value') {
@@ -77,8 +79,7 @@ class Case implements Expression {
     }
 
     serialize(): SerializedExpression {
-        const serialized = ["case"];
-        // @ts-expect-error - TS2345 - Argument of type 'SerializedExpression' is not assignable to parameter of type 'string'.
+        const serialized: Array<SerializedExpression> = ["case"];
         this.eachChild(child => { serialized.push(child.serialize()); });
         return serialized;
     }

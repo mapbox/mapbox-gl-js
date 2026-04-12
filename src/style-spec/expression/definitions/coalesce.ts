@@ -18,8 +18,8 @@ class Coalesce implements Expression {
 
     static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Coalesce | null | undefined {
         if (args.length < 2) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Coalesce'.
-            return context.error("Expectected at least one argument.");
+            context.error("Expectected at least one argument.");
+            return null;
         }
         let outputType: Type = null;
         const expectedType = context.expectedType;
@@ -86,8 +86,7 @@ class Coalesce implements Expression {
     }
 
     serialize(): SerializedExpression {
-        const serialized = ["coalesce"];
-        // @ts-expect-error - TS2345 - Argument of type 'SerializedExpression' is not assignable to parameter of type 'string'.
+        const serialized: Array<SerializedExpression> = ["coalesce"];
         this.eachChild(child => { serialized.push(child.serialize()); });
         return serialized;
     }

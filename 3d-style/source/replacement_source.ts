@@ -2,6 +2,7 @@ import Point from '@mapbox/point-geometry';
 import EXTENT from '../../src/style-spec/data/extent';
 import {triangleIntersectsTriangle, polygonContainsPoint} from '../../src/util/intersection_tests';
 import deepEqual from '../../src/style-spec/util/deep_equal';
+import {getOuterScopeFromFQID} from '../../src/util/fqid';
 
 import type {UnwrappedTileID, CanonicalTileID} from '../../src/source/tile_id';
 import type {Bucket} from '../../src/data/bucket';
@@ -43,8 +44,14 @@ type RegionData = {
     clipScope: Array<string>;
 };
 
-function scopeSkipsClipping(scope: string, scopes: Array<string>) : boolean {
-    return (scopes.length !== 0 && scopes.find((el) => { return el === scope; }) === undefined);
+function scopeSkipsClipping(scope: string, scopes: Array<string>): boolean {
+    if (scopes.length === 0) return false;
+    let current: string = scope;
+    while (current !== '') {
+        if (scopes.includes(current)) return false;
+        current = getOuterScopeFromFQID(current);
+    }
+    return true;
 }
 
 export function skipClipping(region: Region, layerIndex: number, mask: number, scope: string): boolean {

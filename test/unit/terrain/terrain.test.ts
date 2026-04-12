@@ -30,6 +30,7 @@ import browser from '../../../src/util/browser';
 import * as DOM from '../../../src/util/dom';
 import {Map, AVERAGE_ELEVATION_SAMPLING_INTERVAL, AVERAGE_ELEVATION_EASE_TIME} from '../../../src/ui/map';
 import {createConstElevationDEM, setMockElevationTerrain} from '../../util/dem_mock';
+import RasterDEMTileSource from '../../../src/source/raster_dem_tile_source';
 import vectorStub from '../../util/fixtures/10/301/384.pbf?arraybuffer';
 
 function createStyle() {
@@ -658,8 +659,9 @@ describe('Elevation', () => {
     });
 
     test('mapbox-gl-js-internal#349', async () => {
-        vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
-            return new window.Response(await getPNGResponse());
+        vi.spyOn(RasterDEMTileSource.prototype, 'loadTile').mockImplementation((tile, callback) => {
+            tile.state = 'loaded';
+            callback(null);
         });
 
         const map = createMap({

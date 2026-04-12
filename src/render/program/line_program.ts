@@ -54,7 +54,7 @@ export type LinePatternUniformsType = {
     ['u_pattern_transition']: Uniform1f;
 };
 
-export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'LINE_JOIN_NONE' | 'ELEVATED' | 'VARIABLE_LINE_WIDTH' | 'CROSS_SLOPE_VERTICAL' | 'CROSS_SLOPE_HORIZONTAL' | 'ELEVATION_REFERENCE_SEA' | 'ELEVATION_GROUND_SCALE' | 'LINE_PATTERN_TRANSITION' | 'USE_MRT1' | 'DUAL_SOURCE_BLENDING';
+export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'LINE_JOIN_NONE' | 'ELEVATED' | 'ELEVATED_ROADS' | 'VARIABLE_LINE_WIDTH' | 'CROSS_SLOPE_VERTICAL' | 'CROSS_SLOPE_HORIZONTAL' | 'ELEVATION_REFERENCE_SEA' | 'ELEVATION_GROUND_SCALE' | 'LINE_PATTERN_TRANSITION' | 'USE_MRT1' | 'DUAL_SOURCE_BLENDING' | 'LINE_BLEND_MULTIPLY' | 'DEBUG_ELEVATION_ID';
 
 const lineUniforms = (context: Context): LineUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
@@ -208,6 +208,7 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
     const values: LineDefinesType[] = [];
     if (hasDash(layer)) values.push('RENDER_LINE_DASH');
     if (layer.paint.get('line-gradient')) values.push('RENDER_LINE_GRADIENT');
+    if (layer.paint.get('line-blend-mode') === 'multiply') values.push('LINE_BLEND_MULTIPLY');
 
     const trimOffset = layer.paint.get('line-trim-offset');
     if (trimOffset[0] !== 0 || trimOffset[1] !== 0) {

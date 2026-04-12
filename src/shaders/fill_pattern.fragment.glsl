@@ -31,20 +31,20 @@ uniform highp sampler3D u_lutTexture;
 #endif
 
 #pragma mapbox: define lowp float opacity
-#pragma mapbox: define lowp vec4 pattern
+#pragma mapbox: define lowp uvec4 pattern
 #ifdef FILL_PATTERN_TRANSITION
-#pragma mapbox: define mediump vec4 pattern_b
+#pragma mapbox: define mediump uvec4 pattern_b
 #endif
 
 void main() {
     #pragma mapbox: initialize lowp float opacity
-    #pragma mapbox: initialize mediump vec4 pattern
+    #pragma mapbox: initialize mediump uvec4 pattern
     #ifdef FILL_PATTERN_TRANSITION
-    #pragma mapbox: initialize mediump vec4 pattern_b
+    #pragma mapbox: initialize mediump uvec4 pattern_b
     #endif
 
-    vec2 pattern_tl = pattern.xy;
-    vec2 pattern_br = pattern.zw;
+    vec2 pattern_tl = vec2(pattern.xy);
+    vec2 pattern_br = vec2(pattern.zw);
 
     highp vec2 imagecoord = mod(v_pos, 1.0);
     highp vec2 pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, imagecoord);
@@ -56,17 +56,23 @@ void main() {
 #endif
 
 #ifdef FILL_PATTERN_TRANSITION
-    vec2 pattern_b_tl = pattern_b.xy;
-    vec2 pattern_b_br = pattern_b.zw;
+    vec2 pattern_b_tl = vec2(pattern_b.xy);
+    vec2 pattern_b_br = vec2(pattern_b.zw);
     highp vec2 pos_b = mix(pattern_b_tl / u_texsize, pattern_b_br / u_texsize, imagecoord);
     vec4 color_b = textureLodCustom(u_image, pos_b, lod_pos);
     out_color = out_color * (1.0 - u_pattern_transition) + color_b * u_pattern_transition;
+#endif
+
+    vec2 cutout_factors = vec2(0.0);
+#ifdef FEATURE_CUTOUT
+    cutout_factors = get_cutout_factors(gl_FragCoord);
 #endif
 
 #ifdef LIGHTING_3D_MODE
     out_color = apply_lighting_with_emission_ground(out_color, u_emissive_strength);
 #ifdef RENDER_SHADOWS
     float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    light = mix(light, 1.0, cutout_factors.y);
 #ifdef ELEVATED_ROADS
     out_color.rgb *= mix(v_road_z_offset != 0.0 ? u_ground_shadow_factor : vec3(1.0), vec3(1.0), light);
 #else
@@ -76,7 +82,7 @@ void main() {
 #endif // LIGHTING_3D_MODE
 
 #ifdef FEATURE_CUTOUT
-    out_color = apply_feature_cutout(out_color, gl_FragCoord);
+    out_color = apply_feature_cutout(out_color, gl_FragCoord, cutout_factors.x);
 #endif
 
 #ifdef FOG

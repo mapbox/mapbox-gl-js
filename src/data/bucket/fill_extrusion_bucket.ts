@@ -28,12 +28,12 @@ import {number as interpolate} from '../../style-spec/util/interpolate';
 import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat, tileToMeter} from '../../geo/mercator_coordinate';
 import {gridSubdivision} from '../../util/polygon_clipping';
 import {regionsEquals, footprintTrianglesIntersect} from '../../../3d-style/source/replacement_source';
+import {LayerTypeMask} from '../../../3d-style/util/conflation';
 import {clamp, warnOnce} from '../../util/util';
 import {earthRadius} from '../../geo/lng_lat';
 import {Aabb} from '../../util/primitives';
 import {dropBufferConnectionLines, createLineWallGeometry} from '../../geo/line_geometry';
 import {PerformanceUtils} from '../../util/performance';
-import {LayerTypeMask, type TileFootprint} from '../../../3d-style/util/conflation';
 
 import type {Elevation} from '../../terrain/elevation';
 import type {FillExtrusionGroundRadiusLayoutArray} from '../array_types';
@@ -59,6 +59,7 @@ import type {SpritePositions} from '../../util/image';
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
+import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {WallGeometry} from '../../geo/line_geometry';
 import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
 import type {ImageId} from '../../style-spec/expression/types/image_id';
@@ -178,6 +179,7 @@ export class PartData {
     max: Point;
     height: number;
     buildingId: number;
+    groupCentroidPos: Point;
 
     constructor() {
         this.centroidXY = new Point(0, 0);
@@ -194,6 +196,7 @@ export class PartData {
         this.max = new Point(-Number.MAX_VALUE, -Number.MAX_VALUE);
         this.height = 0;
         this.buildingId = 0;
+        this.groupCentroidPos = new Point(0, 0);
     }
 
     span(): Point {
@@ -208,6 +211,7 @@ class BorderCentroidData {
     accCount: number;
     borders: Array<[number, number]> | null | undefined; // Array<[min, max]>
     centroidDataIndex: number;
+    buildingId: number | undefined;
 
     constructor() {
         this.acc = new Point(0, 0);
@@ -580,7 +584,7 @@ export class GroundEffect {
     }
 
     updateHiddenByLandmark(data: PartData) {
-        const hide = !!(data.flags & HIDDEN_BY_REPLACEMENT);
+        const hide = !!((data.flags & HIDDEN_BY_REPLACEMENT) || (data.flags & HIDDEN_BY_CLIP));
         this.updateHiddenByLandmarkRange(data.groundVertexArrayOffset, data.groundVertexCount, hide);
     }
 
@@ -691,6 +695,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
     featuresOnBorder: Array<BorderCentroidData>;
     borderFeatureIndices: Array<Array<number>>;
     centroidData: Array<PartData>;
+    buildingGroups: Map<number, {accX: number, accY: number, accCount: number, mergedMin: Point, mergedMax: Point, partIndices: Array<number>}>;
     // borders / borderDoneWithNeighborZ: 0 - left, 1, right, 2 - top, 3 - bottom
     borderDoneWithNeighborZ: Array<number>;
     selfDEMTileTimestamp: number;
@@ -747,6 +752,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         this.partLookup = {};
         this.triangleSubSegments = [];
         this.polygonSegments = [];
+        this.buildingGroups = new Map();
 
         this.worldview = options.worldview;
         this.hasAppearances = null;
@@ -756,6 +762,10 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
     }
 
     updateAppearances(_canonical?: CanonicalTileID, _featureState?: FeatureStates, _availableImages?: Array<ImageId>, _globalProperties?: GlobalProperties) {
+        return {
+            hasLayoutChanges: false,
+            hasUboChanges: false
+        };
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
@@ -804,6 +814,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
             options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, vertexArrayOffset);
         }
+        this._finalizeBuildingGroups();
         this.sortBorders();
         if (this.projection.name === "mercator") {
             this.splitToSubtiles();
@@ -827,6 +838,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                 this.addFeature(featureId, feature, geometry, feature.index, canonical, imagePositions, availableImages, tileTransform, brightness);
             }
         }
+        this._finalizeBuildingGroups();
         this.sortBorders();
         if (this.projection.name === "mercator") {
             this.splitToSubtiles();
@@ -910,6 +922,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         if (feature.properties && feature.properties.hasOwnProperty('building_id')) {
             centroid.buildingId = Number(feature.properties['building_id']);
         }
+        borderCentroidData.buildingId = centroid.buildingId;
 
         const base = this.layers[0].paint.get('fill-extrusion-base').evaluate(feature, {}, canonical);
         const onGround = base <= 0;
@@ -1308,6 +1321,30 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
         // hiddenCentroid {0, 1}: it is initially hidden as borders are processed later.
         centroid.centroidXY = borderCentroidData.borders ? HIDDEN_CENTROID : this.encodeCentroid(borderCentroidData, centroid);
+
+        // Pass 1 of two-pass centroid grouping: accumulate building group data.
+        if (feature.properties && feature.properties.hasOwnProperty('building_id')) {
+            const bid = centroid.buildingId;
+            let group = this.buildingGroups.get(bid);
+            if (!group) {
+                group = {
+                    accX: 0, accY: 0, accCount: 0,
+                    mergedMin: new Point(Number.MAX_VALUE, Number.MAX_VALUE),
+                    mergedMax: new Point(-Number.MAX_VALUE, -Number.MAX_VALUE),
+                    partIndices: []
+                };
+                this.buildingGroups.set(bid, group);
+            }
+            group.accX += borderCentroidData.acc.x;
+            group.accY += borderCentroidData.acc.y;
+            group.accCount += borderCentroidData.accCount;
+            group.mergedMin.x = Math.min(group.mergedMin.x, centroid.min.x);
+            group.mergedMin.y = Math.min(group.mergedMin.y, centroid.min.y);
+            group.mergedMax.x = Math.max(group.mergedMax.x, centroid.max.x);
+            group.mergedMax.y = Math.max(group.mergedMax.y, centroid.max.y);
+            group.partIndices.push(this.centroidData.length);
+        }
+
         this.centroidData.push(centroid);
 
         if (borderCentroidData.borders) {
@@ -1327,6 +1364,42 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         this.groundEffect.addPaintPropertiesData(feature, index, imagePositions, availableImages, canonical, brightness, this.worldview);
         // compute maximum height of the bucket
         this.maxHeight = Math.max(this.maxHeight, height);
+    }
+
+    // Pass 2 of two-pass centroid grouping: finalize shared centroids for building groups.
+    // All parts with the same building_id get an identical centroid computed from the
+    // union of all their geometries.
+    _finalizeBuildingGroups() {
+        for (const [, group] of this.buildingGroups) {
+            if (group.partIndices.length === 0) continue;
+
+            // Compute the shared centroid from accumulated data
+            const sharedBorderData = new BorderCentroidData();
+            sharedBorderData.acc = new Point(group.accX, group.accY);
+            sharedBorderData.accCount = group.accCount;
+
+            // Build a PartData with the merged bounding box for span computation
+            const sharedPartData = new PartData();
+            sharedPartData.min = group.mergedMin;
+            sharedPartData.max = group.mergedMax;
+
+            const sharedCentroidXY = this.encodeCentroid(sharedBorderData, sharedPartData);
+            const groupCentroid = sharedBorderData.centroid();
+
+            // Write the shared centroid to all non-border parts of this building
+            for (const idx of group.partIndices) {
+                const part = this.centroidData[idx];
+                // Don't overwrite border parts (they keep HIDDEN_CENTROID until border stitching)
+                if (part.centroidXY.x !== HIDDEN_CENTROID.x || part.centroidXY.y !== HIDDEN_CENTROID.y) {
+                    part.centroidXY = sharedCentroidXY;
+                }
+                // Update min/max to the merged bounding box so span is consistent
+                part.min = group.mergedMin;
+                part.max = group.mergedMax;
+                part.groupCentroidPos = groupCentroid;
+            }
+        }
+        this.buildingGroups.clear();
     }
 
     sortBorders() {
@@ -1536,13 +1609,15 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
     // ---------------------------------------------
     //     0     0    Default, no flat roof.
     //     0     1    Hide, used to hide parts of buildings on border while expecting the other side to get loaded
-    //    >0     0    Elevation encoded to uint16 word
-    //    >0    >0    Encoded centroid position and x & y span
+    //    >0     0         Elevation encoded to uint16 word
+    //    >0    >0 y&7!=7  Encoded centroid position and x & y span
+    //    >0    >0 y&7==7  Border elevation + position (for front-cutoff across tiles)
     encodeCentroid(borderCentroidData: BorderCentroidData, data: PartData): Point {
         const c = borderCentroidData.centroid();
         const span = data.span();
         const spanX = Math.min(7, Math.round(span.x * this.tileToMeter / 10));
-        const spanY = Math.min(7, Math.round(span.y * this.tileToMeter / 10));
+        // Cap spanY at 6: value 7 is reserved as marker for border elevation+position encoding
+        const spanY = Math.min(6, Math.round(span.y * this.tileToMeter / 10));
         return new Point((clamp(c.x, 1, EXTENT - 1) << 3) | spanX, (clamp(c.y, 1, EXTENT - 1) << 3) | spanY);
     }
 
@@ -1569,9 +1644,18 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
     showCentroid(borderCentroidData: BorderCentroidData) {
         const c = this.centroidData[borderCentroidData.centroidDataIndex];
-        c.flags &= (HIDDEN_BY_REPLACEMENT | HIDDEN_BY_CLIP);
-        c.centroidXY.x = 0;
-        c.centroidXY.y = 0;
+        c.flags &= HIDDEN_BY_REPLACEMENT;
+        if (c.groupCentroidPos.x !== 0 || c.groupCentroidPos.y !== 0) {
+            const span = c.span();
+            const spanX = Math.min(7, Math.round(span.x * this.tileToMeter / 10));
+            const spanY = Math.min(6, Math.round(span.y * this.tileToMeter / 10));
+            c.centroidXY = new Point(
+                (clamp(c.groupCentroidPos.x, 1, EXTENT - 1) << 3) | spanX,
+                (clamp(c.groupCentroidPos.y, 1, EXTENT - 1) << 3) | spanY
+            );
+        } else {
+            c.centroidXY = new Point(0, 0);
+        }
         this.writeCentroidToBuffer(c);
     }
 
@@ -1581,7 +1665,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         const vertexArrayBounds = data.vertexCount + data.vertexArrayOffset;
         assert(vertexArrayBounds <= this.centroidVertexArray.length);
         assert(this.centroidVertexArray.length === this.layoutVertexArray.length);
-        const c = data.flags & HIDDEN_BY_REPLACEMENT || data.flags & HIDDEN_BY_CLIP ? HIDDEN_CENTROID : data.centroidXY;
+        const c = data.flags & (HIDDEN_BY_REPLACEMENT | HIDDEN_BY_CLIP) ? HIDDEN_CENTROID : data.centroidXY;
         // All the vertex data is the same, use the first to exit early if it is not needed to re-write all.
         const firstX = this.centroidVertexArray.geta_centroid_pos0(offset);
         const firstY = this.centroidVertexArray.geta_centroid_pos1(offset);
@@ -1654,7 +1738,11 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                         continue;
                     }
                     if (region.footprint.buildingIds.has(centroid.buildingId)) {
-                        centroid.flags |= HIDDEN_BY_REPLACEMENT;
+                        if (region.clipMask !== LayerTypeMask.None) {
+                            centroid.flags |= HIDDEN_BY_CLIP | HIDDEN_BY_REPLACEMENT;
+                        } else {
+                            centroid.flags |= HIDDEN_BY_REPLACEMENT;
+                        }
                     }
                 }
             } else {
@@ -1662,7 +1750,6 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                     if (centroid.flags & HIDDEN_BY_REPLACEMENT) {
                         continue;
                     }
-
                     if (centroid.flags & HIDDEN_BY_CLIP) {
                         continue;
                     }
@@ -1700,7 +1787,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                             // Landmark and building replacements don't define which layers to clip.
                             // We can use clipMask to check if it's a clip region or not.
                             if (region.clipMask !== LayerTypeMask.None) {
-                                centroid.flags |= HIDDEN_BY_CLIP;
+                                centroid.flags |= HIDDEN_BY_CLIP | HIDDEN_BY_REPLACEMENT;
                             } else {
                                 centroid.flags |= HIDDEN_BY_REPLACEMENT;
                             }

@@ -10,11 +10,19 @@
 // #define scale 63.0
 #define EXTRUDE_SCALE 0.015873016
 
-in vec2 a_pos_normal;
-in vec4 a_data;
+in ivec2 a_pos_normal;
+in uvec4 a_data;
 #if defined(ELEVATED) || defined(ELEVATED_ROADS) || defined(VARIABLE_LINE_WIDTH)
 in vec3 a_z_offset_width;
 #endif
+#ifdef DEBUG_ELEVATION_ID
+in vec3 a_elevation_id_col;
+#endif
+
+#ifdef DEBUG_ELEVATION_ID
+out vec3 v_elevation_id_col;
+#endif
+
 #ifdef ELEVATION_GROUND_SCALE
 in float a_elevation_ground_scale;
 #endif
@@ -95,7 +103,7 @@ out highp float v_depth;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float floorwidth
-#pragma mapbox: define lowp vec4 dash
+#pragma mapbox: define mediump uvec4 dash
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define mediump float gapwidth
@@ -178,7 +186,7 @@ CurveResult calculateCurve(float line_progress) {
 void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize lowp float floorwidth
-    #pragma mapbox: initialize lowp vec4 dash
+    #pragma mapbox: initialize mediump uvec4 dash
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize mediump float gapwidth
@@ -193,6 +201,9 @@ void main() {
 #if defined(ELEVATED) || defined(ELEVATED_ROADS)
     a_z_offset = a_z_offset_width.x;
 #endif
+#ifdef DEBUG_ELEVATION_ID
+    v_elevation_id_col = a_elevation_id_col;
+#endif
 
     highp float line_progress = 0.0;
 #if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET) || defined(RENDER_LINE_CURVE)
@@ -203,14 +214,15 @@ void main() {
     // Retina devices need a smaller distance to avoid aliasing.
     float ANTIALIASING = 1.0 / u_device_pixel_ratio / 2.0;
 
-    vec2 a_extrude = a_data.xy - 128.0;
-    float a_direction = mod(a_data.z, 4.0) - 1.0;
-    vec2 pos = floor(a_pos_normal * 0.5);
+    vec2 a_extrude = vec2(a_data.xy) - 128.0;
+    float a_direction = float(a_data.z & 3u) - 1.0;
+    vec2 pos_normal = vec2(a_pos_normal);
+    vec2 pos = floor(pos_normal * 0.5);
 
     // x is 1 if it's a round cap, 0 otherwise
     // y is 1 if the normal points up, and -1 if it points down
     // We store these in the least significant bit of a_pos_normal
-    mediump vec2 normal = a_pos_normal - 2.0 * pos;
+    mediump vec2 normal = pos_normal - 2.0 * pos;
     normal.y = normal.y * 2.0 - 1.0;
 
     v_normal = normal;
@@ -298,7 +310,7 @@ void main() {
 #ifdef CROSS_SLOPE_VERTICAL
     // Vertical line
     // The least significant bit of a_pos_normal.y hold 1 if it's on top, 0 for bottom
-    float top = a_pos_normal.y - 2.0 * floor(a_pos_normal.y * 0.5);
+    float top = pos_normal.y - 2.0 * floor(pos_normal.y * 0.5);
     float line_height = 2.0 * u_tile_to_meter * outset * top * u_pixels_to_tile_units[1][1] + scaled_z_offset;
     ele = sample_elevation(offset_pos) + line_height;
     // Ignore projected extrude for vertical lines
@@ -333,11 +345,12 @@ void main() {
 #ifndef ELEVATED
 #ifndef VARIABLE_LINE_WIDTH
 #ifndef RENDER_TO_TEXTURE
-    // Scale up sub-pixel extrusions of inner line width to ensure minimum half-pixel visibility
+    // Scale up sub-pixel extrusions of inner line width to ensure minimum half-pixel visibility.
+    // Only apply when line width >= 1px — lines intentionally styled < 1px should not be diluted.
     float base_w = gl_Position.w;
     vec2 screen_width = abs(projected_extrude.xy / base_w * u_units_to_pixels);
     float max_extrude_component = max(screen_width.x, screen_width.y);
-    if (base_w > 0.0 && max_extrude_component > 0.0001) {
+    if (width >= 1.0 && base_w > 0.0 && max_extrude_component > 0.0001) {
         float min_pixel = 1.05; // u_units_to_pixels is [2 / width, 2 / height], not using half pixel for halfwidth here
         if (max_extrude_component < min_pixel) {
             vec2 abs_pos = abs(gl_Position.xy);
@@ -407,10 +420,11 @@ void main() {
 #endif
 
 #ifdef RENDER_LINE_DASH
-    float scale = dash.z == 0.0 ? 0.0 : u_tile_units_to_pixels / dash.z;
-    float height = dash.y;
+    vec4 dashf = vec4(dash);
+    float totalLength = dashf.z + dashf.w / 65535.0;
+    float scale = totalLength == 0.0 ? 0.0 : u_tile_units_to_pixels / totalLength;
 
-    v_tex = vec2(a_linesofar * scale / (floorwidth * u_floor_width_scale), (-normal.y * height + dash.x + 0.5) / u_texsize.y);
+    v_tex = vec2(a_linesofar * scale / (floorwidth * u_floor_width_scale), (-normal.y * dashf.y + dashf.x + 0.5) / u_texsize.y);
 #endif
 
     v_width2_dilute = vec4(outset, inset, dilute_scale, dilute_border_scale);

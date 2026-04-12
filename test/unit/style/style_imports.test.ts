@@ -7,7 +7,7 @@ import Style from '../../../src/style/style';
 import Transform from '../../../src/geo/transform';
 import StyleLayer from '../../../src/style/style_layer';
 import VectorTileSource from '../../../src/source/vector_tile_source';
-import GlyphManager from '../../../src/render/glyph_manager';
+import {GlyphLoader} from '../../../src/style/glyph_loader';
 import {Event} from '../../../src/util/evented';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import {makeFQID} from '../../../src/util/fqid';
@@ -364,7 +364,7 @@ describe('Style#loadURL', () => {
         style.loadURL('/style.json');
 
         await waitFor(style, "style.load");
-        expect(spy).toHaveBeenCalledTimes(2);
+        expect(spy).toHaveBeenCalledTimes(3);
 
         // initial root style 'data' event
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -381,6 +381,14 @@ describe('Style#loadURL', () => {
         expect(spy.mock.calls[1][0].dataType).toEqual('style');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(spy.mock.calls[1][0].style.scope).toEqual('streets');
+
+        // root style 'data' event after mergeAll() — fired by _loadImports() once the import settles
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(spy.mock.calls[2][0].target).toEqual(map);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(spy.mock.calls[2][0].dataType).toEqual('style');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(spy.mock.calls[2][0].style.scope).toEqual('');
 
     });
 
@@ -586,7 +594,7 @@ describe('Style#loadJSON', () => {
         style.loadJSON(initialStyle);
 
         await waitFor(style, "style.load");
-        expect(spy).toHaveBeenCalledTimes(2);
+        expect(spy).toHaveBeenCalledTimes(3);
 
         // initial root style 'data' event
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -603,6 +611,14 @@ describe('Style#loadJSON', () => {
         expect(spy.mock.calls[1][0].dataType).toEqual('style');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(spy.mock.calls[1][0].style.scope).toEqual('streets');
+
+        // root style 'data' event after mergeAll() — fired by _loadImports() once the import settles
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(spy.mock.calls[2][0].target).toEqual(map);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(spy.mock.calls[2][0].dataType).toEqual('style');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(spy.mock.calls[2][0].style.scope).toEqual('');
 
     });
 
@@ -2503,7 +2519,7 @@ describe('Glyphs', () => {
         }));
 
         await waitFor(style, "style.load");
-        vi.spyOn(GlyphManager, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate) => {
+        vi.spyOn(GlyphLoader.prototype, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate) => {
             expect(urlTemplate).toEqual('mapbox://fonts/mapbox/{fontstack}/{range}.pbf');
             expect(style.serialize().glyphs).toEqual(undefined);
         });
@@ -2527,7 +2543,7 @@ describe('Glyphs', () => {
         }));
 
         await waitFor(style, "style.load");
-        vi.spyOn(GlyphManager, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate) => {
+        vi.spyOn(GlyphLoader.prototype, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate) => {
             expect(urlTemplate).toEqual('mapbox://fonts/foo/{fontstack}/{range}.pbf');
         });
 
@@ -2549,7 +2565,7 @@ describe('Glyphs', () => {
         }));
 
         await waitFor(style, "style.load");
-        vi.spyOn(GlyphManager, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate) => {
+        vi.spyOn(GlyphLoader.prototype, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate) => {
             expect(urlTemplate).toEqual('mapbox://fonts/bar/{fontstack}/{range}.pbf');
         });
 

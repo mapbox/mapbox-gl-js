@@ -5,6 +5,7 @@ import * as DOM from '../util/dom';
 import {getImage, ResourceType} from '../util/ajax';
 import {
     RequestManager,
+    parseAccessToken,
     mapSessionAPI,
     mapLoadEvent,
     getMapSessionAPI,
@@ -125,6 +126,7 @@ export type SetStyleOptions = {
     };
     localFontFamily: StyleOptions['localFontFamily'];
     localIdeographFontFamily: StyleOptions['localIdeographFontFamily'];
+    useServerFontComposition?: StyleOptions['useServerFontComposition'];
 };
 
 type Listener<T extends MapEventType> = (event: MapEventOf<T>) => void;
@@ -210,10 +212,10 @@ export type MapOptions = {
     fadeDuration?: number;
     localFontFamily?: string;
     localIdeographFontFamily?: string;
+    useServerFontComposition?: boolean;
     performanceMetricsCollection?: boolean;
     tessellationStep?: number;
     scaleFactor?: number;
-    spriteFormat?: SpriteFormat;
     pitchRotateKey?: PitchRotateKey;
 };
 
@@ -265,6 +267,7 @@ const defaultOptions = {
     maxTileCacheSize: null,
     localIdeographFontFamily: 'sans-serif',
     localFontFamily: null,
+    useServerFontComposition: true,
     transformRequest: null,
     accessToken: null,
     fadeDuration: 300,
@@ -274,7 +277,6 @@ const defaultOptions = {
     testMode: false,
     precompilePrograms: true,
     scaleFactor: 1.0,
-    spriteFormat: 'auto',
 } satisfies Omit<MapOptions, 'container'>;
 
 /**
@@ -405,7 +407,6 @@ const defaultOptions = {
  * for high-density displays. The scale factor is clamped per-layer by `text-size-scale-range`
  * and `icon-size-scale-range` style properties.
  * This option is experimental and may change in future releases.
- * @param {'raster' | 'icon_set' | 'auto'} [options.spriteFormat='auto'] The format of the image sprite to use. If set to `'auto'`, vector iconset will be used for all mapbox-hosted sprites and raster sprite for all custom URLs.
  * @param {ProjectionSpecification} [options.projection='mercator'] The [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) the map should be rendered in.
  * Supported projections are:
  * * [Albers](https://en.wikipedia.org/wiki/Albers_projection) equal-area conic projection as `albers`
@@ -497,6 +498,7 @@ export class Map extends Camera {
     _mapId: number;
     _localIdeographFontFamily: string;
     _localFontFamily?: string;
+    _useServerFontComposition?: boolean;
     _requestManager: RequestManager;
     _locale: Partial<typeof defaultLocale>;
     _removed: boolean;
@@ -518,6 +520,7 @@ export class Map extends Camera {
     _precompilePrograms: boolean;
     _interactions: InteractionSet;
     _scaleFactor: number;
+    _tokenExpiration?: number;
 
     // `_useExplicitProjection` indicates that a projection is set by a call to map.setProjection()
     _useExplicitProjection: boolean;
@@ -658,6 +661,8 @@ export class Map extends Camera {
         this._scaleFactor = options.scaleFactor;
 
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
+        const tokenData = parseAccessToken(options.accessToken || config.ACCESS_TOKEN);
+        if (tokenData && 'atlas' in tokenData && typeof tokenData.atlas === 'number') this._tokenExpiration = tokenData.atlas;
         this._silenceAuthErrors = !!options.testMode;
         if (options.contextCreateOptions) {
             this._contextCreateOptions = Object.assign({}, options.contextCreateOptions);
@@ -687,7 +692,7 @@ export class Map extends Camera {
             this.setMaxBounds(options.maxBounds);
         }
 
-        this._spriteFormat = options.spriteFormat;
+        this._spriteFormat = 'auto';
 
         bindAll([
             '_onWindowOnline',
@@ -738,13 +743,15 @@ export class Map extends Camera {
 
         this._localFontFamily = options.localFontFamily;
         this._localIdeographFontFamily = options.localIdeographFontFamily;
+        this._useServerFontComposition = options.useServerFontComposition;
 
         if (options.style || !options.testMode) {
             const style = options.style || config.DEFAULT_STYLE;
             this.setStyle(style, {
                 config: options.config,
                 localFontFamily: this._localFontFamily,
-                localIdeographFontFamily: this._localIdeographFontFamily
+                localIdeographFontFamily: this._localIdeographFontFamily,
+                useServerFontComposition: this._useServerFontComposition
             });
         }
 
@@ -1411,7 +1418,7 @@ export class Map extends Camera {
 
         this._worldview = worldview;
         this._styleDirty = true;
-        this.style.reloadSources();
+        this.style.setWorldview(worldview);
 
         return this;
     }
@@ -2335,7 +2342,7 @@ export class Map extends Camera {
      * });
      */
     setStyle(style: StyleSpecification | string | null, options?: SetStyleOptions): this {
-        options = Object.assign({}, {localIdeographFontFamily: this._localIdeographFontFamily, localFontFamily: this._localFontFamily}, options);
+        options = Object.assign({}, {localIdeographFontFamily: this._localIdeographFontFamily, localFontFamily: this._localFontFamily, useServerFontComposition: this._useServerFontComposition}, options);
 
         const diffNeeded =
             options.diff !== false &&
@@ -4812,24 +4819,38 @@ export class Map extends Camera {
     * and the Mapbox Terms of Service are available at https://www.mapbox.com/tos/
     ******************************************************************************/
 
+    _isTokenExpired() {
+        return this._tokenExpiration != null && Date.now() > this._tokenExpiration;
+    }
+
+    _revokeAuth() {
+        const gl = this.painter.context.gl;
+        storeAuthState(gl, false);
+
+        if (this._logoControl instanceof LogoControl) {
+            this._logoControl._updateLogo();
+        }
+
+        if (gl) {
+            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+        }
+
+        if (!this._silenceAuthErrors) {
+            this.fire(new ErrorEvent(new Error('A valid Mapbox access token is required to use Mapbox GL JS. To create an account or a new access token, visit https://account.mapbox.com/')));
+        }
+    }
+
     _authenticate() {
         getMapSessionAPI(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, (err: AJAXError) => {
             if (err) {
                 // throwing an error here will cause the callback to be called again unnecessarily
                 if (err.message === AUTH_ERR_MSG || err.status === 401) {
-                    const gl = this.painter.context.gl;
-                    storeAuthState(gl, false);
-                    if (this._logoControl instanceof LogoControl) {
-                        this._logoControl._updateLogo();
-                    }
-                    if (gl) gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-
-                    if (!this._silenceAuthErrors) {
-                        this.fire(new ErrorEvent(new Error('A valid Mapbox access token is required to use Mapbox GL JS. To create an account or a new access token, visit https://account.mapbox.com/')));
-                    }
+                    this._revokeAuth();
                 }
             }
         });
+
+        if (this._isTokenExpired()) this._revokeAuth();
 
         postMapLoadEvent(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, () => {});
     }
@@ -5143,6 +5164,18 @@ export class Map extends Camera {
         this._update();
     }
 
+    get showElevationIdDebug(): boolean { return this.painter ? this.painter._debugParams.showElevationIdDebug : false; }
+    set showElevationIdDebug(value: boolean) {
+        if (!this.painter || this.painter._debugParams.showElevationIdDebug === value) return;
+        this.painter._debugParams.showElevationIdDebug = value;
+        DevTools.refresh();
+        if (this.style && value) {
+            this.style._reloadSources();
+        } else {
+            this._update();
+        }
+    }
+
     /**
      * Gets and sets a Boolean indicating whether the speedindex metric calculation is on or off
      *
@@ -5197,7 +5230,7 @@ export class Map extends Camera {
         if (this.style && value) {
             // When we turn collision boxes on we have to generate them for existing tiles
             // When we turn them off, there's no cost to leaving existing boxes in place
-            this.style._generateCollisionBoxes();
+            this.style._reloadSources();
         } else {
             // Otherwise, call an update to remove collision boxes
             this._update();

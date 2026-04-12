@@ -70,6 +70,7 @@ class StyleLayer extends Evented {
     expressionDependencies: LayerExpressionDependencies;
     iconImageUseTheme: string | null | undefined;
     appearances: Array<SymbolAppearance>;
+    appearancesVersion: number;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _unevaluatedLayout: Layout<any>;
@@ -108,6 +109,7 @@ class StyleLayer extends Evented {
         this.options = options;
         this.iconImageUseTheme = iconImageUseTheme;
         this.appearances = new Array<SymbolAppearance>();
+        this.appearancesVersion = 0;
 
         this._featureFilter = {filter: () => true, needGeometry: false, needFeature: false};
         this._filterCompiled = false;
@@ -181,17 +183,15 @@ class StyleLayer extends Evented {
 
     getLayoutProperty<T extends keyof LayoutSpecification>(name: T): LayoutSpecification[T] | undefined {
         if (name === 'visibility') {
-            // @ts-expect-error - TS2590 - Expression produces a union type that is too complex to represent.
-            return this.visibility;
+            return this.visibility as LayoutSpecification[T];
         }
 
-        return this._unevaluatedLayout.getValue(name);
+        return this._unevaluatedLayout.getValue(name) as LayoutSpecification[T] | undefined;
     }
 
     setLayoutProperty<T extends keyof LayoutSpecification>(name: string, value: LayoutSpecification[T]): void {
         if (this.type === 'custom' && name === 'visibility') {
-            // @ts-expect-error - TS2590 - Expression produces a union type that is too complex to represent.
-            this.visibility = value;
+            this.visibility = value as 'visible' | 'none' | undefined;
             return;
         }
 
@@ -214,6 +214,7 @@ class StyleLayer extends Evented {
         appearances.forEach(a => {
             this.appearances.push(new SymbolAppearance(a.condition, a.name, a.properties as AppearanceProps, this.scope, this.options, this.iconImageUseTheme));
         });
+        this.appearancesVersion++;
     }
 
     possiblyEvaluateVisibility() {
@@ -221,8 +222,7 @@ class StyleLayer extends Evented {
             // Early return for layers which don't have a visibility property.
             return;
         }
-        // @ts-expect-error - TS2322 - Type 'unknown' is not assignable to type '"none" | "visible"'. | TS2345 - Argument of type '{ zoom: number; }' is not assignable to parameter of type 'EvaluationParameters'.
-        this.visibility = this._unevaluatedLayout._values.visibility.possiblyEvaluate({zoom: 0});
+        this.visibility = this._unevaluatedLayout._values.visibility.possiblyEvaluate({zoom: 0} as EvaluationParameters) as 'visible' | 'none' | undefined;
     }
 
     getPaintProperty<T extends keyof PaintSpecification>(name: T): PaintSpecification[T] | undefined {
@@ -473,8 +473,7 @@ class StyleLayer extends Evented {
         transform: Transform
     ) : QueryResult { return {}; }
 
-    // @ts-expect-error - TS2355 - A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
-    queryRadius(_bucket: Bucket): number {}
+    queryRadius(_bucket: Bucket): number | undefined { return undefined; }
 
     queryIntersectsFeature(
         _queryGeometry: TilespaceQueryGeometry,
@@ -487,8 +486,7 @@ class StyleLayer extends Evented {
         _elevationHelper: DEMSampler | null | undefined,
         _layoutVertexArrayOffset: number,
         scope: string | undefined
-        // @ts-expect-error - TS2355 - A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
-    ): boolean | number {}
+    ): boolean | number | undefined { return undefined; }
 }
 
 export default StyleLayer;

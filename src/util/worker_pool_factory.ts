@@ -1,5 +1,7 @@
 import WorkerPool, {PRELOAD_POOL_ID} from './worker_pool';
+import Dispatcher from './dispatcher';
 
+let globalDispatcher: Dispatcher | null = null;
 let globalWorkerPool: WorkerPool | null | undefined;
 let imageRasterizerWorkerPool: WorkerPool | null | undefined;
 
@@ -31,7 +33,20 @@ export function prewarm() {
     workerPool.acquire(PRELOAD_POOL_ID);
 }
 
+export function getGlobalDispatcher(): Dispatcher {
+    if (!globalDispatcher) {
+        globalDispatcher = new Dispatcher(getGlobalWorkerPool(), {});
+    }
+    return globalDispatcher;
+}
+
 export function clearPrewarmedResources() {
+    const dispatcher = globalDispatcher;
+    if (dispatcher) {
+        dispatcher.remove();
+        globalDispatcher = null;
+    }
+
     const pool = globalWorkerPool;
     if (pool) {
         // Remove the pool only if all maps that referenced the preloaded global worker pool have been removed.

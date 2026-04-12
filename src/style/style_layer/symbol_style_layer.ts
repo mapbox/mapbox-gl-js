@@ -6,7 +6,7 @@ import resolveTokens from '../../util/resolve_tokens';
 import {getLayoutProperties, getPaintProperties} from './symbol_style_layer_properties';
 import {computeColorAdjustmentMatrix} from '../../util/util';
 import {
-    PossiblyEvaluatedPropertyValue
+    PossiblyEvaluatedPropertyValue,
 } from '../properties';
 import {
     isExpression,
@@ -23,6 +23,7 @@ import Literal from '../../style-spec/expression/definitions/literal';
 import ProgramConfiguration from '../../data/program_configuration';
 
 import type {
+    DataDrivenProperty,
     PropertyValue,
     ConfigOptions, Properties,
     Transitionable,
@@ -193,11 +194,11 @@ class SymbolStyleLayer extends StyleLayer {
         canonical: CanonicalTileID,
         availableImages: ImageId[],
     ) {
-        const property = appearance.getProperty(name) as unknown as PossiblyEvaluatedPropertyValue<LayoutProps[T]>;
+        const property = appearance.getLayoutProperty(name) as unknown as PossiblyEvaluatedPropertyValue<LayoutProps[T]>;
         if (!property) return;
 
         const value = property.evaluate(feature, {}, canonical, availableImages);
-        const unevaluated = appearance.getUnevaluatedProperties()._values[name];
+        const unevaluated = appearance.getUnevaluatedLayoutProperties()._values[name];
         if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value) && value && typeof value === 'string') {
             return resolveTokens(feature.properties, value);
         }
@@ -237,11 +238,11 @@ class SymbolStyleLayer extends StyleLayer {
                                                           overriden.value.zoomStops,
                                                           overriden.value.interpolationType) as CompositeExpression);
             }
-            // @ts-expect-error - TS2322 - Type 'PossiblyEvaluatedPropertyValue<PaintProps>' is not assignable to type 'never'.
-            this.paint._values[overridable] = new PossiblyEvaluatedPropertyValue(overriden.property,
-                                                                                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                                                                                 expression,
-                                                                                 overriden.parameters);
+            (this.paint._values as unknown as Record<string, PossiblyEvaluatedPropertyValue<unknown>>)[overridable] =
+                new PossiblyEvaluatedPropertyValue(overriden.property as DataDrivenProperty<unknown>,
+                                                   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                                                   expression,
+                                                   overriden.parameters);
         }
     }
 

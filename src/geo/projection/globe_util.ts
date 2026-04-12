@@ -767,7 +767,7 @@ export class GlobeSharedBuffers {
 
         // Index adjustment, used to make strip (x, y) vertex input attribute data
         // to match same data on ordinary grid edges
-        const prepareVertex = (x: number, y: number, isSkirt: boolean) => {
+        const prepareVertex = (x: number, y: number, isSkirt: boolean): [number, number] => {
             if (!EMBED_SKIRTS) return [x, y];
 
             let adjustedX = (() => {
@@ -790,7 +790,6 @@ export class GlobeSharedBuffers {
         // Add first horizontal strip if present
         if (EMBED_SKIRTS) {
             for (let x = 0; x < xVertices; ++x) {
-                // @ts-expect-error - TS2556 - A spread argument must either have a tuple type or be passed to a rest parameter.
                 vertices.emplaceBack(...prepareVertex(x, 0, true));
             }
         }
@@ -800,7 +799,6 @@ export class GlobeSharedBuffers {
             for (let x = 0; x < xVertices; ++x) {
                 const isSideBorder = (x === 0 || x === xVertices - 1);
 
-                // @ts-expect-error - TS2556 - A spread argument must either have a tuple type or be passed to a rest parameter.
                 vertices.emplaceBack(...prepareVertex(x, y, isSideBorder && EMBED_SKIRTS));
             }
         }
@@ -810,7 +808,6 @@ export class GlobeSharedBuffers {
             for (let lodIdx = 0; lodIdx < latitudinalLods.length; ++lodIdx) {
                 const lastYRowForLod = latitudinalLods[lodIdx];
                 for (let x = 0; x < xVertices; ++x) {
-                    // @ts-expect-error - TS2556 - A spread argument must either have a tuple type or be passed to a rest parameter.
                     vertices.emplaceBack(...prepareVertex(x, lastYRowForLod, true));
                 }
             }

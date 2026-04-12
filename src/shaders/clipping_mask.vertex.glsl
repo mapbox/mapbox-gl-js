@@ -1,4 +1,4 @@
-in vec2 a_pos;
+in ivec2 a_pos;
 
 uniform mat4 u_matrix;
 

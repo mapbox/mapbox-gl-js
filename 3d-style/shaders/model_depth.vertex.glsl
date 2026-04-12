@@ -1,7 +1,6 @@
 in vec3 a_pos_3f;
 
 uniform mat4 u_matrix;
-out highp float v_depth;
 
 #ifdef MODEL_POSITION_ON_GPU
 #ifdef INSTANCED_ARRAYS
@@ -48,6 +47,4 @@ void main() {
 #else
     gl_Position = u_matrix * vec4(a_pos_3f, 1);
 #endif
-
-    v_depth = gl_Position.z / gl_Position.w;
 }

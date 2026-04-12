@@ -1,33 +1,73 @@
 import DEMData from '../data/dem_data';
+import {getArrayBuffer} from '../util/ajax';
+import {getExpiryDataFromHeaders, prevPowerOfTwo} from '../util/util';
 
+import type {DEMSourceEncoding} from '../data/dem_data';
+import type {Cancelable} from '../../src/types/cancelable';
 import type {
     WorkerSource,
+    WorkerSourceOptions,
     WorkerSourceTileRequest,
-    WorkerSourceVectorTileCallback,
     WorkerSourceDEMTileRequest,
-    WorkerSourceDEMTileCallback
+    WorkerSourceDEMTileCallback,
+    WorkerSourceVectorTileCallback
 } from './worker_source';
 
 class RasterDEMTileWorkerSource implements WorkerSource {
+    loading: Record<number, Cancelable>;
     offscreenCanvas: OffscreenCanvas;
     offscreenCanvasContext: OffscreenCanvasRenderingContext2D;
 
+    constructor(options: WorkerSourceOptions) {
+        this.loading = {};
+    }
+
     loadTile(params: WorkerSourceDEMTileRequest, callback: WorkerSourceDEMTileCallback) {
-        const {uid, encoding, rawImageData, padding} = params;
-        // Main thread will transfer ImageBitmap if offscreen decode with OffscreenCanvas is supported, else it will transfer an already decoded image.
-        // Flow struggles to refine ImageBitmap type
-        const imagePixels = ImageBitmap && rawImageData instanceof ImageBitmap ? this.getImageData(rawImageData, padding) : (rawImageData as ImageData);
-        const dem = new DEMData(uid, imagePixels, encoding, padding < 1);
-        callback(null, dem);
+        const uid = params.uid;
+
+        const {cancel} = getArrayBuffer(params.request, (err?: Error | null, buffer?: ArrayBuffer | null, headers?: Headers) => {
+            const aborted = !this.loading[uid];
+            delete this.loading[uid];
+
+            if (aborted || err || !buffer) {
+                return callback(err);
+            }
+
+            this.decodeTile(uid, buffer, params.encoding)
+                .then((result) => {
+                    const {expires, cacheControl} = getExpiryDataFromHeaders(headers);
+                    callback(null, Object.assign(result, {expires, cacheControl}));
+                })
+                .catch((e: Error) => callback(e));
+        });
+
+        this.loading[uid] = {cancel};
+    }
+
+    async decodeTile(uid: number, buffer: ArrayBuffer, encoding: DEMSourceEncoding): Promise<{dem: DEMData; borderReady: boolean}> {
+        const imgBitmap = await createImageBitmap(new Blob([new Uint8Array(buffer)], {type: 'image/png'}));
+        const imgBuffer = (imgBitmap.width - prevPowerOfTwo(imgBitmap.width)) / 2;
+        const padding = 1 - imgBuffer;
+        const borderReady = padding < 1;
+        const imagePixels = this.getImageData(imgBitmap, padding);
+        imgBitmap.close();
+
+        const dem = new DEMData(uid, imagePixels, encoding, borderReady);
+        return {dem, borderReady};
     }
 
     reloadTile(params: WorkerSourceDEMTileRequest, callback: WorkerSourceDEMTileCallback) {
-        // No-op in the RasterDEMTileWorkerSource class
+        // No-op: DEM tiles have no persistent worker-side state to reload
         callback(null, null);
     }
 
     abortTile(params: WorkerSourceTileRequest, callback: WorkerSourceVectorTileCallback) {
-        // No-op in the RasterDEMTileWorkerSource class
+        const uid = params.uid;
+        const tile = this.loading[uid];
+        if (tile) {
+            tile.cancel();
+            delete this.loading[uid];
+        }
         callback();
     }
 

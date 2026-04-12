@@ -1,0 +1,59 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.005
+    }
+  },
+  "center": [-74.0115, 40.7143],
+  "zoom": 16.00,
+  "pitch": 0,
+  "bearing": 320,
+  "sources": {
+    "pmtiles": {
+      "type": "vector",
+      "url": "local://tiles/vector.pmtiles"
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#ededed"
+      }
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "pmtiles",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "#4488cc"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "pmtiles",
+      "source-layer": "road",
+      "paint": {
+        "line-color": "#fff",
+        "line-width": 2
+      }
+    },
+    {
+      "id": "building",
+      "type": "fill-extrusion",
+      "source": "pmtiles",
+      "source-layer": "building",
+      "paint": {
+        "fill-extrusion-color": "#ddd",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-opacity": 1.0
+      }
+    }
+  ]
+}

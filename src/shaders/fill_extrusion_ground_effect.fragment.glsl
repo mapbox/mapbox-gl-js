@@ -53,7 +53,7 @@ void main() {
 #endif // FOG
 #ifdef RENDER_CUTOFF
     fog *= v_cutoff_opacity;
-#endif // RENDER_CUTOFF
+#endif
     glFragColor = vec4(vec3(0.0), mix(1.0, d, effect_intensity * u_opacity * fog));
 #else // SDF_SUBPASS
 #ifdef USE_MRT1

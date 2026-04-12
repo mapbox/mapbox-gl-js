@@ -223,7 +223,7 @@ class MouseRotateWrapper {
     }
 
     mousedown(e: MouseEvent) {
-        this.down(Object.assign({}, e, {type: e.type, ctrlKey: true, preventDefault: () => e.preventDefault()}), DOM.mousePos(this.element, e));
+        this.down(Object.assign({}, e, {button: e.button, type: e.type, ctrlKey: true, preventDefault: () => e.preventDefault()}), DOM.mousePos(this.element, e));
         window.addEventListener('mousemove', this.mousemove);
         window.addEventListener('mouseup', this.mouseup);
     }

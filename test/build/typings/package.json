@@ -9,6 +9,6 @@
   "devDependencies": {
     "@types/geojson": "*",
     "@types/node": "*",
-    "typescript": "^5.8.3"
+    "typescript": "^6.0.2"
   }
 }

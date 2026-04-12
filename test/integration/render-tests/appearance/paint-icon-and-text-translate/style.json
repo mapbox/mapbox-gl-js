@@ -1,0 +1,92 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.001,
+      "spriteFormat": "raster",
+      "height": 64,
+      "width": 64,
+      "operations": [
+        ["wait"],
+        ["setFeatureState", {
+          "source": "geojson",
+          "id": 2
+        }, {
+          "hover": true
+        }],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "id": 1,
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-10, 0]
+            }
+          },
+          {
+            "id": 2,
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [0, 0]
+            }
+          },
+          {
+            "id": 3,
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [10, 0]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-allow-overlap": true,
+        "text-allow-overlap": true,
+        "icon-image": "dot.sdf",
+        "text-field": "T",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-offset": [0, 1.5],
+        "text-anchor": "top"
+      },
+      "paint": {
+        "icon-color": "blue",
+        "text-color": "blue",
+        "icon-translate": [0, 0],
+        "text-translate": [0, 0]
+      },
+      "appearances": [
+        {
+          "name": "hover",
+          "condition": ["==", ["boolean", ["feature-state", "hover"], false], true],
+          "properties": {
+            "icon-translate": [20, -20],
+            "text-translate": [20, -20]
+          }
+        }
+      ]
+    }
+  ]
+}

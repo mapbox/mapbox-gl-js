@@ -1,0 +1,67 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 128,
+      "allowed": 0.001
+    }
+  },
+  "center": [0, 0],
+  "zoom": 2,
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [-15, 5]},
+            "properties": {"label": "A", "myColor": "red"}
+          },
+          {
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [0, 5]},
+            "properties": {"label": "B", "myColor": "green"}
+          },
+          {
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [15, 5]},
+            "properties": {"label": "C", "myColor": "blue"}
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": ["get", "label"],
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-allow-overlap": true,
+        "text-size": [
+          "interpolate", ["linear"], ["zoom"],
+          0, 8,
+          4, 32
+        ]
+      },
+      "paint": {
+        "text-color": [
+          "interpolate", ["linear"], ["zoom"],
+          0, "black",
+          4, ["get", "myColor"]
+        ]
+      }
+    }
+  ]
+}

@@ -28,11 +28,14 @@ export type ContextOptions = {
     extTextureFloatLinearForceOff?: boolean;
     extStandardDerivativesForceOff?: boolean;
     forceManualRenderingForInstanceIDShaders?: boolean;
+    forceDisableSymbolUBO?: boolean;
 };
 
 class Context {
     gl: WebGL2RenderingContext;
     maxTextureSize: number;
+    maxUniformBlockSize: number;
+    maxUniformBufferBindings: number;
 
     clearColor: ClearColor;
     clearDepth: ClearDepth;
@@ -88,6 +91,7 @@ class Context {
     extBlendFuncExtended: WebGL2BlendFuncExtended | null;
 
     forceManualRenderingForInstanceIDShaders: boolean;
+    disableSymbolUBO: boolean;
 
     constructor(gl: WebGL2RenderingContext, options?: ContextOptions) {
         this.gl = gl;
@@ -149,6 +153,8 @@ class Context {
         // Force manual rendering for instanced draw calls having gl_InstanceID usage in the shader for PowerVR adapters
         this.forceManualRenderingForInstanceIDShaders = (options && !!options.forceManualRenderingForInstanceIDShaders) || (this.renderer && this.renderer.indexOf("PowerVR") !== -1);
 
+        this.disableSymbolUBO = (options && !!options.forceDisableSymbolUBO);
+
         if (!this.options.extTextureFloatLinearForceOff) {
             this.extTextureFloatLinear = gl.getExtension('OES_texture_float_linear');
         }
@@ -158,6 +164,12 @@ class Context {
         this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query_webgl2');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+        // Query UBO limits for dynamic sizing (WebGL2 minimum: 16KB, 36 binding points)
+        // Cap it to a max of 32KB to avoid allocating big UBO buffers
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        this.maxUniformBlockSize = Math.min(gl.getParameter(gl.MAX_UNIFORM_BLOCK_SIZE), 32 * 1024);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        this.maxUniformBufferBindings = gl.getParameter(gl.MAX_UNIFORM_BUFFER_BINDINGS);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.extBlendFuncExtended = gl.getExtension('WEBGL_blend_func_extended');
     }

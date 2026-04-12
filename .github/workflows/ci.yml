@@ -25,6 +25,7 @@ jobs:
         npm run codegen
         git add -A && git diff --staged --exit-code
     - run: npm run tsc
+    - run: npm run tsc:strict
     - run: npm run test-style-spec
     - run: npm run test-expressions
     - run: npm run lint
@@ -44,7 +45,6 @@ jobs:
     - run: npm ci --no-audit --no-fund
     - run: npx playwright install chromium --with-deps --no-shell
     - run: npm run build-dev
-    - run: npm run build-prod
     - run: npm run build-prod-min
     - run: npm run build-esm-prod-min
     - run: npm run build-style-spec
@@ -57,6 +57,7 @@ jobs:
     - run: npm run build -w vite-build-test
     - run: npm run build -w webpack-build-test
     - run: npm run size
+    - run: npm run build-pmtiles
     - run: npm run prepare-release-pages
       if: ${{ always() }}
 

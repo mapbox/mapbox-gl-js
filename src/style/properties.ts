@@ -24,6 +24,7 @@ import type {
 import type {ConfigOptions} from '../style-spec/types/config_options';
 import type {ImageId} from '../style-spec/expression/types/image_id';
 import type {Type} from '../style-spec/expression/types';
+import type {FormattedSection} from '../style-spec/expression/types/formatted';
 
 export type {ConfigOptions};
 
@@ -433,7 +434,7 @@ type PropertyValues<Props> = {
  *
  * @private
  */
-type PropertyValueSpecifications<Props> = Partial<{
+export type PropertyValueSpecifications<Props> = Partial<{
     [Key in keyof Props]: Props[Key] extends Property<infer T, unknown> ?
         PropertyValueSpecification<T extends Color ? string : T> :
         never;
@@ -577,8 +578,9 @@ export class PossiblyEvaluatedPropertyValue<T> {
         featureState: FeatureState,
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
+        formattedSection?: FormattedSection
     ): T {
-        return this.property.evaluate(this.value, this.parameters, feature, featureState, canonical, availableImages, this.iconImageUseTheme);
+        return this.property.evaluate(this.value, this.parameters, feature, featureState, canonical, availableImages, this.iconImageUseTheme, formattedSection);
     }
 }
 
@@ -719,12 +721,13 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         featureState: FeatureState,
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
-        iconImageUseTheme?: string
+        iconImageUseTheme?: string,
+        formattedSection?: FormattedSection
     ): T {
         if (value.kind === 'constant') {
             return value.value;
         } else {
-            return value.evaluate(parameters, feature, featureState, canonical, availableImages, undefined, iconImageUseTheme);
+            return value.evaluate(parameters, feature, featureState, canonical, availableImages, formattedSection, iconImageUseTheme);
         }
     }
 }
@@ -833,9 +836,8 @@ export class Properties<Props extends {[Key in keyof Props]: Props[Key]}> {
         const defaultParameters = new EvaluationParameters(0, {});
         for (const property in properties) {
             const prop = properties[property];
-            // @ts-expect-error - TS2339 - Property 'overridable' does not exist on type 'StylePropertySpecification'.
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            if (prop.specification.overridable) {
+            const spec = (prop as {specification?: {overridable?: boolean}}).specification;
+            if (spec && spec.overridable) {
                 this.overridableProperties.push(property);
             }
 

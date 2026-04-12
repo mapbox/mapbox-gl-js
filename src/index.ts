@@ -16,17 +16,17 @@ import LngLat, {LngLatBounds} from './geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from './geo/mercator_coordinate';
 import {Evented} from './util/evented';
-import config from './util/config';
+import config, {getDracoUrl, getMeshoptUrl, getBuildingGenUrl} from './util/config';
 import {Debug} from './util/debug';
 import {isSafari} from './util/util';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
+import {addTileProvider} from './source/tile_provider';
 import WorkerPool from './util/worker_pool';
 import WorkerClass from './util/worker_class';
 import {prewarm, clearPrewarmedResources} from './util/worker_pool_factory';
 import {clearTileCache} from './util/tile_request_cache';
 import {WorkerPerformanceUtils} from './util/worker_performance_utils';
 import {FreeCameraOptions} from './ui/free_camera';
-import {getDracoUrl, setDracoUrl, setMeshoptUrl, getMeshoptUrl} from '../3d-style/util/loaders';
 import browser from './util/browser';
 
 import type {Class} from './types/class';
@@ -53,6 +53,8 @@ export type {StyleImageInterface} from './style/style_image';
 export type {CustomLayerInterface} from './style/style_layer/custom_style_layer';
 export type {CustomSourceInterface} from './source/custom_source';
 export type {CanvasSourceSpecification} from './source/canvas_source';
+export type {TileProvider, TileDataResponse} from './source/tile_provider';
+export type {TileJSON} from './types/tilejson';
 
 export type {Anchor} from './ui/anchor';
 export type {PopupOptions} from './ui/popup';
@@ -85,6 +87,7 @@ const exported = {
     supported,
     setRTLTextPlugin,
     getRTLTextPluginStatus,
+    addTileProvider,
     Map,
     NavigationControl,
     GeolocateControl,
@@ -304,15 +307,42 @@ const exported = {
     },
 
     set dracoUrl(url: string) {
-        setDracoUrl(url);
+        config.DRACO_URL = browser.resolveURL(url);
     },
 
+    /**
+     * Gets and sets the URL for the Meshopt decoder WASM module.
+     * By default, this is loaded from the Mapbox API CDN relative to
+     * [`baseApiUrl`](https://docs.mapbox.com/mapbox-gl-js/api/properties/#baseapiurl).
+     * The SIMD-optimized variant is automatically selected when supported.
+     *
+     * @var {string} meshoptUrl
+     * @returns {string} The current Meshopt WASM URL.
+     */
     get meshoptUrl(): string {
         return getMeshoptUrl();
     },
 
     set meshoptUrl(url: string) {
-        setMeshoptUrl(url);
+        const resolved = browser.resolveURL(url);
+        config.MESHOPT_URL = resolved;
+        config.MESHOPT_SIMD_URL = resolved;
+    },
+
+    /**
+     * Gets and sets the URL for the building generation WASM module (building_gen.wasm).
+     * By default, this is loaded from the Mapbox API CDN relative to
+     * [`baseApiUrl`](https://docs.mapbox.com/mapbox-gl-js/api/properties/#baseapiurl).
+     *
+     * @var {string} buildingGenUrl
+     * @returns {string} The current building generation WASM URL.
+     */
+    get buildingGenUrl(): string {
+        return getBuildingGenUrl();
+    },
+
+    set buildingGenUrl(url: string) {
+        config.BUILDING_GEN_URL = browser.resolveURL(url);
     },
 
     /**
@@ -368,7 +398,7 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  * @param {boolean} lazy If set to `true`, MapboxGL will defer loading the plugin until right-to-left text is encountered, and
  * right-to-left text will be rendered only after the plugin finishes loading.
  * @example
- * mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
+ * mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.4.0/mapbox-gl-rtl-text.js');
  * @see [Example: Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
  */
 

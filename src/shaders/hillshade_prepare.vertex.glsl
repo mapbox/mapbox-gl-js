@@ -1,8 +1,8 @@
 uniform mat4 u_matrix;
 uniform vec2 u_dimension;
 
-in vec2 a_pos;
-in vec2 a_texture_pos;
+in ivec2 a_pos;
+in uvec2 a_texture_pos;
 
 out vec2 v_pos;
 
@@ -11,5 +11,5 @@ void main() {
 
     highp vec2 epsilon = 1.0 / u_dimension;
     float scale = (u_dimension.x - 2.0) / u_dimension.x;
-    v_pos = (a_texture_pos / 8192.0) * scale + epsilon;
+    v_pos = (vec2(a_texture_pos) / 8192.0) * scale + epsilon;
 }

@@ -31,8 +31,8 @@ class IndexOf implements Expression {
 
     static parse(args: ReadonlyArray<unknown>, context: ParsingContext): IndexOf | null | undefined {
         if (args.length <= 2 ||  args.length >= 5) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'IndexOf'.
-            return context.error(`Expected 3 or 4 arguments, but found ${args.length - 1} instead.`);
+            context.error(`Expected 3 or 4 arguments, but found ${args.length - 1} instead.`);
+            return null;
         }
 
         const needle = context.parse(args[1], 1, ValueType);
@@ -41,8 +41,8 @@ class IndexOf implements Expression {
 
         if (!needle || !haystack) return null;
         if (!isValidType(needle.type, [BooleanType, StringType, NumberType, NullType, ValueType])) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'IndexOf'.
-            return context.error(`Expected first argument to be of type boolean, string, number or null, but found ${toString(needle.type)} instead`);
+            context.error(`Expected first argument to be of type boolean, string, number or null, but found ${toString(needle.type)} instead`);
+            return null;
         }
 
         if (args.length === 4) {

@@ -6,5 +6,5 @@ export const starsLayout: StructArrayLayout = createLayout([
     {type: 'Float32', name: 'a_pos_3f', components: 3},
     {type: 'Float32', name: 'a_uv', components: 2},
     {type: 'Float32', name: 'a_size_scale', components: 1},
-    {type: 'Float32', name: 'a_fade_opacity', components: 1}
+    {type: 'Float32', name: 'a_opacity', components: 1}
 ]);

@@ -23,6 +23,7 @@ import {HD_ELEVATION_SOURCE_LAYER, PROPERTY_ELEVATION_ID} from '../../3d-style/e
 import {ElevationPortalGraph} from '../../3d-style/elevation/elevation_graph';
 import {ImageId} from '../style-spec/expression/types/image_id';
 import {parseActiveFloors} from '../render/indoor_parser';
+import {RenderSourceType} from './tile';
 
 import type {VectorTile} from '@mapbox/vector-tile';
 import type {CanonicalTileID} from './tile_id';
@@ -62,8 +63,9 @@ class WorkerTile {
     promoteId: PromoteIdSpecification | null | undefined;
     overscaling: number;
     showCollisionBoxes: boolean;
+    showElevationIdDebug: boolean;
     collectResourceTiming: boolean;
-    isSymbolTile: boolean | null | undefined;
+    renderSourceType: RenderSourceType | null | undefined;
     extraShadowCaster: boolean | null | undefined;
     tessellationStep: number | null | undefined;
     projection: Projection;
@@ -73,6 +75,9 @@ class WorkerTile {
     brightness: number;
     scaleFactor: number;
     indoor: IndoorTileOptions | null;
+    maxUniformBufferBindings: number | null | undefined;
+    maxUniformBlockSizeDwords: number | null | undefined;
+    disableSymbolUBO: boolean | null | undefined;
 
     status: 'parsing' | 'done';
     data: VectorTile;
@@ -96,9 +101,10 @@ class WorkerTile {
         this.scope = params.scope;
         this.overscaling = this.tileID.overscaleFactor();
         this.showCollisionBoxes = params.showCollisionBoxes;
+        this.showElevationIdDebug = params.showElevationIdDebug;
         this.collectResourceTiming = params.request ? params.request.collectResourceTiming : false;
         this.promoteId = params.promoteId;
-        this.isSymbolTile = params.isSymbolTile;
+        this.renderSourceType = params.renderSourceType;
         this.tileTransform = tileTransform(params.tileID.canonical, params.projection);
         this.projection = params.projection;
         this.worldview = params.worldview;
@@ -136,6 +142,7 @@ class WorkerTile {
             availableImages,
             brightness: this.brightness,
             scaleFactor: this.scaleFactor,
+            showElevationIdDebug: this.showElevationIdDebug,
             elevationFeatures: undefined,
             activeFloors: undefined
         };
@@ -154,12 +161,15 @@ class WorkerTile {
             }
 
             let anySymbolLayers = false;
+            let anyFillExtrusionLayers = false;
             let anyOtherLayers = false;
             let any3DLayer = false;
 
             for (const family of layerFamilies[sourceLayerId]) {
                 if (family[0].type === 'symbol') {
                     anySymbolLayers = true;
+                } else if (family[0].type === 'fill-extrusion') {
+                    anyFillExtrusionLayers = true;
                 } else {
                     anyOtherLayers = true;
                 }
@@ -172,9 +182,12 @@ class WorkerTile {
                 continue;
             }
 
-            if (this.isSymbolTile === true && !anySymbolLayers) {
+            // Source-layer level filtering: skip entire source layers that have no relevant layer types
+            if (this.renderSourceType === RenderSourceType.Symbol && !anySymbolLayers) {
                 continue;
-            } else if (this.isSymbolTile === false && !anyOtherLayers) {
+            } else if (this.renderSourceType === RenderSourceType.FillExtrusion && !anyFillExtrusionLayers) {
+                continue;
+            } else if (this.renderSourceType === RenderSourceType.Other && !anyOtherLayers) {
                 continue;
             }
 
@@ -228,7 +241,10 @@ class WorkerTile {
                     // avoid to spend resources in 2D layers or 3D model layers (trees) for extra shadow casters
                     continue;
                 }
-                if (this.isSymbolTile !== undefined && (layer.type === 'symbol') !== this.isSymbolTile) continue;
+                // Three-way render source type filtering:
+                if (this.renderSourceType === RenderSourceType.Symbol && layer.type !== 'symbol') continue;
+                if (this.renderSourceType === RenderSourceType.FillExtrusion && layer.type !== 'fill-extrusion') continue;
+                if (this.renderSourceType === RenderSourceType.Other && (layer.type === 'symbol' || layer.type === 'fill-extrusion')) continue;
                 assert(layer.source === this.source);
                 if (layer.minzoom && this.zoom < Math.floor(layer.minzoom)) continue;
                 if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
@@ -236,7 +252,7 @@ class WorkerTile {
 
                 recalculateLayers(family, this.zoom, options.brightness, availableImages, this.worldview, options.activeFloors);
 
-                // @ts-expect-error: Type 'TypedStyleLayer' doesn't have a 'createBucket' method in all of its subtypes
+                // @ts-expect-error - not all TypedStyleLayer subtypes have createBucket, but only bucket-producing layers reach here
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                 const bucket: Bucket = buckets[layer.id] = layer.createBucket({
                     index: featureIndex.bucketLayerIDs.length,
@@ -254,7 +270,10 @@ class WorkerTile {
                     styleDefinedModelURLs: availableModels,
                     worldview: this.worldview,
                     localizable,
-                    availableImages
+                    availableImages,
+                    maxUniformBufferBindings: this.maxUniformBufferBindings,
+                    maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords,
+                    disableSymbolUBO: this.disableSymbolUBO
                 });
 
                 assert(this.tileTransform.projection.name === this.projection.name);
@@ -282,7 +301,7 @@ class WorkerTile {
             let iconRasterizationTasks: ImageRasterizationTasks;
             let patternRasterizationTasks: ImageRasterizationTasks;
             let imageVersions: Map<string, number>;
-            const taskMetadata = {type: 'maybePrepare', isSymbolTile: this.isSymbolTile, zoom: this.zoom} as const;
+            const taskMetadata = {type: 'maybePrepare', renderSourceType: this.renderSourceType, zoom: this.zoom} as const;
 
             const maybePrepare = () => {
                 if (error) {
@@ -555,6 +574,7 @@ class WorkerTile {
     updateParameters(params: WorkerSourceVectorTileRequest) {
         this.scaleFactor = params.scaleFactor;
         this.showCollisionBoxes = params.showCollisionBoxes;
+        this.showElevationIdDebug = params.showElevationIdDebug;
         this.projection = params.projection;
         this.brightness = params.brightness;
         this.tileTransform = tileTransform(params.tileID.canonical, params.projection);

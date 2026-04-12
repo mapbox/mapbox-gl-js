@@ -12,11 +12,11 @@ uniform mat2 u_extrude_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform highp float u_camera_to_center_distance;
 
-in vec2 a_pos;
+in ivec2 a_pos;
 
 #ifdef PROJECTION_GLOBE_VIEW
-in vec3 a_pos_3;         // Projected position on the globe
-in vec3 a_pos_normal_3;  // Surface normal at the position
+in ivec4 a_pos_3;         // Projected position on the globe
+in ivec4 a_pos_normal_3;  // Surface normal at the position
 
 // Uniforms required for transition between globe and mercator
 uniform mat4 u_inv_rot_matrix;
@@ -46,10 +46,10 @@ vec2 calc_offset(vec2 extrusion, float radius, float stroke_width,  float view_s
 }
 
 float cantilevered_elevation(vec2 pos, float radius, float stroke_width, float view_scale) {
-    vec2 c1 = pos + calc_offset(vec2(-1,-1), radius, stroke_width, view_scale);
-    vec2 c2 = pos + calc_offset(vec2(1,-1), radius, stroke_width, view_scale);
-    vec2 c3 = pos + calc_offset(vec2(1,1), radius, stroke_width, view_scale);
-    vec2 c4 = pos + calc_offset(vec2(-1,1), radius, stroke_width, view_scale);
+    vec2 c1 = pos + calc_offset(vec2(-1.0, -1.0), radius, stroke_width, view_scale);
+    vec2 c2 = pos + calc_offset(vec2(1.0, -1.0), radius, stroke_width, view_scale);
+    vec2 c3 = pos + calc_offset(vec2(1.0, 1.0), radius, stroke_width, view_scale);
+    vec2 c4 = pos + calc_offset(vec2(-1.0, 1.0), radius, stroke_width, view_scale);
     float h1 = elevation(c1) + ELEVATION_BIAS;
     float h2 = elevation(c2) + ELEVATION_BIAS;
     float h3 = elevation(c3) + ELEVATION_BIAS;
@@ -98,31 +98,32 @@ void main() {
     #pragma mapbox: initialize lowp float stroke_opacity
 
     // unencode the extrusion vector that we snuck into the a_pos vector
-    vec2 extrude = vec2(mod(a_pos, 2.0) * 2.0 - 1.0);
+    vec2 pos2 = vec2(a_pos);
+    vec2 extrude = vec2(mod(pos2, 2.0) * 2.0 - 1.0);
 
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data
-    vec2 circle_center = floor(a_pos * 0.5);
+    vec2 circle_center = floor(pos2 * 0.5);
+
+    // extract height offset for terrain, this returns 0 if terrain is not active
+    float height = circle_elevation(circle_center);
 
     vec4 world_center;
     mat3 surface_vectors;
 #ifdef PROJECTION_GLOBE_VIEW
     // Compute positions on both globe and mercator plane to support transition between the two modes
     // Apply extra scaling to extrusion to cover different pixel space ratios (which is dependant on the latitude)
-    vec3 pos_normal_3 = a_pos_normal_3 / 16384.0;
-    surface_vectors = globe_mercator_surface_vectors(pos_normal_3, u_up_dir, u_zoom_transition);
+    surface_vectors = globe_mercator_surface_vectors(vec3(a_pos_normal_3) / 16384.0, u_up_dir, u_zoom_transition);
 
     vec3 surface_extrusion = extrude.x * surface_vectors[0] + extrude.y * surface_vectors[1];
-    vec3 globe_elevation = elevationVector(circle_center) * circle_elevation(circle_center);
-    vec3 globe_pos = a_pos_3 + surface_extrusion + globe_elevation;
-    vec3 mercator_elevation = u_up_dir * u_tile_up_scale * circle_elevation(circle_center);
+    vec3 globe_elevation = elevationVector(circle_center) * height;
+    vec3 globe_pos = vec3(a_pos_3) + surface_extrusion + globe_elevation;
+    vec3 mercator_elevation = u_up_dir * u_tile_up_scale * height;
     vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, circle_center, u_tile_id, u_merc_center) + surface_extrusion + mercator_elevation;
     vec3 pos = mix_globe_mercator(globe_pos, merc_pos, u_zoom_transition);
     world_center = vec4(pos, 1);
 #else 
     surface_vectors = mat3(1.0);
-    // extract height offset for terrain, this returns 0 if terrain is not active
-    float height = circle_elevation(circle_center);
     world_center = vec4(circle_center, height, 1);
 #endif
 

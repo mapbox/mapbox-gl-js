@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Line Blend Mode</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body,
+        #map {
+            height: 100%;
+        }
+
+        #controls {
+            position: absolute;
+            background: #fff;
+            top: 0;
+            left: 0;
+            padding: 10px;
+            max-width: 300px;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        .control-group {
+            margin-bottom: 10px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 3px;
+            font-weight: bold;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+        }
+
+        .control-group input[type="text"] {
+            width: 100%;
+            padding: 4px;
+            box-sizing: border-box;
+        }
+
+        .control-group select {
+            width: 100%;
+            padding: 4px;
+        }
+
+        .control-group input[type="checkbox"] {
+            margin-right: 5px;
+        }
+
+        .slider-value {
+            display: inline-block;
+            margin-left: 5px;
+            font-weight: normal;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='map'></div>
+    <div id='controls'>
+        <div class="control-group">
+            <label>
+                <input type="checkbox" id="blendModeEnabled" checked onchange="toggleBlendMode(this)">
+                Enable Blend Mode
+            </label>
+        </div>
+
+        <div class="control-group">
+            <label for="blendModeSelect">Blend Mode:</label>
+            <select id="blendModeSelect" onchange="updateBlendMode()">
+                <option value="multiply">multiply</option>
+                <option value="additive">additive</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="opacitySlider">
+                Opacity: <span class="slider-value" id="opacityValue">0.01</span>
+            </label>
+            <input type="range" id="opacitySlider" min="0" max="1" step="0.01" value="0.01" oninput="updateOpacity(this)">
+        </div>
+
+        <div class="control-group">
+            <label for="basemapSelect">Basemap & Line Color:</label>
+            <select id="basemapSelect" onchange="updateBasemap()">
+                <option value="light">Light (Blue Lines)</option>
+                <option value="dark">Dark (Yellow Lines)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="geojsonUrl">GeoJSON URL:</label>
+            <input type="text" id="geojsonUrl" value="https://docs.mapbox.com/mapbox-gl-js/assets/flights-200k.geojson">
+            <button onclick="loadGeoJSON()" style="margin-top: 5px; width: 100%; padding: 4px;">Load GeoJSON</button>
+        </div>
+    </div>
+
+    <script src='../dist/mapbox-gl-dev.js'></script>
+    <script type="module">
+        import { getAccessToken } from './access_token_generated.js';
+        mapboxgl.accessToken = getAccessToken();
+
+        let currentOpacity = 0.01;
+        let currentBlendMode = 'multiply';
+        let blendModeEnabled = true;
+
+        const basemapConfig = {
+            light: {
+                url: 'mapbox://styles/mapbox/light-v11',
+                lineColor: [0, 0, 255] // Blue
+            },
+            dark: {
+                url: 'mapbox://styles/mapbox/dark-v11',
+                lineColor: [255, 255, 0] // Yellow
+            }
+        };
+
+        let currentBasemap = 'light';
+
+        const map = window.map = new mapboxgl.Map({
+            container: 'map',
+            projection: 'mercator',
+            style: {
+                imports: [
+                    {
+                        id: 'basemap',
+                        url: basemapConfig.light.url
+                    }
+                ],
+                version: 8,
+                sources: {
+                    'overlay': {
+                        type: 'geojson',
+                        data: document.getElementById('geojsonUrl').value,
+                    },
+                },
+                layers: [
+                    {
+                        id: 'overlay',
+                        type: 'line',
+                        source: 'overlay',
+                        paint: {
+                            'line-color': `rgba(${basemapConfig.light.lineColor.join(',')}, ${currentOpacity})`,
+                            'line-blend-mode': currentBlendMode,
+                            'line-width': 1
+                        }
+                    }
+                ]
+            },
+            center: [-73.985, 40.748],
+            zoom: 6,
+            pitch: 0,
+            hash: true
+        });
+
+        function getLineColor() {
+            const color = basemapConfig[currentBasemap].lineColor;
+            return `rgba(${color.join(',')}, ${currentOpacity})`;
+        }
+
+        function updateLayer() {
+            if (map.getLayer('overlay')) {
+                map.setPaintProperty('overlay', 'line-color', getLineColor());
+                map.setPaintProperty('overlay', 'line-blend-mode', blendModeEnabled ? currentBlendMode : undefined);
+            }
+        }
+
+        function updateOpacity(slider) {
+            currentOpacity = parseFloat(slider.value);
+            document.getElementById('opacityValue').textContent = currentOpacity.toFixed(2);
+            updateLayer();
+        }
+
+        function updateBlendMode() {
+            currentBlendMode = document.getElementById('blendModeSelect').value;
+            updateLayer();
+        }
+
+        function toggleBlendMode(checkbox) {
+            blendModeEnabled = checkbox.checked;
+            document.getElementById('blendModeSelect').disabled = !blendModeEnabled;
+            updateLayer();
+        }
+
+        function updateBasemap() {
+            currentBasemap = document.getElementById('basemapSelect').value;
+            const config = basemapConfig[currentBasemap];
+
+            map.setStyle({
+                imports: [
+                    {
+                        id: 'basemap',
+                        url: config.url
+                    }
+                ],
+                version: 8,
+                sources: {
+                    'overlay': {
+                        type: 'geojson',
+                        data: document.getElementById('geojsonUrl').value,
+                    },
+                },
+                layers: [
+                    {
+                        id: 'overlay',
+                        type: 'line',
+                        source: 'overlay',
+                        paint: {
+                            'line-color': getLineColor(),
+                            'line-blend-mode': blendModeEnabled ? currentBlendMode : 'normal',
+                            'line-width': 1
+                        }
+                    }
+                ]
+            });
+        }
+
+        function loadGeoJSON() {
+            const url = document.getElementById('geojsonUrl').value;
+            if (map.getSource('overlay')) {
+                map.getSource('overlay').setData(url);
+            } else {
+                updateBasemap();
+            }
+        }
+
+        window.updateOpacity = updateOpacity;
+        window.updateBlendMode = updateBlendMode;
+        window.toggleBlendMode = toggleBlendMode;
+        window.updateBasemap = updateBasemap;
+        window.loadGeoJSON = loadGeoJSON;
+    </script>
+</body>
+
+</html>

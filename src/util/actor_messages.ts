@@ -3,7 +3,7 @@ import type {ConfigOptions} from '../style-spec/types/config_options';
 import type {GlyphMap, FontStacks} from '../render/glyph_manager';
 import type {ImageId, StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {ImageRasterizationTasks, ImageRasterizationWorkerTasks, RasterizedImageMap} from '../render/image_manager';
-import type {LayerSpecification, ProjectionSpecification} from '../style-spec/types';
+import type {LayerSpecification, ProjectionSpecification, SourceSpecification} from '../style-spec/types';
 import type {LoadGeoJSONRequest} from '../source/geojson_source';
 import type {LoadGeoJSONResult} from '../source/geojson_worker_source';
 import type {OverscaledTileID} from '../source/tile_id';
@@ -16,6 +16,8 @@ import type {StyleModelMap} from '../style/style_mode';
 import type {IndoorData} from '../style/indoor_data';
 import type {AtlasContentDescriptor} from '../render/atlas_content_descriptor';
 import type {ImagePositionMap} from '../render/image_atlas';
+import type {TileJSON} from '../types/tilejson';
+import type {RequestParameters} from './ajax';
 
 /**
  * Message registry maps message types to their data and result types.
@@ -106,6 +108,19 @@ export type ActorMessages = {
         callback: ActorCallback<RasterizedImageMap>;
     };
 
+    'loadTileProvider': {
+        params: {
+            name: string;
+            url: string;
+            source: string;
+            scope: string;
+            type: string;
+            options: SourceSpecification;
+            request?: RequestParameters;
+        };
+        callback: ActorCallback<TileJSON | null>;
+    };
+
     'reloadTile': {
         params: WorkerSourceTileRequest;
         callback: ActorCallback<unknown>;
@@ -131,13 +146,24 @@ export type ActorMessages = {
         callback: ActorCallback<void>;
     };
 
+    'setContextParams': {
+        params: {maxBindingPoints: number; maxUniformBlockSizeDwords: number; disableSymbolUBO?: boolean};
+        callback: ActorCallback<void>;
+    };
+
     'setWorldview': {
         params: string;
         callback: ActorCallback<void>;
     };
 
-    'setDracoUrl': {
-        params: string;
+    'setConfig': {
+        params: {
+            API_URL?: string;
+            DRACO_URL?: string;
+            MESHOPT_URL?: string;
+            MESHOPT_SIMD_URL?: string;
+            BUILDING_GEN_URL?: string;
+        };
         callback: ActorCallback<void>;
     };
 
@@ -153,11 +179,6 @@ export type ActorMessages = {
 
     'setModels': {
         params: {models: StyleModelMap; scope: string;};
-        callback: ActorCallback<void>;
-    };
-
-    'setMeshoptUrl': {
-        params: string;
         callback: ActorCallback<void>;
     };
 

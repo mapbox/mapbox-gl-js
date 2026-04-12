@@ -1,10 +1,40 @@
-## 3.20.0-rc.2
+## 3.22.0-rc1
 
 ### Bug fixes 🐞
 
-- Fix icons disappearing when changing the color theme.
+- Fix a crash on PowerVR devices.
+- Fix nested scopes support in clip layers.
+- Skip sub-pixel line dilution for intentionally thin lines.
+- Skip map-sessions request when `baseApiUrl` is not a Mapbox host.
 
-## 3.20.0-rc.1
+## 3.21.0
+
+### Features and improvements ✨
+
+- Introduce the `TileProvider` API, a mechanism for extending GL JS with custom vector tile providers.
+- Add first-class support for PMTiles via the new `TileProvider` API and an official plugin (``mapbox-gl-pmtiles-provider.js`) that loads on demand.
+- Add _experimental_ `line-blend-mode` property for rendering lines using `additive` or `multiply` blending.
+- Slightly improve overall map loading times.
+- Improve symbol layer rendering performance (by adopting Uniform Buffer Objects for data-driven properties).
+- Improve indoor maps loading performance.
+
+### Bug fixes 🐞
+
+- Fix dragging gesture not working on the compass control.
+- Various fixes and improvements for the Appearances API.
+- Fix an edge case when combining custom icons with images included in the style's sprite.
+- Fix `setWorldview` not updating layout properties correctly.
+- Fix an issue when rendering stacked underground 3D roads.
+- Fix line dashes with non-integer total array lengths.
+- Fix various rendering issues when using `*-cutoff-fade-range` properties.
+- Fix `clip` layer not clipping `fill-extrusion` ambient occlusion.
+
+## Breaking changes ⚠️
+
+- Removed `mapbox-gl-unminified.js` bundle in the distribution — please switch to either `mapbox-gl.js`, `mapbox-gl-dev.js`, or the new `esm-min/mapbox-gl.js` ESM bundle.
+- Removed `spriteFormat` `Map` option — now Mapbox styles will always use vector icons, while non-Mapbox styles will continue using classic raster sprites.
+
+## 3.20.0
 
 ### Features and improvements ✨
 
@@ -12,6 +42,7 @@
 
 ### Bug fixes 🐞
 
+- Fix icons disappearing when changing the color theme.
 - Fix display of symbols added via the Appearances runtime API.
 
 ## 3.19.1

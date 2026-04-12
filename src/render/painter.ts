@@ -1,4 +1,5 @@
 import browser from '../util/browser';
+import {makeFQID} from '../util/fqid';
 import {mat4} from 'gl-matrix';
 import SourceCache from '../source/source_cache';
 import EXTENT from '../style-spec/data/extent';
@@ -71,7 +72,7 @@ import type {LightsUniformsType} from '../../3d-style/render/lights';
 import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id';
 import type {ProgramName} from './program';
 import type {ProgramUniformsType, DynamicDefinesType} from './program/program_uniforms';
-import type {Source} from '../source/source';
+import type {Source, ISource} from '../source/source';
 import type {UniformBindings} from './uniform_binding';
 import type {CrossTileID, VariableOffset} from '../symbol/placement';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
@@ -209,7 +210,6 @@ class Painter {
     nextStencilID: number;
     id: string;
     _showOverdrawInspector: boolean;
-    _shadowMapDebug: boolean;
     cache: Record<string, Program<UniformBindings>>;
     symbolFadeChange: number;
     gpuTimers: GPUTimers;
@@ -251,6 +251,7 @@ class Painter {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         enabledLayers: any;
         show3DModelFootprints: boolean;
+        showElevationIdDebug: boolean;
     };
 
     _timeStamp: number;
@@ -271,6 +272,7 @@ class Painter {
     _clippingActiveLastFrame: boolean;
 
     scaleFactor: number;
+    maxFrontCutoffRawStart: number;
 
     worldview: string;
 
@@ -296,6 +298,7 @@ class Painter {
             fpsWindow: 30,
             continousRedraw: false,
             show3DModelFootprints: false,
+            showElevationIdDebug: false,
             enabledLayers: {
             }
         };
@@ -312,6 +315,13 @@ class Painter {
         });
         DevTools.addParameter(this._debugParams, 'show3DModelFootprints', 'Debug', {}, () => {
             this.style.map.triggerRepaint();
+        });
+        DevTools.addParameter(this._debugParams, 'showElevationIdDebug', 'Debug', {}, () => {
+            if (this._debugParams.showElevationIdDebug) {
+                this.style._reloadSources();
+            } else {
+                this.style.map._update();
+            }
         });
         DevTools.addParameter(this._debugParams, 'forceEnablePrecipitation', 'Precipitation');
         DevTools.addParameter(this._debugParams, 'fpsWindow', 'FPS', {min: 1, max: 100, step: 1});
@@ -368,6 +378,7 @@ class Painter {
         this._clippingActiveLastFrame = false;
 
         this.scaleFactor = scaleFactor;
+        this.maxFrontCutoffRawStart = 0;
 
         this.worldview = worldview;
 
@@ -849,8 +860,7 @@ class Painter {
                 sourceCache.prepare(this.context);
                 PerformanceUtils.measureLowOverhead(PerformanceUtils.GROUP_RENDERING, `prepare: ${sourceCache.id.toString()}`, sourceCachePrepareStartTime, undefined);
 
-                // @ts-expect-error - TS2339 - Property 'usedInConflation' does not exist on type 'Source'.
-                if (sourceCache.getSource().usedInConflation) {
+                if ((sourceCache.getSource() as ISource).usedInConflation) {
                     ++conflationSourcesOrLayersInStyle;
                 }
             }
@@ -923,8 +933,7 @@ class Painter {
                     const layerIdx = conflationLayerIndicesInStyle[i];
                     const sourceCache = this.style.getLayerSourceCache(layer);
 
-                    // @ts-expect-error - TS2339 - Property 'usedInConflation' does not exist on type 'Source'.
-                    if (!sourceCache || !sourceCache.used || (!sourceCache.getSource().usedInConflation && layer.type !== 'clip' && layer.type !== 'building')) {
+                    if (!sourceCache || !sourceCache.used || (!(sourceCache.getSource() as ISource).usedInConflation && layer.type !== 'clip' && layer.type !== 'building')) {
                         continue;
                     }
 
@@ -957,7 +966,7 @@ class Painter {
                                     clipMask |= (mask === 'model' ? LayerTypeMask.Model : (mask === 'symbol' ? LayerTypeMask.Symbol : LayerTypeMask.FillExtrusion));
                                 }
                                 for (const scope of layer.layout.get('clip-layer-scope')) {
-                                    clipScope.push(scope);
+                                    clipScope.push(makeFQID(scope, layer.scope));
                                 }
                                 clippingActiveThisFrame = true;
                             }
@@ -986,6 +995,7 @@ class Painter {
         this.minCutoffZoom = 0.0;
         // The longest cutoff range will be used for cutting shadows if any layer has non-zero cutoffRange
         this.longestCutoffRange = 0.0;
+        this.maxFrontCutoffRawStart = 0;
         this.opaquePassCutoff = Infinity;
         this._lastOcclusionLayer = -1;
         this.layersWithOcclusionOpacity = [];
@@ -1688,9 +1698,6 @@ class Painter {
                 }
             }
         }
-        if (this.renderPass === 'shadow') {
-            if (!this._shadowMapDebug) defines.push('DEPTH_TEXTURE');
-        }
         if (this.terrainRenderModeElevated()) {
             defines.push('TERRAIN');
             if (this.linearFloatFilteringSupported()) defines.push('TERRAIN_DEM_FLOAT_FORMAT');
@@ -1703,6 +1710,7 @@ class Painter {
         }
         if (rtt) defines.push('RENDER_TO_TEXTURE');
         if (this._showOverdrawInspector) defines.push('OVERDRAW_INSPECTOR');
+
         return defines;
     }
 

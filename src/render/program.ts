@@ -106,8 +106,12 @@ class Program<Us extends UniformBindings> {
         }
 
         for (const define of defines) {
-            if (source.usedDefines.has(define)) {
-                parts.push(define as string);
+            // Include known defines that are used, or all custom string defines (like MAX_SYMBOL_FEATURES)
+            if (typeof define === 'string' && define.includes(' ')) {
+                // Custom numeric define (e.g., "MAX_SYMBOL_FEATURES 128")
+                parts.push(define);
+            } else if (source.usedDefines.has(define)) {
+                parts.push(define);
             }
         }
 

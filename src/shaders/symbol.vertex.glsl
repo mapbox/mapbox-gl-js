@@ -3,22 +3,22 @@
 
 #define USING_APPEARANCE 1.0
 
-in vec4 a_pos_offset;
-in vec4 a_tex_size;
-in vec4 a_pixeloffset;
+in ivec4 a_pos_offset;
+in uvec4 a_tex_size;
+in ivec4 a_pixeloffset;
 in vec4 a_projected_pos;
-in float a_fade_opacity;
+in uint a_fade_opacity;
 
 #ifdef Z_OFFSET
 in float a_auto_z_offset;
 #endif
 #ifdef PROJECTION_GLOBE_VIEW
-in vec3 a_globe_anchor;
+in ivec4 a_globe_anchor;
 in vec3 a_globe_normal;
 #endif
 
 #ifdef ICON_TRANSITION
-in vec2 a_texb;
+in uvec2 a_texb;
 #endif
 
 #ifdef OCCLUSION_QUERIES
@@ -129,6 +129,9 @@ struct SymbolPaintProperties {
     float emissive_strength;
     float occlusion_opacity;
     float z_offset;
+    /// Per-feature translate in label-plane (viewport pixel) units, before anchor rotation.
+    /// Rotated by u_spp_translate_rotation and added to pos before u_coord_matrix multiply.
+    vec2 translate;
 };
 
 struct PropertyType {
@@ -160,6 +163,8 @@ struct SymbolPropertyHeader {
     PropertyType emissive_strength;
     PropertyType occlusion_opacity;
     PropertyType z_offset;
+    /// GL JS-specific: per-feature translate (vec2, uses previously-unused h[2][3] slot).
+    PropertyType translate;
 };
 
 /// Zoom interpolation factor for zoom-dependent paint properties.
@@ -177,6 +182,8 @@ uniform lowp float u_spp_halo_blur;
 uniform lowp float u_spp_emissive_strength;
 uniform lowp float u_spp_occlusion_opacity;
 uniform lowp float u_spp_z_offset;
+/// [cos(angle), sin(angle)] for translate-anchor rotation; [1,0] = no rotation (viewport anchor).
+uniform lowp vec2 u_spp_translate_rotation;
 
 /// Per-feature index used to look up the feature's data-driven paint property block in
 /// the u_properties uniform buffer.
@@ -188,31 +195,31 @@ layout(std140) uniform SymbolPaintPropertiesHeaderUniform {
     /// - Mask for which properties are zoom-dependent (32-bit bitmask, 1 bit per property)
     /// - Size of a data-driven single block
     /// - Offsets for each property in a data-driven block
-    uvec4 u_header[SPP_HEADER_SIZE_VEC4];
-};
+    uvec4 header[SPP_HEADER_SIZE_VEC4];
+} u_spp_header;
 
 layout(std140) uniform SymbolPaintPropertiesUniform {
     /// Buffer contains vec4 aligned data-driven blocks (a single block per feature,
     /// multiple blocks for multiple features).
-    vec4 u_properties[MAX_UBO_SIZE_VEC4];
-};
+    vec4 properties[MAX_UBO_SIZE_VEC4];
+} u_spp_properties;
 
 layout(std140) uniform SymbolPaintPropertiesIndexUniform {
     /// Maps each feature index to its corresponding data-driven block index within
     /// the u_properties uniform buffer.
-    uvec4 u_block_indices[MAX_UBO_SIZE_VEC4];
-};
+    uvec4 block_indices[MAX_UBO_SIZE_VEC4];
+} u_spp_index;
 
 /// Symbol paint properties need to be interpolated and passed to the fragment shader.
-out lowp float opacity;
+out lowp float v_opacity;
 #ifdef RENDER_SDF
-out lowp vec4 fill_np_color;
-out lowp vec4 halo_np_color;
-out lowp float halo_width;
-out lowp float halo_blur;
+out lowp vec4 v_fill_np_color;
+out lowp vec4 v_halo_np_color;
+out lowp float v_halo_width;
+out lowp float v_halo_blur;
 #endif
 #ifdef LIGHTING_3D_MODE
-out lowp float emissive_strength;
+out lowp float v_emissive_strength;
 #endif
 
 PropertyType getPropertyType(uint propertyIndex, uint dataDrivenMask, uint zoomDependentMask, uint offsetDwords) {
@@ -226,19 +233,20 @@ PropertyType getPropertyType(uint propertyIndex, uint dataDrivenMask, uint zoomD
 SymbolPropertyHeader readSymbolPropertiesHeader() {
     SymbolPropertyHeader header;
     // Read masks:
-    uint dataDrivenMask = u_header[0][0];
-    uint zoomDependentMask = u_header[0][1];
+    uint dataDrivenMask = u_spp_header.header[0][0];
+    uint zoomDependentMask = u_spp_header.header[0][1];
     // Read block sizes:
-    header.dataDrivenBlockSizeVec4 = u_header[0][2];
+    header.dataDrivenBlockSizeVec4 = u_spp_header.header[0][2];
     // Read property types and block offsets:
-    header.fill_np_color        = getPropertyType(0u, dataDrivenMask, zoomDependentMask, u_header[0][3]);
-    header.halo_np_color        = getPropertyType(1u, dataDrivenMask, zoomDependentMask, u_header[1][0]);
-    header.opacity              = getPropertyType(2u, dataDrivenMask, zoomDependentMask, u_header[1][1]);
-    header.halo_width           = getPropertyType(3u, dataDrivenMask, zoomDependentMask, u_header[1][2]);
-    header.halo_blur            = getPropertyType(4u, dataDrivenMask, zoomDependentMask, u_header[1][3]);
-    header.emissive_strength    = getPropertyType(5u, dataDrivenMask, zoomDependentMask, u_header[2][0]);
-    header.occlusion_opacity    = getPropertyType(6u, dataDrivenMask, zoomDependentMask, u_header[2][1]);
-    header.z_offset             = getPropertyType(7u, dataDrivenMask, zoomDependentMask, u_header[2][2]);
+    header.fill_np_color        = getPropertyType(0u, dataDrivenMask, zoomDependentMask, u_spp_header.header[0][3]);
+    header.halo_np_color        = getPropertyType(1u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][0]);
+    header.opacity              = getPropertyType(2u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][1]);
+    header.halo_width           = getPropertyType(3u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][2]);
+    header.halo_blur            = getPropertyType(4u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][3]);
+    header.emissive_strength    = getPropertyType(5u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][0]);
+    header.occlusion_opacity    = getPropertyType(6u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][1]);
+    header.z_offset             = getPropertyType(7u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][2]);
+    header.translate            = getPropertyType(8u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][3]);
     return header;
 }
 
@@ -263,7 +271,7 @@ float vec4At(vec4 v, uint index) {
 }
 
 vec4 readVec4(uint baseOffsetVec4, uint propertyOffsetDwords) {
-    return u_properties[baseOffsetVec4 + propertyOffsetDwords / DWORDS_PER_VEC4];
+    return u_spp_properties.properties[baseOffsetVec4 + propertyOffsetDwords / DWORDS_PER_VEC4];
 }
 
 float readFloat(vec4 slot, uint propertyOffsetDwords) {
@@ -283,7 +291,7 @@ vec2 readVec2(vec4 slot, uint propertyOffsetDwords) {
 /// Calculate the feature's data-driven block offset in u_properties uniform buffer (vec4-indexed).
 uint getDataDrivenBlockOffsetVec4(uint dataDrivenBlockSizeVec4) {
     uint featureIndex = uint(a_feature_index);
-    uvec4 slot = u_block_indices[featureIndex / DWORDS_PER_VEC4];
+    uvec4 slot = u_spp_index.block_indices[featureIndex / DWORDS_PER_VEC4];
     uint blockIndex = uvec4At(slot, featureIndex % DWORDS_PER_VEC4);
     return blockIndex * dataDrivenBlockSizeVec4;
 }
@@ -298,6 +306,20 @@ vec4 readColorProperty(PropertyType propertyType, uint dataDrivenBlockSizeVec4) 
         color = decode_color(packedColor);
     }
     return color;
+}
+
+/// Read a vec2 property (translate) from the UBO.
+/// Non-zoom: 2 consecutive floats [tx, ty] within the same vec4 (offset%4 <= 2).
+/// Zoom-dep: 4 floats [tx_min, ty_min, tx_max, ty_max] at a vec4-aligned offset.
+vec2 readVec2Property(PropertyType propertyType, uint dataDrivenBlockSizeVec4) {
+    uint blockOffsetVec4 = getDataDrivenBlockOffsetVec4(dataDrivenBlockSizeVec4);
+    vec4 slot = readVec4(blockOffsetVec4, propertyType.offsetDwords);
+    if (propertyType.isZoomDependent) {
+        vec2 minVal = slot.xy;
+        vec2 maxVal = slot.zw;
+        return mix(minVal, maxVal, u_zoom);
+    }
+    return readVec2(slot, propertyType.offsetDwords);
 }
 
 float readFloatProperty(PropertyType propertyType, uint dataDrivenBlockSizeVec4) {
@@ -325,6 +347,7 @@ SymbolPaintProperties readSymbolPaintProperties() {
     props.emissive_strength    = header.emissive_strength.isDataDriven ? readFloatProperty(header.emissive_strength, sizeVec4) : u_spp_emissive_strength;
     props.occlusion_opacity    = header.occlusion_opacity.isDataDriven ? readFloatProperty(header.occlusion_opacity, sizeVec4) : u_spp_occlusion_opacity;
     props.z_offset             = header.z_offset.isDataDriven          ? readFloatProperty(header.z_offset, sizeVec4)          : u_spp_z_offset;
+    props.translate            = header.translate.isDataDriven          ? readVec2Property(header.translate, sizeVec4)           : vec2(0.0);
     return props;
 }
 
@@ -342,21 +365,26 @@ SymbolPaintProperties readSymbolPaintProperties() {
 
 #endif // USE_PAINT_PROPERTIES_UBO
 
+vec2 unpack_opacity(uint packedOpacity) {
+    return vec2(float(packedOpacity / 2u) / 127.0, float(packedOpacity & 1u));
+}
+
 void main() {
 
 #ifdef USE_PAINT_PROPERTIES_UBO
     /// UBO-based paint property initializations.
 
     SymbolPaintProperties paint_properties = readSymbolPaintProperties();
-    opacity = paint_properties.opacity;
+    lowp float opacity = paint_properties.opacity;
+    v_opacity = opacity;
 #ifdef RENDER_SDF
-    fill_np_color = paint_properties.fill_np_color;
-    halo_np_color = paint_properties.halo_np_color;
-    halo_width = paint_properties.halo_width;
-    halo_blur = paint_properties.halo_blur;
+    v_fill_np_color = paint_properties.fill_np_color;
+    v_halo_np_color = paint_properties.halo_np_color;
+    v_halo_width = paint_properties.halo_width;
+    v_halo_blur = paint_properties.halo_blur;
 #endif
 #ifdef LIGHTING_3D_MODE
-    emissive_strength = paint_properties.emissive_strength;
+    v_emissive_strength = paint_properties.emissive_strength;
 #endif
     lowp float occlusion_opacity = paint_properties.occlusion_opacity;
     lowp float z_offset = paint_properties.z_offset;
@@ -375,17 +403,17 @@ void main() {
 
 #endif // USE_PAINT_PROPERTIES_UBO
 
-    vec2 a_pos = a_pos_offset.xy;
-    vec2 a_offset = a_pos_offset.zw;
+    vec2 a_pos = vec2(a_pos_offset.xy);
+    vec2 a_offset = vec2(a_pos_offset.zw);
 
-    vec2 a_tex = a_tex_size.xy;
-    vec2 a_size = a_tex_size.zw;
+    vec2 a_tex = vec2(a_tex_size.xy);
+    vec2 a_size = vec2(a_tex_size.zw);
 
     float a_size_min = floor(a_size[0] * 0.5);
     float a_size_max =  floor(a_size[1] * 0.5);
-    float a_appearance = a_size[1] - 2.0 * a_size_max;
-    vec2 a_pxoffset = a_pixeloffset.xy;
-    vec2 a_min_font_scale = a_pixeloffset.zw / 256.0;
+    float a_apperance = a_size[1] - 2.0 * a_size_max;
+    vec2 a_pxoffset = vec2(a_pixeloffset.xy);
+    vec2 a_min_font_scale = vec2(a_pixeloffset.zw) / 256.0;
 
     highp float segment_angle = -a_projected_pos[3];
     float size;
@@ -415,7 +443,7 @@ void main() {
     vec3 world_pos_globe;
 #ifdef PROJECTION_GLOBE_VIEW
     mercator_pos = mercator_tile_position(u_inv_rot_matrix, tile_anchor, u_tile_id, u_merc_center);
-    world_pos_globe = a_globe_anchor + h;
+    world_pos_globe = vec3(a_globe_anchor) + h;
     world_pos = mix_globe_mercator(world_pos_globe, mercator_pos, u_zoom_transition);
 
     vec4 ecef_point = u_tile_matrix * vec4(world_pos, 1.0);
@@ -459,7 +487,7 @@ void main() {
 #ifdef PROJECTION_GLOBE_VIEW
         // Use x-axis of the label plane for displacement (x_axis = cross(normal, vec3(0, -1, 0)))
         vec3 displacement = vec3(a_globe_normal.z, 0, -a_globe_normal.x);
-        offsetprojected_point = u_matrix * vec4(a_globe_anchor + displacement, 1);
+        offsetprojected_point = u_matrix * vec4(vec3(a_globe_anchor) + displacement, 1);
         vec4 projected_point_globe = u_matrix * vec4(world_pos_globe, 1);
         a = projected_point_globe.xy / projected_point_globe.w;
 #else
@@ -545,6 +573,22 @@ void main() {
 #endif // ELEVATED_ROADS
 #endif
     gl_Position = mix(u_coord_matrix * vec4(pos, 1.0), AWAY, hidden);
+
+#ifdef USE_PAINT_PROPERTIES_UBO
+    // Apply per-feature translate (in label-plane / viewport-pixel units).
+    // Rotate by u_spp_translate_rotation to handle translate-anchor (identity for viewport anchor).
+    // Adding (u_coord_matrix * vec4(rotated_tr, 0, 0)).xy to gl_Position is equivalent to
+    // shifting pos.xy by rotated_tr before the u_coord_matrix multiply.
+    {
+        vec2 tr = paint_properties.translate;
+        vec2 rotated_tr = vec2(
+            u_spp_translate_rotation.x * tr.x - u_spp_translate_rotation.y * tr.y,
+            u_spp_translate_rotation.y * tr.x + u_spp_translate_rotation.x * tr.y
+        );
+        gl_Position.xy += (u_coord_matrix * vec4(rotated_tr, 0.0, 0.0)).xy;
+    }
+#endif
+
     float gamma_scale = gl_Position.w;
 
     // Cast to float is required to fix a rendering error in Swiftshader
@@ -557,7 +601,7 @@ void main() {
     v_tex_a_icon = a_tex / u_texsize_icon;
 #endif
 #ifdef ICON_TRANSITION
-    v_tex_b = a_texb / u_texsize;
+    v_tex_b = vec2(a_texb) / u_texsize;
 #endif
 
 #ifdef RENDER_SHADOWS

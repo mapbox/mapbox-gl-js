@@ -1,0 +1,187 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1024,
+      "height": 768,
+      "allowed": 0.005,
+      "pixelRatio": 1.1,
+      "operations": [
+        ["wait"],
+        ["wait"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [-73.976486, 40.762959],
+  "zoom": 17.37,
+  "bearing": 220.31,
+  "pitch": 34.79,
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.6,
+        "direction": [195, 30]
+      }
+    }
+  ],
+  "sources": {
+    "composite": {
+      "tiles": [
+        "local://tiles/hd/composite-{z}-{x}-{y}.mvt"
+      ],
+      "type": "vector",
+      "maxzoom": 16
+    },
+    "hd-roads": {
+      "tiles": [
+        "local://tiles/hd/hd-road-{z}-{x}-{y}.mvt"
+      ],
+      "type": "vector",
+      "maxzoom": 17
+    },
+    "3dbuildings": {
+      "tiles": [
+        "local://tiles/hd/3dbuildings-{z}-{x}-{y}.glb"
+      ],
+      "type": "batched-model",
+      "maxzoom": 14
+    },
+    "route-line": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [{
+          "type": "Feature",
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [
+              [-73.976361, 40.763059],
+              [-73.975361, 40.762559],
+              [-73.974361, 40.762059],
+              [-73.973361, 40.761559],
+              [-73.972361, 40.761059]
+            ]
+          }
+        }]
+      }
+    },
+    "puck-model": {
+      "type": "model",
+      "models": {
+        "puck": {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-73.976361, 40.763059],
+          "orientation": [0, 0, 0]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "hd-area",
+      "type": "fill",
+      "source": "hd-roads",
+      "source-layer": "hd_road_polygon",
+      "minzoom": 15.5,
+      "layout": {
+        "fill-elevation-reference": "hd-road-base",
+        "fill-construct-bridge-guard-rail": true
+      },
+      "filter": [
+        "match", ["get", "class"], ["bridge", "road"], true, false
+      ],
+      "paint": {
+        "fill-color": "hsl(0, 0%, 85%)",
+        "fill-opacity": ["interpolate", ["linear"], ["zoom"], 15.5, 0, 16, 1]
+      }
+    },
+    {
+      "id": "3d-building",
+      "type": "fill-extrusion",
+      "source": "composite",
+      "source-layer": "building",
+      "minzoom": 15,
+      "filter": [
+        "all",
+        ["==", ["get", "extrude"], "true"],
+        ["==", ["get", "underground"], "false"]
+      ],
+      "layout": {
+        "fill-extrusion-edge-radius": 0.4,
+        "source-max-zoom": 15
+      },
+      "paint": {
+        "fill-extrusion-color": "hsl(38, 28%, 77%)",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-base": ["get", "min_height"],
+        "fill-extrusion-opacity": 1.0,
+        "fill-extrusion-front-cutoff": [0.1, 0.2, 0.5],
+        "fill-extrusion-ambient-occlusion-intensity": 0.3,
+        "fill-extrusion-ambient-occlusion-ground-radius": 0,
+        "fill-extrusion-ambient-occlusion-ground-attenuation": 0.5
+      }
+    },
+    {
+      "id": "3d-buildings-batched",
+      "type": "model",
+      "source": "3dbuildings",
+      "minzoom": 14,
+      "paint": {
+        "model-opacity": 1.0
+      }
+    },
+    {
+      "id": "route-line-cutout",
+      "type": "line",
+      "source": "route-line",
+      "paint": {
+        "line-width": 50.0,
+        "line-cutout-opacity": 0,
+        "line-cutout-fade-width": 0.5,
+        "line-cutout-shadow-opacity": 0
+      }
+    },
+    {
+      "id": "route-line",
+      "type": "line",
+      "source": "route-line",
+      "paint": {
+        "line-color": "blue",
+        "line-width": 8,
+        "line-border-width": 2,
+        "line-border-color": "darkblue",
+        "line-trim-offset": [0.0, 0.25]
+      }
+    },
+    {
+      "id": "puck",
+      "type": "model",
+      "source": "puck-model",
+      "paint": {
+        "model-type": "location-indicator",
+        "model-indicator-cutout-opacity": 0.2,
+        "model-indicator-cutout-radius": 100.0,
+        "model-indicator-cutout-fade-start": 0.5,
+        "model-scale": [5, 5, 5]
+      }
+    }
+  ]
+}

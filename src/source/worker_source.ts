@@ -22,10 +22,11 @@ import type {TDecodingResult} from '../data/mrt/types';
 import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
 import type {RasterizedImageMap} from '../render/image_manager';
 import type {ImageId} from '../style-spec/expression/types/image_id';
+import type {RenderSourceType} from './tile';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 import type {StyleModelMap} from '../style/style_mode';
 import type {IndoorTileOptions} from '../style/indoor_data.js';
-import type {Cancelable} from '../types/cancelable';
+import type {TileProvider} from './tile_provider';
 
 /**
  * Source types that can instantiate a {@link WorkerSource} in {@link MapWorker}.
@@ -75,6 +76,7 @@ export type WorkerSourceVectorTileRequest = WorkerSourceTileRequest & {
     promoteId: PromoteIdSpecification | null | undefined;
     scaleFactor: number;
     showCollisionBoxes: boolean;
+    showElevationIdDebug: boolean;
     tileSize: number;
     tileZoom: number;
     zoom: number;
@@ -84,7 +86,7 @@ export type WorkerSourceVectorTileRequest = WorkerSourceTileRequest & {
         cacheControl?: string;
     };
     extraShadowCaster?: boolean;
-    isSymbolTile?: boolean | null;
+    renderSourceType?: RenderSourceType | null;
     partial?: boolean;
     tessellationStep?: number // test purpose only;
     worldview?: string | null;
@@ -112,7 +114,7 @@ export type WorkerSourceTiled3dModelRequest = WorkerSourceTileRequest & {
     zoom: number;
     data?: unknown;
     extraShadowCaster?: boolean;
-    isSymbolTile?: boolean | null;
+    renderSourceType?: RenderSourceType | null;
     partial?: boolean;
     request?: RequestParameters;
     tessellationStep?: number // test purpose only;
@@ -145,9 +147,15 @@ export type WorkerSourceVectorTileResult = {
 
 export type WorkerSourceDEMTileRequest = WorkerSourceTileRequest & {
     type: 'raster-dem';
-    rawImageData: ImageData | ImageBitmap;
     encoding: DEMSourceEncoding;
-    padding: number;
+    request: RequestParameters;
+};
+
+export type WorkerSourceDEMTileResult = {
+    dem: DEMData;
+    borderReady: boolean;
+    expires?: string;
+    cacheControl?: string;
 };
 
 export type WorkerSourceRasterArrayTileRequest = WorkerSourceTileRequest & {
@@ -159,7 +167,7 @@ export type WorkerSourceRasterArrayTileRequest = WorkerSourceTileRequest & {
 };
 
 export type WorkerSourceVectorTileCallback = Callback<WorkerSourceVectorTileResult>;
-export type WorkerSourceDEMTileCallback = Callback<DEMData>;
+export type WorkerSourceDEMTileCallback = Callback<WorkerSourceDEMTileResult>;
 export type WorkerSourceRasterArrayTileCallback = ResponseCallback<MapboxRasterTile>;
 export type WorkerSourceRasterArrayDecodingCallback = Callback<TDecodingResult[]>;
 export type WorkerSourceImageRaserizeCallback = Callback<RasterizedImageMap>;
@@ -205,17 +213,18 @@ export interface WorkerSource {
     removeSource?: (params: {source: string}, callback: Callback<void>) => void;
 }
 
-export type WorkerSourceLoadTileData = (params: WorkerSourceTileRequest, callback: Callback<unknown>) => Cancelable['cancel'];
-
 export type WorkerSourceOptions = {
     actor: Actor;
     layerIndex: StyleLayerIndex;
     availableImages: ImageId[];
     availableModels: StyleModelMap;
     isSpriteLoaded: boolean;
-    loadTileData?: WorkerSourceLoadTileData;
+    tileProvider?: TileProvider<ArrayBuffer>;
     brightness?: number;
     worldview?: string;
+    maxUniformBufferBindings?: number;
+    maxUniformBlockSizeDwords?: number;
+    disableSymbolUBO?: boolean | null;
 };
 
 export interface WorkerSourceConstructor {

@@ -2207,6 +2207,22 @@
         "interpolated": false
       },
       "property-type": "constant"
+    },
+    "source-max-zoom": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 24,
+      "private": true,
+      "experimental": true,
+      "doc": "The maximum zoom level at which to load and parse source tiles for this layer. When set, tiles are never loaded or re-parsed above this zoom level. At higher zoom levels, the renderer reuses tiles from this zoom level without creating overscaled variants. This reduces the number of tiles parsed and prevents tile-border artifacts for layers like fill-extrusion.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.21.0",
+          "android": "11.21.0",
+          "ios": "11.21.0"
+        }
+      },
+      "property-type": "constant"
     }
   },
   "layout_building": {
@@ -2222,7 +2238,7 @@
       },
       "default": "visible",
       "doc": "Whether this layer is displayed.",
-      "private": true,      
+      "private": true,
       "sdk-support": {
         "basic functionality": {
           "js": "3.16.0",
@@ -7908,6 +7924,30 @@
       },
       "property-type": "data-constant"
     },
+    "fill-extrusion-front-cutoff": {
+      "type": "array",
+      "private": true,
+      "experimental": true,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": false,
+      "expression": {
+        "interpolated": true,
+        "parameters": ["zoom"]
+      },
+      "length": 3,
+      "default": [0.0, 0.0, 1.0],
+      "minimum": [0.0, 0.0, 0.0],
+      "maximum": [1.0, 1.0, 1.0],
+      "doc": "An array for configuring the fade-out effect for the front cutoff of content on pitched map views. It contains three values: start, range and final opacity. The start parameter defines the point at which the fade-out effect begins, with smaller values causing the effect to start earlier. The range parameter specifies how long the fade-out effect will last. A value of 0.0 for range makes content disappear immediately without a fade-out effect. The final opacity determines content opacity at the end of the fade-out effect. A value of 1.0 for final opacity means that the cutoff is completely disabled. Note: The property has no effect on the map if terrain or globe projection is enabled.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.21.0",
+          "android": "11.21.0",
+          "ios": "11.21.0"
+        }
+      }
+    },
     "fill-extrusion-emissive-strength": {
       "type": "number",
       "default": 0,
@@ -8222,7 +8262,7 @@
     },
     "building-cutoff-fade-range": {
       "type": "number",
-      "private": true,      
+      "private": true,
       "default": 0.0,
       "minimum": 0.0,
       "maximum": 1.0,
@@ -8239,6 +8279,30 @@
         }
       },
       "property-type": "data-constant"
+    },
+    "building-front-cutoff": {
+      "type": "array",
+      "private": true,
+      "experimental": true,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": false,
+      "expression": {
+        "interpolated": true,
+        "parameters": ["zoom"]
+      },
+      "length": 3,
+      "default": [0.0, 0.0, 1.0],
+      "minimum": [0.0, 0.0, 0.0],
+      "maximum": [1.0, 1.0, 1.0],
+      "doc": "An array for configuring the fade-out effect for the front cutoff of content on pitched map views. It contains three values: start, range and final opacity. The start parameter defines the point at which the fade-out effect begins, with smaller values causing the effect to start earlier. The range parameter specifies how long the fade-out effect will last. A value of 0.0 for range makes content disappear immediately without a fade-out effect. The final opacity determines content opacity at the end of the fade-out effect. A value of 1.0 for final opacity means that the cutoff is completely disabled. Note: The property has no effect on the map if terrain or globe projection is enabled.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.21.0",
+          "android": "11.21.0",
+          "ios": "11.21.0"
+        }
+      }
     },
     "building-flood-light-color": {
       "property-type": "data-constant",
@@ -8894,6 +8958,30 @@
       },
       "transition": true,
       "property-type": "data-constant"
+    },
+    "line-blend-mode": {
+      "type": "enum",
+      "values": {
+        "default": { "doc": "Normal non-blended rendering mode." },
+        "multiply": { "doc": "Line features are composited using multiply blending." },
+        "additive": { "doc": "Line features are composited using additive density accumulation with tone mapping." }
+      },
+      "doc": "Controls the blend mode used for rendering line features.",
+      "default": "default",
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.21.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_circle": {
@@ -9418,6 +9506,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "icon-occlusion-opacity": {
@@ -9451,6 +9540,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "icon-emissive-strength": {
@@ -9483,6 +9573,7 @@
           "feature-state"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "text-emissive-strength": {
@@ -9515,6 +9606,7 @@
           "feature-state"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "icon-color": {
@@ -9547,6 +9639,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "icon-halo-color": {
@@ -9579,6 +9672,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "icon-halo-width": {
@@ -9612,6 +9706,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "icon-halo-blur": {
@@ -9645,6 +9740,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "icon-translate": {
@@ -9656,6 +9752,7 @@
         0
       ],
       "transition": true,
+      "appearance": true,
       "units": "pixels",
       "doc": "Distance that the icon's anchor is moved from its original placement. Positive values indicate right and down, while negative values indicate left and up.",
       "requires": [
@@ -9763,6 +9860,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "text-occlusion-opacity": {
@@ -9796,6 +9894,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "text-color": {
@@ -9829,6 +9928,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "text-halo-color": {
@@ -9861,6 +9961,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "text-halo-width": {
@@ -9894,6 +9995,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "text-halo-blur": {
@@ -9927,6 +10029,7 @@
           "measure-light"
         ]
       },
+      "appearance": true,
       "property-type": "data-driven"
     },
     "text-translate": {
@@ -9938,6 +10041,7 @@
         0
       ],
       "transition": true,
+      "appearance": true,
       "units": "pixels",
       "doc": "Distance that the text's anchor is moved from its original placement. Positive values indicate right and down, while negative values indicate left and up.",
       "requires": [
@@ -10072,6 +10176,7 @@
       "minimum": 0,
       "transition": true,
       "experimental": true,
+      "appearance": true,
       "sdk-support": {
         "basic functionality": {
           "js": "3.7.0",
@@ -11474,7 +11579,7 @@
       "default": [0.0, 0.0, 1.0],
       "minimum": [0.0, 0.0, 0.0],
       "maximum": [1.0, 1.0, 1.0],
-      "doc": "An array for configuring the fade-out effect for the front cutoff of content on pitched map views. It contains three values: start, range and final opacity. The start parameter defines the point at which the fade-out effect begins, with smaller values causing the effect to start earlier. The range parameter specifies how long the fade-out effect will last. A value of 0.0 for range makes content disappear immediately without a fade-out effect. The final opacity determines content opacity at the end of the fade-out effect. A value of 1.0 for final opacity means that the cutoff is completely disabled.",
+      "doc": "An array for configuring the fade-out effect for the front cutoff of content on pitched map views. It contains three values: start, range and final opacity. The start parameter defines the point at which the fade-out effect begins, with smaller values causing the effect to start earlier. The range parameter specifies how long the fade-out effect will last. A value of 0.0 for range makes content disappear immediately without a fade-out effect. The final opacity determines content opacity at the end of the fade-out effect. A value of 1.0 for final opacity means that the cutoff is completely disabled. Note: The property has no effect on the map if terrain or globe projection is enabled.",
       "sdk-support": {
         "basic functionality": {
           "js": "3.5.0"
@@ -11506,6 +11611,24 @@
           "js": "3.17.0",
           "android": "11.10.0",
           "ios": "11.10.0"
+        }
+      }
+    },
+    "model-ignore-line-cutout": {
+      "type": "boolean",
+      "doc": "When set to true, the layer is not going to be affected by the line cutout effect.",
+      "default": false,
+      "transition": false,
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-constant",
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.21.0",
+          "ios": "11.21.0"
         }
       }
     }

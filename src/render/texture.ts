@@ -4,8 +4,8 @@ import assert from 'assert';
 import type Context from '../gl/context';
 import type {RGBAImage, AlphaImage} from '../util/image';
 
-export type TextureFormat = WebGL2RenderingContext['RGBA8' | 'DEPTH_COMPONENT16' | 'DEPTH24_STENCIL8' | 'R8' | 'R32F'];
-export type TextureType = WebGL2RenderingContext['UNSIGNED_BYTE' | 'UNSIGNED_SHORT' | 'UNSIGNED_INT_24_8' | 'FLOAT'];
+export type TextureFormat = WebGL2RenderingContext['RGBA8' | 'RGBA16F' | 'DEPTH_COMPONENT16' | 'DEPTH24_STENCIL8' | 'R8' | 'R32F'];
+export type TextureType = WebGL2RenderingContext['UNSIGNED_BYTE' | 'UNSIGNED_SHORT' | 'UNSIGNED_INT_24_8' | 'FLOAT' | 'HALF_FLOAT'];
 export type TextureFilter = WebGL2RenderingContext['LINEAR' | 'NEAREST_MIPMAP_NEAREST' | 'LINEAR_MIPMAP_NEAREST' | 'NEAREST_MIPMAP_LINEAR' | 'LINEAR_MIPMAP_LINEAR' | 'NEAREST'];
 export type TextureWrap = WebGL2RenderingContext['REPEAT' | 'CLAMP_TO_EDGE' | 'MIRRORED_REPEAT'];
 export type TextureCompareMode = WebGL2RenderingContext['LESS' | 'LEQUAL' | 'EQUAL' | 'GEQUAL' | 'GREATER' | 'NOTEQUAL' | 'ALWAYS' | 'NEVER'];
@@ -13,6 +13,7 @@ export type TextureCompareMode = WebGL2RenderingContext['LESS' | 'LEQUAL' | 'EQU
 function _getLegacyFormat(format: TextureFormat): number {
     switch (format) {
     case WebGL2RenderingContext['RGBA8']: return WebGL2RenderingContext['RGBA'];
+    case WebGL2RenderingContext['RGBA16F']: return WebGL2RenderingContext['RGBA'];
     case WebGL2RenderingContext['DEPTH_COMPONENT16']: return WebGL2RenderingContext['DEPTH_COMPONENT'];
     case WebGL2RenderingContext['DEPTH24_STENCIL8']: return WebGL2RenderingContext['DEPTH_STENCIL'];
     case WebGL2RenderingContext['R8']: return WebGL2RenderingContext['RED'];
@@ -22,6 +23,7 @@ function _getLegacyFormat(format: TextureFormat): number {
 function _getType(format: TextureFormat): TextureType {
     switch (format) {
     case WebGL2RenderingContext['RGBA8']: return WebGL2RenderingContext['UNSIGNED_BYTE'];
+    case WebGL2RenderingContext['RGBA16F']: return WebGL2RenderingContext['HALF_FLOAT'];
     case WebGL2RenderingContext['DEPTH_COMPONENT16']: return WebGL2RenderingContext['UNSIGNED_SHORT'];
     case WebGL2RenderingContext['DEPTH24_STENCIL8']: return WebGL2RenderingContext['UNSIGNED_INT_24_8'];
     case WebGL2RenderingContext['R8']: return WebGL2RenderingContext['UNSIGNED_BYTE'];
@@ -36,6 +38,12 @@ type EmptyImage = {
 };
 
 export type TextureImage = RGBAImage | AlphaImage | Float32Image | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageData | EmptyImage | ImageBitmap;
+
+export type TextureUpdateOptions = {
+    premultiply?: boolean;
+    position?: {x: number; y: number;};
+    recreateWhenResize?: boolean;
+};
 
 class Texture {
     context: Context;
@@ -60,17 +68,18 @@ class Texture {
         this.update(image, {premultiply: options && options.premultiply});
     }
 
-    update(image: TextureImage, options?: {premultiply?: boolean; position?: {x: number; y: number;}} | null) {
+    update(image: TextureImage, options?: TextureUpdateOptions | null) {
         const srcWidth = (image && image instanceof HTMLVideoElement && image.width === 0) ? image.videoWidth : image.width;
         const srcHeight = (image && image instanceof HTMLVideoElement && image.height === 0) ? image.videoHeight : image.height;
         const {context} = this;
         const {gl} = context;
         const {x, y} = options && options.position ? options.position : {x: 0, y: 0};
+        const recreateWhenResize = options && options.recreateWhenResize !== undefined ? options.recreateWhenResize : true;
 
         const width = x + srcWidth;
         const height = y + srcHeight;
 
-        if (this.size && (this.size[0] !== width || this.size[1] !== height)) {
+        if (this.size && (this.size[0] !== width || this.size[1] !== height) && recreateWhenResize) {
             gl.bindTexture(gl.TEXTURE_2D, null);
             gl.deleteTexture(this.texture);
             this.texture = gl.createTexture();

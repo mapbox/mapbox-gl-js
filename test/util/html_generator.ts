@@ -13,14 +13,23 @@ const generateResultHTML = template(`
     <% } %>
     <label class="tab-label" style="background: <%- r.color %>" for="<%- r.id %>"><p class="status-container"><span class="status"><%- r.status %></span> - <%- r.name %> <% if (r.attempt !== 0) { %>retry <%- r.attempt + 1 %><% } %> diff: <%- r.minDiff %></p></label>
     <div class="tab-content">
-      <% if (r.actual) { %>
-          <img title="actual" src="<%- r.actual %>">
-      <% } %>
-      <% if (r.expected) { %>
-          <img title="expected <%- r.expectedPath %>" src="<%- r.expected %>">
+      <% if (r.actual || r.expected) { %>
+        <span class="img-hover-container">
+          <p class="img-label img-label-actual">Actual (hover to see expected)</p>
+          <p class="img-label img-label-expected">Expected</p>
+          <% if (r.actual) { %>
+            <img class="img-actual" src="<%- r.actual %>">
+          <% } %>
+          <% if (r.expected) { %>
+            <img class="img-expected" title="<%- r.expectedPath %>" src="<%- r.expected %>">
+          <% } %>
+        </span>
       <% } %>
       <% if (r.imgDiff) { %>
+        <span class="img-static-container">
+          <p class="img-label">Diff</p>
           <img title="diff" src="<%- r.imgDiff %>">
+        </span>
       <% } %>
       <% if (r.jsonDiff) { %>
           <details>
@@ -43,7 +52,16 @@ body { font: 18px/1.2 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helve
 h1 { font-size: 32px; margin-bottom: 0; }
 input[id="only-failed"] { margin-top: 24px; margin-bottom: 12px; margin-right: 8px; }
 input[id="only-failed"]:checked ~ .tests > .tab:not(.tab_failed) { display: none; }
-img { margin: 0 10px 10px 0; border: 1px dotted #ccc; image-rendering: pixelated; }
+img { margin: 0 10px 10px 0; border: 1px dotted #ccc; image-rendering: pixelated; vertical-align: top; }
+.img-hover-container { position: relative; display: inline-block; vertical-align: top; cursor: crosshair; text-align: center; padding-top: 22px; }
+.img-hover-container .img-expected { display: none; }
+.img-hover-container .img-label-expected { display: none; }
+.img-hover-container:hover .img-actual { display: none; }
+.img-hover-container:hover .img-label-actual { display: none; }
+.img-hover-container:hover .img-expected { display: inline; }
+.img-hover-container:hover .img-label-expected { display: block; }
+.img-label { position: absolute; top: 0; left: 0; right: 0; margin: 0; font-size: 14px; font-weight: bold; }
+.img-static-container { position: relative; display: inline-block; vertical-align: top; text-align: center; padding-top: 22px; }
 .tab input { position: absolute; opacity: 0; z-index: -1;}
 .tests { border-top: 1px dotted #bbb; margin-top: 10px; padding-top: 15px; overflow: hidden; }
 .status-container { margin: 0; }

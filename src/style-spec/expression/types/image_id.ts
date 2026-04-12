@@ -41,7 +41,7 @@ export class ImageId {
     }
 
     static parse(str: StringifiedImageId): ImageId | null {
-        const [name, iconsetId] = str.split(separator);
+        const [name, iconsetId] = str.split(separator) as [string, string | undefined];
         return new ImageId({name, iconsetId});
     }
 

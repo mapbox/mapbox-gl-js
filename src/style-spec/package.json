@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/mapbox-gl-style-spec",
-  "version": "14.20.0-rc.2",
+  "version": "14.22.0-rc.1",
   "description": "a specification for mapbox gl styles",
   "author": "Mapbox",
   "license": "SEE LICENSE IN LICENSE.txt",
@@ -44,7 +44,6 @@
     "gl-style-composite": "./bin/gl-style-composite.js"
   },
   "dependencies": {
-    "@mapbox/jsonlint-lines-primitives": "~2.0.2",
     "@mapbox/point-geometry": "^1.1.0",
     "@mapbox/unitbezier": "^0.0.1",
     "cheap-ruler": "^4.0.0",

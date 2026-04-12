@@ -55,15 +55,15 @@ uniform highp sampler3D u_lutTexture;
 #ifdef USE_PAINT_PROPERTIES_UBO
 /// UBO-based paint property declarations.
 
-in lowp float opacity;
+in lowp float v_opacity;
 #ifdef RENDER_SDF
-in lowp vec4 fill_np_color;
-in lowp vec4 halo_np_color;
-in lowp float halo_width;
-in lowp float halo_blur;
+in lowp vec4 v_fill_np_color;
+in lowp vec4 v_halo_np_color;
+in lowp float v_halo_width;
+in lowp float v_halo_blur;
 #endif
 #ifdef LIGHTING_3D_MODE
-in lowp float emissive_strength;
+in lowp float v_emissive_strength;
 #endif
 
 #else
@@ -83,10 +83,21 @@ void main() {
 #ifdef USE_PAINT_PROPERTIES_UBO
     /// UBO-based paint property initializations.
 
+    lowp float opacity = v_opacity;
+    lowp vec4 fill_color = vec4(0.0);
+    lowp vec4 halo_color = vec4(0.0);
+    lowp float halo_width = 0.0;
+    lowp float halo_blur = 0.0;
 #ifdef RENDER_SDF
     ///  Pre-multiply colors by alpha.
-    vec4 fill_color = vec4(fill_np_color.rgb * fill_np_color.a, fill_np_color.a);
-    vec4 halo_color = vec4(halo_np_color.rgb * halo_np_color.a, halo_np_color.a);
+    fill_color = vec4(v_fill_np_color.rgb * v_fill_np_color.a, v_fill_np_color.a);
+    halo_color = vec4(v_halo_np_color.rgb * v_halo_np_color.a, v_halo_np_color.a);
+    halo_width = v_halo_width;
+    halo_blur = v_halo_blur;
+#endif
+    lowp float emissive_strength = 0.0;
+#ifdef LIGHTING_3D_MODE
+    emissive_strength = v_emissive_strength;
 #endif
 
 #else
@@ -115,6 +126,11 @@ void main() {
 #endif
         return;
     }
+#endif
+
+    vec2 cutout_factors = vec2(0.0);
+#ifdef FEATURE_CUTOUT
+    cutout_factors = get_cutout_factors(gl_FragCoord);
 #endif
 
 #ifdef RENDER_SDF
@@ -165,6 +181,7 @@ void main() {
         out_color = apply_lighting_with_emission_ground(out_color, emissive_strength);
         #ifdef RENDER_SHADOWS
             float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
+            light = mix(light, 1.0, cutout_factors.y);
             #ifdef TERRAIN
                 out_color.rgb *= mix(u_ground_shadow_factor, vec3(1.0), light);
             #else
@@ -178,7 +195,7 @@ void main() {
 #endif
 
 #ifdef FEATURE_CUTOUT
-    out_color = apply_feature_cutout(out_color, gl_FragCoord);
+    out_color = apply_feature_cutout(out_color, gl_FragCoord, cutout_factors.x);
 #endif
 
     glFragColor = out_color;

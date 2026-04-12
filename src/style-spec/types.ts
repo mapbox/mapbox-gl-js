@@ -755,7 +755,11 @@ export type LineLayerSpecification = {
         "line-border-color-transition"?: TransitionSpecification,
         "line-border-color-use-theme"?: PropertyValueSpecification<string>,
         "line-occlusion-opacity"?: PropertyValueSpecification<number>,
-        "line-occlusion-opacity-transition"?: TransitionSpecification
+        "line-occlusion-opacity-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "line-blend-mode"?: PropertyValueSpecification<"default" | "multiply" | "additive">
     },
     /**
      * @experimental This property is experimental and subject to change in future versions.
@@ -1021,7 +1025,11 @@ export type FillExtrusionLayerSpecification = {
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
-        "fill-extrusion-edge-radius"?: number | ExpressionSpecification
+        "fill-extrusion-edge-radius"?: number | ExpressionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "source-max-zoom"?: number
     },
     "paint"?: {
         "fill-extrusion-opacity"?: PropertyValueSpecification<number>,
@@ -1102,6 +1110,10 @@ export type FillExtrusionLayerSpecification = {
          */
         "fill-extrusion-rounded-roof"?: PropertyValueSpecification<boolean>,
         "fill-extrusion-cutoff-fade-range"?: number | ExpressionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "fill-extrusion-front-cutoff"?: PropertyValueSpecification<[number, number, number]>,
         "fill-extrusion-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
         "fill-extrusion-emissive-strength-transition"?: TransitionSpecification,
         /**
@@ -1174,6 +1186,10 @@ export type BuildingLayerSpecification = {
         "building-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
         "building-facade-emissive-chance"?: PropertyValueSpecification<number>,
         "building-cutoff-fade-range"?: number | ExpressionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-front-cutoff"?: PropertyValueSpecification<[number, number, number]>,
         "building-flood-light-color"?: PropertyValueSpecification<ColorSpecification>,
         "building-flood-light-color-transition"?: TransitionSpecification,
         "building-flood-light-color-use-theme"?: PropertyValueSpecification<string>,
@@ -1398,7 +1414,11 @@ export type ModelLayerSpecification = {
         "model-height-based-emissive-strength-multiplier-transition"?: TransitionSpecification,
         "model-cutoff-fade-range"?: number | ExpressionSpecification,
         "model-front-cutoff"?: PropertyValueSpecification<[number, number, number]>,
-        "model-elevation-reference"?: "sea" | "ground" | "hd-road-markup" | ExpressionSpecification
+        "model-elevation-reference"?: "sea" | "ground" | "hd-road-markup" | ExpressionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "model-ignore-line-cutout"?: boolean | ExpressionSpecification
     },
     /**
      * @experimental This property is experimental and subject to change in future versions.

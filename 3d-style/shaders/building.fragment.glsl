@@ -9,6 +9,16 @@ in vec4 v_color;
 in highp vec3 v_normal;
 in highp vec3 v_pos;
 
+#ifdef RENDER_FRONT_CUTOFF
+in float v_front_cutoff_opacity;
+#endif
+
+#ifdef INDICATOR_CUTOUT
+#ifdef FEATURE_CUTOUT
+in vec4 v_ground_roof;
+#endif
+#endif
+
 #ifdef BUILDING_FAUX_FACADE
 in lowp float v_faux_facade;
 in highp float v_faux_facade_ed;
@@ -49,8 +59,8 @@ vec3 linearTosRGB(in vec3 color) {
 #ifdef BUILDING_FAUX_FACADE
 // From https://www.shadertoy.com/view/4djSRW by David Hoskins.
 // A shader Hash function that is the same on all systems and doesn't rely on trig functions.
-float hash12(in vec2 p) {
-	vec3 p3  = fract(vec3(p.xyx) * 0.1031);
+highp float hash12(in highp vec2 p) {
+	highp vec3 p3  = fract(vec3(p.xyx) * 0.1031);
     p3 += dot(p3, p3.yzx + 33.33);
     return fract((p3.x + p3.y) * p3.z);
 }
@@ -60,18 +70,18 @@ float min3(in vec3 v) {
 }
 
 // q is in meters.
-vec2 get_uv_mask_id(in vec2 q, out float mask, out vec2 id) {
-    vec2 p = q;
+highp vec2 get_uv_mask_id(in highp vec2 q, out highp float mask, out highp vec2 id) {
+    highp vec2 p = q;
     // Only shade with facades if in range.
     mask = step(v_faux_facade_range.x, p.y) * step(p.y, v_faux_facade_range.y);
     // Compute UVs for windows.
     p.y = p.y - v_faux_facade_range.x;
-    vec2 uv = modf(p / v_faux_facade_floor, id);
+    highp vec2 uv = modf(p / v_faux_facade_floor, id);
 
-    vec4 d = (v_faux_facade_floor.xyxy + vec4(-v_faux_facade_window, v_faux_facade_window)) * 0.5;
-    vec4 edge = d / v_faux_facade_floor.xyxy;
+    highp vec4 d = (v_faux_facade_floor.xyxy + vec4(-v_faux_facade_window, v_faux_facade_window)) * 0.5;
+    highp vec4 edge = d / v_faux_facade_floor.xyxy;
 
-    vec2 m = step(edge.xy, uv) * step(uv, edge.zw);
+    highp vec2 m = step(edge.xy, uv) * step(uv, edge.zw);
     mask *= m.x * m.y;
     uv -= vec2(0.5);
     uv *= vec2(0.5) / (vec2(0.5) - edge.xy);
@@ -79,9 +89,9 @@ vec2 get_uv_mask_id(in vec2 q, out float mask, out vec2 id) {
     return uv;
 }
 
-float ray_unit_box(in vec3 ray_o, in vec3 ray_d, in vec3 bmin, in vec3 bmax) {
-    vec3 planes = mix(bmin, bmax, step(0.0, ray_d));
-    vec3 t = (planes - ray_o) / ray_d;
+highp float ray_unit_box(in highp vec3 ray_o, in highp vec3 ray_d, in highp vec3 bmin, in highp vec3 bmax) {
+    highp vec3 planes = mix(bmin, bmax, step(0.0, ray_d));
+    highp vec3 t = (planes - ray_o) / ray_d;
     return min3(t);
 }
 
@@ -96,15 +106,15 @@ float get_emissive(in vec2 id) {
 // v.y is in [-v_faux_facade_window.y / 2, v_faux_facade_window.y / 2] range.
 // v.z is in [-window_depth / 2, window_depth / 2] range.
 // All values are in meters.
-vec3 get_shade_info(in vec3 v,
-                    in vec3 v_normalized,
+vec3 get_shade_info(in highp vec3 v,
+                    in highp vec3 v_normalized,
                     in vec3 color,
                     in vec2 id,
                     in mat3 tbn,
                     inout vec3 out_normal,
                     inout float out_emissive) {
     vec3 out_color = color;
-    vec3 abs_v = abs(v_normalized);
+    highp vec3 abs_v = abs(v_normalized);
     bool x_major = abs_v.x >= abs_v.y && abs_v.x >= abs_v.z;
     bool y_major = abs_v.y >= abs_v.x && abs_v.y >= abs_v.z;
     bool z_major = abs_v.z >= abs_v.x && abs_v.z >= abs_v.y;
@@ -160,29 +170,29 @@ void main() {
     float emissive = v_color.a;
 #ifdef BUILDING_FAUX_FACADE
     if (v_faux_facade > 0.0) {
-        mat3 tbn = mat3(v_tbn_0, v_tbn_1, v_tbn_2);
+        highp mat3 tbn = mat3(v_tbn_0, v_tbn_1, v_tbn_2);
 
         // v_pos.z is in meters.
-        vec3 v = vec3(v_pos.xy, v_pos.z / u_tile_to_meter) - u_camera_pos;
-        vec3 view_tangent = transpose(tbn) * v; // TBN guaranteed to be orthonormal, so we can use transpose.
+        highp vec3 v = vec3(v_pos.xy, v_pos.z / u_tile_to_meter) - u_camera_pos;
+        highp vec3 view_tangent = transpose(tbn) * v; // TBN guaranteed to be orthonormal, so we can use transpose.
 
-        vec2 q = vec2(v_faux_facade_ed, v_pos.z);
+        highp vec2 q = vec2(v_faux_facade_ed, v_pos.z);
         float mask = 0.0;
         vec2 id = vec2(0.0);
-        vec2 uv = get_uv_mask_id(q, mask, id);
+        highp vec2 uv = get_uv_mask_id(q, mask, id);
         uv *= v_faux_facade_window;
 
         // Perform ray intersection with a box defined by bmin and bmax.
-        vec3 bmin = vec3(0.0, 0.0, -window_depth);
-        vec3 bmax = bmin + vec3(v_faux_facade_window, window_depth);
-        vec3 ray_o = vec3(uv, 0.0);
-        vec3 ray_d = normalize(view_tangent);
-        float t_min = ray_unit_box(ray_o, ray_d, bmin, bmax);
-        vec3 hit = ray_o + t_min * ray_d;
+        highp vec3 bmin = vec3(0.0, 0.0, -window_depth);
+        highp vec3 bmax = bmin + vec3(v_faux_facade_window, window_depth);
+        highp vec3 ray_o = vec3(uv, 0.0);
+        highp vec3 ray_d = normalize(view_tangent);
+        highp float t_min = ray_unit_box(ray_o, ray_d, bmin, bmax);
+        highp vec3 hit = ray_o + t_min * ray_d;
 
-        vec3 r = vec3(v_faux_facade_window, -window_depth);
+        highp vec3 r = vec3(v_faux_facade_window, -window_depth);
         hit -= r * 0.5;
-        vec3 normalized = hit / r;
+        highp vec3 normalized = hit / r;
 
         vec3 out_normal = normal;
         float out_emissive = emissive;
@@ -218,7 +228,7 @@ void main() {
 #endif
 
     color.rgb = mix(color.rgb, linearTosRGB(base_color.rgb), emissive);
-    
+
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos, v_pos.z));
 #endif
@@ -226,14 +236,35 @@ void main() {
     color *= u_opacity;
 
 #ifdef INDICATOR_CUTOUT
+#ifdef FEATURE_CUTOUT
+    {
+        float ditherOpacity = cutoutGroundRoofOpacity(v_ground_roof);
+        if (ditherOpacity < 1.0) {
+            int index = (int(gl_FragCoord.x) % 4) * 4 + (int(gl_FragCoord.y) % 4);
+            if (ditherOpacity < DITHER_THRESHOLDS[index]) {
+                discard;
+            }
+        }
+    }
+#else
     color = applyCutout(color, v_pos.z);
+#endif
+#endif
+
+#ifdef RENDER_FRONT_CUTOFF
+    if (v_front_cutoff_opacity < 1.0) {
+        int index = (int(gl_FragCoord.x) % 4) * 4 + (int(gl_FragCoord.y) % 4);
+        if (v_front_cutoff_opacity < DITHER_THRESHOLDS[index]) {
+            discard;
+        }
+    }
 #endif
 
 #ifdef FEATURE_CUTOUT
-    color = apply_feature_cutout(color, gl_FragCoord);
+    color = apply_feature_cutout(color, gl_FragCoord, get_cutout_factors(gl_FragCoord).x);
 #endif
 
-    glFragColor = color; 
+    glFragColor = color;
 
 #ifdef DEBUG_SHOW_NORMALS
     color.rgb = xy_flipped_normal * 0.5 + vec3(0.5, 0.5, 0.5);

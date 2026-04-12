@@ -115,7 +115,7 @@ class Assertion implements Expression {
 
     serialize(): SerializedExpression {
         const type = this.type;
-        const serialized = [type.kind];
+        const serialized: Array<SerializedExpression> = [type.kind];
         if (type.kind === 'array') {
             const itemType = type.itemType;
             if (itemType.kind === 'string' ||
@@ -124,12 +124,10 @@ class Assertion implements Expression {
                 serialized.push(itemType.kind);
                 const N = type.N;
                 if (typeof N === 'number' || this.args.length > 1) {
-                    // @ts-expect-error - TS2345 - Argument of type 'number' is not assignable to parameter of type '"string" | "number" | "boolean" | "object" | "error" | "color" | "value" | "null" | "collator" | "formatted" | "resolvedImage" | "array"'.
                     serialized.push(N);
                 }
             }
         }
-        // @ts-expect-error - TS2769 - No overload matches this call.
         return serialized.concat(this.args.map(arg => arg.serialize()));
     }
 }

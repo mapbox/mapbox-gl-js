@@ -13,6 +13,7 @@ export type Segment = {
     vaos: {
         [_: string]: VertexArrayObject;
     };
+    batchIndex?: number; // UBO batch index for symbol batching
 };
 
 class SegmentVector {
@@ -28,10 +29,13 @@ class SegmentVector {
         vertexArrayLength: number,
         indexArrayLength: number,
         sortKey?: number,
+        batchIndex?: number,
     ): Segment {
         let segment: Segment = this.segments[this.segments.length - 1];
         if (numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) warnOnce(`Max vertices per segment is ${SegmentVector.MAX_VERTEX_ARRAY_LENGTH}: bucket requested ${numVertices}`);
-        if (!segment || segment.vertexLength + numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH || segment.sortKey !== sortKey) {
+        // Force new segment if batch index differs (for UBO batching)
+        const batchIndexDiffers = batchIndex !== undefined && segment && segment.batchIndex !== undefined && segment.batchIndex !== batchIndex;
+        if (!segment || segment.vertexLength + numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH || segment.sortKey !== sortKey || batchIndexDiffers) {
             segment = {
                 vertexOffset: vertexArrayLength,
                 primitiveOffset: indexArrayLength,
@@ -39,6 +43,7 @@ class SegmentVector {
                 primitiveLength: 0
             } as Segment;
             if (sortKey !== undefined) segment.sortKey = sortKey;
+            if (batchIndex !== undefined) segment.batchIndex = batchIndex;
             this.segments.push(segment);
         }
         return segment;
@@ -49,8 +54,9 @@ class SegmentVector {
         layoutVertexArray: StructArray,
         indexArray: StructArray,
         sortKey?: number,
+        batchIndex?: number,
     ): Segment {
-        return this._prepareSegment(numVertices, layoutVertexArray.length, indexArray.length, sortKey);
+        return this._prepareSegment(numVertices, layoutVertexArray.length, indexArray.length, sortKey, batchIndex);
     }
 
     get(): Array<Segment> {

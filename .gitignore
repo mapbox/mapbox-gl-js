@@ -38,6 +38,7 @@ tests-to-run.txt
 .eslintcache
 src/style-spec/dist/index.cjs
 src/style-spec/dist/index.d.ts
+packages/pmtiles-provider/dist/
 _batfish_site
 _batfish_tmp
 _site
@@ -48,7 +49,7 @@ npm-debug.log
 # https://github.com/vitejs/vite/issues/9470
 vitest.config.js.*
 
-tsconfig.tsbuildinfo
+*.tsbuildinfo
 bundle-analysis.html
 
 # tmp usvg ignores

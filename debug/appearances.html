@@ -8,11 +8,45 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
+
+        #legend {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255,255,255,0.93);
+            border-radius: 6px;
+            padding: 12px 16px;
+            font: 13px/1.5 'Helvetica Neue', Arial, sans-serif;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            max-width: 260px;
+        }
+        #legend h3 { margin: 0 0 8px; font-size: 14px; }
+        #legend ul { margin: 0; padding: 0 0 0 16px; }
+        #legend li { margin-bottom: 2px; }
+        #legend .section { margin-top: 8px; font-weight: bold; font-size: 12px; color: #555; }
     </style>
 </head>
 
 <body>
 <div id="map"></div>
+<div id="legend">
+    <h3>Appearances — paint properties</h3>
+    <div class="section">Hover</div>
+    <ul>
+        <li>Layout: hotel-hover image</li>
+        <li>Paint: icon + label float up, label turns orange</li>
+    </ul>
+    <div class="section">Click</div>
+    <ul>
+        <li>Layout: hotel-active image</li>
+        <li>Paint: icon + label float higher, label turns blue + halo</li>
+    </ul>
+    <div class="section">Previously clicked</div>
+    <ul>
+        <li>Layout: hotel-clicked image</li>
+        <li>Paint: icon + label dim <code>opacity: 0.45</code></li>
+    </ul>
+</div>
 
 <script src="../dist/mapbox-gl-dev.js"></script>
 <script type="module">
@@ -21,284 +55,163 @@ import {getAccessToken} from './access_token_generated.js';
 mapboxgl.accessToken = getAccessToken();
 
 const map = new mapboxgl.Map({
-        container: 'map',
-        // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
-        style: 'mapbox://styles/mapbox/standard',
-        // Disable the POI labels to only show the ones we will import
-        config: {
-            basemap: {
-                showPointOfInterestLabels: false
-            }
+    container: 'map',
+    style: 'mapbox://styles/mapbox/standard',
+    config: {
+        basemap: {
+            showPointOfInterestLabels: false
+        }
+    },
+    zoom: 15.5,
+    center: [1.8447281852, 42.10025506]
+});
+
+map.showCollisionBoxes = true;
+
+map.on('load', () => {
+    const numIconsToLoad = 4;
+    let numIconsLoaded = 0;
+
+    const onImageLoaded = () => {
+        numIconsLoaded++;
+        if (numIconsLoaded === numIconsToLoad) addLayer();
+    };
+
+    map.loadImage('hotel.png',         (err, img) => { if (err) throw err; map.addImage('hotel',         img); onImageLoaded(); });
+    map.loadImage('hotel-active.png',  (err, img) => { if (err) throw err; map.addImage('hotel-active',  img); onImageLoaded(); });
+    map.loadImage('hotel-clicked.png', (err, img) => { if (err) throw err; map.addImage('hotel-clicked', img); onImageLoaded(); });
+    map.loadImage('hotel-hover.png',   (err, img) => { if (err) throw err; map.addImage('hotel-hover',   img); onImageLoaded(); });
+
+    map.addSource('points', {
+        type: 'geojson',
+        data: getGeoJSONData()
+    });
+});
+
+function addLayer() {
+    map.addLayer({
+        id: 'points',
+        type: 'symbol',
+        source: 'points',
+        layout: {
+            'icon-allow-overlap': true,
+            'icon-image': 'hotel',
+            'icon-size': 0.75,
+            'text-field': ['get', 'name'],
+            'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
+            'text-size': 12,
+            'text-offset': [0, 1.2],
+            'text-anchor': 'top',
+            'text-allow-overlap': true
         },
-        zoom: 15.5,
-        center: [1.8447281852, 42.10025506]
-    });
-
-    // Wait until the map has finished loading.
-    map.on('load', () => {
-        // Load an image for every feature state.
-        // When all images are loaded, add the layer to the map
-        const numIconsToLoad = 4;
-        let numIconsLoaded = 0;
-        map.loadImage('hotel.png', (error, image) => {
-            if (error) throw error;
-
-            map.addImage('hotel', image);
-            numIconsLoaded++;
-            if (numIconsLoaded === numIconsToLoad) addLayer();
-        });
-
-        map.loadImage(
-            'hotel-active.png',
-            (error, image) => {
-                if (error) throw error;
-
-                map.addImage('hotel-active', image);
-                numIconsLoaded++;
-                if (numIconsLoaded === numIconsToLoad) addLayer();
-            }
-        );
-
-        map.loadImage(
-            'hotel-clicked.png',
-            (error, image) => {
-                if (error) throw error;
-
-                map.addImage('hotel-clicked', image);
-                numIconsLoaded++;
-                if (numIconsLoaded === numIconsToLoad) addLayer();
-            }
-        );
-
-        map.loadImage(
-            'hotel-hover.png',
-            (error, image) => {
-                if (error) throw error;
-
-                map.addImage('hotel-hover', image);
-                numIconsLoaded++;
-                if (numIconsLoaded === numIconsToLoad) addLayer();
-            }
-        );
-
-        map.addSource('points', {
-            type: 'geojson',
-            data: getGeoJSONData()
-        });
-    });
-
-    function addLayer() {
-        // Add a layer to show an icon on every point.
-        map.addLayer({
-            'id': 'points',
-            'type': 'symbol',
-            'source': 'points',
-            'layout': {
-                'icon-allow-overlap': true,
-                // Define an icon and size for the default appearance of symbols in this layer
-                'icon-image': 'hotel',
-                'icon-size': 0.75
+        paint: {
+            'text-color': '#333333',
+            'text-halo-color': '#ffffff',
+            'text-halo-width': 1,
+            'icon-translate': [0, 0],
+            'text-translate': [0, 0]
+        },
+        appearances: [
+            {
+                name: 'clicked',
+                condition: ['boolean', ['feature-state', 'currentlySelected'], false],
+                properties: {
+                    'icon-image': 'hotel-active',
+                    'icon-translate': [0, -12],
+                    'text-translate': [0, -12],
+                    'text-color': '#4264fb',
+                    'text-halo-color': '#c0caff',
+                    'text-halo-width': 2
+                }
             },
-            'appearances': [
-                {
-                    'name': 'clicked',
-                    'condition': [
-                        'boolean',
-                        ['feature-state', 'currentlySelected'],
-                        false
-                    ],
-                    'properties': {
-                        // This icon will be used when the currentlySelected feature state is active
-                        'icon-image': 'hotel-active'
-                    }
-                },
-                {
-                    'name': 'hovered',
-                    'condition': ['boolean', ['feature-state', 'hover'], false],
-                    'properties': {
-                        // This icon will be used when the hover feature state is active and currentlySelected is not
-                        'icon-image': 'hotel-hover'
-                    }
-                },
-                {
-                    'name': 'has-been-clicked',
-                    'condition': [
-                        'boolean',
-                        ['feature-state', 'hasBeenClicked'],
-                        false
-                    ],
-                    'properties': {
-                        // This icon will be used then the hasBeenClicked feature state is active and neither hover nor currentlySelected are
-                        'icon-image': 'hotel-clicked'
-                    }
+            {
+                name: 'hovered',
+                condition: ['boolean', ['feature-state', 'hover'], false],
+                properties: {
+                    'icon-image': 'hotel-hover',
+                    'icon-translate': [0, -8],
+                    'text-translate': [0, -8],
+                    'text-color': '#d06000'
                 }
-            ]
-        });
-
-        // Store the currently selected feature and the features that have been
-        // selected some time
-        let selectedFeature = null;
-        const clickedFeatures = [];
-
-        // When the mouse hovers over the feature we set the hover feature state to true
-        // and change the pointer
-        map.addInteraction('hover-in', {
-            type: 'mouseenter',
-            target: { layerId: 'points' },
-            handler: (e) => {
-                map.setFeatureState(e.feature, { hover: true });
-                map.getCanvas().style.cursor = 'pointer';
-            }
-        });
-
-        // When the mouse hovers outside the feature we set the hover feature state to false
-        // and change the pointer
-        map.addInteraction('hover-out', {
-            type: 'mouseleave',
-            target: { layerId: 'points' },
-            handler: (e) => {
-                map.setFeatureState(e.feature, { hover: false });
-                map.getCanvas().style.cursor = '';
-            }
-        });
-
-        // When the mouse is clicked on a feature we set the currentlySelected feature state to true,
-        // unselect the previous select one if any and store this feature both as the selected feature
-        // and in the list of features that have been selected
-        map.addInteraction('click', {
-            type: 'click',
-            target: { layerId: 'points' },
-            handler: (e) => {
-                // If we click on a feature and there was some of it selected, we first
-                // deselect that one
-                if (selectedFeature) {
-                    map.setFeatureState(selectedFeature, {
-                        currentlySelected: false
-                    });
+            },
+            {
+                name: 'has-been-clicked',
+                condition: ['boolean', ['feature-state', 'hasBeenClicked'], false],
+                properties: {
+                    'icon-image': 'hotel-clicked',
+                    'icon-opacity': 0.45,
+                    'text-opacity': 0.45
                 }
-                // We store this feature as the currently selected feature and in the list
-                // of feature that have been selected
-                selectedFeature = e.feature;
-                clickedFeatures.push(e.feature);
-                map.setFeatureState(e.feature, {
-                    currentlySelected: true,
-                    hasBeenClicked: true
+            }
+        ]
+    });
+
+    let selectedFeature = null;
+    const clickedFeatures = [];
+
+    map.addInteraction('hover-in', {
+        type: 'mouseenter',
+        target: {layerId: 'points'},
+        handler: (e) => {
+            map.setFeatureState(e.feature, {hover: true});
+            map.getCanvas().style.cursor = 'pointer';
+        }
+    });
+
+    map.addInteraction('hover-out', {
+        type: 'mouseleave',
+        target: {layerId: 'points'},
+        handler: (e) => {
+            map.setFeatureState(e.feature, {hover: false});
+            map.getCanvas().style.cursor = '';
+        }
+    });
+
+    map.addInteraction('click', {
+        type: 'click',
+        target: {layerId: 'points'},
+        handler: (e) => {
+            if (selectedFeature) {
+                map.setFeatureState(selectedFeature, {currentlySelected: false});
+            }
+            selectedFeature = e.feature;
+            clickedFeatures.push(e.feature);
+            map.setFeatureState(e.feature, {currentlySelected: true, hasBeenClicked: true});
+        }
+    });
+
+    map.addInteraction('map-click', {
+        type: 'click',
+        handler: () => {
+            if (selectedFeature) {
+                map.setFeatureState(selectedFeature, {currentlySelected: false});
+                selectedFeature = null;
+            } else {
+                clickedFeatures.forEach((f) => {
+                    map.setFeatureState(f, {hasBeenClicked: false});
                 });
+                clickedFeatures.length = 0;
             }
-        });
+        }
+    });
+}
 
-        // When the mouse is clicked outside of any feature, we unselect the currently selected feature if
-        // there's any or remove all features from the list of feature that have been selected to get back
-        // to the initial state
-        map.addInteraction('map-click', {
-            type: 'click',
-            handler: () => {
-                // When we click on the map we unselect the currently selected feature
-                // If there was none selected we reset the state of all features to the default one
-                if (selectedFeature) {
-                    map.setFeatureState(selectedFeature, {
-                        currentlySelected: false
-                    });
-                    selectedFeature = null;
-                } else {
-                    clickedFeatures.forEach((f) => {
-                        map.setFeatureState(f, { hasBeenClicked: false });
-                    });
-                    clickedFeatures.length = 0;
-                }
-            }
-        });
-    }
-
-    function getGeoJSONData() {
-        return {
-            'type': 'FeatureCollection',
-            'features': [
-                {
-                    'type': 'Feature',
-                    'id': 1,
-                    'properties': {},
-                    'geometry': {
-                        'coordinates': [1.8452993238082342, 42.100164223399275],
-                        'type': 'Point'
-                    }
-                },
-                {
-                    'type': 'Feature',
-                    'id': 2,
-                    'properties': {},
-                    'geometry': {
-                        'coordinates': [1.8438590191857145, 42.1004178052402],
-                        'type': 'Point'
-                    }
-                },
-                {
-                    'type': 'Feature',
-                    'id': 3,
-                    'properties': {},
-                    'geometry': {
-                        'coordinates': [1.844225198327564, 42.10130533369667],
-                        'type': 'Point'
-                    }
-                },
-                {
-                    'type': 'Feature',
-                    'id': 4,
-                    'properties': {},
-                    'geometry': {
-                        'coordinates': [1.8443594640122, 42.0990955459275],
-                        'type': 'Point'
-                    }
-                },
-                {
-                    'type': 'Feature',
-                    'id': 5,
-                    'properties': {},
-                    'geometry': {
-                        'coordinates': [1.8449697625811154, 42.09869705141318],
-                        'type': 'Point'
-                    }
-                },
-                {
-                    'type': 'Feature',
-                    'id': 6,
-                    'properties': {},
-                    'geometry': {
-                        'coordinates': [1.8471058075726603, 42.09978384873651],
-                        'type': 'Point'
-                    }
-                },
-                {
-                    'type': 'Feature',
-                    'id': 7,
-                    'properties': {},
-                    'geometry': {
-                        'coordinates': [1.8455739474818813, 42.10182152060625],
-                        'type': 'Point'
-                    }
-                },
-                {
-                    'type': 'Feature',
-                    'id': 8,
-                    'properties': {},
-                    'geometry': {
-                        'coordinates': [1.8427787800360136, 42.10039061289771],
-                        'type': 'Point'
-                    }
-                },
-                {
-                    'type': 'Feature',
-                    'id': 9,
-                    'properties': {},
-                    'geometry': {
-                        'coordinates': [1.8433280487479635, 42.0994396753579],
-                        'type': 'Point'
-                    }
-                }
-            ]
-        };
-    }
-
+function getGeoJSONData() {
+    return {
+        type: 'FeatureCollection',
+        features: [
+            {type: 'Feature', id: 1, properties: {name: 'Hotel Carlemany'}, geometry: {type: 'Point', coordinates: [1.8452993238082342, 42.100164223399275]}},
+            {type: 'Feature', id: 2, properties: {name: 'Hotel Panorama'},  geometry: {type: 'Point', coordinates: [1.8438590191857145, 42.1004178052402]}},
+            {type: 'Feature', id: 3, properties: {name: 'Hotel Andorra'},   geometry: {type: 'Point', coordinates: [1.844225198327564,  42.10130533369667]}},
+            {type: 'Feature', id: 4, properties: {name: 'Hotel Plaza'},     geometry: {type: 'Point', coordinates: [1.8443594640122,    42.0990955459275]}},
+            {type: 'Feature', id: 5, properties: {name: 'Hotel Cervol'},    geometry: {type: 'Point', coordinates: [1.8449697625811154, 42.09869705141318]}},
+            {type: 'Feature', id: 6, properties: {name: 'Hotel Diplomatic'},geometry: {type: 'Point', coordinates: [1.8471058075726603, 42.09978384873651]}},
+            {type: 'Feature', id: 7, properties: {name: 'Hotel Guillem'},   geometry: {type: 'Point', coordinates: [1.8455739474818813, 42.10182152060625]}},
+            {type: 'Feature', id: 8, properties: {name: 'Hotel Roc Blanc'}, geometry: {type: 'Point', coordinates: [1.8427787800360136, 42.10039061289771]}},
+            {type: 'Feature', id: 9, properties: {name: 'Hotel President'}, geometry: {type: 'Point', coordinates: [1.8433280487479635, 42.0994396753579]}}
+        ]
+    };
+}
 </script>
 </body>
 </html>

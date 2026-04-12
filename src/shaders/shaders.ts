@@ -37,6 +37,8 @@ import fillOutlinePatternFrag from './fill_outline_pattern.fragment.glsl';
 import fillOutlinePatternVert from './fill_outline_pattern.vertex.glsl';
 import fillPatternFrag from './fill_pattern.fragment.glsl';
 import fillPatternVert from './fill_pattern.vertex.glsl';
+import lineBlendCompositeFrag from './line_blend_composite.fragment.glsl';
+import lineBlendCompositeVert from './line_blend_composite.vertex.glsl';
 import fillExtrusionFrag from './fill_extrusion.fragment.glsl';
 import fillExtrusionVert from './fill_extrusion.vertex.glsl';
 import fillExtrusionPatternFrag from './fill_extrusion_pattern.fragment.glsl';
@@ -189,6 +191,7 @@ export default {
     fillOutline: compile(fillOutlineFrag, fillOutlineVert),
     fillOutlinePattern: compile(fillOutlinePatternFrag, fillOutlinePatternVert),
     fillPattern: compile(fillPatternFrag, fillPatternVert),
+    lineBlendComposite: compile(lineBlendCompositeFrag, lineBlendCompositeVert),
     fillExtrusion: compile(fillExtrusionFrag, fillExtrusionVert),
     fillExtrusionDepth: compile(fillExtrusionDepthFrag, fillExtrusionDepthVert),
     fillExtrusionPattern: compile(fillExtrusionPatternFrag, fillExtrusionPatternVert),
@@ -240,6 +243,11 @@ export function parseUsedPreprocessorDefines(source: string, defines: Set<Dynami
     }
 }
 
+function isIntegerType(type: string): boolean {
+    const intTypes = new Set(['uint', 'int', 'uvec2', 'ivec2', 'uvec3', 'ivec3', 'uvec4', 'ivec4']);
+    return intTypes.has(type);
+}
+
 // Expand #pragmas to #ifdefs.
 export function compile(fragmentSource: string, vertexSource: string): ShaderSource {
     const fragmentPragmas: Set<string> = new Set();
@@ -273,12 +281,13 @@ export function compile(fragmentSource: string, vertexSource: string): ShaderSou
         usedDefines = new Set([...usedDefines, ...defineMap[includePath]]);
     }
 
-    fragmentSource = fragmentSource.replace(PRAGMA_REGEX, (_, operation, precision, type, name: string) => {
+    fragmentSource = fragmentSource.replace(PRAGMA_REGEX, (_, operation, precision, type: string, name: string) => {
         fragmentPragmas.add(name);
         if (operation === 'define') {
+            const interpolation = isIntegerType(type) ? 'flat ' : '';
             return `
 #ifndef HAS_UNIFORM_u_${name}
-in ${precision} ${type} ${name};
+${interpolation}in ${precision} ${type} ${name};
 #else
 uniform ${precision} ${type} u_${name};
 #endif
@@ -315,19 +324,20 @@ in ${precision} ${type} a_${name};
 `;
         } else if (fragmentPragmas.has(name)) {
             if (operation === 'define') {
+                const interpolation = isIntegerType(type) ? 'flat ' : '';
                 return `
 #ifndef HAS_UNIFORM_u_${name}
 uniform lowp float u_${name}_t;
     #if !defined(${materialOffsetNameDefineName})
         in ${precision} ${attrType} a_${name};
     #endif
-out ${precision} ${type} ${name};
+${interpolation}out ${precision} ${type} ${name};
 #else
 uniform ${precision} ${type} u_${name};
 #endif
 `;
             } else if (operation === 'initialize') {
-                if (unpackType === 'vec4') {
+                if (unpackType === 'vec4' || unpackType === 'uvec4') {
                     // vec4 attributes are only used for cross-faded properties, and are not packed
                     return `
 #ifndef HAS_UNIFORM_u_${name}
@@ -403,7 +413,7 @@ uniform ${precision} ${type} u_${name};
 #endif
 `;
             } else /* if (operation === 'initialize') */ {
-                if (unpackType === 'vec4') {
+                if (unpackType === 'vec4' || unpackType === 'uvec4') {
                     // vec4 attributes are only used for cross-faded properties, and are not packed
                     return `
 #ifndef HAS_UNIFORM_u_${name}

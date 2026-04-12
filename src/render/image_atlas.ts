@@ -311,9 +311,9 @@ export default class ImageAtlas {
             const size = {width: image.data.width, height: image.data.height};
             const imageToUpload = new RGBAImage(size);
             RGBAImage.copy(image.data, imageToUpload, {x: 0, y: 0}, {x: 0, y: 0}, size, lut, overrideRGBWithWhite);
-            texture.update(imageToUpload, {position: {x, y}});
+            texture.update(imageToUpload, {position: {x, y}, recreateWhenResize: false});
         } else {
-            texture.update(image.data, {position: {x, y}});
+            texture.update(image.data, {position: {x, y}, recreateWhenResize: false});
         }
     }
 

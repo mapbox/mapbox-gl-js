@@ -56,6 +56,7 @@ export type PaintProps = {
     "building-emissive-strength": DataDrivenProperty<number>;
     "building-facade-emissive-chance": DataConstantProperty<number>;
     "building-cutoff-fade-range": DataConstantProperty<number>;
+    "building-front-cutoff": DataConstantProperty<[number, number, number]>;
     "building-flood-light-color": DataConstantProperty<Color>;
     "building-flood-light-intensity": DataConstantProperty<number>;
     "building-flood-light-ground-attenuation": DataConstantProperty<number>;
@@ -76,6 +77,7 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "building-emissive-strength": new DataDrivenProperty(styleSpec["paint_building"]["building-emissive-strength"]),
     "building-facade-emissive-chance": new DataConstantProperty(styleSpec["paint_building"]["building-facade-emissive-chance"]),
     "building-cutoff-fade-range": new DataConstantProperty(styleSpec["paint_building"]["building-cutoff-fade-range"]),
+    "building-front-cutoff": new DataConstantProperty(styleSpec["paint_building"]["building-front-cutoff"]),
     "building-flood-light-color": new DataConstantProperty(styleSpec["paint_building"]["building-flood-light-color"]),
     "building-flood-light-intensity": new DataConstantProperty(styleSpec["paint_building"]["building-flood-light-intensity"]),
     "building-flood-light-ground-attenuation": new DataConstantProperty(styleSpec["paint_building"]["building-flood-light-ground-attenuation"]),

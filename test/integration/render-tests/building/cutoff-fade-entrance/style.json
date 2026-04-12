@@ -114,7 +114,7 @@
       "id": "building",
       "type": "building",
       "source": "geojson",
-      "minzoom": 16,
+      "minzoom": 18,
       "layout": {
         "building-roof-shape": "parapet",
         "building-base": 0,

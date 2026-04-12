@@ -1,9 +1,9 @@
 #include "_prelude_fog.vertex.glsl"
 #include "_prelude_shadow.vertex.glsl"
 
-in vec2 a_pos;
+in ivec2 a_pos;
 in float a_height;
-in vec3 a_pos_normal_3;
+in ivec4 a_pos_normal_3;
 
 uniform mat4 u_matrix;
 
@@ -24,10 +24,10 @@ out float v_depth;
 void main() {
     #pragma mapbox: initialize highp vec4 structure_color
 
-    v_normal = a_pos_normal_3 / 16384.0;
+    v_normal = vec3(a_pos_normal_3) / 16384.0;
     v_height = a_height;
 
-    vec3 pos = vec3(a_pos, a_height);
+    vec3 pos = vec3(vec2(a_pos), a_height);
     gl_Position = u_matrix * vec4(pos, 1);
 
 #ifdef RENDER_SHADOWS
@@ -44,6 +44,6 @@ void main() {
 #endif
 
 #ifdef FOG
-    v_fog_pos = fog_position(a_pos);
+    v_fog_pos = fog_position(vec2(a_pos));
 #endif
 }

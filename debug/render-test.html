@@ -23,9 +23,11 @@
         import {applyOperations} from '../test/integration/lib/operation-handlers.js';
         import {transformRequest as baseTransformRequest} from '../test/integration/lib/transform-request.js';
 
+        mapboxgl.addTileProvider('pmtiles', `${location.origin}/packages/pmtiles-provider/dist/mapbox-gl-pmtiles-provider.js`);
+
         function transformRequest(url, resourceTypeEnum) {
             const req = baseTransformRequest(url, resourceTypeEnum);
-            return {url: req.url.replace(location.origin, `${location.origin}/test/integration/`)};
+            return {url: req.url.replace(location.origin, `${location.origin}/test/integration`)};
         }
 
         async function fetchStyle() {
@@ -109,9 +111,12 @@
             attributionControl: false,
             performanceMetricsCollection: false,
             scaleFactor,
-            spriteFormat: options.spriteFormat || 'auto',
             maxZoom: options.maxZoom
         });
+
+        if (options.spriteFormat) {
+            map._spriteFormat = options.spriteFormat;
+        }
 
         map.removeControl(map._logoControl);
 
@@ -134,6 +139,7 @@
         if (options.showTerrainWireframe) map.showTerrainWireframe = true;
         if (options.showLayers2DWireframe) map.showLayers2DWireframe = true;
         if (options.showLayers3DWireframe) map.showLayers3DWireframe = true;
+        if (options.showElevationIdDebug) map.showElevationIdDebug = true;
         if (options.showPadding) map.showPadding = true;
         if (options.collisionDebug) map.showCollisionBoxes = true;
         if (options.fadeDuration) map._isInitialLoad = false;

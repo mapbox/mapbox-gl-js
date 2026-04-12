@@ -351,9 +351,8 @@ export function uuid(): string {
     function b(a?: undefined): string {
         return a ?
             (a ^ Math.random() * (16 >> a / 4)).toString(16) :
-            // @ts-expect-error - TS2365 - Operator '+' cannot be applied to types 'number[]' and 'number'.
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands, @typescript-eslint/no-unsafe-unary-minus, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            ([1e7] + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b) as string;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-unary-minus
+            (([1e7] as unknown as string) + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b);
     }
     return b();
 }
@@ -616,6 +615,9 @@ export function cartesianPositionToSpherical(x: number, y: number, z: number): [
  * @private
  * @returns {boolean}
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const WorkerGlobalScope: (new (...args: any[]) => any) | undefined;
+
 export function isWorker(scope?: unknown): scope is Worker {
     if (typeof self === 'undefined' && scope === undefined) {
         return false;
@@ -623,7 +625,6 @@ export function isWorker(scope?: unknown): scope is Worker {
 
     // Check if WorkerGlobalScope isn't available
     // This is a global that's only present in browser worker environments
-    // @ts-expect-error - TS2304: Cannot find name 'WorkerGlobalScope'
     if (typeof WorkerGlobalScope === 'undefined') {
         return false;
     }
@@ -632,7 +633,6 @@ export function isWorker(scope?: unknown): scope is Worker {
     const contextToCheck = scope !== undefined ? scope : self;
 
     // Final check if context is a WorkerGlobalScope
-    // @ts-expect-error - TS2304: Cannot find name 'WorkerGlobalScope'
     return contextToCheck instanceof WorkerGlobalScope;
 }
 

@@ -70,8 +70,7 @@ class VertexBuffer {
     }
 
     enableAttributes(gl: WebGL2RenderingContext, program: Program<UniformBindings>) {
-        for (let j = 0; j < this.attributes.length; j++) {
-            const member = this.attributes[j];
+        for (const member of this.attributes) {
             const attribIndex = program.getAttributeLocation(gl, member.name);
             if (attribIndex !== -1) {
                 gl.enableVertexAttribArray(attribIndex);
@@ -86,19 +85,30 @@ class VertexBuffer {
      * @param vertexOffset Index of the starting vertex of the segment.
      */
     setVertexAttribPointers(gl: WebGL2RenderingContext, program: Program<UniformBindings>, vertexOffset?: number | null) {
-        for (let j = 0; j < this.attributes.length; j++) {
-            const member = this.attributes[j];
+        for (const member of this.attributes) {
             const attribIndex = program.getAttributeLocation(gl, member.name);
             if (attribIndex !== -1) {
-                gl.vertexAttribPointer(
-                    attribIndex,
-                    member.components,
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    gl[AttributeType[member.type]],
-                    false,
-                    this.itemSize,
-                    member.offset + (this.itemSize * (vertexOffset || 0))
-                );
+                const byteOffset = member.offset + (this.itemSize * (vertexOffset || 0));
+                // Use vertexAttribIPointer for integer types and vertexAttribPointer for float
+                if (member.type === 'Float32') {
+                    gl.vertexAttribPointer(
+                        attribIndex,
+                        member.components,
+                        gl.FLOAT,
+                        false,
+                        this.itemSize,
+                        byteOffset
+                    );
+                } else {
+                    gl.vertexAttribIPointer(
+                        attribIndex,
+                        member.components,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                        gl[AttributeType[member.type]],
+                        this.itemSize,
+                        byteOffset
+                    );
+                }
             }
         }
     }

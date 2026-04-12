@@ -1,0 +1,69 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128
+    }
+  },
+  "zoom": 1.5,
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "GeometryCollection",
+        "geometries": [
+          {
+            "type": "Point",
+            "coordinates": [0, 0]
+          },
+          {
+            "type": "Point",
+            "coordinates": [10, 10]
+          }
+        ]
+      }
+    },
+    "polygon": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [[[-5, -5], [-5, 5], [5, 5], [5, -5], [-5, -5]]]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "polygon",
+      "type": "fill",
+      "source": "polygon",
+      "paint": {
+        "fill-color": "rgba(0, 0, 255, 0.1)"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "points",
+      "layout": {
+        "icon-image": "rocket-12"
+      }
+    },
+    {
+      "id": "clip",
+      "type": "clip",
+      "source": "polygon",
+      "layout": {
+        "clip-layer-types": ["symbol"]
+      }
+    }
+  ]
+}

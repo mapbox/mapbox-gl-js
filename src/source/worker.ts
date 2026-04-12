@@ -13,6 +13,8 @@ import {Event} from '../util/evented';
 import {getProjection} from '../geo/projection/index';
 import {ImageRasterizer} from '../render/image_rasterizer';
 import {isWorker} from '../util/util';
+import config from '../util/config';
+import {loadTileProvider} from './tile_provider_worker';
 
 import type Projection from '../geo/projection/projection';
 import type {ImageId} from '../style-spec/expression/types/image_id';
@@ -21,6 +23,7 @@ import type {RtlTextPlugin} from './rtl_text_plugin';
 import type {RasterizedImageMap} from '../render/image_manager';
 import type {ActorMessage, ActorMessages} from '../util/actor_messages';
 import type {WorkerSourceType, WorkerSource, WorkerSourceConstructor, WorkerSourceRequest} from './worker_source';
+import type {TileProvider} from './tile_provider';
 import type {StyleModelMap} from '../style/style_mode';
 import type {Callback} from '../types/callback';
 
@@ -49,9 +52,10 @@ export default class MapWorker {
     defaultProjection: Projection;
     isSpriteLoaded: WorkerScopeRegistry<boolean>;
     referrer: string | null | undefined;
-    dracoUrl: string | null | undefined;
-    meshoptUrl: string | null | undefined;
-    brightness: number | undefined;
+    brightness: number | null | undefined;
+    maxUniformBufferBindings: number | null | undefined;
+    maxUniformBlockSizeDwords: number | null | undefined;
+    disableSymbolUBO: boolean | null | undefined;
     imageRasterizer: ImageRasterizer;
     worldview: string | undefined;
     rtlPluginParsingListeners: Array<Callback<boolean>>;
@@ -204,6 +208,13 @@ export default class MapWorker {
         callback();
     }
 
+    setContextParams(mapId: number, params: ActorMessages['setContextParams']['params'], callback: ActorMessages['setContextParams']['callback']) {
+        this.maxUniformBufferBindings = params.maxBindingPoints;
+        this.maxUniformBlockSizeDwords = params.maxUniformBlockSizeDwords;
+        this.disableSymbolUBO = params.disableSymbolUBO;
+        callback();
+    }
+
     setWorldview(mapId: number, worldview: ActorMessages['setWorldview']['params'], callback: ActorMessages['setWorldview']['callback']) {
         this.worldview = worldview;
         callback();
@@ -268,6 +279,33 @@ export default class MapWorker {
     }
 
     /**
+     * Imports a tile provider module, creates an instance,
+     * pre-creates the WorkerSource, and optionally loads TileJSON.
+     * Called via broadcast from the main thread.
+     * @private
+     */
+    loadTileProvider(mapId: number, params: ActorMessages['loadTileProvider']['params'], callback: ActorMessages['loadTileProvider']['callback']) {
+        loadTileProvider(params.name, params.url)
+            .then((ProviderClass) => {
+                const tileProvider = new ProviderClass(params.options);
+
+                this.getWorkerSource(mapId, {
+                    type: params.type,
+                    source: params.source,
+                    scope: params.scope,
+                } as WorkerSourceRequest, tileProvider);
+
+                if (tileProvider.load && params.request) {
+                    return tileProvider.load({request: params.request});
+                }
+
+                return null;
+            })
+            .then((tileJSON) => callback(null, tileJSON))
+            .catch((err: unknown) => callback(err instanceof Error ? err : new Error(typeof err === 'string' ? err : 'Unknown error')));
+    }
+
+    /**
      * Load a {@link WorkerSource} script at params.url.  The script is run
      * (using importScripts) with `registerWorkerSource` in scope, which is a
      * function taking `(name, workerSourceObject)`.
@@ -317,8 +355,8 @@ export default class MapWorker {
         }
     }
 
-    setDracoUrl(mapId: number, dracoUrl: ActorMessages['setDracoUrl']['params']) {
-        this.dracoUrl = dracoUrl;
+    setConfig(mapId: number, updates: ActorMessages['setConfig']['params']) {
+        Object.assign(config, updates);
     }
 
     getAvailableImages(mapId: number, scope: string): ImageId[] {
@@ -364,7 +402,7 @@ export default class MapWorker {
         return layerIndex;
     }
 
-    getWorkerSource(mapId: number, params: WorkerSourceRequest): WorkerSource {
+    getWorkerSource(mapId: number, params: WorkerSourceRequest, tileProvider?: TileProvider<ArrayBuffer>): WorkerSource {
         const {type, source, scope} = params;
         const workerSources = this.workerSources;
 
@@ -399,9 +437,12 @@ export default class MapWorker {
                 availableImages: this.getAvailableImages(mapId, scope),
                 availableModels: this.getAvailableModels(mapId, scope),
                 isSpriteLoaded: this.isSpriteLoaded[mapId][scope],
-                loadTileData: undefined,
+                tileProvider,
                 brightness: this.brightness,
-                worldview: this.worldview
+                worldview: this.worldview,
+                maxUniformBufferBindings: this.maxUniformBufferBindings,
+                maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords,
+                disableSymbolUBO: this.disableSymbolUBO,
             });
         }
 

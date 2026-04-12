@@ -12,6 +12,16 @@ in highp vec4 v_pos_light_view_1;
 
 uniform lowp float u_opacity;
 
+#ifdef RENDER_FRONT_CUTOFF
+in float v_front_cutoff_opacity;
+#endif
+
+#ifdef INDICATOR_CUTOUT
+#ifdef FEATURE_CUTOUT
+in vec4 v_ground_roof;
+#endif
+#endif
+
 #ifdef FAUX_AO
 uniform lowp vec2 u_ao;
 in vec2 v_ao;
@@ -36,6 +46,7 @@ in float v_has_floodlight;
 #endif
 
 in float v_height;
+
 
 #pragma mapbox: define highp float emissive_strength
 
@@ -130,11 +141,32 @@ float flood_radiance = 0.0;
 #endif
 
 #ifdef INDICATOR_CUTOUT
+#ifdef FEATURE_CUTOUT
+    {
+        float ditherOpacity = cutoutGroundRoofOpacity(v_ground_roof);
+        if (ditherOpacity < 1.0) {
+            int index = (int(gl_FragCoord.x) % 4) * 4 + (int(gl_FragCoord.y) % 4);
+            if (ditherOpacity < DITHER_THRESHOLDS[index]) {
+                discard;
+            }
+        }
+    }
+#else
     color = applyCutout(color, h);
+#endif
+#endif
+
+#ifdef RENDER_FRONT_CUTOFF
+    if (v_front_cutoff_opacity < 1.0) {
+        int index = (int(gl_FragCoord.x) % 4) * 4 + (int(gl_FragCoord.y) % 4);
+        if (v_front_cutoff_opacity < DITHER_THRESHOLDS[index]) {
+            discard;
+        }
+    }
 #endif
 
 #ifdef FEATURE_CUTOUT
-    color = apply_feature_cutout(color, gl_FragCoord);
+    color = apply_feature_cutout(color, gl_FragCoord, get_cutout_factors(gl_FragCoord).x);
 #endif
 
     glFragColor = color;

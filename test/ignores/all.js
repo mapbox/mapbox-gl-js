@@ -108,6 +108,9 @@ const todo = [
 ];
 
 const skip = [
+    // Validate stacked underground 3D road geometry and shadows (gl-native only)
+    "render-tests/3d-intersections/stacked-underground-roads",
+
     // Pattern should be seamless across tile edges
     // https://github.com/mapbox/mapbox-gl-js/issues/11221
     "render-tests/background-pattern/projected",
@@ -279,6 +282,11 @@ const skip = [
     // Not implemented, https://mapbox.atlassian.net/browse/GLJS-1591
     "render-tests/slots/inner-slot-before-outer",
     "render-tests/slots/mixed-slot-order-with-imports",
+
+    // gl-native only: indicator cutout with front cutoff
+    "render-tests/front-cutoff/indicator-cutout",
+    "render-tests/front-cutoff/indicator-cutout-transparency",
+    "render-tests/front-cutoff/indicator-cutout-2x-pixelratio"
 ];
 
 export default {todo, skip};

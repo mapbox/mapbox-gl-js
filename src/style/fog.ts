@@ -117,8 +117,7 @@ class Fog extends Evented {
         const fogColor = (this.properties && this.properties.get('color')) || 1.0;
         const isGlobe = this._transform.projection.name === 'globe';
         const pitchFactor = isGlobe ? 1.0 : smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
-        // @ts-expect-error - TS2339 - Property 'a' does not exist on type 'unknown'.
-        return pitchFactor * fogColor.a;
+        return pitchFactor * (fogColor as Color).a;
     }
 
     getOpacityAtLatLng(lngLat: LngLat, transform: Transform): number {

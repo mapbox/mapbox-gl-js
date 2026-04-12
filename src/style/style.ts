@@ -16,6 +16,7 @@ import {getJSON, getReferrer, ResourceType} from '../util/ajax';
 import {isMapboxURL} from '../util/mapbox_url';
 import {stripQueryParameters} from '../util/url';
 import browser from '../util/browser';
+import {getBroadcastableConfig} from '../util/config';
 import Dispatcher from '../util/dispatcher';
 import Lights from '../../3d-style/style/lights';
 import {getProperties as getAmbientProps} from '../../3d-style/style/ambient_light_properties';
@@ -41,6 +42,7 @@ import {
 } from '../source/source';
 import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures, shouldSkipFeatureVariant} from '../source/query_features';
 import SourceCache from '../source/source_cache';
+import {RenderSourceType} from '../source/tile';
 import BuildingIndex from '../source/building_index';
 import styleSpec from '../style-spec/reference/latest';
 import {getGlobalWorkerPool as getWorkerPool} from '../util/worker_pool_factory';
@@ -223,6 +225,7 @@ export type StyleOptions = {
     validate?: boolean;
     localFontFamily?: string | null | undefined;
     localIdeographFontFamily?: string;
+    useServerFontComposition?: boolean;
     dispatcher?: Dispatcher;
     imageManager?: ImageManager;
     glyphManager?: GlyphManager;
@@ -319,6 +322,7 @@ class Style extends Evented<MapEvents> {
     _mergedSourceCaches: Record<string, SourceCache>;
     _mergedOtherSourceCaches: Record<string, SourceCache>;
     _mergedSymbolSourceCaches: Record<string, SourceCache>;
+    _mergedFillExtrusionSourceCaches: Record<string, SourceCache>;
     _clipLayerPresent: boolean;
 
     _featuresetSelectors: Record<string, Array<FeaturesetSelector>>;
@@ -337,6 +341,9 @@ class Style extends Evented<MapEvents> {
         [_: string]: SourceCache;
     };
     _symbolSourceCaches: {
+        [_: string]: SourceCache;
+    };
+    _fillExtrusionSourceCaches: {
         [_: string]: SourceCache;
     };
     _loaded: boolean;
@@ -406,6 +413,7 @@ class Style extends Evented<MapEvents> {
         this._mergedSourceCaches = {};
         this._mergedOtherSourceCaches = {};
         this._mergedSymbolSourceCaches = {};
+        this._mergedFillExtrusionSourceCaches = {};
         this._clipLayerPresent = false;
         this._hasAppearances = false;
 
@@ -427,6 +435,17 @@ class Style extends Evented<MapEvents> {
             this.dispatcher = new Dispatcher(getWorkerPool(), this);
         }
 
+        // Send UBO limits to workers so they can size batches correctly for this device.
+        if (this.map.painter && this.map.painter.context) {
+            const maxBindingPoints = this.map.painter.context.maxUniformBufferBindings;
+            const maxUniformBlockSizeDwords = Math.floor(this.map.painter.context.maxUniformBlockSize / 4);
+            this.dispatcher.broadcast('setContextParams', {
+                maxBindingPoints,
+                maxUniformBlockSizeDwords,
+                disableSymbolUBO: this.map.painter.context.disableSymbolUBO
+            });
+        }
+
         if (options.imageManager) {
             this.imageManager = options.imageManager;
         } else {
@@ -442,7 +461,8 @@ class Style extends Evented<MapEvents> {
                 options.localFontFamily ?
                     LocalGlyphMode.all :
                     (options.localIdeographFontFamily ? LocalGlyphMode.ideographs : LocalGlyphMode.none),
-                options.localFontFamily || options.localIdeographFontFamily);
+                options.localFontFamily || options.localIdeographFontFamily,
+                options.useServerFontComposition);
         }
 
         if (options.modelManager) {
@@ -456,6 +476,7 @@ class Style extends Evented<MapEvents> {
         this._sourceCaches = {};
         this._otherSourceCaches = {};
         this._symbolSourceCaches = {};
+        this._fillExtrusionSourceCaches = {};
         this._loaded = false;
         this._precompileDone = false;
         this._shouldPrecompile = false;
@@ -480,6 +501,7 @@ class Style extends Evented<MapEvents> {
         this._initialConfig = options.initialConfig;
 
         this.dispatcher.broadcast('setReferrer', getReferrer());
+        this.dispatcher.broadcast('setConfig', getBroadcastableConfig());
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
@@ -655,7 +677,12 @@ class Style extends Evented<MapEvents> {
             const waitForStyle = new Promise((resolve) => {
                 style.once('style.import.load', resolve);
                 style.once('error', resolve);
-            }).then(() => this.mergeAll());
+            }).then(() => {
+                this.mergeAll();
+                // Fire a data event so that updateSources() runs after _mergedLayers is populated,
+                // ensuring tile fetches start promptly once merged state is ready.
+                this.fire(new Event('data', {dataType: 'style'}));
+            });
             waitForStyles.push(waitForStyle);
 
             // Load empty style if one of the ancestors was already
@@ -668,7 +695,16 @@ class Style extends Evented<MapEvents> {
             // Use previously cached style JSON if the import data is not set.
             const json = importSpec.data || this.importsCache.get(importSpec.url);
             if (json) {
-                style.loadJSON(json, {validate});
+                if (importSpec.data) {
+                    // Data is already in memory — use a microtask instead of RAF to avoid ~16ms delay.
+                    // loadJSON() schedules _load() via browser.frame() (RAF) which introduces an
+                    // unnecessary animation frame delay when the data is already available.
+                    style.fire(new Event('dataloading', {dataType: 'style'}));
+                    style.globalId = style._getGlobalId(json);
+                    queueMicrotask(() => style._load(json, validate));
+                } else {
+                    style.loadJSON(json, {validate});
+                }
 
                 // Don't expose global ID for internal style to ensure
                 // that we don't send in telemetry Standard style as import
@@ -795,13 +831,17 @@ class Style extends Evented<MapEvents> {
         }
 
         this._loaded = true;
+
+        // Issue TileJSON requests immediately, before the expensive deep clone of the full style JSON.
+        // addSource() does not depend on this.stylesheet, so it's safe to call here.
+        // By the time TileJSON responses arrive (~100ms), clone() will have long since completed.
+        for (const id in json.sources) {
+            this.addSource(id, json.sources[id], {validate: false, isInitialLoad: true});
+        }
+
         this.stylesheet = clone(json);
 
         const proceedWithStyleLoad = () => {
-            for (const id in json.sources) {
-                this.addSource(id, json.sources[id], {validate: false, isInitialLoad: true});
-            }
-
             if (json.iconsets) {
                 for (const id in json.iconsets) {
                     this.addIconset(id, json.iconsets[id]);
@@ -852,6 +892,25 @@ class Style extends Evented<MapEvents> {
 
                 if (sourceCache && styleLayer.canCastShadows() && shadowsEnabled) {
                     sourceCache.castsShadows = true;
+                }
+            }
+
+            // Pre-warm glyph range 0 (codepoints 0-255, ASCII/Latin) for all constant font stacks.
+            // This fires the HTTP requests before any tiles arrive, eliminating the first step
+            // of the waterfall staircase (tiles → workers discover text → getGlyphs IPC → HTTP).
+            if (this.glyphManager.url) {
+                const fontStacks = new Set<string>();
+                for (const id in this._layers) {
+                    const layer = this._layers[id];
+                    if (layer.type === 'symbol' && layer.layout) {
+                        const fonts = layer.layout.get('text-font');
+                        if (fonts && fonts.value && fonts.value.kind === 'constant') {
+                            fontStacks.add(fonts.value.value.join(','));
+                        }
+                    }
+                }
+                for (const stack of fontStacks) {
+                    this.glyphManager.prefetchRange(stack, 0);
                 }
             }
 
@@ -1115,6 +1174,7 @@ class Style extends Evented<MapEvents> {
         const mergedSourceCaches: Record<string, SourceCache> = {};
         const mergedOtherSourceCaches: Record<string, SourceCache> = {};
         const mergedSymbolSourceCaches: Record<string, SourceCache> = {};
+        const mergedFillExtrusionSourceCaches: Record<string, SourceCache> = {};
 
         this.forEachFragmentStyle((style: Style) => {
             for (const id in style._sourceCaches) {
@@ -1131,11 +1191,17 @@ class Style extends Evented<MapEvents> {
                 const fqid = makeFQID(id, style.scope);
                 mergedSymbolSourceCaches[fqid] = style._symbolSourceCaches[id];
             }
+
+            for (const id in style._fillExtrusionSourceCaches) {
+                const fqid = makeFQID(id, style.scope);
+                mergedFillExtrusionSourceCaches[fqid] = style._fillExtrusionSourceCaches[id];
+            }
         });
 
         this._mergedSourceCaches = mergedSourceCaches;
         this._mergedOtherSourceCaches = mergedOtherSourceCaches;
         this._mergedSymbolSourceCaches = mergedSymbolSourceCaches;
+        this._mergedFillExtrusionSourceCaches = mergedFillExtrusionSourceCaches;
     }
 
     mergeIndoor() {
@@ -1427,13 +1493,14 @@ class Style extends Evented<MapEvents> {
      * @fires Map.event:data Fires `data` with `{dataType: 'style'}` to indicate that sprite loading is complete.
      */
     _loadIconset(url: string) {
-        // If the sprite is not a mapbox URL, we load
-        // raster sprite if icon_set is not specified explicitly.
+        // For non-Mapbox URLs, automatically fall back to raster sprite loading.
+        // 'raster' and 'icon_set' are reserved for internal/test use only.
         if ((!isMapboxURL(url) && this.map._spriteFormat !== 'icon_set') || this.map._spriteFormat === 'raster') {
             this._loadSprite(url);
             return;
         }
 
+        // At runtime _spriteFormat is always 'auto'
         const isFallbackExists = this.map._spriteFormat === 'auto';
 
         this._spriteRequest = loadIconset(url, this.map._requestManager, (err, images) => {
@@ -1793,6 +1860,9 @@ class Style extends Evented<MapEvents> {
             sourceCache.tileCoverLift = 0.0;
         }
 
+        // Track effective max-source-zoom per fill-extrusion source cache
+        const feSourceMaxZooms: Record<string, number | null> = {};
+
         for (const layerId of this._mergedOrder) {
             const layer = this._mergedLayers[layerId];
             if (layer.visibility !== 'none' || layer.hasTransition()) layer.recalculate(parameters, this._availableImages);
@@ -1802,6 +1872,18 @@ class Style extends Evented<MapEvents> {
                     sourceCache.used = true;
                     // Select the highest elevation across all layers that are rendered with this source
                     sourceCache.tileCoverLift = Math.max(sourceCache.tileCoverLift, layer.tileCoverLift());
+                }
+            }
+
+            // Accumulate source-max-zoom for fill-extrusion layers
+            if (layer.type === 'fill-extrusion') {
+                const fqid = makeFQID(layer.source, layer.scope);
+                if (fqid in this._mergedFillExtrusionSourceCaches) {
+                    const maxSourceZoom = layer.layout && layer.layout.get('source-max-zoom');
+                    if (maxSourceZoom !== undefined && maxSourceZoom !== null) {
+                        const prev = feSourceMaxZooms[fqid];
+                        feSourceMaxZooms[fqid] = prev == null ? maxSourceZoom : Math.min(prev, maxSourceZoom);
+                    }
                 }
             }
 
@@ -1818,6 +1900,11 @@ class Style extends Evented<MapEvents> {
 
         if (this._shouldPrecompile) {
             this._precompileDone = true;
+        }
+
+        // Apply accumulated source-max-zoom overrides
+        for (const fqid in this._mergedFillExtrusionSourceCaches) {
+            this._mergedFillExtrusionSourceCaches[fqid].setMaxzoomOverride(feSourceMaxZooms[fqid] != null ? feSourceMaxZooms[fqid] : null);
         }
 
         if (this.terrain && layersUpdated) {
@@ -2117,17 +2204,28 @@ class Style extends Evented<MapEvents> {
             sourceId: sourceInstance.id
         }));
 
-        const addSourceCache = (onlySymbols: boolean) => {
-            const sourceCacheId = (onlySymbols ? 'symbol:' : 'other:') + sourceInstance.id;
+        const addSourceCache = (renderSourceType?: RenderSourceType) => {
+            const prefix = renderSourceType === RenderSourceType.Symbol ? 'symbol:' :
+                renderSourceType === RenderSourceType.FillExtrusion ? 'fill-extrusion:' : 'other:';
+            const sourceCacheId = prefix + sourceInstance.id;
             const sourceCacheFQID = makeFQID(sourceCacheId, this.scope);
-            const sourceCache = this._sourceCaches[sourceCacheId] = new SourceCache(sourceCacheFQID, sourceInstance, onlySymbols);
-            (onlySymbols ? this._symbolSourceCaches : this._otherSourceCaches)[sourceInstance.id] = sourceCache;
+            const sourceCache = this._sourceCaches[sourceCacheId] = new SourceCache(sourceCacheFQID, sourceInstance, renderSourceType);
+            if (renderSourceType === RenderSourceType.Symbol) {
+                this._symbolSourceCaches[sourceInstance.id] = sourceCache;
+            } else if (renderSourceType === RenderSourceType.FillExtrusion) {
+                this._fillExtrusionSourceCaches[sourceInstance.id] = sourceCache;
+            } else {
+                this._otherSourceCaches[sourceInstance.id] = sourceCache;
+            }
             sourceCache.onAdd(this.map);
         };
 
-        addSourceCache(false);
+        addSourceCache(RenderSourceType.Other);
         if (source.type === 'vector' || source.type === 'geojson') {
-            addSourceCache(true);
+            addSourceCache(RenderSourceType.Symbol);
+            if (source.type === 'vector') {
+                addSourceCache(RenderSourceType.FillExtrusion);
+            }
         }
 
         if (sourceInstance.onAdd)
@@ -2180,6 +2278,7 @@ class Style extends Evented<MapEvents> {
         }
         delete this._otherSourceCaches[id];
         delete this._symbolSourceCaches[id];
+        delete this._fillExtrusionSourceCaches[id];
         this.mergeSources();
 
         source.setEventedParent(null);
@@ -3204,6 +3303,13 @@ class Style extends Evented<MapEvents> {
         return Object.assign({}, this.stylesheet.transition);
     }
 
+    setWorldview(worldview: string | undefined | null) {
+        if (worldview === this._worldview) return;
+        this._worldview = worldview;
+        this.dispatcher.broadcast('setWorldview', this._worldview);
+        this.reloadSources();
+    }
+
     serialize(): StyleSpecification {
         this._checkLoaded();
 
@@ -3540,7 +3646,7 @@ class Style extends Evented<MapEvents> {
         if (this.placement) {
             for (const sourceCacheId in queries) {
                 // Skip non-symbol source caches
-                if (!queries[sourceCacheId].sourceCache._onlySymbols) continue;
+                if (queries[sourceCacheId].sourceCache._renderSourceType !== RenderSourceType.Symbol) continue;
 
                 const queryResult = queryRenderedSymbols(
                     queryGeometryStruct.screenGeometry,
@@ -4118,7 +4224,7 @@ class Style extends Evented<MapEvents> {
         }
     }
 
-    _generateCollisionBoxes() {
+    _reloadSources() {
         for (const id in this._sourceCaches) {
             const sourceCache = this._sourceCaches[id];
             sourceCache.resume();
@@ -4202,6 +4308,17 @@ class Style extends Evented<MapEvents> {
         if (this.pauseablePlacement.isFullPlacementRequested() || !this.pauseablePlacement.placement || newImmediatePlacementRequired || newNormalPlacementRequired) {
             const fogState = this.fog && transform.projection.supportsFog ? this.fog.state : null;
             this.pauseablePlacement = this.pauseablePlacement.startNewPlacement(transform, this._mergedOrder, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState, this._buildingIndex);
+            if (this.map.painter) {
+                const raw = this.map.painter.maxFrontCutoffRawStart;
+                if (raw > 0) {
+                    const pitchDeg = transform.pitch * 180 / Math.PI;
+                    if (pitchDeg >= 15) {
+                        const t = Math.min(1, Math.max(0, (pitchDeg - 15) / 5));
+                        const pitchBlend = t * t * (3 - 2 * t);
+                        this.pauseablePlacement.placement.frontCutoffStart = -0.5 * (1 - pitchBlend) + raw * pitchBlend;
+                    }
+                }
+            }
         }
 
         if (!this.pauseablePlacement.isDone()) {
@@ -4472,9 +4589,9 @@ class Style extends Evented<MapEvents> {
 
     getLayerSourceCache(layer: TypedStyleLayer): SourceCache | undefined {
         const fqid = makeFQID(layer.source, layer.scope);
-        return layer.type === 'symbol' ?
-            this._mergedSymbolSourceCaches[fqid] :
-            this._mergedOtherSourceCaches[fqid];
+        if (layer.type === 'symbol') return this._mergedSymbolSourceCaches[fqid];
+        if (layer.type === 'fill-extrusion') return this._mergedFillExtrusionSourceCaches[fqid] || this._mergedOtherSourceCaches[fqid];
+        return this._mergedOtherSourceCaches[fqid];
     }
 
     /**
@@ -4494,6 +4611,9 @@ class Style extends Evented<MapEvents> {
         }
         if (this._mergedSymbolSourceCaches[fqid]) {
             sourceCaches.push(this._mergedSymbolSourceCaches[fqid]);
+        }
+        if (this._mergedFillExtrusionSourceCaches[fqid]) {
+            sourceCaches.push(this._mergedFillExtrusionSourceCaches[fqid]);
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return sourceCaches;
@@ -4591,9 +4711,9 @@ class Style extends Evented<MapEvents> {
     }
 
     getOwnLayerSourceCache(layer: TypedStyleLayer): SourceCache | undefined {
-        return layer.type === 'symbol' ?
-            this._symbolSourceCaches[layer.source] :
-            this._otherSourceCaches[layer.source];
+        if (layer.type === 'symbol') return this._symbolSourceCaches[layer.source];
+        if (layer.type === 'fill-extrusion') return this._fillExtrusionSourceCaches[layer.source] || this._otherSourceCaches[layer.source];
+        return this._otherSourceCaches[layer.source];
     }
 
     getOwnSourceCaches(source: string): Array<SourceCache> {
@@ -4603,6 +4723,9 @@ class Style extends Evented<MapEvents> {
         }
         if (this._symbolSourceCaches[source]) {
             sourceCaches.push(this._symbolSourceCaches[source]);
+        }
+        if (this._fillExtrusionSourceCaches[source]) {
+            sourceCaches.push(this._fillExtrusionSourceCaches[source]);
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return sourceCaches;

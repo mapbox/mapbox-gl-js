@@ -434,7 +434,7 @@ describe('StyleLayer#appearances', () => {
         expect(appearances.length).toEqual(symbolLayer.appearances.length);
         appearances.forEach((a, index) => {
             expect(a.getName(), symbolLayer.appearances[index].name);
-            const properties = a.getUnevaluatedProperties();
+            const properties = a.getUnevaluatedLayoutProperties();
             Object.keys(symbolLayer.appearances[index].properties).forEach(k => {
                 expect(properties._properties.properties[k]).toBeDefined();
             });
@@ -471,7 +471,7 @@ describe('StyleLayer#appearances', () => {
         const appearances = styleLayer.getAppearances();
 
         appearances.forEach((a, index) => {
-            const properties = a.getUnevaluatedProperties();
+            const properties = a.getUnevaluatedLayoutProperties();
             Object.keys(symbolLayer.appearances[index].properties).forEach(k => {
                 expect(properties.getValue(k)).toEqual(symbolLayer.appearances[index].properties[k]);
             });

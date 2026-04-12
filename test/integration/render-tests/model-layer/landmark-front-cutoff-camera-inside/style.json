@@ -244,70 +244,10 @@
     },
     {
       "minzoom": 15.0,
-      "type": "line",
-      "paint": {
-        "line-blur": [
-          "interpolate",
-          [
-            "exponential",
-            1.309999942779541
-          ],
-          [
-            "zoom"
-          ],
-          0.0,
-          0.0,
-          22.0,
-          30.0
-        ],
-        "line-color": [
-          "rgba",
-          190.0,
-          190.0,
-          190.0,
-          1.0
-        ],
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            1.309999942779541
-          ],
-          [
-            "zoom"
-          ],
-          0.0,
-          0.0,
-          22.0,
-          50.0
-        ]
-      },
-      "source-layer": "building",
-      "filter": [
-        "all",
-        [
-          "==",
-          [
-            "get",
-            "min_height"
-          ],
-          0.0
-        ],
-        [
-          "==",
-          [
-            "get",
-            "extrude"
-          ],
-          "true"
-        ]
-      ],
-      "source": "composite",
-      "id": "ground-faux-ao"
-    },
-    {
-      "minzoom": 15.0,
       "type": "fill-extrusion",
+      "layout": {
+        "source-max-zoom": 15.0
+      },
       "paint": {
         "fill-extrusion-height": [
           "number",

@@ -1,0 +1,39 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.005,
+      "debug": true
+    }
+  },
+  "center": [-135, 45],
+  "zoom": 4,
+  "pitch": 0,
+  "bearing": 0,
+  "sources": {
+    "pmtiles": {
+      "type": "vector",
+      "url": "local://tiles/streets-v8-z0-z3.pmtiles"
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#fff"
+      }
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "pmtiles",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "#4488cc"
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import {loadGlyphRange} from '../style/load_glyph_range';
+import {GlyphLoader} from '../style/glyph_loader';
 import TinySDF from '@mapbox/tiny-sdf';
 import isChar from '../util/is_char_in_unicode_block';
 import config from '../util/config';
@@ -51,7 +51,7 @@ type Entry = {
     glyphs: StyleGlyphs;
     requests: {[range: number]: Array<Callback<GlyphRange>>};
     ranges: {[range: number]: boolean | null};
-    tinySDF?: TinySDF;
+    tinySDF?: TinySDF & {fontWeight: FontWeight};
     ascender?: number;
     descender?: number;
 };
@@ -73,12 +73,11 @@ class GlyphManager {
     // into the glyphs based soley on font weight
     localGlyphs: Record<FontWeight, GlyphRange>;
     url: string;
+    glyphLoader: GlyphLoader;
 
-    // exposed as statics to enable stubbing in unit tests
-    static loadGlyphRange: typeof loadGlyphRange;
     static TinySDF: Class<TinySDF>;
 
-    constructor(requestManager: RequestManager, localGlyphMode: number, localFontFamily?: string) {
+    constructor(requestManager: RequestManager, localGlyphMode: number, localFontFamily?: string, useServerFontComposition?: boolean) {
         this.requestManager = requestManager;
         this.localGlyphMode = localGlyphMode;
         this.localFontFamily = localFontFamily;
@@ -90,10 +89,34 @@ class GlyphManager {
             '500': {},
             '900': {}
         };
+        this.glyphLoader = new GlyphLoader({useServerFontComposition});
     }
 
     setURL(url: string) {
         this.url = url;
+    }
+
+    prefetchRange(stack: string, range: number): void {
+        const url = this.url || config.GLYPHS_URL;
+        if (!url) return;
+        let entry = this.entries[stack];
+        if (!entry) {
+            entry = this.entries[stack] = {glyphs: {}, requests: {}, ranges: {}};
+        }
+        if (entry.ranges[range] || entry.requests[range]) return; // already done or in-flight
+        entry.requests[range] = [];
+        this.glyphLoader.loadGlyphRange(stack, range, url, this.requestManager, (err, response?: GlyphRange) => {
+            if (response) {
+                entry.ascender = response.ascender;
+                entry.descender = response.descender;
+                for (const id in response.glyphs) {
+                    if (!this._doesCharSupportLocalGlyph(+id)) entry.glyphs[+id] = response.glyphs[+id];
+                }
+                entry.ranges[range] = true;
+            }
+            for (const cb of entry.requests[range] || []) cb(err, response);
+            delete entry.requests[range];
+        });
     }
 
     getGlyphs(glyphs: FontStacks, callback: Callback<GlyphMap>) {
@@ -148,7 +171,7 @@ class GlyphManager {
             let requests = entry.requests[range];
             if (!requests) {
                 requests = entry.requests[range] = [];
-                GlyphManager.loadGlyphRange(stack, range, url, this.requestManager,
+                this.glyphLoader.loadGlyphRange(stack, range, url, this.requestManager,
                     (err, response?: GlyphRange) => {
                         if (response) {
                             entry.ascender = response.ascender;
@@ -225,7 +248,7 @@ class GlyphManager {
 
         let tinySDF = entry.tinySDF;
         if (!tinySDF) {
-            let fontWeight = '400';
+            let fontWeight: FontWeight = '400';
             if (/bold/i.test(stack)) {
                 fontWeight = '900';
             } else if (/medium/i.test(stack)) {
@@ -237,17 +260,15 @@ class GlyphManager {
             const fontSize = 24 * SDF_SCALE;
             const buffer = 3 * SDF_SCALE;
             const radius = 8 * SDF_SCALE;
-            tinySDF = entry.tinySDF = new GlyphManager.TinySDF({fontFamily, fontWeight, fontSize, buffer, radius});
-            // @ts-expect-error - TS2339 - Property 'fontWeight' does not exist on type 'TinySDF'.
+            tinySDF = entry.tinySDF = new GlyphManager.TinySDF({fontFamily, fontWeight, fontSize, buffer, radius}) as Entry['tinySDF'];
             tinySDF.fontWeight = fontWeight;
         }
 
-        // @ts-expect-error - TS2339 - Property 'fontWeight' does not exist on type 'TinySDF'.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (this.localGlyphs[tinySDF.fontWeight][id]) {
-            // @ts-expect-error - TS2339 - Property 'fontWeight' does not exist on type 'TinySDF'.
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-            return this.localGlyphs[tinySDF.fontWeight][id];
+        const weight = tinySDF.fontWeight;
+
+        if (this.localGlyphs[weight][id]) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            return this.localGlyphs[weight][id];
         }
 
         const char = String.fromCodePoint(id);
@@ -271,9 +292,7 @@ class GlyphManager {
         */
         const baselineAdjustment = 27;
 
-        // @ts-expect-error - TS2339 - Property 'fontWeight' does not exist on type 'TinySDF'.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const glyph = this.localGlyphs[tinySDF.fontWeight][id] = {
+        const glyph = this.localGlyphs[weight][id] = {
             id,
             bitmap: new AlphaImage({width, height}, data),
             metrics: {
@@ -289,7 +308,6 @@ class GlyphManager {
     }
 }
 
-GlyphManager.loadGlyphRange = loadGlyphRange;
 GlyphManager.TinySDF = TinySDF;
 
 export type {GlyphRange};

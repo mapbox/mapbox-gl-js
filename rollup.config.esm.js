@@ -3,7 +3,6 @@ import {plugins} from './build/rollup_plugins.js';
 const {BUILD, MINIFY} = process.env;
 const minified = MINIFY === 'true';
 const production = BUILD === 'production';
-const bench = BUILD === 'bench';
 
 export default () => [
     {
@@ -12,9 +11,7 @@ export default () => [
             'worker': 'src/source/worker.ts'
         },
         output: {
-            dir: bench ?
-                'dist/esm-bench/' :
-                production ?
+            dir: production ?
                     minified ? 'dist/esm-min/' : 'dist/esm/' :
                     'dist/esm-dev/',
             chunkFileNames: 'shared.js',
@@ -31,7 +28,7 @@ export default () => [
             externalLiveBindings: false,
             sourcemap: true,
         },
-        treeshake: (production || bench) ? {
+        treeshake: production ? {
             preset: 'smallest',
             moduleSideEffects: (id) => !id.endsWith('devtools.ts'),
         } : false,
@@ -39,7 +36,7 @@ export default () => [
         preserveEntrySignatures: 'strict',
         plugins: [
             resolveWebWorker(),
-        ].concat(plugins({production, minified, bench, test: false, keepClassNames: false, mode: BUILD, format: 'esm'})),
+        ].concat(plugins({production, minified, test: false, keepClassNames: false, mode: BUILD, format: 'esm'})),
     }
 ];
 

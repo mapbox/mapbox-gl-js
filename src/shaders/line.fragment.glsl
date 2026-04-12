@@ -29,6 +29,10 @@ uniform sampler2D u_dash_image;
 in vec2 v_tex;
 #endif
 
+#ifdef DEBUG_ELEVATION_ID
+in vec3 v_elevation_id_col;
+#endif
+
 #ifdef RENDER_LINE_GRADIENT
 uniform sampler2D u_gradient_image;
 #endif
@@ -52,7 +56,7 @@ float luminance(vec3 c) {
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float floorwidth
-#pragma mapbox: define lowp vec4 dash
+#pragma mapbox: define mediump uvec4 dash
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define mediump float side_z_offset
@@ -67,7 +71,7 @@ float linearstep(float edge0, float edge1, float x) {
 void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize lowp float floorwidth
-    #pragma mapbox: initialize lowp vec4 dash
+    #pragma mapbox: initialize mediump uvec4 dash
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize mediump float side_z_offset
@@ -94,7 +98,7 @@ void main() {
 
 #ifdef RENDER_LINE_DASH
     float sdfdist = texture(u_dash_image, v_tex).r;
-    float sdfgamma = 1.0 / (2.0 * u_device_pixel_ratio) / dash.z;
+    float sdfgamma = 1.0 / (2.0 * u_device_pixel_ratio) / (float(dash.z) + float(dash.w) / 65535.0);
     float scaled_floorwidth = (floorwidth * u_floor_width_scale);
     alpha *= linearstep(0.5 - sdfgamma / scaled_floorwidth, 0.5 + sdfgamma / scaled_floorwidth, sdfdist);
 #endif
@@ -163,10 +167,16 @@ void main() {
 #endif
 #endif
 
+    vec2 cutout_factors = vec2(0.0);
+#ifdef FEATURE_CUTOUT
+    cutout_factors = get_cutout_factors(gl_FragCoord);
+#endif
+
 #ifdef LIGHTING_3D_MODE
     out_color = apply_lighting_with_emission_ground(out_color, emissive_strength);
 #ifdef RENDER_SHADOWS
     float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    light = mix(light, 1.0, cutout_factors.y);
     light = u_emissive_in_shadows ? mix(light, 1.0, emissive_strength) : light;
 #ifdef ELEVATED_ROADS
     out_color.rgb *= mix(v_road_z_offset != 0.0 ? u_ground_shadow_factor : vec3(1.0), vec3(1.0), light);
@@ -182,11 +192,25 @@ void main() {
 
     out_color *= (alpha * diluted_opacity);
 
+#ifdef LINE_BLEND_MULTIPLY
+    // In multiply blend mode the FBO accumulates per-line multiply factors using
+    // ColorMode.multiply ([DST_COLOR, ZERO]).  Each fragment must therefore output
+    // the factor by which the background should be scaled for this line at this
+    // coverage level:
+    //   factor = 1 - a*(1 - C)  (lerp between 1=no-op and C=full multiply)
+    // out_color is premultiplied: out_color.rgb = C*a, out_color.a = a, so:
+    //   factor.rgb = out_color.rgb + (1.0 - out_color.a)
+    // Output alpha=1 so the DST_COLOR blend sees a solid factor with no alpha scaling.
+    glFragColor = vec4(out_color.rgb + (1.0 - out_color.a), 1.0);
+    HANDLE_WIREFRAME_DEBUG;
+    return;
+#endif
+
 #ifdef INDICATOR_CUTOUT
     out_color = applyCutout(out_color, v_z_offset);
 #endif
 #ifdef FEATURE_CUTOUT
-    out_color = apply_feature_cutout(out_color, gl_FragCoord);
+    out_color = apply_feature_cutout(out_color, gl_FragCoord, cutout_factors.x);
 #endif
 
     glFragColor = out_color;
@@ -200,6 +224,10 @@ void main() {
 
 #ifdef OVERDRAW_INSPECTOR
     glFragColor = vec4(1.0);
+#endif
+
+#ifdef DEBUG_ELEVATION_ID
+    glFragColor = vec4(v_elevation_id_col, 1.0);
 #endif
 
     HANDLE_WIREFRAME_DEBUG;

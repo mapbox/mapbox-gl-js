@@ -1,4 +1,4 @@
-import {Uniform1i, Uniform1f, Uniform2f, Uniform3f, UniformMatrix4f} from '../uniform_binding';
+import {Uniform1i, Uniform1f, Uniform2f, Uniform3f, Uniform4f, UniformMatrix4f} from '../uniform_binding';
 import {mat4} from 'gl-matrix';
 import browser from '../../util/browser';
 import {globeECEFOrigin} from '../../geo/projection/globe_util';
@@ -48,6 +48,20 @@ export type SymbolUniformsType = {
     ['u_inv_matrix']: UniformMatrix4f;
     ['u_normal_scale']: Uniform1f;
     ['u_lutTexture']: Uniform1i;
+    ['u_zoom']: Uniform1f;
+    // Constant paint property uniforms (u_spp_* = Symbol Paint Properties).
+    // Used when USE_PAINT_PROPERTIES_UBO is defined; the shader reads these for
+    // properties that are not data-driven (isDataDriven == false in the header).
+    ['u_spp_fill_np_color']: Uniform4f;
+    ['u_spp_halo_np_color']: Uniform4f;
+    ['u_spp_opacity']: Uniform1f;
+    ['u_spp_halo_width']: Uniform1f;
+    ['u_spp_halo_blur']: Uniform1f;
+    ['u_spp_emissive_strength']: Uniform1f;
+    ['u_spp_occlusion_opacity']: Uniform1f;
+    ['u_spp_z_offset']: Uniform1f;
+    // [cos(angle), sin(angle)] for translate-anchor rotation; identity [1,0] for viewport anchor.
+    ['u_spp_translate_rotation']: Uniform2f;
 };
 
 export type SymbolDefinesType =
@@ -58,7 +72,8 @@ export type SymbolDefinesType =
     | 'RENDER_SDF'
     | 'RENDER_TEXT_AND_SYMBOL'
     | 'Z_OFFSET'
-    | 'APPLY_LUT_ON_GPU';
+    | 'APPLY_LUT_ON_GPU'
+    | 'USE_PAINT_PROPERTIES_UBO';
 
 const symbolUniforms = (context: Context): SymbolUniformsType => ({
     'u_is_size_zoom_constant': new Uniform1i(context),
@@ -97,6 +112,16 @@ const symbolUniforms = (context: Context): SymbolUniformsType => ({
     'u_inv_matrix': new UniformMatrix4f(context),
     'u_normal_scale': new Uniform1f(context),
     'u_lutTexture': new Uniform1i(context),
+    'u_zoom': new Uniform1f(context),
+    'u_spp_fill_np_color': new Uniform4f(context),
+    'u_spp_halo_np_color': new Uniform4f(context),
+    'u_spp_opacity': new Uniform1f(context),
+    'u_spp_halo_width': new Uniform1f(context),
+    'u_spp_halo_blur': new Uniform1f(context),
+    'u_spp_emissive_strength': new Uniform1f(context),
+    'u_spp_occlusion_opacity': new Uniform1f(context),
+    'u_spp_z_offset': new Uniform1f(context),
+    'u_spp_translate_rotation': new Uniform2f(context),
 });
 
 const identityMatrix = mat4.create();
@@ -166,6 +191,18 @@ const symbolUniformValues = (
         'u_inv_matrix': mat4.invert(mat4.create(), labelPlaneMatrix) as Float32Array,
         'u_normal_scale': normalScale,
         'u_lutTexture': TextureSlots.LUT,
+        'u_zoom': transform.zoom - Math.floor(transform.zoom),
+        // Defaults for u_spp_* — overwritten per draw call in drawSymbolElements()
+        // when USE_PAINT_PROPERTIES_UBO is active.
+        'u_spp_fill_np_color': [0, 0, 0, 1] as [number, number, number, number],
+        'u_spp_halo_np_color': [0, 0, 0, 0] as [number, number, number, number],
+        'u_spp_opacity': 1.0,
+        'u_spp_halo_width': 0.0,
+        'u_spp_halo_blur': 0.0,
+        'u_spp_emissive_strength': 0.0,
+        'u_spp_occlusion_opacity': 1.0,
+        'u_spp_z_offset': 0.0,
+        'u_spp_translate_rotation': [1.0, 0.0] as [number, number], // identity: no rotation
     };
 
     if (projection.name === 'globe') {

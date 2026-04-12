@@ -24,6 +24,7 @@ import type SourceCache from '../../source/source_cache';
 import type {LUT} from "../../util/lut";
 import type {ImageId} from '../../style-spec/expression/types/image_id';
 import type {ProgramName} from '../../render/program';
+import type Framebuffer from '../../gl/framebuffer';
 
 let properties: {
     layout: Properties<LayoutProps>;
@@ -100,6 +101,12 @@ class LineStyleLayer extends StyleLayer {
     override _transitioningPaint: Transitioning<PaintProps>;
     override paint: PossiblyEvaluated<PaintProps>;
 
+    lineBlendFbo: Framebuffer | null | undefined;
+    lineBlendStencil: WebGLRenderbuffer | null | undefined;
+
+    lineBlendDrapeFbo: Framebuffer | null | undefined;
+    lineBlendDrapeStencil: WebGLRenderbuffer | null | undefined;
+
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = getProperties();
         super(layer, properties, scope, lut, options);
@@ -147,10 +154,20 @@ class LineStyleLayer extends StyleLayer {
 
         const image = patternProperty.constantOr(1);
         const programId = image ? 'linePattern' : 'line';
-        return [programId];
+        const ids: ProgramName[] = [programId];
+
+        const blendMode = this.paint.get('line-blend-mode');
+        if (blendMode !== 'default') {
+            ids.push('lineBlendComposite');
+        }
+
+        return ids;
     }
 
     override getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
+        if (name === 'lineBlendComposite') {
+            return {};
+        }
         const definesValues = (lineDefinesValues(this) as DynamicDefinesType[]);
         return {
             config: new ProgramConfiguration(this, {zoom, lut}),
@@ -206,6 +223,36 @@ class LineStyleLayer extends StyleLayer {
 
     override hasElevation(): boolean {
         return this.layout && this.layout.get('line-elevation-reference') !== 'none';
+    }
+
+    override hasOffscreenPass(): boolean {
+        const blendMode = this.paint.get('line-blend-mode');
+        return blendMode !== 'default' &&
+            this.paint.get('line-opacity').constantOr(1) !== 0 &&
+            this.paint.get('line-width').constantOr(1) !== 0 &&
+            this.visibility !== 'none';
+    }
+
+    override resize() {
+        this._destroyLineBlendFbo();
+    }
+
+    override _clear() {
+        this._destroyLineBlendFbo();
+    }
+
+    _destroyLineBlendFbo() {
+        if (this.lineBlendFbo) {
+            this.lineBlendFbo.destroy();
+            this.lineBlendFbo = null;
+        }
+        this.lineBlendStencil = null;
+
+        if (this.lineBlendDrapeFbo) {
+            this.lineBlendDrapeFbo.destroy();
+            this.lineBlendDrapeFbo = null;
+        }
+        this.lineBlendDrapeStencil = null;
     }
 }
 

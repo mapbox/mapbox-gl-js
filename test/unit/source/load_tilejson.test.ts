@@ -428,7 +428,7 @@ describe('LoadTileJson#variants', () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         loadTileJSON(tileJSON, map._requestManager, null, null, withAsync((err, doneRef) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            expect(err.message).toEqual("variants must be an array");
+            expect(err.cause.message).toEqual("variants must be an array");
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
@@ -445,7 +445,7 @@ describe('LoadTileJson#variants', () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         loadTileJSON(tileJSON, map._requestManager, null, null, withAsync((err, doneRef) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            expect(err.message).toEqual("variant must be an object");
+            expect(err.cause.message).toEqual("variant must be an object");
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
@@ -466,7 +466,7 @@ describe('LoadTileJson#variants', () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         loadTileJSON(tileJSON, map._requestManager, null, null, withAsync((err, doneRef) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            expect(err.message).toEqual("capabilities must be an array");
+            expect(err.cause.message).toEqual("capabilities must be an array");
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));

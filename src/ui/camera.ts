@@ -824,12 +824,14 @@ class Camera extends Evented<MapEvents> {
         return extendedAABB;
     }
 
+    /* eslint-disable jsdoc/valid-types */
     /**
      * @section {Querying features}
      * @method
      * @instance
      * @memberof Map
      */
+    /* eslint-enable jsdoc/valid-types */
 
     /**
      * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` relative to mean sea-level.
@@ -1785,8 +1787,8 @@ class Camera extends Evented<MapEvents> {
         return this._stop();
     }
 
-    // @ts-expect-error - No-op in the Camera class, implemented by the Map class
-    _requestRenderFrame(_callback: () => void): TaskID {}
+    // No-op in the Camera class, implemented by the Map class
+    _requestRenderFrame(_callback: () => void): TaskID | undefined { return undefined; }
 
     // No-op in the Camera class, implemented by the Map class
     _cancelRenderFrame(_: TaskID): void {}

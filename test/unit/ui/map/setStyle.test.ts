@@ -4,12 +4,12 @@
 import {describe, test, expect, waitFor, vi, createMap} from '../../../util/vitest';
 import {createStyle} from './util';
 import {Map} from '../../../../src/ui/map';
-import {getPNGResponse} from '../../../util/network';
 import {fixedLngLat, fixedNum} from '../../../util/fixed';
 import {Event} from '../../../../src/util/evented';
 import Fog from '../../../../src/style/fog';
 import Color from '../../../../src/style-spec/util/color';
 import RasterTileSource from '../../../../src/source/raster_tile_source';
+import RasterDEMTileSource from '../../../../src/source/raster_dem_tile_source';
 import {LngLatBounds} from '../../../../src/geo/lng_lat';
 
 describe('Map#setStyle', () => {
@@ -223,9 +223,9 @@ describe('Map#setStyle', () => {
         style['terrain'] = {
             'source': 'mapbox-dem'
         };
-        vi.spyOn(window, 'fetch').mockImplementation(async () => {
-            const res = await getPNGResponse();
-            return new window.Response(res);
+        vi.spyOn(RasterDEMTileSource.prototype, 'loadTile').mockImplementation((tile, callback) => {
+            tile.state = 'loaded';
+            callback(null);
         });
         const map = createMap({style});
         await waitFor(map, 'load');
@@ -353,9 +353,9 @@ describe('Map#setStyle', () => {
 
             test('adding terrain', async () => {
                 const style = createStyle();
-                vi.spyOn(window, 'fetch').mockImplementation(async () => {
-                    const res = await getPNGResponse();
-                    return new window.Response(res);
+                vi.spyOn(RasterDEMTileSource.prototype, 'loadTile').mockImplementation((tile, callback) => {
+                    tile.state = 'loaded';
+                    callback(null);
                 });
                 const map = createMap({style});
                 const initStyleObj = map.style;
@@ -460,9 +460,9 @@ describe('Map#setStyle', () => {
             'layers': []
         };
 
-        vi.spyOn(window, 'fetch').mockImplementation(async () => {
-            const res = await getPNGResponse();
-            return new window.Response(res);
+        vi.spyOn(RasterDEMTileSource.prototype, 'loadTile').mockImplementation((tile, callback) => {
+            tile.state = 'loaded';
+            callback(null);
         });
         const map = createMap({style: styleWithTerrainExaggeration});
 

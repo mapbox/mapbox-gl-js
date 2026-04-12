@@ -1,4 +1,3 @@
-import replace from '@rollup/plugin-replace';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
@@ -20,15 +19,6 @@ const config = [{
         sourcemap: true
     },
     plugins: [
-        // https://github.com/zaach/jison/issues/351
-        replace({
-            preventAssignment: true,
-            include: /\/jsonlint-lines-primitives\/lib\/jsonlint.js/,
-            delimiters: ['', ''],
-            values: {
-                '_token_stack:': ''
-            }
-        }),
         esbuild({tsconfig: `${__dirname}/../../tsconfig.json`}),
         json(),
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call

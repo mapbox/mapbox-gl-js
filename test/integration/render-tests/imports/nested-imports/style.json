@@ -1,0 +1,180 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128
+    }
+  },
+  "zoom": 4.2,
+  "sprite": "local://sprites/sprite",
+  "imports": [
+    {
+      "id": "basemap",
+      "data": {
+        "version": 8,
+        "imports": [
+          {
+            "id": "basemap",
+            "data": {
+              "version": 8,
+              "sprite": "local://sprites/sprite",
+              "sources": {
+                "points": {
+                  "type": "geojson",
+                  "data": {
+                    "type": "GeometryCollection",
+                    "geometries": [
+                      {
+                        "type": "Point",
+                        "coordinates": [2, -2]
+                      },
+                      {
+                        "type": "Point",
+                        "coordinates": [1, -1]
+                      },
+                      {
+                        "type": "Point",
+                        "coordinates": [-1, 1]
+                      },
+                      {
+                        "type": "Point",
+                        "coordinates": [-2, 2]
+                      }
+                    ]
+                  }
+                },
+                "polygon": {
+                  "type": "geojson",
+                  "data": {
+                    "type": "Polygon",
+                    "coordinates": [[[-1.5, -1.5], [-1.5, 1.5], [1.5, 1.5], [1.5, -1.5], [-1.5, -1.5]]]
+                  }
+                }
+              },
+              "layers": [
+                {
+                  "id": "background",
+                  "type": "background",
+                  "paint": {
+                    "background-color": "white"
+                  }
+                },
+                {
+                  "id": "polygon",
+                  "type": "fill",
+                  "source": "polygon",
+                  "paint": {
+                    "fill-color": "rgba(0, 0, 255, 0.1)"
+                  }
+                },
+                {
+                  "id": "symbol",
+                  "type": "symbol",
+                  "source": "points",
+                  "layout": {
+                    "icon-image": "building-12",
+                    "icon-padding": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "sprite": "local://sprites/sprite",
+        "sources": {
+          "points": {
+            "type": "geojson",
+            "data": {
+              "type": "GeometryCollection",
+              "geometries": [
+                {
+                  "type": "Point",
+                  "coordinates": [-1, -1]
+                },
+                {
+                  "type": "Point",
+                  "coordinates": [0, 0]
+                },
+                {
+                  "type": "Point",
+                  "coordinates": [1, 1]
+                }
+              ]
+            }
+          },
+          "polygon": {
+            "type": "geojson",
+            "data": {
+              "type": "Polygon",
+              "coordinates": [[[-0.5, -0.5], [-0.5, 0.5], [0.5, 0.5], [0.5, -0.5], [-0.5, -0.5]]]
+            }
+          }
+        },
+        "layers": [
+          {
+            "id": "symbol",
+            "type": "symbol",
+            "source": "points",
+            "layout": {
+              "icon-image": "rocket-12",
+              "icon-padding": 0
+            }
+          },
+          {
+            "id": "polygon",
+            "type": "fill",
+            "source": "polygon",
+            "paint": {
+              "fill-color": "rgba(0, 255, 0, 0.1)"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "GeometryCollection",
+        "geometries": [
+          {
+            "type": "Point",
+            "coordinates": [-2, -2]
+          },
+          {
+            "type": "Point",
+            "coordinates": [2, 2]
+          }
+        ]
+      }
+    },
+    "polygon": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [[[1.5, -1.5], [1.5, -2.5], [2.5, -2.5], [2.5, -1.5], [1.5, -1.5]]]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "points",
+      "layout": {
+        "icon-image": "music-12",
+        "icon-padding": 0
+      }
+    },
+    {
+      "id": "polygon",
+      "type": "fill",
+      "source": "polygon",
+      "paint": {
+        "fill-color": "rgba(255, 0, 0, 0.1)"
+      }
+    }
+  ]
+}

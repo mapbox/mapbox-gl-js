@@ -1,7 +1,7 @@
 [
   {
     "error": {},
-    "message": "Parse error on line 2:\n...  \"version\": \"1\"  \"buckets\": { }}\n---------------------^\nExpecting 'EOF', '}', ':', ',', ']', got 'STRING'",
-    "line": 2
+    "message": "Expected ',' or '}' after property value in JSON at position 21 (line 3 column 3)",
+    "line": 3
   }
 ]

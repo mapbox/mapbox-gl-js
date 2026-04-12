@@ -13,8 +13,8 @@ uniform vec2 u_merc_center;
 
 #define GLOBE_UPSCALE GLOBE_RADIUS / 6371008.8
 
-in vec2 a_pos;
-in vec2 a_texture_pos;
+in ivec2 a_pos;
+in uvec2 a_texture_pos;
 
 out vec2 v_pos0;
 out vec2 v_pos1;
@@ -61,10 +61,10 @@ void main() {
     // as an arbitrarily high number to preserve adequate precision when rendering.
     // This is also the same value as the EXTENT we are using for our tile buffer pos coordinates,
     // so math for modifying either is consistent.
-    uv = a_texture_pos / 8192.0;
-    gl_Position = u_matrix * vec4(a_pos * w, u_raster_elevation * w, w);
+    uv = vec2(a_texture_pos) / 8192.0;
+    gl_Position = u_matrix * vec4(vec2(a_pos) * w, u_raster_elevation * w, w);
 #ifdef FOG
-    v_fog_pos = fog_position(a_pos);
+    v_fog_pos = fog_position(vec2(a_pos));
 #endif // FOG
 #endif // endif PROJECTION_GLOBE_VIEW
 

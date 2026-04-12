@@ -41,6 +41,9 @@ export type BucketParameters<Layer extends TypedStyleLayer> = {
     worldview: string | undefined;
     localizable: boolean;
     availableImages: ImageId[];
+    maxUniformBufferBindings?: number | null;
+    maxUniformBlockSizeDwords?: number | null;
+    disableSymbolUBO?: boolean | null;
 };
 
 export type ImageDependenciesMap = Map<StringifiedImageId, Array<ImageVariant>>;
@@ -56,6 +59,7 @@ export type PopulateParameters = {
     lineAtlas: LineAtlas;
     brightness: number | null | undefined;
     scaleFactor: number;
+    showElevationIdDebug: boolean;
     elevationFeatures: ElevationFeature[] | undefined;
     activeFloors: Set<string> | undefined;
 };
@@ -77,6 +81,11 @@ export type BucketFeature = {
     // Array<[primaryId, secondaryIs]>
     readonly patterns: Record<string, string[]>;
     sortKey?: number;
+};
+
+export type AppearanceUpdateResult = {
+    hasLayoutChanges: boolean,
+    hasUboChanges: boolean
 };
 
 /**
@@ -125,7 +134,8 @@ export interface Bucket {
         imagePositions: SpritePositions,
         layers: ReadonlyArray<TypedStyleLayer>,
         isBrightnessChanged: boolean,
-        brightness?: number | null
+        brightness?: number | null,
+        canonical?: CanonicalTileID
     ) => void;
     isEmpty: () => boolean;
     upload: (context: Context, canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties) => void;
@@ -139,7 +149,7 @@ export interface Bucket {
      */
     destroy: (reload?: boolean) => void;
     updateFootprints: (id: UnwrappedTileID, footprints: Array<TileFootprint>) => void;
-    updateAppearances: (canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties, imageManager?: ImageManager) => void;
+    updateAppearances: (canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties, imageManager?: ImageManager, featureStateChanged?: boolean) => AppearanceUpdateResult;
 }
 
 export function deserialize(input: Array<Bucket>, style: Style): Record<string, Bucket> {

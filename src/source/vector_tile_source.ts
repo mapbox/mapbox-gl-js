@@ -1,6 +1,6 @@
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import {getExpiryDataFromHeaders, pick} from '../util/util';
-import loadTileJSON from './load_tilejson';
+import loadTileJSON, {processTileJSON} from './load_tilejson';
 import {postTurnstileEvent} from '../util/mapbox';
 import TileBounds from './tile_bounds';
 import {ResourceType} from '../util/ajax';
@@ -9,6 +9,7 @@ import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
 import {DedupedRequest, loadVectorTile} from './load_vector_tile';
 import {makeFQID} from '../util/fqid';
 import {isMapboxURL} from '../util/mapbox_url';
+import {resolveTileProvider} from './tile_provider';
 
 import type {ISource, SourceEvents, SourceVectorLayer} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -51,6 +52,7 @@ import type {WorkerSourceVectorTileRequest, WorkerSourceVectorTileResult} from '
  */
 class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'> {
     type: 'vector';
+    provider?: string;
     id: string;
     scope: string;
     minzoom: number;
@@ -66,7 +68,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
     mapbox_logo?: boolean;
     promoteId?: PromoteIdSpecification | null;
 
-    _options: VectorSourceSpecification;
+    _options: VectorSourceSpecification & {provider?: string; collectResourceTiming: boolean};
     _collectResourceTiming: boolean;
     dispatcher: Dispatcher;
     map: Map;
@@ -90,12 +92,13 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
     prepare: undefined;
     _clear: undefined;
 
-    constructor(id: string, options: VectorSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: VectorSourceSpecification & {provider?: string; collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
 
         this.type = 'vector';
+        this.provider = options.provider;
         this.minzoom = 0;
         this.maxzoom = 22;
         this.scheme = 'xyz';
@@ -124,27 +127,87 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
         this.fire(new Event('dataloading', {dataType: 'source'}));
         const language = Array.isArray(this.map._language) ? this.map._language.join() : this.map._language;
         const worldview = this.map.getWorldview();
-        this._tileJSONRequest = loadTileJSON(this._options, this.map._requestManager, language, worldview, (err, tileJSON) => {
+
+        const done = (err?: Error | null, tileJSON?: TileJSON | null) => {
             this._tileJSONRequest = null;
             this._loaded = true;
             if (err) {
                 if (language) console.warn(`Ensure that your requested language string is a valid BCP-47 code or list of codes. Found: ${language}`);
                 if (worldview) console.warn(`Requested worldview strings must be a valid ISO alpha-2 code. Found: ${worldview}`);
-
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
                 this._setTileJSON(tileJSON);
                 postTurnstileEvent(tileJSON.tiles, this.map._requestManager._customAccessToken);
-
                 // `content` is included here to prevent a race condition where `Style#updateSources` is called
                 // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives
                 // ref: https://github.com/mapbox/mapbox-gl-js/pull/4347#discussion_r104418088
                 this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
                 this.fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
             }
-
             if (callback) callback(err);
+        };
+
+        this.provider = this._options.provider;
+        const tileProvider = resolveTileProvider(this._options);
+        if (this.provider && !tileProvider) {
+            this._loaded = true;
+            this.fire(new ErrorEvent(new Error(`TileProvider "${this.provider}" is not registered`)));
+            if (callback) callback();
+            return;
+        }
+
+        this._tileJSONRequest = tileProvider ?
+            this._loadWithProvider(tileProvider, done) :
+            loadTileJSON(this._options, this.map._requestManager, language, worldview, done);
+    }
+
+    _loadWithProvider(tileProvider: {name: string; url: string}, callback: Callback<TileJSON>) {
+        this.provider = tileProvider.name;
+        const controller = new AbortController();
+
+        const request = (this._options.url && !this._options.tiles) ?
+            this.map._requestManager.transformRequest(this._options.url, ResourceType.Source) :
+            undefined;
+
+        const options = request ?
+            Object.assign({}, this._options, {url: request.url}) :
+            this._options;
+
+        this.dispatcher.broadcast('loadTileProvider', {
+            name: tileProvider.name,
+            url: tileProvider.url,
+            source: this.id,
+            scope: this.scope,
+            type: this.type,
+            options,
+            request,
+        }, (err, results) => {
+            if (controller.signal.aborted) return;
+
+            if (err) {
+                callback(err);
+                return;
+            }
+
+            const tileJSON = results ? results.find((r: TileJSON | null) => r != null) : null;
+
+            if (tileJSON) {
+                const result = processTileJSON(this._options, tileJSON, this.map._requestManager);
+                if (result instanceof Error) {
+                    callback(result);
+                } else {
+                    callback(null, result);
+                }
+            } else {
+                callback(null, {tiles: this._options.tiles} as TileJSON);
+            }
         });
+
+        return {
+            cancel: () => {
+                controller.abort();
+            }
+        };
     }
 
     _setTileJSON(tileJSON: TileJSON) {
@@ -271,8 +334,9 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             scope: this.scope,
             pixelRatio: browser.devicePixelRatio,
             showCollisionBoxes: this.map.showCollisionBoxes,
+            showElevationIdDebug: this.map.painter ? this.map.painter._debugParams.showElevationIdDebug : false,
             promoteId: this.promoteId,
-            isSymbolTile: tile.isSymbolTile,
+            renderSourceType: tile.renderSourceType,
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
             extraShadowCaster: tile.isExtraShadowCaster,
             tessellationStep: this.map._tessellationStep,
@@ -294,8 +358,9 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             tile.actor = this._tileWorkers[url] = this._tileWorkers[url] || this.dispatcher.getActor();
 
             // if workers are not ready to receive messages yet, use the idle time to preemptively
-            // load tiles on the main thread and pass the result instead of requesting a worker to do so
-            if (!this.dispatcher.ready) {
+            // load tiles on the main thread and pass the result instead of requesting a worker to do so.
+            // Provider tiles are fetched by the provider on workers, so skip main-thread preloading.
+            if (!this.dispatcher.ready && !this.provider) {
 
                 const cancel = loadVectorTile.call({deduped: this._deduped}, params, (err?: Error | null, data?: LoadVectorTileResult | null) => {
                     if (err || !data) {

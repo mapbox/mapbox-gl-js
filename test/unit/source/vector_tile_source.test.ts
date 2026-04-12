@@ -1,12 +1,14 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import {describe, test, expect, waitFor, vi, doneAsync} from '../../util/vitest';
+import {vi} from 'vitest';
+import {describe, test, expect, waitFor, doneAsync, afterEach} from '../../util/vitest';
 import {mockFetch} from '../../util/network';
 import VectorTileSource from '../../../src/source/vector_tile_source';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import {Evented} from '../../../src/util/evented';
 import {RequestManager} from '../../../src/util/mapbox';
 import sourceFixture from '../../fixtures/source.json';
+import config from '../../../src/util/config';
 
 const wrapDispatcher = (dispatcher) => {
     return {
@@ -518,7 +520,7 @@ describe('VectorTileSource', () => {
             send(type, params, cb) {
                 // Simulate a non-AJAX error (no .status property)
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                setTimeout(() => cb(new Error('parse failed'), null), 0);
+                Promise.resolve().then(() => cb(new Error('parse failed'), null));
                 source.dispatcher = mockDispatcher;
                 return 1;
             }
@@ -569,4 +571,244 @@ describe('VectorTileSource', () => {
             });
         }
     });
+});
+
+describe('VectorTileSource provider', () => {
+    let providerId = 0;
+    let currentProvider: string;
+    function nextProvider() { currentProvider = `test-provider-${++providerId}`; return currentProvider; }
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+        delete config.TILE_PROVIDER_URLS[currentProvider];
+    });
+
+    function createProviderSource(
+        providerName: string,
+        options: Record<string, unknown>,
+        overrides: {dispatcherOverrides?: object; mapOverrides?: object; broadcastResult?: unknown[]} = {},
+    ) {
+        const {dispatcherOverrides, mapOverrides, broadcastResult} = overrides;
+        const broadcastSpy = vi.fn((_type: string, _data: unknown, cb?: (err: null, result: unknown[]) => void) => {
+            if (cb) cb(null, broadcastResult !== undefined ? broadcastResult : [null]);
+        });
+        const dispatcher = {
+            getActor() { return {send() {}}; },
+            ready: true,
+            broadcast: broadcastSpy,
+            ...dispatcherOverrides,
+        };
+
+        const source = new VectorTileSource(
+            'id',
+            ({type: 'vector' as const, provider: providerName, ...options}) as unknown as Parameters<typeof VectorTileSource['prototype']['onAdd']>[0] extends never ? never : ConstructorParameters<typeof VectorTileSource>[1],
+            dispatcher as unknown as ConstructorParameters<typeof VectorTileSource>[2],
+            options.eventedParent as ConstructorParameters<typeof VectorTileSource>[3],
+        );
+
+        source.onAdd({
+            _language: null,
+            getWorldview() {},
+            getScaleFactor() { return 1; },
+            getIndoorTileOptions: () => null,
+            transform: {showCollisionBoxes: false},
+            _getMapId: () => 1,
+            _requestManager: new RequestManager(),
+            style: {
+                clearSource: () => {},
+                getLut: () => null,
+                getBrightness: () => 0.0,
+            },
+            ...mapOverrides,
+        } as unknown as Parameters<typeof source.onAdd>[0]);
+
+        return {source, broadcastSpy, dispatcher};
+    }
+
+    test('fires error when provider is not registered', async () => {
+        const name = nextProvider();
+        // Don't register — config.TILE_PROVIDER_URLS[name] is undefined
+
+        const source = new VectorTileSource('id', {
+            type: 'vector',
+            provider: name,
+            tiles: ['http://example.com/{z}/{x}/{y}.mvt'],
+        }, {
+            getActor() { return {send() {}}; },
+            ready: true,
+            broadcast: vi.fn(),
+        }, null);
+
+        // Listen before onAdd since the error fires synchronously
+        const errorPromise = waitFor(source, 'error');
+
+        source.onAdd({
+            _language: null,
+            getWorldview() {},
+            getScaleFactor() { return 1; },
+            getIndoorTileOptions: () => null,
+            transform: {showCollisionBoxes: false},
+            _getMapId: () => 1,
+            _requestManager: new RequestManager(),
+            style: {
+                clearSource: () => {},
+                getLut: () => null,
+                getBrightness: () => 0.0,
+            },
+        });
+
+        const e = await errorPromise as {error: Error};
+        expect(e.error.message).toMatch(new RegExp(`TileProvider "${name}" is not registered`));
+    });
+
+    test('broadcasts loadTileProvider to workers', () => {
+        const name = nextProvider();
+        const moduleUrl = 'http://example.com/provider.js';
+        config.TILE_PROVIDER_URLS[name] = moduleUrl;
+
+        const {source, broadcastSpy} = createProviderSource(name, {
+            tiles: ['http://example.com/{z}/{x}/{y}.mvt'],
+        });
+
+        expect(broadcastSpy).toHaveBeenCalledWith(
+            'loadTileProvider',
+            expect.objectContaining({name, url: moduleUrl, source: 'id', type: 'vector'}),
+            expect.any(Function)
+        );
+        expect(source.tiles).toEqual(['http://example.com/{z}/{x}/{y}.mvt']);
+    });
+
+    test('uses provider TileJSON when workers return it', () => {
+        const name = nextProvider();
+        const tileJSON = {
+            tiles: ['http://provider.example.com/{z}/{x}/{y}.mvt'],
+            minzoom: 2,
+            maxzoom: 16,
+        };
+        config.TILE_PROVIDER_URLS[name] = 'http://example.com/provider.js';
+
+        const {source} = createProviderSource(name, {url: 'pmtiles://my-archive.pmtiles'}, {
+            broadcastResult: [tileJSON],
+        });
+
+        expect(source.tiles).toEqual(['http://provider.example.com/{z}/{x}/{y}.mvt']);
+        expect(source.minzoom).toEqual(2);
+        expect(source.maxzoom).toEqual(16);
+    });
+
+});
+
+describe('VectorTileSource provider autodetection', () => {
+    const savedApiUrl = config.API_URL;
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+        delete config.TILE_PROVIDER_URLS['pmtiles'];
+        config.API_URL = savedApiUrl;
+    });
+
+    function createAutodetectSource(
+        options: Record<string, unknown>,
+        overrides: {broadcastResult?: unknown[]} = {},
+    ) {
+        const {broadcastResult} = overrides;
+        const broadcastSpy = vi.fn((_type: string, _data: unknown, cb?: (err: null, result: unknown[]) => void) => {
+            if (cb) cb(null, broadcastResult !== undefined ? broadcastResult : [null]);
+        });
+        const dispatcher = {
+            getActor() { return {send() {}}; },
+            ready: true,
+            broadcast: broadcastSpy,
+        };
+
+        const source = new VectorTileSource(
+            'id',
+            ({type: 'vector' as const, ...options}) as unknown as ConstructorParameters<typeof VectorTileSource>[1],
+            dispatcher as unknown as ConstructorParameters<typeof VectorTileSource>[2],
+            options.eventedParent as ConstructorParameters<typeof VectorTileSource>[3],
+        );
+
+        source.onAdd({
+            _language: null,
+            getWorldview() {},
+            getScaleFactor() { return 1; },
+            getIndoorTileOptions: () => null,
+            transform: {showCollisionBoxes: false},
+            _getMapId: () => 1,
+            _requestManager: new RequestManager(),
+            style: {
+                clearSource: () => {},
+                getLut: () => null,
+                getBrightness: () => 0.0,
+            },
+        } as unknown as Parameters<typeof source.onAdd>[0]);
+
+        return {source, broadcastSpy, dispatcher};
+    }
+
+    test('autodetects provider from .pmtiles URL extension', () => {
+        config.TILE_PROVIDER_URLS['pmtiles'] = '/mapbox-gl-js/mock-provider.js';
+
+        const {broadcastSpy} = createAutodetectSource({
+            url: 'https://example.com/tiles.pmtiles',
+        });
+
+        expect(broadcastSpy).toHaveBeenCalledWith(
+            'loadTileProvider',
+            expect.objectContaining({name: 'pmtiles'}),
+            expect.any(Function)
+        );
+    });
+
+    test('does not autodetect when provider is false', () => {
+        config.TILE_PROVIDER_URLS['pmtiles'] = '/mapbox-gl-js/mock-provider.js';
+
+        const {broadcastSpy} = createAutodetectSource({
+            url: 'https://example.com/tiles.pmtiles',
+            provider: false,
+        });
+
+        expect(broadcastSpy).not.toHaveBeenCalled();
+    });
+
+    test('does not autodetect when provider is explicitly set', () => {
+        config.TILE_PROVIDER_URLS['pmtiles'] = '/mapbox-gl-js/mock-provider.js';
+        config.TILE_PROVIDER_URLS['custom'] = 'https://example.com/custom.js';
+
+        const {broadcastSpy} = createAutodetectSource({
+            url: 'https://example.com/tiles.pmtiles',
+            provider: 'custom',
+        });
+
+        expect(broadcastSpy).toHaveBeenCalledWith(
+            'loadTileProvider',
+            expect.objectContaining({name: 'custom', url: 'https://example.com/custom.js'}),
+            expect.any(Function)
+        );
+        delete config.TILE_PROVIDER_URLS['custom'];
+    });
+
+    test('does not autodetect when URL has no matching extension', () => {
+        const {broadcastSpy} = createAutodetectSource({
+            url: 'https://example.com/tilejson.json',
+        });
+
+        expect(broadcastSpy).not.toHaveBeenCalled();
+    });
+
+    test('resolves relative provider URL against API_URL', () => {
+        config.TILE_PROVIDER_URLS['pmtiles'] = '/mapbox-gl-js/mock-provider.js';
+        config.API_URL = 'https://api.mapbox.cn';
+
+        const {broadcastSpy} = createAutodetectSource({
+            url: 'https://example.com/tiles.pmtiles',
+        });
+
+        expect(broadcastSpy).toHaveBeenCalledWith(
+            'loadTileProvider',
+            expect.objectContaining({url: 'https://api.mapbox.cn/mapbox-gl-js/mock-provider.js'}),
+            expect.any(Function)
+        );
+    });
+
 });

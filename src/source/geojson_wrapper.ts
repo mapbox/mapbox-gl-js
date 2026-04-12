@@ -5,6 +5,9 @@ import EXTENT from '../style-spec/data/extent';
 
 import type {VectorTile, VectorTileLayer} from '@mapbox/vector-tile';
 
+type VectorTileFeatureLike = Pick<VectorTileFeature, 'properties' | 'extent' | 'type' | 'id' | 'loadGeometry' | 'toGeoJSON'>;
+type VectorTileLayerLike = Pick<VectorTileLayer, 'name' | 'extent' | 'length' | 'feature'>;
+
 // The feature type used by geojson-vt and supercluster. Should be extracted to
 // global type and used in module definitions for those two modules.
 export type Feature = {
@@ -23,8 +26,7 @@ export type Feature = {
     geometry: Array<Array<[number, number]>>;
 };
 
-// @ts-expect-error TS2739
-class FeatureWrapper implements VectorTileFeature {
+class FeatureWrapper implements VectorTileFeatureLike {
     _feature: Feature;
 
     extent: number;
@@ -47,10 +49,8 @@ class FeatureWrapper implements VectorTileFeature {
         // vector tile spec only supports integer values for feature ids --
         // allowing non-integer values here results in a non-compliant PBF
         // that causes an exception when it is parsed with vector-tile-js
-        // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'number'.
-        if ('id' in feature && !isNaN(feature.id)) {
-            // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'string'.
-            this.id = parseInt(feature.id, 10);
+        if ('id' in feature && !isNaN(feature.id as number)) {
+            this.id = parseInt(feature.id as string, 10);
         }
     }
 
@@ -79,8 +79,7 @@ class FeatureWrapper implements VectorTileFeature {
     }
 }
 
-// @ts-expect-error TS2739
-class LayerWrapper implements VectorTileLayer {
+class LayerWrapper implements VectorTileLayerLike {
     name: string;
     extent: number;
     length: number;
@@ -94,8 +93,8 @@ class LayerWrapper implements VectorTileLayer {
     }
 
     feature(i: number): VectorTileFeature {
-        // @ts-expect-error TS2739: Type 'FeatureWrapper' is missing the following properties from type 'VectorTileFeature': _pbf, _geometry, _keys, _values, bbox
-        return new FeatureWrapper(this._jsonFeatures[i]);
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- needed under strictNullChecks
+        return new FeatureWrapper(this._jsonFeatures[i] as Feature) as unknown as VectorTileFeature;
     }
 }
 
@@ -108,8 +107,8 @@ class GeoJSONWrapper implements VectorTile {
         this.extent = EXTENT;
 
         for (const name of Object.keys(layers)) {
-            // @ts-expect-error TS2739
-            this.layers[name] = new LayerWrapper(name, layers[name]);
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- needed under strictNullChecks
+            this.layers[name] = new LayerWrapper(name, layers[name] as Array<Feature>) as unknown as VectorTileLayer;
         }
     }
 }

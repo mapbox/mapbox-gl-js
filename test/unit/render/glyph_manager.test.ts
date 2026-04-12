@@ -3,6 +3,7 @@
 import {test, expect, vi} from '../../util/vitest';
 import parseGlyphPBF from '../../../src/style/parse_glyph_pbf';
 import GlyphManager, {LocalGlyphMode} from '../../../src/render/glyph_manager';
+import {GlyphLoader} from '../../../src/style/glyph_loader';
 
 // eslint-disable-next-line import-x/extensions
 import glyphStub from '/test/fixtures/0-255.pbf?arraybuffer';
@@ -39,7 +40,7 @@ const TinySDF = class {
 };
 
 const createLoadGlyphRangeStub = () => {
-    return vi.spyOn(GlyphManager, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate, transform, callback) => {
+    return vi.spyOn(GlyphLoader, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate, transform, callback) => {
         expect(stack).toEqual('Arial Unicode MS');
         expect(range).toEqual(0);
         expect(urlTemplate).toEqual('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
@@ -94,7 +95,7 @@ test('GlyphManager doesn\'t request twice 0-255 PBF if a glyph is missing', asyn
 });
 
 test('GlyphManager requests remote CJK PBF', async () => {
-    vi.spyOn(GlyphManager, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate, transform, callback) => {
+    vi.spyOn(GlyphLoader, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate, transform, callback) => {
         setTimeout(() => callback(null, glyphData));
     });
 
@@ -110,7 +111,7 @@ test('GlyphManager requests remote CJK PBF', async () => {
 });
 
 test('GlyphManager does not cache CJK chars that should be rendered locally', async () => {
-    vi.spyOn(GlyphManager, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate, transform, callback) => {
+    vi.spyOn(GlyphLoader, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate, transform, callback) => {
         const overlappingGlyphs: Record<string, any> = {};
         overlappingGlyphs.glyphs = [];
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

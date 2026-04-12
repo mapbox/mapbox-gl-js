@@ -1,28 +1,35 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-import {
-    describe,
-    test,
-    beforeEach,
-    expect,
-    waitFor,
-    vi,
-} from '../../util/vitest';
-import {getPNGResponse, mockFetch} from '../../util/network';
+import {describe, test, beforeEach, expect, vi} from 'vitest';
 import RasterDEMTileSource from '../../../src/source/raster_dem_tile_source';
-import {OverscaledTileID} from '../../../src/source/tile_id';
+import {waitFor} from '../../util/vitest';
+import {Evented} from '../../../src/util/evented';
+import {mockFetch} from '../../util/network';
 import {RequestManager} from '../../../src/util/mapbox';
+import {OverscaledTileID} from '../../../src/source/tile_id';
 
-function createSource(options, transformCallback) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-    const source = new RasterDEMTileSource('id', options, {send() {}}, options.eventedParent);
+import type Tile from '../../../src/source/tile';
+import type Dispatcher from '../../../src/util/dispatcher';
+import type {Map as MapboxMap} from '../../../src/ui/map';
+import type {RequestTransformFunction} from '../../../src/util/mapbox';
+import type {RasterDEMSourceSpecification} from '../../../src/style-spec/types';
+
+function createSource(options: Partial<RasterDEMSourceSpecification>, transformCallback?: RequestTransformFunction) {
+    const dispatcher = {
+        send() {},
+        getActor() {
+            return {
+                send() {
+                    return {cancel() {}};
+                }
+            };
+        }
+    } as unknown as Dispatcher;
+    const source = new RasterDEMTileSource('id', options as RasterDEMSourceSpecification, dispatcher, new Evented());
     source.onAdd({
         transform: {angle: 0, pitch: 0, showCollisionBoxes: false},
         _getMapId: () => 1,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         _requestManager: new RequestManager(transformCallback),
         getWorldview: () => undefined
-    });
+    } as unknown as MapboxMap);
 
     source.on('error', (e) => {
         expect.unreachable(e.error.message);
@@ -34,19 +41,18 @@ function createSource(options, transformCallback) {
 describe('RasterTileSource', () => {
     test('create and serialize source', async () => {
         mockFetch({
-            '/source.json': () => new Response(JSON.stringify({}))
+            '/source.json': () => Promise.resolve(new Response(JSON.stringify({})))
         });
-        const transformSpy = vi.fn((url) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const transformSpy = vi.fn<RequestTransformFunction>((url) => {
             return {url};
         });
-        const options = {
+        const options: Partial<RasterDEMSourceSpecification> = {
             url: "/source.json",
             minzoom: 0,
             maxzoom: 22,
             attribution: "Mapbox",
             tiles: ["http://example.com/{z}/{x}/{y}.png"],
-            bounds: [-47, -7, -45, -5],
+            bounds: [-47, -7, -45, -5] as [number, number, number, number],
             encoding: "terrarium",
             tileSize: 512,
             volatile: false
@@ -59,16 +65,15 @@ describe('RasterTileSource', () => {
 
     test('transforms request for TileJSON URL', async () => {
         mockFetch({
-            '/source.json': () => new Response(JSON.stringify({
+            '/source.json': () => Promise.resolve(new Response(JSON.stringify({
                 minzoom: 0,
                 maxzoom: 22,
                 attribution: "Mapbox",
                 tiles: ["http://example.com/{z}/{x}/{y}.pngraw"],
                 bounds: [-47, -7, -45, -5]
-            }))
+            })))
         });
-        const transformSpy = vi.fn((url) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const transformSpy = vi.fn<RequestTransformFunction>((url) => {
             return {url};
         });
 
@@ -82,49 +87,42 @@ describe('RasterTileSource', () => {
 
     test('transforms tile urls before requesting', async () => {
         mockFetch({
-            '/source.json': () => new Response(JSON.stringify({
+            '/source.json': () => Promise.resolve(new Response(JSON.stringify({
                 minzoom: 0,
                 maxzoom: 22,
                 attribution: "Mapbox",
                 tiles: ["http://example.com/{z}/{x}/{y}.png"],
                 bounds: [-47, -7, -45, -5]
-            })),
-            'http://example.com/10/5/5.png': async () => {
-                return new Response(await getPNGResponse());
-            }
+            }))),
         });
         const source = createSource({url: "/source.json"});
         const transformSpy = vi.spyOn(source.map._requestManager, 'transformRequest');
-        const e = await waitFor(source, "data");
+        const e = await waitFor(source, "data") as {sourceDataType?: string};
+        expect(e.sourceDataType).toBe('metadata');
 
-        await new Promise(resolve => {
-            if (e.sourceDataType === 'metadata') {
-                const tile = {
-                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
-                    state: 'loading',
-                    loadVectorData() {},
-                    setExpiryData() {}
-                };
-                source.loadTile(tile, () => {
-                    expect(transformSpy).toHaveBeenCalledTimes(1);
-                    expect(transformSpy.mock.calls[0][0]).toEqual('http://example.com/10/5/5.png');
-                    expect(transformSpy.mock.calls[0][1]).toEqual('Tile');
-                    resolve();
-                });
-            }
-        });
+        const tile = {
+            tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+            state: 'loading',
+            loadVectorData() {},
+            setExpiryData() {}
+        } as unknown as Tile;
+        source.loadTile(tile, () => {});
+        // transformRequest is called synchronously when building params for the worker
+        expect(transformSpy).toHaveBeenCalledTimes(1);
+        expect(transformSpy.mock.calls[0][0]).toEqual('http://example.com/10/5/5.png');
+        expect(transformSpy.mock.calls[0][1]).toEqual('Tile');
     });
 
     describe('getNeighboringTiles', () => {
-        let source: any;
+        let source: RasterDEMTileSource;
         beforeEach(async () => {
             mockFetch({
-                '/source.json': () => new Response(JSON.stringify({
+                '/source.json': () => Promise.resolve(new Response(JSON.stringify({
                     minzoom: 0,
                     maxzoom: 22,
                     attribution: "Mapbox",
                     tiles: ["http://example.com/{z}/{x}/{y}.png"]
-                }))
+                })))
             });
 
             source = createSource({url: "/source.json"});
@@ -134,7 +132,6 @@ describe('RasterTileSource', () => {
 
         test('getNeighboringTiles', () => {
             expect(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 Uint32Array.from(Object.keys(source._getNeighboringTiles(new OverscaledTileID(10, 0, 10, 5, 5)))).sort()
             ).toEqual(Uint32Array.from([
                 new OverscaledTileID(10, 0, 10, 4, 5).key,
@@ -150,7 +147,6 @@ describe('RasterTileSource', () => {
 
         test('getNeighboringTiles with wrapped tiles', () => {
             expect(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 Uint32Array.from(Object.keys(source._getNeighboringTiles(new OverscaledTileID(5, 0, 5, 31, 5)))).sort()
             ).toEqual(Uint32Array.from([
                 new OverscaledTileID(5, 0, 5, 30, 6).key,

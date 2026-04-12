@@ -313,7 +313,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                 modes.push('RENDER_CUTOFF');
             }
             if (shadowRenderer) {
-                modes.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
+                modes.push('RENDER_SHADOWS');
                 if (shadowRenderer.useNormalOffset) {
                     modes.push('NORMAL_OFFSET');
                 }

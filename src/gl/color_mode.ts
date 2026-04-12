@@ -28,6 +28,7 @@ export default class ColorMode {
     static alphaBlended: Readonly<ColorMode>;
     static alphaBlendedNonPremultiplied: Readonly<ColorMode>;
     static multiply: Readonly<ColorMode>;
+    static multiplyAccumulateAlpha: Readonly<ColorMode>;
     static additive: Readonly<ColorMode>;
 }
 
@@ -38,4 +39,5 @@ ColorMode.unblended = new ColorMode(ColorMode.Replace, Color.transparent, [true,
 ColorMode.alphaBlended = new ColorMode([ONE, ONE_MINUS_SRC_ALPHA, ONE, ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, true]);
 ColorMode.alphaBlendedNonPremultiplied = new ColorMode([SRC_ALPHA, ONE_MINUS_SRC_ALPHA, SRC_ALPHA, ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, true]);
 ColorMode.multiply = new ColorMode([DST_COLOR, ZERO, DST_COLOR, ZERO], Color.transparent, [true, true, true, true]);
+ColorMode.multiplyAccumulateAlpha = new ColorMode([DST_COLOR, ZERO, ONE, ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, true]);
 ColorMode.additive = new ColorMode([ONE, ONE, ONE, ONE], Color.transparent, [true, true, true, true]);

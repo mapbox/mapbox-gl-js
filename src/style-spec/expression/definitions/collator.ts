@@ -20,14 +20,16 @@ export default class CollatorExpression implements Expression {
     }
 
     static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | undefined {
-        if (args.length !== 2)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
-            return context.error(`Expected one argument.`);
+        if (args.length !== 2) {
+            context.error(`Expected one argument.`);
+            return null;
+        }
 
         const options = args[1];
-        if (typeof options !== "object" || Array.isArray(options))
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
-            return context.error(`Collator options argument must be an object.`);
+        if (typeof options !== "object" || Array.isArray(options)) {
+            context.error(`Collator options argument must be an object.`);
+            return null;
+        }
 
         const caseSensitive = options['case-sensitive'] === undefined ?
             context.parse(false, 1, BooleanType) :

@@ -302,6 +302,13 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                     assert(buffer);
                     assert(indexBuffer);
                     assert(segments);
+                    // Workaround for missing texture pos attribute in the vertex buffer. In this case tex coord is
+                    // calculated using the grid matrix in the shader. The issue should be fixed so that the shader does
+                    // not define this attribute when it is not actually needed. The missing vertex attribute became
+                    // a problem after changing the attribute to integer type. WebGL by default sets disabled attributes
+                    // to float type and this causes an error when the type doesn't match the type in the shader.
+                    const attrIndex = program.getAttributeLocation(gl, 'a_texture_pos');
+                    if (attrIndex !== -1) gl.vertexAttribI4ui(attrIndex, 0, 0, 0, 0);
 
                     program.draw(painter, gl.TRIANGLES, depthMode, elevatedStencilMode || stencilMode, painter.colorModeForRenderPass(), cullFaceMode, uniformValues, layer.id, buffer, indexBuffer, segments);
                 }

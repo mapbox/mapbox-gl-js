@@ -1,6 +1,6 @@
 #include "_prelude_raster_particle.glsl"
 
-in float a_index;
+in int a_index;
 
 uniform sampler2D u_particle_texture;
 uniform float u_particle_texture_side_len;
@@ -10,8 +10,8 @@ out float v_particle_speed;
 
 void main() {
     ivec2 pixel_coord = ivec2(
-        mod(a_index, u_particle_texture_side_len),
-        a_index / u_particle_texture_side_len);
+        mod(float(a_index), u_particle_texture_side_len),
+        float(a_index) / u_particle_texture_side_len);
     vec4 pixel = texelFetch(u_particle_texture, pixel_coord, 0);
     vec2 pos = unpack_pos_from_rgba(pixel) + u_tile_offset;
 

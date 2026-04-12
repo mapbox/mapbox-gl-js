@@ -1,5 +1,6 @@
 import {fillExtrusionDepthUniforms, fillExtrusionUniforms, fillExtrusionPatternUniforms, fillExtrusionGroundEffectUniforms} from './fill_extrusion_program';
 import {fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms, elevatedStructuresDepthUniforms, elevatedStructuresUniforms, elevatedStructuresDepthReconstructUniforms} from './fill_program';
+import {lineBlendCompositeUniforms} from './line_blend_composite_program';
 import {buildingUniforms, buildingBloomUniforms, buildingDepthUniforms, type BuildingDefinesType} from '../../../3d-style/render/program/building_program';
 import {circleUniforms} from './circle_program';
 import {collisionUniforms, collisionCircleUniforms, type CollisionDebugDefinesType} from './collision_program';
@@ -41,7 +42,6 @@ export type TerrainDepthAccessDefinesType = 'DEPTH_D24' | 'DEPTH_OCCLUSION';
 
 type GlobalDefinesType =
     | 'DEBUG_WIREFRAME'
-    | 'DEPTH_TEXTURE'
     | 'FOG'
     | 'GLOBE'
     | 'LIGHTING_3D_ALPHA_EMISSIVENESS'
@@ -70,7 +70,8 @@ export type DynamicDefinesType =
     | HillshadeDefinesType
     | TerrainDepthAccessDefinesType
     | ModelDefinesType
-    | BuildingDefinesType;
+    | BuildingDefinesType
+    | `MAX_UBO_SIZE_VEC4 ${number}u`;
 
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,
@@ -81,6 +82,7 @@ export const programUniforms = {
     fillPattern: fillPatternUniforms,
     fillOutline: fillOutlineUniforms,
     fillOutlinePattern: fillOutlinePatternUniforms,
+    lineBlendComposite: lineBlendCompositeUniforms,
     building: buildingUniforms,
     buildingBloom: buildingBloomUniforms,
     buildingDepth: buildingDepthUniforms,

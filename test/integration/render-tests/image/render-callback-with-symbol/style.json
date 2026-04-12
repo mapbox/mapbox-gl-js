@@ -1,0 +1,78 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 200,
+      "height": 200,
+      "operations": [
+        [
+          "addImage",
+          "dot",
+          "./image/dot.js"
+        ],
+        [
+          "addImage",
+          "marker",
+          "./image/marker.png"
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-0.5, 0]
+            },
+            "properties": {
+              "type": "dot"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [0.5, 0]
+            },
+            "properties": {
+              "type": "marker"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "render-callback-layer",
+      "type": "symbol",
+      "source": "points",
+      "filter": ["==", ["get", "type"], "dot"],
+      "layout": {
+        "icon-image": "dot",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      }
+    },
+    {
+      "id": "static-image-layer",
+      "type": "symbol",
+      "source": "points",
+      "filter": ["==", ["get", "type"], "marker"],
+      "layout": {
+        "icon-image": "marker",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      }
+    }
+  ]
+}

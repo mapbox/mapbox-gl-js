@@ -14,7 +14,7 @@ uniform float u_skirt_height;
 in vec3 a_globe_pos;
 in vec2 a_uv;
 #else
-in vec2 a_pos; // .xy - grid coords, .z - 1 - skirt, 0 - grid
+in ivec2 a_pos; // .xy - grid coords, .z - 1 - skirt, 0 - grid
 #endif
 
 out vec2 v_pos0;

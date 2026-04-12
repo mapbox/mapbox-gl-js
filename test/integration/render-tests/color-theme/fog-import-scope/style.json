@@ -61,7 +61,7 @@
   ],
   "terrain": {
     "source": "rgbterrain",
-    "exaggeration": 0.5
+    "exaggeration": 1.0
   },
   "sources": {
     "rgbterrain": {
@@ -123,6 +123,7 @@
       "source": "mapbox",
       "source-layer": "building",
       "minzoom": 15,
+      "source-max-zoom": 15,
       "paint": {
         "fill-extrusion-color": "white",
         "fill-extrusion-height": ["get", "height"],

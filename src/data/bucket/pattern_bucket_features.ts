@@ -1,5 +1,7 @@
 import ResolvedImage from '../../style-spec/expression/types/resolved_image';
 
+import type StyleLayer from '../../style/style_layer';
+import type {PossiblyEvaluatedPropertyValue} from '../../style/properties';
 import type FillStyleLayer from '../../style/style_layer/fill_style_layer';
 import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion_style_layer';
 import type LineStyleLayer from '../../style/style_layer/line_style_layer';
@@ -49,16 +51,13 @@ export function hasPattern(type: string, layers: PatternStyleLayers, pixelRatio:
     let hasPattern = false;
 
     for (const layer of layers) {
-        // @ts-expect-error - TS2349 - This expression is not callable.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const patternProperty = layer.paint.get(`${type}-pattern`);
+        const patternProperty = (layer as StyleLayer).paint.get(`${type}-pattern`) as PossiblyEvaluatedPropertyValue<ResolvedImage>;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         if (!patternProperty.isConstant()) {
             hasPattern = true;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const constantPattern = patternProperty.constantOr(null);
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -80,20 +79,12 @@ export function addPatternDependencies(
 ): BucketFeature {
     const patterns = options.patternDependencies;
     for (const layer of layers) {
-        // @ts-expect-error - TS2349 - This expression is not callable.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const patternProperty = layer.paint.get(`${type}-pattern`);
+        const patternProperty = (layer as StyleLayer).paint.get(`${type}-pattern`) as PossiblyEvaluatedPropertyValue<ResolvedImage>;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const patternPropertyValue = patternProperty.value;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (patternPropertyValue.kind !== "constant") {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            let pattern = patternPropertyValue.evaluate({zoom}, patternFeature, {}, options.availableImages);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-            pattern = pattern && pattern.name ? pattern.name : pattern;
+            const pattern: string | ResolvedImage = patternPropertyValue.evaluate({zoom}, patternFeature, {}, undefined, options.availableImages);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const patternResult = addPattern(pattern, patterns, pixelRatio);
 
             if (!patternResult) {
