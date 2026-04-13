@@ -1209,30 +1209,30 @@ function addTextVertices(bucket: SymbolBucket,
     return glyphQuads.length * 4;
 }
 
-export function packSizeForVertex(layerId: string, inputSizeData: SizeData, evaluatedTextSize: number, textScaleFactor: number,
-    minZoomSize: number, maxZoomSize: number
+export function packSizeForVertex(layerId: string, inputSizeData: SizeData, evaluatedTextSize: number,
+    scaleFactor: number, minZoomSize: number, maxZoomSize: number
 ) {
     const sizeData = inputSizeData;
-    let textSizeData: number[] = null;
+    let effectiveSizeData: number[] = null;
 
     if (sizeData.kind === 'source') {
-        textSizeData = [
-            SIZE_PACK_FACTOR * evaluatedTextSize * textScaleFactor
+        effectiveSizeData = [
+            SIZE_PACK_FACTOR * evaluatedTextSize * scaleFactor
         ];
-        if (textSizeData[0] > MAX_PACKED_SIZE) {
-            warnOnce(`${layerId}: Value for "text-size" is >= ${MAX_GLYPH_ICON_SIZE}. Reduce your "text-size".`);
+        if (effectiveSizeData[0] > MAX_PACKED_SIZE) {
+            warnOnce(`${layerId}: Value for "text-size" or "icon-size" is >= ${MAX_GLYPH_ICON_SIZE}. Reduce your "text-size" or "icon-size".`);
         }
     } else if (sizeData.kind === 'composite') {
-        textSizeData = [
-            SIZE_PACK_FACTOR * minZoomSize * textScaleFactor,
-            SIZE_PACK_FACTOR * maxZoomSize * textScaleFactor
+        effectiveSizeData = [
+            SIZE_PACK_FACTOR * minZoomSize * scaleFactor,
+            SIZE_PACK_FACTOR * maxZoomSize * scaleFactor
         ];
-        if (textSizeData[0] > MAX_PACKED_SIZE || textSizeData[1] > MAX_PACKED_SIZE) {
-            warnOnce(`${layerId}: Value for "text-size" is >= ${MAX_GLYPH_ICON_SIZE}. Reduce your "text-size".`);
+        if (effectiveSizeData[0] > MAX_PACKED_SIZE || effectiveSizeData[1] > MAX_PACKED_SIZE) {
+            warnOnce(`${layerId}: Value for "text-size" or "icon-size" is >= ${MAX_GLYPH_ICON_SIZE}. Reduce your "text-size" or "icon-size".`);
         }
     }
 
-    return textSizeData;
+    return effectiveSizeData;
 }
 
 function getDefaultHorizontalShaping(horizontalShaping: Partial<Record<TextJustify, Shaping>>): Shaping | null {
@@ -1428,7 +1428,9 @@ function addSymbol(bucket: SymbolBucket,
         const evaluatedIconSize = layer.layout.get('icon-size').evaluate(feature, {}, canonical, availableImages);
         const minZoomSize = sizes.compositeIconSizes ? sizes.compositeIconSizes[0].evaluate(feature, {}, canonical, availableImages) : 0;
         const maxZoomSize = sizes.compositeIconSizes ? sizes.compositeIconSizes[1].evaluate(feature, {}, canonical, availableImages) : 0;
-        const iconSizeData = packSizeForVertex(bucket.layerIds[0], bucket.iconSizeData, evaluatedIconSize, sizes.iconScaleFactor, minZoomSize, maxZoomSize);
+        // Vector image is already rasterized at iconScaleFactor, pass scaleFactor=1 to avoid double scaling in shader.
+        const iconScaleFactor = shapedIcon.imagePrimary.usvg ? 1 : sizes.iconScaleFactor;
+        const iconSizeData = packSizeForVertex(bucket.layerIds[0], bucket.iconSizeData, evaluatedIconSize, iconScaleFactor, minZoomSize, maxZoomSize);
 
         bucket.addSymbols(
             bucket.icon,

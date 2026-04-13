@@ -1,0 +1,118 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 128,
+      "scaleFactor": 2
+    }
+  },
+  "sources": {
+    "geojson-x1": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "fire-station"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                35
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "geojson-x2": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "fire-station"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "geojson-x4": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "fire-station"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                -50
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/standard",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "icon-const-icon-size",
+      "type": "symbol",
+      "source": "geojson-x1",
+      "layout": {
+        "icon-image": ["image", ["get", "class"]],
+        "icon-size": 0.5
+      }
+    },
+    {
+      "id": "icon-zoom-function-icon-size",
+      "type": "symbol",
+      "source": "geojson-x2",
+      "layout": {
+        "icon-image": ["image", ["get", "class"]],
+        "icon-size": ["step", ["zoom"], 1.0, 18, 2.0]
+      }
+    },
+    {
+      "id": "icon-source-function-icon-size",
+      "type": "symbol",
+      "source": "geojson-x4",
+      "layout": {
+        "icon-image": ["image", ["get", "class"]],
+        "icon-size": [
+          "match",
+          ["get", "class"],
+          "fire-station",
+          2.0,
+          1
+        ]
+      }
+    }
+  ]
+}
