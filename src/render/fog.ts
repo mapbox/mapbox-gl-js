@@ -67,7 +67,7 @@ export const fogUniformValues = (
     const [verticalRangeMin, verticalRangeMax] = fog.properties.get('vertical-range');
     return {
         'u_fog_matrix': (tileID ? tr.calculateFogTileMatrix(tileID) : fogMatrix ? fogMatrix : painter.identityMat) as Float32Array,
-        'u_fog_range': fog.getFovAdjustedRange(tr._fov),
+        'u_fog_range': fog.getRangeForProjection(),
         'u_fog_color': fogColor,
         'u_fog_horizon_blend': fog.properties.get('horizon-blend'),
         'u_fog_vertical_limit': [Math.min(verticalRangeMin, verticalRangeMax), verticalRangeMax],

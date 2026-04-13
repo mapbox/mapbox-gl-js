@@ -416,7 +416,7 @@ class Painter {
 
         // We start culling where the fog opacity function hits
         // 98% which leaves a non-noticeable change threshold.
-        const [start, end] = fog.getFovAdjustedRange(this.transform._fov);
+        const [start, end] = fog.getRangeForProjection();
 
         if (start > end) {
             this.transform.fogCullDistSq = null;

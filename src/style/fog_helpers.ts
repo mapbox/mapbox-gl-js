@@ -19,9 +19,9 @@ export type FogState = {
 };
 
 // As defined in _prelude_fog.fragment.glsl#fog_opacity
-export function getFogOpacity(state: FogState, depth: number, pitch: number, fov: number): number {
+export function getFogOpacity(state: FogState, depth: number, pitch: number): number {
     const fogPitchOpacity = smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
-    const [start, end] = getFovAdjustedFogRange(state, fov);
+    const [start, end] = state.range;
 
     // The output of this function must match _prelude_fog.fragment.glsl
     // For further details, refer to the implementation in the shader code
@@ -33,15 +33,6 @@ export function getFogOpacity(state: FogState, depth: number, pitch: number, fov
     falloff = Math.min(1.0, 1.00747 * falloff);
 
     return falloff * fogPitchOpacity * state.alpha;
-}
-
-export function getFovAdjustedFogRange(state: FogState, fov: number): [number, number] {
-    // This function computes a shifted fog range so that the appearance is unchanged
-    // when the fov changes. We define range=0 starting at the camera position given
-    // the default fov. We avoid starting the fog range at the camera center so that
-    // ranges aren't generally negative unless the FOV is modified.
-    const shift = 0.5 / Math.tan(fov * 0.5);
-    return [state.range[0] + shift, state.range[1] + shift];
 }
 
 export function getFogOpacityAtTileCoord(
@@ -56,7 +47,7 @@ export function getFogOpacityAtTileCoord(
     const pos = [x, y, z];
     vec3.transformMat4(pos as [number, number, number], pos as [number, number, number], mat);
 
-    return getFogOpacity(state, vec3.length(pos as [number, number, number]), transform.pitch, transform._fov);
+    return getFogOpacity(state, vec3.length(pos as [number, number, number]), transform.pitch);
 }
 
 export function getFogOpacityAtLngLat(state: FogState, lngLat: LngLat, transform: Transform): number {
@@ -73,7 +64,7 @@ export function getFogOpacityAtMercCoord(
     transform: Transform,
 ): number {
     const pos = vec3.transformMat4([], [x, y, elevation], transform.mercatorFogMatrix);
-    return getFogOpacity(state, vec3.length(pos), transform.pitch, transform._fov);
+    return getFogOpacity(state, vec3.length(pos), transform.pitch);
 }
 
 export function getFogOpacityForBounds(
@@ -103,5 +94,5 @@ export function getFogOpacityForBounds(
         max = Math.max(max, distance);
     }
 
-    return [getFogOpacity(state, min, transform.pitch, transform._fov), getFogOpacity(state, max, transform.pitch, transform._fov)];
+    return [getFogOpacity(state, min, transform.pitch), getFogOpacity(state, max, transform.pitch)];
 }

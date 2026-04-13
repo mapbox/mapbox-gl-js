@@ -50,6 +50,7 @@ var GUIParams = function() {
     this.showTileBoundaries = false;
     this.showCollisionBoxes = false;
     this.fov = 36.86989764584402;
+    this.enableGlobe = false;
 };
 
 var guiParams = new GUIParams();
@@ -64,6 +65,7 @@ var map = window.map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/satellite-streets-v11',
     hash: true
 });
+map.repaint = true;
 
 window.onload = function() {
     var gui = new dat.GUI({autoPlace: false}); // eslint-disable-line
@@ -97,6 +99,10 @@ window.onload = function() {
     var enableSky = gui.add(guiParams, 'enableSky');
     enableSky.onFinishChange((value) => {
         map.setLayoutProperty('sky', 'visibility', value ? 'visible' : 'none');
+    });
+    var enableGlobe = gui.add(guiParams, 'enableGlobe');
+    enableGlobe.onFinishChange((value) => {
+        map.setProjection(value ? 'globe' : 'mercator');
     });
     var fov = gui.add(guiParams, 'fov', 5, 60);
     fov.onChange((value) => {

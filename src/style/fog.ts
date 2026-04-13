@@ -3,7 +3,7 @@ import {smoothstep} from '../util/util';
 import {Evented} from '../util/evented';
 import {validateStyle, validateFog, emitValidationErrors} from './validate_style';
 import {Properties, Transitionable, PossiblyEvaluated, DataConstantProperty} from './properties';
-import {FOG_PITCH_START, FOG_PITCH_END, FOG_OPACITY_THRESHOLD, getFogOpacityAtLngLat, getFogOpacityAtMercCoord, getFovAdjustedFogRange, getFogOpacityForBounds} from './fog_helpers';
+import {FOG_PITCH_START, FOG_PITCH_END, FOG_OPACITY_THRESHOLD, getFogOpacityAtLngLat, getFogOpacityAtMercCoord, getFogOpacityForBounds} from './fog_helpers';
 import {number as interpolate, array as vecInterpolate} from '../style-spec/util/interpolate';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
 import EXTENT from '../style-spec/data/extent';
@@ -77,13 +77,15 @@ class Fog extends Evented {
         const isGlobe = tr.projection.name === 'globe';
         const transitionT = globeToMercatorTransition(tr.zoom);
         const range = this.properties.get('range');
-        const globeFixedFogRange = [0.5, 3];
+        const globeFixedFogRange = [2, 4.5];
+        const shift = 0.5 / Math.tan(tr._fov * 0.5);
+        const fovAdjustedRange: [number, number] = [range[0] + shift, range[1] + shift];
         return {
 
             range: isGlobe ? [
-                interpolate(globeFixedFogRange[0], range[0], transitionT),
-                interpolate(globeFixedFogRange[1], range[1], transitionT)
-            ] : range,
+                interpolate(globeFixedFogRange[0], fovAdjustedRange[0], transitionT),
+                interpolate(globeFixedFogRange[1], fovAdjustedRange[1], transitionT)
+            ] : fovAdjustedRange,
 
             horizonBlend: this.properties.get('horizon-blend'),
 
@@ -139,11 +141,11 @@ class Fog extends Evented {
         return getFogOpacityForBounds(this.state, matrix, x0, y0, x1, y1, this._transform);
     }
 
-    getFovAdjustedRange(fov: number): [number, number] {
+    getRangeForProjection(): [number, number] {
         // We can return any arbitrary range because we expect opacity=0 to clean it up
         if (!this._transform.projection.supportsFog) return [0, 1];
 
-        return getFovAdjustedFogRange(this.state, fov);
+        return this.state.range;
     }
 
     isVisibleOnFrustum(frustum: Frustum): boolean {
