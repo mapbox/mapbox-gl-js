@@ -133,6 +133,7 @@ export type WorkerSourceVectorTileResult = {
     lineAtlas: LineAtlas;
     featureIndex: FeatureIndex;
     collisionBoxArray: CollisionBoxArray;
+    hasTunnelGeometry?: boolean;
     rawTileData?: ArrayBuffer;
     resourceTiming?: Array<PerformanceResourceTiming>;
     brightness: number;

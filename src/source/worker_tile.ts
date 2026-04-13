@@ -293,6 +293,7 @@ class WorkerTile {
 
         const prepareTile = () => {
             lineAtlas.trim();
+            const hasTunnelGeometry = !!(options.elevationFeatures && options.elevationFeatures.some((feature) => feature.heightRange.min < 0.0));
 
             let error: Error | null | undefined;
             let glyphMap: GlyphMap;
@@ -314,6 +315,7 @@ class WorkerTile {
                         buckets: Object.values(buckets).filter(b => !b.isEmpty()),
                         featureIndex,
                         collisionBoxArray: null,
+                        hasTunnelGeometry,
                         glyphAtlasImage: null,
                         lineAtlas: null,
                         imageAtlas: null,
@@ -382,6 +384,7 @@ class WorkerTile {
                         buckets: Object.values(buckets).filter(b => !b.isEmpty()),
                         featureIndex,
                         collisionBoxArray: this.collisionBoxArray,
+                        hasTunnelGeometry,
                         glyphAtlasImage: glyphAtlas.image,
                         lineAtlas,
                         imageAtlas: null,
@@ -412,6 +415,7 @@ class WorkerTile {
                         buckets: Object.values(buckets).filter(b => !b.isEmpty()),
                         featureIndex,
                         collisionBoxArray: this.collisionBoxArray,
+                        hasTunnelGeometry,
                         glyphAtlasImage: glyphAtlas.image,
                         lineAtlas,
                         imageAtlas: imageAtlasForTransfer,
