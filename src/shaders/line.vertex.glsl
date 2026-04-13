@@ -360,6 +360,15 @@ void main() {
             dilute_scale = mix(max_extrude_component / min_pixel, 1.0, smoothstep(2.5, 4.5, is_out));
             projected_extrude /= dilute_scale;
         }
+        else if (gapwidth > 0.0) {
+            // For case layers (line-gap-width > 0), the visible border is just halfwidth
+            // on each side. The overall extrusion is wide due to the gap, but the visible
+            // portion can still be sub-pixel and needs dilution to reduce aliasing.
+            float visible_ratio = (halfwidth + ANTIALIASING) / outset;
+            vec2 visible_screen_width = screen_width * visible_ratio;
+            float max_visible_component = max(visible_screen_width.x, visible_screen_width.y);
+            dilute_scale = min(1.0, max_visible_component / min_pixel);
+        }
         else
         {
 #ifdef RENDER_LINE_BORDER
