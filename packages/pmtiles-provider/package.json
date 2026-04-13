@@ -22,7 +22,7 @@
     "test": "vitest --run"
   },
   "dependencies": {
-    "pmtiles": "4.4.0"
+    "pmtiles": "4.4.1"
   },
   "files": [
     "dist/"
