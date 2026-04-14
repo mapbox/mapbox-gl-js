@@ -33,8 +33,8 @@ export async function createCheck(sha: string, checkName: string, title: string,
  */
 export async function getCheckSummary(sha: string, checkName: string): Promise<string | undefined> {
     const githubReader = new Octokit({auth: process.env.GITHUB_READER_TOKEN});
-    const {data: checks} = await githubReader.checks.listForRef({owner, repo, ref: sha});
-    const run = checks.check_runs.find(run => run.name === checkName);
+    const {data: checks} = await githubReader.checks.listForRef({owner, repo, ref: sha, check_name: checkName});
+    const run = checks.check_runs[0];
     if (!run) return undefined;
     return run.output.summary;
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import {execSync} from 'child_process';
+import {execSync, spawnSync} from 'child_process';
 import {createCheck, getCheckSummary} from './gh-check-utils';
 
 type Size = {
@@ -13,8 +13,9 @@ type Size = {
 const CHECK_NAME = 'GL JS Size';
 
 function getSizes(): Size[] {
-    const raw = execSync('npm run size --silent -- --json').toString().trim();
-    return JSON.parse(raw || '[]') as Size[];
+    const result = spawnSync('npm', ['run', 'size', '--silent', '--', '--json'], {encoding: 'utf-8', shell: true});
+    if (result.error) throw result.error;
+    return JSON.parse(result.stdout.trim() || '[]') as Size[];
 }
 
 function formatSize(size: number): string {
@@ -62,6 +63,12 @@ console.log(message);
 
 const title = newSizes.map(size => `${size.name}: ${size.formattedDiff}`).join('; ');
 await createCheck(currentSha, CHECK_NAME, title, JSON.stringify(newSizes), passed ? 'success' : 'failure');
+
+if (!passed) {
+    const failed = newSizes.filter(s => !s.passed).map(s => `  ${s.name}: ${formatSize(s.size)} (limit exceeded)`).join('\n');
+    console.error(`Size limit exceeded:\n${failed}`);
+    process.exit(1);
+}
 
 process.on('unhandledRejection', (error: unknown) => {
     console.error((error as Error)?.message || 'Error');
