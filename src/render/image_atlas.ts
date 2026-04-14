@@ -371,6 +371,7 @@ export class ImageAtlasCache {
             this.textures.delete(atlas);
             this.textureAccessTimes.delete(atlas);
             this.textureMemoryUsed -= memory;
+            atlas.uploaded = false;
         }
     }
 

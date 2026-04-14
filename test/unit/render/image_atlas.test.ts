@@ -423,6 +423,30 @@ describe('ImageAtlasCache', () => {
 });
 
 describe('ImageAtlasCache - LRU eviction', () => {
+    test('resets atlas.uploaded to false when its texture is evicted', () => {
+        // After GPU texture eviction, atlas.uploaded must be reset so
+        // tiles re-upload on the next frame if needed
+        const cache = new ImageAtlasCache({maxTextureMemoryMB: 0.001});
+
+        const icons1: StyleImageMap<StringifiedImageVariant> = new Map([[createImageVariantId('icon1'), createMockImage('icon1', 100, 100)]]);
+        const icons2: StyleImageMap<StringifiedImageVariant> = new Map([[createImageVariantId('icon2'), createMockImage('icon2', 100, 100)]]);
+        const patterns: StyleImageMap<StringifiedImageVariant> = new Map();
+        const versions: Map<string, number> = new Map([['icon1', 1], ['icon2', 1]]);
+
+        const atlas1 = new ImageAtlas(icons1, patterns, null, versions);
+        const atlas2 = new ImageAtlas(icons2, patterns, null, versions);
+
+        // Simulate tile.upload() having already uploaded atlas1
+        cache.getTextureForAtlas(atlas1, context, context.gl.RGBA8);
+        atlas1.uploaded = true;
+
+        // Uploading atlas2 exceeds the memory budget, forcing eviction of atlas1
+        cache.getTextureForAtlas(atlas2, context, context.gl.RGBA8);
+
+        // The eviction must reset atlas1.uploaded so tiles re-upload on the next frame
+        expect(atlas1.uploaded).toBe(false);
+    });
+
     test('evicts LRU texture when memory budget exceeded', () => {
         // Create cache with very small budget (1KB)
         const cache = new ImageAtlasCache({maxTextureMemoryMB: 0.001});
