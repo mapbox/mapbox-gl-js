@@ -147,6 +147,15 @@ export const preludeShadow = compile(preludeShadowFrag, preludeShadowVert);
 export const preludeRasterArray = compile(preludeRasterArrayFrag, '');
 export const preludeRasterParticle = compile(preludeRasterParticleFrag, '');
 export const prelude = compile(preludeFrag, preludeVert);
+
+export const preludeShaders = {
+    prelude,
+    preludeFog,
+    preludeTerrain,
+    preludeShadow,
+    preludeRasterArray,
+    preludeRasterParticle,
+} as const;
 export const preludeCommonSource = preludeCommon;
 export const preludeLightingSource = preludeLighting;
 
