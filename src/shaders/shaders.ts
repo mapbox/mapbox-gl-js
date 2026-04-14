@@ -141,8 +141,8 @@ export const includeMap: Record<string, string> = {
 
 // Populated during precompilation
 const defineMap: Record<string, Set<DynamicDefinesType>> = {};
-
 export const preludeCommonSource = preludeCommon;
+
 export const preludeVertPrecisionQualifiers = `precision highp float;`;
 export const preludeFragPrecisionQualifiers = `precision mediump float;`;
 
@@ -150,7 +150,6 @@ export const preludeFragExtensions = `
 #if defined(GL_EXT_blend_func_extended) && defined(DUAL_SOURCE_BLENDING)
 #extension GL_EXT_blend_func_extended : require
 #endif`;
-
 
 export const preludeShaders = {
     preludeTerrain: compile('', preludeTerrainVert),
@@ -161,10 +160,7 @@ export const preludeShaders = {
     preludeLighting: compile(preludeLighting, preludeLighting),
     preludePrecisionQualifiers: compile(preludeFragPrecisionQualifiers, preludeVertPrecisionQualifiers),
     prelude: compile(preludeFrag, preludeVert),
-    preludeExtensions: {
-        fragmentSource: preludeFragExtensions,
-        vertexSource: ''
-    },
+    preludeExtensions: compile(preludeFragExtensions, ''),
 } as const;
 
 export const FRAGMENT_PRELUDE_BLOCK = [
