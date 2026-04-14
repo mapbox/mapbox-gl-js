@@ -141,24 +141,8 @@ export const includeMap: Record<string, string> = {
 
 // Populated during precompilation
 const defineMap: Record<string, Set<DynamicDefinesType>> = {};
-export const preludeTerrain = compile('', preludeTerrainVert);
-export const preludeFog = compile(preludeFogFrag, preludeFogVert);
-export const preludeShadow = compile(preludeShadowFrag, preludeShadowVert);
-export const preludeRasterArray = compile(preludeRasterArrayFrag, '');
-export const preludeRasterParticle = compile(preludeRasterParticleFrag, '');
-export const prelude = compile(preludeFrag, preludeVert);
 
-export const preludeShaders = {
-    prelude,
-    preludeFog,
-    preludeTerrain,
-    preludeShadow,
-    preludeRasterArray,
-    preludeRasterParticle,
-} as const;
 export const preludeCommonSource = preludeCommon;
-export const preludeLightingSource = preludeLighting;
-
 export const preludeVertPrecisionQualifiers = `precision highp float;`;
 export const preludeFragPrecisionQualifiers = `precision mediump float;`;
 
@@ -167,17 +151,33 @@ export const preludeFragExtensions = `
 #extension GL_EXT_blend_func_extended : require
 #endif`;
 
+
+export const preludeShaders = {
+    preludeTerrain: compile('', preludeTerrainVert),
+    preludeFog: compile(preludeFogFrag, preludeFogVert),
+    preludeShadow: compile(preludeShadowFrag, preludeShadowVert),
+    preludeRasterArray: compile(preludeRasterArrayFrag, ''),
+    preludeRasterParticle: compile(preludeRasterParticleFrag, ''),
+    preludeLighting: compile(preludeLighting, preludeLighting),
+    preludePrecisionQualifiers: compile(preludeFragPrecisionQualifiers, preludeVertPrecisionQualifiers),
+    prelude: compile(preludeFrag, preludeVert),
+    preludeExtensions: {
+        fragmentSource: preludeFragExtensions,
+        vertexSource: ''
+    },
+} as const;
+
 export const FRAGMENT_PRELUDE_BLOCK = [
     preludeFragExtensions,
     preludeFragPrecisionQualifiers,
-    preludeCommonSource,
-    prelude.fragmentSource
+    preludeCommon,
+    preludeShaders.prelude.fragmentSource
 ].join('\n');
 
 export const VERTEX_PRELUDE_BLOCK = [
     preludeVertPrecisionQualifiers,
-    preludeCommonSource,
-    prelude.vertexSource
+    preludeCommon,
+    preludeShaders.prelude.vertexSource
 ].join('\n');
 
 export default {
