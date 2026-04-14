@@ -143,10 +143,10 @@ export const includeMap: Record<string, string> = {
 const defineMap: Record<string, Set<DynamicDefinesType>> = {};
 export const preludeCommonSource = preludeCommon;
 
-export const preludeVertPrecisionQualifiers = `precision highp float;`;
-export const preludeFragPrecisionQualifiers = `precision mediump float;`;
+const preludeVertPrecisionQualifiers = `precision highp float;`;
+const preludeFragPrecisionQualifiers = `precision mediump float;`;
 
-export const preludeFragExtensions = `
+const preludeFragExtensions = `
 #if defined(GL_EXT_blend_func_extended) && defined(DUAL_SOURCE_BLENDING)
 #extension GL_EXT_blend_func_extended : require
 #endif`;
