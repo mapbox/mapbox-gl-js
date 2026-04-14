@@ -7,7 +7,7 @@ import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestT
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../style-spec/data/extent';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
-import {FAR_BL, FAR_BR, Frustum, FrustumCorners, NEAR_BL, NEAR_BR, Ray} from '../util/primitives';
+import {FAR_BL, FAR_BR, FAR_TL, FAR_TR, Frustum, FrustumCorners, NEAR_BL, NEAR_BR, NEAR_TL, NEAR_TR, Ray} from '../util/primitives';
 import EdgeInsets from './edge_insets';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera';
 import assert from 'assert';
@@ -25,7 +25,7 @@ import {
     aabbForTileOnGlobe,
 } from '../geo/projection/globe_util';
 import {projectClamped} from '../symbol/projection';
-import {edgeIntersectsBox} from '../util/intersection_tests';
+import {edgeIntersectsBox, polygonIntersectsBox} from '../util/intersection_tests';
 
 import type {Aabb} from '../util/primitives';
 import type Projection from '../geo/projection/projection';
@@ -1130,6 +1130,118 @@ class Transform {
         assert(far[2] < near[2]);
         return vec3.lerp(vec3.create(), near, far, near[2] / (near[2] - far[2]));
     };
+
+    _projectToZ(near: vec3, far: vec3, z: number): vec3 {
+        const dz = near[2] - far[2];
+        if (Math.abs(dz) < 1e-6) return vec3.clone(near);
+        return vec3.lerp(vec3.create(), near, far, (near[2] - z) / dz);
+    }
+
+    /**
+     * Extend the tile cover beyond the ground-level horizon for underground tunnel geometry.
+     * At high pitch, line-of-sight can reach below z=0 in distant tiles. This finds the strip
+     * between the z=0 horizon and z=-tunnelDepth horizon of the top frustum edges.
+     *
+     * @param {Array<OverscaledTileID>} tiles tile cover that is extended
+     * @param {Frustum} frustum view frustum
+     * @param {number} maxZoom maximum zoom level
+     * @param {number} tunnelDepth maximum tunnel depth in meters
+     * @returns {Array<OverscaledTileID>} a set of extension tiles
+     */
+    extendTileCoverForTunnels(tiles: Array<OverscaledTileID>, frustum: Frustum, maxZoom: number, tunnelDepth: number): Array<OverscaledTileID> {
+        const TUNNEL_TILE_COVER_MIN_ZOOM = 18;
+        if (maxZoom < TUNNEL_TILE_COVER_MIN_ZOOM) {
+            return [];
+        }
+
+        const points = frustum.points;
+        const nearTl = points[NEAR_TL];
+        const nearTr = points[NEAR_TR];
+        const farTl = points[FAR_TL];
+        const farTr = points[FAR_TR];
+
+        // Only extend when at least one top edge reaches below ground and both near points
+        // are above ground.
+        if ((farTl[2] >= 0.0 && farTr[2] >= 0.0) || nearTl[2] <= 0.0 || nearTr[2] <= 0.0) {
+            return [];
+        }
+
+        // Ground intersection (z=0): if edge does not reach ground, use far point.
+        const groundTl = farTl[2] < 0.0 ? this._projectToZ(nearTl, farTl, 0.0) : farTl;
+        const groundTr = farTr[2] < 0.0 ? this._projectToZ(nearTr, farTr, 0.0) : farTr;
+
+        // Underground intersection (z=-tunnelDepth): if edge does not reach depth, use far point.
+        const depth = -tunnelDepth;
+        const undergroundTl = farTl[2] < depth ? this._projectToZ(nearTl, farTl, depth) : farTl;
+        const undergroundTr = farTr[2] < depth ? this._projectToZ(nearTr, farTr, depth) : farTr;
+
+        // The quad spans the full viewport width at the horizon, which can produce many tiles.
+        // Limit to the closest tiles (by distance from center) since tunnels are typically
+        // near the camera's forward direction during navigation.
+        const MAX_TUNNEL_EXTENSION_TILES = 3;
+
+        const result = this._findExtensionTilesInQuad(tiles, maxZoom, [undergroundTr, undergroundTl, groundTr, groundTl], [
+            0.5 * (groundTl[0] + groundTr[0]),
+            0.5 * (groundTl[1] + groundTr[1])
+        ]);
+        if (result.length > MAX_TUNNEL_EXTENSION_TILES) {
+            result.length = MAX_TUNNEL_EXTENSION_TILES;
+        }
+        return result;
+    }
+
+    /**
+     * Find tiles that intersect a projected frustum quad strip, excluding existing tiles.
+     */
+    _findExtensionTilesInQuad(
+        tiles: Array<OverscaledTileID>,
+        maxZoom: number,
+        corners: [vec3, vec3, vec3, vec3],
+        center: [number, number]
+    ): Array<OverscaledTileID> {
+        const out: OverscaledTileID[] = [];
+        const addedTiles = new Set<number>();
+        for (const tile of tiles) {
+            addedTiles.add(tile.key);
+        }
+
+        const overscaledZ = tiles.reduce((acc, tile) => Math.max(acc, tile.overscaledZ), maxZoom);
+        const numTiles = 1 << maxZoom;
+        const ring = [
+            new Point(corners[0][0], corners[0][1]),
+            new Point(corners[1][0], corners[1][1]),
+            new Point(corners[3][0], corners[3][1]),
+            new Point(corners[2][0], corners[2][1]),
+            new Point(corners[0][0], corners[0][1])
+        ];
+
+        const cx0 = corners[0][0], cx1 = corners[1][0], cx2 = corners[2][0], cx3 = corners[3][0];
+        const cy0 = corners[0][1], cy1 = corners[1][1], cy2 = corners[2][1], cy3 = corners[3][1];
+        const minX = Math.max(0, Math.floor(Math.min(cx0, cx1, cx2, cx3)));
+        const maxX = Math.min(numTiles - 1, Math.ceil(Math.max(cx0, cx1, cx2, cx3)) - 1);
+        const minY = Math.max(0, Math.floor(Math.min(cy0, cy1, cy2, cy3)));
+        const maxY = Math.min(numTiles - 1, Math.ceil(Math.max(cy0, cy1, cy2, cy3)) - 1);
+
+        for (let y = minY; y <= maxY; y++) {
+            for (let x = minX; x <= maxX; x++) {
+                if (!polygonIntersectsBox(ring, x, y, x + 1, y + 1)) continue;
+
+                const key = calculateKey(0, overscaledZ, maxZoom, x, y);
+                if (addedTiles.has(key)) continue;
+
+                out.push(new OverscaledTileID(overscaledZ, 0, maxZoom, x, y));
+                addedTiles.add(key);
+            }
+        }
+
+        const cx = center[0], cy = center[1];
+        out.sort((a, b) => {
+            const adx = a.canonical.x + 0.5 - cx, ady = a.canonical.y + 0.5 - cy;
+            const bdx = b.canonical.x + 0.5 - cx, bdy = b.canonical.y + 0.5 - cy;
+            return (adx * adx + ady * ady) - (bdx * bdx + bdy * bdy) || a.canonical.x - b.canonical.x || a.canonical.y - b.canonical.y;
+        });
+        return out;
+    }
 
     /**
      * Return all coordinates that could cover this transform for a covering

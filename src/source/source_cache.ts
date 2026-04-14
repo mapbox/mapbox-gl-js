@@ -313,10 +313,19 @@ class SourceCache extends Evented {
         this._setTileReloadTimer(id, tile);
         if (this._source.type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
         this._state.initializeTileState(tile, this.map ? this.map.painter : null);
+
         let responseHeaders: Map<string, string> = new Map();
         if (data && data.responseHeaders) responseHeaders = data.responseHeaders;
 
         this._source.fire(new Event('data', {dataType: 'source', tile, coord: tile.tileID, 'sourceCacheId': this.id, responseHeaders}));
+    }
+
+    _hasTunnelGeometry(): boolean {
+        for (const key in this._tiles) {
+            const tile = this._tiles[key];
+            if (tile && tile.hasTunnelGeometry) return true;
+        }
+        return false;
     }
 
     /**
@@ -634,9 +643,21 @@ class SourceCache extends Evented {
                     idealTileIDs.push(id);
                 }
             } else if (elevatedLayers) {
-                const elevatedTileIDs = transform.extendTileCoverToNearPlane(idealTileIDs, this.transform.getFrustum(idealZoom), idealZoom);
+                const frustum = this.transform.getFrustum(idealZoom);
+
+                const elevatedTileIDs = transform.extendTileCoverToNearPlane(idealTileIDs, frustum, idealZoom);
                 for (const id of elevatedTileIDs) {
                     idealTileIDs.push(id);
+                }
+
+                // Extend tile cover beyond the ground-level horizon for underground tunnel geometry.
+                // Only extend if zoom >= 18 and any already-loaded tile contains tunnel features.
+                if (idealZoom >= 18 && this._hasTunnelGeometry()) {
+                    const TUNNEL_TILE_COVER_DEPTH = 20.0; // meters
+                    const tunnelTileIDs = transform.extendTileCoverForTunnels(idealTileIDs, frustum, idealZoom, TUNNEL_TILE_COVER_DEPTH);
+                    for (const id of tunnelTileIDs) {
+                        idealTileIDs.push(id);
+                    }
                 }
             } else if (this.castsShadows && directionalLight) {
                 // find shadowCasterTiles

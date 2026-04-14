@@ -170,6 +170,7 @@ class Tile {
 
     symbolFadeHoldUntil: number | null | undefined;
     hasSymbolBuckets: boolean;
+    hasTunnelGeometry: boolean;
     hasRTLText: boolean;
     dependencies: Record<string, Record<StringifiedImageId, boolean>>;
     projection: Projection;
@@ -210,6 +211,7 @@ class Tile {
         this.expirationTime = null;
         this.queryPadding = 0;
         this.hasSymbolBuckets = false;
+        this.hasTunnelGeometry = false;
         this.hasRTLText = false;
         this.dependencies = {};
         this.isRaster = isRaster;
@@ -292,6 +294,7 @@ class Tile {
         this.buckets = deserializeBucket(data.buckets, painter.style);
 
         this.hasSymbolBuckets = false;
+        this.hasTunnelGeometry = !!data.hasTunnelGeometry;
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
             if (bucket instanceof SymbolBucket) {
