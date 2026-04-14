@@ -5,6 +5,7 @@ import Point from '@mapbox/point-geometry';
 import Transform from '../../../src/geo/transform';
 import LngLat, {LngLatBounds} from '../../../src/geo/lng_lat';
 import {OverscaledTileID, CanonicalTileID} from '../../../src/source/tile_id';
+import {FAR_TL, FAR_TR} from '../../../src/util/primitives';
 import {fixedNum, fixedLngLat, fixedCoord, fixedPoint, fixedVec3, fixedVec4} from '../../util/fixed';
 import {FreeCameraOptions} from '../../../src/ui/free_camera';
 import MercatorCoordinate, {mercatorZfromAltitude, altitudeFromMercatorZ, MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate';
@@ -688,6 +689,83 @@ describe('transform', () => {
             expect(tileExtension).toStrictEqual([
                 Object.assign(new OverscaledTileID(20, 0, 18, 60561, 105514))
             ]);
+        });
+
+        test('Extend tile coverage for tunnels at high pitch', () => {
+            transform.resize(1024, 1024);
+            transform.zoom = 20.0;
+            transform.pitch = 65.0;
+            transform.bearing = 0.0;
+            transform.center = new LngLat(-96.830256, 33.088666);
+
+            const visibleTiles = [
+                new OverscaledTileID(20, 0, 20, 242249, 422057),
+                new OverscaledTileID(20, 0, 20, 242249, 422058),
+                new OverscaledTileID(20, 0, 20, 242248, 422057),
+                new OverscaledTileID(20, 0, 20, 242248, 422058)
+            ];
+            const frustum = transform.getFrustum(20);
+
+            // Verify the far top edges go below ground (prerequisite for tunnel extension)
+            expect(frustum.points[FAR_TL][2]).toBeLessThan(0);
+            expect(frustum.points[FAR_TR][2]).toBeLessThan(0);
+
+            const tunnelTiles = transform.extendTileCoverForTunnels(visibleTiles, frustum, 20, 20.0);
+            expect(tunnelTiles.length).toBeGreaterThan(0);
+            expect(tunnelTiles.length).toBeLessThanOrEqual(3);
+
+            const visibleKeys = new Set(visibleTiles.map(t => t.key));
+            const minVisibleY = Math.min(...visibleTiles.map(t => t.canonical.y));
+            for (const tile of tunnelTiles) {
+                // Tiles should be at the correct zoom
+                expect(tile.canonical.z).toBe(20);
+                // Tiles should not duplicate the visible set
+                expect(visibleKeys.has(tile.key)).toBe(false);
+                // Tiles should be beyond the visible tiles (closer to horizon = lower y)
+                expect(tile.canonical.y).toBeLessThan(minVisibleY);
+            }
+        });
+
+        test('Extend tile coverage for tunnels at low pitch with fixed seed', () => {
+            transform.resize(1024, 1024);
+            transform.zoom = 18;
+            transform.pitch = 0;
+            transform.bearing = 0;
+            transform.center = new LngLat(-96.830256, 33.088666);
+
+            const visibleTiles = [
+                new OverscaledTileID(18, 0, 18, 60562, 105514),
+                new OverscaledTileID(18, 0, 18, 60562, 105513),
+                new OverscaledTileID(18, 0, 18, 60563, 105514),
+                new OverscaledTileID(18, 0, 18, 60563, 105513)
+            ];
+            const frustum = transform.getFrustum(18);
+
+            const tunnelTiles = transform.extendTileCoverForTunnels(visibleTiles, frustum, 18, 20.0);
+            expect(tunnelTiles.length).toBeLessThanOrEqual(3);
+
+            expect(tunnelTiles).toStrictEqual([
+                Object.assign(new OverscaledTileID(18, 0, 18, 60561, 105513))
+            ]);
+        });
+
+        test('Extend tile coverage for tunnels returns empty below minimum zoom', () => {
+            transform.resize(1024, 1024);
+            transform.zoom = 17.0;
+            transform.pitch = 65.0;
+            transform.bearing = 0.0;
+            transform.center = new LngLat(-96.830256, 33.088666);
+
+            const visibleTiles = [
+                new OverscaledTileID(17, 0, 17, 30281, 52757),
+                new OverscaledTileID(17, 0, 17, 30280, 52757),
+                new OverscaledTileID(17, 0, 17, 30281, 52756),
+                new OverscaledTileID(17, 0, 17, 30280, 52756)
+            ];
+            const frustum = transform.getFrustum(17);
+            const tunnelTiles = transform.extendTileCoverForTunnels(visibleTiles, frustum, 17, 20.0);
+
+            expect(tunnelTiles).toStrictEqual([]);
         });
     });
 
