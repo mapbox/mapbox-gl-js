@@ -63,6 +63,8 @@ out vec2 v_normal;
 out vec4 v_width2_dilute; // xy fow width, z for dilute of whole line w for dilute of border
 out float v_gamma_scale;
 out highp vec3 v_uv;
+out vec2 v_tile_pos;
+
 #ifdef ELEVATED_ROADS
 out highp float v_road_z_offset;
 #endif
@@ -286,7 +288,8 @@ void main() {
     vec2 projected_extrude_xy = projected_extrude.xy;
 #ifdef ELEVATED_ROADS
     v_road_z_offset = a_z_offset;
-    gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, a_z_offset, 1.0);
+    v_tile_pos = pos + offset2 * u_pixels_to_tile_units;
+    gl_Position = u_matrix * vec4(v_tile_pos, a_z_offset, 1.0);
 #else
 #ifdef ELEVATED
     vec2 offsetTile = offset2 * u_pixels_to_tile_units;
@@ -321,13 +324,15 @@ void main() {
     ele = ele_max - ele0 + ele1 + scaled_z_offset;
 #endif // CROSS_SLOPE_HORIZONTAL
 #endif // CROSS_SLOPE_VERTICAL
-    gl_Position = u_matrix * vec4(offset_pos, ele, 1.0) + projected_extrude;
+    v_tile_pos = offset_pos;
+    gl_Position = u_matrix * vec4(v_tile_pos, ele, 1.0) + projected_extrude;
     float z = clamp(gl_Position.z / gl_Position.w, 0.5, 1.0);
     float zbias = max(0.00005, (pow(z, 0.8) - z) * u_zbias_factor * u_exaggeration);
     gl_Position.z -= (gl_Position.w * zbias);
     gl_Position = mix(gl_Position, AWAY, hidden);
 #else // ELEVATED
-    gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0);
+    v_tile_pos = pos + offset2 * u_pixels_to_tile_units;
+    gl_Position = u_matrix * vec4(v_tile_pos, 0.0, 1.0);
 #endif // ELEVATED
 #endif // ELEVATED_ROADS
 
@@ -361,6 +366,7 @@ void main() {
     }
 #endif
 #endif
+    v_tile_pos = (v_tile_pos + extrude) / EXTENT;
 #ifdef ELEVATED_ROADS
     gl_Position = gl_Position + projected_extrude;
 #else
