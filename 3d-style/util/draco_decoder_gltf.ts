@@ -39,17 +39,9 @@ export function DracoDecoderModule(wasmPromise) {
         }
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const instantiateWasm = WebAssembly.instantiateStreaming ?
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        WebAssembly.instantiateStreaming(wasmPromise, wasmImports) :
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-        wasmPromise.then(wasm => wasm.arrayBuffer()).then(buffer => WebAssembly.instantiate(buffer, wasmImports));
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    return instantiateWasm.then(output => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    return WebAssembly.instantiateStreaming(wasmPromise, wasmImports).then(output => {
         // minified exports values might change when recompiling Draco WASM, to be manually updated on version ugprade
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const {
             Rb: _free,
             Qb: _malloc,
@@ -71,10 +63,8 @@ export function DracoDecoderModule(wasmPromise) {
             Bb: getUINT16,
             Db: getUINT32,
             Gb: getFLOAT32
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         } = output.instance.exports;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         wasmMemory = memory;
 
         const ensureCache = (() => {
@@ -85,16 +75,14 @@ export function DracoDecoderModule(wasmPromise) {
 
             return (array) => {
                 if (needed) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     _free(temp);
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     _free(buffer);
                     size += needed;
                     needed = buffer = 0;
                 }
                 if (!buffer) {
                     size += 128;
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     buffer = _malloc(size);
                 }
 
@@ -103,7 +91,7 @@ export function DracoDecoderModule(wasmPromise) {
                 let offset = buffer;
                 if (len >= size) {
                     needed = len;
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     offset = temp = _malloc(len);
                 }
 
@@ -119,73 +107,66 @@ export function DracoDecoderModule(wasmPromise) {
 
         class Mesh {
             constructor() {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 this.ptr = _Mesh();
             }
             destroy() {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 _MeshDestroy(this.ptr);
             }
         }
 
         class Decoder {
             constructor() {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 this.ptr = _Decoder();
             }
             destroy() {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 _DecoderDestroy(this.ptr);
             }
             DecodeArrayToMesh(data, dataSize, outMesh) {
                 const offset = ensureCache(data);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 const status = _DecoderDecodeArrayToMesh(this.ptr, offset, dataSize, outMesh.ptr);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 return !!_StatusOK(status);
             }
             GetAttributeByUniqueId(pc, id) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 return {ptr: _DecoderGetAttributeByUniqueId(this.ptr, pc.ptr, id)};
             }
             GetTrianglesUInt16Array(m, outSize, outValues) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 _DecoderGetTrianglesUInt16Array(this.ptr, m.ptr, outSize, outValues);
             }
             GetTrianglesUInt32Array(m, outSize, outValues) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 _DecoderGetTrianglesUInt32Array(this.ptr, m.ptr, outSize, outValues);
             }
             GetAttributeDataArrayForAllPoints(pc, pa, dataType, outSize, outValues) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 _DecoderGetAttributeDataArrayForAllPoints(this.ptr, pc.ptr, pa.ptr, dataType, outSize, outValues);
             }
         }
 
         updateMemoryViews();
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         initRuntime();
 
         return {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             memory,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             _free,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             _malloc,
             Mesh,
             Decoder,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             DT_INT8: getINT8(),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             DT_UINT8: getUINT8(),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             DT_INT16: getINT16(),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             DT_UINT16: getUINT16(),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             DT_UINT32: getUINT32(),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             DT_FLOAT32: getFLOAT32()
         };
     });

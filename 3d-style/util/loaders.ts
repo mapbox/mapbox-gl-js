@@ -5,7 +5,7 @@ import {getDracoUrl, getMeshoptUrl, getBuildingGenUrl} from '../../src/util/conf
 import {warnOnce} from '../../src/util/util';
 import {loadBuildingGen} from './building_gen';
 import {DracoDecoderModule} from './draco_decoder_gltf';
-import {MeshoptDecoder} from './meshopt_decoder';
+import {MeshoptDecoderModule} from './meshopt_decoder';
 import {PerformanceUtils} from '../../src/util/performance';
 import {makeAsyncRequest} from '../../src/util/ajax';
 
@@ -37,13 +37,13 @@ interface DracoModule {
 }
 
 interface MeshoptModule {
-    ready: Promise<void>;
     decodeGltfBuffer: (target: Uint8Array, count: number, stride: number, source: Uint8Array, mode: string, filter: string) => void;
 }
 
 let draco: DracoModule | null = null;
-let dracoLoading: Promise<DracoModule> | undefined;
+let dracoLoading: Promise<void> | null = null;
 let meshopt: MeshoptModule | null = null;
+let meshoptLoading: Promise<void> | null = null;
 let buildingGen: BuildingGen | null = null;
 let buildingGenError: Error | null = null;
 let buildingGenLoading: Promise<unknown> | null = null;
@@ -52,24 +52,25 @@ function waitForDraco() {
     if (draco) return;
     if (dracoLoading != null) return dracoLoading;
     const startTime = PerformanceUtils.now();
-
-    dracoLoading = DracoDecoderModule(fetch(getDracoUrl())) as Promise<DracoModule>;
-
-    return dracoLoading.then((module) => {
-        draco = module;
-        dracoLoading = undefined;
+    dracoLoading = DracoDecoderModule(fetch(getDracoUrl())).then((module) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        draco = module as any as DracoModule;
+        dracoLoading = null;
         PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_COMMON, "waitForDraco", "Models", startTime);
     });
+    return dracoLoading;
 }
 
 function waitForMeshopt() {
     if (meshopt) return;
+    if (meshoptLoading != null) return meshoptLoading;
     const startTime = PerformanceUtils.now();
-    const decoder = MeshoptDecoder(fetch(getMeshoptUrl())) as MeshoptModule;
-    return decoder.ready.then(() => {
+    meshoptLoading = MeshoptDecoderModule(fetch(getMeshoptUrl())).then((module) => {
+        meshopt = module;
+        meshoptLoading = null;
         PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_COMMON, "waitForMeshopt", "Models", startTime);
-        meshopt = decoder;
     });
+    return meshoptLoading;
 }
 
 export function waitForBuildingGen(): Promise<unknown> {
