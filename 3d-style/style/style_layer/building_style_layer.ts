@@ -1,9 +1,10 @@
 import StyleLayer from '../../../src/style/style_layer';
-import {BuildingBucket, BUILDING_VISIBLE} from '../../data/bucket/building_bucket';
+import {BUILDING_VISIBLE} from '../../data/bucket/building_bucket_flags';
 import {getLayoutProperties, getPaintProperties} from './building_style_layer_properties';
 import {checkIntersection, projectExtrusion} from '../../../src/style/style_layer/fill_extrusion_style_layer';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
+import {BuildingBucket, prepareHD} from '../../../modules/hd_worker';
 
 import type {Layout, Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../../../src/style/properties';
 import type {Bucket, BucketParameters} from '../../../src/data/bucket';
@@ -33,6 +34,10 @@ class BuildingStyleLayer extends StyleLayer {
         };
         super(layer, properties, scope, lut, options);
         this._stats = {numRenderedVerticesInShadowPass: 0, numRenderedVerticesInTransparentPass: 0};
+    }
+
+    prepare(): Promise<void> {
+        return prepareHD();
     }
 
     createBucket(parameters: BucketParameters<BuildingStyleLayer>): BuildingBucket {

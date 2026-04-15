@@ -252,41 +252,44 @@ class WorkerTile {
 
                 recalculateLayers(family, this.zoom, options.brightness, availableImages, this.worldview, options.activeFloors);
 
-                // @ts-expect-error - not all TypedStyleLayer subtypes have createBucket, but only bucket-producing layers reach here
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-                const bucket: Bucket = buckets[layer.id] = layer.createBucket({
-                    index: featureIndex.bucketLayerIDs.length,
-                    layers: family,
-                    zoom: this.zoom,
-                    lut: this.lut,
-                    canonical: this.canonical,
-                    pixelRatio: this.pixelRatio,
-                    overscaling: this.overscaling,
-                    collisionBoxArray: this.collisionBoxArray,
-                    sourceLayerIndex,
-                    sourceID: this.source,
-                    projection: this.projection.spec,
-                    tessellationStep: this.tessellationStep,
-                    styleDefinedModelURLs: availableModels,
-                    worldview: this.worldview,
-                    localizable,
-                    availableImages,
-                    maxUniformBufferBindings: this.maxUniformBufferBindings,
-                    maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords,
-                    disableSymbolUBO: this.disableSymbolUBO
-                });
+                const processBucket = () => {
 
-                assert(this.tileTransform.projection.name === this.projection.name);
-                featureIndex.bucketLayerIDs.push(family.map((l) => makeFQID(l.id, l.scope)));
+                    // @ts-expect-error - not all TypedStyleLayer subtypes have createBucket, but only bucket-producing layers reach here
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+                    const bucket: Bucket = buckets[layer.id] = layer.createBucket({
+                        index: featureIndex.bucketLayerIDs.length,
+                        layers: family,
+                        zoom: this.zoom,
+                        lut: this.lut,
+                        canonical: this.canonical,
+                        pixelRatio: this.pixelRatio,
+                        overscaling: this.overscaling,
+                        collisionBoxArray: this.collisionBoxArray,
+                        sourceLayerIndex,
+                        sourceID: this.source,
+                        projection: this.projection.spec,
+                        tessellationStep: this.tessellationStep,
+                        styleDefinedModelURLs: availableModels,
+                        worldview: this.worldview,
+                        localizable,
+                        availableImages,
+                        maxUniformBufferBindings: this.maxUniformBufferBindings,
+                        maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords,
+                        disableSymbolUBO: this.disableSymbolUBO
+                    });
 
-                let bucketPromise = bucket.prepare ? bucket.prepare() : null;
-                if (bucketPromise != null) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    bucketPromise = bucketPromise.then(() => bucket.populate(features, options, this.tileID.canonical, this.tileTransform));
-                    asyncBucketLoads.push(bucketPromise);
-                } else {
+                    assert(this.tileTransform.projection.name === this.projection.name);
+                    featureIndex.bucketLayerIDs.push(family.map((l) => makeFQID(l.id, l.scope)));
+
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     bucket.populate(features, options, this.tileID.canonical, this.tileTransform);
+                };
+
+                if ('prepare' in layer) {
+                    const layerPromise = layer.prepare().then(() => processBucket());
+                    asyncBucketLoads.push(layerPromise);
+                } else {
+                    processBucket();
                 }
             }
         }

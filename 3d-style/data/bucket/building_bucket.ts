@@ -14,7 +14,7 @@ import {
     StructArrayLayout1ui2
 } from '../../../src/data/array_types';
 import {calculateLightsMesh} from '../../source/model_loader';
-import {clamp, warnOnce} from '../../../src/util/util';
+import {clamp, warnOnce, isWorker} from '../../../src/util/util';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
 import {
     buildingPositionAttributes,
@@ -38,7 +38,6 @@ import {GroundEffect} from '../../../src/data/bucket/fill_extrusion_bucket';
 import Point from '@mapbox/point-geometry';
 import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
-import {waitForBuildingGen, getBuildingGen} from '../../util/loaders';
 import {footprintTrianglesIntersect, regionsEquals, type Region, type ReplacementSource} from '../../source/replacement_source';
 import TriangleGridIndex from '../../../src/util/triangle_grid_index';
 import earcut from 'earcut';
@@ -57,8 +56,20 @@ import {
     BUILDING_PART_ROOF,
     BUILDING_PART_WALL,
     BUILDING_PART_FACADE_GLAZING,
-    BUILDING_PART_ENTRANCE
+    BUILDING_PART_ENTRANCE,
+    loadBuildingGen,
+    type BuildingGen,
+    type Style,
+    type Feature,
+    type Facade,
+    type RoofType,
+    type BuildingPart
 } from '../../util/building_gen';
+import {getBuildingGenUrl} from '../../../src/util/config';
+import {
+    BUILDING_VISIBLE,
+    BUILDING_HIDDEN_BY_REPLACEMENT
+} from './building_bucket_flags';
 
 import type {OverscaledTileID, UnwrappedTileID, CanonicalTileID} from '../../../src/source/tile_id';
 import type {BucketParameters, IndexedFeature, PopulateParameters} from '../../../src/data/bucket';
@@ -71,13 +82,6 @@ import type {GlobalProperties} from "../../../src/style-spec/expression";
 import type IndexBuffer from '../../../src/gl/index_buffer';
 import type {LUT} from '../../../src/util/lut';
 import type {SpritePositions} from '../../../src/util/image';
-import type {
-    Style,
-    Feature,
-    Facade,
-    RoofType,
-    BuildingPart
-} from '../../util/building_gen';
 import type {Footprint, TileFootprint} from '../../util/conflation';
 import type {TileTransform} from '../../../src/geo/projection/tile_transform';
 import type {TypedStyleLayer} from '../../../src/style/style_layer/typed_style_layer';
@@ -88,9 +92,6 @@ import type {BucketWithGroundEffect} from '../../../src/render/draw_fill_extrusi
 import type {AreaLight} from '../model';
 import type {NonPremultipliedRenderColor} from '../../../src/style-spec/util/color';
 
-export const BUILDING_VISIBLE: number = 0x0;
-export const BUILDING_HIDDEN_BY_REPLACEMENT: number = 0x1;
-export const BUILDING_HIDDEN_BY_TILE_BORDER_DEDUPLICATION: number = 0x2;
 const BUILDING_HIDDEN_WITH_INCOMPLETE_PARTS: number = 0x4;
 
 const MAX_INT_16 = 32767.0;
@@ -166,7 +167,30 @@ type BuildingFeatureOnBorder = {
     footprintIndex: number;
 };
 
-export class BuildingBloomGeometry {
+let buildingGenLoading: Promise<void> | null = null;
+let buildingGenError: Error = null;
+let buildingGen: BuildingGen | null = null;
+
+export function waitForBuildingGen(): Promise<void> {
+    if (!isWorker(self)) return null; // only load building WASM on the worker thread
+    if (buildingGen != null || buildingGenError != null) return null;
+    if (buildingGenLoading != null) return buildingGenLoading;
+    const m = PerformanceUtils.now();
+    const wasmData = fetch(getBuildingGenUrl());
+    buildingGenLoading = loadBuildingGen(wasmData).then((instance) => {
+        buildingGenLoading = null;
+        buildingGen = instance;
+        PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_COMMON, "waitForBuildingGen", "BuildingBucket", m);
+    }).catch((error) => {
+        warnOnce('Could not load building-gen');
+        buildingGenLoading = null;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        buildingGenError = error;
+    });
+    return buildingGenLoading;
+}
+
+class BuildingBloomGeometry {
     layoutVertexArray = new BuildingPositionArray();
     layoutVertexBuffer: VertexBuffer;
 
@@ -364,17 +388,12 @@ export class BuildingBucket implements BucketWithGroundEffect {
         };
     }
 
-    prepare(): Promise<unknown> {
-        return waitForBuildingGen();
-    }
-
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
         const perfStartTime = PerformanceUtils.now();
         let perfBuildingGenTime = 0;
         let perfBuildingGenCount = 0;
         let perfMeshLoopAccuTime = 0;
 
-        const buildingGen = getBuildingGen();
         if (!buildingGen) {
             return;
         }

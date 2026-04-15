@@ -7,11 +7,13 @@ import browserslistToEsbuild from 'browserslist-to-esbuild';
 import {plugins} from './build/rollup_plugins.js';
 import banner from './build/banner.js';
 
+import type {Plugin, RollupLog, RollupOptions, SourceMapInput} from 'rollup';
+
 const {BUILD, MINIFY} = process.env;
 const minified = MINIFY === 'true';
 const production = BUILD === 'production';
 
-function buildType(build, minified) {
+function buildType(build: string, minified: string) {
     switch (build) {
     case 'production':
         return 'dist/mapbox-gl.js';
@@ -27,7 +29,7 @@ const outputFile = buildType(BUILD, MINIFY);
 const bundlePreludeSource = fs.readFileSync(fileURLToPath(new URL('./rollup/bundle_prelude.js', import.meta.url)), 'utf8');
 const bundlePrelude = production ? transformSync(bundlePreludeSource, {target: browserslistToEsbuild(), minify: true}).code : bundlePreludeSource;
 
-function preserveDynamicImport() {
+function preserveDynamicImport(): Plugin {
     return {
         name: 'preserve-dynamic-import',
         resolveDynamicImport() {
@@ -41,7 +43,7 @@ function preserveDynamicImport() {
     };
 }
 
-export default ({watch}) => {
+export default ({watch}: {watch: boolean}): RollupOptions[] => {
     return [{
         // First, use code splitting to bundle GL JS into three "chunks":
         // - rollup/build/index.js: the main module, plus all its dependencies not shared by the worker module
@@ -59,7 +61,7 @@ export default ({watch}) => {
             chunkFileNames: 'shared.js',
             minifyInternalExports: production
         },
-        onwarn: production ? onwarn : false,
+        onwarn: production ? onwarn : undefined,
         treeshake: production ? {preset: 'recommended', moduleSideEffects: (id) => !id.endsWith('devtools.ts')} : false,
         plugins: [preserveDynamicImport()].concat(plugins({minified, production, test: false, keepClassNames: false, mode: BUILD}))
     }, {
@@ -81,49 +83,41 @@ export default ({watch}) => {
             preserveDynamicImport(),
             // Ingest the sourcemaps produced in the first step of the build.
             // This is the only reason we use Rollup for this second pass
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             sourcemaps({watch}),
         ]
     }];
 };
 
-function sourcemaps({watch}) {
+function sourcemaps({watch}: {watch: boolean}): Plugin {
     const base64SourceMapRegExp = /\/\/# sourceMappingURL=data:[^,]+,([^ ]+)/;
 
     return {
         name: 'sourcemaps',
         async load(id) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const code = await readFile(id, {encoding: 'utf8'});
             const match = base64SourceMapRegExp.exec(code);
             if (!match) return;
 
             const base64EncodedSourceMap = match[1];
             const decodedSourceMap = Buffer.from(base64EncodedSourceMap, 'base64').toString('utf-8');
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const map = JSON.parse(decodedSourceMap);
+            const map = JSON.parse(decodedSourceMap) as SourceMapInput;
 
             // Starting with Rollup 4.x, we need to explicitly watch files
             // if their content is returned by the load hook.
             // https://github.com/rollup/rollup/pull/5150
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             if (watch) this.addWatchFile(id);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             return {code, map};
         }
     };
 }
 
-function onwarn(warning) {
+function onwarn(warning: RollupLog) {
     const styleSpecPath = path.resolve('src', 'style-spec');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (warning.code === 'CIRCULAR_DEPENDENCY') {
         // Ignore circular dependencies in style-spec and throw on all others
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
         if (!warning.ids[0].startsWith(styleSpecPath)) throw new Error(warning.message);
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         console.error(`(!) ${warning.message}`);
     }
 }

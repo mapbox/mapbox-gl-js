@@ -22,6 +22,7 @@ import Lights from '../../3d-style/style/lights';
 import {getProperties as getAmbientProps} from '../../3d-style/style/ambient_light_properties';
 import {getProperties as getDirectionalProps} from '../../3d-style/style/directional_light_properties';
 import {createExpression} from '../style-spec/expression/index';
+import {prepareHD as prepareHDWorker} from '../../modules/hd_worker';
 import {
     validateStyle,
     validateLayoutProperty,
@@ -196,6 +197,8 @@ const ignoredDiffOperations = pick(diffOperations, [
  * Layer types that has no features and are not queryable with QRF API.
  */
 const featurelessLayerTypes = new Set(['background', 'sky', 'slot', 'custom']);
+
+const hdlayerTypes = new Set(['building']);
 
 const empty = emptyStyle();
 
@@ -1867,6 +1870,11 @@ class Style extends Evented<MapEvents> {
             const layer = this._mergedLayers[layerId];
             if (layer.visibility !== 'none' || layer.hasTransition()) layer.recalculate(parameters, this._availableImages);
             if (!layer.isHidden(parameters.zoom)) {
+
+                if (hdlayerTypes.has(layer.type)) {
+                    void prepareHDWorker(); // load HD worker code so that bucket transfers to main thread work
+                }
+
                 const sourceCache = this.getLayerSourceCache(layer);
                 if (sourceCache) {
                     sourceCache.used = true;

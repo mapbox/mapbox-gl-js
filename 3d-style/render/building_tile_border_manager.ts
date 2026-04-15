@@ -1,4 +1,4 @@
-import {BUILDING_HIDDEN_BY_TILE_BORDER_DEDUPLICATION} from "../data/bucket/building_bucket";
+import {BUILDING_HIDDEN_BY_TILE_BORDER_DEDUPLICATION} from "../data/bucket/building_bucket_flags";
 
 import type BuildingBucket from "../data/bucket/building_bucket";
 import type SourceCache from "../../src/source/source_cache";

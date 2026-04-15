@@ -1,17 +1,16 @@
 import {plugins} from './build/rollup_plugins.js';
 import banner from './build/banner.js';
 
+import type {InputOption, ModuleFormat, RollupOptions} from 'rollup';
+
 // a config for generating a special GL JS bundle with static web worker code (in a separate file)
 // https://github.com/mapbox/mapbox-gl-js/issues/6058
 
-const config = (input, file, format) => ({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const config = (input: InputOption, file: string, format: ModuleFormat): RollupOptions => ({
     input,
     output: {
         name: 'mapboxgl',
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         file,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         format,
         sourcemap: true,
         indent: false,

@@ -28,7 +28,7 @@ import heatmap from './draw_heatmap';
 import line, {prepare as prepareLine} from './draw_line';
 import fill, {drawDepthPrepass as fillDepthPrepass, drawGroundShadowMask as fillGroundShadowMask} from './draw_fill';
 import fillExtrusion from './draw_fill_extrusion';
-import building from '../../3d-style/render/draw_building';
+import {HD, prepareHD} from '../../modules/hd_main';
 import hillshade from './draw_hillshade';
 import raster, {prepare as prepareRaster} from './draw_raster';
 import rasterParticle, {prepare as prepareRasterParticle} from './draw_raster_particle';
@@ -142,7 +142,6 @@ const draw: Record<string, DrawStyleLayer> = {
     line,
     fill,
     'fill-extrusion': fillExtrusion,
-    building,
     hillshade,
     raster,
     'raster-particle': rasterParticle,
@@ -165,6 +164,11 @@ const depthPrepass = {
 const groundShadowMask = {
     fill: fillGroundShadowMask
 };
+
+async function setupHD() {
+    await prepareHD();
+    draw.building = HD.drawBuilding;
+}
 
 /**
  * Initialize a new painter object.
@@ -1513,8 +1517,11 @@ class Painter {
         const startTime = PerformanceUtils.now();
         this.gpuTimingStart(layer);
         if ((!painter.transform.projection.unsupportedLayers || !painter.transform.projection.unsupportedLayers.includes(layer.type) ||
-            (painter.terrain && layer.type === 'custom')) && layer.type !== 'clip') {
+            (painter.terrain && layer.type === 'custom')) && layer.type !== 'clip' && draw[layer.type]) {
             draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets, this.options.isInitialLoad);
+        }
+        if (!draw[layer.type]) {
+            void setupHD(); // load HD drawing code & shaders; drawing will be possible once it loads
         }
         this.gpuTimingEnd();
         PerformanceUtils.measureLowOverhead(PerformanceUtils.GROUP_RENDERING_DETAILED, `renderLayer: ${layer.type.toString()}`, startTime, undefined);
@@ -1723,10 +1730,12 @@ class Painter {
 
         const globalDefines = this.currentGlobalDefines(name, overrideFog, overrideRtt);
         const allDefines = globalDefines.concat(defines);
-        const key = Program.cacheKey(shaders[name], name, allDefines, config);
+
+        const shaderSource = shaders[name as keyof typeof shaders] || HD.shaders[name as keyof typeof HD.shaders];
+        const key = Program.cacheKey(shaderSource, name, allDefines, config);
 
         if (!this.cache[key]) {
-            this.cache[key] = new Program(this.context, name, shaders[name], config, programUniforms[name] as (Context) => UniformBindings, allDefines);
+            this.cache[key] = new Program(this.context, name, shaderSource, config, programUniforms[name] as (Context) => UniformBindings, allDefines);
         }
 
         return this.cache[key] as Program<ProgramUniformsType[T]>;

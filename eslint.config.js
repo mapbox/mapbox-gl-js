@@ -125,6 +125,8 @@ export default tseslint.config(
                     message: 'import.meta.url is not available in the UMD bundle.',
                 }
             ],
+
+            'no-void': ['error', {allowAsStatement: true}]
         }
     },
 

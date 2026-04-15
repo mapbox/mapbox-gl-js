@@ -9,12 +9,6 @@ import backgroundFrag from './background.fragment.glsl';
 import backgroundVert from './background.vertex.glsl';
 import backgroundPatternFrag from './background_pattern.fragment.glsl';
 import backgroundPatternVert from './background_pattern.vertex.glsl';
-import buildingFrag from '../../3d-style/shaders/building.fragment.glsl';
-import buildingVert from '../../3d-style/shaders/building.vertex.glsl';
-import buildingBloomFrag from '../../3d-style/shaders/building_bloom.fragment.glsl';
-import buildingBloomVert from '../../3d-style/shaders/building_bloom.vertex.glsl';
-import buildingDepthFrag from '../../3d-style/shaders/building_depth.fragment.glsl';
-import buildingDepthVert from '../../3d-style/shaders/building_depth.vertex.glsl';
 import circleFrag from './circle.fragment.glsl';
 import circleVert from './circle.vertex.glsl';
 import clippingMaskFrag from './clipping_mask.fragment.glsl';
@@ -179,9 +173,6 @@ export const VERTEX_PRELUDE_BLOCK = [
 export default {
     background: compile(backgroundFrag, backgroundVert),
     backgroundPattern: compile(backgroundPatternFrag, backgroundPatternVert),
-    building: compile(buildingFrag, buildingVert),
-    buildingBloom: compile(buildingBloomFrag, buildingBloomVert),
-    buildingDepth: compile(buildingDepthFrag, buildingDepthVert),
     circle: compile(circleFrag, circleVert),
     clippingMask: compile(clippingMaskFrag, clippingMaskVert),
     heatmap: compile(heatmapFrag, heatmapVert),

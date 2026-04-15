@@ -1,16 +1,14 @@
 /* eslint-disable new-cap */
 
 import assert from 'assert';
-import {getDracoUrl, getMeshoptUrl, getBuildingGenUrl} from '../../src/util/config';
+import {getDracoUrl, getMeshoptUrl} from '../../src/util/config';
 import {warnOnce} from '../../src/util/util';
-import {loadBuildingGen} from './building_gen';
 import {DracoDecoderModule} from './draco_decoder_gltf';
 import {MeshoptDecoderModule} from './meshopt_decoder';
 import {PerformanceUtils} from '../../src/util/performance';
 import {makeAsyncRequest} from '../../src/util/ajax';
 
 import type {vec3, mat4, quat} from 'gl-matrix';
-import type {BuildingGen} from './building_gen';
 import type {TextureImage} from '../../src/render/texture';
 import type {MaterialDescription, Sampler} from '../data/model';
 
@@ -44,9 +42,6 @@ let draco: DracoModule | null = null;
 let dracoLoading: Promise<void> | null = null;
 let meshopt: MeshoptModule | null = null;
 let meshoptLoading: Promise<void> | null = null;
-let buildingGen: BuildingGen | null = null;
-let buildingGenError: Error | null = null;
-let buildingGenLoading: Promise<unknown> | null = null;
 
 function waitForDraco() {
     if (draco) return;
@@ -71,28 +66,6 @@ function waitForMeshopt() {
         PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_COMMON, "waitForMeshopt", "Models", startTime);
     });
     return meshoptLoading;
-}
-
-export function waitForBuildingGen(): Promise<unknown> {
-    if (buildingGen != null || buildingGenError != null) return null;
-    if (buildingGenLoading != null) return buildingGenLoading;
-    const m = PerformanceUtils.now();
-    const wasmData = fetch(getBuildingGenUrl());
-    buildingGenLoading = loadBuildingGen(wasmData).then((instance) => {
-        buildingGenLoading = null;
-        buildingGen = instance;
-        PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_COMMON, 'waitForBuildingGen', 'BuildingBucket', m);
-        return buildingGen;
-    }).catch((error: unknown) => {
-        warnOnce('Could not load building-gen');
-        buildingGenLoading = null;
-        buildingGenError = error instanceof Error ? error : new Error('Unknown error');
-    });
-    return buildingGenLoading;
-}
-
-export function getBuildingGen(): BuildingGen {
-    return buildingGen;
 }
 
 export const GLTF_BYTE = 5120;

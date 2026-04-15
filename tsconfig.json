@@ -45,6 +45,7 @@
     "./build/**/*",
     "./3d-style/**/*",
     "./packages/**/*",
+    "./modules/**/*",
     "./*.config.*"
   ],
   "exclude": [

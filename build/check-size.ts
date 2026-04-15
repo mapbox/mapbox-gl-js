@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-import {execSync, spawnSync} from 'child_process';
+import {execSync} from 'child_process';
+import {readFileSync} from 'fs';
 import {createCheck, getCheckSummary} from './gh-check-utils';
 
 type Size = {
@@ -11,15 +12,61 @@ type Size = {
 };
 
 const CHECK_NAME = 'GL JS Size';
+const DATA_SEPARATOR = '\n\n<!-- size-data\n';
+const DATA_SEPARATOR_END = '\n-->';
+
+type SizeLimitEntry = {
+    name?: string;
+    path: string;
+};
+
+// Build a map from size-limit `name` (which equals `path` when no explicit name is set)
+// to a human-friendly display name sourced from package.json.
+// Entries with an explicit `name` use it as-is; path-only entries strip the `dist/` prefix.
+function buildDisplayNames(): Record<string, string> {
+    const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+    const map: Record<string, string> = {};
+    for (const entry of pkg['size-limit'] as SizeLimitEntry[]) {
+        // size-limit uses the explicit `name` field as the key in JSON output,
+        // falling back to `path` when no name is defined
+        const key = entry.name ?? entry.path;
+        map[key] = entry.name ?? entry.path.replace(/^dist\//, '');
+    }
+    return map;
+}
+
+const displayNames = buildDisplayNames();
 
 function getSizes(): Size[] {
-    const result = spawnSync('npm', ['run', 'size', '--silent', '--', '--json'], {encoding: 'utf-8', shell: true});
-    if (result.error) throw result.error;
-    return JSON.parse(result.stdout.trim() || '[]') as Size[];
+    let raw: string;
+    try {
+        raw = execSync('npm run size --silent -- --json').toString().trim();
+    } catch (err: unknown) {
+        // npm run size exits with non-zero when a chunk exceeds its limit,
+        // but the JSON output is still written to stdout
+        const stdout = (err as {stdout?: Buffer | string}).stdout;
+        if (!stdout) throw err;
+        raw = stdout.toString().trim();
+        console.error(`npm run size failed:\n${raw}`);
+    }
+    return JSON.parse(raw || '[]') as Size[];
 }
 
 function formatSize(size: number): string {
     return `${(size / 1000).toFixed(2)} kB gzipped`;
+}
+
+function formatTable(sizes: Size[]): string {
+    const rows = sizes.map(size => {
+        const displayName = displayNames[size.name] ?? size.name;
+        const absoluteSize = formatSize(size.size);
+        return `| ${displayName} | ${absoluteSize} | ${size.formattedDiff} |`;
+    });
+    return [
+        '| Chunk | Size | Change |',
+        '|---|---|---|',
+        ...rows,
+    ].join('\n');
 }
 
 // COMMIT_SHA and PRIOR_COMMIT_SHA are being set in the GitHub Action Workflow
@@ -33,9 +80,19 @@ if (priorCommit) {
     if (!priorSummary) {
         console.warn(`No prior size data found for check "${CHECK_NAME}" at ${priorCommit}, proceeding without comparison`);
     } else {
-        const sizes = JSON.parse(priorSummary) as Size[];
-        for (const size of sizes) {
-            priorSizes[size.name] = size;
+        // Extract JSON from after the separator, or fall back to parsing the whole summary
+        // (for backwards compatibility with checks that stored raw JSON directly)
+        const separatorIndex = priorSummary.indexOf(DATA_SEPARATOR);
+        const json = separatorIndex !== -1
+            ? priorSummary.slice(separatorIndex + DATA_SEPARATOR.length, priorSummary.lastIndexOf(DATA_SEPARATOR_END))
+            : priorSummary;
+        try {
+            const sizes = JSON.parse(json) as Size[];
+            for (const size of sizes) {
+                priorSizes[size.name] = size;
+            }
+        } catch (_) {
+            // Ignore parse errors from unrecognised legacy formats
         }
     }
 }
@@ -45,24 +102,24 @@ const newSizes = getSizes();
 for (const size of newSizes) {
     passed = passed && size.passed;
     const priorSize = priorSizes[size.name]?.size;
-    const formattedSize = formatSize(size.size);
     if (!priorSize) {
-        size.formattedDiff = `No prior data (${formattedSize})`;
+        size.formattedDiff = 'No prior data';
     } else if (size.size === priorSize) {
-        size.formattedDiff = `No changes (${formattedSize})`;
+        size.formattedDiff = 'No change';
     } else {
         const diff = size.size - priorSize;
         const percent = (diff / priorSize) * 100;
-        size.formattedDiff = `${diff >= 0 ? '+' : ''}${formatSize(diff)} ${percent.toFixed(3)}% (${formattedSize})`;
+        size.formattedDiff = `${diff >= 0 ? '+' : ''}${formatSize(diff)} (${percent >= 0 ? '+' : ''}${percent.toFixed(3)}%)`;
     }
 }
 
-const jsSize = newSizes.find(s => s.name === 'dist/mapbox-gl.js');
-const message = jsSize?.formattedDiff || '';
-console.log(message);
+const table = formatTable(newSizes);
+console.log(table);
 
-const title = newSizes.map(size => `${size.name}: ${size.formattedDiff}`).join('; ');
-await createCheck(currentSha, CHECK_NAME, title, JSON.stringify(newSizes), passed ? 'success' : 'failure');
+const failingCount = newSizes.filter(s => !s.passed).length;
+const title = passed ? 'All bundles within size limits' : `${failingCount} bundle${failingCount === 1 ? '' : 's'} too large`;
+const summary = `${table}${DATA_SEPARATOR}${JSON.stringify(newSizes)}${DATA_SEPARATOR_END}`;
+await createCheck(currentSha, CHECK_NAME, title, summary, passed ? 'success' : 'failure');
 
 if (!passed) {
     const failed = newSizes.filter(s => !s.passed).map(s => `  ${s.name}: ${formatSize(s.size)} (limit exceeded)`).join('\n');
