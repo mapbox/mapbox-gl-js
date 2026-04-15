@@ -1,11 +1,13 @@
-import {test, expect, vi} from '../../util/vitest';
+import {test, describe, expect, vi} from '../../util/vitest';
 import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source';
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 import {isHttpNotFound} from '../../../src/util/ajax';
 import {getProjection} from '../../../src/geo/projection/index';
+import {processTileJSON} from '../../../src/source/tile_provider';
 
 import type {TileProvider, TileDataResponse} from '../../../src/source/tile_provider';
 import type {RequestParameters} from '../../../src/util/ajax';
+import type {RequestManager} from '../../../src/util/mapbox';
 import type {WorkerSourceOptions, WorkerSourceVectorTileRequest} from '../../../src/source/worker_source';
 
 type Tile = {z: number; x: number; y: number};
@@ -135,5 +137,43 @@ test('loadTileData with provider - cancellation aborts and ignores settlement', 
     // Wait a tick - the abort guard should prevent callback from being called
     await new Promise<void>(r => { setTimeout(r, 10); });
     expect(callback).not.toHaveBeenCalled();
+});
+
+describe('processTileJSON', () => {
+    function mockRequestManager(): RequestManager {
+        return {
+            canonicalizeTileset: vi.fn((_result: unknown, _url: unknown) => ['https://canonical/{z}/{x}/{y}']),
+        } as unknown as RequestManager;
+    }
+
+    test('returns processed TileJSON when tileJSON is provided', () => {
+        const rm = mockRequestManager();
+        const options = {type: 'vector' as const, url: 'https://example.com/tiles'};
+        const tileJSON = {tiles: ['https://example.com/{z}/{x}/{y}.pbf']};
+
+        const result = processTileJSON(options, tileJSON, rm);
+        expect(result).not.toBeInstanceOf(Error);
+        expect(result).toHaveProperty('tiles');
+    });
+
+    test('falls back to options.tiles when tileJSON is null and tiles exist', () => {
+        const rm = mockRequestManager();
+        const tiles = ['https://example.com/{z}/{x}/{y}.pbf'];
+        const options = {type: 'vector' as const, tiles};
+
+        const result = processTileJSON(options, null, rm);
+        expect(result).not.toBeInstanceOf(Error);
+        expect(result).toEqual({tiles});
+    });
+
+    test('returns Error when tileJSON is null and no tiles available', () => {
+        const rm = mockRequestManager();
+        const options = {type: 'vector' as const, url: 'https://example.com/tiles'};
+
+        const result = processTileJSON(options, null, rm);
+        expect(result).toBeInstanceOf(Error);
+        expect((result as Error).message).toBe('TileJSON is missing required "tiles" property');
+    });
+
 });
 

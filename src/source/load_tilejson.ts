@@ -6,12 +6,30 @@ import type {RequestManager} from '../util/mapbox';
 import type {Callback} from '../types/callback';
 import type {TileJSON} from '../types/tilejson';
 import type {Cancelable} from '../types/cancelable';
+import type {RequestParameters} from '../util/ajax';
 import type {SourceSpecification} from '../style-spec/types';
 
-type TileJSONLike = {url?: string, tiles?: Array<string>};
-type Options = Extract<SourceSpecification, TileJSONLike> & TileJSONLike & {
+export type TileJSONLike = {url?: string, tiles?: Array<string>};
+
+export type Options = Extract<SourceSpecification, TileJSONLike> & TileJSONLike & {
     data?: TileJSON
 };
+
+/**
+ * Computes the transformed request URL and provider options from source options.
+ * @private
+ */
+export function parseTileJSONRequest(source: TileJSONLike, requestManager: RequestManager): {options: TileJSONLike; request?: RequestParameters} {
+    const request = (source.url && !source.tiles) ?
+        requestManager.transformRequest(source.url, ResourceType.Source) :
+        undefined;
+
+    const options: TileJSONLike = request ?
+        Object.assign({}, source, {url: request.url}) :
+        source;
+
+    return {request, options};
+}
 
 function getInlinedTileJSON(data?: TileJSON, language?: string, worldview?: string): TileJSON | undefined | null {
     if (!data) {
@@ -107,8 +125,6 @@ export function processTileJSON(options: Options, tileJSON: Partial<TileJSON>, r
     );
 
     // Prefer TileJSON tiles when both url and tiles are set.
-    // In loadTileJSON, options.tiles is already deleted before this runs.
-    // This handles callers (like _loadWithProvider) that don't mutate options.
     if (options.url && tileJSON.tiles && options.tiles) {
         result.tiles = tileJSON.tiles;
     }

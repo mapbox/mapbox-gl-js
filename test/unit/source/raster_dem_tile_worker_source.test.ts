@@ -2,6 +2,7 @@ import {describe, test, expect, vi} from '../../util/vitest';
 import {mockFetch, getPNGResponse} from '../../util/network';
 import RasterDEMTileWorkerSource from '../../../src/source/raster_dem_tile_worker_source';
 import DEMData from '../../../src/data/dem_data';
+import {OverscaledTileID} from '../../../src/source/tile_id';
 
 import type {WorkerSourceOptions, WorkerSourceDEMTileRequest, WorkerSourceDEMTileResult} from '../../../src/source/worker_source';
 
@@ -52,5 +53,28 @@ describe('RasterDEMTileWorkerSource', () => {
         source.abortTile({uid: 99, source: 'source', type: 'raster-dem', scope: ''}, callbackSpy);
 
         expect(callbackSpy).toHaveBeenCalledTimes(1);
+    });
+
+    test('loads DEM tile via tileProvider', async () => {
+        const pngData = await getPNGResponse();
+        const buffer = await new Response(pngData).arrayBuffer();
+        const tileProvider = {loadTile: vi.fn().mockResolvedValue({data: buffer})};
+        const source = new RasterDEMTileWorkerSource({tileProvider} as unknown as WorkerSourceOptions);
+
+        await new Promise<void>((resolve, reject) => {
+            source.loadTile({
+                source: 'source',
+                uid: 0,
+                type: 'raster-dem',
+                scope: '',
+                tileID: new OverscaledTileID(1, 0, 1, 0, 0),
+                request: {url: 'http://example.com/1/0/0.png'},
+                encoding: 'mapbox',
+            } as WorkerSourceDEMTileRequest, (err?: Error | null, result?: WorkerSourceDEMTileResult | null) => {
+                if (err) return reject(err);
+                expect(result && result.dem instanceof DEMData).toBeTruthy();
+                resolve();
+            });
+        });
     });
 });

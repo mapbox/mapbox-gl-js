@@ -81,36 +81,38 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
         }
 
         const controller = new AbortController();
-        const {z, x, y} = params.tileID.canonical;
-
-        this.tileProvider.loadTile({z, x, y}, {request: params.request, signal: controller.signal})
-            .then(response => {
-                if (controller.signal.aborted) return;
-
-                // Produce a 404 error so SourceCache triggers parent tile lookup for the missing tile
-                if (response == null) {
-                    const err: Error & {status?: number} = new Error('Tile not found');
-                    err.status = 404;
-                    return callback(err);
-                }
-
-                // Intentionally empty tile
-                if (response.data === null) {
-                    return callback(null, null);
-                }
-
-                const headers = new Map<string, string>();
-                if (response.expires) headers.set('expires', response.expires);
-                if (response.cacheControl) headers.set('cache-control', response.cacheControl);
-
-                callback(null, {rawData: response.data, responseHeaders: headers});
-            })
-            .catch(err => {
-                if (controller.signal.aborted) return;
-                callback(err instanceof Error ? err : new Error(String(err)));
-            });
-
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this.loadTileWithProvider(this.tileProvider, params, controller, callback);
         return () => controller.abort();
+    }
+
+    async loadTileWithProvider(provider: TileProvider<ArrayBuffer>, params: WorkerSourceVectorTileRequest, controller: AbortController, callback: LoadVectorDataCallback) {
+        const {z, x, y} = params.tileID.canonical;
+        try {
+            const response = await provider.loadTile({z, x, y}, {request: params.request, signal: controller.signal});
+
+            if (controller.signal.aborted) return;
+
+            // Produce a 404 error so SourceCache triggers parent tile lookup for the missing tile
+            if (response == null) {
+                const err: Error & {status?: number} = new Error('Tile not found');
+                err.status = 404;
+                return callback(err);
+            }
+
+            // Intentionally empty tile
+            if (response.data == null) return callback(null, null);
+
+            const headers = new Map<string, string>();
+            if (response.expires) headers.set('expires', response.expires);
+            if (response.cacheControl) headers.set('cache-control', response.cacheControl);
+
+            callback(null, {rawData: response.data, responseHeaders: headers});
+        } catch (err) {
+            if (controller.signal.aborted) return;
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+            callback(err instanceof Error ? err : new Error(String(err)));
+        }
     }
 
     /**

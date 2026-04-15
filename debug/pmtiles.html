@@ -31,19 +31,33 @@
 
         mapboxgl.addTileProvider('pmtiles', new URL('../packages/pmtiles-provider/dist/mapbox-gl-pmtiles-provider.js', import.meta.url).href);
 
-        const style = await fetch(`https://api.mapbox.com/styles/v1/mapbox/light-v11?access_token=${accessToken}`).then(response => response.json());
-
-        style.sources = {
-            composite: {
-                type: 'vector',
-                url: new URL('../test/integration/tiles/streets-v8-z0-z3.pmtiles', location.href).href
-            }
-        };
+        const style = await fetch(`https://api.mapbox.com/styles/v1/mapbox/standard-satellite?access_token=${accessToken}`)
+            .then(response => response.json())
+            .then(style => {
+                const baseURL = new URL('../test/integration/tiles', location.href).href;
+                style.sources = {
+                    'composite': {
+                        type: 'vector',
+                        url: baseURL + '/streets-v8-z0-z3.pmtiles'
+                    },
+                    'mapbox-dem': {
+                        type: 'raster-dem',
+                        tileSize: 256,
+                        url: baseURL + '/terrain-dem.pmtiles'
+                    },
+                    'mapbox://mapbox.satellite': {
+                        type: 'raster',
+                        tileSize: 256,
+                        url: baseURL + '/satellite-z0-z3.pmtiles'
+                    },
+                };
+                return style;
+            });
 
         const map = window.map = new mapboxgl.Map({
             container: 'map',
-            zoom: 1,
-            center: [0, 20],
+            zoom: 4,
+            center: [-112, 41],
             hash: true,
             style
         });

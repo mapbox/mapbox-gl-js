@@ -1,10 +1,11 @@
-import {describe, test, beforeEach, expect, vi} from 'vitest';
+import {describe, test, beforeEach, afterEach, expect, vi} from 'vitest';
 import RasterDEMTileSource from '../../../src/source/raster_dem_tile_source';
 import {waitFor} from '../../util/vitest';
 import {Evented} from '../../../src/util/evented';
 import {mockFetch} from '../../util/network';
 import {RequestManager} from '../../../src/util/mapbox';
 import {OverscaledTileID} from '../../../src/source/tile_id';
+import config from '../../../src/util/config';
 
 import type Tile from '../../../src/source/tile';
 import type Dispatcher from '../../../src/util/dispatcher';
@@ -113,6 +114,52 @@ describe('RasterTileSource', () => {
         expect(transformSpy.mock.calls[0][1]).toEqual('Tile');
     });
 
+    test('null worker result marks tile as loaded (empty tile)', async () => {
+        // When the worker delivers (null, null) — e.g., provider returned
+        // {data: null} for a sparse area — the main-thread done() handler must
+        // set tile.state = 'loaded' so SourceCache doesn't keep re-requesting.
+        const dispatcher = {
+            send() {},
+            getActor() {
+                return {
+                    send: (_type: string, _params: unknown, cb: (err?: Error | null, result?: unknown) => void) => {
+                        Promise.resolve().then(() => cb(null, null));
+                        return {cancel() {}};
+                    }
+                };
+            }
+        } as unknown as Dispatcher;
+
+        const source = new RasterDEMTileSource(
+            'id',
+            {type: 'raster-dem', tiles: ['http://example.com/{z}/{x}/{y}.png']} as RasterDEMSourceSpecification,
+            dispatcher,
+            new Evented(),
+        );
+        // Skip onAdd's load() flow (no fetch mock); set up directly for loadTile.
+        source.map = {
+            _requestManager: new RequestManager(),
+            _refreshExpiredTiles: true,
+            getWorldview: () => undefined,
+        } as unknown as MapboxMap;
+        source.tiles = ['http://example.com/{z}/{x}/{y}.png'];
+
+        const tile = {
+            uid: 0,
+            tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+            state: 'loading',
+            setExpiryData() {},
+        } as unknown as Tile;
+
+        await new Promise<void>((resolve) => {
+            source.loadTile(tile, (err) => {
+                expect(err).toBeNull();
+                expect(tile.state).toBe('loaded');
+                resolve();
+            });
+        });
+    });
+
     describe('getNeighboringTiles', () => {
         let source: RasterDEMTileSource;
         beforeEach(async () => {
@@ -161,3 +208,143 @@ describe('RasterTileSource', () => {
         });
     });
 });
+
+describe('RasterDEMTileSource provider', () => {
+    const savedApiUrl = config.API_URL;
+    let providerId = 0;
+    let currentProvider: string;
+
+    function nextProvider() {
+        currentProvider = `test-raster-dem-provider-${++providerId}`;
+        return currentProvider;
+    }
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+        if (currentProvider) {
+            delete config.TILE_PROVIDER_URLS[currentProvider];
+        }
+        config.API_URL = savedApiUrl;
+    });
+
+    function createProviderSource(
+        providerName: string,
+        options: Record<string, unknown> = {},
+        overrides: {broadcastResult?: unknown[]; broadcastError?: Error} = {},
+    ) {
+        const moduleUrl = 'http://example.com/mock-provider.js';
+        config.TILE_PROVIDER_URLS[providerName] = moduleUrl;
+
+        const {broadcastResult, broadcastError} = overrides;
+        const broadcastSpy = vi.fn((_type: string, _data: unknown, cb?: (err: Error | null, result?: unknown[]) => void) => {
+            if (!cb) return;
+            if (broadcastError) {
+                cb(broadcastError);
+            } else {
+                cb(null, broadcastResult !== undefined ? broadcastResult : [null]);
+            }
+        });
+
+        const dispatcher = {
+            send() {},
+            getActor() { return {send() { return {cancel() {}}; }}; },
+            ready: true,
+            broadcast: broadcastSpy,
+        } as unknown as Dispatcher;
+
+        const source = new RasterDEMTileSource(
+            'id',
+            {type: 'raster-dem', ...options} as RasterDEMSourceSpecification,
+            dispatcher,
+            new Evented(),
+        );
+
+        source.onAdd({
+            transform: {angle: 0, pitch: 0, showCollisionBoxes: false},
+            _getMapId: () => 1,
+            _requestManager: new RequestManager(),
+            _refreshExpiredTiles: true,
+            style: {clearSource: () => {}, getLut: () => null, getBrightness: () => 0.0},
+            painter: {},
+            getWorldview: () => undefined,
+        } as unknown as MapboxMap);
+
+        return {source, broadcastSpy};
+    }
+
+    test('broadcasts loadTileProvider when provider resolves', () => {
+        const name = nextProvider();
+        const {source, broadcastSpy} = createProviderSource(name, {
+            provider: name,
+            tiles: ['http://example.com/{z}/{x}/{y}.png'],
+        });
+
+        expect(broadcastSpy).toHaveBeenCalledWith(
+            'loadTileProvider',
+            expect.objectContaining({name, source: 'id', type: 'raster-dem'}),
+            expect.any(Function),
+        );
+        expect(source.tiles).toEqual(['http://example.com/{z}/{x}/{y}.png']);
+    });
+
+    test('uses provider TileJSON when workers return it', () => {
+        const name = nextProvider();
+        const tileJSON = {
+            tiles: ['http://provider.example.com/{z}/{x}/{y}.png'],
+            minzoom: 2,
+            maxzoom: 16,
+        };
+        const {source} = createProviderSource(name, {provider: name}, {broadcastResult: [tileJSON]});
+
+        expect(source.tiles).toEqual(['http://provider.example.com/{z}/{x}/{y}.png']);
+        expect(source.minzoom).toEqual(2);
+        expect(source.maxzoom).toEqual(16);
+    });
+
+    test('falls back to options.tiles when workers return no TileJSON', () => {
+        const name = nextProvider();
+        const {source} = createProviderSource(name, {
+            provider: name,
+            tiles: ['http://example.com/{z}/{x}/{y}.png'],
+        }, {broadcastResult: [null]});
+
+        expect(source.tiles).toEqual(['http://example.com/{z}/{x}/{y}.png']);
+        expect(source._loaded).toBe(true);
+    });
+
+    test('fires error when provider is not registered', async () => {
+        const name = `unregistered-dem-provider-${++providerId}`;
+        delete config.TILE_PROVIDER_URLS[name];
+
+        const dispatcher = {
+            send() {},
+            getActor() { return {send() { return {cancel() {}}; }}; },
+            ready: true,
+            broadcast: vi.fn(),
+        } as unknown as Dispatcher;
+
+        const source = new RasterDEMTileSource(
+            'id',
+            {type: 'raster-dem', provider: name, tiles: ['http://example.com/{z}/{x}/{y}.png']} as unknown as RasterDEMSourceSpecification,
+            dispatcher,
+            new Evented(),
+        );
+
+        const errorPromise = waitFor(source, 'error') as Promise<{error: Error}>;
+
+        source.onAdd({
+            transform: {angle: 0, pitch: 0, showCollisionBoxes: false},
+            _getMapId: () => 1,
+            _requestManager: new RequestManager(),
+            _refreshExpiredTiles: true,
+            style: {clearSource: () => {}, getLut: () => null, getBrightness: () => 0.0},
+            painter: {},
+            getWorldview: () => undefined,
+        } as unknown as MapboxMap);
+
+        const e = await errorPromise;
+        expect(e.error.message).toMatch(new RegExp(`TileProvider "${name}" is not registered`));
+    });
+
+});
+

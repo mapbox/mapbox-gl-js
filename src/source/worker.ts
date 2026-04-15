@@ -14,7 +14,7 @@ import {getProjection} from '../geo/projection/index';
 import {ImageRasterizer} from '../render/image_rasterizer';
 import {isWorker} from '../util/util';
 import config from '../util/config';
-import {loadTileProvider} from './tile_provider_worker';
+import {loadTileProvider} from './tile_provider';
 
 import type Projection from '../geo/projection/projection';
 import type {ImageId} from '../style-spec/expression/types/image_id';
@@ -302,7 +302,8 @@ export default class MapWorker {
                 return null;
             })
             .then((tileJSON) => callback(null, tileJSON))
-            .catch((err: unknown) => callback(err instanceof Error ? err : new Error(typeof err === 'string' ? err : 'Unknown error')));
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+            .catch((err: unknown) => callback(err instanceof Error ? err : new Error(String(err))));
     }
 
     /**
@@ -444,6 +445,11 @@ export default class MapWorker {
                 maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords,
                 disableSymbolUBO: this.disableSymbolUBO,
             });
+        } else if (tileProvider) {
+            // Reload (e.g. setUrl/setTiles) re-broadcasts loadTileProvider with
+            // a fresh provider instance; update the existing worker source so it
+            // doesn't keep using the stale provider with stale options.
+            workerSources[mapId][scope][type][source].tileProvider = tileProvider;
         }
 
         return workerSources[mapId][scope][type][source];

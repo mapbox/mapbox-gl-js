@@ -2,6 +2,7 @@ import DEMData from '../data/dem_data';
 import {getArrayBuffer} from '../util/ajax';
 import {getExpiryDataFromHeaders, prevPowerOfTwo} from '../util/util';
 
+import type {TileProvider} from './tile_provider';
 import type {DEMSourceEncoding} from '../data/dem_data';
 import type {Cancelable} from '../../src/types/cancelable';
 import type {
@@ -14,16 +15,26 @@ import type {
 } from './worker_source';
 
 class RasterDEMTileWorkerSource implements WorkerSource {
+    tileProvider?: TileProvider<ArrayBuffer>;
     loading: Record<number, Cancelable>;
     offscreenCanvas: OffscreenCanvas;
     offscreenCanvasContext: OffscreenCanvasRenderingContext2D;
 
     constructor(options: WorkerSourceOptions) {
+        this.tileProvider = options.tileProvider;
         this.loading = {};
     }
 
     loadTile(params: WorkerSourceDEMTileRequest, callback: WorkerSourceDEMTileCallback) {
         const uid = params.uid;
+
+        if (this.tileProvider) {
+            const controller = new AbortController();
+            this.loading[uid] = {cancel: () => controller.abort()};
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this.loadTileWithProvider(this.tileProvider, uid, params, controller, callback);
+            return;
+        }
 
         const {cancel} = getArrayBuffer(params.request, (err?: Error | null, buffer?: ArrayBuffer | null, headers?: Headers) => {
             const aborted = !this.loading[uid];
@@ -54,6 +65,39 @@ class RasterDEMTileWorkerSource implements WorkerSource {
 
         const dem = new DEMData(uid, imagePixels, encoding, borderReady);
         return {dem, borderReady};
+    }
+
+    async loadTileWithProvider(provider: TileProvider<ArrayBuffer>, uid: number, params: WorkerSourceDEMTileRequest, controller: AbortController, callback: WorkerSourceDEMTileCallback) {
+        const {z, x, y} = params.tileID.canonical;
+        try {
+            const response = await provider.loadTile({z, x, y}, {request: params.request, signal: controller.signal});
+
+            if (controller.signal.aborted) return callback(null, null);
+
+            if (response == null) {
+                const err: Error & {status?: number} = new Error('Tile not found');
+                err.status = 404;
+                return callback(err);
+            }
+
+            if (response.data == null) return callback(null, null);
+
+            const result = await this.decodeTile(uid, response.data, params.encoding);
+
+            if (controller.signal.aborted) return callback(null, null);
+
+            callback(null, Object.assign(result, {
+                expires: response.expires,
+                cacheControl: response.cacheControl,
+            }));
+        } catch (err) {
+            if (controller.signal.aborted) return callback(null, null);
+            if (err instanceof DOMException && err.name === 'AbortError') return callback(null, null);
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+            callback(err instanceof Error ? err : new Error(String(err)));
+        } finally {
+            delete this.loading[uid];
+        }
     }
 
     reloadTile(params: WorkerSourceDEMTileRequest, callback: WorkerSourceDEMTileCallback) {

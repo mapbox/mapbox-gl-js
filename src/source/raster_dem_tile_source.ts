@@ -1,5 +1,7 @@
 import {ResourceType} from '../util/ajax';
 import {OverscaledTileID} from './tile_id';
+import {parseTileJSONRequest} from './load_tilejson';
+import {processTileJSON} from './tile_provider';
 import RasterTileSource from './raster_tile_source';
 // Import DEMData as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
@@ -9,7 +11,9 @@ import type {Evented} from '../util/evented';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
+import type {Cancelable} from '../types/cancelable';
 import type {RasterDEMSourceSpecification} from '../style-spec/types';
+import type {TileJSON} from '../types/tilejson';
 import type {WorkerSourceDEMTileRequest, WorkerSourceDEMTileResult} from './worker_source';
 
 class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
@@ -21,6 +25,39 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
         this.maxzoom = 22;
         this._options = Object.assign({type: 'raster-dem'}, options);
         this.encoding = options.encoding || "mapbox";
+    }
+
+    override loadTileJSONWithProvider(tileProvider: {name: string; url: string}, callback: Callback<TileJSON>): Cancelable {
+        this.provider = tileProvider.name;
+        const {request, options} = parseTileJSONRequest(this._options, this.map._requestManager);
+
+        const controller = new AbortController();
+        this.dispatcher.broadcast('loadTileProvider', {
+            name: tileProvider.name,
+            url: tileProvider.url,
+            source: this.id,
+            scope: this.scope,
+            type: this.type,
+            options,
+            request,
+        }, (err, results) => {
+            if (controller.signal.aborted) return;
+
+            if (err) {
+                callback(err);
+                return;
+            }
+
+            const tileJSON = results ? results.find((r: Partial<TileJSON> | null) => r != null) : null;
+            const result = processTileJSON(this._options, tileJSON, this.map._requestManager);
+            if (result instanceof Error) {
+                callback(result);
+            } else {
+                callback(null, result);
+            }
+        });
+
+        return {cancel: () => controller.abort()};
     }
 
     override loadTile(tile: Tile, callback: Callback<undefined>) {
@@ -66,11 +103,10 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
                 tile.dem.onDeserialize();
                 tile.needsHillshadePrepare = true;
                 tile.needsDEMTextureUpload = true;
-                tile.state = 'loaded';
-                callback(null);
-            } else {
-                callback(null);
             }
+
+            tile.state = 'loaded';
+            callback(null);
         }
     }
 

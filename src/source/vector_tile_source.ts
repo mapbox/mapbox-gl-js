@@ -1,6 +1,6 @@
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import {getExpiryDataFromHeaders, pick} from '../util/util';
-import loadTileJSON, {processTileJSON} from './load_tilejson';
+import loadTileJSON, {parseTileJSONRequest} from './load_tilejson';
 import {postTurnstileEvent} from '../util/mapbox';
 import TileBounds from './tile_bounds';
 import {ResourceType} from '../util/ajax';
@@ -9,7 +9,7 @@ import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
 import {DedupedRequest, loadVectorTile} from './load_vector_tile';
 import {makeFQID} from '../util/fqid';
 import {isMapboxURL} from '../util/mapbox_url';
-import {resolveTileProvider} from './tile_provider';
+import {resolveTileProvider, processTileJSON} from './tile_provider';
 
 import type {ISource, SourceEvents, SourceVectorLayer} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -52,7 +52,7 @@ import type {WorkerSourceVectorTileRequest, WorkerSourceVectorTileResult} from '
  */
 class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'> {
     type: 'vector';
-    provider?: string;
+    provider?: string | false;
     id: string;
     scope: string;
     minzoom: number;
@@ -68,7 +68,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
     mapbox_logo?: boolean;
     promoteId?: PromoteIdSpecification | null;
 
-    _options: VectorSourceSpecification & {provider?: string; collectResourceTiming: boolean};
+    _options: VectorSourceSpecification & {provider?: string | false; collectResourceTiming: boolean};
     _collectResourceTiming: boolean;
     dispatcher: Dispatcher;
     map: Map;
@@ -92,7 +92,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
     prepare: undefined;
     _clear: undefined;
 
-    constructor(id: string, options: VectorSourceSpecification & {provider?: string; collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: VectorSourceSpecification & {provider?: string | false; collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
@@ -149,6 +149,14 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
 
         this.provider = this._options.provider;
         const tileProvider = resolveTileProvider(this._options);
+
+        if (tileProvider instanceof Error) {
+            this._loaded = true;
+            this.fire(new ErrorEvent(tileProvider));
+            if (callback) callback();
+            return;
+        }
+
         if (this.provider && !tileProvider) {
             this._loaded = true;
             this.fire(new ErrorEvent(new Error(`TileProvider "${this.provider}" is not registered`)));
@@ -157,22 +165,15 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
         }
 
         this._tileJSONRequest = tileProvider ?
-            this._loadWithProvider(tileProvider, done) :
+            this.loadTileJSONWithProvider(tileProvider, done) :
             loadTileJSON(this._options, this.map._requestManager, language, worldview, done);
     }
 
-    _loadWithProvider(tileProvider: {name: string; url: string}, callback: Callback<TileJSON>) {
+    loadTileJSONWithProvider(tileProvider: {name: string; url: string}, callback: Callback<TileJSON>) {
         this.provider = tileProvider.name;
+        const {request, options} = parseTileJSONRequest(this._options, this.map._requestManager);
+
         const controller = new AbortController();
-
-        const request = (this._options.url && !this._options.tiles) ?
-            this.map._requestManager.transformRequest(this._options.url, ResourceType.Source) :
-            undefined;
-
-        const options = request ?
-            Object.assign({}, this._options, {url: request.url}) :
-            this._options;
-
         this.dispatcher.broadcast('loadTileProvider', {
             name: tileProvider.name,
             url: tileProvider.url,
@@ -189,25 +190,16 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                 return;
             }
 
-            const tileJSON = results ? results.find((r: TileJSON | null) => r != null) : null;
-
-            if (tileJSON) {
-                const result = processTileJSON(this._options, tileJSON, this.map._requestManager);
-                if (result instanceof Error) {
-                    callback(result);
-                } else {
-                    callback(null, result);
-                }
+            const tileJSON = results ? results.find((r: Partial<TileJSON> | null) => r != null) : null;
+            const result = processTileJSON(this._options, tileJSON, this.map._requestManager);
+            if (result instanceof Error) {
+                callback(result);
             } else {
-                callback(null, {tiles: this._options.tiles} as TileJSON);
+                callback(null, result);
             }
         });
 
-        return {
-            cancel: () => {
-                controller.abort();
-            }
-        };
+        return {cancel: () => controller.abort()};
     }
 
     _setTileJSON(tileJSON: TileJSON) {

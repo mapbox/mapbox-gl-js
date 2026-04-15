@@ -186,6 +186,7 @@ export type WorkerSourceImageRaserizeCallback = Callback<RasterizedImageMap>;
 export interface WorkerSource {
     availableImages?: ImageId[];
     availableModels?: StyleModelMap;
+    tileProvider?: TileProvider<ArrayBuffer>;
 
     /**
      * Loads a tile from the given params and parse it into buckets ready to send

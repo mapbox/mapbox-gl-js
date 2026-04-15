@@ -115,10 +115,10 @@ export type ActorMessages = {
             source: string;
             scope: string;
             type: string;
-            options: SourceSpecification;
+            options: Partial<SourceSpecification>;
             request?: RequestParameters;
         };
-        callback: ActorCallback<TileJSON | null>;
+        callback: ActorCallback<Partial<TileJSON> | null>;
     };
 
     'reloadTile': {
