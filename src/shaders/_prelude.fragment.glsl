@@ -4,6 +4,8 @@
 #ifdef DUAL_SOURCE_BLENDING
 layout(location = 0, index = 0) out vec4 glFragColor;
 layout(location = 0, index = 1) out vec4 glFragColorSrc1;
+#elif defined(FLOAT_RENDER_TARGET)
+layout(location = 0) out highp vec4 glFragColor;
 #else
 layout(location = 0) out vec4 glFragColor;
 #endif
