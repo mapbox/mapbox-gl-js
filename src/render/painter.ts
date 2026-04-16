@@ -72,7 +72,7 @@ import type {ProgramUniformsType, DynamicDefinesType} from './program/program_un
 import type {Source, ISource} from '../source/source';
 import type {UniformBindings} from './uniform_binding';
 import type {CrossTileID, VariableOffset} from '../symbol/placement';
-import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
+import type {TypedStyleLayer, CoreStyleLayer, HDStyleLayer} from '../style/style_layer/typed_style_layer';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
 export type DepthPrePass = 'initialize' | 'reset' | 'geometry';
@@ -132,7 +132,9 @@ type DrawStyleLayer = (
     isInitialLoad?: boolean
 ) => void;
 
-const draw: Record<string, DrawStyleLayer> = {
+type PrepareStyleLayer = (layer: TypedStyleLayer, sourceCache: SourceCache, painter: Painter) => void;
+
+const draw: Record<CoreStyleLayer['type'], DrawStyleLayer> & Partial<Record<HDStyleLayer['type'], DrawStyleLayer>> = {
     symbol,
     circle,
     heatmap,
@@ -141,18 +143,16 @@ const draw: Record<string, DrawStyleLayer> = {
     'fill-extrusion': fillExtrusion,
     hillshade,
     raster,
-    'raster-particle': null,
     background,
     sky,
     custom,
     model
 };
 
-const prepare = {
+const prepare: Partial<Record<CoreStyleLayer['type'] | HDStyleLayer['type'], PrepareStyleLayer>> = {
     line: prepareLine,
     model: modelPrepare,
     raster: prepareRaster,
-    'raster-particle': null
 };
 
 const depthPrepass = {
@@ -164,9 +164,13 @@ const groundShadowMask = {
 
 async function setupHD() {
     await prepareHD();
-    draw.building = HD.building.draw;
-    draw['raster-particle'] = HD.particles.draw;
-    prepare['raster-particle'] = HD.particles.prepare;
+    Object.assign(draw, {
+        building: HD.drawBuilding,
+        'raster-particle': HD.drawRasterParticle,
+    });
+    Object.assign(prepare, {
+        'raster-particle': HD.prepareRasterParticle,
+    });
 }
 
 /**
@@ -229,8 +233,8 @@ class Painter {
     loadTimeStamps: Array<number>;
     _backgroundTiles: Record<number, Tile>;
     _atmosphere: Atmosphere | null | undefined;
-    _rain?: InstanceType<typeof HD.precipitation.Rain>;
-    _snow?: InstanceType<typeof HD.precipitation.Snow>;
+    _rain?: InstanceType<typeof HD.Rain>;
+    _snow?: InstanceType<typeof HD.Snow>;
     replacementSource: ReplacementSource;
     conflationActive: boolean;
     firstLightBeamLayer: number;
@@ -1093,20 +1097,20 @@ class Painter {
         const rain = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.rain);
 
         // Load HD for precipitation functionality
-        if ((snow || rain) && (!HD.precipitation || !HD.precipitation.Rain || !HD.precipitation.Snow)) {
+        if ((snow || rain) && !HD.loaded) {
             void prepareHD();
         }
 
-        if (snow && !this._snow && HD.precipitation && HD.precipitation.Snow) {
-            this._snow = new HD.precipitation.Snow(this);
+        if (snow && !this._snow && HD.Snow) {
+            this._snow = new HD.Snow(this);
         }
         if (!snow && this._snow) {
             this._snow.destroy();
             delete this._snow;
         }
 
-        if (rain && !this._rain && HD.precipitation && HD.precipitation.Rain) {
-            this._rain = new HD.precipitation.Rain(this);
+        if (rain && !this._rain && HD.Rain) {
+            this._rain = new HD.Rain(this);
         }
         if (!rain && this._rain) {
             this._rain.destroy();
@@ -1521,7 +1525,7 @@ class Painter {
         const startTime = PerformanceUtils.now();
         this.gpuTimingStart(layer);
         if ((!painter.transform.projection.unsupportedLayers || !painter.transform.projection.unsupportedLayers.includes(layer.type) ||
-            (painter.terrain && layer.type === 'custom')) && layer.type !== 'clip' && draw[layer.type]) {
+            (painter.terrain && layer.type === 'custom')) && layer.type !== 'clip' && layer.type !== 'slot' && draw[layer.type]) {
             draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets, this.options.isInitialLoad);
         }
         if (!draw[layer.type]) {

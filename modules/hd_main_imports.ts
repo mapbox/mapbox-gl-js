@@ -5,16 +5,11 @@ import {Rain} from '../src/precipitation/draw_rain';
 import {Snow} from '../src/precipitation/draw_snow';
 
 export const HD = {
-    building: {
-        draw: drawBuilding,
-    },
-    particles: {
-        draw: drawRasterParticle,
-        prepare: prepareRasterParticle,
-    },
-    precipitation: {
-        Rain,
-        Snow,
-    },
+    loaded: true,
+    drawBuilding,
+    drawRasterParticle,
+    prepareRasterParticle,
+    Rain,
+    Snow,
     shaders,
 };

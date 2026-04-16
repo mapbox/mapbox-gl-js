@@ -25,11 +25,13 @@ export type TypedStyleLayerConstructor = new (
     options?: ConfigOptions | null
 ) => TypedStyleLayer;
 
-export type TypedStyleLayer =
-    | BackgroundStyleLayer
-    | BuildingStyleLayer
-    | CircleStyleLayer
+export type FeaturelessStyleLayer =
     | ClipStyleLayer
+    | SlotStyleLayer;
+
+export type CoreStyleLayer =
+    | BackgroundStyleLayer
+    | CircleStyleLayer
     | CustomStyleLayer
     | FillExtrusionStyleLayer
     | FillStyleLayer
@@ -37,8 +39,12 @@ export type TypedStyleLayer =
     | HillshadeStyleLayer
     | LineStyleLayer
     | ModelStyleLayer
-    | RasterParticleStyleLayer
     | RasterStyleLayer
     | SkyStyleLayer
-    | SlotStyleLayer
     | SymbolStyleLayer;
+
+export type HDStyleLayer =
+    | BuildingStyleLayer
+    | RasterParticleStyleLayer;
+
+export type TypedStyleLayer = CoreStyleLayer | HDStyleLayer | FeaturelessStyleLayer;
