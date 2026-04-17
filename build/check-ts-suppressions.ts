@@ -63,7 +63,11 @@ if (priorCommit) {
     if (!priorSummary) {
         console.warn(`No prior suppressions data found for check "${CHECK_NAME}" at ${priorCommit}, proceeding without comparison`);
     } else {
-        priorSuppressions = JSON.parse(priorSummary) as number;
+        try {
+            priorSuppressions = JSON.parse(priorSummary) as number;
+        } catch (_) {
+            console.warn(`Prior suppressions summary at ${priorCommit} is not JSON, proceeding without comparison`);
+        }
     }
 }
 
