@@ -11,6 +11,19 @@
     "type": "git",
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/mapbox-gl.d.ts",
+      "default": "./dist/mapbox-gl.js"
+    },
+    "./esm": {
+      "types": "./dist/mapbox-gl.d.ts",
+      "default": "./dist/esm/mapbox-gl.js"
+    },
+    "./dist/*": "./dist/*",
+    "./mapbox-gl.css": "./dist/mapbox-gl.css",
+    "./package.json": "./package.json"
+  },
   "workspaces": [
     "src/style-spec",
     "packages/pmtiles-provider",
@@ -119,8 +132,9 @@
     "build-dev": "rollup -c --environment BUILD:dev",
     "watch-dev": "rollup -c --environment BUILD:dev --watch",
     "watch-esm": "rollup -c rollup.config.esm.ts --environment BUILD:dev --watch",
-    "build-prod-min": "rollup -c --environment BUILD:production,MINIFY:true",
-    "build-esm-prod-min": "rollup -c rollup.config.esm.ts --environment BUILD:production,MINIFY:true",
+    "build-esm-dev": "rollup -c rollup.config.esm.ts --environment BUILD:dev",
+    "build-prod": "rollup -c --environment BUILD:production,MINIFY:true",
+    "build-esm-prod": "rollup -c rollup.config.esm.ts --environment BUILD:production,MINIFY:true",
     "build-csp": "rollup -c rollup.config.csp.ts",
     "build-pmtiles": "npm run build -w packages/pmtiles-provider",
     "watch-pmtiles": "npm run watch -w packages/pmtiles-provider",
@@ -134,7 +148,7 @@
     "start-esm": "run-p build-token watch-css watch-esm start-server",
     "start-debug": "run-p build-token watch-css watch-pmtiles watch-dev start-server",
     "prepare-release-pages": "ln -sfn $PWD/dist test/release/dist && ln -sfn $PWD/debug test/release/debug && cp debug/access_token_generated.js test/release/",
-    "start-release": "run-s build-token build-prod-min build-esm-prod-min build-css print-release-url prepare-release-pages start-server",
+    "start-release": "run-s build-token build-prod build-esm-prod build-css print-release-url prepare-release-pages start-server",
     "lint": "eslint --cache src 3d-style test packages modules",
     "lint-css": "stylelint 'src/css/mapbox-gl.css'",
     "test": "run-s lint lint-css test-typings test-unit",
@@ -156,7 +170,7 @@
     "test-render-firefox": "npx vitest run --config vitest.config.render.firefox.ts",
     "pretest-render-safari": "npm run build-pmtiles",
     "test-render-safari": "npx vitest run --config vitest.config.render.safari.ts",
-    "pretest-render-prod": "npm run build-prod-min && npm run build-pmtiles",
+    "pretest-render-prod": "npm run build-prod && npm run build-pmtiles",
     "test-render-prod": "npx vitest run --config vitest.config.render.chromium.prod.ts",
     "pretest-render-chromium-prod": "npm run build-pmtiles",
     "test-render-chromium-prod": "npx vitest run --config vitest.config.render.chromium.prod.ts",
@@ -169,7 +183,7 @@
     "test-expressions": "tsx ./test/expression.test.ts",
     "test-typings": "tsx ./build/generate-typed-style-spec.ts && npm run tsc",
     "test-style-spec": "npm test --workspace src/style-spec",
-    "prepublishOnly": "run-s build-dev build-prod-min build-esm-prod-min build-csp build-css build-style-spec build-dts",
+    "prepublishOnly": "run-s build-dev build-prod build-esm-prod build-csp build-css build-style-spec build-dts",
     "print-release-url": "node build/print-release-url.js",
     "size": "size-limit",
     "check-size": "tsx build/check-size.ts",
@@ -185,7 +199,7 @@
   "files": [
     "dist/mapbox-gl*",
     "dist/style-spec/",
-    "dist/esm-min/",
+    "dist/esm/",
     "dist/package.json",
     "LICENSE.txt"
   ],
@@ -205,17 +219,17 @@
       "gzip": true,
       "name": "Core Module",
       "path": [
-        "dist/esm-min/core.js",
-        "dist/esm-min/worker.js",
-        "dist/esm-min/shared.js",
-        "dist/esm-min/shared*.js"
+        "dist/esm/core.js",
+        "dist/esm/worker.js",
+        "dist/esm/shared.js",
+        "dist/esm/shared*.js"
       ]
     },
     {
       "limit": "100 kb",
       "gzip": true,
       "name": "HD Module",
-      "path": "dist/esm-min/hd.*.js"
+      "path": "dist/esm/hd.*.js"
     }
   ]
 }

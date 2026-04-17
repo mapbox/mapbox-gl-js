@@ -21,6 +21,7 @@ Example:
 
 Required files (build with npm run prepublishOnly):
 ${CDN_FILES.map(f => `  - dist/${f}`).join('\n')}
+  - dist/esm-cdn/*
 `);
 }
 
@@ -34,10 +35,16 @@ const CDN_FILES = [
     'mapbox-gl-csp.js.map',
     'mapbox-gl-csp-worker.js',
     'mapbox-gl-csp-worker.js.map',
-    'esm-min/mapbox-gl.js',
-    'esm-min/shared.js',
-    'esm-min/worker.js',
 ];
+
+/** Discovers all ESM CDN files from dist/esm-cdn/ directory */
+function getEsmCdnFiles(): string[] {
+    const esmCdnDir = './dist/esm-cdn';
+    if (!fs.existsSync(esmCdnDir)) return [];
+    return fs.readdirSync(esmCdnDir)
+        .filter(f => f.endsWith('.js') || f.endsWith('.js.map'))
+        .map(f => `esm-cdn/${f}`);
+}
 
 /**
  * Determines the MIME type for a file.
@@ -73,7 +80,7 @@ function validateDistFiles(dryRun: boolean): void {
             return;
         }
         console.error('Error: dist folder does not exist. Make sure you build the bundle before running this script.');
-        console.error('Run: npm run build-prod-min && npm run build-csp && npm run build-dev && npm run build-css');
+        console.error('Run: npm run build-prod && npm run build-esm-prod && npm run build-csp && npm run build-dev && npm run build-css');
         process.exit(1);
     }
 
@@ -84,10 +91,13 @@ function validateDistFiles(dryRun: boolean): void {
                 missingFiles.push(file);
             }
         }
+        if (!fs.existsSync('./dist/esm-cdn')) {
+            missingFiles.push('esm-cdn/');
+        }
         if (missingFiles.length > 0) {
             console.error(`Error: Missing files in dist folder: ${missingFiles.join(', ')}`);
             console.error('Make sure you build the bundle before running this script.');
-            console.error('Run: npm run build-prod-min && npm run build-csp && npm run build-dev && npm run build-css');
+            console.error('Run: npm run build-prod && npm run build-esm-prod && npm run build-csp && npm run build-dev && npm run build-css');
             process.exit(1);
         }
     }
@@ -97,11 +107,23 @@ export function publishCdn(tag: string, dryRun: boolean): void {
     validateTag(tag);
     validateDistFiles(dryRun);
 
+    const esmCdnFiles = getEsmCdnFiles();
+    if (esmCdnFiles.length === 0) {
+        if (dryRun) {
+            console.warn('Warning: dist/esm-cdn/ does not exist or is empty (dry-run mode, continuing)');
+        } else {
+            console.error('Error: dist/esm-cdn/ does not exist or contains no files.');
+            process.exit(1);
+        }
+    }
+    const allFiles = [...CDN_FILES, ...esmCdnFiles];
+
     console.log(`\nUploading to CDN: ${tag}`);
 
-    for (const file of CDN_FILES) {
+    for (const file of allFiles) {
         const mimeType = getMimeType(file);
-        const cmd = `aws s3 cp --acl public-read --content-type ${mimeType} ./dist/${file} s3://mapbox-gl-js/${tag}/${file}`;
+        const cdnPath = file.startsWith('esm-cdn/') ? file.replace('esm-cdn/', 'esm/') : file;
+        const cmd = `aws s3 cp --acl public-read --content-type ${mimeType} ./dist/${file} s3://mapbox-gl-js/${tag}/${cdnPath}`;
 
         if (dryRun) {
             console.log(cmd);

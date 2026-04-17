@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return doc
             .replace(REGEX_PATTERNS.LOCAL_JS_SCRIPT, `<script src="${jsUrl}"></script>`)
             .replace(REGEX_PATTERNS.LOCAL_CSS_LINK, `<link rel="stylesheet" href="${cssUrl}" />`)
-            .replace(REGEX_PATTERNS.LOCAL_ESM_SCRIPT, `import mapbox from './dist/esm-min/mapbox-gl.js';`);
+            .replace(REGEX_PATTERNS.LOCAL_ESM_SCRIPT, `import mapbox from './dist/esm/mapbox-gl.js';`);
     }
 
     /**
