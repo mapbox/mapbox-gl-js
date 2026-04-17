@@ -59,6 +59,9 @@ export const plugins = ({mode, format, minified, production, test, keepClassName
             pure_getters: true,
             passes: 3
         },
+        format: {
+            comments: (node, comment) => comment.value.includes('webpackIgnore') || comment.value.includes('vite-ignore'),
+        },
     }) : false,
     resolve({
         browser: true,

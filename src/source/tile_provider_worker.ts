@@ -17,7 +17,7 @@ export async function loadTileProvider(name: string, url: string): Promise<TileP
     const pending = pendingLoads.get(name);
     if (pending !== undefined) return pending;
 
-    const load = import(/* @vite-ignore */ url)
+    const load = import(/* webpackIgnore: true */ /* @vite-ignore */ url)
         .then((mod: {default?: new (...args: unknown[]) => TileProvider<ArrayBuffer>}) => {
             const TileProviderClass = mod.default;
             if (typeof TileProviderClass !== 'function') {
