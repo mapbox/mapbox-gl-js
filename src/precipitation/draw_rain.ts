@@ -1,5 +1,3 @@
-// // @flow
-
 import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
 import {default as ColorMode} from '../gl/color_mode.js';
@@ -11,120 +9,175 @@ import {rainUniformValues} from './rain_program.js';
 import {mulberry32} from '../style-spec/util/random.js';
 import {rainLayout} from "./rain_attributes.js";
 import Texture from '../render/texture.js';
-import {PrecipitationRevealParams} from './precipitation_reveal_params.js';
-import {createDevToolsBindings} from './vignette';
 import {PrecipitationBase, boxWrap, generateUniformDistributedPointsInsideCube, lerpClamp} from './common';
-import {DevTools} from '../ui/devtools';
+import {createDefaultRevealParams} from './precipitation_reveal_params.js';
+import {Debug} from '../util/debug';
 
+import type {DevToolsFolder} from '../ui/control/devtools';
+import type {PrecipitationRevealParams} from './precipitation_reveal_params.js';
 import type Painter from '../render/painter';
 import type {VignetteParams} from './vignette';
+
+type RainDrawParams = {
+    params: RainParams;
+    vignetteParams: VignetteParams;
+    revealParams: PrecipitationRevealParams;
+    direction: vec3;
+};
+
+export type RainParams = {
+    intensity: number;
+    timeFactor: number;
+    velocityConeAperture: number;
+    velocity: number;
+    boxSize: number;
+    dropletSizeX: number;
+    dropletSizeYScale: number;
+    distortionStrength: number;
+    screenThinning: {
+        intensity: number;
+        start: number;
+        range: number;
+        fadePower: number;
+        affectedRatio: number;
+        particleOffset: number;
+    };
+    color: {r: number; g: number; b: number; a: number};
+    direction: {x: number; y: number};
+    shapeDirPower: number;
+    shapeNormalPower: number;
+};
+
+export function createDefaultRainParams(): RainParams {
+    return {
+        intensity: 0.5,
+        timeFactor: 1.0,
+        velocityConeAperture: 0.0,
+        velocity: 300.0,
+        boxSize: 2500,
+        dropletSizeX: 1.0,
+        dropletSizeYScale: 10.0,
+        distortionStrength: 70.0,
+        screenThinning: {
+            intensity: 0.57,
+            start: 0.46,
+            range: 1.17,
+            fadePower: 0.17,
+            affectedRatio: 1.0,
+            particleOffset: -0.2
+        },
+        color: {r: 0.66, g: 0.68, b: 0.74, a: 0.7},
+        direction: {x: -50, y: -35},
+        shapeDirPower: 2.0,
+        shapeNormalPower: 1.0
+    };
+}
+
+export function createDefaultRainVignetteParams(): VignetteParams {
+    return {
+        strength: 1.0,
+        start: 0.7,
+        range: 1.0,
+        fadePower: 0.4,
+        color: {r: 0.27, g: 0.27, b: 0.27, a: 1}
+    };
+}
 
 export class Rain extends PrecipitationBase {
     screenTexture: Texture | null | undefined;
 
-    _revealParams: PrecipitationRevealParams;
-
-    _params: {
-        overrideStyleParameters: boolean,
-        intensity: number,
-        timeFactor: number,
-        velocityConeAperture: number,
-        velocity: number,
-        boxSize: number,
-        dropletSizeX: number,
-        dropletSizeYScale: number,
-        distortionStrength: number,
-        screenThinning:{
-            intensity: number,
-            start: number,
-            range: number,
-            fadePower: number,
-            affectedRatio: number,
-            particleOffset: number
-        },
-        color: {r: number, g: number, b: number, a: number},
-        direction: {x: number, y: number},
-        shapeDirPower: number;
-        shapeNormalPower: number;
-    };
+    _params: RainParams;
 
     _vignetteParams: VignetteParams;
 
-    constructor(painter: Painter) {
+    _devtoolsFolder: DevToolsFolder | null;
+
+    _painter: Painter | null;
+
+    constructor() {
         super(4.25);
-
-        this._params = {
-            overrideStyleParameters: false,
-            intensity: 0.5,
-            timeFactor: 1.0,
-            velocityConeAperture: 0.0,
-            velocity: 300.0,
-            boxSize: 2500,
-            dropletSizeX: 1.0,
-            dropletSizeYScale: 10.0,
-            distortionStrength: 70.0,
-            screenThinning: {
-                intensity: 0.57,
-                start: 0.46,
-                range: 1.17,
-                fadePower: 0.17,
-                affectedRatio: 1.0,
-                particleOffset: -0.2
-            },
-            color: {r: 0.66, g: 0.68, b: 0.74, a: 0.7},
-            direction: {x: -50, y: -35},
-            shapeDirPower: 2.0,
-            shapeNormalPower: 1.0
-        };
-
-        const folder = 'Precipitation > Rain';
-        this._revealParams = new PrecipitationRevealParams(folder);
-
-        this._vignetteParams = {
-            strength: 1.0,
-            start: 0.7,
-            range: 1.0,
-            fadePower: 0.4,
-            color: {r: 0.27, g: 0.27, b: 0.27, a: 1}
-        };
-
+        this._params = createDefaultRainParams();
+        this._vignetteParams = createDefaultRainVignetteParams();
         this.particlesCount = 16000;
+        this._devtoolsFolder = null;
+        this._painter = null;
+    }
 
-        DevTools.addParameter(this._params, 'overrideStyleParameters', folder);
-        DevTools.addParameter(this._params, 'intensity', folder, {min: 0.0, max: 1.0});
-        DevTools.addParameter(this._params, 'timeFactor', folder, {min: 0.0, max: 3.0, step: 0.01});
-        DevTools.addParameter(this._params, 'velocityConeAperture', folder, {min: 0.0, max: 160.0, step: 1.0});
-        DevTools.addParameter(this._params, 'velocity', folder, {min: 0.0, max: 1500.0, step: 5});
-        DevTools.addParameter(this._params, 'boxSize', folder, {min: 100.0, max: 4400.0, step: 10.0});
-        DevTools.addParameter(this._params, 'dropletSizeX', folder, {min: 0.1, max: 10.0, step: 0.1});
-        DevTools.addParameter(this._params, 'dropletSizeYScale', folder, {min: 0.1, max: 10.0, step: 0.1});
-        DevTools.addParameter(this._params, 'distortionStrength', folder, {min: 0.0, max: 100.0, step: 0.5});
-
-        DevTools.addParameter(this._params, 'direction', folder, {
-            picker: 'inline',
-            expanded: true,
-            x: {min: -200, max: 200},
-            y: {min: -200, max: 200},
+    override destroy() {
+        Debug.run(() => {
+            if (this._painter && this._painter._devtools) {
+                this._painter._devtools.removeFolder('Rain');
+            }
+            this._devtoolsFolder = null;
         });
-
-        DevTools.addParameter(this._params, 'shapeDirPower', `${folder} > Shape`, {min: 1.0, max: 10.0, step: 0.01});
-        DevTools.addParameter(this._params, 'shapeNormalPower', `${folder} > Shape`, {min: 1.0, max: 10.0, step: 0.01});
-
-        DevTools.addParameter(this._params, 'color', folder, {
-            color: {type: 'float'},
-        });
-
-        DevTools.addParameter(this._params.screenThinning, 'intensity', `${folder} > ScreenThinning`, {min: 0.0, max: 1.0});
-        DevTools.addParameter(this._params.screenThinning, 'start', `${folder} > ScreenThinning`, {min: 0.0, max: 2.0});
-        DevTools.addParameter(this._params.screenThinning, 'range', `${folder} > ScreenThinning`, {min: 0.0, max: 2.0});
-        DevTools.addParameter(this._params.screenThinning, 'fadePower', `${folder} > ScreenThinning`, {min: -1.0, max: 1.0, step: 0.01});
-        DevTools.addParameter(this._params.screenThinning, 'affectedRatio', `${folder} > ScreenThinning`, {min: 0.0, max: 1.0, step: 0.01});
-        DevTools.addParameter(this._params.screenThinning, 'particleOffset', `${folder} > ScreenThinning`, {min: -1.0, max: 1.0, step: 0.01});
-
-        createDevToolsBindings(this._vignetteParams, painter, `${folder} > Vignette`);
+        super.destroy();
     }
 
     update(painter: Painter) {
+        Debug.run(() => {
+            this._painter = painter;
+
+            if (painter._devtools && !this._devtoolsFolder) {
+                const precipFolder = painter._devtools.addFolder('Precipitation');
+
+                // Register shared binding only if we're the first to create the folder
+                if (precipFolder.folder.children.length === 0) {
+                    precipFolder.addBinding(painter._debugParams, 'forceEnablePrecipitation', {}, () => painter.style.map.triggerRepaint());
+                }
+
+                precipFolder.addBinding(painter._debugParams, 'overrideRainParams', {}, () => {
+                    painter.style.map.triggerRepaint();
+                    rainFolder.folder.expanded = painter._debugParams.overrideRainParams;
+                    rainFolder.folder.disabled = !painter._debugParams.overrideRainParams;
+                });
+
+                const rainParams = createDefaultRainParams();
+                const rainRevealParams = createDefaultRevealParams();
+                const rainVignetteParams = createDefaultRainVignetteParams();
+                painter._debugParams.rainParamsOverride = rainParams;
+                painter._debugParams.rainRevealParamsOverride = rainRevealParams;
+                painter._debugParams.rainVignetteParamsOverride = rainVignetteParams;
+
+                const rainFolder = precipFolder.addSubFolder('Rain', {expanded: false, disabled: !painter._debugParams.overrideRainParams});
+
+                rainFolder.addBinding(rainParams, 'color', {color: {type: 'float'}}, () => painter.style.map.triggerRepaint());
+                rainFolder.addBinding(rainParams, 'direction', {picker: 'inline', expanded: true, x: {min: -200, max: 200}, y: {min: -200, max: 200}}, () => painter.style.map.triggerRepaint());
+                rainFolder.addBinding(rainParams, 'intensity', {min: 0.0, max: 1.0}, () => painter.style.map.triggerRepaint());
+                rainFolder.addBinding(rainParams, 'timeFactor', {min: 0.0, max: 3.0, step: 0.01}, () => painter.style.map.triggerRepaint());
+                rainFolder.addBinding(rainParams, 'velocityConeAperture', {min: 0.0, max: 160.0, step: 1.0}, () => painter.style.map.triggerRepaint());
+                rainFolder.addBinding(rainParams, 'velocity', {min: 0.0, max: 1500.0, step: 5}, () => painter.style.map.triggerRepaint());
+                rainFolder.addBinding(rainParams, 'boxSize', {min: 100.0, max: 4400.0, step: 10.0}, () => painter.style.map.triggerRepaint());
+                rainFolder.addBinding(rainParams, 'dropletSizeX', {min: 0.1, max: 10.0, step: 0.1}, () => painter.style.map.triggerRepaint());
+                rainFolder.addBinding(rainParams, 'dropletSizeYScale', {min: 0.1, max: 10.0, step: 0.1}, () => painter.style.map.triggerRepaint());
+                rainFolder.addBinding(rainParams, 'distortionStrength', {min: 0.0, max: 100.0, step: 0.5}, () => painter.style.map.triggerRepaint());
+
+                const rainRevealFolder = rainFolder.addSubFolder('Rain_Reveal', {title: 'Reveal'});
+                rainRevealFolder.addBinding(rainRevealParams, 'revealStart', {min: 0, max: 17, step: 0.05}, () => painter.style.map.triggerRepaint());
+                rainRevealFolder.addBinding(rainRevealParams, 'revealRange', {min: 0.1, max: 5.1, step: 0.05}, () => painter.style.map.triggerRepaint());
+
+                const rainScreenThinningFolder = rainFolder.addSubFolder('Rain_ScreenThinning', {title: 'Screen Thinning'});
+                rainScreenThinningFolder.addBinding(rainParams.screenThinning, 'intensity', {min: 0.0, max: 1.0}, () => painter.style.map.triggerRepaint());
+                rainScreenThinningFolder.addBinding(rainParams.screenThinning, 'start', {min: 0.0, max: 2.0}, () => painter.style.map.triggerRepaint());
+                rainScreenThinningFolder.addBinding(rainParams.screenThinning, 'range', {min: 0.0, max: 2.0}, () => painter.style.map.triggerRepaint());
+                rainScreenThinningFolder.addBinding(rainParams.screenThinning, 'fadePower', {min: -1.0, max: 1.0, step: 0.01}, () => painter.style.map.triggerRepaint());
+                rainScreenThinningFolder.addBinding(rainParams.screenThinning, 'affectedRatio', {min: 0.0, max: 1.0, step: 0.01}, () => painter.style.map.triggerRepaint());
+                rainScreenThinningFolder.addBinding(rainParams.screenThinning, 'particleOffset', {min: -1.0, max: 1.0, step: 0.01}, () => painter.style.map.triggerRepaint());
+
+                const rainShapeFolder = rainFolder.addSubFolder('Rain_Shape', {title: 'Shape'});
+                rainShapeFolder.addBinding(rainParams, 'shapeDirPower', {min: 1.0, max: 10.0, step: 0.01}, () => painter.style.map.triggerRepaint());
+                rainShapeFolder.addBinding(rainParams, 'shapeNormalPower', {min: 1.0, max: 10.0, step: 0.01}, () => painter.style.map.triggerRepaint());
+
+                const rainVignetteFolder = rainFolder.addSubFolder('Rain_Vignette', {title: 'Vignette'});
+                rainVignetteFolder.addBinding(rainVignetteParams, 'start', {min: 0.0, max: 2.0}, () => painter.style.map.triggerRepaint());
+                rainVignetteFolder.addBinding(rainVignetteParams, 'range', {min: 0.0, max: 2.0}, () => painter.style.map.triggerRepaint());
+                rainVignetteFolder.addBinding(rainVignetteParams, 'fadePower', {min: -1.0, max: 1.0, step: 0.01}, () => painter.style.map.triggerRepaint());
+                rainVignetteFolder.addBinding(rainVignetteParams, 'strength', {min: 0.0, max: 1.0}, () => painter.style.map.triggerRepaint());
+                rainVignetteFolder.addBinding(rainVignetteParams, 'color', {color: {type: 'float'}}, () => painter.style.map.triggerRepaint());
+
+                this._devtoolsFolder = precipFolder;
+            }
+        });
+
         const context = painter.context;
 
         if (!this.particlesVx) {
@@ -162,45 +215,77 @@ export class Rain extends PrecipitationBase {
         }
     }
 
-    draw(painter: Painter) {
-        if (!this._params.overrideStyleParameters && !painter.style.rain) {
-            return;
-        }
+    getDrawParams(painter: Painter): RainDrawParams | null {
+        // In debug builds, Debug.run() populates debugParams from devtools overrides.
+        // In production, Debug.run() is stripped and we always fall through to the style-spec path.
+        let debugParams: RainDrawParams | null = null;
+        Debug.run(() => {
+            if (!painter._debugParams.overrideRainParams || !painter._debugParams.rainParamsOverride) {
+                return;
+            }
 
-        // Global parameters
-        const gp = this._params.overrideStyleParameters ? this._revealParams : {revealStart: 0, revealRange: 0.01};
-        const zoom = painter.transform.zoom;
-        if (gp.revealStart > zoom) { return; }
-        const revealFactor = lerpClamp(0, 1, gp.revealStart, gp.revealStart + gp.revealRange, zoom);
+            const params = structuredClone(painter._debugParams.rainParamsOverride);
+            const direction: vec3 = [-params.direction.x, params.direction.y, -100];
+            vec3.normalize(direction, direction);
 
-        if (!this.particlesVx || !this.particlesIdx) {
-            return;
-        }
+            const vp = painter._debugParams.rainVignetteParamsOverride ?
+                structuredClone(painter._debugParams.rainVignetteParamsOverride) :
+                structuredClone(this._vignetteParams);
+            const rp = painter._debugParams.rainRevealParamsOverride ?
+                Object.assign({}, painter._debugParams.rainRevealParamsOverride) :
+                {revealStart: 0, revealRange: 0.01};
 
+            debugParams = {
+                params,
+                vignetteParams: vp,
+                revealParams: rp,
+                direction
+            };
+        });
+
+        if (debugParams) return debugParams;
+
+        if (!painter.style.rain) return null;
+
+        const state = painter.style.rain.state;
         const params = structuredClone(this._params);
-
-        let rainDirection: vec3 = [-params.direction.x, params.direction.y, -100];
-        vec3.normalize(rainDirection, rainDirection);
+        params.intensity = state.density;
+        params.timeFactor = state.intensity;
+        params.color = structuredClone(state.color);
+        params.screenThinning.intensity = state.centerThinning;
+        params.dropletSizeX = state.dropletSize[0];
+        params.dropletSizeYScale = state.dropletSize[1] / state.dropletSize[0];
+        params.distortionStrength = state.distortionStrength * 100;
 
         const vignetteParams = structuredClone(this._vignetteParams);
+        vignetteParams.strength = 1;
+        vignetteParams.color = structuredClone(state.vignetteColor);
+
+        return {
+            params,
+            vignetteParams,
+            revealParams: {revealStart: 0, revealRange: 0.01},
+            direction: structuredClone(state.direction)
+        };
+    }
+
+    draw(painter: Painter) {
+        const drawParams = this.getDrawParams(painter);
+        if (!drawParams) return;
+
+        const {params, revealParams, direction, vignetteParams} = drawParams;
+
+        // Check reveal factor
+        const zoom = painter.transform.zoom;
+        if (revealParams.revealStart > zoom) return;
+        const revealFactor = lerpClamp(0, 1, revealParams.revealStart, revealParams.revealStart + revealParams.revealRange, zoom);
+
+        // Verify buffers exist
+        if (!this.particlesVx || !this.particlesIdx) return;
 
         vignetteParams.strength *= revealFactor;
 
-        // Use values from stylespec if not overriden
-        if (!params.overrideStyleParameters) {
-            params.intensity = painter.style.rain.state.density;
-            params.timeFactor = painter.style.rain.state.intensity;
-            params.color = structuredClone(painter.style.rain.state.color);
-            rainDirection = structuredClone(painter.style.rain.state.direction);
-            params.screenThinning.intensity = painter.style.rain.state.centerThinning;
-            params.dropletSizeX = painter.style.rain.state.dropletSize[0];
-            params.dropletSizeYScale = painter.style.rain.state.dropletSize[1] / painter.style.rain.state.dropletSize[0];
-            params.distortionStrength = painter.style.rain.state.distortionStrength * 100;
-
-            vignetteParams.strength = 1;
-            vignetteParams.color = structuredClone(painter.style.rain.state.vignetteColor);
-        }
-
+        // Update timing
         const drawData = this.updateOnRender(painter, params.timeFactor);
 
         const context = painter.context;
@@ -254,7 +339,7 @@ export class Rain extends PrecipitationBase {
                 boxSize,
                 rainDropletSize: [sizeX, sizeY],
                 distortionStrength: params.distortionStrength,
-                rainDirection: rainDirection as [number, number, number],
+                rainDirection: direction as [number, number, number],
                 color: colorVec,
                 screenSize: [tr.width, tr.height],
                 thinningCenterPos: [thinningX, thinningY],

@@ -40,7 +40,6 @@ import {BuildingTileBorderManager} from '../../3d-style/render/building_tile_bor
 import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe_util';
 import {Terrain, defaultTerrainUniforms} from '../terrain/terrain';
 import {Debug} from '../util/debug';
-import {DevTools} from '../ui/devtools';
 import Tile from '../source/tile';
 import {RGBAImage} from '../util/image';
 import {LayerTypeMask} from '../../3d-style/util/conflation';
@@ -54,6 +53,11 @@ import Framebuffer from '../gl/framebuffer';
 import {OcclusionParams} from './occlusion_params';
 import {PerformanceUtils} from '../util/performance';
 
+import type {RainParams} from '../precipitation/draw_rain';
+import type {SnowParams} from '../precipitation/draw_snow';
+import type {PrecipitationRevealParams} from '../precipitation/precipitation_reveal_params';
+import type {VignetteParams} from '../precipitation/vignette';
+import type {StarsParams} from './draw_atmosphere';
 import type ImageManager from './image_manager';
 import type IndexBuffer from '../gl/index_buffer';
 import type ModelManager from '../../3d-style/render/model_manager';
@@ -73,6 +77,7 @@ import type {Source, ISource} from '../source/source';
 import type {UniformBindings} from './uniform_binding';
 import type {CrossTileID, VariableOffset} from '../symbol/placement';
 import type {TypedStyleLayer, CoreStyleLayer, HDStyleLayer} from '../style/style_layer/typed_style_layer';
+import type {DevTools} from '../ui/control/devtools';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
 export type DepthPrePass = 'initialize' | 'reset' | 'geometry';
@@ -248,25 +253,46 @@ class Painter {
     _fogVisible: boolean;
     _cachedTileFogOpacities: Record<number, [number, number]>;
     _shadowRenderer?: ShadowRenderer;
+    _devtools?: DevTools;
     _wireframeDebugCache: WireframeDebugCache;
 
+    updateAverageFPS?: () => void;
+
     _debugParams: {
-        forceEnablePrecipitation: boolean;
-        showTerrainProxyTiles: boolean;
+        // fps
+        averageFPS: number;
+        fpsHistory: Array<number>;
         fpsWindow: number;
+        dt: number;
+        timeStamp: number;
         continousRedraw: boolean;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        enabledLayers: any;
+        enabledLayers: Record<string, boolean>;
+        // buildings
+        buildingsShowNormals: boolean;
+        buildingsDrawGroundAO: boolean;
+        buildingsDrawShadowPass: boolean;
+        buildingsDrawTranslucentPass: boolean;
+        // terrain
+        showTerrainProxyTiles: boolean;
+        terrainSortTilesHiZFirst: boolean;
+        terrainDisableRenderCache: boolean;
+        // precipitation
+        forceEnablePrecipitation: boolean;
+        overrideSnowParams: boolean;
+        snowParamsOverride?: SnowParams;
+        snowRevealParamsOverride?: PrecipitationRevealParams;
+        snowVignetteParamsOverride?: VignetteParams;
+        overrideRainParams: boolean;
+        rainParamsOverride?: RainParams;
+        rainRevealParamsOverride?: PrecipitationRevealParams;
+        rainVignetteParamsOverride?: VignetteParams;
+        // stars
+        overrideStarsParams: boolean;
+        starsParamsOverride?: StarsParams;
+        // models
         show3DModelFootprints: boolean;
         showElevationIdDebug: boolean;
     };
-
-    _timeStamp: number;
-    _dt: number;
-
-    _averageFPS: number;
-
-    _fpsHistory: Array<number>;
 
     // Depth for occlusion
     // FBO+Underlying texture & empty depth texture
@@ -294,63 +320,55 @@ class Painter {
         this.frameCopies = [];
         this.loadTimeStamps = [];
 
-        this._timeStamp = browser.now();
-        this._averageFPS = 0;
-        this._fpsHistory = [];
-        this._dt = 0;
-
         this._debugParams = {
-            forceEnablePrecipitation: false,
-            showTerrainProxyTiles: false,
+            averageFPS: 0,
+            fpsHistory: [],
             fpsWindow: 30,
+            dt: 0,
+            timeStamp: browser.now(),
             continousRedraw: false,
+            enabledLayers: { },
+            buildingsShowNormals: false,
+            buildingsDrawGroundAO: true,
+            buildingsDrawShadowPass: true,
+            buildingsDrawTranslucentPass: true,
+            showTerrainProxyTiles: false,
+            terrainSortTilesHiZFirst: true,
+            terrainDisableRenderCache: false,
+            forceEnablePrecipitation: false,
+            overrideSnowParams: false,
+            snowParamsOverride: null,
+            snowRevealParamsOverride: null,
+            snowVignetteParamsOverride: null,
+            overrideRainParams: false,
+            rainParamsOverride: null,
+            rainRevealParamsOverride: null,
+            rainVignetteParamsOverride: null,
+            overrideStarsParams: false,
+            starsParamsOverride: null,
             show3DModelFootprints: false,
-            showElevationIdDebug: false,
-            enabledLayers: {
-            }
+            showElevationIdDebug: false
         };
 
-        const layerTypes = ["fill", "line", "symbol", "circle", "heatmap", "fill-extrusion", "building", "raster", "raster-particle", "hillshade", "model", "background", "sky"];
-
-        for (const layerType of layerTypes) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            this._debugParams.enabledLayers[layerType] = true;
-        }
-
-        DevTools.addParameter(this._debugParams, 'showTerrainProxyTiles', 'Terrain', {}, () => {
-            this.style.map.triggerRepaint();
-        });
-        DevTools.addParameter(this._debugParams, 'show3DModelFootprints', 'Debug', {}, () => {
-            this.style.map.triggerRepaint();
-        });
-        DevTools.addParameter(this._debugParams, 'showElevationIdDebug', 'Debug', {}, () => {
-            if (this._debugParams.showElevationIdDebug) {
-                this.style._reloadSources();
-            } else {
-                this.style.map._update();
+        Debug.run(() => {
+            const layerTypes = ["fill", "line", "symbol", "circle", "heatmap", "fill-extrusion", "building", "raster", "raster-particle", "hillshade", "model", "background", "sky"];
+            for (const layerType of layerTypes) {
+                this._debugParams.enabledLayers[layerType] = true;
             }
-        });
-        DevTools.addParameter(this._debugParams, 'forceEnablePrecipitation', 'Precipitation');
-        DevTools.addParameter(this._debugParams, 'fpsWindow', 'FPS', {min: 1, max: 100, step: 1});
-        DevTools.addBinding(this._debugParams, 'continousRedraw', 'FPS', {
-            readonly: true,
-            label: 'continuous redraw'
-        });
-        DevTools.addBinding(this, '_averageFPS', 'FPS', {
-            readonly: true,
-            label: 'value'
-        });
-        DevTools.addBinding(this, '_averageFPS', 'FPS', {
-            readonly: true,
-            label: 'graph',
-            view: 'graph',
-            min: 0,
-            max: 200
-        });
 
-        for (const layerType of layerTypes) {
-            DevTools.addParameter(this._debugParams.enabledLayers, layerType, 'Debug > Layers');
-        }
+            this.updateAverageFPS = () => {
+                const fps = this._debugParams.dt === 0 ? 0 : 1000.0 / this._debugParams.dt;
+
+                this._debugParams.fpsHistory.push(fps);
+                if (this._debugParams.fpsHistory.length > this._debugParams.fpsWindow) {
+                    this._debugParams.fpsHistory.splice(0, this._debugParams.fpsHistory.length - this._debugParams.fpsWindow);
+                }
+
+                this._debugParams.averageFPS = Math.round(this._debugParams.fpsHistory.reduce((accum: number, current: number) => {
+                    return accum + current / this._debugParams.fpsHistory.length;
+                }, 0));
+            };
+        });
 
         this.occlusionParams = new OcclusionParams();
 
@@ -780,47 +798,49 @@ class Painter {
         }
     }
 
-    updateAverageFPS() {
-        const fps = this._dt === 0 ? 0 : 1000.0 / this._dt;
-
-        this._fpsHistory.push(fps);
-        if (this._fpsHistory.length > this._debugParams.fpsWindow) {
-            this._fpsHistory.splice(0, this._fpsHistory.length - this._debugParams.fpsWindow);
-        }
-
-        this._averageFPS = Math.round(this._fpsHistory.reduce((accum: number, current: number) => { return accum + current / this._fpsHistory.length; }, 0));
-    }
-
     render(style: Style, options: PainterOptions) {
-        // Update time delta and current timestamp
-        const curTime = browser.now();
-        this._dt = curTime - this._timeStamp;
-        this._timeStamp = curTime;
-
         const renderStartTime = PerformanceUtils.now();
 
-        Debug.run(() => { this.updateAverageFPS(); });
+        Debug.run(() => {
+            // Update time delta and current timestamp
+            const curTime = browser.now();
+            this._debugParams.dt = curTime - this._debugParams.timeStamp;
+            this._debugParams.timeStamp = curTime;
+
+            this.updateAverageFPS();
+        });
 
         // Update debug cache, i.e. clear all unused buffers
         this._wireframeDebugCache.update(this.frameCounter);
 
-        this._debugParams.continousRedraw = style.map.repaint;
+        Debug.run(() => {
+            this._debugParams.continousRedraw = style.map.repaint;
+        });
+
         this.style = style;
         this.options = options;
 
         const layers = this.style._mergedLayers;
 
         const drapingEnabled = !!(this.terrain && this.terrain.enabled);
-        const getLayerIds = () => this.style._getOrder(drapingEnabled).filter((id) => {
-            const layer = layers[id];
 
-            if (layer.type in this._debugParams.enabledLayers) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                return this._debugParams.enabledLayers[layer.type];
-            }
+        const getLayerIds = () => {
+            let renderableLayers = this.style._getOrder(drapingEnabled);
 
-            return true;
-        });
+            Debug.run(() => {
+                // eslint-disable-next-line no-warning-comments
+                // TODO: use Set for enabledLayers
+                renderableLayers = renderableLayers.filter((id) => {
+                    const layer = layers[id];
+                    if (layer.type in this._debugParams.enabledLayers) {
+                        return this._debugParams.enabledLayers[layer.type];
+                    }
+                    return true;
+                });
+            });
+
+            return renderableLayers;
+        };
 
         let layerIds = getLayerIds();
 
@@ -1082,7 +1102,7 @@ class Painter {
 
         if (this.style.fog && this.transform.projection.supportsFog) {
             if (!this._atmosphere) {
-                this._atmosphere = new Atmosphere(this);
+                this._atmosphere = new Atmosphere();
             }
 
             this._atmosphere.update(this);
@@ -1093,8 +1113,14 @@ class Painter {
             }
         }
 
-        const snow = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.snow);
-        const rain = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.rain);
+        let snow = !!(this.style && this.style.snow);
+        let rain = !!(this.style && this.style.rain);
+        Debug.run(() => {
+            if (this._debugParams.forceEnablePrecipitation) {
+                snow = true;
+                rain = true;
+            }
+        });
 
         // Load HD for precipitation functionality
         if ((snow || rain) && !HD.loaded) {
@@ -1102,7 +1128,7 @@ class Painter {
         }
 
         if (snow && !this._snow && HD.Snow) {
-            this._snow = new HD.Snow(this);
+            this._snow = new HD.Snow();
         }
         if (!snow && this._snow) {
             this._snow.destroy();
@@ -1110,7 +1136,7 @@ class Painter {
         }
 
         if (rain && !this._rain && HD.Rain) {
-            this._rain = new HD.Rain(this);
+            this._rain = new HD.Rain();
         }
         if (!rain && this._rain) {
             this._rain.destroy();
@@ -1475,9 +1501,11 @@ class Painter {
             }
         }
 
-        if (this.terrain && this._debugParams.showTerrainProxyTiles) {
-            drawDebug(this, this.terrain.proxySourceCache, this.terrain.proxyCoords, new Color(1.0, 0.8, 0.1, 1.0), true, this.options.showParseStatus);
-        }
+        Debug.run(() => {
+            if (this.terrain && this._debugParams.showTerrainProxyTiles) {
+                drawDebug(this, this.terrain.proxySourceCache, this.terrain.proxyCoords, new Color(1.0, 0.8, 0.1, 1.0), true, this.options.showParseStatus);
+            }
+        });
 
         if (this.options.showPadding) {
             drawDebugPadding(this);

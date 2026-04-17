@@ -30,6 +30,8 @@ export const Debug: {
         return Object.assign(dest, ...sources) as object;
     },
 
+    // Production stripping: @rollup/plugin-strip removes all Debug.* call sites
+    // (see build/rollup_plugins.js). This is pattern-matched removal, not tree-shaking.
     run(fn: () => unknown) {
         fn();
     },

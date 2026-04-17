@@ -44,7 +44,7 @@ import {Debug} from '../util/debug';
 import config from '../util/config';
 import {isFQID} from '../util/fqid';
 import defaultLocale from './default_locale';
-import {DevTools} from './devtools';
+import {DevTools} from './control/devtools';
 import {InteractionSet} from './interactions';
 import {ImageId} from '../style-spec/expression/types/image_id';
 
@@ -705,21 +705,6 @@ export class Map extends Camera {
 
         this._setupContainer();
 
-        if (options.devtools) DevTools.addTo(this);
-
-        DevTools.addParameter(this, 'showOverdrawInspector', 'Debug');
-        DevTools.addParameter(this, 'showTileBoundaries', 'Debug');
-        DevTools.addParameter(this, 'showParseStatus', 'Debug');
-        DevTools.addParameter(this, 'repaint', 'Debug');
-        DevTools.addParameter(this, 'showTileAABBs', 'Debug');
-        DevTools.addParameter(this, 'showPadding', 'Debug');
-        DevTools.addParameter(this, 'showCollisionBoxes', 'Debug', {}, () => this._update());
-        DevTools.addParameter(this.transform, 'freezeTileCoverage', 'Debug', {}, () => this._update());
-        DevTools.addParameter(this, 'showTerrainWireframe', 'Debug');
-        DevTools.addParameter(this, 'showLayers2DWireframe', 'Debug');
-        DevTools.addParameter(this, 'showLayers3DWireframe', 'Debug');
-        DevTools.addParameter(this, '_scaleFactor', 'Scaling', {label: 'scaleFactor', min: 0.1, max: 10.0, step: 0.1}, () => this.setScaleFactor(this._scaleFactor));
-
         this._setupPainter();
         if (this.painter === undefined) {
             throw new Error(`Failed to initialize WebGL.`);
@@ -808,6 +793,14 @@ export class Map extends Camera {
         });
 
         this._interactions = new InteractionSet(this);
+
+        Debug.run(() => {
+            // eslint-disable-next-line no-warning-comments
+            // TODO: deprecate the `devtools` map option in favor of programmatic addition of the DevTools control
+            if (options.devtools) {
+                this.addControl(new DevTools());
+            }
+        });
     }
 
     /*
@@ -1277,7 +1270,6 @@ export class Map extends Camera {
     setScaleFactor(scaleFactor: number): this {
         this._scaleFactor = scaleFactor;
         this.painter.scaleFactor = scaleFactor;
-        DevTools.refresh();
 
         if (this.style) {
             this.style._setLabelPlacementStale();
@@ -5075,7 +5067,6 @@ export class Map extends Camera {
     set showTileBoundaries(value: boolean) {
         if (this._showTileBoundaries === value) return;
         this._showTileBoundaries = value;
-        DevTools.refresh();
         this._update();
     }
 
@@ -5097,7 +5088,6 @@ export class Map extends Camera {
     set showParseStatus(value: boolean) {
         if (this._showParseStatus === value) return;
         this._showParseStatus = value;
-        DevTools.refresh();
         this._update();
     }
 
@@ -5118,7 +5108,6 @@ export class Map extends Camera {
     set showTerrainWireframe(value: boolean) {
         if (this._showTerrainWireframe === value) return;
         this._showTerrainWireframe = value;
-        DevTools.refresh();
         this._update();
     }
 
@@ -5139,7 +5128,6 @@ export class Map extends Camera {
     set showLayers2DWireframe(value: boolean) {
         if (this._showLayers2DWireframe === value) return;
         this._showLayers2DWireframe = value;
-        DevTools.refresh();
         this._update();
     }
 
@@ -5160,7 +5148,6 @@ export class Map extends Camera {
     set showLayers3DWireframe(value: boolean) {
         if (this._showLayers3DWireframe === value) return;
         this._showLayers3DWireframe = value;
-        DevTools.refresh();
         this._update();
     }
 
@@ -5168,7 +5155,6 @@ export class Map extends Camera {
     set showElevationIdDebug(value: boolean) {
         if (!this.painter || this.painter._debugParams.showElevationIdDebug === value) return;
         this.painter._debugParams.showElevationIdDebug = value;
-        DevTools.refresh();
         if (this.style && value) {
             this.style._reloadSources();
         } else {
@@ -5207,7 +5193,6 @@ export class Map extends Camera {
     set showPadding(value: boolean) {
         if (this._showPadding === value) return;
         this._showPadding = value;
-        DevTools.refresh();
         this._update();
     }
 
@@ -5226,7 +5211,6 @@ export class Map extends Camera {
     set showCollisionBoxes(value: boolean) {
         if (this._showCollisionBoxes === value) return;
         this._showCollisionBoxes = value;
-        DevTools.refresh();
         if (this.style && value) {
             // When we turn collision boxes on we have to generate them for existing tiles
             // When we turn them off, there's no cost to leaving existing boxes in place
@@ -5253,7 +5237,6 @@ export class Map extends Camera {
     set showOverdrawInspector(value: boolean) {
         if (this._showOverdrawInspector === value) return;
         this._showOverdrawInspector = value;
-        DevTools.refresh();
         this._update();
     }
 
@@ -5271,7 +5254,6 @@ export class Map extends Camera {
     set repaint(value: boolean) {
         if (this._repaint !== value) {
             this._repaint = value;
-            DevTools.refresh();
             this.triggerRepaint();
         }
     }
@@ -5289,7 +5271,6 @@ export class Map extends Camera {
     set showTileAABBs(value: boolean) {
         if (this._showTileAABBs === value) return;
         this._showTileAABBs = value;
-        DevTools.refresh();
         if (!value) { Debug.clearAabbs(); return; }
         this._update();
     }

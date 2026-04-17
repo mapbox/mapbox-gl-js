@@ -9,6 +9,7 @@ import {globalIgnores} from 'eslint/config';
 import {includeIgnoreFile} from '@eslint/compat';
 import tsConfig from './tsconfig.json' with {type: 'json'};
 import noObjectMethodsOnCollections from './test/eslint-rules/no-object-methods-on-collections.ts';
+import devtoolsMustUseDebugRun from './test/eslint-rules/devtools-must-use-debug-run.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -157,11 +158,21 @@ export default tseslint.config(
             mapbox: {
                 rules: {
                     'no-object-methods-on-collections': noObjectMethodsOnCollections,
+                    'devtools-must-use-debug-run': devtoolsMustUseDebugRun,
                 },
             },
         },
         rules: {
             'mapbox/no-object-methods-on-collections': 'error',
+        },
+    },
+
+    // Require _devtools access inside Debug.run()
+    {
+        files: ['src/**/*.ts', '3d-style/**/*.ts'],
+        ignores: ['src/ui/control/devtools.ts'],
+        rules: {
+            'mapbox/devtools-must-use-debug-run': 'error',
         },
     },
 

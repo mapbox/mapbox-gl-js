@@ -7,7 +7,6 @@ import {mat4} from 'gl-matrix';
 import StencilMode from '../../src/gl/stencil_mode';
 import {getMetersPerPixelAtLatitude} from '../../src/geo/mercator_coordinate';
 import {Debug} from '../../src/util/debug';
-import {DevTools} from '../../src/ui/devtools';
 import {drawGroundEffect as fillExtrusionDrawGroundEffect, GroundEffectProperties, frustumCullShadowCaster, computeFrontCutoffParams} from '../../src/render/draw_fill_extrusion';
 import Color from '../../src/style-spec/util/color';
 import ColorMode from '../../src/gl/color_mode';
@@ -199,40 +198,6 @@ function drawTiles(params: DrawParams) {
     }
 }
 
-// Debug settings for rendering of buildings
-
-let drawBuildingsDebugParams: DrawBuildingsDebugParams | null = null;
-
-class DrawBuildingsDebugParams {
-    public showNormals: boolean = false;
-    public drawGroundAO: boolean = true;
-    public drawShadowPass: boolean = true;
-    public drawTranslucentPass: boolean = true;
-
-    public static getOrCreateInstance(painter: Painter): DrawBuildingsDebugParams {
-
-        if (!drawBuildingsDebugParams) {
-            drawBuildingsDebugParams = new DrawBuildingsDebugParams(painter);
-        }
-        return drawBuildingsDebugParams;
-    }
-
-    constructor(painter: Painter) {
-        DevTools.addParameter(this, 'drawTranslucentPass', 'Buildings', {label: 'Draw Translucent Pass'}, () => {
-            painter.style.map.triggerRepaint();
-        });
-        DevTools.addParameter(this, 'drawShadowPass', 'Buildings', {label: 'Draw Shadow Pass'}, () => {
-            painter.style.map.triggerRepaint();
-        });
-        DevTools.addParameter(this, 'showNormals', 'Buildings', {label: 'Show normals'}, () => {
-            painter.style.map.triggerRepaint();
-        });
-        DevTools.addParameter(this, 'drawGroundAO', 'Buildings', {label: 'Ground AO'}, () => {
-            painter.style.map.triggerRepaint();
-        });
-    }
-}
-
 function drawGroundEffect(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, coords: Array<OverscaledTileID>, aoPass: boolean, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: [number, number, number], attenuationFactor: number, replacementActive: boolean, renderNeighbors: boolean, frontCutoffParams?: [number, number, number]) {
     const lerp = (a: number, b: number, t: number) => { return (1 - t) * a + t * b; };
 
@@ -316,10 +281,9 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
     }
 
     Debug.run(() => {
-        const debugParams = DrawBuildingsDebugParams.getOrCreateInstance(painter);
-        aoEnabled = aoEnabled && debugParams.drawGroundAO;
-        castsShadowsEnabled = castsShadowsEnabled && debugParams.drawShadowPass;
-        drawLayer = drawLayer && debugParams.drawTranslucentPass;
+        aoEnabled = aoEnabled && painter._debugParams.buildingsDrawGroundAO;
+        castsShadowsEnabled = castsShadowsEnabled && painter._debugParams.buildingsDrawShadowPass;
+        drawLayer = drawLayer && painter._debugParams.buildingsDrawTranslucentPass;
     });
 
     if (!painter.shadowRenderer) {
@@ -374,10 +338,9 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
         if (painter.shadowRenderer && painter.shadowRenderer.useNormalOffset) {
             definesForPass = definesForPass.concat("NORMAL_OFFSET");
         }
-        // Apply debug settinggs. Stripped out in production.
+
         Debug.run(() => {
-            const debugParams = DrawBuildingsDebugParams.getOrCreateInstance(painter);
-            if (debugParams.showNormals) {
+            if (painter._debugParams.buildingsShowNormals) {
                 definesForPass = definesForPass.concat("DEBUG_SHOW_NORMALS");
             }
         });

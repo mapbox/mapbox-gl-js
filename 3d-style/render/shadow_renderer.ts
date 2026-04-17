@@ -8,7 +8,6 @@ import Color from '../../src/style-spec/util/color';
 import {FreeCamera} from '../../src/ui/free_camera';
 import {mercatorZfromAltitude, tileToMeter} from '../../src/geo/mercator_coordinate';
 import {cartesianPositionToSpherical, sphericalPositionToCartesian, clamp, linearVec3TosRGB} from '../../src/util/util';
-import {DevTools} from '../../src/ui/devtools';
 import {defaultShadowUniformValues} from '../render/shadow_uniforms';
 import TextureSlots from './texture_slots';
 import assert from 'assert';
@@ -16,8 +15,10 @@ import {mat4, vec3} from 'gl-matrix';
 import {groundShadowUniformValues} from './program/ground_shadow_program';
 import EXTENT from '../../src/style-spec/data/extent';
 import {getCutoffParams} from '../../src/render/cutoff';
+import {Debug} from '../../src/util/debug';
 
 import type {vec4} from 'gl-matrix';
+import type {DevToolsFolder} from '../../src/ui/control/devtools';
 import type Lights from '../style/lights';
 import type {OverscaledTileID, UnwrappedTileID} from '../../src/source/tile_id';
 import type Transform from '../../src/geo/transform';
@@ -69,12 +70,6 @@ export type TileShadowVolume = {
 };
 
 type ShadowNormalOffsetMode = 'vector-tile' | 'model-tile';
-
-const shadowParameters = {
-    cascadeCount: 2,
-    normalOffset: 3,
-    shadowMapResolution: 2048
-};
 
 function lerpClamp(x: number, x1: number, x2: number, y1: number, y2: number) {
     const t = clamp((x - x1) / (x2 - x1), 0, 1);
@@ -173,6 +168,13 @@ export class ShadowRenderer {
     useNormalOffset: boolean;
 
     _forceDisable: boolean;
+    _devtoolsFolder: DevToolsFolder | null;
+
+    _shadowParameters: {
+        cascadeCount: number,
+        normalOffset: number,
+        shadowMapResolution: number
+    };
 
     constructor(painter: Painter) {
         this.painter = painter;
@@ -185,17 +187,25 @@ export class ShadowRenderer {
         this._depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, [0, 1]);
         this._uniformValues = defaultShadowUniformValues();
         this._forceDisable = false;
+        this._devtoolsFolder = null;
 
         this.useNormalOffset = false;
 
-        DevTools.addParameter(this, '_forceDisable', 'Shadows', {label: 'forceDisable'}, () => { this.painter.style.map.triggerRepaint(); });
-        DevTools.addParameter(shadowParameters, 'cascadeCount', 'Shadows', {min: 1, max: 2, step: 1});
-        DevTools.addParameter(shadowParameters, 'normalOffset', 'Shadows', {min: 0, max: 10, step: 0.05});
-        DevTools.addParameter(shadowParameters, 'shadowMapResolution', 'Shadows', {min: 32, max: 2048, step: 32});
-        DevTools.addBinding(this, '_numCascadesToRender', 'Shadows', {readonly: true, label: 'numCascadesToRender'});
+        this._shadowParameters = {
+            cascadeCount: 2,
+            normalOffset: 3,
+            shadowMapResolution: 2048
+        };
     }
 
     destroy() {
+        Debug.run(() => {
+            if (this.painter._devtools) {
+                this.painter._devtools.removeFolder('Shadows');
+            }
+            this._devtoolsFolder = null;
+        });
+
         for (const cascade of this._cascades) {
             cascade.texture.destroy();
             cascade.framebuffer.destroy();
@@ -206,6 +216,18 @@ export class ShadowRenderer {
 
     updateShadowParameters(transform: Transform, directionalLight?: Lights<Directional> | null) {
         const painter = this.painter;
+
+        Debug.run(() => {
+            if (painter._devtools && !this._devtoolsFolder) {
+                const folder = painter._devtools.addFolder('Shadows');
+                folder.addBinding(this, '_forceDisable', {label: 'forceDisable'}, () => painter.style.map.triggerRepaint());
+                folder.addBinding(this._shadowParameters, 'cascadeCount', {min: 1, max: 2, step: 1});
+                folder.addBinding(this._shadowParameters, 'normalOffset', {min: 0, max: 10, step: 0.05});
+                folder.addBinding(this._shadowParameters, 'shadowMapResolution', {min: 32, max: 2048, step: 32});
+                folder.addReadonly(this, '_numCascadesToRender', {label: 'numCascadesToRender'});
+                this._devtoolsFolder = folder;
+            }
+        });
 
         this._enabled = false;
         this._drawShadowAfterLayer = -1;
@@ -252,12 +274,12 @@ export class ShadowRenderer {
         }
 
         const context = painter.context;
-        const width = shadowParameters.shadowMapResolution;
-        const height = shadowParameters.shadowMapResolution;
+        const width = this._shadowParameters.shadowMapResolution;
+        const height = this._shadowParameters.shadowMapResolution;
 
-        if (this._cascades.length === 0 || shadowParameters.shadowMapResolution !== this._cascades[0].texture.size[0]) {
+        if (this._cascades.length === 0 || this._shadowParameters.shadowMapResolution !== this._cascades[0].texture.size[0]) {
             this._cascades = [];
-            for (let i = 0; i < shadowParameters.cascadeCount; ++i) {
+            for (let i = 0; i < this._shadowParameters.cascadeCount; ++i) {
                 const gl = context.gl;
                 const fbo = context.createFramebuffer(width, height, 0, 'texture');
                 const depthTexture = new Texture(context, {width, height, data: null}, gl.DEPTH_COMPONENT16);
@@ -299,7 +321,7 @@ export class ShadowRenderer {
             let near = transform.height / 50.0;
             let far = 1.0;
 
-            if (shadowParameters.cascadeCount === 1) {
+            if (this._shadowParameters.cascadeCount === 1) {
                 far = shadowCutoutDist;
             } else {
                 if (cascadeIndex === 0) {
@@ -310,7 +332,7 @@ export class ShadowRenderer {
                 }
             }
 
-            const [matrix, radius] = createLightMatrix(transform, this.shadowDirection, near, far, shadowParameters.shadowMapResolution, verticalRange);
+            const [matrix, radius] = createLightMatrix(transform, this.shadowDirection, near, far, this._shadowParameters.shadowMapResolution, verticalRange);
             cascade.scale = transform.scale;
             cascade.matrix = matrix;
             cascade.boundingSphereRadius = radius;
@@ -323,8 +345,8 @@ export class ShadowRenderer {
         this._uniformValues['u_fade_range'] = [this._cascades[fadeRangeIdx].far * 0.75, this._cascades[fadeRangeIdx].far];
         this._uniformValues['u_shadow_intensity'] = shadowIntensity;
         this._uniformValues['u_shadow_direction'] = [this.shadowDirection[0], this.shadowDirection[1], this.shadowDirection[2]];
-        this._uniformValues['u_shadow_texel_size'] = 1 / shadowParameters.shadowMapResolution;
-        this._uniformValues['u_shadow_map_resolution'] = shadowParameters.shadowMapResolution;
+        this._uniformValues['u_shadow_texel_size'] = 1 / this._shadowParameters.shadowMapResolution;
+        this._uniformValues['u_shadow_map_resolution'] = this._shadowParameters.shadowMapResolution;
         this._uniformValues['u_shadowmap_0'] = TextureSlots.ShadowMap0;
         this._uniformValues['u_shadowmap_1'] = TextureSlots.ShadowMap0 + 1;
 
@@ -373,7 +395,7 @@ export class ShadowRenderer {
         // shadows.
         this._numCascadesToRender = this._receivers.computeRequiredCascades(painter.transform.getFrustum(0), painter.transform.worldSize, this._cascades);
 
-        context.viewport.set([0, 0, shadowParameters.shadowMapResolution, shadowParameters.shadowMapResolution]);
+        context.viewport.set([0, 0, this._shadowParameters.shadowMapResolution, this._shadowParameters.shadowMapResolution]);
 
         for (let cascade = 0; cascade < this._numCascadesToRender; ++cascade) {
             painter.currentShadowCascade = cascade;
@@ -492,7 +514,7 @@ export class ShadowRenderer {
 
         if (this.useNormalOffset) {
             const meterInTiles = tileToMeter(unwrappedTileID.canonical);
-            const texelScale = 2.0 / transform.tileSize * EXTENT / shadowParameters.shadowMapResolution;
+            const texelScale = 2.0 / transform.tileSize * EXTENT / this._shadowParameters.shadowMapResolution;
             const shadowTexelInTileCoords0 = texelScale * this._cascades[0].boundingSphereRadius;
             const shadowTexelInTileCoords1 = texelScale * this._cascades[this._cascades.length - 1].boundingSphereRadius;
             // Instanced model tiles could have smoothened (shared among neighbor faces) normals. Normal is not surface normal
@@ -523,7 +545,7 @@ export class ShadowRenderer {
         const uniforms = this._uniformValues;
 
         const lightMatrix = new Float64Array(16);
-        for (let i = 0; i < shadowParameters.cascadeCount; i++) {
+        for (let i = 0; i < this._shadowParameters.cascadeCount; i++) {
             mat4.multiply(lightMatrix, this._cascades[i].matrix, worldMatrix);
             uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = Float32Array.from(lightMatrix);
             context.activeTexture.set(gl.TEXTURE0 + TextureSlots.ShadowMap0 + i);
@@ -533,7 +555,7 @@ export class ShadowRenderer {
         this.useNormalOffset = normalOffset;
 
         if (normalOffset) {
-            const scale = shadowParameters.normalOffset;
+            const scale = this._shadowParameters.normalOffset;
             uniforms["u_shadow_normal_offset"] = [1.0, scale, scale]; // meterToTile isn't used
             uniforms["u_shadow_bias"] = [0.00006, 0.0012, 0.012]; // Reduce constant offset
         } else {

@@ -26,6 +26,7 @@ import CullFaceMode from '../gl/cull_face_mode';
 import {clippingMaskUniformValues} from '../render/program/clipping_mask_program';
 import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate';
 import browser from '../util/browser';
+import {Debug} from '../util/debug';
 import {DrapeRenderMode} from '../style/terrain';
 import rasterFade from '../render/raster_fade';
 import {create as createSource} from '../source/source';
@@ -33,7 +34,6 @@ import {Float32Image} from '../util/image';
 import {globeMetersToEcef} from '../geo/projection/globe_util';
 import {ZoomDependentExpression} from '../style-spec/expression/index';
 import {number as interpolate} from '../style-spec/util/interpolate';
-import {DevTools} from '../ui/devtools';
 
 import type Framebuffer from '../gl/framebuffer';
 import type Program from '../render/program';
@@ -63,6 +63,7 @@ import type {
     FillExtrusionPatternUniformsType
 } from '../render/program/fill_extrusion_program';
 import type {MapDataEvent} from '../ui/events';
+import type {DevToolsFolder} from '../ui/control/devtools';
 
 const GRID_DIM = 128;
 
@@ -299,25 +300,10 @@ export class Terrain extends Elevation {
 
     _emissiveTexture: boolean;
 
-    _debugParams: {
-        sortTilesHiZFirst: boolean;
-        disableRenderCache: boolean;
-    };
+    _devtoolsFolder: DevToolsFolder | null;
 
     constructor(painter: Painter, style: Style) {
         super();
-
-        this._debugParams = {sortTilesHiZFirst: true, disableRenderCache: false};
-        DevTools.addParameter(this._debugParams, 'sortTilesHiZFirst', 'Terrain', {}, () => {
-            this._style.map.triggerRepaint();
-        });
-        DevTools.addParameter(this._debugParams, 'disableRenderCache', 'Terrain', {}, () => {
-            this._style.map.triggerRepaint();
-        });
-        DevTools.addButton('Terrain', 'Invalidate Render Cache', () => {
-            this.invalidateRenderCache = true;
-            this._style.map.triggerRepaint();
-        });
 
         this.painter = painter;
         this.terrainTileForTile = {};
@@ -355,6 +341,7 @@ export class Terrain extends Elevation {
         this._mockSourceCache = new MockSourceCache(style.map);
         this._pendingGroundEffectLayers = [];
         this._emissiveTexture = false;
+        this._devtoolsFolder = null;
     }
 
     set style(style: Style) {
@@ -442,6 +429,20 @@ export class Terrain extends Elevation {
 
             this._emptyDEMTextureDirty = true;
             this._previousZoom = transform.zoom;
+
+            Debug.run(() => {
+                if (this.painter._devtools && !this._devtoolsFolder) {
+                    const folder = this.painter._devtools.addFolder('Terrain');
+                    folder.addBinding(this.painter._debugParams, 'showTerrainProxyTiles', {}, () => this._style.map.triggerRepaint());
+                    folder.addBinding(this.painter._debugParams, 'terrainSortTilesHiZFirst', {}, () => this._style.map.triggerRepaint());
+                    folder.addBinding(this.painter._debugParams, 'terrainDisableRenderCache', {}, () => this._style.map.triggerRepaint());
+                    folder.addButton('Invalidate Render Cache', () => {
+                        this.invalidateRenderCache = true;
+                        this._style.map.triggerRepaint();
+                    });
+                    this._devtoolsFolder = folder;
+                }
+            });
         } else {
             this._disable();
         }
@@ -565,6 +566,12 @@ export class Terrain extends Elevation {
         this.pool.forEach(fbo => fbo.fb.destroy());
         this.pool = [];
         if (this.framebufferCopyTexture) this.framebufferCopyTexture.destroy();
+        Debug.run(() => {
+            if (this.painter._devtools) {
+                this.painter._devtools.removeFolder('Terrain');
+            }
+            this._devtoolsFolder = null;
+        });
     }
 
     // Implements Elevation::_source.
@@ -1160,9 +1167,9 @@ export class Terrain extends Elevation {
     }
 
     _shouldDisableRenderCache(): boolean {
-        if (this._debugParams.disableRenderCache) {
-            return true;
-        }
+        let debugDisable = false;
+        Debug.run(() => { debugDisable = this.painter._debugParams.terrainDisableRenderCache; });
+        if (debugDisable) return true;
 
         // Disable render caches on dynamic events due to fading or transitioning.
         if (this._style.hasLightTransitions()) {
@@ -1575,7 +1582,9 @@ export class Terrain extends Elevation {
             }
         }
         this._sourceTilesOverlap[sourceCache.id] = hasOverlap;
-        if (hasOverlap && this._debugParams.sortTilesHiZFirst) {
+        let sortHiZ = true;
+        Debug.run(() => { sortHiZ = this.painter._debugParams.terrainSortTilesHiZFirst; });
+        if (hasOverlap && sortHiZ) {
             for (const arr of proxiesToSort) {
                 arr.sort((a, b) => {
                     return b.overscaledZ - a.overscaledZ;

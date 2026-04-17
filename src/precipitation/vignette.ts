@@ -6,7 +6,6 @@ import SegmentVector from '../data/segment';
 import {TriangleIndexArray, VignetteVertexArray} from '../data/array_types';
 import {vignetteUniformValues} from './vignette_program';
 import {vignetteLayout} from "./vignette_attributes";
-import {DevTools} from '../ui/devtools';
 
 import type Painter from '../render/painter';
 import type IndexBuffer from '../gl/index_buffer';
@@ -19,16 +18,6 @@ export type VignetteParams = {
     fadePower: number,
     color: {r: number, g: number, b: number, a: number},
 };
-
-export function createDevToolsBindings(params: VignetteParams, painter: Painter, folder: string) {
-    DevTools.addParameter(params, 'start', folder, {min: 0.0, max: 2.0});
-    DevTools.addParameter(params, 'range', folder, {min: 0.0, max: 2.0});
-    DevTools.addParameter(params, 'fadePower', folder, {min: -1.0, max: 1.0, step: 0.01});
-    DevTools.addParameter(params, 'strength', folder, {min: 0.0, max: 1.0});
-    DevTools.addParameter(params, 'color', folder, {
-        color: {type: 'float'},
-    });
-}
 
 export class Vignette {
     vignetteVx: VertexBuffer | null | undefined;
