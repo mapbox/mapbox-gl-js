@@ -112,7 +112,7 @@ export async function loadTileProvider(name: string, url: string): Promise<TileP
     const pending = pendingLoads.get(name);
     if (pending !== undefined) return pending;
 
-    const load = import(/* @vite-ignore */ url)
+    const load = import(/* webpackIgnore: true */ /* @vite-ignore */ url)
         .catch((err) => {
             throw new Error(`TileProvider "${name}" failed to load: ${err instanceof Error ? err.message : String(err)}`);
         })
