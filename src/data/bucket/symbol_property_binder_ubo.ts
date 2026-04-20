@@ -1,4 +1,4 @@
-import {SymbolPropertiesUBO, type SymbolPropertyHeader, type PropertyValue} from './symbol_properties_ubo';
+import {SymbolPropertiesUBO, type SymbolPropertyHeader} from './symbol_properties_ubo';
 import Color from '../../style-spec/util/color';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import {register} from '../../util/web_worker_transfer';
@@ -19,18 +19,6 @@ import type SymbolAppearance from '../../style/appearance';
 
 // WebGL2 minimum guaranteed value for MAX_UNIFORM_BUFFER_BINDINGS (OpenGL ES 3.0.6 table 6.33)
 const WEBGL2_MIN_UNIFORM_BUFFER_BINDINGS = 24;
-
-/**
- * Pack a non-premultiplied color into 2 floats using packUint8ToFloat.
- * The shader uses decode_color() to reverse this and the fragment shader
- * premultiplies the result.
- */
-function packNonPremultColor(r: number, g: number, b: number, a: number): [number, number] {
-    return [
-        packUint8ToFloat(255 * r, 255 * g),
-        packUint8ToFloat(255 * b, 255 * a)
-    ];
-}
 
 /**
  * Determines if LUT should be ignored based on use-theme property.
@@ -171,8 +159,8 @@ export class SymbolPropertyBinderUBO {
     // When true, updateDynamicExpressions can be skipped on brightness-only changes.
     isLightConstant: boolean;
 
-    // Scratch buffer to avoid allocations on evaluateAllProperties
-    _evalResult: Array<PropertyValue | null>;
+    // Flat scratch buffer for evaluateAllProperties — reused per call, eliminates per-feature inner array allocations.
+    _evalFlat: Float32Array;
 
     constructor(layer: SymbolStyleLayer, zoom: number, lut: LUT | null, isText: boolean, worldview: string = '', maxUniformBufferBindings?: number | null, uboSizeDwords?: number | null) {
         this.layer = layer;
@@ -204,7 +192,7 @@ export class SymbolPropertyBinderUBO {
 
         this.activeAppearanceByVtIndex = new Map();
         this.isLightConstant = true; // updated in buildHeader()
-        this._evalResult = new Array<PropertyValue | null>(9).fill(null);
+        this._evalFlat = new Float32Array(SymbolPropertiesUBO.EVAL_FLAT_TOTAL);
     }
 
     /**
@@ -337,43 +325,46 @@ export class SymbolPropertyBinderUBO {
         brightness?: number | null,
         formattedSection?: FormattedSection,
         activeAppearance?: SymbolAppearance | null
-    ): Array<PropertyValue | null> {
+    ): Float32Array {
         const {params, paramsNext} = this._getCachedParams(brightness);
         const ctx: EvaluationContext = {feature, featureState, canonical, availableImages, params, paramsNext, formattedSection};
         const header = this.cachedHeader;
         const propDefs = this.propDefs;
-        if (!this._evalResult) this._evalResult = new Array<PropertyValue | null>(9).fill(null);
-        const result = this._evalResult;
+        if (!this._evalFlat) this._evalFlat = new Float32Array(SymbolPropertiesUBO.EVAL_FLAT_TOTAL);
+        const flat = this._evalFlat;
 
         for (let i = 0; i < 9; i++) {
             const {name, useThemeName, isColor, isVec2} = propDefs[i];
             const isZoomDep = !!(header && (header.zoomDependentMask & (1 << i)) !== 0);
+            const flatOffset = SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[i];
 
             if (isColor) {
-                result[i] = this._evaluateColorValue(name, useThemeName, ctx, brightness, isZoomDep, activeAppearance);
+                this._evaluateColorValue(name, useThemeName, ctx, brightness, isZoomDep, activeAppearance, flat, flatOffset);
             } else if (isVec2) {
-                result[i] = this._evaluateTranslateValue(name, isZoomDep, ctx, activeAppearance);
+                this._evaluateTranslateValue(name, isZoomDep, ctx, activeAppearance, flat, flatOffset);
             } else {
-                result[i] = this._evaluateFloatValue(name, isZoomDep, ctx, activeAppearance);
+                this._evaluateFloatValue(name, isZoomDep, ctx, activeAppearance, flat, flatOffset);
             }
         }
 
-        return result;
+        return flat;
     }
 
     /**
-     * Evaluate a color property and return it in UBO-ready format (non-premultiplied, packed).
-     *   non-zoom → [packed0, packed1, 0, 0]
-     *   zoom-dep → [packMin[0], packMin[1], packMax[0], packMax[1]]
+     * Evaluate a color property and write it into the flat buffer in UBO-ready format (non-premultiplied, packed).
+     *   non-zoom → flat[offset..offset+3] = [packed0, packed1, 0, 0]
+     *   zoom-dep → flat[offset..offset+3] = [packMin0, packMin1, packMax0, packMax1]
      */
     private _evaluateColorValue(
         propName: string,
         useThemeName: string | null,
         ctx: EvaluationContext,
-        brightness?: number | null,
-        isZoomDep?: boolean,
-        activeAppearance?: SymbolAppearance | null
-    ): [number, number, number, number] {
+        brightness: number | null | undefined,
+        isZoomDep: boolean,
+        activeAppearance: SymbolAppearance | null | undefined,
+        flat: Float32Array,
+        flatOffset: number
+    ): void {
         const paint = this.layer.paint;
 
         // Appearance overrides the color property.
@@ -391,7 +382,8 @@ export class SymbolPropertyBinderUBO {
             (useThemeName ? paint.get(useThemeName as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<string> | undefined : undefined);
 
         if (!prop) {
-            return [0, 0, 0, 1];
+            flat[flatOffset] = 0; flat[flatOffset + 1] = 0; flat[flatOffset + 2] = 0; flat[flatOffset + 3] = 1;
+            return;
         }
 
         const useThemeValue = useThemeProp && typeof useThemeProp !== 'string' ? useThemeProp.value : undefined;
@@ -420,29 +412,34 @@ export class SymbolPropertyBinderUBO {
         }
 
         // Non-premultiplied — the fragment shader does vec4(np_color.rgb * np_color.a, np_color.a).
+        // Inline packNonPremultColor to avoid allocating a [number, number] tuple.
         const minNP = (colorMin || Color.transparent).toNonPremultipliedRenderColor(effectiveLut);
-        const maxNP = (colorMax || Color.transparent).toNonPremultipliedRenderColor(effectiveLut);
-
+        flat[flatOffset] = packUint8ToFloat(255 * minNP.r, 255 * minNP.g);
+        flat[flatOffset + 1] = packUint8ToFloat(255 * minNP.b, 255 * minNP.a);
         if (isZoomDep) {
-            const [p0, p1] = packNonPremultColor(minNP.r, minNP.g, minNP.b, minNP.a);
-            const [p2, p3] = packNonPremultColor(maxNP.r, maxNP.g, maxNP.b, maxNP.a);
-            return [p0, p1, p2, p3];
+            const maxNP = (colorMax || Color.transparent).toNonPremultipliedRenderColor(effectiveLut);
+            flat[flatOffset + 2] = packUint8ToFloat(255 * maxNP.r, 255 * maxNP.g);
+            flat[flatOffset + 3] = packUint8ToFloat(255 * maxNP.b, 255 * maxNP.a);
+        } else {
+            // Non-zoom: last 2 dwords are padding (shader uses readVec2).
+            flat[flatOffset + 2] = 0;
+            flat[flatOffset + 3] = 0;
         }
-        // Non-zoom: pack into 2 floats; the other 2 dwords are padding (shader uses readVec2).
-        const [p0, p1] = packNonPremultColor(minNP.r, minNP.g, minNP.b, minNP.a);
-        return [p0, p1, 0, 0];
     }
 
     /**
-     * Evaluate a float property and return it in UBO-ready format.
-     * For non-zoom: single number. For zoom-dep: [min, max].
+     * Evaluate a float property and write it into the flat buffer in UBO-ready format.
+     *   non-zoom → flat[offset] = val, flat[offset+1] = 0
+     *   zoom-dep → flat[offset] = min, flat[offset+1] = max
      */
     private _evaluateFloatValue(
         propName: string,
         isZoomDep: boolean,
         ctx: EvaluationContext,
-        activeAppearance?: SymbolAppearance | null
-    ): number | [number, number] {
+        activeAppearance: SymbolAppearance | null | undefined,
+        flat: Float32Array,
+        flatOffset: number
+    ): void {
         const paint = this.layer.paint;
         const defaultVal = propName.endsWith('opacity') ? 1.0 : 0.0;
 
@@ -453,39 +450,46 @@ export class SymbolPropertyBinderUBO {
             activeAppearance.paintProperties.get(appearanceName) as PossiblyEvaluatedPropertyValue<number> | undefined :
             paint.get(propName as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<number> | undefined;
 
-        if (!prop) return defaultVal;
+        if (!prop) {
+            flat[flatOffset] = defaultVal; flat[flatOffset + 1] = 0;
+            return;
+        }
 
         if (prop.isConstant()) {
-            return prop.constantOr(defaultVal);
+            flat[flatOffset] = prop.constantOr(defaultVal); flat[flatOffset + 1] = 0;
+            return;
         }
 
         const min = prop.property.evaluate(
             prop.value, ctx.params, ctx.feature, ctx.featureState,
             ctx.canonical, ctx.availableImages, prop.iconImageUseTheme, ctx.formattedSection
         );
-        const minVal = min !== null && min !== undefined ? min : defaultVal;
+        flat[flatOffset] = min !== null && min !== undefined ? min : defaultVal;
 
         if (isZoomDep) {
             const max = prop.property.evaluate(
                 prop.value, ctx.paramsNext, ctx.feature, ctx.featureState,
                 ctx.canonical, ctx.availableImages, prop.iconImageUseTheme, ctx.formattedSection
             );
-            const maxVal = max !== null && max !== undefined ? max : defaultVal;
-            return [minVal, maxVal];
+            flat[flatOffset + 1] = max !== null && max !== undefined ? max : defaultVal;
+        } else {
+            flat[flatOffset + 1] = 0;
         }
-        return minVal;
     }
 
     /**
-     * Evaluate a translate property ([number, number]) and return it in UBO-ready format.
-     * Non-zoom: [tx, ty]. Zoom-dep: [tx_min, ty_min, tx_max, ty_max].
+     * Evaluate a translate property and write it into the flat buffer in UBO-ready format.
+     *   non-zoom → flat[offset..offset+3] = [tx, ty, 0, 0]
+     *   zoom-dep → flat[offset..offset+3] = [tx_min, ty_min, tx_max, ty_max]
      */
     private _evaluateTranslateValue(
         propName: string,
         isZoomDep: boolean,
         ctx: EvaluationContext,
-        activeAppearance?: SymbolAppearance | null
-    ): [number, number] | [number, number, number, number] {
+        activeAppearance: SymbolAppearance | null | undefined,
+        flat: Float32Array,
+        flatOffset: number
+    ): void {
         const paint = this.layer.paint;
         const appearanceName = propName as keyof AppearancePaintProps;
         const useAppearanceProp = activeAppearance && activeAppearance.hasPaintProperty(appearanceName);
@@ -493,17 +497,24 @@ export class SymbolPropertyBinderUBO {
             activeAppearance.paintProperties.get(appearanceName) as unknown as PossiblyEvaluatedPropertyValue<[number, number]> | undefined :
             paint.get(propName as keyof typeof paint._values) as unknown as PossiblyEvaluatedPropertyValue<[number, number]> | undefined;
 
-        if (!prop) return [0, 0];
+        if (!prop) {
+            flat[flatOffset] = 0; flat[flatOffset + 1] = 0; flat[flatOffset + 2] = 0; flat[flatOffset + 3] = 0;
+            return;
+        }
 
         // translate is a DataConstantProperty at the layer level (not data-driven), so paint.get()
         // returns the raw [number, number] value directly — no isConstant() wrapper.
         // The appearance path uses DataDrivenProperty and goes through the branches below.
         if (typeof prop.isConstant !== 'function') {
-            return (prop as unknown as [number, number]) || [0, 0];
+            const tv = (prop as unknown as [number, number]) || [0, 0];
+            flat[flatOffset] = tv[0]; flat[flatOffset + 1] = tv[1]; flat[flatOffset + 2] = 0; flat[flatOffset + 3] = 0;
+            return;
         }
 
         if (prop.isConstant()) {
-            return prop.constantOr([0, 0]);
+            const tv = prop.constantOr([0, 0]);
+            flat[flatOffset] = tv[0]; flat[flatOffset + 1] = tv[1]; flat[flatOffset + 2] = 0; flat[flatOffset + 3] = 0;
+            return;
         }
 
         const minVal: [number, number] = prop.property.evaluate(
@@ -511,14 +522,20 @@ export class SymbolPropertyBinderUBO {
             ctx.canonical, ctx.availableImages, prop.iconImageUseTheme, ctx.formattedSection
         ) || [0, 0];
 
+        flat[flatOffset] = minVal[0];
+        flat[flatOffset + 1] = minVal[1];
+
         if (isZoomDep) {
             const maxVal: [number, number] = prop.property.evaluate(
                 prop.value, ctx.paramsNext, ctx.feature, ctx.featureState,
                 ctx.canonical, ctx.availableImages, prop.iconImageUseTheme, ctx.formattedSection
             ) || [0, 0];
-            return [minVal[0], minVal[1], maxVal[0], maxVal[1]];
+            flat[flatOffset + 2] = maxVal[0];
+            flat[flatOffset + 3] = maxVal[1];
+        } else {
+            flat[flatOffset + 2] = 0;
+            flat[flatOffset + 3] = 0;
         }
-        return minVal;
     }
 
     /**
@@ -572,19 +589,16 @@ export class SymbolPropertyBinderUBO {
      * Hash data-driven property values for deduplication.
      * Returns an empty string when there are no data-driven properties (all constant).
      */
-    private _hashDataDrivenValues(values: Array<PropertyValue | null>, header: SymbolPropertyHeader): string {
+    private _hashDataDrivenValues(flat: Float32Array, header: SymbolPropertyHeader): string {
         if (header.dataDrivenMask === 0) return ''; // All constant — single entry
         const parts: string[] = [];
-        for (let i = 0; i < 9; i++) {
+        for (let i = 0; i < this.propDefs.length; i++) {
             if ((header.dataDrivenMask & (1 << i)) === 0) continue;
-            const v = values[i];
-            if (v === null || v === undefined) {
-                parts.push('null');
-            } else if (Array.isArray(v)) {
-                parts.push((v as number[]).join(','));
-            } else {
-                parts.push(String(v));
-            }
+            const offset = SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[i];
+            const size = SymbolPropertiesUBO.EVAL_FLAT_SIZES[i];
+            let entry = String(flat[offset]);
+            for (let j = 1; j < size; j++) entry += `,${String(flat[offset + j])}`;
+            parts.push(entry);
         }
         return parts.join('|');
     }
@@ -614,8 +628,7 @@ export class SymbolPropertyBinderUBO {
         // Build header on first feature
         if (!this.cachedHeader) {
             this.cachedHeader = this.buildHeader();
-            const propsDwords = this.uboSizeDwords;
-            const max = SymbolPropertiesUBO.getMaxFeatureCount(this.cachedHeader, propsDwords);
+            const max = SymbolPropertiesUBO.getMaxFeatureCount(this.cachedHeader, this.uboSizeDwords);
             this.maxFeaturesPerBatch = isFinite(max) ? max : Number.MAX_SAFE_INTEGER;
         }
         const header = this.cachedHeader;
@@ -931,4 +944,4 @@ export class SymbolPropertyBinderUBO {
 // 'layer' is omitted because SymbolStyleLayer is not serializable. It must be re-assigned on
 // the main thread before any main-thread method (getConstantUniformValues, bind, etc.) is called.
 // See draw_symbol.ts: `buffers.uboBinder.layer = layer` before drawSymbolElements().
-register(SymbolPropertyBinderUBO, 'SymbolPropertyBinderUBO', {omit: ['layer', 'cachedParams', 'cachedParamsNext', 'cachedBrightness', 'propertyHashToUBOIndex', 'cachedConstantUniforms', 'cachedConstantRenderZoom', 'cachedConstantBrightness', 'activeAppearanceByVtIndex', '_evalResult']});
+register(SymbolPropertyBinderUBO, 'SymbolPropertyBinderUBO', {omit: ['layer', 'cachedParams', 'cachedParamsNext', 'cachedBrightness', 'propertyHashToUBOIndex', 'cachedConstantUniforms', 'cachedConstantRenderZoom', 'cachedConstantBrightness', 'activeAppearanceByVtIndex', '_evalFlat']});

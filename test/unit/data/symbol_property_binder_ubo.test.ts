@@ -1,5 +1,5 @@
 import {test, expect, describe} from '../../util/vitest';
-import {SymbolPropertiesUBO, type SymbolPropertyHeader, type PropertyValue} from '../../../src/data/bucket/symbol_properties_ubo';
+import {SymbolPropertiesUBO, type SymbolPropertyHeader} from '../../../src/data/bucket/symbol_properties_ubo';
 import {SymbolPropertyBinderUBO} from '../../../src/data/bucket/symbol_property_binder_ubo';
 import {SymbolBuffers} from '../../../src/data/bucket/symbol_bucket';
 import {ProgramConfigurationSet} from '../../../src/data/program_configuration';
@@ -61,10 +61,11 @@ describe('SymbolPropertiesUBO', () => {
         ubo.writeHeader(header);
 
         // Feature 0 DD block: starts at dword featureIndex * dataDrivenBlockSizeDwords = 0 * 4 = 0
-        const ddValues: Array<PropertyValue | null> = new Array<PropertyValue | null>(8).fill(null);
-        ddValues[2] = 0.9; // opacity = 0.9
+        // opacity is property index 2, flat offset = EVAL_FLAT_OFFSETS[2] = 8
+        const flat = new Float32Array(SymbolPropertiesUBO.EVAL_FLAT_TOTAL);
+        flat[SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[2]] = 0.9; // opacity = 0.9
 
-        ubo.writeDataDrivenBlock(ddValues, 0, header);
+        ubo.writeDataDrivenBlock(flat, 0, header);
 
         expect(ubo.propertiesData[0]).toBeCloseTo(0.9, 5); // opacity for feature 0
     });
@@ -80,10 +81,11 @@ describe('SymbolPropertiesUBO', () => {
         };
         ubo.writeHeader(header);
 
-        const ddValues: Array<PropertyValue | null> = new Array<PropertyValue | null>(9).fill(null);
-        ddValues[2] = 1.0; // opacity = 1.0 for feature 1
+        // opacity is property index 2, flat offset = EVAL_FLAT_OFFSETS[2] = 8
+        const flat = new Float32Array(SymbolPropertiesUBO.EVAL_FLAT_TOTAL);
+        flat[SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[2]] = 1.0; // opacity = 1.0 for feature 1
 
-        ubo.writeDataDrivenBlock(ddValues, 1, header);
+        ubo.writeDataDrivenBlock(flat, 1, header);
 
         // Feature 1 DD block: 1 * 4 = 4 (dataDrivenBlockSizeDwords=4, featureIndex=1)
         expect(ubo.propertiesData[4]).toBeCloseTo(1.0, 5);
@@ -91,8 +93,8 @@ describe('SymbolPropertiesUBO', () => {
 
     test('getMaxFeatureCount returns correct value', () => {
         // dataDrivenBlockSizeVec4=1 → dataDrivenBlockSizeDwords=4
-        // propsDwords = 4096 - 12 (HEADER_DWORDS) = 4084
-        // maxFeatures = floor(4084 / 4) = 1021
+        // propsDwords = 4096
+        // maxFeatures = floor(4096) = 1024
         const header: SymbolPropertyHeader = {
             dataDrivenMask: 0b00000100,
             zoomDependentMask: 0,
@@ -100,7 +102,7 @@ describe('SymbolPropertiesUBO', () => {
             dataDrivenBlockSizeVec4: 1,
             offsets: [0, 0, 0, 0, 0, 0, 0, 0, 0],
         };
-        expect(SymbolPropertiesUBO.getMaxFeatureCount(header)).toEqual(1021);
+        expect(SymbolPropertiesUBO.getMaxFeatureCount(header)).toEqual(1024);
     });
 
     test('getMaxFeatureCount returns Infinity when all constant', () => {
@@ -222,8 +224,8 @@ describe('SymbolPropertyBinderUBO', () => {
 
             const result = binder.evaluateAllProperties(feature, {}, canonical, []);
 
-            // Opacity is at index 2, constant, should be 0.8
-            expect(result[2]).toBeCloseTo(0.8, 5);
+            // Opacity is property index 2, flat offset = EVAL_FLAT_OFFSETS[2] = 8
+            expect(result[SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[2]]).toBeCloseTo(0.8, 5);
         });
 
         test('handles data-driven opacity from feature property', () => {
@@ -235,7 +237,7 @@ describe('SymbolPropertyBinderUBO', () => {
 
             const result = binder.evaluateAllProperties(feature, {}, canonical, []);
 
-            expect(result[2]).toBeCloseTo(0.75, 5);
+            expect(result[SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[2]]).toBeCloseTo(0.75, 5);
         });
 
         test('handles constant fill_color as [r,g,b,a]', () => {
@@ -247,9 +249,9 @@ describe('SymbolPropertyBinderUBO', () => {
 
             const result = binder.evaluateAllProperties(feature, {}, canonical, []);
 
-            // fill_color at index 0 is [r, g, b, a] for constant (non-zoom)
-            expect(Array.isArray(result[0])).toBeTruthy();
-            expect((result[0] as number[]).length).toEqual(4);
+            // result is a Float32Array(24); fill_color occupies flat offsets 0-3
+            expect(result instanceof Float32Array).toBeTruthy();
+            expect(result.length).toEqual(SymbolPropertiesUBO.EVAL_FLAT_TOTAL);
         });
 
         test('missing properties return defaults', () => {
@@ -260,13 +262,14 @@ describe('SymbolPropertyBinderUBO', () => {
             const canonical = new CanonicalTileID(0, 0, 0);
 
             const result = binder.evaluateAllProperties(feature, {}, canonical, []);
+            const O = SymbolPropertiesUBO.EVAL_FLAT_OFFSETS;
 
-            // opacity default = 1.0
-            expect(result[2]).toBeCloseTo(1.0, 5);
-            // halo_width default = 0.0
-            expect(result[3]).toBeCloseTo(0.0, 5);
-            // halo_blur default = 0.0
-            expect(result[4]).toBeCloseTo(0.0, 5);
+            // opacity (prop index 2) default = 1.0
+            expect(result[O[2]]).toBeCloseTo(1.0, 5);
+            // halo_width (prop index 3) default = 0.0
+            expect(result[O[3]]).toBeCloseTo(0.0, 5);
+            // halo_blur (prop index 4) default = 0.0
+            expect(result[O[4]]).toBeCloseTo(0.0, 5);
         });
     });
 

@@ -55,6 +55,25 @@ export class SymbolPropertiesUBO {
     static readonly HEADER_DWORDS = 12; // 3 uvec4s (never changes)
     static readonly HEADER_BYTES = 48;  // HEADER_DWORDS * 4
 
+    // Flat evaluation buffer layout — per-property start offsets and slot counts in a Float32Array(EVAL_FLAT_TOTAL).
+    // fill_color[0..3], halo_color[4..7], opacity[8..9], halo_width[10..11],
+    // halo_blur[12..13], emissive_strength[14..15], occlusion_opacity[16..17],
+    // z_offset[18..19], translate[20..23].
+    // Colors and translate always use 4 slots; scalars always use 2 (second = 0 for non-zoom).
+    static readonly EVAL_FLAT_OFFSETS: readonly number[] = [0, 4, 8, 10, 12, 14, 16, 18, 20];
+    static readonly EVAL_FLAT_SIZES: readonly number[]   = [4, 4, 2,  2,  2,  2,  2,  2,  4];
+    static readonly EVAL_FLAT_TOTAL = 24;
+
+    // Until we support layout properties in UBOs, blockIndicesData is just
+    // an identity mapping since deduplication happens at the vertex attribute level
+    // (duplicate features get the same index written into the vertex buffer, so no
+    // indirection is needed). When we move layout properties to UBO we'll use this
+    // array to deduplicate paint properties and add a new array for layout properties
+    // deduplication.
+    // Until we need that, we just create the identity-mapping once and create a copy
+    // of it
+    private static _blockIndicesTemplate: Uint32Array | null = null;
+
     propsDwords: number;           // dword count for u_properties
     totalBytes: number;            // byte size of each of properties / block-indices buffers
     headerData: Uint32Array;       // 12 uint32s (3 uvec4s)
@@ -77,14 +96,13 @@ export class SymbolPropertiesUBO {
         this.headerData = new Uint32Array(SymbolPropertiesUBO.HEADER_DWORDS);
         this.propertiesData = new Float32Array(this.propsDwords);
 
-        // Block indices are write-once identity mapping: blockIndices[i] = i.
-        // Deduplication works by assigning duplicate features the same a_feature_index
-        // (localFeatureIndex), so the shader maps each index to itself — no indirection needed.
-        // This buffer never changes after construction.
-        this.blockIndicesData = new Uint32Array(this.propsDwords);
-        for (let i = 0; i < this.propsDwords; i++) {
-            this.blockIndicesData[i] = i;
+        if (!SymbolPropertiesUBO._blockIndicesTemplate) {
+            SymbolPropertiesUBO._blockIndicesTemplate = new Uint32Array(this.propsDwords);
+            for (let i = 0; i < this.propsDwords; i++) {
+                SymbolPropertiesUBO._blockIndicesTemplate[i] = i;
+            }
         }
+        this.blockIndicesData = new Uint32Array(SymbolPropertiesUBO._blockIndicesTemplate);
 
         if (context) {
             this._initBuffers(context);
@@ -141,12 +159,13 @@ export class SymbolPropertiesUBO {
     }
 
     /**
-     * Write all data-driven properties for one feature.
+     * Write all data-driven properties for one feature from a flat evaluation buffer.
      *
      * The feature's block starts at dword offset: featureIndex * dataDrivenBlockSizeDwords.
      * (No constant block — constant properties are passed as u_spp_* uniforms at draw time.)
+     * `flat` is a Float32Array(EVAL_FLAT_TOTAL) produced by evaluateAllProperties().
      */
-    writeDataDrivenBlock(values: Array<PropertyValue | null>, featureIndex: number, header: SymbolPropertyHeader): void {
+    writeDataDrivenBlock(flat: Float32Array, featureIndex: number, header: SymbolPropertyHeader): void {
         const dataDrivenBlockSizeDwords = header.dataDrivenBlockSizeVec4 * 4;
         if (dataDrivenBlockSizeDwords === 0) return;
         const base = featureIndex * dataDrivenBlockSizeDwords;
@@ -155,8 +174,7 @@ export class SymbolPropertiesUBO {
         }
         for (let i = 0; i < 9; i++) {
             if ((header.dataDrivenMask & (1 << i)) === 0) continue;
-            if (values[i] === null || values[i] === undefined) continue;
-            this._writeProperty(base + header.offsets[i], i, values[i], header.zoomDependentMask);
+            this._copyFromFlat(base + header.offsets[i], i, flat, SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[i], header.zoomDependentMask);
         }
     }
 
@@ -164,53 +182,34 @@ export class SymbolPropertiesUBO {
      * Maximum number of features that fit in one UBO batch given a header.
      * Returns Infinity when dataDrivenBlockSizeVec4 is 0 (all properties constant).
      */
-    static getMaxFeatureCount(header: SymbolPropertyHeader, propsDwords: number = 4096 - SymbolPropertiesUBO.HEADER_DWORDS): number {
+    static getMaxFeatureCount(header: SymbolPropertyHeader, propsDwords: number = 4096): number {
         const dataDrivenBlockSizeDwords = header.dataDrivenBlockSizeVec4 * 4;
         if (dataDrivenBlockSizeDwords === 0) return Infinity;
         return Math.floor(propsDwords / dataDrivenBlockSizeDwords);
     }
 
     /**
-     * Write a single property value at the given dword offset in propertiesData.
+     * Copy one property's values from the flat evaluation buffer into propertiesData.
      *
-     * Colors (propIdx < 2) always occupy 4 dwords — non-premultiplied, packed:
-     *   non-zoom → [packed0, packed1, 0, 0]
-     *   zoom-dep → [packMin[0], packMin[1], packMax[0], packMax[1]]
-     * Floats occupy 1 dword (non-zoom) or 2 dwords (zoom-dep, [min, max]).
+     * Colors (propIdx < 2) and zoom-dep translate always copy 4 dwords.
+     * Non-zoom translate and zoom-dep scalars copy 2 dwords. Non-zoom scalars copy 1 dword.
      */
-    private _writeProperty(dwordOffset: number, propIdx: number, value: PropertyValue, zoomDependentMask: number): void {
+    private _copyFromFlat(dwordOffset: number, propIdx: number, flat: Float32Array, flatOffset: number, zoomDependentMask: number): void {
         const pd = this.propertiesData;
-        // Property order is fixed by the GL Native contract: 0=fill_color, 1=halo_color (colors),
-        // 2-7=floats, 8=translate (vec2).
-        // This must stay in sync with _getPropDefs() in symbol_property_binder_ubo.ts.
         const isColor = propIdx < 2;
-        const isVec2 = propIdx === 8; // translate: [tx, ty] non-zoom or [tx_min, ty_min, tx_max, ty_max] zoom-dep
+        const isVec2 = propIdx === 8;
         const isZoomDep = (zoomDependentMask & (1 << propIdx)) !== 0;
 
-        if (isColor) {
-            const v = value as [number, number, number, number];
-            pd[dwordOffset]     = v[0];
-            pd[dwordOffset + 1] = v[1];
-            pd[dwordOffset + 2] = v[2];
-            pd[dwordOffset + 3] = v[3];
-        } else if (isVec2 && isZoomDep) {
-            // zoom-dep translate: [tx_min, ty_min, tx_max, ty_max], vec4-aligned
-            const v = value as [number, number, number, number];
-            pd[dwordOffset]     = v[0]; // tx_min
-            pd[dwordOffset + 1] = v[1]; // ty_min
-            pd[dwordOffset + 2] = v[2]; // tx_max
-            pd[dwordOffset + 3] = v[3]; // ty_max
-        } else if (isVec2) {
-            // non-zoom translate: [tx, ty], 2-aligned (both within same vec4)
-            const v = value as [number, number];
-            pd[dwordOffset]     = v[0]; // tx
-            pd[dwordOffset + 1] = v[1]; // ty
-        } else if (isZoomDep) {
-            const v = value as [number, number];
-            pd[dwordOffset]     = v[0]; // min
-            pd[dwordOffset + 1] = v[1]; // max
+        if (isColor || (isVec2 && isZoomDep)) {
+            pd[dwordOffset]     = flat[flatOffset];
+            pd[dwordOffset + 1] = flat[flatOffset + 1];
+            pd[dwordOffset + 2] = flat[flatOffset + 2];
+            pd[dwordOffset + 3] = flat[flatOffset + 3];
+        } else if (isVec2 || isZoomDep) {
+            pd[dwordOffset]     = flat[flatOffset];
+            pd[dwordOffset + 1] = flat[flatOffset + 1];
         } else {
-            pd[dwordOffset] = value as number;
+            pd[dwordOffset] = flat[flatOffset];
         }
     }
 
