@@ -178,10 +178,7 @@ vec4 getBaseColor() {
 
 #ifdef UNPREMULT_TEXTURE_IN_SHADER
     // Unpremultiply alpha for decals and opaque materials.
-    if(texColor.w > 0.0) {
-        texColor.rgb /= texColor.w;
-    }
-    texColor.w = 1.0;
+    texColor = vec4(unpremultiplyColor(texColor), 1.0);
 #endif
 
     if(u_baseTextureIsAlpha) {

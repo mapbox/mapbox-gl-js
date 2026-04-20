@@ -117,13 +117,24 @@ vec4 textureLodCustom(sampler2D image, highp vec2 pos, highp vec2 lod_coord) {
     return textureLod(image, pos, lod);
 }
 
-vec4 applyLUT(highp sampler3D lut, vec4 col) {
-    vec3 size = vec3(textureSize(lut, 0));
-    // Sample from the center of the pixel in the LUT
-    vec3 uvw = (col.rbg * float(size - 1.0) + 0.5) / size;
-    return vec4(texture(lut, uvw).rgb * col.a, col.a);
+vec4 premultiplyColor(vec3 nonPremultipliedColor, float a) {
+    return vec4(nonPremultipliedColor * a, a);
+}
+
+vec3 unpremultiplyColor(vec4 premultipliedColor) {
+    if (premultipliedColor.a > 0.0) {
+        return premultipliedColor.rgb / premultipliedColor.a;
+    }
+    return premultipliedColor.rgb;
 }
 
 vec3 applyLUT(highp sampler3D lut, vec3 col) {
-    return applyLUT(lut, vec4(col, 1.0)).rgb;
+    vec3 size = vec3(textureSize(lut, 0));
+    // Sample from the center of the pixel in the LUT
+    vec3 uvw = (col.rbg * float(size - 1.0) + 0.5) / size;
+    return texture(lut, uvw).rgb;
+}
+
+vec4 applyLUT(highp sampler3D lut, vec4 premultipliedColor) {
+    return premultiplyColor(applyLUT(lut, unpremultiplyColor(premultipliedColor)), premultipliedColor.a);
 }
