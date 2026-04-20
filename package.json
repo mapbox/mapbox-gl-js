@@ -83,7 +83,7 @@
     "browserslist-to-esbuild": "^2.1.1",
     "cssnano": "^7.0.7",
     "d3-queue": "^3.0.7",
-    "diff": "^8.0.2",
+    "diff": "^9.0.0",
     "dts-bundle-generator": "^9.5.1",
     "ejs": "^5.0.1",
     "envify": "^4.1.0",
