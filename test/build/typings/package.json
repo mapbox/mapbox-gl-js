@@ -1,5 +1,5 @@
 {
-  "name": "mapbox-gl-ts",
+  "name": "typescript-build-test",
   "scripts": {
     "pretest": "./pretest.sh",
     "tsc": "tsc --project tsconfig.json",

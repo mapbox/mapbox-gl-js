@@ -1,5 +1,5 @@
-import mapbox from 'mapbox-gl/dist/esm/mapbox-gl.js';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import mapbox from 'mapbox-gl/esm';
+import 'mapbox-gl/mapbox-gl.css';
 
 mapbox.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 

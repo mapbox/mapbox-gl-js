@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "main": "index.js",
   "scripts": {
+    "prebuild": "./pretest.sh",
     "build": "webpack --mode=development"
   },
   "devDependencies": {

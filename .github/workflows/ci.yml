@@ -44,6 +44,7 @@ jobs:
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
     - run: npx playwright install chromium --with-deps --no-shell
+    - run: npm run build-token
     - run: npm run build-dev
     - run: npm run build-prod-min
     - run: npm run build-esm-prod-min
@@ -51,27 +52,16 @@ jobs:
     - run: npm run build-csp
     - run: npm run build-css
     - run: npm run test-build
-    - run: xvfb-run -a npm run test-csp
     - run: xvfb-run -a npm run test-esm
-    - run: npm run build-token
+    - run: xvfb-run -a npm run test-csp
+    - run: npm run build-dts
     - run: npm run build -w vite-build-test
     - run: npm run build -w webpack-build-test
-    - run: npm run size
+    - run: npm run test -w typescript-build-test
     - run: npm run build-pmtiles
+    - run: npm run size
     - run: npm run prepare-release-pages
       if: ${{ always() }}
-
-  test-typings:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        cache: npm
-        node-version-file: '.nvmrc'
-        cache-dependency-path: 'package-lock.json'
-    - run: npm ci --no-audit --no-fund
-    - run: npm test --workspace test/build/typings
 
   test-unit:
     runs-on: ubuntu-latest
@@ -97,7 +87,6 @@ jobs:
     needs: [
       check,
       test-build,
-      test-typings,
       test-unit
     ]
     steps:
@@ -127,6 +116,5 @@ jobs:
         |-----|--------|
         | check | $(status_emoji "${{ needs.check.result }}") |
         | test-build | $(status_emoji "${{ needs.test-build.result }}") |
-        | test-typings | $(status_emoji "${{ needs.test-typings.result }}") |
         | test-unit | $(status_emoji "${{ needs.test-unit.result }}") |
         EOF

@@ -4,12 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "prebuild": "./pretest.sh",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
-    "mapbox-gl": "file:../../../",
     "vite": "^8.0.8"
   }
 }
