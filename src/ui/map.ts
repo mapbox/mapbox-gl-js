@@ -2210,9 +2210,7 @@ export class Map extends Camera {
 
     /**
      * Add an interaction — a named gesture handler of a given type.
-     * *This API is experimental and subject to change in future versions*.
      *
-     * @experimental
      * @param {string} id The ID of the interaction.
      * @param {Object} interaction The interaction object with the following properties.
      * @param {string} interaction.type The type of gesture to handle (e.g. 'click').
@@ -2258,9 +2256,7 @@ export class Map extends Camera {
 
     /**
      * Remove an interaction previously added with `addInteraction`.
-     * *This API is experimental and subject to change in future versions*.
      *
-     * @experimental
      * @param {string} id The id of the interaction to remove.
      * @returns {Map} Returns itself to allow for method chaining.
      *
