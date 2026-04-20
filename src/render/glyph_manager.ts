@@ -5,6 +5,7 @@ import config from '../util/config';
 import {asyncAll, warnOnce} from '../util/util';
 import {AlphaImage} from '../util/image';
 
+import type {FontstackCompositing} from '../style/glyph_loader';
 import type {Class} from '../types/class';
 import type {GlyphRange} from '../style/load_glyph_range';
 import type {StyleGlyph, StyleGlyphs} from '../style/style_glyph';
@@ -77,7 +78,7 @@ class GlyphManager {
 
     static TinySDF: Class<TinySDF>;
 
-    constructor(requestManager: RequestManager, localGlyphMode: number, localFontFamily?: string, useServerFontComposition?: boolean) {
+    constructor(requestManager: RequestManager, localGlyphMode: number, localFontFamily?: string, fontstackCompositing?: FontstackCompositing) {
         this.requestManager = requestManager;
         this.localGlyphMode = localGlyphMode;
         this.localFontFamily = localFontFamily;
@@ -89,7 +90,7 @@ class GlyphManager {
             '500': {},
             '900': {}
         };
-        this.glyphLoader = new GlyphLoader({useServerFontComposition});
+        this.glyphLoader = new GlyphLoader({fontstackCompositing});
     }
 
     setURL(url: string) {

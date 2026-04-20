@@ -6,8 +6,18 @@ import type {StyleGlyphs} from './style_glyph';
 import type {RequestManager} from '../util/mapbox';
 import type {Callback} from '../types/callback';
 
+/**
+ * Controls how multi-font fontstacks are composited.
+ *
+ * - `'client'` (default): Each font in a comma-separated fontstack is loaded individually
+ *   and missing glyphs are filled from subsequent fallback fonts on the client.
+ * - `'server'`: The full fontstack string is passed as-is to the glyph server, which must
+ *   support server-side fontstack composition.
+ */
+export type FontstackCompositing = 'client' | 'server';
+
 type GlyphLoaderOptions = {
-    useServerFontComposition?: boolean;
+    fontstackCompositing?: FontstackCompositing;
 };
 
 /*
@@ -24,7 +34,7 @@ class GlyphLoader {
 
     private cachedRanges: Map<string, GlyphRange | null>;
 
-    private useServerFontComposition: boolean;
+    private fontstackCompositing: FontstackCompositing;
 
     // Exposed as static to enable stubbing in unit tests
     static loadGlyphRange: typeof loadGlyphRange;
@@ -32,7 +42,7 @@ class GlyphLoader {
     constructor(options?: GlyphLoaderOptions) {
         this.pendingRequests = new Map();
         this.cachedRanges = new Map();
-        this.useServerFontComposition = options && options.useServerFontComposition !== undefined ? options.useServerFontComposition : true;
+        this.fontstackCompositing = (options && options.fontstackCompositing) || 'client';
     }
 
     loadGlyphRange(
@@ -42,7 +52,7 @@ class GlyphLoader {
         requestManager: RequestManager,
         callback: Callback<GlyphRange>
     ): void {
-        if (this.useServerFontComposition) {
+        if (this.fontstackCompositing === 'server') {
             GlyphLoader.loadGlyphRange(fontstack, range, urlTemplate, requestManager, callback);
             return;
         }

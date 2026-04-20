@@ -3,7 +3,8 @@
     "metadata": {
         "test": {
             "width": 256,
-            "height": 256
+            "height": 256,
+            "fontstackCompositing": "server"
         }
     },
     "sources": {

@@ -664,6 +664,45 @@ describe('Map#setStyle', () => {
         });
     });
 
+    describe('fontstackCompositing', () => {
+        test('defaults _fontstackCompositing to "client" when not provided', () => {
+            const map = createMap();
+            expect(map._fontstackCompositing).toEqual('client');
+        });
+
+        test('propagates fontstackCompositing from Map constructor to GlyphLoader', () => {
+            const map = createMap({fontstackCompositing: 'server'});
+            expect(map._fontstackCompositing).toEqual('server');
+            expect(map.style.glyphManager.glyphLoader.fontstackCompositing).toEqual('server');
+        });
+
+        test('setStyle with changed fontstackCompositing triggers full rebuild and updates GlyphLoader', async () => {
+            const map = createMap({fontstackCompositing: 'server'});
+            await waitFor(map, 'style.load');
+            expect(map.style.glyphManager.glyphLoader.fontstackCompositing).toEqual('server');
+
+            map.setStyle(createStyle(), {fontstackCompositing: 'client'});
+            await waitFor(map, 'style.load');
+
+            expect(map._fontstackCompositing).toEqual('client');
+            expect(map.style.glyphManager.glyphLoader.fontstackCompositing).toEqual('client');
+        });
+
+        test('setStyle updates _fontstackCompositing across successive calls', async () => {
+            const map = createMap();
+            await waitFor(map, 'style.load');
+            expect(map._fontstackCompositing).toEqual('client');
+
+            map.setStyle(createStyle(), {fontstackCompositing: 'server'});
+            await waitFor(map, 'style.load');
+            expect(map._fontstackCompositing).toEqual('server');
+
+            map.setStyle(createStyle(), {fontstackCompositing: 'client'});
+            await waitFor(map, 'style.load');
+            expect(map._fontstackCompositing).toEqual('client');
+        });
+    });
+
     // eslint-disable-next-line @typescript-eslint/require-await
     test('emits load event after a style is set', async () => {
         vi.spyOn(Map.prototype, '_detectMissingCSS').mockImplementation(() => {});

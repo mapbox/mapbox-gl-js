@@ -150,6 +150,7 @@ export async function renderMap(style, options, currentTestName) {
         scaleFactor: options.scaleFactor || 1,
         fadeDuration: options.fadeDuration || 0,
         localIdeographFontFamily: options.localIdeographFontFamily || false,
+        fontstackCompositing: options.fontstackCompositing,
         projection: options.projection,
         precompilePrograms: false,
         crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,

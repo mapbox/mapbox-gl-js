@@ -30,6 +30,33 @@ const createLoadGlyphRangeStub = (impl: typeof GlyphLoader.loadGlyphRange) => {
     return vi.spyOn(GlyphLoader, 'loadGlyphRange').mockImplementation(impl);
 };
 
+test('GlyphLoader defaults to client-side composition when constructed without options', async () => {
+    const primaryData = createMockGlyphRange([65, 66]);
+    const fallbackData = createMockGlyphRange([67]);
+    const stub = createLoadGlyphRangeStub(
+        (font: string, _range: number, _url: string, _rm: RequestManager, cb: Callback<GlyphRange>) => {
+            setTimeout(() => {
+                if (font === 'Primary') cb(null, primaryData);
+                else cb(null, fallbackData);
+            }, 0);
+        }
+    );
+
+    const loader = new GlyphLoader();
+
+    await new Promise<void>(resolve => {
+        loader.loadGlyphRange('Primary,Fallback', 0, urlTemplate, mockRequestManager, (err, result) => {
+            expect(err).toBeFalsy();
+            expect(result).toBeTruthy();
+            // Two per-font requests prove client-side composition was chosen, not a single server-side request.
+            expect(stub).toHaveBeenCalledTimes(2);
+            expect(stub).toHaveBeenCalledWith('Primary', 0, urlTemplate, mockRequestManager, expect.any(Function));
+            expect(stub).toHaveBeenCalledWith('Fallback', 0, urlTemplate, mockRequestManager, expect.any(Function));
+            resolve();
+        });
+    });
+});
+
 test('GlyphLoader loads single font directly', async () => {
     const mockData = createMockGlyphRange([65, 66, 67]);
     const stub = createLoadGlyphRangeStub(
@@ -39,7 +66,7 @@ test('GlyphLoader loads single font directly', async () => {
     );
 
     const loader = new GlyphLoader({
-        useServerFontComposition: false
+        fontstackCompositing: 'client'
     });
 
     await new Promise<void>(resolve => {
@@ -77,7 +104,7 @@ test('GlyphLoader performs client-side composition with multiple fonts', async (
     );
 
     const loader = new GlyphLoader({
-        useServerFontComposition: false
+        fontstackCompositing: 'client'
     });
 
     await new Promise<void>(resolve => {
@@ -109,7 +136,7 @@ test('GlyphLoader deduplicates concurrent requests for same font/range', async (
     );
 
     const loader = new GlyphLoader({
-        useServerFontComposition: false
+        fontstackCompositing: 'client'
     });
     const results: Array<GlyphRange | null | undefined> = [];
 
@@ -157,7 +184,7 @@ test('GlyphLoader deduplicates shared fallback fonts across different fontstacks
     );
 
     const loader = new GlyphLoader({
-        useServerFontComposition: false
+        fontstackCompositing: 'client'
     });
 
     await new Promise<void>(resolve => {
@@ -202,7 +229,7 @@ test('GlyphLoader caches completed requests', async () => {
     );
 
     const loader = new GlyphLoader({
-        useServerFontComposition: false
+        fontstackCompositing: 'client'
     });
 
     // First request
@@ -244,7 +271,7 @@ test('GlyphLoader handles partial results when one font fails', async () => {
     );
 
     const loader = new GlyphLoader({
-        useServerFontComposition: false
+        fontstackCompositing: 'client'
     });
 
     await new Promise<void>(resolve => {
@@ -267,7 +294,7 @@ test('GlyphLoader returns error when all fonts fail', async () => {
     );
 
     const loader = new GlyphLoader({
-        useServerFontComposition: false
+        fontstackCompositing: 'client'
     });
 
     await new Promise<void>(resolve => {
@@ -279,7 +306,7 @@ test('GlyphLoader returns error when all fonts fail', async () => {
     });
 });
 
-test('GlyphLoader uses server composition when useServerFontComposition is true', async () => {
+test('GlyphLoader uses server composition when fontstackCompositing is \'server\'', async () => {
     const mockData = createMockGlyphRange([65, 66]);
     const stub = createLoadGlyphRangeStub(
         (_font: string, _range: number, _url: string, _rm: RequestManager, cb: Callback<GlyphRange>) => {
@@ -287,7 +314,7 @@ test('GlyphLoader uses server composition when useServerFontComposition is true'
         }
     );
 
-    const loader = new GlyphLoader({useServerFontComposition: true});
+    const loader = new GlyphLoader({fontstackCompositing: 'server'});
 
     await new Promise<void>(resolve => {
         loader.loadGlyphRange('Primary,Fallback', 0, urlTemplate, mockRequestManager, (err, result) => {
@@ -311,7 +338,7 @@ test('GlyphLoader trims whitespace from font names', async () => {
         }
     );
 
-    const loader = new GlyphLoader({useServerFontComposition: false});
+    const loader = new GlyphLoader({fontstackCompositing: 'client'});
 
     await new Promise<void>(resolve => {
         loader.loadGlyphRange('  Arial  ,  Fallback  ', 0, urlTemplate, mockRequestManager, (err, result) => {
@@ -344,7 +371,7 @@ test('GlyphLoader uses ascender/descender from first font that provides them', a
     );
 
     const loader = new GlyphLoader({
-        useServerFontComposition: false
+        fontstackCompositing: 'client'
     });
 
     await new Promise<void>(resolve => {

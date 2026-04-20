@@ -73,6 +73,7 @@ import {ImageProvider} from '../render/image_provider';
 import IndoorManager from './indoor_manager';
 import {StyleBOMUtils} from './style_bom_utils';
 
+import type {FontstackCompositing} from './glyph_loader';
 import type {PropertyValidatorOptions} from '../style-spec/validate/validate_property';
 import type Tile from '../source/tile';
 import type GeoJSONSource from '../source/geojson_source';
@@ -228,7 +229,7 @@ export type StyleOptions = {
     validate?: boolean;
     localFontFamily?: string | null | undefined;
     localIdeographFontFamily?: string;
-    useServerFontComposition?: boolean;
+    fontstackCompositing?: FontstackCompositing;
     dispatcher?: Dispatcher;
     imageManager?: ImageManager;
     glyphManager?: GlyphManager;
@@ -465,7 +466,7 @@ class Style extends Evented<MapEvents> {
                     LocalGlyphMode.all :
                     (options.localIdeographFontFamily ? LocalGlyphMode.ideographs : LocalGlyphMode.none),
                 options.localFontFamily || options.localIdeographFontFamily,
-                options.useServerFontComposition);
+                options.fontstackCompositing);
         }
 
         if (options.modelManager) {

@@ -60,6 +60,7 @@ import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image';
 import type {StyleOptions, StyleSetterOptions, AnyLayer, FeatureSelector, SourceSelector, QueryRenderedFeaturesParams, QueryRenderedFeaturesetParams} from '../style/style';
+import type {FontstackCompositing} from '../style/glyph_loader';
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type {ScrollZoomHandlerOptions} from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
@@ -126,7 +127,7 @@ export type SetStyleOptions = {
     };
     localFontFamily: StyleOptions['localFontFamily'];
     localIdeographFontFamily: StyleOptions['localIdeographFontFamily'];
-    useServerFontComposition?: StyleOptions['useServerFontComposition'];
+    fontstackCompositing?: FontstackCompositing;
 };
 
 type Listener<T extends MapEventType> = (event: MapEventOf<T>) => void;
@@ -212,7 +213,7 @@ export type MapOptions = {
     fadeDuration?: number;
     localFontFamily?: string;
     localIdeographFontFamily?: string;
-    useServerFontComposition?: boolean;
+    fontstackCompositing?: FontstackCompositing;
     performanceMetricsCollection?: boolean;
     tessellationStep?: number;
     scaleFactor?: number;
@@ -267,7 +268,7 @@ const defaultOptions = {
     maxTileCacheSize: null,
     localIdeographFontFamily: 'sans-serif',
     localFontFamily: null,
-    useServerFontComposition: true,
+    fontstackCompositing: 'client',
     transformRequest: null,
     accessToken: null,
     fadeDuration: 300,
@@ -392,6 +393,9 @@ const defaultOptions = {
  * @param {string} [options.localFontFamily=null] Defines a CSS
  * font-family for locally overriding generation of all glyphs. Font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
  * If set, this option overrides the setting in localIdeographFontFamily.
+ * @param {'client' | 'server'} [options.fontstackCompositing='client'] Controls how multi-font fontstacks are composited.
+ * When `'client'` (the default), each font in a comma-separated fontstack is loaded individually and missing glyphs are filled from subsequent fallback fonts on the client.
+ * When `'server'`, the full fontstack string is passed as-is to the glyph server, which must support server-side fontstack composition.
  * @param {RequestTransformFunction} [options.transformRequest=null] A callback run before the Map makes a request for an external URL. The callback can be used to modify the url, set headers, or set the credentials property for cross-origin requests.
  * Expected to return a {@link RequestParameters} object with a `url` property and optionally `headers` and `credentials` properties.
  * @param {boolean} [options.collectResourceTiming=false] If `true`, Resource Timing API information will be collected for requests made by GeoJSON and Vector Tile web workers (this information is normally inaccessible from the main Javascript thread). Information will be returned in a `resourceTiming` property of relevant `data` events.
@@ -498,7 +502,7 @@ export class Map extends Camera {
     _mapId: number;
     _localIdeographFontFamily: string;
     _localFontFamily?: string;
-    _useServerFontComposition?: boolean;
+    _fontstackCompositing: FontstackCompositing;
     _requestManager: RequestManager;
     _locale: Partial<typeof defaultLocale>;
     _removed: boolean;
@@ -728,7 +732,7 @@ export class Map extends Camera {
 
         this._localFontFamily = options.localFontFamily;
         this._localIdeographFontFamily = options.localIdeographFontFamily;
-        this._useServerFontComposition = options.useServerFontComposition;
+        this._fontstackCompositing = options.fontstackCompositing;
 
         if (options.style || !options.testMode) {
             const style = options.style || config.DEFAULT_STYLE;
@@ -736,7 +740,7 @@ export class Map extends Camera {
                 config: options.config,
                 localFontFamily: this._localFontFamily,
                 localIdeographFontFamily: this._localIdeographFontFamily,
-                useServerFontComposition: this._useServerFontComposition
+                fontstackCompositing: this._fontstackCompositing
             });
         }
 
@@ -2334,12 +2338,13 @@ export class Map extends Camera {
      * });
      */
     setStyle(style: StyleSpecification | string | null, options?: SetStyleOptions): this {
-        options = Object.assign({}, {localIdeographFontFamily: this._localIdeographFontFamily, localFontFamily: this._localFontFamily, useServerFontComposition: this._useServerFontComposition}, options);
+        options = Object.assign({}, {localIdeographFontFamily: this._localIdeographFontFamily, localFontFamily: this._localFontFamily, fontstackCompositing: this._fontstackCompositing}, options);
 
         const diffNeeded =
             options.diff !== false &&
             options.localFontFamily === this._localFontFamily &&
             options.localIdeographFontFamily === this._localIdeographFontFamily &&
+            options.fontstackCompositing === this._fontstackCompositing &&
             !options.config; // Rebuild the style from scratch if config is set
 
         if (this.style && style && diffNeeded) {
@@ -2363,6 +2368,7 @@ export class Map extends Camera {
         } else {
             this._localIdeographFontFamily = options.localIdeographFontFamily;
             this._localFontFamily = options.localFontFamily;
+            this._fontstackCompositing = options.fontstackCompositing;
             return this._updateStyle(style, options);
         }
     }

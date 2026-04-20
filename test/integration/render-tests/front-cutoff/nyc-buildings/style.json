@@ -5,6 +5,7 @@
       "width": 1024,
       "height": 768,
       "allowed": 0.005,
+      "fontstackCompositing": "server",
       "operations": [
         [
           "setStyle",
