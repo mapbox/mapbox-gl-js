@@ -1,3 +1,21 @@
+## 3.23.0-rc.1
+
+### Features and improvements ✨
+
+- Improve the performance of symbol layers on old devices.
+- Add `TileProvider` for raster and raster-dem sources, adding support for PMTiles with raster tiles.
+- Enable client-side fontstack compositing by default. When multiple fonts are requested they are now fetched individually and composited on the client.
+- Promote interactions API to stable.
+- Add a bundler-friendly ESM bundle in the NPM package (`import mapboxgl from 'mapbox-gl/esm'`).
+- Lazy-load procedural buildings and precipitation code when using the ESM entry point.
+
+### Bug fixes 🐞
+
+- Fix values smaller than 1 in `line-dasharray` not working.
+- Fix a render issue where black boxes could appear instead of symbols briefly in some environments.
+- Fix `scale-factor` being applied twice to icons with feature-dependent `icon-size`.
+- Fix redundant WASM requests on map load when using the Standard style.
+
 ## 3.22.0
 
 ### Bug fixes 🐞
