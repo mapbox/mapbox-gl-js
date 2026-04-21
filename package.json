@@ -87,7 +87,7 @@
     "dts-bundle-generator": "^9.5.1",
     "ejs": "^5.0.1",
     "envify": "^4.1.0",
-    "esbuild": "^0.27.2",
+    "esbuild": "^0.28.0",
     "eslint": "^9.30.1",
     "eslint-config-mourner": "^4.0.0",
     "eslint-import-resolver-typescript": "^4.4.4",
