@@ -13,6 +13,7 @@ import {OverscaledTileID} from '../../../src/source/tile_id';
 import {makeFQID} from '../../../src/util/fqid';
 import {ImageId} from '../../../src/style-spec/expression/types/image_id';
 import {StubMap} from './utils';
+import browser from '../../../src/util/browser';
 
 function createStyleJSON(properties) {
     return Object.assign({
@@ -2209,6 +2210,35 @@ describe('Terrain', () => {
         });
 
         expect(style.getTerrain().exaggeration).toEqual(2);
+    });
+
+    test('propagates disableElevatedTerrain from import to root style', async () => {
+        vi.spyOn(browser, 'hasCanvasFingerprintNoise').mockReturnValue(true);
+
+        const style = new Style(new StubMap());
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(createStyleJSON({
+            imports: [{
+                id: 'streets',
+                url: '/styles/streets-v12.json',
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                data: createStyleJSON({
+                    terrain: {source: 'mapbox-dem', exaggeration: 1.5},
+                    sources: {
+                        'mapbox-dem': {
+                            type: 'raster-dem',
+                            tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                            tileSize: 256,
+                            maxzoom: 14
+                        }
+                    },
+                })
+            }],
+        }));
+
+        await waitFor(style, "style.load");
+        expect(style.disableElevatedTerrain).toBe(true);
     });
 });
 
