@@ -113,15 +113,7 @@ export interface ISource<T = Source['type']> extends Evented<SourceEvents> {
     readonly _clear?: () => void;
 }
 
-type SourceStatics = {
-    /*
-     * An optional URL to a script which, when run by a Worker, registers a {@link WorkerSource}
-     * implementation for this Source type by calling `self.registerWorkerSource(workerSource: WorkerSource)`.
-     */
-    workerSourceURL?: string;
-};
-
-export type SourceClass = Class<ISource> & SourceStatics;
+export type SourceClass = Class<ISource>;
 
 const sourceTypes: Record<Source['type'], Class<ISource>> = {
     vector,

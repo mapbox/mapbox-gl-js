@@ -8,8 +8,6 @@ declare global {
         worker: MapWorker;
         registerWorkerSource?: (name: string, WorkerSource: WorkerSourceConstructor) => void;
         getWorkerSource?: (mapId: number, params: WorkerSourceRequest) => WorkerSource;
-        registerRTLTextPlugin?: (rtlTextPlugin?: RtlTextPlugin) => void;
-
-        importScripts: (...urls: string[]) => void;
+        registerRTLTextPlugin?: (rtlTextPlugin: RtlTextPlugin) => void;
     }
 }

@@ -93,12 +93,11 @@ export default class MapWorker {
             this.workerSourceTypes[name] = WorkerSource;
         };
 
-        // This is invoked by the RTL text plugin when the download via the `importScripts` call has finished, and the code has been parsed.
+        // The RTL text plugin self-registers here during module eval.
         this.self.registerRTLTextPlugin = (rtlTextPlugin: RtlTextPlugin) => {
             if (globalRTLTextPlugin.isParsed()) {
                 throw new Error('RTL text plugin already registered.');
             }
-
             globalRTLTextPlugin.setState({
                 pluginStatus: rtlPluginStatus.parsed,
                 pluginURL: globalRTLTextPlugin.getPluginURL()
@@ -306,22 +305,7 @@ export default class MapWorker {
             .catch((err: unknown) => callback(err instanceof Error ? err : new Error(String(err))));
     }
 
-    /**
-     * Load a {@link WorkerSource} script at params.url.  The script is run
-     * (using importScripts) with `registerWorkerSource` in scope, which is a
-     * function taking `(name, workerSourceObject)`.
-     *  @private
-     */
-    loadWorkerSource(mapId: number, params: ActorMessages['loadWorkerSource']['params'], callback: ActorMessages['loadWorkerSource']['callback']) {
-        try {
-            this.self.importScripts(params.url);
-            callback();
-        } catch (e) {
-            callback(e as Error);
-        }
-    }
-
-    syncRTLPluginState(mapId: number, state: ActorMessages['syncRTLPluginState']['params'], callback: ActorMessages['syncRTLPluginState']['callback']) {
+    async syncRTLPluginState(mapId: number, state: ActorMessages['syncRTLPluginState']['params'], callback: ActorMessages['syncRTLPluginState']['callback']) {
         if (globalRTLTextPlugin.isParsed()) {
             callback(null, true);
             return;
@@ -330,29 +314,28 @@ export default class MapWorker {
             this.rtlPluginParsingListeners.push(callback);
             return;
         }
-        try {
-            globalRTLTextPlugin.setState(state);
-            const pluginURL = globalRTLTextPlugin.getPluginURL();
-            if (
-                globalRTLTextPlugin.isLoaded() &&
-                !globalRTLTextPlugin.isParsed() &&
-                !globalRTLTextPlugin.isParsing() &&
-                pluginURL != null // Not possible when `isLoaded` is true, but keeps flow happy
-            ) {
-                globalRTLTextPlugin.setState({
-                    pluginStatus: rtlPluginStatus.parsing,
-                    pluginURL: globalRTLTextPlugin.getPluginURL()
-                });
-                this.self.importScripts(pluginURL);
 
-                if (globalRTLTextPlugin.isParsed()) {
-                    callback(null, true);
-                } else {
-                    this.rtlPluginParsingListeners.push(callback);
-                }
+        globalRTLTextPlugin.setState(state);
+        const pluginURL = globalRTLTextPlugin.getPluginURL();
+        if (!globalRTLTextPlugin.isLoaded() || globalRTLTextPlugin.isParsed() || globalRTLTextPlugin.isParsing()) {
+            callback(null, false);
+            return;
+        }
+
+        globalRTLTextPlugin.setState({pluginStatus: rtlPluginStatus.parsing, pluginURL});
+        try {
+            await import(/* webpackIgnore: true */ /* @vite-ignore */ pluginURL);
+
+            if (globalRTLTextPlugin.isParsed()) {
+                callback(null, true);
+            } else {
+                this.rtlPluginParsingListeners.push(callback);
             }
         } catch (e) {
+            globalRTLTextPlugin.setState({pluginStatus: rtlPluginStatus.error, pluginURL});
             callback(e as Error);
+            for (const cb of this.rtlPluginParsingListeners) cb(e as Error);
+            this.rtlPluginParsingListeners = [];
         }
     }
 

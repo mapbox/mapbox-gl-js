@@ -131,10 +131,21 @@ export default tseslint.config(
                 }, {
                     selector: 'MemberExpression[object.name=\'process\'][property.name=\'env\']',
                     message: 'process.env is not available in browser bundles. Use import.meta.env instead.',
+                }, {
+                    selector: 'MemberExpression[property.name=\'importScripts\']',
+                    message: 'importScripts is not allowed. Use dynamic import() instead.',
+                }, {
+                    selector: 'MemberExpression[property.type=\'Literal\'][property.value=\'importScripts\']',
+                    message: 'importScripts is not allowed. Use dynamic import() instead.',
                 }
             ],
 
-            'no-void': ['error', {allowAsStatement: true}]
+            'no-void': ['error', {allowAsStatement: true}],
+
+            'no-restricted-globals': ['error', {
+                name: 'importScripts',
+                message: 'importScripts is not allowed. Use dynamic import() instead.',
+            }],
         }
     },
 

@@ -2158,32 +2158,9 @@ describe('Style#addSourceType', () => {
         const style = new Style(new StubMap());
         const SourceType = function () {};
 
-        // expect no call to load worker source
-        style.dispatcher.broadcast = function (type) {
-            if (type === 'loadWorkerSource') {
-                expect.unreachable();
-            }
-        };
-
         style.addSourceType('foo', SourceType, () => {
             expect(_types['foo']).toEqual(SourceType);
         });
-    });
-
-    test('triggers workers to load worker source code', () => {
-        const style = new Style(new StubMap());
-        const SourceType = function () {};
-        SourceType.workerSourceURL = 'worker-source.js';
-
-        style.dispatcher.broadcast = function (type, params) {
-            if (type === 'loadWorkerSource') {
-                expect(_types['bar']).toEqual(SourceType);
-                expect(params.name).toEqual('bar');
-                expect(params.url).toEqual('worker-source.js');
-            }
-        };
-
-        style.addSourceType('bar', SourceType, (err) => { expect(err).toBeFalsy(); });
     });
 
     test('refuses to add new type over existing name', () => {

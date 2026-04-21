@@ -3701,15 +3701,7 @@ class Style extends Evented<MapEvents> {
         }
 
         Style.setSourceType(name, SourceType);
-
-        if (!SourceType.workerSourceURL) {
-            return callback(null, null);
-        }
-
-        this.dispatcher.broadcast('loadWorkerSource', {
-            name,
-            url: SourceType.workerSourceURL
-        }, callback);
+        return callback(null, null);
     }
 
     getFlatLight(): LightSpecification {

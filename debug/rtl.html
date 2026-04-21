@@ -27,8 +27,8 @@
     <span id="pluginStatus"></span>
 </div>
 
-<script src="/dist/mapbox-gl-dev.js"></script>
 <script type="module">
+import mapboxgl from '/dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
 
 mapboxgl.accessToken = getAccessToken();

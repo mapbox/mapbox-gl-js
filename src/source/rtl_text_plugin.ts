@@ -31,8 +31,9 @@ let pluginStatus: PluginStatus = rtlPluginStatus.unavailable;
 let pluginURL: string | null | undefined = null;
 
 export const triggerPluginCompletionEvent = function (error?: Error | string | null) {
-    // NetworkError's are not correctly reflected by the plugin status which prevents reloading plugin
-    if (error && typeof error === 'string' && error.indexOf('NetworkError') > -1) {
+    // Reset plugin status on any error so the consumer's callback can retry
+    // `setRTLTextPlugin` without hitting the "cannot be called multiple times" guard.
+    if (error) {
         pluginStatus = rtlPluginStatus.error;
     }
 

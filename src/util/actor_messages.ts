@@ -93,11 +93,6 @@ export type ActorMessages = {
         callback: ActorCallback<unknown>;
     };
 
-    'loadWorkerSource': {
-        params: {name: string; url: string;};
-        callback: ActorCallback<void>;
-    };
-
     'rasterizeImages': {
         params: {scope: string; tasks: ImageRasterizationTasks};
         callback: ActorCallback<RasterizedImageMap>;
