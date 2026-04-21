@@ -22,6 +22,7 @@ import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
  * @param {boolean} [options.production] - whether this is a production build
  * @param {boolean} [options.test] - whether this is a test build
  * @param {boolean} [options.keepClassNames] - whether to keep class names during minification
+ * @returns {import('rollup').InputPluginOption[]}
  */
 export const plugins = ({mode, format, minified, production, test, keepClassNames}) => [
     minifyStyleSpec(),

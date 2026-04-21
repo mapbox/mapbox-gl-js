@@ -63,7 +63,7 @@ export default ({watch}: {watch: boolean}): RollupOptions[] => {
         },
         onwarn: production ? onwarn : undefined,
         treeshake: production ? {preset: 'recommended', moduleSideEffects: (id) => !id.endsWith('devtools.ts')} : false,
-        plugins: [preserveDynamicImport()].concat(plugins({minified, production, test: false, keepClassNames: false, mode: BUILD}))
+        plugins: [preserveDynamicImport(), ...plugins({minified, production, test: false, keepClassNames: false, mode: BUILD})]
     }, {
         // Next, bundle together the three "chunks" produced in the previous pass
         // into a single, final bundle. See rollup/bundle_prelude.js and

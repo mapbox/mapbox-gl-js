@@ -1,17 +1,20 @@
+import {visualizer} from 'rollup-plugin-visualizer';
 import {plugins} from './build/rollup_plugins.js';
 
 import type {Plugin, RollupOptions} from 'rollup';
 
-const {BUILD, MINIFY} = process.env;
+const {BUILD, MINIFY, VISUALIZE} = process.env;
 const minified = MINIFY === 'true';
 const production = BUILD === 'production';
+const visualize = production && (VISUALIZE === '1' || VISUALIZE === 'true');
 
 /**
  * Creates an ESM rollup config.
  * @param dir - Output directory
  * @param workerSuffix - Suffix for the web_worker substitution ('_esm_cdn' for cross-origin Blob workaround, '_esm_npm' for bundler-detectable pattern)
+ * @param emitVisualizer - When true, append rollup-plugin-visualizer to emit a gzip treemap at `<dir>/treemap.html`
  */
-function esmConfig(dir: string, workerSuffix: string): RollupOptions {
+function esmConfig(dir: string, workerSuffix: string, emitVisualizer = false): RollupOptions {
     return {
         input: {
             'mapbox-gl': 'src/index.ts',
@@ -49,7 +52,16 @@ function esmConfig(dir: string, workerSuffix: string): RollupOptions {
         preserveEntrySignatures: 'strict',
         plugins: [
             esmSubstitutions(workerSuffix),
-        ].concat(plugins({production, minified, test: false, keepClassNames: false, mode: BUILD, format: 'esm'})),
+            ...plugins({production, minified, test: false, keepClassNames: false, mode: BUILD, format: 'esm'}),
+            emitVisualizer && visualizer({
+                filename: `${dir}treemap.html`,
+                template: 'treemap',
+                gzipSize: true,
+                brotliSize: false,
+                sourcemap: false,
+                title: 'GL JS ESM bundle',
+            }),
+        ],
     };
 }
 
@@ -57,7 +69,7 @@ export default (): RollupOptions[] => {
     if (production) {
         // Production: build both NPM (dist/esm/) and CDN (dist/esm-cdn/) variants
         return [
-            esmConfig('dist/esm/', '_esm_npm'),
+            esmConfig('dist/esm/', '_esm_npm', visualize),
             esmConfig('dist/esm-cdn/', '_esm_cdn'),
         ];
     }
