@@ -27,6 +27,10 @@ export default tseslint.config(
 
     // Settings
     {
+        linterOptions: {
+            reportUnusedDisableDirectives: 'error',
+        },
+
         languageOptions: {
             parserOptions: {
                 projectService: true,
@@ -120,10 +124,13 @@ export default tseslint.config(
                     message: 'Nullish coalescing is not allowed.',
                 }, {
                     selector: 'ChainExpression',
-                    message: 'Optional chaining is now allowed.',
+                    message: 'Optional chaining is not allowed.',
                 }, {
                     selector: 'MemberExpression[object.type=\'MetaProperty\'][property.name=\'url\']',
                     message: 'import.meta.url is not available in the UMD bundle.',
+                }, {
+                    selector: 'MemberExpression[object.name=\'process\'][property.name=\'env\']',
+                    message: 'process.env is not available in browser bundles. Use import.meta.env instead.',
                 }
             ],
 
@@ -149,6 +156,9 @@ export default tseslint.config(
                 caughtErrors: 'none',
                 ignoreRestSiblings: true,
             }],
+            '@typescript-eslint/no-non-null-assertion': 'error',
+            '@typescript-eslint/no-misused-promises': 'error',
+            'prefer-object-has-own': 'error',
         }
     },
 
@@ -306,6 +316,7 @@ export default tseslint.config(
             'test/**',
             'build/**',
             'rollup.*',
+            'vitest.config.*',
             'eslint.config.js',
             'src/style-spec/test.js',
             'src/style-spec/rollup.config.js',
