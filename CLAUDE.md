@@ -52,9 +52,18 @@ npm run test-unit -- test/unit/style-spec/spec.test.ts
 # Run specific test inside a file (use -t with test name pattern)
 npm run test-unit -- test/unit/style/style.test.ts -t 'Style#addImage'
 
-# Run render tests with pattern matching
-npm run test-render -- -t "render-tests/background-color"
+# Run render tests with pattern matching (matches test path segments)
+npm run test-render -- -t "background-color"
+
+# Regenerate expected.png baselines (inspect diffs before committing!)
+UPDATE=1 npm run test-render -- -t "<pattern>"
 ```
+
+Render tests:
+- Test name = folder path under `test/integration/render-tests/` (e.g. `circle-radius/literal`). `-t` is Vitest's substring pattern, so `-t "circle"` also hits `circle-color`, `circle-blur`, etc. — add a slash to narrow: `-t "circle-radius/"`
+- Always use `npm run test-render`, not `npx vitest` — the `pretest` hook rebuilds `dist/mapbox-gl-dev.js` and pmtiles
+- Inspect diffs: `open test/integration/render-tests/render-tests.html`
+- Platform-specific failures → `test/ignores/<platform>.js` (prefer `todo` over `skip`, link the issue)
 
 ### Code Quality
 ```bash
@@ -93,7 +102,7 @@ Mapbox GL JS uses WebWorkers to parse vector tiles off the main thread:
 
 3. **WebGL Rendering** (Main Thread)
    - Rendering happens layer-by-layer in `Painter#render()`, `Painter.renderPass` tracks the current render phase
-   - Layer-specific `draw*()` methods in `src/render/draw_*.js`
+   - Layer-specific `draw*()` methods in `src/render/draw_*.ts`
    - Shader programs are compiled and cached by `Painter`
 
 ### Key Components
@@ -133,13 +142,16 @@ test/
 
 - ES6+ features are used throughout
 - Prefer immutable data structures
-- Always use named exports, default exports are forbidden
+- Prefer named exports over default exports
 - Modules export classes or functions (no namespace objects)
 - JSDoc comments for all public APIs
 - Don't use `!.` for non-null assertions (hides potential null issues)
 - Don't use `?.` or `??` operators (hides null handling, harder to debug)
 - Use `assert` for invariants
 - Break complex expressions into named variables, especially WebGL math
+- Object spread (`{...obj}`) is banned, use `Object.assign()` instead
+- Use `import type` for type-only imports
+- No TODO/FIXME comments in committed code
 
 ## TypeScript
 
@@ -148,7 +160,7 @@ test/
 
 ## Testing Guidelines
 
-- Tests use Vitest framework with Playwright for testing in browsers
+- Tests use Vitest framework with Playwright as the browser provider
 - Install Playwright browsers: `npx playwright install chromium`
 
 ### Writing Unit Tests

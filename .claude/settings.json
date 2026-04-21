@@ -1,21 +1,40 @@
 {
   "env": {
-    "ENABLE_BACKGROUND_TASKS": "1",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1"
   },
   "permissions": {
     "allow": [
-      "Bash(rg:*)",
-      "Bash(ls:*)",
-      "Bash(cp:*)",
-      "Bash(find:*)",
-      "Bash(grep:*)",
+      "Bash(npm info:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm pack:*)",
       "Bash(npm run:*)",
       "Bash(npm test:*)",
+      "Bash(npm view:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx vitest:*)",
+      "WebFetch(domain:api.mapbox.com)",
+      "WebFetch(domain:bugs.chromium.org)",
+      "WebFetch(domain:bugs.webkit.org)",
+      "WebFetch(domain:bugzilla.mozilla.org)",
+      "WebFetch(domain:caniuse.com)",
       "WebFetch(domain:docs.mapbox.com)",
       "WebFetch(domain:developer.mozilla.org)"
     ],
-    "deny": [],
-    "defaultMode": "plan"
+    "deny": []
+  },
+  "extraKnownMarketplaces": {
+    "chrome-devtools-plugins": {
+      "source": { "source": "github", "repo": "ChromeDevTools/chrome-devtools-mcp" }
+    },
+    "claude-plugins-official": {
+      "source": { "source": "github", "repo": "anthropics/claude-plugins-official" }
+    }
+  },
+  "enabledPlugins": {
+    "chrome-devtools-mcp@chrome-devtools-plugins": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true
   }
 }

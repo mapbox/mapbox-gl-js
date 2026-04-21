@@ -1,5 +1,6 @@
 !build/
 /rollup/build/
+/docs
 /dist/esm*
 /dist/mapbox-gl*
 /dist/versions*

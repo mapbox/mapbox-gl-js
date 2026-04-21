@@ -9,13 +9,13 @@
 ### Parsing and layout
 
 Vector tiles are fetched and parsed on WebWorker threads.  "Parsing" a vector tile involves:
- - Deserializing source layers, feature properties, and feature geometries from the PBF.  This is handled by the [`vector-tile-js`](https://github.com/mapbox/vector-tile-js) library.
+ - Deserializing source layers, feature properties, and feature geometries from the PBF.  This is handled by the [`@mapbox/vector-tile`](https://github.com/mapbox/vector-tile-js) library.
  - Transforming that data into _render-ready_ data that can be used by WebGL shaders to draw the map.  We refer to this process as "layout," and it carried out by `WorkerTile`, the `Bucket` classes, and `ProgramConfiguration`.
  - Indexing feature geometries into a `FeatureIndex`, used for spatial queries (e.g. `queryRenderedFeatures`).
 
-`WorkerTile#parse()` takes a (deserialized) vector tile, fetches additional resources if they're needed (fonts, images), and then creates a `Bucket` for each 'family' of style layers that share the same underlying features and 'layout' properties (see `group_by_layout.js`).
+`WorkerTile#parse()` takes a (deserialized) vector tile, fetches additional resources if they're needed (fonts, images), and then creates a `Bucket` for each 'family' of style layers that share the same underlying features and 'layout' properties (see `src/style-spec/group_by_layout.ts`).
 
-[Bucket](./src/data/bucket.js) is the single point of knowledge about turning vector tiles into WebGL buffers. Each bucket holds the vertex and element array data needed to render its group of style layers (see [ArrayGroup](./src/data/bucket.js)).  The particular bucket types each know how to populate that data for their layer types.
+[Bucket](./src/data/bucket.ts) is the single point of knowledge about turning vector tiles into WebGL buffers. Each bucket holds the vertex and element array data needed to render its group of style layers (see [ArrayGroup](./src/data/bucket.ts)).  The particular bucket types each know how to populate that data for their layer types.
 
 ### Rendering with WebGL
 
@@ -46,7 +46,7 @@ Tile
 ```
 _Note that a particular bucket may appear multiple times in `tile.buckets`--once for each layer in a given layout 'family'._
 
- - Rendering happens style-layer by style-layer, in `Painter#renderPass()`, which delegates to the layer-specific `drawXxxx()` methods in `src/render/draw_*.js`.
+ - Rendering happens style-layer by style-layer, in `Painter#renderPass()`, which delegates to the layer-specific `drawXxxx()` methods in `src/render/draw_*.ts`.
  - The `drawXxxx()` methods, in turn, render a layer tile by tile, by:
    - Obtaining a property configured shader program from the `Painter`
    - Setting _uniform_ values based on the style layer's properties
