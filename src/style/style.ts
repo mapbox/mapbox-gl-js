@@ -1018,6 +1018,9 @@ class Style extends Evented<MapEvents> {
         this.forEachFragmentStyle((style: Style) => {
             if (!style.stylesheet) return;
 
+            if (style.disableElevatedTerrain)
+                this.disableElevatedTerrain = true;
+
             if (style.light != null)
                 light = style.light;
 
