@@ -141,20 +141,22 @@ class FrustumCorners {
     }
 }
 
-function projectPoints(points: Array<vec3>, origin: vec3, axis: vec3): [number, number] {
+function projectPoints(points: Array<vec3>, origin: vec3, axis: vec3, out: [number, number]): [number, number] {
+    const ox = origin[0], oy = origin[1], oz = origin[2];
+    const ax = axis[0], ay = axis[1], az = axis[2];
     let min = Infinity;
     let max = -Infinity;
 
-    const vec = [];
-    for (const point of points) {
-        vec3.sub(vec, point, origin);
-        const projection = vec3.dot(vec, axis);
-
-        min = Math.min(min, projection);
-        max = Math.max(max, projection);
+    for (let i = 0; i < points.length; i++) {
+        const p = points[i];
+        const proj = (p[0] - ox) * ax + (p[1] - oy) * ay + (p[2] - oz) * az;
+        if (proj < min) min = proj;
+        if (proj > max) max = proj;
     }
 
-    return [min, max];
+    out[0] = min;
+    out[1] = max;
+    return out;
 }
 
 function intersectsFrustum(frustum: Frustum, aabbPoints: Array<vec3>): number {
@@ -178,9 +180,11 @@ function intersectsFrustum(frustum: Frustum, aabbPoints: Array<vec3>): number {
     return fullyInside ? 2 : 1;
 }
 
+const preciseProjScratch: [number, number] = [0, 0];
+
 function intersectsFrustumPrecise(frustum: Frustum, aabbPoints: Array<vec3>): number {
     for (const proj of frustum.projections) {
-        const projectedAabb = projectPoints(aabbPoints, frustum.points[0], proj.axis);
+        const projectedAabb = projectPoints(aabbPoints, frustum.points[0], proj.axis, preciseProjScratch);
 
         if (proj.projection[1] < projectedAabb[0] || proj.projection[0] > projectedAabb[1]) {
             return 0;
@@ -207,19 +211,16 @@ const FAR_TR = 5;
 const FAR_BR = 6;
 const FAR_BL = 7;
 
-function pointsInsideOfPlane(points: Array<vec3>, plane: vec4): number {
-    let pointsInside = 0;
-    const p = [0, 0, 0, 0];
+// Returns true if at least one point satisfies a*x + b*y + c*z + d >= 0 (i.e. is on the plane's
+// inside). intersectsPrecise only cares about the zero-points-inside case, so we short-circuit
+// on the first inside point rather than counting.
+function anyPointInsideOfPlane(points: Array<vec3>, plane: vec4): boolean {
+    const a = plane[0], b = plane[1], c = plane[2], d = plane[3];
     for (let i = 0; i < points.length; i++) {
-        p[0] = points[i][0];
-        p[1] = points[i][1];
-        p[2] = points[i][2];
-        p[3] = 1.0;
-        if (vec4.dot(p as [number, number, number, number], plane) >= 0) {
-            pointsInside++;
-        }
+        const p = points[i];
+        if (a * p[0] + b * p[1] + c * p[2] + d >= 0) return true;
     }
-    return pointsInside;
+    return false;
 }
 
 class Frustum {
@@ -254,12 +255,12 @@ class Frustum {
 
             this.projections.push({
                 axis: axis0,
-                projection: projectPoints(this.points, this.points[0], axis0)
+                projection: projectPoints(this.points, this.points[0], axis0, [0, 0])
             });
 
             this.projections.push({
                 axis: axis1,
-                projection: projectPoints(this.points, this.points[0], axis1)
+                projection: projectPoints(this.points, this.points[0], axis1, [0, 0])
             });
         }
     }
@@ -311,38 +312,46 @@ class Frustum {
         return new Frustum(frustumPoints as FrustumPoints, frustumPlanes);
     }
 
-    // Performs precise intersection test between the frustum and the provided convex hull.
-    // The hull consits of vertices, faces (defined as planes) and a list of edges.
-    // Intersection test is performed using separating axis theoreom.
+    // Precise intersection test between the frustum and a convex hull (vertices + face planes
+    // + edges) via separating axis theorem. The SAT axis is not normalized — comparisons of
+    // projA/projB are invariant under a common positive scale, we only skip exact-zero axes
+    // where the two edges are parallel. Projection loops are inlined so the JIT keeps axis
+    // and origin components in registers across all points.
     intersectsPrecise(vertices: Array<vec3>, faces: Array<vec4>, edges: Array<vec3>): number {
-        // Check if any of the provided faces defines a separating axis
         for (let i = 0; i < faces.length; i++) {
-            if (!pointsInsideOfPlane(vertices, faces[i])) {
-                return 0;
-            }
+            if (!anyPointInsideOfPlane(vertices, faces[i])) return 0;
         }
-        // Check if any of the frustum planes defines a separating axis
         for (let i = 0; i < this.planes.length; i++) {
-            if (!pointsInsideOfPlane(vertices, this.planes[i])) {
-                return 0;
-            }
+            if (!anyPointInsideOfPlane(vertices, this.planes[i])) return 0;
         }
+
+        const points = this.points;
+        const ox = points[0][0], oy = points[0][1], oz = points[0][2];
 
         for (const edge of edges) {
             for (const frustumEdge of this.frustumEdges) {
-                const axis = vec3.cross([], edge, frustumEdge);
-                const len  = vec3.length(axis);
-                if (len === 0) {
-                    continue;
+                // axis = edge × frustumEdge
+                const ax = edge[1] * frustumEdge[2] - edge[2] * frustumEdge[1];
+                const ay = edge[2] * frustumEdge[0] - edge[0] * frustumEdge[2];
+                const az = edge[0] * frustumEdge[1] - edge[1] * frustumEdge[0];
+                if (ax === 0 && ay === 0 && az === 0) continue;
+
+                let minA = Infinity, maxA = -Infinity;
+                for (let k = 0; k < points.length; k++) {
+                    const p = points[k];
+                    const d = (p[0] - ox) * ax + (p[1] - oy) * ay + (p[2] - oz) * az;
+                    if (d < minA) minA = d;
+                    if (d > maxA) maxA = d;
+                }
+                let minB = Infinity, maxB = -Infinity;
+                for (let k = 0; k < vertices.length; k++) {
+                    const v = vertices[k];
+                    const d = (v[0] - ox) * ax + (v[1] - oy) * ay + (v[2] - oz) * az;
+                    if (d < minB) minB = d;
+                    if (d > maxB) maxB = d;
                 }
 
-                vec3.scale(axis, axis, 1 / len);
-                const projA = projectPoints(this.points, this.points[0], axis);
-                const projB = projectPoints(vertices, this.points[0], axis);
-
-                if (projA[0] > projB[1] || projB[0] > projA[1]) {
-                    return 0;
-                }
+                if (minA > maxB || minB > maxA) return 0;
             }
         }
         return 1;

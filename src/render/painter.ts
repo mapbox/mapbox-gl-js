@@ -78,6 +78,7 @@ import type {UniformBindings} from './uniform_binding';
 import type {CrossTileID, VariableOffset} from '../symbol/placement';
 import type {TypedStyleLayer, CoreStyleLayer, HDStyleLayer} from '../style/style_layer/typed_style_layer';
 import type {DevTools} from '../ui/control/devtools';
+import type {ShadowCullCache} from './draw_fill_extrusion';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
 export type DepthPrePass = 'initialize' | 'reset' | 'geometry';
@@ -219,6 +220,7 @@ class Painter {
     currentLayer: number;
     currentStencilSource: string | null | undefined;
     currentShadowCascade: number;
+    _shadowCullCache: ShadowCullCache | null;
     nextStencilID: number;
     id: string;
     _showOverdrawInspector: boolean;
@@ -382,6 +384,7 @@ class Painter {
         this.deferredRenderGpuTimeQueries = [];
         this.gpuTimers = {};
         this.frameCounter = 0;
+        this._shadowCullCache = null;
         this._backgroundTiles = {};
 
         this.conflationActive = false;

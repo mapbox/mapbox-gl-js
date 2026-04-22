@@ -1045,47 +1045,52 @@ const XAxis: vec3 = [1, 0, 0];
 const YAxis: vec3 = [0, 1, 0];
 const ZAxis: vec3 = [0, 0, 1];
 
+// Pass-invariant state for frustumCullShadowCaster. Within a shadow pass the camera frustum,
+// shadow direction, SAT edge set, and world size are all fixed — only per-tile height/volume
+// change. Cached on the Painter (per-Map) and keyed by frameCounter and cascade index.
+export type ShadowCullCache = {
+    frame: number;
+    cascade: number;
+    cameraFrustum: Frustum;
+    edges: vec3[];
+    shadowDir: vec3;
+    ws: number;
+    zoom: number;
+};
+
 export function frustumCullShadowCaster(id: OverscaledTileID, bucketMaxHeight: number, painter: Painter): boolean {
     const transform = painter.transform;
     const shadowRenderer = painter.shadowRenderer;
-    if (!shadowRenderer) {
-        return true;
+    if (!shadowRenderer) return true;
+
+    const frame = painter.frameCounter;
+    const cascade = painter.currentShadowCascade;
+    let cache = painter._shadowCullCache;
+    if (!cache || cache.frame !== frame || cache.cascade !== cascade) {
+        const ws = transform.tileSize * shadowRenderer._cascades[cascade].scale;
+        const zoom = transform.scaleZoom(ws);
+        const sd = shadowRenderer.shadowDirection;
+        const shadowDir: vec3 = [sd[0], sd[1], -sd[2]];
+        const edges: vec3[] = [XAxis, YAxis, ZAxis, shadowDir, [shadowDir[0], 0, shadowDir[2]], [0, shadowDir[1], shadowDir[2]]];
+        const isGlobe = transform.projection.name === 'globe';
+        const cameraFrustum = Frustum.fromInvProjectionMatrix(transform.invProjMatrix, transform.worldSize, zoom, !isGlobe);
+        cache = {frame, cascade, cameraFrustum, edges, shadowDir, ws, zoom};
+        painter._shadowCullCache = cache;
     }
-
-    const unwrappedId = id.toUnwrapped();
-
-    const ws = transform.tileSize * shadowRenderer._cascades[painter.currentShadowCascade].scale;
+    const {cameraFrustum, edges, shadowDir, ws, zoom} = cache;
 
     let height = bucketMaxHeight;
     if (transform.elevation) {
         const minmax = transform.elevation.getMinMaxForTile(id);
-        if (minmax) {
-            height += minmax.max;
-        }
+        if (minmax) height += minmax.max;
     }
-    // Convert height from meters to world pixels to match the tile AABB coordinate space
-    const zoom = transform.scaleZoom(ws);
     height /= getMetersPerPixelAtLatitude(transform.center.lat, zoom);
 
-    const shadowDir = [...shadowRenderer.shadowDirection] as vec3;
-    shadowDir[2] = -shadowDir[2];
+    const tileShadowVolume = shadowRenderer.computeSimplifiedTileShadowVolume(id.toUnwrapped(), height, ws, shadowDir);
+    if (!tileShadowVolume) return false;
 
-    const tileShadowVolume = shadowRenderer.computeSimplifiedTileShadowVolume(unwrappedId, height, ws, shadowDir);
-    if (!tileShadowVolume) {
-        return false;
-    }
-
-    // Projected shadow volume has 3-6 unique edge direction vectors.
-    // These are used for computing remaining separating axes for the intersection test
-    const edges: vec3[] = [XAxis, YAxis, ZAxis, shadowDir, [shadowDir[0], 0, shadowDir[2]], [0, shadowDir[1], shadowDir[2]]];
-    const isGlobe = transform.projection.name === 'globe';
-    const cameraFrustum = Frustum.fromInvProjectionMatrix(transform.invProjMatrix, transform.worldSize, zoom, !isGlobe);
-    const cascadeFrustum = shadowRenderer.getCurrentCascadeFrustum();
-    if (cameraFrustum.intersectsPrecise(tileShadowVolume.vertices, tileShadowVolume.planes, edges) === 0) {
-        return true;
-    }
-    if (cascadeFrustum.intersectsPrecise(tileShadowVolume.vertices, tileShadowVolume.planes, edges) === 0) {
-        return true;
-    }
+    const {vertices, planes} = tileShadowVolume;
+    if (cameraFrustum.intersectsPrecise(vertices, planes, edges) === 0) return true;
+    if (shadowRenderer.getCurrentCascadeFrustum().intersectsPrecise(vertices, planes, edges) === 0) return true;
     return false;
 }
