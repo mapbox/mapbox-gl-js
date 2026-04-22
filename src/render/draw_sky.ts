@@ -161,27 +161,22 @@ function captureSkybox(painter: Painter, layer: SkyLayer, width: number, height:
     const faceRotate = new Float64Array(16);
 
     // +x;
-    mat4.identity(faceRotate);
-    mat4.rotateY(faceRotate, faceRotate, -Math.PI * 0.5);
+    mat4.fromYRotation(faceRotate, -Math.PI * 0.5);
     drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 0);
     // -x
-    mat4.identity(faceRotate);
-    mat4.rotateY(faceRotate, faceRotate, Math.PI * 0.5);
+    mat4.fromYRotation(faceRotate, Math.PI * 0.5);
     drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 1);
     // +y
-    mat4.identity(faceRotate);
-    mat4.rotateX(faceRotate, faceRotate, -Math.PI * 0.5);
+    mat4.fromXRotation(faceRotate, -Math.PI * 0.5);
     drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 2);
     // -y
-    mat4.identity(faceRotate);
-    mat4.rotateX(faceRotate, faceRotate, Math.PI * 0.5);
+    mat4.fromXRotation(faceRotate, Math.PI * 0.5);
     drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 3);
     // +z
     mat4.identity(faceRotate);
     drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 4);
     // -z
-    mat4.identity(faceRotate);
-    mat4.rotateY(faceRotate, faceRotate, Math.PI);
+    mat4.fromYRotation(faceRotate, Math.PI);
     drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 5);
 
     context.viewport.set([0, 0, painter.width, painter.height]);

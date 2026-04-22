@@ -6,7 +6,7 @@ import Point from '@mapbox/point-geometry';
 import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner, warnOnce, deepEqual, easeIn} from '../util/util';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../style-spec/data/extent';
-import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
+import {vec4, mat4, vec3, quat} from 'gl-matrix';
 import {FAR_BL, FAR_BR, FAR_TL, FAR_TR, Frustum, FrustumCorners, NEAR_BL, NEAR_BR, NEAR_TL, NEAR_TR, Ray} from '../util/primitives';
 import EdgeInsets from './edge_insets';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera';
@@ -27,6 +27,7 @@ import {
 import {projectClamped} from '../symbol/projection';
 import {edgeIntersectsBox, polygonIntersectsBox} from '../util/intersection_tests';
 
+import type {mat2} from 'gl-matrix';
 import type {Aabb} from '../util/primitives';
 import type Projection from '../geo/projection/projection';
 import type {Elevation} from '../terrain/elevation';
@@ -222,6 +223,9 @@ class Transform {
 
     _allowWorldUnderZoom: boolean;
 
+    _mat4Scratch: mat4; // reused for non-overlapping intermediate computations in _calcMatrices
+    _expandedFarZProjMatrixBuf: mat4;
+
     constructor(minZoom?: number | null, maxZoom?: number | null, minPitch?: number | null, maxPitch?: number | null, renderWorldCopies?: boolean, projection?: ProjectionSpecification | null, bounds?: LngLatBounds | null) {
         this.tileSize = 512; // constant
 
@@ -268,6 +272,20 @@ class Transform {
         this._orthographicProjectionAtLowPitch = false;
 
         this._allowWorldUnderZoom = false;
+
+        this.mercatorMatrix = new Float64Array(16);
+        this.mercatorFogMatrix = new Float32Array(16);
+        this.invProjMatrix = new Float64Array(16);
+        this._expandedFarZProjMatrixBuf = new Float64Array(16);
+        this.expandedFarZProjMatrix = this._expandedFarZProjMatrixBuf;
+        this.starsProjMatrix = new Float32Array(16);
+        this.skyboxMatrix = new Float32Array(16);
+        this._mat4Scratch = new Float64Array(16);
+        this.alignedProjMatrix = new Float64Array(16);
+        this.labelPlaneMatrix = new Float32Array(16);
+        this.glCoordMatrix = new Float32Array(16);
+        this.pixelMatrix = new Float64Array(16);
+        this.pixelMatrixInverse = new Float64Array(16);
     }
 
     clone(): Transform {
@@ -480,8 +498,8 @@ class Transform {
         this._calcMatrices();
 
         // 2x2 matrix for rotating points
-        this.rotationMatrix = mat2.create() as [number, number, number, number];
-        mat2.rotate(this.rotationMatrix, this.rotationMatrix, this.angle);
+        const s = Math.sin(this.angle), c = Math.cos(this.angle);
+        this.rotationMatrix = [c, s, -s, c];
     }
 
     get pitch(): number {
@@ -1488,7 +1506,7 @@ class Transform {
             let closestDistance = Number.MAX_VALUE;
             let closestElevation = 0.0;
             const corners = it.aabb.getCorners();
-            const distanceXyz = [];
+            const distanceXyz: [number, number, number] = [0, 0, 0];
             for (const corner of corners) {
                 vec3.sub(distanceXyz, corner, cameraPoint);
                 if (!isGlobe) {
@@ -1501,7 +1519,6 @@ class Transform {
                 const dist = vec3.dot(distanceXyz, this._camera.forward());
                 if (dist < closestDistance) {
                     closestDistance = dist;
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     closestElevation = Math.abs(distanceXyz[2]);
                 }
             }
@@ -1985,8 +2002,8 @@ class Transform {
      */
     _coordinatePoint(coord: MercatorCoordinate, sampleTerrainIn3D: boolean): Point {
         const elevation = sampleTerrainIn3D && this.elevation ? this.elevation.getAtPointOrZero(coord, this._centerAltitude) : this._centerAltitude;
-        const p = [coord.x * this.worldSize, coord.y * this.worldSize, elevation + coord.toAltitude(), 1];
-        vec4.transformMat4(p as [number, number, number, number], p as [number, number, number, number], this.pixelMatrix);
+        const p: [number, number, number, number] = [coord.x * this.worldSize, coord.y * this.worldSize, elevation + coord.toAltitude(), 1];
+        vec4.transformMat4(p, p, this.pixelMatrix);
         return p[3] > 0 ?
             new Point(p[0] / p[3], p[1] / p[3]) :
             new Point(Number.MAX_VALUE, Number.MAX_VALUE);
@@ -2267,7 +2284,7 @@ class Transform {
         }
 
         const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.worldSize);
-        let projMatrix;
+        let projMatrix: mat4;
         if (this.projection.isReprojectedInTileSpace) {
             projMatrix = this.mercatorMatrix;
         } else if (expanded) {
@@ -2276,7 +2293,6 @@ class Transform {
         } else {
             projMatrix = aligned ? this.alignedProjMatrix : this.projMatrix;
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         mat4.multiply(posMatrix, projMatrix, posMatrix);
 
         cache[projMatrixKey] = new Float32Array(posMatrix);
@@ -2335,8 +2351,8 @@ class Transform {
             const point = vec3.scaleAndAdd([], start, dir, t);
             const newCenter = new MercatorCoordinate(point[0], point[1], mercatorZfromAltitude(point[2], latFromMercatorY(point[1])));
 
-            const camToNew = [newCenter.x - start[0], newCenter.y - start[1], newCenter.z - start[2] * metersToMerc];
-            const maxAltitude = (newCenter.z + vec3.length(camToNew as [number, number, number])) * this._pixelsPerMercatorPixel;
+            const camToNew: [number, number, number] = [newCenter.x - start[0], newCenter.y - start[1], newCenter.z - start[2] * metersToMerc];
+            const maxAltitude = (newCenter.z + vec3.length(camToNew)) * this._pixelsPerMercatorPixel;
             this._seaLevelZoom = this._zoomFromMercatorZ(maxAltitude);
 
             // Camera zoom has to be updated as the orbit distance might have changed
@@ -2366,18 +2382,18 @@ class Transform {
         if (cameraHeight <= minHeight) {
             if (cameraHeight < 0 || adaptCameraAltitude) {
                 const center = this.locationCoordinate(this._center, this._centerAltitude);
-                const cameraToCenter = [pos[0], pos[1], center.z - pos[2]];
+                const cameraToCenter: [number, number, number] = [pos[0], pos[1], center.z - pos[2]];
 
-                const prevDistToCamera = vec3.length(cameraToCenter as [number, number, number]);
+                const prevDistToCamera = vec3.length(cameraToCenter);
                 // Adjust the camera vector so that the camera is placed above the terrain.
                 // Distance between the camera and the center point is kept constant.
                 cameraToCenter[2] -= (minHeight - cameraHeight) / this._pixelsPerMercatorPixel;
-                const newDistToCamera = vec3.length(cameraToCenter as [number, number, number]);
+                const newDistToCamera = vec3.length(cameraToCenter);
 
                 if (newDistToCamera === 0)
                     return;
 
-                vec3.scale(cameraToCenter as [number, number, number], cameraToCenter as [number, number, number], prevDistToCamera / newDistToCamera * this._pixelsPerMercatorPixel);
+                vec3.scale(cameraToCenter, cameraToCenter, prevDistToCamera / newDistToCamera * this._pixelsPerMercatorPixel);
                 this._camera.position = [pos[0], pos[1], center.z * this._pixelsPerMercatorPixel - cameraToCenter[2]];
                 this._updateStateFromCamera();
             } else {
@@ -2511,7 +2527,7 @@ class Transform {
         const zUnit = this.projection.zAxisUnit === "meters" ? pixelsPerMeter : 1.0;
         const worldToCamera = this._camera.getWorldToCamera(this.worldSize, zUnit);
 
-        let cameraToClip;
+        let cameraToClip: mat4;
 
         const cameraToClipPerspective = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, this._farZ);
         // Apply offset/padding
@@ -2536,21 +2552,20 @@ class Transform {
 
             const mixValue =
                 this.pitch >= OrthographicPitchTranstionValue ? 1.0 : this.pitch / OrthographicPitchTranstionValue;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             lerpMatrix(cameraToClip, cameraToClip, cameraToClipPerspective, easeIn(mixValue));
         } else {
             cameraToClip = cameraToClipPerspective;
         }
 
         const worldToClipPerspective = mat4.mul([], cameraToClipPerspective, worldToCamera);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        let m = mat4.mul([], cameraToClip, worldToCamera);
+        const m = mat4.mul([], cameraToClip, worldToCamera);
 
         if (this.projection.isReprojectedInTileSpace) {
             // Projections undistort as you zoom in (shear, scale, rotate).
             // Apply the undistortion around the center of the map.
             const mc = this.locationCoordinate(this.center);
-            const adjustments = mat4.identity([]);
+            mat4.identity(this._mat4Scratch);
+            const adjustments = this._mat4Scratch;
             mat4.translate(adjustments, adjustments, [mc.x * this.worldSize, mc.y * this.worldSize, 0]);
             mat4.multiply(adjustments, adjustments, getProjectionAdjustments(this) as mat4);
             mat4.translate(adjustments, adjustments, [-mc.x * this.worldSize, -mc.y * this.worldSize, 0]);
@@ -2563,46 +2578,44 @@ class Transform {
 
         // The mercatorMatrix can be used to transform points from mercator coordinates
         // ([0, 0] nw, [1, 1] se) to GL coordinates. / zUnit compensates for scaling done in worldToCamera.
-        this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize / zUnit, 1.0]);
+        mat4.scale(this.mercatorMatrix, m, [this.worldSize, this.worldSize, this.worldSize / zUnit, 1.0]);
 
         this.projMatrix = m;
 
         // For tile cover calculation, use inverted of base (non elevated) matrix
         // as tile elevations are in tile coordinates and relative to center elevation.
-        this.invProjMatrix = mat4.invert(new Float64Array(16), this.projMatrix);
+        mat4.invert(this.invProjMatrix, this.projMatrix);
 
         if (isGlobe) {
             const expandedCameraToClipPerspective = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, Infinity);
             expandedCameraToClipPerspective[8] = -offset.x * 2 / this.width;
             expandedCameraToClipPerspective[9] = offset.y * 2 / this.height;
-            this.expandedFarZProjMatrix = mat4.mul([], expandedCameraToClipPerspective, worldToCamera);
+            mat4.mul(this._expandedFarZProjMatrixBuf, expandedCameraToClipPerspective, worldToCamera);
+            this.expandedFarZProjMatrix = this._expandedFarZProjMatrixBuf;
         } else {
             this.expandedFarZProjMatrix = this.projMatrix;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        const clipToCamera = mat4.invert([], cameraToClip);
+        mat4.invert(this._mat4Scratch, cameraToClip);
+        const clipToCamera = this._mat4Scratch;
         this.frustumCorners = FrustumCorners.fromInvProjectionMatrix(clipToCamera, this.horizonLineFromTop(), this.height);
 
         // Create a camera frustum in mercator units
         this.cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, 0.0, !isGlobe);
 
-        const view = new Float32Array(16);
-        mat4.identity(view);
-        mat4.scale(view, view, [1, -1, 1]);
-        mat4.rotateX(view, view, this._pitch);
-        mat4.rotateZ(view, view, this.angle);
+        mat4.fromScaling(this.skyboxMatrix, [1, -1, 1]);
+        mat4.rotateX(this.skyboxMatrix, this.skyboxMatrix, this._pitch);
+        mat4.rotateZ(this.skyboxMatrix, this.skyboxMatrix, this.angle);
 
-        const projection = mat4.perspective(new Float32Array(16), this._fov, this.width / this.height, this._nearZ, this._farZ);
-
-        this.starsProjMatrix = mat4.clone(projection);
+        mat4.perspective(this.starsProjMatrix, this._fov, this.width / this.height, this._nearZ, this._farZ);
 
         // The distance in pixels the skybox needs to be shifted down by to meet the shifted horizon.
         const skyboxHorizonShift = (Math.PI / 2 - this._pitch) * (this.height / this._fov) * this._horizonShift;
         // Apply center of perspective offset to skybox projection
-        projection[8] = -offset.x * 2 / this.width;
-        projection[9] = (offset.y + skyboxHorizonShift) * 2 / this.height;
-        this.skyboxMatrix = mat4.multiply(view, projection, view);
+        mat4.copy(this._mat4Scratch, this.starsProjMatrix);
+        this._mat4Scratch[8] = -offset.x * 2 / this.width;
+        this._mat4Scratch[9] = (offset.y + skyboxHorizonShift) * 2 / this.height;
+        mat4.multiply(this.skyboxMatrix, this._mat4Scratch, this.skyboxMatrix);
 
         // Make a second projection matrix that is aligned to a pixel grid for rendering raster tiles.
         // We're rounding the (floating point) x/y values to achieve to avoid rendering raster images to fractional
@@ -2616,31 +2629,24 @@ class Transform {
             angleCos = Math.cos(this.angle), angleSin = Math.sin(this.angle),
             dx = x - Math.round(x) + angleCos * xShift + angleSin * yShift,
             dy = y - Math.round(y) + angleCos * yShift + angleSin * xShift;
-        const alignedM = new Float64Array(m);
-        mat4.translate(alignedM, alignedM, [dx > 0.5 ? dx - 1 : dx, dy > 0.5 ? dy - 1 : dy, 0]);
-        this.alignedProjMatrix = alignedM;
+        mat4.copy(this.alignedProjMatrix, m);
+        mat4.translate(this.alignedProjMatrix, this.alignedProjMatrix, [dx > 0.5 ? dx - 1 : dx, dy > 0.5 ? dy - 1 : dy, 0]);
 
-        m = mat4.create();
-        mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
-        mat4.translate(m, m, [1, -1, 0]);
-        this.labelPlaneMatrix = m;
+        mat4.fromScaling(this.labelPlaneMatrix, [this.width / 2, -this.height / 2, 1]);
+        mat4.translate(this.labelPlaneMatrix, this.labelPlaneMatrix, [1, -1, 0]);
 
-        m = mat4.create();
-        mat4.scale(m, m, [1, -1, 1]);
-        mat4.translate(m, m, [-1, -1, 0]);
-        mat4.scale(m, m, [2 / this.width, 2 / this.height, 1]);
-        this.glCoordMatrix = m;
+        mat4.fromScaling(this.glCoordMatrix, [1, -1, 1]);
+        mat4.translate(this.glCoordMatrix, this.glCoordMatrix, [-1, -1, 0]);
+        mat4.scale(this.glCoordMatrix, this.glCoordMatrix, [2 / this.width, 2 / this.height, 1]);
 
         // matrix for conversion from location to screen coordinates
-        this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, worldToClipPerspective);
+        mat4.multiply(this.pixelMatrix, this.labelPlaneMatrix, worldToClipPerspective);
 
         this._calcFogMatrices();
         this._distanceTileDataCache = {};
 
         // inverse matrix for conversion from screen coordinates to location
-        m = mat4.invert(new Float64Array(16), this.pixelMatrix);
-        if (!m) throw new Error("failed to invert matrix");
-        this.pixelMatrixInverse = m;
+        if (!mat4.invert(this.pixelMatrixInverse, this.pixelMatrix)) throw new Error("failed to invert matrix");
 
         if (this.projection.name === 'globe' || this.mercatorFromTransition) {
             this.globeMatrix = calculateGlobeMatrix(this);
@@ -2649,7 +2655,7 @@ class Transform {
             this.globeCenterInViewSpace = vec3.transformMat4(globeCenter, globeCenter, worldToCamera) as [number, number, number];
             this.globeRadius = this.worldSize / 2.0 / Math.PI - 1.0;
         } else {
-            this.globeMatrix = m;
+            this.globeMatrix = this.pixelMatrixInverse;
         }
 
         this._projMatrixCache = {};
@@ -2672,15 +2678,13 @@ class Transform {
         // - p.xy = p.xy * cameraWorldSizeForFog * windowScaleFactor
         // - p.z  = p.z  * cameraPixelsPerMeter * windowScaleFactor
         const windowScaleFactor = 1 / this.height / this._pixelsPerMercatorPixel;
-        const metersToPixel = [cameraWorldSizeForFog, cameraWorldSizeForFog, cameraPixelsPerMeter];
-        vec3.scale(metersToPixel as [number, number, number], metersToPixel as [number, number, number], windowScaleFactor);
+        const metersToPixel: [number, number, number] = [cameraWorldSizeForFog, cameraWorldSizeForFog, cameraPixelsPerMeter];
+        vec3.scale(metersToPixel, metersToPixel, windowScaleFactor);
         vec3.scale(cameraPos, cameraPos, -1);
-        vec3.multiply(cameraPos, cameraPos, metersToPixel as [number, number, number]);
+        vec3.multiply(cameraPos, cameraPos, metersToPixel);
 
-        const m = mat4.create();
-        mat4.translate(m, m, cameraPos);
-        mat4.scale(m, m, metersToPixel as [number, number, number]);
-        this.mercatorFogMatrix = m;
+        mat4.fromTranslation(this.mercatorFogMatrix, cameraPos);
+        mat4.scale(this.mercatorFogMatrix, this.mercatorFogMatrix, metersToPixel);
 
         // The worldToFogMatrix can be used for conversion from world coordinates to relative camera position in
         // units of fractions of the map height. Later composed with tile position to construct the fog tile matrix.

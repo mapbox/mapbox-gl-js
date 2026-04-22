@@ -1867,7 +1867,7 @@ class Painter {
         }
     }
 
-    uploadCommonUniforms(context: Context, program: Program<ProgramUniformsType[ProgramName]>, tileID?: UnwrappedTileID | null, fogMatrix?: Float32Array | null, cutoffParams?: CutoffParams | null) {
+    uploadCommonUniforms(context: Context, program: Program<ProgramUniformsType[ProgramName]>, tileID?: UnwrappedTileID | null, fogMatrix?: mat4 | null, cutoffParams?: CutoffParams | null) {
         this.uploadCommonLightUniforms(context, program as unknown as Program<LightsUniformsType>);
 
         // Fog is not enabled when rendering to texture so we

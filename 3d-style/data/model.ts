@@ -200,8 +200,8 @@ export function calculateModelMatrix(matrix: mat4, model: Readonly<Model>, state
     const modelMetersPerPixel = getMetersPerPixelAtLatitude(position.lat, zoom);
     const modelPixelsPerMeter = 1.0 / modelMetersPerPixel;
     mat4.identity(matrix);
-    const offset = [projectedPoint.x + translation[0] * modelPixelsPerMeter, projectedPoint.y + translation[1] * modelPixelsPerMeter, translation[2]];
-    mat4.translate(matrix, matrix, offset as [number, number, number]);
+    const offset: [number, number, number] = [projectedPoint.x + translation[0] * modelPixelsPerMeter, projectedPoint.y + translation[1] * modelPixelsPerMeter, translation[2]];
+    mat4.translate(matrix, matrix, offset);
     let scaleXY = 1.0;
     let scaleZ = 1.0;
     const worldSize = state.worldSize;
@@ -219,8 +219,8 @@ export function calculateModelMatrix(matrix: mat4, model: Readonly<Model>, state
         } else if (state.projection.name === 'globe') {
             const globeMatrix = convertModelMatrixForGlobe(matrix, state);
             const worldViewProjection = mat4.multiply([], state.projMatrix, globeMatrix);
-            const globeProjPos =  [0, 0, 0, 1];
-            vec4.transformMat4(globeProjPos as [number, number, number, number], globeProjPos as [number, number, number, number], worldViewProjection);
+            const globeProjPos: [number, number, number, number] = [0, 0, 0, 1];
+            vec4.transformMat4(globeProjPos, globeProjPos, worldViewProjection);
             const globeProjectionScale = globeProjPos[3] / state.cameraToCenterDistance;
             const transition = globeToMercatorTransition(zoom);
             const modelPixelConv = state.projection.pixelsPerMeter(position.lat, worldSize) * getMetersPerPixelAtLatitude(position.lat, zoom);

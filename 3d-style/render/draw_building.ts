@@ -21,6 +21,10 @@ import type {DynamicDefinesType} from '../../src/render/program/program_uniforms
 
 export default draw;
 
+// Reused per-tile; safe to pass directly to uniforms because UniformMatrix4f caches a copy.
+const matrixScratch = new Float32Array(16);
+const normalMatrixScratch = new Float32Array(16);
+
 interface DrawParams {
     painter: Painter;
     source: SourceCache;
@@ -84,13 +88,14 @@ function drawTiles(params: DrawParams) {
         let programWithFacades;
         let programWithoutFacades;
 
-        let matrix = painter.translatePosMatrix(
+        const translated = painter.translatePosMatrix(
             coord.expandedProjMatrix,
             tile,
             [0, 0],
             'map');
 
-        matrix = mat4.scale(mat4.create(), matrix, [1.0, 1.0, params.verticalScale]);
+        mat4.scale(matrixScratch, translated, [1.0, 1.0, params.verticalScale]);
+        const matrix = matrixScratch;
 
         let uniformValues;
 
@@ -99,8 +104,8 @@ function drawTiles(params: DrawParams) {
             if (frustumCullShadowCaster(tile.tileID, bucketMaxHeight, painter)) {
                 continue;
             }
-            let tileShadowPassMatrix = shadowRenderer.calculateShadowPassMatrixFromTile(tile.tileID.toUnwrapped());
-            tileShadowPassMatrix = mat4.scale(mat4.create(), tileShadowPassMatrix, [1.0, 1.0, params.verticalScale]);
+            const tileShadowPassMatrix = shadowRenderer.calculateShadowPassMatrixFromTile(tile.tileID.toUnwrapped());
+            mat4.scale(tileShadowPassMatrix, tileShadowPassMatrix, [1.0, 1.0, params.verticalScale]);
 
             uniformValues = buildingDepthUniformValues(tileShadowPassMatrix);
 
@@ -111,12 +116,12 @@ function drawTiles(params: DrawParams) {
             const tileMatrix = painter.transform.calculatePosMatrix(coord.toUnwrapped(), painter.transform.worldSize);
             mat4.scale(tileMatrix, tileMatrix, [1, 1, params.verticalScale]);
 
-            const normalMatrix = mat4.create();
             // For tilespace XY, normals are ZUp. Flip Y to follow tile coordinate system orientation.
             // Take vertical scale into account and convert Z to meters.
-            mat4.scale(normalMatrix, tileMatrix, [1, -1, 1.0 / metersPerPixel]);
-            mat4.invert(normalMatrix, normalMatrix);
-            mat4.transpose(normalMatrix, normalMatrix);
+            mat4.scale(normalMatrixScratch, tileMatrix, [1, -1, 1.0 / metersPerPixel]);
+            mat4.invert(normalMatrixScratch, normalMatrixScratch);
+            mat4.transpose(normalMatrixScratch, normalMatrixScratch);
+            const normalMatrix = normalMatrixScratch;
 
             // camera position in the tile coordinates
             const mercCameraPos = painter.transform.getFreeCameraOptions().position;

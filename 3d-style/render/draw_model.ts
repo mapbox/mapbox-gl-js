@@ -47,6 +47,17 @@ import type {ModelUniformsType, ModelDepthUniformsType} from '../render/program/
 
 export default drawModels;
 
+// Module-level scratch buffers reused across hot paths to avoid per-frame allocations.
+// Kept as Float64Array because mat4.invert + mat4.transpose on the normal matrix is sensitive
+// to precision; Float32 narrowing here caused visible PBR shading diffs (ANGLE/D3D on Windows).
+// UniformMatrix4f.set performs the Float32 conversion at upload time.
+const lightingMatrixScratch = new Float64Array(16);
+const normalMatrixScratch = new Float64Array(16);
+const fogMatrixScratch = new Float64Array(16);
+// Placeholder passed to modelUniformValues for u_normal_matrix in the instanced path;
+// it's either overwritten per instance or unused (shader reads from instance attributes).
+const instancedNormalMatrixPlaceholder = new Float32Array(16);
+
 type ModelParameters = {
     zScaleMatrix: mat4;
     negCameraPosMatrix: mat4;
@@ -84,15 +95,12 @@ type RenderData = {
     aabb: Aabb;
 };
 
-function fogMatrixForModel(modelMatrix: mat4, transform: Transform): mat4 {
+function fogMatrixForModel(out: mat4, modelMatrix: mat4, transform: Transform): mat4 {
     // convert model matrix from the default world size to the one used by the fog
-    const fogMatrix = [...modelMatrix] as mat4;
     const scale = transform.cameraWorldSizeForFog / transform.worldSize;
-    const scaleMatrix = mat4.identity([]);
-    mat4.scale(scaleMatrix, scaleMatrix, [scale, scale, 1]);
-    mat4.multiply(fogMatrix, scaleMatrix, fogMatrix);
-    mat4.multiply(fogMatrix, transform.worldToFogMatrix, fogMatrix);
-    return fogMatrix;
+    mat4.scale(out, transform.worldToFogMatrix, [scale, scale, 1]);
+    mat4.multiply(out, out, modelMatrix);
+    return out;
 }
 
 // Collect defines and dynamic buffers (colors, normals, uv) and bind textures. Used for single mesh and instanced draw.
@@ -183,24 +191,21 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     const pbr = material.pbrMetallicRoughness;
     const fog = painter.style.fog;
 
-    let lightingMatrix;
     if (painter.transform.projection.zAxisUnit === "pixels") {
-        lightingMatrix = [...sortedMesh.nodeModelMatrix];
+        lightingMatrixScratch.set(sortedMesh.nodeModelMatrix);
     } else {
-        lightingMatrix = mat4.multiply([], modelParameters.zScaleMatrix, sortedMesh.nodeModelMatrix);
+        mat4.multiply(lightingMatrixScratch, modelParameters.zScaleMatrix, sortedMesh.nodeModelMatrix);
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    mat4.multiply(lightingMatrix, modelParameters.negCameraPosMatrix, lightingMatrix);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    const normalMatrix = mat4.invert([], lightingMatrix);
-    mat4.transpose(normalMatrix, normalMatrix);
+    mat4.multiply(lightingMatrixScratch, modelParameters.negCameraPosMatrix, lightingMatrixScratch);
+    mat4.invert(normalMatrixScratch, lightingMatrixScratch);
+    mat4.transpose(normalMatrixScratch, normalMatrixScratch);
 
     const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
     const emissiveStrength = layer.paint.get('model-emissive-strength').constantOr(0.0);
     const uniformValues = modelUniformValues(
-        new Float32Array(sortedMesh.worldViewProjection),
-        new Float32Array(lightingMatrix),
-        new Float32Array(normalMatrix),
+        sortedMesh.worldViewProjection,
+        lightingMatrixScratch,
+        normalMatrixScratch,
         null,
         painter,
 
@@ -230,10 +235,9 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
 
-    let fogMatrixArray = null;
+    let fogMatrix: mat4 | null = null;
     if (fog) {
-        const fogMatrix = fogMatrixForModel(sortedMesh.nodeModelMatrix, painter.transform);
-        fogMatrixArray = new Float32Array(fogMatrix);
+        fogMatrix = fogMatrixForModel(fogMatrixScratch, sortedMesh.nodeModelMatrix, painter.transform);
 
         if (tr.projection.name !== 'globe') {
             const min = mesh.aabb.min;
@@ -250,8 +254,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
 
     const program = painter.getOrCreateProgram('model', programOptions);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    painter.uploadCommonUniforms(context, program, null, fogMatrixArray, cutoffParams);
+    painter.uploadCommonUniforms(context, program, null, fogMatrix, cutoffParams);
 
     const isShadowPass = painter.renderPass === 'shadow';
 
@@ -312,7 +315,7 @@ function prepareMeshes(painter: Painter, node: ModelNode, modelMatrix: mat4, pro
     const nodeModelMatrix = isGlobe ? convertModelMatrixForGlobe(modelMatrix, transform) : [...modelMatrix];
 
     mat4.multiply(nodeModelMatrix, nodeModelMatrix, node.globalMatrix);
-    const worldViewProjection = mat4.multiply([] as unknown as mat4, projectionMatrix, nodeModelMatrix);
+    const worldViewProjection = mat4.multiply([], projectionMatrix, nodeModelMatrix);
     if (node.meshes) {
         for (const mesh of node.meshes) {
             const materialOverride = materialOverrides.get(mesh.material.name);
@@ -574,11 +577,10 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         model.computeModelMatrix(painter, rotation, scale, translation, shouldApplyElevation, shouldFollowTerrainSlope, false);
 
         // compute model parameters matrices
-        const negCameraPosMatrix = mat4.identity([]);
+        const negCameraPosMatrix = mat4.fromTranslation([], cameraPos);
         const modelMetersPerPixel = getMetersPerPixelAtLatitude(model.position.lat, painter.transform.zoom);
         const modelPixelsPerMeter = 1.0 / modelMetersPerPixel;
         const zScaleMatrix = mat4.fromScaling([], [1.0, 1.0, modelPixelsPerMeter]);
-        mat4.translate(negCameraPosMatrix, negCameraPosMatrix, cameraPos);
         const modelParameters = {zScaleMatrix, negCameraPosMatrix};
         modelParametersVector.push(modelParameters);
         for (const node of model.nodes) {
@@ -612,7 +614,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
             if (node.footprint) {
                 const id = node.id || node.name || 'footprint';
                 if (!footprints.has(id)) {
-                    const mvp = mat4.multiply([] as unknown as mat4, proj, matrix);
+                    const mvp = mat4.multiply([], proj, matrix);
                     footprints.set(id, {node, mvp});
                 }
             }
@@ -815,7 +817,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
 
             const tileMatrix = tr.calculatePosMatrix(coord.toUnwrapped(), tr.worldSize);
             renderData.tileMatrix.set(tileMatrix);
-            renderData.shadowTileMatrix = Float32Array.from(shadowRenderer.calculateShadowPassMatrixFromMatrix(tileMatrix));
+            renderData.shadowTileMatrix.set(shadowRenderer.calculateShadowPassMatrixFromMatrix(tileMatrix));
             renderData.aabb.min = [0, 0, 0];
             renderData.aabb.max[0] = renderData.aabb.max[1] = EXTENT;
             renderData.aabb.max[2] = 0;
@@ -859,7 +861,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
             if (!model || !model.uploaded) continue;
 
             if (isGlobe) {
-                const cameraPosGlobe = vec3.scale([] as unknown as vec3, [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
+                const cameraPosGlobe = vec3.scale([], [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
                 vec3.negate(cameraPosGlobe, cameraPosGlobe);
 
                 for (let instanceIndex = 0; instanceIndex < modelInstances.instancedDataArray.length; ++instanceIndex) {
@@ -883,11 +885,10 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
                     const colorMix = modelInstances.colorForInstance(instanceIndex);
 
                     // compute model parameters matrices
-                    const negCameraPosMatrix = mat4.identity([] as unknown as mat4);
+                    const negCameraPosMatrix = mat4.fromTranslation([], cameraPosGlobe);
                     const modelMetersPerPixel = getMetersPerPixelAtLatitude(position.lat, painter.transform.zoom);
                     const modelPixelsPerMeter = 1.0 / modelMetersPerPixel;
-                    const zScaleMatrix = mat4.fromScaling([] as unknown as mat4, [1.0, 1.0, modelPixelsPerMeter]);
-                    mat4.translate(negCameraPosMatrix, negCameraPosMatrix, cameraPosGlobe);
+                    const zScaleMatrix = mat4.fromScaling([], [1.0, 1.0, modelPixelsPerMeter]);
                     const modelParameters = {zScaleMatrix, negCameraPosMatrix};
                     modelParametersVector.push(modelParameters);
 
@@ -954,7 +955,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Model
             }
             if (isShadowPass && shadowRenderer) {
                 program = painter.getOrCreateProgram('modelDepth', {defines: (definesValues as DynamicDefinesType[])});
-                uniformValues = modelDepthUniformValues(renderData.shadowTileMatrix, renderData.shadowTileMatrix, Float32Array.from(node.globalMatrix));
+                uniformValues = modelDepthUniformValues(renderData.shadowTileMatrix, renderData.shadowTileMatrix, node.globalMatrix);
                 colorMode = ColorMode.disabled;
             } else {
 
@@ -969,8 +970,8 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Model
                 const emissiveStrength = layer.paint.get('model-emissive-strength').constantOr(0.0);
                 uniformValues = modelUniformValues(
                     coord.expandedProjMatrix,
-                    Float32Array.from(node.globalMatrix),
-                    new Float32Array(16),
+                    node.globalMatrix,
+                    instancedNormalMatrixPlaceholder,
                     null,
                     painter,
 
@@ -1070,11 +1071,10 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     const cameraPos = vec3.scale([], [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
     const negCameraPos = vec3.negate([], cameraPos);
     // compute model parameters matrices
-    const negCameraPosMatrix = mat4.identity([]);
+    const negCameraPosMatrix = mat4.fromTranslation([], negCameraPos);
     const metersPerPixel = getMetersPerPixelAtLatitude(tr.center.lat, tr.zoom);
     const pixelsPerMeter = 1.0 / metersPerPixel;
     const zScaleMatrix = mat4.fromScaling([], [1.0, 1.0, pixelsPerMeter]);
-    mat4.translate(negCameraPosMatrix, negCameraPosMatrix, negCameraPos);
     const layerOpacity = layer.paint.get('model-opacity').constantOr(1.0);
 
     const depthModeRW = new DepthMode(context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
@@ -1190,8 +1190,8 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 }
 
                 // keep model and nodemodel matrices separate for rendering door lights
-                const nodeModelMatrix = mat4.multiply([] as unknown as mat4, tileModelMatrix, node.globalMatrix);
-                const wvpForNode = mat4.multiply([] as unknown as mat4, tr.expandedFarZProjMatrix, nodeModelMatrix);
+                const nodeModelMatrix = mat4.multiply([], tileModelMatrix, node.globalMatrix);
+                const wvpForNode = mat4.multiply([], tr.expandedFarZProjMatrix, nodeModelMatrix);
                 // Lights come in tilespace so wvp should not include node.matrix when rendering door ligths
                 const wvpForTile = mat4.multiply([], tr.expandedFarZProjMatrix, tileModelMatrix);
                 const anchorPos = vec4.transformMat4([], [anchorX, anchorY, elevation, 1.0], wvpForNode);
@@ -1256,14 +1256,14 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     }
                 }
 
-                let lightingMatrix = mat4.multiply([], zScaleMatrix, sortedNode.tileModelMatrix);
-                mat4.multiply(lightingMatrix, negCameraPosMatrix, lightingMatrix);
-                const normalMatrix = mat4.invert([], lightingMatrix);
-                mat4.transpose(normalMatrix, normalMatrix);
-                mat4.scale(normalMatrix, normalMatrix, normalScale as [number, number, number]);
+                mat4.multiply(lightingMatrixScratch, zScaleMatrix, sortedNode.tileModelMatrix);
+                mat4.multiply(lightingMatrixScratch, negCameraPosMatrix, lightingMatrixScratch);
+                mat4.invert(normalMatrixScratch, lightingMatrixScratch);
+                mat4.transpose(normalMatrixScratch, normalMatrixScratch);
+                mat4.scale(normalMatrixScratch, normalMatrixScratch, normalScale as [number, number, number]);
 
                 // lighting matrix should take node.matrix into account
-                lightingMatrix = mat4.multiply(lightingMatrix, lightingMatrix, node.globalMatrix);
+                mat4.multiply(lightingMatrixScratch, lightingMatrixScratch, node.globalMatrix);
 
                 const isLightBeamPass = painter.renderPass === 'light-beam';
                 const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
@@ -1319,10 +1319,9 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         continue;
                     }
 
-                    let fogMatrixArray = null;
+                    let fogMatrix: mat4 | null = null;
                     if (fog) {
-                        const fogMatrix = fogMatrixForModel(sortedNode.nodeModelMatrix, painter.transform);
-                        fogMatrixArray = new Float32Array(fogMatrix);
+                        fogMatrix = fogMatrixForModel(fogMatrixScratch, sortedNode.nodeModelMatrix, painter.transform);
 
                         if (tr.projection.name !== 'globe') {
                             const min = mesh.aabb.min;
@@ -1348,8 +1347,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         shadowRenderer.setupShadowsFromMatrix(sortedNode.tileModelMatrix, program, shadowRenderer.useNormalOffset);
                     }
 
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    painter.uploadCommonUniforms(context, program, null, fogMatrixArray);
+                    painter.uploadCommonUniforms(context, program, null, fogMatrix);
 
                     const pbr = material.pbrMetallicRoughness;
                     // These values were taken from the tilesets used for testing
@@ -1358,10 +1356,10 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
 
                     // Set emissive strength to zero for landmarks, as it is already used embedded in the PBR buffer.
                     const uniformValues = modelUniformValues(
-                            new Float32Array(worldViewProjection),
-                            new Float32Array(lightingMatrix),
-                            new Float32Array(normalMatrix),
-                            new Float32Array(node.globalMatrix),
+                            worldViewProjection,
+                            lightingMatrixScratch,
+                            normalMatrixScratch,
+                            node.globalMatrix,
                             painter,
                             sortedNode.opacity,
                             pbr.baseColorFactor,

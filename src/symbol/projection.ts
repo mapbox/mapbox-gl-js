@@ -187,12 +187,12 @@ function getGlCoordMatrix(
             return m;
         } else {
             const m = mat4.clone(posMatrix);
-            const s = mat4.identity([]);
-            s[0] = pixelsToTileUnits[0];
-            s[1] = pixelsToTileUnits[1];
-            s[4] = pixelsToTileUnits[2];
-            s[5] = pixelsToTileUnits[3];
-            mat4.multiply(m, m, s);
+            // Multiply m by the sparse 4x4 with only the upper-left 2x2 block non-trivial
+            // (equivalent to mat4.multiply with a near-identity matrix, but ~16x fewer ops).
+            const [p0, p1, p2, p3] = pixelsToTileUnits;
+            const [a0, a1, a2, a3, b0, b1, b2, b3] = m;
+            m[0] = p0 * a0 + p1 * b0; m[1] = p0 * a1 + p1 * b1; m[2] = p0 * a2 + p1 * b2; m[3] = p0 * a3 + p1 * b3;
+            m[4] = p2 * a0 + p3 * b0; m[5] = p2 * a1 + p3 * b1; m[6] = p2 * a2 + p3 * b2; m[7] = p2 * a3 + p3 * b3;
             if (!rotateWithMap) {
                 mat4.rotateZ(m, m, -transform.angle);
             }

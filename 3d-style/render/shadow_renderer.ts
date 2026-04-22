@@ -51,6 +51,15 @@ type ShadowsUniformsType =
     | BuildingUniformsType
     | BuildingDepthUniformsType;
 
+// One scratch buffer per cascade; each assignment into the uniforms bag must keep a distinct
+// reference because the bag is consumed after the cascade loop completes. Grown lazily in case
+// the cascade count ever increases (currently capped at 2 by the u_light_matrix_0/1 uniforms).
+const lightMatrixScratches: Float64Array[] = [];
+function getLightMatrixScratch(i: number): Float64Array {
+    const scratch = lightMatrixScratches[i] = lightMatrixScratches[i] || new Float64Array(16);
+    return scratch;
+}
+
 type ShadowCascade = {
     framebuffer: Framebuffer;
     texture: Texture;
@@ -130,8 +139,8 @@ class ShadowReceivers {
                 let aabbInsideCascade = true;
 
                 for (const point of clampedTileAabbPoints) {
-                    const p = [point[0] * worldSize, point[1] * worldSize, point[2]];
-                    vec3.transformMat4(p as [number, number, number], p as [number, number, number], cascades[i].matrix);
+                    const p: [number, number, number] = [point[0] * worldSize, point[1] * worldSize, point[2]];
+                    vec3.transformMat4(p, p, cascades[i].matrix);
 
                     if (p[0] < -1.0 || p[0] > 1.0 || p[1] < -1.0 || p[1] > 1.0) {
                         aabbInsideCascade = false;
@@ -500,12 +509,12 @@ export class ShadowRenderer {
         const gl = context.gl;
         const uniforms = this._uniformValues;
 
-        const lightMatrix = new Float64Array(16);
         const tileMatrix = transform.calculatePosMatrix(unwrappedTileID, transform.worldSize);
 
         for (let i = 0; i < this._cascades.length; i++) {
-            mat4.multiply(lightMatrix, this._cascades[i].matrix, tileMatrix);
-            uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = Float32Array.from(lightMatrix);
+            const scratch = getLightMatrixScratch(i);
+            mat4.multiply(scratch, this._cascades[i].matrix, tileMatrix);
+            uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = scratch;
             context.activeTexture.set(gl.TEXTURE0 + TextureSlots.ShadowMap0 + i);
             this._cascades[i].texture.bindExtraParam(gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.GREATER);
         }
@@ -544,10 +553,10 @@ export class ShadowRenderer {
         const gl = context.gl;
         const uniforms = this._uniformValues;
 
-        const lightMatrix = new Float64Array(16);
         for (let i = 0; i < this._shadowParameters.cascadeCount; i++) {
-            mat4.multiply(lightMatrix, this._cascades[i].matrix, worldMatrix);
-            uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = Float32Array.from(lightMatrix);
+            const scratch = getLightMatrixScratch(i);
+            mat4.multiply(scratch, this._cascades[i].matrix, worldMatrix);
+            uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = scratch;
             context.activeTexture.set(gl.TEXTURE0 + TextureSlots.ShadowMap0 + i);
             this._cascades[i].texture.bindExtraParam(gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.GREATER);
         }
@@ -798,18 +807,18 @@ function createLightMatrix(
     const alignedCenter = vec3.fromValues(Math.floor(sphereCenter[0] * 1e6) / 1e6 * ws, Math.floor(sphereCenter[1] * 1e6) / 1e6 * ws, 0.);
 
     const halfResolution = 0.5 * resolution;
-    const projectedPoint = [0.0, 0.0, 0.0];
-    vec3.transformMat4(projectedPoint as [number, number, number], alignedCenter, lightWorldToClip);
-    vec3.scale(projectedPoint as [number, number, number], projectedPoint as [number, number, number], halfResolution);
+    const projectedPoint: [number, number, number] = [0.0, 0.0, 0.0];
+    vec3.transformMat4(projectedPoint, alignedCenter, lightWorldToClip);
+    vec3.scale(projectedPoint, projectedPoint, halfResolution);
 
-    const roundedPoint = [Math.floor(projectedPoint[0]), Math.floor(projectedPoint[1]), Math.floor(projectedPoint[2])];
-    const offsetVec = [0.0, 0.0, 0.0];
-    vec3.sub(offsetVec as [number, number, number], projectedPoint as [number, number, number], roundedPoint as [number, number, number]);
-    vec3.scale(offsetVec as [number, number, number], offsetVec as [number, number, number], -1.0 / halfResolution);
+    const roundedPoint: [number, number, number] = [Math.floor(projectedPoint[0]), Math.floor(projectedPoint[1]), Math.floor(projectedPoint[2])];
+    const offsetVec: [number, number, number] = [0.0, 0.0, 0.0];
+    vec3.sub(offsetVec, projectedPoint, roundedPoint);
+    vec3.scale(offsetVec, offsetVec, -1.0 / halfResolution);
 
     const truncMatrix = new Float64Array(16);
     mat4.identity(truncMatrix);
-    mat4.translate(truncMatrix, truncMatrix, offsetVec as [number, number, number]);
+    mat4.translate(truncMatrix, truncMatrix, offsetVec);
     mat4.multiply(lightWorldToClip, truncMatrix, lightWorldToClip);
 
     return [lightWorldToClip, radiusPx];

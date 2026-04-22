@@ -11,6 +11,7 @@ import {computeRasterColorMix, computeRasterColorOffset} from '../raster';
 import {COLOR_RAMP_RES} from '../../style/style_layer/raster_style_layer';
 import {contrastFactor, saturationFactor, clamp} from '../../util/util';
 
+import type {mat3, mat4} from 'gl-matrix';
 import type Painter from '../painter';
 import type Context from '../../gl/context';
 import type {UniformValues} from '../uniform_binding';
@@ -90,11 +91,11 @@ const rasterUniforms = (context: Context): RasterUniformsType => ({
 
 const rasterUniformValues = (
     painter: Painter,
-    matrix: Float32Array,
-    normalizeMatrix: Float32Array,
-    globeMatrix: Float32Array,
-    mercMatrix: Float32Array,
-    gridMatrix: Float32Array,
+    matrix: mat4,
+    normalizeMatrix: mat4,
+    globeMatrix: mat4,
+    mercMatrix: mat4,
+    gridMatrix: mat3,
     parentTL: [number, number],
     zoomTransition: number,
     mercatorCenter: [number, number],
@@ -154,9 +155,9 @@ const rasterUniformValues = (
 
 const rasterPoleUniformValues = (
     painter: Painter,
-    matrix: Float32Array,
-    normalizeMatrix: Float32Array,
-    globeMatrix: Float32Array,
+    matrix: mat4,
+    normalizeMatrix: mat4,
+    globeMatrix: mat4,
     zoomTransition: number,
     fade: {
         mix: number;

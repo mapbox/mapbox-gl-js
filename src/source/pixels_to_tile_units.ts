@@ -1,6 +1,6 @@
-import {mat2} from 'gl-matrix';
 import EXTENT from '../style-spec/data/extent';
 
+import type {mat2} from 'gl-matrix';
 import type {OverscaledTileID} from './tile_id';
 import type Transform from '../geo/transform';
 import type {TileTransform} from '../geo/projection/tile_transform';
@@ -41,5 +41,6 @@ export function getPixelsToTileUnitsMatrix(
 ): mat2 {
     const {scale} = tile.tileTransform;
     const s = scale * EXTENT / (tile.tileSize * Math.pow(2, transform.zoom - tile.tileID.overscaledZ + tile.tileID.canonical.z));
-    return mat2.scale(new Float32Array(4), transform.inverseAdjustmentMatrix, [s, s]);
+    const m = transform.inverseAdjustmentMatrix;
+    return new Float32Array([m[0] * s, m[1] * s, m[2] * s, m[3] * s]) as mat2;
 }

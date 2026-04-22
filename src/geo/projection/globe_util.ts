@@ -472,9 +472,9 @@ export function globeNormalizeECEF(bounds: Aabb): mat4 {
 }
 
 export function globeDenormalizeECEF(bounds: Aabb): mat4 {
-    const m = mat4.fromTranslation(tempMatrix, bounds.min);
     const scale = 1.0 / globeECEFNormalizationScale(bounds);
-    return mat4.scale(m, m, [scale, scale, scale]);
+    mat4.fromTranslation(tempMatrix, bounds.min);
+    return mat4.scale(tempMatrix, tempMatrix, [scale, scale, scale]);
 }
 
 export function globeECEFUnitsToPixelScale(worldSize: number): number {

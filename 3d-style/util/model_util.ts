@@ -23,6 +23,14 @@ import Point from '@mapbox/point-geometry';
 import type {vec2} from 'gl-matrix';
 import type Transform from '../../src/geo/transform';
 
+// gltf spec uses right-handed coordinate space (+y up); this transforms to our left-handed space.
+const COORD_SPACE_TRANSFORM: mat4 = new Float64Array([
+    1, 0, 0, 0,
+    0, 0, 1, 0,
+    0, 1, 0, 0,
+    0, 0, 0, 1
+]);
+
 export function rotationScaleYZFlipMatrix(out: mat4, rotation: vec3, scale: vec3) {
     mat4.identity(out);
     mat4.rotateZ(out, out, degToRad(rotation[2]));
@@ -33,14 +41,7 @@ export function rotationScaleYZFlipMatrix(out: mat4, rotation: vec3, scale: vec3
 
     // gltf spec uses right handed coordinate space where +y is up. Coordinate space transformation matrix
     // has to be created for the initial transform to our left handed coordinate space
-    const coordSpaceTransform = [
-        1, 0, 0, 0,
-        0, 0, 1, 0,
-        0, 1, 0, 0,
-        0, 0, 0, 1
-    ];
-
-    mat4.multiply(out, out, coordSpaceTransform as [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]);
+    mat4.multiply(out, out, COORD_SPACE_TRANSFORM);
 }
 
 type BoxFace = {
@@ -61,9 +62,9 @@ export function getBoxBottomFace(corners: Array<vec3>, meterToMercator: number):
         const p0 = corners[face.corners[0]];
         const p1 = corners[face.corners[1]];
         const p2 = corners[face.corners[2]];
-        const a = [p1[0] - p0[0], p1[1] - p0[1], meterToMercator * (p1[2] - p0[2])];
-        const b = [p2[0] - p0[0], p2[1] - p0[1], meterToMercator * (p2[2] - p0[2])];
-        const normal = vec3.cross(a as [number, number, number], a as [number, number, number], b as [number, number, number]);
+        const a: [number, number, number] = [p1[0] - p0[0], p1[1] - p0[1], meterToMercator * (p1[2] - p0[2])];
+        const b: [number, number, number] = [p2[0] - p0[0], p2[1] - p0[1], meterToMercator * (p2[2] - p0[2])];
+        const normal = vec3.cross(a, a, b);
         vec3.normalize(normal, normal);
         face.dotProductWithUp = vec3.dot(normal, zUp as [number, number, number]);
     }

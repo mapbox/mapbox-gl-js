@@ -163,9 +163,9 @@ const symbolUniformValues = (
         'u_rotate_symbol': +rotateInShader,
         'u_aspect_ratio': transform.width / transform.height,
         'u_fade_change': painter.options.fadeDuration ? painter.symbolFadeChange : 1,
-        'u_matrix': matrix as Float32Array,
-        'u_label_plane_matrix': labelPlaneMatrix as Float32Array,
-        'u_coord_matrix': glCoordMatrix as Float32Array,
+        'u_matrix': matrix,
+        'u_label_plane_matrix': labelPlaneMatrix,
+        'u_coord_matrix': glCoordMatrix,
         'u_is_text': +isText,
         'u_elevation_from_sea': elevationFromSea ? 1.0 : 0.0,
         'u_pitch_with_map': +pitchWithMap,
@@ -175,20 +175,20 @@ const symbolUniformValues = (
         'u_texture_icon': 1,
         'u_tile_id': [0, 0, 0] as [number, number, number],
         'u_zoom_transition': 0,
-        'u_inv_rot_matrix': identityMatrix as Float32Array,
+        'u_inv_rot_matrix': identityMatrix,
         'u_merc_center': [0, 0] as [number, number],
         'u_camera_forward': [0, 0, 0] as [number, number, number],
         'u_ecef_origin': [0, 0, 0] as [number, number, number],
-        'u_tile_matrix': identityMatrix as Float32Array,
+        'u_tile_matrix': identityMatrix,
         'u_up_vector': [0, -1, 0] as [number, number, number],
-        'u_color_adj_mat': colorAdjustmentMatrix as Float32Array,
+        'u_color_adj_mat': colorAdjustmentMatrix,
         'u_icon_transition': transition ? transition : 0.0,
         'u_gamma_scale': pitchWithMap ? painter.transform.getCameraToCenterDistance(projection) * Math.cos(painter.terrain ? 0 : painter.transform._pitch) : 1,
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_is_halo': +isHalo,
         'u_scale_factor': scaleFactor ? scaleFactor : 1.0,
         'u_ground_shadow_factor': groundShadowFactor,
-        'u_inv_matrix': mat4.invert(mat4.create(), labelPlaneMatrix) as Float32Array,
+        'u_inv_matrix': mat4.invert(mat4.create(), labelPlaneMatrix),
         'u_normal_scale': normalScale,
         'u_lutTexture': TextureSlots.LUT,
         'u_zoom': transform.zoom - Math.floor(transform.zoom),
@@ -208,11 +208,11 @@ const symbolUniformValues = (
     if (projection.name === 'globe') {
         values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         values['u_zoom_transition'] = zoomTransition;
-        values['u_inv_rot_matrix'] = invMatrix as Float32Array;
+        values['u_inv_rot_matrix'] = invMatrix;
         values['u_merc_center'] = mercatorCenter;
         values['u_camera_forward'] = (transform._camera.forward() as [number, number, number]);
         values['u_ecef_origin'] = globeECEFOrigin(transform.globeMatrix, coord.toUnwrapped());
-        values['u_tile_matrix'] = Float32Array.from(transform.globeMatrix);
+        values['u_tile_matrix'] = transform.globeMatrix;
         values['u_up_vector'] = upVector;
     }
 

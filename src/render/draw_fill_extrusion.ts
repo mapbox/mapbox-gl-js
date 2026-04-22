@@ -32,6 +32,10 @@ import {ZoomDependentExpression} from '../style-spec/expression/index';
 import browser from '../util/browser';
 import {PerformanceUtils} from '../util/performance';
 
+// Scratch buffer reused across neighbour iterations in the ground-effect loop; safe because
+// the matrix is consumed synchronously by program.draw (UniformMatrix4f caches a copy).
+const neighborProjScratch = new Float32Array(16);
+
 import type {vec3} from 'gl-matrix';
 import type {UniformValues} from './uniform_binding';
 import type {DynamicDefinesType} from './program/program_uniforms';
@@ -678,11 +682,10 @@ export function drawGroundEffect<StyleLayerType extends TypedStyleLayer>(props: 
                 // No geometry from the neighbour tile intersects the current tile.
                 if (!segments) continue;
 
-                const proj = new Float32Array(16);
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                mat4.translate(proj, coord.projMatrix, translation);
+                mat4.translate(neighborProjScratch, coord.projMatrix, translation);
                 const matrix = painter.translatePosMatrix(
-                    proj,
+                    neighborProjScratch,
                     tile,
 
                     paintPropertyTranslate,

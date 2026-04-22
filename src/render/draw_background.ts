@@ -20,6 +20,8 @@ import type {DynamicDefinesType} from './program/program_uniforms';
 
 export default drawBackground;
 
+const identityMat4 = mat4.identity(new Float32Array(16));
+
 function drawBackground(painter: Painter, sourceCache: SourceCache, layer: BackgroundStyleLayer, coords: Array<OverscaledTileID>) {
     const color = layer.paint.get('background-color');
     const ignoreLut = layer.paint.get('background-color-use-theme').constantOr('default') === 'none';
@@ -76,7 +78,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     if (isViewportPitch) {
         // Set overrideRtt to ignore 3D lights
         const program = painter.getOrCreateProgram(programName, {overrideFog: false, overrideRtt: true, defines});
-        const matrix = new Float32Array(mat4.identity([]));
+        const matrix = identityMat4;
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
 
         const uniformValues: UniformValues<BackgroundUniformsType | BackgroundPatternUniformsType> = image ?

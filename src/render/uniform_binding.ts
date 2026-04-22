@@ -1,5 +1,6 @@
 import Color from '../style-spec/util/color';
 
+import type {mat2, mat3, mat4} from 'gl-matrix';
 import type Context from '../gl/context';
 import type {PremultipliedRenderColor} from "../style-spec/util/color";
 
@@ -148,65 +149,70 @@ class UniformColor extends Uniform<PremultipliedRenderColor> implements IUniform
     }
 }
 
-const emptyMat4 = new Float32Array(16);
-class UniformMatrix4f extends Uniform<Float32Array> implements IUniform<Float32Array> {
+// Matrix uniforms cache a Float32Array copy of the last uploaded value. This makes it safe
+// for callers to pass long-lived buffers (reused across frames, mutated in place) directly:
+// change detection compares against the private copy rather than `v` itself, so `v === cache`
+// can never silently skip an upload. Uploads always go through the Float32Array copy, so
+// Float64Array or plain-array inputs are implicitly converted (gl.uniformMatrix*fv requires Float32Array).
+class UniformMatrix4f extends Uniform<mat4> implements IUniform<mat4> {
     constructor(context: Context) {
         super(context);
-        this.current = emptyMat4;
+        this.current = new Float32Array(16);
     }
 
-    override set(program: WebGLProgram, name: string, v: Float32Array): void {
+    override set(program: WebGLProgram, name: string, v: mat4): void {
         if (!this.fetchUniformLocation(program, name)) return;
+        const cache = this.current as Float32Array;
         // The vast majority of matrix comparisons that will trip this set
         // happen at i=12 or i=0, so we check those first to avoid lots of
         // unnecessary iteration:
-        if (v[12] !== this.current[12] || v[0] !== this.current[0]) {
-            this.current = v;
-            this.gl.uniformMatrix4fv(this.location, false, v);
+        if (v[12] !== cache[12] || v[0] !== cache[0]) {
+            cache.set(v);
+            this.gl.uniformMatrix4fv(this.location, false, cache);
             return;
         }
         for (let i = 1; i < 16; i++) {
-            if (v[i] !== this.current[i]) {
-                this.current = v;
-                this.gl.uniformMatrix4fv(this.location, false, v);
+            if (v[i] !== cache[i]) {
+                cache.set(v);
+                this.gl.uniformMatrix4fv(this.location, false, cache);
                 break;
             }
         }
     }
 }
 
-const emptyMat3 = new Float32Array(9);
-class UniformMatrix3f extends Uniform<Float32Array> implements IUniform<Float32Array> {
+class UniformMatrix3f extends Uniform<mat3> implements IUniform<mat3> {
     constructor(context: Context) {
         super(context);
-        this.current = emptyMat3;
+        this.current = new Float32Array(9);
     }
 
-    override set(program: WebGLProgram, name: string, v: Float32Array): void {
+    override set(program: WebGLProgram, name: string, v: mat3): void {
         if (!this.fetchUniformLocation(program, name)) return;
+        const cache = this.current as Float32Array;
         for (let i = 0; i < 9; i++) {
-            if (v[i] !== this.current[i]) {
-                this.current = v;
-                this.gl.uniformMatrix3fv(this.location, false, v);
+            if (v[i] !== cache[i]) {
+                cache.set(v);
+                this.gl.uniformMatrix3fv(this.location, false, cache);
                 break;
             }
         }
     }
 }
 
-const emptyMat2 = new Float32Array(4);
-class UniformMatrix2f extends Uniform<Float32Array> implements IUniform<Float32Array> {
+class UniformMatrix2f extends Uniform<mat2> implements IUniform<mat2> {
     constructor(context: Context) {
         super(context);
-        this.current = emptyMat2;
+        this.current = new Float32Array(4);
     }
 
-    override set(program: WebGLProgram, name: string, v: Float32Array): void {
+    override set(program: WebGLProgram, name: string, v: mat2): void {
         if (!this.fetchUniformLocation(program, name)) return;
+        const cache = this.current as Float32Array;
         for (let i = 0; i < 4; i++) {
-            if (v[i] !== this.current[i]) {
-                this.current = v;
-                this.gl.uniformMatrix2fv(this.location, false, v);
+            if (v[i] !== cache[i]) {
+                cache.set(v);
+                this.gl.uniformMatrix2fv(this.location, false, cache);
                 break;
             }
         }

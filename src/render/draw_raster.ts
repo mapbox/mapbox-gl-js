@@ -148,7 +148,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 projMatrix = coord.projMatrix;
             } else if (renderingWithElevation) {
                 depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
-                projMatrix = isGlobeProjection ? Float32Array.from(painter.transform.expandedFarZProjMatrix) : painter.transform.calculateProjMatrix(unwrappedTileID, align);
+                projMatrix = isGlobeProjection ? painter.transform.expandedFarZProjMatrix : painter.transform.calculateProjMatrix(unwrappedTileID, align);
             } else {
                 // Set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
                 // Use gl.LESS to prevent double drawing in areas where tiles overlap.
@@ -398,7 +398,7 @@ function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, 
     defines.push("GLOBE_POLES");
 
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
-    const projMatrix = Float32Array.from(painter.transform.expandedFarZProjMatrix);
+    const projMatrix = painter.transform.expandedFarZProjMatrix;
     const normalizeMatrix = Float32Array.from(globeNormalizeECEF(globeTileBounds(new CanonicalTileID(0, 0, 0))));
     const fade = {opacity: 1, mix: 0};
 

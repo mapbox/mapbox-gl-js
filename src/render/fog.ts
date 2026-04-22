@@ -1,6 +1,7 @@
 import {Uniform1f, Uniform1i, Uniform2f, Uniform3f, Uniform4f, UniformMatrix4f} from './uniform_binding';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
 
+import type {mat4} from 'gl-matrix';
 import type Context from '../gl/context';
 import type Fog from '../style/fog';
 import type {UniformValues} from './uniform_binding';
@@ -55,7 +56,7 @@ export const fogUniformValues = (
     globePosition: [number, number, number],
     globeRadius: number,
     viewport: [number, number],
-    fogMatrix?: Float32Array | null,
+    fogMatrix?: mat4 | null,
 ): UniformValues<FogUniformsType> => {
     const tr = painter.transform;
 

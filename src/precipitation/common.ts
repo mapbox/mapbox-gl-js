@@ -155,10 +155,11 @@ export class PrecipitationBase {
 
         const rotationMatrix = mat4.fromQuat(new Float32Array(16), orientation);
 
-        const swapAxesT = mat4.fromValues(1, 0, 0, 0,
-            0, 0, 1, 0,
+        const swapAxesT = new Float32Array([
+            1,  0, 0, 0,
+            0,  0, 1, 0,
             0, -1, 0, 0,
-            0, 0, 0, 1);
+            0,  0, 0, 1]);
         const swapAxes = mat4.transpose([], swapAxesT);
 
         const modelviewMatrix = mat4.multiply([], swapAxes, rotationMatrix);

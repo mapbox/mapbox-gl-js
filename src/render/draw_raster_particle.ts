@@ -461,7 +461,7 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
             particleState.targetColorTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
         }
 
-        const projMatrix = isGlobeProjection ? Float32Array.from(painter.transform.expandedFarZProjMatrix) : painter.transform.calculateProjMatrix(unwrappedTileID, align);
+        const projMatrix = isGlobeProjection ? painter.transform.expandedFarZProjMatrix : painter.transform.calculateProjMatrix(unwrappedTileID, align);
 
         const tr = painter.transform;
         const cutoffParams = cutoffParamsForElevation(tr);
