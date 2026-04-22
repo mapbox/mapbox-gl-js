@@ -15,7 +15,7 @@ const generateResultHTML = template(`
     <div class="tab-content">
       <% if (r.actual || r.expected) { %>
         <span class="img-hover-container">
-          <p class="img-label img-label-actual">Actual (hover to see expected)</p>
+          <p class="img-label img-label-actual">Actual<span class="img-hover-hint"> (hover to see expected)</span></p>
           <p class="img-label img-label-expected">Expected</p>
           <% if (r.actual) { %>
             <img class="img-actual" src="<%- r.actual %>">
@@ -50,16 +50,20 @@ const generateResultHTML = template(`
 export const pageCss = `
 body { font: 18px/1.2 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif; padding: 10px; background: #ecf0f1 }
 h1 { font-size: 32px; margin-bottom: 0; }
-input[id="only-failed"] { margin-top: 24px; margin-bottom: 12px; margin-right: 8px; }
+input[id="only-failed"], input[id="img-hover"] { margin-top: 24px; margin-bottom: 12px; margin-right: 8px; }
+input[id="img-hover"] { margin-left: 16px; }
 input[id="only-failed"]:checked ~ .tests > .tab:not(.tab_failed) { display: none; }
 img { margin: 0 10px 10px 0; border: 1px dotted #ccc; image-rendering: pixelated; vertical-align: top; }
-.img-hover-container { position: relative; display: inline-block; vertical-align: top; cursor: crosshair; text-align: center; padding-top: 22px; }
-.img-hover-container .img-expected { display: none; }
-.img-hover-container .img-label-expected { display: none; }
-.img-hover-container:hover .img-actual { display: none; }
-.img-hover-container:hover .img-label-actual { display: none; }
-.img-hover-container:hover .img-expected { display: inline; }
-.img-hover-container:hover .img-label-expected { display: block; }
+.img-hover-container { position: relative; display: inline-block; vertical-align: top; text-align: center; padding-top: 22px; }
+.img-hover-hint { display: none; }
+input[id="img-hover"]:checked ~ .tests .img-hover-container { cursor: crosshair; }
+input[id="img-hover"]:checked ~ .tests .img-hover-hint { display: inline; }
+input[id="img-hover"]:checked ~ .tests .img-hover-container .img-expected { display: none; }
+input[id="img-hover"]:checked ~ .tests .img-hover-container .img-label-expected { display: none; }
+input[id="img-hover"]:checked ~ .tests .img-hover-container:hover .img-actual { display: none; }
+input[id="img-hover"]:checked ~ .tests .img-hover-container:hover .img-label-actual { display: none; }
+input[id="img-hover"]:checked ~ .tests .img-hover-container:hover .img-expected { display: inline; }
+input[id="img-hover"]:checked ~ .tests .img-hover-container:hover .img-label-expected { display: block; }
 .img-label { position: absolute; top: 0; left: 0; right: 0; margin: 0; font-size: 14px; font-weight: bold; }
 .img-static-container { position: relative; display: inline-block; vertical-align: top; text-align: center; padding-top: 22px; }
 .tab input { position: absolute; opacity: 0; z-index: -1;}
@@ -157,6 +161,20 @@ export function setupHTML() {
     document.body.appendChild(onlyFailedCheckbox);
     document.body.appendChild(onlyFailedLabel);
 
+    const imgHoverCheckbox = Object.assign(document.createElement('input'), {
+        type: 'checkbox',
+        id: 'img-hover',
+        checked: true,
+    });
+
+    const imgHoverLabel = Object.assign(document.createElement('label'), {
+        htmlFor: 'img-hover',
+        innerHTML: 'Toggle images on Hover',
+    });
+
+    document.body.appendChild(imgHoverCheckbox);
+    document.body.appendChild(imgHoverLabel);
+
     //Create a container to hold test results
     resultsContainer = document.createElement('div');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -228,7 +246,77 @@ export function updateHTML(testData) {
     return html;
 }
 
-export function getHTML(statsContent: string, testsContent: string) {
+export type DiagnosticInfo = {
+    platform: string;
+    generatedAt: string;
+    testSuite?: string;
+    configFile?: string;
+    reproduceCommand?: string;
+    userAgent?: string;
+    os?: string;
+    browser?: string;
+    viewport?: {width: number; height: number};
+    devicePixelRatio?: number;
+    spriteFormat?: string;
+    nodeVersion?: string;
+    shard?: string;
+    durationMs?: number;
+};
+
+const escapeHTML = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+function formatDuration(ms: number): string {
+    const totalSeconds = Math.round(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    if (hours > 0) return `${hours}h ${minutes}min ${seconds}sec`;
+    if (minutes > 0) return `${minutes}min ${seconds}sec`;
+    return `${seconds}sec`;
+}
+
+export function getDiagnosticsHTML(diag: DiagnosticInfo): string {
+    const rows: Array<[string, string | undefined]> = [
+        ['Platform', diag.platform],
+        ['Generated', diag.generatedAt],
+        ['Duration', diag.durationMs !== undefined ? formatDuration(diag.durationMs) : undefined],
+        ['Test suite', diag.testSuite],
+        ['Config file', diag.configFile],
+        ['Reproduce locally', diag.reproduceCommand],
+        ['Browser', diag.browser],
+        ['Operating system', diag.os],
+        ['User agent', diag.userAgent],
+        ['Viewport', diag.viewport ? `${diag.viewport.width} x ${diag.viewport.height}` : undefined],
+        ['Device pixel ratio', diag.devicePixelRatio !== undefined ? String(diag.devicePixelRatio) : undefined],
+        ['Sprite format', diag.spriteFormat],
+        ['Shard', diag.shard],
+        ['Node version', diag.nodeVersion],
+    ];
+
+    const items = rows
+        .filter(([, value]) => value !== undefined && value !== '')
+        .map(([label, value]) => `<dt>${escapeHTML(label)}</dt><dd>${escapeHTML(String(value))}</dd>`)
+        .join('\n');
+
+    return `
+      <details class="diagnostics" open>
+        <summary>Run diagnostics</summary>
+        <dl>
+          ${items}
+        </dl>
+      </details>
+    `.trim();
+}
+
+export const diagnosticsCss = `
+.diagnostics { background: #fff; border: 1px solid #ddd; border-radius: 5px; padding: 8px 12px; margin-bottom: 16px; font-size: 14px; }
+.diagnostics summary { cursor: pointer; font-weight: bold; font-size: 16px; padding: 4px 0; }
+.diagnostics dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 8px 0 0; }
+.diagnostics dt { font-weight: bold; color: #555; }
+.diagnostics dd { margin: 0; word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, "SF Mono", Menlo, monospace; }
+`;
+
+export function getHTML(statsContent: string, testsContent: string, diagnosticsContent: string = '') {
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -238,14 +326,18 @@ export function getHTML(statsContent: string, testsContent: string) {
           <title>GL JS | Render tests results</title>
           <style>
               ${pageCss}
+              ${diagnosticsCss}
           </style>
       </head>
       <body>
+          ${diagnosticsContent}
           <div id="stats">
             ${statsContent}
           </div>
           <input type="checkbox" id="only-failed" checked>
           <label for="only-failed">Show only failed tests</label>
+          <input type="checkbox" id="img-hover" checked>
+          <label for="img-hover">Toggle images on Hover</label>
           <div class="tests">
             ${testsContent}
           </div>

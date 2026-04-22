@@ -34,7 +34,10 @@ export default mergeConfig(baseConfig, defineConfig({
         }
     },
     plugins: [
-        setupIntegrationTestsMiddlewares({reportPath: 'test/integration/query-tests/query-tests.html'}),
+        setupIntegrationTestsMiddlewares({
+            reportPath: 'test/integration/query-tests/query-tests.html',
+            suiteName: 'query-tests',
+        }),
         integrationTests({suiteDirs}),
         serveDistPlugin(),
     ],

@@ -4,7 +4,8 @@ import {writeFile} from 'node:fs/promises';
 import serveStatic from 'serve-static';
 import {tilesets, staticFolders} from './test/integration/lib/middlewares.js';
 import {getAllStyleFixturePaths, generateFixtureJson} from './test/integration/lib/generate-fixture-json.js';
-import {getHTML} from './test/util/html_generator';
+import {getHTML, getDiagnosticsHTML} from './test/util/html_generator';
+import type {DiagnosticInfo} from './test/util/html_generator';
 
 import type {Plugin} from 'vite';
 
@@ -63,11 +64,33 @@ export function integrationTests({suiteDirs, includeImages}: {suiteDirs: string[
     };
 }
 
-export function setupIntegrationTestsMiddlewares({reportPath}: {reportPath: string}): Plugin {
+function detectConfigFileFromArgv(): string | undefined {
+    const argv = process.argv;
+    const idx = argv.indexOf('--config');
+    if (idx >= 0 && idx + 1 < argv.length) return argv[idx + 1];
+    const eq = argv.find((a) => a.startsWith('--config='));
+    if (eq) return eq.slice('--config='.length);
+    return undefined;
+}
+
+function detectReproduceCommand(): string | undefined {
+    // argv[0] is node, argv[1] is the vitest entry; skip them for a clean npx invocation.
+    const rest = process.argv.slice(2);
+    if (rest.length) return `npx vitest ${rest.map((a) => (/\s/.test(a) ? JSON.stringify(a) : a)).join(' ')}`;
+    const configFile = detectConfigFileFromArgv();
+    if (configFile) return `npx vitest run --config ${configFile}`;
+    return undefined;
+}
+
+export function setupIntegrationTestsMiddlewares({reportPath, suiteName}: {
+    reportPath: string;
+    suiteName?: string;
+}): Plugin {
     return {
         name: 'setup-integration-tests-middlewares',
         configureServer(server) {
             const reportFragmentsMap = new Map<number, string>();
+            let browserDiagnostics: Partial<DiagnosticInfo> = {};
             staticFolders.forEach((folder) => {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
                 server.middlewares.use(`/${folder}`, serveStatic(resolve(__dirname, `test/integration/${folder}`)));
@@ -92,6 +115,21 @@ export function setupIntegrationTestsMiddlewares({reportPath}: {reportPath: stri
                 });
             });
 
+            server.middlewares.use('/report-html/send-diagnostics', (req, res) => {
+                let body = '';
+                req.on('data', (data) => { body += data; });
+                return req.on('end', () => {
+                    try {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                        browserDiagnostics = JSON.parse(body);
+                    } catch (err) {
+                        console.error('Error parsing browser diagnostics:', err);
+                    }
+                    res.writeHead(200, {'Content-Type': 'application/json'});
+                    res.end(JSON.stringify({status: 'ok'}));
+                });
+            });
+
             server.middlewares.use('/report-html/flush', (req, res) => {
                 const statsContent = reportFragmentsMap.get(0);
                 const testsContent = Array.from(reportFragmentsMap.entries()).sort((a, b) => a[0] - b[0]).map((r) => r[1]).slice(1).join('');
@@ -99,7 +137,22 @@ export function setupIntegrationTestsMiddlewares({reportPath}: {reportPath: stri
                 res.writeHead(200, {'Content-Type': 'application/json'});
                 res.end(JSON.stringify({status: 'ok'}));
 
-                writeFile(reportPath, getHTML(statsContent, testsContent)).catch((err) => {
+                const shardId = process.env.POOL_SHARD_ID;
+                const totalShards = process.env.POOL_SHARDS;
+                const diagnostics: DiagnosticInfo = {
+                    platform: 'Mapbox GL JS (Web)',
+                    generatedAt: new Date().toISOString(),
+                    testSuite: suiteName,
+                    configFile: detectConfigFileFromArgv(),
+                    reproduceCommand: detectReproduceCommand(),
+                    spriteFormat: process.env.SPRITE_FORMAT,
+                    nodeVersion: process.version,
+                    shard: shardId && totalShards ? `${Number(shardId) + 1} / ${totalShards}` : undefined,
+                    ...browserDiagnostics,
+                };
+                const diagnosticsContent = getDiagnosticsHTML(diagnostics);
+
+                writeFile(reportPath, getHTML(statsContent, testsContent, diagnosticsContent)).catch((err) => {
                     console.error('Error writing report file:', err);
                 });
             });

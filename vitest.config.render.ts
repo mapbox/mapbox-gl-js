@@ -10,6 +10,7 @@ if (existsSync('internal/test/integration/render-tests')) {
     suiteDirs.push('internal/test/integration/render-tests');
 }
 
+
 export default mergeConfig(baseConfig, defineConfig({
     define: {
         'import.meta.env.VITE_CI': isCI,
@@ -32,7 +33,10 @@ export default mergeConfig(baseConfig, defineConfig({
         }
     },
     plugins: [
-        setupIntegrationTestsMiddlewares({reportPath: 'test/integration/render-tests/render-tests.html'}),
+        setupIntegrationTestsMiddlewares({
+            reportPath: 'test/integration/render-tests/render-tests.html',
+            suiteName: 'render-tests',
+        }),
         integrationTests({suiteDirs, includeImages: true}),
         serveDistPlugin(),
     ],

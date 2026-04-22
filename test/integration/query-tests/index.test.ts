@@ -13,7 +13,7 @@ import {deepEqual, generateDiffLog} from '../lib/json-diff.js';
 import {integrationTests} from 'virtual:integration-tests';
 import {getStatsHTML, setupHTML, updateHTML} from '../../util/html_generator';
 import {mapboxgl} from '../lib/mapboxgl.js';
-import {sendFragment} from '../lib/utils';
+import {sendFragment, sendBrowserDiagnostics} from '../lib/utils';
 import {transformRequest} from '../lib/transform-request.js';
 
 setupHTML();
@@ -199,6 +199,7 @@ Object.keys(integrationTests).forEach((testName) => {
 
 afterAll(async () => {
     document.body.removeChild(container);
+    await sendBrowserDiagnostics();
     await sendFragment(0, getStatsHTML());
     // We cannot use `server.commands.writeFile` here because the HTML file is large
     return fetch('/report-html/flush', {

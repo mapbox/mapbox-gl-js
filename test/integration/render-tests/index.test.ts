@@ -11,7 +11,7 @@ import {parseStyle, parseOptions, getActualImage, calculateDiff, diffCanvas, dif
 import {integrationTests} from 'virtual:integration-tests';
 import {getStatsHTML, updateHTML} from '../../util/html_generator';
 import {mapboxgl} from '../lib/mapboxgl.js';
-import {sendFragment} from '../lib/utils';
+import {sendFragment, sendBrowserDiagnostics} from '../lib/utils';
 
 function getEnvironmentParams() {
     let timeout = 30000;
@@ -186,6 +186,7 @@ Object.keys(integrationTests).forEach((testName) => {
 });
 
 afterAll(async () => {
+    await sendBrowserDiagnostics();
     await sendFragment(0, getStatsHTML());
     // We cannot use `server.commands.writeFile` here because the HTML file is large
     return fetch('/report-html/flush', {
