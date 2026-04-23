@@ -1,3 +1,9 @@
+## 3.23.0-rc.2
+
+### Bug fixes 🐞
+
+- Fix hillshade rendering issue when using Safari in private browsing mode.
+
 ## 3.23.0-rc.1
 
 ### Features and improvements ✨
