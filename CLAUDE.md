@@ -31,7 +31,7 @@ npm run start
 npm run build-dev
 
 # Build production bundles
-npm run build-prod-min  # Minified production build
+npm run build-prod  # Minified production build
 npm run build-css       # Build CSS file
 
 # Generate code (style code, struct arrays, and TypeScript types)

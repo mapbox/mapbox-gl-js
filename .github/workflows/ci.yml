@@ -46,8 +46,8 @@ jobs:
     - run: npx playwright install chromium --with-deps --no-shell
     - run: npm run build-token
     - run: npm run build-dev
-    - run: npm run build-prod-min
-    - run: npm run build-esm-prod-min
+    - run: npm run build-prod
+    - run: npm run build-esm-prod
     - run: npm run build-style-spec
     - run: npm run build-csp
     - run: npm run build-css

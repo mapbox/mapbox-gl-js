@@ -57,6 +57,7 @@
     "tinyqueue": "^3.0.0"
   },
   "devDependencies": {
+    "@actions/core": "^3.0.1",
     "@eslint/compat": "^2.0.0",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.30.1",
@@ -150,7 +151,7 @@
     "start-debug": "run-p build-token watch-css watch-pmtiles watch-dev start-server",
     "prepare-release-pages": "ln -sfn $PWD/dist test/release/dist && ln -sfn $PWD/debug test/release/debug && cp debug/access_token_generated.js test/release/",
     "start-release": "run-s build-token build-prod build-esm-prod build-css print-release-url prepare-release-pages start-server",
-    "lint": "eslint --cache src 3d-style test packages modules",
+    "lint": "eslint --cache src 3d-style test packages modules internal",
     "lint-css": "stylelint 'src/css/mapbox-gl.css'",
     "test": "run-s lint lint-css test-typings test-unit",
     "test-suite": "run-s test-render test-query test-expressions",
@@ -187,8 +188,6 @@
     "prepublishOnly": "run-s build-dev build-prod build-esm-prod build-csp build-css build-style-spec build-dts",
     "print-release-url": "node build/print-release-url.js",
     "size": "size-limit",
-    "check-size": "tsx build/check-size.ts",
-    "check-ts-suppressions": "tsx build/check-ts-suppressions.ts",
     "codegen": "tsx ./build/generate-style-code.ts && tsx ./build/generate-struct-arrays.ts && tsx ./build/generate-typed-style-spec.ts",
     "tsc": "tsc --project tsconfig.json",
     "tsc:strict": "tsc -p tsconfig.strictNullChecks.json",

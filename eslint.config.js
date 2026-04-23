@@ -326,6 +326,7 @@ export default tseslint.config(
         files: [
             'test/**',
             'build/**',
+            'internal/**',
             'rollup.*',
             'vitest.config.*',
             'eslint.config.js',
