@@ -93,9 +93,12 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                 errors.push(new ValidationError(key, layer.source, 'raster-dem source can only be used with layer type \'hillshade\'.'));
             } else if (sourceType === 'raster-array' && !['raster', 'raster-particle'].includes(type)) {
                 errors.push(new ValidationError(key, layer.source, `raster-array source can only be used with layer type \'raster\'.`));
-            } else if (type === 'line' && layer.paint && (layer.paint['line-gradient'] || layer.paint['line-trim-offset']) &&
+            } else if (type === 'line' && layer.paint && layer.paint['line-gradient'] &&
                     (sourceType === 'geojson' && !(source as GeoJSONSourceSpecification).lineMetrics)) {
                 errors.push(new ValidationError(key, layer, `layer "${layer.id as string}" specifies a line-gradient, which requires the GeoJSON source to have \`lineMetrics\` enabled.`));
+            } else if (type === 'line' && layer.paint && layer.paint['line-trim-offset'] &&
+                    (sourceType === 'geojson' && !(source as GeoJSONSourceSpecification).lineMetrics)) {
+                errors.push(new ValidationError(key, layer, `layer "${layer.id as string}" specifies a line-trim-offset, which requires the GeoJSON source to have \`lineMetrics\` enabled.`));
             } else if (type === 'raster-particle' && sourceType !== 'raster-array') {
                 errors.push(new ValidationError(key, layer.source, `layer "${layer.id as string}" requires a \'raster-array\' source.`));
             }
