@@ -14,13 +14,11 @@ function getShardedTests(suiteDir: string): string[] {
 
     const shardId = parseInt(process.env.POOL_SHARD_ID || '0');
     const totalShards = parseInt(process.env.POOL_SHARDS || '1');
-    const testsPerShard = Math.ceil(testFiles.length / totalShards);
 
-    const start = shardId * testsPerShard;
-    const end = Math.min(start + testsPerShard, testFiles.length);
-    const shardedTests = testFiles.slice(start, end);
-
-    return shardedTests;
+    // Interleave by index rather than slicing contiguously. Render tests are
+    // sorted alphabetically, so heavy tests cluster by feature name and a
+    // contiguous slice produces very unbalanced shards.
+    return testFiles.filter((_, i) => i % totalShards === shardId);
 }
 
 export function integrationTests({suiteDirs, includeImages}: {suiteDirs: string[], includeImages?: boolean}): Plugin {
