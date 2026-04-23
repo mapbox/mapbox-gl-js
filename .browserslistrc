@@ -4,20 +4,22 @@
 #   - WebGL 2
 #   - Worker type:'module'
 #   - Promise.allSettled
+#   - Object.hasOwn
+#   - Array.at
 #   - async/await
 #
 #   Browser        | Limiting Feature      | Min
 #   ---------------|-----------------------|----
-#   Chrome         | Worker type:'module'  | 80
-#   Safari         | WebGL 2               | 15
-#   Firefox        | Worker type:'module'  | 114
-#   Edge           | Worker type:'module'  | 80
-#   Chrome Android | Worker type:'module'  | 80
-#   iOS Safari     | WebGL 2               | 15
+#   Chrome         | Object.hasOwn         | 93
+#   Safari         | Array.at              | 15.4
+#   Firefox        | Object.hasOwn         | 115
+#   Edge           | Object.hasOwn         | 93
+#   Chrome Android | Object.hasOwn         | 93
+#   iOS Safari     | Array.at              | 15.4
 
-chrome >= 80
-safari >= 15
-firefox >= 114
-edge >= 80
-and_chr >= 80
-ios_saf >= 15
+chrome >= 93
+safari >= 15.4
+firefox >= 115
+edge >= 93
+and_chr >= 93
+ios_saf >= 15.4

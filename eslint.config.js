@@ -1,5 +1,6 @@
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import e18e from '@e18e/eslint-plugin';
 import jsdoc from 'eslint-plugin-jsdoc';
 import config from 'eslint-config-mourner';
 import tseslint from 'typescript-eslint';
@@ -21,6 +22,7 @@ export default tseslint.config(
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     ...config,
+    /** @type {import('eslint').Linter.Config} */ (e18e.configs.recommended),
     tseslint.configs.recommendedTypeChecked,
     importX.flatConfigs.recommended,
     jsdoc.configs['flat/recommended-typescript'],
@@ -237,6 +239,32 @@ export default tseslint.config(
                 json: 'always',
             }],
         },
+    },
+
+    // e18e rules disabled for browser compatibility
+    {
+        rules: {
+            'e18e/prefer-spread-syntax': 'off',       // Object spread not allowed (affects some downstream bundlers)
+            'e18e/prefer-nullish-coalescing': 'off',  // ?? not allowed (affects some downstream bundlers)
+            'e18e/prefer-array-to-sorted': 'off',     // Not available until Safari 16
+            'e18e/prefer-array-to-reversed': 'off',   // Not available until Safari 16
+            'e18e/prefer-url-canparse': 'off',        // Not available until Safari 17
+        }
+    },
+
+    // e18e rules temporarily disabled
+    {
+        rules: {
+            'e18e/ban-dependencies': 'off',
+            'e18e/prefer-array-at': 'off',
+            'e18e/prefer-array-some': 'off',
+            'e18e/prefer-date-now': 'off',
+            'e18e/prefer-includes': 'off',
+            'e18e/prefer-object-has-own': 'off',
+            'e18e/prefer-regex-test': 'off',
+            'e18e/prefer-static-regex': 'off',
+            'e18e/prefer-timer-args': 'off',
+        }
     },
 
     // Stylistic rules
