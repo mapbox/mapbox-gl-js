@@ -1081,6 +1081,11 @@ export class BuildingBucket implements BucketWithGroundEffect {
         PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_COMMON, 'BuildingBucket.update', 'BuildingBucket', perfStartTime);
     }
 
+    updateExpressions(layers: ReadonlyArray<TypedStyleLayer>) {
+        this.programConfigurations.updateExpressions(layers);
+        this.groundEffect.programConfigurations.updateExpressions(layers);
+    }
+
     isEmpty(): boolean {
         return this.buildingWithoutFacade.layoutVertexArray.length === 0 && this.buildingWithFacade.layoutVertexArray.length === 0;
     }

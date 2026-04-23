@@ -259,6 +259,15 @@ class FillBucket implements Bucket {
         }
     }
 
+    updateExpressions(layers: ReadonlyArray<TypedStyleLayer>) {
+        this.bufferData.programConfigurations.updateExpressions(layers);
+        this.elevationBufferData.programConfigurations.updateExpressions(layers);
+        if (this.elevatedStructures) {
+            this.elevatedStructures.bridgeProgramConfigurations.updateExpressions(layers);
+            this.elevatedStructures.tunnelProgramConfigurations.updateExpressions(layers);
+        }
+    }
+
     addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[], _: TileTransform, brightness?: number | null) {
         for (const feature of this.patternFeatures) {
             this.addFeature(feature, feature.geometry, feature.index, canonical, imagePositions, availableImages, brightness, options.elevationFeatures);

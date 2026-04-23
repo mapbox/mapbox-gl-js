@@ -587,6 +587,20 @@ export default class ProgramConfiguration {
         this.cacheKey = keys.sort().join('');
     }
 
+    updateExpressions(layer: TypedStyleLayer) {
+        const baseLayer = layer as StyleLayer;
+        for (const property in this.binders) {
+            const binder = this.binders[property];
+            if (binder instanceof SourceExpressionBinder ||
+                binder instanceof CompositeExpressionBinder ||
+                binder instanceof PatternCompositeBinder) {
+                const value = baseLayer.paint.get(property) as PossiblyEvaluatedPropertyValue<unknown>;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (binder as {expression: any}).expression = value.value;
+            }
+        }
+    }
+
     getMaxValue(property: string): number {
         const binder = this.binders[property];
         return binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ? binder.maxValue : 0;
@@ -814,6 +828,23 @@ export class ProgramConfigurationSet<Layer extends TypedStyleLayer> {
             this.programConfigurations[layerId].destroy();
         }
     }
+
+    updateExpressions(layers: ReadonlyArray<TypedStyleLayer>) {
+        const known = new Set<string>();
+        for (const layer of layers) {
+            const pc = this.programConfigurations[layer.id];
+            if (pc) {
+                pc.updateExpressions(layer);
+                known.add(layer.id);
+            }
+        }
+        // Drop entries for layers that were removed from the style between
+        // the worker building this bucket and the main thread receiving it;
+        // those binders no longer have an expression to reattach.
+        for (const layerId in this.programConfigurations) {
+            if (!known.has(layerId)) delete this.programConfigurations[layerId];
+        }
+    }
 }
 
 const attributeNameExceptions: Record<string, string[]> = {
@@ -884,8 +915,9 @@ function layoutType(property: string, type: LayoutType, binderType: 'source' | '
 
 register(ConstantBinder, 'ConstantBinder');
 register(PatternConstantBinder, 'PatternConstantBinder');
-register(SourceExpressionBinder, 'SourceExpressionBinder');
-register(PatternCompositeBinder, 'PatternCompositeBinder');
-register(CompositeExpressionBinder, 'CompositeExpressionBinder');
+// `expression` is omitted from transfer; reattached post-deserialize via updateBucketExpressions
+register(SourceExpressionBinder, 'SourceExpressionBinder', {omit: ['expression']});
+register(PatternCompositeBinder, 'PatternCompositeBinder', {omit: ['expression']});
+register(CompositeExpressionBinder, 'CompositeExpressionBinder', {omit: ['expression']});
 register(ProgramConfiguration, 'ProgramConfiguration', {omit: ['_buffers']});
 register(ProgramConfigurationSet, 'ProgramConfigurationSet');

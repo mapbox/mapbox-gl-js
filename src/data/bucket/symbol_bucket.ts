@@ -58,7 +58,7 @@ import {clamp} from '../../util/util';
 import {tileToMeter} from '../../geo/mercator_coordinate';
 import {type CollisionBoxArray, type CollisionBox, type SymbolInstance, SymbolOrientationArray} from '../array_types';
 import {type SymbolQuad, getIconQuads, getGlyphQuads} from '../../symbol/quads';
-import {FeatureAppearances, UNINITIALIZED_APPEARANCE_INDEX} from './feature_appearances';
+import {FeatureAppearances} from './feature_appearances';
 
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type Anchor from '../../symbol/anchor';
@@ -105,16 +105,21 @@ export type AppearanceFeatureData = {
     usesAppearanceIconAsPlaceholder: boolean;
 
     // Cached vertex snapshots — written on first appearance activation, restored on deactivation.
-    layoutBasedIconVertexData: Uint16Array;
-    layoutBasedTextVertexData: Uint16Array;
+    // Optional because these are only ever assigned on the main thread; the
+    // worker doesn't need to serialize empty placeholders.
+    layoutBasedIconVertexData?: Uint16Array;
+    layoutBasedTextVertexData?: Uint16Array;
 
     // Mutable render state — updated every frame by updateAppearances() on the main thread.
-    isUsingAppearanceIconVertexData: boolean;
-    isUsingAppearanceTextVertexData: boolean;
+    // Optional: absent ≡ false (walker-skipped on transfer). All readers either
+    // use a truthy check or a `!==` comparison, both of which behave identically
+    // whether the field is missing, undefined, or explicitly false.
+    isUsingAppearanceIconVertexData?: boolean;
+    isUsingAppearanceTextVertexData?: boolean;
     // Index into layer.appearances[]; -1 means no appearance is active (default rendering).
-    // Initialized to UNINITIALIZED_APPEARANCE_INDEX — ensures the first updateAppearances() call
-    // always runs the full update path (so placeholder icons get zeroed, etc.).
-    activeAppearanceIndex: number;
+    // Optional: absent on first read ≡ no previous value, matching the purpose
+    // of the former `UNINITIALIZED_APPEARANCE_INDEX` sentinel.
+    activeAppearanceIndex?: number;
 
     // Layout dependencies — written during worker-thread layout (addTextVertices), read on main thread.
     textShaping?: Shaping;
@@ -1039,11 +1044,10 @@ class SymbolBucket implements Bucket {
                 id, // This is already the promoted ID from IndexedFeature
                 properties: feature.properties,
                 usesAppearanceIconAsPlaceholder: usesAppearanceIconAsFallback,
-                isUsingAppearanceIconVertexData: false,
-                isUsingAppearanceTextVertexData: false,
-                layoutBasedIconVertexData: new Uint16Array(0),
-                layoutBasedTextVertexData: new Uint16Array(0),
-                activeAppearanceIndex: UNINITIALIZED_APPEARANCE_INDEX
+                // isUsingAppearance*VertexData / layoutBased*VertexData /
+                // activeAppearanceIndex intentionally unset — they're mutated
+                // exclusively on the main thread, so serializing defaults from
+                // the worker is pure overhead.
             });
 
             if (icon) {
@@ -1383,6 +1387,11 @@ class SymbolBucket implements Bucket {
         } else {
             return {vertexOffsetDelta: symbolInstance.numHorizontalGlyphVertices + symbolInstance.numVerticalGlyphVertices, hasChanges: false};
         }
+    }
+
+    updateExpressions(layers: ReadonlyArray<TypedStyleLayer>) {
+        if (this.text) this.text.programConfigurations.updateExpressions(layers);
+        if (this.icon) this.icon.programConfigurations.updateExpressions(layers);
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null, canonical?: CanonicalTileID) {

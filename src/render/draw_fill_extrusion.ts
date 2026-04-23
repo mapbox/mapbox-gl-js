@@ -874,14 +874,14 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
         // Match border features by building_id
         for (const ia of a) {
             const partA = bucket.featuresOnBorder[ia];
-            const centroidA = bucket.centroidData[partA.centroidDataIndex];
+            const centroidA = bucket.centroidData.get(partA.centroidDataIndex);
             if (partA.buildingId === undefined) continue;
 
             const bi = neighborBuildingIdMap.get(partA.buildingId);
             if (bi === undefined) continue;
 
             const partB = nBucket.featuresOnBorder[b[bi]];
-            const centroidB = nBucket.centroidData[partB.centroidDataIndex];
+            const centroidB = nBucket.centroidData.get(partB.centroidDataIndex);
 
             matchedByBuildingIdA.add(ia);
             matchedByBuildingIdB.add(bi);
@@ -940,7 +940,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
             if (matchedByBuildingIdA.has(ia)) continue;
 
             const partA = bucket.featuresOnBorder[ia];
-            const centroidA = bucket.centroidData[partA.centroidDataIndex];
+            const centroidA = bucket.centroidData.get(partA.centroidDataIndex);
             assert(partA.borders);
             const partABorderRange = partA.borders[i];
 
@@ -1002,7 +1002,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                     continue;
                 }
 
-                const centroidB = nBucket.centroidData[partB.centroidDataIndex];
+                const centroidB = nBucket.centroidData.get(partB.centroidDataIndex);
                 if (reconcileReplacementState && doReconcile) {
                     reconcileReplacement(centroidA, centroidB);
                 }

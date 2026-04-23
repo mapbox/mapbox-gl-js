@@ -149,6 +149,13 @@ export interface Bucket {
     destroy: (reload?: boolean) => void;
     updateFootprints: (id: UnwrappedTileID, footprints: Array<TileFootprint>) => void;
     updateAppearances: (canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties, imageManager?: ImageManager, featureStateChanged?: boolean) => AppearanceUpdateResult;
+    // Called after deserialize on the main thread to reattach `expression` refs
+    // on attribute binders (omitted from transfer — see `register()` calls in
+    // program_configuration.ts). Each bucket iterates its own
+    // ProgramConfigurationSet instances so nested locations (symbol text/icon,
+    // fill elevatedStructures, fill-extrusion groundEffect) stay covered.
+    // Buckets without binders (ClipBucket, model buckets) don't need it.
+    updateExpressions?: (layers: ReadonlyArray<TypedStyleLayer>) => void;
 }
 
 export function deserialize(input: Array<Bucket>, style: Style): Record<string, Bucket> {
@@ -173,6 +180,7 @@ export function deserialize(input: Array<Bucket>, style: Style): Record<string, 
         if (bucket.stateDependentLayerIds) {
             bucket.stateDependentLayers = bucket.stateDependentLayerIds.map((lId) => layers.filter((l) => l.id === lId)[0]);
         }
+        if (bucket.updateExpressions) bucket.updateExpressions(layers);
         for (const layer of layers) {
             output[layer.fqid] = bucket;
         }

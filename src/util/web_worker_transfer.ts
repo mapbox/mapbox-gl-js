@@ -144,24 +144,21 @@ function isArrayBuffer(val: unknown): val is ArrayBuffer {
  * @private
  */
 export function serialize(input: unknown, transferables?: Set<Transferable> | null): Serialized {
-    if (input === null ||
-        input === undefined ||
-        typeof input === 'boolean' ||
-        typeof input === 'number' ||
-        typeof input === 'string' ||
-        input instanceof Boolean ||
-        input instanceof Number ||
-        input instanceof String ||
-        input instanceof Date ||
-        input instanceof RegExp) {
+    if (input === null) return null;
+    const type = typeof input;
+    if (type !== 'object') {
+        if (type === 'bigint') return {$name: 'BigInt', value: (input as bigint).toString()};
         return input as Serialized;
     }
 
-    if (isArrayBuffer(input) || input instanceof ImageBitmap) {
-        if (transferables) {
-            transferables.add(input);
+    if (Array.isArray(input)) {
+        const length = input.length;
+        const serialized: Array<Serialized> = [];
+        serialized.length = length;
+        for (let i = 0; i < length; i++) {
+            serialized[i] = serialize(input[i], transferables);
         }
-        return input;
+        return serialized;
     }
 
     if (ArrayBuffer.isView(input)) {
@@ -171,19 +168,18 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         return input;
     }
 
+    if (isArrayBuffer(input) || input instanceof ImageBitmap) {
+        if (transferables) {
+            transferables.add(input);
+        }
+        return input;
+    }
+
     if (input instanceof ImageData) {
         if (transferables) {
             transferables.add(input.data.buffer);
         }
         return input;
-    }
-
-    if (Array.isArray(input)) {
-        const serialized: Array<Serialized> = [];
-        for (const item of input) {
-            serialized.push(serialize(item, transferables));
-        }
-        return serialized;
     }
 
     if (input instanceof Map) {
@@ -203,127 +199,111 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         return properties;
     }
 
-    if (typeof input === 'bigint') {
-        return {$name: 'BigInt', value: input.toString()};
+    if (input instanceof Date || input instanceof RegExp ||
+        input instanceof Boolean || input instanceof Number || input instanceof String) {
+        return input as Serialized;
     }
 
-    if (typeof input === 'object') {
-        const klass = input.constructor as Klass;
-        const name = klass._classRegistryKey;
-        if (!name) {
-            throw new Error(`Can't serialize object of unregistered class "${klass.name}".`);
-        }
-        assert(registry[name]);
+    const klass = input.constructor as Klass;
+    const name = klass._classRegistryKey;
+    if (!name) {
+        throw new Error(`Can't serialize object of unregistered class "${klass.name}".`);
+    }
+    assert(registry[name]);
 
-        const properties: SerializedObject = klass.serialize ?
-            // (Temporary workaround) allow a class to provide static
-            // `serialize()` and `deserialize()` methods to bypass the generic
-            // approach.
-            // This temporary workaround lets us use the generic serialization
-            // approach for objects whose members include instances of dynamic
-            // StructArray types. Once we refactor StructArray to be static,
-            // we can remove this complexity.
-            klass.serialize(input, transferables) : {};
+    const properties: SerializedObject = klass.serialize ?
+        // (Temporary workaround) allow a class to provide static
+        // `serialize()` and `deserialize()` methods to bypass the generic
+        // approach.
+        // This temporary workaround lets us use the generic serialization
+        // approach for objects whose members include instances of dynamic
+        // StructArray types. Once we refactor StructArray to be static,
+        // we can remove this complexity.
+        klass.serialize(input, transferables) : {};
 
-        if (!klass.serialize) {
-            for (const key in input) {
-                if (!input.hasOwnProperty(key)) continue;
-                if (registry[name].omit.indexOf(key) >= 0) continue;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                const property = input[key];
-                properties[key] = serialize(property, transferables);
-            }
-            if (input instanceof Error) {
-                properties['message'] = input.message;
-            }
-        } else {
-            // make sure statically serialized object survives transfer of $name property
-            assert(!transferables || !transferables.has(properties as unknown as Transferable));
+    if (!klass.serialize) {
+        const omit = registry[name].omit;
+        const obj = input as Record<string, unknown>;
+        for (const key in obj) {
+            if (!obj.hasOwnProperty(key)) continue;
+            if (omit.indexOf(key) >= 0) continue;
+            properties[key] = serialize(obj[key], transferables);
         }
-
-        if (properties['$name']) {
-            throw new Error('$name property is reserved for worker serialization logic.');
+        if (input instanceof Error) {
+            properties['message'] = input.message;
         }
-        if (name !== 'Object') {
-            properties['$name'] = name;
-        }
-
-        return properties;
+    } else {
+        // make sure statically serialized object survives transfer of $name property
+        assert(!transferables || !transferables.has(properties as unknown as Transferable));
     }
 
-    throw new Error(`can't serialize object of type ${typeof input}`);
+    if (properties['$name']) {
+        throw new Error('$name property is reserved for worker serialization logic.');
+    }
+    if (name !== 'Object') {
+        properties['$name'] = name;
+    }
+
+    return properties;
 }
 
 export function deserialize(input: Serialized): unknown {
-    if (input === null ||
-        input === undefined ||
-        typeof input === 'boolean' ||
-        typeof input === 'number' ||
-        typeof input === 'string' ||
-        input instanceof Boolean ||
-        input instanceof Number ||
-        input instanceof String ||
-        input instanceof Date ||
-        input instanceof RegExp ||
-        isArrayBuffer(input) ||
-        input instanceof ImageBitmap ||
-        ArrayBuffer.isView(input) ||
-        input instanceof ImageData) {
+    if (input === null || typeof input !== 'object') return input;
+
+    if (Array.isArray(input)) {
+        for (let i = 0; i < input.length; i++) {
+            input[i] = deserialize(input[i]) as Serialized;
+        }
         return input;
     }
 
-    if (Array.isArray(input)) {
-        return input.map(deserialize);
+    if (ArrayBuffer.isView(input) || isArrayBuffer(input) ||
+        input instanceof ImageBitmap || input instanceof ImageData ||
+        input instanceof Date || input instanceof RegExp ||
+        input instanceof Boolean || input instanceof Number || input instanceof String) {
+        return input;
     }
 
-    if (typeof input === 'object') {
-        const name = input.$name || 'Object';
+    const name = input.$name || 'Object';
 
-        if (name === 'Map') {
-            const entries = input.entries as Array<[Serialized, Serialized]> || [];
-            const map = new Map();
-            for (let i = 0; i < entries.length; i += 2) {
-                map.set(deserialize(entries[i]), deserialize(entries[i + 1]));
-            }
-            return map;
+    if (name === 'Map') {
+        const entries = input.entries as Array<[Serialized, Serialized]> || [];
+        const map = new Map();
+        for (let i = 0; i < entries.length; i += 2) {
+            map.set(deserialize(entries[i]), deserialize(entries[i + 1]));
         }
-
-        if (name === 'Set') {
-            const set = new Set();
-            for (const key of Object.keys(input)) {
-                if (key === '$name')
-                    continue;
-                const value = input[key];
-                set.add(deserialize(value));
-            }
-            return set;
-        }
-
-        if (name === 'BigInt') {
-            return BigInt(input.value as string);
-        }
-
-        const {klass} = registry[name];
-        if (!klass) {
-            throw new Error(`Can't deserialize unregistered class "${name}".`);
-        }
-
-        if (klass.deserialize) {
-            return klass.deserialize(input);
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
-        const result: Record<string, unknown> = Object.create(klass.prototype);
-
-        for (const key of Object.keys(input)) {
-            if (key === '$name')
-                continue;
-            const value = input[key];
-            result[key] = deserialize(value);
-        }
-
-        return result;
+        return map;
     }
 
-    throw new Error(`can't deserialize object of type ${typeof input}`);
+    if (name === 'Set') {
+        const set = new Set();
+        for (const key in input) {
+            if (key === '$name') continue;
+            set.add(deserialize(input[key]));
+        }
+        return set;
+    }
+
+    if (name === 'BigInt') {
+        return BigInt(input.value as string);
+    }
+
+    const {klass} = registry[name];
+    if (!klass) {
+        throw new Error(`Can't deserialize unregistered class "${name}".`);
+    }
+
+    if (klass.deserialize) {
+        return klass.deserialize(input);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
+    const result: Record<string, unknown> = Object.create(klass.prototype);
+
+    for (const key in input) {
+        if (key === '$name') continue;
+        result[key] = deserialize(input[key]);
+    }
+
+    return result;
 }
