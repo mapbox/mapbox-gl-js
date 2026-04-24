@@ -11,7 +11,7 @@ const generateResultHTML = template(`
     <% } else { %>
       <input type="checkbox" id="<%- r.id %>">
     <% } %>
-    <label class="tab-label" style="background: <%- r.color %>" for="<%- r.id %>"><p class="status-container"><span class="status"><%- r.status %></span> - <%- r.name %> <% if (r.attempt !== 0) { %>retry <%- r.attempt + 1 %><% } %> diff: <%- r.minDiff %></p></label>
+    <label class="tab-label" style="background: <%- r.color %>" for="<%- r.id %>"><p class="status-container"><span class="status"><%- r.status %></span> - <%- r.name %> <% if (r.attempt !== 0) { %>retry <%- r.attempt + 1 %><% } %></p></label>
     <div class="tab-content">
       <% if (r.actual || r.expected) { %>
         <span class="img-hover-container">
@@ -30,6 +30,15 @@ const generateResultHTML = template(`
           <p class="img-label">Diff</p>
           <img title="diff" src="<%- r.imgDiff %>">
         </span>
+      <% } %>
+      <% if (r.allowed !== undefined) { %>
+        <p class="diff"><strong>Allowed:</strong> <%- r.allowed %></p>
+      <% } %>
+      <% if (r.minDiff !== undefined) { %>
+        <p class="diff"><strong>Diff:</strong> <%- r.minDiff === 0 ? 'none' : r.minDiff %></p>
+      <% } %>
+      <% if (r.expectedPath) { %>
+        <p class="diff"><strong>Expected image path:</strong> <%- r.expectedPath %></p>
       <% } %>
       <% if (r.jsonDiff) { %>
           <details>

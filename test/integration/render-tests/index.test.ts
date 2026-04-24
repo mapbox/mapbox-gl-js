@@ -68,7 +68,7 @@ function loadPngFromUrl(url: string): Promise<ImageDataWithCanvas> {
     });
 }
 
-async function getExpectedImages(currentTestName: string, renderTest: Record<string, unknown>): Promise<ImageDataWithCanvas[]> {
+async function getExpectedImages(currentTestName: string, renderTest: Record<string, unknown>): Promise<Array<ImageDataWithCanvas & {src: string}>> {
     const urls: string[] = [];
     for (const prop in renderTest) {
         if (prop.indexOf('expected') > -1) {
@@ -80,12 +80,16 @@ async function getExpectedImages(currentTestName: string, renderTest: Record<str
             urls.push(url);
         }
     }
-    return Promise.all(urls.map(loadPngFromUrl));
+    return Promise.all(urls.map(async (url) => {
+        const result = await loadPngFromUrl(url);
+        return Object.assign({}, result, {src: url});
+    }));
 }
 
 type TestMetadata = {
     name: string;
     minDiff: number;
+    allowed: number;
     status: string;
     actual?: string;
     expected?: string;
@@ -118,11 +122,12 @@ const getTest = (renderTestName: string) => async () => {
             throw new Error(`No expected images found for ${renderTestName}. Please run the test with UPDATE=true to generate expected images.`);
         }
 
-        const {minDiff, minDiffImage, expectedIndex, minImageSrc} = calculateDiff(actualImageData, expectedImages.map(({imageData}) => imageData), {w, h}, options['diff-calculation-threshold']);
+        const {minDiff, minDiffImage, expectedIndex, minImageSrc} = calculateDiff(actualImageData, expectedImages.map(({imageData, src}) => ({data: imageData.data, src})), {w, h}, options['diff-calculation-threshold']);
         const pass = minDiff <= options.allowed;
         const testMetaData: TestMetadata = {
             name: renderTestName,
             minDiff: Math.round(100000 * minDiff) / 100000,
+            allowed: options.allowed,
             status: pass ? 'passed' : 'failed',
         };
 
