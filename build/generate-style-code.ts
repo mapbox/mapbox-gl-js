@@ -231,7 +231,7 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (paintSpec[name].appearance) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             appearancePaintProperties.push({
                 src: `paint_${type}`,
                 srcSection: 'paint',
@@ -262,7 +262,8 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
 });
 
 // Add -use-theme counterparts for color paint appearance properties
-// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 for (const prop of [...appearancePaintProperties]) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (prop.type === 'color') {

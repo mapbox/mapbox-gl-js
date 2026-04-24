@@ -124,7 +124,7 @@ function validSchema(k, name, obj, ref, version, kind) {
 
         // schema type must be js native, 'color', or present in ref root object.
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-        expect(types.indexOf(obj.type) !== -1).toBeTruthy();
+        expect(types.includes(obj.type)).toBeTruthy();
 
         // schema type is an enum, it must have 'values' and they must be
         // objects (>=v8) or scalars (<=v7). If objects, check that doc key
@@ -134,7 +134,7 @@ function validSchema(k, name, obj, ref, version, kind) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
             const values = (ref.$version >= 8 ? Object.keys(obj.values) : obj.values);
             expect(Array.isArray(values) && values.every((v) => {
-                return scalar.indexOf(typeof v) !== -1;
+                return scalar.includes(typeof v);
             })).toBeTruthy();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (ref.$version >= 8) {
@@ -161,7 +161,7 @@ function validSchema(k, name, obj, ref, version, kind) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 obj.value.forEach((i) => {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    expect(types.indexOf(i) !== -1).toBeTruthy();
+                    expect(types.includes(i)).toBeTruthy();
                 });
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             } else if (typeof obj.value === 'object') {
@@ -169,7 +169,7 @@ function validSchema(k, name, obj, ref, version, kind) {
                 validSchema(`${k}.value`, name, obj.value, ref);
             } else {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-                expect(types.indexOf(obj.value) !== -1).toBeTruthy();
+                expect(types.includes(obj.value)).toBeTruthy();
             }
         }
 
@@ -195,7 +195,7 @@ function validSchema(k, name, obj, ref, version, kind) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (ref.$version >= 7) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-                expect(true).toEqual(['interpolated', 'piecewise-constant'].indexOf(obj.function) >= 0);
+                expect(true).toEqual(['interpolated', 'piecewise-constant'].includes(obj.function));
             } else {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect('boolean').toEqual(typeof obj.function);
@@ -255,7 +255,7 @@ function validSchema(k, name, obj, ref, version, kind) {
         }
     } else if (Array.isArray(obj)) {
         obj.forEach((child, j) => {
-            if (typeof child === 'string' && scalar.indexOf(child) !== -1) return;
+            if (typeof child === 'string' && scalar.includes(child)) return;
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             validSchema(`${k}[${j}]`, name,  typeof child === 'string' ? ref[child] : child, ref);
         });

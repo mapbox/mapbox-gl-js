@@ -57,7 +57,7 @@ function isStateConstant(e: Expression): boolean {
 }
 
 function isGlobalPropertyConstant(e: Expression, properties: Array<string>): boolean {
-    if (e instanceof CompoundExpression && properties.indexOf(e.name) >= 0) { return false; }
+    if (e instanceof CompoundExpression && properties.includes(e.name)) { return false; }
     let result = true;
     e.eachChild((arg) => {
         if (result && !isGlobalPropertyConstant(arg, properties)) { result = false; }

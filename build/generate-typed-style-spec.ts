@@ -113,7 +113,7 @@ function tsObjectDeclaration(key, properties, overrides = {}) {
 
 function tsObject(properties, indent, overrides = {}) {
     return `{
-${// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+${// eslint-disable-next-line @typescript-eslint/no-unsafe-argument, indent
 Object.keys(properties)
         .flatMap(k => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -421,7 +421,7 @@ ${tsObjectDeclaration('SelectorPropertySpecification', spec.selectorProperty)}
 
 ${tsObjectDeclaration('AppearanceSpecification', spec.appearance)}
 
-${// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+${// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, indent
 spec.source.map(key => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const sourceSpecName = tsSourceSpecificationTypeName(key);
@@ -436,14 +436,14 @@ spec.source.map(key => {
     }).join('\n\n')}
 
 export type SourceSpecification =
-${// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-spec.source.map(key => `    | ${tsSourceSpecificationTypeName(key)}`// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+${// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, indent
+spec.source.map(key => `    | ${tsSourceSpecificationTypeName(key)}`// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, indent
 ).join('\n')};
 
 export type IconsetSpecification =
-${// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-spec.iconset.map(key => `    | ${// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-tsObject(spec[key], '    ')}`// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+${// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, indent
+spec.iconset.map(key => `    | ${// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, indent
+tsObject(spec[key], '    ')}`// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, indent
 ).join('\n')};
 
 export type ModelSpecification = ${tsType(spec.model)};

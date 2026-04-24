@@ -1546,7 +1546,7 @@ class Style extends Evented<MapEvents> {
             return;
         }
 
-        if (source.type === 'geojson' || (source.vectorLayerIds && source.vectorLayerIds.indexOf(sourceLayer) === -1)) {
+        if (source.type === 'geojson' || (source.vectorLayerIds && !source.vectorLayerIds.includes(sourceLayer))) {
             this.fire(new ErrorEvent(new Error(
                 `Source layer "${sourceLayer}" ` +
                 `does not exist on source "${source.id}" ` +
@@ -2173,7 +2173,7 @@ class Style extends Evented<MapEvents> {
         }
 
         const builtIns = ['vector', 'raster', 'geojson', 'video', 'image'];
-        const shouldValidate = builtIns.indexOf(source.type) >= 0;
+        const shouldValidate = builtIns.includes(source.type);
         if (shouldValidate && this._validate(validateSource, `sources.${id}`, source, null, options)) return;
 
         if (this.map && this.map._collectResourceTiming) source.collectResourceTiming = true;

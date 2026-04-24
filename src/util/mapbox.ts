@@ -249,7 +249,7 @@ export class RequestManager {
                 throw new Error(`Use a public access token (pk.*) with Mapbox GL, not a secret access token (sk.*). ${help}`);
         }
 
-        urlObject.params = urlObject.params.filter((d) => d.indexOf('access_token') === -1);
+        urlObject.params = urlObject.params.filter((d) => !d.includes('access_token'));
         urlObject.params.push(`access_token=${accessToken || ''}`);
         return formatUrl(urlObject);
     }

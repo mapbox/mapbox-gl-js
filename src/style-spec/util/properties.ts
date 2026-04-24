@@ -6,7 +6,7 @@ function expressionHasParameter(
     expression: PropertyExpressionSpecification | null | undefined,
     parameter: ExpressionParameter,
 ): boolean {
-    return !!expression && !!expression.parameters && expression.parameters.indexOf(parameter) > -1;
+    return !!expression && !!expression.parameters && expression.parameters.includes(parameter);
 }
 
 export function supportsPropertyExpression(spec: StylePropertySpecification): boolean {

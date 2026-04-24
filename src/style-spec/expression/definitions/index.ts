@@ -617,21 +617,21 @@ CompoundExpression.register(expressions, {
     'filter-type-in': [
         BooleanType,
         [array(StringType)],
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        (ctx, [v]) => (v).value.indexOf(ctx.geometryType()) >= 0
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+        (ctx, [v]) => (v).value.includes(ctx.geometryType())
     ],
     'filter-id-in': [
         BooleanType,
         [array(ValueType)],
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        (ctx, [v]) => (v).value.indexOf(ctx.id()) >= 0
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+        (ctx, [v]) => (v).value.includes(ctx.id())
     ],
     'filter-in-small': [
         BooleanType,
         [StringType, array(ValueType)],
         // assumes v is an array literal
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        (ctx, [k, v]) => (v).value.indexOf(ctx.properties()[(k).value]) >= 0
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+        (ctx, [k, v]) => (v).value.includes(ctx.properties()[(k).value])
     ],
     'filter-in-large': [
         BooleanType,

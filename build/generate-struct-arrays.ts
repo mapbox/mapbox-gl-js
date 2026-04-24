@@ -43,7 +43,6 @@ const arraysWithStructAccessors: ArrayWithStructAccessors[] = [];
 const arrayTypeEntries = new Set();
 const layoutCache: Record<string, {className: string; members: StructArrayMember[]; size: number; usedTypes: Set<string>}> = {};
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 function normalizeMembers(members: StructArrayMember[], usedTypes: Set<string | ViewType>): StructArrayMember[] {
     return members.map((member) => {
         if (usedTypes && !usedTypes.has(member.type)) {

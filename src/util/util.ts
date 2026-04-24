@@ -492,7 +492,7 @@ export function mapValue(value: number, min: number, max: number, outMin: number
  */
 export function arraysIntersect<T>(a: Array<T>, b: Array<T>): boolean {
     for (let l = 0; l < a.length; l++) {
-        if (b.indexOf(a[l]) >= 0) return true;
+        if (b.includes(a[l])) return true;
     }
     return false;
 }

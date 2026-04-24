@@ -192,7 +192,7 @@ export default tseslint.config(
 
     // Require _devtools access inside Debug.run()
     {
-        files: ['src/**/*.ts', '3d-style/**/*.ts'],
+        files: ['src/**/*.ts', '3d-style/**/*.ts', 'modules/**/*.ts'],
         ignores: ['src/ui/control/devtools.ts'],
         rules: {
             'mapbox/devtools-must-use-debug-run': 'error',
@@ -229,7 +229,7 @@ export default tseslint.config(
             'import-x/no-restricted-paths': ['error', {
                 zones: [{
                     target: './src/style-spec',
-                    from: ['./src/!(style-spec)/**/*', './3d-style/**/*'],
+                    from: ['./src/!(style-spec)/**/*', './3d-style/**/*', './modules/**/*'],
                 }],
             }],
 
@@ -259,7 +259,6 @@ export default tseslint.config(
             'e18e/prefer-array-at': 'off',
             'e18e/prefer-array-some': 'off',
             'e18e/prefer-date-now': 'off',
-            'e18e/prefer-includes': 'off',
             'e18e/prefer-object-has-own': 'off',
             'e18e/prefer-regex-test': 'off',
             'e18e/prefer-static-regex': 'off',

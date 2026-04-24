@@ -812,7 +812,7 @@ describe("mapbox", () => {
             await new Promise(resolve => {
                 setTimeout(() => {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                    expect(window.server.requests[0].url.indexOf('https://events.mapbox.cn') > -1).toBeTruthy();
+                    expect(window.server.requests[0].url.includes('https://events.mapbox.cn')).toBeTruthy();
                     resolve();
                 }, 0);
             });
@@ -1228,7 +1228,7 @@ describe("mapbox", () => {
             req.respond(200);
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            expect(req.url.indexOf('https://events.mapbox.cn') > -1).toBeTruthy();
+            expect(req.url.includes('https://events.mapbox.cn')).toBeTruthy();
         });
 
         test('POSTs no event when API_URL unavailable', () => {

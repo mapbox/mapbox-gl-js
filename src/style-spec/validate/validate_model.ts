@@ -6,7 +6,7 @@ import type {StyleSpecification} from '../types';
 
 // Allow any URL, use dummy base, if it's a relative URL
 export function isValidUrl(str: string, allowRelativeUrls: boolean): boolean {
-    const isRelative = str.indexOf('://') === -1;
+    const isRelative = !str.includes('://');
     try {
         new URL(str, isRelative && allowRelativeUrls ? 'http://example.com' : undefined);
         return true;

@@ -8,7 +8,7 @@ export type FQID<T> = Brand<string, T>;
 const FQIDSeparator = '\u001F';
 
 export function isFQID(id: string): boolean {
-    return id.indexOf(FQIDSeparator) >= 0;
+    return id.includes(FQIDSeparator);
 }
 
 export function makeFQID<T = string>(name: T, scope?: string | null): FQID<T> {

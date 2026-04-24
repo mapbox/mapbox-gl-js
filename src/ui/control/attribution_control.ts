@@ -157,7 +157,7 @@ class AttributionControl implements IControl {
             const sourceCache = sourceCaches[id];
             if (sourceCache.used) {
                 const source = sourceCache.getSource();
-                if (source.attribution && attributions.indexOf(source.attribution) < 0) {
+                if (source.attribution && !attributions.includes(source.attribution)) {
                     attributions.push(source.attribution);
                 }
             }
@@ -168,7 +168,7 @@ class AttributionControl implements IControl {
         attributions.sort((a, b) => a.length - b.length);
         attributions = attributions.filter((attrib, i) => {
             for (let j = i + 1; j < attributions.length; j++) {
-                if (attributions[j].indexOf(attrib) >= 0) { return false; }
+                if (attributions[j].includes(attrib)) { return false; }
             }
             return true;
         });

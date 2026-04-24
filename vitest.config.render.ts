@@ -10,7 +10,6 @@ if (existsSync('internal/test/integration/render-tests')) {
     suiteDirs.push('internal/test/integration/render-tests');
 }
 
-
 export default mergeConfig(baseConfig, defineConfig({
     define: {
         'import.meta.env.VITE_CI': isCI,

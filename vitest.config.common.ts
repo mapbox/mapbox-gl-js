@@ -3,20 +3,19 @@ import {existsSync} from 'node:fs';
 import {writeFile} from 'node:fs/promises';
 import serveStatic from 'serve-static';
 import {tilesets, staticFolders} from './test/integration/lib/middlewares.js';
-
 import {getAllStyleFixturePaths, generateFixtureJson} from './test/integration/lib/generate-fixture-json.js';
 import {getHTML, getDiagnosticsHTML} from './test/util/html_generator';
-import type {DiagnosticInfo} from './test/util/html_generator';
 
+import type {DiagnosticInfo} from './test/util/html_generator';
 import type {Plugin} from 'vite';
 
 // On CI, test assets are immutable for the duration of the run. Telling the
 // browser to cache them aggressively eliminates repeated conditional-request
 // round-trips for tiles, glyphs, sprites, and models shared across tests.
 const isCI = process.env.CI === 'true';
-const staticCacheOptions = isCI
-    ? {maxAge: '1h', immutable: true, etag: false, lastModified: false}
-    : {};
+const staticCacheOptions = isCI ?
+    {maxAge: '1h', immutable: true, etag: false, lastModified: false} :
+    {};
 
 function getShardedTests(suiteDir: string): string[] {
     const testFiles = getAllStyleFixturePaths(suiteDir);

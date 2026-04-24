@@ -151,7 +151,7 @@ class Context {
         }
 
         // Force manual rendering for instanced draw calls having gl_InstanceID usage in the shader for PowerVR adapters
-        this.forceManualRenderingForInstanceIDShaders = (options && !!options.forceManualRenderingForInstanceIDShaders) || (this.renderer && this.renderer.indexOf("PowerVR") !== -1);
+        this.forceManualRenderingForInstanceIDShaders = (options && !!options.forceManualRenderingForInstanceIDShaders) || (this.renderer && this.renderer.includes("PowerVR"));
 
         this.disableSymbolUBO = (options && !!options.forceDisableSymbolUBO);
 

@@ -226,7 +226,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         const obj = input as Record<string, unknown>;
         for (const key in obj) {
             if (!obj.hasOwnProperty(key)) continue;
-            if (omit.indexOf(key) >= 0) continue;
+            if (omit.includes(key)) continue;
             properties[key] = serialize(obj[key], transferables);
         }
         if (input instanceof Error) {

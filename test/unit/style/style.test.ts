@@ -296,11 +296,11 @@ describe('Style#loadJSON', () => {
         const err = event.error;
         expect(err).toBeTruthy();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        expect(err.toString().indexOf('-source-layer-') !== -1).toBeTruthy();
+        expect(err.toString().includes('-source-layer-')).toBeTruthy();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        expect(err.toString().indexOf('-source-id-') !== -1).toBeTruthy();
+        expect(err.toString().includes('-source-id-')).toBeTruthy();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        expect(err.toString().indexOf('-layer-id-') !== -1).toBeTruthy();
+        expect(err.toString().includes('-layer-id-')).toBeTruthy();
     });
 
     test('sets up layer event forwarding', async () => {
@@ -798,11 +798,11 @@ describe('Style#addLayer', () => {
 
         expect(err).toBeTruthy();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        expect(err.toString().indexOf('-source-layer-') !== -1).toBeTruthy();
+        expect(err.toString().includes('-source-layer-')).toBeTruthy();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        expect(err.toString().indexOf('-source-id-') !== -1).toBeTruthy();
+        expect(err.toString().includes('-source-id-')).toBeTruthy();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        expect(err.toString().indexOf('-layer-id-') !== -1).toBeTruthy();
+        expect(err.toString().includes('-layer-id-')).toBeTruthy();
     });
 
     test('emits error on invalid layer', async () => {

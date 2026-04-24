@@ -474,7 +474,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                 }
                 // Add horizontal shaping for all point labels and line labels that need horizontal writing mode.
 
-                if (isPointPlacement || ((layout.get("text-writing-mode").indexOf('horizontal') >= 0) || !allowsVerticalWritingMode(unformattedText))) {
+                if (isPointPlacement || ((layout.get("text-writing-mode").includes('horizontal')) || !allowsVerticalWritingMode(unformattedText))) {
                     const shaping = shapeText(text, glyphMap, glyphPositions, imagePositions, fontstack, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed,
                                             textOffset, WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom, pixelRatio, sizes.textScaleFactor);
                     if (shaping) shapedTextOrientations.horizontal[textJustify] = shaping;

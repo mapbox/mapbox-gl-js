@@ -135,7 +135,7 @@ class SymbolStyleLayer extends StyleLayer {
             const deduped = [];
 
             for (const m of writingModes) {
-                if (deduped.indexOf(m) < 0) deduped.push(m);
+                if (!deduped.includes(m)) deduped.push(m);
             }
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this.layout._values['text-writing-mode'] = deduped;

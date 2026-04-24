@@ -66,7 +66,7 @@ class In implements Expression {
         }
 
         // Type assertions safe due to isValidNativeType checks above
-        return (haystack as string | unknown[]).indexOf(needle as string) >= 0;
+        return (haystack as string | unknown[]).includes(needle as string);
     }
 
     eachChild(fn: (_: Expression) => void) {

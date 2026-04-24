@@ -304,7 +304,7 @@ class HandlerManager {
     ): boolean {
         for (const name in activeHandlers) {
             if (name === myName) continue;
-            if (!allowed || allowed.indexOf(name) < 0) {
+            if (!allowed || !allowed.includes(name)) {
                 return true;
             }
         }

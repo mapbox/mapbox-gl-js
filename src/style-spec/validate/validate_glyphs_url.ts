@@ -11,11 +11,11 @@ export default function validateGlyphsUrl({key, value}: GlyphsUrlValidatorOption
     if (errors.length) return errors;
 
     const str = value as string;
-    if (str.indexOf('{fontstack}') === -1) {
+    if (!str.includes('{fontstack}')) {
         errors.push(new ValidationError(key, value, '"glyphs" url must include a "{fontstack}" token'));
     }
 
-    if (str.indexOf('{range}') === -1) {
+    if (!str.includes('{range}')) {
         errors.push(new ValidationError(key, value, '"glyphs" url must include a "{range}" token'));
     }
 

@@ -14,8 +14,8 @@ const {scripts} = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package
 const minBundle = fs.readFileSync('dist/mapbox-gl.js', 'utf8');
 
 test('production build removes asserts', () => {
-    assert(minBundle.indexOf('canary assert') === -1);
-    assert(minBundle.indexOf('canary debug run') === -1);
+    assert(!minBundle.includes('canary assert'));
+    assert(!minBundle.includes('canary debug run'));
 });
 
 test('trims package.json assets', () => {
@@ -23,7 +23,7 @@ test('trims package.json assets', () => {
     // the absence of each of our script strings
     for (const name in scripts) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-        if (minBundle.indexOf(scripts[name]) >= 0) {
+        if (minBundle.includes(scripts[name])) {
             throw new Error(`script "${name}" found in minified bundle`);
         }
     }
@@ -33,7 +33,7 @@ test('trims reference.json fields', () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     assert(reference.$root.version.doc);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-    assert(minBundle.indexOf(reference.$root.version.doc) === -1);
+    assert(!minBundle.includes(reference.$root.version.doc));
 });
 
 test('can be browserified', () => {

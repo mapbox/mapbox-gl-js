@@ -512,7 +512,7 @@ function determineLineBreaks(
     const potentialLineBreaks = [];
     const targetWidth = determineAverageLineWidth(logicalInput, spacing, maxWidth, glyphMap, imagePositions, layoutTextSize, textSizeFactor);
 
-    const hasServerSuggestedBreakpoints = logicalInput.text.indexOf("\u200b") >= 0;
+    const hasServerSuggestedBreakpoints = logicalInput.text.includes("\u200b");
 
     let currentX = 0;
 

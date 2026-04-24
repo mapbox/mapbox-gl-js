@@ -45,7 +45,7 @@ type Listeners<R extends EventRegistry, Target = unknown> = {
 };
 
 function _addEventListener<R extends EventRegistry, T extends keyof R>(type: T, listener: Listener<R, T, Evented<R>>, listenerList: Listeners<R>) {
-    const listenerExists = listenerList[type] && listenerList[type].indexOf(listener) !== -1;
+    const listenerExists = listenerList[type] && listenerList[type].includes(listener);
     if (!listenerExists) {
         listenerList[type] = listenerList[type] || [];
         listenerList[type].push(listener);

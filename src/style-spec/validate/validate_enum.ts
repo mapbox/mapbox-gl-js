@@ -16,12 +16,12 @@ export default function validateEnum(options: EnumValidatorOptions): ValidationE
 
     const errors: ValidationError[] = [];
     if (Array.isArray(valueSpec.values)) { // <=v7
-        if (valueSpec.values.indexOf(unbundle(value)) === -1) {
+        if (!valueSpec.values.includes(unbundle(value))) {
             // eslint-disable-next-line @typescript-eslint/no-base-to-string
             errors.push(new ValidationError(key, value, `expected one of [${valueSpec.values.join(', ')}], ${JSON.stringify(value)} found`));
         }
     } else { // >=v8
-        if (Object.keys(valueSpec.values).indexOf(unbundle(value) as string) === -1) {
+        if (!Object.keys(valueSpec.values).includes(unbundle(value) as string)) {
             errors.push(new ValidationError(key, value, `expected one of [${Object.keys(valueSpec.values).join(', ')}], ${JSON.stringify(value)} found`));
         }
     }
