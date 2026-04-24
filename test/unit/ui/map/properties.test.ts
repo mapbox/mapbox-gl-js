@@ -30,15 +30,15 @@ describe('Map#properties', () => {
             });
 
             await waitFor(map, "style.load");
-            vi.spyOn(map.style.dispatcher, 'broadcast').mockImplementation((key, value) => {
-                expect(key).toEqual('updateLayers');
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                expect(value.layers.map((layer) => { return layer.id; })).toEqual(['symbol']);
-            });
+            const broadcast = vi.spyOn(map.style.dispatcher, 'broadcast');
 
             map.setLayoutProperty('symbol', 'text-transform', 'lowercase');
             map.style.update({});
             expect(map.getLayoutProperty('symbol', 'text-transform')).toEqual('lowercase');
+
+            expect(broadcast).toHaveBeenCalledWith('updateLayers', expect.objectContaining({
+                layers: [expect.objectContaining({id: 'symbol'})]
+            }));
         });
 
         test('throw before loaded', () => {

@@ -4196,7 +4196,7 @@ export class Map extends Camera {
     }
 
     getIndoorTileOptions(source: string, scope: string): IndoorTileOptions | null {
-        if (!this.style.isIndoorEnabled()) {
+        if (!this.style || !this.style.isIndoorEnabled()) {
             return null;
         }
         return this.style.indoorManager.getIndoorTileOptions(source, scope);

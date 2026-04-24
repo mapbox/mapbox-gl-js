@@ -29,8 +29,8 @@ export function getImageRasterizerWorkerPool(): WorkerPool {
 }
 
 export function prewarm() {
-    const workerPool = getGlobalWorkerPool();
-    workerPool.acquire(PRELOAD_POOL_ID);
+    getGlobalWorkerPool().acquire(PRELOAD_POOL_ID);
+    getImageRasterizerWorkerPool().acquire(PRELOAD_POOL_ID);
 }
 
 export function getGlobalDispatcher(): Dispatcher {
@@ -56,5 +56,11 @@ export function clearPrewarmedResources() {
         } else {
             console.warn('Could not clear WebWorkers since there are active Map instances that still reference it. The pre-warmed WebWorker pool can only be cleared when all map instances have been removed with map.remove()');
         }
+    }
+
+    const rasterizerPool = imageRasterizerWorkerPool;
+    if (rasterizerPool && rasterizerPool.isPreloaded() && rasterizerPool.numActive() === 1) {
+        rasterizerPool.release(PRELOAD_POOL_ID);
+        imageRasterizerWorkerPool = null;
     }
 }

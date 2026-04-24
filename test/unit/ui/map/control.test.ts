@@ -9,7 +9,8 @@ describe('Map#control', () => {
             onAdd(_) {
                 expect(map).toEqual(_);
                 return window.document.createElement('div');
-            }
+            },
+            onRemove() {}
         };
         map.addControl(control);
         expect(map._controls[1]).toEqual(control);
@@ -46,7 +47,8 @@ describe('Map#control', () => {
         Ctrl.prototype = {
             onAdd(_) {
                 return window.document.createElement('div');
-            }
+            },
+            onRemove() {}
         };
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

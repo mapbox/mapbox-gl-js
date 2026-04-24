@@ -4097,8 +4097,11 @@ class Style extends Evented<MapEvents> {
         }
 
         for (const id in this._mergedSourceCaches) {
-            this._mergedSourceCaches[id].clearTiles();
-            this._mergedSourceCaches[id].setEventedParent(null);
+            const sourceCache = this._mergedSourceCaches[id];
+            sourceCache.clearTiles();
+            sourceCache.setEventedParent(null);
+            const source = sourceCache.getSource();
+            if (source && source.onRemove) source.onRemove(this.map);
         }
 
         this.imageManager.removeScope(this.scope);
