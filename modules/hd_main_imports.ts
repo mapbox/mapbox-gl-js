@@ -3,6 +3,7 @@ import drawRasterParticle, {prepare as prepareRasterParticle} from '../src/rende
 import shaders from '../3d-style/shaders/shaders_hd';
 import {Rain} from '../src/precipitation/draw_rain';
 import {Snow} from '../src/precipitation/draw_snow';
+import {programUniforms} from '../3d-style/render/program/program_uniforms_hd';
 
 export const HD = {
     loaded: true,
@@ -12,4 +13,5 @@ export const HD = {
     Rain,
     Snow,
     shaders,
+    programUniforms
 };

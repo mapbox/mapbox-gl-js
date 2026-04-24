@@ -1,7 +1,6 @@
 import {fillExtrusionDepthUniforms, fillExtrusionUniforms, fillExtrusionPatternUniforms, fillExtrusionGroundEffectUniforms} from './fill_extrusion_program';
 import {fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms, elevatedStructuresDepthUniforms, elevatedStructuresUniforms, elevatedStructuresDepthReconstructUniforms} from './fill_program';
 import {lineBlendCompositeUniforms} from './line_blend_composite_program';
-import {buildingUniforms, buildingBloomUniforms, buildingDepthUniforms, type BuildingDefinesType} from '../../../3d-style/render/program/building_program';
 import {circleUniforms} from './circle_program';
 import {collisionUniforms, collisionCircleUniforms, type CollisionDebugDefinesType} from './collision_program';
 import {debugUniforms} from './debug_program';
@@ -10,7 +9,6 @@ import {heatmapUniforms, heatmapTextureUniforms} from './heatmap_program';
 import {hillshadeUniforms, hillshadePrepareUniforms} from './hillshade_program';
 import {lineUniforms, linePatternUniforms} from './line_program';
 import {rasterUniforms} from './raster_program';
-import {rasterParticleUniforms, rasterParticleTextureUniforms, rasterParticleDrawUniforms, rasterParticleUpdateUniforms} from './raster_particle_program';
 import {symbolUniforms} from './symbol_program';
 import {backgroundUniforms, backgroundPatternUniforms} from './background_program';
 import {terrainRasterUniforms} from '../../terrain/terrain_raster_program';
@@ -21,9 +19,6 @@ import {modelUniforms, modelDepthUniforms} from '../../../3d-style/render/progra
 import {groundShadowUniforms} from '../../../3d-style/render/program/ground_shadow_program';
 import {starsUniforms} from '../../terrain/stars_program';
 import {occlusionUniforms} from './occlusion_program';
-import {snowUniforms} from '../../precipitation/snow_program';
-import {rainUniforms} from "../../precipitation/rain_program";
-import {vignetteUniforms} from "../../precipitation/vignette_program";
 
 import type {GlobeDefinesType} from '../../terrain/globe_raster_program';
 import type {HeatmapDefinesType} from './heatmap_program';
@@ -36,6 +31,8 @@ import type {CircleDefinesType} from './circle_program';
 import type {ModelDefinesType} from '../../../3d-style/render/program/model_program';
 import type {FillDefinesType} from './fill_program';
 import type {FillExtrusionDefinesType} from './fill_extrusion_program';
+import type {BuildingDefinesType} from '../../../3d-style/render/program/building_program';
+import type {ProgramUniformsHDType} from '../../../3d-style/render/program/program_uniforms_hd';
 
 export type FogDefinesType = 'FOG';
 export type TerrainDepthAccessDefinesType = 'DEPTH_D24' | 'DEPTH_OCCLUSION';
@@ -83,9 +80,6 @@ export const programUniforms = {
     fillOutline: fillOutlineUniforms,
     fillOutlinePattern: fillOutlinePatternUniforms,
     lineBlendComposite: lineBlendCompositeUniforms,
-    building: buildingUniforms,
-    buildingBloom: buildingBloomUniforms,
-    buildingDepth: buildingDepthUniforms,
     elevatedStructuresDepth: elevatedStructuresDepthUniforms,
     elevatedStructures: elevatedStructuresUniforms,
     elevatedStructuresDepthReconstruct: elevatedStructuresDepthReconstructUniforms,
@@ -101,10 +95,6 @@ export const programUniforms = {
     line: lineUniforms,
     linePattern: linePatternUniforms,
     raster: rasterUniforms,
-    rasterParticle: rasterParticleUniforms,
-    rasterParticleTexture: rasterParticleTextureUniforms,
-    rasterParticleDraw: rasterParticleDrawUniforms,
-    rasterParticleUpdate: rasterParticleUpdateUniforms,
     symbol: symbolUniforms,
     background: backgroundUniforms,
     backgroundPattern: backgroundPatternUniforms,
@@ -118,12 +108,9 @@ export const programUniforms = {
     modelDepth: modelDepthUniforms,
     groundShadow: groundShadowUniforms,
     stars: starsUniforms,
-    snowParticle: snowUniforms,
-    rainParticle: rainUniforms,
-    vignette: vignetteUniforms,
     occlusion: occlusionUniforms
 } as const;
 
 export type ProgramUniformsType = {
     [K in keyof typeof programUniforms]: ReturnType<typeof programUniforms[K]>;
-};
+} & ProgramUniformsHDType;

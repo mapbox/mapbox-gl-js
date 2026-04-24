@@ -1771,10 +1771,11 @@ class Painter {
         const allDefines = globalDefines.concat(defines);
 
         const shaderSource = shaders[name as keyof typeof shaders] || (HD.shaders && HD.shaders[name as keyof typeof HD.shaders]);
+        const uniforms = ((programUniforms as Record<string, (context: Context) => UniformBindings>)[name] || (HD.programUniforms as Record<string, (context: Context) => UniformBindings>)[name]) as (context: Context) => UniformBindings;
         const key = Program.cacheKey(shaderSource, name, allDefines, config);
 
         if (!this.cache[key]) {
-            this.cache[key] = new Program(this.context, name, shaderSource, config, programUniforms[name] as (Context) => UniformBindings, allDefines);
+            this.cache[key] = new Program(this.context, name, shaderSource, config, uniforms, allDefines);
         }
 
         return this.cache[key] as Program<ProgramUniformsType[T]>;
