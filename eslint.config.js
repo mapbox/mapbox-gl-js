@@ -252,15 +252,6 @@ export default tseslint.config(
         }
     },
 
-    // e18e rules temporarily disabled
-    {
-        rules: {
-            'e18e/prefer-array-at': 'off',
-            'e18e/prefer-array-some': 'off',
-            'e18e/prefer-object-has-own': 'off'
-        }
-    },
-
     // Stylistic rules
     {
         rules: {

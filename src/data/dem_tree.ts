@@ -473,7 +473,7 @@ export function buildDemMipmap(dem: DEMData): Array<MipLevel> {
 
     // Construct the rest of the mip levels from bottom to up
     for (blockCount /= 2; blockCount >= 1; blockCount /= 2) {
-        const prevMip = mips[mips.length - 1];
+        const prevMip = mips.at(-1);
 
         mip = new MipLevel(blockCount);
 

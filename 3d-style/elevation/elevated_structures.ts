@@ -288,9 +288,9 @@ export class ElevatedStructures {
             }
             // Each edge of the exterior ring is a potential portal
             const exterior = polygon[0];
-            assert(exterior.length > 1 && pointsEqual(exterior[0], exterior[exterior.length - 1]));
+            assert(exterior.length > 1 && pointsEqual(exterior[0], exterior.at(-1)));
 
-            let prevEdgeHash = ElevatedStructures.computeEdgeHash(exterior[exterior.length - 2], exterior[exterior.length - 1]);
+            let prevEdgeHash = ElevatedStructures.computeEdgeHash(exterior[exterior.length - 2], exterior.at(-1));
 
             for (let i = 0; i < exterior.length - 1; i++) {
                 const a = exterior[i + 0];

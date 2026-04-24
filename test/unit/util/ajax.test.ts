@@ -299,7 +299,7 @@ describe('ajax', () => {
 
         // abort the previously queued request and confirm that it is aborted
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const queuedRequest = serverRequests[serverRequests.length - 1];
+        const queuedRequest = serverRequests.at(-1);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(queuedRequest.url).toMatch(queuedURL);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

@@ -69,7 +69,7 @@ class PropertyParser {
     }
 
     private get(name: string, required, setter: Setter, convert?: Convert): PropertyParser {
-        const value = this.feature.properties.hasOwnProperty(name) ? +this.feature.properties[name] : undefined;
+        const value = Object.hasOwn(this.feature.properties, name) ? +this.feature.properties[name] : undefined;
         if (this._valid && value !== undefined && !Number.isNaN(value)) {
             if (convert) {
                 setter(convert(value));

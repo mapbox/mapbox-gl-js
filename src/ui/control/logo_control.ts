@@ -65,7 +65,7 @@ class LogoControl implements IControl {
         if (Object.entries(sourceCaches).length === 0) return true;
         for (const id in sourceCaches) {
             const source = sourceCaches[id].getSource();
-            if (source.hasOwnProperty('mapbox_logo') && !source.mapbox_logo) {
+            if (Object.hasOwn(source, 'mapbox_logo') && !source.mapbox_logo) {
                 return false;
             }
         }

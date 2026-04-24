@@ -781,7 +781,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
     layer.modelManager = modelManager;
     const shadowRenderer = painter.shadowRenderer;
 
-    if (!layer._unevaluatedLayout._values.hasOwnProperty('model-id')) { return; }
+    if (!Object.hasOwn(layer._unevaluatedLayout._values, 'model-id')) { return; }
 
     const modelIdUnevaluatedProperty = layer._unevaluatedLayout._values['model-id'];
 

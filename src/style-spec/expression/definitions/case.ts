@@ -48,7 +48,7 @@ class Case implements Expression {
             outputType = outputType || result.type;
         }
 
-        const otherwise = context.parse(args[args.length - 1], args.length - 1, outputType);
+        const otherwise = context.parse(args.at(-1), args.length - 1, outputType);
         if (!otherwise) return null;
 
         assert(outputType);

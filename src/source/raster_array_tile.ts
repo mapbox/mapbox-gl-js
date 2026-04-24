@@ -168,7 +168,7 @@ class RasterArrayTile extends Tile implements Tile {
                 // ignored by the server), then cache the buffer and neglect range requests.
                 let lastByte = 0;
                 for (const layer of Object.values(mrt.layers)) {
-                    lastByte = Math.max(lastByte, layer.dataIndex[layer.dataIndex.length - 1].lastByte);
+                    lastByte = Math.max(lastByte, layer.dataIndex.at(-1).lastByte);
                 }
 
                 if (dataBuffer.byteLength >= lastByte) {

@@ -70,7 +70,7 @@ export default class FormatExpression implements Expression {
                     if (!textColor) return null;
                 }
 
-                const lastExpression = sections[sections.length - 1];
+                const lastExpression = sections.at(-1);
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 lastExpression.scale = scale;
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

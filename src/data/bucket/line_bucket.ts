@@ -470,7 +470,7 @@ class LineBucket implements Bucket {
             startProp = 'mapbox_clip_start';
             endProp = 'mapbox_clip_end';
         }
-        if (!!feature.properties && feature.properties.hasOwnProperty(startProp) && feature.properties.hasOwnProperty(endProp)) {
+        if (!!feature.properties && Object.hasOwn(feature.properties, startProp) && Object.hasOwn(feature.properties, endProp)) {
             const start = +feature.properties[startProp];
             const end = +feature.properties[endProp];
             return {start, end};
@@ -488,7 +488,7 @@ class LineBucket implements Bucket {
         this.lineClips = this.lineFeatureClips(feature);
         this.lineFeature = feature;
         // Flag indicating that the line metrics were calculated for the vector tile feature.
-        const hasMapboxLineMetrics = !!feature.properties && feature.properties.hasOwnProperty('mapbox_line_metrics') ? feature.properties['mapbox_line_metrics'] : false;
+        const hasMapboxLineMetrics = !!feature.properties && Object.hasOwn(feature.properties, 'mapbox_line_metrics') ? feature.properties['mapbox_line_metrics'] : false;
         this.zOffsetValue = layout.get('line-z-offset').value;
 
         const paint = this.layers[0].paint;

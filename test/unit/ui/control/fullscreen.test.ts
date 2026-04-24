@@ -35,7 +35,7 @@ test('FullscreenControl makes optional container element full screen', () => {
     const fullscreen = new FullscreenControl({container: window.document.querySelector('body')});
     map.addControl(fullscreen);
     const control = map._controls.find((ctrl) => {
-        return ctrl.hasOwnProperty('_fullscreen');
+        return Object.hasOwn(ctrl, '_fullscreen');
     });
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     control._container.requestFullscreen = () => {};

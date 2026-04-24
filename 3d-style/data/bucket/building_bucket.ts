@@ -504,7 +504,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
                 continue;
 
             let buildingId: number | null = null;
-            if (feature.properties && feature.properties.hasOwnProperty('building_id')) {
+            if (feature.properties && Object.hasOwn(feature.properties, 'building_id')) {
                 buildingId = Number(feature.properties['building_id']);
                 if (disabledBuildings.has(buildingId)) {
                     continue;
@@ -1473,7 +1473,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
         // We use a lookup table to cache the results of the footprint search
         // to avoid searching through all footprints for every tile coordinate.
         const lookupKey = (x + EXTENT) * 4 * EXTENT + (y + EXTENT);
-        if (this.footprintLookup.hasOwnProperty(lookupKey)) {
+        if (Object.hasOwn(this.footprintLookup, lookupKey)) {
             const footprint = this.footprintLookup[lookupKey];
             return footprint ? {height: footprint.height, hidden: footprint.hiddenFlags !== BUILDING_VISIBLE} : undefined;
         }

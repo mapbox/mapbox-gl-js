@@ -525,7 +525,7 @@ export class ShadowRenderer {
             const meterInTiles = tileToMeter(unwrappedTileID.canonical);
             const texelScale = 2.0 / transform.tileSize * EXTENT / this._shadowParameters.shadowMapResolution;
             const shadowTexelInTileCoords0 = texelScale * this._cascades[0].boundingSphereRadius;
-            const shadowTexelInTileCoords1 = texelScale * this._cascades[this._cascades.length - 1].boundingSphereRadius;
+            const shadowTexelInTileCoords1 = texelScale * this._cascades.at(-1).boundingSphereRadius;
             // Instanced model tiles could have smoothened (shared among neighbor faces) normals. Normal is not surface normal
             // and this is why it is needed to increase the offset. 3.0 in case of model-tile could be alternatively replaced by
             // 2.0 if normal would not get scaled by dotScale in shadow_normal_offset().

@@ -35,11 +35,11 @@ function clipFirst(a: Point, b: Point, axis: string, clip: number): void {
     const ratio = (clip - a[axis]) / (b[axis] - a[axis]);
     a[axis1] = Math.round(a[axis1] + (b[axis1] - a[axis1]) * ratio);
     a[axis] = clip;
-    if (a.hasOwnProperty('z')) {
+    if (Object.hasOwn(a, 'z')) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         a['z'] = interpolate(a['z'], b['z'], ratio);
     }
-    if (a.hasOwnProperty('w')) {
+    if (Object.hasOwn(a, 'w')) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         a['w'] = interpolate(a['w'], b['w'], ratio);
     }
@@ -124,7 +124,7 @@ export function clipLines(lines: Point[][], x1: number, y1: number, x2: number, 
                 p1 = new Point(p0.x + (p1.x - p0.x) * ((y2 - p0.y) / (p1.y - p0.y)), y2)._round();
             }
 
-            if (!clippedLine || !p0.equals(clippedLine[clippedLine.length - 1])) {
+            if (!clippedLine || !p0.equals(clippedLine.at(-1))) {
                 clippedLine = [p0];
                 clippedLines.push(clippedLine);
 
@@ -141,8 +141,8 @@ export function clipLines(lines: Point[][], x1: number, y1: number, x2: number, 
             clippedLine.push(p1);
 
             if (linesInfo) {
-                linesInfo[linesInfo.length - 1].progress.max = lenSoFar + computeT(pStart, pEnd, p1) * segLen;
-                linesInfo[linesInfo.length - 1].nextPoint = pEnd;
+                linesInfo.at(-1).progress.max = lenSoFar + computeT(pStart, pEnd, p1) * segLen;
+                linesInfo.at(-1).nextPoint = pEnd;
             }
         }
 
@@ -239,7 +239,7 @@ export function lineSubdivision(subjectLine: Point[], edgeIterator: EdgeIterator
         if (intrIdx === intersections.length) {
             // No more intersection points. Copy remaining subject points
             while (subjIdx !== subjectLine.length) {
-                if (output.length === 0 || !output[output.length - 1].equals(subjectLine[subjIdx])) {
+                if (output.length === 0 || !output.at(-1).equals(subjectLine[subjIdx])) {
                     output.push(subjectLine[subjIdx]);
                 }
                 subjIdx++;
@@ -249,7 +249,7 @@ export function lineSubdivision(subjectLine: Point[], edgeIterator: EdgeIterator
 
         if (intersections[intrIdx].t <= subjIdx) {
             // Copy intersection point
-            if (output.length === 0 || !output[output.length - 1].equals(intersections[intrIdx].point)) {
+            if (output.length === 0 || !output.at(-1).equals(intersections[intrIdx].point)) {
                 output.push(intersections[intrIdx].point);
             }
 
@@ -262,9 +262,9 @@ export function lineSubdivision(subjectLine: Point[], edgeIterator: EdgeIterator
                 if (progressOut) {
                     const fract = intersections[intrIdx].t - pointIdx;
                     const distanceAtT = interpolate(pointDistances[pointIdx], pointDistances[pointIdx + 1], fract);
-                    const normT = distanceAtT / pointDistances[pointDistances.length - 1];
+                    const normT = distanceAtT / pointDistances.at(-1);
 
-                    progressOut[progressOut.length - 1].max = normT;
+                    progressOut.at(-1).max = normT;
                     progressOut.push({min: normT, max: 1.0});
                 }
             }
@@ -272,7 +272,7 @@ export function lineSubdivision(subjectLine: Point[], edgeIterator: EdgeIterator
             intrIdx++;
         } else {
             // Copy subject point
-            if (output.length === 0 || !output[output.length - 1].equals(subjectLine[subjIdx])) {
+            if (output.length === 0 || !output.at(-1).equals(subjectLine[subjIdx])) {
                 output.push(subjectLine[subjIdx]);
             }
             subjIdx++;

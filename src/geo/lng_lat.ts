@@ -315,7 +315,7 @@ export class LngLatBounds {
                 const lngLatObj = (obj as LngLatLike);
                 return this.extend(LngLat.convert(lngLatObj));
             }
-        } else if (typeof obj === 'object' && obj !== null && obj.hasOwnProperty("lat") && (obj.hasOwnProperty("lon") || obj.hasOwnProperty("lng"))) {
+        } else if (typeof obj === 'object' && obj !== null && Object.hasOwn(obj, "lat") && (Object.hasOwn(obj, "lon") || Object.hasOwn(obj, "lng"))) {
             return this.extend(LngLat.convert(obj));
         } else {
             return this;

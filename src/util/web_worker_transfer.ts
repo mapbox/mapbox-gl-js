@@ -225,7 +225,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         const omit = registry[name].omit;
         const obj = input as Record<string, unknown>;
         for (const key in obj) {
-            if (!obj.hasOwnProperty(key)) continue;
+            if (!Object.hasOwn(obj, key)) continue;
             if (omit.includes(key)) continue;
             properties[key] = serialize(obj[key], transferables);
         }

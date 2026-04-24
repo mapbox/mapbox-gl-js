@@ -118,7 +118,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     }
     const [stencilModes, coords] = source instanceof ImageSource || renderingToTexture ? [{}, tileIDs] :
         painter.stencilConfigForOverlap(tileIDs);
-    const minTileZ = coords[coords.length - 1].overscaledZ;
+    const minTileZ = coords.at(-1).overscaledZ;
 
     if (renderingElevatedOnGlobe) {
         rasterConfig.defines.push("PROJECTION_GLOBE_VIEW");

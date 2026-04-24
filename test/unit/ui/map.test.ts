@@ -814,7 +814,7 @@ describe('Map', () => {
                     if (e.sourceDataType === 'metadata') {
                         setTimeout(() => {
                             expect(clearSourceSpy).toHaveBeenCalledTimes(1);
-                            expect(clearSourceSpy.mock.calls[clearSourceSpy.mock.calls.length - 1][0]).toEqual('mapbox');
+                            expect(clearSourceSpy.mock.calls.at(-1)[0]).toEqual('mapbox');
                             resolve();
                         }, 0);
                     }
@@ -879,7 +879,7 @@ describe('Map', () => {
                     if (e.sourceDataType === 'metadata') {
                         setTimeout(() => {
                             expect(clearSourceSpy).toHaveBeenCalledTimes(1);
-                            expect(clearSourceSpy.mock.calls[clearSourceSpy.mock.calls.length - 1][0]).toEqual('mapbox');
+                            expect(clearSourceSpy.mock.calls.at(-1)[0]).toEqual('mapbox');
                             resolve();
                         }, 0);
                     }

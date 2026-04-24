@@ -25,7 +25,7 @@ class PathInterpolator {
             this._distances[i] = this._distances[i - 1] + this.points[i].dist(this.points[i - 1]);
         }
 
-        this.length = this._distances[this._distances.length - 1];
+        this.length = this._distances.at(-1);
         this.padding = Math.min(padding_ || 0, this.length * 0.5);
         this.paddedLength = this.length - this.padding * 2.0;
     }

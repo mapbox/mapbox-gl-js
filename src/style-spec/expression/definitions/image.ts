@@ -121,7 +121,7 @@ export default class ImageExpression implements Expression {
                         parsedParams[key] = value;
                     }
 
-                    imageExpression[imageExpression.length - 1].options.params = parsedParams;
+                    imageExpression.at(-1).options.params = parsedParams;
                 }
 
                 // Validate the iconset image options
@@ -136,7 +136,7 @@ export default class ImageExpression implements Expression {
                         return false;
                     }
 
-                    imageExpression[imageExpression.length - 1].options.iconset = iconset;
+                    imageExpression.at(-1).options.iconset = iconset;
                 }
 
                 nextArgId++;

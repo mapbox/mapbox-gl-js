@@ -229,7 +229,7 @@ function stretchZonesToCuts(stretchZones: Array<[number, number]>, fixedSize: nu
     const cuts = [{fixed: -border, stretch: 0}];
 
     for (const [c1, c2] of stretchZones) {
-        const last = cuts[cuts.length - 1];
+        const last = cuts.at(-1);
         cuts.push({
             fixed: c1 - last.stretch,
             stretch: last.stretch

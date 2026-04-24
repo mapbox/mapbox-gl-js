@@ -377,7 +377,7 @@ function parseLegacyFootprintMesh(gltfNode: GLTFNode): FootprintMesh | null | un
         return null;
     }
 
-    if (vertices.length > 1 && vertices[vertices.length - 1].equals(vertices[0])) {
+    if (vertices.length > 1 && vertices.at(-1).equals(vertices[0])) {
         vertices.pop();
     }
 

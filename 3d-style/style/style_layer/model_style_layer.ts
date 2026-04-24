@@ -181,8 +181,8 @@ class ModelStyleLayer extends StyleLayer {
         for (const modelId in bucket.instancesPerModel) {
             const instances = bucket.instancesPerModel[modelId];
             const featureId = feature.id !== undefined ? feature.id :
-                (feature.properties && feature.properties.hasOwnProperty("id")) ? (feature.properties["id"] as string | number) : undefined;
-            if (instances.idToFeaturesIndex.hasOwnProperty(featureId)) {
+                (feature.properties && Object.hasOwn(feature.properties, "id")) ? (feature.properties["id"] as string | number) : undefined;
+            if (Object.hasOwn(instances.idToFeaturesIndex, featureId)) {
                 const modelFeature = instances.features[instances.idToFeaturesIndex[featureId]];
                 const model = modelManager.getModel(modelId, scope || this.scope);
                 if (!model) return false;

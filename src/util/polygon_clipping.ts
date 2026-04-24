@@ -55,13 +55,13 @@ function clipPolygon(polygons: PolygonArray, clipAxis1: number, clipAxis2: numbe
                 }
             }
 
-            let last = ring[ring.length - 1];
+            let last = ring.at(-1);
             const a = axis === 0 ? last.x : last.y;
             if (a >= clipAxis1 && a <= clipAxis2) {
                 clipped.push(last);
             }
             if (clipped.length) {
-                last = clipped[clipped.length - 1];
+                last = clipped.at(-1);
                 if (clipped[0].x !== last.x || clipped[0].y !== last.y) {
                     clipped.push(clipped[0]);
                 }

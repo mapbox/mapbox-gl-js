@@ -686,7 +686,7 @@ class Painter {
     }, Array<OverscaledTileID>] {
         const gl = this.context.gl;
         const coords = tileIDs.sort((a, b) => b.overscaledZ - a.overscaledZ);
-        const minTileZ = coords[coords.length - 1].overscaledZ;
+        const minTileZ = coords.at(-1).overscaledZ;
         const stencilValues = coords[0].overscaledZ - minTileZ + 1;
         if (stencilValues > 1) {
             this.currentStencilSource = undefined;

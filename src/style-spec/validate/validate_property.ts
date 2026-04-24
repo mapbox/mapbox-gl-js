@@ -103,7 +103,7 @@ export default function validateProperty(options: PropertyValidatorOptions, prop
         if (propertyKey === 'text-font' && isFunction(deepUnbundle(value)) && unbundle((value as {type: unknown}).type) === 'identity') {
             errors.push(new ValidationError(key, value, '"text-font" does not support identity functions'));
         }
-    } else if (options.layerType === 'model' && propertyType === 'paint' && layer && layer.layout && layer.layout.hasOwnProperty('model-id')) {
+    } else if (options.layerType === 'model' && propertyType === 'paint' && layer && layer.layout && Object.hasOwn(layer.layout, 'model-id')) {
         if (supportsPropertyExpression(valueSpec) && (supportsLightExpression(valueSpec) || supportsZoomExpression(valueSpec))) {
             // Performance related style spec limitation: zoom and light expressions are not allowed for e.g. trees.
             const expression = createPropertyExpression(deepUnbundle(value), valueSpec);

@@ -702,7 +702,7 @@ class SourceCache extends Evented {
 
             // for children tiles with parent tiles still fading in,
             // retain the children so the parent can fade on top
-            const minZoom = idealTileIDs[idealTileIDs.length - 1].overscaledZ;
+            const minZoom = idealTileIDs.at(-1).overscaledZ;
             for (const id in this._tiles) {
                 const childTile = this._tiles[id];
                 if (retain[id] || !childTile.hasData()) {

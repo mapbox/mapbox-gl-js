@@ -222,7 +222,7 @@ class WorkerTile {
                     }
                 }
 
-                if (!elevationDependency && feature.properties && feature.properties.hasOwnProperty(PROPERTY_ELEVATION_ID)) {
+                if (!elevationDependency && feature.properties && Object.hasOwn(feature.properties, PROPERTY_ELEVATION_ID)) {
                     elevationDependency = true;
                 }
 
@@ -230,7 +230,7 @@ class WorkerTile {
                 currentFeatureIndex++;
             }
 
-            if (elevationDependency && !options.elevationFeatures && data.layers.hasOwnProperty(HD_ELEVATION_SOURCE_LAYER)) {
+            if (elevationDependency && !options.elevationFeatures && Object.hasOwn(data.layers, HD_ELEVATION_SOURCE_LAYER)) {
                 options.elevationFeatures = ElevationFeatures.parseFrom(data.layers[HD_ELEVATION_SOURCE_LAYER], this.canonical);
             }
 

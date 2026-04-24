@@ -213,7 +213,7 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
     }
 
     setValue<S extends keyof Props, T>(name: S, value?: PropertyValueSpecification<T>) {
-        if (!this._values.hasOwnProperty(name)) {
+        if (!Object.hasOwn(this._values, name)) {
             this._values[name] = new TransitionablePropertyValue(this._values[name].property, this._scope, this._options, this._iconImageUseTheme) as TransitionablePropertyValues<Props>[S];
         }
         // Note that we do not _remove_ an own property in the case where a value is being reset
@@ -237,7 +237,7 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
                     if (specProperties[propName]) {
                         this.setTransition(propName, value as TransitionSpecification);
                     }
-                } else if (specProperties.hasOwnProperty(name)) { // skip unrecognized properties
+                } else if (Object.hasOwn(specProperties, name)) { // skip unrecognized properties
                     this.setValue(name as unknown as keyof Props, value);
                 }
             }
@@ -249,7 +249,7 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
     }
 
     setTransition<S extends keyof Props>(name: S, value?: TransitionSpecification) {
-        if (!this._values.hasOwnProperty(name)) {
+        if (!Object.hasOwn(this._values, name)) {
             this._values[name] = new TransitionablePropertyValue(this._values[name].property) as TransitionablePropertyValues<Props>[S];
         }
         this._values[name].transition = clone(value) || undefined;

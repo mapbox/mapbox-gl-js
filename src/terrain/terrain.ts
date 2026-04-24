@@ -1325,7 +1325,7 @@ export class Terrain extends Elevation {
         assert(batches.length === 1 || batches.length === 0);
 
         if (batches.length !== 0) {
-            const lastBatch = batches[batches.length - 1];
+            const lastBatch = batches.at(-1);
             const groundEffectLayersComeLast = this._pendingGroundEffectLayers.every((id: number) => {
                 return id > lastBatch.end;
             });
@@ -1378,7 +1378,7 @@ export class Terrain extends Elevation {
                     const prevTiles = prev[source];
                     if (!prevTiles || prevTiles.length !== tiles.length ||
                         tiles.some((t, index) => (t !== prevTiles[index] ||
-                            (dirty[source] && dirty[source].hasOwnProperty(t.key)
+                            (dirty[source] && Object.hasOwn(dirty[source], t.key)
                             )))
                     ) {
                         equal = -1;
@@ -1439,7 +1439,7 @@ export class Terrain extends Elevation {
             stencilRange = proxiedCoords.length;
             this._overlapStencilMode.test = {func: gl.EQUAL, mask: 0xFF};
             this._overlapStencilType = 'Clip';
-        } else if (proxiedCoords[0].overscaledZ > proxiedCoords[proxiedCoords.length - 1].overscaledZ) {
+        } else if (proxiedCoords[0].overscaledZ > proxiedCoords.at(-1).overscaledZ) {
             stencilRange = 1;
             this._overlapStencilMode.test = {func: gl.GREATER, mask: 0xFF};
             this._overlapStencilType = 'Mask';

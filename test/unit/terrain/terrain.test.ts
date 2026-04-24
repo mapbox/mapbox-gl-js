@@ -651,8 +651,8 @@ describe('Elevation', () => {
         });
 
         test('Source other:trace is cleared from cache', () => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            expect(map.painter.terrain._tilesDirty.hasOwnProperty('other:trace')).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(Object.hasOwn(map.painter.terrain._tilesDirty as object, 'other:trace')).toBeTruthy();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain._tilesDirty['other:trace']['0']).toBeTruthy();
         });

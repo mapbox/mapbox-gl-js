@@ -26,7 +26,7 @@ function isClockWise(vertices: Array<Point>) {
 
 // Note: This function mostly matches the geometry processing code of the line bucket.
 export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
-    const isPolygon = vertices[0].x === vertices[vertices.length - 1].x && vertices[0].y === vertices[vertices.length - 1].y;
+    const isPolygon = vertices[0].x === vertices.at(-1).x && vertices[0].y === vertices.at(-1).y;
     const isCW = isClockWise(vertices);
     if (!isCW) {
         vertices = vertices.reverse();
@@ -164,7 +164,7 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     wallGeometry.geometry = [...innerWall, ...outerWall.reverse(), innerWall[0]];
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    wallGeometry.joinNormals = [...joinNormals, ...joinNormals.reverse(), joinNormals[joinNormals.length - 1]];
+    wallGeometry.joinNormals = [...joinNormals, ...joinNormals.reverse(), joinNormals.at(-1)];
 
     // Build index buffer
     const numPoints = wallGeometry.geometry.length - 1;
@@ -214,7 +214,7 @@ export function dropBufferConnectionLines(polygon: Array<Point>, isPolygon: bool
         return [];
     } else {
         for (let i = 0; i < polygon.length + 2; i++) {
-            const p0 = i === 0 ? polygon[polygon.length - 1] : polygon[(i - 1) % polygon.length];
+            const p0 = i === 0 ? polygon.at(-1) : polygon[(i - 1) % polygon.length];
             const p1 = polygon[i % polygon.length];
             const p2 = polygon[(i + 1) % polygon.length];
             const intersectsPrev = edgeIntersectsBox(p0, p1, tileCorners);

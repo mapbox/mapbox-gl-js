@@ -109,7 +109,7 @@ export default class HandlerInertia {
             if (settings.pinchAround) deltas.pinchAround = settings.pinchAround;
         }
 
-        const lastEntry = this._inertiaBuffer[this._inertiaBuffer.length - 1];
+        const lastEntry = this._inertiaBuffer.at(-1);
         const duration = (lastEntry.time - this._inertiaBuffer[0].time);
 
         const easeOptions: EasingOptions & {easeId?: string; noMoveStart?: boolean} = {} as EasingOptions & {easeId?: string; noMoveStart?: boolean};

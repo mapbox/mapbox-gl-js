@@ -91,7 +91,7 @@ export function buildStretchedAreas(metadata: {stretch_x?: number[]; stretch_y?:
             if (areas.length === 0) {
                 left = stretch[0];
             } else {
-                left = areas[areas.length - 1][1] + stretch[i];
+                left = areas.at(-1)[1] + stretch[i];
             }
         } else {
             const right = left + stretch[i];

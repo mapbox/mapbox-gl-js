@@ -509,10 +509,10 @@ describe("mapbox", () => {
                     this.data[id] = String(val);
                 },
                 getItem(this: {data: Record<string, string>}, id: string) {
-                    return this.data.hasOwnProperty(id) ? this.data[id] : undefined;
+                    return Object.hasOwn(this.data, id) ? this.data[id] : undefined;
                 },
                 removeItem(this: {data: Record<string, string>}, id: string) {
-                    if (this.hasOwnProperty(id)) delete this.data[id];
+                    if (Object.hasOwn(this, id)) delete this.data[id];
                 }
             });
         });
@@ -844,10 +844,10 @@ describe("mapbox", () => {
                         this.data[id] = String(val);
                     },
                     getItem(this: {data: Record<string, string>}, id: string) {
-                        return this.data.hasOwnProperty(id) ? this.data[id] : undefined;
+                        return Object.hasOwn(this.data, id) ? this.data[id] : undefined;
                     },
                     removeItem(this: {data: Record<string, string>}, id: string) {
-                        if (this.hasOwnProperty(id)) delete this.data[id];
+                        if (Object.hasOwn(this, id)) delete this.data[id];
                     }
                 });
             });
@@ -1255,10 +1255,10 @@ describe("mapbox", () => {
                         this.data[id] = String(val);
                     },
                     getItem(this: {data: Record<string, string>}, id: string) {
-                        return this.data.hasOwnProperty(id) ? this.data[id] : undefined;
+                        return Object.hasOwn(this.data, id) ? this.data[id] : undefined;
                     },
                     removeItem(this: {data: Record<string, string>}, id: string) {
-                        if (this.hasOwnProperty(id)) delete this.data[id];
+                        if (Object.hasOwn(this, id)) delete this.data[id];
                     }
                 });
             });

@@ -593,7 +593,7 @@ class Tiled3dModelBucket implements Bucket {
         for (const nodeInfo of this.getNodesInfo()) {
             const footprint = nodeInfo.node.footprint;
             // Node is visible if its footprint passes the replacement check
-            nodeInfo.hiddenByReplacement = !!footprint && !activeReplacements.find(region => region.footprint === footprint);
+            nodeInfo.hiddenByReplacement = !!footprint && !activeReplacements.some(region => region.footprint === footprint);
         }
     }
 

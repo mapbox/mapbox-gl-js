@@ -56,7 +56,7 @@ class Step implements Expression {
                 return context.error('Input/output pairs for "step" expressions must be defined using literal numeric values (not computed expressions) for the input values.', labelKey);
             }
 
-            if (stops.length && stops[stops.length - 1][0] >= label) {
+            if (stops.length && stops.at(-1)[0] >= label) {
                 return context.error('Input/output pairs for "step" expressions must be arranged with input values in strictly ascending order.', labelKey);
             }
 

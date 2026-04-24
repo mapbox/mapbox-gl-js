@@ -202,7 +202,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
                 orientation: [0, 0, 0]
             };
 
-            if (value.hasOwnProperty('orientation')) {
+            if (Object.hasOwn(value, 'orientation')) {
                 const orientation = value['orientation'] as Float32Array;
                 if (orientation) {
                     nodeOverride.orientation = orientation;

@@ -2363,7 +2363,7 @@ describe('Camera', () => {
 
             await waitFor(style, "style.load");
             expect(style.camera).toEqual({'camera-projection': 'orthographic'});
-            expect(spy.mock.calls[spy.mock.calls.length - 1][0]).toEqual({'camera-projection': 'orthographic'});
+            expect(spy.mock.calls.at(-1)[0]).toEqual({'camera-projection': 'orthographic'});
         }
     );
 
@@ -2452,7 +2452,7 @@ describe('Projection', () => {
 
         await waitFor(style, "style.load");
         expect(style.projection).toEqual({name: 'globe'});
-        expect(spy.mock.calls[spy.mock.calls.length - 1][1]).toEqual({name: 'globe'});
+        expect(spy.mock.calls.at(-1)[1]).toEqual({name: 'globe'});
     });
 
     test('root style overrides projection in imports', async () => {
@@ -2474,7 +2474,7 @@ describe('Projection', () => {
 
         await waitFor(style, "style.load");
         expect(style.projection).toEqual({name: 'globe'});
-        expect(spy.mock.calls[spy.mock.calls.length - 1][1]).toEqual({name: 'globe'});
+        expect(spy.mock.calls.at(-1)[1]).toEqual({name: 'globe'});
     });
 
     test(
@@ -2498,7 +2498,7 @@ describe('Projection', () => {
 
             await waitFor(style, "style.load");
             expect(style.projection).toEqual({name: 'albers'});
-            expect(spy.mock.calls[spy.mock.calls.length - 1][1]).toEqual({name: 'albers'});
+            expect(spy.mock.calls.at(-1)[1]).toEqual({name: 'albers'});
         }
     );
 });

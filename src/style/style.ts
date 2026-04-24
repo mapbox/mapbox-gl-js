@@ -3796,7 +3796,7 @@ class Style extends Evented<MapEvents> {
             for (const name of Object.keys(styleSpec.terrain)) {
                 // Fallback to use default style specification when the properties wasn't set
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                if (!options.hasOwnProperty(name) && !!styleSpec.terrain[name].default) {
+                if (!Object.hasOwn(options, name) && !!styleSpec.terrain[name].default) {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     options[name] = styleSpec.terrain[name].default;
                 }

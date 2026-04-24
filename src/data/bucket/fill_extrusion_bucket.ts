@@ -1075,7 +1075,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         borderCentroidData.centroidDataIndex = this.centroidData.length;
         const centroid = new PartData();
         centroid.buildingId = featureId;
-        if (feature.properties && feature.properties.hasOwnProperty('building_id')) {
+        if (feature.properties && Object.hasOwn(feature.properties, 'building_id')) {
             centroid.buildingId = Number(feature.properties['building_id']);
         }
         borderCentroidData.buildingId = centroid.buildingId;
@@ -1143,7 +1143,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
         const isDuplicate = (coords: Array<Point>, a: Point) => {
             if (coords.length === 0) return false;
-            const b = coords[coords.length - 1];
+            const b = coords.at(-1);
             return a.x === b.x && a.y === b.y;
         };
 
@@ -1154,7 +1154,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             let numVertices = 0;
             for (const ring of polygon) {
                 // make sure the ring closes
-                if (isPolygon && !ring[0].equals(ring[ring.length - 1])) ring.push(ring[0]);
+                if (isPolygon && !ring[0].equals(ring.at(-1))) ring.push(ring[0]);
                 numVertices += (isPolygon ? (ring.length - 1) : ring.length);
             }
 
@@ -1479,7 +1479,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         centroid.centroidXY = borderCentroidData.borders ? HIDDEN_CENTROID : this.encodeCentroid(borderCentroidData, centroid);
 
         // Pass 1 of two-pass centroid grouping: accumulate building group data.
-        if (feature.properties && feature.properties.hasOwnProperty('building_id')) {
+        if (feature.properties && Object.hasOwn(feature.properties, 'building_id')) {
             const bid = centroid.buildingId;
             let group = this.buildingGroups.get(bid);
             if (!group) {
@@ -1992,7 +1992,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         let hidden = true;
         assert(x > -EXTENT && y > -EXTENT && x < 2 * EXTENT && y < 2 * EXTENT);
         const lookupKey = (x + EXTENT) * 4 * EXTENT + (y + EXTENT);
-        if (this.partLookup.hasOwnProperty(lookupKey)) {
+        if (Object.hasOwn(this.partLookup, lookupKey)) {
             const centroid = this.partLookup[lookupKey];
             return centroid ? {height: centroid.height, hidden: !!(centroid.flags & HIDDEN_BY_REPLACEMENT)} : undefined;
         }

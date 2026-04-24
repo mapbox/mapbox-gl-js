@@ -67,7 +67,7 @@ class LineAtlas {
 
         const ranges: DashRange[] = [];
 
-        let left = oddDashArray ? -dasharray[dasharray.length - 1] * stretch : 0;
+        let left = oddDashArray ? -dasharray.at(-1) * stretch : 0;
         let right = dasharray[0] * stretch;
         let isDash = true;
 
@@ -136,7 +136,7 @@ class LineAtlas {
 
         // Combine the first and last parts if possible
         const first = ranges[0];
-        const last = ranges[ranges.length - 1];
+        const last = ranges.at(-1);
         if (first.isDash === last.isDash) {
             first.left = last.left - this.width;
             last.right = first.right + this.width;

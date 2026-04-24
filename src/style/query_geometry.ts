@@ -379,7 +379,7 @@ export function unwrapQueryPolygon(polygon: Point[], tr: Transform): {
 
                 if (edge === 0) {
                     // First and last points are duplicate for closed polygons
-                    polygon[polygon.length - 1].x += 1;
+                    polygon.at(-1).x += 1;
                 }
             } else {
                 b.x += 1;
@@ -449,13 +449,13 @@ export function projectPolygonCoveringPoles(polygon: Point[], tr: Transform): Ca
     const resampled = [...partA];
 
     if (resampled.length === 0) {
-        resampled.push(partB[partB.length - 1]);
+        resampled.push(partB.at(-1));
     }
 
     // Find location of the crossing by interpolating mercator coordinates.
     // This will produce slightly off result as the crossing edge is not actually
     // linear on the globe.
-    const a = resampled[resampled.length - 1];
+    const a = resampled.at(-1);
     const b = partB.length === 0 ? partA[0] : partB[0];
     const intersectionY = interpolate(a.y, b.y, t);
 

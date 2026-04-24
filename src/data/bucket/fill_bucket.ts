@@ -357,7 +357,7 @@ class FillBucket implements Bucket {
                     const isTunnel = elevated.elevationFeature.isTunnel();
                     // Parse zLevel properties
                     let zLevel = 0;
-                    if (feature.properties.hasOwnProperty(PROPERTY_ELEVATION_ROAD_BASE_Z_LEVEL)) {
+                    if (Object.hasOwn(feature.properties, PROPERTY_ELEVATION_ROAD_BASE_Z_LEVEL)) {
                         zLevel = +feature.properties[PROPERTY_ELEVATION_ROAD_BASE_Z_LEVEL];
                     }
 
