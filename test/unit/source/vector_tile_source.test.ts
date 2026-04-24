@@ -293,10 +293,9 @@ describe('VectorTileSource', () => {
         });
         const events: Array<any> = [];
         source.dispatcher = wrapDispatcher({
-            send(type, params, cb) {
+            send(type, params, cb: () => void) {
                 events.push(type);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                if (cb) setTimeout(() => cb(), 0);
+                if (cb) setTimeout(cb, 0);
                 return 1;
             }
         });
@@ -409,11 +408,10 @@ describe('VectorTileSource', () => {
             collectResourceTiming: true
         });
         source.dispatcher = wrapDispatcher({
-            send(type, params, cb) {
+            send(type, params, cb: () => void) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(params.request.collectResourceTiming).toBeTruthy();
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                setTimeout(() => cb(), 0);
+                setTimeout(cb, 0);
 
                 // do nothing for cache size check dispatch
                 source.dispatcher = mockDispatcher;

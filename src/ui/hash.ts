@@ -3,6 +3,8 @@ import throttle from '../util/throttle';
 
 import type {Map} from './map';
 
+const HASH_SUFFIX_RE = /(#.+)?$/;
+
 /*
  * Adds the map's position to its page's location hash.
  * Passed as an option to the map object.
@@ -119,7 +121,7 @@ export default class Hash {
 
     _updateHashUnthrottled() {
         // Replace if already present, else append the updated hash string
-        history.replaceState(history.state, '', location.href.replace(/(#.+)?$/, this.getHashString()));
+        history.replaceState(history.state, '', location.href.replace(HASH_SUFFIX_RE, this.getHashString()));
     }
 }
 

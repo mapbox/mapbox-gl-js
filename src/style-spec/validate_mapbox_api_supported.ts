@@ -13,6 +13,11 @@ import type {
     ImportSpecification
 } from './types';
 
+const MAPBOX_SOURCE_URL_RE = /^mapbox:\/\/([^/]*)$/;
+const MAPBOX_GLYPH_URL_RE = /^mapbox:\/\/fonts\/([^/]*)\/{fontstack}\/{range}.pbf$/;
+const MAPBOX_SPRITE_URL_RE = /^mapbox:\/\/sprites\/([^/]*)\/([^/]*)\/?([^/]*)?$/;
+const VISIBILITY_RE = /^(public|private)$/;
+
 type MapboxStyleSpecification = StyleSpecification & {
     visibility?: 'public' | 'private';
     protected?: boolean;
@@ -63,8 +68,7 @@ function getSourceErrors(source: SourceSpecification, i: number): Array<Validati
      * mapbox://penny.abcd1234
      * mapbox://mapbox.abcd1234,penny.abcd1234
      */
-    const sourceUrlPattern = /^mapbox:\/\/([^/]*)$/;
-    if (!('url' in source) || !isValid(source.url, sourceUrlPattern)) {
+    if (!('url' in source) || !isValid(source.url, MAPBOX_SOURCE_URL_RE)) {
         errors.push(new ValidationError(`sources[${i}].url`, (source as {url?: string}).url, 'Expected a valid Mapbox tileset url'));
     }
 
@@ -166,8 +170,7 @@ function getRootErrors(style: MapboxStyleSpecification, specKeys: string[]): Arr
      * mapbox://fonts/penny/{fontstack}/{range}.pbf
      * mapbox://fonts/mapbox/{fontstack}/{range}.pbf
      */
-    const glyphUrlPattern = /^mapbox:\/\/fonts\/([^/]*)\/{fontstack}\/{range}.pbf$/;
-    if (!isValid(style.glyphs, glyphUrlPattern)) {
+    if (!isValid(style.glyphs, MAPBOX_GLYPH_URL_RE)) {
         errors.push(new ValidationError('glyphs', style.glyphs, 'Styles must reference glyphs hosted by Mapbox'));
     }
 
@@ -177,8 +180,7 @@ function getRootErrors(style: MapboxStyleSpecification, specKeys: string[]): Arr
      * mapbox://sprites/mapbox/abcd1234/draft
      * mapbox://sprites/cyrus/abcd1234/abcd1234
      */
-    const spriteUrlPattern = /^mapbox:\/\/sprites\/([^/]*)\/([^/]*)\/?([^/]*)?$/;
-    if (!isValid(style.sprite, spriteUrlPattern)) {
+    if (!isValid(style.sprite, MAPBOX_SPRITE_URL_RE)) {
         errors.push(new ValidationError('sprite', style.sprite, 'Styles must reference sprites hosted by Mapbox'));
     }
 
@@ -187,8 +189,7 @@ function getRootErrors(style: MapboxStyleSpecification, specKeys: string[]): Arr
      * "private"
      * "public"
      */
-    const visibilityPattern = /^(public|private)$/;
-    if (!isValid(style.visibility, visibilityPattern)) {
+    if (!isValid(style.visibility, VISIBILITY_RE)) {
         errors.push(new ValidationError('visibility', style.visibility, 'Style visibility must be public or private'));
     }
 

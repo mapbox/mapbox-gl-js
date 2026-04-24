@@ -1,6 +1,7 @@
 import {default as ValidationError, ValidationWarning} from '../error/validation_error';
 import validate from './validate';
 import {getType, isObject} from '../util/get_type';
+import {TRANSITION_KEY_RE} from '../util/properties';
 
 import type {StyleReference} from '../reference/latest';
 import type {StyleSpecification} from '../types';
@@ -29,7 +30,7 @@ export default function validateSnow(options: SnowValidatorOptions): ValidationE
 
     let errors: ValidationError[] = [];
     for (const key in snow) {
-        const transitionMatch = key.match(/^(.*)-transition$/);
+        const transitionMatch = key.match(TRANSITION_KEY_RE);
 
         if (transitionMatch && snowSpec[transitionMatch[1]] && snowSpec[transitionMatch[1]].transition) {
             errors = errors.concat(validate({

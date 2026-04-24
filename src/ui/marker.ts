@@ -16,6 +16,8 @@ import type {LngLatLike} from '../geo/lng_lat';
 import type {MapEventOf, MapMouseEvent, MapTouchEvent} from './events';
 import type {PointLike} from '../types/point-like';
 
+const WHITESPACE_RE = /\s+/;
+
 export type MarkerOptions = {
     element?: HTMLElement;
     offset?: PointLike;
@@ -190,7 +192,7 @@ export default class Marker extends Evented<MarkerEvents> {
             classList.remove(`mapboxgl-marker-anchor-${key}`);
         }
         classList.add(`mapboxgl-marker-anchor-${this._anchor}`);
-        const classNames = options && options.className ? options.className.trim().split(/\s+/) : [];
+        const classNames = options && options.className ? options.className.trim().split(WHITESPACE_RE) : [];
         classList.add(...classNames);
 
         this._popup = null;

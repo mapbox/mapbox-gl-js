@@ -220,6 +220,8 @@ export type MapOptions = {
     pitchRotateKey?: PitchRotateKey;
 };
 
+const CSS_MATRIX_RE = /matrix.*\((.+)\)/;
+
 const defaultMinZoom = -2;
 const defaultMaxZoom = 22;
 
@@ -4215,7 +4217,7 @@ export class Map extends Camera {
         while (el && (!transformScaleWidth || !transformScaleHeight)) {
             const transformMatrix = window.getComputedStyle(el).transform;
             if (transformMatrix && transformMatrix !== 'none') {
-                transformValues = transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
+                transformValues = transformMatrix.match(CSS_MATRIX_RE)[1].split(', ');
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
                 if (transformValues[0] && transformValues[0] !== '0' && transformValues[0] !== '1') transformScaleWidth = transformValues[0];
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment

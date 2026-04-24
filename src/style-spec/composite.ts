@@ -1,5 +1,7 @@
 import type {StyleSpecification} from './types';
 
+const MAPBOX_URL_RE = /^mapbox:\/\/(.*)/;
+
 export default function (style: StyleSpecification): StyleSpecification {
     const styleIDs: string[] = [];
     const sourceIDs: string[] = [];
@@ -11,7 +13,7 @@ export default function (style: StyleSpecification): StyleSpecification {
         if (source.type !== "vector")
             continue;
 
-        const match = /^mapbox:\/\/(.*)/.exec(source.url);
+        const match = MAPBOX_URL_RE.exec(source.url);
         if (!match)
             continue;
 

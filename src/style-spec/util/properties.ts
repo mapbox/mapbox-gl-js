@@ -1,5 +1,8 @@
 import type {PropertyExpressionSpecification, StylePropertySpecification} from '../style-spec';
 
+export const TRANSITION_KEY_RE = /^(.*)-transition$/;
+export const USE_THEME_KEY_RE = /^(.*)-use-theme$/;
+
 type ExpressionParameter = PropertyExpressionSpecification['parameters'][number];
 
 function expressionHasParameter(

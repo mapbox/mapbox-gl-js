@@ -286,7 +286,7 @@ uniform ${precision} ${type} u_${name};
         const materialOffsetNameDefineName = `MATERIAL_ATTRIBUTE_OFFSET_${name}`;
         const attrType = type === 'float' ? 'vec2' : type;
         const materialAttribExpression = `GET_ATTRIBUTE_${attrType}(a_${name}, materialInfo, ${materialOffsetNameDefineName})`;
-        const unpackType = name.match(/color/) ? 'color' : attrType;
+        const unpackType = name.includes('color') ? 'color' : attrType;
 
         if (operation === 'define-attribute-vertex-shader-only') {
             return `

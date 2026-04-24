@@ -6,6 +6,8 @@
  * @returns Sanitized HTML string containing only text and safe anchor tags
  * @private
  */
+const SAFE_LINK_PROTOCOL_RE = /^(https?:|mailto:)/i;
+
 export function sanitizeLinks(html: string): string {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
@@ -20,7 +22,7 @@ export function sanitizeLinks(html: string): string {
         }
 
         const href = (el as HTMLAnchorElement).getAttribute('href');
-        if (!href || !/^(https?:|mailto:)/i.test(href)) {
+        if (!href || !SAFE_LINK_PROTOCOL_RE.test(href)) {
             el.replaceWith(doc.createTextNode(text));
             return;
         }

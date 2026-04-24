@@ -61,7 +61,7 @@ test('GlyphLoader loads single font directly', async () => {
     const mockData = createMockGlyphRange([65, 66, 67]);
     const stub = createLoadGlyphRangeStub(
         (_font: string, _range: number, _url: string, _rm: RequestManager, cb: Callback<GlyphRange>) => {
-            setTimeout(() => cb(null, mockData), 0);
+            setTimeout(cb, 0, null, mockData);
         }
     );
 
@@ -131,7 +131,7 @@ test('GlyphLoader deduplicates concurrent requests for same font/range', async (
     createLoadGlyphRangeStub(
         (_font: string, _range: number, _url: string, _rm: RequestManager, cb: Callback<GlyphRange>) => {
             callCount++;
-            setTimeout(() => cb(null, mockData), 10);
+            setTimeout(cb, 10, null, mockData);
         }
     );
 
@@ -224,7 +224,7 @@ test('GlyphLoader caches completed requests', async () => {
     createLoadGlyphRangeStub(
         (_font: string, _range: number, _url: string, _rm: RequestManager, cb: Callback<GlyphRange>) => {
             callCount++;
-            setTimeout(() => cb(null, mockData), 0);
+            setTimeout(cb, 0, null, mockData);
         }
     );
 
@@ -310,7 +310,7 @@ test('GlyphLoader uses server composition when fontstackCompositing is \'server\
     const mockData = createMockGlyphRange([65, 66]);
     const stub = createLoadGlyphRangeStub(
         (_font: string, _range: number, _url: string, _rm: RequestManager, cb: Callback<GlyphRange>) => {
-            setTimeout(() => cb(null, mockData), 0);
+            setTimeout(cb, 0, null, mockData);
         }
     );
 
@@ -334,7 +334,7 @@ test('GlyphLoader trims whitespace from font names', async () => {
     const mockData = createMockGlyphRange([65]);
     const stub = createLoadGlyphRangeStub(
         (_font: string, _range: number, _url: string, _rm: RequestManager, cb: Callback<GlyphRange>) => {
-            setTimeout(() => cb(null, mockData), 0);
+            setTimeout(cb, 0, null, mockData);
         }
     );
 

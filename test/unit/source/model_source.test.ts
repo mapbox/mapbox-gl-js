@@ -27,7 +27,7 @@ describe('ModelSource', () => {
         const modelSource = new ModelSource('id', opts, wrapDispatcher({
             send(type, data, callback) {
                 if (callback) {
-                    // eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-argument
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     return setTimeout(callback, 0);
                 }
             }

@@ -1,6 +1,7 @@
 import ValidationError from '../error/validation_error';
 import {getType, isObject} from '../util/get_type';
 import validate from './validate';
+import {TRANSITION_KEY_RE, USE_THEME_KEY_RE} from '../util/properties';
 
 import type {StyleReference} from '../reference/latest';
 import type {StyleSpecification} from '../types';
@@ -29,8 +30,8 @@ export default function validateLight(options: LightValidatorOptions): Validatio
 
     let errors: ValidationError[] = [];
     for (const key in light) {
-        const transitionMatch = key.match(/^(.*)-transition$/);
-        const useThemeMatch = key.match(/^(.*)-use-theme$/);
+        const transitionMatch = key.match(TRANSITION_KEY_RE);
+        const useThemeMatch = key.match(USE_THEME_KEY_RE);
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (useThemeMatch && lightSpec[useThemeMatch[1]]) {

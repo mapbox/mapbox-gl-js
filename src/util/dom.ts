@@ -1,6 +1,9 @@
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 
+const FIREFOX_UA_RE = /firefox/i;
+const MACINTOSH_UA_RE = /macintosh/i;
+
 // refine the return type based on tagName, e.g. 'button' -> HTMLButtonElement
 export function create<T extends keyof HTMLElementTagNameMap>(tagName: T, className?: string | null, container?: HTMLElement) {
     const el = document.createElement<T>(tagName);
@@ -74,7 +77,7 @@ export function touchPos(el: HTMLElement, touches: TouchList): Array<Point> {
 
 export function mouseButton(e: MouseEvent): number {
     assert(e.type === 'mousedown' || e.type === 'mouseup');
-    if (/firefox/i.test(navigator.userAgent) && /macintosh/i.test(navigator.userAgent) && e.button === 2 && e.ctrlKey) {
+    if (FIREFOX_UA_RE.test(navigator.userAgent) && MACINTOSH_UA_RE.test(navigator.userAgent) && e.button === 2 && e.ctrlKey) {
         // Fix for https://github.com/mapbox/mapbox-gl-js/issues/3131:
         // Firefox on Mac (detected by user agent) determines e.button = 2 when
         // using Control + left click

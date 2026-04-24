@@ -35,6 +35,10 @@ import type {Callback} from '../types/callback';
 */
 export const SDF_SCALE = 2;
 
+const BOLD_FONT_RE = /bold/i;
+const MEDIUM_FONT_RE = /medium/i;
+const LIGHT_FONT_RE = /light/i;
+
 // Only these four font weights are supported
 type FontWeight = '200' | '400' | '500' | '900';
 
@@ -250,11 +254,11 @@ class GlyphManager {
         let tinySDF = entry.tinySDF;
         if (!tinySDF) {
             let fontWeight: FontWeight = '400';
-            if (/bold/i.test(stack)) {
+            if (BOLD_FONT_RE.test(stack)) {
                 fontWeight = '900';
-            } else if (/medium/i.test(stack)) {
+            } else if (MEDIUM_FONT_RE.test(stack)) {
                 fontWeight = '500';
-            } else if (/light/i.test(stack)) {
+            } else if (LIGHT_FONT_RE.test(stack)) {
                 fontWeight = '200';
             }
 

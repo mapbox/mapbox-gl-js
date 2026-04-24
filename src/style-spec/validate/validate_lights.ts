@@ -2,6 +2,7 @@ import {default as ValidationError, ValidationWarning} from '../error/validation
 import {getType, isObject, isString} from '../util/get_type';
 import validate from './validate';
 import {unbundle} from '../util/unbundle_jsonlint';
+import {TRANSITION_KEY_RE, USE_THEME_KEY_RE} from '../util/properties';
 
 import type {StyleReference} from '../reference/latest';
 import type {StyleSpecification} from '../types';
@@ -72,8 +73,8 @@ export default function validateLights(options: LightsValidatorOptions): Validat
                 return errors;
             }
             for (const propertyKey in properties) {
-                const transitionMatch = propertyKey.match(/^(.*)-transition$/);
-                const useThemeMatch = propertyKey.match(/^(.*)-use-theme$/);
+                const transitionMatch = propertyKey.match(TRANSITION_KEY_RE);
+                const useThemeMatch = propertyKey.match(USE_THEME_KEY_RE);
 
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (useThemeMatch && lightPropertySpec[useThemeMatch[1]]) {

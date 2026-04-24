@@ -17,7 +17,7 @@ describe('Actor', () => {
             }
             test(mapId, data, id) {
                 for (const listener of this.listeners) {
-                    // eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
                     setTimeout(listener, 0, {data: {data, id, type: '<response>'}});
                 }
             }
@@ -55,7 +55,7 @@ describe('Actor', () => {
             }
             test(mapId, data, id, type, targetMapId) {
                 for (const listener of this.listeners) {
-                    // eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
                     setTimeout(listener, 0, {data: {data, id, type, targetMapId}});
                 }
             }

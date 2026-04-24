@@ -14,6 +14,8 @@ import type {LngLatLike} from '../geo/lng_lat';
 import type {PointLike} from '../types/point-like';
 import type Marker from './marker';
 
+const WHITESPACE_RE = /\s+/;
+
 const defaultOptions = {
     closeButton: true,
     closeOnClick: true,
@@ -129,7 +131,7 @@ export default class Popup extends Evented<PopupEvents> {
         this._altitude = this.options.altitude;
         bindAll(['_update', '_onClose', 'remove', '_onMouseEvent'], this);
         this._classList = new Set(options && options.className ?
-            options.className.trim().split(/\s+/) : []);
+            options.className.trim().split(WHITESPACE_RE) : []);
     }
 
     /**

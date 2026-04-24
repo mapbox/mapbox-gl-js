@@ -63,7 +63,7 @@ describe('GeoJSONSource#setData', () => {
         return new GeoJSONSource('id', opts, wrapDispatcher({
             send(type, data, callback) {
                 if (callback) {
-                    // eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-argument
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     return setTimeout(callback, 0);
                 }
             }
@@ -105,7 +105,7 @@ describe('GeoJSONSource#setData', () => {
             if (type === 'geojson.loadData') {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(params.request.collectResourceTiming).toBeTruthy();
-                // eslint-disable-next-line @typescript-eslint/no-implied-eval
+
                 setTimeout(cb, 0);
             }
         };
@@ -145,7 +145,7 @@ describe('GeoJSONSource#update', () => {
                         expect(ids).to.deep.equal([2, 3]);
                         resolve();
                     }
-                    // eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-argument
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     setTimeout(callback);
                     return true;
                 }
@@ -227,7 +227,7 @@ describe('GeoJSONSource#update', () => {
         const mockDispatcher = wrapDispatcher({
             send(message, args, callback) {
                 if (callback) {
-                    // eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-argument
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     setTimeout(callback, 0);
                 }
             }
@@ -248,8 +248,8 @@ describe('GeoJSONSource#update', () => {
         const mockDispatcher = wrapDispatcher({
             send(message, args, callback) {
                 if (callback) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                    setTimeout(callback.bind(null, 'error'), 0);
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                    setTimeout(callback, 0, 'error');
                 }
             }
         });
@@ -285,7 +285,7 @@ describe('GeoJSONSource#update', () => {
                         resolve();
                     }
                     if (callback) {
-                        // eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-argument
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         setTimeout(callback, 0);
                     }
                 }

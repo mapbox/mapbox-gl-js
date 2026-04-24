@@ -1,6 +1,7 @@
+/* global document */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-/* global document */
+// eslint-disable-next-line e18e/ban-dependencies
 import template from 'lodash/template.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call

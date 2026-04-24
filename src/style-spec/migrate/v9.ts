@@ -21,7 +21,7 @@ export default function (style) {
     // remove class-specific paint properties
     eachLayer(style, (layer) => {
         for (const k in layer) {
-            if (/paint\..*/.test(k)) {
+            if (k.includes('paint.')) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 delete layer[k];
             }

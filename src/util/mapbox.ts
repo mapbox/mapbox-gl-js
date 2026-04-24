@@ -29,6 +29,12 @@ import type {Map as MapboxMap} from "../ui/map";
 
 import '../types/import-meta.d';
 
+const IMAGE_EXTENSION_RE = /(\.(png|jpg)\d*)(?=$)/;
+const TILE_V4_PREFIX_RE = /^.+\/v4\//;
+const EXTENSION_RE = /\.[\w]+$/;
+const TILE_PATH_RE = /^(\/v4\/|\/(raster|rasterarrays)\/v1\/)/;
+const ACCESS_TOKEN_PARAM_RE = /^access_token=(.*)$/;
+
 export type ResourceType = keyof typeof ResourceTypeEnum;
 export type RequestTransformFunction = (url: string, resourceTypeEnum?: ResourceType) => RequestParameters;
 
@@ -147,14 +153,13 @@ export class RequestManager {
         if (tileURL && !isMapboxURL(tileURL)) return tileURL;
 
         const urlObject = parseUrl(tileURL);
-        const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
         const extension = webpSupported.supported ? '.webp' : '$1';
 
         // The v4 mapbox tile API supports 512x512 image tiles but they must be requested as '@2x' tiles.
         const use2xAs512 = rasterTileSize && urlObject.authority !== 'raster' && rasterTileSize === 512;
 
         const suffix = use2x || use2xAs512 ? '@2x' : '';
-        urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
+        urlObject.path = urlObject.path.replace(IMAGE_EXTENSION_RE, `${suffix}${extension}`);
 
         if (urlObject.authority === 'raster') {
             urlObject.path = `/${config.RASTER_URL_PREFIX}${urlObject.path}`;
@@ -163,8 +168,7 @@ export class RequestManager {
         } else if (urlObject.authority === '3dtiles') {
             urlObject.path = `/${config.TILES3D_URL_PREFIX}${urlObject.path}`;
         } else {
-            const tileURLAPIPrefixRe = /^.+\/v4\//;
-            urlObject.path = urlObject.path.replace(tileURLAPIPrefixRe, '/');
+            urlObject.path = urlObject.path.replace(TILE_V4_PREFIX_RE, '/');
             urlObject.path = `/${config.TILE_URL_VERSION}${urlObject.path}`;
         }
 
@@ -177,23 +181,20 @@ export class RequestManager {
     }
 
     canonicalizeTileURL(url: string, removeAccessToken: boolean): string {
-        // matches any file extension specified by a dot and one or more alphanumeric characters
-        const extensionRe = /\.[\w]+$/;
-
         const urlObject = parseUrl(url);
         // Make sure that we are dealing with a valid Mapbox tile URL.
         // Has to begin with /v4/, /raster/v1 or /rasterarrays/v1 with a valid filename + extension
-        if (!urlObject.path.match(/^(\/v4\/|\/(raster|rasterarrays)\/v1\/)/) || !urlObject.path.match(extensionRe)) {
+        if (!TILE_PATH_RE.test(urlObject.path) || !EXTENSION_RE.test(urlObject.path)) {
             // Not a proper Mapbox tile URL.
             return url;
         }
         // Reassemble the canonical URL from the parts we've parsed before.
         let result = "mapbox://";
-        if (urlObject.path.match(/^\/raster\/v1\//)) {
+        if (urlObject.path.startsWith('/raster/v1/')) {
             // If the tile url has /raster/v1/, make the final URL mapbox://raster/....
             const rasterPrefix = `/${config.RASTER_URL_PREFIX}/`;
             result += `raster/${urlObject.path.replace(rasterPrefix, '')}`;
-        } else if (urlObject.path.match(/^\/rasterarrays\/v1\//)) {
+        } else if (urlObject.path.startsWith('/rasterarrays/v1/')) {
             // If the tile url has /rasterarrays/v1/, make the final URL mapbox://rasterarrays/....
             const rasterPrefix = `/${config.RASTERARRAYS_URL_PREFIX}/`;
             result += `rasterarrays/${urlObject.path.replace(rasterPrefix, '')}`;
@@ -205,7 +206,7 @@ export class RequestManager {
         // Append the query string, minus the access token parameter.
         let params = urlObject.params;
         if (removeAccessToken) {
-            params = params.filter(p => !p.match(/^access_token=/));
+            params = params.filter(p => !p.match(ACCESS_TOKEN_PARAM_RE));
         }
         if (params.length) result += `?${params.join('&')}`;
         return result;
@@ -257,7 +258,7 @@ export class RequestManager {
 
 function getAccessToken(params: Array<string>): string | null {
     for (const param of params) {
-        const match = param.match(/^access_token=(.*)$/);
+        const match = param.match(ACCESS_TOKEN_PARAM_RE);
         if (match) {
             return match[1];
         }

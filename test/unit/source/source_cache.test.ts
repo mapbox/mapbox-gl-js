@@ -41,7 +41,7 @@ function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
                     expires: sourceOptions.expires
                 });
             }
-            // eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-argument
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             setTimeout(callback, 0);
         }
         loaded() {
@@ -1877,15 +1877,11 @@ describe('SourceCache loads tiles recursively', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             maxzoom: 14,
-            loadTile(tile, callback) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            loadTile(tile: Tile, callback: (error: unknown, data?: {status: number}) => void) {
                 if (tile.tileID.canonical.z > maxAvailableZoom) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                    setTimeout(() => callback({status: 404}), 0);
+                    setTimeout(callback, 0, {status: 404});
                 } else {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tile.state = 'loaded';
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     callback(null);
                 }
             }
@@ -1899,7 +1895,7 @@ describe('SourceCache loads tiles recursively', () => {
                 }
 
                 if (e.tile && e.sourceDataType !== 'error') loadedTiles++;
-                if (loadedTiles === 4) setTimeout(() => assert(resolve), 0);
+                if (loadedTiles === 4) setTimeout(assert, 0, resolve);
             });
 
             sourceCache.getSource().onAdd();
@@ -1946,9 +1942,8 @@ describe('SourceCache loads tiles recursively', () => {
         transform.zoom = 1;
 
         const {sourceCache, eventedParent} = createSourceCache({
-            loadTile(tile, callback) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                setTimeout(() => callback({status: 404}), 0);
+            loadTile(tile: Tile, callback: (error: unknown, data?: {status: number}) => void) {
+                setTimeout(callback, 0, {status: 404});
             }
         });
 

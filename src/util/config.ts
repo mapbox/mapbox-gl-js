@@ -1,5 +1,12 @@
 import {isWasmSimdSupported} from './is_wasm_simd_supported';
 
+const API_URL_REGEX = /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/|\?|$)/i;
+const API_TILEJSON_REGEX = /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/v[0-9]*\/.*\.json.*$)/i;
+const API_SPRITE_REGEX = /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/styles\/v[0-9]*\/)(.*\/sprite.*\..*$)/i;
+const API_FONTS_REGEX = /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/fonts\/v[0-9]*\/)(.*\.pbf.*$)/i;
+const API_STYLE_REGEX = /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/styles\/v[0-9]*\/)(.*$)/i;
+const API_CDN_URL_REGEX = /^((https?:)?\/\/)?api\.mapbox\.c(n|om)(\/mapbox-gl-js\/)(.*$)/i;
+
 export type Config = {
     API_URL: string;
     API_URL_REGEX: RegExp;
@@ -29,28 +36,12 @@ export type Config = {
 
 const config: Config = {
     API_URL: 'https://api.mapbox.com',
-    get API_URL_REGEX() {
-        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/|\?|$)/i;
-    },
-    get API_TILEJSON_REGEX() {
-        // https://docs.mapbox.com/api/maps/mapbox-tiling-service/#retrieve-tilejson-metadata
-        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/v[0-9]*\/.*\.json.*$)/i;
-    },
-    get API_SPRITE_REGEX() {
-        // https://docs.mapbox.com/api/maps/styles/#retrieve-a-sprite-image-or-json
-        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/styles\/v[0-9]*\/)(.*\/sprite.*\..*$)/i;
-    },
-    get API_FONTS_REGEX() {
-        // https://docs.mapbox.com/api/maps/fonts/#retrieve-font-glyph-ranges
-        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/fonts\/v[0-9]*\/)(.*\.pbf.*$)/i;
-    },
-    get API_STYLE_REGEX() {
-        // https://docs.mapbox.com/api/maps/styles/#retrieve-a-style
-        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/styles\/v[0-9]*\/)(.*$)/i;
-    },
-    get API_CDN_URL_REGEX() {
-        return /^((https?:)?\/\/)?api\.mapbox\.c(n|om)(\/mapbox-gl-js\/)(.*$)/i;
-    },
+    API_URL_REGEX,
+    API_TILEJSON_REGEX,
+    API_SPRITE_REGEX,
+    API_FONTS_REGEX,
+    API_STYLE_REGEX,
+    API_CDN_URL_REGEX,
     get EVENTS_URL() {
         if (!config.API_URL) { return null; }
         try {

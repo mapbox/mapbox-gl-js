@@ -26,9 +26,8 @@ test('loadGeometry warns and clamps when exceeding extent', () => {
 
     // Use a custom console.warn to count warnings
     const warn = console.warn;
-    console.warn = function (warning) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        if (warning.match(/Geometry exceeds allowed extent, reduce your vector tile buffer size/)) {
+    console.warn = function (warning: string) {
+        if (/Geometry exceeds allowed extent, reduce your vector tile buffer size/.test(warning)) {
             numWarnings++;
         }
     };

@@ -3,6 +3,8 @@ import type {Expression, SerializedExpression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext  from '../evaluation_context';
 
+const INVALID_VAR_CHAR_RE = /[^a-zA-Z0-9_]/;
+
 class Let implements Expression {
     type: Type;
     bindings: Array<[string, Expression]>;
@@ -39,7 +41,7 @@ class Let implements Expression {
                 return context.error(`Expected string, but found ${typeof name} instead.`, i);
             }
 
-            if (/[^a-zA-Z0-9_]/.test(name)) {
+            if (INVALID_VAR_CHAR_RE.test(name)) {
                 return context.error(`Variable names must contain only alphanumeric characters or '_'.`, i);
             }
 

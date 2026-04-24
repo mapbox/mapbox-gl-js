@@ -11,6 +11,10 @@ import type {Callback} from '../types/callback';
 const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
 
+const UUID_V4_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const IOS_DEVICE_RE = /\b(iPad|iPhone|iPod)\b/;
+const SAFARI_BUG_OS_RE = /CPU (OS|iPhone OS) (15_4|15_5) like Mac OS X/;
+
 /**
  * Converts an angle in degrees to radians
  * copy all properties from the source objects into the destination.
@@ -390,7 +394,7 @@ export function prevPowerOfTwo(value: number): number {
  * @private
  */
 export function validateUuid(str?: string | null): boolean {
-    return str ? /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str) : false;
+    return str ? UUID_V4_RE.test(str) : false;
 }
 
 /**
@@ -696,7 +700,7 @@ export function isSafari(scope: WindowOrWorkerGlobalScope): boolean {
     if (_isSafari == null) {
         const userAgent = (scope as Window).navigator ? (scope as Window).navigator.userAgent : null;
         _isSafari = !!(scope as {safari?: boolean}).safari ||
-        !!(userAgent && (/\b(iPad|iPhone|iPod)\b/.test(userAgent) || (!!userAgent.match('Safari') && !userAgent.match('Chrome'))));
+        !!(userAgent && (IOS_DEVICE_RE.test(userAgent) || (!!userAgent.match('Safari') && !userAgent.match('Chrome'))));
     }
     return _isSafari;
 }
@@ -706,7 +710,7 @@ export function isSafariWithAntialiasingBug(scope: WindowOrWorkerGlobalScope): b
     if (!isSafari(scope)) return false;
     // 15.4 is known to be buggy.
     // 15.5 may or may not include the fix. Mark it as buggy to be on the safe side.
-    return !!(userAgent && (userAgent.match('Version/15.4') || userAgent.match('Version/15.5') || userAgent.match(/CPU (OS|iPhone OS) (15_4|15_5) like Mac OS X/)));
+    return !!(userAgent && (userAgent.match('Version/15.4') || userAgent.match('Version/15.5') || userAgent.match(SAFARI_BUG_OS_RE)));
 }
 
 export function isFullscreen(): boolean {

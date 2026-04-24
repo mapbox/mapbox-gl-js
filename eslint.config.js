@@ -255,14 +255,9 @@ export default tseslint.config(
     // e18e rules temporarily disabled
     {
         rules: {
-            'e18e/ban-dependencies': 'off',
             'e18e/prefer-array-at': 'off',
             'e18e/prefer-array-some': 'off',
-            'e18e/prefer-date-now': 'off',
-            'e18e/prefer-object-has-own': 'off',
-            'e18e/prefer-regex-test': 'off',
-            'e18e/prefer-static-regex': 'off',
-            'e18e/prefer-timer-args': 'off',
+            'e18e/prefer-object-has-own': 'off'
         }
     },
 
@@ -367,6 +362,8 @@ export default tseslint.config(
             '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/no-unsafe-return': 'off',
             '@typescript-eslint/no-floating-promises': 'off',
+            '@typescript-eslint/no-implied-eval': 'off',
+            'e18e/prefer-static-regex': 'off',
         }
     },
 

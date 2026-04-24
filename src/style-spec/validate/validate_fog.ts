@@ -1,6 +1,7 @@
 import {default as ValidationError, ValidationWarning} from '../error/validation_error';
 import validate from './validate';
 import {getType, isObject} from '../util/get_type';
+import {TRANSITION_KEY_RE, USE_THEME_KEY_RE} from '../util/properties';
 
 import type {StyleReference} from '../reference/latest';
 import type {StyleSpecification} from '../types';
@@ -29,8 +30,8 @@ export default function validateFog(options: FogValidatorOptions): ValidationErr
 
     let errors: ValidationError[] = [];
     for (const key in fog) {
-        const transitionMatch = key.match(/^(.*)-transition$/);
-        const useThemeMatch = key.match(/^(.*)-use-theme$/);
+        const transitionMatch = key.match(TRANSITION_KEY_RE);
+        const useThemeMatch = key.match(USE_THEME_KEY_RE);
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (useThemeMatch && fogSpec[useThemeMatch[1]]) {

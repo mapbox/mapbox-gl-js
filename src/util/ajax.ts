@@ -105,10 +105,13 @@ export const getReferrer: () => string = isWorker() ?
     () => (self as typeof self & {worker: {referrer: string}}).worker.referrer :
     () => (location.protocol === 'blob:' ? parent : self).location.href;
 
+const PROTOCOL_RE = /^\w+:/;
+const NEWLINE_RE = /[\r\n]+/;
+
 // Determines whether a URL is a file:// URL. This is obviously the case if it begins
 // with file://. Relative URLs are also file:// URLs iff the original document was loaded
 // via a file:// URL.
-const isFileURL = (url: string) => /^file:/.test(url) || (/^file:/.test(getReferrer()) && !/^\w+:/.test(url));
+const isFileURL = (url: string) => url.startsWith('file:') || (getReferrer().startsWith('file:') && !PROTOCOL_RE.test(url));
 
 function makeFetchRequest(requestParameters: RequestParameters, callback: ResponseCallback<unknown>): Cancelable {
     const controller = new AbortController();
@@ -233,7 +236,7 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
             }
             const headersObject = new Headers();
             const headers = xhr.getAllResponseHeaders();
-            headers.trim().split(/[\r\n]+/).forEach(line => {
+            headers.trim().split(NEWLINE_RE).forEach(line => {
                 const parts = line.split(': ');
                 const header = parts.shift();
                 const value = parts.join(': ');

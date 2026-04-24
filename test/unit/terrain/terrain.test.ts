@@ -2024,7 +2024,7 @@ test('terrain recursively loads parent tiles on 404', async () => {
     cache.used = cache._sourceLoaded = true;
     cache._loadTile = (tile, callback) => {
         if (tile.tileID.canonical.z > 10) {
-            setTimeout(() => callback({status: 404}), 0);
+            setTimeout(callback, 0, {status: 404});
         } else {
             tile.state = 'loaded';
             callback(null);

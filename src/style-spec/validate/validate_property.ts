@@ -3,7 +3,7 @@ import {default as ValidationError, ValidationWarning} from '../error/validation
 import {isString} from '../util/get_type';
 import {isFunction} from '../function/index';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
-import {supportsLightExpression, supportsPropertyExpression, supportsZoomExpression} from '../util/properties';
+import {supportsLightExpression, supportsPropertyExpression, supportsZoomExpression, TRANSITION_KEY_RE, USE_THEME_KEY_RE} from '../util/properties';
 import {isGlobalPropertyConstant, isFeatureConstant, isStateConstant} from '../expression/is_constant';
 import {createPropertyExpression, isExpression} from '../expression/index';
 
@@ -11,6 +11,8 @@ import type {Expression} from '../expression/expression';
 import type {StyleReference} from '../reference/latest';
 import type {StylePropertySpecification} from '../style-spec';
 import type {StyleSpecification, LayerSpecification} from '../types';
+
+const TOKEN_PATTERN_RE = /^{([^}]+)}$/;
 
 export type PropertyValidatorOptions = {
     key: string;
@@ -34,7 +36,7 @@ export default function validateProperty(options: PropertyValidatorOptions, prop
 
     if (!layerSpec) return [];
 
-    const useThemeMatch = propertyKey.match(/^(.*)-use-theme$/);
+    const useThemeMatch = propertyKey.match(USE_THEME_KEY_RE);
     if (useThemeMatch && layerSpec[useThemeMatch[1]]) {
         if (isExpression(deepUnbundle(value))) {
             const errors: ValidationError[] = [];
@@ -66,7 +68,7 @@ export default function validateProperty(options: PropertyValidatorOptions, prop
         });
     }
 
-    const transitionMatch = propertyKey.match(/^(.*)-transition$/);
+    const transitionMatch = propertyKey.match(TRANSITION_KEY_RE);
     if (propertyType === 'paint' && transitionMatch && layerSpec[transitionMatch[1]] && layerSpec[transitionMatch[1]].transition) {
         return validate({
             key,
@@ -84,7 +86,7 @@ export default function validateProperty(options: PropertyValidatorOptions, prop
     }
 
     let tokenMatch: RegExpExecArray | undefined;
-    if (isString(value) && supportsPropertyExpression(valueSpec) && !valueSpec.tokens && (tokenMatch = /^{([^}]+)}$/.exec(value))) {
+    if (isString(value) && supportsPropertyExpression(valueSpec) && !valueSpec.tokens && (tokenMatch = TOKEN_PATTERN_RE.exec(value))) {
         const example = `\`{ "type": "identity", "property": ${tokenMatch ? JSON.stringify(tokenMatch[1]) : '"_"'} }\``;
         return [new ValidationError(
             key, value,
