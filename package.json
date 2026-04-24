@@ -213,7 +213,15 @@
     {
       "limit": "500 kb",
       "gzip": true,
-      "name": "Core Module",
+      "name": "ESM total",
+      "path": [
+        "dist/esm/*.js"
+      ]
+    },
+    {
+      "limit": "500 kb",
+      "gzip": true,
+      "name": "ESM Core",
       "path": [
         "dist/esm/core.js",
         "dist/esm/worker.js",
@@ -224,7 +232,7 @@
     {
       "limit": "100 kb",
       "gzip": true,
-      "name": "HD Module",
+      "name": "ESM HD Module",
       "path": "dist/esm/hd.*.js"
     }
   ]
