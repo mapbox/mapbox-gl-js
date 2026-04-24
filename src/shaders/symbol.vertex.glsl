@@ -137,7 +137,7 @@ struct SymbolPaintProperties {
 struct PropertyType {
     /// Whether the property is data-driven and has value in data-driven block or constant uniform.
     bool isDataDriven;
-     /// Whether the property is zoom-dependent and has two values that need to be interpolated between zooms.
+    /// Whether the property is zoom-dependent and has two values that need to be interpolated between zooms.
     bool isZoomDependent;
     /// Local offset within the data-driven block (in dwords).
     ///
@@ -418,7 +418,7 @@ void main() {
     float size;
 
     // When rendering appearances, we use a_size_max to store the size
-    if (a_apperance == USING_APPEARANCE) {
+    if (a_appearance == USING_APPEARANCE) {
         size = a_size_max / 128.0;
     } else if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
         size = mix(a_size_min, a_size_max, u_size_t) / 128.0;
@@ -538,8 +538,8 @@ void main() {
 
 #ifdef DEPTH_OCCLUSION
     float depth_occlusion = occlusionFadeMultiSample(projected_point);
-    float depth_occlusion_multplier = mix(occlusion_opacity, 1.0, depth_occlusion);
-    out_fade_opacity *= depth_occlusion_multplier;
+    float depth_occlusion_multiplier = mix(occlusion_opacity, 1.0, depth_occlusion);
+    out_fade_opacity *= depth_occlusion_multiplier;
 #endif
 
 #ifdef OCCLUSION_QUERIES
