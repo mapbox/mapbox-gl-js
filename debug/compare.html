@@ -6,9 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
+        html, body {
+            height: 100%;
+        }
+
         body {
             overflow: hidden;
             margin: 0px !important;
+        }
+
+        #comparison-container {
+            height: 100%;
         }
 
         body * {
@@ -19,89 +27,99 @@
             user-select: none;
         }
 
-        .map {
+        #comparison-container > .map {
             position: absolute;
-            top: 0;
-            bottom: 0;
             width: 100%;
+            height: 100%;
         }
 
         .version {
-            font-size: 24px;
-            color: red;
-            font-weight: bold;
+            position: fixed;
+            top: 10px;
             z-index: 1000;
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 4px 8px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+        }
+
+        .version a {
+            color: white;
         }
 
         #latest-version {
-            position: absolute;
+            left: 10px;
+        }
+
+        #current-version {
             right: 10px;
         }
 
-        #this-version {
-            position: absolute;
-            left: 10px;
-        }
     </style>
-    <link
-        rel="stylesheet"
-        href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-compare/v0.4.0/mapbox-gl-compare.css"
-        type="text/css"
-    />
+    <link rel="stylesheet" type="text/css" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-compare/v0.4.0/mapbox-gl-compare.css"/>
 </head>
 
 <body>
     <div id="comparison-container">
-        <div id="this" class="map">
-            <div id="this-version" class="version">This PR</div>
-        </div>
-        <div id="latest" class="map">
-            <div id="latest-version" class="version"></div>
-        </div>
+        <div id="latest" class="map"></div>
+        <div id="current" class="map"></div>
     </div>
+    <div id="latest-version" class="version"></div>
+    <div id="current-version" class="version"></div>
 
-    <script>
-        function getURLParameter(name) {
-            const url = new URL(window.location.href);
-            return url.searchParams.get(name);
+    <script type="module">
+        import Compare from 'https://esm.sh/mapbox-gl-compare';
+        import currentMapbox from '../dist/esm-dev/mapbox-gl.js';
+        import {getAccessToken} from './access_token_generated.js';
+
+        const accessToken = getAccessToken();
+        currentMapbox.accessToken = accessToken;
+
+        let version = 'v3.22.0'; // fallback
+        try {
+            const res = await fetch('https://api.mapbox.com/mapbox-gl-js/versions.json');
+            const data = await res.json();
+            for (const [key, info] of Object.entries(data)) {
+                if (key.startsWith('v') && info.released) {
+                    version = key;
+                    break;
+                }
+            }
+        } catch (e) {
+            console.error(`Failed to fetch versions.json, using ${version} as fallback`, e);
         }
 
-        var accessToken = getURLParameter('access_token');
-        if (!accessToken) {
-            // This default access token is scoped to localhost and internal mapbox pages
-            accessToken = 'pk.eyJ1IjoiZ2wtanMtdGVhbSIsImEiOiJjbTV1d3l0d3AwMThnMmpzZ2M5OTNyeDE1In0.2nygBIo7PXbkFCCt6LEBgw'
+        const latestMapbox = await import(`https://api.mapbox.com/mapbox-gl-js/${version}/esm/mapbox-gl.js`).then(mod => mod.default);
+        latestMapbox.accessToken = accessToken;
+
+        const params = new URLSearchParams(location.search);
+        const style = params.get('style');
+
+        const mapOptions = {center: [0, 0], zoom: 1, hash: true};
+        if (style) mapOptions.style = style;
+
+        const currentMap = new currentMapbox.Map({...mapOptions, container: 'current'});
+        const latestMap = new latestMapbox.Map({...mapOptions, container: 'latest'});
+        new Compare(latestMap, currentMap, '#comparison-container');
+
+        document.getElementById('latest-version').textContent = `Latest ${version}`;
+
+        const prUrl = params.get('pr');
+        if (prUrl) {
+            const prMatch = prUrl.match(/\/pull\/(\d+)/);
+            const a = document.createElement('a');
+            a.textContent = prMatch ? `PR #${prMatch[1]}` : 'PR';
+            a.target = '_blank';
+            try {
+                const parsed = new URL(prUrl);
+                if (parsed.protocol === 'https:' || parsed.protocol === 'http:') a.href = parsed.href;
+            } catch (e) { /* invalid URL, link will have no href */ }
+            document.getElementById('current-version').appendChild(a);
+        } else {
+            document.getElementById('current-version').textContent = 'Local build';
         }
-    </script>
-    <script src='../dist/mapbox-gl-dev.js'></script>
-    <script>
-        window.thisMapbox = mapboxgl;
-        window.thisMapbox.accessToken = accessToken;
-    </script>
-    <script src='https://cdn.jsdelivr.net/npm/mapbox-gl@latest/dist/mapbox-gl.min.js'></script>
-    <script>
-        window.latestMapbox = mapboxgl;
-        window.latestMapbox.accessToken = accessToken;
-    </script>
-
-    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-compare/v0.4.0/mapbox-gl-compare.js"></script>
-    <script>
-        const center = [1.845089, 42.100143];
-        const zoom = 18;
-        const thisMap = new window.thisMapbox.Map({
-            container: 'this',
-            center,
-            zoom,
-            hash: true
-        });
-
-        const latestMap = new window.latestMapbox.Map({
-            container: 'latest',
-            center,
-            zoom,
-            hash: true
-        });
-        const map = new window.latestMapbox.Compare(thisMap, latestMap, '#comparison-container');
-        document.getElementById('latest-version').innerHTML = `${window.latestMapbox.version}`;
     </script>
 
 </body>
