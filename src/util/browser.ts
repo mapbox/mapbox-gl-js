@@ -17,6 +17,17 @@ let hasCanvasFingerprintNoise: boolean | undefined;
  * @private
  */
 const exported = {
+    requestIdleCallback: (callback: (deadline: IdleDeadline) => void): number | undefined => {
+        if (typeof requestIdleCallback !== 'undefined') {
+            return requestIdleCallback(callback);
+        } else {
+            // Fallback for environments without requestIdleCallback: emulate a fresh idle
+            // window (50ms is the spec maximum) via setTimeout so callers that rely on
+            // deadline.timeRemaining() still make progress.
+            setTimeout(() => callback({didTimeout: false, timeRemaining: () => 50}), 0);
+        }
+    },
+
     /**
      * Returns either performance.now() or a value set by setNow.
      * @returns {number} Time value in milliseconds.

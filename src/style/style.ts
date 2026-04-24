@@ -61,7 +61,7 @@ import {validateCustomStyleLayer} from './style_layer/custom_style_layer';
 import {isFQID, makeFQID, getNameFromFQID, getInnerScopeFromFQID, getOuterScopeFromFQID} from '../util/fqid';
 import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_renderer';
 import ModelManager from '../../3d-style/render/model_manager';
-import {DEFAULT_MAX_ZOOM, DEFAULT_MIN_ZOOM} from '../geo/transform';
+import {ProgramPrecompiler} from '../render/program_precompiler';
 import {RGBAImage} from '../util/image';
 import {evaluateColorThemeProperties} from '../util/lut';
 import EvaluationParameters from './evaluation_parameters';
@@ -351,8 +351,7 @@ class Style extends Evented<MapEvents> {
         [_: string]: SourceCache;
     };
     _loaded: boolean;
-    _shouldPrecompile: boolean;
-    _precompileDone: boolean;
+    _programPrecompiler: ProgramPrecompiler | null;
     _rtlTextPluginCallback: (state: {pluginStatus: string; pluginURL: string | null | undefined}) => void;
     _changes: StyleChanges;
     _optionsChanged: boolean;
@@ -482,8 +481,9 @@ class Style extends Evented<MapEvents> {
         this._symbolSourceCaches = {};
         this._fillExtrusionSourceCaches = {};
         this._loaded = false;
-        this._precompileDone = false;
-        this._shouldPrecompile = false;
+        this._programPrecompiler = this.map._precompilePrograms && this.isRootStyle() ?
+            new ProgramPrecompiler() :
+            null;
         this._availableImages = [];
         this._availableModels = {};
         this._order = [];
@@ -806,7 +806,9 @@ class Style extends Evented<MapEvents> {
             options: this.options
         });
 
-        this._shouldPrecompile = this.map._precompilePrograms && this.isRootStyle();
+        if (this._programPrecompiler) {
+            this._programPrecompiler.reset();
+        }
     }
 
     _isInternalStyle(json: StyleSpecification): boolean {
@@ -1751,38 +1753,15 @@ class Style extends Evented<MapEvents> {
         return source;
     }
 
-    precompilePrograms(layer: TypedStyleLayer, parameters: EvaluationParameters) {
-        const painter = this.map.painter;
+    handleIdle() {
+        if (!this._programPrecompiler || !this.map.painter) return;
+        this._programPrecompiler.processQueue(this.map.painter, this);
+    }
 
-        if (!painter) {
-            return;
+    handleContextLost() {
+        if (this._programPrecompiler) {
+            this._programPrecompiler.reset();
         }
-
-        for (let i = (layer.minzoom || DEFAULT_MIN_ZOOM); i < (layer.maxzoom || DEFAULT_MAX_ZOOM); i++) {
-            const programIds = layer.getProgramIds();
-            if (!programIds) continue;
-
-            for (const programId of programIds) {
-                const params = layer.getDefaultProgramParams(programId, parameters.zoom, this._styleColorTheme.lut);
-                if (params) {
-                    painter.style = this;
-                    if (this.fog) {
-                        painter._fogVisible = true;
-                        params.overrideFog = true;
-                        painter.getOrCreateProgram(programId, params);
-                    }
-                    painter._fogVisible = false;
-                    params.overrideFog = false;
-                    painter.getOrCreateProgram(programId, params);
-
-                    if (this.stylesheet.terrain || (this.stylesheet.projection && this.stylesheet.projection.name === 'globe')) {
-                        params.overrideRtt = true;
-                        painter.getOrCreateProgram(programId, params);
-                    }
-                }
-            }
-        }
-
     }
 
     /**
@@ -1899,19 +1878,11 @@ class Style extends Evented<MapEvents> {
                 }
             }
 
-            if (!this._precompileDone && this._shouldPrecompile) {
-                if ('requestIdleCallback' in window) {
-                    requestIdleCallback(() => {
-                        this.precompilePrograms(layer, parameters);
-                    });
-                } else {
-                    this.precompilePrograms(layer, parameters);
-                }
-            }
         }
 
-        if (this._shouldPrecompile) {
-            this._precompileDone = true;
+        if (this._programPrecompiler && this._programPrecompiler.needsBuild()) {
+            const layers = this._mergedOrder.map(id => this._mergedLayers[id]);
+            this._programPrecompiler.buildQueue(layers, parameters, this);
         }
 
         // Apply accumulated source-max-zoom overrides
@@ -4105,6 +4076,10 @@ class Style extends Evented<MapEvents> {
     }
 
     _remove() {
+        if (this._programPrecompiler) {
+            this._programPrecompiler.reset();
+            this._programPrecompiler = null;
+        }
         if (this._request) {
             this._request.cancel();
             this._request = null;

@@ -4345,6 +4345,9 @@ export class Map extends Camera {
             this._frame.cancel();
             this._frame = null;
         }
+        if (this.style) {
+            this.style.handleContextLost();
+        }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.fire(new Event('webglcontextlost', {originalEvent: event}));
     }
@@ -4699,6 +4702,10 @@ export class Map extends Camera {
                         this.fire(new Event('speedindexcompleted', {speedIndex: speedIndexNumber}));
                         this.speedIndexTiming = false;
                     }
+                }
+
+                if (willIdle && this.style) {
+                    this.style.handleIdle();
                 }
             }
         }
