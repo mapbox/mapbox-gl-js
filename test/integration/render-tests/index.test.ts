@@ -52,45 +52,35 @@ type ImageDataWithCanvas = {
     canvas: HTMLCanvasElement;
 }
 
-async function base64PngToImageDataWithCanvas(base64Png: string): Promise<ImageDataWithCanvas> {
+function loadPngFromUrl(url: string): Promise<ImageDataWithCanvas> {
     return new Promise((resolve, reject) => {
         const image = new Image();
         image.onload = () => {
             const canvas = document.createElement('canvas');
             canvas.width = image.width;
             canvas.height = image.height;
-
             const ctx = canvas.getContext('2d')!;
             ctx.drawImage(image, 0, 0);
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            resolve({imageData, canvas});
+            resolve({imageData: ctx.getImageData(0, 0, canvas.width, canvas.height), canvas});
         };
         image.onerror = reject;
-
-        // Convert base64 to data URL if not already
-        const dataURL = base64Png.startsWith('data:') ? base64Png : `data:image/png;base64,${base64Png}`;
-        image.src = dataURL;
+        image.src = url;
     });
 }
 
 async function getExpectedImages(currentTestName: string, renderTest: Record<string, unknown>): Promise<ImageDataWithCanvas[]> {
-    const expectedPaths: string[] = [];
-
-    // Use test's path property instead of global suiteDir
-    const testPath = renderTest.path;
-
+    const urls: string[] = [];
     for (const prop in renderTest) {
         if (prop.indexOf('expected') > -1) {
-            expectedPaths.push(`${testPath}/${prop}.png`);
+            // Encode each path segment to handle special characters (e.g. '#' in regression test names).
+            const url = `/render-tests/${currentTestName}/${prop}.png`
+                .split('/')
+                .map(encodeURIComponent)
+                .join('/');
+            urls.push(url);
         }
     }
-
-    return Promise.all(
-        expectedPaths.map(async (path) => {
-            const base64 = await server.commands.readFile(path, {encoding: 'base64'});
-            return base64PngToImageDataWithCanvas(base64);
-        })
-    );
+    return Promise.all(urls.map(loadPngFromUrl));
 }
 
 type TestMetadata = {
@@ -113,8 +103,10 @@ const getTest = (renderTestName: string) => async () => {
         const style = parseStyle(renderTest);
         const options = parseOptions(renderTest, style);
 
-        const expectedImages = await getExpectedImages(renderTestName, renderTest);
-        const {actualImageData, w, h} = await getActualImage(style, options, renderTestName);
+        const [expectedImages, {actualImageData, w, h}] = await Promise.all([
+            getExpectedImages(renderTestName, renderTest),
+            getActualImage(style, options, renderTestName),
+        ]);
 
         const actual = getActualImageDataURL(actualImageData, mapRef.current, {w, h}, options);
 
@@ -206,7 +198,6 @@ afterEach(() => {
         delete (mapRef.current as any).painter.context.gl;
         mapRef.current = null;
     }
-    mapboxgl.clearStorage();
 
     while (fakeCanvasContainer.firstChild) {
         fakeCanvasContainer.removeChild(fakeCanvasContainer.firstChild);

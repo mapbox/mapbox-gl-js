@@ -76,8 +76,8 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: npx playwright install chrome --with-deps
-    - run: xvfb-run -a npm run test-unit
+    - run: npx playwright install chromium --with-deps --shell-only
+    - run: npm run test-unit
 
   report:
     runs-on: ubuntu-latest

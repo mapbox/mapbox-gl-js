@@ -3,11 +3,20 @@ import {existsSync} from 'node:fs';
 import {writeFile} from 'node:fs/promises';
 import serveStatic from 'serve-static';
 import {tilesets, staticFolders} from './test/integration/lib/middlewares.js';
+
 import {getAllStyleFixturePaths, generateFixtureJson} from './test/integration/lib/generate-fixture-json.js';
 import {getHTML, getDiagnosticsHTML} from './test/util/html_generator';
 import type {DiagnosticInfo} from './test/util/html_generator';
 
 import type {Plugin} from 'vite';
+
+// On CI, test assets are immutable for the duration of the run. Telling the
+// browser to cache them aggressively eliminates repeated conditional-request
+// round-trips for tiles, glyphs, sprites, and models shared across tests.
+const isCI = process.env.CI === 'true';
+const staticCacheOptions = isCI
+    ? {maxAge: '1h', immutable: true, etag: false, lastModified: false}
+    : {};
 
 function getShardedTests(suiteDir: string): string[] {
     const testFiles = getAllStyleFixturePaths(suiteDir);
@@ -91,10 +100,10 @@ export function setupIntegrationTestsMiddlewares({reportPath, suiteName}: {
             let browserDiagnostics: Partial<DiagnosticInfo> = {};
             staticFolders.forEach((folder) => {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
-                server.middlewares.use(`/${folder}`, serveStatic(resolve(__dirname, `test/integration/${folder}`)));
+                server.middlewares.use(`/${folder}`, serveStatic(resolve(__dirname, `test/integration/${folder}`), staticCacheOptions));
                 const internalPath = resolve(__dirname, `internal/test/integration/${folder}`);
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
-                if (existsSync(internalPath)) server.middlewares.use(`/${folder}`, serveStatic(internalPath));
+                if (existsSync(internalPath)) server.middlewares.use(`/${folder}`, serveStatic(internalPath, staticCacheOptions));
             });
             server.middlewares.use('/report-html/send-fragment', (req, res) => {
                 let body = '';
@@ -158,9 +167,9 @@ export function setupIntegrationTestsMiddlewares({reportPath, suiteName}: {
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             server.middlewares.use('/tilesets', tilesets);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
-            server.middlewares.use('/mapbox-gl-styles', serveStatic(resolve(__dirname, 'node_modules/mapbox-gl-styles')));
+            server.middlewares.use('/mapbox-gl-styles', serveStatic(resolve(__dirname, 'node_modules/mapbox-gl-styles'), staticCacheOptions));
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
-            server.middlewares.use('/mvt-fixtures', serveStatic(resolve(__dirname, 'node_modules/@mapbox/mvt-fixtures')));
+            server.middlewares.use('/mvt-fixtures', serveStatic(resolve(__dirname, 'node_modules/@mapbox/mvt-fixtures'), staticCacheOptions));
         }
     };
 }

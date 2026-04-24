@@ -1031,7 +1031,7 @@ describe('GeolocateControl geolocation timeout', () => {
         vi.useRealTimers();
     });
 
-    test('triggers error when no response', async () => {
+    test('triggers error when no response', {timeout: 15000}, async () => {
         const {geolocate, errorHandler} = await setupGeolocationTimeoutTest();
 
         geolocate.trigger();

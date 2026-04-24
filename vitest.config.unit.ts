@@ -32,7 +32,7 @@ function styleSpecFixtures() {
 export default mergeConfig(baseConfig, defineConfig({
     test: {
         browser: {
-            provider: playwright({launchOptions: {channel: 'chrome'}}),
+            provider: playwright(isCI ? {} : {launchOptions: {channel: 'chrome'}}),
             instances: [
                 {browser: 'chromium'},
             ],

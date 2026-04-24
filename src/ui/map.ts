@@ -4945,6 +4945,7 @@ export class Map extends Camera {
      * map.remove();
      */
     remove() {
+        if (this._removed) return;
         if (this._hash) this._hash.remove();
 
         for (const control of this._controls) control.onRemove(this);
