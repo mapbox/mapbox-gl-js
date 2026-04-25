@@ -2898,6 +2898,12 @@
         },
         "line-center": {
           "doc": "The label is placed at the center of the line of the geometry. Can only be used on `LineString` and `Polygon` geometries. Note that a single feature in a vector tile may contain multiple line geometries."
+        },
+        "line-start": {
+          "doc": "The label is placed at the start of the line of the geometry. Can only be used on `LineString` and `Polygon` geometries. Works with line geometry that may cross tile boundaries."
+        },
+        "line-end": {
+          "doc": "The label is placed at the end of the line of the geometry. Can only be used on `LineString` and `Polygon` geometries. Works with line geometry that may cross tile boundaries."
         }
       },
       "default": "point",
