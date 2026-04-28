@@ -187,6 +187,10 @@ export const operationHandlers = {
         map.setFreeCameraOptions(options);
         doneCb();
     },
+    setFov(map, params, doneCb) {
+        map.transform.fov = params[0];
+        waitForRender(map, () => true, doneCb);
+    },
     updateImage(map, params, doneCb) {
         params[1] = params[1].replace('./', '/test/integration/');
         map.loadImage(params[1], (error, image) => {

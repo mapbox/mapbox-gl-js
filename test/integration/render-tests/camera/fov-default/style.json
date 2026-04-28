@@ -1,0 +1,68 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256
+    }
+  },
+  "zoom": 15,
+  "pitch": 45,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {"height": 200},
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [-0.001, -0.003], [-0.001, -0.001], [0.001, -0.001], [0.001, -0.003], [-0.001, -0.003]
+              ]]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {"height": 200},
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [-0.001, 0.001], [-0.001, 0.003], [0.001, 0.003], [0.001, 0.001], [-0.001, 0.001]
+              ]]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {"height": 200},
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [-0.001, 0.005], [-0.001, 0.007], [0.001, 0.007], [0.001, 0.005], [-0.001, 0.005]
+              ]]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "#f8f4f0"}
+    },
+    {
+      "id": "buildings",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-color": "#aaa",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-base": 0
+      }
+    }
+  ]
+}
