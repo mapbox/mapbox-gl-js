@@ -82,7 +82,7 @@ const config: Config = {
     GLYPHS_URL: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
     TILES3D_URL_PREFIX: '3dtiles/v1',
     TILE_PROVIDER_URLS: Object.assign(Object.create(null) as Record<string, string>, {
-        pmtiles: `/mapbox-gl-js/mapbox-gl-pmtiles-provider-v0.0.1.js`,
+        pmtiles: `/mapbox-gl-js/plugins/mapbox-gl-pmtiles-provider/v0.0.2/mapbox-gl-pmtiles-provider.js`,
     }),
 };
 
