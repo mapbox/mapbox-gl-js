@@ -1,10 +1,4 @@
-## 3.23.0-rc.2
-
-### Bug fixes 🐞
-
-- Fix hillshade rendering issue when using Safari in private browsing mode.
-
-## 3.23.0-rc.1
+## 3.23.0
 
 ### Features and improvements ✨
 
@@ -21,6 +15,7 @@
 - Fix a render issue where black boxes could appear instead of symbols briefly in some environments.
 - Fix `scale-factor` being applied twice to icons with feature-dependent `icon-size`.
 - Fix redundant WASM requests on map load when using the Standard style.
+- Fix hillshade rendering issue when using Safari in private browsing mode.
 
 ## 3.22.0
 
