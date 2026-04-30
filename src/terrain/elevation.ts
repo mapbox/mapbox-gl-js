@@ -164,7 +164,7 @@ export class Elevation {
         if (!helper) { return false; }
 
         points.forEach(p => {
-            p[2] = this.exaggeration() * helper.getElevationAt(p[0], p[1], interpolated);
+            p[2] = this.exaggeration() * helper.getElevationAt(p[0], p[1], interpolated, true);
         });
         return true;
     }
