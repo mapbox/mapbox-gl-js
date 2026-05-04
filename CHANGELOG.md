@@ -1,3 +1,9 @@
+## 3.23.1
+
+### Bug fixes 🐞
+
+- Fix a rendering error occurring with `fill-extrusion` layers when terrain is enabled in specific edge cases.
+
 ## 3.23.0
 
 ### Features and improvements ✨
