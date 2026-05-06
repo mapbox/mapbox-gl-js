@@ -1,3 +1,32 @@
+## 3.24.0-rc.1
+
+## Features and improvements ✨
+
+- Introduce Level of Detail (LOD) support for landmark models, enabling automatic switching between model versions based on camera distance.
+- Support additive blend mode with clamped density by setting the `line-blend-additive-clamp` property.
+- Improve rendering performance by reducing per-frame matrix allocations.
+- Improve rendering performance via parallel shader compilation on supported devices.
+- Improve rendering performance by advancing shader precompilation.
+- Improve shadow rendering performance.
+- Improve vector icon loading performance.
+- Improve initial load by skipping redundant config-related style layers updates in Web Workers.
+- Improve initial load by rescheduling shader precompilation to occur during browser idle time after the map's `idle` event.
+- Improve model processing performance.
+- Improve performance and memory footprint by streamlining communication between the main thread and Web Workers.
+- Reduce first-interaction jank by optimizing shader compilation pipeline behavior.
+- Optimize expression parsing performance.
+- Improve an error messaging for the `line-trim-offset` property without `lineMetrics`.
+
+## Bug fixes 🐞
+- Fix LUT to properly work with premultiplied color.
+- Fix a potential memory leak and crash occurring when a map was destroyed.
+
+## 3.23.1
+
+### Bug fixes 🐞
+
+- Fix a rendering error occurring with `fill-extrusion` layers when terrain is enabled in specific edge cases.
+
 ## 3.23.0
 
 ### Features and improvements ✨
