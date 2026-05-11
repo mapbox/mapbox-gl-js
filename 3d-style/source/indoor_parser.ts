@@ -1,11 +1,11 @@
-import {warnOnce} from "../util/util";
-import {getLngLatPoint} from "../style-spec/expression/definitions/distance";
+import {warnOnce} from "../../src/util/util";
+import {getLngLatPoint} from "../../src/style-spec/expression/definitions/distance";
 import {IndoorActiveFloorStrategy} from "../style/indoor_active_floor_strategy";
 
 import type {VectorTile, VectorTileFeature} from "@mapbox/vector-tile";
-import type {IndoorBuilding, IndoorData, IndoorTileOptions} from "../style/indoor_data";
-import type Actor from "../util/actor";
-import type {CanonicalTileID} from "../source/tile_id";
+import type {IndoorBuilding, IndoorData, IndoorTileOptions} from "../../src/style/indoor_data";
+import type Actor from "../../src/util/actor";
+import type {CanonicalTileID} from "../../src/source/tile_id";
 import type {Polygon, MultiPolygon} from "geojson";
 
 export function parseActiveFloors(data: VectorTile, indoorTileOptions: IndoorTileOptions, actor: Actor, tileID: CanonicalTileID): Set<string> | undefined {

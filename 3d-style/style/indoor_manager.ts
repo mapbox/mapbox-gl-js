@@ -1,11 +1,11 @@
 import Point from '@mapbox/point-geometry';
-import {bindAll} from '../util/util';
-import {Event, Evented} from '../util/evented';
+import {bindAll} from '../../src/util/util';
+import {Event, Evented} from '../../src/util/evented';
 import {ViewportIntersectionStrategy} from './indoor_building_detection';
 import {IndoorActiveFloorStrategy} from './indoor_active_floor_strategy';
 
-import type {IndoorBuilding, IndoorData, IndoorEvents, IndoorState, IndoorTileOptions, IndoorFloor} from './indoor_data';
-import type Style from './style';
+import type {IndoorBuilding, IndoorData, IndoorEvents, IndoorState, IndoorTileOptions, IndoorFloor} from '../../src/style/indoor_data';
+import type Style from '../../src/style/style';
 
 export function setsEqual(a: Set<string> | null, b: Set<string> | null): boolean {
     if (a === b) return true;
@@ -27,7 +27,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
     _buildingDetectionStrategy: ViewportIntersectionStrategy;
     _initialLoadDone: boolean;
 
-    constructor(style: Style) {
+    constructor(style: Style, styleLoaded: boolean = false) {
         super();
         this._style = style;
         this._buildings = {};
@@ -51,7 +51,16 @@ export default class IndoorManager extends Evented<IndoorEvents> {
                 this._style.map.on('idle', this._updateUI);
             }
         };
-        this._style.on('style.load', setupObservers);
+        // If the style has already finished loading (IndoorManager was created lazily
+        // after the style.load event fired), register observers and mark load as done
+        // immediately — the style.load listener would never fire in this case.
+
+        if (styleLoaded) {
+            this._initialLoadDone = true;
+            setupObservers();
+        } else {
+            this._style.on('style.load', setupObservers);
+        }
     }
 
     destroy() {

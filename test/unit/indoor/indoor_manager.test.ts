@@ -1,5 +1,5 @@
 import {describe, test, expect, vi} from '../../util/vitest';
-import IndoorManager from '../../../src/style/indoor_manager';
+import IndoorManager from '../../../3d-style/style/indoor_manager';
 
 import type {IndoorFloor} from '../../../src/style/indoor_data';
 import type Style from '../../../src/style/style';

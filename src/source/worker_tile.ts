@@ -21,7 +21,6 @@ import {type SpritePositions} from '../util/image';
 import {PROPERTY_ELEVATION_ID} from '../../3d-style/elevation/elevation_constants';
 import * as HD from '../../modules/hd_worker';
 import {ImageId} from '../style-spec/expression/types/image_id';
-import {parseActiveFloors} from '../render/indoor_parser';
 import {RenderSourceType} from './tile';
 
 import type {VectorTile} from '@mapbox/vector-tile';
@@ -152,9 +151,9 @@ class WorkerTile {
         // rely on HD would render without elevation. Non-HD tiles bypass the gate
         // entirely and stay fully synchronous.
         const layerFamilies = layerIndex.familiesBySource[this.source];
-        if (layerFamilies && !HD.loaded) {
-            let needsHD = false;
-            for (const sourceLayerId in layerFamilies) {
+        if ((layerFamilies || this.indoor) && !HD.loaded) {
+            let needsHD = !!this.indoor; // Indoor parsing requires HD.parseActiveFloors
+            for (const sourceLayerId in layerFamilies || {}) {
                 for (const family of layerFamilies[sourceLayerId]) {
                     const layer = family[0];
                     // Layers that won't actually parse for this tile shouldn't force an
@@ -211,8 +210,8 @@ class WorkerTile {
             activeFloors: undefined
         };
 
-        if (this.indoor) {
-            options.activeFloors = parseActiveFloors(data, this.indoor, actor, this.canonical);
+        if (this.indoor && HD.parseActiveFloors) {
+            options.activeFloors = HD.parseActiveFloors(data, this.indoor, actor, this.canonical);
         }
 
         const asyncBucketLoads: Promise<unknown>[] = [];

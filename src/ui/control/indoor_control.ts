@@ -32,6 +32,7 @@ class IndoorControl implements IControl {
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-group');
         this._container.style.display = 'none';
         this._map.on('styledata', this._onStyleData);
+        this._map.on('idle', this._onStyleData);
         this._updateConnection();
         return this._container;
     }
@@ -44,6 +45,8 @@ class IndoorControl implements IControl {
             manager.off('selector-update', this._onIndoorUpdate);
             manager.on('selector-update', this._onIndoorUpdate);
             this._onIndoorUpdate(manager.getControlState());
+            // Connection established — stop polling on idle, selector-update handles future updates.
+            this._map.off('idle', this._onStyleData);
         }
     }
     _createButton(className: string, fn: (e: Event) => unknown): HTMLButtonElement {
@@ -62,7 +65,8 @@ class IndoorControl implements IControl {
         }
         if (this._map) {
             this._map.off('styledata', this._onStyleData);
-            if (this._map.style) {
+            this._map.off('idle', this._onStyleData);
+            if (this._map.style && this._map.style.indoorManager) {
                 this._map.style.indoorManager.off('selector-update', this._onIndoorUpdate);
             }
             this._map = null;
@@ -95,8 +99,7 @@ class IndoorControl implements IControl {
                 const selectedIndex = model.floors.findIndex(f => f.id === model.selectedFloorId);
                 if (selectedIndex !== -1) {
                     const totalFloors = model.floors.length;
-                    let minVisible: number;
-                    let maxVisible: number;
+                    let minVisible, maxVisible;
 
                     if (totalFloors <= VISIBLE_FLOORS + 2) {
                         minVisible = 0;

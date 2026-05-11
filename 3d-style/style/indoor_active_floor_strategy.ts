@@ -1,4 +1,4 @@
-import type {IndoorBuilding} from './indoor_data';
+import type {IndoorBuilding} from '../../src/style/indoor_data';
 
 export class IndoorActiveFloorStrategy {
     static calculate(

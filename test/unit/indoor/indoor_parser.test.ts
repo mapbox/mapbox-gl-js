@@ -1,6 +1,6 @@
 /* eslint-disable camelcase, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument */
 import {describe, test, expect} from '../../util/vitest';
-import {parseActiveFloors} from '../../../src/render/indoor_parser';
+import {parseActiveFloors} from '../../../3d-style/source/indoor_parser';
 import {CanonicalTileID} from '../../../src/source/tile_id';
 import Actor from '../../../src/util/actor';
 

@@ -12,27 +12,32 @@
 </head>
 <body>
     <div id="map"></div>
-    <script src='/debug/indoor/indoor_style.js'></script>
     <script type="module">
     import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
     import {getAccessToken} from './access_token_generated.js';
 
     mapboxgl.accessToken = getAccessToken();
-
     var map = window.map = new mapboxgl.Map({
         container: 'map',
-        zoom: 17.5,
-        bearing: -15,
-        pitch: 50,
-        center: [24.941915, 60.171768],
+        style: 'mapbox://styles/mapbox/standard',
+        config: {
+            basemap: {
+                showIndoor: true
+            }
+        },
+        center: [2.36020, 48.72861],
+        zoom: 16.00,
+        bearing: 0.00,
+        pitch: 0.00,
         hash: true
     });
 
-    map.addControl(new mapboxgl.NavigationControl());
+    // Add the indoor floor selector UI
     map.addControl(new mapboxgl.IndoorControl());
-    map.addControl(new mapboxgl.AttributionControl());
 
-    map.setStyle(window.style);
+    // Add navigation controls (optional)
+    map.addControl(new mapboxgl.NavigationControl());
+
     </script>
 </body>
 </html>

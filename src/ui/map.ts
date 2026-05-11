@@ -4211,15 +4211,15 @@ export class Map extends Camera {
      * map._selectIndoorFloor('floor-1');
      */
     _selectIndoorFloor(floorId: string) {
-        this.style.indoorManager.selectFloor(floorId);
+        if (this.style.indoorManager) this.style.indoorManager.selectFloor(floorId);
     }
 
     _setIndoorActiveFloorsVisibility(activeFloorsVisible: boolean) {
-        this.style.indoorManager.setActiveFloorsVisibility(activeFloorsVisible);
+        if (this.style.indoorManager) this.style.indoorManager.setActiveFloorsVisibility(activeFloorsVisible);
     }
 
     getIndoorTileOptions(source: string, scope: string): IndoorTileOptions | null {
-        if (!this.style || !this.style.isIndoorEnabled()) {
+        if (!this.style || !this.style.isIndoorEnabled() || !this.style.indoorManager) {
             return null;
         }
         return this.style.indoorManager.getIndoorTileOptions(source, scope);

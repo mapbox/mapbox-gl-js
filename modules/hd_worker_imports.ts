@@ -16,6 +16,8 @@ export {
 export {parseElevationFeatures} from '../3d-style/elevation/parse_elevation_features';
 export {evaluatePortalGraphs as postprocessTile} from '../3d-style/elevation/evaluate_portal_graphs';
 
+export {parseActiveFloors} from '../3d-style/source/indoor_parser';
+
 /**
  * Dispatches HD extension attachment to the bucket-type-specific helper. Called from
  * `WorkerTile.parse` immediately after `layer.createBucket()` so the relevance check

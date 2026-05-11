@@ -1,7 +1,7 @@
 
 import {describe, test, expect} from '../../util/vitest';
 import {vi} from 'vitest';
-import {ViewportIntersectionStrategy} from '../../../src/style/indoor_building_detection';
+import {ViewportIntersectionStrategy} from '../../../3d-style/style/indoor_building_detection';
 import Point from '@mapbox/point-geometry';
 
 import type {IndoorBuilding} from '../../../src/style/indoor_data';

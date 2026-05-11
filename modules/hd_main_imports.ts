@@ -1,4 +1,5 @@
 import drawBuilding from '../3d-style/render/draw_building';
+import IndoorManager from '../3d-style/style/indoor_manager';
 import drawRasterParticle, {prepare as prepareRasterParticle} from '../src/render/draw_raster_particle';
 import shaders from '../3d-style/shaders/shaders_hd';
 import {Rain} from '../src/precipitation/draw_rain';
@@ -30,4 +31,5 @@ export const HD = {
     drawElevatedFillShadows,
     drawDepthPrepass,
     drawGroundShadowMask,
+    IndoorManager,
 };

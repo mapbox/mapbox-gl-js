@@ -1,9 +1,9 @@
 import Point from '@mapbox/point-geometry';
-import {polygonIntersectsPolygon, polygonIntersectsMultiPolygon} from '../util/intersection_tests';
+import {polygonIntersectsPolygon, polygonIntersectsMultiPolygon} from '../../src/util/intersection_tests';
 
-import type LngLat from '../geo/lng_lat';
-import type {LngLatBounds} from '../geo/lng_lat';
-import type {IndoorBuilding} from './indoor_data';
+import type LngLat from '../../src/geo/lng_lat';
+import type {LngLatBounds} from '../../src/geo/lng_lat';
+import type {IndoorBuilding} from '../../src/style/indoor_data';
 
 export class ViewportIntersectionStrategy {
     _previousClosestBuildingId: string | null = null;
