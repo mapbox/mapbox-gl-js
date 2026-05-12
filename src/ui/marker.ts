@@ -286,8 +286,10 @@ export default class Marker extends Evented<MarkerEvents> {
             map.off('touchstart', this._addDragHandler);
             map.off('mouseup', this._onUp);
             map.off('touchend', this._onUp);
+            map.off('mouseupWindow', this._onUp);
             map.off('mousemove', this._onMove);
             map.off('touchmove', this._onMove);
+            map.off('mousemoveWindow', this._onMove);
             map.off('remove', this._clearFadeTimer);
             map._removeMarker(this);
             this._map = undefined;
@@ -842,8 +844,10 @@ export default class Marker extends Evented<MarkerEvents> {
             this._state = 'pending';
             map.on('mousemove', this._onMove);
             map.on('touchmove', this._onMove);
+            map.on('mousemoveWindow', this._onMove);
             map.once('mouseup', this._onUp);
             map.once('touchend', this._onUp);
+            map.once('mouseupWindow', this._onUp);
         }
     }
 

@@ -12,10 +12,12 @@ import type {SourceSpecification} from '../style-spec/types';
 export type MapMouseEventType =
     | 'mousedown'
     | 'mouseup'
+    | 'mouseupWindow'
     | 'preclick'
     | 'click'
     | 'dblclick'
     | 'mousemove'
+    | 'mousemoveWindow'
     | 'mouseover'
     | 'mouseenter'
     | 'mouseleave'
@@ -529,6 +531,32 @@ export type MapEvents = {
      * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     'mouseup': MapMouseEvent;
+
+    /**
+     * Fired when a pointing device (usually a mouse) is released anywhere on the page during a
+     * gesture that started inside the map. Unlike `mouseup`, this fires when the release happens
+     * outside the map's canvas container as well, allowing consumers to terminate gestures cleanly
+     * when the cursor has left the map.
+     *
+     * @event mouseupWindow
+     * @memberof Map
+     * @instance
+     * @type {MapMouseEvent}
+     */
+    'mouseupWindow': MapMouseEvent;
+
+    /**
+     * Fired when a pointing device (usually a mouse) is moved anywhere on the page during a
+     * gesture that started inside the map. Unlike `mousemove`, this fires while the cursor is
+     * outside the map's canvas container as well, allowing consumers to track movement during
+     * gestures that extend outside the map.
+     *
+     * @event mousemoveWindow
+     * @memberof Map
+     * @instance
+     * @type {MapMouseEvent}
+     */
+    'mousemoveWindow': MapMouseEvent;
 
     /**
      * Fired when a pointing device (usually a mouse) is moved within the map.
