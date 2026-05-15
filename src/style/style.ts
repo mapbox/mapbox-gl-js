@@ -351,6 +351,7 @@ class Style extends Evented<MapEvents> {
         [_: string]: SourceCache;
     };
     _loaded: boolean;
+    _initialBroadcastDone: boolean;
     _programPrecompiler: ProgramPrecompiler | null;
     _rtlTextPluginCallback: (state: {pluginStatus: string; pluginURL: string | null | undefined}) => void;
     _changes: StyleChanges;
@@ -481,6 +482,7 @@ class Style extends Evented<MapEvents> {
         this._symbolSourceCaches = {};
         this._fillExtrusionSourceCaches = {};
         this._loaded = false;
+        this._initialBroadcastDone = false;
         this._programPrecompiler = this.map._precompilePrograms && this.isRootStyle() ?
             new ProgramPrecompiler() :
             null;
@@ -795,24 +797,43 @@ class Style extends Evented<MapEvents> {
     _reloadImports(initialLoad: boolean = false) {
         this.mergeAll();
         this._updateMapProjection();
-        // On initial load, skip `updateConfigDependencies()`. Layers are constructed
-        // with a live reference to `this.options` (via `Layout`/`Transitionable`),
-        // and `Light`/`Fog`/`Snow`/`Rain` do the same, so config-bound expressions
-        // already resolve against the up-to-date config map. Calling `_updateLayer`
-        // here would only queue redundant source-cache reloads and dirty markers
-        // for layers that haven't been broadcast to workers yet — the `setLayers`
-        // call below ships the final state in a single round-trip.
         if (!initialLoad) {
             this.updateConfigDependencies();
         }
         this._updateLayers(this._indoorDependentLayers);
         this.map._triggerCameraUpdate(this.camera);
 
-        this.dispatcher.broadcast('setLayers', {
-            layers: this._serializeLayers(this._order),
-            scope: this.scope,
-            options: this.options
-        });
+        // During root's initial-load batch, sibling fragments share a single
+        // config-options Map populated incrementally as each import calls
+        // updateConfig. A fragment that finishes first would broadcast setLayers
+        // with a stale snapshot missing sibling-fragment options — workers
+        // serialize that snapshot into their per-scope layer index, leaving
+        // cross-fragment ['config', _, _] expressions unresolved. Defer to
+        // root's _reloadImports, which runs after all imports have settled and
+        // ships one setLayers per scope with the final options.
+        //
+        // For runtime fragment additions (addImport, setImportUrl) the root has
+        // already broadcast — _initialBroadcastDone is true — and won't fire
+        // _reloadImports again. In that case the fragment broadcasts itself;
+        // its options Map already reflects the rest of the loaded style.
+        if (initialLoad && !this.isRootStyle() && !this.map.style._initialBroadcastDone) return;
+
+        if (initialLoad && this.isRootStyle()) {
+            this.forEachFragmentStyle((style: Style) => {
+                this.dispatcher.broadcast('setLayers', {
+                    layers: style._serializeLayers(style._order),
+                    scope: style.scope,
+                    options: style.options
+                });
+            });
+            this._initialBroadcastDone = true;
+        } else {
+            this.dispatcher.broadcast('setLayers', {
+                layers: this._serializeLayers(this._order),
+                scope: this.scope,
+                options: this.options
+            });
+        }
     }
 
     _isInternalStyle(json: StyleSpecification): boolean {

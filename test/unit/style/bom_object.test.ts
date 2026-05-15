@@ -2,8 +2,7 @@
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import {mockFetch} from '../../util/network';
-import Style from '../../../src/style/style';
-import {StubMap} from './utils';
+import {newStubStyle} from './utils';
 
 function createStyleJSON(properties) {
     return Object.assign({
@@ -15,7 +14,7 @@ function createStyleJSON(properties) {
 
 describe('Style#getBOMObject', () => {
     test('returns array with root style for simple style', async () => {
-        const style = new Style(new StubMap());
+        const {style} = newStubStyle();
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const initialStyle = createStyleJSON({
@@ -38,7 +37,7 @@ describe('Style#getBOMObject', () => {
     });
 
     test('includes root style with globalId and modified date', async () => {
-        const style = new Style(new StubMap());
+        const {style} = newStubStyle();
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const initialStyle = createStyleJSON({
@@ -60,7 +59,7 @@ describe('Style#getBOMObject', () => {
     });
 
     test('includes tileset URLs from sources with tiles array', async () => {
-        const style = new Style(new StubMap());
+        const {style} = newStubStyle();
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const initialStyle = createStyleJSON({
@@ -114,7 +113,7 @@ describe('Style#getBOMObject', () => {
     });
 
     test('excludes sources without url property (like geojson)', async () => {
-        const style = new Style(new StubMap());
+        const {style} = newStubStyle();
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const initialStyle = createStyleJSON({
@@ -161,7 +160,7 @@ describe('Style#getBOMObject', () => {
     });
 
     test('includes imported styles from fragments', async () => {
-        const style = new Style(new StubMap());
+        const {style} = newStubStyle();
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const fragment = createStyleJSON({
@@ -225,8 +224,7 @@ describe('Style#getBOMObject', () => {
     });
 
     test('handles nested imports (multiple levels) with sources', async () => {
-        const map = new StubMap();
-        const style = new Style(map);
+        const {map, style} = newStubStyle();
         style.setEventedParent(map, {style});
 
         // Deepest level nested fragment with its own source
@@ -312,7 +310,7 @@ describe('Style#getBOMObject', () => {
     });
 
     test('avoids duplicate entries for circular imports', async () => {
-        const style = new Style(new StubMap());
+        const {style} = newStubStyle();
 
         // Parent imports child which imports parent again
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -350,7 +348,7 @@ describe('Style#getBOMObject', () => {
     });
 
     test('handles style with no sources', async () => {
-        const style = new Style(new StubMap());
+        const {style} = newStubStyle();
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const initialStyle = createStyleJSON({
@@ -380,7 +378,7 @@ describe('Style#getBOMObject', () => {
     });
 
     test('handles style loaded from JSON (with hash-based globalId)', async () => {
-        const style = new Style(new StubMap());
+        const {style} = newStubStyle();
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const jsonStyle = createStyleJSON({
@@ -403,7 +401,7 @@ describe('Style#getBOMObject', () => {
     });
 
     test('includes modified timestamp from stylesheet', async () => {
-        const style = new Style(new StubMap());
+        const {style} = newStubStyle();
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const initialStyle = createStyleJSON({
@@ -424,7 +422,7 @@ describe('Style#getBOMObject', () => {
     });
 
     test('returns valid array structure', async () => {
-        const style = new Style(new StubMap());
+        const {style} = newStubStyle();
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const initialStyle = createStyleJSON({
@@ -471,7 +469,7 @@ describe('Style#getBOMObject', () => {
     });
 
     test('handles fragment style converted to basemap import', async () => {
-        const style = new Style(new StubMap());
+        const {style} = newStubStyle();
 
         // Style with fragment: true gets converted to basemap import
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
