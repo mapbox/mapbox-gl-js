@@ -17,6 +17,7 @@ export type FillUniformsType = {
     ['u_matrix']: UniformMatrix4f;
     ['u_emissive_strength']: Uniform1f;
     ['u_ground_shadow_factor']: Uniform3f;
+    ['u_opacity_multiplier']: Uniform1f;
 };
 
 export type FillOutlineUniformsType = {
@@ -24,6 +25,7 @@ export type FillOutlineUniformsType = {
     ['u_emissive_strength']: Uniform1f;
     ['u_world']: Uniform2f;
     ['u_ground_shadow_factor']: Uniform3f;
+    ['u_opacity_multiplier']: Uniform1f;
 };
 
 export type FillPatternUniformsType = {
@@ -37,6 +39,7 @@ export type FillPatternUniformsType = {
     ['u_tile_units_to_pixels']: Uniform1f;
     ['u_ground_shadow_factor']: Uniform3f;
     ['u_pattern_transition']: Uniform1f;
+    ['u_opacity_multiplier']: Uniform1f;
 };
 
 export type FillOutlinePatternUniformsType = {
@@ -51,6 +54,7 @@ export type FillOutlinePatternUniformsType = {
     ['u_tile_units_to_pixels']: Uniform1f;
     ['u_ground_shadow_factor']: Uniform3f;
     ['u_pattern_transition']: Uniform1f;
+    ['u_opacity_multiplier']: Uniform1f;
 };
 
 export type ElevatedStructuresDepthUniformsType = {
@@ -61,6 +65,7 @@ export type ElevatedStructuresDepthUniformsType = {
 export type ElevatedStructuresUniformsType = {
     ['u_matrix']: UniformMatrix4f;
     ['u_ground_shadow_factor']: Uniform3f;
+    ['u_opacity_multiplier']: Uniform1f;
 };
 
 export type ElevatedStructuresDepthReconstructUniformsType = {
@@ -77,6 +82,7 @@ const fillUniforms = (context: Context): FillUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
     'u_emissive_strength': new Uniform1f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
+    'u_opacity_multiplier': new Uniform1f(context),
 });
 
 const fillPatternUniforms = (context: Context): FillPatternUniformsType => ({
@@ -88,7 +94,8 @@ const fillPatternUniforms = (context: Context): FillPatternUniformsType => ({
     'u_pixel_coord_lower': new Uniform2f(context),
     'u_tile_units_to_pixels': new Uniform1f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
-    'u_pattern_transition': new Uniform1f(context)
+    'u_pattern_transition': new Uniform1f(context),
+    'u_opacity_multiplier': new Uniform1f(context),
 });
 
 const fillOutlineUniforms = (context: Context): FillOutlineUniformsType => ({
@@ -96,6 +103,7 @@ const fillOutlineUniforms = (context: Context): FillOutlineUniformsType => ({
     'u_emissive_strength': new Uniform1f(context),
     'u_world': new Uniform2f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
+    'u_opacity_multiplier': new Uniform1f(context),
 });
 
 const fillOutlinePatternUniforms = (context: Context): FillOutlinePatternUniformsType => ({
@@ -108,7 +116,8 @@ const fillOutlinePatternUniforms = (context: Context): FillOutlinePatternUniform
     'u_pixel_coord_lower': new Uniform2f(context),
     'u_tile_units_to_pixels': new Uniform1f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
-    'u_pattern_transition': new Uniform1f(context)
+    'u_pattern_transition': new Uniform1f(context),
+    'u_opacity_multiplier': new Uniform1f(context),
 });
 
 const elevatedStructuresDepthUniforms = (context: Context): ElevatedStructuresDepthUniformsType => ({
@@ -119,6 +128,7 @@ const elevatedStructuresDepthUniforms = (context: Context): ElevatedStructuresDe
 const elevatedStructuresUniforms = (context: Context): ElevatedStructuresUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
+    'u_opacity_multiplier': new Uniform1f(context),
 });
 
 const elevatedStructuresDepthReconstructUniforms = (context: Context): ElevatedStructuresDepthReconstructUniformsType => ({
@@ -133,6 +143,7 @@ const fillUniformValues = (matrix: mat4, emissiveStrength: number, groundShadowF
     'u_matrix': matrix as Float32Array,
     'u_emissive_strength': emissiveStrength,
     'u_ground_shadow_factor': groundShadowFactor,
+    'u_opacity_multiplier': 1,
 });
 
 const fillPatternUniformValues = (
@@ -151,12 +162,13 @@ const fillOutlineUniformValues = (
     matrix: mat4,
     emissiveStrength: number,
     drawingBufferSize: [number, number],
-    groundShadowFactor: [number, number, number]
+    groundShadowFactor: [number, number, number],
 ): UniformValues<FillOutlineUniformsType> => ({
     'u_matrix': matrix as Float32Array,
     'u_world': drawingBufferSize,
     'u_emissive_strength': emissiveStrength,
     'u_ground_shadow_factor': groundShadowFactor,
+    'u_opacity_multiplier': 1,
 });
 
 const fillOutlinePatternUniformValues = (
@@ -182,6 +194,7 @@ const elevatedStructuresDepthUniformValues = (matrix: mat4, depthBias: number): 
 const elevatedStructuresUniformValues = (matrix: mat4, groundShadowFactor: [number, number, number]): UniformValues<ElevatedStructuresUniformsType> => ({
     'u_matrix': matrix as Float32Array,
     'u_ground_shadow_factor': groundShadowFactor,
+    'u_opacity_multiplier': 1.0,
 });
 
 const elevatedStructuresDepthReconstructUniformValues = (

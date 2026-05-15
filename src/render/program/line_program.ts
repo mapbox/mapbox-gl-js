@@ -31,6 +31,7 @@ export type LineUniformsType = {
     ['u_zbias_factor']: Uniform1f;
     ['u_tile_to_meter']: Uniform1f;
     ['u_ground_shadow_factor']: Uniform3f;
+    ['u_opacity_multiplier']: Uniform1f;
 };
 
 export type LinePatternUniformsType = {
@@ -52,6 +53,7 @@ export type LinePatternUniformsType = {
     ['u_tile_to_meter']: Uniform1f;
     ['u_ground_shadow_factor']: Uniform3f;
     ['u_pattern_transition']: Uniform1f;
+    ['u_opacity_multiplier']: Uniform1f;
 };
 
 export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'LINE_JOIN_NONE' | 'ELEVATED' | 'VARIABLE_LINE_WIDTH' | 'CROSS_SLOPE_VERTICAL' | 'CROSS_SLOPE_HORIZONTAL' | 'ELEVATION_REFERENCE_SEA' | 'ELEVATION_GROUND_SCALE' | 'LINE_PATTERN_TRANSITION' | 'USE_MRT1' | 'DUAL_SOURCE_BLENDING' | 'LINE_BLEND_MULTIPLY';
@@ -76,6 +78,7 @@ const lineUniforms = (context: Context): LineUniformsType => ({
     'u_zbias_factor': new Uniform1f(context),
     'u_tile_to_meter': new Uniform1f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
+    'u_opacity_multiplier': new Uniform1f(context),
 });
 
 const linePatternUniforms = (context: Context): LinePatternUniformsType => ({
@@ -97,6 +100,7 @@ const linePatternUniforms = (context: Context): LinePatternUniformsType => ({
     'u_tile_to_meter': new Uniform1f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
     'u_pattern_transition': new Uniform1f(context),
+    'u_opacity_multiplier': new Uniform1f(context),
 });
 
 const lerp = (a: number, b: number, t: number) => { return (1 - t) * a + t * b; };
@@ -143,6 +147,7 @@ const lineUniformValues = (
         'u_zbias_factor': zbiasFactor,
         'u_tile_to_meter': tileToMeter(tile.tileID.canonical, 0.0),
         'u_ground_shadow_factor': groundShadowFactor,
+        'u_opacity_multiplier': 1,
     };
 };
 
@@ -156,7 +161,7 @@ const linePatternUniformValues = (
     floorWidthScale: number,
     trimOffset: [number, number],
     groundShadowFactor: [number, number, number],
-    transition: number
+    transition: number,
 ): UniformValues<LinePatternUniformsType> => {
     const transform = painter.transform;
     const zbiasFactor = transform.pitch < 15.0 ? lerp(0.07, 0.7, clamp((14.0 - transform.zoom) / (14.0 - 9.0), 0.0, 1.0)) : 0.07;
@@ -187,6 +192,7 @@ const linePatternUniformValues = (
         'u_tile_to_meter': tileToMeter(tile.tileID.canonical, 0.0),
         'u_ground_shadow_factor': groundShadowFactor,
         'u_pattern_transition': transition,
+        'u_opacity_multiplier': 1,
     };
 };
 

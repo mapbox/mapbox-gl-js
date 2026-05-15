@@ -2,6 +2,7 @@
 #include "_prelude_shadow.vertex.glsl"
 
 uniform mat4 u_matrix;
+uniform lowp float u_opacity_multiplier;
 uniform vec2 u_pixel_coord_upper;
 uniform vec2 u_pixel_coord_lower;
 uniform float u_tile_units_to_pixels;

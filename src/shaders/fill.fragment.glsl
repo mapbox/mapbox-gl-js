@@ -6,6 +6,7 @@
 #pragma mapbox: define lowp float opacity
 
 uniform float u_emissive_strength;
+uniform lowp float u_opacity_multiplier;
 
 #ifdef RENDER_SHADOWS
 uniform vec3 u_ground_shadow_factor;
@@ -47,7 +48,7 @@ void main() {
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif
 
-    out_color *= opacity;
+    out_color *= (opacity * u_opacity_multiplier);
 
 #ifdef INDICATOR_CUTOUT
     // apply cutout if the fragment is not an underground polygon (no need)

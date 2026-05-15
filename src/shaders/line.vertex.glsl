@@ -39,6 +39,7 @@ uniform float u_width_scale;
 // in that case the value is passed as a vertex attribute instead of a uniform.
 uniform float u_z_offset;
 uniform highp float u_floor_width_scale;
+uniform lowp float u_opacity_multiplier;
 
 #ifdef RENDER_LINE_CURVE
 // Encodes curve control points in 3x3 matrices for x, y, z

@@ -17,6 +17,7 @@ out highp float v_depth;
 
 uniform mat4 u_matrix;
 uniform vec2 u_world;
+uniform lowp float u_opacity_multiplier;
 
 out highp vec2 v_pos;
 

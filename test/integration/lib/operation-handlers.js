@@ -257,6 +257,17 @@ export const operationHandlers = {
     setLayerProperty(map, params, doneCb) {
         map.setLayerProperty(...params);
         waitForRender(map, () => map.loaded(), doneCb);
+    },
+    setStyleImportConfigProperty(map, params, doneCb) {
+        map.setConfigProperty(params[0], params[1], params[2]);
+        waitForRender(map, () => map.loaded(), doneCb);
+    },
+    removeImport(map, params, doneCb) {
+        map.removeImport(params[0]);
+        waitForRender(map, () => true, doneCb);
+    },
+    pinBooleanTransitionProgress(map, params, doneCb) {
+        throw new Error('pinBooleanTransitionProgress is driven natively in the SDK and is not supported in gl-js render tests. Add this test to test/ignores/all.js.');
     }
 };
 

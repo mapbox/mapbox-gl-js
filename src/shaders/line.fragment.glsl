@@ -6,6 +6,7 @@ uniform lowp float u_device_pixel_ratio;
 uniform highp float u_width_scale;
 uniform highp float u_floor_width_scale;
 uniform float u_alpha_discard_threshold;
+uniform lowp float u_opacity_multiplier;
 uniform highp vec2 u_trim_offset;
 uniform highp vec2 u_trim_fade_range;
 uniform highp vec2 u_trim_gradient_mix_range;
@@ -189,7 +190,7 @@ void main() {
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif
 
-    out_color *= (alpha * diluted_opacity);
+    out_color *= (alpha * diluted_opacity * u_opacity_multiplier);
 
 #ifdef LINE_BLEND_MULTIPLY
     // In multiply blend mode the FBO accumulates per-line multiply factors using

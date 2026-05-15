@@ -13,6 +13,7 @@ uniform float u_pattern_transition;
 in highp vec2 v_pos;
 
 uniform float u_emissive_strength;
+uniform lowp float u_opacity_multiplier;
 
 #ifdef RENDER_SHADOWS
 uniform vec3 u_ground_shadow_factor;
@@ -89,7 +90,7 @@ void main() {
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif
 
-    glFragColor = out_color * opacity;
+    glFragColor = out_color * (opacity * u_opacity_multiplier);
 #ifdef USE_MRT1
     out_Target1 = vec4(u_emissive_strength * glFragColor.a, 0.0, 0.0, glFragColor.a);
 #endif
