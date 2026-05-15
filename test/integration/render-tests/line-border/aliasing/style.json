@@ -1,0 +1,106 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.0001
+    }
+  },
+  "center": [
+    11.5498,
+    48.1324
+  ],
+  "zoom": 15.901,
+  "bearing": 355.731,
+  "pitch": 75.851,
+  "sources": {
+    "geojson1": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  11.547036399999963,
+                  48.131
+                ],
+                [
+                  11.549036399999963,
+                  48.131
+                ],
+                [
+                  11.551036399999963,
+                  48.1305
+                ],
+                [
+                  11.553036399999963,
+                  48.1315
+                ],
+                [
+                  11.555036399999963,
+                  48.131
+                ],
+                [
+                  11.557036399999963,
+                  48.131
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "line-with-border-0",
+      "type": "line",
+      "source": "geojson1",
+      "paint": {
+        "line-offset": 0,
+        "line-width": 30,
+        "line-border-width": 2.5,
+        "line-color": "blue",
+        "line-border-color": "black"
+      }
+    },
+    {
+      "id": "line-with-border-1",
+      "type": "line",
+      "source": "geojson1",
+      "paint": {
+        "line-offset": -50,
+        "line-width": 30,
+        "line-border-width": 3.0,
+        "line-color": "orange",
+        "line-border-color": "black"
+      }
+    },
+    {
+      "id": "line-with-border-2",
+      "type": "line",
+      "source": "geojson1",
+      "paint": {
+        "line-offset": -100,
+        "line-width": 30,
+        "line-border-width": 3.5,
+        "line-color": "red",
+        "line-border-color": "black"
+      }
+    }
+  ]
+}
