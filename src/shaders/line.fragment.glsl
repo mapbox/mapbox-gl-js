@@ -184,14 +184,18 @@ void main() {
     float alpha2 = smoothstep(edge2 - pxStep, edge2 + pxStep, delta);
     if (alpha2 < 1.) {
         if (border_color.a == 0.0) {
+#ifndef RENDER_LINE_GRADIENT
             float Y = (out_color.a > 0.01) ? luminance(out_color.rgb / out_color.a) : 1.; // out_color is premultiplied
             float adjustment = (Y > 0.) ? 0.5 / Y : 0.45;
             if (out_color.a > 0.25 && Y < 0.25) {
                 vec3 borderColor = (Y > 0.) ? out_color.rgb : vec3(1, 1, 1) * out_color.a;
                 out_color.rgb = out_color.rgb + borderColor * (adjustment * (1.0 - alpha2));
             } else {
-                out_color.rgb *= (0.6  + 0.4 * alpha2);
+                out_color.rgb *= (0.6 + 0.4 * alpha2);
             }
+#else
+            out_color.rgb *= (0.6 + 0.4 * alpha2);
+#endif
         } else {
             out_color = mix(border_color * trim_alpha, out_color, alpha2);
         }
