@@ -71,6 +71,13 @@ float linearstep(float edge0, float edge1, float x) {
     return  clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
 }
 
+/// Calculate the distance from point 'x' to the closer edge of the line.
+float closerDistance(float x, float outset, float inset) {
+    float out_edge = outset - x;
+    float in_edge = x - inset;
+    return inset > 0.0 ? min(in_edge, out_edge) : out_edge;
+}
+
 void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize lowp float floorwidth
@@ -85,20 +92,41 @@ void main() {
     // Calculate the distance of the pixel from the line in pixels.
     float dist = length(v_normal) * v_width2_dilute.x;
 
+    // The distance over which the line edge fades out.
+    // Note: the same value is used in line vertex shader as a padding for extrusion.
+    float ANTIALIASING = 1.0 / u_device_pixel_ratio / 2.0;
+
     // Calculate the antialiasing fade factor. This is either when fading in
     // the line in case of an offset line (v_width2_dilute.y) or when fading out
     // (v_width2_dilute.x)
 #ifdef VARIABLE_LINE_WIDTH
     blur = mix(blur, 0.0, stub_side);
 #endif
+
     float diluted_opacity = opacity * v_width2_dilute.z;
+
+    // Compute blur alpha factor.   
     float blur2 = (u_width_scale * blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
     float alpha = clamp(min(dist - (v_width2_dilute.y - blur2), v_width2_dilute.x - dist) / blur2, 0.0, 1.0);
-    alpha = side_z_offset > 0.0 ? 1.0 - alpha : alpha;
 
+    float pxStep;
+    float delta;
+#ifdef RENDER_LINE_BORDER
+#ifndef VARIABLE_LINE_WIDTH
+    // Calculate the rate of change of the distance across the line.
+    pxStep = fwidth(dist);
+    // Find the distance to the closer edge of the line.
+    delta = closerDistance(dist, v_width2_dilute.x, v_width2_dilute.y);
+    // Compute distance based anti-aliasing alpha factor to smooth line edges.
+    float edge = ANTIALIASING * v_gamma_scale;
+    alpha = delta > 0.0 ? smoothstep(edge - pxStep, u_width_scale * blur + edge + pxStep, delta) : 0.0;
+#endif
+#endif
+
+    alpha = side_z_offset > 0.0 ? 1.0 - alpha : alpha;
 #ifdef RENDER_LINE_DASH
     float sdfdist = texture(u_dash_image, v_tex).r;
-    float sdfgamma = 1.0 / (2.0 * u_device_pixel_ratio) / (float(dash.z) + float(dash.w) / 65535.0);
+    float sdfgamma = ANTIALIASING / (float(dash.z) + float(dash.w) / 65535.0);
     float scaled_floorwidth = (floorwidth * u_floor_width_scale);
     alpha *= linearstep(0.5 - sdfgamma / scaled_floorwidth, 0.5 + sdfgamma / scaled_floorwidth, sdfdist);
 #endif
@@ -146,21 +174,26 @@ void main() {
 
 #ifdef RENDER_LINE_BORDER
 #ifndef VARIABLE_LINE_WIDTH
-    float edgeBlur = ((border_width * u_width_scale) + 1.0 / u_device_pixel_ratio);
-    float alpha2 = clamp(min(dist - (v_width2_dilute.y - edgeBlur), v_width2_dilute.x - dist) / edgeBlur, 0.0, 1.0);
+    // The following half of the line notation being used is aligned with the line vertex shader:
+    //  |      | inner border |       body       | outer border |     
+    //  |------|**************|##################|**************|---------->
+    // (0)  (inset)        (inset+h)          (outset-h)      (outset)      x
+    //
+    // Compute distance based anti-aliasing alpha factor to smooth line borders.
+    float edge2 = border_width * u_width_scale + ANTIALIASING;
+    float alpha2 = smoothstep(edge2 - pxStep, edge2 + pxStep, delta);
     if (alpha2 < 1.) {
-        float smoothAlpha = smoothstep(0.6, 1.0, alpha2);
         if (border_color.a == 0.0) {
             float Y = (out_color.a > 0.01) ? luminance(out_color.rgb / out_color.a) : 1.; // out_color is premultiplied
             float adjustment = (Y > 0.) ? 0.5 / Y : 0.45;
             if (out_color.a > 0.25 && Y < 0.25) {
                 vec3 borderColor = (Y > 0.) ? out_color.rgb : vec3(1, 1, 1) * out_color.a;
-                out_color.rgb = out_color.rgb + borderColor * (adjustment * (1.0 - smoothAlpha));
+                out_color.rgb = out_color.rgb + borderColor * (adjustment * (1.0 - alpha2));
             } else {
-                out_color.rgb *= (0.6  + 0.4 * smoothAlpha);
+                out_color.rgb *= (0.6  + 0.4 * alpha2);
             }
         } else {
-            out_color = mix(border_color * trim_alpha, out_color, smoothAlpha);
+            out_color = mix(border_color * trim_alpha, out_color, alpha2);
         }
         out_color *= v_width2_dilute.w;
     }
