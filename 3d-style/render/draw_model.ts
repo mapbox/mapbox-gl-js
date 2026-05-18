@@ -1060,7 +1060,7 @@ function prepareBatched(painter: Painter, source: SourceCache, layer: ModelStyle
     }
 }
 
-function updateModelLod(nodeInfo: Tiled3dModelFeature, distanceToCamera: number, dtMs: number, switchDistance: number) {
+function updateModelLod(nodeInfo: Tiled3dModelFeature, distanceToCamera: number, dtMs: number, switchDistance: number, fadeDuration: number) {
     const node = nodeInfo.node;
     if (node.lodMeshes && node.lodMeshes.length > 0) {
         if (nodeInfo.targetLod < 0) {
@@ -1069,10 +1069,12 @@ function updateModelLod(nodeInfo: Tiled3dModelFeature, distanceToCamera: number,
             nodeInfo.targetLod = distanceToCamera > switchDistance ? 1.0 : 0.0;
         } else {
             const timePassed = dtMs / 1000.0; // milliseconds to seconds
+            // Convert seconds passed into LOD progress per frame. A duration of 0 means snap instantly.
+            const fadeStep = fadeDuration > 0.0 ? timePassed / fadeDuration : 1.0;
             if (distanceToCamera > switchDistance) {
-                nodeInfo.targetLod = Math.min(nodeInfo.targetLod + timePassed, 1.0);
+                nodeInfo.targetLod = clamp(nodeInfo.targetLod + fadeStep, 0.0, 1.0);
             } else {
-                nodeInfo.targetLod = Math.max(nodeInfo.targetLod - timePassed, 0.0);
+                nodeInfo.targetLod = clamp(nodeInfo.targetLod - fadeStep, 0.0, 1.0);
             }
         }
     } else {
@@ -1195,7 +1197,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     const distanceToCamera = vec3.distance(cameraPos, lodNodeCenterScratch) * metersPerPixel;
                     // Rendering can get paused and thus the LOD transition may stop. Therefore don't use the full time-step,
                     // such that when rendering is resumed, the transition smoothly continues.
-                    updateModelLod(nodeInfo, distanceToCamera, Math.min(painter._debugParams.dt, 1000 / 30), painter._debugParams.lodSwitchDistance);
+                    updateModelLod(nodeInfo, distanceToCamera, Math.min(painter._debugParams.dt, 1000 / 30), painter._debugParams.lodSwitchDistance, painter._debugParams.lodSwitchFadeDuration);
                 }
 
                 if (!isShadowPass && frontCutoffEnabled) {

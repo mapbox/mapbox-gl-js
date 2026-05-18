@@ -291,6 +291,7 @@ class Painter {
         show3DModelFootprints: boolean;
         showElevationIdDebug: boolean;
         lodSwitchDistance: number;
+        lodSwitchFadeDuration: number;
     };
 
     // Depth for occlusion
@@ -347,7 +348,8 @@ class Painter {
             starsParamsOverride: null,
             show3DModelFootprints: false,
             showElevationIdDebug: false,
-            lodSwitchDistance: 3000
+            lodSwitchDistance: 5000,
+            lodSwitchFadeDuration: 0.5
         };
 
         Debug.run(() => {
