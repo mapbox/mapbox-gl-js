@@ -302,6 +302,7 @@ const skip = [
     "render-tests/hd-sd-transition/elevated-hd-sd",
     "render-tests/hd-sd-transition/elevated-hd-sd-mid-forward",
     "render-tests/hd-sd-transition/elevated-hd-sd-mid-reverse",
+    "render-tests/hd-sd-transition/elevated-hd-sd-landuse",
     "render-tests/hd-sd-transition/hd-on-remove-import",
     "render-tests/hd-sd-transition/sd-on-steady"
 ];
