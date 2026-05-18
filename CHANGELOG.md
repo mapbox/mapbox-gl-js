@@ -1,4 +1,4 @@
-## 3.24.0-rc.1
+## 3.24.0
 
 ## Features and improvements ✨
 
@@ -20,6 +20,7 @@
 ## Bug fixes 🐞
 - Fix LUT to properly work with premultiplied color.
 - Fix a potential memory leak and crash occurring when a map was destroyed.
+- Fix an issue where cross-fragments config values were not correctly updated.
 
 ## 3.23.1
 
