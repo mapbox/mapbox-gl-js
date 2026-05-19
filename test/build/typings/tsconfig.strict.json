@@ -5,6 +5,7 @@
   },
   "files": [
     "mapbox-gl.test.ts",
-    "types__mapbox-gl.test.ts"
+    "types__mapbox-gl.test.ts",
+    "types__mapbox-gl.esm.test.ts"
   ]
 }
