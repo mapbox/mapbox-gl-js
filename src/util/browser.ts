@@ -107,6 +107,10 @@ const exported = {
 
         const offscreenCanvas = new OffscreenCanvas(255 / 3, 1);
         const offscreenCanvasContext = offscreenCanvas.getContext('2d', {willReadFrequently: true});
+        if (!offscreenCanvasContext) {
+            hasCanvasFingerprintNoise = false;
+            return false;
+        }
         let inc = 0;
         // getImageData is lossy with premultiplied alpha.
         for (let i = 0; i < offscreenCanvas.width; ++i) {
