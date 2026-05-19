@@ -16,12 +16,12 @@ import LngLat, {LngLatBounds} from './geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from './geo/mercator_coordinate';
 import {Evented} from './util/evented';
-import config, {getDracoUrl, getMeshoptUrl, getBuildingGenUrl} from './util/config';
+import config, {setAccessToken, setBaseApiUrl, setMaxParallelImageRequests, getDracoUrl, setDracoUrl, getMeshoptUrl, setMeshoptUrl, getBuildingGenUrl, setBuildingGenUrl} from './util/config';
 import {Debug} from './util/debug';
 import {isSafari} from './util/util';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
 import {addTileProvider} from './source/tile_provider';
-import WorkerPool from './util/worker_pool';
+import WorkerPool, {getWorkerCount, setWorkerCount} from './util/worker_pool';
 import WorkerClass from './util/worker_class';
 import {prewarm, clearPrewarmedResources} from './util/worker_pool_factory';
 import {clearTileCache} from './util/tile_request_cache';
@@ -157,7 +157,7 @@ const exported = {
     },
 
     set accessToken(token: string) {
-        config.ACCESS_TOKEN = token;
+        setAccessToken(token);
     },
 
     /**
@@ -173,7 +173,7 @@ const exported = {
     },
 
     set baseApiUrl(url: string) {
-        config.API_URL = url;
+        setBaseApiUrl(url);
     },
 
     /**
@@ -187,11 +187,11 @@ const exported = {
      * mapboxgl.workerCount = 4;
      */
     get workerCount(): number {
-        return WorkerPool.workerCount;
+        return getWorkerCount();
     },
 
     set workerCount(count: number) {
-        WorkerPool.workerCount = count;
+        setWorkerCount(count);
     },
 
     /**
@@ -208,7 +208,7 @@ const exported = {
     },
 
     set maxParallelImageRequests(numRequests: number) {
-        config.MAX_PARALLEL_IMAGE_REQUESTS = numRequests;
+        setMaxParallelImageRequests(numRequests);
     },
 
     /**
@@ -308,7 +308,7 @@ const exported = {
     },
 
     set dracoUrl(url: string) {
-        config.DRACO_URL = browser.resolveURL(url);
+        setDracoUrl(url);
     },
 
     /**
@@ -325,9 +325,7 @@ const exported = {
     },
 
     set meshoptUrl(url: string) {
-        const resolved = browser.resolveURL(url);
-        config.MESHOPT_URL = resolved;
-        config.MESHOPT_SIMD_URL = resolved;
+        setMeshoptUrl(url);
     },
 
     /**
@@ -343,7 +341,7 @@ const exported = {
     },
 
     set buildingGenUrl(url: string) {
-        config.BUILDING_GEN_URL = browser.resolveURL(url);
+        setBuildingGenUrl(url);
     },
 
     /**

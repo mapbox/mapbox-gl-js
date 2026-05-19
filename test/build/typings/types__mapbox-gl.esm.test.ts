@@ -60,7 +60,7 @@ version satisfies string;
 // supported() returns a boolean
 supported() satisfies boolean;
 
-// Global setters accept the right types
+// Global getters and setters
 setAccessToken('pk.abc123') satisfies void;
 setBaseApiUrl('https://api.mapbox.com') satisfies void;
 getWorkerCount() satisfies number;
