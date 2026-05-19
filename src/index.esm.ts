@@ -2,7 +2,7 @@ import assert from 'assert';
 
 // Explicit type re-exports
 export type * from './ui/events';
-export type * from './style-spec/types';
+export type * from './style-spec/types.esm';
 export type * from './source/source_types';
 export type * from './types/deprecated-aliases';
 

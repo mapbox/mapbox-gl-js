@@ -1,9 +1,11 @@
 import {describe, test, expect} from 'vitest';
 import {waitFor} from '../util/vitest';
 
+import type * as MapboxGLESM from '../../src/index.esm';
+
 function testEsmBundle(name: string, importPath: string) {
     describe(name, async () => {
-        const mapboxgl = await import(importPath);
+        const mapboxgl = await import(importPath) as typeof MapboxGLESM;
 
         expect(mapboxgl.Map).toBeDefined();
         expect(mapboxgl.version).toBeDefined();

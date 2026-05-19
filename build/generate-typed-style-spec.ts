@@ -292,7 +292,31 @@ const rootLayerKeys = Object.keys(spec.layer).filter(k => !['id', 'type', 'sourc
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const {source, ...updatableTerrainSpec} = spec.terrain;
 
-fs.writeFileSync('src/style-spec/types.ts', `// Generated code; do not edit. Edit build/generate-typed-style-spec.ts instead.
+// Deprecated aliases are kept in types.ts for backwards compatibility but omitted from
+// types-esm.ts to avoid naming conflicts with ESM named exports (e.g. the Style class).
+const deprecatedAliases = `
+${alias('Style', 'StyleSpecification')}
+
+${alias('AnyLayer', 'LayerSpecification')}
+
+${layerTypes.map(key => alias(tsLayerTypeName(key), tsLayerSpecificationTypeName(key))).join('\n\n')}
+
+${alias('AnyLayout', 'LayoutSpecification')}
+
+${alias('AnyPaint', 'PaintSpecification')}
+
+${alias('Expression', 'ExpressionSpecification')}
+
+${alias('Transition', 'TransitionSpecification')}
+
+${alias('AnySourceData', 'SourceSpecification')}
+
+${alias('Sources', 'SourcesSpecification')}
+
+${alias('Projection', 'ProjectionSpecification')}
+`;
+
+const sharedContent = `// Generated code; do not edit. Edit build/generate-typed-style-spec.ts instead.
 
 import type {UnionToIntersection} from './union-to-intersection';
 
@@ -483,24 +507,16 @@ export type Layer = Pick<
     | "maxzoom"
     | "metadata"
 >;
+`;
 
-${alias('Style', 'StyleSpecification')}
+// types.ts: full content including deprecated aliases for backwards compatibility
+fs.writeFileSync('src/style-spec/types.ts', sharedContent + deprecatedAliases);
 
-${alias('AnyLayer', 'LayerSpecification')}
-
-${layerTypes.map(key => alias(tsLayerTypeName(key), tsLayerSpecificationTypeName(key))).join('\n\n')}
-
-${alias('AnyLayout', 'LayoutSpecification')}
-
-${alias('AnyPaint', 'PaintSpecification')}
-
-${alias('Expression', 'ExpressionSpecification')}
-
-${alias('Transition', 'TransitionSpecification')}
-
-${alias('AnySourceData', 'SourceSpecification')}
-
-${alias('Sources', 'SourcesSpecification')}
-
-${alias('Projection', 'ProjectionSpecification')}
-`);
+// types-esm.ts: same content but without deprecated aliases, used by the ESM entry
+// point to avoid naming conflicts with explicit named exports (e.g. the Style class).
+fs.writeFileSync('src/style-spec/types.esm.ts',
+    sharedContent.replace(
+        '// Generated code; do not edit. Edit build/generate-typed-style-spec.ts instead.',
+        '// Generated code; do not edit. Edit build/generate-typed-style-spec.ts instead.\n// ESM entry point version: deprecated type aliases are omitted to avoid conflicts\n// with explicit named exports in src/index.esm.ts (e.g. the Style class).'
+    )
+);

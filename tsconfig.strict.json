@@ -37,6 +37,7 @@
     "./src/style-spec/expression/types/image_id.ts",
     "./src/style-spec/format.ts",
     "./src/style-spec/types.ts",
+    "./src/style-spec/types.esm.ts",
     "./src/style-spec/types/brand.ts",
     "./src/style-spec/types/lut.ts",
     "./src/style-spec/types/tile_id.ts",
