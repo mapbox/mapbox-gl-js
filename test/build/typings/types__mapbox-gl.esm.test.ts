@@ -34,6 +34,7 @@ import {
     restoreNow,
     setAccessToken,
     setBaseApiUrl,
+    getWorkerCount,
     setWorkerCount,
     setMaxParallelImageRequests,
     setDracoUrl,
@@ -62,6 +63,7 @@ supported() satisfies boolean;
 // Global setters accept the right types
 setAccessToken('pk.abc123') satisfies void;
 setBaseApiUrl('https://api.mapbox.com') satisfies void;
+getWorkerCount() satisfies number;
 setWorkerCount(4) satisfies void;
 setMaxParallelImageRequests(10) satisfies void;
 setDracoUrl('https://example.com/draco.wasm') satisfies void;

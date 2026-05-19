@@ -54,3 +54,11 @@ export default class WorkerPool {
 // extensive benchmarking showed 2 to be the best default for both desktop and mobile devices;
 // we can't rely on hardwareConcurrency because of wild inconsistency of reported numbers between browsers
 WorkerPool.workerCount = 2;
+
+export function getWorkerCount(): number {
+    return WorkerPool.workerCount;
+}
+
+export function setWorkerCount(count: number) {
+    WorkerPool.workerCount = count;
+}

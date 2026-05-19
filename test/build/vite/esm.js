@@ -1,10 +1,9 @@
-import mapbox from 'mapbox-gl/esm';
+import { Map } from 'mapbox-gl/esm';
 import 'mapbox-gl/mapbox-gl.css';
 
-mapbox.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-
-new mapbox.Map({
+new Map({
     container: 'map',
     center: [-74.5, 40],
-    zoom: 9
+    zoom: 9,
+    accessToken: import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
 });

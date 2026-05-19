@@ -127,3 +127,5 @@ const exported = {
 };
 
 export default exported;
+
+export const {setNow, restoreNow} = exported;

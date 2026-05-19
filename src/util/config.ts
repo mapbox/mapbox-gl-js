@@ -1,4 +1,5 @@
 import {isWasmSimdSupported} from './is_wasm_simd_supported';
+import browser from './browser';
 
 const API_URL_REGEX = /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/|\?|$)/i;
 const API_TILEJSON_REGEX = /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/v[0-9]*\/.*\.json.*$)/i;
@@ -77,6 +78,18 @@ const config: Config = {
     }),
 };
 
+export function setAccessToken(token: string) {
+    config.ACCESS_TOKEN = token;
+}
+
+export function setBaseApiUrl(url: string) {
+    config.API_URL = url;
+}
+
+export function setMaxParallelImageRequests(numRequests: number) {
+    config.MAX_PARALLEL_IMAGE_REQUESTS = numRequests;
+}
+
 // Returns the config subset that can be changed via public setters and needs syncing to workers.
 export function getBroadcastableConfig() {
     return {
@@ -92,6 +105,10 @@ export function getDracoUrl(): string {
     return new URL(config.DRACO_URL, config.API_URL).href;
 }
 
+export function setDracoUrl(url: string) {
+    config.DRACO_URL = browser.resolveURL(url);
+}
+
 export function getMeshoptUrl(): string {
     if (typeof WebAssembly !== 'object') {
         throw new Error("WebAssembly not supported, cannot instantiate meshoptimizer");
@@ -100,8 +117,18 @@ export function getMeshoptUrl(): string {
     return new URL(isWasmSimdSupported() ? config.MESHOPT_SIMD_URL : config.MESHOPT_URL, config.API_URL).href;
 }
 
+export function setMeshoptUrl(url: string) {
+    const resolved = browser.resolveURL(url);
+    config.MESHOPT_URL = resolved;
+    config.MESHOPT_SIMD_URL = resolved;
+}
+
 export function getBuildingGenUrl(): string {
     return new URL(config.BUILDING_GEN_URL, config.API_URL).href;
+}
+
+export function setBuildingGenUrl(url: string) {
+    config.BUILDING_GEN_URL = browser.resolveURL(url);
 }
 
 export default config;
