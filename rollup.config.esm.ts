@@ -23,12 +23,16 @@ function esmConfig(dir: string, workerSuffix: string, emitVisualizer = false): R
         output: {
             dir,
             chunkFileNames: (chunk) => {
-                if (chunk.name === "index") return "core.js";
                 if (chunk.isDynamicEntry) {
                     if (chunk.facadeModuleId.endsWith('hd_main_imports.ts')) return 'hd.shared.js';
                     if (chunk.facadeModuleId.endsWith('hd_worker_imports.ts')) return 'hd.worker.js';
                 }
-                return 'shared.js'; // catch all for deduped code
+                // Identify each code-split chunk by a foundational module/file rather than by
+                // chunk.name, which is derived from rollup's representative-module selection
+                // and can silently change when the module graph topology shifts
+                if (chunk.moduleIds.some(id => id.endsWith('/src/ui/map.ts'))) return 'core.js';
+                if (chunk.moduleIds.some(id => id.endsWith('/3d-style/data/bucket/building_bucket.ts'))) return 'hd.common.js';
+                return 'shared.js'; // catch-all: the large gl-matrix / startup utilities chunk
             },
             experimentalMinChunkSize: 5000,
             format: 'esm',
