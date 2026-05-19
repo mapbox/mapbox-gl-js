@@ -12,6 +12,8 @@ uniform lowp float u_device_pixel_ratio;
 uniform bool u_is_text;
 uniform bool u_is_halo;
 uniform lowp float u_scale_factor;
+// Boolean-config transition fragment alpha multiplier (dual-pass: originals + deltas).
+uniform lowp float u_opacity_multiplier;
 #ifdef ICON_TRANSITION
 uniform float u_icon_transition;
 #endif
@@ -118,7 +120,7 @@ void main() {
 #ifdef RENDER_TEXT_AND_SYMBOL
     if (is_sdf == ICON) {
         vec2 tex_icon = v_tex_a_icon;
-        lowp float alpha = opacity * fade_opacity;
+        lowp float alpha = opacity * fade_opacity * u_opacity_multiplier;
         glFragColor = texture(u_texture_icon, tex_icon) * alpha;
 
 #ifdef OVERDRAW_INSPECTOR
@@ -175,7 +177,7 @@ void main() {
     #endif
 #endif
 
-    out_color *= opacity * fade_opacity;
+    out_color *= opacity * fade_opacity * u_opacity_multiplier;
 
     #ifdef LIGHTING_3D_MODE
         out_color = apply_lighting_with_emission_ground(out_color, emissive_strength);

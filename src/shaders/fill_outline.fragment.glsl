@@ -5,6 +5,7 @@
 in highp vec2 v_pos;
 
 uniform float u_emissive_strength;
+uniform lowp float u_opacity_multiplier;
 
 #ifdef RENDER_SHADOWS
 uniform vec3 u_ground_shadow_factor;
@@ -47,7 +48,7 @@ void main() {
     out_color = apply_feature_cutout(out_color, gl_FragCoord, cutout_factors.x);
 #endif
 
-    glFragColor = out_color * (alpha * opacity);
+    glFragColor = out_color * (alpha * opacity * u_opacity_multiplier);
 #ifdef USE_MRT1
     out_Target1 = vec4(u_emissive_strength * glFragColor.a, 0.0, 0.0, glFragColor.a);
 #endif

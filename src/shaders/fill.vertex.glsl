@@ -21,6 +21,7 @@ out highp float v_z_offset;
 #endif
 
 uniform mat4 u_matrix;
+uniform lowp float u_opacity_multiplier;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float opacity

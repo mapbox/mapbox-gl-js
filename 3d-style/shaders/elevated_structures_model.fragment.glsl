@@ -28,6 +28,7 @@ vec3 compute_view_dependent_emissive_color(float ndotl, float emissive_strength,
 }
 
 uniform float u_emissive_strength;
+uniform float u_opacity_multiplier;
 
 #pragma mapbox: define highp vec4 structure_color
 
@@ -77,6 +78,9 @@ void main() {
 #ifdef FEATURE_CUTOUT
     out_color = apply_feature_cutout(out_color, gl_FragCoord, cutout_factors.x);
 #endif
+
+    // Premultiplied alpha output for (One, OneMinusSrcAlpha) translucent blend.
+    out_color *= u_opacity_multiplier;
 
     glFragColor = out_color;
 

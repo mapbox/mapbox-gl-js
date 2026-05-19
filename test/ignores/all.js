@@ -105,6 +105,7 @@ const todo = [
     "render-tests/icon-text-fit/stretch-nine-part-content-interpolate-text-size",
     // https://mapbox.atlassian.net/browse/GLJS-1189
     "render-tests/background-pattern/image-update/delayed/same-size-before-color-theme-change",
+
 ];
 
 const skip = [
@@ -287,7 +288,18 @@ const skip = [
     // gl-native only: indicator cutout with front cutoff
     "render-tests/front-cutoff/indicator-cutout",
     "render-tests/front-cutoff/indicator-cutout-transparency",
-    "render-tests/front-cutoff/indicator-cutout-2x-pixelratio"
+    "render-tests/front-cutoff/indicator-cutout-2x-pixelratio",
+
+    // gl-native only: elevated HD road markup (geojson line with hd-road-markup elevation reference not supported in gl-js)
+    "render-tests/hd-sd-transition/elevated-hd-sd-end",
+
+    // gl-native only: animated config change (pinBooleanTransitionProgress) is not supported in gl-js.
+    "render-tests/hd-sd-transition/elevated-hd-sd",
+    "render-tests/hd-sd-transition/elevated-hd-sd-mid-forward",
+    "render-tests/hd-sd-transition/elevated-hd-sd-mid-reverse",
+    "render-tests/hd-sd-transition/elevated-hd-sd-landuse",
+    "render-tests/hd-sd-transition/hd-on-remove-import",
+    "render-tests/hd-sd-transition/sd-on-steady"
 ];
 
 export default {todo, skip};

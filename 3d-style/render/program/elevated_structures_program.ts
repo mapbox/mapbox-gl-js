@@ -16,6 +16,7 @@ export type ElevatedStructuresDepthUniformsType = {
 export type ElevatedStructuresUniformsType = {
     ['u_matrix']: UniformMatrix4f;
     ['u_ground_shadow_factor']: Uniform3f;
+    ['u_opacity_multiplier']: Uniform1f;
 };
 
 export type ElevatedStructuresDepthReconstructUniformsType = {
@@ -34,6 +35,7 @@ const elevatedStructuresDepthUniforms = (context: Context): ElevatedStructuresDe
 const elevatedStructuresUniforms = (context: Context): ElevatedStructuresUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
+    'u_opacity_multiplier': new Uniform1f(context),
 });
 
 const elevatedStructuresDepthReconstructUniforms = (context: Context): ElevatedStructuresDepthReconstructUniformsType => ({
@@ -52,6 +54,7 @@ const elevatedStructuresDepthUniformValues = (matrix: mat4, depthBias: number): 
 const elevatedStructuresUniformValues = (matrix: mat4, groundShadowFactor: [number, number, number]): UniformValues<ElevatedStructuresUniformsType> => ({
     'u_matrix': matrix as Float32Array,
     'u_ground_shadow_factor': groundShadowFactor,
+    'u_opacity_multiplier': 1.0,
 });
 
 const elevatedStructuresDepthReconstructUniformValues = (
