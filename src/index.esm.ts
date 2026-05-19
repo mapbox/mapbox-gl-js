@@ -1,4 +1,6 @@
 import assert from 'assert';
+import _Point from '@mapbox/point-geometry';
+import {version as _version} from '../package.json';
 
 // Explicit type re-exports
 export type * from './ui/events';
@@ -38,7 +40,7 @@ export type {FontstackCompositing} from './style/glyph_loader';
 export type {AnimationOptions, CameraOptions, EasingOptions} from './ui/camera';
 
 // Named value exports — classes, functions, constants
-export {version} from '../package.json';
+export const version: string = _version;
 export {supported} from '@mapbox/mapbox-gl-supported';
 export {Map} from './ui/map';
 export {default as NavigationControl} from './ui/control/navigation_control';
@@ -51,7 +53,7 @@ export {default as Popup} from './ui/popup';
 export {default as Marker} from './ui/marker';
 export {default as Style} from './style/style';
 export {default as LngLat, LngLatBounds} from './geo/lng_lat';
-export {default as Point} from '@mapbox/point-geometry';
+export {_Point as Point};
 export {default as MercatorCoordinate} from './geo/mercator_coordinate';
 export {Evented} from './util/evented';
 export {FreeCameraOptions} from './ui/free_camera';
