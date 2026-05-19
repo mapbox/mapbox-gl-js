@@ -4,8 +4,8 @@ set -e
 DEST="$(cd "$(dirname "$0")" && pwd)"
 cd "$DEST/../.."
 
-if [ ! -f dist/mapbox-gl.js ] || [ ! -d dist/esm ] || [ ! -d dist/style-spec ]; then
-  echo "pack.sh: dist/ artifacts missing. Run build-dev, build-prod, build-esm-prod, build-csp, build-css, build-style-spec, build-dts first." >&2
+if [ ! -f dist/mapbox-gl.js ] || [ ! -d dist/esm ] || [ ! -f dist/esm/mapbox-gl.d.ts ] || [ ! -d dist/style-spec ]; then
+  echo "pack.sh: dist/ artifacts missing. Run build-dev, build-prod, build-esm-prod, build-csp, build-css, build-style-spec, build-dts, build-dts-esm first." >&2
   exit 1
 fi
 

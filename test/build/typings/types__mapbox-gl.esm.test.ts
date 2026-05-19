@@ -82,7 +82,7 @@ config.MAX_PARALLEL_IMAGE_REQUESTS satisfies number;
 
 // clearStorage accepts an optional callback
 clearStorage() satisfies void;
-clearStorage((err) => { err satisfies Error | null | undefined; }) satisfies void;
+clearStorage((err: Error | null | undefined) => { err satisfies Error | null | undefined; }) satisfies void;
 
 // Map constructor and basic methods
 const map = new Map({
