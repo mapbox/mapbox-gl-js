@@ -17,7 +17,7 @@ const visualize = production && (VISUALIZE === '1' || VISUALIZE === 'true');
 function esmConfig(dir: string, workerSuffix: string, emitVisualizer = false): RollupOptions {
     return {
         input: {
-            'mapbox-gl': 'src/index.ts',
+            'mapbox-gl': 'src/index.esm.ts',
             'worker': 'src/source/worker.ts'
         },
         output: {
