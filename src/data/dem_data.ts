@@ -2,7 +2,7 @@ import {Float32Image} from '../util/image';
 import {warnOnce, clamp} from '../util/util';
 import {register} from '../util/web_worker_transfer';
 import DemMinMaxQuadTree from './dem_tree';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import browser from '../util/browser';
 
 import type {CanonicalTileID} from '../source/tile_id';

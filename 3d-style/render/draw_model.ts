@@ -10,7 +10,7 @@ import {getMetersPerPixelAtLatitude, mercatorZfromAltitude, tileToMeter} from '.
 import TextureSlots from './texture_slots';
 import {convertModelMatrixForGlobe} from '../util/model_util';
 import {clamp, warnOnce, esgtsaHash} from '../../src/util/util';
-import assert from 'assert';
+import assert from '../../src/style-spec/util/assert';
 import {DEMSampler} from '../../src/terrain/elevation';
 import {Aabb} from '../../src/util/primitives';
 import {getCutoffParams} from '../../src/render/cutoff';

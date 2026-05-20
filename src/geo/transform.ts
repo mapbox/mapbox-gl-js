@@ -10,7 +10,7 @@ import {vec4, mat4, vec3, quat} from 'gl-matrix';
 import {FAR_BL, FAR_BR, FAR_TL, FAR_TR, Frustum, FrustumCorners, NEAR_BL, NEAR_BR, NEAR_TL, NEAR_TR, Ray} from '../util/primitives';
 import EdgeInsets from './edge_insets';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment, getProjectionInterpolationT} from './projection/adjustments';
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID, calculateKey} from '../source/tile_id';

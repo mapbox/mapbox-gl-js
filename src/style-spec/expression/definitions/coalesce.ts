@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../../util/assert';
 import {checkSubtype, ValueType} from '../types';
 import ResolvedImage from '../types/resolved_image';
 

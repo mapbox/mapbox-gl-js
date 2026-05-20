@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../util/assert';
 import ParsingError from './parsing_error';
 import ParsingContext from './parsing_context';
 import EvaluationContext from './evaluation_context';

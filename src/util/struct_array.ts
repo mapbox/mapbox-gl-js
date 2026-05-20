@@ -1,6 +1,6 @@
 // Note: all "sizes" are measured in bytes
 
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 
 import type {Transferable} from '../types/transferable';
 

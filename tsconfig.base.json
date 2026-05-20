@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "skipLibCheck": true,
-    "allowImportingTsExtensions": true,
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
@@ -29,7 +28,6 @@
       "DOM.Iterable"
     ],
     "types": [
-      "node",
       "geojson",
       "offscreencanvas"
     ],

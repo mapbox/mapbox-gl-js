@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../../style-spec/util/assert';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units';
 
 import type {

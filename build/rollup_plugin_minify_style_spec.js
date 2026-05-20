@@ -32,7 +32,7 @@ export default function minifyStyleSpec() {
 
             return {
                 code: `export default JSON.parse('${JSON.stringify(spec, replacer, 0)}');`,
-                map: {mappings: ''}
+                map: null
             };
         }
     };

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import offscreenCanvasSupported from './offscreen_canvas_supported';
 
 import type {Cancelable} from '../types/cancelable';

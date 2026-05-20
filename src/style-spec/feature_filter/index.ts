@@ -2,7 +2,7 @@ import latest from '../reference/latest';
 import {deepUnbundle} from '../util/unbundle_jsonlint';
 import {createExpression} from '../expression/index';
 import {isFeatureConstant} from '../expression/is_constant';
-import assert from 'assert';
+import assert from '../util/assert';
 
 import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../types/tile_id';

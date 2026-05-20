@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 
 export type TaskID = number;
 type Task = {

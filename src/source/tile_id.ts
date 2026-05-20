@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {register} from '../util/web_worker_transfer';
 
 import type {mat4} from 'gl-matrix';

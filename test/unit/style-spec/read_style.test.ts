@@ -2,6 +2,7 @@
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import readStyle from '../../../src/style-spec/read_style';
+import ParsingError from '../../../src/style-spec/error/parsing_error';
 
 describe('readStyle', () => {
     test('does not change parsed object\'s prototype via "__proto__" key', () => {
@@ -26,6 +27,18 @@ describe('readStyle', () => {
         } finally {
             delete (Object.prototype as Record<string, unknown>).glyphs;
         }
+    });
+
+    test('decodes a UTF-8 Uint8Array and returns a parsed style', () => {
+        const json = '{"version": 8, "sources": {}, "layers": []}';
+        const bytes = new TextEncoder().encode(json);
+        const result = readStyle(bytes);
+        expect(+result.version).toBe(8);
+    });
+
+    test('throws ParsingError when Uint8Array decodes to invalid JSON', () => {
+        const bytes = new TextEncoder().encode('not valid json');
+        expect(() => readStyle(bytes)).toThrow(ParsingError);
     });
 
     test('does not change a nested object\'s prototype via "__proto__" key', () => {

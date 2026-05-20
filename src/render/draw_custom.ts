@@ -4,7 +4,7 @@ import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import {warnOnce} from '../util/util';
 import {globeToMercatorTransition} from './../geo/projection/globe_util';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 
 import type Painter from './painter';
 import type {OverscaledTileID} from '../source/tile_id';

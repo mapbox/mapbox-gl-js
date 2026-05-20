@@ -1,7 +1,7 @@
 import {FillExtLayoutArray} from '../../../src/data/array_types';
 import {fillLayoutAttributesExt} from '../../../src/data/bucket/fill_attributes';
 import FillBufferData from '../../../src/data/bucket/fill_buffer_data';
-import assert from 'assert';
+import assert from '../../../src/style-spec/util/assert';
 import {register} from '../../../src/util/web_worker_transfer';
 
 import type {Range} from '../../elevation/elevation_feature';

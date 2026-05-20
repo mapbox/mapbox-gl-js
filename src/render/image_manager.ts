@@ -3,7 +3,7 @@ import {Event, ErrorEvent, Evented} from '../util/evented';
 import {RGBAImage} from '../util/image';
 import {ImagePosition, PATTERN_PADDING, ImageAtlasCache} from './image_atlas';
 import Texture from './texture';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {renderStyleImage} from '../style/style_image';
 import {warnOnce} from '../util/util';
 import {ImageRasterizer} from './image_rasterizer';

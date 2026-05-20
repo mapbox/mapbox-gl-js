@@ -1,5 +1,5 @@
 import Color, {type NonPremultipliedRenderColor} from '../style-spec/util/color';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 
 import type Context from './context';
 import type {
@@ -27,10 +27,10 @@ export interface Value<T> {
 }
 
 class BaseValue<T> implements Value<T> {
-    gl: WebGL2RenderingContext;
-    current: T;
-    default: T;
-    dirty: boolean;
+    declare gl: WebGL2RenderingContext;
+    declare current: T;
+    declare default: T;
+    declare dirty: boolean;
 
     constructor(context: Context) {
         this.gl = context.gl;

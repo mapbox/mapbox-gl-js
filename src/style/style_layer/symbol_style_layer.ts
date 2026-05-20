@@ -1,7 +1,7 @@
 import {mat4} from 'gl-matrix';
 import StyleLayer, {rawLayoutMayUseHD} from '../style_layer';
 import {prepareHD} from '../../../modules/hd_worker';
-import assert from 'assert';
+import assert from '../../style-spec/util/assert';
 import SymbolBucket from '../../data/bucket/symbol_bucket';
 import resolveTokens from '../../util/resolve_tokens';
 import {getLayoutProperties, getPaintProperties} from './symbol_style_layer_properties';

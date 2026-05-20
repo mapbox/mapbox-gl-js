@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import ImageSource from '../source/image_source';
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';

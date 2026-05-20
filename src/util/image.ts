@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {register} from './web_worker_transfer';
 import Color from '../style-spec/util/color';
 

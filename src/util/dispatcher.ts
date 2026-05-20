@@ -1,6 +1,6 @@
 import {uniqueId, asyncAll} from './util';
 import Actor from './actor';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import WorkerPool from './worker_pool';
 
 import type {Class} from '../types/class';

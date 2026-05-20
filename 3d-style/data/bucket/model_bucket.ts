@@ -5,7 +5,7 @@ import toEvaluationFeature from '../../../src/data/evaluation_feature';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
 import {vec3} from 'gl-matrix';
 import {InstanceVertexArray} from '../../../src/data/array_types';
-import assert from 'assert';
+import assert from '../../../src/style-spec/util/assert';
 import {warnOnce} from '../../../src/util/util';
 import {rotationScaleYZFlipMatrix} from '../../util/model_util';
 import {tileToMeter} from '../../../src/geo/mercator_coordinate';

@@ -1,5 +1,5 @@
 import {register} from '../../src/util/web_worker_transfer';
-import assert from 'assert';
+import assert from '../../src/style-spec/util/assert';
 import EXTENT from '../../src/style-spec/data/extent';
 
 import type Point from "@mapbox/point-geometry";

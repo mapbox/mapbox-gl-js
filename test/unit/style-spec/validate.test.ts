@@ -26,3 +26,10 @@ test('errors from validate do not contain line numbers', () => {
     const result = validate(style, reference);
     expect(result[0].line).toEqual(undefined);
 });
+
+test('validate accepts a UTF-8 encoded Uint8Array', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+    const bytes = new TextEncoder().encode(fixtures['bad-color']);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+    expect(JSON.stringify(validate(bytes))).toEqual(JSON.stringify(validate(fixtures['bad-color'])));
+});

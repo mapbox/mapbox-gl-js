@@ -1,7 +1,7 @@
 import {Event, Evented} from '../util/evented';
 import {getArrayBuffer} from '../util/ajax';
 import browser from '../util/browser';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {isWorker} from '../util/util';
 
 import type {Callback} from '../types/callback';

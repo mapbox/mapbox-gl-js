@@ -17,7 +17,7 @@ import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer
 import {renderColorRamp} from '../util/color_ramp';
 import EXTENT from '../style-spec/data/extent';
 import ResolvedImage from '../style-spec/expression/types/resolved_image';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import Framebuffer from '../gl/framebuffer';
 

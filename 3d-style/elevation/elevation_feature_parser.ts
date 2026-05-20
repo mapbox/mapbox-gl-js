@@ -1,4 +1,4 @@
-import assert from "assert";
+import assert from '../../src/style-spec/util/assert';
 import {VectorTileFeature, type VectorTileLayer} from "@mapbox/vector-tile";
 import {warnOnce} from "../../src/util/util";
 import {vec2} from "gl-matrix";

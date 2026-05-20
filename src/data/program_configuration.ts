@@ -14,7 +14,7 @@ import {
     UniformColor,
     Uniform4ui
 } from '../render/uniform_binding';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 
 import type {Class} from '../../src/types/class';
 import type {CanonicalTileID} from '../source/tile_id';

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../../src/style-spec/util/assert';
 import FillBucket from '../../src/data/bucket/fill_bucket';
 import {ElevationPortalGraph} from './elevation_graph';
 

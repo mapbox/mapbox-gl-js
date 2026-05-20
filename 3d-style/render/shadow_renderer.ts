@@ -10,7 +10,7 @@ import {mercatorZfromAltitude, tileToMeter} from '../../src/geo/mercator_coordin
 import {cartesianPositionToSpherical, sphericalPositionToCartesian, clamp, linearVec3TosRGB} from '../../src/util/util';
 import {defaultShadowUniformValues} from '../render/shadow_uniforms';
 import TextureSlots from './texture_slots';
-import assert from 'assert';
+import assert from '../../src/style-spec/util/assert';
 import {mat4, vec3} from 'gl-matrix';
 import {groundShadowUniformValues} from './program/ground_shadow_program';
 import EXTENT from '../../src/style-spec/data/extent';

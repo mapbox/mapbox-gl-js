@@ -32,7 +32,7 @@
     "pretest": "npm run build",
     "test": "node ./test.js",
     "build": "npm run build-spec && npm run build-dts",
-    "build-dts": "dts-bundle-generator --no-banner --export-referenced-types=false -o ./dist/index.d.ts ./style-spec.ts",
+    "build-dts": "dts-bundle-generator --no-banner --export-referenced-types=false --project ../../tsconfig.browser.json -o ./dist/index.d.ts ./style-spec.ts",
     "build-spec": "rollup -c && rollup -c --environment esm",
     "prepublishOnly": "npm run build",
     "postpublish": "rm dist/index.cjs dist/index.d.ts"

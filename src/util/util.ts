@@ -1,7 +1,7 @@
 import {mat4} from 'gl-matrix';
 import UnitBezier from '@mapbox/unitbezier';
 import Point from '@mapbox/point-geometry';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import deepEqual from '../style-spec/util/deep_equal';
 
 import type {vec4} from 'gl-matrix';

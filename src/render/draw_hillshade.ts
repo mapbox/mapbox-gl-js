@@ -7,7 +7,7 @@ import {
     hillshadeUniformPrepareValues
 } from './program/hillshade_program';
 import ColorMode from '../gl/color_mode';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';

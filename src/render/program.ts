@@ -3,7 +3,7 @@ import {
     FRAGMENT_PRELUDE_BLOCK,
     VERTEX_PRELUDE_BLOCK
 } from '../shaders/shaders';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import VertexArrayObject from './vertex_array_object';
 import {terrainUniforms, globeUniforms} from '../terrain/terrain';
 import {fogUniforms} from './fog';

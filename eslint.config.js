@@ -10,7 +10,6 @@ import {createNodeResolver, importX} from 'eslint-plugin-import-x';
 import {createTypeScriptImportResolver} from 'eslint-import-resolver-typescript';
 import {globalIgnores} from 'eslint/config';
 import {includeIgnoreFile} from '@eslint/compat';
-import tsConfig from './tsconfig.json' with {type: 'json'};
 import noObjectMethodsOnCollections from './test/eslint-rules/no-object-methods-on-collections.ts';
 import devtoolsMustUseDebugRun from './test/eslint-rules/devtools-must-use-debug-run.ts';
 
@@ -45,8 +44,37 @@ const UNTYPED_FILES = [
     './test/build/browserify-test-fixture.js',
 ];
 
+const IGNORED_PATHS = [
+    './dist',
+    './debug',
+    './rollup',
+    './src/style-spec/bin',
+    './src/style-spec/dist',
+    './src/style-spec/data',
+    './src/style-spec/reference',
+    './test/release/**/*',
+    './test/integration/render-tests/**/*',
+    './test/integration/query-tests/**/*',
+    './test/integration/expression-tests/**/*',
+    './test/integration/csp-tests/**/*',
+    './test/integration/data/**/*',
+    './test/integration/glyphs/**/*',
+    './test/integration/image/**/*',
+    './test/integration/models/**/*',
+    './test/integration/sprites/**/*',
+    './test/integration/styles/**/*',
+    './test/integration/tiles/**/*',
+    './test/integration/tilesets/**/*',
+    './test/integration/lib/operation-handlers.js',
+    './test/build/vite/**/*',
+    './test/build/webpack/**/*',
+    './test/build/typings/**/*',
+    './test/build/style-spec.test.js',
+    './test/build/browserify-test-fixture.js',
+];
+
 export default tseslint.config(
-    globalIgnores(tsConfig.exclude),
+    globalIgnores(IGNORED_PATHS),
     includeIgnoreFile(gitignorePath),
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -62,7 +90,7 @@ export default tseslint.config(
 
         languageOptions: {
             parserOptions: {
-                projectService: true,
+                project: ['./tsconfig.strict.json', './tsconfig.browser.json', './tsconfig.node.json'],
                 tsconfigRootDir: import.meta.dirname,
             },
         },

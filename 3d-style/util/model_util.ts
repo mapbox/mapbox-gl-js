@@ -15,7 +15,7 @@ import {
 import {latLngToECEF} from '../../src/geo/lng_lat';
 import {GLOBE_RADIUS} from '../../src/geo/projection/globe_constants';
 import {number as interpolate} from '../../src/style-spec/util/interpolate';
-import assert from 'assert';
+import assert from '../../src/style-spec/util/assert';
 import {Aabb} from '../../src/util/primitives';
 import {polygonIntersectsPolygon} from '../../src/util/intersection_tests';
 import Point from '@mapbox/point-geometry';

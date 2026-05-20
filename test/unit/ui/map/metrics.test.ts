@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import assert from 'assert';
+import assert from '../../../../src/style-spec/util/assert';
 import {describe, test, expect, waitFor, vi, createMap, doneAsync} from '../../../util/vitest';
 import {getRequestBody, mockFetch} from '../../../util/network';
 import {performanceEvent_} from '../../../../src/util/mapbox';

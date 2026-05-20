@@ -52,7 +52,7 @@ import {resamplePred} from '../../geo/projection/resample';
 import {tileCoordToECEF} from '../../geo/projection/globe_util';
 import {getProjection} from '../../geo/projection/index';
 import {mat4, vec3} from 'gl-matrix';
-import assert from 'assert';
+import assert from '../../style-spec/util/assert';
 import {regionsEquals} from '../../../3d-style/source/replacement_source';
 import {clamp} from '../../util/util';
 import {type CollisionBoxArray, type CollisionBox, type SymbolInstance, SymbolOrientationArray} from '../array_types';

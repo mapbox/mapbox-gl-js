@@ -1,5 +1,5 @@
 import Point from '@mapbox/point-geometry';
-import assert from 'assert';
+import assert from '../../style-spec/util/assert';
 import {mat4, vec4} from 'gl-matrix';
 import {clamp, warnOnce} from '../../util/util';
 import CollisionIndex from '../collision_index';

@@ -3,7 +3,7 @@ import {BUILDING_VISIBLE} from '../../data/bucket/building_bucket_flags';
 import {getLayoutProperties, getPaintProperties} from './building_style_layer_properties';
 import {checkIntersection, projectExtrusion} from '../../../src/style/style_layer/fill_extrusion_style_layer';
 import Point from '@mapbox/point-geometry';
-import assert from 'assert';
+import assert from '../../../src/style-spec/util/assert';
 import {BuildingBucket, prepareHD} from '../../../modules/hd_worker';
 
 import type {Layout, Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../../../src/style/properties';

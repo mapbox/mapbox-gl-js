@@ -1,7 +1,7 @@
 import {RGBAImage} from './image';
 import {isPowerOfTwo} from './util';
 import {lerp} from '../style-spec/util/lerp';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 
 import type {StylePropertyExpression, GlobalProperties} from '../style-spec/expression/index';
 import type {default as Color, PremultipliedRenderColor} from '../style-spec/util/color';

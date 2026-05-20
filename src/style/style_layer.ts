@@ -7,7 +7,7 @@ import {makeFQID} from '../util/fqid';
 import {createExpression, type FeatureState} from '../style-spec/expression/index';
 import {isStateConstant} from '../style-spec/expression/is_constant';
 import latest from '../style-spec/reference/latest';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import SymbolAppearance from './appearance';
 
 import type {Bucket, BucketParameters} from '../data/bucket';

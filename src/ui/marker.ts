@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import Point from '@mapbox/point-geometry';
 import * as DOM from '../util/dom';
 import LngLat from '../geo/lng_lat';

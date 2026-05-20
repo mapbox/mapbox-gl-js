@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {clone, easeCubicInOut, sphericalDirectionToCartesian, sphericalPositionToCartesian} from '../util/util';
 import * as interpolate from '../style-spec/util/interpolate';
 import {number as interpolateValue} from '../style-spec/util/interpolate';

@@ -1,5 +1,5 @@
 import StyleLayer from '../style_layer';
-import assert from 'assert';
+import assert from '../../style-spec/util/assert';
 
 import type {Map} from '../../ui/map';
 import type {ValidationError, ValidationErrors} from '../validate_style';

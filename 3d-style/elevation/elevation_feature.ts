@@ -1,6 +1,6 @@
 import {vec2, vec3} from "gl-matrix";
 import {register} from '../../src/util/web_worker_transfer';
-import assert from 'assert';
+import assert from '../../src/style-spec/util/assert';
 import {ElevationFeatureParser} from "./elevation_feature_parser";
 import {tileToMeter} from "../../src/geo/mercator_coordinate";
 import {Ray2D} from "../../src/util/primitives";

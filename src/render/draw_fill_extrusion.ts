@@ -18,7 +18,7 @@ import {
 } from './program/fill_extrusion_program';
 import Point from '@mapbox/point-geometry';
 import {neighborCoord} from '../source/tile_id';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {mercatorXfromLng, mercatorYfromLat, getMetersPerPixelAtLatitude} from '../geo/mercator_coordinate';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
 import Color from '../style-spec/util/color';

@@ -41,7 +41,7 @@ const vectorTileFeatureTypes = VectorTileFeature.types;
 import {footprintTrianglesIntersect, regionsEquals, type Region, type ReplacementSource} from '../../source/replacement_source';
 import TriangleGridIndex from '../../../src/util/triangle_grid_index';
 import earcut from 'earcut';
-import assert from 'assert';
+import assert from '../../../src/style-spec/util/assert';
 import EXTENT from '../../../src/style-spec/data/extent';
 import classifyRings from '../../../src/util/classify_rings';
 import {PerformanceUtils} from '../../../src/util/performance';

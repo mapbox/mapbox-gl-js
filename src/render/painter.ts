@@ -23,7 +23,7 @@ import {clippingMaskUniformValues} from './program/clipping_mask_program';
 import Color from '../style-spec/util/color';
 import symbol from './draw_symbol';
 import circle from './draw_circle';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import heatmap from './draw_heatmap';
 import line, {prepare as prepareLine} from './draw_line';
 import fill from './draw_fill';

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {NullType} from '../style-spec/expression/types';
 import {register} from '../util/web_worker_transfer';
 

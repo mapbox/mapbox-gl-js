@@ -7,7 +7,7 @@ import LineBucket from '../data/bucket/line_bucket';
 import FillBucket from '../data/bucket/fill_bucket';
 import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
 import {warnOnce, mapObject} from '../util/util';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import LineAtlas from '../render/line_atlas';
 import ImageAtlas, {ImageAtlasReference, getImagePosition, ICON_PADDING, sortImagesMap} from '../render/image_atlas';
 import {AtlasContentDescriptor} from '../render/atlas_content_descriptor';

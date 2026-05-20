@@ -1,6 +1,6 @@
 import {ColorAttachment, DepthRenderbufferAttachment, DepthTextureAttachment} from './value';
 import Texture from '../render/texture';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 
 import type Context from './context';
 import type {DepthBufferType} from './types';

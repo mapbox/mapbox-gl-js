@@ -5,7 +5,7 @@ import GeoJSONRT from './geojson_rt';
 import writePbf from './vector_tile_to_pbf';
 import Supercluster from 'supercluster';
 import geojsonvt from 'geojson-vt';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import VectorTileWorkerSource from './vector_tile_worker_source';
 import {createExpression} from '../style-spec/expression/index';
 

@@ -1,5 +1,5 @@
 import {Float32Image} from '../util/image';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 
 import type Context from '../gl/context';
 import type {RGBAImage, AlphaImage} from '../util/image';

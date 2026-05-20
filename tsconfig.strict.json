@@ -41,6 +41,7 @@
     "./src/style-spec/types/lut.ts",
     "./src/style-spec/types/tile_id.ts",
     "./src/style-spec/union-to-intersection.ts",
+    "./src/style-spec/util/assert.ts",
     "./src/style-spec/util/deep_equal.ts",
     "./src/style-spec/util/get_type.ts",
     "./src/style-spec/util/random.ts",

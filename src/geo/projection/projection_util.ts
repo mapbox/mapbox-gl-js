@@ -1,5 +1,5 @@
 import {mat4} from 'gl-matrix';
-import assert from 'assert';
+import assert from '../../style-spec/util/assert';
 
 import type {OverscaledTileID} from '../../source/tile_id';
 import type SymbolBucket from '../../data/bucket/symbol_bucket';

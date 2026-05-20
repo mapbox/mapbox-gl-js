@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../../util/assert';
 import {typeOf} from '../values';
 import {typeEquals, ValueType} from '../types';
 

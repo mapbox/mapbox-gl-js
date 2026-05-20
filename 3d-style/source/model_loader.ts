@@ -1,5 +1,5 @@
 import Point from '@mapbox/point-geometry';
-import assert from 'assert';
+import assert from '../../src/style-spec/util/assert';
 import earcut from 'earcut';
 import {mat4, vec3} from 'gl-matrix';
 import {Aabb} from '../../src/util/primitives';

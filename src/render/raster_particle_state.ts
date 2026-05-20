@@ -3,7 +3,7 @@ import {ParticleIndexLayoutArray} from '../data/array_types';
 import particleAttributes from '../data/particle_attributes';
 import SegmentVector from '../data/segment';
 import Texture from './texture';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 
 import type Context from '../gl/context';
 import type {OverscaledTileID} from "../source/tile_id";

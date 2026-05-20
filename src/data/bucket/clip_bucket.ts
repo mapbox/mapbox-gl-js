@@ -1,6 +1,6 @@
 import earcut from 'earcut';
 import classifyRings from '../../util/classify_rings';
-import assert from 'assert';
+import assert from '../../style-spec/util/assert';
 import {register} from '../../util/web_worker_transfer';
 import loadGeometry from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';

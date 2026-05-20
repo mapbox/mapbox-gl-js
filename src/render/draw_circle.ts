@@ -4,7 +4,7 @@ import CullFaceMode from '../gl/cull_face_mode';
 import {circleUniformValues, circleDefinesValues} from './program/circle_program';
 import SegmentVector from '../data/segment';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 
 import type {OverscaledTileID} from '../source/tile_id';
 import type Program from './program';

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {RGBAImage} from '../util/image';
 import {register} from '../util/web_worker_transfer';
 import {warnOnce} from '../util/util';

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../../util/assert';
 import {BooleanType, ColorType, NumberType, StringType, ValueType, array, NullType} from '../types';
 import {Color, isValue, toString as valueToString, typeOf, validateRGBA} from '../values';
 import RuntimeError from '../runtime_error';

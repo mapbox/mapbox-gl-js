@@ -18,7 +18,7 @@ import {
 } from '../geo/projection/globe_constants';
 import Point from '@mapbox/point-geometry';
 import {Event, Evented} from '../util/evented';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {Debug} from '../util/debug';
 import MercatorCoordinate, {
     mercatorZfromAltitude,

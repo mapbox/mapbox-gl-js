@@ -1,5 +1,5 @@
 import Point from '@mapbox/point-geometry';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {mat4} from 'gl-matrix';
 import {pointInFootprint, skipClipping, transformPointToTile} from '../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../3d-style/util/conflation';

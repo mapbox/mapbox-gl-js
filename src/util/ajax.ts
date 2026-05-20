@@ -1,7 +1,7 @@
 import {warnOnce, isWorker} from './util';
 import {isMapboxHTTPURL, hasCacheDefeatingSku} from './mapbox_url';
 import config from './config';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {cacheGet, cachePut} from './tile_request_cache';
 import webpSupported from './webp_supported';
 

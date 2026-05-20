@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {mat4, vec3} from 'gl-matrix';
 import {aabbForTileOnGlobe} from '../geo/projection/globe_util';
 

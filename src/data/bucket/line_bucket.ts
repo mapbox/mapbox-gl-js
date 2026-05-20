@@ -20,7 +20,7 @@ import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
-import assert from 'assert';
+import assert from '../../style-spec/util/assert';
 import {Point4D, clipLine} from '../../util/line_clipping';
 import {mapRange, warnOnce} from '../../util/util';
 import {tileToMeter} from '../../geo/mercator_coordinate';

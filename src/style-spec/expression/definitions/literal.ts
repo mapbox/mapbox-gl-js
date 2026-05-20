@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../../util/assert';
 import {isValue, typeOf, Color} from '../values';
 import Formatted from '../types/formatted';
 

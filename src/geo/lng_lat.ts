@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {wrap, degToRad, radToDeg} from '../util/util';
 import {GLOBE_RADIUS} from '../geo/projection/globe_constants';
 

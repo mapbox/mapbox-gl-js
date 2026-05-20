@@ -4,7 +4,7 @@ import EXTENT from '../../style-spec/data/extent';
 import {vec3} from 'gl-matrix';
 import {Aabb} from '../../util/primitives';
 import {aabbForTileOnGlobe} from './globe_util';
-import assert from 'assert';
+import assert from '../../style-spec/util/assert';
 import {CanonicalTileID} from '../../source/tile_id';
 
 import type MercatorCoordinate from '../mercator_coordinate';

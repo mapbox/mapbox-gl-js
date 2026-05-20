@@ -1,7 +1,7 @@
 import {Event, Evented} from '../../util/evented';
 import * as DOM from '../../util/dom';
 import {bindAll, warnOnce} from '../../util/util';
-import assert from 'assert';
+import assert from '../../style-spec/util/assert';
 import Marker from '../marker';
 import LngLat from '../../geo/lng_lat';
 import throttle from '../../util/throttle';

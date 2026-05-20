@@ -7,7 +7,7 @@ import SkyboxGeometry from './skybox_geometry';
 import {skyboxUniformValues, skyboxGradientUniformValues} from './program/skybox_program';
 import {skyboxCaptureUniformValues} from './program/skybox_capture_program';
 import {mat3, mat4} from 'gl-matrix';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
 
 import type SkyLayer from '../style/style_layer/sky_style_layer';

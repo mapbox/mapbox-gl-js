@@ -17,7 +17,7 @@ import DragRotateHandler from './handler/shim/drag_rotate';
 import TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate';
 import {bindAll} from '../util/util';
 import Point from '@mapbox/point-geometry';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {vec3} from 'gl-matrix';
 import {latFromMercatorY, mercatorScale} from '../geo/mercator_coordinate';
 

@@ -2,10 +2,10 @@ import ParsingError from './error/parsing_error';
 
 import type {StyleSpecification} from './types';
 
-export default function readStyle(style: string | Buffer | StyleSpecification): StyleSpecification {
+export default function readStyle(style: string | Uint8Array | StyleSpecification): StyleSpecification {
     if (style instanceof String || typeof style === 'string' || ArrayBuffer.isView(style)) {
         try {
-            const str = style.toString();
+            const str = ArrayBuffer.isView(style) ? new TextDecoder().decode(style) : style.toString();
             JSON.parse(str); // first try full parsing to catch malformed JSON
             return parse(str) as StyleSpecification; // then our custom parser
         } catch (e) {

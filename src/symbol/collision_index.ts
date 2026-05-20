@@ -5,7 +5,7 @@ import Grid from './grid_index';
 import {mat4, vec2, vec4} from 'gl-matrix';
 import ONE_EM from '../symbol/one_em';
 import {FOG_SYMBOL_CLIPPING_THRESHOLD, getFogOpacityAtTileCoord} from '../style/fog_helpers';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import * as symbolProjection from '../symbol/projection';
 import {degToRad, wrap} from '../util/util';
 import {clipLines} from '../util/line_clipping';

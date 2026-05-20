@@ -1,5 +1,5 @@
 import Point from '@mapbox/point-geometry';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 
 const FIREFOX_UA_RE = /firefox/i;
 const MACINTOSH_UA_RE = /macintosh/i;

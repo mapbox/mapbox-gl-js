@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../../style-spec/util/assert';
 import * as DOM from '../../util/dom';
 import {ease as _ease, bindAll, bezier, isFullscreen} from '../../util/util';
 import browser from '../../util/browser';

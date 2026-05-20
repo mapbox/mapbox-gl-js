@@ -1,0 +1,38 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./rollup/build/types-loose",
+    "rootDir": "."
+  },
+  "references": [
+    { "path": "./tsconfig.strict.json" }
+  ],
+  "include": [
+    "./src/**/*",
+    "./3d-style/**/*",
+    "./plugins/**/*",
+    "./modules/**/*",
+    "./internal/**/*",
+    "./package.json"
+  ],
+  "exclude": [
+    "./dist",
+    "./debug",
+    "./rollup",
+    "./node_modules",
+    "./src/style-spec/bin",
+    "./src/style-spec/dist",
+    "./src/style-spec/data",
+    "./src/style-spec/reference",
+    "./src/style-spec/test.js",
+    "./src/style-spec/rollup.config.js",
+    "./build/**/*",
+    "./test/**/*",
+    "./*.config.*",
+    "./internal/scripts/**/*",
+    "./plugins/**/rollup.config.ts",
+    "./plugins/mapbox-gl-pmtiles-provider/dist"
+  ]
+}

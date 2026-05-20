@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import Grid from '../symbol/grid_index';
 import Color from '../style-spec/util/color';
 import Point from '@mapbox/point-geometry';

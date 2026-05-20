@@ -11,7 +11,7 @@
 * and the Mapbox Terms of Service are available at https://www.mapbox.com/tos/
 ******************************************************************************/
 
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import config from './config';
 import webpSupported from './webp_supported';
 import {isMapboxHTTPURL, isMapboxURL} from './mapbox_url';

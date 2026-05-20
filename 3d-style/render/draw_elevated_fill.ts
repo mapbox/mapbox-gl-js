@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../../src/style-spec/util/assert';
 import {vec3} from 'gl-matrix';
 import DepthMode from '../../src/gl/depth_mode';
 import CullFaceMode from '../../src/gl/cull_face_mode';

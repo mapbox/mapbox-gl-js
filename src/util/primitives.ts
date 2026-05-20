@@ -1,5 +1,5 @@
 import {vec2, vec3, vec4} from 'gl-matrix';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {register} from './web_worker_transfer';
 
 import type {UnwrappedTileID} from '../source/tile_id';

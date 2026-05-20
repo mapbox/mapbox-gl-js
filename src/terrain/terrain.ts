@@ -10,7 +10,7 @@ import {Uniform1i, Uniform1f, Uniform2f, Uniform3f, UniformMatrix4f} from '../re
 import {prepareDEMTexture} from '../render/draw_hillshade';
 import EXTENT from '../style-spec/data/extent';
 import {clamp, warnOnce} from '../util/util';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {vec3, mat4, vec4} from 'gl-matrix';
 import ImageSource from '../source/image_source';
 import RasterTileSource from '../source/raster_tile_source';

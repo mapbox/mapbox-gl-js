@@ -8,7 +8,7 @@ import webpSupported from '../../../src/util/webp_supported';
 import {uuid} from '../../../src/util/util';
 import {SKU_ID} from '../../../src/util/sku_token';
 import {version} from '../../../package.json';
-import assert from 'assert';
+import assert from '../../../src/style-spec/util/assert';
 
 const mapboxTileURLs = [
     'https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf',

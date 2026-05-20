@@ -7,7 +7,7 @@ import {getLayoutProperties, getPaintProperties} from './circle_style_layer_prop
 import {vec4, vec3} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 import ProgramConfiguration from '../../data/program_configuration';
-import assert from 'assert';
+import assert from '../../style-spec/util/assert';
 import {latFromMercatorY, mercatorZfromAltitude} from '../../geo/mercator_coordinate';
 import EXTENT from '../../style-spec/data/extent';
 import {circleDefinesValues} from '../../render/program/circle_program';

@@ -5,7 +5,7 @@ import RasterDEMTileWorkerSource from './raster_dem_tile_worker_source';
 import RasterArrayTileWorkerSource from './raster_array_tile_worker_source';
 import GeoJSONWorkerSource from './geojson_worker_source';
 import Tiled3dModelWorkerSource from '../../3d-style/source/tiled_3d_model_worker_source';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {plugin as globalRTLTextPlugin, rtlPluginStatus} from './rtl_text_plugin';
 import {enforceCacheSizeLimit} from '../util/tile_request_cache';
 import {PerformanceUtils} from '../util/performance';

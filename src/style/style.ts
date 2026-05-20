@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import murmur3 from 'murmurhash-js';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import StyleChanges from './style_changes';

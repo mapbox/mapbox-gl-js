@@ -1,6 +1,6 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import unassert from 'rollup-plugin-unassert';
+import strip from '@rollup/plugin-strip';
 import json from '@rollup/plugin-json';
 import esbuild from 'rollup-plugin-esbuild';
 import {fileURLToPath} from 'url';
@@ -19,10 +19,13 @@ const config = [{
         sourcemap: true
     },
     plugins: [
-        esbuild({tsconfig: `${__dirname}/../../tsconfig.json`}),
+        esbuild({tsconfig: `${__dirname}/../../tsconfig.browser.json`}),
         json(),
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        unassert({include: ['*.js', '**/*.js', '*.ts', '**/*.ts']}),
+        strip({
+            sourceMap: true,
+            functions: ['assert', 'assert.*'],
+            include: ['**/*.ts']
+        }),
         resolve({
             browser: true,
             preferBuiltins: false

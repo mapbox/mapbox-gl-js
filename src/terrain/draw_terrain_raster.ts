@@ -2,7 +2,7 @@ import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import {terrainRasterUniformValues} from './terrain_raster_program';
 import {globeRasterUniformValues} from './globe_raster_program';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {easeCubicInOut} from '../util/util';
 import browser from '../util/browser';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';

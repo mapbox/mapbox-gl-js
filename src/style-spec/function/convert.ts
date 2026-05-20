@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../util/assert';
 
 import type {StylePropertySpecification} from '../style-spec';
 import type {

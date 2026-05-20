@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../../../src/style-spec/util/assert';
 import Point from '@mapbox/point-geometry';
 import {quat, vec3} from 'gl-matrix';
 import {register} from '../../../src/util/web_worker_transfer';

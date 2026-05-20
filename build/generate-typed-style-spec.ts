@@ -1,5 +1,5 @@
 import fs from 'fs';
-import assert from 'assert';
+import assert from '../src/style-spec/util/assert';
 import spec from '../src/style-spec/reference/latest';
 import {supportsPropertyExpression, supportsZoomExpression} from '../src/style-spec/util/properties';
 

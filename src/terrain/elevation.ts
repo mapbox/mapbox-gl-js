@@ -4,7 +4,7 @@ import EXTENT from '../style-spec/data/extent';
 import {vec3} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 
 import type DEMData from '../data/dem_data';
 import type {vec4} from 'gl-matrix';

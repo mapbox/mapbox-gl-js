@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../../src/style-spec/util/assert';
 import Point from "@mapbox/point-geometry";
 import {ElevationPortalGraph, type ElevationPortalEdge, type ElevationPortalType} from "./elevation_graph";
 import {vec2, vec3} from "gl-matrix";

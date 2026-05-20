@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../types/glsl.d.ts" />
 
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import preludeCommon from './_prelude.glsl';
 import preludeFrag from './_prelude.fragment.glsl';
 import preludeVert from './_prelude.vertex.glsl';

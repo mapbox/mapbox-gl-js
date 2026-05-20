@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import Point from '@mapbox/point-geometry';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import {segmentSegmentIntersection} from './intersection_tests';

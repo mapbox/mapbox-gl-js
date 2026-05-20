@@ -25,7 +25,7 @@ import RasterParticleState from './raster_particle_state';
 import Texture from './texture';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
 import rasterFade from './raster_fade';
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {RGBAImage} from '../util/image';
 import {smoothstep, esgtsaHash} from '../util/util';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_constants';

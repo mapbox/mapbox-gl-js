@@ -359,7 +359,7 @@ fs.writeFileSync('src/data/array_types.ts',
 `// This file is generated. Edit build/generate-struct-arrays.ts, then run \`npm run codegen\`.
 /* eslint-disable camelcase */
 
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import {Struct, StructArray} from '../util/struct_array';
 import {register} from '../util/web_worker_transfer';
 

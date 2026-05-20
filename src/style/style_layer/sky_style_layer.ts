@@ -3,7 +3,7 @@ import {getLayoutProperties, getPaintProperties} from './sky_style_layer_propert
 import {renderColorRamp} from '../../util/color_ramp';
 import {warnOnce, degToRad} from '../../util/util';
 import {vec3, quat} from 'gl-matrix';
-import assert from 'assert';
+import assert from '../../style-spec/util/assert';
 
 import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {PaintProps} from './sky_style_layer_properties';

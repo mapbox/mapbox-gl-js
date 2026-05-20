@@ -1,6 +1,6 @@
 /* eslint-disable new-cap */
 
-import assert from 'assert';
+import assert from '../../src/style-spec/util/assert';
 import {getDracoUrl, getMeshoptUrl} from '../../src/util/config';
 import {warnOnce} from '../../src/util/util';
 import {DracoDecoderModule} from './draco_decoder_gltf';

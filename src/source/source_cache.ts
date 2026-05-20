@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from '../style-spec/util/assert';
 import Point from '@mapbox/point-geometry';
 import Tile, {RenderSourceType} from './tile';
 import RasterArrayTile from './raster_array_tile';
