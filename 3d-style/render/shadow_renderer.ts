@@ -60,6 +60,15 @@ function getLightMatrixScratch(i: number): Float64Array {
     return scratch;
 }
 
+// Per-tile cache of cascade.matrix * tileMatrix, filled by computeCascadeTileMatrices and
+// consumed by setupShadowsFromTileCache. Module-level: the caller drains it per-node before
+// moving to the next tile.
+const cascadeTileMatrixScratches: Float64Array[] = [];
+
+// Reused by calculateShadowPassMatrixFromMatrix. All callers consume the result synchronously
+// (uniform upload or .set() copy), so a single scratch is safe.
+const shadowPassMatrixScratch = new Float32Array(16);
+
 type ShadowCascade = {
     framebuffer: Framebuffer;
     texture: Texture;
@@ -493,10 +502,8 @@ export class ShadowRenderer {
     }
 
     calculateShadowPassMatrixFromMatrix(matrix: mat4): mat4 {
-        const result = mat4.clone(matrix);
         const lightMatrix = this._cascades[this.painter.currentShadowCascade].matrix;
-        mat4.multiply(result, lightMatrix, matrix);
-        return result;
+        return mat4.multiply(shadowPassMatrixScratch, lightMatrix, matrix);
     }
 
     setupShadows(unwrappedTileID: UnwrappedTileID, program: Program<ShadowsUniformsType>, normalOffsetMode?: ShadowNormalOffsetMode | null) {
@@ -544,19 +551,39 @@ export class ShadowRenderer {
         program.setShadowUniformValues(context, uniforms);
     }
 
-    setupShadowsFromMatrix(worldMatrix: mat4, program: Program<ShadowUniformsType | ModelUniformsType | BuildingUniformsType>, normalOffset: boolean = false) {
-        if (!this.enabled) {
-            return;
+    // Precompute cascade.matrix * tileMatrix for each active cascade, returning per-cascade
+    // scratches. The caller layers per-node translate/scale on top before passing the result
+    // to setupShadowsFromCascadeMatrices — saves the per-node cascade-mul.
+    computeCascadeTileMatrices(tileMatrix: mat4): Float64Array[] {
+        const count = this._shadowParameters.cascadeCount;
+        for (let i = 0; i < count; i++) {
+            const out = cascadeTileMatrixScratches[i] = cascadeTileMatrixScratches[i] || new Float64Array(16);
+            mat4.multiply(out, this._cascades[i].matrix, tileMatrix);
         }
+        cascadeTileMatrixScratches.length = count;
+        return cascadeTileMatrixScratches;
+    }
+
+    setupShadowsFromMatrix(worldMatrix: mat4, program: Program<ShadowUniformsType | ModelUniformsType | BuildingUniformsType>, normalOffset: boolean = false) {
+        if (!this.enabled) return;
+        const count = this._shadowParameters.cascadeCount;
+        for (let i = 0; i < count; i++) {
+            mat4.multiply(getLightMatrixScratch(i), this._cascades[i].matrix, worldMatrix);
+        }
+        lightMatrixScratches.length = count;
+        this.setupShadowsFromCascadeMatrices(lightMatrixScratches, program, normalOffset);
+    }
+
+    // Bind shadow textures and upload per-cascade light matrices already baked by the caller.
+    setupShadowsFromCascadeMatrices(perCascadeMatrices: mat4[], program: Program<ShadowUniformsType | ModelUniformsType | BuildingUniformsType>, normalOffset: boolean = false) {
+        if (!this.enabled) return;
 
         const context = this.painter.context;
         const gl = context.gl;
         const uniforms = this._uniformValues;
 
         for (let i = 0; i < this._shadowParameters.cascadeCount; i++) {
-            const scratch = getLightMatrixScratch(i);
-            mat4.multiply(scratch, this._cascades[i].matrix, worldMatrix);
-            uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = scratch;
+            uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = perCascadeMatrices[i];
             context.activeTexture.set(gl.TEXTURE0 + TextureSlots.ShadowMap0 + i);
             this._cascades[i].texture.bindExtraParam(gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.GREATER);
         }
@@ -564,8 +591,8 @@ export class ShadowRenderer {
         this.useNormalOffset = normalOffset;
 
         if (normalOffset) {
-            const scale = this._shadowParameters.normalOffset;
-            uniforms["u_shadow_normal_offset"] = [1.0, scale, scale]; // meterToTile isn't used
+            const s = this._shadowParameters.normalOffset;
+            uniforms["u_shadow_normal_offset"] = [1.0, s, s]; // meterToTile isn't used
             uniforms["u_shadow_bias"] = [0.00006, 0.0012, 0.012]; // Reduce constant offset
         } else {
             uniforms["u_shadow_bias"] = [0.00036, 0.0012, 0.012];

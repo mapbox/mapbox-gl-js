@@ -153,8 +153,9 @@ function drawTiles(params: DrawParams) {
                 shadowRenderer.setupShadowsFromMatrix(tileMatrix, programWithoutFacades, true);
 
                 if (programWithFacades !== programWithoutFacades) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    shadowRenderer.setupShadowsFromMatrix(tileMatrix, programWithFacades, true);
+                    // Same shadow uniforms for both programs — skip the redundant cascade muls + texture binds.
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                    programWithFacades.setShadowUniformValues(context, shadowRenderer.getShadowUniformValues());
                 }
             }
         } else {
