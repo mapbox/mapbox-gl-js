@@ -110,12 +110,10 @@ class MeshBuilder {
         this.outIndices.emplaceBack(i1, i2, i3);
     }
 
-    addTriangles(indices: number[], vertices: Point[], heights: number[]) {
+    addTriangles(indices: number[], vertices: Point[], heights: number[], heightOffset: number = 0) {
         if (indices.length === 0) return;
         assert(indices.length % 3 === 0);
-        // For constant height, heights array length is 1
-        assert(vertices.length === heights.length || heights.length === 1);
-        const constantHeight = heights.length === 1;
+        assert(vertices.length === heights.length);
 
         const tmpVec = vec3.create();
         const normal = vec3.create();
@@ -124,9 +122,9 @@ class MeshBuilder {
             const v0 = vertices[indices[i + 0]];
             const v1 = vertices[indices[i + 1]];
             const v2 = vertices[indices[i + 2]];
-            const h0 = constantHeight ? heights[0] : heights[indices[i + 0]];
-            const h1 = constantHeight ? heights[0] : heights[indices[i + 1]];
-            const h2 = constantHeight ? heights[0] : heights[indices[i + 2]];
+            const h0 = heights[indices[i + 0]] + heightOffset;
+            const h1 = heights[indices[i + 1]] + heightOffset;
+            const h2 = heights[indices[i + 2]] + heightOffset;
             vec3.set(tmpVec, v0.x, v0.y, h0);
             const i0 = this.addVertex(tmpVec, normal);
             vec3.set(tmpVec, v1.x, v1.y, h1);
@@ -409,7 +407,7 @@ export class ElevatedStructures {
         endSegment(depthSegment);
 
         // Include tunnel roofs as shadow casters
-        builder.addTriangles(this.unevalTunnelTriangles, this.unevalVertices, [-0.1]);
+        builder.addTriangles(this.unevalTunnelTriangles, this.unevalVertices, this.unevalHeights, TUNNEL_ENTERANCE_HEIGHT);
         endSegment(shadowCasterSegment);
 
         this.maskSegments = SegmentVector.simpleSegment(0, maskSegment.primitiveOffset, 0, maskSegment.primitiveLength);
@@ -722,8 +720,8 @@ export class ElevatedStructures {
             builder.addQuad(
                 vec3.set(v1, a.coord.x, a.coord.y, a.height),
                 vec3.set(v2, b.coord.x, b.coord.y, b.height),
-                vec3.set(v3, b.coord.x, b.coord.y, edges[i].isTunnel ? -0.1 : 0.0),
-                vec3.set(v4, a.coord.x, a.coord.y, edges[i].isTunnel ? -0.1 : 0.0),
+                vec3.set(v3, b.coord.x, b.coord.y, edges[i].isTunnel ? b.height + tunnelEntranceHeight : 0.0),
+                vec3.set(v4, a.coord.x, a.coord.y, edges[i].isTunnel ? a.height + tunnelEntranceHeight : 0.0),
                 norm);
         }
 

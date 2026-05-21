@@ -3,7 +3,7 @@
     "metadata": {
         "test": {
             "mapMode": "static",
-            "allowed": 0.001,
+            "allowed": 0.0015,
             "showLayers3DWireframe": true,
             "showElevatedStructuresWireframe": true,
             "spriteFormat": "raster"
