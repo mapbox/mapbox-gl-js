@@ -95,23 +95,6 @@ function convertMaterial(materialDesc: Partial<MaterialDescription>, textures: A
     };
 }
 
-function computeCentroid(indexArray: Uint32Array | Float32Array, vertexArray: ArrayBufferView): vec3 {
-    const out: [number, number, number] = [0.0, 0.0, 0.0];
-    const indexSize = indexArray.length;
-    if (indexSize > 0) {
-        for (let i = 0; i < indexSize; i++) {
-            const index = indexArray[i] * 3;
-            out[0] += vertexArray[index];
-            out[1] += vertexArray[index + 1];
-            out[2] += vertexArray[index + 2];
-        }
-        out[0] /= indexSize;
-        out[1] /= indexSize;
-        out[2] /= indexSize;
-    }
-    return out;
-}
-
 function getNormalizedScale(arrayType: Class<ArrayBufferView>) {
     switch (arrayType) {
     case Int8Array:
@@ -153,14 +136,13 @@ function setArrayData(gltf: GLTF, accessor: GLTFAccessor, array: StructArray, bu
     const float32Array = (array).float32;
 
     const components = float32Array.length / array.capacity;
+    const total = accessor.count * numElements;
 
-    for (let i = 0, count = 0;  i < accessor.count * numElements; i += numElements, count += components) {
+    for (let i = 0, count = 0;  i < total; i += numElements, count += components) {
         for (let j = 0; j < components; j++) {
             float32Array[count + j] = buffer[i + j] * norm;
         }
     }
-
-    array._trim();
 }
 
 function convertPrimitive(primitive: GLTFPrimitive, gltf: GLTF, textures: Array<ModelTexture>): Mesh {
@@ -170,35 +152,26 @@ function convertPrimitive(primitive: GLTFPrimitive, gltf: GLTF, textures: Array<
 
     const mesh: Mesh = {} as Mesh;
 
-    // eslint-disable-next-line no-warning-comments
-    // TODO: Investigate a better way to pass arrays to StructArrays and avoid the double componentType indices
     mesh.indexArray = new TriangleIndexArray();
-    // eslint-disable-next-line no-warning-comments
-    // TODO: There might be no need to copy element by element to mesh.indexArray.
     const indexAccessor = gltf.json.accessors[indicesIdx];
 
-    const numTriangles = indexAccessor.count / 3;
-    mesh.indexArray.reserve(numTriangles);
     const indexArrayBuffer = getBufferData(gltf, indexAccessor);
-    for (let i = 0; i < numTriangles; i++) {
-        mesh.indexArray.emplaceBack(indexArrayBuffer[i * 3], indexArrayBuffer[i * 3 + 1], indexArrayBuffer[i * 3 + 2]);
-    }
-    mesh.indexArray._trim();
+    mesh.indexArray.resizeExact(indexAccessor.count / 3);
+    mesh.indexArray.uint16.set(indexArrayBuffer as Uint32Array);
+
     // vertices
     mesh.vertexArray = new ModelLayoutArray();
 
     const positionAccessor = gltf.json.accessors[attributeMap.POSITION];
 
-    mesh.vertexArray.reserve(positionAccessor.count);
     const vertexArrayBuffer = getBufferData(gltf, positionAccessor);
-
-    for (let i = 0; i < positionAccessor.count; i++) {
-        mesh.vertexArray.emplaceBack(vertexArrayBuffer[i * 3], vertexArrayBuffer[i * 3 + 1], vertexArrayBuffer[i * 3 + 2]);
-    }
-    mesh.vertexArray._trim();
+    mesh.vertexArray.resizeExact(positionAccessor.count);
+    mesh.vertexArray.float32.set(vertexArrayBuffer as Float32Array);
     // bounding box
     mesh.aabb = new Aabb(positionAccessor.min, positionAccessor.max);
-    mesh.centroid = computeCentroid(indexArrayBuffer, vertexArrayBuffer);
+    const [minX, minY, minZ] = positionAccessor.min;
+    const [maxX, maxY, maxZ] = positionAccessor.max;
+    mesh.centroid = [(minX + maxX) * 0.5, (minY + maxY) * 0.5, (minZ + maxZ) * 0.5];
 
     // colors
     if (attributeMap.COLOR_0 !== undefined) {
@@ -208,7 +181,7 @@ function convertPrimitive(primitive: GLTFPrimitive, gltf: GLTF, textures: Array<
         const colorArrayBuffer = getBufferData(gltf, colorAccessor);
         mesh.colorArray = numElements === 3 ? new Color3fLayoutArray() : new Color4fLayoutArray();
 
-        mesh.colorArray.resize(colorAccessor.count);
+        mesh.colorArray.resizeExact(colorAccessor.count);
         setArrayData(gltf, colorAccessor, mesh.colorArray, colorArrayBuffer);
     }
 
@@ -218,7 +191,7 @@ function convertPrimitive(primitive: GLTFPrimitive, gltf: GLTF, textures: Array<
 
         const normalAccessor = gltf.json.accessors[attributeMap.NORMAL];
 
-        mesh.normalArray.resize(normalAccessor.count);
+        mesh.normalArray.resizeExact(normalAccessor.count);
         const normalArrayBuffer = getBufferData(gltf, normalAccessor);
         setArrayData(gltf, normalAccessor, mesh.normalArray, normalArrayBuffer);
     }
@@ -229,7 +202,7 @@ function convertPrimitive(primitive: GLTFPrimitive, gltf: GLTF, textures: Array<
 
         const texcoordAccessor = gltf.json.accessors[attributeMap.TEXCOORD_0];
 
-        mesh.texcoordArray.resize(texcoordAccessor.count);
+        mesh.texcoordArray.resizeExact(texcoordAccessor.count);
         const texcoordArrayBuffer = getBufferData(gltf, texcoordAccessor);
         setArrayData(gltf, texcoordAccessor, mesh.texcoordArray, texcoordArrayBuffer);
     }
@@ -827,6 +800,12 @@ function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
     mesh.indexArray = new TriangleIndexArray();
     mesh.vertexArray = new ModelLayoutArray();
     mesh.colorArray = new Color4fLayoutArray();
+
+    // calculateLightsMesh emits 4 triangles, 10 vertices, and 10 colors per light;
+    // pre-size exactly so so we don't overallocate for a known size
+    mesh.indexArray.reserveExact(lights.length * 4);
+    mesh.vertexArray.reserveExact(lights.length * 10);
+    mesh.colorArray.reserveExact(lights.length * 10);
 
     calculateLightsMesh(lights, zScale, mesh.indexArray, mesh.vertexArray, mesh.colorArray);
 

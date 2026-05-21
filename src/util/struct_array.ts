@@ -186,20 +186,46 @@ class StructArray implements IStructArrayLayout {
     }
 
     /**
+     * Like `resize`, but allocates exactly `n` slots — no growth multiplier or
+     * default-capacity floor. Use when the final size is known up front.
+     * @param {number} n The new size of the array.
+     */
+    resizeExact(n: number) {
+        this.reserveExact(n);
+        this.length = n;
+    }
+
+    /**
      * Indicate a planned increase in size, so that any necessary allocation may
      * be done once, ahead of time.
      * @param {number} n The expected size of the array.
      */
     reserve(n: number) {
         if (n > this.capacity) {
-            this._reallocCount++;
-            this.capacity = Math.max(n, Math.floor(this.capacity * RESIZE_MULTIPLIER), DEFAULT_CAPACITY);
-            this.arrayBuffer = new ArrayBuffer(this.capacity * this.bytesPerElement);
-
-            const oldUint8Array = this.uint8;
-            this._refreshViews();
-            if (oldUint8Array) this.uint8.set(oldUint8Array);
+            this._allocate(Math.max(n, Math.floor(this.capacity * RESIZE_MULTIPLIER), DEFAULT_CAPACITY));
         }
+    }
+
+    /**
+     * Like `reserve`, but allocates exactly `n` slots — no growth multiplier or
+     * default-capacity floor. Use when the final size is known up front, so the
+     * subsequent emplaceBacks fill the buffer exactly and no `_trim` is needed.
+     * @param {number} n The exact final size of the array.
+     */
+    reserveExact(n: number) {
+        if (n > this.capacity || !this.arrayBuffer) {
+            this._allocate(n);
+        }
+    }
+
+    _allocate(capacity: number) {
+        this._reallocCount++;
+        this.capacity = capacity;
+        this.arrayBuffer = new ArrayBuffer(this.capacity * this.bytesPerElement);
+
+        const oldUint8Array = this.uint8;
+        this._refreshViews();
+        if (oldUint8Array) this.uint8.set(oldUint8Array);
     }
 
     /**

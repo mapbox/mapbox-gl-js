@@ -71,6 +71,82 @@ describe('StructArray', () => {
         expect(array.capacity).toEqual(1);
         expect(array.arrayBuffer.byteLength).toEqual(array.bytesPerElement);
     });
+
+    test('reserve is a no-op when n <= capacity', () => {
+        // Regression: a refactor once made reserve(n) reallocate on every call
+        // because the guard compared the bumped capacity against itself, not n.
+        const array = new TestArray();
+        array.reserve(100);
+        const buffer = array.arrayBuffer;
+        const capacity = array.capacity;
+
+        array.reserve(50);
+        expect(array.arrayBuffer).toBe(buffer);
+        expect(array.capacity).toEqual(capacity);
+
+        array.reserve(capacity);
+        expect(array.arrayBuffer).toBe(buffer);
+        expect(array.capacity).toEqual(capacity);
+    });
+
+    test('reserveExact allocates exactly n slots — no default floor, no growth multiplier', () => {
+        const array = new TestArray();
+        array.reserveExact(5);
+        expect(array.capacity).toEqual(5);
+        expect(array.length).toEqual(0);
+        expect(array.arrayBuffer.byteLength).toEqual(5 * array.bytesPerElement);
+    });
+
+    test('reserveExact(0) still initializes views so subsequent serialize/emplaceBack are safe', () => {
+        // Regression: reserveExact(0) used to leave arrayBuffer and views undefined.
+        // A later .uint8.set(...) or transfer would then crash.
+        const array = new TestArray();
+        array.reserveExact(0);
+        expect(array.capacity).toEqual(0);
+        expect(array.arrayBuffer).toBeTruthy();
+        expect(array.int16).toBeTruthy();
+        expect(array.arrayBuffer.byteLength).toEqual(0);
+    });
+
+    test('reserveExact does not shrink an already-larger array', () => {
+        const array = new TestArray();
+        array.reserve(100);
+        const capacity = array.capacity;
+        array.reserveExact(10);
+        expect(array.capacity).toEqual(capacity);
+    });
+
+    test('resizeExact sets capacity and length exactly', () => {
+        const array = new TestArray();
+        array.resizeExact(7);
+        expect(array.capacity).toEqual(7);
+        expect(array.length).toEqual(7);
+        expect(array.arrayBuffer.byteLength).toEqual(7 * array.bytesPerElement);
+    });
+
+    test('reserveExact + N emplaceBacks leaves length === capacity so _trim is a no-op', () => {
+        const array = new TestArray();
+        array.reserveExact(3);
+        array.emplaceBack(1, 2, 3);
+        array.emplaceBack(4, 5, 6);
+        array.emplaceBack(7, 8, 9);
+        expect(array.capacity).toEqual(3);
+        expect(array.length).toEqual(3);
+        const buffer = array.arrayBuffer;
+        array._trim();
+        expect(array.arrayBuffer).toBe(buffer);
+    });
+
+    test('emplaceBack past reserveExact capacity still grows correctly', () => {
+        const array = new TestArray();
+        array.reserveExact(2);
+        array.emplaceBack(1, 2, 3);
+        array.emplaceBack(4, 5, 6);
+        array.emplaceBack(7, 8, 9);
+        expect(array.length).toEqual(3);
+        expect(array.capacity >= 3).toBeTruthy();
+        expect(Array.from(array.int16.slice(0, 9))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    });
 });
 
 describe('FeatureIndexArray', () => {
