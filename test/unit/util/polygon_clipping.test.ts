@@ -2,7 +2,7 @@
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import {gridSubdivision} from '../../../src/util/polygon_clipping';
-import {polygonSubdivision, clip} from '../../../3d-style/util/polygon_clipping_hd';
+import {polygonSubdivision, clip, roundWithBoundaryTolerance, VertexCanonicalizer} from '../../../3d-style/util/polygon_clipping_hd';
 import Point from '@mapbox/point-geometry';
 import {EdgeIterator} from '../../../3d-style/elevation/elevation_feature';
 
@@ -584,8 +584,8 @@ describe('polygon subdivision', () => {
         expect(result[1].length).toBe(1);
     });
 
-    test('grid snapping to fix precision issues', () => {
-        // Real-world polygon that caused precision issues without grid snapping fix.
+    test('canonical rounding fixes precision issues', () => {
+        // Real-world polygon that caused precision issues without canonical rounding.
         // The martinez library can produce nearly-coincident vertices that should be
         // identical, causing rendering artifacts.
         const subject = [
@@ -641,5 +641,74 @@ describe('polygon subdivision', () => {
             new Point(3539, -1), new Point(4966, -1), new Point(4964, 63),
             new Point(3539, -1)
         ]);
+    });
+
+    test('roundWithBoundaryTolerance keeps near-half values consistent', () => {
+        // Captured from a HD-road bridge guard rail bug: martinez emitted two
+        // post-scale floats for the same logical cut endpoint. The old 128-grid
+        // snap moved them to opposite sides of the integer rounding boundary,
+        // so the two adjacent sub-polygons no longer shared the cut edge — and
+        // their unpaired cut walls rendered as a phantom guard rail crossing
+        // the road.
+        const oldSnapRound = (value: number) => Math.round(Math.round(value * 65536 / 128) * 128 / 65536);
+        expect(oldSnapRound(4861.499005)).toBe(4861);
+        expect(oldSnapRound(4861.499027)).toBe(4862);
+        expect(roundWithBoundaryTolerance(4861.499005, 1e-3)).toBe(4862);
+        expect(roundWithBoundaryTolerance(4861.499027, 1e-3)).toBe(4862);
+
+        // The MAPS3D-2108 shape: values straddling n + 0.5 also collapse to the
+        // same integer.
+        expect(roundWithBoundaryTolerance(3538.4998, 1e-3)).toBe(3539);
+        expect(roundWithBoundaryTolerance(3538.5002, 1e-3)).toBe(3539);
+
+        // Outside the tolerance window the function matches Math.round.
+        expect(roundWithBoundaryTolerance(4861.4, 1e-3)).toBe(4861);
+        expect(roundWithBoundaryTolerance(4861.6, 1e-3)).toBe(4862);
+        expect(roundWithBoundaryTolerance(4861.498, 1e-3)).toBe(4861);
+        expect(roundWithBoundaryTolerance(4861.502, 1e-3)).toBe(4862);
+
+        // Negative values are handled symmetrically.
+        expect(roundWithBoundaryTolerance(-4861.4995, 1e-3)).toBe(-4861);
+        expect(roundWithBoundaryTolerance(-4861.5005, 1e-3)).toBe(-4861);
+    });
+
+    test('VertexCanonicalizer collapses arbitrarily close pairs to one integer', () => {
+        // Two floats representing the same logical martinez vertex can land on
+        // opposite sides of any per-vertex rounding-rule discontinuity. Cross-
+        // vertex canonicalization makes them adopt a single integer regardless
+        // of the rounding rule.
+        const cases: Array<[[number, number], [number, number]]> = [
+            // Drift 1e-4 across the boundary at n + 0.5.
+            [[1234.499, 0], [1234.4989, 0]],
+            // Drift 1e-3 straddling the n + 0.5 boundary.
+            [[1234.4995, 0], [1234.4985, 0]],
+            // Tiny drift just below n + 0.5.
+            [[1234.4984, 0], [1234.4985, 0]],
+            // Mirror case for negative coords (JS Math.round breaks ties toward
+            // +inf, so the conflict edge is on the more-negative side).
+            [[-1234.5015, 0], [-1234.5016, 0]],
+            // Drift equal to the tolerance, straddling n + 0.5.
+            [[1234.498, 0], [1234.499, 0]],
+        ];
+
+        for (const [first, second] of cases) {
+            const c = new VertexCanonicalizer(1e-3);
+            const a = c.canonicalize(first[0], first[1]);
+            const b = c.canonicalize(second[0], second[1]);
+            expect(b).toEqual(a);
+        }
+    });
+
+    test('VertexCanonicalizer chains aliases so close pairs survive intermediate hops', () => {
+        // The third vertex is within tolerance of the second but outside
+        // tolerance of the first. It must adopt the cluster's integer pair
+        // anyway — which requires the second vertex's pre-round position to
+        // have been stored as an alias when it adopted the cluster.
+        const c = new VertexCanonicalizer(1e-3);
+        const a = c.canonicalize(1234.4976, 0);
+        const b = c.canonicalize(1234.4985, 0);
+        const third = c.canonicalize(1234.4995, 0);
+        expect(b).toEqual(a);
+        expect(third).toEqual(a);
     });
 });
