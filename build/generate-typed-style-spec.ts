@@ -286,6 +286,9 @@ const lightTypes = Object.keys(spec['light-3d'].type.values);
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
 const layerTypes = Object.keys(spec.layer.type.values);
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+const rootLayerKeys = Object.keys(spec.layer).filter(k => !['id', 'type', 'source', 'source-layer', 'metadata', 'paint', 'layout'].includes(k));
+
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const {source, ...updatableTerrainSpec} = spec.terrain;
 
@@ -461,6 +464,8 @@ ${layerTypes.map(key => `    | ${tsLayerSpecificationTypeName(key)}`).join('\n')
 export type LayoutSpecification = UnionToIntersection<NonNullable<LayerSpecification['layout']>>;
 
 export type PaintSpecification = UnionToIntersection<NonNullable<LayerSpecification['paint']>>;
+
+export type LayerBaseSpecification = Pick<LayerSpecification, ${rootLayerKeys.map(k => JSON.stringify(k)).join(' | ')}>;
 
 // Aliases for easier migration from @types/mapbox-gl
 

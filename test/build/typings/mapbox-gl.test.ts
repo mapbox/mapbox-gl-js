@@ -428,6 +428,49 @@ map.getPaintProperty('id', 'background-opacity') satisfies NonNullable<mapboxgl.
 map.getPaintProperty('id', 'background-color-transition') satisfies mapboxgl.TransitionSpecification | undefined;
 
 //
+// Layer Properties (unified getter/setter)
+//
+
+// setLayerProperty — paint property
+map.setLayerProperty('id', 'background-color', '#f08');
+// @ts-expect-error
+map.setLayerProperty('id', 'background-kolor', '#f08');
+// @ts-expect-error
+map.setLayerProperty('id', 'background-color', 42);
+
+// setLayerProperty — layout property
+map.setLayerProperty('id', 'visibility', 'visible');
+// @ts-expect-error
+map.setLayerProperty('id', 'visibility', 'viseble');
+
+// setLayerProperty — root-level properties
+map.setLayerProperty('id', 'minzoom', 3);
+map.setLayerProperty('id', 'maxzoom', 12);
+map.setLayerProperty('id', 'slot', 'middle');
+map.setLayerProperty('id', 'filter', ['==', ['get', 'type'], 'road']);
+// @ts-expect-error
+map.setLayerProperty('id', 'minzoom', 'three');
+// @ts-expect-error — source and source-layer are not mutable via setLayerProperty
+map.setLayerProperty('id', 'source', 'new-source');
+// @ts-expect-error
+map.setLayerProperty('id', 'source-layer', 'new-layer');
+
+// getLayerProperty — paint property
+map.getLayerProperty('id', 'background-color') satisfies NonNullable<mapboxgl.BackgroundLayerSpecification['paint']>['background-color'] | null | undefined;
+
+// getLayerProperty — layout property
+map.getLayerProperty('id', 'visibility') satisfies NonNullable<mapboxgl.SymbolLayerSpecification['layout']>['visibility'] | null | undefined;
+
+// getLayerProperty — root-level properties
+map.getLayerProperty('id', 'minzoom') satisfies number | null | undefined;
+map.getLayerProperty('id', 'maxzoom') satisfies number | null | undefined;
+map.getLayerProperty('id', 'slot') satisfies string | null | undefined;
+map.getLayerProperty('id', 'filter') satisfies mapboxgl.FilterSpecification | null | undefined;
+
+// @ts-expect-error — unknown property name
+map.getLayerProperty('id', 'background-kolor');
+
+//
 // Add Custom Layer
 //
 

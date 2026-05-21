@@ -1495,3 +1495,47 @@ test('Disallow usage of FQID separator in the public APIs', async () => {
         expect(event.error.message).toMatch(/can't contain special symbols/);
     }
 });
+
+describe('Map#setLayerProperty', () => {
+    test('fires the appearances telemetry event', async () => {
+        const map = createMap({
+            style: {
+                version: 8,
+                sources: {},
+                layers: [{id: 'bg', type: 'background'}]
+            }
+        });
+        await waitFor(map, 'style.load');
+        const telemetrySpy = vi.spyOn(map, '_postAddingAppearancesToStyleEvent').mockImplementation(() => {});
+        map.setLayerProperty('bg', 'appearances', []);
+        expect(telemetrySpy).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('Map#getLayerProperty', () => {
+    test('delegates to the style and returns the value', async () => {
+        const map = createMap({
+            style: {
+                version: 8,
+                sources: {},
+                layers: [{id: 'bg', type: 'background', minzoom: 3, maxzoom: 12}]
+            }
+        });
+        await waitFor(map, 'style.load');
+        expect(map.getLayerProperty('bg', 'minzoom')).toBe(3);
+        expect(map.getLayerProperty('bg', 'maxzoom')).toBe(12);
+    });
+
+    test('returns undefined for unknown layer', async () => {
+        const map = createMap();
+        await waitFor(map, 'style.load');
+        expect(map.getLayerProperty('nonexistent', 'minzoom')).toBeUndefined();
+    });
+
+    test('returns null for FQID-shaped ids', async () => {
+        const map = createMap();
+        map.on('error', () => {});
+        await waitFor(map, 'style.load');
+        expect(map.getLayerProperty(makeFQID('id', 'scope'), 'minzoom')).toBeNull();
+    });
+});

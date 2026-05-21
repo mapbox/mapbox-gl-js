@@ -106,6 +106,7 @@ import type {
     IconsetSpecification,
     ModelsSpecification,
     AppearanceSpecification,
+    LayerBaseSpecification,
     TerrainSpecificationUpdate
 } from '../style-spec/types';
 import type {Callback} from '../types/callback';
@@ -288,6 +289,8 @@ type FeaturesetSelector = {
     properties?: Record<string, StyleExpression>;
     uniqueFeatureID: boolean;
 };
+
+export type LayerProperty = LayerBaseSpecification & PaintSpecification & LayoutSpecification;
 
 const MAX_IMPORT_DEPTH = 5;
 const defaultTransition = {duration: 300, delay: 0};
@@ -3117,19 +3120,46 @@ class Style extends Evented<MapEvents> {
         this._updateLayer(layer);
     }
 
-    setLayerProperty<T extends keyof (PaintSpecification | LayoutSpecification)>(layerId: string, name: T | "appearances", value: PaintSpecification[T] | LayoutSpecification[T] | AppearanceSpecification[], options: StyleSetterOptions = {}) {
+    getLayerProperty<K extends keyof LayerProperty>(layerId: string, name: K): LayerProperty[K] | undefined {
+        const layer = this._checkLayer(layerId);
+        if (!layer) return;
+
+        switch (name) {
+        case 'minzoom':      return layer.minzoom as LayerProperty[K];
+        case 'maxzoom':      return layer.maxzoom as LayerProperty[K];
+        case 'filter':       return this.getFilter(layerId) as LayerProperty[K];
+        case 'slot':         return layer.slot as LayerProperty[K];
+        case 'appearances':  return layer.getAppearances().map(a => a.serialize()) as LayerProperty[K];
+        }
+
+        return (layer.isPaintProperty(name as keyof PaintSpecification) ?
+            this.getPaintProperty(layerId, name as keyof PaintSpecification) :
+            this.getLayoutProperty(layerId, name as keyof LayoutSpecification)) as LayerProperty[K];
+    }
+
+    setLayerProperty<K extends keyof LayerProperty>(layerId: string, name: K, value: LayerProperty[K], options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const layer = this._checkLayer(layerId);
         if (!layer) return;
 
-        if (name === 'appearances') {
-            layer.setAppearances(value);
+        switch (name) {
+        case 'appearances':
+            layer.setAppearances(value as AppearanceSpecification[]);
             this._updateLayer(layer);
-        } else if (layer.isPaintProperty(name)) {
-            this.setPaintProperty(layerId, name, value as PaintSpecification[T], options);
+            return;
+        case 'minzoom':      return this.setLayerZoomRange(layerId, value as number);
+        case 'maxzoom':      return this.setLayerZoomRange(layerId, null, value as number);
+        case 'filter':       return this.setFilter(layerId, value as FilterSpecification, options);
+        case 'slot':         return this.setSlot(layerId, value as string);
+        }
+
+        if (layer.isPaintProperty(name as keyof PaintSpecification)) {
+            const paintName = name as keyof PaintSpecification;
+            this.setPaintProperty(layerId, paintName, value as PaintSpecification[typeof paintName], options);
         } else {
-            this.setLayoutProperty(layerId, name, value as LayoutSpecification[T], options);
+            const layoutName = name as keyof LayoutSpecification;
+            this.setLayoutProperty(layerId, layoutName, value as LayoutSpecification[typeof layoutName], options);
         }
     }
 

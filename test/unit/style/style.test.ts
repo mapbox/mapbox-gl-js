@@ -411,6 +411,7 @@ describe('Style#setState', () => {
             'setPaintProperty',
             'setLayoutProperty',
             'setLayerProperty',
+            'getLayerProperty',
             'setFilter',
             'addSource',
             'removeSource',
@@ -1704,6 +1705,221 @@ describe('Style#setLayerProperty', () => {
 
         style.update({});
         expect(style._changes.isDirty()).toBeFalsy();
+    });
+
+    test('minzoom', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [
+                {"id": "background", "type": "background"}
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+        style.setLayerProperty('background', 'minzoom', 5);
+        expect(style._layers['background'].minzoom).toBe(5);
+        expect(style._changes.isDirty()).toBeTruthy();
+    });
+
+    test('maxzoom', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [
+                {"id": "background", "type": "background"}
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+        style.setLayerProperty('background', 'maxzoom', 12);
+        expect(style._layers['background'].maxzoom).toBe(12);
+        expect(style._changes.isDirty()).toBeTruthy();
+    });
+
+    test('filter', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {"type": "FeatureCollection", "features": []}
+                }
+            },
+            "layers": [
+                {"id": "line", "type": "line", "source": "geojson"}
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+        const filter = ['==', ['get', 'type'], 'road'];
+        style.setLayerProperty('line', 'filter', filter);
+        expect(style.getFilter('line')).toEqual(filter);
+        expect(style.getFilter('line')).not.toBe(filter);
+        expect(style._changes.isDirty()).toBeTruthy();
+    });
+
+    test('slot', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [
+                {"id": "background", "type": "background"}
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+        style.setLayerProperty('background', 'slot', 'middle');
+        expect(style._layers['background'].slot).toBe('middle');
+    });
+
+});
+
+describe('Style#getLayerProperty', () => {
+    test('returns undefined for unknown layer', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": []
+        });
+
+        await waitFor(style, 'style.load');
+        expect(style.getLayerProperty('nonexistent', 'minzoom')).toBeUndefined();
+    });
+
+    test('returns minzoom and maxzoom', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [
+                {"id": "background", "type": "background", "minzoom": 3, "maxzoom": 12}
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+        expect(style.getLayerProperty('background', 'minzoom')).toBe(3);
+        expect(style.getLayerProperty('background', 'maxzoom')).toBe(12);
+    });
+
+    test('returns filter', async () => {
+        const filter = ['==', ['get', 'type'], 'road'];
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {"type": "FeatureCollection", "features": []}
+                }
+            },
+            "layers": [
+                {"id": "line", "type": "line", "source": "geojson", filter}
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+        expect(style.getLayerProperty('line', 'filter')).toEqual(filter);
+    });
+
+    test('returns slot', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "vt": {"type": "vector", "tiles": ["http://example.com/{z}/{x}/{y}.pbf"]}
+            },
+            "layers": [
+                {"id": "line", "type": "line", "source": "vt", "source-layer": "roads", "slot": "middle"}
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+        expect(style.getLayerProperty('line', 'slot')).toBe('middle');
+    });
+
+    test('returns appearances round-tripped through serialize', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [
+                {"id": "background", "type": "background"}
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+        const appearances = [
+            {
+                "condition": ["==", ["feature-state", "availability"], "partial"],
+                "properties": {
+                    "icon-image": ["image", "charging-station", {"params": {"fill": "orange"}}],
+                    "icon-size": 1.1
+                }
+            }
+        ];
+        style.setLayerProperty('background', 'appearances', appearances);
+        expect(style.getLayerProperty('background', 'appearances')).toEqual(appearances);
+    });
+
+    test('returns undefined for unset root properties', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {"type": "FeatureCollection", "features": []}
+                }
+            },
+            "layers": [
+                {"id": "line", "type": "line", "source": "geojson"}
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+        expect(style.getLayerProperty('line', 'minzoom')).toBeUndefined();
+        expect(style.getLayerProperty('line', 'maxzoom')).toBeUndefined();
+        expect(style.getLayerProperty('line', 'filter')).toBeUndefined();
+        expect(style.getLayerProperty('line', 'slot')).toBeUndefined();
+    });
+
+    test('delegates to getPaintProperty for paint properties', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [
+                {"id": "background", "type": "background", "paint": {"background-color": "red"}}
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+        expect(style.getLayerProperty('background', 'background-color')).toEqual('red');
+    });
+
+    test('delegates to getLayoutProperty for layout properties', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {"type": "FeatureCollection", "features": []}
+                }
+            },
+            "layers": [
+                {"id": "line", "type": "line", "source": "geojson", "layout": {"line-cap": "round"}}
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+        expect(style.getLayerProperty('line', 'line-cap')).toBe('round');
     });
 });
 
