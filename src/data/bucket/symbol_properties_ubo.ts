@@ -84,6 +84,15 @@ export class SymbolPropertiesUBO {
     blockIndicesBuffer: WebGLBuffer | null;
     batchIndex: number;
     context: Context | null;
+    // Dirty tracking: each flag/range marks data that needs uploading to GPU.
+    // headerDirty: set by writeHeader (writes are rare — header is built once).
+    // propsDirtyMin/Max: dword range touched by writeDataDrivenBlock; -1 means clean.
+    // blockIndicesDirty: identity mapping never changes at runtime after construction,
+    // so this clears after the first upload and stays false.
+    _headerDirty: boolean;
+    _propsDirtyMin: number;
+    _propsDirtyMax: number;
+    _blockIndicesDirty: boolean;
 
     constructor(context: Context | null | undefined = null, batchIndex: number = 0, uboSizeDwords: number = 4096) {
         this.batchIndex = batchIndex;
@@ -103,6 +112,13 @@ export class SymbolPropertiesUBO {
             }
         }
         this.blockIndicesData = new Uint32Array(SymbolPropertiesUBO._blockIndicesTemplate);
+
+        // Initial state: header and blockIndices need uploading on first upload(); properties
+        // gets dirtied as features are written.
+        this._headerDirty = true;
+        this._propsDirtyMin = -1;
+        this._propsDirtyMax = -1;
+        this._blockIndicesDirty = true;
 
         if (context) {
             this._initBuffers(context);
@@ -156,6 +172,7 @@ export class SymbolPropertiesUBO {
         h[9]  = header.offsets[6]; // occlusion_opacity
         h[10] = header.offsets[7]; // z_offset
         h[11] = header.offsets[8]; // translate
+        this._headerDirty = true;
     }
 
     /**
@@ -176,6 +193,10 @@ export class SymbolPropertiesUBO {
             if ((header.dataDrivenMask & (1 << i)) === 0) continue;
             this._copyFromFlat(base + header.offsets[i], i, flat, SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[i], header.zoomDependentMask);
         }
+        // Track dword range touched so upload() can do a partial bufferSubData.
+        if (this._propsDirtyMin === -1 || base < this._propsDirtyMin) this._propsDirtyMin = base;
+        const end = base + dataDrivenBlockSizeDwords;
+        if (end > this._propsDirtyMax) this._propsDirtyMax = end;
     }
 
     /**
@@ -214,7 +235,9 @@ export class SymbolPropertiesUBO {
     }
 
     /**
-     * Upload all 3 buffers to GPU.
+     * Upload dirty buffer regions to GPU. Header and block-indices are uploaded
+     * at most once (they don't change after construction); properties uploads
+     * only the dword range touched by writeDataDrivenBlock since the last upload.
      */
     upload(context: Context): void {
         if (!this.context) this.context = context;
@@ -224,16 +247,35 @@ export class SymbolPropertiesUBO {
             this._initBuffers(context);
         }
 
-        gl.bindBuffer(gl.UNIFORM_BUFFER, this.headerBuffer);
-        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.headerData);
+        let didAny = false;
 
-        gl.bindBuffer(gl.UNIFORM_BUFFER, this.propertiesBuffer);
-        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.propertiesData);
+        if (this._headerDirty) {
+            gl.bindBuffer(gl.UNIFORM_BUFFER, this.headerBuffer);
+            gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.headerData);
+            this._headerDirty = false;
+            didAny = true;
+        }
 
-        gl.bindBuffer(gl.UNIFORM_BUFFER, this.blockIndicesBuffer);
-        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.blockIndicesData);
+        if (this._propsDirtyMin !== -1) {
+            const min = this._propsDirtyMin;
+            const max = this._propsDirtyMax; // exclusive
+            gl.bindBuffer(gl.UNIFORM_BUFFER, this.propertiesBuffer);
+            // bufferSubData(target, dstByteOffset, srcData, srcOffset, srcLength) — srcOffset/srcLength
+            // are in element units, not bytes.
+            gl.bufferSubData(gl.UNIFORM_BUFFER, min * 4, this.propertiesData, min, max - min);
+            this._propsDirtyMin = -1;
+            this._propsDirtyMax = -1;
+            didAny = true;
+        }
 
-        gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+        if (this._blockIndicesDirty) {
+            gl.bindBuffer(gl.UNIFORM_BUFFER, this.blockIndicesBuffer);
+            gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.blockIndicesData);
+            this._blockIndicesDirty = false;
+            didAny = true;
+        }
+
+        if (didAny) gl.bindBuffer(gl.UNIFORM_BUFFER, null);
     }
 
     /**

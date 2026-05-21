@@ -1416,38 +1416,48 @@ class SymbolBucket implements Bucket {
                     );
                 }
             } else if (Object.keys(states).length > 0) {
-                // Update specific features when feature-state changes
-                const featureIds = new Set<string | number>(Object.keys(states).map(id => {
-                    // Convert to number only if it's a safe integer to avoid precision loss
-                    const numId = Number(id);
-                    if (!isNaN(numId) && Number.isSafeInteger(numId) && String(numId) === id) {
-                        return numId;
+                // Update specific features when feature-state changes.
+                // Skip when no paint property reads feature-state — appearance condition
+                // flips (which CAN depend on state) are written by updateAppearances →
+                // updateFeaturePaintForAppearance below, so updateFeatures would only
+                // re-evaluate values that are about to be overwritten with the same data.
+                const symbolLayer = layers[0] as SymbolStyleLayer;
+                const textNeedsUpdate = this.text.uboBinder && this.text.uboBinder.hasStateDependentPaint(symbolLayer);
+                const iconNeedsUpdate = this.icon.uboBinder && this.icon.uboBinder.hasStateDependentPaint(symbolLayer);
+
+                if (textNeedsUpdate || iconNeedsUpdate) {
+                    const featureIds = new Set<string | number>(Object.keys(states).map(id => {
+                        // Convert to number only if it's a safe integer to avoid precision loss
+                        const numId = Number(id);
+                        if (!isNaN(numId) && Number.isSafeInteger(numId) && String(numId) === id) {
+                            return numId;
+                        }
+                        return id;
+                    }));
+
+                    if (textNeedsUpdate) {
+                        this.text.uboBinder.updateFeatures(
+                            featureIds,
+                            symbolLayer,
+                            vtLayer,
+                            canonical,
+                            availableImages,
+                            states,
+                            brightness
+                        );
                     }
-                    return id;
-                }));
 
-                if (this.text.uboBinder) {
-                    this.text.uboBinder.updateFeatures(
-                        featureIds,
-                        layers[0] as SymbolStyleLayer,
-                        vtLayer,
-                        canonical,
-                        availableImages,
-                        states,
-                        brightness
-                    );
-                }
-
-                if (this.icon.uboBinder) {
-                    this.icon.uboBinder.updateFeatures(
-                        featureIds,
-                        layers[0] as SymbolStyleLayer,
-                        vtLayer,
-                        canonical,
-                        availableImages,
-                        states,
-                        brightness
-                    );
+                    if (iconNeedsUpdate) {
+                        this.icon.uboBinder.updateFeatures(
+                            featureIds,
+                            symbolLayer,
+                            vtLayer,
+                            canonical,
+                            availableImages,
+                            states,
+                            brightness
+                        );
+                    }
                 }
             }
         }

@@ -1,11 +1,12 @@
 import {SymbolPropertiesUBO, type SymbolPropertyHeader} from './symbol_properties_ubo';
 import Color from '../../style-spec/util/color';
 import EvaluationParameters from '../../style/evaluation_parameters';
+import {PossiblyEvaluatedPropertyValue} from '../../style/properties';
 import {register} from '../../util/web_worker_transfer';
 import {packUint8ToFloat} from '../../shaders/encode_attribute';
 import {warnOnce} from '../../util/util';
 
-import type {PossiblyEvaluatedValue, PossiblyEvaluatedPropertyValue} from '../../style/properties';
+import type {PossiblyEvaluatedValue} from '../../style/properties';
 import type SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
 import type {LUT} from '../../util/lut';
 import type {Feature, FeatureState} from '../../style-spec/expression';
@@ -56,6 +57,16 @@ function shouldIgnoreLut(
     }
 
     return false;
+}
+
+/**
+ * True iff `prop` is a data-driven paint property whose expression reads feature-state.
+ * Constants and camera-only expressions return false.
+ */
+function isPaintStateDependent(prop: unknown): boolean {
+    if (!(prop instanceof PossiblyEvaluatedPropertyValue)) return false;
+    const inner = prop.value;
+    return (inner.kind === 'source' || inner.kind === 'composite') && inner.isStateDependent;
 }
 
 /**
@@ -121,6 +132,9 @@ export class SymbolPropertyBinderUBO {
 
     // Hash map for O(1) feature-state lookup
     featureVertexRangesFromId: Map<string | number, LocalFeatureVertexRange[]>;
+    // Hash map for O(1) lookup by vtFeatureIndex, used by appearance updates which
+    // dispatch by vt index rather than featureId.
+    featureVertexRangesFromVtIndex: Map<number, LocalFeatureVertexRange[]>;
     // Track ALL features for full re-evaluation when images/properties change
     allFeatures: LocalFeatureVertexRange[];
 
@@ -173,6 +187,7 @@ export class SymbolPropertyBinderUBO {
         this.uboSizeDwords = uboSizeDwords || 4096;
 
         this.featureVertexRangesFromId = new Map();
+        this.featureVertexRangesFromVtIndex = new Map();
         this.allFeatures = [];
         this.ubos = [];
         this.featureCount = 0;
@@ -586,6 +601,31 @@ export class SymbolPropertyBinderUBO {
     }
 
     /**
+     * Returns true if any layer paint property OR any appearance paint property read by
+     * this binder depends on feature-state. When false, feature-state changes alone
+     * cannot alter UBO contents (appearance condition flips are handled by
+     * updateAppearances), so updateFeatures can be skipped on feature-state updates.
+     *
+     * Called per bucket.update with the fresh layer so runtime setPaintProperty edits
+     * are picked up
+     */
+    hasStateDependentPaint(layer: SymbolStyleLayer): boolean {
+        const paint = layer.paint;
+        for (const def of this.propDefs) {
+            if (isPaintStateDependent(paint.get(def.name as keyof typeof paint._values))) return true;
+        }
+        for (const appearance of layer.getAppearances() || []) {
+            for (const def of this.propDefs) {
+                const key = def.name as keyof AppearancePaintProps;
+                if (appearance.hasPaintProperty(key) && isPaintStateDependent(appearance.paintProperties.get(key))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Hash data-driven property values for deduplication.
      * Returns an empty string when there are no data-driven properties (all constant).
      */
@@ -649,6 +689,8 @@ export class SymbolPropertyBinderUBO {
                     if (!this.featureVertexRangesFromId.has(featureId)) this.featureVertexRangesFromId.set(featureId, []);
                     this.featureVertexRangesFromId.get(featureId).push(featureRange);
                 }
+                if (!this.featureVertexRangesFromVtIndex.has(vtFeatureIndex)) this.featureVertexRangesFromVtIndex.set(vtFeatureIndex, []);
+                this.featureVertexRangesFromVtIndex.get(vtFeatureIndex).push(featureRange);
                 return localIndex;
             }
             this.propertyHashToUBOIndex.set(hash, this.featureCount);
@@ -674,6 +716,8 @@ export class SymbolPropertyBinderUBO {
                 if (!this.featureVertexRangesFromId.has(featureId)) this.featureVertexRangesFromId.set(featureId, []);
                 this.featureVertexRangesFromId.get(featureId).push(clampedRange);
             }
+            if (!this.featureVertexRangesFromVtIndex.has(vtFeatureIndex)) this.featureVertexRangesFromVtIndex.set(vtFeatureIndex, []);
+            this.featureVertexRangesFromVtIndex.get(vtFeatureIndex).push(clampedRange);
             return 0;
         }
 
@@ -693,6 +737,8 @@ export class SymbolPropertyBinderUBO {
             if (!this.featureVertexRangesFromId.has(featureId)) this.featureVertexRangesFromId.set(featureId, []);
             this.featureVertexRangesFromId.get(featureId).push(featureRange);
         }
+        if (!this.featureVertexRangesFromVtIndex.has(vtFeatureIndex)) this.featureVertexRangesFromVtIndex.set(vtFeatureIndex, []);
+        this.featureVertexRangesFromVtIndex.get(vtFeatureIndex).push(featureRange);
 
         return localIndex;
     }
@@ -812,12 +858,14 @@ export class SymbolPropertyBinderUBO {
         if (header.dataDrivenMask === 0) return false; // All constant — nothing per-feature to write
 
         let wrote = false;
-        for (const range of this.allFeatures) {
-            if (range.vtFeatureIndex !== vtFeatureIndex) continue;
-            const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, undefined, activeAppearance);
-            if (!this.ubos[range.batchIndex]) continue;
-            this.ubos[range.batchIndex].writeDataDrivenBlock(allValues, range.localFeatureIndex, header);
-            wrote = true;
+        const ranges = this.featureVertexRangesFromVtIndex.get(vtFeatureIndex);
+        if (ranges) {
+            for (const range of ranges) {
+                const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, undefined, activeAppearance);
+                if (!this.ubos[range.batchIndex]) continue;
+                this.ubos[range.batchIndex].writeDataDrivenBlock(allValues, range.localFeatureIndex, header);
+                wrote = true;
+            }
         }
         return wrote;
     }
@@ -931,6 +979,7 @@ export class SymbolPropertyBinderUBO {
         }
         this.ubos = [];
         this.featureVertexRangesFromId.clear();
+        this.featureVertexRangesFromVtIndex.clear();
         this.allFeatures = [];
         this.featureCount = 0;
         this.cachedHeader = null;
