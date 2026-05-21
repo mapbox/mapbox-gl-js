@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from './style-spec/util/assert';
 import _Point from '@mapbox/point-geometry';
 import {version as _version} from '../package.json';
 
