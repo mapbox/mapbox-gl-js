@@ -77,4 +77,31 @@ describe('RasterDEMTileWorkerSource', () => {
             });
         });
     });
+
+    test('reuses ImageBitmap response from tileProvider without redecoding', async () => {
+        // Build the bitmap *before* spying so the setup call isn't counted.
+        const pngBlob = await getPNGResponse();
+        const realBitmap = await createImageBitmap(pngBlob);
+
+        const createSpy = vi.spyOn(globalThis, 'createImageBitmap');
+        const tileProvider = {loadTile: vi.fn().mockResolvedValue({data: realBitmap})};
+        const source = new RasterDEMTileWorkerSource({tileProvider} as unknown as WorkerSourceOptions);
+
+        await new Promise<void>((resolve, reject) => {
+            source.loadTile({
+                source: 'source',
+                uid: 0,
+                type: 'raster-dem',
+                scope: '',
+                tileID: new OverscaledTileID(1, 0, 1, 0, 0),
+                request: {url: 'http://example.com/1/0/0.png'},
+                encoding: 'mapbox',
+            } as WorkerSourceDEMTileRequest, (err?: Error | null, result?: WorkerSourceDEMTileResult | null) => {
+                if (err) return reject(err);
+                expect(result && result.dem instanceof DEMData).toBeTruthy();
+                expect(createSpy).not.toHaveBeenCalled();
+                resolve();
+            });
+        });
+    });
 });

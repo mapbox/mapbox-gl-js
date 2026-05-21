@@ -483,6 +483,26 @@ describe('RasterTileSource provider', () => {
             });
         });
 
+        test('ImageBitmap response is passed directly to setTexture (fast path)', async () => {
+            // Build a real ImageBitmap *before* spying so we don't count this call.
+            const png = await getPNGResponse();
+            const realBitmap = await createImageBitmap(png);
+
+            const createSpy = vi.spyOn(globalThis, 'createImageBitmap');
+            const source = makeSourceWithProvider(vi.fn().mockResolvedValue({data: realBitmap}));
+            const tile = makeTile();
+
+            await new Promise(resolve => {
+                source.loadTile(tile, (err) => {
+                    expect(err).toBeNull();
+                    expect(tile.state).toBe('loaded');
+                    expect(tile.setTexture).toHaveBeenCalledWith(realBitmap, source.map.painter);
+                    expect(createSpy).not.toHaveBeenCalled();
+                    resolve();
+                });
+            });
+        });
+
         test('abortTile aborts the controller signal', async () => {
             let capturedSignal;
             const source = makeSourceWithProvider(vi.fn().mockImplementation((_tile, options) => {

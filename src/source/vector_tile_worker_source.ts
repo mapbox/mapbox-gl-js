@@ -38,7 +38,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
     availableImages: ImageId[];
     availableModels: StyleModelMap;
     loadVectorData: LoadVectorData;
-    tileProvider?: TileProvider<ArrayBuffer>;
+    tileProvider?: TileProvider<ArrayBuffer | ImageBitmap>;
     loading: Record<number, WorkerTile>;
     loaded: Record<number, WorkerTile>;
     deduped: DedupedRequest;
@@ -86,7 +86,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
         return () => controller.abort();
     }
 
-    async loadTileWithProvider(provider: TileProvider<ArrayBuffer>, params: WorkerSourceVectorTileRequest, controller: AbortController, callback: LoadVectorDataCallback) {
+    async loadTileWithProvider(provider: TileProvider<ArrayBuffer | ImageBitmap>, params: WorkerSourceVectorTileRequest, controller: AbortController, callback: LoadVectorDataCallback) {
         const {z, x, y} = params.tileID.canonical;
         try {
             const response = await provider.loadTile({z, x, y}, {request: params.request, signal: controller.signal});
@@ -102,6 +102,10 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
             // Intentionally empty tile
             if (response.data == null) return callback(null, null);
+
+            if (response.data instanceof ImageBitmap) {
+                return callback(new Error('Vector tiles require ArrayBuffer data'));
+            }
 
             const headers = new Map<string, string>();
             if (response.expires) headers.set('expires', response.expires);

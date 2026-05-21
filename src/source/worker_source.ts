@@ -190,7 +190,7 @@ export type WorkerSourceImageRaserizeCallback = Callback<RasterizedImageMap>;
 export interface WorkerSource {
     availableImages?: ImageId[];
     availableModels?: StyleModelMap;
-    tileProvider?: TileProvider<ArrayBuffer>;
+    tileProvider?: TileProvider<ArrayBuffer | ImageBitmap>;
 
     /**
      * Loads a tile from the given params and parse it into buckets ready to send
@@ -225,7 +225,7 @@ export type WorkerSourceOptions = {
     availableImages: ImageId[];
     availableModels: StyleModelMap;
     isSpriteLoaded: boolean;
-    tileProvider?: TileProvider<ArrayBuffer>;
+    tileProvider?: TileProvider<ArrayBuffer | ImageBitmap>;
     brightness?: number;
     worldview?: string;
     maxUniformBufferBindings?: number;

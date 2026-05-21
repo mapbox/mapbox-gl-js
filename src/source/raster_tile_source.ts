@@ -78,7 +78,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
     _loaded: boolean;
     _options: (RasterSourceSpecification | RasterDEMSourceSpecification | RasterArraySourceSpecification) & {provider?: string | false};
     _tileJSONRequest: Cancelable | null | undefined;
-    _tileProvider?: TileProvider<ArrayBuffer>;
+    _tileProvider?: TileProvider<ArrayBuffer | ImageBitmap>;
 
     prepare: undefined;
     afterUpdate: undefined;
@@ -308,7 +308,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
         }
     }
 
-    async loadTileWithProvider(tile: Tile, provider: TileProvider<ArrayBuffer>, request: RequestParameters, controller: AbortController, callback: Callback<undefined>) {
+    async loadTileWithProvider(tile: Tile, provider: TileProvider<ArrayBuffer | ImageBitmap>, request: RequestParameters, controller: AbortController, callback: Callback<undefined>) {
         const {z, x, y} = tile.tileID.canonical;
         try {
             const response = await provider.loadTile({z, x, y}, {request, signal: controller.signal});
@@ -330,7 +330,9 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
                 return callback(null);
             }
 
-            const imageBitmap = await createImageBitmap(new Blob([response.data]));
+            const imageBitmap = response.data instanceof ImageBitmap ?
+                response.data :
+                await createImageBitmap(new Blob([response.data]));
 
             if (controller.signal.aborted) {
                 tile.state = 'unloaded';

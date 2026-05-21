@@ -7,6 +7,7 @@ import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_sourc
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 import perf from '../../../src/util/performance';
 import {getProjection} from '../../../src/geo/projection/index';
+import {getPNGResponse} from '../../util/network';
 import rawTileDataImport from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 import type {LoadVectorDataCallback} from '../../../src/source/load_vector_tile';
@@ -239,6 +240,28 @@ test('VectorTileWorkerSource#loadTile forwards cache headers from response heade
         expect(err).toBeFalsy();
         expect(res.cacheControl).toBe('max-age=30');
         expect(res.expires).toBe('Thu, 01 Jan 2099 00:00:00 GMT');
+    });
+});
+
+test('VectorTileWorkerSource rejects ImageBitmap from provider with an error', async () => {
+    const pngBlob = await getPNGResponse();
+    const realBitmap = await createImageBitmap(pngBlob);
+
+    const tileProvider = {loadTile: vi.fn().mockResolvedValue({data: realBitmap})};
+    const source = new VectorTileWorkerSource({actor, layerIndex: new StyleLayerIndex(), availableImages: [], availableModels: [], isSpriteLoaded: true, tileProvider});
+
+    await new Promise((resolve) => {
+        source.loadTile({
+            source: 'source',
+            uid: 0,
+            tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}},
+            projection: getProjection({name: 'mercator'}),
+            request: {url: 'http://example.com/0/0/0.pbf'}
+        }, (err) => {
+            expect(err).toBeInstanceOf(Error);
+            expect(err.message).toBe('Vector tiles require ArrayBuffer data');
+            resolve();
+        });
     });
 });
 

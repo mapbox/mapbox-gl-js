@@ -1,4 +1,5 @@
 import {test, describe, expect, vi} from '../../util/vitest';
+import {getPNGResponse} from '../../util/network';
 import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source';
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 import {isHttpNotFound} from '../../../src/util/ajax';
@@ -114,6 +115,27 @@ test('loadTileData with provider - rejection propagates as Error', async () => {
     const err = callback.mock.calls[0][0] as Error;
     expect(err).toBeInstanceOf(Error);
     expect(err.message).toBe('network failure');
+});
+
+test('vector worker rejects ImageBitmap response with a clear error', async () => {
+    const bitmap = await createImageBitmap(await getPNGResponse());
+    const source = new VectorTileWorkerSource({
+        actor,
+        layerIndex: new StyleLayerIndex(),
+        availableImages: [],
+        availableModels: {},
+        isSpriteLoaded: true,
+        tileProvider: {loadTile: vi.fn().mockResolvedValue({data: bitmap})},
+    });
+
+    const callback = vi.fn();
+    source.loadTileData(makeParams(), callback);
+    await vi.waitFor(() => expect(callback).toHaveBeenCalled());
+
+    const err = callback.mock.calls[0][0] as Error;
+    expect(err).toBeInstanceOf(Error);
+    expect(err.message).toMatch(/require ArrayBuffer/);
+    expect(callback.mock.calls[0][1]).toBeUndefined();
 });
 
 test('loadTileData with provider - cancellation aborts and ignores settlement', async () => {

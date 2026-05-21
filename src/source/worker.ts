@@ -382,7 +382,7 @@ export default class MapWorker {
         return layerIndex;
     }
 
-    getWorkerSource(mapId: number, params: WorkerSourceRequest, tileProvider?: TileProvider<ArrayBuffer>): WorkerSource {
+    getWorkerSource(mapId: number, params: WorkerSourceRequest, tileProvider?: TileProvider<ArrayBuffer | ImageBitmap>): WorkerSource {
         const {type, source, scope} = params;
         const workerSources = this.workerSources;
 

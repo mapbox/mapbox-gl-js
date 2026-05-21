@@ -15,7 +15,7 @@ import type {
 } from './worker_source';
 
 class RasterDEMTileWorkerSource implements WorkerSource {
-    tileProvider?: TileProvider<ArrayBuffer>;
+    tileProvider?: TileProvider<ArrayBuffer | ImageBitmap>;
     loading: Record<number, Cancelable>;
     offscreenCanvas: OffscreenCanvas;
     offscreenCanvasContext: OffscreenCanvasRenderingContext2D;
@@ -55,8 +55,10 @@ class RasterDEMTileWorkerSource implements WorkerSource {
         this.loading[uid] = {cancel};
     }
 
-    async decodeTile(uid: number, buffer: ArrayBuffer, encoding: DEMSourceEncoding): Promise<{dem: DEMData; borderReady: boolean}> {
-        const imgBitmap = await createImageBitmap(new Blob([new Uint8Array(buffer)], {type: 'image/png'}));
+    async decodeTile(uid: number, buffer: ArrayBuffer | ImageBitmap, encoding: DEMSourceEncoding): Promise<{dem: DEMData; borderReady: boolean}> {
+        const imgBitmap = buffer instanceof ImageBitmap ?
+            buffer :
+            await createImageBitmap(new Blob([new Uint8Array(buffer)], {type: 'image/png'}));
         const imgBuffer = (imgBitmap.width - prevPowerOfTwo(imgBitmap.width)) / 2;
         const padding = 1 - imgBuffer;
         const borderReady = padding < 1;
@@ -67,7 +69,7 @@ class RasterDEMTileWorkerSource implements WorkerSource {
         return {dem, borderReady};
     }
 
-    async loadTileWithProvider(provider: TileProvider<ArrayBuffer>, uid: number, params: WorkerSourceDEMTileRequest, controller: AbortController, callback: WorkerSourceDEMTileCallback) {
+    async loadTileWithProvider(provider: TileProvider<ArrayBuffer | ImageBitmap>, uid: number, params: WorkerSourceDEMTileRequest, controller: AbortController, callback: WorkerSourceDEMTileCallback) {
         const {z, x, y} = params.tileID.canonical;
         try {
             const response = await provider.loadTile({z, x, y}, {request: params.request, signal: controller.signal});

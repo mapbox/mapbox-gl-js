@@ -12,6 +12,14 @@ import type {Options as TileJsonParserOptions} from './load_tilejson';
 /**
  * Response returned by {@link TileProvider.loadTile}.
  *
+ * Raster and raster-dem sources accept `data: ArrayBuffer | ImageBitmap`. Vector
+ * sources require `ArrayBuffer` and will reject `ImageBitmap` responses at runtime
+ * with an error.
+ *
+ * Providers that hand DEM sources a pre-decoded `ImageBitmap` should construct it
+ * with `createImageBitmap(blob, {premultiplyAlpha: 'none', colorSpaceConversion: 'none'})`
+ * so the canvas round-trip preserves elevation byte fidelity.
+ *
  * @property {T} data - The raw tile payload.
  * @property {string} [expires] - Expires header value for tile caching.
  * @property {string} [cacheControl] - Cache-Control header value for tile caching.
@@ -37,17 +45,34 @@ export type TileDataResponse<T> = {
  * @private
  *
  * @example
- * export default class MyTileProvider {
- *     constructor(options) {
+ * import type {RequestParameters, TileDataResponse, TileProvider, TileJSON, RasterSourceSpecification} from 'mapbox-gl';
+ *
+ * export default class MyTileProvider implements TileProvider<ArrayBuffer> {
+ *     private url: string;
+ *
+ *     constructor(options: RasterSourceSpecification) {
  *         this.url = options.url;
  *     }
- *     async loadTile(tile, options) {
+ *
+ *     async load(): Promise<Partial<TileJSON>> {
+ *         const response = await fetch(this.url);
+ *         return await response.json();
+ *     }
+ *
+ *     async loadTile(tile: {z: number; x: number; y: number}, options: {request: RequestParameters; signal: AbortSignal}): Promise<TileDataResponse<ArrayBuffer>> {
  *         const response = await fetch(options.request.url, {signal: options.signal});
  *         return {data: await response.arrayBuffer()};
  *     }
- *     async load(options) {
- *         const response = await fetch(this.url);
- *         return await response.json();
+ * }
+ *
+ * @example
+ * import type {RequestParameters, TileDataResponse, TileProvider} from 'mapbox-gl';
+ *
+ * export default class MyBitmapTileProvider implements TileProvider<ImageBitmap> {
+ *     async loadTile(tile: {z: number; x: number; y: number}, options: {request: RequestParameters; signal: AbortSignal}): Promise<TileDataResponse<ImageBitmap>> {
+ *         const response = await fetch(options.request.url, {signal: options.signal});
+ *         const blob = await response.blob();
+ *         return {data: await createImageBitmap(blob)};
  *     }
  * }
  */
@@ -75,7 +100,7 @@ export interface TileProvider<T> {
     loadTile: (tile: {z: number; x: number; y: number}, options: {request: RequestParameters; signal: AbortSignal}) => Promise<TileDataResponse<T | null> | null | undefined>;
 }
 
-export type TileProviderConstructor = new (options: Partial<SourceSpecification>) => TileProvider<ArrayBuffer>;
+export type TileProviderConstructor = new (options: Partial<SourceSpecification>) => TileProvider<ArrayBuffer | ImageBitmap>;
 
 /**
  * Registers a tile provider module URL by name. Call this **before** creating
