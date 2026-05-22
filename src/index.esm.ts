@@ -143,7 +143,7 @@ export type {
     ClipLayerSpecification,
     ClipLayout,
     LayerSpecification,
-} from './style-spec/types.esm';
+} from './style-spec/types';
 
 // Named value exports — classes, functions, constants
 export const version: string = _version;
