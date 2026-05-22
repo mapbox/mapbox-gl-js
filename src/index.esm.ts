@@ -2,16 +2,13 @@ import assert from './style-spec/util/assert';
 import _Point from '@mapbox/point-geometry';
 import {version as _version} from '../package.json';
 
-// Explicit type re-exports
-export type * from './ui/events';
-export type * from './style-spec/types.esm';
+// Source class instance types — returned by map.getSource()
 export type * from './source/source_types';
-export type * from './types/deprecated-aliases';
 
 export type {PointLike} from './types/point-like';
 export type {PluginStatus} from './source/rtl_text_plugin';
-
 export type {Event, ErrorEvent} from './util/evented';
+
 export type {GeoJSONFeature, TargetFeature} from './util/vectortile_to_geojson';
 export type {InteractionEvent} from './ui/interactions';
 export type {PaddingOptions} from './geo/edge_insets';
@@ -38,6 +35,115 @@ export type {AttributionControlOptions} from './ui/control/attribution_control';
 export type {MapOptions, IControl, ControlPosition} from './ui/map';
 export type {FontstackCompositing} from './style/glyph_loader';
 export type {AnimationOptions, CameraOptions, EasingOptions} from './ui/camera';
+
+// Map event callback types
+export type {
+    MapMouseEventType,
+    MapTouchEventType,
+    MapWheelEventType,
+    MapInteractionEventType,
+    MapMouseEvent,
+    MapTouchEvent,
+    MapWheelEvent,
+    MapBoxZoomEvent,
+    MapStyleDataEvent,
+    MapSourceDataEvent,
+    MapDataEvent,
+    MapContextEvent,
+    MapEventType,
+    MapEventOf,
+    MapEvent,
+} from './ui/events';
+
+// Style specification types — used with addLayer(), addSource(), setStyle(), etc.
+export type {
+    // Primitive value types
+    ColorSpecification,
+    PromoteIdSpecification,
+    FilterSpecification,
+    TransitionSpecification,
+    ExpressionSpecification,
+    PropertyValueSpecification,
+    DataDrivenPropertyValueSpecification,
+    // Top-level style
+    StyleSpecification,
+    SourcesSpecification,
+    LightSpecification,
+    TerrainSpecification,
+    TerrainSpecificationUpdate,
+    FogSpecification,
+    SnowSpecification,
+    RainSpecification,
+    CameraSpecification,
+    ColorThemeSpecification,
+    ProjectionSpecification,
+    ImportSpecification,
+    ConfigSpecification,
+    // Feature interaction
+    FeaturesetSpecification,
+    SelectorSpecification,
+    // Sources
+    VectorSourceSpecification,
+    RasterSourceSpecification,
+    RasterDEMSourceSpecification,
+    RasterArraySourceSpecification,
+    GeoJSONSourceSpecification,
+    VideoSourceSpecification,
+    ImageSourceSpecification,
+    ModelSourceSpecification,
+    SourceSpecification,
+    IconsetSpecification,
+    ModelSpecification,
+    // Lights
+    AmbientLightSpecification,
+    DirectionalLightSpecification,
+    FlatLightSpecification,
+    LightsSpecification,
+    // Layers
+    FillLayerSpecification,
+    FillLayout,
+    FillPaint,
+    LineLayerSpecification,
+    LineLayout,
+    LinePaint,
+    SymbolLayerSpecification,
+    SymbolLayout,
+    SymbolPaint,
+    CircleLayerSpecification,
+    CircleLayout,
+    CirclePaint,
+    HeatmapLayerSpecification,
+    HeatmapLayout,
+    HeatmapPaint,
+    FillExtrusionLayerSpecification,
+    FillExtrusionLayout,
+    FillExtrusionPaint,
+    BuildingLayerSpecification,
+    BuildingLayout,
+    BuildingPaint,
+    RasterLayerSpecification,
+    RasterLayout,
+    RasterPaint,
+    RasterParticleLayerSpecification,
+    RasterParticleLayout,
+    RasterParticlePaint,
+    HillshadeLayerSpecification,
+    HillshadeLayout,
+    HillshadePaint,
+    ModelLayerSpecification,
+    ModelLayout,
+    ModelPaint,
+    BackgroundLayerSpecification,
+    BackgroundLayout,
+    BackgroundPaint,
+    SkyLayerSpecification,
+    SkyLayout,
+    SkyPaint,
+    SlotLayerSpecification,
+    ClipLayerSpecification,
+    ClipLayout,
+    LayerSpecification,
+} from './style-spec/types.esm';
 
 // Named value exports — classes, functions, constants
 export const version: string = _version;
