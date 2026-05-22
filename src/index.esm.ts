@@ -167,7 +167,7 @@ export {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin
 export {addTileProvider} from './source/tile_provider';
 export {prewarm, clearPrewarmedResources} from './util/worker_pool_factory';
 export {getWorkerCount, setWorkerCount} from './util/worker_pool';
-export {default as config, setAccessToken, setBaseApiUrl, setMaxParallelImageRequests, getDracoUrl, setDracoUrl, getMeshoptUrl, setMeshoptUrl, getBuildingGenUrl, setBuildingGenUrl} from './util/config';
+export {setAccessToken, setBaseApiUrl, setMaxParallelImageRequests, getDracoUrl, setDracoUrl, getMeshoptUrl, setMeshoptUrl, getBuildingGenUrl, setBuildingGenUrl} from './util/config';
 
 export {clearTileCache as clearStorage} from './util/tile_request_cache';
 export {setNow, restoreNow} from './util/browser';

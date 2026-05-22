@@ -23,7 +23,6 @@ import {
     MercatorCoordinate,
     FreeCameraOptions,
     Evented,
-    config,
     setRTLTextPlugin,
     getRTLTextPluginStatus,
     addTileProvider,
@@ -74,11 +73,6 @@ setBuildingGenUrl('https://example.com/building_gen.wasm') satisfies void;
 getDracoUrl() satisfies string;
 getMeshoptUrl() satisfies string;
 getBuildingGenUrl() satisfies string;
-
-// config object is accessible for advanced use
-config.ACCESS_TOKEN satisfies string | null | undefined;
-config.API_URL satisfies string;
-config.MAX_PARALLEL_IMAGE_REQUESTS satisfies number;
 
 // clearStorage accepts an optional callback
 clearStorage() satisfies void;
