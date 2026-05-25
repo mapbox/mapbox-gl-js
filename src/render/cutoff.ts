@@ -1,5 +1,5 @@
 import {Uniform4f} from './uniform_binding';
-import {smoothstep, warnOnce} from '../util/util';
+import {smoothstep} from '../util/util';
 import {lerp} from '../style-spec/util/lerp';
 import {MIN_LOD_PITCH} from '../geo/transform';
 
@@ -50,9 +50,10 @@ const ACTIVATION_PITCH_RAMP_WIDTH = 15;
 // Activation is smoothly blended over a pitch range using the LOD pitch threshold
 // (which accounts for top padding via edge insets).
 export const getCutoffParams = (painter: Painter, cutoffFadeRange: number): CutoffParams => {
-    if (cutoffFadeRange > 0.0 && painter.terrain) {
-        warnOnce("Cutoff is currently disabled on terrain");
-    }
+    // eslint-disable-next-line no-warning-comments
+    // TODO: Cutoff is currently disabled on terrain
+    // https://mapbox.atlassian.net/browse/MAPS3D-1288
+
     if (cutoffFadeRange <= 0.0 || painter.terrain) {
         return {
             shouldRenderCutoff: false,
