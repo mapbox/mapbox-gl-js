@@ -58,6 +58,7 @@ type GeolocateControlEvents = {
     'outofmaxbounds': GeolocationPosition;
     'trackuserlocationstart': void;
     'trackuserlocationend': void;
+    'ready': void;
 };
 
 /**
@@ -565,6 +566,8 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
                 }
             });
         }
+
+        this.fire(new Event('ready'));
     }
 
     /**
@@ -616,7 +619,8 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
      * });
      * // Add the control to the map.
      * map.addControl(geolocate);
-     * map.on('load', () => {
+     * // Wait until the control is set up before triggering it.
+     * geolocate.once('ready', () => {
      *     geolocate.trigger();
      * });
      * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
@@ -928,6 +932,25 @@ export default GeolocateControl;
  * // when a trackuserlocationstart event occurs.
  * geolocate.on('trackuserlocationstart', () => {
  *     console.log('A trackuserlocationstart event has occurred.');
+ * });
+ */
+
+/**
+ * Fired once when the `GeolocateControl` has finished initializing and is ready to be triggered. Because geolocation support is determined asynchronously (via the Permissions API on supporting browsers), this event provides a reliable signal that {@link GeolocateControl#trigger} can be called without warning.
+ *
+ * @event ready
+ * @memberof GeolocateControl
+ * @instance
+ * @example
+ * // Initialize the GeolocateControl.
+ * const geolocate = new mapboxgl.GeolocateControl({
+ *     trackUserLocation: true
+ * });
+ * // Add the control to the map.
+ * map.addControl(geolocate);
+ * // Trigger the control as soon as it is ready.
+ * geolocate.once('ready', () => {
+ *     geolocate.trigger();
  * });
  */
 

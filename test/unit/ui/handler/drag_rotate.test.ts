@@ -263,6 +263,113 @@ test('DragRotateHandler does not pitch if given pitchWithRotate: false', () => {
     map.remove();
 });
 
+test('DragRotateHandler does not pitch after disablePitch() but still rotates', () => {
+    const map = createMap();
+
+    // Prevent inertial rotation.
+    vi.spyOn(browser, 'now').mockImplementation(() => 0);
+
+    map.dragRotate.disablePitch();
+
+    const pitchstart = vi.fn();
+    const pitch      = vi.fn();
+    const pitchend   = vi.fn();
+    const rotatestart = vi.fn();
+    const rotate      = vi.fn();
+    const rotateend   = vi.fn();
+
+    map.on('pitchstart',  pitchstart);
+    map.on('pitch',       pitch);
+    map.on('pitchend',    pitchend);
+    map.on('rotatestart', rotatestart);
+    map.on('rotate',      rotate);
+    map.on('rotateend',   rotateend);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mousedown(map.getCanvas(), {buttons: 1, button: 0, ctrlKey: true});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mousemove(window.document, {buttons: 1, ctrlKey: true, clientX: 10, clientY: 10});
+    map._renderTaskQueue.run();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mouseup(window.document,   {buttons: 0, button: 0, ctrlKey: true});
+    map._renderTaskQueue.run();
+
+    expect(pitchstart).not.toHaveBeenCalled();
+    expect(pitch).not.toHaveBeenCalled();
+    expect(pitchend).not.toHaveBeenCalled();
+    expect(rotatestart).toHaveBeenCalledTimes(1);
+    expect(rotate).toHaveBeenCalledTimes(1);
+    expect(rotateend).toHaveBeenCalledTimes(1);
+
+    // dragRotate is still considered enabled because rotation works.
+    expect(map.dragRotate.isEnabled()).toEqual(true);
+
+    map.remove();
+});
+
+test('DragRotateHandler enablePitch() restores pitch after disablePitch()', () => {
+    const map = createMap();
+
+    // Prevent inertial rotation.
+    vi.spyOn(browser, 'now').mockImplementation(() => 0);
+
+    map.dragRotate.disablePitch();
+    map.dragRotate.enablePitch();
+
+    const pitchstart = vi.fn();
+    const pitch      = vi.fn();
+    const pitchend   = vi.fn();
+
+    map.on('pitchstart', pitchstart);
+    map.on('pitch',      pitch);
+    map.on('pitchend',   pitchend);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mousedown(map.getCanvas(), {buttons: 1, button: 0, ctrlKey: true});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mousemove(map.getCanvas(), {buttons: 1, ctrlKey: true, clientX: 10, clientY: -10});
+    map._renderTaskQueue.run();
+    expect(pitchstart).toHaveBeenCalledTimes(1);
+    expect(pitch).toHaveBeenCalledTimes(1);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 0, ctrlKey: true});
+    map._renderTaskQueue.run();
+    expect(pitchend).toHaveBeenCalledTimes(1);
+
+    map.remove();
+});
+
+test('DragRotateHandler disablePitch() persists across enable()/disable() cycles', () => {
+    const map = createMap();
+
+    map.dragRotate.disablePitch();
+    map.dragRotate.disable();
+    map.dragRotate.enable();
+
+    const pitchstart = vi.fn();
+    const pitch      = vi.fn();
+    const pitchend   = vi.fn();
+
+    map.on('pitchstart', pitchstart);
+    map.on('pitch',      pitch);
+    map.on('pitchend',   pitchend);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mousedown(map.getCanvas(), {buttons: 1, button: 0, ctrlKey: true});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mousemove(map.getCanvas(), {buttons: 1, ctrlKey: true, clientX: 10, clientY: -10});
+    map._renderTaskQueue.run();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 0, ctrlKey: true});
+
+    expect(pitchstart).not.toHaveBeenCalled();
+    expect(pitch).not.toHaveBeenCalled();
+    expect(pitchend).not.toHaveBeenCalled();
+
+    map.remove();
+});
+
 test('DragRotateHandler does not rotate or pitch when disabled', () => {
     const map = createMap();
 

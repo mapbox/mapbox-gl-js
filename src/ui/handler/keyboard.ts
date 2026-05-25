@@ -32,6 +32,7 @@ class KeyboardHandler implements Handler {
     _bearingStep: number;
     _pitchStep: number;
     _rotationDisabled: boolean;
+    _panDisabled: boolean;
 
     /**
     * @private
@@ -42,6 +43,7 @@ class KeyboardHandler implements Handler {
         this._bearingStep = stepOptions.bearingStep;
         this._pitchStep = stepOptions.pitchStep;
         this._rotationDisabled = false;
+        this._panDisabled = false;
     }
 
     blur() {
@@ -118,6 +120,11 @@ class KeyboardHandler implements Handler {
         if (this._rotationDisabled) {
             bearingDir = 0;
             pitchDir = 0;
+        }
+
+        if (this._panDisabled) {
+            xDir = 0;
+            yDir = 0;
         }
 
         return {
@@ -205,6 +212,28 @@ class KeyboardHandler implements Handler {
      */
     enableRotation() {
         this._rotationDisabled = false;
+    }
+
+    /**
+     * Disables the "keyboard pan" interaction (arrow keys), leaving the
+     * "keyboard zoom" and "keyboard rotate/pitch" interactions enabled.
+     *
+     * @example
+     * map.keyboard.disablePan();
+     */
+    disablePan() {
+        this._panDisabled = true;
+    }
+
+    /**
+     * Enables the "keyboard pan" interaction (arrow keys).
+     *
+     * @example
+     * map.keyboard.enable();
+     * map.keyboard.enablePan();
+     */
+    enablePan() {
+        this._panDisabled = false;
     }
 }
 

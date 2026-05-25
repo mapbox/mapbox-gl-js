@@ -12,6 +12,7 @@ export default class DragRotateHandler {
     _mouseRotate: MouseRotateHandler;
     _mousePitch: MousePitchHandler;
     _pitchWithRotate: boolean;
+    _pitchDisabled: boolean;
 
     /**
      * @param {Object} [options]
@@ -26,6 +27,7 @@ export default class DragRotateHandler {
         this._pitchWithRotate = options.pitchWithRotate;
         this._mouseRotate = mouseRotate;
         this._mousePitch = mousePitch;
+        this._pitchDisabled = false;
     }
 
     /**
@@ -36,7 +38,7 @@ export default class DragRotateHandler {
      */
     enable() {
         this._mouseRotate.enable();
-        if (this._pitchWithRotate) this._mousePitch.enable();
+        if (this._pitchWithRotate && !this._pitchDisabled) this._mousePitch.enable();
     }
 
     /**
@@ -58,7 +60,7 @@ export default class DragRotateHandler {
      * const isDragRotateEnabled = map.dragRotate.isEnabled();
      */
     isEnabled(): boolean {
-        return this._mouseRotate.isEnabled() && (!this._pitchWithRotate || this._mousePitch.isEnabled());
+        return this._mouseRotate.isEnabled() && (!this._pitchWithRotate || this._pitchDisabled || this._mousePitch.isEnabled());
     }
 
     /**
@@ -70,5 +72,31 @@ export default class DragRotateHandler {
      */
     isActive(): boolean {
         return this._mouseRotate.isActive() || this._mousePitch.isActive();
+    }
+
+    /**
+     * Disables the "drag to pitch" interaction, leaving the "drag to rotate"
+     * interaction enabled.
+     *
+     * @example
+     * map.dragRotate.disablePitch();
+     */
+    disablePitch() {
+        this._pitchDisabled = true;
+        this._mousePitch.disable();
+    }
+
+    /**
+     * Enables the "drag to pitch" interaction.
+     *
+     * Has no effect if the handler was constructed with `pitchWithRotate: false`,
+     * or if the parent "drag to rotate" interaction is currently disabled.
+     *
+     * @example
+     * map.dragRotate.enablePitch();
+     */
+    enablePitch() {
+        this._pitchDisabled = false;
+        if (this._pitchWithRotate && this._mouseRotate.isEnabled()) this._mousePitch.enable();
     }
 }

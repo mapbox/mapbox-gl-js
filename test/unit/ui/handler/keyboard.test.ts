@@ -313,3 +313,87 @@ test('KeyboardHandler zooms map in response to -/+ keys when disableRotation has
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(map.easeTo.mock.calls[3][0].zoom).toEqual(8);
 });
+
+test('KeyboardHandler does not pan map in response to arrow keys when disablePan has been called', () => {
+    const map = createMap({zoom: 10, center: [0, 0]});
+    vi.spyOn(map, 'easeTo');
+    map.keyboard.disablePan();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.keydown(map.getCanvas(), {keyCode: 37, key: "ArrowLeft"});
+    expect(map.easeTo).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    let easeToArgs = map.easeTo.mock.calls[0][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(easeToArgs.offset[0]).toEqual(-0);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(easeToArgs.offset[1]).toEqual(-0);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.keydown(map.getCanvas(), {keyCode: 38, key: "ArrowUp"});
+    expect(map.easeTo).toHaveBeenCalledTimes(2);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    easeToArgs = map.easeTo.mock.calls[1][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(easeToArgs.offset[0]).toEqual(-0);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(easeToArgs.offset[1]).toEqual(-0);
+});
+
+test('KeyboardHandler still zooms with +/- keys when disablePan has been called', () => {
+    const map = createMap({zoom: 10, center: [0, 0]});
+    vi.spyOn(map, 'easeTo');
+    map.keyboard.disablePan();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.keydown(map.getCanvas(), {keyCode: 187, key: "Equal"});
+    expect(map.easeTo).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(map.easeTo.mock.calls[0][0].zoom).toEqual(11);
+
+    map.setZoom(10);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.keydown(map.getCanvas(), {keyCode: 189, key: "Minus"});
+    expect(map.easeTo).toHaveBeenCalledTimes(2);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(map.easeTo.mock.calls[1][0].zoom).toEqual(9);
+});
+
+// eslint-disable-next-line @typescript-eslint/require-await
+test('KeyboardHandler still rotates with Shift+left/right when disablePan has been called', async () => {
+    const map = createMap({zoom: 10, center: [0, 0], bearing: 0});
+    vi.spyOn(map, 'easeTo');
+    map.keyboard.disablePan();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.keydown(map.getCanvas(), {keyCode: 39, key: "ArrowRight", shiftKey: true});
+    expect(map.easeTo).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(map.easeTo.mock.calls[0][0].bearing).toEqual(15);
+});
+
+// eslint-disable-next-line @typescript-eslint/require-await
+test('KeyboardHandler still pitches with Shift+up/down when disablePan has been called', async () => {
+    const map = createMap({zoom: 10, center: [0, 0], pitch: 30});
+    vi.spyOn(map, 'easeTo');
+    map.keyboard.disablePan();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.keydown(map.getCanvas(), {keyCode: 40, key: "ArrowDown", shiftKey: true});
+    expect(map.easeTo).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(map.easeTo.mock.calls[0][0].pitch).toEqual(20);
+});
+
+test('KeyboardHandler enablePan restores arrow-key panning', () => {
+    const map = createMap({zoom: 10, center: [0, 0]});
+    vi.spyOn(map, 'easeTo');
+    map.keyboard.disablePan();
+    map.keyboard.enablePan();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.keydown(map.getCanvas(), {keyCode: 37, key: "ArrowLeft"});
+    expect(map.easeTo).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(map.easeTo.mock.calls[0][0].offset[0]).toEqual(100);
+});

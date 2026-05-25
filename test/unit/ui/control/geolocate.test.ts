@@ -43,6 +43,23 @@ test('GeolocateControl with no options', async () => {
     });
 });
 
+test('GeolocateControl fires ready event once setup completes', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl();
+
+    const readyPromise = new Promise<void>((resolve) => {
+        geolocate.once('ready', () => {
+            expect(geolocate._setup).toEqual(true);
+            // trigger() must not warn after ready fires
+            expect(geolocate.trigger()).toEqual(true);
+            resolve();
+        });
+    });
+
+    map.addControl(geolocate);
+    await readyPromise;
+});
+
 test('GeolocateControl error event', async () => {
     const map = createMap();
     const geolocate = new GeolocateControl();
