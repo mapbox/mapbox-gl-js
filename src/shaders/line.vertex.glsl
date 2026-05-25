@@ -268,7 +268,7 @@ void main() {
 
         a_extrude *= apply;
         a_z_offset += abs(side_z_offset) * apply;
-        v_normal *= left_f;
+        v_normal *= apply;
     }
 
     // Variable width is used as an offset for non-zero border_widths case.

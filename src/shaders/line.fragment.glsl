@@ -124,7 +124,6 @@ void main() {
 #endif
 #endif
 
-    alpha = side_z_offset > 0.0 ? 1.0 - alpha : alpha;
 #ifdef RENDER_LINE_DASH
     float sdfdist = texture(u_dash_image, v_tex).r;
     float sdfgamma = ANTIALIASING / (float(dash.z) + float(dash.w) / 65535.0);
