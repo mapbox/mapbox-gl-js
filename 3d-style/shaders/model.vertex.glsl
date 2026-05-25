@@ -51,6 +51,10 @@ out lowp vec4 v_color_mix;
 out highp float v_depth;
 #endif
 
+#ifdef FEATURE_CUTOUT
+out highp float v_cutout_factor;
+#endif
+
 #ifdef HAS_ATTRIBUTE_a_pbr
 out lowp vec4 v_roughness_metallic_emissive_alpha;
 out mediump vec4 v_height_based_emission_params;
@@ -78,6 +82,10 @@ void main() {
     normal_matrix = mat4(a_normal_matrix0, a_normal_matrix1, a_normal_matrix2, a_normal_matrix3);
 #else
     normal_matrix = u_normal_matrix;
+#endif
+
+#ifdef FEATURE_CUTOUT
+    v_cutout_factor = 1.0;
 #endif
 
     vec3 local_pos;
@@ -110,6 +118,24 @@ void main() {
     gl_Position = mix(u_matrix * pos, AWAY, hidden);
     pos.z *= meter_to_tile;
     v_position_height.xyz = pos.xyz - u_camera_pos;
+
+#ifdef FEATURE_CUTOUT
+    if (u_feature_cutout_params.z == 2.0) {
+        // Sample cutout from the tile position of the feature
+        highp vec4 ground_pos = vec4(pos_a.xy, 0.0, 1.0);
+        highp vec4 cutout_clip_pos = mix(u_matrix * ground_pos, AWAY, hidden);
+        highp vec3 cutout_ndc = cutout_clip_pos.xyz / cutout_clip_pos.w;
+        vec2 uv = cutout_ndc.xy * 0.5 + 0.5;
+        highp float fragDepthNDC = cutout_ndc.z * 0.5 + 0.5;
+        highp float cutoutFactor = get_cutout_factors_vert(uv).x;
+        highp float cutoutDepthNDC = sample_cutout_depth(u_cutout_depth_image, uv);
+        // Prevent cutting above ground
+        highp float groundThreshold = 0.001;
+        highp float groundLimit = clamp((fragDepthNDC + groundThreshold - cutoutDepthNDC) / groundThreshold + 0.5, 0.0, 1.0);
+        v_cutout_factor = mix(1.0 - cutoutFactor, 1.0, groundLimit);
+    }
+#endif
+
 #else
     local_pos = a_pos_3f;
     gl_Position = u_matrix * vec4(a_pos_3f, 1);

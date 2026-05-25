@@ -77,6 +77,10 @@ uniform sampler2D u_emissionTexture;
 uniform highp sampler3D u_lutTexture;
 #endif
 
+#ifdef FEATURE_CUTOUT
+in highp float v_cutout_factor;
+#endif
+
 #ifdef TERRAIN_FRAGMENT_OCCLUSION
 in highp float v_depth;
 uniform highp sampler2D u_depthTexture;
@@ -623,7 +627,12 @@ vec4 finalColor;
 #endif
 
 #ifdef FEATURE_CUTOUT
-    finalColor = apply_feature_cutout(finalColor, gl_FragCoord, get_cutout_factors(gl_FragCoord).x);
+    if (u_feature_cutout_params.z == 2.0) {
+        // Apply pre-calculated cutout factor
+        apply_feature_cutout_dither(gl_FragCoord, v_cutout_factor);
+    } else {
+        finalColor = apply_feature_cutout(finalColor, gl_FragCoord, get_cutout_factors(gl_FragCoord).x);
+    }
 #endif
 
     glFragColor = finalColor;
