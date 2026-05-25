@@ -127,6 +127,9 @@ void main() {
         highp vec3 cutout_ndc = cutout_clip_pos.xyz / cutout_clip_pos.w;
         vec2 uv = cutout_ndc.xy * 0.5 + 0.5;
         highp float fragDepthNDC = cutout_ndc.z * 0.5 + 0.5;
+#ifdef FLIP_Y
+        fragDepthNDC = cutout_ndc.z;
+#endif
         highp float cutoutFactor = get_cutout_factors_vert(uv).x;
         highp float cutoutDepthNDC = sample_cutout_depth(u_cutout_depth_image, uv);
         // Prevent cutting above ground
