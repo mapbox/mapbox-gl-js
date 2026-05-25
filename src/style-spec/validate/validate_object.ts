@@ -41,18 +41,30 @@ export default function validateObject(options: ObjectValidatorOptions): Validat
 
     let errors: ValidationError[] = [];
     for (const objectKey in object) {
+        // Skip inherited keys: a hostile style JSON parsed with JSON.parse can
+        // have an own "__proto__" key, but downstream consumers may have mutated
+        // the prototype of `object` upstream. We never want to validate
+        // inherited properties as if they were user-supplied.
+        if (!Object.hasOwn(object, objectKey)) continue;
+
         const elementSpecKey = objectKey.split('.')[0]; // treat 'paint.*' as 'paint'
+        // Object.hasOwn: a bare lookup like `elementSpecs[objectKey]` would
+        // find inherited keys from Object.prototype (e.g. "__proto__",
+        // "constructor", "toString") when the user-supplied key matches one,
+        // returning a non-spec value that then fails as a validator.
+        const hasSpec = Object.hasOwn(elementSpecs, elementSpecKey);
+        const hasWildcardSpec = Object.hasOwn(elementSpecs, '*');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const elementSpec = elementSpecs[elementSpecKey] || elementSpecs['*'];
+        const elementSpec = hasSpec ? elementSpecs[elementSpecKey] : (hasWildcardSpec ? elementSpecs['*'] : undefined);
 
         let validateElement: ((options: ObjectElementValidatorOptions, object?: unknown) => ValidationError[]) | undefined;
-        if (elementValidators[elementSpecKey]) {
+        if (Object.hasOwn(elementValidators, elementSpecKey)) {
             validateElement = elementValidators[elementSpecKey];
-        } else if (elementSpecs[elementSpecKey]) {
+        } else if (hasSpec) {
             validateElement = validateSpec;
-        } else if (elementValidators['*']) {
+        } else if (Object.hasOwn(elementValidators, '*')) {
             validateElement = elementValidators['*'];
-        } else if (elementSpecs['*']) {
+        } else if (hasWildcardSpec) {
             validateElement = validateSpec;
         }
 
@@ -73,13 +85,14 @@ export default function validateObject(options: ObjectValidatorOptions): Validat
     }
 
     for (const elementSpecKey in elementSpecs) {
+        if (!Object.hasOwn(elementSpecs, elementSpecKey)) continue;
         // Don't check `required` when there's a custom validator for that property.
-        if (elementValidators[elementSpecKey]) {
+        if (Object.hasOwn(elementValidators, elementSpecKey)) {
             continue;
         }
 
         const elementSpec = elementSpecs[elementSpecKey] as {required?: boolean; default?: unknown};
-        if (elementSpec.required && elementSpec['default'] === undefined && object[elementSpecKey] === undefined) {
+        if (elementSpec.required && elementSpec['default'] === undefined && (!Object.hasOwn(object, elementSpecKey) || object[elementSpecKey] === undefined)) {
             errors.push(new ValidationError(key, object, `missing required property "${elementSpecKey}"`));
         }
     }

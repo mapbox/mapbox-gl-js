@@ -429,12 +429,17 @@ class Style extends Evented<MapEvents> {
 
         this._mergedOrder = [];
         this._drapedFirstOrder = [];
-        this._mergedLayers = {};
+        this._mergedLayers = Object.create(null) as Style['_mergedLayers'];
         this._mergedIndoor = {};
         this._mergedSourceCaches = {};
-        this._mergedOtherSourceCaches = {};
-        this._mergedSymbolSourceCaches = {};
-        this._mergedFillExtrusionSourceCaches = {};
+        // `_other/_symbol/_fillExtrusionSourceCaches` are indexed by the raw
+        // source ID from the style JSON, so a source named "__proto__" would
+        // otherwise mutate the registry's prototype. Use null-prototype
+        // objects here (and in their non-merged counterparts and in
+        // `mergeSources`) to make those assignments ordinary own properties.
+        this._mergedOtherSourceCaches = Object.create(null) as Style['_mergedOtherSourceCaches'];
+        this._mergedSymbolSourceCaches = Object.create(null) as Style['_mergedSymbolSourceCaches'];
+        this._mergedFillExtrusionSourceCaches = Object.create(null) as Style['_mergedFillExtrusionSourceCaches'];
         this._clipLayerPresent = false;
         this._hasAppearances = false;
 
@@ -493,11 +498,15 @@ class Style extends Evented<MapEvents> {
             this.modelManager.setEventedParent(this);
         }
 
-        this._layers = {};
+        // Use a null-prototype object so a layer ID of "__proto__" (or any
+        // other inherited-property name) becomes an ordinary own property
+        // rather than mutating Object.prototype. The same hardening exists
+        // in StyleLayerIndex on the worker side.
+        this._layers = Object.create(null) as Style['_layers'];
         this._sourceCaches = {};
-        this._otherSourceCaches = {};
-        this._symbolSourceCaches = {};
-        this._fillExtrusionSourceCaches = {};
+        this._otherSourceCaches = Object.create(null) as Style['_otherSourceCaches'];
+        this._symbolSourceCaches = Object.create(null) as Style['_symbolSourceCaches'];
+        this._fillExtrusionSourceCaches = Object.create(null) as Style['_fillExtrusionSourceCaches'];
         this._loaded = false;
         this._initialBroadcastDone = false;
         this._programPrecompiler = this.map._precompilePrograms && this.isRootStyle() ?
@@ -926,7 +935,7 @@ class Style extends Evented<MapEvents> {
                 this.light = new Light(this.stylesheet.light);
             }
 
-            this._layers = {};
+            this._layers = Object.create(null) as Style['_layers'];
             for (const layer of layers) {
                 const styleLayer = createStyleLayer(layer, this.scope, this._styleColorTheme.lut, this.options);
                 if (styleLayer.expressionDependencies.configDependencies.size !== 0) this._configDependentLayers.add(styleLayer.fqid);
@@ -1220,9 +1229,13 @@ class Style extends Evented<MapEvents> {
 
     mergeSources() {
         const mergedSourceCaches: Record<string, SourceCache> = {};
-        const mergedOtherSourceCaches: Record<string, SourceCache> = {};
-        const mergedSymbolSourceCaches: Record<string, SourceCache> = {};
-        const mergedFillExtrusionSourceCaches: Record<string, SourceCache> = {};
+        // `_other/_symbol/_fillExtrusionSourceCaches` are keyed by raw source
+        // IDs from the style JSON, so the root-scope FQID can collapse to
+        // "__proto__". Use null-prototype objects here so that assignment
+        // creates an own property rather than touching the prototype chain.
+        const mergedOtherSourceCaches: Record<string, SourceCache> = Object.create(null) as Record<string, SourceCache>;
+        const mergedSymbolSourceCaches: Record<string, SourceCache> = Object.create(null) as Record<string, SourceCache>;
+        const mergedFillExtrusionSourceCaches: Record<string, SourceCache> = Object.create(null) as Record<string, SourceCache>;
 
         this.forEachFragmentStyle((style: Style) => {
             for (const id in style._sourceCaches) {
@@ -1292,7 +1305,11 @@ class Style extends Evented<MapEvents> {
     mergeLayers() {
         const slots: Record<string, TypedStyleLayer[]> = {};
         const mergedOrder: TypedStyleLayer[] = [];
-        const mergedLayers: Record<string, TypedStyleLayer> = {};
+        // Keys are FQIDs that collapse to the raw layer ID at root scope, so
+        // a layer named "__proto__" would otherwise mutate this object's
+        // prototype rather than being stored as an own property. Match the
+        // null-prototype hardening used for the unmerged `_layers` registry.
+        const mergedLayers: Record<string, TypedStyleLayer> = Object.create(null) as Record<string, TypedStyleLayer>;
 
         this._mergedSlots = [];
         this._has3DLayers = false;

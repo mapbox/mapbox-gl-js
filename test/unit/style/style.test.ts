@@ -329,6 +329,94 @@ describe('Style#loadJSON', () => {
     });
 });
 
+// `_layers`, `_otherSourceCaches`, `_symbolSourceCaches`, and
+// `_fillExtrusionSourceCaches` are indexed by raw IDs from untrusted style
+// JSON. If they were initialized with `{}`, an ID of "__proto__" would invoke
+// the prototype setter rather than creating an own property, corrupting the
+// registry and breaking `for...in` iteration across the render pipeline.
+// These tests guard the `Object.create(null)` hardening against regression.
+describe('Style prototype-pollution hardening', () => {
+    test('layer id "__proto__" via loadJSON does not corrupt the registry', async () => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON({
+            version: 8,
+            sources: {},
+            layers: [{id: '__proto__', type: 'background'}]
+        });
+
+        await waitFor(style, "style.load");
+
+        expect(Object.getPrototypeOf(style._layers)).toBeNull();
+        expect(Object.hasOwn(style._layers, '__proto__')).toBe(true);
+        expect(style.getLayer('__proto__')).toBeTruthy();
+        expect(Object.keys(style._layers)).toEqual(['__proto__']);
+    });
+
+    test('source id "__proto__" via loadJSON does not corrupt source-cache registries', async () => {
+        const style = new Style(new StubMap());
+
+        // JSON.parse models the realistic attack vector: hostile JSON over the
+        // network. An object-literal `{"__proto__": ...}` in JS source sets
+        // the prototype rather than creating an own property, so it cannot
+        // reach `addSource()` with id "__proto__". Validation runs (default)
+        // so this exercises the full path including validate_object.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const hostileStyle = JSON.parse('{"version":8,"sources":{"__proto__":{"type":"geojson","data":{"type":"FeatureCollection","features":[]}}},"layers":[]}');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(hostileStyle);
+
+        await waitFor(style, "style.load");
+
+        expect(Object.getPrototypeOf(style._otherSourceCaches)).toBeNull();
+        expect(Object.getPrototypeOf(style._symbolSourceCaches)).toBeNull();
+        expect(Object.getPrototypeOf(style._fillExtrusionSourceCaches)).toBeNull();
+        expect(Object.hasOwn(style._otherSourceCaches, '__proto__')).toBe(true);
+        expect(Object.hasOwn(style._symbolSourceCaches, '__proto__')).toBe(true);
+    });
+
+    test('addLayer with id "__proto__" does not corrupt the registry', async () => {
+        const style = new Style(new StubMap());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(createStyleJSON());
+        await waitFor(style, "style.load");
+
+        style.addLayer({id: '__proto__', type: 'background'});
+
+        expect(Object.getPrototypeOf(style._layers)).toBeNull();
+        expect(style.getLayer('__proto__')).toBeTruthy();
+    });
+
+    test('addSource with id "__proto__" does not corrupt source-cache registries', async () => {
+        const style = new Style(new StubMap());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(createStyleJSON());
+        await waitFor(style, "style.load");
+
+        style.addSource('__proto__', createGeoJSONSource());
+
+        expect(Object.getPrototypeOf(style._otherSourceCaches)).toBeNull();
+        expect(Object.getPrototypeOf(style._symbolSourceCaches)).toBeNull();
+        expect(Object.hasOwn(style._otherSourceCaches, '__proto__')).toBe(true);
+        expect(Object.hasOwn(style._symbolSourceCaches, '__proto__')).toBe(true);
+    });
+
+    test('merged source-cache registries stay null-prototype after mergeSources', async () => {
+        const style = new Style(new StubMap());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const hostileStyle = JSON.parse('{"version":8,"sources":{"__proto__":{"type":"geojson","data":{"type":"FeatureCollection","features":[]}}},"layers":[]}');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(hostileStyle);
+        await waitFor(style, "style.load");
+
+        style.mergeSources();
+
+        expect(Object.getPrototypeOf(style._mergedOtherSourceCaches)).toBeNull();
+        expect(Object.getPrototypeOf(style._mergedSymbolSourceCaches)).toBeNull();
+        expect(Object.getPrototypeOf(style._mergedFillExtrusionSourceCaches)).toBeNull();
+    });
+});
+
 describe('Style#_remove', () => {
     test('clears tiles', async () => {
         const style = new Style(new StubMap());

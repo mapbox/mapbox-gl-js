@@ -130,6 +130,35 @@ describe('Map#featureState', () => {
                 map.setFeatureState({source: 'vector', sourceLayer: "1"}, {'hover': true});
             });
         });
+
+        // A feature id of "__proto__" can flow in through promoteId on a hostile
+        // GeoJSON/vector source. Without `Object.create(null)` storage in
+        // SourceFeatureState, the per-feature `Object.assign` target resolves
+        // to Object.prototype and the hover/selection payload writes globally.
+        test('feature id "__proto__" does not pollute Object.prototype', async () => {
+            const map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            await waitFor(map, "load");
+
+            const canary = '__pollutionCanary_setFeatureState';
+            map.setFeatureState({source: 'geojson', id: '__proto__'}, {[canary]: true});
+
+            // Reading back through getFeatureState must still work, but the
+            // canary must not have leaked onto Object.prototype.
+            const fState = map.getFeatureState({source: 'geojson', id: '__proto__'});
+            expect(fState[canary]).toEqual(true);
+            expect({}[canary]).toBeUndefined();
+
+            // Defensive cleanup in case a regression slips it through.
+            delete Object.prototype[canary];
+        });
     });
 
     describe('#removeFeatureState', () => {
