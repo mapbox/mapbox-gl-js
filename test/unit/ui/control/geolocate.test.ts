@@ -1025,6 +1025,202 @@ test('GeolocateControl button click centers camera even when followUserLocation 
     });
 });
 
+test('GeolocateControl setShowAccuracyCircle removes the accuracy circle at runtime', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({showUserLocation: true});
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        geolocate.once('geolocate', () => {
+            // Circle marker initially on the map
+            expect(geolocate._accuracyCircleMarker._map).toBeTruthy();
+
+            geolocate.setShowAccuracyCircle(false);
+            expect(geolocate.options.showAccuracyCircle).toEqual(false);
+            expect(geolocate._accuracyCircleMarker._map).toBeFalsy();
+
+            geolocate.setShowAccuracyCircle(true);
+            expect(geolocate.options.showAccuracyCircle).toEqual(true);
+            expect(geolocate._accuracyCircleMarker._map).toBeTruthy();
+            resolve();
+        });
+        geolocate.trigger();
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+});
+
+test('GeolocateControl setShowAccuracyCircle keeps subsequent positions hidden', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({trackUserLocation: true, showUserLocation: true});
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        let geolocateCount = 0;
+        geolocate.on('geolocate', () => {
+            geolocateCount++;
+            if (geolocateCount === 1) {
+                geolocate.setShowAccuracyCircle(false);
+                expect(geolocate._accuracyCircleMarker._map).toBeFalsy();
+                mockGeolocation.change({latitude: 11, longitude: 21, accuracy: 40});
+            } else if (geolocateCount === 2) {
+                // Circle should still be hidden after a new position arrives
+                expect(geolocate._accuracyCircleMarker._map).toBeFalsy();
+                resolve();
+            }
+        });
+        geolocate.trigger();
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+});
+
+test('GeolocateControl setShowAccuracyCircle is a no-op when showUserLocation is false', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({showUserLocation: false});
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        const result = geolocate.setShowAccuracyCircle(true);
+        expect(result).toBe(geolocate);
+        expect(geolocate.options.showAccuracyCircle).toEqual(true);
+        expect(geolocate._accuracyCircleMarker).toBeUndefined();
+        resolve();
+    });
+});
+
+test('GeolocateControl setShowUserHeading attaches and detaches the orientation listener', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true,
+        showUserLocation: true,
+        showUserHeading: false
+    });
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        const addSpy = vi.spyOn(window, 'addEventListener');
+        const removeSpy = vi.spyOn(window, 'removeEventListener');
+
+        geolocate.once('geolocate', () => {
+            // Watch is active. Enabling heading should attach the listener.
+            geolocate.setShowUserHeading(true);
+            expect(geolocate.options.showUserHeading).toEqual(true);
+            const added = addSpy.mock.calls.some(c => c[0] === 'deviceorientation' || c[0] === 'deviceorientationabsolute');
+            expect(added).toBe(true);
+
+            // Pretend a heading was received (the actual event-driven path is
+            // covered by 'watching device orientation event').
+            geolocate._heading = 90;
+
+            // Disabling heading should remove the listeners and clear state.
+            geolocate.setShowUserHeading(false);
+            expect(geolocate.options.showUserHeading).toEqual(false);
+            expect(geolocate._heading).toBeUndefined();
+            const removed = removeSpy.mock.calls.some(c => c[0] === 'deviceorientation' || c[0] === 'deviceorientationabsolute');
+            expect(removed).toBe(true);
+            resolve();
+        });
+        geolocate.trigger();
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+});
+
+test('GeolocateControl setShowUserHeading does not attach the listener when no watch is active', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({trackUserLocation: true, showUserLocation: true});
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        const addSpy = vi.spyOn(window, 'addEventListener');
+        geolocate.setShowUserHeading(true);
+        const added = addSpy.mock.calls.some(c => c[0] === 'deviceorientation' || c[0] === 'deviceorientationabsolute');
+        expect(added).toBe(false);
+        expect(geolocate.options.showUserHeading).toEqual(true);
+        resolve();
+    });
+});
+
+test('GeolocateControl setFitBoundsOptions updates the options used by the next camera move', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({showUserLocation: true});
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        const newOpts = {maxZoom: 17, linear: true, duration: 0};
+        const result = geolocate.setFitBoundsOptions(newOpts);
+        expect(result).toBe(geolocate);
+        expect(geolocate.options.fitBoundsOptions).toEqual(newOpts);
+
+        const fitBoundsSpy = vi.spyOn(map, 'fitBounds');
+        geolocate.once('geolocate', () => {
+            const passed = fitBoundsSpy.mock.calls[0][1] as {maxZoom?: number};
+            expect(passed.maxZoom).toEqual(17);
+            resolve();
+        });
+        geolocate.trigger();
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+});
+
+test('GeolocateControl setShowUserLocation removes and restores the puck at runtime', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({trackUserLocation: true, showUserLocation: true});
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        geolocate.once('geolocate', () => {
+            expect(geolocate._userLocationDotMarker._map).toBeTruthy();
+
+            geolocate.setShowUserLocation(false);
+            expect(geolocate.options.showUserLocation).toEqual(false);
+            expect(geolocate._userLocationDotMarker._map).toBeFalsy();
+            expect(geolocate._accuracyCircleMarker._map).toBeFalsy();
+
+            geolocate.setShowUserLocation(true);
+            expect(geolocate.options.showUserLocation).toEqual(true);
+            expect(geolocate._userLocationDotMarker._map).toBeTruthy();
+            resolve();
+        });
+        geolocate.trigger();
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+});
+
+test('GeolocateControl setShowUserLocation lazily creates markers when constructed with showUserLocation: false', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({trackUserLocation: true, showUserLocation: false});
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        expect(geolocate._userLocationDotMarker).toBeUndefined();
+        expect(geolocate._accuracyCircleMarker).toBeUndefined();
+
+        geolocate.setShowUserLocation(true);
+        expect(geolocate._userLocationDotMarker).toBeTruthy();
+        expect(geolocate._accuracyCircleMarker).toBeTruthy();
+
+        geolocate.once('geolocate', () => {
+            expect(geolocate._userLocationDotMarker._map).toBeTruthy();
+            resolve();
+        });
+        geolocate.trigger();
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+});
+
+test('GeolocateControl runtime setters return this for chaining', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({showUserLocation: true});
+    map.addControl(geolocate);
+
+    await afterUIChanges((resolve) => {
+        expect(geolocate.setShowAccuracyCircle(false)).toBe(geolocate);
+        expect(geolocate.setShowUserHeading(true)).toBe(geolocate);
+        expect(geolocate.setFitBoundsOptions({maxZoom: 18})).toBe(geolocate);
+        expect(geolocate.setShowUserLocation(false)).toBe(geolocate);
+        resolve();
+    });
+});
+
 describe('GeolocateControl geolocation timeout', () => {
     const DEFAULT_TIMEOUT_MS = 6000;
     const CUSTOM_TIMEOUT_MS = 3000;

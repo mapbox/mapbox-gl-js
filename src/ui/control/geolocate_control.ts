@@ -291,12 +291,12 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             return;
         }
 
-        if (this.options.trackUserLocation) {
-            // keep a record of the position so that if the state is BACKGROUND and the user
-            // clicks the button, we can move to ACTIVE_LOCK immediately without waiting for
-            // watchPosition to trigger _onSuccess
-            this._lastKnownPosition = position;
+        // Keep a record of the last good position. Used by the trackUserLocation
+        // BACKGROUND->ACTIVE_LOCK transition, and by runtime setters that need
+        // to re-render markers without waiting for a new geolocation event.
+        this._lastKnownPosition = position;
 
+        if (this.options.trackUserLocation) {
             switch (this._watchState) {
             case 'WAITING_ACTIVE':
             case 'ACTIVE_LOCK':
@@ -374,7 +374,11 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
     _updateMarker(position?: GeolocationPosition | null) {
         if (position) {
             const center = new LngLat(position.coords.longitude, position.coords.latitude);
-            this._accuracyCircleMarker.setLngLat(center).addTo(this._map);
+            if (this.options.showAccuracyCircle) {
+                this._accuracyCircleMarker.setLngLat(center).addTo(this._map);
+            } else {
+                this._accuracyCircleMarker.remove();
+            }
             this._userLocationDotMarker.setLngLat(center).addTo(this._map);
             this._accuracy = position.coords.accuracy;
             if (this.options.showUserLocation && this.options.showAccuracyCircle) {
@@ -526,18 +530,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
 
         // when showUserLocation is enabled, keep the Geolocate button disabled until the device location marker is setup on the map
         if (this.options.showUserLocation) {
-            this._dotElement = DOM.create('div', 'mapboxgl-user-location');
-            this._dotElement.appendChild(DOM.create('div', 'mapboxgl-user-location-dot'));
-            this._dotElement.appendChild(DOM.create('div', 'mapboxgl-user-location-heading'));
-
-            this._userLocationDotMarker = new Marker({
-                element: this._dotElement,
-                rotationAlignment: 'map',
-                pitchAlignment: 'map'
-            });
-
-            this._circleElement = DOM.create('div', 'mapboxgl-user-location-accuracy-circle');
-            this._accuracyCircleMarker = new Marker({element: this._circleElement, pitchAlignment: 'map'});
+            this._createUserLocationMarkers();
 
             if (this.options.trackUserLocation) this._watchState = 'OFF';
 
@@ -784,6 +777,120 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
         return this;
     }
 
+    /**
+     * Sets whether a transparent accuracy circle is drawn around the user
+     * location dot.
+     *
+     * Has no effect if the control was constructed with `showUserLocation: false`,
+     * because the underlying marker is only created when user-location rendering
+     * is enabled. Call `setShowUserLocation(true)` first if you need the circle
+     * after construction.
+     *
+     * @param {boolean} [show] Whether to draw the accuracy circle.
+     * @returns {GeolocateControl} `this`.
+     * @example
+     * geolocate.setShowAccuracyCircle(false);
+     */
+    setShowAccuracyCircle(show?: boolean): this {
+        this.options.showAccuracyCircle = show != null ? show : defaultOptions.showAccuracyCircle;
+
+        if (!this._accuracyCircleMarker) return this;
+
+        if (this.options.showAccuracyCircle) {
+            if (this.options.showUserLocation && this._lastKnownPosition) {
+                const {longitude, latitude, accuracy} = this._lastKnownPosition.coords;
+                this._accuracy = accuracy;
+                this._accuracyCircleMarker.setLngLat(new LngLat(longitude, latitude)).addTo(this._map);
+                this._updateCircleRadius();
+            }
+        } else {
+            this._accuracyCircleMarker.remove();
+        }
+
+        return this;
+    }
+
+    /**
+     * Sets whether an arrow next to the user location dot indicates the
+     * device's heading.
+     *
+     * Only takes effect when `trackUserLocation` is `true` (heading is only
+     * meaningful while a geolocation watch is active).
+     *
+     * @param {boolean} [show] Whether to show the heading arrow.
+     * @returns {GeolocateControl} `this`.
+     * @example
+     * geolocate.setShowUserHeading(true);
+     */
+    setShowUserHeading(show?: boolean): this {
+        this.options.showUserHeading = show != null ? show : defaultOptions.showUserHeading;
+
+        if (!this._setup) return this;
+
+        if (this.options.showUserHeading) {
+            // If a geolocation watch is already active, attach the orientation
+            // listener now so the heading arrow appears immediately.
+            if (this._geolocationWatchID !== undefined) {
+                this._addDeviceOrientationListener();
+            }
+        } else {
+            this._removeDeviceOrientationListener();
+            this._heading = undefined;
+            if (this._userLocationDotMarker) this._updateMarkerRotation();
+        }
+
+        return this;
+    }
+
+    /**
+     * Sets the {@link Map#fitBounds} options used when the map is panned and
+     * zoomed to the user's location. Takes effect on the next geolocation
+     * event or the next call to {@link GeolocateControl#trigger}.
+     *
+     * @param {EasingOptions} [opts] The new `fitBounds` options.
+     * @returns {GeolocateControl} `this`.
+     * @example
+     * geolocate.setFitBoundsOptions({maxZoom: 17, duration: 0});
+     */
+    setFitBoundsOptions(opts?: EasingOptions): this {
+        this.options.fitBoundsOptions = opts != null ? opts : defaultOptions.fitBoundsOptions;
+        return this;
+    }
+
+    /**
+     * Sets whether the user location dot (and, when enabled, the accuracy
+     * circle and heading arrow) is rendered on the map.
+     *
+     * When called with `true` on a control that was constructed with
+     * `showUserLocation: false`, the location markers are created lazily.
+     *
+     * @param {boolean} [show] Whether to render the user location dot.
+     * @returns {GeolocateControl} `this`.
+     * @example
+     * geolocate.setShowUserLocation(false); // hide the puck
+     * geolocate.setShowUserLocation(true);  // show it again
+     */
+    setShowUserLocation(show?: boolean): this {
+        this.options.showUserLocation = show != null ? show : defaultOptions.showUserLocation;
+
+        if (!this._setup) return this;
+
+        if (this.options.showUserLocation) {
+            if (!this._userLocationDotMarker) {
+                this._createUserLocationMarkers();
+                this._map.on('zoom', this._onZoom);
+            }
+            if (this._lastKnownPosition && (this._watchState === undefined || this._watchState !== 'OFF')) {
+                this._updateMarker(this._lastKnownPosition);
+            }
+        } else {
+            if (this._userLocationDotMarker) this._userLocationDotMarker.remove();
+            if (this._accuracyCircleMarker) this._accuracyCircleMarker.remove();
+        }
+
+        return this;
+    }
+
     _addDeviceOrientationListener() {
         const addListener = () => {
             const eventName = 'ondeviceorientationabsolute' in window ?
@@ -804,12 +911,31 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
         }
     }
 
+    _removeDeviceOrientationListener() {
+        window.removeEventListener('deviceorientation', this._onDeviceOrientation);
+        window.removeEventListener('deviceorientationabsolute', this._onDeviceOrientation);
+    }
+
+    _createUserLocationMarkers() {
+        this._dotElement = DOM.create('div', 'mapboxgl-user-location');
+        this._dotElement.appendChild(DOM.create('div', 'mapboxgl-user-location-dot'));
+        this._dotElement.appendChild(DOM.create('div', 'mapboxgl-user-location-heading'));
+
+        this._userLocationDotMarker = new Marker({
+            element: this._dotElement,
+            rotationAlignment: 'map',
+            pitchAlignment: 'map'
+        });
+
+        this._circleElement = DOM.create('div', 'mapboxgl-user-location-accuracy-circle');
+        this._accuracyCircleMarker = new Marker({element: this._circleElement, pitchAlignment: 'map'});
+    }
+
     _clearWatch() {
         this._clearRequestTimeout();
         this.options.geolocation.clearWatch(this._geolocationWatchID);
 
-        window.removeEventListener('deviceorientation', this._onDeviceOrientation);
-        window.removeEventListener('deviceorientationabsolute', this._onDeviceOrientation);
+        this._removeDeviceOrientationListener();
 
         this._geolocationWatchID = undefined;
         this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
