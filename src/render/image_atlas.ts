@@ -326,6 +326,11 @@ export class ImageAtlasCache {
     private textureAccessTimes: Map<ImageAtlas, number>;
     private textureMemoryUsed: number;
     private maxTextureMemory: number;
+    // Atlases handed out during the current frame. LRU eviction must not destroy
+    // textures still referenced by tiles already processed in this frame's prepare pass —
+    // doing so leaves Texture.texture === null and triggers "no texture bound to target"
+    // when the tile later tries to bind during draw.
+    private currentFrameAtlases: Set<ImageAtlas>;
 
     constructor(options?: {maxTextureMemoryMB?: number}) {
         this.cache = new Map();
@@ -333,11 +338,16 @@ export class ImageAtlasCache {
         this.textureAccessTimes = new Map();
         this.textureMemoryUsed = 0;
         this.maxTextureMemory = (options && options.maxTextureMemoryMB ? options.maxTextureMemoryMB : 256) * 1024 * 1024;
+        this.currentFrameAtlases = new Set();
         // Use FinalizationRegistry to clean up cache entries when atlases are garbage collected
         this.finalizationRegistry = new FinalizationRegistry((hash) => {
             this.cache.delete(hash);
             this.clearExpiredTextures();
         });
+    }
+
+    beginFrame() {
+        this.currentFrameAtlases.clear();
     }
 
     /**
@@ -381,11 +391,12 @@ export class ImageAtlasCache {
      */
     private evictTexturesIfNeeded(requiredMemory: number) {
         while (this.textureMemoryUsed + requiredMemory > this.maxTextureMemory && this.textures.size > 0) {
-            // Find least recently used texture
+            // Find least recently used texture, skipping any already handed out this frame.
             let lruAtlas: ImageAtlas | null = null;
             let oldestTime = Infinity;
 
             for (const [atlas,] of this.textures.entries()) {
+                if (this.currentFrameAtlases.has(atlas)) continue;
                 const accessTime = this.textureAccessTimes.get(atlas) || 0;
                 if (accessTime < oldestTime) {
                     oldestTime = accessTime;
@@ -396,7 +407,8 @@ export class ImageAtlasCache {
             if (lruAtlas) {
                 this.evictTexture(lruAtlas);
             } else {
-                // No texture found to evict, break to avoid infinite loop
+                // Every cached texture is in use this frame — accept the temporary
+                // overshoot rather than tear down a texture a tile still references.
                 break;
             }
         }
@@ -442,6 +454,9 @@ export class ImageAtlasCache {
     getTextureForAtlas(atlas: ImageAtlas, context: Context, format: TextureFormat): Texture | null {
         // Update access time for LRU tracking
         this.textureAccessTimes.set(atlas, performance.now());
+        // Pin this atlas for the rest of the frame so subsequent uploads in the same
+        // prepare pass can't evict the texture we're about to hand out (or already have).
+        this.currentFrameAtlases.add(atlas);
 
         // Check if we already have a texture for this atlas
         let texture = this.textures.get(atlas);

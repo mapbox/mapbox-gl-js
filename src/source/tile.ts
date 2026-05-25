@@ -485,12 +485,14 @@ class Tile {
 
         const gl = context.gl;
         const atlas = this.imageAtlas;
-        if (atlas && (!this.imageAtlasTexture || !atlas.uploaded)) {
+        if (atlas && painter) {
+            // Always go through the cache so the atlas is pinned for this frame and
+            // its texture can't be LRU-evicted by another tile's upload before render.
+            // This also picks up a fresh texture if a previous LRU eviction destroyed
+            // the one we were holding.
+            //
             // Don't destroy old texture - it may be shared with other tiles via atlas caching.
-            // Just replace the reference. The ImageAtlasCache will clean up unused textures.
-            this.imageAtlasTexture = null;
-
-            // Get or create texture for this atlas
+            // The ImageAtlasCache owns destruction.
             this.imageAtlasTexture = painter.style.imageManager.imageAtlasCache.getTextureForAtlas(atlas, context, gl.RGBA8);
             atlas.uploaded = true;
         }

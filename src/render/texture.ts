@@ -117,6 +117,7 @@ class Texture {
     bind(filter: TextureFilter, wrap: TextureWrap, ignoreMipMap: boolean = false) {
         const {context} = this;
         const {gl} = context;
+        assert(this.texture, 'Texture.bind called after destroy — caller is holding a stale reference');
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
         if (filter !== this.minFilter) {

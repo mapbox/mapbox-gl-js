@@ -565,6 +565,7 @@ class ImageManager extends Evented {
         for (const scope of this.images.keys()) {
             this.callbackDispatchedThisFrame.set(scope, new Set());
         }
+        this.imageAtlasCache.beginFrame();
     }
 
     dispatchRenderCallbacks(ids: ImageId[], scope: string) {
