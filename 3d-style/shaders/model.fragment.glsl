@@ -77,7 +77,7 @@ uniform sampler2D u_emissionTexture;
 uniform highp sampler3D u_lutTexture;
 #endif
 
-#ifdef FEATURE_CUTOUT
+#ifdef FEATURE_CUTOUT_VERTEX
 in highp float v_cutout_factor;
 #endif
 
@@ -626,13 +626,13 @@ vec4 finalColor;
     finalColor = applyCutout(finalColor, v_position_height.w);
 #endif
 
+#ifdef FEATURE_CUTOUT_VERTEX
+    // Apply pre-calculated cutout factor
+    apply_feature_cutout_dither(gl_FragCoord, v_cutout_factor);
+#else
 #ifdef FEATURE_CUTOUT
-    if (u_feature_cutout_params.z == 2.0) {
-        // Apply pre-calculated cutout factor
-        apply_feature_cutout_dither(gl_FragCoord, v_cutout_factor);
-    } else {
-        finalColor = apply_feature_cutout(finalColor, gl_FragCoord, get_cutout_factors(gl_FragCoord).x);
-    }
+    finalColor = apply_feature_cutout(finalColor, gl_FragCoord, get_cutout_factors(gl_FragCoord).x);
+#endif
 #endif
 
     glFragColor = finalColor;
