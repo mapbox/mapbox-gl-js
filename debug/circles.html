@@ -26,13 +26,12 @@
 </div>
 
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
-
-mapboxgl.accessToken = getAccessToken();
 
 const r = 255 * 0.65;
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     zoom: 3,
@@ -46,7 +45,6 @@ map.addControl(new mapboxgl.NavigationControl());
 map.addControl(new mapboxgl.GeolocateControl());
 
 map.on('load', function() {
-
     map.addSource('circles', {
         "type": "geojson",
         "data": "/test/integration/data/places.geojson"

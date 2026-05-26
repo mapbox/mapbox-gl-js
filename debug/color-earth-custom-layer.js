@@ -7,11 +7,11 @@ function getColor(tileId) {
     return [r, g, b];
 };
 
-var coloredEarthLayer = {
+export const coloredEarthLayer = {
     id: 'coloredEarth',
     type: 'custom',
 
-    onAdd: (map, gl) => {
+    onAdd: function(map, gl) {
         const vertexSource = `
         attribute vec2 a_pos;
         void main() {
@@ -52,7 +52,7 @@ var coloredEarthLayer = {
         return true;
     },
 
-    renderToTile: (gl, tileId) => {
+    renderToTile: function(gl, tileId) {
         gl.useProgram(this.program);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.enableVertexAttribArray(this.program.aPos);

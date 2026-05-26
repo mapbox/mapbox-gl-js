@@ -14,14 +14,13 @@
 <div id="map"></div>
 
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
 import loadEncoder from 'https://unpkg.com/mp4-h264@1.0.7/build/mp4-encoder.js';
 import {simd} from "https://unpkg.com/wasm-feature-detect?module";
 
-mapboxgl.accessToken = getAccessToken();
-
 const map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     center: [7.533634776071096, 45.486077107185565],

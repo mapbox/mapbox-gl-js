@@ -26,11 +26,11 @@
     <label><input id="freeze-tile-coverage-checkbox" type="checkbox"> freeze tile coverage </label><br />
 </div>
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
 
-mapboxgl.accessToken = getAccessToken();
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     style: {

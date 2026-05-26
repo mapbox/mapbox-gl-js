@@ -5,7 +5,6 @@
     <title>Mapbox GL JS Sky Demo</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link href="main.css" rel="stylesheet" type="text/css" />
     <style>
         body {
             margin: 0;
@@ -42,12 +41,12 @@
     </div>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.8.0/suncalc.min.js"></script>
     <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
 
-mapboxgl.accessToken = getAccessToken();
 
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     zoom: 14.1,

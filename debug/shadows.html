@@ -28,10 +28,9 @@
 <div id="container"></div>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
 
-mapboxgl.accessToken = getAccessToken();
 
 var PageSettings = function() {
     this.enableTerrain = true;
@@ -119,6 +118,7 @@ window.onload = function() {
 };
 
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     zoom: 12.5,

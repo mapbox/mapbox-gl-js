@@ -24,11 +24,9 @@
 <script type='module'>
     /* globals d3 */
 
-    import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+    import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
     import {getAccessToken} from './access_token_generated.js';
     import {Pane} from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.3/dist/tweakpane.min.js';
-
-    mapboxgl.accessToken = getAccessToken();
 
     const PARAMS = {
       'fill-extrusion-line-width': 0.5
@@ -46,6 +44,7 @@
     });
 
     var map = window.map = new mapboxgl.Map({
+        accessToken: getAccessToken(),
         container: 'map',
         devtools: true,
         zoom: 17.34,

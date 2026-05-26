@@ -15,11 +15,9 @@
 <div id="map"></div>
 
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {Pane} from 'https://esm.sh/tweakpane@4';
 import {getAccessToken} from './access_token_generated.js';
-
-mapboxgl.accessToken = getAccessToken();
 
 const PARAMS = {
     projection: 'globe',
@@ -41,6 +39,7 @@ const projections = {
 };
 
 const map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     hash: true,

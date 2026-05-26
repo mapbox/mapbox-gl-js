@@ -18,10 +18,8 @@
 <div class="map"></div>
 
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
-
-mapboxgl.accessToken = getAccessToken();
 
 var style = {
     "version": 8,
@@ -62,6 +60,7 @@ var style = {
 
 function addMap (container) {
     var map = new mapboxgl.Map({
+        accessToken: getAccessToken(),
         container,
         minZoom: 14,
         zoom: 15.5,

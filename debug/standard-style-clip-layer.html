@@ -49,11 +49,9 @@
     <div id="config"></div>
     <script src="/debug/dynamic.js"></script>
     <script type='module'>
-        import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+        import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
         import {getAccessToken} from './access_token_generated.js';
         import {Pane} from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.3/dist/tweakpane.min.js';
-
-        mapboxgl.accessToken = getAccessToken();
 
         const pane = new Pane({
             title: 'Parameters',
@@ -154,10 +152,11 @@
 
         const defaultStyle = styles[1];
 
-        const params = window.params = {style: defaultStyle, accessToken: mapboxgl.accessToken};
+        const params = window.params = {style: defaultStyle, accessToken: getAccessToken()};
         const arrayToOptions = (arr) => arr.reduce((acc, item) => ({...acc, [item]: item}), {});
 
         const map = window.map = new mapboxgl.Map({
+            accessToken: getAccessToken(),
             container: 'map',
             center: [-0.12501974, 51.5332374],
             zoom: 16,
@@ -177,8 +176,9 @@
         });
 
         const accessTokenBinding = pane.addBinding(params, 'accessToken', {label: 'Access Token'});
-        accessTokenBinding.on('change', (e) => { mapboxgl.accessToken = e.value; });
-
+        accessTokenBinding.on('change', (e) => {
+            mapboxgl.setAccessToken(e.value);
+        });
         map.on('style.load', (e) => {
             const style = map.getStyle();
             dynamicFolders.forEach((folder) => folder.dispose());
@@ -192,13 +192,13 @@
 
                 // Render configuration binding
                 const schema = fragment.schema || {};
-                for (const config in schema) {
-                    const meta = schema[config];
+                for (const configKey in schema) {
+                    const meta = schema[configKey];
                     const label = meta.metadata['mapbox:title'];
                     const options = meta.values && Array.isArray(meta.values) ? arrayToOptions(meta.values) : undefined;
-                    params[config] = meta.default;
-                    const configBinding = folder.addBinding(params, config, {label, options});
-                    configBinding.on('change', (e) => map.setConfigProperty(id, config, e.value));
+                    params[configKey] = meta.default;
+                    const configBinding = folder.addBinding(params, configKey, {label, options});
+                    configBinding.on('change', (e) => map.setConfigProperty(id, configKey, e.value));
                 }
             }
 

@@ -21,19 +21,18 @@
 </head>
 
 <body>
-<div id"map">
-    <div id"tooltip"></div>
+<div id="map">
+    <div id="tooltip"></div>
 </div>
 
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
-
-mapboxgl.accessToken = getAccessToken();
 
 /*global glMatrix, turf*/
 
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     zoom: 10.852,

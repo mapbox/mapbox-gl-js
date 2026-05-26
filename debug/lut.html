@@ -28,11 +28,9 @@
 <script type='module'>
     /* globals d3 */
 
-    import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+    import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
     import {getAccessToken} from './access_token_generated.js';
     import {Pane} from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.3/dist/tweakpane.min.js';
-
-    mapboxgl.accessToken = getAccessToken();
 
     const PARAMS = {
         brightness: 1.0,
@@ -54,6 +52,7 @@
     const lutPresets = ['custom', 'almost-bw', 'bright', 'bw-2', 'identity', 'red'];
 
     var map = window.map = new mapboxgl.Map({
+        accessToken: getAccessToken(),
         container: 'map',
         devtools: true,
         zoom: 12.2,

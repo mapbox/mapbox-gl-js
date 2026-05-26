@@ -15,10 +15,9 @@
     <div id="map"></div>
 
     <script type="module">
-        import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+        import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
         import {getAccessToken} from './access_token_generated.js';
 
-        mapboxgl.accessToken = getAccessToken();
         import {applyOperations} from '../test/integration/lib/operation-handlers.js';
         import {transformRequest as baseTransformRequest} from '../test/integration/lib/transform-request.js';
 
@@ -56,6 +55,7 @@
         container.style.height = height + 'px';
 
         const map = window.map = new mapboxgl.Map({
+            accessToken: getAccessToken(),
             container,
             style,
             transformRequest,

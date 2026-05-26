@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Mapbox GL JS debug page</title>
-    <meta http-equiv="Content-Security-Policy" content="worker-src blob: ; img-src data: blob: ; script-src http: 'nonce-dummy' 'wasm-unsafe-eval' ; connect-src https://api.mapbox.com https://events.mapbox.com">
+    <meta http-equiv="Content-Security-Policy" content="worker-src http://localhost:9966; img-src data: blob: ; script-src http: 'nonce-dummy' 'wasm-unsafe-eval' ; connect-src https://api.mapbox.com https://events.mapbox.com">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="../dist/mapbox-gl.css" />
@@ -16,12 +16,11 @@
 <div id="map"></div>
 
 <script type="module" nonce="dummy">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
 
-mapboxgl.accessToken = getAccessToken();
-
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     zoom: 12.5,

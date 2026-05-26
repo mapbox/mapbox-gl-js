@@ -137,10 +137,8 @@
 </div>
 
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
-
-mapboxgl.accessToken = getAccessToken();
 
 const projectionInput = document.getElementById('projection');
 const styleInput = document.getElementById('style');
@@ -156,6 +154,7 @@ const lat2Input = document.getElementById('lat2');
 const lat2Value = document.getElementById('lat2-value');
 
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     zoom: 2,
@@ -166,6 +165,7 @@ var map = window.map = new mapboxgl.Map({
 });
 
 var map2 = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map2',
     zoom: 0.1,
     center: [0, 0],

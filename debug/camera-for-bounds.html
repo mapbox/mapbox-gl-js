@@ -24,10 +24,8 @@
 <div id="pane"></div>
 <div id="map"></div>
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
-
-mapboxgl.accessToken = getAccessToken();
 import {Pane} from 'https://esm.sh/tweakpane@4';
 
 const url = new URL(window.location.href);
@@ -58,6 +56,7 @@ const projections = {
 };
 
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     zoom: 5,
     center: [-68.13734351262877, 45.137451890638886],

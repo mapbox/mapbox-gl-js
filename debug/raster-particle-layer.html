@@ -57,10 +57,8 @@
 <div id="config"></div>
 <script type='text/javascript' src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.9/dist/tweakpane.min.js"></script>
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
-
-mapboxgl.accessToken = getAccessToken();
 
 const PARAMS = {
     projection: 'globe',
@@ -158,6 +156,7 @@ window.onload = function() {
 };
 
 const map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     maxZoom: 2,
     minZoom: 2,

@@ -46,11 +46,9 @@
     <script src='https://unpkg.com/d3@7.8.5/dist/d3.min.js'></script>
     <script type='module'>
         /* globals d3 */
-        import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+        import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
         import {getAccessToken} from './access_token_generated.js';
         import {Pane} from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.3/dist/tweakpane.min.js';
-
-        mapboxgl.accessToken = getAccessToken();
 
         const PARAMS = {
             bandIndex: 0,
@@ -86,6 +84,7 @@
         }
 
         var map = window.map = new mapboxgl.Map({
+            accessToken: getAccessToken(),
             container: 'map',
             style: 'mapbox://styles/mapbox/standard-satellite',
             center: [135.0053045734985, 36.00653610439714],

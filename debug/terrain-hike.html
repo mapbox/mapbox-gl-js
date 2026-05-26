@@ -26,12 +26,11 @@
 
     <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
     <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
 
-mapboxgl.accessToken = getAccessToken();
-
 var map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     style: 'mapbox://styles/mapbox/satellite-v9',

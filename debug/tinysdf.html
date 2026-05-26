@@ -41,17 +41,15 @@
 
 <div id="originalMap" style="float: left"></div>
 <div id="newMap" style="float: right"></div>
-<label id="originalLabel">Original Map</label>
-<label id="newLabel">New Map</label>
+<label id="originalLabel">Original mapboxgl.Map</label>
+<label id="newLabel">New mapboxgl.Map</label>
 <div id="checkboxes">
     <label><input id="show-overdraw-checkbox" type="checkbox"> overdraw debug</label><br />
 </div>
 
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
-
-mapboxgl.accessToken = getAccessToken();
 
 function localizeLayers(map) {
     map.on('load', function() {
@@ -67,6 +65,7 @@ function localizeLayers(map) {
 }
 
 var originalMap = window.originalMap = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'originalMap',
     zoom: 8.8,
     center: [121.574, 31.1489],
@@ -78,6 +77,7 @@ var originalMap = window.originalMap = new mapboxgl.Map({
 localizeLayers(originalMap);
 
 var newMap = window.newMap = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'newMap',
     zoom: 8.8,
     center: [121.574, 31.1489],

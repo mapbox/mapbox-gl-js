@@ -9,14 +9,13 @@ let now = performance.now();
 window.performance.now = () => now;
 </script>
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
 
-mapboxgl.accessToken = getAccessToken();
-
-mapboxgl.workerCount = 1;
+mapboxgl.setWorkerCount(1);
 
 var map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: document.getElementById('map'),
     style: 'mapbox://styles/mapbox/streets-v11',
     center: [-77.07842066675323, 38.890315130853566],

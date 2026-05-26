@@ -24,10 +24,9 @@
     <div id="map"></div>
 
     <script type="module">
-        import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+        import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
         import {getAccessToken} from './access_token_generated.js';
         const accessToken = getAccessToken();
-        mapboxgl.accessToken = accessToken;
 
         mapboxgl.addTileProvider('pmtiles', new URL('../plugins/mapbox-gl-pmtiles-provider/dist/mapbox-gl-pmtiles-provider.js', import.meta.url).href);
 
@@ -55,6 +54,7 @@
             });
 
         const map = window.map = new mapboxgl.Map({
+            accessToken: accessToken,
             container: 'map',
             zoom: 4,
             center: [-112, 41],

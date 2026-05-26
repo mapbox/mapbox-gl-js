@@ -9,16 +9,11 @@
 <body>
 
 <iframe width="800" height="600"></iframe>
-<script>
-const mapboxgl = {};
-</script>
 <script type="module">
 import {getAccessToken} from './access_token_generated.js';
 
-mapboxgl.accessToken = getAccessToken();
-
 const js = document.createElement("a");
-js.href = "../dist/mapbox-gl-dev.js";
+js.href = "../dist/esm-dev/mapbox-gl.js";
 const css = document.createElement("a");
 css.href = "../dist/mapbox-gl.css";
 document.querySelector('iframe').src = URL.createObjectURL(new Blob([ `
@@ -37,11 +32,10 @@ document.querySelector('iframe').src = URL.createObjectURL(new Blob([ `
 
 <body>
 <div id="map"></div>
-
-<script src="${js.href}"><\/script>
-<script>
-mapboxgl.accessToken = '${mapboxgl.accessToken}';
+<script type="module">
+import * as mapboxgl from '${js.href}';
 var map = window.map = new mapboxgl.Map({
+    accessToken: "${getAccessToken()}",
     container: 'map',
     devtools: true,
     zoom: 12.5,

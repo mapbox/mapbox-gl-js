@@ -15,12 +15,11 @@
 <div id="map"></div>
 
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
 
-mapboxgl.accessToken = getAccessToken();
-
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     zoom: 12.5,
@@ -34,7 +33,7 @@ var map = window.map = new mapboxgl.Map({
         'GeolocateControl.FindMyLocation': 'X Find my location',
         'GeolocateControl.LocationNotAvailable': 'X Location not available',
         'LogoControl.Title': 'X Mapbox logo',
-        'Map.Title': 'X Map',
+        'Map.Title': 'X mapboxgl.Map',
         'NavigationControl.ResetBearing': 'X Reset bearing to north',
         'NavigationControl.ZoomIn': 'X Zoom in',
         'NavigationControl.ZoomOut': 'X Zoom out',

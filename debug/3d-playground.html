@@ -63,10 +63,8 @@
 <script type='text/javascript' src="https://unpkg.com/csscolorparser@1.0.3/csscolorparser.js"></script>
 <script src="/debug/dynamic.js"></script>
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
-
-mapboxgl.accessToken = getAccessToken();
 
 const Demo3D = function() {
     this.enableTerrain = false;
@@ -369,6 +367,7 @@ window.onload = function() {
 };
 
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     zoom: 13.5,
     center: [-122.45814, 37.76159],

@@ -71,12 +71,12 @@
 
     <script type="module">
         import Compare from 'https://esm.sh/mapbox-gl-compare';
-        import currentMapbox from '../dist/esm-dev/mapbox-gl.js';
+        import * as currentMapbox from '../dist/esm-dev/mapbox-gl.js';
         import {getAccessToken} from './access_token_generated.js';
 
         const params = new URLSearchParams(location.search);
         const accessToken = params.get('accessToken') || getAccessToken();
-        currentMapbox.accessToken = accessToken;
+        currentMapbox.setAccessToken(accessToken);
 
         let version = 'v3.22.0'; // fallback
         try {
@@ -92,8 +92,18 @@
             console.error(`Failed to fetch versions.json, using ${version} as fallback`, e);
         }
 
-        const latestMapbox = await import(`https://api.mapbox.com/mapbox-gl-js/${version}/esm/mapbox-gl.js`).then(mod => mod.default);
-        latestMapbox.accessToken = accessToken;
+        const {setAccessToken: setLatestAccessToken, Map: LatestMap, default: latestMapboxgl} = await import(`https://api.mapbox.com/mapbox-gl-js/${version}/esm/mapbox-gl.js`).then(mod => mod);
+
+        function setLatestAccessTokenWithFallback(token) {
+            if (setLatestAccessToken) {
+                setLatestAccessToken(token);
+            } else {
+                latestMapboxgl.accessToken = token;
+            }
+        }
+
+        setLatestAccessTokenWithFallback(accessToken);
+        const LatestMapConstructor = LatestMap || latestMapboxgl.Map;
 
         const style = params.get('style');
 
@@ -101,7 +111,7 @@
         if (style) mapOptions.style = style;
 
         const currentMap = new currentMapbox.Map({...mapOptions, container: 'current'});
-        const latestMap = new latestMapbox.Map({...mapOptions, container: 'latest'});
+        const latestMap = new LatestMapConstructor({...mapOptions, container: 'latest'});
         new Compare(latestMap, currentMap, '#comparison-container');
 
         document.getElementById('latest-version').textContent = `Latest ${version}`;

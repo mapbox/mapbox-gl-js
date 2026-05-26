@@ -23,12 +23,11 @@
 <!-- <input type="range" id="radius" min="0" max="50" step="any" value="20" />
  -->
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
 
-mapboxgl.accessToken = getAccessToken();
-
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     zoom: 12.5,
@@ -38,7 +37,6 @@ var map = window.map = new mapboxgl.Map({
 });
 
 map.on('load', () => {
-
     map.addLayer({
         'id': 'add-3d-buildings',
         'source': 'composite',

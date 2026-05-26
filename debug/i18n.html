@@ -129,10 +129,9 @@
 </div>
 
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
 
-mapboxgl.accessToken = getAccessToken();
 
 const url = new URL(window.location);
 const language = document.getElementById('language');
@@ -144,6 +143,7 @@ const worldviewSearchParam = url.searchParams.get('worldview');
 if (worldviewSearchParam) worldview.value = worldviewSearchParam;
 
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     zoom: 12.5,

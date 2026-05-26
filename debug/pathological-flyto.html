@@ -57,10 +57,8 @@
     </div>
 
     <script type="module">
-    import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+    import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
     import {getAccessToken} from './access_token_generated.js';
-
-    mapboxgl.accessToken = getAccessToken();
 
     let goat = 0;
     let pleaseStop = null;
@@ -117,6 +115,7 @@
     });
 
     var map = window.map = new mapboxgl.Map({
+        accessToken: getAccessToken(),
         container: 'map',
         devtools: true,
         zoom: 12.5,

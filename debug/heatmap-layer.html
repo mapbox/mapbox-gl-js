@@ -25,12 +25,11 @@
 <button id="globe">switch to globe</button>
 
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
 
-mapboxgl.accessToken = getAccessToken();
-
 const map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     style: 'mapbox://styles/mapbox/dark-v10',
@@ -49,7 +48,6 @@ document.getElementById('globe').addEventListener('click', (e) => {
 });
 
 map.on('load', () => {
-
     map.addSource('earthquakes', {
         'type': 'geojson',
         'data': 'https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson'

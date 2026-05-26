@@ -21,11 +21,10 @@
 <script type="module" nonce="app-js">
 import {getAccessToken} from './access_token_generated.js';
 
-mapboxgl.accessToken = getAccessToken();
-
 mapboxgl.workerUrl = '/dist/mapbox-gl-csp-worker.js';
 
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     zoom: 12.5,

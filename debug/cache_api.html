@@ -18,10 +18,8 @@
 <div id="map"></div>
 
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
-
-mapboxgl.accessToken = getAccessToken();
 
 const CACHE_NAME = 'mapbox-tiles';
 let map;
@@ -103,6 +101,7 @@ function storageClearedTest(callback) {
 function initialize(zoom, onLoad) {
     if (map) map.remove();
     map = window.map = new mapboxgl.Map({
+        accessToken: getAccessToken(),
         container: 'map',
         devtools: true,
         zoom,
@@ -256,6 +255,7 @@ function testThirdView(done) {
 function initializeRaster(done) {
     if (map) map.remove();
     map = new mapboxgl.Map({
+        accessToken: getAccessToken(),
         container: 'map',
         devtools: true,
         zoom: 0,

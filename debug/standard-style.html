@@ -49,11 +49,10 @@
     <div id="config"></div>
     <script src="./dynamic.js"></script>
     <script type='module'>
-        import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+        import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
         import {getAccessToken} from './access_token_generated.js';
         import {Pane} from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.3/dist/tweakpane.min.js';
 
-        mapboxgl.accessToken = getAccessToken();
 
         const pane = new Pane({
             title: 'Parameters',
@@ -71,10 +70,11 @@
 
         const defaultStyle = styles[1];
 
-        const params = window.params = {style: defaultStyle, accessToken: mapboxgl.accessToken};
+        const params = window.params = {style: defaultStyle, accessToken: getAccessToken()};
         const arrayToOptions = (arr) => Object.fromEntries(arr.map(item => [item, item]));
 
         const map = window.map = new mapboxgl.Map({
+            accessToken: getAccessToken(),
             container: 'map',
             center: [-74.012499, 40.705441],
             zoom: 15.27,
@@ -90,8 +90,9 @@
         styleBinding.on('change', (e) => map.setStyle(e.value === 'dynamic' ? window.dynamic : e.value, {diff: false}));
 
         const accessTokenBinding = pane.addBinding(params, 'accessToken', {label: 'Access Token'});
-        accessTokenBinding.on('change', (e) => { mapboxgl.accessToken = e.value; });
-
+        accessTokenBinding.on('change', (e) => {
+            mapboxgl.setAccessToken(e.value);
+        });
         map.on('style.load', (e) => {
             const style = map.getStyle();
             dynamicFolders.forEach((folder) => folder.dispose());

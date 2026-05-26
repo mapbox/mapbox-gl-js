@@ -17,10 +17,8 @@
 <script src="/debug/dark-v9.js"></script>
 <script src="/debug/light-v9.js"></script>
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
-
-mapboxgl.accessToken = getAccessToken();
 
 // these are set in dark-v9.js and light-v9.js
 var dark = window.darkv9;
@@ -28,6 +26,7 @@ var light = window.lightv9;
 
 var style = dark;
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     zoom: 2,

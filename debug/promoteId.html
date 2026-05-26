@@ -27,10 +27,8 @@
 
 <script src='/debug/dynamic.js'></script>
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
-
-mapboxgl.accessToken = getAccessToken();
 
 var newStyle = window.dynamic;
 newStyle.sources.composite.promoteId = {
@@ -38,6 +36,7 @@ newStyle.sources.composite.promoteId = {
 };
 
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     zoom: 17.0,

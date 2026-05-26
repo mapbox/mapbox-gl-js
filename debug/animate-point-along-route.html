@@ -44,13 +44,13 @@
 
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
-import {getAccessToken} from './access_token_generated.js';
+    import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+    import {getAccessToken} from './access_token_generated.js';
 
-mapboxgl.accessToken = getAccessToken();
     /* globals turf */
 
     const map = new mapboxgl.Map({
+        accessToken: getAccessToken(),
         container: 'map',
         devtools: true,
         style: 'mapbox://styles/mapbox/streets-v11',

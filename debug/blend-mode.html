@@ -168,9 +168,8 @@
     </div>
 
     <script type="module">
-        import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+        import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
         import { getAccessToken } from './access_token_generated.js';
-        mapboxgl.accessToken = getAccessToken();
 
         let currentOpacity = 1.0;
         let currentBlendMode = 'additive';
@@ -220,6 +219,7 @@
         };
 
         const map = window.map = new mapboxgl.Map({
+            accessToken: getAccessToken(),
             container: 'map',
             projection: 'mercator',
             style: {

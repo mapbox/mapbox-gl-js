@@ -18,10 +18,8 @@ Canvas not supported
 </canvas>
 <div id="map"></div>
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
-
-mapboxgl.accessToken = getAccessToken();
 
 function drawToCanvas() {
     var canvas = document.getElementById('testCanvasID');
@@ -65,6 +63,7 @@ var canvasStyle = {
 };
 
 var map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     minZoom: 14,

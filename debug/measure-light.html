@@ -4,8 +4,7 @@
     <title>Mapbox GL JS debug page</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="mapbox-gl.css" />
-    <link href="main.css" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
     <style>
         body { margin: 0; padding: 0 }
         html, body, #map { height: 100%; }
@@ -23,10 +22,8 @@
 
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
 <script type="module">
-import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
 import {getAccessToken} from './access_token_generated.js';
-
-mapboxgl.accessToken = getAccessToken();
 
 var Demo3D = function() {
     this.enableTerrain = false;
@@ -153,6 +150,7 @@ window.onload = function() {
 };
 
 var map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
     container: 'map',
     devtools: true,
     zoom: 13.5,

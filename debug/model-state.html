@@ -10,23 +10,83 @@
         body {
             margin: 0;
             padding: 0;
+            display: flex;
         }
 
-        html,
-        body,
+        html, body {
+            height: 100%;
+        }
+
+        #panel {
+            width: 220px;
+            flex-shrink: 0;
+            background: #fff;
+            border-right: 1px solid #ccc;
+            padding: 12px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            font-family: sans-serif;
+            font-size: 13px;
+        }
+
+        #panel h3 {
+            margin: 0 0 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #555;
+        }
+
+        #panel h4 {
+            margin: 10px 0 4px;
+            font-size: 12px;
+            color: #777;
+        }
+
+        #panel label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            gap: 6px;
+        }
+
+        #panel input[type=range] {
+            flex: 1;
+        }
+
+        #panel input[type=color] {
+            width: 36px;
+            height: 24px;
+            border: 1px solid #ccc;
+            padding: 0;
+            cursor: pointer;
+        }
+
         #map {
+            flex: 1;
             height: 100%;
         }
     </style>
 </head>
 
 <body>
+    <div id='panel'>
+        <h3>Model State</h3>
+        <label>Color <input type="color" id="vehicle-color"></label>
+        <label>Trunk <input type="range" id="trunk" min="0" max="1" step="0.01" value="0"></label>
+        <label>Hood <input type="range" id="hood" min="0" max="1" step="0.01" value="0"></label>
+        <h4>Doors</h4>
+        <label>Front Left <input type="range" id="doors-front-left" min="0" max="1" step="0.01" value="0.5"></label>
+        <label>Front Right <input type="range" id="doors-front-right" min="0" max="1" step="0.01" value="0"></label>
+        <h4>Lights</h4>
+        <label>Brake <input type="range" id="brake-lights" min="0" max="1" step="0.01" value="0"></label>
+    </div>
     <div id='map'></div>
 
     <script type="module">
-    import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
-    import {getAccessToken} from './access_token_generated.js';
-    mapboxgl.accessToken = getAccessToken();
+        import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+        import {getAccessToken} from './access_token_generated.js';
 
         const style = {
             "version": 8,
@@ -263,8 +323,8 @@
             ]
         };
 
-
         var map = window.map = new mapboxgl.Map({
+            accessToken: getAccessToken(),
             container: 'map',
             devtools: true,
             projection: 'globe',
@@ -359,34 +419,36 @@
 
 
         // Setup UI for parameters
-        {
-            const dbgTrackedParams = map._tp;
-            const scope = ["Model State"];
-            const scopeDoors = [...scope, "Doors"];
-            const scopeLights = [...scope, "Lights"];
-
-            dbgTrackedParams.registerParameter(egoCarParams, scope, "color", { label: "Vehicle Color", type: 'float', picker: 'inline' }, () => {
-                updateModelState();
-            });
-            dbgTrackedParams.registerParameter(egoCarParams, scope, "trunk", { label: "Trunk", min: 0, max: 1.0 }, () => {
-                updateModelState();
-            });
-
-            dbgTrackedParams.registerParameter(egoCarParams, scope, "hood", { label: "Hood", min: 0, max: 1.0 }, () => {
-                updateModelState();
-            });
-
-            dbgTrackedParams.registerParameter(egoCarParams, scopeDoors, "doorsFrontLeft", { label: "Front Left", min: 0, max: 1.0 }, () => {
-                updateModelState();
-            });
-            dbgTrackedParams.registerParameter(egoCarParams, scopeDoors, "doorsFrontRight", { label: "Front Right", min: 0, max: 1.0 }, () => {
-                updateModelState();
-            });
-
-            dbgTrackedParams.registerParameter(egoCarParams, scopeLights, "brakeLights", { label: "Brake", min: 0, max: 1.0 }, () => {
-                updateModelState();
-            });
+        function rgbToHex(r, g, b) {
+            return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
         }
+
+        function hexToRgb(hex) {
+            const n = parseInt(hex.slice(1), 16);
+            return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255, a: 1 };
+        }
+
+        const colorInput = document.getElementById('vehicle-color');
+        colorInput.value = rgbToHex(egoCarParams.color.r, egoCarParams.color.g, egoCarParams.color.b);
+        colorInput.addEventListener('input', () => {
+            egoCarParams.color = hexToRgb(colorInput.value);
+            updateModelState();
+        });
+
+        [
+            ['trunk',            'trunk'],
+            ['hood',             'hood'],
+            ['doors-front-left', 'doorsFrontLeft'],
+            ['doors-front-right','doorsFrontRight'],
+            ['brake-lights',     'brakeLights'],
+        ].forEach(([id, key]) => {
+            const el = document.getElementById(id);
+            el.value = egoCarParams[key];
+            el.addEventListener('input', () => {
+                egoCarParams[key] = parseFloat(el.value);
+                updateModelState();
+            });
+        });
 
         console.time('load');
 

@@ -15,13 +15,12 @@
 <script src="https://unpkg.com/three@0.106.2/examples/js/loaders/GLTFLoader.js"></script>
 <div id="map"></div>
 <script type="module">
-    import mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+    import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
     import {getAccessToken} from './access_token_generated.js';
-
-    mapboxgl.accessToken = getAccessToken();
 
     /* eslint-disable */
     var map = (window.map = new mapboxgl.Map({
+        accessToken: getAccessToken(),
         container: 'map',
         devtools: true,
         style: 'mapbox://styles/mapbox/light-v10',
