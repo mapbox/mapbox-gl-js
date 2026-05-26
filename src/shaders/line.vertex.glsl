@@ -220,9 +220,20 @@ void main() {
     line_progress = a_packed[2];
 #endif
 
-    // the distance over which the line edge fades out.
+    // The distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
     float ANTIALIASING = 1.0 / u_device_pixel_ratio / 2.0;
+#ifdef RENDER_LINE_BORDER
+#ifndef VARIABLE_LINE_WIDTH
+    // Increase distance for lines with border to improve distance based
+    // anti-aliasing (fwidth-based) of the border edges.
+    // The multiplier was determined experimentally to achieve pixel-perfect
+    // anti-aliasing of the border for extremely pitched lines near the
+    // horizon: lower values cause aliasing on the borders, while higher
+    // values yield no further visual improvement.
+    ANTIALIASING *= 8.0;
+#endif
+#endif
 
     vec2 a_extrude = vec2(a_data.xy) - 128.0;
     float a_direction = float(a_data.z & 3u) - 1.0;
@@ -289,7 +300,7 @@ void main() {
 #endif
 
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
-    float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + (halfwidth == 0.0 ? 0.0 : ANTIALIASING);
+    float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + (halfwidth > 0.0 ? ANTIALIASING : 0.0);
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
