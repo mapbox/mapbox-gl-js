@@ -46,7 +46,7 @@ export type PaintProps = {
     "model-cutoff-fade-range": DataConstantProperty<number>;
     "model-front-cutoff": DataConstantProperty<[number, number, number]>;
     "model-elevation-reference": DataConstantProperty<"sea" | "ground" | "hd-road-markup">;
-    "model-ignore-line-cutout": DataConstantProperty<boolean>;
+    "model-line-cutout-mode": DataConstantProperty<"enabled" | "disabled" | "enabled-above-cutout">;
     "model-color-use-theme": DataDrivenProperty<string>;
 };
 
@@ -69,6 +69,6 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "model-cutoff-fade-range": new DataConstantProperty(styleSpec["paint_model"]["model-cutoff-fade-range"]),
     "model-front-cutoff": new DataConstantProperty(styleSpec["paint_model"]["model-front-cutoff"]),
     "model-elevation-reference": new DataConstantProperty(styleSpec["paint_model"]["model-elevation-reference"]),
-    "model-ignore-line-cutout": new DataConstantProperty(styleSpec["paint_model"]["model-ignore-line-cutout"]),
+    "model-line-cutout-mode": new DataConstantProperty(styleSpec["paint_model"]["model-line-cutout-mode"]),
     "model-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

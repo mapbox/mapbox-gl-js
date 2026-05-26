@@ -11656,10 +11656,21 @@
         }
       }
     },
-    "model-ignore-line-cutout": {
-      "type": "boolean",
-      "doc": "When set to true, the layer is not going to be affected by the line cutout effect.",
-      "default": false,
+    "model-line-cutout-mode": {
+      "type": "enum",
+      "doc": "Selects the way the line cutout effect is applied to the model.",
+      "default": "enabled",
+      "values": {
+        "enabled": {
+          "doc": "The model receives the cutout without any special handling."
+        },
+        "disabled": {
+          "doc": "The cutout effect is disabled for the model."
+        },
+        "enabled-above-cutout": {
+          "doc": "Only enabled if the model is above the cutout plane, such as for models above cut tunnels."
+        }
+      },
       "transition": false,
       "expression": {
         "interpolated": false
@@ -11669,8 +11680,9 @@
       "private": true,
       "sdk-support": {
         "basic functionality": {
-          "android": "11.21.0",
-          "ios": "11.21.0"
+          "js": "3.26.0",
+          "android": "11.26.0",
+          "ios": "11.26.0"
         }
       }
     }

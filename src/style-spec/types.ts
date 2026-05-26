@@ -1427,7 +1427,7 @@ export type ModelLayerSpecification = {
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
-        "model-ignore-line-cutout"?: boolean | ExpressionSpecification
+        "model-line-cutout-mode"?: "enabled" | "disabled" | "enabled-above-cutout" | ExpressionSpecification
     },
     /**
      * @experimental This property is experimental and subject to change in future versions.
