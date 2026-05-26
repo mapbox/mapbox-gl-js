@@ -22,19 +22,14 @@ type Task = {
 
 class Scheduler {
 
-    tasks: {
-        [key: number]: Task;
-    };
-    taskQueue: Array<number>;
+    tasks: Map<number, Task>;
     invoker: ThrottledInvoker;
     nextId: number;
 
     constructor() {
-        this.tasks = {};
-        this.taskQueue = [];
+        this.tasks = new Map();
         bindAll(['process'], this);
         this.invoker = new ThrottledInvoker(this.process);
-
         this.nextId = 0;
     }
 
@@ -54,12 +49,11 @@ class Scheduler {
             return null;
         }
 
-        this.tasks[id] = {fn, metadata, priority, id};
-        this.taskQueue.push(id);
+        this.tasks.set(id, {fn, metadata, priority, id});
         this.invoker.trigger();
         return {
             cancel: () => {
-                delete this.tasks[id];
+                this.tasks.delete(id);
             }
         };
     }
@@ -67,25 +61,15 @@ class Scheduler {
     process() {
         const m = isWorker(self) ? PerformanceUtils.beginMeasure('workerTask') : undefined;
         try {
-            this.taskQueue = this.taskQueue.filter(id => !!this.tasks[id]);
+            const task = this.pick();
+            if (!task) return;
 
-            if (!this.taskQueue.length) {
-                return;
-            }
-            const id = this.pick();
-            if (id === null) return;
-
-            const task = this.tasks[id];
-            delete this.tasks[id];
+            this.tasks.delete(task.id);
             // Schedule another process call if we know there's more to process _before_ invoking the
             // current task. This is necessary so that processing continues even if the current task
             // doesn't execute successfully.
-            if (this.taskQueue.length) {
+            if (this.tasks.size > 0) {
                 this.invoker.trigger();
-            }
-            if (!task) {
-                // If the task ID doesn't have associated task data anymore, it was canceled.
-                return;
             }
 
             task.fn();
@@ -94,24 +78,20 @@ class Scheduler {
         }
     }
 
-    pick(): null | number {
-        let minIndex: number = null;
+    pick(): Task | null {
+        let result: Task | null = null;
         let minPriority = Infinity;
-        for (let i = 0; i < this.taskQueue.length; i++) {
-            const id = this.taskQueue[i];
-            const task = this.tasks[id];
+        for (const task of this.tasks.values()) {
             if (task.priority < minPriority) {
                 minPriority = task.priority;
-                minIndex = i;
+                result = task;
             }
         }
-        if (minIndex === null) return null;
-        const id = this.taskQueue[minIndex];
-        this.taskQueue.splice(minIndex, 1);
-        return id;
+        return result;
     }
 
     remove() {
+        this.tasks.clear();
         this.invoker.remove();
     }
 }
