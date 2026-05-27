@@ -6,7 +6,7 @@
  * npx tsc --allowJs --declaration --emitDeclarationOnly --outDir . --removeComments mrt.esm.js
  */
 
-import type Pbf from 'pbf';
+import type {PbfReader} from 'pbf';
 import type {LRUCache} from '../../util/lru';
 import type {
     TArrayLike,
@@ -24,7 +24,7 @@ import type {
 export type {TBandViewRGBA};
 
 export namespace MapboxRasterTile {
-    function setPbf(_Pbf: typeof Pbf): void;
+    function setPbf(_Pbf: typeof PbfReader): void;
     function performDecoding(buf: ArrayBufferLike, decodingBatch: TProcessingBatch): Promise<TDecodingResult[]>;
 }
 

@@ -5,7 +5,7 @@ import EXTENT from '../style-spec/data/extent';
 import Grid from '../symbol/grid_index';
 import DictionaryCoder from '../util/dictionary_coder';
 import {VectorTile} from '@mapbox/vector-tile';
-import Protobuf from 'pbf';
+import {PbfReader} from 'pbf';
 import Feature from '../util/vectortile_to_geojson';
 import {arraysIntersect, mapObject, warnOnce} from '../util/util';
 import {register} from '../util/web_worker_transfer';
@@ -119,7 +119,7 @@ class FeatureIndex {
 
     loadVTLayers(): Record<string, VectorTileLayer> {
         if (!this.vtLayers) {
-            this.vtLayers = new VectorTile(new Protobuf(this.rawTileData)).layers;
+            this.vtLayers = new VectorTile(new PbfReader(this.rawTileData)).layers;
             this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
             this.vtFeatures = {};
             for (const layer in this.vtLayers) {

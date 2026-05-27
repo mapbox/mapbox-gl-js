@@ -1,5 +1,5 @@
 import {AlphaImage} from '../util/image';
-import Protobuf from 'pbf';
+import {PbfReader} from 'pbf';
 const border = 3;
 
 import type {StyleGlyph, GlyphMetrics} from './style_glyph';
@@ -10,14 +10,14 @@ export type GlyphData = {
     descender?: number;
 };
 
-function readFontstacks(tag: number, glyphData: GlyphData, pbf: Protobuf) {
+function readFontstacks(tag: number, glyphData: GlyphData, pbf: PbfReader) {
     glyphData.glyphs = [];
     if (tag === 1) {
         pbf.readMessage(readFontstack, glyphData);
     }
 }
 
-function readFontstack(tag: number, glyphData: GlyphData, pbf: Protobuf) {
+function readFontstack(tag: number, glyphData: GlyphData, pbf: PbfReader) {
     if (tag === 3) {
         const {id, bitmap, width, height, left, top, advance} = pbf.readMessage(readGlyph, {} as StyleGlyph & GlyphMetrics);
         glyphData.glyphs.push({
@@ -35,7 +35,7 @@ function readFontstack(tag: number, glyphData: GlyphData, pbf: Protobuf) {
     }
 }
 
-function readGlyph(tag: number, glyph: StyleGlyph & GlyphMetrics & {bitmap: Uint8Array}, pbf: Protobuf) {
+function readGlyph(tag: number, glyph: StyleGlyph & GlyphMetrics & {bitmap: Uint8Array}, pbf: PbfReader) {
     if (tag === 1) glyph.id = pbf.readVarint();
     else if (tag === 2) (glyph as {bitmap: Uint8Array}).bitmap = pbf.readBytes();
     else if (tag === 3) glyph.width = pbf.readVarint();
@@ -46,7 +46,7 @@ function readGlyph(tag: number, glyph: StyleGlyph & GlyphMetrics & {bitmap: Uint
 }
 
 export default function parseGlyphPbf(data: ArrayBuffer | Uint8Array): GlyphData {
-    return new Protobuf(data).readFields(readFontstacks, {} as GlyphData);
+    return new PbfReader(data).readFields(readFontstacks, {} as GlyphData);
 }
 
 export const GLYPH_PBF_BORDER = border;

@@ -1,4 +1,4 @@
-import Pbf from 'pbf';
+import {PbfReader} from 'pbf';
 import {describe, test, expect} from 'vitest';
 import {readArrayBuffer} from '../../util/read_array_buffer';
 import {readIconSet, buildStretchedAreas} from '../../../src/data/usvg/usvg_pb_decoder';
@@ -7,7 +7,7 @@ describe('IconSet', () => {
     test('parses an icon set into a JSON', async () => {
         const data = await readArrayBuffer('test/fixtures/iconset.pb');
 
-        const iconSet = readIconSet(new Pbf(data));
+        const iconSet = readIconSet(new PbfReader(data));
         await expect(JSON.stringify(iconSet)).toMatchFileSnapshot('__snapshots__/iconset.json');
     });
 

@@ -1,5 +1,5 @@
 import '../data/mrt_data';
-import Pbf from 'pbf';
+import {PbfReader} from 'pbf';
 import {getArrayBuffer} from '../util/ajax';
 import {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
 
@@ -15,7 +15,7 @@ import type {
     WorkerSourceRasterArrayTileCallback,
 } from './worker_source';
 
-MapboxRasterTile.setPbf(Pbf);
+MapboxRasterTile.setPbf(PbfReader);
 
 const MRT_DECODED_BAND_CACHE_SIZE = 30;
 

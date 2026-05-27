@@ -1,6 +1,6 @@
 
 import {describe, test, expect} from '../../util/vitest';
-import Protobuf from 'pbf';
+import {PbfReader} from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 import {EdgeIterator, ElevationFeature, ElevationFeatures, type Edge, type Range, type Vertex} from '../../../3d-style/elevation/elevation_feature';
 import {getElevationFeature} from '../../../3d-style/elevation/get_elevation_feature';
@@ -177,7 +177,7 @@ describe('ElevationFeature', () => {
     test('#parseTileZ14', () => {
         // Load a fill feature from fixture tile.
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        const vt = new VectorTile(new Protobuf(vectorTileStubZ14));
+        const vt = new VectorTile(new PbfReader(vectorTileStubZ14));
         const layer = vt.layers[HD_ELEVATION_SOURCE_LAYER];
 
         expect(layer).toBeDefined();
@@ -243,7 +243,7 @@ describe('ElevationFeature', () => {
     test('#parseTileZ17', () => {
         // Load a fill feature from fixture tile.
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        const vt = new VectorTile(new Protobuf(vectorTileStubZ17));
+        const vt = new VectorTile(new PbfReader(vectorTileStubZ17));
         const layer = vt.layers[HD_ELEVATION_SOURCE_LAYER];
 
         expect(layer).toBeDefined();

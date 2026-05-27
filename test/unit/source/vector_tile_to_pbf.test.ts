@@ -1,6 +1,6 @@
 import {test, expect} from '../../util/vitest';
 import writePbf from '../../../src/source/vector_tile_to_pbf';
-import Pbf from 'pbf';
+import {PbfReader} from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 
 import type {Feature} from '../../../src/source/geojson_wrapper';
@@ -38,7 +38,7 @@ test('does not encode empty rings', () => {
 
     expect(() => {
         const buf = writePbf({test: features});
-        const tile = new VectorTile(new Pbf(buf));
+        const tile = new VectorTile(new PbfReader(buf));
         tile.layers.test.feature(0).loadGeometry();
     }).not.toThrowError();
 });

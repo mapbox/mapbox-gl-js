@@ -2,7 +2,7 @@
 
 import Color from "../../style-spec/util/color";
 
-import type Pbf from "pbf";
+import type {PbfReader} from "pbf";
 
 const defaultColor = new Color(0, 0, 0);
 
@@ -73,11 +73,11 @@ export interface IconSet {
     icons: Icon[];
 }
 
-export function readIconSet(pbf: Pbf, end?: number): IconSet {
+export function readIconSet(pbf: PbfReader, end?: number): IconSet {
     return pbf.readFields(readIconSetField, {icons: []}, end);
 }
 
-function readIconSetField(tag: number, obj: IconSet, pbf: Pbf) {
+function readIconSetField(tag: number, obj: IconSet, pbf: PbfReader) {
     if (tag === 1) obj.icons.push(readIcon(pbf, pbf.readVarint() + pbf.pos));
 }
 
@@ -164,11 +164,11 @@ export interface Icon {
     data?: "usvg_tree";
 }
 
-export function readIcon(pbf: Pbf, end?: number): Icon {
+export function readIcon(pbf: PbfReader, end?: number): Icon {
     return postProcessIcon(pbf.readFields(readIconField, {name: undefined}, end));
 }
 
-function readIconField(tag: number, obj: Icon, pbf: Pbf) {
+function readIconField(tag: number, obj: Icon, pbf: PbfReader) {
     if (tag === 1) obj.name = pbf.readString();
     else if (tag === 2) obj.metadata = readIconMetadata(pbf, pbf.readVarint() + pbf.pos);
     else if (tag === 3) { obj.usvg_tree = readUsvgTree(pbf, pbf.readVarint() + pbf.pos); obj.data = "usvg_tree"; }
@@ -184,7 +184,7 @@ export interface IconMetadata {
     variables: Variable[];
 }
 
-export function readIconMetadata(pbf: Pbf, end?: number): IconMetadata {
+export function readIconMetadata(pbf: PbfReader, end?: number): IconMetadata {
     return pbf.readFields(readIconMetadataField, {
         stretch_x: null,
         stretch_y: null,
@@ -194,7 +194,7 @@ export function readIconMetadata(pbf: Pbf, end?: number): IconMetadata {
     }, end);
 }
 
-function readIconMetadataField(tag: number, obj: IconMetadata, pbf: Pbf) {
+function readIconMetadataField(tag: number, obj: IconMetadata, pbf: PbfReader) {
     if (tag === 1) obj.stretch_x = pbf.readPackedVarint();
     else if (tag === 2) obj.stretch_y = pbf.readPackedVarint();
     else if (tag === 3) obj.content_area = readNonEmptyArea(pbf, pbf.readVarint() + pbf.pos);
@@ -209,11 +209,11 @@ export interface NonEmptyArea {
     height: number;
 }
 
-export function readNonEmptyArea(pbf: Pbf, end?: number): NonEmptyArea {
+export function readNonEmptyArea(pbf: PbfReader, end?: number): NonEmptyArea {
     return pbf.readFields(readNonEmptyAreaField, {} as NonEmptyArea, end);
 }
 
-function readNonEmptyAreaField(tag: number, obj: NonEmptyArea, pbf: Pbf) {
+function readNonEmptyAreaField(tag: number, obj: NonEmptyArea, pbf: PbfReader) {
     if (tag === 1) obj.left = pbf.readVarint();
     else if (tag === 2) obj.width = pbf.readVarint();
     else if (tag === 3) obj.top = pbf.readVarint();
@@ -226,11 +226,11 @@ export interface Variable {
     value?: "rgb_color";
 }
 
-export function readVariable(pbf: Pbf, end?: number): Variable {
+export function readVariable(pbf: PbfReader, end?: number): Variable {
     return pbf.readFields(readVariableField, {name: undefined}, end);
 }
 
-function readVariableField(tag: number, obj: Variable, pbf: Pbf) {
+function readVariableField(tag: number, obj: Variable, pbf: PbfReader) {
     if (tag === 1) obj.name = pbf.readString();
     else if (tag === 2) { obj.rgb_color = readColor(pbf.readVarint()); obj.value = "rgb_color"; }
 }
@@ -245,11 +245,11 @@ export interface UsvgTree {
     masks: Mask[];
 }
 
-export function readUsvgTree(pbf: Pbf, end?: number): UsvgTree {
+export function readUsvgTree(pbf: PbfReader, end?: number): UsvgTree {
     return pbf.readFields(readUsvgTreeField, {width: 20, children: [], linear_gradients: [], radial_gradients: [], clip_paths: [], masks: []} as UsvgTree, end);
 }
 
-function readUsvgTreeField(tag: number, obj: UsvgTree, pbf: Pbf) {
+function readUsvgTreeField(tag: number, obj: UsvgTree, pbf: PbfReader) {
     if (tag === 1) obj.width = obj.height = pbf.readVarint();
     else if (tag === 2) obj.height = pbf.readVarint();
     else if (tag === 3) obj.children.push(readNode(pbf, pbf.readVarint() + pbf.pos));
@@ -265,11 +265,11 @@ export interface Node {
     node?: "group" | "path";
 }
 
-export function readNode(pbf: Pbf, end?: number): Node {
+export function readNode(pbf: PbfReader, end?: number): Node {
     return pbf.readFields(readNodeField, {}, end);
 }
 
-function readNodeField(tag: number, obj: Node, pbf: Pbf) {
+function readNodeField(tag: number, obj: Node, pbf: PbfReader) {
     if (tag === 1) { obj.group = readGroup(pbf, pbf.readVarint() + pbf.pos); obj.node = "group"; }
     else if (tag === 2) { obj.path = readPath(pbf, pbf.readVarint() + pbf.pos); obj.node = "path"; }
 }
@@ -282,11 +282,11 @@ export interface Group {
     children: Node[];
 }
 
-export function readGroup(pbf: Pbf, end?: number): Group {
+export function readGroup(pbf: PbfReader, end?: number): Group {
     return pbf.readFields(readGroupField, {opacity: 255, children: []}, end);
 }
 
-function readGroupField(tag: number, obj: Group, pbf: Pbf) {
+function readGroupField(tag: number, obj: Group, pbf: PbfReader) {
     if (tag === 1) obj.transform = readTransform(pbf, pbf.readVarint() + pbf.pos);
     else if (tag === 2) obj.opacity = pbf.readVarint();
     else if (tag === 5) obj.clip_path_idx = pbf.readVarint();
@@ -303,11 +303,11 @@ export interface Transform {
     ty?: number;
 }
 
-export function readTransform(pbf: Pbf, end?: number): Transform {
+export function readTransform(pbf: PbfReader, end?: number): Transform {
     return pbf.readFields(readTransformField, {sx: 1, ky: 0, kx: 0, sy: 1, tx: 0, ty: 0}, end);
 }
 
-function readTransformField(tag: number, obj: Transform, pbf: Pbf) {
+function readTransformField(tag: number, obj: Transform, pbf: PbfReader) {
     if (tag === 1) obj.sx = pbf.readFloat();
     else if (tag === 2) obj.ky = pbf.readFloat();
     else if (tag === 3) obj.kx = pbf.readFloat();
@@ -326,11 +326,11 @@ export interface Path {
     rule?: PathRuleValue;
 }
 
-export function readPath(pbf: Pbf, end?: number): Path {
+export function readPath(pbf: PbfReader, end?: number): Path {
     return pbf.readFields(readPathField, {paint_order: 1, commands: [], step: 1, diffs: [], rule: PathRule.PATH_RULE_NON_ZERO}, end);
 }
 
-function readPathField(tag: number, obj: Path, pbf: Pbf) {
+function readPathField(tag: number, obj: Path, pbf: PbfReader) {
     if (tag === 1) obj.fill = readFill(pbf, pbf.readVarint() + pbf.pos);
     else if (tag === 2) obj.stroke = readStroke(pbf, pbf.readVarint() + pbf.pos);
     else if (tag === 3) obj.paint_order = pbf.readVarint() as PaintOrderValue;
@@ -348,11 +348,11 @@ export interface Fill {
     paint?: "rgb_color" | "linear_gradient_idx" | "radial_gradient_idx";
 }
 
-export function readFill(pbf: Pbf, end?: number): Fill {
+export function readFill(pbf: PbfReader, end?: number): Fill {
     return pbf.readFields(readFillField, {rgb_color: defaultColor, paint: "rgb_color", opacity: 255}, end);
 }
 
-function readFillField(tag: number, obj: Fill, pbf: Pbf) {
+function readFillField(tag: number, obj: Fill, pbf: PbfReader) {
     if (tag === 1) { obj.rgb_color = readColor(pbf.readVarint()); obj.paint = "rgb_color"; }
     else if (tag === 2) { obj.linear_gradient_idx = pbf.readVarint(); obj.paint = "linear_gradient_idx"; }
     else if (tag === 3) { obj.radial_gradient_idx = pbf.readVarint(); obj.paint = "radial_gradient_idx"; }
@@ -373,7 +373,7 @@ export interface Stroke {
     paint?: "rgb_color" | "linear_gradient_idx" | "radial_gradient_idx";
 }
 
-export function readStroke(pbf: Pbf, end?: number): Stroke {
+export function readStroke(pbf: PbfReader, end?: number): Stroke {
     return pbf.readFields(readStrokeField, {rgb_color: defaultColor, paint: "rgb_color", dasharray: [], dashoffset: 0, miterlimit: 4, opacity: 255, width: 1, linecap: 1, linejoin: 1}, end);
 }
 
@@ -381,7 +381,7 @@ export function readColor(number: number): Color {
     return new Color(((number >> 16) & 255) / 255, ((number >> 8) & 255) / 255, (number & 255) / 255, 1);
 }
 
-function readStrokeField(tag: number, obj: Stroke, pbf: Pbf) {
+function readStrokeField(tag: number, obj: Stroke, pbf: PbfReader) {
     if (tag === 1) { obj.rgb_color = readColor(pbf.readVarint()); obj.paint = "rgb_color"; }
     else if (tag === 2) { obj.linear_gradient_idx = pbf.readVarint(); obj.paint = "linear_gradient_idx"; }
     else if (tag === 3) { obj.radial_gradient_idx = pbf.readVarint(); obj.paint = "radial_gradient_idx"; }
@@ -404,11 +404,11 @@ export interface LinearGradient {
     y2?: number;
 }
 
-export function readLinearGradient(pbf: Pbf, end?: number): LinearGradient {
+export function readLinearGradient(pbf: PbfReader, end?: number): LinearGradient {
     return pbf.readFields(readLinearGradientField, {spread_method: 1, stops: [], x1: 0, y1: 0, x2: 1, y2: 0}, end);
 }
 
-function readLinearGradientField(tag: number, obj: LinearGradient, pbf: Pbf) {
+function readLinearGradientField(tag: number, obj: LinearGradient, pbf: PbfReader) {
     if (tag === 1) obj.transform = readTransform(pbf, pbf.readVarint() + pbf.pos);
     else if (tag === 2) obj.spread_method = pbf.readVarint() as SpreadMethodValue;
     else if (tag === 3) obj.stops.push(readStop(pbf, pbf.readVarint() + pbf.pos));
@@ -424,11 +424,11 @@ export interface Stop {
     rgb_color?: Color;
 }
 
-export function readStop(pbf: Pbf, end?: number): Stop {
+export function readStop(pbf: PbfReader, end?: number): Stop {
     return pbf.readFields(readStopField, {offset: 0, opacity: 255, rgb_color: defaultColor}, end);
 }
 
-function readStopField(tag: number, obj: Stop, pbf: Pbf) {
+function readStopField(tag: number, obj: Stop, pbf: PbfReader) {
     if (tag === 1) obj.offset = pbf.readFloat();
     else if (tag === 2) obj.opacity = pbf.readVarint();
     else if (tag === 3) obj.rgb_color = readColor(pbf.readVarint());
@@ -446,11 +446,11 @@ export interface RadialGradient {
     fr?: number;
 }
 
-export function readRadialGradient(pbf: Pbf, end?: number): RadialGradient {
+export function readRadialGradient(pbf: PbfReader, end?: number): RadialGradient {
     return pbf.readFields(readRadialGradientField, {spread_method: 1, stops: [], cx: 0.5, cy: 0.5, r: 0.5, fx: 0.5, fy: 0.5, fr: 0}, end);
 }
 
-function readRadialGradientField(tag: number, obj: RadialGradient, pbf: Pbf) {
+function readRadialGradientField(tag: number, obj: RadialGradient, pbf: PbfReader) {
     if (tag === 1) obj.transform = readTransform(pbf, pbf.readVarint() + pbf.pos);
     else if (tag === 2) obj.spread_method = pbf.readVarint() as SpreadMethodValue;
     else if (tag === 3) obj.stops.push(readStop(pbf, pbf.readVarint() + pbf.pos));
@@ -468,11 +468,11 @@ export interface ClipPath {
     children: Node[];
 }
 
-export function readClipPath(pbf: Pbf, end?: number): ClipPath {
+export function readClipPath(pbf: PbfReader, end?: number): ClipPath {
     return pbf.readFields(readClipPathField, {children: []}, end);
 }
 
-function readClipPathField(tag: number, obj: ClipPath, pbf: Pbf) {
+function readClipPathField(tag: number, obj: ClipPath, pbf: PbfReader) {
     if (tag === 1) obj.transform = readTransform(pbf, pbf.readVarint() + pbf.pos);
     else if (tag === 2) obj.clip_path_idx = pbf.readVarint();
     else if (tag === 3) obj.children.push(readNode(pbf, pbf.readVarint() + pbf.pos));
@@ -488,7 +488,7 @@ export interface Mask {
     children: Node[];
 }
 
-export function readMask(pbf: Pbf, end?: number): Mask {
+export function readMask(pbf: PbfReader, end?: number): Mask {
     const mask = pbf.readFields(readMaskField, {left: 0, width: 20, mask_type: MaskType.MASK_TYPE_LUMINANCE, children: []}, end);
 
     if (mask.height == null) {
@@ -502,7 +502,7 @@ export function readMask(pbf: Pbf, end?: number): Mask {
     return mask;
 }
 
-function readMaskField(tag: number, obj: Mask, pbf: Pbf) {
+function readMaskField(tag: number, obj: Mask, pbf: PbfReader) {
     if (tag === 1) obj.left = obj.top = pbf.readFloat();
     else if (tag === 2) obj.width = obj.height = pbf.readFloat();
     else if (tag === 3) obj.top = pbf.readFloat();

@@ -1,4 +1,4 @@
-import Pbf from 'pbf';
+import {PbfReader} from 'pbf';
 import {server, page} from 'vitest/browser';
 import pixelmatch from 'pixelmatch';
 import {describe, test, expect, afterEach, afterAll, onTestFailed, onTestFinished} from 'vitest';
@@ -11,7 +11,7 @@ import {fixtures} from 'virtual:usvg-fixtures';
 
 async function getIconSet(iconsetPath) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    const pbf = new Pbf(await readArrayBuffer(iconsetPath));
+    const pbf = new PbfReader(await readArrayBuffer(iconsetPath));
     const iconSet = readIconSet(pbf);
     return iconSet;
 }

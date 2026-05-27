@@ -1,14 +1,14 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
-import Protobuf from 'pbf';
+import {PbfReader} from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 import classifyRings from '../../../src/util/classify_rings';
 import vectorTileStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 // Load a fill feature from fixture tile.
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-const vt = new VectorTile(new Protobuf(vectorTileStub));
+const vt = new VectorTile(new PbfReader(vectorTileStub));
 const feature = vt.layers.water.feature(0);
 
 test('classifyRings', () => {

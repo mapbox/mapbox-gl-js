@@ -1,4 +1,4 @@
-import Protobuf from 'pbf';
+import {PbfReader} from 'pbf';
 import {getArrayBuffer, ResourceType} from "../util/ajax";
 import {readIconSet, type Icon} from "../data/usvg/usvg_pb_decoder";
 import browser from '../util/browser';
@@ -47,7 +47,7 @@ export function loadIconset(
 
         const result: StyleImages = {};
 
-        const iconSet = readIconSet(new Protobuf(data));
+        const iconSet = readIconSet(new PbfReader(data));
 
         for (const icon of iconSet.icons) {
             const styleImage: StyleImage = {

@@ -1,7 +1,7 @@
 /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 import {test, expect, vi} from '../../util/vitest';
-import Protobuf from 'pbf';
+import {PbfReader} from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 import {CollisionBoxArray} from '../../../src/data/array_types';
 import vectorStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
@@ -16,7 +16,7 @@ import featureFilter from '../../../src/style-spec/feature_filter/index';
 
 // Load a point feature from fixture tile.
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-const vt = new VectorTile(new Protobuf(vectorStub));
+const vt = new VectorTile(new PbfReader(vectorStub));
 const feature = vt.layers.place_label.feature(10);
 const collisionBoxArray = new CollisionBoxArray();
 const eventedParent = new Evented();

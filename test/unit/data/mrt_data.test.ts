@@ -1,11 +1,11 @@
-import Pbf from 'pbf';
+import {PbfReader} from 'pbf';
 import {describe, test, expect, beforeAll} from 'vitest';
 import {readArrayBuffer} from '../../util/read_array_buffer';
 import {MapboxRasterTile} from '../../../src/data/mrt/mrt.esm.js';
 
 describe('MapboxRasterTile', () => {
     beforeAll(() => {
-        MapboxRasterTile.setPbf(Pbf);
+        MapboxRasterTile.setPbf(PbfReader);
     });
     test('parses an MRT with an icon set', async () => {
         const arrayBuffer = await readArrayBuffer('test/fixtures/iconset-0-0-0.mrt');

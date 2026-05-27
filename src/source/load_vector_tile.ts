@@ -1,5 +1,5 @@
 import {VectorTile} from '@mapbox/vector-tile';
-import Protobuf from 'pbf';
+import {PbfReader} from 'pbf';
 import {getArrayBuffer, isHttpNotFound} from '../util/ajax';
 
 import type {Callback} from '../types/callback';
@@ -110,7 +110,7 @@ export function loadVectorTile(
             } else if (data) {
                 callback(null, {
                     rawData: data,
-                    vectorTile: skipParse ? undefined : new VectorTile(new Protobuf(data)),
+                    vectorTile: skipParse ? undefined : new VectorTile(new PbfReader(data)),
                     responseHeaders: new Map(responseHeaders.entries())
                 });
             }

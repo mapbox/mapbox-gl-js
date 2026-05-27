@@ -1,14 +1,14 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect} from '../../util/vitest';
-import Protobuf from 'pbf';
+import {PbfReader} from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 import loadGeometry from '../../../src/data/load_geometry';
 import tileStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 // Load a line feature from fixture tile.
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-const vt = new VectorTile(new Protobuf(tileStub));
+const vt = new VectorTile(new PbfReader(tileStub));
 
 test('loadGeometry', () => {
     const feature = vt.layers.road.feature(0);

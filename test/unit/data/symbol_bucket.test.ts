@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, vi} from '../../util/vitest';
-import Protobuf from 'pbf';
+import {PbfReader} from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 import {CollisionBoxArray} from '../../../src/data/array_types';
 import {performSymbolLayout, postRasterizationSymbolLayout, SymbolBucketConstants} from '../../../src/symbol/symbol_layout';
@@ -22,7 +22,7 @@ import type {BucketPart} from '../../../src/symbol/placement';
 
 // Load a point feature from fixture tile.
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-const vt = new VectorTile(new Protobuf(vectorStub));
+const vt = new VectorTile(new PbfReader(vectorStub));
 const feature = vt.layers.place_label.feature(10);
 
 /*eslint new-cap: 0*/

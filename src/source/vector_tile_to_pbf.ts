@@ -1,5 +1,5 @@
 import EXTENT from '../style-spec/data/extent';
-import Pbf from 'pbf';
+import {PbfWriter} from 'pbf';
 
 import type {Feature} from './geojson_wrapper';
 
@@ -8,7 +8,7 @@ import type {Feature} from './geojson_wrapper';
  * @private
  */
 export default function writeFeatures(layers: Record<string, Feature[]>) {
-    const pbf = new Pbf();
+    const pbf = new PbfWriter();
     for (const name of Object.keys(layers)) {
         const features = layers[name];
         pbf.writeMessage(3, writeLayer, {name, features});
@@ -16,7 +16,7 @@ export default function writeFeatures(layers: Record<string, Feature[]>) {
     return pbf.finish();
 }
 
-function writeLayer({name, features}: {name: string, features: Feature[]}, pbf: Pbf) {
+function writeLayer({name, features}: {name: string, features: Feature[]}, pbf: PbfWriter) {
     pbf.writeStringField(1, name);
     pbf.writeVarintField(5, EXTENT);
 
@@ -43,7 +43,7 @@ function writeLayer({name, features}: {name: string, features: Feature[]}, pbf: 
 
 type FeatureContext = {keys: Map<string, number>, values: Map<unknown, number>, feature: Feature};
 
-function writeFeature(context: FeatureContext, pbf: Pbf) {
+function writeFeature(context: FeatureContext, pbf: PbfWriter) {
     const feature = context.feature;
 
     // vector tile spec only supports integer values for feature ids -
@@ -58,7 +58,7 @@ function writeFeature(context: FeatureContext, pbf: Pbf) {
     pbf.writeMessage(4, writeGeometry, feature);
 }
 
-function writeProperties({keys, values, feature}: FeatureContext, pbf: Pbf) {
+function writeProperties({keys, values, feature}: FeatureContext, pbf: PbfWriter) {
     for (const key of Object.keys(feature.tags)) {
         let value = feature.tags[key];
         if (value === null) continue; // don't encode null value properties
@@ -94,7 +94,7 @@ function zigzag(num: number): number {
     return (num << 1) ^ (num >> 31);
 }
 
-function writeGeometry(feature: Feature, pbf: Pbf) {
+function writeGeometry(feature: Feature, pbf: PbfWriter) {
     const {geometry, type} = feature;
     let x = 0;
     let y = 0;
@@ -133,7 +133,7 @@ function writeGeometry(feature: Feature, pbf: Pbf) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function writeValue(value: any, pbf: Pbf) {
+function writeValue(value: any, pbf: PbfWriter) {
     const type = typeof value;
     if (type === 'string') {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

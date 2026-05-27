@@ -2,7 +2,7 @@
 // @ts-nocheck
 import {test, expect, vi} from '../../util/vitest';
 import {VectorTile} from '@mapbox/vector-tile';
-import Protobuf from 'pbf';
+import {PbfReader} from 'pbf';
 import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source';
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 import perf from '../../../src/util/performance';
@@ -214,7 +214,7 @@ test('VectorTileWorkerSource#loadTile forwards cache headers from response heade
 
     function loadVectorData(params, callback: LoadVectorDataCallback) {
         return callback(null, {
-            vectorTile: new VectorTile(new Protobuf(rawTileData)),
+            vectorTile: new VectorTile(new PbfReader(rawTileData)),
             rawData: rawTileData,
             responseHeaders: new Map(headers.entries())
         });
@@ -268,7 +268,7 @@ test('VectorTileWorkerSource rejects ImageBitmap from provider with an error', a
 test('VectorTileWorkerSource provides resource timing information', () => {
     function loadVectorData(params, callback: LoadVectorDataCallback) {
         return callback(null, {
-            vectorTile: new VectorTile(new Protobuf(rawTileData)),
+            vectorTile: new VectorTile(new PbfReader(rawTileData)),
             rawData: rawTileData,
             cacheControl: null,
             expires: null

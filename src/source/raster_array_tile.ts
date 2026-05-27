@@ -1,4 +1,4 @@
-import Pbf from 'pbf';
+import {PbfReader} from 'pbf';
 import Tile from './tile';
 import Texture from '../render/texture';
 import {RGBAImage} from '../util/image';
@@ -16,7 +16,7 @@ import type {OverscaledTileID} from './tile_id';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {MapboxRasterLayer, MRTDecodingBatch} from '../data/mrt/mrt.esm.js';
 
-MapboxRasterTile.setPbf(Pbf);
+MapboxRasterTile.setPbf(PbfReader);
 
 export type TextureDescriptor = {
     img: TextureImage;

@@ -1,5 +1,5 @@
 import {VectorTile} from '@mapbox/vector-tile';
-import Protobuf from 'pbf';
+import {PbfReader} from 'pbf';
 import WorkerTile from './worker_tile';
 import {getPerformanceMeasurement} from '../util/performance';
 import {Evented} from '../util/evented';
@@ -156,7 +156,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
             // response.vectorTile will be present in the GeoJSON worker case (which inherits from this class)
             // because we stub the vector tile interface around JSON data instead of parsing it directly
-            workerTile.vectorTile = response.vectorTile || new VectorTile(new Protobuf(rawTileData));
+            workerTile.vectorTile = response.vectorTile || new VectorTile(new PbfReader(rawTileData));
             const parseTile = () => {
                 const WorkerSourceVectorTileCallback = (err?: Error | null, result?: WorkerSourceVectorTileResult | null) => {
                     if (err || !result) return callback(err);
