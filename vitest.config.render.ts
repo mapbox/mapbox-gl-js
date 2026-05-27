@@ -9,6 +9,12 @@ import type {BrowserConfigOptions} from 'vitest/node';
 const renderBrowser = process.env.RENDER_BROWSER || 'chromium';
 const bundle = process.env.RENDER_BUNDLE || 'dev';
 
+const getAngle = () => {
+    if (os.platform() === 'darwin' && os.arch() === 'arm64') return '--use-angle=metal';
+    if (os.platform() === 'win32') return '--use-angle=d3d11';
+    return '--use-angle=gl';
+};
+
 const chromiumArgs = [
     '--disable-background-networking',
     '--disable-background-timer-throttling',
@@ -16,7 +22,7 @@ const chromiumArgs = [
     '--disable-features=CalculateNativeWinOcclusion',
     '--disable-renderer-backgrounding',
     '--ash-no-nudges',
-    os.platform() === 'darwin' && os.arch() === 'arm64' ? '--use-angle=metal' : '--use-angle=gl',
+    getAngle(),
 ];
 if (isCI) chromiumArgs.push('--ignore-gpu-blocklist');
 
