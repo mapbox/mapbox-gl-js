@@ -212,6 +212,7 @@
       "gzip": true,
       "name": "ESM Core",
       "path": [
+        "dist/esm/mapbox-gl.js",
         "dist/esm/core*.js",
         "dist/esm/worker*.js",
         "dist/esm/shared*.js"
