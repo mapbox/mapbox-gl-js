@@ -222,6 +222,12 @@
       "gzip": true,
       "name": "ESM HD Module",
       "path": "dist/esm/hd.*.js"
+    },
+    {
+      "limit": "150 kb",
+      "gzip": true,
+      "name": "ESM Standard Module",
+      "path": "dist/esm/standard.*.js"
     }
   ]
 }

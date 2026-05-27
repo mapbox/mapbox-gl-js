@@ -16,7 +16,6 @@ import {terrainRasterUniforms} from '../../terrain/terrain_raster_program';
 import {skyboxUniforms, skyboxGradientUniforms} from './skybox_program';
 import {skyboxCaptureUniforms} from './skybox_capture_program';
 import {globeRasterUniforms, atmosphereUniforms} from '../../terrain/globe_raster_program';
-import {modelUniforms, modelDepthUniforms} from '../../../3d-style/render/program/model_program';
 import {groundShadowUniforms} from '../../../3d-style/render/program/ground_shadow_program';
 import {starsUniforms} from '../../terrain/stars_program';
 import {occlusionUniforms} from './occlusion_program';
@@ -34,6 +33,7 @@ import type {FillDefinesType} from './fill_program';
 import type {FillExtrusionDefinesType} from './fill_extrusion_program';
 import type {BuildingDefinesType} from '../../../3d-style/render/program/building_program';
 import type {ProgramUniformsHDType} from '../../../3d-style/render/program/program_uniforms_hd';
+import type {ProgramUniformsStandardType} from '../../../3d-style/render/program/program_uniforms_standard';
 
 export type FogDefinesType = 'FOG';
 export type TerrainDepthAccessDefinesType = 'DEPTH_D24' | 'DEPTH_OCCLUSION';
@@ -104,8 +104,6 @@ export const programUniforms = {
     skyboxCapture: skyboxCaptureUniforms,
     globeRaster: globeRasterUniforms,
     globeAtmosphere: atmosphereUniforms,
-    model: modelUniforms,
-    modelDepth: modelDepthUniforms,
     groundShadow: groundShadowUniforms,
     stars: starsUniforms,
     occlusion: occlusionUniforms
@@ -113,4 +111,4 @@ export const programUniforms = {
 
 export type ProgramUniformsType = {
     [K in keyof typeof programUniforms]: ReturnType<typeof programUniforms[K]>;
-} & ProgramUniformsHDType;
+} & ProgramUniformsHDType & ProgramUniformsStandardType;

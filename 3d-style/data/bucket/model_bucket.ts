@@ -139,6 +139,8 @@ class PerModelAttributes {
 }
 
 class ModelBucket implements Bucket {
+    static requiresStandardRuntime = true;
+
     zoom: number;
     index: number;
     canonical: CanonicalTileID;

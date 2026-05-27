@@ -11,6 +11,7 @@ import {makeFQID} from '../util/fqid';
 import {isMapboxURL} from '../util/mapbox_url';
 import {resolveTileProvider, processTileJSON} from './tile_provider';
 import {HD, prepareHD} from '../../modules/hd_main';
+import {Standard, prepareStandard} from '../../modules/standard_main';
 
 import type {ISource, SourceEvents, SourceVectorLayer} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -400,12 +401,16 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
 
             if (this.map._refreshExpiredTiles && data) tile.setExpiryData(data);
 
-            // Tiles carrying HD extensions (elevated roads, etc.) can't be deserialized
-            // until the HD module is loaded on the main thread — unregistered classes
-            // throw on `deserializeBucket`. Gate the call on `HD.loaded` and await the
-            // module load if needed. Non-HD tiles bypass entirely.
-            if (data && data.containsHdExt && !HD.loaded) {
-                prepareHD().then(
+            // Tiles carrying HD or Standard extensions can't be deserialized until the
+            // relevant module is loaded on the main thread — unregistered classes throw
+            // on `deserializeBucket`. Gate on the loaded flags and await as needed.
+            const needsHD = data && data.containsHdExt && !HD.loaded;
+            const needsStandard = data && data.containsStandardExt && !(Standard as {loaded?: boolean}).loaded;
+            if (needsHD || needsStandard) {
+                const loads: Array<Promise<void>> = [];
+                if (needsHD) loads.push(prepareHD());
+                if (needsStandard) loads.push(prepareStandard());
+                Promise.all(loads).then(
                     () => finishLoad.call(this),
                     () => finishLoad.call(this),
                 );
@@ -415,12 +420,15 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
 
             function finishLoad(this: VectorTileSource) {
                 // Post-await abort check: the tile may have been cancelled while we were
-                // waiting for HD. Silent drop (callback(null)) matches the abort path above.
+                // waiting for a module load. Silent drop matches the abort path above.
                 if (tile.aborted) return callback(null);
-                // If HD failed to load, `loadVectorData` would throw on the unregistered
-                // `hdExt` classes. Surface as a tile error rather than an uncaught throw.
+                // If a required module failed to load, surface as a tile error rather
+                // than an uncaught throw from `loadVectorData`.
                 if (data && data.containsHdExt && !HD.loaded) {
                     return callback(new Error('HD module failed to load'));
+                }
+                if (data && data.containsStandardExt && !(Standard as {loaded?: boolean}).loaded) {
+                    return callback(new Error('Standard module failed to load'));
                 }
 
                 tile.loadVectorData(data, this.map.painter);

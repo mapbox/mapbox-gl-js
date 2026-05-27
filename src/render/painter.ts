@@ -44,7 +44,7 @@ import Tile from '../source/tile';
 import {RGBAImage} from '../util/image';
 import {LayerTypeMask} from '../../3d-style/util/conflation';
 import {ReplacementSource, ReplacementOrderLandmark, ReplacementOrderBuilding} from '../../3d-style/source/replacement_source';
-import model, {prepare as modelPrepare} from '../../3d-style/render/draw_model';
+import {Standard, prepareStandard} from '../../modules/standard_main';
 import {lightsUniformValues} from '../../3d-style/render/lights';
 import {ShadowRenderer} from '../../3d-style/render/shadow_renderer';
 import {WireframeDebugCache} from './wireframe_cache';
@@ -71,12 +71,12 @@ import type {CutoffParams} from '../render/cutoff';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
 import type {LightsUniformsType} from '../../3d-style/render/lights';
 import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id';
-import type {ProgramName} from './program';
+import type {ProgramName, ShaderSource} from './program';
 import type {ProgramUniformsType, DynamicDefinesType} from './program/program_uniforms';
 import type {Source, ISource} from '../source/source';
 import type {UniformBindings} from './uniform_binding';
 import type {CrossTileID, VariableOffset} from '../symbol/placement';
-import type {TypedStyleLayer, CoreStyleLayer, HDStyleLayer} from '../style/style_layer/typed_style_layer';
+import type {TypedStyleLayer, CoreStyleLayer, HDStyleLayer, StandardStyleLayer} from '../style/style_layer/typed_style_layer';
 import type {DevTools} from '../ui/control/devtools';
 import type {ShadowCullCache} from './draw_fill_extrusion';
 
@@ -143,7 +143,7 @@ type DrawStyleLayer = (
 
 type PrepareStyleLayer = (layer: TypedStyleLayer, sourceCache: SourceCache, painter: Painter) => void;
 
-const draw: Record<CoreStyleLayer['type'], DrawStyleLayer> & Partial<Record<HDStyleLayer['type'], DrawStyleLayer>> = {
+const draw: Record<CoreStyleLayer['type'], DrawStyleLayer> & Partial<Record<HDStyleLayer['type'] | StandardStyleLayer['type'], DrawStyleLayer>> = {
     symbol,
     circle,
     heatmap,
@@ -155,12 +155,10 @@ const draw: Record<CoreStyleLayer['type'], DrawStyleLayer> & Partial<Record<HDSt
     background,
     sky,
     custom,
-    model
 };
 
-const prepare: Partial<Record<CoreStyleLayer['type'] | HDStyleLayer['type'], PrepareStyleLayer>> = {
+const prepare: Partial<Record<CoreStyleLayer['type'] | HDStyleLayer['type'] | StandardStyleLayer['type'], PrepareStyleLayer>> = {
     line: prepareLine,
-    model: modelPrepare,
     raster: prepareRaster,
 };
 
@@ -172,6 +170,16 @@ async function setupHD() {
     });
     Object.assign(prepare, {
         'raster-particle': HD.prepareRasterParticle,
+    });
+}
+
+async function setupStandard() {
+    await prepareStandard();
+    Object.assign(draw, {
+        model: (Standard as {drawModels?: DrawStyleLayer}).drawModels,
+    });
+    Object.assign(prepare, {
+        model: (Standard as {prepare?: PrepareStyleLayer}).prepare,
     });
 }
 
@@ -1562,7 +1570,9 @@ class Painter {
             draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets, this.options.isInitialLoad);
         }
         if (!draw[layer.type]) {
-            void setupHD(); // load HD drawing code & shaders; drawing will be possible once it loads
+            // Trigger lazy module loads so drawing will be possible once they load.
+            if (layer.mayUse('HD')) void setupHD();
+            if (layer.mayUse('Standard')) void setupStandard();
         }
         this.gpuTimingEnd();
         PerformanceUtils.measureLowOverhead(PerformanceUtils.GROUP_RENDERING_DETAILED, `renderLayer: ${layer.type.toString()}`, startTime, undefined);
@@ -1772,7 +1782,7 @@ class Painter {
         const allDefines = globalDefines.concat(defines || []);
 
         const shaderSource = this.getShaderSource(name);
-        const uniforms = ((programUniforms as Record<string, (context: Context) => UniformBindings>)[name] || (HD.programUniforms as Record<string, (context: Context) => UniformBindings>)[name]) as (context: Context) => UniformBindings;
+        const uniforms = ((programUniforms as Record<string, (context: Context) => UniformBindings>)[name] || (HD.programUniforms as Record<string, (context: Context) => UniformBindings>)[name] || ((Standard as {programUniforms?: Record<string, (context: Context) => UniformBindings>}).programUniforms || {})[name]) as (context: Context) => UniformBindings;
         const key = Program.cacheKey(shaderSource, name, allDefines, config);
 
         if (!this.cache[key]) {
@@ -1785,7 +1795,8 @@ class Painter {
     // Returns shader source metadata for a program name, including the usedDefines set
     // used to prune cartesian variant enumeration in the precompiler.
     getShaderSource(name: ProgramName) {
-        return shaders[name as keyof typeof shaders] || (HD.shaders && HD.shaders[name as keyof typeof HD.shaders]);
+        const standardShaders = (Standard as {shaders?: Record<string, ShaderSource>}).shaders;
+        return shaders[name as keyof typeof shaders] || (HD.shaders && HD.shaders[name as keyof typeof HD.shaders]) || (standardShaders && standardShaders[name]);
     }
 
     /*

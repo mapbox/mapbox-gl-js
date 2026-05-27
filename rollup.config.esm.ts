@@ -26,6 +26,8 @@ function esmConfig(dir: string, workerSuffix: string, emitVisualizer = false): R
                 if (chunk.isDynamicEntry) {
                     if (chunk.facadeModuleId.endsWith('hd_main_imports.ts')) return 'hd.shared.js';
                     if (chunk.facadeModuleId.endsWith('hd_worker_imports.ts')) return 'hd.worker.js';
+                    if (chunk.facadeModuleId.endsWith('standard_main_imports.ts')) return 'standard.shared.js';
+                    if (chunk.facadeModuleId.endsWith('standard_worker_imports.ts')) return 'standard.worker.js';
                 }
                 // Identify each code-split chunk by a foundational module/file rather than by
                 // chunk.name, which is derived from rollup's representative-module selection
@@ -83,7 +85,7 @@ export default (): RollupOptions[] => {
     ];
 };
 
-const filesToSub = new Set(['hd_main', 'hd_worker']);
+const filesToSub = new Set(['hd_main', 'hd_worker', 'standard_main', 'standard_worker']);
 
 function esmSubstitutions(workerSuffix: string): Plugin {
     return {

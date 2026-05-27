@@ -40,6 +40,8 @@ import type {QueryResult} from '../source/query_features';
 
 const TRANSITION_SUFFIX = '-transition';
 
+export type RuntimeModuleType = 'HD' | 'Standard';
+
 type LayerRenderingStats = {
     numRenderedVerticesInTransparentPass: number;
     numRenderedVerticesInShadowPass: number;
@@ -361,20 +363,21 @@ class StyleLayer extends Evented {
         return false;
     }
 
-    // Conservative predicate used to preload the HD module on both threads before the
+    // Conservative predicate used to preload a lazy module on both threads before the
     // first relevant tile parses/deserializes. Reads the *raw* layout declaration via
     // `_unevaluatedLayout` because this runs on the worker before layers have been
     // recalculated, and on the main thread during recalculate. Data-driven expression
-    // declarations are reported as "may use HD" because we can't evaluate them without
-    // per-feature context — the worst case is an unnecessary HD preload.
-    mayUseHD(): boolean {
+    // declarations return true conservatively — the worst case is an unnecessary preload.
+    // Subclasses override this to indicate which module(s) they require.
+    mayUse(_type: RuntimeModuleType): boolean {
         return false;
     }
 
-    // Worker-side HD preload hook. Default no-op; HD-relevant subclasses return
-    // `prepareHD()` (from `modules/hd_worker`) when their layout declares HD use.
-    // Main-side preload stays at call sites — importing `prepareHDMain` here would
-    // pull the main-only chunk into the worker bundle.
+    // Worker-side module preload hook. Default no-op; subclasses return the relevant
+    // `prepare*()` promise (from `modules/hd_worker` or `modules/standard_worker`) when
+    // their layer type needs async module loading before bucket creation.
+    // Main-side preload stays at call sites to avoid pulling main-only chunks into the
+    // worker bundle.
     prepare(): Promise<void> {
         return Promise.resolve();
     }
@@ -513,7 +516,7 @@ class StyleLayer extends Evented {
  * Reads a raw layout declaration and evaluates `predicate` against it. Returns `true`
  * if the declaration is an expression (conservative — we can't evaluate without
  * feature/zoom context), `false` if the declaration is missing, otherwise defers to
- * `predicate`. Shared helper for `mayUseHD` implementations on subclasses.
+ * `predicate`. Shared helper for `mayUse('HD')` implementations on subclasses.
  *
  * @private
  */

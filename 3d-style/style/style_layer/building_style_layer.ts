@@ -16,6 +16,7 @@ import type {LUT} from "../../../src/util/lut";
 import type {TilespaceQueryGeometry} from '../../../src/style/query_geometry';
 import type Transform from '../../../src/geo/transform';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
+import type {RuntimeModuleType} from '../../../src/style/style_layer';
 
 class BuildingStyleLayer extends StyleLayer {
     override type: 'building';
@@ -36,8 +37,8 @@ class BuildingStyleLayer extends StyleLayer {
         this._stats = {numRenderedVerticesInShadowPass: 0, numRenderedVerticesInTransparentPass: 0};
     }
 
-    override mayUseHD(): boolean {
-        return true;
+    override mayUse(type: RuntimeModuleType): boolean {
+        return type === 'HD';
     }
 
     override prepare(): Promise<void> {

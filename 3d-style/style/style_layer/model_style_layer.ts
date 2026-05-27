@@ -1,5 +1,4 @@
 import StyleLayer from '../../../src/style/style_layer';
-import ModelBucket from '../../data/bucket/model_bucket';
 import {getLayoutProperties, getPaintProperties} from './model_style_layer_properties';
 import {ZoomDependentExpression} from '../../../src/style-spec/expression/index';
 import {mat4} from 'gl-matrix';
@@ -8,7 +7,7 @@ import LngLat from '../../../src/geo/lng_lat';
 import {latFromMercatorY, lngFromMercatorX} from '../../../src/geo/mercator_coordinate';
 import EXTENT from '../../../src/style-spec/data/extent';
 import {convertModelMatrixForGlobe, queryGeometryIntersectsProjectedAabb} from '../../util/model_util';
-import Tiled3dModelBucket from '../../data/bucket/tiled_3d_model_bucket';
+import {ModelBucket, Tiled3dModelBucket, prepareStandard} from '../../../modules/standard_worker';
 import Feature from '../../../src/util/vectortile_to_geojson';
 import {type Feature as ExpressionEvalFeature, type FeatureState} from '../../../src/style-spec/expression/index';
 import ModelSource from '../../source/model_source';
@@ -23,6 +22,7 @@ import type Transform from '../../../src/geo/transform';
 import type ModelManager from '../../render/model_manager';
 import type {ModelNode} from '../../data/model';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
+import type {RuntimeModuleType} from '../../../src/style/style_layer';
 import type {CanonicalTileID} from '../../../src/source/tile_id';
 import type {LUT} from "../../../src/util/lut";
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
@@ -52,6 +52,14 @@ class ModelStyleLayer extends StyleLayer {
         super(layer, properties, scope, lut, options);
         this.layer = layer as ModelLayerSpecification;
         this._stats = {numRenderedVerticesInShadowPass: 0, numRenderedVerticesInTransparentPass: 0};
+    }
+
+    override mayUse(type: RuntimeModuleType): boolean {
+        return type === 'Standard';
+    }
+
+    override prepare(): Promise<void> {
+        return prepareStandard();
     }
 
     override createBucket(parameters: BucketParameters<this>): ModelBucket {

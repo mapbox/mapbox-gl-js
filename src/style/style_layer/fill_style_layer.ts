@@ -16,6 +16,7 @@ import type Transform from '../../geo/transform';
 import type {LayerSpecification} from '../../style-spec/types';
 import type {TilespaceQueryGeometry} from '../query_geometry';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
+import type {RuntimeModuleType} from '../style_layer';
 import type {CreateProgramParams} from '../../render/painter';
 import type {LUT} from "../../util/lut";
 import type {ImageId} from '../../style-spec/expression/types/image_id';
@@ -111,12 +112,12 @@ class FillStyleLayer extends StyleLayer {
         return this.layout && this.layout.get('fill-elevation-reference') !== 'none';
     }
 
-    override mayUseHD(): boolean {
-        return rawLayoutMayUseHD(this, 'fill-elevation-reference', v => v !== 'none');
+    override mayUse(type: RuntimeModuleType): boolean {
+        return type === 'HD' && rawLayoutMayUseHD(this, 'fill-elevation-reference', v => v !== 'none');
     }
 
     override prepare(): Promise<void> {
-        return this.mayUseHD() ? prepareHD() : Promise.resolve();
+        return this.mayUse('HD') ? prepareHD() : Promise.resolve();
     }
 
     override hasShadowPass(): boolean {

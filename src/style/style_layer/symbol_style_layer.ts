@@ -47,6 +47,7 @@ import type {ImageId} from '../../style-spec/expression/types/image_id';
 import type {ProgramName} from '../../render/program';
 import type SymbolAppearance from '../appearance';
 import type {AppearanceProps} from '../appearance_properties';
+import type {RuntimeModuleType} from '../style_layer';
 
 let properties: {
     layout: Properties<LayoutProps>;
@@ -312,12 +313,12 @@ class SymbolStyleLayer extends StyleLayer {
         return this.layout && this.layout.get('symbol-elevation-reference') === 'hd-road-markup';
     }
 
-    override mayUseHD(): boolean {
-        return rawLayoutMayUseHD(this, 'symbol-elevation-reference', v => v === 'hd-road-markup');
+    override mayUse(type: RuntimeModuleType): boolean {
+        return type === 'HD' && rawLayoutMayUseHD(this, 'symbol-elevation-reference', v => v === 'hd-road-markup');
     }
 
     override prepare(): Promise<void> {
-        return this.mayUseHD() ? prepareHD() : Promise.resolve();
+        return this.mayUse('HD') ? prepareHD() : Promise.resolve();
     }
 }
 

@@ -80,10 +80,6 @@ import fillExtrusionDepthFrag from '../../3d-style/shaders/fill_extrusion_depth.
 import fillExtrusionDepthVert from '../../3d-style/shaders/fill_extrusion_depth.vertex.glsl';
 import groundShadowFrag from '../../3d-style/shaders/ground_shadow.fragment.glsl';
 import groundShadowVert from '../../3d-style/shaders/ground_shadow.vertex.glsl';
-import modelVert from '../../3d-style/shaders/model.vertex.glsl';
-import modelFrag from '../../3d-style/shaders/model.fragment.glsl';
-import modelDepthVert from '../../3d-style/shaders/model_depth.vertex.glsl';
-import modelDepthFrag from '../../3d-style/shaders/model_depth.fragment.glsl';
 import preludeShadowVert from '../../3d-style/shaders/_prelude_shadow.vertex.glsl';
 import preludeShadowFrag from '../../3d-style/shaders/_prelude_shadow.fragment.glsl';
 import preludeMaterialTableVert from './_prelude_material_table.vertex.glsl';
@@ -183,8 +179,6 @@ export default {
     skyboxCapture: compile(skyboxCaptureFrag, skyboxCaptureVert),
     globeRaster: compile(globeFrag, globeVert),
     globeAtmosphere: compile(atmosphereFrag, atmosphereVert),
-    model: compile(modelFrag, modelVert),
-    modelDepth: compile(modelDepthFrag, modelDepthVert),
     stars: compile(starsFrag, starsVert),
     occlusion: compile(occlusionFrag, occlusionVert)
 } as const;

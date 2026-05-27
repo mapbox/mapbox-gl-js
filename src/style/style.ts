@@ -23,6 +23,7 @@ import {getProperties as getAmbientProps} from '../../3d-style/style/ambient_lig
 import {getProperties as getDirectionalProps} from '../../3d-style/style/directional_light_properties';
 import {createExpression} from '../style-spec/expression/index';
 import {HD, prepareHD as prepareHDMain} from '../../modules/hd_main';
+import {prepareStandard as prepareStandardMain} from '../../modules/standard_main';
 import {
     validateStyle,
     validateLayoutProperty,
@@ -1939,7 +1940,7 @@ class Style extends Evented<MapEvents> {
             if (layer.visibility !== 'none' || layer.hasTransition()) layer.recalculate(parameters, this._availableImages);
             if (!layer.isHidden(parameters.zoom)) {
 
-                if (layer.mayUseHD()) {
+                if (layer.mayUse('HD')) {
                     // Preload HD on both threads so bucket transfers from worker succeed and
                     // main can render without an extra await. Fire-and-forget: the tile-level
                     // gate in WorkerTile.parse / vector_tile_source `done()` awaits the same
@@ -1950,6 +1951,14 @@ class Style extends Evented<MapEvents> {
                     // bundle.
                     void layer.prepare();
                     void prepareHDMain();
+                }
+
+                if (layer.mayUse('Standard')) {
+                    // Same pattern as HD: preload Standard on both threads before the first
+                    // tile carrying ModelBucket/Tiled3dModelBucket arrives. `layer.prepare()`
+                    // triggers worker-side load; `prepareStandardMain()` triggers main-side.
+                    void layer.prepare();
+                    void prepareStandardMain();
                 }
 
                 const sourceCache = this.getLayerSourceCache(layer);

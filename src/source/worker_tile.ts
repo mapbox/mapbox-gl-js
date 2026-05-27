@@ -20,6 +20,7 @@ import {makeFQID} from "../util/fqid";
 import {type SpritePositions} from '../util/image';
 import {PROPERTY_ELEVATION_ID} from '../../3d-style/elevation/elevation_constants';
 import * as HD from '../../modules/hd_worker';
+import * as Standard from '../../modules/standard_worker';
 import {ImageId} from '../style-spec/expression/types/image_id';
 import {RenderSourceType} from './tile';
 
@@ -59,6 +60,13 @@ function anyBucketRequiresHD(buckets: Array<Bucket>): boolean {
     for (const bucket of buckets) {
         if ((bucket as {hdExt?: unknown}).hdExt != null) return true;
         if ((bucket.constructor as {requiresHDRuntime?: boolean}).requiresHDRuntime) return true;
+    }
+    return false;
+}
+
+function anyBucketRequiresStandard(buckets: Array<Bucket>): boolean {
+    for (const bucket of buckets) {
+        if ((bucket.constructor as {requiresStandardRuntime?: boolean}).requiresStandardRuntime) return true;
     }
     return false;
 }
@@ -151,29 +159,25 @@ class WorkerTile {
         // rely on HD would render without elevation. Non-HD tiles bypass the gate
         // entirely and stay fully synchronous.
         const layerFamilies = layerIndex.familiesBySource[this.source];
-        if ((layerFamilies || this.indoor) && !HD.loaded) {
+        if ((layerFamilies || this.indoor) && (!HD.loaded || !Standard.loaded)) {
             let needsHD = !!this.indoor; // Indoor parsing requires HD.parseActiveFloors
+            let needsStandard = false;
             for (const sourceLayerId in layerFamilies || {}) {
                 for (const family of layerFamilies[sourceLayerId]) {
                     const layer = family[0];
-                    // Layers that won't actually parse for this tile shouldn't force an
-                    // HD module load. The same predicate is applied inside `_parseAfterHD`.
+                    // Layers that won't actually parse for this tile shouldn't force a
+                    // module load. The same predicate is applied inside `_parseAfterHD`.
                     if (!this.isLayerActiveForTile(layer)) continue;
-                    if (layer.mayUseHD()) {
-                        needsHD = true;
-                        break;
-                    }
+                    if (!HD.loaded && layer.mayUse('HD')) needsHD = true;
+                    if (!Standard.loaded && layer.mayUse('Standard')) needsStandard = true;
                 }
-                if (needsHD) break;
             }
-            if (needsHD) {
-                // If HD fails to load, `_parseAfterHD`'s `if (HD.attachExtension)` guards
-                // skip augmentation — HD-flagged features parse without elevation and
-                // render flat. Matches the Buildings/Rain/Snow precedent: optional feature
-                // modules fail soft on the worker; the main thread may still fail loudly
-                // on deserialize if a tile already carries hdExt payloads.
+            if (needsHD || needsStandard) {
                 const proceed = () => this._parseAfterHD(data, layerIndex, availableImages, availableModels, actor, callback);
-                HD.prepareHD().then(proceed, proceed);
+                const loads: Array<Promise<void>> = [];
+                if (needsHD) loads.push(HD.prepareHD());
+                if (needsStandard) loads.push(Standard.prepareStandard());
+                Promise.all(loads).then(proceed, proceed);
                 return;
             }
         }
@@ -354,11 +358,9 @@ class WorkerTile {
                     bucket.populate(features, options, this.tileID.canonical, this.tileTransform);
                 };
 
-                // Only HD-relevant layers go through the async prepare() path; everything
-                // else stays fully synchronous so non-HD tiles pay no microtask overhead.
-                // For HD layers, `prepare()` returns the pending `prepareHD()` promise that
-                // must resolve before the bucket can populate safely.
-                if (layer.mayUseHD()) {
+                // Only module-relevant layers go through the async prepare() path; everything
+                // else stays fully synchronous so non-HD/Standard tiles pay no microtask overhead.
+                if (layer.mayUse('HD') || layer.mayUse('Standard')) {
                     asyncBucketLoads.push(layer.prepare().then(() => processBucket()));
                 } else {
                     processBucket();
@@ -390,6 +392,7 @@ class WorkerTile {
                     callback(null, {
                         buckets: transferredBuckets,
                         containsHdExt: anyBucketRequiresHD(transferredBuckets),
+                        containsStandardExt: anyBucketRequiresStandard(transferredBuckets),
                         featureIndex,
                         collisionBoxArray: null,
                         hasTunnelGeometry,
@@ -464,6 +467,7 @@ class WorkerTile {
                     callback(null, {
                         buckets: transferredBuckets,
                         containsHdExt: anyBucketRequiresHD(transferredBuckets),
+                        containsStandardExt: anyBucketRequiresStandard(transferredBuckets),
                         featureIndex,
                         collisionBoxArray: this.collisionBoxArray,
                         hasTunnelGeometry,
@@ -497,6 +501,7 @@ class WorkerTile {
                     callback(null, {
                         buckets: transferredBuckets,
                         containsHdExt: anyBucketRequiresHD(transferredBuckets),
+                        containsStandardExt: anyBucketRequiresStandard(transferredBuckets),
                         featureIndex,
                         collisionBoxArray: this.collisionBoxArray,
                         hasTunnelGeometry,

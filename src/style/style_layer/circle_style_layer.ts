@@ -22,6 +22,7 @@ import type {LayerSpecification} from '../../style-spec/types';
 import type {TilespaceQueryGeometry} from '../query_geometry';
 import type {DEMSampler} from '../../terrain/elevation';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
+import type {RuntimeModuleType} from '../style_layer';
 import type {CreateProgramParams} from '../../render/painter';
 import type {DynamicDefinesType} from '../../render/program/program_uniforms';
 import type {LUT} from "../../util/lut";
@@ -104,12 +105,12 @@ class CircleStyleLayer extends StyleLayer {
         return this.layout && this.layout.get('circle-elevation-reference') !== 'none';
     }
 
-    override mayUseHD(): boolean {
-        return rawLayoutMayUseHD(this, 'circle-elevation-reference', v => v === 'hd-road-markup');
+    override mayUse(type: RuntimeModuleType): boolean {
+        return type === 'HD' && rawLayoutMayUseHD(this, 'circle-elevation-reference', v => v === 'hd-road-markup');
     }
 
     override prepare(): Promise<void> {
-        return this.mayUseHD() ? prepareHD() : Promise.resolve();
+        return this.mayUse('HD') ? prepareHD() : Promise.resolve();
     }
 }
 

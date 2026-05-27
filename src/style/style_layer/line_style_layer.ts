@@ -19,6 +19,7 @@ import type Transform from '../../geo/transform';
 import type {LayerSpecification} from '../../style-spec/types';
 import type {TilespaceQueryGeometry} from '../query_geometry';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
+import type {RuntimeModuleType} from '../style_layer';
 import type {CreateProgramParams} from '../../render/painter';
 import type {Map as MapboxMap} from '../../ui/map';
 import type {DynamicDefinesType} from '../../render/program/program_uniforms';
@@ -231,12 +232,12 @@ class LineStyleLayer extends StyleLayer {
         return this.layout && this.layout.get('line-elevation-reference') !== 'none';
     }
 
-    override mayUseHD(): boolean {
-        return rawLayoutMayUseHD(this, 'line-elevation-reference', v => v === 'hd-road-markup');
+    override mayUse(type: RuntimeModuleType): boolean {
+        return type === 'HD' && rawLayoutMayUseHD(this, 'line-elevation-reference', v => v === 'hd-road-markup');
     }
 
     override prepare(): Promise<void> {
-        return this.mayUseHD() ? prepareHD() : Promise.resolve();
+        return this.mayUse('HD') ? prepareHD() : Promise.resolve();
     }
 
     override hasOffscreenPass(): boolean {

@@ -138,6 +138,9 @@ export type WorkerSourceVectorTileResult = {
     // Main uses this flag to know whether to await the HD module before deserializing
     // the payload — without it, unregistered extension classes would cause a crash.
     containsHdExt?: boolean;
+    // True when any transferred bucket requires the Standard module on main before it
+    // can be deserialized (e.g. ModelBucket, Tiled3dModelBucket).
+    containsStandardExt?: boolean;
     rawTileData?: ArrayBuffer;
     resourceTiming?: Array<PerformanceResourceTiming>;
     brightness: number;
