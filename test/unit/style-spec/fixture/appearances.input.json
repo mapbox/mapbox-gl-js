@@ -45,6 +45,18 @@
             "icon-opacity": 1,
             "text-color": "red"
           }
+        },
+        {
+          "condition": ["all", ["==", ["get", "category"], "poi"], [">=", ["zoom"], 10]],
+          "properties": {"icon-opacity": 1}
+        },
+        {
+          "condition": ["has", "icon"],
+          "properties": {"icon-opacity": 0.8}
+        },
+        {
+          "condition": ["any", ["==", ["id"], 1], ["==", ["id"], 2]],
+          "properties": {"icon-opacity": 0.5}
         }
       ]
     },

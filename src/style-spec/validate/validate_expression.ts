@@ -50,7 +50,7 @@ export default function validateExpression(options: ExpressionValidatorOptions):
 
     if (options.expressionContext === 'appearance') {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        return checkDisallowedParameters(expressionObj, options);
+        return checkDisallowedAppearancesParameters(expressionObj, options);
     }
 
     if (options.expressionContext && options.expressionContext.indexOf('cluster') === 0) {
@@ -103,32 +103,40 @@ export function disallowedFilterParameters(e: Expression, options: any): Validat
     return errors;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function checkDisallowedParameters(e: Expression, options: any): ValidationError[] {
-    const allowedParameters = new Set<string>();
+const FEATURE_OPERATORS = new Set(['get', 'has', 'properties', 'geometry-type', 'id']);
+const APPEARANCES_DISALLOWED_PARAMETERS = new Set([
+    'zoom', 'pitch', 'distance-from-center',
+    'feature', 'feature-state',
+    'measure-light',
+    'heatmap-density', 'line-progress',
+    'raster-value', 'raster-particle-speed', 'sky-radial-progress',
+]);
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function checkDisallowedAppearancesParameters(e: Expression, options: any): ValidationError[] {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (options.valueSpec && options.valueSpec.expression) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         for (const param of options.valueSpec.expression.parameters) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            allowedParameters.add(param);
+            APPEARANCES_DISALLOWED_PARAMETERS.delete(param);
         }
     }
 
-    if (allowedParameters.size === 0) {
+    if (APPEARANCES_DISALLOWED_PARAMETERS.size === 0) {
         return [];
     }
     const errors: ValidationError[] = [];
 
     if (e instanceof CompoundExpression) {
-        if (!allowedParameters.has(e.name)) {
+        const param = FEATURE_OPERATORS.has(e.name) ? 'feature' : e.name;
+        if (APPEARANCES_DISALLOWED_PARAMETERS.has(param)) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             return [new ValidationError(options.key, options.value, `["${e.name}"] is not an allowed parameter`)];
         }
     }
     e.eachChild((arg) => {
-        errors.push(...checkDisallowedParameters(arg, options));
+        errors.push(...checkDisallowedAppearancesParameters(arg, options));
     });
 
     return errors;

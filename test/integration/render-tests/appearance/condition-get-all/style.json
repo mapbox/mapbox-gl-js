@@ -1,0 +1,80 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.001,
+      "pixelRatio": 2,
+      "height": 64,
+      "width": 128,
+      "_comment": "Verifies that appearance conditions accept compound expressions that were previously blocked by the validator: 'all' (feature 1 → bakery icon), 'has' (feature 2 → rotated icon), 'any'+'id' (feature 3 → small icon). Without the fix each of these operators would be rejected as 'not an allowed parameter', causing the style to fail to load."
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "id": 1,
+            "type": "Feature",
+            "properties": {"category": "bakery"},
+            "geometry": {"type": "Point", "coordinates": [-22, 0]}
+          },
+          {
+            "id": 2,
+            "type": "Feature",
+            "properties": {"category": "bank"},
+            "geometry": {"type": "Point", "coordinates": [0, 0]}
+          },
+          {
+            "id": 3,
+            "type": "Feature",
+            "properties": {},
+            "geometry": {"type": "Point", "coordinates": [22, 0]}
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-allow-overlap": true,
+        "icon-image": "bank-12",
+        "icon-size": 1
+      },
+      "appearances": [
+        {
+          "name": "all-and-get",
+          "condition": ["all", ["==", ["get", "category"], "bakery"], [">=", ["zoom"], 0]],
+          "properties": {
+            "icon-image": "bakery-12",
+            "icon-size": 2
+          }
+        },
+        {
+          "name": "has",
+          "condition": ["has", "category"],
+          "properties": {
+            "icon-rotate": 45,
+            "icon-size": 1.5
+          }
+        },
+        {
+          "name": "any-and-id",
+          "condition": ["any", ["==", ["id"], 3], ["==", ["id"], -1]],
+          "properties": {
+            "icon-image": "bakery-12",
+            "icon-rotate": 90
+          }
+        }
+      ]
+    }
+  ]
+}
