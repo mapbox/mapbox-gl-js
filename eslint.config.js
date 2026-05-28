@@ -41,7 +41,7 @@ const UNTYPED_FILES = [
     './test/release/**/*',
     './test/integration/**/*.js',
     './test/build/style-spec.test.js',
-    './test/build/browserify-test-fixture.js',
+    './build/start-server.js',
 ];
 
 const IGNORED_PATHS = [
@@ -70,7 +70,6 @@ const IGNORED_PATHS = [
     './test/build/webpack/**/*',
     './test/build/typings/**/*',
     './test/build/style-spec.test.js',
-    './test/build/browserify-test-fixture.js',
 ];
 
 export default tseslint.config(

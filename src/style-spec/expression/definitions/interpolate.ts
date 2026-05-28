@@ -1,4 +1,4 @@
-import UnitBezier from '@mapbox/unitbezier';
+import unitBezier from '@mapbox/unitbezier';
 import * as interpolate from '../../util/interpolate';
 import {toString, NumberType, ColorType} from '../types';
 import {findStopLessThanOrEqualTo} from '../stops';
@@ -57,8 +57,8 @@ class Interpolate implements Expression {
             t = exponentialInterpolation(input, 1, lower, upper);
         } else if (interpolation.name === 'cubic-bezier') {
             const c = interpolation.controlPoints;
-            const ub = new UnitBezier(c[0], c[1], c[2], c[3]);
-            t = ub.solve(exponentialInterpolation(input, 1, lower, upper));
+            const ub = unitBezier(c[0], c[1], c[2], c[3]);
+            t = ub(exponentialInterpolation(input, 1, lower, upper));
         }
         return t;
     }

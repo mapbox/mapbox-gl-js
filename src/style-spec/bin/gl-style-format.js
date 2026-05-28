@@ -2,17 +2,23 @@
 /* eslint-disable no-process-exit */
 
 import fs from 'fs';
-import minimist from 'minimist';
+import {parseArgs} from 'util';
 import {format} from '@mapbox/mapbox-gl-style-spec';
 
-const argv = minimist(process.argv.slice(2));
+const {values: argv, positionals} = parseArgs({
+    options: {
+        space: {type: 'string'},
+        help: {type: 'boolean', short: 'h'}
+    },
+    allowPositionals: true
+});
 
-if (argv.help || argv.h || (!argv._.length && process.stdin.isTTY)) {
+if (argv.help || (!positionals.length && process.stdin.isTTY)) {
     help();
     process.exit(0);
 }
 
-console.log(format(JSON.parse(fs.readFileSync(argv._[0]).toString()), argv.space));
+console.log(format(JSON.parse(fs.readFileSync(positionals[0]).toString()), argv.space ? Number(argv.space) : undefined));
 
 function help() {
     console.log('usage:');

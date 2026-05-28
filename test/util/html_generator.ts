@@ -1,61 +1,59 @@
 /* global document */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-// eslint-disable-next-line e18e/ban-dependencies
-import template from 'lodash/template.js';
+import {compile} from 'yeahjs';
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-const generateResultHTML = template(`
-  <div class="tab tab_<%- r.status %>">
+const generateResultHTML = compile(`
+  <div class="tab tab_<%= r.status %>">
     <% if (r.status === 'failed') { %>
-      <input type="checkbox" id="<%- r.id %>" checked>
+      <input type="checkbox" id="<%= r.id %>" checked>
     <% } else { %>
-      <input type="checkbox" id="<%- r.id %>">
+      <input type="checkbox" id="<%= r.id %>">
     <% } %>
-    <label class="tab-label" style="background: <%- r.color %>" for="<%- r.id %>"><p class="status-container"><span class="status"><%- r.status %></span> - <%- r.name %> <% if (r.attempt !== 0) { %>retry <%- r.attempt + 1 %><% } %></p></label>
+    <label class="tab-label" style="background: <%= r.color %>" for="<%= r.id %>"><p class="status-container"><span class="status"><%= r.status %></span> - <%= r.name %> <% if (r.attempt !== 0) { %>retry <%= r.attempt + 1 %><% } %></p></label>
     <div class="tab-content">
       <% if (r.actual || r.expected) { %>
         <span class="img-hover-container">
           <p class="img-label img-label-actual">Actual<span class="img-hover-hint"> (hover to see expected)</span></p>
           <p class="img-label img-label-expected">Expected</p>
           <% if (r.actual) { %>
-            <img class="img-actual" src="<%- r.actual %>">
+            <img class="img-actual" src="<%= r.actual %>">
           <% } %>
           <% if (r.expected) { %>
-            <img class="img-expected" title="<%- r.expectedPath %>" src="<%- r.expected %>">
+            <img class="img-expected" title="<%= r.expectedPath %>" src="<%= r.expected %>">
           <% } %>
         </span>
       <% } %>
       <% if (r.imgDiff) { %>
         <span class="img-static-container">
           <p class="img-label">Diff</p>
-          <img title="diff" src="<%- r.imgDiff %>">
+          <img title="diff" src="<%= r.imgDiff %>">
         </span>
       <% } %>
       <% if (r.allowed !== undefined) { %>
-        <p class="diff"><strong>Allowed:</strong> <%- r.allowed %></p>
+        <p class="diff"><strong>Allowed:</strong> <%= r.allowed %></p>
       <% } %>
       <% if (r.minDiff !== undefined) { %>
-        <p class="diff"><strong>Diff:</strong> <%- r.minDiff === 0 ? 'none' : r.minDiff %></p>
+        <p class="diff"><strong>Diff:</strong> <%= r.minDiff === 0 ? 'none' : r.minDiff %></p>
       <% } %>
       <% if (r.expectedPath) { %>
-        <p class="diff"><strong>Expected image path:</strong> <%- r.expectedPath %></p>
+        <p class="diff"><strong>Expected image path:</strong> <%= r.expectedPath %></p>
       <% } %>
       <% if (r.jsonDiff) { %>
           <details>
             <summary><strong style="color: red">JSON Diff</strong></summary>
-            <pre><%- r.jsonDiff %></pre>
+            <pre><%= r.jsonDiff %></pre>
           </details>
       <% } %>
       <% if (r.error) { %>
           <p style="color: red">
             <strong>Error:</strong>
-            <pre><%- r.error.stack %></pre>
+            <pre><%= r.error.stack %></pre>
           </p>
       <% } %>
     </div>
   </div>
-`);
+`, {locals: ['r']});
 
 export const pageCss = `
 body { font: 18px/1.2 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif; padding: 10px; background: #ecf0f1 }
@@ -245,9 +243,8 @@ export function updateHTML(testData) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     testData["attempt"] = testId.get(testData.name);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const html = generateResultHTML({r: testData});
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const resultHTMLFrag = document.createRange().createContextualFragment(html);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access

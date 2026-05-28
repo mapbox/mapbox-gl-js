@@ -73,9 +73,7 @@ export default mergeConfig(baseConfig, defineConfig({
         noDiscovery: true,
         include: [
             '@mapbox/mapbox-gl-supported',
-            '@mapbox/unitbezier',
             'csscolorparser',
-            'murmurhash-js',
             'vitest > expect-type',
         ],
     },

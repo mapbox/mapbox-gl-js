@@ -19,7 +19,7 @@ export function transformRequest(url, resourceTypeEnum) {
         const baseUrl = url.split('?')[0];
         switch (resourceTypeEnum) {
         case 'Source':
-            return {url: baseUrl.replace(/^https:\/\/api\.mapbox\.com\/v4\/(.+)\.json$/, `${location.origin}/tilesets/$1`)};
+            return {url: baseUrl.replace(/^https:\/\/api\.mapbox\.com\/v4\//, `${location.origin}/tilesets/`)};
 
         case 'Tile':
             return {url: baseUrl.replace(/^https:\/\/api\.mapbox\.com\/(v4|raster\/v1|rasterarrays\/v1|3dtiles\/v1)\/(.+)$/, `${location.origin}/tiles/$2`)};

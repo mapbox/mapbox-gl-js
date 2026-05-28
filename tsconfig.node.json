@@ -39,7 +39,6 @@
     "./test/build/vite/**/*",
     "./test/build/webpack/**/*",
     "./test/build/typings/**/*",
-    "./test/build/style-spec.test.js",
-    "./test/build/browserify-test-fixture.js"
+    "./test/build/style-spec.test.js"
   ]
 }

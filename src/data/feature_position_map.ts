@@ -1,4 +1,4 @@
-import murmur3 from 'murmurhash-js';
+import murmur3 from '../util/murmur3';
 import {register} from '../util/web_worker_transfer';
 import assert from '../style-spec/util/assert';
 

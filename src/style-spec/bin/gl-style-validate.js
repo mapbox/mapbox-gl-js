@@ -1,32 +1,33 @@
 #!/usr/bin/env node
 /* eslint-disable no-process-exit */
 
-import rw from 'rw';
-import minimist from 'minimist';
+import fs from 'fs';
+import {parseArgs} from 'util';
 import {validate, validateMapboxApiSupported} from '@mapbox/mapbox-gl-style-spec';
 
-const argv = minimist(process.argv.slice(2), {
-    boolean: ['json', 'mapbox-api-supported'],
+const {values: argv, positionals} = parseArgs({
+    options: {
+        json: {type: 'boolean'},
+        'mapbox-api-supported': {type: 'boolean'},
+        help: {type: 'boolean', short: 'h'}
+    },
+    allowPositionals: true
 });
 
 let status = 0;
 
-if (argv.help || argv.h || (!argv._.length && process.stdin.isTTY)) {
+if (argv.help || (!positionals.length && process.stdin.isTTY)) {
     help();
     process.exit(status);
 }
 
-if (!argv._.length) {
-    argv._.push('/dev/stdin');
-}
+const files = positionals.length ? positionals : [0];
 
-argv._.forEach((file) => {
-    let errors = [];
-    if (argv['mapbox-api-supported']) {
-        errors = validateMapboxApiSupported(rw.readFileSync(file, 'utf8'));
-    } else {
-        errors = validate(rw.readFileSync(file, 'utf8'));
-    }
+files.forEach((file) => {
+    const source = fs.readFileSync(file, 'utf8');
+    const errors = argv['mapbox-api-supported'] ?
+        validateMapboxApiSupported(source) :
+        validate(source);
     if (errors.length) {
         if (argv.json) {
             process.stdout.write(JSON.stringify(errors, null, 2));

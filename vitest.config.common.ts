@@ -2,7 +2,7 @@ import {resolve} from 'node:path';
 import {existsSync} from 'node:fs';
 import {writeFile} from 'node:fs/promises';
 import serveStatic from 'serve-static';
-import {tilesets, staticFolders} from './test/integration/lib/middlewares.js';
+import {staticFolders} from './test/integration/lib/middlewares.js';
 import {getAllStyleFixturePaths, generateFixtureJson} from './test/integration/lib/generate-fixture-json.js';
 import {getHTML, getDiagnosticsHTML} from './test/util/html_generator';
 
@@ -170,8 +170,6 @@ export function setupIntegrationTestsMiddlewares({reportPath, suiteName}: {
                 });
             });
 
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            server.middlewares.use('/tilesets', tilesets);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
             server.middlewares.use('/mapbox-gl-styles', serveStatic(resolve(__dirname, 'node_modules/mapbox-gl-styles'), staticCacheOptions));
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call

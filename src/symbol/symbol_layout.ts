@@ -14,7 +14,7 @@ import EvaluationParameters from '../style/evaluation_parameters';
 import {getRasterizedIconSize, getSizeData, SIZE_PACK_FACTOR, type SizeData} from './symbol_size';
 import ONE_EM from './one_em';
 import Point from '@mapbox/point-geometry';
-import murmur3 from 'murmurhash-js';
+import murmur3 from '../util/murmur3';
 import {PROPERTY_ELEVATION_ID} from '../../3d-style/elevation/elevation_constants';
 import {clipLines} from '../util/line_clipping';
 import {keys} from '../util/object';

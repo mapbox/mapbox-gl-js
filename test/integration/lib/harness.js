@@ -1,11 +1,8 @@
 
 import path from 'path';
 import * as fs from 'fs';
-import shuffleSeed from 'shuffle-seed';
-import {queue} from 'd3-queue';
 import {styleText} from 'node:util';
-// eslint-disable-next-line e18e/ban-dependencies
-import template from 'lodash/template.js';
+import {compile} from 'yeahjs';
 import createServer from './server.js';
 // eslint-disable-next-line import-x/order
 import {fileURLToPath} from 'url';
@@ -14,11 +11,24 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 import {createRequire} from 'module';
 const require = createRequire(import.meta.url);
 
-export default function (directory, implementation, options, run) {
-    const q = queue(1);
+function shuffle(array, seed) {
+    let s = seed >>> 0;
+    const a = array.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+        s = Math.imul(s ^ (s >>> 15), 1 | s);
+        s ^= s + Math.imul(s ^ (s >>> 7), 61 | s);
+        const j = ((s ^ (s >>> 14)) >>> 0) % (i + 1);
+        const tmp = a[i];
+        a[i] = a[j];
+        a[j] = tmp;
+    }
+    return a;
+}
+
+export default async function (directory, implementation, options, run) {
     const server = createServer();
 
-    const tests = options.tests || [];
+    const testFilter = options.tests || [];
     const ignores = options.ignores || {'todo': [], 'skip': []};
 
     let sequence = fs.globSync(`**/${options.fixtureFilename || 'style.json'}`, {cwd: directory})
@@ -46,7 +56,7 @@ export default function (directory, implementation, options, run) {
         .filter(style => {
             const test = style.metadata.test;
 
-            if (tests.length !== 0 && !tests.some(t => test.id.includes(t))) {
+            if (testFilter.length !== 0 && !testFilter.some(t => test.id.includes(t))) {
                 return false;
             }
 
@@ -65,21 +75,18 @@ export default function (directory, implementation, options, run) {
 
     if (options.shuffle) {
         console.log(styleText('white', `* shuffle seed: `) + styleText('bold', `${options.seed}`));
-        sequence = shuffleSeed.shuffle(sequence, options.seed);
+        sequence = shuffle(sequence, options.seed);
     }
 
-    q.defer(server.listen);
+    await server.listen();
 
-    sequence.forEach(style => {
-        q.defer((callback) => {
-            const test = style.metadata.test;
+    const tests = sequence.map(style => style.metadata.test);
 
-            try {
-                run(style, test, handleResult);
-            } catch (error) {
-                handleResult(error);
-            }
+    for (const style of sequence) {
+        const test = style.metadata.test;
 
+        // eslint-disable-next-line no-await-in-loop -- tests must run sequentially
+        await new Promise((resolve) => {
             function handleResult(error) {
                 if (error) {
                     test.error = error;
@@ -107,113 +114,104 @@ export default function (directory, implementation, options, run) {
                     console.log(styleText('green', `* passed ${test.id}`));
                 }
 
-                callback(null, test);
+                resolve();
+            }
+
+            try {
+                run(style, test, handleResult);
+            } catch (error) {
+                handleResult(error);
             }
         });
-    });
+    }
 
-    q.defer(server.close);
+    await server.close();
 
-    q.awaitAll((err, results) => {
-        if (err) {
-            console.error(err);
-            setTimeout(() => { process.exit(-1); }, 0);
-            return;
+    if (process.env.UPDATE) {
+        console.log(`Updated ${tests.length} tests.`);
+        process.exit(0);
+    }
+
+    let passedCount = 0,
+        ignoreCount = 0,
+        ignorePassCount = 0,
+        failedCount = 0,
+        erroredCount = 0;
+
+    for (const test of tests) {
+        if (test.ignored && !test.ok) {
+            ignoreCount++;
+        } else if (test.ignored) {
+            ignorePassCount++;
+        } else if (test.error) {
+            erroredCount++;
+        } else if (!test.ok) {
+            failedCount++;
+        } else {
+            passedCount++;
         }
+    }
 
-        const tests = results.slice(1, -1);
+    const totalCount = passedCount + ignorePassCount + ignoreCount + failedCount + erroredCount;
+    const pct = (count) => (100 * count / totalCount).toFixed(1);
 
-        if (process.env.UPDATE) {
-            console.log(`Updated ${tests.length} tests.`);
-            process.exit(0);
-        }
+    if (passedCount > 0) {
+        console.log(styleText('green', `${passedCount} passed (${pct(passedCount)}%)`));
+    }
 
-        let passedCount = 0,
-            ignoreCount = 0,
-            ignorePassCount = 0,
-            failedCount = 0,
-            erroredCount = 0;
+    if (ignorePassCount > 0) {
+        console.log(styleText('yellow', `${ignorePassCount} passed but were ignored (${pct(ignorePassCount)}%)`));
+    }
 
-        tests.forEach((test) => {
-            if (test.ignored && !test.ok) {
-                ignoreCount++;
-            } else if (test.ignored) {
-                ignorePassCount++;
-            } else if (test.error) {
-                erroredCount++;
-            } else if (!test.ok) {
-                failedCount++;
-            } else {
-                passedCount++;
-            }
-        });
+    if (ignoreCount > 0) {
+        console.log(styleText('white', `${ignoreCount} ignored (${pct(ignoreCount)}%)`));
+    }
 
-        const totalCount = passedCount + ignorePassCount + ignoreCount + failedCount + erroredCount;
+    if (failedCount > 0) {
+        console.log(styleText('red', `${failedCount} failed (${pct(failedCount)}%)`));
+    }
 
-        if (passedCount > 0) {
-            console.log(styleText('green', '%d passed (%s%)'),
-                passedCount, (100 * passedCount / totalCount).toFixed(1));
-        }
+    if (erroredCount > 0) {
+        console.log(styleText('red', `${erroredCount} errored (${pct(erroredCount)}%)`));
+    }
 
-        if (ignorePassCount > 0) {
-            console.log(styleText('yellow', '%d passed but were ignored (%s%)'),
-                ignorePassCount, (100 * ignorePassCount / totalCount).toFixed(1));
-        }
+    const resultsTemplate = compile(fs.readFileSync(path.join(__dirname, '..', 'results.html.tmpl'), 'utf8'), {locals: ['unsuccessful', 'tests', 'stats', 'shuffle', 'seed']});
+    const itemTemplate = compile(fs.readFileSync(path.join(directory, 'result_item.html.tmpl'), 'utf8'), {locals: ['r', 'hasFailedTests']});
 
-        if (ignoreCount > 0) {
-            console.log(styleText('white', '%d ignored (%s%)'),
-                ignoreCount, (100 * ignoreCount / totalCount).toFixed(1));
-        }
+    const stats = {};
+    for (const test of tests) {
+        stats[test.status] = (stats[test.status] || 0) + 1;
+    }
 
-        if (failedCount > 0) {
-            console.log(styleText('red', '%d failed (%s%)'),
-                failedCount, (100 * failedCount / totalCount).toFixed(1));
-        }
+    const unsuccessful = tests.filter(test => test.status === 'failed' || test.status === 'errored');
 
-        if (erroredCount > 0) {
-            console.log(styleText('red', '%d errored (%s%)'),
-                erroredCount, (100 * erroredCount / totalCount).toFixed(1));
-        }
+    const resultsShell = resultsTemplate({unsuccessful, tests, stats, shuffle: options.shuffle, seed: options.seed})
+        .split('<!-- results go here -->');
 
-        const resultsTemplate = template(fs.readFileSync(path.join(__dirname, '..', 'results.html.tmpl'), 'utf8'));
-        const itemTemplate = template(fs.readFileSync(path.join(directory, 'result_item.html.tmpl'), 'utf8'));
+    const p = path.join(directory, 'index.html');
+    const out = fs.createWriteStream(p);
 
-        const stats = {};
-        for (const test of tests) {
-            stats[test.status] = (stats[test.status] || 0) + 1;
-        }
+    await write(out, resultsShell[0]);
+    for (const test of tests) {
+        const escaped = itemTemplate({r: test, hasFailedTests: unsuccessful.length > 0});
+        // Undo lodash.template's escape characters to correctly render "<" and ">" as html.
+        const fixed = escaped.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+        // eslint-disable-next-line no-await-in-loop -- write backpressure must be sequential
+        await write(out, fixed);
+    }
+    await write(out, resultsShell[1]);
+    await new Promise(resolve => { out.end(resolve); });
 
-        const unsuccessful = tests.filter(test => test.status === 'failed' || test.status === 'errored');
-
-        const resultsShell = resultsTemplate({unsuccessful, tests, stats, shuffle: options.shuffle, seed: options.seed})
-            .split('<!-- results go here -->');
-
-        const p = path.join(directory, 'index.html');
-        const out = fs.createWriteStream(p);
-
-        const q = queue(1);
-        q.defer(write, out, resultsShell[0]);
-        for (const test of tests) {
-            const escaped = itemTemplate({r: test, hasFailedTests: unsuccessful.length > 0});
-            // Undo lodash.template's escape characters to correctly render "<" and ">" as html.
-            const fixed = escaped.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
-            q.defer(write, out, fixed);
-        }
-        q.defer(write, out, resultsShell[1]);
-        q.await(() => {
-            out.end();
-            out.on('close', () => {
-                console.log(`Results at: ${p}`);
-                process.exit((failedCount + erroredCount) === 0 ? 0 : 1);
-            });
-        });
-    });
+    console.log(`Results at: ${p}`);
+    process.exit((failedCount + erroredCount) === 0 ? 0 : 1);
 }
 
-function write(stream, data, cb) {
-    if (!stream.write(data)) {
-        stream.once('drain', cb);
-    } else {
-        process.nextTick(cb);
-    }
+function write(stream, data) {
+    return new Promise((resolve) => {
+        if (!stream.write(data)) {
+            stream.once('drain', resolve);
+        } else {
+            process.nextTick(resolve);
+        }
+    });
 }

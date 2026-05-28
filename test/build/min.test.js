@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'fs';
 import path from 'path';
-import browserify from 'browserify';
+import {createRequire} from 'module';
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -36,11 +36,9 @@ test('trims reference.json fields', () => {
     assert(!minBundle.includes(reference.$root.version.doc));
 });
 
-test('can be browserified', () => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    browserify(path.join(__dirname, 'browserify-test-fixture.js')).bundle((err) => {
-        assert(!err, `Browserify failed: ${err}`);
-    });
+test('can be required as CommonJS', () => {
+    const require = createRequire(import.meta.url);
+    assert.doesNotThrow(() => require(path.join(__dirname, '../../dist/mapbox-gl.js')));
 });
 
 test('evaluates without errors', async () => {

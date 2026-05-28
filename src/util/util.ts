@@ -1,5 +1,5 @@
 import {mat4} from 'gl-matrix';
-import UnitBezier from '@mapbox/unitbezier';
+import bezier from '@mapbox/unitbezier';
 import Point from '@mapbox/point-geometry';
 import assert from '../style-spec/util/assert';
 import deepEqual from '../style-spec/util/deep_equal';
@@ -178,24 +178,7 @@ export function bufferConvexPolygon(ring: Point[], buffer: number): Point[] {
     return output;
 }
 
-type EaseFunction = (t: number) => number;
-
-/**
- * Given given (x, y), (x1, y1) control points for a bezier curve,
- * return a function that interpolates along that curve.
- *
- * @param p1x control point 1 x coordinate
- * @param p1y control point 1 y coordinate
- * @param p2x control point 2 x coordinate
- * @param p2y control point 2 y coordinate
- * @private
- */
-export function bezier(p1x: number, p1y: number, p2x: number, p2y: number): EaseFunction {
-    const bezier = new UnitBezier(p1x, p1y, p2x, p2y);
-    return function (t: number) {
-        return bezier.solve(t);
-    };
-}
+export {bezier};
 
 /**
  * A default bezier-curve powered easing function with
@@ -203,7 +186,7 @@ export function bezier(p1x: number, p1y: number, p2x: number, p2y: number): Ease
  *
  * @private
  */
-export const ease: EaseFunction = bezier(0.25, 0.1, 0.25, 1);
+export const ease = bezier(0.25, 0.1, 0.25, 1);
 
 /**
  * constrain n to the given range via min + max

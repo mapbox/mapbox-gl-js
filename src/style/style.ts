@@ -1,5 +1,5 @@
 import assert from '../style-spec/util/assert';
-import murmur3 from 'murmurhash-js';
+import murmur3 from '../util/murmur3';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import StyleChanges from './style_changes';
 import createStyleLayer from './create_style_layer';
