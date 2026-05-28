@@ -80,7 +80,7 @@ function validateDistFiles(dryRun: boolean): void {
             return;
         }
         console.error('Error: dist folder does not exist. Make sure you build the bundle before running this script.');
-        console.error('Run: npm run build-prod && npm run build-esm-prod && npm run build-csp && npm run build-dev && npm run build-css');
+        console.error('Run: npm run build-prod && npm run build-esm-prod-cdn && npm run build-csp && npm run build-dev && npm run build-css');
         process.exit(1);
     }
 
@@ -97,7 +97,7 @@ function validateDistFiles(dryRun: boolean): void {
         if (missingFiles.length > 0) {
             console.error(`Error: Missing files in dist folder: ${missingFiles.join(', ')}`);
             console.error('Make sure you build the bundle before running this script.');
-            console.error('Run: npm run build-prod && npm run build-esm-prod && npm run build-csp && npm run build-dev && npm run build-css');
+            console.error('Run: npm run build-prod && npm run build-esm-prod-cdn && npm run build-csp && npm run build-dev && npm run build-css');
             process.exit(1);
         }
     }

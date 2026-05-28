@@ -3,7 +3,7 @@ import {plugins} from './build/rollup_plugins.js';
 
 import type {Plugin, RollupOptions} from 'rollup';
 
-const {BUILD, MINIFY, VISUALIZE} = process.env;
+const {BUILD, MINIFY, VISUALIZE, ESM_TARGET} = process.env;
 const minified = MINIFY === 'true';
 const production = BUILD === 'production';
 const visualize = production && (VISUALIZE === '1' || VISUALIZE === 'true');
@@ -73,11 +73,9 @@ function esmConfig(dir: string, workerSuffix: string, emitVisualizer = false): R
 
 export default (): RollupOptions[] => {
     if (production) {
-        // Production: build both NPM (dist/esm/) and CDN (dist/esm-cdn/) variants
-        return [
-            esmConfig('dist/esm/', '_esm_npm', visualize),
-            esmConfig('dist/esm-cdn/', '_esm_cdn'),
-        ];
+        // Production: build NPM (dist/esm/) by default; ESM_TARGET=cdn selects the CDN variant (dist/esm-cdn/).
+        if (ESM_TARGET === 'cdn') return [esmConfig('dist/esm-cdn/', '_esm_cdn')];
+        return [esmConfig('dist/esm/', '_esm_npm', visualize)];
     }
     // Dev: build only NPM variant (dist/esm-dev/)
     return [
