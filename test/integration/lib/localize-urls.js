@@ -28,7 +28,7 @@ export default function localizeURLs(style, port) {
                 try {
                     const relativePath = op[1].replace(/^local:\/\//, '');
                     if (relativePath.startsWith('mapbox-gl-styles')) {
-                        styleJSON = fs.readFileSync(path.join(path.dirname(require.resolve('mapbox-gl-styles')), '..', relativePath));
+                        styleJSON = fs.readFileSync(path.join(path.dirname(require.resolve('@mapbox/mapbox-gl-styles')), '..', relativePath));
                     } else {
                         styleJSON = fs.readFileSync(path.join(__dirname, '..', relativePath));
                     }
@@ -43,6 +43,12 @@ export default function localizeURLs(style, port) {
                     console.log(styleText('blue', `* Error while parsing ${op[1]}: ${error}`));
                     return;
                 }
+
+                // @mapbox/mapbox-gl-styles templates ship with a default
+                // center/zoom that would override the render test camera.
+                // Strip them so each test controls its own view.
+                delete styleJSON.center;
+                delete styleJSON.zoom;
 
                 op[1] = styleJSON;
                 op[2] = {diff: false};

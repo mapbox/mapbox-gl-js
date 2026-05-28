@@ -9,7 +9,7 @@ export default function () {
     const port = 3000;
     const mounts = [
         ['/mvt-fixtures', serveStatic(path.dirname(fileURLToPath(import.meta.resolve('@mapbox/mvt-fixtures'))), defaultOptions)],
-        ['/mapbox-gl-styles', serveStatic(path.dirname(fileURLToPath(import.meta.resolve('mapbox-gl-styles'))), defaultOptions)],
+        ['/mapbox-gl-styles', serveStatic(path.dirname(fileURLToPath(import.meta.resolve('@mapbox/mapbox-gl-styles'))), defaultOptions)],
         ...staticFolders.map((dir) => [`/${dir}`, serveStatic(path.join(import.meta.dirname, '..', dir), defaultOptions)])
     ];
 

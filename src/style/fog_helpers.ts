@@ -45,9 +45,9 @@ export function getFogOpacityAtTileCoord(
 ): number {
     const mat = transform.calculateFogTileMatrix(tileId);
     const pos = [x, y, z];
-    vec3.transformMat4(pos as [number, number, number], pos as [number, number, number], mat);
+    vec3.transformMat4(pos, pos, mat);
 
-    return getFogOpacity(state, vec3.length(pos as [number, number, number]), transform.pitch);
+    return getFogOpacity(state, vec3.length(pos), transform.pitch);
 }
 
 export function getFogOpacityAtLngLat(state: FogState, lngLat: LngLat, transform: Transform): number {

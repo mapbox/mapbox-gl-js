@@ -89,7 +89,7 @@ class Actor {
             mustQueue,
             sourceMapId: this.mapId,
             data: serialize(data, buffers)
-        } as Task, buffers as unknown as Transferable[]);
+        }, buffers as unknown as Transferable[]);
         return {
             cancel: () => {
                 if (callback) {
@@ -101,7 +101,7 @@ class Actor {
                     type: '<cancel>',
                     targetMapId,
                     sourceMapId: this.mapId
-                } as Task);
+                });
             }
         };
     }
@@ -159,7 +159,7 @@ class Actor {
                 // If we get a response, but don't have a callback, the request was canceled.
                 if (task.error) {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                    callback(deserialize(task.error) as Error);
+                    callback(deserialize(task.error));
                 } else {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     callback(null, deserialize(task.data));
@@ -174,14 +174,14 @@ class Actor {
                     sourceMapId: this.mapId,
                     error: err ? serialize(err) : null,
                     data: serialize(data, buffers)
-                } as Task, buffers as unknown as Transferable[]);
+                }, buffers as unknown as Transferable[]);
             } : () => {};
 
             const params = deserialize(task.data);
             if (this.parent[task.type]) {
                 // task.type == 'loadTile', 'removeTile', etc.
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                this.parent[task.type](task.sourceMapId, params as ActorMessages[ActorMessage]['params'], done);
+                this.parent[task.type](task.sourceMapId, params, done);
             } else if (this.parent.getWorkerSource) {
                 // task.type == sourcetype.method
                 const keys = task.type.split('.');

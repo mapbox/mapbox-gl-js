@@ -269,7 +269,7 @@ const fillExtrusionUniformValues = (
 
 const fillExtrusionDepthUniformValues = (matrix: mat4, edgeRadius: number, lineWidthScale: number, verticalScale: number, heightAlignment: string, baseAlignment: string): UniformValues<FillExtrusionDepthUniformsType> => {
     return {
-        'u_matrix': matrix as Float32Array,
+        'u_matrix': matrix,
         'u_edge_radius': edgeRadius,
         'u_width_scale': lineWidthScale,
         'u_vertical_scale': verticalScale,

@@ -386,7 +386,7 @@ function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: 
             v[1] = y;
             v[2] = heightOffset.base;
             v[3] = 1;
-            vec4.transformMat4(v as [number, number, number, number], v as [number, number, number, number], m);
+            vec4.transformMat4(v, v, m);
             v[3] = Math.max(v[3], 0.00001);
             const base = new Point3D(v[0] / v[3], v[1] / v[3], v[2] / v[3]);
 
@@ -394,7 +394,7 @@ function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: 
             v[1] = y;
             v[2] = heightOffset.top;
             v[3] = 1;
-            vec4.transformMat4(v as [number, number, number, number], v as [number, number, number, number], m);
+            vec4.transformMat4(v, v, m);
             v[3] = Math.max(v[3], 0.00001);
             const top = new Point3D(v[0] / v[3], v[1] / v[3], v[2] / v[3]);
 

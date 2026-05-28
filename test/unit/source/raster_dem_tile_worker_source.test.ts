@@ -4,7 +4,7 @@ import RasterDEMTileWorkerSource from '../../../src/source/raster_dem_tile_worke
 import DEMData from '../../../src/data/dem_data';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 
-import type {WorkerSourceOptions, WorkerSourceDEMTileRequest, WorkerSourceDEMTileResult} from '../../../src/source/worker_source';
+import type {WorkerSourceOptions, WorkerSourceDEMTileResult} from '../../../src/source/worker_source';
 
 describe('RasterDEMTileWorkerSource', () => {
     test('loads DEM tile via getArrayBuffer + createImageBitmap', async () => {
@@ -23,7 +23,7 @@ describe('RasterDEMTileWorkerSource', () => {
                 scope: '',
                 request: {url: 'http://example.com/10/5/5.png'},
                 encoding: 'mapbox',
-            } as WorkerSourceDEMTileRequest, (err?: Error | null, result?: WorkerSourceDEMTileResult | null) => {
+            }, (err?: Error | null, result?: WorkerSourceDEMTileResult | null) => {
                 if (err) return reject(err);
                 expect(result).toBeTruthy();
                 expect(result && result.dem instanceof DEMData).toBeTruthy();
@@ -70,7 +70,7 @@ describe('RasterDEMTileWorkerSource', () => {
                 tileID: new OverscaledTileID(1, 0, 1, 0, 0),
                 request: {url: 'http://example.com/1/0/0.png'},
                 encoding: 'mapbox',
-            } as WorkerSourceDEMTileRequest, (err?: Error | null, result?: WorkerSourceDEMTileResult | null) => {
+            }, (err?: Error | null, result?: WorkerSourceDEMTileResult | null) => {
                 if (err) return reject(err);
                 expect(result && result.dem instanceof DEMData).toBeTruthy();
                 resolve();
@@ -96,7 +96,7 @@ describe('RasterDEMTileWorkerSource', () => {
                 tileID: new OverscaledTileID(1, 0, 1, 0, 0),
                 request: {url: 'http://example.com/1/0/0.png'},
                 encoding: 'mapbox',
-            } as WorkerSourceDEMTileRequest, (err?: Error | null, result?: WorkerSourceDEMTileResult | null) => {
+            }, (err?: Error | null, result?: WorkerSourceDEMTileResult | null) => {
                 if (err) return reject(err);
                 expect(result && result.dem instanceof DEMData).toBeTruthy();
                 expect(createSpy).not.toHaveBeenCalled();

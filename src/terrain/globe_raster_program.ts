@@ -107,9 +107,9 @@ const globeRasterUniformValues = (
     gridMatrix?: mat4 | null,
 ): UniformValues<GlobeRasterUniformsType> => ({
     'u_proj_matrix': Float32Array.from(projMatrix),
-    'u_globe_matrix': globeMatrix as Float32Array,
+    'u_globe_matrix': globeMatrix,
     'u_normalize_matrix': Float32Array.from(normalizeMatrix),
-    'u_merc_matrix': globeMercatorMatrix as Float32Array,
+    'u_merc_matrix': globeMercatorMatrix,
     'u_zoom_transition': zoomTransition,
     'u_merc_center': mercCenter,
     'u_image0': 0,

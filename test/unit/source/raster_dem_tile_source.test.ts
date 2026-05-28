@@ -132,7 +132,7 @@ describe('RasterTileSource', () => {
 
         const source = new RasterDEMTileSource(
             'id',
-            {type: 'raster-dem', tiles: ['http://example.com/{z}/{x}/{y}.png']} as RasterDEMSourceSpecification,
+            {type: 'raster-dem', tiles: ['http://example.com/{z}/{x}/{y}.png']},
             dispatcher,
             new Evented(),
         );
@@ -254,7 +254,7 @@ describe('RasterDEMTileSource provider', () => {
 
         const source = new RasterDEMTileSource(
             'id',
-            {type: 'raster-dem', ...options} as RasterDEMSourceSpecification,
+            {type: 'raster-dem', ...options},
             dispatcher,
             new Evented(),
         );

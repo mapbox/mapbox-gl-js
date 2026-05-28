@@ -59,8 +59,8 @@ const collisionUniformValues = (
     const pixelRatio = EXTENT / tile.tileSize;
 
     return {
-        'u_matrix': matrix as Float32Array,
-        'u_inv_rot_matrix': invMatrix as Float32Array,
+        'u_matrix': matrix,
+        'u_inv_rot_matrix': invMatrix,
         'u_camera_to_center_distance': transform.getCameraToCenterDistance(projection),
         'u_extrude_scale': [transform.pixelsToGLUnits[0] / pixelRatio,
             transform.pixelsToGLUnits[1] / pixelRatio],
@@ -77,8 +77,8 @@ const collisionCircleUniformValues = (
     projection: Projection,
 ): UniformValues<CollisionCircleUniformsType> => {
     return {
-        'u_matrix': matrix as Float32Array,
-        'u_inv_matrix': invMatrix as Float32Array,
+        'u_matrix': matrix,
+        'u_inv_matrix': invMatrix,
         'u_camera_to_center_distance': transform.getCameraToCenterDistance(projection),
         'u_viewport_size': [transform.width, transform.height]
     };

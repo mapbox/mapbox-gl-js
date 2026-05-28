@@ -97,7 +97,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
                 circleArray,
                 circleOffset,
                 transform,
-                invTransform: invTransform as Float32Array,
+                invTransform,
                 projection: bucket.getProjection()
             });
 

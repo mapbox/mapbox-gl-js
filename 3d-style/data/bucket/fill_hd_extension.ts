@@ -3,7 +3,7 @@ import Point from '@mapbox/point-geometry';
 import {register} from '../../../src/util/web_worker_transfer';
 import ElevatedFillBufferData from './elevated_fill_buffer_data';
 import {ElevatedStructures, type FeatureInfo} from '../../elevation/elevated_structures';
-import {ElevationFeatureSampler, EdgeIterator, type ElevationFeature, type Range} from '../../elevation/elevation_feature';
+import {ElevationFeatureSampler, EdgeIterator, type ElevationFeature} from '../../elevation/elevation_feature';
 import {getElevationFeature} from '../../elevation/get_elevation_feature';
 import {ELEVATION_CLIP_MARGIN, MARKUP_ELEVATION_BIAS, PROPERTY_ELEVATION_ROAD_BASE_Z_LEVEL, SUBDIVISION_EDGE_EXTENSION} from '../../elevation/elevation_constants';
 import {tileToMeter} from '../../../src/geo/mercator_coordinate';
@@ -219,7 +219,7 @@ export class FillHDExtension {
         const [min, max] = bucket.addGeometry(polygons, this.elevationBufferData, elevationParams, this.elevatedStructures);
 
         if (this.elevationBufferData.heightRange == null) {
-            this.elevationBufferData.heightRange = {min, max} as Range;
+            this.elevationBufferData.heightRange = {min, max};
         } else {
             this.elevationBufferData.heightRange.min = Math.min(this.elevationBufferData.heightRange.min, min);
             this.elevationBufferData.heightRange.max = Math.max(this.elevationBufferData.heightRange.max, max);

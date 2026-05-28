@@ -356,9 +356,9 @@ class GridIndex<K = number> {
         offset += this.boxUid;
         a.set(this.circleKeys as unknown as number[], offset);
         offset += this.circleUid;
-        a.set(this.bboxes as Array<number>, offset);
+        a.set(this.bboxes, offset);
         offset += this.boxUid * 4;
-        a.set(this.circles as Array<number>, offset);
+        a.set(this.circles, offset);
 
         return a.buffer;
     }

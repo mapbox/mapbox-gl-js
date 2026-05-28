@@ -21,12 +21,12 @@ export default class FeaturePositionMap {
         this.indexed = false;
     }
 
-    add(id: unknown, index: number, start: number, end: number) {
+    add(id: string | number, index: number, start: number, end: number) {
         this.ids.push(getNumericId(id));
         this.positions.push(index, start, end);
     }
 
-    eachPosition(id: unknown, fn: (index: number, start: number, end: number) => void) {
+    eachPosition(id: string | number, fn: (index: number, start: number, end: number) => void) {
         assert(this.indexed);
 
         const intId = getNumericId(id);
@@ -82,12 +82,12 @@ export default class FeaturePositionMap {
     }
 }
 
-function getNumericId(value: unknown): number {
+function getNumericId(value: string | number): number {
     const numValue = +value;
     if (Number.isSafeInteger(numValue)) {
         return numValue;
     }
-    return murmur3(String(value as number));
+    return murmur3(String(value));
 }
 
 // custom quicksort that sorts ids, indices and offsets together (by ids)

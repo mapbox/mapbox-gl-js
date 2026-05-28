@@ -47,12 +47,12 @@ const elevatedStructuresDepthReconstructUniforms = (context: Context): ElevatedS
 });
 
 const elevatedStructuresDepthUniformValues = (matrix: mat4, depthBias: number): UniformValues<ElevatedStructuresDepthUniformsType> => ({
-    'u_matrix': matrix as Float32Array,
+    'u_matrix': matrix,
     'u_depth_bias': depthBias,
 });
 
 const elevatedStructuresUniformValues = (matrix: mat4, groundShadowFactor: [number, number, number]): UniformValues<ElevatedStructuresUniformsType> => ({
-    'u_matrix': matrix as Float32Array,
+    'u_matrix': matrix,
     'u_ground_shadow_factor': groundShadowFactor,
     'u_opacity_multiplier': 1.0,
 });
@@ -64,7 +64,7 @@ const elevatedStructuresDepthReconstructUniformValues = (
     heightScale: number,
     resetDepth: number
 ): UniformValues<ElevatedStructuresDepthReconstructUniformsType> => ({
-    'u_matrix': tileMatrix as Float32Array,
+    'u_matrix': tileMatrix,
     'u_camera_pos': [cameraTilePos[0], cameraTilePos[1], cameraTilePos[2]],
     'u_depth_bias': depthBias,
     'u_height_scale': heightScale,

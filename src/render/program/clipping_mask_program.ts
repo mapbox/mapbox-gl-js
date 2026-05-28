@@ -13,7 +13,7 @@ const clippingMaskUniforms = (context: Context): ClippingMaskUniformsType => ({
 });
 
 const clippingMaskUniformValues = (matrix: mat4): UniformValues<ClippingMaskUniformsType> => ({
-    'u_matrix': matrix as Float32Array
+    'u_matrix': matrix
 });
 
 export {clippingMaskUniforms, clippingMaskUniformValues};

@@ -28,7 +28,7 @@ const terrainRasterUniformValues = (
     groundShadowFactor: [number, number, number],
     emissiveTextureAvailable: number,
 ): UniformValues<TerrainRasterUniformsType> => ({
-    'u_matrix': matrix as Float32Array,
+    'u_matrix': matrix,
     'u_image0': 0,
     'u_image1': 1,
     'u_skirt_height': skirtHeight,

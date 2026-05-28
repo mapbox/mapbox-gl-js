@@ -421,19 +421,19 @@ class WorkerTile {
                         const bucket = buckets[key];
                         if (bucket instanceof SymbolBucket) {
                             recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages, this.worldview, options.activeFloors);
-                            symbolLayoutData[key] =
-                            performSymbolLayout(bucket,
-                                    glyphMap,
-                                    glyphAtlas.positions,
-                                    iconMap,
-                                    iconPositions,
-                                    this.tileID.canonical,
-                                    this.tileZoom,
-                                    this.scaleFactor,
-                                    this.pixelRatio,
-                                    iconRasterizationTasks,
-                                    this.worldview,
-                                    availableImages);
+                            symbolLayoutData[key] = performSymbolLayout(
+                                bucket,
+                                glyphMap,
+                                glyphAtlas.positions,
+                                iconMap,
+                                iconPositions,
+                                this.tileID.canonical,
+                                this.tileZoom,
+                                this.scaleFactor,
+                                this.pixelRatio,
+                                iconRasterizationTasks,
+                                this.worldview,
+                                availableImages);
                         }
                     }
 

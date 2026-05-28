@@ -9,7 +9,7 @@ export function transformRequest(url, resourceTypeEnum) {
     if (url.startsWith('local://')) {
         return {
             url: url
-                .replace('local://mapbox-gl-styles/', `${location.origin}/node_modules/mapbox-gl-styles/`)
+                .replace('local://mapbox-gl-styles/', `${location.origin}/node_modules/@mapbox/mapbox-gl-styles/`)
                 .replace('local://mvt-fixtures/', `${location.origin}/node_modules/@mapbox/mvt-fixtures/`)
                 .replace('local://', `${location.origin}/`)
         };

@@ -24,8 +24,7 @@ export const Debug: {
     _drawLine: (...args: unknown[]) => void;
     _drawQuad: (...args: unknown[]) => void;
     _initializeCanvas: (tr: Transform) => HTMLCanvasElement;
-} =
-{
+} = {
     extend(dest: object, ...sources: Array<object | null | undefined>): object {
         return Object.assign(dest, ...sources) as object;
     },

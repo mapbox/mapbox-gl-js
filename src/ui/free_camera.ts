@@ -39,11 +39,11 @@ export function orientationFromFrame(forward: vec3, up: vec3): quat | null | und
 
     const epsilon = 1e-15;
 
-    if (vec3.length(xyForward as [number, number, number]) >= epsilon) {
+    if (vec3.length(xyForward) >= epsilon) {
         // Roll rotation can be seen as the right vector not being on the xy-plane, ie. right[2] != 0.0.
         // It can be negated by projecting the up vector on top of the forward vector.
-        const xyDir = vec3.normalize([], xyForward as [number, number, number]);
-        vec3.scale(xyUp as [number, number, number], xyDir, vec3.dot(xyUp as [number, number, number], xyDir));
+        const xyDir = vec3.normalize([], xyForward);
+        vec3.scale(xyUp, xyDir, vec3.dot(xyUp, xyDir));
 
         up[0] = xyUp[0];
         up[1] = xyUp[1];

@@ -27,7 +27,7 @@ export function getPNGResponse() {
         try {
             canvasElement.toBlob(resolve, 'image/png');
         } catch (err) {
-            reject(err as Error);
+            reject(err instanceof Error ? err : new Error('toBlob failed'));
         }
     });
 }

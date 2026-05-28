@@ -190,9 +190,9 @@ const modelDepthUniformValues = (
     nodeMatrix: mat4 = emptyMat4,
 ): UniformValues<ModelDepthUniformsType> => {
     return {
-        'u_matrix': matrix as Float32Array,
-        'u_instance': instance as Float32Array,
-        'u_node_matrix': nodeMatrix as Float32Array
+        'u_matrix': matrix,
+        'u_instance': instance,
+        'u_node_matrix': nodeMatrix
     };
 };
 

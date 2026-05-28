@@ -15,7 +15,7 @@ const groundShadowUniforms = (context: Context): GroundShadowUniformsType => ({
 });
 
 const groundShadowUniformValues = (matrix: mat4, shadowFactor: [number, number, number]): UniformValues<GroundShadowUniformsType> => ({
-    'u_matrix': matrix as Float32Array,
+    'u_matrix': matrix,
     'u_ground_shadow_factor': shadowFactor
 });
 

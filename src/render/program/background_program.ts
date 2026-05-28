@@ -65,7 +65,7 @@ const backgroundUniformValues = (
     opacity: number,
     color: NonPremultipliedRenderColor,
 ): UniformValues<BackgroundUniformsType> => ({
-    'u_matrix': matrix as Float32Array,
+    'u_matrix': matrix,
     'u_emissive_strength': emissiveStrength,
     'u_opacity': opacity,
     'u_color': color

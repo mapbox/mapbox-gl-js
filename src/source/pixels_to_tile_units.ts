@@ -42,5 +42,5 @@ export function getPixelsToTileUnitsMatrix(
     const {scale} = tile.tileTransform;
     const s = scale * EXTENT / (tile.tileSize * Math.pow(2, transform.zoom - tile.tileID.overscaledZ + tile.tileID.canonical.z));
     const m = transform.inverseAdjustmentMatrix;
-    return new Float32Array([m[0] * s, m[1] * s, m[2] * s, m[3] * s]) as mat2;
+    return new Float32Array([m[0] * s, m[1] * s, m[2] * s, m[3] * s]);
 }

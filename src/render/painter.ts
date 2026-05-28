@@ -1695,7 +1695,7 @@ class Painter {
         ];
 
         const translatedMatrix = new Float32Array(16);
-        mat4.translate(translatedMatrix, matrix, translation as [number, number, number]);
+        mat4.translate(translatedMatrix, matrix, translation);
         return translatedMatrix;
     }
 
@@ -1782,7 +1782,7 @@ class Painter {
         const allDefines = globalDefines.concat(defines || []);
 
         const shaderSource = this.getShaderSource(name);
-        const uniforms = ((programUniforms as Record<string, (context: Context) => UniformBindings>)[name] || (HD.programUniforms as Record<string, (context: Context) => UniformBindings>)[name] || ((Standard as {programUniforms?: Record<string, (context: Context) => UniformBindings>}).programUniforms || {})[name]) as (context: Context) => UniformBindings;
+        const uniforms = ((programUniforms as Record<string, (context: Context) => UniformBindings>)[name] || (HD.programUniforms as Record<string, (context: Context) => UniformBindings>)[name] || ((Standard as {programUniforms?: Record<string, (context: Context) => UniformBindings>}).programUniforms || {})[name]);
         const key = Program.cacheKey(shaderSource, name, allDefines, config);
 
         if (!this.cache[key]) {

@@ -431,7 +431,7 @@ function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, 
     }
     const rasterColorMix = adjustColorMix(rasterConfig.mix);
 
-    const uniformValues = rasterPoleUniformValues(painter, projMatrix, normalizeMatrix, globeMatrix as Float32Array, globeToMercatorTransition(painter.transform.zoom), fade, layer, [0, 0], elevation, RASTER_COLOR_TEXTURE_UNIT, rasterColorMix, rasterConfig.offset, rasterConfig.range, emissiveStrength);
+    const uniformValues = rasterPoleUniformValues(painter, projMatrix, normalizeMatrix, globeMatrix, globeToMercatorTransition(painter.transform.zoom), fade, layer, [0, 0], elevation, RASTER_COLOR_TEXTURE_UNIT, rasterColorMix, rasterConfig.offset, rasterConfig.range, emissiveStrength);
     const program = painter.getOrCreateProgram('raster', {defines});
 
     painter.uploadCommonUniforms(context, program, null);
@@ -491,7 +491,7 @@ function getTextureDescriptor(
     if (!tile) return;
 
     if (source instanceof RasterArrayTileSource && tile instanceof RasterArrayTile) {
-        return source.getTextureDescriptor(tile, layer, true) as TextureDescriptor;
+        return source.getTextureDescriptor(tile, layer, true);
     }
 
     return {

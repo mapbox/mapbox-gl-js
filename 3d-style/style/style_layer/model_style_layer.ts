@@ -302,7 +302,7 @@ export function loadMatchingModelFeature(bucket: Tiled3dModelBucket, featureInde
     const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
 
     const checkNode = function (n: ModelNode) {
-        const worldViewProjectionForNode = mat4.multiply([] as unknown as mat4, modelMatrix, n.globalMatrix);
+        const worldViewProjectionForNode = mat4.multiply([], modelMatrix, n.globalMatrix);
         mat4.multiply(worldViewProjectionForNode, transform.expandedFarZProjMatrix, worldViewProjectionForNode);
         for (let i = 0; i < n.meshes.length; ++i) {
             const mesh = n.meshes[i];

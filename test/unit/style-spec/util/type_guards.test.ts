@@ -1,4 +1,4 @@
-/* eslint-disable no-new-wrappers */
+
 import {test, expect, assertType, expectTypeOf} from 'vitest';
 import {getType, isObject, isString, isNumber, isBoolean} from '../../../../src/style-spec/util/get_type';
 

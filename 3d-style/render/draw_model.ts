@@ -272,7 +272,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     if (shadowRenderer) { shadowRenderer.useNormalOffset = false; }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
+    setupMeshDraw((programOptions.defines), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
 
     let fogMatrix: mat4 | null = null;
     if (fog) {
@@ -1420,7 +1420,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         }
 
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                        setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
+                        setupMeshDraw((programOptions.defines), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
                         if (!hasMapboxFeatures) {
                             programOptions.defines.push('DIFFUSE_SHADED');
                         }

@@ -10,7 +10,7 @@ export default function throttle(fn: () => void, time: number): () => number | n
         timerId = null;
         if (pending) {
             fn();
-            timerId = setTimeout(later, time) as unknown as number;
+            timerId = setTimeout(later, time);
             pending = false;
         }
     };

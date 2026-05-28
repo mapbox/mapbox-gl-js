@@ -6,7 +6,7 @@
  *    - Particular, named StructArray subclasses, when fancy struct accessors are needed (e.g. CollisionBoxArray)
  */
 
-'use strict'; // eslint-disable-line strict
+'use strict';
 
 import fs from 'fs';
 import {compile} from 'yeahjs';
@@ -50,7 +50,7 @@ function normalizeMembers(members: StructArrayMember[], usedTypes: Set<string | 
         return Object.assign(member, {
             size: sizeOf(member.type),
             view: member.type.toLowerCase()
-        }) as StructArrayMember;
+        });
     });
 }
 

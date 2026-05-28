@@ -281,7 +281,7 @@ export class DevTools implements IControl {
                 return this._createFolderHandle(sub);
             },
             addReadonly: <T extends object>(target: T, key: keyof T, params?: BindingParams): BindingApi => {
-                return folder.addBinding(target, key, Object.assign({}, params, {readonly: true}) as BindingParams);
+                return folder.addBinding(target, key, Object.assign({}, params, {readonly: true}));
             },
             folder
         };

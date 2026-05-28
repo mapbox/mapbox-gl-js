@@ -122,7 +122,7 @@ function parseTokens(s: string, tokens: number[]) {
             i += 3;
             return arr;
         }
-        /* eslint-disable no-new-wrappers */
+
         if (type === STRING) return setLine(new String(JSON.parse(s.slice(start, end))), line);
         if (type === NUMBER) return setLine(new Number(+s.slice(start, end)), line);
         if (type === TRUE)   return setLine(new Boolean(true), line);

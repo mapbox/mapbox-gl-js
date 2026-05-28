@@ -534,7 +534,7 @@ class CollisionIndex implements CollisionDetector {
         const p = [x, y, z, 1];
         let behindFog = false;
         if (z || this.transform.pitch > 0) {
-            vec4.transformMat4(p as [number, number, number, number], p as [number, number, number, number], posMatrix);
+            vec4.transformMat4(p, p, posMatrix);
             // Do not perform symbol occlusion on globe due to fog fixed range
             const isGlobe = bucketProjection.name === 'globe';
             if (this.fogState && tileID && !isGlobe) {

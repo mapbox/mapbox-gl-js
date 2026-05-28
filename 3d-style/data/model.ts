@@ -359,7 +359,7 @@ export default class Model {
     }
 
     computeBoundsAndApplyParent() {
-        const localMatrix = mat4.identity([] as unknown as mat4);
+        const localMatrix = mat4.identity([]);
         this.aabb = new Aabb([Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]);
         for (const node of this.nodes) {
             this._applyTransformations(node, localMatrix);

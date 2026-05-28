@@ -506,7 +506,7 @@ describe('SymbolPropertyBinderUBO', () => {
 
             // Simulate a layer update — sets cachedConstantUniforms to null
             const canonical = new CanonicalTileID(0, 0, 0);
-            binder.updateDynamicExpressions(layer, null as unknown as VectorTileLayer, canonical, [], {});
+            binder.updateDynamicExpressions(layer, null, canonical, [], {});
             expect(binder.cachedConstantUniforms).toBeNull();
 
             const cv2 = binder.getConstantUniformValues(10);

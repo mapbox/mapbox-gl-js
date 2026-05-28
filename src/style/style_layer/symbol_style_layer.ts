@@ -24,7 +24,6 @@ import Literal from '../../style-spec/expression/definitions/literal';
 import ProgramConfiguration from '../../data/program_configuration';
 
 import type {
-    DataDrivenProperty,
     PropertyValue,
     ConfigOptions, Properties,
     Transitionable,
@@ -241,7 +240,7 @@ class SymbolStyleLayer extends StyleLayer {
                                                           overriden.value.interpolationType) as CompositeExpression);
             }
             (this.paint._values as unknown as Record<string, PossiblyEvaluatedPropertyValue<unknown>>)[overridable] =
-                new PossiblyEvaluatedPropertyValue(overriden.property as DataDrivenProperty<unknown>,
+                new PossiblyEvaluatedPropertyValue(overriden.property,
                                                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                                                    expression,
                                                    overriden.parameters);

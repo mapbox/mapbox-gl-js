@@ -389,7 +389,7 @@ export default class MapWorker {
         if (!workerSources[mapId])
             workerSources[mapId] = {};
         if (!workerSources[mapId][scope])
-            workerSources[mapId][scope] = {} as Record<WorkerSourceType, {[sourceId: string]: WorkerSource}>;
+            workerSources[mapId][scope] = {};
         if (!workerSources[mapId][scope][type])
             workerSources[mapId][scope][type] = {};
 

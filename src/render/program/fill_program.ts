@@ -102,7 +102,7 @@ const fillOutlinePatternUniforms = (context: Context): FillOutlinePatternUniform
 });
 
 const fillUniformValues = (matrix: mat4, emissiveStrength: number, groundShadowFactor: [number, number, number]): UniformValues<FillUniformsType> => ({
-    'u_matrix': matrix as Float32Array,
+    'u_matrix': matrix,
     'u_emissive_strength': emissiveStrength,
     'u_ground_shadow_factor': groundShadowFactor,
     'u_opacity_multiplier': 1,
@@ -126,7 +126,7 @@ const fillOutlineUniformValues = (
     drawingBufferSize: [number, number],
     groundShadowFactor: [number, number, number],
 ): UniformValues<FillOutlineUniformsType> => ({
-    'u_matrix': matrix as Float32Array,
+    'u_matrix': matrix,
     'u_world': drawingBufferSize,
     'u_emissive_strength': emissiveStrength,
     'u_ground_shadow_factor': groundShadowFactor,

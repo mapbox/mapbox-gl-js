@@ -2568,7 +2568,7 @@ class Transform {
             mat4.identity(this._mat4Scratch);
             const adjustments = this._mat4Scratch;
             mat4.translate(adjustments, adjustments, [mc.x * this.worldSize, mc.y * this.worldSize, 0]);
-            mat4.multiply(adjustments, adjustments, getProjectionAdjustments(this) as mat4);
+            mat4.multiply(adjustments, adjustments, getProjectionAdjustments(this));
             mat4.translate(adjustments, adjustments, [-mc.x * this.worldSize, -mc.y * this.worldSize, 0]);
             mat4.multiply(m, m, adjustments);
             mat4.multiply(worldToClipPerspective, worldToClipPerspective, adjustments);

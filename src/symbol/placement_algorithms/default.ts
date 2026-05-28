@@ -271,8 +271,8 @@ export class DefaultPlacementAlgorithm implements PlacementAlgorithm {
                     };
 
                     placeTextForPlacementModes(
-                        (placeHorizontal as () => Partial<PlacedCollisionBox>),
-                        (placeVertical as () => Partial<PlacedCollisionBox>),
+                        (placeHorizontal),
+                        (placeVertical),
                     );
 
                     const isPlaced = placed && placed.box && placed.box.length;
@@ -310,7 +310,7 @@ export class DefaultPlacementAlgorithm implements PlacementAlgorithm {
                                 partiallyEvaluatedTextSize, partiallyEvaluatedIconSize);
 
                             if (result) {
-                                placedBox = (result.placedGlyphBoxes as Partial<PlacedCollisionBox>);
+                                placedBox = (result.placedGlyphBoxes);
                                 if (placedBox && placedBox.box && placedBox.box.length) {
                                     placeText = true;
                                     shift = result.shift;

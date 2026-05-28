@@ -171,7 +171,7 @@ export function setupIntegrationTestsMiddlewares({reportPath, suiteName}: {
             });
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
-            server.middlewares.use('/mapbox-gl-styles', serveStatic(resolve(__dirname, 'node_modules/mapbox-gl-styles'), staticCacheOptions));
+            server.middlewares.use('/mapbox-gl-styles', serveStatic(resolve(__dirname, 'node_modules/@mapbox/mapbox-gl-styles'), staticCacheOptions));
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
             server.middlewares.use('/mvt-fixtures', serveStatic(resolve(__dirname, 'node_modules/@mapbox/mvt-fixtures'), staticCacheOptions));
         }

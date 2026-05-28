@@ -23,7 +23,7 @@ function createMockGlyphRange(glyphIds: number[], ascender = 1000, descender = -
             metrics: {width: 10, height: 10, left: 0, top: 0, advance: 12}
         };
     }
-    return {glyphs, ascender, descender} as unknown as GlyphRange;
+    return {glyphs, ascender, descender} as unknown;
 }
 
 const createLoadGlyphRangeStub = (impl: typeof GlyphLoader.loadGlyphRange) => {

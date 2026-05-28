@@ -68,7 +68,7 @@ class Snow extends Evented {
     }
 
     get(): SnowSpecification {
-        return this._transitionable.serialize() as SnowSpecification;
+        return this._transitionable.serialize();
     }
 
     set(snow?: SnowSpecification, configOptions?: ConfigOptions | null, options: StyleSetterOptions = {}) {

@@ -66,7 +66,7 @@ export function getBoxBottomFace(corners: Array<vec3>, meterToMercator: number):
         const b: [number, number, number] = [p2[0] - p0[0], p2[1] - p0[1], meterToMercator * (p2[2] - p0[2])];
         const normal = vec3.cross(a, a, b);
         vec3.normalize(normal, normal);
-        face.dotProductWithUp = vec3.dot(normal, zUp as [number, number, number]);
+        face.dotProductWithUp = vec3.dot(normal, zUp);
     }
 
     boxFaces.sort((a, b) => {

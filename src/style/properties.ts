@@ -235,10 +235,10 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
                 if (name.endsWith('-transition')) {
                     const propName = name.slice(0, -'-transition'.length) as keyof Props;
                     if (specProperties[propName]) {
-                        this.setTransition(propName, value as TransitionSpecification);
+                        this.setTransition(propName, value);
                     }
                 } else if (Object.hasOwn(specProperties, name)) { // skip unrecognized properties
-                    this.setValue(name as unknown as keyof Props, value);
+                    this.setValue(name, value);
                 }
             }
         }

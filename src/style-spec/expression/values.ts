@@ -131,11 +131,10 @@ export function typeOf(value: Value): Type {
 }
 
 export function toString(value: Value): string {
-    const type = typeof value;
     if (value === null) {
         return '';
-    } else if (type === 'string' || type === 'number' || type === 'boolean') {
-        return String(value as string | number | boolean);
+    } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+        return String(value);
     } else if (value instanceof Formatted || value instanceof ResolvedImage || value instanceof Color) {
         return value.toString();
     } else {

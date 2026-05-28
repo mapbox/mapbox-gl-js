@@ -124,8 +124,8 @@ const lineUniformValues = (
     // The values were found experimentally, to make an elevated line look good over a terrain with high elevation differences.
     const zbiasFactor = transform.pitch < 15.0 ? lerp(0.07, 0.7, clamp((14.0 - transform.zoom) / (14.0 - 9.0), 0.0, 1.0)) : 0.07;
     return {
-        'u_matrix': calculateMatrix(painter, tile, layer, matrix) as Float32Array,
-        'u_pixels_to_tile_units': pixelsToTileUnits as Float32Array,
+        'u_matrix': calculateMatrix(painter, tile, layer, matrix),
+        'u_pixels_to_tile_units': pixelsToTileUnits,
         'u_device_pixel_ratio': pixelRatio,
         'u_width_scale': widthScale,
         'u_floor_width_scale': floorWidthScale,
@@ -169,10 +169,10 @@ const linePatternUniformValues = (
     // Increase zbias factor for low pitch values based on the zoom level. Lower zoom level increases the zbias factor.
     // The values were found experimentally, to make an elevated line look good over a terrain with high elevation differences.
     return {
-        'u_matrix': calculateMatrix(painter, tile, layer, matrix) as Float32Array,
+        'u_matrix': calculateMatrix(painter, tile, layer, matrix),
         'u_texsize': tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0],
         // camera zoom ratio
-        'u_pixels_to_tile_units': transform.calculatePixelsToTileUnitsMatrix(tile) as Float32Array,
+        'u_pixels_to_tile_units': transform.calculatePixelsToTileUnitsMatrix(tile),
         'u_device_pixel_ratio': pixelRatio,
         'u_width_scale': widthScale,
         'u_floor_width_scale': floorWidthScale,

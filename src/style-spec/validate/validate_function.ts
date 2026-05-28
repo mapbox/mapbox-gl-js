@@ -99,7 +99,7 @@ export default function validateFunction(options: FunctionValidatorOptions): Val
         errors = errors.concat(validateArray({
             key: options.key,
             value,
-            valueSpec: options.valueSpec as Extract<StylePropertySpecification, {type: 'array'}>,
+            valueSpec: options.valueSpec,
             style: options.style,
             styleSpec: options.styleSpec,
             arrayElementValidator: validateFunctionStop
@@ -207,7 +207,8 @@ export default function validateFunction(options: FunctionValidatorOptions): Val
         }
 
         if (functionType === 'categorical' && type === 'number' && (typeof value !== 'number' || !isFinite(value) || Math.floor(value) !== value)) {
-            return [new ValidationError(options.key, reportValue, `integer expected, found ${String(value as number)}`)];
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string -- value narrowed to number|string|boolean by the check above
+            return [new ValidationError(options.key, reportValue, `integer expected, found ${String(value)}`)];
         }
 
         if (functionType !== 'categorical' && type === 'number' && typeof value === 'number' && typeof previousStopDomainValue === 'number' && previousStopDomainValue !== undefined && value < previousStopDomainValue) {

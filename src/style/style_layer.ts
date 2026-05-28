@@ -35,7 +35,6 @@ import type Painter from '../render/painter';
 import type {LUT} from '../util/lut';
 import type {ImageId} from '../style-spec/expression/types/image_id';
 import type {ProgramName} from '../render/program';
-import type {AppearanceProps} from './appearance_properties';
 import type {QueryResult} from '../source/query_features';
 
 const TRANSITION_SUFFIX = '-transition';
@@ -163,7 +162,7 @@ class StyleLayer extends Evented {
             }
             for (const property in layer.layout) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                this.setLayoutProperty(property as keyof LayoutSpecification, layer.layout[property]);
+                this.setLayoutProperty(property, layer.layout[property]);
             }
             this.expressionDependencies.configDependencies = new Set([...this.expressionDependencies.configDependencies, ...this._transitionablePaint.configDependencies]);
             this.expressionDependencies.isIndoorDependent = this.expressionDependencies.isIndoorDependent || this._transitionablePaint.isIndoorDependent();
@@ -214,7 +213,7 @@ class StyleLayer extends Evented {
     setAppearances(appearances: AppearanceSpecification[]) {
         this.appearances = [];
         appearances.forEach(a => {
-            this.appearances.push(new SymbolAppearance(a.condition, a.name, a.properties as AppearanceProps, this.scope, this.options, this.iconImageUseTheme));
+            this.appearances.push(new SymbolAppearance(a.condition, a.name, a.properties, this.scope, this.options, this.iconImageUseTheme));
         });
         this.appearancesVersion++;
     }

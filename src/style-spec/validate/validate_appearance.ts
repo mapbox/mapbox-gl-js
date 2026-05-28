@@ -90,7 +90,7 @@ function validateCondition(options: AppearanceValidatorOptions): Array<Validatio
     errors.push(...validateExpression({
         key: options.key,
         value: condition,
-        valueSpec: (latest['appearance'] as Record<string, unknown>)['condition'] as StylePropertySpecification,
+        valueSpec: (latest['appearance'] as Record<string, unknown>)['condition'],
         expressionContext: 'appearance'
     }));
 

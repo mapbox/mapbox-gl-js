@@ -47,8 +47,10 @@ let contextDepth = 0;
 
 function acquireContext(width: number, height: number): Context {
     if (contextDepth >= contextPool.length) {
-        const canvas: HTMLCanvasElement | OffscreenCanvas = offscreenCanvasSupported() ? new OffscreenCanvas(width, height) : document.createElement('canvas');
-        contextPool.push(canvas.getContext('2d', {willReadFrequently: true}) as Context);
+        const ctx = offscreenCanvasSupported() ?
+            new OffscreenCanvas(width, height).getContext('2d', {willReadFrequently: true}) :
+            document.createElement('canvas').getContext('2d', {willReadFrequently: true});
+        contextPool.push(ctx);
     }
     const ctx = contextPool[contextDepth++];
     ctx.canvas.width = width;
@@ -86,7 +88,7 @@ export function renderIcon(icon: Icon, options: RasterizationOptions): ImageData
 
     const context = acquireContext(renderedWidth, renderedHeight);
 
-    renderNodes(context, finalTr, tree, tree as unknown as Group, colorReplacements);
+    renderNodes(context, finalTr, tree, tree, colorReplacements);
     const imageData = context.getImageData(0, 0, renderedWidth, renderedHeight);
     releaseContext();
     return imageData;

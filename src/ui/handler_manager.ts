@@ -562,12 +562,12 @@ class HandlerManager {
                 // This scenario is possible if user is trying to zoom towards a feature like a hill or a mountain.
                 // Convert zoomDelta to a movement vector as if the camera would be orbiting around the picked point
                 const movement = tr.zoomDeltaToMovement(pickedPosition, zoomDelta);
-                vec3.scale(zoomVec as [number, number, number], aroundRay.dir, movement);
+                vec3.scale(zoomVec, aroundRay.dir, movement);
             }
         }
 
         // Mutate camera state via CameraAPI
-        const translation = vec3.add(panVec as [number, number, number], panVec as [number, number, number], zoomVec as [number, number, number]);
+        const translation = vec3.add(panVec, panVec, zoomVec);
         tr._translateCameraConstrained(translation);
 
         if (zoomDelta && Math.abs(tr.zoom - originalZoom) > 0.0001) {

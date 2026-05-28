@@ -944,7 +944,7 @@ class SourceCache extends Evented {
             this._timers[id] = setTimeout(() => {
                 this._reloadTile(id, 'expired');
                 delete this._timers[id];
-            }, expiryTimeout) as unknown as number;
+            }, expiryTimeout);
         }
     }
 

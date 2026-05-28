@@ -15,7 +15,7 @@ process.on('unhandledRejection', (/** @type {Error} */ error) => {
 });
 
 const require = createRequire(import.meta.url);
-const stylePath = require.resolve('mapbox-gl-styles/styles/basic-v9.json');
+const stylePath = require.resolve('@mapbox/mapbox-gl-styles/styles/basic-v9.json');
 
 try {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

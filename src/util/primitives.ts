@@ -167,7 +167,7 @@ function intersectsFrustum(frustum: Frustum, aabbPoints: Array<vec3>): number {
         let pointsInside = 0;
 
         for (let i = 0; i < aabbPoints.length; i++) {
-            pointsInside += +(vec3.dot(plane as vec3, aabbPoints[i]) + plane[3] >= 0);
+            pointsInside += +(vec3.dot(plane, aabbPoints[i]) + plane[3] >= 0);
         }
 
         if (pointsInside === 0)
@@ -302,7 +302,7 @@ class Frustum {
             const b = vec3.sub([], frustumCoords[p[2]], frustumCoords[p[1]]);
             const n = vec3.normalize([], vec3.cross([], a, b)) as [number, number, number];
             const d = -vec3.dot(n, frustumCoords[p[1]]);
-            return n.concat(d) as vec4;
+            return n.concat(d);
         }) as FrustumPlanes;
 
         const frustumPoints: vec3[] = [];

@@ -152,6 +152,7 @@ export default tseslint.config(
             }],
             'template-curly-spacing': 'error',
             'no-useless-escape': 'off',
+            'no-useless-assignment': 'off',
             'no-multiple-empty-lines': ['error', {max: 1}],
             'no-restricted-syntax': ['error',
                 {
@@ -252,6 +253,7 @@ export default tseslint.config(
             '@stylistic/arrow-parens': 'off',
             '@stylistic/indent': ['error', 4, {
                 flatTernaryExpressions: true,
+                SwitchCase: 0,
                 CallExpression: {arguments: 'off'},
                 FunctionDeclaration: {parameters: 'off'},
             }],

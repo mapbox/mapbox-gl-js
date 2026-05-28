@@ -112,7 +112,7 @@ export default class HandlerInertia {
         const lastEntry = this._inertiaBuffer.at(-1);
         const duration = (lastEntry.time - this._inertiaBuffer[0].time);
 
-        const easeOptions: EasingOptions & {easeId?: string; noMoveStart?: boolean} = {} as EasingOptions & {easeId?: string; noMoveStart?: boolean};
+        const easeOptions: EasingOptions & {easeId?: string; noMoveStart?: boolean} = {};
 
         if (deltas.pan.mag()) {
             const result = calculateEasing(deltas.pan.mag(), duration, Object.assign({}, defaultPanInertiaOptions, panInertiaOptions || {}));

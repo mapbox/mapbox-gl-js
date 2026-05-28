@@ -57,8 +57,8 @@ test('SymbolBucket', () => {
     // add feature from bucket A
     bucketA.populate([{feature}], options);
     const bucketAData = performSymbolLayout(bucketA, stacks, glyphPositions, null, null, null, null, null, null, projection);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    postRasterizationSymbolLayout(bucketA as SymbolBucket, bucketAData, null, null, null, null, projection, null, null, {});
+
+    postRasterizationSymbolLayout(bucketA, bucketAData, null, null, null, null, projection, null, null, {});
 
     const tileA = new Tile(tileID, 512, 0, painter);
     tileA.latestFeatureIndex = new FeatureIndex(tileID);
@@ -68,8 +68,8 @@ test('SymbolBucket', () => {
     // add same feature from bucket B
     bucketB.populate([{feature}], options);
     const bucketBData = performSymbolLayout(bucketB, stacks, glyphPositions, null, null, null, null, null, null, projection);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    postRasterizationSymbolLayout(bucketB as SymbolBucket, bucketBData, null, null, null, null, projection, null, null, {});
+
+    postRasterizationSymbolLayout(bucketB, bucketBData, null, null, null, null, projection, null, null, {});
     const tileB = new Tile(tileID, 512, 0, painter);
     tileB.buckets = {test: bucketB};
     tileB.collisionBoxArray = collisionBoxArray;

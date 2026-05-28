@@ -628,7 +628,7 @@ export class Terrain extends Elevation {
 
         const coords = this.proxyCoords = proxySourceCache.getIds().map((id) => {
             const tileID = proxySourceCache.getTileByID(id).tileID;
-            tileID.projMatrix = tr.calculateProjMatrix(tileID.toUnwrapped()) as Float32Array;
+            tileID.projMatrix = tr.calculateProjMatrix(tileID.toUnwrapped());
             return tileID;
         });
         sortByDistanceToCamera(coords, this.painter);
@@ -827,7 +827,7 @@ export class Terrain extends Elevation {
             uniforms['u_meter_to_dem'] = meterToDEM;
         }
         if (options && options.labelPlaneMatrixInv) {
-            uniforms['u_label_plane_matrix_inv'] = options.labelPlaneMatrixInv as Float32Array;
+            uniforms['u_label_plane_matrix_inv'] = options.labelPlaneMatrixInv;
         }
         program.setTerrainUniformValues(context, uniforms);
 
@@ -1520,7 +1520,7 @@ export class Terrain extends Elevation {
         const camera = transform._camera.position;
         const mercatorZScale = mercatorZfromAltitude(1, transform.center.lat);
         const p: [number, number, number, number] = [camera[0], camera[1], camera[2] / mercatorZScale, 0.0];
-        const dir = vec3.subtract([], far.slice(0, 3) as vec3, p);
+        const dir = vec3.subtract([], far.slice(0, 3), p);
         vec3.normalize(dir, dir);
 
         const exaggeration = this._exaggeration;

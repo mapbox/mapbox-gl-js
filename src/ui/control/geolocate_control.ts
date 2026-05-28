@@ -470,7 +470,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             PERMISSION_DENIED: error.PERMISSION_DENIED,
             POSITION_UNAVAILABLE: error.POSITION_UNAVAILABLE,
             TIMEOUT: error.TIMEOUT
-        } as GeolocationPositionError));
+        }));
 
         this._finish();
     }

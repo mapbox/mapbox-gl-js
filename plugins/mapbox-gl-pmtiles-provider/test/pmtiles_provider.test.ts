@@ -5,7 +5,7 @@ describe('pmtiles_provider', () => {
     describe('PMTilesProvider', () => {
         test('constructor without url throws', async () => {
             const {default: PMTilesProvider} = await import('../src/pmtiles_provider');
-            expect(() => new PMTilesProvider({type: 'vector'} as {type: 'vector'; url: string})).toThrow('PMTilesProvider requires a source url');
+            expect(() => new PMTilesProvider({type: 'vector'})).toThrow('PMTilesProvider requires a source url');
         });
 
         test('load delegates to PMTiles.getTileJson with the source URL', async () => {

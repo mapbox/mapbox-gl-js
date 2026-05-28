@@ -20,7 +20,7 @@ const debugUniforms = (context: Context): DebugUniformsType => ({
 });
 
 const debugUniformValues = (matrix: mat4, color: PremultipliedRenderColor, scaleRatio: number = 1): UniformValues<DebugUniformsType> => ({
-    'u_matrix': matrix as Float32Array,
+    'u_matrix': matrix,
     'u_color': color,
     'u_overlay': 0,
     'u_overlay_scale': scaleRatio

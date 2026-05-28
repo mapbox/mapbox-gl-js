@@ -103,7 +103,7 @@ export default class Projection {
     pointCoordinate3D(tr: Transform, x: number, y: number): vec3 | null | undefined {
         const p = new Point(x, y);
         if (tr.elevation) {
-            return tr.elevation.pointCoordinate(p) as vec3;
+            return tr.elevation.pointCoordinate(p);
         } else {
             const mc = this.pointCoordinate(tr, p.x, p.y, 0);
             return [mc.x, mc.y, mc.z];

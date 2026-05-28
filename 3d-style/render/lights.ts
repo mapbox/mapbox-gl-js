@@ -55,9 +55,9 @@ function calculateGroundRadiance(dir: vec3, dirColor: [number, number, number], 
     const ambientDirectionalFactor = calculateAmbientDirectionalFactor(dir, groundNormal, dirColor);
 
     const ambientContrib: [number, number, number] = [0, 0, 0];
-    vec3.scale(ambientContrib, ambientColor.slice(0, 3) as vec3, ambientDirectionalFactor);
+    vec3.scale(ambientContrib, ambientColor.slice(0, 3), ambientDirectionalFactor);
     const dirContrib: [number, number, number] = [0, 0, 0];
-    vec3.scale(dirContrib, dirColor.slice(0, 3) as vec3, dir[2]);
+    vec3.scale(dirContrib, dirColor.slice(0, 3), dir[2]);
 
     const radiance: [number, number, number] = [0, 0, 0];
     vec3.add(radiance, ambientContrib, dirContrib);
