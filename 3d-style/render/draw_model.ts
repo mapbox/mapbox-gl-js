@@ -348,6 +348,13 @@ function prepareMeshes(painter: Painter, node: ModelNode, modelMatrix: mat4, pro
     const isShadowPass = painter.renderPass === 'shadow';
     const isLightMesh = node.isGeometryBloom ? node.isGeometryBloom : false;
 
+    if (node.minZoom !== undefined) {
+        if (painter.transform.zoom < node.minZoom) return;
+    }
+    if (node.maxZoom !== undefined) {
+        if (painter.transform.zoom > node.maxZoom) return;
+    }
+
     // Skip bloom geometry meshes for shadow pass
     if (isLightMesh && isShadowPass) return;
 

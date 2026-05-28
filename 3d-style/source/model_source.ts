@@ -199,7 +199,9 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         Object.entries(overrides).forEach(([key, value]) => {
 
             const nodeOverride: NodeOverride = {
-                orientation: [0, 0, 0]
+                orientation: [0, 0, 0],
+                minZoom: undefined,
+                maxZoom: undefined
             };
 
             if (Object.hasOwn(value, 'orientation')) {
@@ -207,6 +209,12 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
                 if (orientation) {
                     nodeOverride.orientation = orientation;
                 }
+            }
+            if (Object.hasOwn(value, 'minzoom')) {
+                nodeOverride.minZoom = value['minzoom'] as number;
+            }
+            if (Object.hasOwn(value, 'maxzoom')) {
+                nodeOverride.maxZoom = value['maxzoom'] as number;
             }
 
             model.nodeOverrides.set(key, nodeOverride);

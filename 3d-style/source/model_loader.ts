@@ -368,6 +368,12 @@ function convertNode(nodeDesc: GLTFNode, gltf: GLTF, meshes: Array<Array<Mesh>>)
         if (extras['MAPBOX_geometry_bloom']) {
             node.isGeometryBloom = extras['MAPBOX_geometry_bloom'] as boolean;
         }
+        if (extras['MAPBOX_zoom_min']) {
+            node.minZoom = extras['MAPBOX_zoom_min'] as number;
+        }
+        if (extras['MAPBOX_zoom_max']) {
+            node.maxZoom = extras['MAPBOX_zoom_max'] as number;
+        }
     }
 
     if (children) {
