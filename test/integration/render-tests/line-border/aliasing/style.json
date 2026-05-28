@@ -2,18 +2,17 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 512,
-      "height": 512,
-      "allowed": 0.0001
+      "width": 1024,
+      "height": 768
     }
   },
   "center": [
-    11.5498,
-    48.1324
+    11.555210899999992,
+    48.13503319999998
   ],
-  "zoom": 15.901,
-  "bearing": 355.731,
-  "pitch": 75.851,
+  "zoom": 15.689,
+  "bearing": 44.45400000000001,
+  "pitch": 82.847,
   "sources": {
     "geojson1": {
       "type": "geojson",
@@ -67,38 +66,63 @@
       }
     },
     {
-      "id": "line-with-border-0",
+      "id": "line-0",
       "type": "line",
       "source": "geojson1",
       "paint": {
         "line-offset": 0,
-        "line-width": 30,
-        "line-border-width": 2.5,
+        "line-width": 15,
+        "line-border-width": 2.0,
+        "line-color": "white",
+        "line-border-color": "black"
+      }
+    },
+    {
+      "id": "line-1",
+      "type": "line",
+      "source": "geojson1",
+      "paint": {
+        "line-offset": -30,
+        "line-width": 10,
+        "line-gap-width": 10,
+        "line-border-width": 2.0,
+        "line-color": "red",
+        "line-border-color": "black"
+      }
+    },
+    {
+      "id": "line-2",
+      "type": "line",
+      "source": "geojson1",
+      "paint": {
+        "line-offset": -60,
+        "line-width": 20,
+        "line-border-width": 4.0,
         "line-color": "blue",
         "line-border-color": "black"
       }
     },
     {
-      "id": "line-with-border-1",
+      "id": "line-3",
       "type": "line",
       "source": "geojson1",
       "paint": {
-        "line-offset": -50,
-        "line-width": 30,
-        "line-border-width": 3.0,
-        "line-color": "orange",
+        "line-offset": 30,
+        "line-width": 20,
+        "line-border-width": 2.0,
+        "line-color": "black",
         "line-border-color": "black"
       }
     },
     {
-      "id": "line-with-border-2",
+      "id": "line-4",
       "type": "line",
       "source": "geojson1",
       "paint": {
-        "line-offset": -100,
-        "line-width": 30,
-        "line-border-width": 3.5,
-        "line-color": "red",
+        "line-offset": 60,
+        "line-width": 20,
+        "line-border-width": 4.0,
+        "line-color": "blue",
         "line-border-color": "black"
       }
     }
