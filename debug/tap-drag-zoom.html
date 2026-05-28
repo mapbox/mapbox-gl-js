@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug - tap drag zoom</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+    <style>
+        body { margin: 0; padding: 0; font-family: sans-serif; }
+        html, body, #map { height: 100%; }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1;
+            background: rgba(255,255,255,0.9);
+            padding: 12px 16px;
+            border-radius: 6px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 260px;
+        }
+        #ui h3 { margin: 0 0 4px; font-size: 14px; }
+        #ui label { font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        #log {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1;
+            background: rgba(0,0,0,0.75);
+            color: #0f0;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            max-width: 340px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+<div id="map"></div>
+
+<div id="ui">
+    <h3>Tap-drag zoom debug</h3>
+    <label>
+        <input type="checkbox" id="toggle-tap-drag-zoom" checked>
+        tapDragZoom enabled
+    </label>
+    <label>
+        <input type="checkbox" id="auto-disable-coarse">
+        Auto-disable on fine (mouse) pointer
+    </label>
+    <div id="pointer-type" style="font-size:12px;color:#555;">Pointer: —</div>
+</div>
+
+<div id="log"></div>
+
+<script type="module">
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import {getAccessToken} from './access_token_generated.js';
+
+const map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
+    container: 'map',
+    devtools: true,
+    zoom: 12.5,
+    center: [-122.4194, 37.7749],
+    hash: true,
+});
+
+// --- logging ---
+const logEl = document.getElementById('log');
+function log(msg) {
+    const line = document.createElement('div');
+    line.textContent = `${new Date().toLocaleTimeString()} ${msg}`;
+    logEl.appendChild(line);
+    logEl.scrollTop = logEl.scrollHeight;
+    if (logEl.children.length > 40) logEl.children[0].remove();
+}
+
+map.on('zoomstart', () => log('zoomstart'));
+map.on('zoom',      () => log(`zoom → ${map.getZoom().toFixed(3)}`));
+map.on('zoomend',   () => log('zoomend'));
+
+// --- toggle checkbox ---
+const toggleEl = document.getElementById('toggle-tap-drag-zoom');
+toggleEl.addEventListener('change', () => {
+    if (toggleEl.checked) {
+        map.touchZoomRotate.enableTapDragZoom();
+        log('tapDragZoom enabled');
+    } else {
+        map.touchZoomRotate.disableTapDragZoom();
+        log('tapDragZoom disabled');
+    }
+});
+
+// --- auto-disable on fine pointer ---
+const autoEl = document.getElementById('auto-disable-coarse');
+const pointerTypeEl = document.getElementById('pointer-type');
+
+function applyAutoDisable() {
+    if (!autoEl.checked) return;
+    const isCoarse = matchMedia('(pointer: coarse)').matches;
+    pointerTypeEl.textContent = `Pointer: ${isCoarse ? 'coarse (touch)' : 'fine (mouse)'}`;
+    if (isCoarse) {
+        map.touchZoomRotate.enableTapDragZoom();
+        toggleEl.checked = true;
+        log('auto: coarse pointer detected — tapDragZoom enabled');
+    } else {
+        map.touchZoomRotate.disableTapDragZoom();
+        toggleEl.checked = false;
+        log('auto: fine pointer detected — tapDragZoom disabled');
+    }
+}
+
+autoEl.addEventListener('change', () => {
+    if (autoEl.checked) applyAutoDisable();
+});
+
+// detect pointer type from first interaction
+window.addEventListener('pointerdown', (e) => {
+    pointerTypeEl.textContent = `Pointer: ${e.pointerType}`;
+    if (autoEl.checked) applyAutoDisable();
+}, {once: true});
+
+log('ready — try tap-then-tap-drag to zoom');
+</script>
+</body>
+</html>

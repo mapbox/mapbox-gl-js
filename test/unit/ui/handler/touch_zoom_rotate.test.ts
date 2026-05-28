@@ -175,6 +175,43 @@ test('TouchZoomRotateHandler starts zoom immediately when rotation disabled', ()
     map.remove();
 });
 
+test('TouchZoomRotateHandler does not fire tap-drag zoom when disableTapDragZoom() called', () => {
+    const map = createMap();
+    const target = map.getCanvas();
+    map.touchZoomRotate.disableTapDragZoom();
+
+    const zoom = vi.fn();
+    map.on('zoom', zoom);
+
+    // first tap
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.touchstart(target, {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: 0})]});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.touchend(target, {touches: [], changedTouches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: 0})]});
+    map._renderTaskQueue.run();
+
+    // second tap, holding and dragging vertically — would normally trigger tap-drag zoom
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.touchstart(target, {touches: [constructTouch(target, {target, identifier: 2, clientX: 0, clientY: 0})]});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.touchmove(target, {touches: [constructTouch(target, {target, identifier: 2, clientX: 0, clientY: 100})]});
+    map._renderTaskQueue.run();
+
+    expect(zoom).not.toHaveBeenCalled();
+    expect(map.touchZoomRotate.isEnabled()).toBeTruthy();
+
+    map.remove();
+});
+
+test('TouchZoomRotateHandler enableTapDragZoom restores the gesture after disableTapDragZoom', () => {
+    const map = createMap();
+    map.touchZoomRotate.disableTapDragZoom();
+    expect(map.handlers._handlersById.tapDragZoom.isEnabled()).toBeFalsy();
+    map.touchZoomRotate.enableTapDragZoom();
+    expect(map.handlers._handlersById.tapDragZoom.isEnabled()).toBeTruthy();
+    map.remove();
+});
+
 test('TouchZoomRotateHandler adds css class used for disabling default touch behavior in some browsers', () => {
     const map = createMap();
 

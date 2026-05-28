@@ -20,6 +20,7 @@ export default class TouchZoomRotateHandler {
     _touchRotate: TouchRotateHandler;
     _tapDragZoom: TapDragZoomHandler;
     _rotationDisabled: boolean;
+    _tapDragZoomDisabled: boolean;
     _enabled: boolean;
 
     /**
@@ -31,6 +32,7 @@ export default class TouchZoomRotateHandler {
         this._touchRotate = touchRotate;
         this._tapDragZoom = tapDragZoom;
         this._rotationDisabled = false;
+        this._tapDragZoomDisabled = false;
         this._enabled = true;
     }
 
@@ -48,7 +50,7 @@ export default class TouchZoomRotateHandler {
     enable(options?: TouchZoomRotateHandlerOptions) {
         this._touchZoom.enable(options);
         if (!this._rotationDisabled) this._touchRotate.enable(options);
-        this._tapDragZoom.enable();
+        if (!this._tapDragZoomDisabled) this._tapDragZoom.enable();
         this._el.classList.add('mapboxgl-touch-zoom-rotate');
     }
 
@@ -75,7 +77,7 @@ export default class TouchZoomRotateHandler {
     isEnabled(): boolean {
         return this._touchZoom.isEnabled() &&
             (this._rotationDisabled || this._touchRotate.isEnabled()) &&
-            this._tapDragZoom.isEnabled();
+            (this._tapDragZoomDisabled || this._tapDragZoom.isEnabled());
     }
 
     /**
@@ -111,5 +113,32 @@ export default class TouchZoomRotateHandler {
     enableRotation() {
         this._rotationDisabled = false;
         if (this._touchZoom.isEnabled()) this._touchRotate.enable();
+    }
+
+    /**
+     * Disables the "tap and drag to zoom" interaction (single-finger zoom by
+     * tapping, then on a second tap holding and dragging vertically), leaving
+     * pinch-zoom and pinch-rotate enabled. Useful on touchscreen-equipped
+     * desktops where the gesture can fire unintentionally from successive
+     * clicks.
+     *
+     * @example
+     * map.touchZoomRotate.disableTapDragZoom();
+     */
+    disableTapDragZoom() {
+        this._tapDragZoomDisabled = true;
+        this._tapDragZoom.disable();
+    }
+
+    /**
+     * Enables the "tap and drag to zoom" interaction.
+     *
+     * @example
+     * map.touchZoomRotate.enable();
+     * map.touchZoomRotate.enableTapDragZoom();
+     */
+    enableTapDragZoom() {
+        this._tapDragZoomDisabled = false;
+        if (this._touchZoom.isEnabled()) this._tapDragZoom.enable();
     }
 }
