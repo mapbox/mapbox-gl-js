@@ -238,6 +238,204 @@ describe('VectorTileSource', () => {
     testRemoteScheme('xyz', 'http://example.com/10/5/5.png');
     testRemoteScheme('tms', 'http://example.com/10/5/1018.png');
 
+    // Captures the `frcCoverage` block of params sent to the worker for a given painter state.
+    // Builds a real VectorTileSource and intercepts dispatcher.send before metadata loads,
+    // then drives a loadTile() and resolves with the captured params.
+    function captureFrcCoverageParams({painter, mapZoom, tileID}) {
+        return new Promise((resolve) => {
+            const source = createSource({
+                minzoom: 0,
+                maxzoom: 22,
+                tiles: ["http://example.com/{z}/{x}/{y}.png"]
+            });
+
+            // Augment the map stub with painter + transform.zoom so the inline IIFE
+            // in loadTile can read them. Existing helper only stubs the bare minimum.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            source.map.painter = painter;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            source.map.transform = Object.assign({}, source.map.transform, {zoom: mapZoom});
+
+            source.dispatcher = wrapDispatcher({
+                send(type, params) {
+                    if (type === 'loadTile') {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                        resolve(params.frcCoverage);
+                    }
+                }
+            });
+
+            source.on('data', (e) => {
+                if (e.sourceDataType === 'metadata') {
+                    source.loadTile({
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                        tileID,
+                        uid: 0,
+                        renderSourceType: 0,
+                    }, () => {});
+                }
+            });
+        });
+    }
+
+    describe('frcCoverage params', () => {
+        test('painter.frcCoverageFadeRange=null → frcCoverage=null (feature disabled)', async () => {
+            const frc = await captureFrcCoverageParams({
+                painter: {
+                    _debugParams: {showElevationIdDebug: false},
+                    frcCoverageFadeRange: null,
+                    frcCoverageSnapshot: null,
+                    frcCoverageSourceLayers: [],
+                },
+                mapZoom: 15,
+                tileID: new OverscaledTileID(15, 0, 15, 1, 1),
+            });
+            expect(frc).toBeNull();
+        });
+
+        test('mapZoom < fadeRange[0] → resolved=true (below coverage, no defer)', async () => {
+            const frc = await captureFrcCoverageParams({
+                painter: {
+                    _debugParams: {showElevationIdDebug: false},
+                    frcCoverageFadeRange: [14, 15],
+                    frcCoverageSnapshot: null,
+                    frcCoverageSourceLayers: ['road'],
+                },
+                mapZoom: 12, // below 14
+                tileID: new OverscaledTileID(12, 0, 12, 1, 1),
+            });
+            expect(frc).not.toBeNull();
+            expect(frc.resolved).toBe(true);
+            expect(frc.frcMask).toBeNull();
+        });
+
+        test('mapZoom >= fadeRange[0], snapshot=null → resolved=false (coverage still loading)', async () => {
+            const frc = await captureFrcCoverageParams({
+                painter: {
+                    _debugParams: {showElevationIdDebug: false},
+                    frcCoverageFadeRange: [14, 15],
+                    frcCoverageSnapshot: null,
+                    frcCoverageSourceLayers: ['road'],
+                },
+                mapZoom: 14.5,
+                tileID: new OverscaledTileID(14, 0, 14, 1, 1),
+            });
+            expect(frc.resolved).toBe(false);
+            expect(frc.frcMask).toBeNull();
+        });
+
+        test('tileZ < ceil(fadeRange[1]) → frcMask=null even with snapshot', async () => {
+            const snapshot = {
+                getFullCoverageMask: () => 0b1,
+                getTileOrParent: () => null,
+            };
+            const frc = await captureFrcCoverageParams({
+                painter: {
+                    _debugParams: {showElevationIdDebug: false},
+                    frcCoverageFadeRange: [14, 15],
+                    frcCoverageSnapshot: snapshot,
+                    frcCoverageSourceLayers: ['road'],
+                },
+                mapZoom: 14.5,
+                tileID: new OverscaledTileID(14, 0, 14, 1, 1),
+            });
+            expect(frc.frcMask).toBeNull();
+            // snapshot present means resolved=true
+            expect(frc.resolved).toBe(true);
+        });
+
+        test('tileZ >= ceil(fadeRange[1]), full coverage → frcMask from getFullCoverageMask()', async () => {
+            const snapshot = {
+                getFullCoverageMask: () => 0b101,
+                getTileOrParent: () => ({tileId: {z: 14, x: 0, y: 0}, polygons: [], frcMask: 0b101}),
+            };
+            const frc = await captureFrcCoverageParams({
+                painter: {
+                    _debugParams: {showElevationIdDebug: false},
+                    frcCoverageFadeRange: [14, 15],
+                    frcCoverageSnapshot: snapshot,
+                    frcCoverageSourceLayers: ['road'],
+                },
+                mapZoom: 15,
+                tileID: new OverscaledTileID(15, 0, 15, 1, 1),
+            });
+            expect(frc.frcMask).toBe(0b101);
+        });
+
+        test('tileZ >= ceil(fadeRange[1]), partial coverage → frcMask=null, polygons present', async () => {
+            const partialPolys = [{frcMask: 0b1, rings: []}];
+            const snapshot = {
+                getFullCoverageMask: () => null,
+                getTileOrParent: () => ({tileId: {z: 14, x: 0, y: 0}, polygons: partialPolys, frcMask: 0b1}),
+            };
+            const frc = await captureFrcCoverageParams({
+                painter: {
+                    _debugParams: {showElevationIdDebug: false},
+                    frcCoverageFadeRange: [14, 15],
+                    frcCoverageSnapshot: snapshot,
+                    frcCoverageSourceLayers: ['road'],
+                },
+                mapZoom: 15,
+                tileID: new OverscaledTileID(15, 0, 15, 1, 1),
+            });
+            expect(frc.frcMask).toBeNull();
+            expect(frc.polygons).toBe(partialPolys);
+            expect(frc.tileZoom).toBe(14);
+        });
+
+        test('integer endpoint: fadeRange=[14,15], tileZ=15 → frcMask applied (ceil edge)', async () => {
+            // Without ceil(), tileZ >= 15 wouldn't be enforced — this verifies the comment in
+            // vector_tile_source.ts that integer endpoints use >= via Math.ceil(max).
+            const snapshot = {
+                getFullCoverageMask: () => 0b1,
+                getTileOrParent: () => ({tileId: {z: 14, x: 0, y: 0}, polygons: [], frcMask: 0b1}),
+            };
+            const frc = await captureFrcCoverageParams({
+                painter: {
+                    _debugParams: {showElevationIdDebug: false},
+                    frcCoverageFadeRange: [14, 15],
+                    frcCoverageSnapshot: snapshot,
+                    frcCoverageSourceLayers: ['road'],
+                },
+                mapZoom: 15,
+                tileID: new OverscaledTileID(15, 0, 15, 1, 1),
+            });
+            expect(frc.frcMask).toBe(0b1);
+        });
+
+        test('non-integer endpoint: fadeRange=[14,14.9], tileZ=15 → frcMask applied (ceil(14.9)=15)', async () => {
+            const snapshot = {
+                getFullCoverageMask: () => 0b1,
+                getTileOrParent: () => ({tileId: {z: 14, x: 0, y: 0}, polygons: [], frcMask: 0b1}),
+            };
+            const frc = await captureFrcCoverageParams({
+                painter: {
+                    _debugParams: {showElevationIdDebug: false},
+                    frcCoverageFadeRange: [14, 14.9],
+                    frcCoverageSnapshot: snapshot,
+                    frcCoverageSourceLayers: ['road'],
+                },
+                mapZoom: 15,
+                tileID: new OverscaledTileID(15, 0, 15, 1, 1),
+            });
+            expect(frc.frcMask).toBe(0b1);
+        });
+
+        test('sourceLayers comes from painter.frcCoverageSourceLayers', async () => {
+            const frc = await captureFrcCoverageParams({
+                painter: {
+                    _debugParams: {showElevationIdDebug: false},
+                    frcCoverageFadeRange: [14, 15],
+                    frcCoverageSnapshot: null,
+                    frcCoverageSourceLayers: ['(sd-traffic)traffic'],
+                },
+                mapZoom: 14.5,
+                tileID: new OverscaledTileID(14, 0, 14, 1, 1),
+            });
+            expect(frc.sourceLayers).toEqual(['(sd-traffic)traffic']);
+        });
+    });
+
     test('transforms tile urls before requesting', async () => {
         mockFetch({
             '/source.json': () => new Response(JSON.stringify(sourceFixture))

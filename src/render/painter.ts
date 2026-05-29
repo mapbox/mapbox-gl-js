@@ -53,6 +53,8 @@ import Framebuffer from '../gl/framebuffer';
 import {OcclusionParams} from './occlusion_params';
 import {PerformanceUtils} from '../util/performance';
 
+import type {FrcCoverageSnapshot} from '../source/frc_coverage_snapshot';
+import type {FrcCoverageRenderer} from '../../3d-style/render/frc_coverage_renderer';
 import type {RainParams} from '../precipitation/draw_rain';
 import type {SnowParams} from '../precipitation/draw_snow';
 import type {PrecipitationRevealParams} from '../precipitation/precipitation_reveal_params';
@@ -218,6 +220,12 @@ class Painter {
     buildingTileBorderManager: BuildingTileBorderManager;
     depthRangeFor3D: DepthRangeType;
     depthOcclusion: boolean;
+    frcCoverageSnapshot: FrcCoverageSnapshot | null;
+    frcCoverageFadeRange: [number, number] | null;
+    frcCoverageSourceLayers: string[];
+    // Lazy-constructed when the HD chunk loads (HD.FrcCoverageRenderer).
+    // Null when SD-HD conflation is not in use and HD hasn't been loaded.
+    frcCoverageRenderer: FrcCoverageRenderer | null;
     opaquePassCutoff: number;
     frameCounter: number;
     renderPass: RenderPass;
@@ -327,6 +335,11 @@ class Painter {
         this._tileTextures = {};
         this.frameCopies = [];
         this.loadTimeStamps = [];
+        this.frcCoverageSnapshot = null;
+        this.frcCoverageFadeRange = null;
+        this.frcCoverageSourceLayers = [];
+        // Built when HD module is available (UMD: always; ESM: after prepareHD()).
+        this.frcCoverageRenderer = HD.FrcCoverageRenderer ? new HD.FrcCoverageRenderer() : null;
 
         this._debugParams = {
             averageFPS: 0,
@@ -834,6 +847,17 @@ class Painter {
 
         this.style = style;
         this.options = options;
+
+        // Update FRC coverage polygon GPU buffers from current snapshot
+        if (this.frcCoverageSnapshot && !this.frcCoverageSnapshot.empty()) {
+            // Ensure the renderer exists once HD has loaded after painter construction.
+            if (!this.frcCoverageRenderer && HD.FrcCoverageRenderer) {
+                this.frcCoverageRenderer = new HD.FrcCoverageRenderer();
+            }
+            if (this.frcCoverageRenderer) {
+                this.frcCoverageRenderer.update(this.context, this.frcCoverageSnapshot.tiles);
+            }
+        }
 
         const layers = this.style._mergedLayers;
 

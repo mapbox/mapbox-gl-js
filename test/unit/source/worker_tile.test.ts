@@ -1,11 +1,13 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import {test, expect, vi} from '../../util/vitest';
+import {describe, test, expect, vi} from '../../util/vitest';
 import WorkerTile from '../../../src/source/worker_tile';
 import Wrapper from '../../../src/source/geojson_wrapper';
 import {OverscaledTileID} from '../../../src/source/tile_id';
+import {RenderSourceType} from '../../../src/source/tile';
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 import {getProjection} from '../../../src/geo/projection/index';
+import Point from '@mapbox/point-geometry';
 
 function createWorkerTile(params = {}) {
     return new WorkerTile({
@@ -162,4 +164,172 @@ test('WorkerTile#parse adds $localized property and filters features based on th
     expect(usFeatures[1].feature.properties).toMatchObject({worldview: 'US', '$localized': true});
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(usFeatures[2].feature.properties).toMatchObject({worldview: 'US', '$localized': true});
+});
+
+describe('WorkerTile frcCoverage / modularization gate', () => {
+    // Build a minimal frcCoverage params object. resolved=false + frcMask=null is the
+    // "coverage tile not yet loaded" state that triggers road/structure deferral.
+    function frcParams(overrides = {}) {
+        return {
+            frcMask: null,
+            resolved: false,
+            sourceLayers: ['road'],
+            polygons: null,
+            tileZoom: null,
+            ...overrides,
+        };
+    }
+
+    // Most modularization-gate tests only care about the defer flag, not bucket data.
+    // Use a fill StyleLayerIndex matching source/source-layer 'road'.
+    function makeRoadLayerIndex() {
+        return new StyleLayerIndex([{
+            id: 'road',
+            type: 'fill',
+            source: 'source',
+            'source-layer': 'road',
+        }]);
+    }
+
+    test('constructor copies frcCoverage from params', () => {
+        const params = frcParams({sourceLayers: ['road', 'structure']});
+        const tile = createWorkerTile({frcCoverage: params});
+        expect(tile.frcCoverage).toBe(params);
+        expect(tile.deferRoadStructure).toBe(false); // not set until parse runs
+    });
+
+    test('constructor defaults frcCoverage to null when omitted', () => {
+        expect(createWorkerTile().frcCoverage).toBeNull();
+    });
+
+    test('frcCoverage non-null is the modularization signal: needsHD path is reachable', () => {
+        // This test documents the gate input: when frcCoverage is set, the parse() gate at
+        // worker_tile.ts uses `needsHD = !!this.indoor || !!this.frcCoverage` to force HD load.
+        // In test (UMD) env HD is statically loaded so the gate is already satisfied — we
+        // verify the input state, not the dynamic-import side effect.
+        const tile = createWorkerTile({frcCoverage: frcParams()});
+        expect(Boolean(tile.frcCoverage)).toBe(true);
+    });
+
+    test('deferRoadStructure=true when resolved=false, frcMask=null, source layer matches', () => {
+        const layerIndex = makeRoadLayerIndex();
+        const tile = createWorkerTile({frcCoverage: frcParams()});
+        return new Promise((resolve) => {
+            tile.parse({layers: {}}, layerIndex, [], [], createActor(), (err, result) => {
+                expect(err).toBeFalsy();
+                expect(tile.deferRoadStructure).toBe(true);
+                expect(result.hasDeferredRoadStructure).toBe(true);
+                resolve();
+            });
+        });
+    });
+
+    test('deferRoadStructure=false when resolved=true (coverage arrived)', () => {
+        const layerIndex = makeRoadLayerIndex();
+        const tile = createWorkerTile({frcCoverage: frcParams({resolved: true})});
+        return new Promise((resolve) => {
+            tile.parse({layers: {}}, layerIndex, [], [], createActor(), (err, result) => {
+                expect(err).toBeFalsy();
+                expect(tile.deferRoadStructure).toBe(false);
+                expect(result.hasDeferredRoadStructure).toBe(false);
+                resolve();
+            });
+        });
+    });
+
+    test('deferRoadStructure=false when frcMask is set (full coverage known)', () => {
+        const layerIndex = makeRoadLayerIndex();
+        const tile = createWorkerTile({frcCoverage: frcParams({frcMask: 0b1})});
+        return new Promise((resolve) => {
+            tile.parse({layers: {}}, layerIndex, [], [], createActor(), (err) => {
+                expect(err).toBeFalsy();
+                expect(tile.deferRoadStructure).toBe(false);
+                resolve();
+            });
+        });
+    });
+
+    test('deferRoadStructure=false when source layer does NOT match sourceLayers list', () => {
+        // StyleLayerIndex has source-layer 'building' but FRC sourceLayers = ['road']
+        const layerIndex = new StyleLayerIndex([{
+            id: 'building',
+            type: 'fill',
+            source: 'source',
+            'source-layer': 'building',
+        }]);
+        const tile = createWorkerTile({frcCoverage: frcParams({sourceLayers: ['road']})});
+        return new Promise((resolve) => {
+            tile.parse({layers: {}}, layerIndex, [], [], createActor(), (err) => {
+                expect(err).toBeFalsy();
+                expect(tile.deferRoadStructure).toBe(false);
+                resolve();
+            });
+        });
+    });
+
+    test('deferRoadStructure=false for HdRoadCoverage tiles even when frcCoverage indicates not-resolved', () => {
+        // Coverage tiles themselves must never defer their own road layer.
+        const layerIndex = makeRoadLayerIndex();
+        const tile = createWorkerTile({
+            renderSourceType: RenderSourceType.HdRoadCoverage,
+            frcCoverage: frcParams(),
+        });
+        return new Promise((resolve) => {
+            tile.parse({layers: {}}, layerIndex, [], [], createActor(), (err) => {
+                expect(err).toBeFalsy();
+                expect(tile.deferRoadStructure).toBe(false);
+                resolve();
+            });
+        });
+    });
+
+    test('HdRoadCoverage tile parses hd_road_coverage layer into frcCoveragePolygons', () => {
+        const layerIndex = makeRoadLayerIndex();
+        // Build a stand-in for the hd_road_coverage VectorTileLayer that the parser consumes.
+        const EXTENT = 8192;
+        const partialRing = [
+            new Point(100, 100),
+            new Point(1000, 100),
+            new Point(1000, 1000),
+            new Point(100, 1000),
+            new Point(100, 100),
+        ];
+        const coverageLayer = {
+            length: 1,
+            feature(_) {
+                return {
+                    // eslint-disable-next-line camelcase
+                    properties: {frc_mask: 0b101},
+                    loadGeometry() { return [partialRing]; },
+                };
+            },
+        };
+        const tile = createWorkerTile({
+            renderSourceType: RenderSourceType.HdRoadCoverage,
+        });
+        return new Promise((resolve) => {
+            // eslint-disable-next-line camelcase
+            tile.parse({layers: {hd_road_coverage: coverageLayer}}, layerIndex, [], [], createActor(), (err, result) => {
+                expect(err).toBeFalsy();
+                expect(Array.isArray(result.frcCoveragePolygons)).toBe(true);
+                expect(result.frcCoveragePolygons.length).toBe(1);
+                expect(result.frcCoveragePolygons[0].frcMask).toBe(0b101);
+                // Suppress unused var warning
+                void EXTENT;
+                resolve();
+            });
+        });
+    });
+
+    test('non-coverage tile does not parse frcCoveragePolygons (undefined in result)', () => {
+        const layerIndex = makeRoadLayerIndex();
+        const tile = createWorkerTile(); // default renderSourceType is undefined
+        return new Promise((resolve) => {
+            tile.parse({layers: {}}, layerIndex, [], [], createActor(), (err, result) => {
+                expect(err).toBeFalsy();
+                expect(result.frcCoveragePolygons).toBeUndefined();
+                resolve();
+            });
+        });
+    });
 });

@@ -6,6 +6,16 @@ import {Rain} from '../src/precipitation/draw_rain';
 import {Snow} from '../src/precipitation/draw_snow';
 import {programUniforms} from '../3d-style/render/program/program_uniforms_hd';
 import {drawElevatedStructures, drawElevatedFillShadows, drawDepthPrepass, drawGroundShadowMask} from '../3d-style/render/draw_elevated_fill';
+import {HdCoverageState, updateFrcCoverage, updateHdCoverageSourceCache, updateFrcCoverageFadeRange} from '../3d-style/style/frc_coverage_style';
+import {FrcCoverageRenderer} from '../3d-style/render/frc_coverage_renderer';
+import {
+    drawFillFrcCoverageFirstPass,
+    drawFillFrcCoverageSecondPass,
+    drawLineFrcCoverageDetect,
+    drawLineFrcRenderLine,
+    drawLineFrcFadePass,
+    drawLineFrcCoverageSecondPass,
+} from '../3d-style/render/draw_frc_coverage';
 // Side-effect imports: extension class files call `register(...)` at module load.
 // Including them here ensures main-thread registration happens when the HD module
 // loads, before any tile carrying hdExt data is deserialized.
@@ -32,4 +42,15 @@ export const HD = {
     drawDepthPrepass,
     drawGroundShadowMask,
     IndoorManager,
+    HdCoverageState,
+    updateFrcCoverage,
+    updateHdCoverageSourceCache,
+    updateFrcCoverageFadeRange,
+    FrcCoverageRenderer,
+    drawFillFrcCoverageFirstPass,
+    drawFillFrcCoverageSecondPass,
+    drawLineFrcCoverageDetect,
+    drawLineFrcRenderLine,
+    drawLineFrcFadePass,
+    drawLineFrcCoverageSecondPass,
 };

@@ -27,6 +27,9 @@ import type {UniformValues} from './uniform_binding';
 import type SegmentVector from '../data/segment';
 import type IndexBuffer from '../gl/index_buffer';
 import type ElevatedFillBufferData from '../../3d-style/data/bucket/elevated_fill_buffer_data';
+import type FillBufferData from '../data/bucket/fill_buffer_data';
+import type Program from './program';
+import type ProgramConfiguration from '../data/program_configuration';
 import type {
     FillUniformsType,
     FillPatternUniformsType,
@@ -151,7 +154,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, multip
 
         let drawMode: DrawMode;
         let indexBuffer: IndexBuffer;
-        let segments: SegmentVector;
+        let segments: SegmentVector | null;
         if (!isOutline) {
             programName = image ? 'fillPattern' : 'fill';
             drawMode = gl.TRIANGLES;
@@ -159,6 +162,23 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, multip
             programName = image && !layer.getPaintProperty('fill-outline-color') ? 'fillOutlinePattern' : 'fillOutline';
             drawMode = gl.LINES;
         }
+
+        // Collected tiles for partial-coverage structure fill second-pass.
+        // Mirrors the line-layer pattern (draw_line.ts): tile's first-pass draw is
+        // skipped and replaced by outside-polygon (full opacity) + inside-polygon
+        // (faded opacity) draws after the main loop.
+        const polygonCoverageTiles: Array<{
+            coord: OverscaledTileID;
+            bufferData: FillBufferData | ElevatedFillBufferData;
+            program: Program<FillUniformsType | FillPatternUniformsType>;
+            programConfiguration: ProgramConfiguration;
+            uniformValues: UniformValues<FillUniformsType | FillPatternUniformsType>;
+            depthMode: DepthMode;
+            dynamicBuffers: VertexBuffer[];
+            indexBuffer: IndexBuffer;
+            segments: SegmentVector;
+            frcMask: number;
+        }> = [];
 
         for (const coord of coords) {
             const tile = sourceCache.getTile(coord);
@@ -251,10 +271,35 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, multip
                 activeDepthMode = depthModeFor3D;
             }
 
+            if (!segments || (segments.get && segments.get().length === 0)) continue;
+
+            const stencilMode = stencilModeOverride ? stencilModeOverride : painter.stencilModeForClipping(coord);
+
+            // FRC coverage routing (road per-level dispatch, structure skip/defer to
+            // second pass) lives in HD. When HD is not loaded the snapshot is null so
+            // there is nothing to do — fall through to the default draw.
+            let frcResult: 'drawn' | 'deferred' | 'skip' | 'fallthrough' = 'fallthrough';
+            if (!isOutline && HD.drawFillFrcCoverageFirstPass) {
+                frcResult = HD.drawFillFrcCoverageFirstPass({
+                    painter, layer, bucket, coord, elevatedGeometry,
+                    program, programConfiguration, uniformValues,
+                    drawMode, depthMode: activeDepthMode, stencilMode, colorMode,
+                    bufferData, indexBuffer, segments, dynamicBuffers,
+                    polygonCoverageTiles,
+                });
+            }
+            if (frcResult !== 'fallthrough') continue;
+
             program.draw(painter, drawMode, activeDepthMode,
-                stencilModeOverride ? stencilModeOverride : painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
+                stencilMode, colorMode, CullFaceMode.disabled, uniformValues,
                 layer.id, bufferData.layoutVertexBuffer, indexBuffer, segments,
                 layer.paint, painter.transform.zoom, programConfiguration, dynamicBuffers);
+        }
+
+        // Second pass for partial-coverage structure fills: outside polygon full opacity,
+        // inside polygon faded. Mirrors render_line_layer second pass.
+        if (!isOutline && HD.drawFillFrcCoverageSecondPass) {
+            HD.drawFillFrcCoverageSecondPass(painter, layer, polygonCoverageTiles, drawMode, colorMode);
         }
     };
 

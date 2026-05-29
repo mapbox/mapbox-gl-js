@@ -23,7 +23,9 @@ import * as HD from '../../modules/hd_worker';
 import * as Standard from '../../modules/standard_worker';
 import {ImageId} from '../style-spec/expression/types/image_id';
 import {RenderSourceType} from './tile';
+import {HD_ROAD_COVERAGE_SOURCE_LAYER} from './frc_coverage_snapshot';
 
+import type {FrcCoveragePolygons, FrcCoverageParams} from './frc_coverage_snapshot';
 import type {VectorTile} from '@mapbox/vector-tile';
 import type {CanonicalTileID} from './tile_id';
 import type Projection from '../geo/projection/projection';
@@ -87,6 +89,8 @@ class WorkerTile {
     showElevationIdDebug: boolean;
     collectResourceTiming: boolean;
     renderSourceType: RenderSourceType | null | undefined;
+    frcCoverage: FrcCoverageParams | null;
+    deferRoadStructure: boolean;
     extraShadowCaster: boolean | null | undefined;
     tessellationStep: number | null | undefined;
     projection: Projection;
@@ -126,6 +130,8 @@ class WorkerTile {
         this.collectResourceTiming = params.request ? params.request.collectResourceTiming : false;
         this.promoteId = params.promoteId;
         this.renderSourceType = params.renderSourceType;
+        this.frcCoverage = params.frcCoverage || null;
+        this.deferRoadStructure = false;
         this.tileTransform = tileTransform(params.tileID.canonical, params.projection);
         this.projection = params.projection;
         this.worldview = params.worldview;
@@ -159,7 +165,7 @@ class WorkerTile {
         // entirely and stay fully synchronous.
         const layerFamilies = layerIndex.familiesBySource[this.source];
         if ((layerFamilies || this.indoor) && (!HD.loaded || !Standard.loaded)) {
-            let needsHD = !!this.indoor; // Indoor parsing requires HD.parseActiveFloors
+            let needsHD = !!this.indoor || !!this.frcCoverage; // Indoor needs HD.parseActiveFloors; FRC needs HD.attachExtension
             let needsStandard = false;
             for (const sourceLayerId in layerFamilies || {}) {
                 for (const family of layerFamilies[sourceLayerId]) {
@@ -188,6 +194,14 @@ class WorkerTile {
         this.status = 'parsing';
         this.data = data;
 
+        // Parse FRC coverage polygons early (before normal bucket creation).
+        // Coverage tiles also create normal buckets so layers like hd-coverage-helper render.
+        let frcCoveragePolygons: FrcCoveragePolygons | undefined;
+        if (this.renderSourceType === RenderSourceType.HdRoadCoverage) {
+            const coverageLayer = data.layers[HD_ROAD_COVERAGE_SOURCE_LAYER];
+            frcCoveragePolygons = coverageLayer && HD.parseFrcCoverageFromLayer ? HD.parseFrcCoverageFromLayer(coverageLayer) : [];
+        }
+
         this.collisionBoxArray = new CollisionBoxArray();
         const sourceLayerCoder = new DictionaryCoder(Object.keys(data.layers).sort());
 
@@ -210,7 +224,7 @@ class WorkerTile {
             scaleFactor: this.scaleFactor,
             showElevationIdDebug: this.showElevationIdDebug,
             elevationFeatures: undefined,
-            activeFloors: undefined
+            activeFloors: undefined,
         };
 
         if (this.indoor && HD.parseActiveFloors) {
@@ -219,6 +233,22 @@ class WorkerTile {
 
         const asyncBucketLoads: Promise<unknown>[] = [];
         const layerFamilies = layerIndex.familiesBySource[this.source];
+
+        // Defer configured coverage source layers when HD coverage hasn't resolved yet.
+        // When coverage arrives, tiles are reparsed with coverageFrcMask set,
+        // allowing fully covered features to be skipped at parse time.
+        this.deferRoadStructure = false;
+        if (this.renderSourceType !== RenderSourceType.HdRoadCoverage &&
+            this.frcCoverage != null &&
+            !this.frcCoverage.resolved &&
+            this.frcCoverage.frcMask === null) {
+            for (const sourceLayerId in layerFamilies) {
+                if (HD.matchesCoverageSourceLayer && HD.matchesCoverageSourceLayer(this.frcCoverage.sourceLayers, this.source, sourceLayerId)) {
+                    this.deferRoadStructure = true;
+                    break;
+                }
+            }
+        }
 
         for (const sourceLayerId in layerFamilies) {
             const sourceLayer = data.layers[sourceLayerId];
@@ -253,7 +283,14 @@ class WorkerTile {
                 continue;
             } else if (this.renderSourceType === RenderSourceType.FillExtrusion && !anyFillExtrusionLayers) {
                 continue;
-            } else if (this.renderSourceType === RenderSourceType.Other && !anyOtherLayers) {
+            } else if ((this.renderSourceType === RenderSourceType.Other ||
+                        this.renderSourceType === RenderSourceType.HdRoadCoverage) && !anyOtherLayers) {
+                continue;
+            }
+
+            // Defer configured coverage source layers when coverage hasn't resolved.
+            const isRoadOrStructureLayer = this.frcCoverage != null && !!HD.matchesCoverageSourceLayer && HD.matchesCoverageSourceLayer(this.frcCoverage.sourceLayers, this.source, sourceLayerId);
+            if (this.deferRoadStructure && isRoadOrStructureLayer) {
                 continue;
             }
 
@@ -292,6 +329,12 @@ class WorkerTile {
                     elevationDependency = true;
                 }
 
+                // Skip features fully covered by FRC mask on road/structure source layers
+                if (isRoadOrStructureLayer && this.frcCoverage && this.frcCoverage.frcMask && feature.properties && HD.isFeatureCoveredByFrcMask &&
+                    HD.isFeatureCoveredByFrcMask(feature.properties, this.frcCoverage.frcMask)) {
+                    continue;
+                }
+
                 features.push({feature, id, index: currentFeatureIndex, sourceLayerIndex});
                 currentFeatureIndex++;
             }
@@ -308,6 +351,11 @@ class WorkerTile {
                     continue;
                 }
                 // Three-way render source type filtering:
+                if (this.renderSourceType === RenderSourceType.Symbol && layer.type !== 'symbol') continue;
+                if (this.renderSourceType === RenderSourceType.FillExtrusion && layer.type !== 'fill-extrusion') continue;
+                if ((this.renderSourceType === RenderSourceType.Other ||
+                     this.renderSourceType === RenderSourceType.HdRoadCoverage) &&
+                    (layer.type === 'symbol' || layer.type === 'fill-extrusion')) continue;
                 assert(layer.source === this.source);
                 if (!this.isLayerActiveForTile(layer)) continue;
 
@@ -334,6 +382,7 @@ class WorkerTile {
                         overscaling: this.overscaling,
                         collisionBoxArray: this.collisionBoxArray,
                         sourceLayerIndex,
+                        sourceLayerName: sourceLayerId,
                         sourceID: this.source,
                         projection: this.projection.spec,
                         tessellationStep: this.tessellationStep,
@@ -348,11 +397,12 @@ class WorkerTile {
 
                     assert(this.tileTransform.projection.name === this.projection.name);
 
-                    // Attach HD extension when the layer declares HD elevation. Dispatching
-                    // through HD.attachExtension keeps the relevance check and the concrete
-                    // extension classes in the HD module — core stays unaware of which
-                    // bucket types are HD-augmentable.
-                    if (HD.attachExtension) HD.attachExtension(bucket);
+                    // Attach HD extension when the layer declares HD elevation OR when the
+                    // bucket's source layer participates in FRC coverage. Dispatching through
+                    // HD.attachExtension keeps the relevance checks and the concrete extension
+                    // classes in the HD module — core stays unaware of which bucket types are
+                    // HD-augmentable.
+                    if (HD.attachExtension) HD.attachExtension(bucket, this.frcCoverage ? this.frcCoverage.sourceLayers : null);
 
                     bucket.populate(features, options, this.tileID.canonical, this.tileTransform);
                 };
@@ -432,7 +482,12 @@ class WorkerTile {
                                 this.pixelRatio,
                                 iconRasterizationTasks,
                                 this.worldview,
-                                availableImages);
+                                availableImages,
+                                this.frcCoverage ? this.frcCoverage.frcMask : null,
+                                this.frcCoverage ? this.frcCoverage.polygons : null,
+                                this.frcCoverage ? this.frcCoverage.tileZoom : null,
+                                HD.isFeatureCoveredByFrcMask || null,
+                                HD.symbolAnchorInFrcCoverage || null);
                         }
                     }
 
@@ -473,7 +528,9 @@ class WorkerTile {
                         glyphAtlasImage: glyphAtlas.image,
                         lineAtlas,
                         imageAtlas: null,
-                        brightness: options.brightness
+                        brightness: options.brightness,
+                        hasDeferredRoadStructure: this.deferRoadStructure,
+                        frcCoveragePolygons,
                     });
                     PerformanceUtils.endMeasure(m, [["tileID", this.tileID.toString()], ["source", this.source]]);
                     return;
@@ -507,7 +564,9 @@ class WorkerTile {
                         glyphAtlasImage: glyphAtlas.image,
                         lineAtlas,
                         imageAtlas: imageAtlasForTransfer,
-                        brightness: options.brightness
+                        brightness: options.brightness,
+                        hasDeferredRoadStructure: this.deferRoadStructure,
+                        frcCoveragePolygons,
                     });
                     PerformanceUtils.endMeasure(m, [["tileID", this.tileID.toString()], ["source", this.source]]);
                 };
@@ -621,6 +680,7 @@ class WorkerTile {
         this.lut = params.lut;
         this.worldview = params.worldview;
         this.indoor = params.indoor;
+        this.frcCoverage = params.frcCoverage || null;
     }
 
     updateImageMapAndGetImageTaskQueue(imageMap: StyleImageMap<StringifiedImageVariant>, images: StyleImageMap<StringifiedImageId>, imageDependencies: ImageDependenciesMap): ImageRasterizationTasks {

@@ -23,6 +23,7 @@ import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
 import type {RasterizedImageMap} from '../render/image_manager';
 import type {ImageId} from '../style-spec/expression/types/image_id';
 import type {RenderSourceType} from './tile';
+import type {FrcCoverageParams, FrcCoveragePolygons} from './frc_coverage_snapshot';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 import type {StyleModelMap} from '../style/style_mode';
 import type {IndoorTileOptions} from '../style/indoor_data.js';
@@ -87,6 +88,7 @@ export type WorkerSourceVectorTileRequest = WorkerSourceTileRequest & {
     };
     extraShadowCaster?: boolean;
     renderSourceType?: RenderSourceType | null;
+    frcCoverage?: FrcCoverageParams | null;
     partial?: boolean;
     tessellationStep?: number // test purpose only;
     worldview?: string | null;
@@ -151,6 +153,8 @@ export type WorkerSourceVectorTileResult = {
     glyphPositions?: GlyphPositions;
     cacheControl?: string;
     expires?: string;
+    frcCoveragePolygons?: FrcCoveragePolygons;
+    hasDeferredRoadStructure?: boolean;
 };
 
 export type WorkerSourceDEMTileRequest = WorkerSourceTileRequest & {

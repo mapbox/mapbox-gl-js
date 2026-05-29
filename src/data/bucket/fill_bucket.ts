@@ -55,6 +55,7 @@ class FillBucket implements Bucket {
     projection: ProjectionSpecification;
 
     sourceLayerIndex: number;
+    sourceLayerName: string;
 
     worldview: string;
     hasAppearances: boolean | null;
@@ -81,6 +82,7 @@ class FillBucket implements Bucket {
         this.projection = options.projection;
 
         this.sourceLayerIndex = options.sourceLayerIndex;
+        this.sourceLayerName = options.sourceLayerName || '';
 
         this.worldview = options.worldview;
         this.hasAppearances = null;
@@ -105,8 +107,9 @@ class FillBucket implements Bucket {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors}), evaluationFeature, canonical))
-                continue;
+            const passesFilter = this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors}), evaluationFeature, canonical);
+
+            if (!passesFilter) continue;
 
             const sortKey = fillSortKey ?
 
@@ -149,6 +152,13 @@ class FillBucket implements Bucket {
             const feature = features[index].feature;
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
+
+        // Build per-FRC-level segments for non-pattern features (pattern features
+        // are handled in addFeatures separately). The extension early-returns when
+        // FRC tracking isn't enabled on this bucket.
+        if (!this.hasPattern && this.hdExt) {
+            this.hdExt.buildFrcSegments(this);
+        }
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
@@ -168,6 +178,9 @@ class FillBucket implements Bucket {
     addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[], _: TileTransform, brightness?: number | null) {
         for (const feature of this.patternFeatures) {
             this.addFeature(feature, feature.geometry, feature.index, canonical, imagePositions, availableImages, brightness, options.elevationFeatures);
+        }
+        if (this.hdExt) {
+            this.hdExt.buildFrcSegments(this);
         }
     }
 
@@ -194,6 +207,9 @@ class FillBucket implements Bucket {
     }
 
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[] = [], brightness?: number | null, elevationFeatures?: ElevationFeature[]) {
+        const frc = this.hdExt ? this.hdExt.trackFeatureFrc(feature.properties) : null;
+        const triStartIndex = this.bufferData.indexArray.length;
+
         const polygons = classifyRings(geometry, EARCUT_MAX_RINGS);
 
         // Route through the HD extension first if present; it may consume the feature
@@ -206,6 +222,10 @@ class FillBucket implements Bucket {
         this.bufferData.populatePaintArrays(feature, index, imagePositions, availableImages, canonical, brightness, this.worldview);
         if (this.hdExt) {
             this.hdExt.populatePaintArrays(feature, index, imagePositions, availableImages, canonical, brightness, this.worldview);
+        }
+
+        if (this.hdExt) {
+            this.hdExt.recordFeatureRange(this, triStartIndex, this.bufferData.indexArray.length, frc);
         }
     }
 

@@ -35,6 +35,7 @@ export type BucketParameters<Layer extends StyleLayer> = {
     overscaling: number;
     collisionBoxArray: CollisionBoxArray;
     sourceLayerIndex: number;
+    sourceLayerName?: string;
     sourceID: string;
     projection: ProjectionSpecification;
     tessellationStep: number | null | undefined;

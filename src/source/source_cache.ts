@@ -1078,6 +1078,7 @@ class SourceCache extends Evented {
     }
 
     _getRenderableCoordinates(symbolLayer?: boolean, includeShadowCasters?: boolean): Array<OverscaledTileID> {
+        if (!this.transform) return []; // HdRoadCoverage caches are created before the first update() sets transform
         const coords = this.getRenderableIds(symbolLayer, includeShadowCasters).map((id) => this._tiles[id].tileID);
         const isGlobe = this.transform.projection.name === 'globe';
         for (const coord of coords) {

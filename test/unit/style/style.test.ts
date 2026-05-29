@@ -23,7 +23,7 @@ import {
 import Tile from '../../../src/source/tile';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import {ImageId} from '../../../src/style-spec/expression/types/image_id';
-import {StubMap} from './utils';
+import {StubMap, newStubStyle} from './utils';
 import {makeFQID} from '../../../src/util/fqid';
 
 function createStyleJSON(properties) {
@@ -3293,5 +3293,228 @@ describe('Style#_updatePlacement', () => {
         const result = style._updatePlacement(tr, false, 300, false, {updateTime: 1});
 
         expect(result).toBeTruthy();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Style FRC init-time wiring
+//
+// Two integration points that aren't covered by the pure-function tests in
+// frc_coverage.test.ts:
+//   1. When a style loads with an hd_road_coverage layer, Style must create a
+//      dedicated SourceCache (renderSourceType: HdRoadCoverage) and stash an
+//      HdCoverageState on `_hdCoverage`. This is the moment the conflation
+//      pipeline turns on.
+//   2. When setConfigProperty changes `sdCoverageFadeRange` at runtime, the
+//      next call to style.updateFrcCoverageFadeRange() must pick up the new
+//      value and push it onto the painter. This is the contract the runtime
+//      toggle depends on.
+// ---------------------------------------------------------------------------
+
+describe('Style HD coverage source-cache wiring', () => {
+    const HD_COVERAGE_LAYER = 'hd_road_coverage';
+
+    // In test env HD is statically loaded, so _updateHdCoverageSourceCache always
+    // constructs an empty HdCoverageState on first call. The real signal that a
+    // coverage cache was created is `coverageSourceCaches[<source>]` being populated.
+
+    function loadStyleWithLayer(layer) {
+        const {style} = newStubStyle();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(createStyleJSON({
+            sources: {
+                'hd-roads': {
+                    type: 'vector',
+                    tiles: ['http://example.com/{z}/{x}/{y}.mvt']
+                }
+            },
+            layers: [layer]
+        }));
+        return style;
+    }
+
+    test('Style with no hd_road_coverage layer leaves coverageSourceCaches empty', async () => {
+        const style = loadStyleWithLayer({
+            id: 'just-a-fill',
+            type: 'fill',
+            source: 'hd-roads',
+            'source-layer': 'building'
+        });
+        await waitFor(style, 'style.load');
+        // State may exist (always-create), but no coverage caches inside.
+        const coverageKeys = Object.keys(style._sourceCaches).filter(k => k.startsWith('hd-road-coverage:'));
+        expect(coverageKeys.length).toBe(0);
+        if (style._hdCoverage) {
+            expect(Object.keys(style._hdCoverage.coverageSourceCaches).length).toBe(0);
+        }
+    });
+
+    test('Adding a fill layer with source-layer hd_road_coverage creates the state and cache', async () => {
+        const style = loadStyleWithLayer({
+            id: 'hd-coverage-helper',
+            type: 'fill',
+            source: 'hd-roads',
+            'source-layer': HD_COVERAGE_LAYER,
+            paint: {'fill-color': 'red', 'fill-opacity': 0}
+        });
+        await waitFor(style, 'style.load');
+
+        expect(style._hdCoverage).not.toBeNull();
+        // The dedicated cache key is `hd-road-coverage:<sourceId>`.
+        const cacheKey = `hd-road-coverage:hd-roads`;
+        expect(style._sourceCaches[cacheKey]).toBeDefined();
+        // SourceCache has _renderSourceType === HdRoadCoverage (=3 per tile.ts).
+        expect(style._sourceCaches[cacheKey]._renderSourceType).toBe(3);
+        // State has a back-reference under coverageSourceCaches[sourceId].
+        expect(style._hdCoverage.coverageSourceCaches['hd-roads']).toBe(style._sourceCaches[cacheKey]);
+    });
+
+    test('Idempotent — second fill layer with same source/source-layer does not double up the cache', async () => {
+        const {style} = newStubStyle();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(createStyleJSON({
+            sources: {
+                'hd-roads': {type: 'vector', tiles: ['http://example.com/{z}/{x}/{y}.mvt']}
+            },
+            layers: [{
+                id: 'cov-a', type: 'fill', source: 'hd-roads', 'source-layer': HD_COVERAGE_LAYER
+            }, {
+                id: 'cov-b', type: 'fill', source: 'hd-roads', 'source-layer': HD_COVERAGE_LAYER
+            }]
+        }));
+        await waitFor(style, 'style.load');
+
+        const cacheKey = `hd-road-coverage:hd-roads`;
+        expect(style._sourceCaches[cacheKey]).toBeDefined();
+        // Only one coverage cache total for this source.
+        const coverageKeys = Object.keys(style._sourceCaches).filter(k => k.startsWith('hd-road-coverage:'));
+        expect(coverageKeys.length).toBe(1);
+    });
+
+    test('Non-fill layer with the same source-layer does NOT create a coverage cache', async () => {
+        const style = loadStyleWithLayer({
+            id: 'cov-line',
+            type: 'line',
+            source: 'hd-roads',
+            'source-layer': HD_COVERAGE_LAYER
+        });
+        await waitFor(style, 'style.load');
+
+        const coverageKeys = Object.keys(style._sourceCaches).filter(k => k.startsWith('hd-road-coverage:'));
+        expect(coverageKeys.length).toBe(0);
+    });
+
+    test('Fill layer pointing at a NON-vector source does NOT create a coverage cache', async () => {
+        const {style} = newStubStyle();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(createStyleJSON({
+            sources: {
+                'gj': {type: 'geojson', data: {type: 'FeatureCollection', features: []}}
+            },
+            layers: [{
+                id: 'cov', type: 'fill', source: 'gj', 'source-layer': HD_COVERAGE_LAYER
+            }]
+        }));
+        await waitFor(style, 'style.load');
+
+        const coverageKeys = Object.keys(style._sourceCaches).filter(k => k.startsWith('hd-road-coverage:'));
+        expect(coverageKeys.length).toBe(0);
+    });
+});
+
+describe('Style FRC config update propagation', () => {
+    // Style.updateFrcCoverageFadeRange is the bridge between style.options
+    // (where setConfigProperty writes) and painter.frcCoverageFadeRange
+    // (where vector_tile_source reads). These tests verify that bridge:
+    //   - Default schema [0,0] → painter stays null.
+    //   - Setting the option to a valid range → painter picks it up.
+    //   - Resetting to [0,0] → painter goes back to null.
+    //   - Without a painter on the map, calling is a safe no-op.
+
+    function loadStyleWithSchema(opts = {}) {
+        const {style} = newStubStyle();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(createStyleJSON({
+            // fragment:false keeps schema on the root style, otherwise Style wraps
+            // it as an internal "basemap" import and setConfigProperty('') wouldn't apply.
+            fragment: false,
+            schema: {
+                sdCoverageFadeRange: {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    default: opts.defaultRange || [0, 0],
+                    type: 'number',
+                    array: true,
+                    minValue: 0,
+                    maxValue: 24
+                },
+                sdCoverageSourceLayers: {
+                    default: ['road', 'structure'],
+                    type: 'string',
+                    array: true
+                }
+            }
+        }));
+        return style;
+    }
+
+    function attachStubPainter(style) {
+        const painter = {frcCoverageFadeRange: null, frcCoverageSourceLayers: []};
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        style.map.painter = painter;
+        return painter;
+    }
+
+    test('Default schema [0,0] → painter.frcCoverageFadeRange stays null', async () => {
+        const style = loadStyleWithSchema();
+        await waitFor(style, 'style.load');
+        const painter = attachStubPainter(style);
+
+        style.updateFrcCoverageFadeRange();
+        expect(painter.frcCoverageFadeRange).toBeNull();
+    });
+
+    test('setConfigProperty([14,15]) → next updateFrcCoverageFadeRange pushes [14,15] onto painter', async () => {
+        const style = loadStyleWithSchema();
+        await waitFor(style, 'style.load');
+        const painter = attachStubPainter(style);
+
+        style.setConfigProperty('', 'sdCoverageFadeRange', [14, 15]);
+        style.updateFrcCoverageFadeRange();
+        expect(painter.frcCoverageFadeRange).toEqual([14, 15]);
+    });
+
+    test('Resetting config back to [0,0] → painter.frcCoverageFadeRange goes back to null', async () => {
+        const style = loadStyleWithSchema();
+        await waitFor(style, 'style.load');
+        const painter = attachStubPainter(style);
+
+        style.setConfigProperty('', 'sdCoverageFadeRange', [14, 15]);
+        style.updateFrcCoverageFadeRange();
+        expect(painter.frcCoverageFadeRange).toEqual([14, 15]);
+
+        style.setConfigProperty('', 'sdCoverageFadeRange', [0, 0]);
+        style.updateFrcCoverageFadeRange();
+        expect(painter.frcCoverageFadeRange).toBeNull();
+    });
+
+    test('Changing sdCoverageSourceLayers updates painter.frcCoverageSourceLayers', async () => {
+        const style = loadStyleWithSchema();
+        await waitFor(style, 'style.load');
+        const painter = attachStubPainter(style);
+
+        // Source layers only get pushed when fadeRange is active.
+        style.setConfigProperty('', 'sdCoverageFadeRange', [14, 15]);
+        style.setConfigProperty('', 'sdCoverageSourceLayers', ['(sd-traffic)traffic']);
+        style.updateFrcCoverageFadeRange();
+        expect(painter.frcCoverageSourceLayers).toEqual(['(sd-traffic)traffic']);
+    });
+
+    test('updateFrcCoverageFadeRange is a safe no-op when map.painter is undefined', async () => {
+        const style = loadStyleWithSchema({defaultRange: [14, 15]});
+        await waitFor(style, 'style.load');
+        // Deliberately do NOT attach a painter.
+        expect(style.map.painter).toBeUndefined();
+        // Must not throw.
+        expect(() => style.updateFrcCoverageFadeRange()).not.toThrow();
     });
 });

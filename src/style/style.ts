@@ -24,6 +24,7 @@ import {getProperties as getDirectionalProps} from '../../3d-style/style/directi
 import {createExpression} from '../style-spec/expression/index';
 import {HD, prepareHD as prepareHDMain} from '../../modules/hd_main';
 import {prepareStandard as prepareStandardMain} from '../../modules/standard_main';
+import {HD_ROAD_COVERAGE_SOURCE_LAYER} from '../source/frc_coverage_snapshot';
 import {
     validateStyle,
     validateLayoutProperty,
@@ -345,6 +346,8 @@ class Style extends Evented<MapEvents> {
     _mergedOtherSourceCaches: Record<string, SourceCache>;
     _mergedSymbolSourceCaches: Record<string, SourceCache>;
     _mergedFillExtrusionSourceCaches: Record<string, SourceCache>;
+    _mergedHdRoadCoverageSourceCaches: Record<string, SourceCache>;
+    _hdCoverage: InstanceType<NonNullable<typeof HD.HdCoverageState>> | null;
     _clipLayerPresent: boolean;
 
     _featuresetSelectors: Record<string, Array<FeaturesetSelector>>;
@@ -441,6 +444,8 @@ class Style extends Evented<MapEvents> {
         this._mergedOtherSourceCaches = Object.create(null) as Style['_mergedOtherSourceCaches'];
         this._mergedSymbolSourceCaches = Object.create(null) as Style['_mergedSymbolSourceCaches'];
         this._mergedFillExtrusionSourceCaches = Object.create(null) as Style['_mergedFillExtrusionSourceCaches'];
+        this._mergedHdRoadCoverageSourceCaches = Object.create(null) as Style['_mergedHdRoadCoverageSourceCaches'];
+        this._hdCoverage = null;
         this._clipLayerPresent = false;
         this._hasAppearances = false;
 
@@ -508,6 +513,7 @@ class Style extends Evented<MapEvents> {
         this._otherSourceCaches = Object.create(null) as Style['_otherSourceCaches'];
         this._symbolSourceCaches = Object.create(null) as Style['_symbolSourceCaches'];
         this._fillExtrusionSourceCaches = Object.create(null) as Style['_fillExtrusionSourceCaches'];
+        this._hdCoverage = null;
         this._loaded = false;
         this._initialBroadcastDone = false;
         this._programPrecompiler = this.map._precompilePrograms && this.isRootStyle() ?
@@ -937,6 +943,7 @@ class Style extends Evented<MapEvents> {
             }
 
             this._layers = Object.create(null) as Style['_layers'];
+            let hasPendingHdCoverage = false;
             for (const layer of layers) {
                 const styleLayer = createStyleLayer(layer, this.scope, this._styleColorTheme.lut, this.options);
                 if (styleLayer.expressionDependencies.configDependencies.size !== 0) this._configDependentLayers.add(styleLayer.fqid);
@@ -945,12 +952,35 @@ class Style extends Evented<MapEvents> {
                 styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
                 this._layers[styleLayer.id] = styleLayer;
 
+                if (this._updateHdCoverageSourceCache(styleLayer)) {
+                    hasPendingHdCoverage = true;
+                }
                 const sourceCache = this.getOwnLayerSourceCache(styleLayer);
                 const shadowsEnabled = !!this.directionalLight && this.directionalLight.shadowsEnabled();
 
                 if (sourceCache && styleLayer.canCastShadows() && shadowsEnabled) {
                     sourceCache.castsShadows = true;
                 }
+            }
+
+            // In ESM builds HD loads lazily — `_updateHdCoverageSourceCache` is a no-op when
+            // HD hasn't resolved yet. Re-run setup and re-merge after the module loads so the
+            // coverage source cache is properly created and merged.
+            if (hasPendingHdCoverage) {
+                void prepareHDMain().then(() => {
+                    if (!this.map) return;
+                    for (const layerId in this._layers) {
+                        this._updateHdCoverageSourceCache(this._layers[layerId]);
+                    }
+                    this.map.style.mergeAll();
+                    const transform = this.map.transform;
+                    for (const fqid in this.map.style._mergedHdRoadCoverageSourceCaches) {
+                        const sc = this.map.style._mergedHdRoadCoverageSourceCaches[fqid];
+                        sc.used = true;
+                        if (transform) sc.update(transform);
+                    }
+                    this.map._update();
+                });
             }
 
             // Pre-warm glyph range 0 (codepoints 0-255, ASCII/Latin) for all constant font stacks.
@@ -1237,6 +1267,7 @@ class Style extends Evented<MapEvents> {
         const mergedOtherSourceCaches: Record<string, SourceCache> = Object.create(null) as Record<string, SourceCache>;
         const mergedSymbolSourceCaches: Record<string, SourceCache> = Object.create(null) as Record<string, SourceCache>;
         const mergedFillExtrusionSourceCaches: Record<string, SourceCache> = Object.create(null) as Record<string, SourceCache>;
+        const mergedHdRoadCoverageSourceCaches: Record<string, SourceCache> = Object.create(null) as Record<string, SourceCache>;
 
         this.forEachFragmentStyle((style: Style) => {
             for (const id in style._sourceCaches) {
@@ -1258,12 +1289,24 @@ class Style extends Evented<MapEvents> {
                 const fqid = makeFQID(id, style.scope);
                 mergedFillExtrusionSourceCaches[fqid] = style._fillExtrusionSourceCaches[id];
             }
+
+            if (style._hdCoverage) {
+                const coverageCaches = style._hdCoverage.coverageSourceCaches;
+                for (const id in coverageCaches) {
+                    mergedHdRoadCoverageSourceCaches[makeFQID(id, style.scope)] = coverageCaches[id];
+                }
+            }
         });
 
         this._mergedSourceCaches = mergedSourceCaches;
         this._mergedOtherSourceCaches = mergedOtherSourceCaches;
         this._mergedSymbolSourceCaches = mergedSymbolSourceCaches;
         this._mergedFillExtrusionSourceCaches = mergedFillExtrusionSourceCaches;
+        this._mergedHdRoadCoverageSourceCaches = mergedHdRoadCoverageSourceCaches;
+
+        if (Object.keys(mergedHdRoadCoverageSourceCaches).length > 0 && !this._hdCoverage && HD.HdCoverageState) {
+            this._hdCoverage = new HD.HdCoverageState();
+        }
     }
 
     mergeIndoor() {
@@ -1969,6 +2012,15 @@ class Style extends Evented<MapEvents> {
                 }
             }
 
+            // Mark HD road coverage source caches as used when any layer uses their source
+            if (layer.source) {
+                const coverageFqid = makeFQID(layer.source, layer.scope);
+                const coverageCache = this._mergedHdRoadCoverageSourceCaches[coverageFqid];
+                if (coverageCache && !coverageCache.used) {
+                    coverageCache.used = true;
+                }
+            }
+
             // Accumulate source-max-zoom for fill-extrusion layers
             if (layer.type === 'fill-extrusion') {
                 const fqid = makeFQID(layer.source, layer.scope);
@@ -2365,6 +2417,7 @@ class Style extends Evented<MapEvents> {
         delete this._otherSourceCaches[id];
         delete this._symbolSourceCaches[id];
         delete this._fillExtrusionSourceCaches[id];
+        if (this._hdCoverage) delete this._hdCoverage.coverageSourceCaches[id];
         this.mergeSources();
 
         source.setEventedParent(null);
@@ -4316,6 +4369,10 @@ class Style extends Evented<MapEvents> {
             }
         }
 
+        // Set fade range before source cache updates so tiles loading on this
+        // frame see the correct forceHdCoveredFalse flag.
+        this.updateFrcCoverageFadeRange();
+
         for (const id in this._mergedSourceCaches) {
             const sourceCache = this._mergedSourceCaches[id];
             const elevatedLayers = sourcesWithElevatedLayers.has(sourceCache._source.id);
@@ -4325,6 +4382,8 @@ class Style extends Evented<MapEvents> {
             }
             sourceCache.update(transform, undefined, undefined, lightDirection, elevatedLayers);
         }
+
+        this.updateFrcCoverage();
     }
 
     _reloadSources() {
@@ -4333,6 +4392,15 @@ class Style extends Evented<MapEvents> {
             sourceCache.resume();
             sourceCache.reload();
         }
+    }
+
+    updateFrcCoverageFadeRange() {
+        if (!this.map.painter || !HD.updateFrcCoverageFadeRange) return;
+        HD.updateFrcCoverageFadeRange(this, this.map.painter);
+    }
+
+    updateFrcCoverage() {
+        if (this._hdCoverage && HD.updateFrcCoverage) HD.updateFrcCoverage(this, this._hdCoverage);
     }
 
     _handleLayerOrderChange() {
@@ -4695,6 +4763,11 @@ class Style extends Evented<MapEvents> {
         const fqid = makeFQID(layer.source, layer.scope);
         if (layer.type === 'symbol') return this._mergedSymbolSourceCaches[fqid];
         if (layer.type === 'fill-extrusion') return this._mergedFillExtrusionSourceCaches[fqid] || this._mergedOtherSourceCaches[fqid];
+        // Layers using hd_road_coverage source-layer render from the HdRoadCoverage
+        // source cache (maxzoom=14) since coverage data only exists at z14.
+        if (layer.type === 'fill' && layer.sourceLayer === HD_ROAD_COVERAGE_SOURCE_LAYER && this._mergedHdRoadCoverageSourceCaches[fqid]) {
+            return this._mergedHdRoadCoverageSourceCaches[fqid];
+        }
         return this._mergedOtherSourceCaches[fqid];
     }
 
@@ -4718,6 +4791,9 @@ class Style extends Evented<MapEvents> {
         }
         if (this._mergedFillExtrusionSourceCaches[fqid]) {
             sourceCaches.push(this._mergedFillExtrusionSourceCaches[fqid]);
+        }
+        if (this._mergedHdRoadCoverageSourceCaches[fqid]) {
+            sourceCaches.push(this._mergedHdRoadCoverageSourceCaches[fqid]);
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return sourceCaches;
@@ -4833,8 +4909,22 @@ class Style extends Evented<MapEvents> {
         if (this._fillExtrusionSourceCaches[source]) {
             sourceCaches.push(this._fillExtrusionSourceCaches[source]);
         }
+        if (this._hdCoverage && this._hdCoverage.coverageSourceCaches[source]) {
+            sourceCaches.push(this._hdCoverage.coverageSourceCaches[source]);
+        }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return sourceCaches;
+    }
+
+    // Returns true if HD module isn't loaded yet and the layer needs a coverage source
+    // cache — signals _load() to retry setup after prepareHD() resolves.
+    _updateHdCoverageSourceCache(layer: TypedStyleLayer): boolean {
+        if (!HD.HdCoverageState || !HD.updateHdCoverageSourceCache) {
+            return layer.type === 'fill' && layer.sourceLayer === HD_ROAD_COVERAGE_SOURCE_LAYER;
+        }
+        if (!this._hdCoverage) this._hdCoverage = new HD.HdCoverageState();
+        HD.updateHdCoverageSourceCache(this, this._hdCoverage, layer);
+        return false;
     }
 
     _isSourceCacheLoaded(source: string): boolean {

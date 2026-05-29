@@ -331,6 +331,26 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             showElevationIdDebug: this.map.painter ? this.map.painter._debugParams.showElevationIdDebug : false,
             promoteId: this.promoteId,
             renderSourceType: tile.renderSourceType,
+            frcCoverage: (() => {
+                const painter = this.map.painter;
+                const fadeRange = painter ? painter.frcCoverageFadeRange : null;
+                if (fadeRange == null) return null;
+                const snapshot = painter ? painter.frcCoverageSnapshot : null;
+                const mapZoom = this.map.transform.zoom;
+                const belowCoverageZoom = mapZoom < fadeRange[0];
+                const covTile = snapshot ? snapshot.getTileOrParent(tile.tileID.canonical) : null;
+                // Use ceil(fadeRange[1]) so integer endpoints (e.g. [14,15]) are handled correctly:
+                // overscaledZ=15 with max=15 should be filtered (>=), not skipped by a strict > test.
+                const aboveFadeMax = tile.tileID.overscaledZ >= Math.ceil(fadeRange[1]);
+                const frcMaskFromSnapshot = (snapshot && aboveFadeMax) ? snapshot.getFullCoverageMask(tile.tileID.canonical) : null;
+                return {
+                    frcMask: aboveFadeMax ? (frcMaskFromSnapshot != null ? frcMaskFromSnapshot : null) : null,
+                    resolved: belowCoverageZoom || snapshot != null,
+                    polygons: (covTile && covTile.frcMask !== 0) ? covTile.polygons : null,
+                    tileZoom: (covTile && covTile.frcMask !== 0) ? covTile.tileId.z : null,
+                    sourceLayers: painter ? painter.frcCoverageSourceLayers : ['road', 'structure'],
+                };
+            })(),
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
             extraShadowCaster: tile.isExtraShadowCaster,
             tessellationStep: this.map._tessellationStep,

@@ -37,12 +37,14 @@ export const RenderSourceType = {
     Other: 0,
     Symbol: 1,
     FillExtrusion: 2,
+    HdRoadCoverage: 3,
 } as const;
 export type RenderSourceType = typeof RenderSourceType[keyof typeof RenderSourceType];
 import type FeatureIndex from '../data/feature_index';
 import type {Bucket} from '../data/bucket';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type {WorkerSourceVectorTileResult, WorkerSourceVectorTileCallback} from './worker_source';
+import type {FrcCoveragePolygons} from './frc_coverage_snapshot';
 import type Actor from '../util/actor';
 import type DEMData from '../data/dem_data';
 import type {AlphaImage, SpritePositions} from '../util/image';
@@ -146,6 +148,8 @@ class Tile {
         [_: string]: VectorTileLayer;
     };
     renderSourceType: RenderSourceType | null | undefined;
+    frcCoveragePolygons: FrcCoveragePolygons | null | undefined;
+    hasDeferredRoadStructure: boolean;
     isExtraShadowCaster: boolean | null | undefined;
     isRaster: boolean | null | undefined;
     _tileTransform: TileTransform;
@@ -292,6 +296,11 @@ class Tile {
         }
         this.collisionBoxArray = data.collisionBoxArray;
         this.buckets = deserializeBucket(data.buckets, painter.style);
+
+        if (data.frcCoveragePolygons && data.frcCoveragePolygons.length > 0) {
+            this.frcCoveragePolygons = data.frcCoveragePolygons;
+        }
+        this.hasDeferredRoadStructure = !!data.hasDeferredRoadStructure;
 
         this.hasSymbolBuckets = false;
         this.hasTunnelGeometry = !!data.hasTunnelGeometry;

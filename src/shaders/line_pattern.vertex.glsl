@@ -42,7 +42,6 @@ uniform mat2 u_pixels_to_tile_units;
 uniform float u_device_pixel_ratio;
 uniform float u_width_scale;
 uniform float u_floor_width_scale;
-uniform lowp float u_opacity_multiplier;
 
 #ifdef ELEVATED
 uniform lowp float u_zbias_factor;

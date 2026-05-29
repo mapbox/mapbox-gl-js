@@ -181,6 +181,7 @@ class LineBucket implements Bucket {
     hasCrossSlope: boolean;
     programConfigurations: ProgramConfigurationSet<LineStyleLayer>;
     segments: SegmentVector;
+    sourceLayerName: string;
     uploaded: boolean;
     projection: ProjectionSpecification;
     currentVertex: Point4D | null | undefined;
@@ -226,6 +227,7 @@ class LineBucket implements Bucket {
         this.indexArray = new TriangleIndexArray();
         this.programConfigurations = new ProgramConfigurationSet(options.layers, {zoom: options.zoom, lut: options.lut});
         this.segments = new SegmentVector();
+        this.sourceLayerName = options.sourceLayerName || '';
         this.maxLineLength = 0;
         this.zOffsetVertexArray = new LineZOffsetExtArray();
         this.elevationIdColVertexArray = new LineElevationIdColArray();
@@ -282,8 +284,9 @@ class LineBucket implements Bucket {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors}), evaluationFeature, canonical))
-                continue;
+            const passesFilter = this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors}), evaluationFeature, canonical);
+
+            if (!passesFilter) continue;
 
             const sortKey = lineSortKey ?
                 lineSortKey.evaluate(evaluationFeature, {}, canonical) :
@@ -332,6 +335,13 @@ class LineBucket implements Bucket {
 
             const feature = features[index].feature;
             featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
+        }
+
+        // Build per-FRC-level segments for non-pattern features (pattern features
+        // are handled in addFeatures separately). The extension early-returns when
+        // FRC tracking isn't enabled on this bucket.
+        if (!this.hasPattern && this.hdExt) {
+            this.hdExt.buildFrcSegments(this);
         }
     }
 
@@ -407,6 +417,9 @@ class LineBucket implements Bucket {
     addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[], _: TileTransform, brightness?: number | null) {
         for (const feature of this.patternFeatures) {
             this.addFeature(feature, feature.geometry, feature.index, canonical, imagePositions, availableImages, brightness, options.elevationFeatures);
+        }
+        if (this.hdExt) {
+            this.hdExt.buildFrcSegments(this);
         }
     }
 
@@ -485,6 +498,9 @@ class LineBucket implements Bucket {
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[], brightness?: number | null, elevationFeatures?: ElevationFeature[]) {
         const layout = this.layers[0].layout;
 
+        const frc = this.hdExt ? this.hdExt.trackFeatureFrc(feature.properties) : null;
+        const triStartIndex = this.indexArray.length;
+
         const join = layout.get('line-join').evaluate(feature, {});
 
         const cap = layout.get('line-cap').evaluate(feature, {});
@@ -515,9 +531,8 @@ class LineBucket implements Bucket {
             }
         }
 
-        if (this.hdExt) {
-            this.hdExt.handleFeature(feature, geometry, canonical, elevationFeatures, join, cap, miterLimit, roundLimit, this);
-        } else {
+        const handledByElevation = this.hdExt != null && this.hdExt.handleFeature(feature, geometry, canonical, elevationFeatures, join, cap, miterLimit, roundLimit, this);
+        if (!handledByElevation) {
             for (let i = 0; i < geometry.length; i++) {
                 const line = geometry[i];
                 const multiLineMetricsIndex = hasMapboxLineMetrics && i > 0 ? i : null;
@@ -526,6 +541,10 @@ class LineBucket implements Bucket {
         }
 
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness, undefined, this.worldview);
+
+        if (this.hdExt) {
+            this.hdExt.recordFeatureRange(this, triStartIndex, this.indexArray.length, frc);
+        }
     }
 
     /**

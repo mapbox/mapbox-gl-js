@@ -7,6 +7,8 @@ import {getElevationFeature} from '../../elevation/get_elevation_feature';
 import {tileToMeter} from '../../../src/geo/mercator_coordinate';
 import {clipLines, lineSubdivision, type LineInfo} from '../../../src/util/line_clipping';
 import EXTENT from '../../../src/style-spec/data/extent';
+import {FrcSegmentData, buildFrcLevelSegments} from '../frc_segment_builder';
+import {featureFrcLevel, matchesCoverageSourceLayer} from '../frc_road_classes';
 
 import type {CanonicalTileID} from '../../../src/source/tile_id';
 import type {BucketFeature} from '../../../src/data/bucket';
@@ -35,10 +37,49 @@ function computeSegPrevDir(info: LineInfo, line: Point[]) {
  * @private
  */
 export class LineHDExtension {
+    elevationEnabled: boolean;
     heightRange: Range | undefined;
+    frcData: FrcSegmentData | undefined;
+
+    constructor(elevationEnabled: boolean, frcEnabled: boolean) {
+        this.elevationEnabled = elevationEnabled;
+        if (frcEnabled) {
+            this.frcData = new FrcSegmentData();
+        }
+    }
 
     isEmpty(): boolean {
-        return this.heightRange === undefined;
+        const elevEmpty = !this.elevationEnabled || this.heightRange === undefined;
+        const frcEmpty = !this.frcData || this.frcData.empty();
+        return elevEmpty && frcEmpty;
+    }
+
+    /// Compute the feature's FRC level and record it in the coverage set. Returns the
+    /// level (or null) so the caller can pass it back to `recordFeatureRange`.
+    trackFeatureFrc(properties: Record<string, unknown> | null | undefined): number | null {
+        if (!this.frcData) return null;
+        const frc = featureFrcLevel(properties || {});
+        if (frc !== null) this.frcData.frcCoverage.add(frc);
+        return frc;
+    }
+
+    /// Record a feature's [triStart, triEnd) triangle range. Called after addLine.
+    recordFeatureRange(bucket: LineBucket, triStartIndex: number, triEndIndex: number, frc: number | null): void {
+        if (!this.frcData || triEndIndex <= triStartIndex) return;
+        const segArray = bucket.segments.get();
+        this.frcData.featureTriSegments.push({
+            start: triStartIndex * 3,
+            end: triEndIndex * 3,
+            segIdx: segArray.length > 0 ? segArray.length - 1 : 0,
+            frc,
+        });
+    }
+
+    /// Sort triangles by FRC and emit per-level segment vectors. Called once at the
+    /// end of populate / addFeatures.
+    buildFrcSegments(bucket: LineBucket): void {
+        if (!this.frcData || this.frcData.empty()) return;
+        buildFrcLevelSegments(this.frcData, bucket.indexArray, bucket.segments);
     }
 
     /**
@@ -60,7 +101,8 @@ export class LineHDExtension {
         miterLimit: number,
         roundLimit: number,
         bucket: LineBucket,
-    ): void {
+    ): boolean {
+        if (!this.elevationEnabled) return false;
         const tiledElevation = getElevationFeature(feature, elevationFeatures);
         if (tiledElevation) {
             const clippedLines = clipLines(geometry, -ELEVATION_CLIP_MARGIN, -ELEVATION_CLIP_MARGIN, EXTENT + ELEVATION_CLIP_MARGIN, EXTENT + ELEVATION_CLIP_MARGIN);
@@ -90,7 +132,7 @@ export class LineHDExtension {
 
                 assert(bucket.layoutVertexArray.length === bucket.zOffsetVertexArray.length);
             }
-            return;
+            return true;
         }
 
         // Feature is not elevated but is rendered as part of (road) elevated bucket.
@@ -115,6 +157,7 @@ export class LineHDExtension {
         }
 
         bucket.fillNonElevatedRoadSegment(vertexOffset);
+        return true;
     }
 
     private prepareElevatedLines(lines: Point[][], elevation: ElevationFeature, tileID: CanonicalTileID): Point[][] {
@@ -145,20 +188,24 @@ export class LineHDExtension {
 }
 
 /**
- * Attach a `LineHDExtension` to the bucket if its layer declares HD road elevation.
- * Called by `worker_tile.ts` immediately after LineBucket construction, which is
- * BEFORE `populate()` runs — so we can't rely on `bucket.elevationType` here (it's
- * still the default `'none'` at attach time). We inspect the raw layer property
- * instead; `'hd-road-markup'` is the one value that maps to `elevationType === 'road'`
- * in `populate()`.
+ * Attach a `LineHDExtension` when either HD road elevation or FRC coverage tracking
+ * applies. Elevation is gated on `line-elevation-reference === 'hd-road-markup'`;
+ * FRC is gated on the bucket's source layer being in the configured
+ * `coverageSourceLayers` set. The extension owns both feature sets internally so
+ * core LineBucket carries no FRC fields.
+ *
+ * Called by `worker_tile.ts` immediately after LineBucket construction (BEFORE
+ * `populate()` runs).
  *
  * @private
  */
-export function maybeAttachLineHDExt(bucket: LineBucket): void {
+export function maybeAttachLineHDExt(bucket: LineBucket, coverageSourceLayers: string[] | null | undefined): void {
     const elevationReference = bucket.layers[0].layout.get('line-elevation-reference');
-    if (elevationReference === 'hd-road-markup') {
-        bucket.hdExt = new LineHDExtension();
-    }
+    const elevationEnabled = elevationReference === 'hd-road-markup';
+    const frcEnabled = !!coverageSourceLayers && coverageSourceLayers.length > 0 &&
+        matchesCoverageSourceLayer(coverageSourceLayers, bucket.layers[0].source, bucket.sourceLayerName);
+    if (!elevationEnabled && !frcEnabled) return;
+    bucket.hdExt = new LineHDExtension(elevationEnabled, frcEnabled);
 }
 
 register(LineHDExtension, 'LineHDExtension');

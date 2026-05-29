@@ -86,6 +86,7 @@ class SegmentVector {
             sortKey: 0
         }]);
     }
+
 }
 
 /*
