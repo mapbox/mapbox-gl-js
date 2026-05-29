@@ -1,0 +1,54 @@
+{
+  "_comment": "Verifies that a composite step expression on zoom produces a discrete 0/1 opacity transition, not a gradual mix. At zoom=14.9 (floor=14, u_zoom=0.9) with a step at zoom=15, icon-opacity should be 0 (invisible). Without the fix, mix(0, 1, 0.9)=0.9 would make the icon nearly opaque.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64,
+      "allowed": 0
+    }
+  },
+  "center": [0, 0],
+  "zoom": 14.9,
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [0, 0]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "icon-image": "building-12"
+      },
+      "paint": {
+        "icon-opacity": ["step", ["zoom"], 0.1, 15, 1]
+      }
+    }
+  ]
+}

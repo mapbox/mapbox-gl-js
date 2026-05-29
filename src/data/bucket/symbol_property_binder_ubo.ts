@@ -104,6 +104,11 @@ export type LocalFeatureVertexRange = {
 
 /**
  * Constant property values ready to be set as u_spp_* uniforms.
+ *
+ * `zoomFactors` carries one precomputed interpolation factor per property — the same role
+ * `u_opacity_t` etc. played in the pre-UBO pragma-mapbox approach. Each factor is the
+ * `t` in `mix(min, max, t)` for that property at the current render zoom. 9 floats total,
+ * indexed by property bit position; entries for non-zoom-dep properties are unused.
  */
 export type ConstantUniformValues = {
     fill_np_color: [number, number, number, number];
@@ -114,6 +119,7 @@ export type ConstantUniformValues = {
     emissive_strength: number;
     occlusion_opacity: number;
     z_offset: number;
+    zoomFactors: Float32Array;
 };
 
 /**
@@ -173,6 +179,11 @@ export class SymbolPropertyBinderUBO {
     // When true, updateDynamicExpressions can be skipped on brightness-only changes.
     isLightConstant: boolean;
 
+    // [zm, zM] pairs per zoom-dep property (9 pairs = 18 floats), computed in buildHeader.
+    // Each draw call, getConstantUniformValues turns these into a single u_spp_*_zoom_factor
+    // per property using the current render zoom.
+    sharedZoomRanges: Float32Array;
+
     // Flat scratch buffer for evaluateAllProperties — reused per call, eliminates per-feature inner array allocations.
     _evalFlat: Float32Array;
 
@@ -207,6 +218,7 @@ export class SymbolPropertyBinderUBO {
 
         this.activeAppearanceByVtIndex = new Map();
         this.isLightConstant = true; // updated in buildHeader()
+        this.sharedZoomRanges = new Float32Array(18); // updated in buildHeader()
         this._evalFlat = new Float32Array(SymbolPropertiesUBO.EVAL_FLAT_TOTAL);
     }
 
@@ -247,6 +259,7 @@ export class SymbolPropertyBinderUBO {
         let dataDrivenOffset = 0;
         let allDataDrivenLightConstant = true;
         const offsets: [number, number, number, number, number, number, number, number, number] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        const sharedZoomRanges = new Float32Array(18);
 
         for (let i = 0; i < 9; i++) {
             const {name, isColor, isVec2} = propDefs[i];
@@ -300,6 +313,10 @@ export class SymbolPropertyBinderUBO {
                     offsets[i] = dataDrivenOffset;
                     dataDrivenOffset += isZoomDep ? 2 : 1;
                 }
+
+                if (isZoomDep && prop) {
+                    this._computeZoomRange(prop, Math.floor(this.zoom), sharedZoomRanges, i * 2);
+                }
             } else {
                 if (isCamera) cameraMask |= (1 << i);
                 // Constant properties use u_spp_* uniforms — offset is unused, leave at 0.
@@ -311,6 +328,7 @@ export class SymbolPropertyBinderUBO {
         const dataDrivenBlockSizeVec4 = dataDrivenBlockSizeDwords / 4;
 
         this.isLightConstant = allDataDrivenLightConstant;
+        this.sharedZoomRanges = sharedZoomRanges;
 
         return {dataDrivenMask, zoomDependentMask, cameraMask, dataDrivenBlockSizeVec4, offsets};
     }
@@ -436,10 +454,69 @@ export class SymbolPropertyBinderUBO {
             flat[flatOffset + 2] = packUint8ToFloat(255 * maxNP.r, 255 * maxNP.g);
             flat[flatOffset + 3] = packUint8ToFloat(255 * maxNP.b, 255 * maxNP.a);
         } else {
-            // Non-zoom: last 2 dwords are padding (shader uses readVec2).
             flat[flatOffset + 2] = 0;
             flat[flatOffset + 3] = 0;
         }
+    }
+
+    /**
+     * Compute [zm, zM] for the zoom-interpolation range that contains floorZoom and write
+     * it into `out[outOffset..outOffset+1]`
+     *
+     * For step expressions (interpolationType == null):
+     *   If a boundary falls in (floorZoom, floorZoom+1], write [t, t] where t = boundary - floorZoom.
+     *   The shader interprets zm == zM as a step: output = u_zoom >= zm ? max : min.
+     *   If no boundary in range, write [1.0, 1.0] (stays at floorZoom's value throughout).
+     *
+     * For interpolate expressions (interpolationType != null):
+     *   If a stop falls in (floorZoom, floorZoom+1), use zm = stop - floorZoom to delay the
+     *   transition start.
+     *   zM is always 1.0 (transition ends at the next integer zoom).
+     */
+    private _computeZoomRange(prop: PossiblyEvaluatedPropertyValue<unknown>, floorZoom: number, out: Float32Array, outOffset: number): void {
+        const writeRange = (zm: number, zM: number) => {
+            out[outOffset] = zm;
+            out[outOffset + 1] = zM;
+        };
+        if (!prop || !prop.value) { writeRange(0.0, 1.0); return; }
+        const expr = prop.value as {kind?: string; interpolationType?: {name: string} | null; zoomStops?: number[]};
+        if (expr.kind !== 'composite') { writeRange(0.0, 1.0); return; }
+        const stops = expr.zoomStops;
+        if (!stops || stops.length === 0) { writeRange(0.0, 1.0); return; }
+        const isStep = expr.interpolationType == null;
+        if (isStep) {
+            for (const stop of stops) {
+                if (isFinite(stop) && stop > floorZoom && stop <= floorZoom + 1) {
+                    const t = stop - floorZoom;
+                    writeRange(t, t); // zm == zM → step at threshold t
+                    return;
+                }
+            }
+            writeRange(1.0, 1.0); // No step boundary in this zoom range — value stays constant
+            return;
+        }
+        // Only delay the interpolation start (zm > 0) when the expression has NO stop
+        // at or below floorZoom. A stop at floorZoom means the interpolation begins
+        // there; a stop below means it is already in progress. In both cases zm = 0
+        // and behavior is unchanged from the plain mix(min, max, u_zoom) path.
+        //
+        // This handles the case where an expression starts mid-integer — e.g.,
+        // ["interpolate", ["linear"], ["zoom"], 1.5, 0, 2, 1] at floorZoom=1 should
+        // not start the transition until u_zoom=0.5 (zm=0.5).
+        for (const stop of stops) {
+            if (isFinite(stop) && stop <= floorZoom) {
+                writeRange(0.0, 1.0); // Starts at floor zoom — use default mix range
+                return;
+            }
+        }
+        let zm = 0.0;
+        for (const stop of stops) {
+            if (isFinite(stop) && stop > floorZoom && stop < floorZoom + 1) {
+                zm = stop - floorZoom;
+                break;
+            }
+        }
+        writeRange(zm, 1.0); // Interpolation starts at zm, reaches max at zM=1.0
     }
 
     /**
@@ -876,20 +953,22 @@ export class SymbolPropertyBinderUBO {
      * Called once per draw call in draw_symbol.ts. Evaluates at the current render zoom
      * so that camera (zoom-only) expressions are up-to-date every frame.
      *
-     * Result is cached: constant layers (cameraMask==0) cache indefinitely until the layer
-     * changes; camera layers re-evaluate only when renderZoom or brightness changes.
+     * Result is cached: constant layers without camera or zoom-dep properties cache
+     * indefinitely until the layer changes; otherwise the cache invalidates on renderZoom
+     * or brightness change.
      */
     getConstantUniformValues(renderZoom: number, brightness?: number | null): ConstantUniformValues {
         const header = this.cachedHeader;
         const hasCameraExpr = !!(header && header.cameraMask);
+        const hasZoomDep = !!(header && header.zoomDependentMask);
 
-        // Cache hit: for layers with no camera expressions zoom is irrelevant, so any zoom
-        // matches. For camera layers, both zoom and brightness must match.
+        // Cache hit: zoom factors depend on renderZoom too, so we must also invalidate on
+        // renderZoom change when any property is zoom-dependent.
         // Truthy check (not !== null) because the field may be undefined after worker→main
         // transfer (constructor is not called during deserialization, omitted fields stay undefined).
         if (this.cachedConstantUniforms &&
                 this.cachedConstantBrightness === brightness &&
-                (!hasCameraExpr || this.cachedConstantRenderZoom === renderZoom)) {
+                ((!hasCameraExpr && !hasZoomDep) || this.cachedConstantRenderZoom === renderZoom)) {
             return this.cachedConstantUniforms;
         }
 
@@ -935,6 +1014,21 @@ export class SymbolPropertyBinderUBO {
             return prop.constantOr(defaultVal);
         };
 
+        // Precompute the zoom-interpolation factor for every zoom-dep property.
+        // Step expressions encode the snap as zm == zM.
+        const zoomFactors = new Float32Array(9);
+        if (hasZoomDep) {
+            const uZoom = renderZoom - Math.floor(renderZoom);
+            for (let i = 0; i < 9; i++) {
+                if ((header.zoomDependentMask & (1 << i)) === 0) continue;
+                const zm = this.sharedZoomRanges[i * 2];
+                const zM = this.sharedZoomRanges[i * 2 + 1];
+                zoomFactors[i] = zm === zM ?
+                    (uZoom >= zm ? 1.0 : 0.0) :
+                    Math.max(0, Math.min(1, (uZoom - zm) / (zM - zm)));
+            }
+        }
+
         const result: ConstantUniformValues = {
             'fill_np_color': getColor(0),
             'halo_np_color': getColor(1),
@@ -944,6 +1038,7 @@ export class SymbolPropertyBinderUBO {
             'emissive_strength': getFloat(5, 0.0),
             'occlusion_opacity': getFloat(6, 1.0),
             'z_offset': getFloat(7, 0.0),
+            zoomFactors,
         };
 
         this.cachedConstantUniforms = result;

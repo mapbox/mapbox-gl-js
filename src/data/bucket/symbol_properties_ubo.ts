@@ -8,13 +8,12 @@ import type Context from '../../gl/context';
  * Property order (bit index 0-8): fill_color, halo_color, opacity,
  * halo_width, halo_blur, emissive_strength, occlusion_opacity, z_offset, translate.
  *
- * dataDrivenMask      – bitmask: 1 = property goes in per-feature data-driven block
- * zoomDependentMask   – bitmask: 1 = property uses zoom interpolation (composite kind)
- * cameraMask          – bitmask: 1 = property is a camera (zoom-only) expression
+ * dataDrivenMask          – bitmask: 1 = property goes in per-feature data-driven block
+ * zoomDependentMask       – bitmask: 1 = property uses zoom interpolation (composite kind)
+ * cameraMask              – bitmask: 1 = property is a camera (zoom-only) expression
  * dataDrivenBlockSizeVec4 – size of data-driven block in vec4 units (0 when dataDrivenMask=0)
- * offsets[i]          – dword offset of property i within the data-driven block
- *                       (only meaningful for properties with the dataDrivenMask bit set)
- *
+ * offsets[i]              – dword offset of property i within the data-driven block
+ *                           (only meaningful for properties with the dataDrivenMask bit set)
  */
 export type SymbolPropertyHeader = {
     dataDrivenMask: number;
@@ -156,7 +155,7 @@ export class SymbolPropertiesUBO {
      * Layout (matching GL Native):
      *   u_header[0] = { dataDrivenMask, zoomDependentMask, dataDrivenBlockSizeVec4, offsets[0] }
      *   u_header[1] = { offsets[1], offsets[2], offsets[3], offsets[4] }
-     *   u_header[2] = { offsets[5], offsets[6], offsets[7], 0 }
+     *   u_header[2] = { offsets[5], offsets[6], offsets[7], offsets[8] }
      */
     writeHeader(header: SymbolPropertyHeader): void {
         const h = this.headerData;

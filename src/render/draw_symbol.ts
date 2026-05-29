@@ -826,6 +826,17 @@ function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, lay
         uniformValues['u_spp_emissive_strength'] = cv.emissive_strength;
         uniformValues['u_spp_occlusion_opacity'] = cv.occlusion_opacity;
         uniformValues['u_spp_z_offset']          = cv.z_offset;
+        // Per-property precomputed zoom interpolation factor
+        const zf = cv.zoomFactors;
+        uniformValues['u_spp_fill_color_zoom_factor']        = zf[0];
+        uniformValues['u_spp_halo_color_zoom_factor']        = zf[1];
+        uniformValues['u_spp_opacity_zoom_factor']           = zf[2];
+        uniformValues['u_spp_halo_width_zoom_factor']        = zf[3];
+        uniformValues['u_spp_halo_blur_zoom_factor']         = zf[4];
+        uniformValues['u_spp_emissive_strength_zoom_factor'] = zf[5];
+        uniformValues['u_spp_occlusion_opacity_zoom_factor'] = zf[6];
+        uniformValues['u_spp_z_offset_zoom_factor']          = zf[7];
+        uniformValues['u_spp_translate_zoom_factor']         = zf[8];
         // Compute translate-anchor rotation for per-feature translate (appearances).
         // When translate is data-driven (bit 8 of dataDrivenMask), u_coord_matrix has no translate
         // baked in (set to [0,0] in drawLayerSymbols). The shader applies per-feature translate

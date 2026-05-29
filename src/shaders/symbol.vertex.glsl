@@ -137,7 +137,7 @@ struct SymbolPaintProperties {
 struct PropertyType {
     /// Whether the property is data-driven and has value in data-driven block or constant uniform.
     bool isDataDriven;
-     /// Whether the property is zoom-dependent and has two values that need to be interpolated between zooms.
+    /// Whether the property is zoom-dependent and has two values that need to be interpolated between zooms.
     bool isZoomDependent;
     /// Local offset within the data-driven block (in dwords).
     ///
@@ -147,6 +147,9 @@ struct PropertyType {
     /// - float for float properties
     /// - vec2 for two floats properties (used for zoom-dependent float properties)
     uint offsetDwords;
+    /// Precomputed zoom interpolation factor t in [0, 1] supplied by the binder via
+    /// u_spp_*_zoom_factor. Only meaningful when isZoomDependent is true.
+    float zoomFactor;
 };
 
 struct SymbolPropertyHeader {
@@ -166,9 +169,6 @@ struct SymbolPropertyHeader {
     PropertyType translate;
 };
 
-/// Zoom interpolation factor for zoom-dependent paint properties.
-uniform float u_zoom;
-
 /// Constant paint properties values shared for all features.
 ///
 /// Note: "spp" prefix (Symbol Paint Properties) is needed to avoid name conflicts
@@ -183,6 +183,17 @@ uniform lowp float u_spp_occlusion_opacity;
 uniform highp float u_spp_z_offset;
 /// [cos(angle), sin(angle)] for translate-anchor rotation; [1,0] = no rotation (viewport anchor).
 uniform lowp vec2 u_spp_translate_rotation;
+
+/// Per-property zoom interpolation factor. Only meaningful for zoom-dependent properties.
+uniform highp float u_spp_fill_color_zoom_factor;
+uniform highp float u_spp_halo_color_zoom_factor;
+uniform highp float u_spp_opacity_zoom_factor;
+uniform highp float u_spp_halo_width_zoom_factor;
+uniform highp float u_spp_halo_blur_zoom_factor;
+uniform highp float u_spp_emissive_strength_zoom_factor;
+uniform highp float u_spp_occlusion_opacity_zoom_factor;
+uniform highp float u_spp_z_offset_zoom_factor;
+uniform highp float u_spp_translate_zoom_factor;
 
 /// Per-feature index used to look up the feature's data-driven paint property block in
 /// the u_properties uniform buffer.
@@ -221,31 +232,29 @@ out lowp float v_halo_blur;
 out lowp float v_emissive_strength;
 #endif
 
-PropertyType getPropertyType(uint propertyIndex, uint dataDrivenMask, uint zoomDependentMask, uint offsetDwords) {
+PropertyType getPropertyType(uint propertyIndex, uint dataDrivenMask, uint zoomDependentMask, uint offsetDwords, float zoomFactor) {
     PropertyType type;
     type.isDataDriven = (dataDrivenMask & (1u << propertyIndex)) != 0u;
     type.isZoomDependent = (zoomDependentMask & (1u << propertyIndex)) != 0u;
     type.offsetDwords = offsetDwords;
+    type.zoomFactor = zoomFactor;
     return type;
 }
 
 SymbolPropertyHeader readSymbolPropertiesHeader() {
     SymbolPropertyHeader header;
-    // Read masks:
-    uint dataDrivenMask = u_spp_header.header[0][0];
-    uint zoomDependentMask = u_spp_header.header[0][1];
-    // Read block sizes:
+    uint dataDrivenMask            = u_spp_header.header[0][0];
+    uint zoomDependentMask         = u_spp_header.header[0][1];
     header.dataDrivenBlockSizeVec4 = u_spp_header.header[0][2];
-    // Read property types and block offsets:
-    header.fill_np_color        = getPropertyType(0u, dataDrivenMask, zoomDependentMask, u_spp_header.header[0][3]);
-    header.halo_np_color        = getPropertyType(1u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][0]);
-    header.opacity              = getPropertyType(2u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][1]);
-    header.halo_width           = getPropertyType(3u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][2]);
-    header.halo_blur            = getPropertyType(4u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][3]);
-    header.emissive_strength    = getPropertyType(5u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][0]);
-    header.occlusion_opacity    = getPropertyType(6u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][1]);
-    header.z_offset             = getPropertyType(7u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][2]);
-    header.translate            = getPropertyType(8u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][3]);
+    header.fill_np_color     = getPropertyType(0u, dataDrivenMask, zoomDependentMask, u_spp_header.header[0][3], u_spp_fill_color_zoom_factor);
+    header.halo_np_color     = getPropertyType(1u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][0], u_spp_halo_color_zoom_factor);
+    header.opacity           = getPropertyType(2u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][1], u_spp_opacity_zoom_factor);
+    header.halo_width        = getPropertyType(3u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][2], u_spp_halo_width_zoom_factor);
+    header.halo_blur         = getPropertyType(4u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][3], u_spp_halo_blur_zoom_factor);
+    header.emissive_strength = getPropertyType(5u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][0], u_spp_emissive_strength_zoom_factor);
+    header.occlusion_opacity = getPropertyType(6u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][1], u_spp_occlusion_opacity_zoom_factor);
+    header.z_offset          = getPropertyType(7u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][2], u_spp_z_offset_zoom_factor);
+    header.translate         = getPropertyType(8u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][3], u_spp_translate_zoom_factor);
     return header;
 }
 
@@ -295,11 +304,15 @@ uint getDataDrivenBlockOffsetVec4(uint dataDrivenBlockSizeVec4) {
     return blockIndex * dataDrivenBlockSizeVec4;
 }
 
+/// Read a color property from the UBO.
+/// Non-zoom: vec4 at offsetDwords = [RG, BA, pad, pad]; decode packed vec2.
+/// Zoom-dep: vec4 at offsetDwords = [minRG, minBA, maxRG, maxBA]; mix via the property's
+///           precomputed zoomFactor on the CPU side.
 vec4 readColorProperty(PropertyType propertyType, uint dataDrivenBlockSizeVec4) {
     uint blockOffsetVec4 = getDataDrivenBlockOffsetVec4(dataDrivenBlockSizeVec4);
     vec4 color = readVec4(blockOffsetVec4, propertyType.offsetDwords);
     if (propertyType.isZoomDependent) {
-        color = unpack_mix_color(color, u_zoom);
+        color = unpack_mix_color(color, propertyType.zoomFactor);
     } else {
         vec2 packedColor = readVec2(color, propertyType.offsetDwords);
         color = decode_color(packedColor);
@@ -309,25 +322,28 @@ vec4 readColorProperty(PropertyType propertyType, uint dataDrivenBlockSizeVec4) 
 
 /// Read a vec2 property (translate) from the UBO.
 /// Non-zoom: 2 consecutive floats [tx, ty] within the same vec4 (offset%4 <= 2).
-/// Zoom-dep: 4 floats [tx_min, ty_min, tx_max, ty_max] at a vec4-aligned offset.
+/// Zoom-dep: 4 floats [tx_min, ty_min, tx_max, ty_max] at a vec4-aligned offset. Mix via the property's
+/// precomputed zoomFactor
 vec2 readVec2Property(PropertyType propertyType, uint dataDrivenBlockSizeVec4) {
     uint blockOffsetVec4 = getDataDrivenBlockOffsetVec4(dataDrivenBlockSizeVec4);
     vec4 slot = readVec4(blockOffsetVec4, propertyType.offsetDwords);
     if (propertyType.isZoomDependent) {
-        vec2 minVal = slot.xy;
-        vec2 maxVal = slot.zw;
-        return mix(minVal, maxVal, u_zoom);
+        return mix(slot.xy, slot.zw, propertyType.zoomFactor);
     }
     return readVec2(slot, propertyType.offsetDwords);
 }
 
+/// Read a float property from the UBO.
+/// Non-zoom: single float at offsetDwords within its vec4.
+/// Zoom-dep: 2 consecutive floats [min, max] within one vec4 (even-aligned);
+///           mix via the property's precomputed zoomFactor on the CPU side.
 float readFloatProperty(PropertyType propertyType, uint dataDrivenBlockSizeVec4) {
     uint blockOffsetVec4 = getDataDrivenBlockOffsetVec4(dataDrivenBlockSizeVec4);
     vec4 slot = readVec4(blockOffsetVec4, propertyType.offsetDwords);
     float value;
     if (propertyType.isZoomDependent) {
         vec2 packedValues = readVec2(slot, propertyType.offsetDwords);
-        value = unpack_mix_vec2(packedValues, u_zoom);
+        value = unpack_mix_vec2(packedValues, propertyType.zoomFactor);
     } else {
         value = readFloat(slot, propertyType.offsetDwords);
     }

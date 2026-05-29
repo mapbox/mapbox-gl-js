@@ -30,12 +30,11 @@ describe('SymbolPropertiesUBO', () => {
         const header = makeAllConstantHeader();
         ubo.writeHeader(header);
 
-        // New layout (matching GL Native):
+        // Layout (3 uvec4s = 12 dwords):
         //   h[0] = dataDrivenMask
         //   h[1] = zoomDependentMask
         //   h[2] = dataDrivenBlockSizeVec4
-        //   h[3..10] = offsets[0..7]
-        //   h[11] = offsets[8] (translate)
+        //   h[3..11] = offsets[0..8]
         expect(ubo.headerData[0]).toEqual(0);   // dataDrivenMask
         expect(ubo.headerData[1]).toEqual(0);   // zoomDependentMask
         expect(ubo.headerData[2]).toEqual(0);   // dataDrivenBlockSizeVec4 (all-constant → 0)
@@ -43,7 +42,7 @@ describe('SymbolPropertiesUBO', () => {
         expect(ubo.headerData[4]).toEqual(0);   // offsets[1] = halo_color
         expect(ubo.headerData[5]).toEqual(0);   // offsets[2] = opacity
         expect(ubo.headerData[6]).toEqual(0);   // offsets[3] = halo_width
-        expect(ubo.headerData[11]).toEqual(0);  // unused padding
+        expect(ubo.headerData[11]).toEqual(0);  // offsets[8] = translate
     });
 
     test('writeDataDrivenBlock stores feature data at correct offset', () => {
