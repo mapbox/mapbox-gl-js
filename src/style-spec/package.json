@@ -47,7 +47,7 @@
     "@mapbox/point-geometry": "^1.1.0",
     "@mapbox/unitbezier": "^1.0.0",
     "cheap-ruler": "^4.0.0",
-    "csscolorparser": "~1.0.2",
+    "csscolorparser": "~1.0.3",
     "json-stringify-pretty-compact": "^4.0.0",
     "quickselect": "^3.0.0",
     "tinyqueue": "^3.0.0"

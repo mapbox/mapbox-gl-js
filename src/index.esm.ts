@@ -147,7 +147,7 @@ export type {
 
 // Named value exports — classes, functions, constants
 export const version: string = _version;
-export {supported} from '@mapbox/mapbox-gl-supported';
+export {isSupported as supported} from '@mapbox/mapbox-gl-supported';
 export {Map} from './ui/map';
 export {default as NavigationControl} from './ui/control/navigation_control';
 export {default as GeolocateControl} from './ui/control/geolocate_control';

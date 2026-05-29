@@ -29,7 +29,7 @@ import LngLat, {LngLatBounds} from '../geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import AttributionControl from './control/attribution_control';
 import LogoControl from './control/logo_control';
-import {supported} from '@mapbox/mapbox-gl-supported';
+import {webGLContextAttributes} from '@mapbox/mapbox-gl-supported';
 import {RGBAImage} from '../util/image';
 import {Event, ErrorEvent} from '../util/evented';
 import {MapMouseEvent} from './events';
@@ -4329,7 +4329,7 @@ export class Map extends Camera {
     }
 
     _setupPainter() {
-        const attributes = Object.assign({}, supported.webGLContextAttributes, {
+        const attributes = Object.assign({}, webGLContextAttributes, {
             failIfMajorPerformanceCaveat: this._failIfMajorPerformanceCaveat,
             preserveDrawingBuffer: this._preserveDrawingBuffer,
             antialias: this._antialias || false

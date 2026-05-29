@@ -1,6 +1,6 @@
 import {PerformanceUtils} from './util/performance';
 import assert from './style-spec/util/assert';
-import {supported} from '@mapbox/mapbox-gl-supported';
+import {isSupported as supported} from '@mapbox/mapbox-gl-supported';
 import {version} from '../package.json';
 import {Map} from './ui/map';
 import NavigationControl from './ui/control/navigation_control';
