@@ -1330,7 +1330,6 @@ export class Map extends Camera {
     /**
      * Returns the map's language, which is used for translating map labels and UI components.
      *
-     * @private
      * @returns {undefined | string | string[]} Returns the map's language code.
      * @example
      * const language = map.getLanguage();
@@ -1351,13 +1350,12 @@ export class Map extends Camera {
     /**
      * Sets the map's language, which is used for translating map labels and UI components.
      *
-     * @private
      * @param {'auto' | string | string[]} [language] A string representing the desired language used for the map's labels and UI components. Languages can only be set on Mapbox vector tile sources.
-     *  Valid language strings must be a [BCP-47 language code](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_subtags). Unsupported BCP-47 codes will not include any translations. Invalid codes will result in an recoverable error.
-     *  If a label has no translation for the selected language, it will display in the label's local language.
-     *  If param is set to `auto`, GL JS will select a user's preferred language as determined by the browser's [`window.navigator.language`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language) property.
-     *  If the `locale` property is not set separately, this language will also be used to localize the UI for supported languages.
-     *  If param is set to `undefined` or `null`, it will remove the current map language and reset the language used for translating map labels and UI components.
+     * Valid language strings must be a [BCP-47 language code](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_subtags). Unsupported BCP-47 codes will not include any translations. Invalid codes will result in an recoverable error.
+     * If a label has no translation for the selected language, it will display in the label's local language.
+     * If param is set to `auto`, GL JS will select a user's preferred language as determined by the browser's [`window.navigator.language`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language) property.
+     * If the `locale` property is not set separately, this language will also be used to localize the UI for supported languages.
+     * If param is set to `undefined` or `null`, it will remove the current map language and reset the language used for translating map labels and UI components.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setLanguage('es');
@@ -1390,7 +1388,6 @@ export class Map extends Camera {
     /**
      * Returns the code for the map's worldview.
      *
-     * @private
      * @returns {string} Returns the map's worldview code.
      * @example
      * const worldview = map.getWorldview();
@@ -1402,12 +1399,11 @@ export class Map extends Camera {
     /**
      * Sets the map's worldview.
      *
-     * @private
      * @param {string} [worldview] A string representing the desired worldview.
-     *  A worldview determines the way that certain disputed boundaries are rendered.
-     *  Valid worldview strings must be an [ISO alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes).
-     *  Unsupported ISO alpha-2 codes will fall back to the TileJSON's default worldview. Invalid codes will result in a recoverable error.
-     *  If param is set to `undefined` or `null`, it will cause the map to fall back to the TileJSON's default worldview.
+     * A worldview determines the way that certain disputed boundaries are rendered.
+     * Valid worldview strings must be an [ISO alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes).
+     * Unsupported ISO alpha-2 codes will fall back to the TileJSON's default worldview. Invalid codes will result in a recoverable error.
+     * If param is set to `undefined` or `null`, it will cause the map to fall back to the TileJSON's default worldview.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setWorldview('JP');
