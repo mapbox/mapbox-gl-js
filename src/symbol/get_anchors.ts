@@ -5,7 +5,7 @@ import checkMaxAngle from './check_max_angle';
 import type Point from '@mapbox/point-geometry';
 import type {Shaping, PositionedIcon} from './shaping';
 
-export {getAnchors, getCenterAnchor};
+export {getAnchors, getCenterAnchor, getStartAnchor, getEndAnchor};
 
 function getLineLength(line: Array<Point>): number {
     let lineLength = 0;
@@ -165,4 +165,39 @@ function resample(line: Array<Point>, offset: number, spacing: number, angleWind
     }
 
     return anchors;
+}
+
+function getStartAnchor(
+    line: Array<Point>,
+    maxAngle: number,
+    shapedText: Shaping | null | undefined,
+    shapedIcon: PositionedIcon | null | undefined,
+    glyphSize: number,
+    boxScale: number,
+): Anchor | null | undefined {
+    if (line.length < 2) return;
+
+    // Use the first point as the anchor
+    const a = line[0];
+    const b = line[1];
+    const angle = a.angleTo(b);
+    return new Anchor(a.x, a.y, 0, angle, 0);
+}
+
+function getEndAnchor(
+    line: Array<Point>,
+    maxAngle: number,
+    shapedText: Shaping | null | undefined,
+    shapedIcon: PositionedIcon | null | undefined,
+    glyphSize: number,
+    boxScale: number,
+): Anchor | null | undefined {
+    if (line.length < 2) return;
+
+    // Use the last point as the anchor
+    const lastIndex = line.length - 1;
+    const a = line[lastIndex];
+    const b = line[lastIndex - 1];
+    const angle = a.angleTo(b);
+    return new Anchor(a.x, a.y, 0, angle, lastIndex - 1);
 }
