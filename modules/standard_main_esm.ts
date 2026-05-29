@@ -2,7 +2,7 @@ import {warnOnce} from '../src/util/util';
 
 import type {Standard as StandardType} from './standard_main_imports';
 
-export const Standard: Record<never, never> | typeof StandardType = {};
+export const Standard: Partial<typeof StandardType> = {};
 
 export async function prepareStandard(): Promise<void> {
     try {

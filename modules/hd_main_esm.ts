@@ -2,7 +2,7 @@ import {warnOnce} from '../src/util/util';
 
 import type {HD as HDType} from './hd_main_imports';
 
-export const HD: Record<never, never> | typeof HDType = {};
+export const HD: Partial<typeof HDType> = {};
 
 export async function prepareHD() {
     try {

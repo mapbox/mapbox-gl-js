@@ -71,7 +71,7 @@ import type {CutoffParams} from '../render/cutoff';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
 import type {LightsUniformsType} from '../../3d-style/render/lights';
 import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id';
-import type {ProgramName, ShaderSource} from './program';
+import type {ProgramName} from './program';
 import type {ProgramUniformsType, DynamicDefinesType} from './program/program_uniforms';
 import type {Source, ISource} from '../source/source';
 import type {UniformBindings} from './uniform_binding';
@@ -176,10 +176,10 @@ async function setupHD() {
 async function setupStandard() {
     await prepareStandard();
     Object.assign(draw, {
-        model: (Standard as {drawModels?: DrawStyleLayer}).drawModels,
+        model: Standard.drawModels,
     });
     Object.assign(prepare, {
-        model: (Standard as {prepare?: PrepareStyleLayer}).prepare,
+        model: Standard.prepare,
     });
 }
 
@@ -244,8 +244,8 @@ class Painter {
     loadTimeStamps: Array<number>;
     _backgroundTiles: Record<number, Tile>;
     _atmosphere: Atmosphere | null | undefined;
-    _rain?: InstanceType<typeof HD.Rain>;
-    _snow?: InstanceType<typeof HD.Snow>;
+    _rain?: InstanceType<NonNullable<typeof HD.Rain>>;
+    _snow?: InstanceType<NonNullable<typeof HD.Snow>>;
     replacementSource: ReplacementSource;
     conflationActive: boolean;
     firstLightBeamLayer: number;
@@ -1782,7 +1782,11 @@ class Painter {
         const allDefines = globalDefines.concat(defines || []);
 
         const shaderSource = this.getShaderSource(name);
-        const uniforms = ((programUniforms as Record<string, (context: Context) => UniformBindings>)[name] || (HD.programUniforms as Record<string, (context: Context) => UniformBindings>)[name] || ((Standard as {programUniforms?: Record<string, (context: Context) => UniformBindings>}).programUniforms || {})[name]);
+        const hdUniforms = HD.programUniforms as Record<string, (context: Context) => UniformBindings> | undefined;
+        const standardUniforms = Standard.programUniforms as Record<string, (context: Context) => UniformBindings> | undefined;
+        const uniforms = (programUniforms as Record<string, (context: Context) => UniformBindings>)[name] ||
+            (hdUniforms && hdUniforms[name]) ||
+            (standardUniforms && standardUniforms[name]);
         const key = Program.cacheKey(shaderSource, name, allDefines, config);
 
         if (!this.cache[key]) {
@@ -1795,8 +1799,9 @@ class Painter {
     // Returns shader source metadata for a program name, including the usedDefines set
     // used to prune cartesian variant enumeration in the precompiler.
     getShaderSource(name: ProgramName) {
-        const standardShaders = (Standard as {shaders?: Record<string, ShaderSource>}).shaders;
-        return shaders[name as keyof typeof shaders] || (HD.shaders && HD.shaders[name as keyof typeof HD.shaders]) || (standardShaders && standardShaders[name]);
+        const hdShaders = HD.shaders;
+        const standardShaders = Standard.shaders;
+        return shaders[name as keyof typeof shaders] || (hdShaders && hdShaders[name as keyof typeof hdShaders]) || (standardShaders && standardShaders[name as keyof typeof standardShaders]);
     }
 
     /*
