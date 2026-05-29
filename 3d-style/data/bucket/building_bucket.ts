@@ -299,7 +299,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
     // cannot be deserialized on main without the HD module loaded, because the class
     // itself is defined and registered in the HD chunk. Checked via the class
     // constructor so we don't need a statically-imported BuildingBucket reference.
-    static requiresHDRuntime = true;
+    requiresHDRuntime = true;
 
     index: number;
     zoom: number;

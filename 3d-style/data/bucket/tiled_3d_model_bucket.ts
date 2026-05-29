@@ -136,7 +136,7 @@ export class Tiled3dModelFeature {
 }
 
 class Tiled3dModelBucket implements Bucket {
-    static requiresStandardRuntime = true;
+    requiresStandardRuntime = true;
 
     id: OverscaledTileID;
     uploaded: boolean;

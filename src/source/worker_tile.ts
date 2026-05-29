@@ -52,21 +52,20 @@ import type {IndoorTileOptions} from '../style/indoor_data';
 // be deserialized. Covers two cases:
 //   1. Fill/line/circle/symbol buckets carrying an `hdExt` — the extension class lives
 //      only in the HD module, so `deserialize` throws "unregistered class" without it.
-//   2. Buckets whose constructor advertises `requiresHDRuntime = true` — classes that
-//      live entirely in the HD chunk (e.g. `BuildingBucket`) and cannot be reconstructed
-//      on main without HD. Checked via a static on the constructor so core doesn't need
-//      to statically import the HD class.
+//   2. Buckets that advertise `requiresHDRuntime = true` — classes that live entirely
+//      in the HD chunk (e.g. `BuildingBucket`) and cannot be reconstructed on main
+//      without HD.
 function anyBucketRequiresHD(buckets: Array<Bucket>): boolean {
     for (const bucket of buckets) {
         if ((bucket as {hdExt?: unknown}).hdExt != null) return true;
-        if ((bucket.constructor as {requiresHDRuntime?: boolean}).requiresHDRuntime) return true;
+        if (bucket.requiresHDRuntime) return true;
     }
     return false;
 }
 
 function anyBucketRequiresStandard(buckets: Array<Bucket>): boolean {
     for (const bucket of buckets) {
-        if ((bucket.constructor as {requiresStandardRuntime?: boolean}).requiresStandardRuntime) return true;
+        if (bucket.requiresStandardRuntime) return true;
     }
     return false;
 }

@@ -139,7 +139,7 @@ class PerModelAttributes {
 }
 
 class ModelBucket implements Bucket {
-    static requiresStandardRuntime = true;
+    requiresStandardRuntime = true;
 
     zoom: number;
     index: number;

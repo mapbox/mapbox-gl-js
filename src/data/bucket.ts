@@ -150,6 +150,8 @@ export interface Bucket {
     destroy: (reload?: boolean) => void;
     updateFootprints: (id: UnwrappedTileID, footprints: Array<TileFootprint>) => void;
     updateAppearances: (canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties, imageManager?: ImageManager, featureStateChanged?: boolean) => AppearanceUpdateResult;
+    requiresStandardRuntime?: boolean;
+    requiresHDRuntime?: boolean;
     // Called after deserialize on the main thread to reattach `expression` refs
     // on attribute binders (omitted from transfer — see `register()` calls in
     // program_configuration.ts). Each bucket iterates its own
