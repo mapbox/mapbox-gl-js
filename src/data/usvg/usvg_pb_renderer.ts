@@ -33,9 +33,7 @@ class ColorReplacements {
 function getStyleColor(iconColor: Color, opacity: number = 255, colorReplacements: Map<string, Color>) {
     const color = colorReplacements.get(iconColor.toString()) || iconColor;
     if (opacity === 255) return color.toString();
-    const result = color.clone();
-    result.a *= opacity / 255;
-    return result.toString();
+    return new Color(color.r, color.g, color.b, color.a * opacity / 255).toString();
 }
 
 type Context = OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;

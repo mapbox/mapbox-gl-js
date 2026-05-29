@@ -545,8 +545,8 @@ class ModelBucket implements Bucket {
 
         // When layer.paint.get('model-color') is constant, evaluate returns the object defined in the spec.
         // If we don't create a new object here we would be updating that, causing problems afterwards
-        const color = Object.assign({}, layer.paint.get('model-color').evaluate(evaluationFeature, featureState, canonical));
-        color.a = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, featureState, canonical);
+        const {r, g, b} = layer.paint.get('model-color').evaluate(evaluationFeature, featureState, canonical);
+        const a = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, featureState, canonical);
 
         const rotationScaleYZFlip: mat4 = [];
         if (this.maxVerticalOffset < translation[2]) this.maxVerticalOffset = translation[2];
@@ -564,7 +564,7 @@ class ModelBucket implements Bucket {
         const constantTileToMeterAcrossTile = 10;
         assert(perModelVertexArray.instancedDataArray.bytesPerElement === 64);
 
-        const vaOffset2 = Math.round(100.0 * color.a) + color.b / 1.05;
+        const vaOffset2 = Math.round(100.0 * a) + b / 1.05;
 
         for (let i = 0; i < feature.instancedDataCount; ++i) {
             const instanceOffset = feature.instancedDataOffset + i;
@@ -583,8 +583,8 @@ class ModelBucket implements Bucket {
             // originally in range [0..1], scaled to range [0..0.952(arbitrary, just needs to be
             // under 1)].
             const pointY = va[offset + 1] | 0; // point.y stored in integer part
-            va[offset] = (va[offset] | 0) + color.r / 1.05; // point.x stored in integer part
-            va[offset + 1] = pointY + color.g / 1.05;
+            va[offset] = (va[offset] | 0) + r / 1.05; // point.x stored in integer part
+            va[offset + 1] = pointY + g / 1.05;
             // Element 2: packs color's alpha (as integer part) and blue component in fractional part.
             va[offset + 2] = vaOffset2;
             // tileToMeter is taken at center of tile. Prevent recalculating it over again for

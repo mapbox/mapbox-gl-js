@@ -54,8 +54,8 @@ class Rain extends Evented {
 
         const direction: vec3 = [Math.cos(heading) * Math.cos(pitch), Math.sin(heading) * Math.cos(pitch), Math.sin(pitch)];
 
-        const vignetteColor = this.properties.get('vignette-color');
-        vignetteColor.a = this.properties.get('vignette');
+        const baseVignetteColor = this.properties.get('vignette-color');
+        const vignetteColor = new Color(baseVignetteColor.r, baseVignetteColor.g, baseVignetteColor.b, this.properties.get('vignette'));
 
         return {
             density: this.properties.get('density'),

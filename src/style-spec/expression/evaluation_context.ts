@@ -23,16 +23,11 @@ class EvaluationContext {
     options: ConfigOptions | null | undefined;
     iconImageUseTheme: string | null | undefined;
 
-    _parseColorCache: {
-        [_: string]: Color | null | undefined;
-    };
-
     constructor(scope?: string | null, options?: ConfigOptions | null, iconImageUseTheme?: string) {
         this.globals = null;
         this.feature = null;
         this.featureState = null;
         this.formattedSection = null;
-        this._parseColorCache = {};
         this.availableImages = null;
         this.canonical = null;
         this.featureTileCoord = null;
@@ -90,11 +85,7 @@ class EvaluationContext {
     }
 
     parseColor(input: string): Color | undefined {
-        let cached = this._parseColorCache[input];
-        if (!cached) {
-            cached = this._parseColorCache[input] = Color.parse(input);
-        }
-        return cached;
+        return Color.parse(input);
     }
 
     getConfig(id: string): ConfigOptionValue | null | undefined {

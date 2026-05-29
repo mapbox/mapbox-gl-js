@@ -3,6 +3,10 @@ import {lerp} from './lerp';
 
 import type {LUT} from '../types/lut';
 
+// Color strings are parsed repeatedly during style load and evaluation; since Color
+// is immutable, parsed instances can be safely shared and cached by input string.
+const colorCache: Map<string, Color> = new Map();
+
 /**
  * An RGBA color value. Create instances from color strings using the static
  * method `Color.parse`. The constructor accepts RGB channel values in the range
@@ -15,10 +19,10 @@ import type {LUT} from '../types/lut';
  * @private
  */
 class Color {
-    r: number;
-    g: number;
-    b: number;
-    a: number;
+    readonly r: number;
+    readonly g: number;
+    readonly b: number;
+    readonly a: number;
 
     constructor(r: number, g: number, b: number, a: number = 1) {
         this.r = r;
@@ -50,17 +54,24 @@ class Color {
             return undefined;
         }
 
+        const cached = colorCache.get(input);
+        if (cached) {
+            return cached;
+        }
+
         const rgba = parseCSSColor(input);
         if (!rgba) {
             return undefined;
         }
 
-        return new Color(
+        const color = new Color(
             rgba[0] / 255,
             rgba[1] / 255,
             rgba[2] / 255,
             rgba[3]
         );
+        colorCache.set(input, color);
+        return color;
     }
 
     /**
@@ -152,28 +163,32 @@ export abstract class RenderColor {
             const i6 = (r1 + g1 * N2 + b0 * N) * 4;
             const i7 = (r1 + g1 * N2 + b1 * N) * 4;
 
+            // r/g/b are clamped to [0, N-1] above, so every index below is within bounds.
+            // The `as number` casts only suppress the `number | undefined` that
+            // `noUncheckedIndexedAccess` infers for typed-array reads; they are erased at
+            // runtime, so unlike a helper closure they add no per-construction allocation.
             // Trilinear interpolation.
             this.r = lerp(
                 lerp(
-                    lerp(data[i0], data[i1], bw),
-                    lerp(data[i2], data[i3], bw), gw),
+                    lerp(data[i0] as number, data[i1] as number, bw),
+                    lerp(data[i2] as number, data[i3] as number, bw), gw),
                 lerp(
-                    lerp(data[i4], data[i5], bw),
-                    lerp(data[i6], data[i7], bw), gw), rw) / 255 * (this.premultiplied ? a : 1);
+                    lerp(data[i4] as number, data[i5] as number, bw),
+                    lerp(data[i6] as number, data[i7] as number, bw), gw), rw) / 255 * (this.premultiplied ? a : 1);
             this.g = lerp(
                 lerp(
-                    lerp(data[i0 + 1], data[i1 + 1], bw),
-                    lerp(data[i2 + 1], data[i3 + 1], bw), gw),
+                    lerp(data[i0 + 1] as number, data[i1 + 1] as number, bw),
+                    lerp(data[i2 + 1] as number, data[i3 + 1] as number, bw), gw),
                 lerp(
-                    lerp(data[i4 + 1], data[i5 + 1], bw),
-                    lerp(data[i6 + 1], data[i7 + 1], bw), gw), rw) / 255 * (this.premultiplied ? a : 1);
+                    lerp(data[i4 + 1] as number, data[i5 + 1] as number, bw),
+                    lerp(data[i6 + 1] as number, data[i7 + 1] as number, bw), gw), rw) / 255 * (this.premultiplied ? a : 1);
             this.b = lerp(
                 lerp(
-                    lerp(data[i0 + 2], data[i1 + 2], bw),
-                    lerp(data[i2 + 2], data[i3 + 2], bw), gw),
+                    lerp(data[i0 + 2] as number, data[i1 + 2] as number, bw),
+                    lerp(data[i2 + 2] as number, data[i3 + 2] as number, bw), gw),
                 lerp(
-                    lerp(data[i4 + 2], data[i5 + 2], bw),
-                    lerp(data[i6 + 2], data[i7 + 2], bw), gw), rw) / 255 * (this.premultiplied ? a : 1);
+                    lerp(data[i4 + 2] as number, data[i5 + 2] as number, bw),
+                    lerp(data[i6 + 2] as number, data[i7 + 2] as number, bw), gw), rw) / 255 * (this.premultiplied ? a : 1);
             this.a = a;
         }
     }

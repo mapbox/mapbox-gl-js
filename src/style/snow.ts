@@ -53,8 +53,8 @@ class Snow extends Evented {
         const direction: vec3 = [Math.cos(heading) * Math.cos(pitch), Math.sin(heading) * Math.cos(pitch), Math.sin(pitch)];
 
         const vignetteIntensity = this.properties.get('vignette');
-        const vignetteColor = this.properties.get('vignette-color');
-        vignetteColor.a = vignetteIntensity;
+        const baseVignetteColor = this.properties.get('vignette-color');
+        const vignetteColor = new Color(baseVignetteColor.r, baseVignetteColor.g, baseVignetteColor.b, vignetteIntensity);
 
         return {
             density: this.properties.get('density'),
