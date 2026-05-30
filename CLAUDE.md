@@ -1,14 +1,5 @@
 # CLAUDE.md
 
-## Hard rules (read first, every session)
-
-**Use LSP for symbol lookup, not grep/find.** If you reach for `grep`/`rg`/`find`/`Bash` to locate a symbol, type, function, class, method, or reference — stop and use LSP:
-- `goToDefinition`, `findReferences`, `hover`, `documentSymbol`, `incomingCalls`, `outgoingCalls`
-- Fall back to grep only if LSP errors, or for plain string/comment search.
-- Never use `workspaceSymbol` — dumps ~43K symbols.
-
-Defaulting to grep is a bug, not a preference.
-
 ## Project Overview
 
 Mapbox GL JS is a JavaScript library for interactive, customizable vector maps on the web. It uses WebGL to render vector tiles that conform to the Mapbox Vector Tile Specification.
