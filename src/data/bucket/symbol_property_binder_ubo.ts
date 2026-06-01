@@ -1,4 +1,4 @@
-import {SymbolPropertiesUBO, type SymbolPropertyHeader} from './symbol_properties_ubo';
+import {SymbolPropertiesUBO, HEADER_DATA_DRIVEN_MASK, HEADER_ZOOM_DEPENDENT_MASK, HEADER_BLOCK_SIZE_VEC4, HEADER_OFFSETS} from './symbol_properties_ubo';
 import Color from '../../style-spec/util/color';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import {PossiblyEvaluatedPropertyValue} from '../../style/properties';
@@ -40,23 +40,16 @@ function shouldIgnoreLut(
         return lutExpression.value === 'none';
     }
 
-    if (lutExpression.kind === 'composite' || lutExpression.kind === 'source') {
-        const value = lutExpression.evaluate(
-            {zoom: 0, brightness, worldview},
-            feature,
-            featureState,
-            canonical,
-            availableImages,
-            formattedSection
-        );
-        return value === 'none';
-    }
-
-    if (typeof lutExpression === 'string') {
-        return lutExpression === 'none';
-    }
-
-    return false;
+    // Data-driven (source/composite) use-theme: evaluate against the feature.
+    const value = lutExpression.evaluate(
+        {zoom: 0, brightness, worldview},
+        feature,
+        featureState,
+        canonical,
+        availableImages,
+        formattedSection
+    );
+    return value === 'none';
 }
 
 /**
@@ -80,27 +73,29 @@ type EvaluationContext = {
     params: EvaluationParameters;
     paramsNext: EvaluationParameters;
     formattedSection?: FormattedSection;
+    activeAppearance?: SymbolAppearance | null;
 };
 
-/**
- * Property definition metadata.
- */
-type PropDef = {
-    name: string;
-    useThemeName: string | null;
-    isColor: boolean;
-    isVec2?: boolean; // translate is a [number, number] vec2 property
-};
+// Indexed [icon, text] to match `+isText` (false → 0 → icon, true → 1 → text).
+const PROP_NAMES = ['icon', 'text'].map((p) => [
+    `${p}-color`,
+    `${p}-halo-color`,
+    `${p}-opacity`,
+    `${p}-halo-width`,
+    `${p}-halo-blur`,
+    `${p}-emissive-strength`,
+    `${p}-occlusion-opacity`,
+    'symbol-z-offset',
+    `${p}-translate`
+]);
 
-/**
- * Tracks UBO location for a feature across multiple batches.
- */
-export type LocalFeatureVertexRange = {
-    batchIndex: number;        // Which UBO batch (0-N)
-    localFeatureIndex: number; // Index within batch (0 to maxFeaturesPerBatch-1)
-    vtFeatureIndex: number;    // Vector tile feature index
-    featureId: string | number | undefined;
-};
+const PROP_COUNT = 9; // paint properties, indexed by bit position
+
+// Flat scratch buffer for evaluateAllProperties — reused per call, eliminates per-feature inner array allocations.
+const evalFlatScratch = new Float32Array(SymbolPropertiesUBO.EVAL_FLAT_TOTAL);
+
+// Shared read-only translate default; passed to constantOr to avoid a per-feature [0, 0] allocation.
+const ZERO_VEC2: [number, number] = [0, 0];
 
 /**
  * Constant property values ready to be set as u_spp_* uniforms.
@@ -136,33 +131,34 @@ export class SymbolPropertyBinderUBO {
     worldview: string;
     maxUniformBufferBindings: number;
 
-    // Hash map for O(1) feature-state lookup
-    featureVertexRangesFromId: Map<string | number, LocalFeatureVertexRange[]>;
-    // Hash map for O(1) lookup by vtFeatureIndex, used by appearance updates which
-    // dispatch by vt index rather than featureId.
-    featureVertexRangesFromVtIndex: Map<number, LocalFeatureVertexRange[]>;
-    // Track ALL features for full re-evaluation when images/properties change
-    allFeatures: LocalFeatureVertexRange[];
+    // Per-feature tracking, in insertion (populate) order. One entry per populateUBO call;
+    // the entry's index IS the feature's global index (see _writeFeatureBlock), so batch/local
+    // need not be stored. These two parallel arrays are the only feature-tracking state
+    // transferred worker→main; the lookup maps below are rebuilt lazily on the main thread.
+    allFeatureVtIndices: number[];                          // vector-tile feature index per entry
+    allFeatureIds: Array<string | number | undefined>;      // feature id per entry (if any)
+
+    // Lazily built on the main thread (omitted from serialization). Map a featureId / vtFeatureIndex
+    // to the positions in allFeature* that reference it, for O(1) targeted updates.
+    // featureVertexRangesFromId backs feature-state updates; featureVertexRangesFromVtIndex backs
+    // appearance updates, which dispatch by vt index rather than featureId.
+    featureVertexRangesFromId: Map<string | number, number[]>;
+    featureVertexRangesFromVtIndex: Map<number, number[]>;
 
     // UBO batches
     ubos: SymbolPropertiesUBO[];
     featureCount: number;       // Total across all batches
 
-    // Header (built once, describes layout of each UBO batch)
-    cachedHeader: SymbolPropertyHeader | null;
+    // Header (built once in the constructor, describes layout of each UBO batch). A flat Uint32Array
+    // of 12 dwords (3 uvec4) shared with every batch's headerData; index it with the HEADER_* constants.
+    header: Uint32Array;
     maxFeaturesPerBatch: number; // computed from header
 
-    // Deduplication: hash of data-driven property values → global feature index
-    propertyHashToUBOIndex: Map<string, number>;
-    canDeduplicate: boolean;
+    // True when no paint property is data-driven (dataDrivenMask === 0). Such binders carry no
+    // per-feature block — constants go through u_spp_* uniforms — so every feature shares entry 0.
+    isAllConstant: boolean;
 
     isText: boolean;
-    propDefs: PropDef[]; // built once from isText; never changes
-
-    // Cached EvaluationParameters for evaluateAllProperties (excluded from serialization)
-    cachedParams: EvaluationParameters | null;
-    cachedParamsNext: EvaluationParameters | null;
-    cachedBrightness: number | null | undefined;
 
     // Cached result of getConstantUniformValues (main-thread only, excluded from serialization).
     // Invalidated when the layer changes or when zoom/brightness change for camera expressions.
@@ -171,7 +167,7 @@ export class SymbolPropertyBinderUBO {
     cachedConstantBrightness: number | null | undefined;
 
     // Tracks current active appearance per vtFeatureIndex (main-thread only, excluded from serialization).
-    activeAppearanceByVtIndex: Map<number, SymbolAppearance | null>;
+    activeAppearanceByVtIndex?: Map<number, SymbolAppearance | null>;
 
     uboSizeDwords: number;
 
@@ -179,169 +175,128 @@ export class SymbolPropertyBinderUBO {
     // When true, updateDynamicExpressions can be skipped on brightness-only changes.
     isLightConstant: boolean;
 
-    // [zm, zM] pairs per zoom-dep property (9 pairs = 18 floats), computed in buildHeader.
+    // Bitmask: 1 = property is a constant camera (zoom-only) expression, computed in updateHeader.
+    // CPU-only — camera properties go through u_spp_* uniforms (re-evaluated at render zoom),
+    // not the GPU UBO, so this is not part of the header.
+    cameraMask: number;
+
+    // [zm, zM] pairs per zoom-dep property (9 pairs = 18 floats), computed in updateHeader.
     // Each draw call, getConstantUniformValues turns these into a single u_spp_*_zoom_factor
     // per property using the current render zoom.
     sharedZoomRanges: Float32Array;
-
-    // Flat scratch buffer for evaluateAllProperties — reused per call, eliminates per-feature inner array allocations.
-    _evalFlat: Float32Array;
 
     constructor(layer: SymbolStyleLayer, zoom: number, lut: LUT | null, isText: boolean, worldview: string = '', maxUniformBufferBindings?: number | null, uboSizeDwords?: number | null) {
         this.layer = layer;
         this.zoom = zoom;
         this.lut = lut;
         this.isText = isText;
-        this.propDefs = this._getPropDefs();
         this.worldview = worldview;
         this.maxUniformBufferBindings = maxUniformBufferBindings || WEBGL2_MIN_UNIFORM_BUFFER_BINDINGS;
         this.uboSizeDwords = uboSizeDwords || 4096;
 
-        this.featureVertexRangesFromId = new Map();
-        this.featureVertexRangesFromVtIndex = new Map();
-        this.allFeatures = [];
+        this.allFeatureVtIndices = [];
+        this.allFeatureIds = [];
+        this.featureVertexRangesFromId = null;
+        this.featureVertexRangesFromVtIndex = null;
         this.ubos = [];
         this.featureCount = 0;
-        this.cachedHeader = null;
-        this.maxFeaturesPerBatch = 0;
-
-        this.propertyHashToUBOIndex = new Map();
-        this.canDeduplicate = this._checkIfAllPropertiesAreConstant(layer, isText);
-
-        this.cachedParams = null;
-        this.cachedParamsNext = null;
-        this.cachedBrightness = undefined;
 
         this.cachedConstantUniforms = null;
         this.cachedConstantRenderZoom = null;
         this.cachedConstantBrightness = undefined;
 
-        this.activeAppearanceByVtIndex = new Map();
-        this.isLightConstant = true; // updated in buildHeader()
-        this.sharedZoomRanges = new Float32Array(18); // updated in buildHeader()
-        this._evalFlat = new Float32Array(SymbolPropertiesUBO.EVAL_FLAT_TOTAL);
+        this.activeAppearanceByVtIndex = null;
+
+        this.sharedZoomRanges = new Float32Array(PROP_COUNT * 2);
+        this.header = new Uint32Array(SymbolPropertiesUBO.HEADER_DWORDS);
+        this.updateHeader();
+        this.isAllConstant = this.header[HEADER_DATA_DRIVEN_MASK] === 0;
+
+        // Max features per UBO batch = how many data-driven blocks fit in one buffer.
+        // All-constant layers have no per-feature block, so a single batch holds every feature.
+        const blockDwords = this.header[HEADER_BLOCK_SIZE_VEC4] * 4;
+        this.maxFeaturesPerBatch = blockDwords === 0 ? Number.MAX_SAFE_INTEGER : Math.floor(this.uboSizeDwords / blockDwords);
     }
 
     /**
-     * Returns an ordered list of property definitions for text or icon.
-     * Order determines bit index: 0=fill_color, 1=halo_color, 2=opacity,
-     * 3=halo_width, 4=halo_blur, 5=emissive_strength, 6=occlusion_opacity, 7=z_offset,
-     * 8=translate.
-     */
-    private _getPropDefs(): PropDef[] {
-        const p = this.isText ? 'text' : 'icon';
-        return [
-            {name: `${p}-color`,            useThemeName: `${p}-color-use-theme`,       isColor: true},
-            {name: `${p}-halo-color`,        useThemeName: `${p}-halo-color-use-theme`,  isColor: true},
-            {name: `${p}-opacity`,           useThemeName: null,                          isColor: false},
-            {name: `${p}-halo-width`,        useThemeName: null,                          isColor: false},
-            {name: `${p}-halo-blur`,         useThemeName: null,                          isColor: false},
-            {name: `${p}-emissive-strength`, useThemeName: null,                          isColor: false},
-            {name: `${p}-occlusion-opacity`, useThemeName: null,                          isColor: false},
-            {name: 'symbol-z-offset',        useThemeName: null,                          isColor: false},
-            {name: `${p}-translate`,         useThemeName: null,                          isColor: false, isVec2: true},
-        ];
-    }
-
-    /**
-     * Build a SymbolPropertyHeader that describes the UBO layout for the current layer.
+     * Update the 12-dword header array that describes the UBO layout for the current layer.
      *
      * Only data-driven properties have meaningful offsets — constant properties are passed
      * as u_spp_* uniforms and their offsets in the header are unused (set to 0).
      */
-    buildHeader(): SymbolPropertyHeader {
+    private updateHeader(): void {
         const paint = this.layer.paint;
-        const propDefs = this.propDefs;
 
         let dataDrivenMask = 0;
         let zoomDependentMask = 0;
         let cameraMask = 0;
         let dataDrivenOffset = 0;
         let allDataDrivenLightConstant = true;
-        const offsets: [number, number, number, number, number, number, number, number, number] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-        const sharedZoomRanges = new Float32Array(18);
 
-        for (let i = 0; i < 9; i++) {
-            const {name, isColor, isVec2} = propDefs[i];
+        const names = PROP_NAMES[+this.isText];
+        for (let i = 0; i < PROP_COUNT; i++) {
+            const name = names[i];
+            const isColor = i < 2;
+            const isVec2 = i === 8;
             const prop = paint.get(name as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<unknown> | undefined;
 
             // DataConstantProperty returns a plain value (no isConstant method) — treat as constant.
             const layerIsDataDriven = prop && typeof prop.isConstant === 'function' ? !prop.isConstant() : false;
             // If any appearance defines this property, it must be in the UBO so per-feature values can differ.
-            const appearanceForceDataDriven =
-                this._appearancesHavePaintProperties(name as keyof AppearancePaintProps);
+            const appearanceForceDataDriven = this._appearancesHavePaintProperties(name as keyof AppearancePaintProps);
             const isDataDriven = layerIsDataDriven || appearanceForceDataDriven;
             const isZoomDep = !!(prop && prop.value && (prop.value as {kind?: string}).kind === 'composite');
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-            const transVal: any = (this.layer._transitionablePaint._values as any)[name];
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const origKind = (transVal && transVal.value && transVal.value.expression && transVal.value.expression.kind) as string | undefined;
-            const isCamera = !isDataDriven && origKind === 'camera';
+            // Constant properties use u_spp_* uniforms — they get no data-driven block (offset 0).
+            if (!isDataDriven) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+                const transVal: any = (this.layer._transitionablePaint._values as any)[name];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                const origKind = (transVal && transVal.value && transVal.value.expression && transVal.value.expression.kind) as string | undefined;
+                if (origKind === 'camera') cameraMask |= (1 << i);
+                continue;
+            }
 
-            if (isDataDriven) {
-                dataDrivenMask |= (1 << i);
-                if (isZoomDep) zoomDependentMask |= (1 << i);
-                // Check if this data-driven expression depends on light/brightness.
-                // Same pattern as program_configuration.ts:313-314.
-                const expr = prop && prop.value as {isLightConstant?: boolean} | undefined;
-                if (expr && expr.isLightConstant === false) allDataDrivenLightConstant = false;
+            dataDrivenMask |= (1 << i);
+            if (isZoomDep) zoomDependentMask |= (1 << i);
+            // Check if this data-driven expression depends on light/brightness.
+            // Same pattern as program_configuration.ts:313-314.
+            const expr = prop && prop.value as {isLightConstant?: boolean} | undefined;
+            if (expr && expr.isLightConstant === false) allDataDrivenLightConstant = false;
 
-                if (isColor) {
-                    // Colors must be vec4-aligned within the data-driven block.
-                    if (dataDrivenOffset % 4 !== 0) {
-                        dataDrivenOffset = (dataDrivenOffset + 3) & ~3;
-                    }
-                    offsets[i] = dataDrivenOffset;
-                    dataDrivenOffset += 4;
-                } else if (isVec2) {
-                    if (isZoomDep) {
-                        // zoom-dep translate needs 4 floats [tx_min, ty_min, tx_max, ty_max], vec4-aligned.
-                        if (dataDrivenOffset % 4 !== 0) {
-                            dataDrivenOffset = (dataDrivenOffset + 3) & ~3;
-                        }
-                        offsets[i] = dataDrivenOffset;
-                        dataDrivenOffset += 4;
-                    } else {
-                        // non-zoom translate needs 2 floats [tx, ty] within the same vec4.
-                        // Ensure offset%4 != 3 (y would overflow to next vec4).
-                        if (dataDrivenOffset % 4 === 3) dataDrivenOffset++;
-                        offsets[i] = dataDrivenOffset;
-                        dataDrivenOffset += 2;
-                    }
-                } else {
-                    offsets[i] = dataDrivenOffset;
-                    dataDrivenOffset += isZoomDep ? 2 : 1;
-                }
+            // Block size in dwords, and how it must align within the vec4-packed block:
+            //   color / zoom-dep translate → 4 dwords (a full vec4), vec4-aligned
+            //   non-zoom translate         → 2 dwords [tx, ty] kept within one vec4 (no straddle)
+            //   scalar                     → 2 dwords if zoom-dep ([min, max]) else 1, unaligned
+            const vec4 = isColor || (isVec2 && isZoomDep);
+            const size = vec4 ? 4 : (isVec2 || isZoomDep) ? 2 : 1;
 
-                if (isZoomDep && prop) {
-                    this._computeZoomRange(prop, Math.floor(this.zoom), sharedZoomRanges, i * 2);
-                }
-            } else {
-                if (isCamera) cameraMask |= (1 << i);
-                // Constant properties use u_spp_* uniforms — offset is unused, leave at 0.
+            if (vec4 && dataDrivenOffset % 4 !== 0) {
+                dataDrivenOffset = (dataDrivenOffset + 3) & ~3;
+            } else if (isVec2 && dataDrivenOffset % 4 === 3) {
+                dataDrivenOffset++;
+            }
+            this.header[HEADER_OFFSETS + i] = dataDrivenOffset;
+            dataDrivenOffset += size;
+
+            if (isZoomDep && prop) {
+                this._computeZoomRange(prop, Math.floor(this.zoom), i * 2);
             }
         }
 
         // Round up data-driven block size to vec4 boundary, then express in vec4 units.
         const dataDrivenBlockSizeDwords = dataDrivenOffset === 0 ? 0 : (dataDrivenOffset + 3) & ~3;
-        const dataDrivenBlockSizeVec4 = dataDrivenBlockSizeDwords / 4;
+
+        this.header[HEADER_DATA_DRIVEN_MASK] = dataDrivenMask;
+        this.header[HEADER_ZOOM_DEPENDENT_MASK] = zoomDependentMask;
+        this.header[HEADER_BLOCK_SIZE_VEC4] = dataDrivenBlockSizeDwords / 4;
 
         this.isLightConstant = allDataDrivenLightConstant;
-        this.sharedZoomRanges = sharedZoomRanges;
-
-        return {dataDrivenMask, zoomDependentMask, cameraMask, dataDrivenBlockSizeVec4, offsets};
+        this.cameraMask = cameraMask;
     }
 
     /**
-     * Returns true if any paint property uses a camera (zoom-only) expression.
-     */
-    get hasCameraExpression(): boolean {
-        return !!(this.cachedHeader && this.cachedHeader.cameraMask);
-    }
-
-    /**
-     * Evaluate all 8 properties and return their UBO-ready values.
+     * Evaluate all 9 properties and return their UBO-ready values.
      *
      * Color encoding (non-premultiplied — the fragment shader premultiplies):
      *   non-zoom → [packed0, packed1, 0, 0]
@@ -359,28 +314,51 @@ export class SymbolPropertyBinderUBO {
         formattedSection?: FormattedSection,
         activeAppearance?: SymbolAppearance | null
     ): Float32Array {
-        const {params, paramsNext} = this._getCachedParams(brightness);
-        const ctx: EvaluationContext = {feature, featureState, canonical, availableImages, params, paramsNext, formattedSection};
-        const header = this.cachedHeader;
-        const propDefs = this.propDefs;
-        if (!this._evalFlat) this._evalFlat = new Float32Array(SymbolPropertiesUBO.EVAL_FLAT_TOTAL);
-        const flat = this._evalFlat;
+        const options = {brightness, worldview: this.worldview};
+        const params = new EvaluationParameters(this.zoom, options);
+        const paramsNext = new EvaluationParameters(this.zoom + 1, options);
+        const ctx: EvaluationContext = {feature, featureState, canonical, availableImages, params, paramsNext, formattedSection, activeAppearance};
+        const header = this.header;
 
-        for (let i = 0; i < 9; i++) {
-            const {name, useThemeName, isColor, isVec2} = propDefs[i];
-            const isZoomDep = !!(header && (header.zoomDependentMask & (1 << i)) !== 0);
+        const names = PROP_NAMES[+this.isText];
+        for (let i = 0; i < PROP_COUNT; i++) {
+            const name = names[i];
+            const isColor = i < 2;
+            const isVec2 = i === 8;
+            const isZoomDep = (header[HEADER_ZOOM_DEPENDENT_MASK] & (1 << i)) !== 0;
             const flatOffset = SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[i];
 
             if (isColor) {
-                this._evaluateColorValue(name, useThemeName, ctx, brightness, isZoomDep, activeAppearance, flat, flatOffset);
+                this._evaluateColorValue(name, isZoomDep, ctx, flatOffset);
             } else if (isVec2) {
-                this._evaluateTranslateValue(name, isZoomDep, ctx, activeAppearance, flat, flatOffset);
+                this._evaluateTranslateValue(name, isZoomDep, ctx, flatOffset);
             } else {
-                this._evaluateFloatValue(name, isZoomDep, ctx, activeAppearance, flat, flatOffset);
+                this._evaluateFloatValue(name, isZoomDep, ctx, flatOffset);
             }
         }
 
-        return flat;
+        return evalFlatScratch;
+    }
+
+    /**
+     * Resolve a paint property by name, preferring the active appearance's override when it
+     * defines that property, otherwise the layer's paint. Shared by all three evaluate paths.
+     */
+    private _resolveProp<T>(propName: string, activeAppearance: SymbolAppearance | null | undefined): PossiblyEvaluatedPropertyValue<T> | undefined {
+        const appearanceName = propName as keyof AppearancePaintProps;
+        if (activeAppearance && activeAppearance.hasPaintProperty(appearanceName)) {
+            return activeAppearance.paintProperties.get(appearanceName) as unknown as PossiblyEvaluatedPropertyValue<T> | undefined;
+        }
+        const paint = this.layer.paint;
+        return paint.get(propName as keyof typeof paint._values) as unknown as PossiblyEvaluatedPropertyValue<T> | undefined;
+    }
+
+    /** Evaluate a property at the given zoom params, with the verbose shared argument list filled in. */
+    private _evalAt<T>(prop: PossiblyEvaluatedPropertyValue<T>, params: EvaluationParameters, ctx: EvaluationContext): T {
+        return prop.property.evaluate(
+            prop.value, params, ctx.feature, ctx.featureState,
+            ctx.canonical, ctx.availableImages, prop.iconImageUseTheme, ctx.formattedSection
+        );
     }
 
     /**
@@ -390,72 +368,46 @@ export class SymbolPropertyBinderUBO {
      */
     private _evaluateColorValue(
         propName: string,
-        useThemeName: string | null,
-        ctx: EvaluationContext,
-        brightness: number | null | undefined,
         isZoomDep: boolean,
-        activeAppearance: SymbolAppearance | null | undefined,
-        flat: Float32Array,
+        ctx: EvaluationContext,
         flatOffset: number
     ): void {
-        const paint = this.layer.paint;
-
-        // Appearance overrides the color property.
-        const appearanceName = propName as keyof AppearancePaintProps;
-        const useAppearanceProp = activeAppearance && activeAppearance.hasPaintProperty(appearanceName);
-        const prop = useAppearanceProp ?
-            activeAppearance.paintProperties.get(appearanceName) as PossiblyEvaluatedPropertyValue<Color> | undefined :
-            paint.get(propName as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<Color> | undefined;
-
-        // Use-theme: prefer appearance's value when it defines the color, fall back to layer's.
-        const appearanceUseThemeName = useThemeName as keyof AppearancePaintProps;
-        const useAppearanceTheme = useThemeName && activeAppearance && activeAppearance.hasPaintProperty(appearanceUseThemeName);
-        const useThemeProp = useAppearanceTheme ?
-            activeAppearance.paintProperties.get(appearanceUseThemeName) as PossiblyEvaluatedPropertyValue<string> | undefined :
-            (useThemeName ? paint.get(useThemeName as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<string> | undefined : undefined);
+        const prop = this._resolveProp<Color>(propName, ctx.activeAppearance);
 
         if (!prop) {
-            flat[flatOffset] = 0; flat[flatOffset + 1] = 0; flat[flatOffset + 2] = 0; flat[flatOffset + 3] = 1;
+            evalFlatScratch[flatOffset] = 0;
+            evalFlatScratch[flatOffset + 1] = 0;
+            evalFlatScratch[flatOffset + 2] = 0;
+            evalFlatScratch[flatOffset + 3] = 1;
             return;
         }
 
+        // Use-theme: prefer appearance's value when it defines the color, fall back to layer's.
+        const useThemeProp = this._resolveProp<string>(`${propName}-use-theme`, ctx.activeAppearance);
         const useThemeValue = useThemeProp && typeof useThemeProp !== 'string' ? useThemeProp.value : undefined;
         const ignoreLut = shouldIgnoreLut(
             useThemeValue,
             ctx.feature, ctx.featureState, ctx.availableImages,
-            ctx.canonical, brightness, ctx.formattedSection, this.worldview
+            ctx.canonical, ctx.params.brightness, ctx.formattedSection, this.worldview
         );
         const effectiveLut = ignoreLut ? null : this.lut;
 
-        let colorMin: Color;
-        let colorMax: Color;
-        if (prop.isConstant()) {
-            colorMin = colorMax = prop.constantOr(Color.transparent);
-        } else {
-            colorMin = prop.property.evaluate(
-                prop.value, ctx.params, ctx.feature, ctx.featureState,
-                ctx.canonical, ctx.availableImages, prop.iconImageUseTheme, ctx.formattedSection
-            );
-            colorMax = isZoomDep ?
-                prop.property.evaluate(
-                    prop.value, ctx.paramsNext, ctx.feature, ctx.featureState,
-                    ctx.canonical, ctx.availableImages, prop.iconImageUseTheme, ctx.formattedSection
-                ) :
-                colorMin;
-        }
+        const colorMin = prop.isConstant() ? prop.constantOr(Color.transparent) : this._evalAt(prop, ctx.params, ctx) || Color.transparent;
 
         // Non-premultiplied — the fragment shader does vec4(np_color.rgb * np_color.a, np_color.a).
         // Inline packNonPremultColor to avoid allocating a [number, number] tuple.
-        const minNP = (colorMin || Color.transparent).toNonPremultipliedRenderColor(effectiveLut);
-        flat[flatOffset] = packUint8ToFloat(255 * minNP.r, 255 * minNP.g);
-        flat[flatOffset + 1] = packUint8ToFloat(255 * minNP.b, 255 * minNP.a);
+        const minNP = colorMin.toNonPremultipliedRenderColor(effectiveLut);
+        evalFlatScratch[flatOffset] = packUint8ToFloat(255 * minNP.r, 255 * minNP.g);
+        evalFlatScratch[flatOffset + 1] = packUint8ToFloat(255 * minNP.b, 255 * minNP.a);
+
         if (isZoomDep) {
-            const maxNP = (colorMax || Color.transparent).toNonPremultipliedRenderColor(effectiveLut);
-            flat[flatOffset + 2] = packUint8ToFloat(255 * maxNP.r, 255 * maxNP.g);
-            flat[flatOffset + 3] = packUint8ToFloat(255 * maxNP.b, 255 * maxNP.a);
+            // zoom-dependent ⟹ data-driven composite (never constant), so evaluate the next-zoom color directly.
+            const maxNP = (this._evalAt(prop, ctx.paramsNext, ctx) || Color.transparent).toNonPremultipliedRenderColor(effectiveLut);
+            evalFlatScratch[flatOffset + 2] = packUint8ToFloat(255 * maxNP.r, 255 * maxNP.g);
+            evalFlatScratch[flatOffset + 3] = packUint8ToFloat(255 * maxNP.b, 255 * maxNP.a);
         } else {
-            flat[flatOffset + 2] = 0;
-            flat[flatOffset + 3] = 0;
+            evalFlatScratch[flatOffset + 2] = 0;
+            evalFlatScratch[flatOffset + 3] = 0;
         }
     }
 
@@ -473,50 +425,39 @@ export class SymbolPropertyBinderUBO {
      *   transition start.
      *   zM is always 1.0 (transition ends at the next integer zoom).
      */
-    private _computeZoomRange(prop: PossiblyEvaluatedPropertyValue<unknown>, floorZoom: number, out: Float32Array, outOffset: number): void {
-        const writeRange = (zm: number, zM: number) => {
-            out[outOffset] = zm;
-            out[outOffset + 1] = zM;
-        };
-        if (!prop || !prop.value) { writeRange(0.0, 1.0); return; }
-        const expr = prop.value as {kind?: string; interpolationType?: {name: string} | null; zoomStops?: number[]};
-        if (expr.kind !== 'composite') { writeRange(0.0, 1.0); return; }
-        const stops = expr.zoomStops;
-        if (!stops || stops.length === 0) { writeRange(0.0, 1.0); return; }
-        const isStep = expr.interpolationType == null;
-        if (isStep) {
-            for (const stop of stops) {
-                if (isFinite(stop) && stop > floorZoom && stop <= floorZoom + 1) {
-                    const t = stop - floorZoom;
-                    writeRange(t, t); // zm == zM → step at threshold t
-                    return;
-                }
-            }
-            writeRange(1.0, 1.0); // No step boundary in this zoom range — value stays constant
-            return;
-        }
-        // Only delay the interpolation start (zm > 0) when the expression has NO stop
-        // at or below floorZoom. A stop at floorZoom means the interpolation begins
-        // there; a stop below means it is already in progress. In both cases zm = 0
-        // and behavior is unchanged from the plain mix(min, max, u_zoom) path.
-        //
-        // This handles the case where an expression starts mid-integer — e.g.,
-        // ["interpolate", ["linear"], ["zoom"], 1.5, 0, 2, 1] at floorZoom=1 should
-        // not start the transition until u_zoom=0.5 (zm=0.5).
-        for (const stop of stops) {
-            if (isFinite(stop) && stop <= floorZoom) {
-                writeRange(0.0, 1.0); // Starts at floor zoom — use default mix range
-                return;
-            }
-        }
+    private _computeZoomRange(prop: PossiblyEvaluatedPropertyValue<unknown>, floorZoom: number, outOffset: number): void {
+        // Default mix range: interpolate across the whole integer zoom step.
         let zm = 0.0;
-        for (const stop of stops) {
-            if (isFinite(stop) && stop > floorZoom && stop < floorZoom + 1) {
-                zm = stop - floorZoom;
-                break;
+        let zM = 1.0;
+
+        const expr = prop && prop.value as {kind?: string; interpolationType?: {name: string} | null; zoomStops?: number[]};
+        const stops = expr && expr.kind === 'composite' ? expr.zoomStops : null;
+
+        // zoomStops are validated to be in strictly ascending order, so stops[0] is the lowest.
+        if (stops && stops.length > 0) {
+            if (expr.interpolationType == null) {
+                // Step expression: the value holds constant across the step (zm == zM == 1.0)
+                // unless a boundary falls strictly inside it, where it jumps at that normalized
+                // position (zm == zM == stop - floorZoom).
+                zm = zM = 1.0;
+                for (const stop of stops) {
+                    if (stop > floorZoom && stop < floorZoom + 1) {
+                        zm = zM = stop - floorZoom;
+                        break;
+                    }
+                }
+            } else if (stops[0] > floorZoom && stops[0] < floorZoom + 1) {
+                // Interpolation whose first stop falls inside this step: the value is clamped
+                // constant until that stop, so delay the transition start to its normalized
+                // position — e.g. ["interpolate", ["linear"], ["zoom"], 1.5, 0, 2, 1] at
+                // floorZoom=1 begins at zm=0.5. Otherwise the transition spans the whole step
+                // from zm=0, matching the plain mix(min, max, u_zoom) path.
+                zm = stops[0] - floorZoom;
             }
         }
-        writeRange(zm, 1.0); // Interpolation starts at zm, reaches max at zM=1.0
+
+        this.sharedZoomRanges[outOffset] = zm;
+        this.sharedZoomRanges[outOffset + 1] = zM;
     }
 
     /**
@@ -528,44 +469,25 @@ export class SymbolPropertyBinderUBO {
         propName: string,
         isZoomDep: boolean,
         ctx: EvaluationContext,
-        activeAppearance: SymbolAppearance | null | undefined,
-        flat: Float32Array,
         flatOffset: number
     ): void {
-        const paint = this.layer.paint;
         const defaultVal = propName.endsWith('opacity') ? 1.0 : 0.0;
+        const prop = this._resolveProp<number>(propName, ctx.activeAppearance);
 
-        // Appearance overrides the float property.
-        const appearanceName = propName as keyof AppearancePaintProps;
-        const useAppearanceProp = activeAppearance && activeAppearance.hasPaintProperty(appearanceName);
-        const prop = useAppearanceProp ?
-            activeAppearance.paintProperties.get(appearanceName) as PossiblyEvaluatedPropertyValue<number> | undefined :
-            paint.get(propName as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<number> | undefined;
+        // Constants (no prop / constant DataDrivenProperty) are never zoom-dependent, so they
+        // feed min and the max slot below stays 0.
+        const min =
+            !prop ? defaultVal :
+            prop.isConstant() ? prop.constantOr(defaultVal) :
+            this._evalAt(prop, ctx.params, ctx);
 
-        if (!prop) {
-            flat[flatOffset] = defaultVal; flat[flatOffset + 1] = 0;
-            return;
-        }
-
-        if (prop.isConstant()) {
-            flat[flatOffset] = prop.constantOr(defaultVal); flat[flatOffset + 1] = 0;
-            return;
-        }
-
-        const min = prop.property.evaluate(
-            prop.value, ctx.params, ctx.feature, ctx.featureState,
-            ctx.canonical, ctx.availableImages, prop.iconImageUseTheme, ctx.formattedSection
-        );
-        flat[flatOffset] = min !== null && min !== undefined ? min : defaultVal;
+        evalFlatScratch[flatOffset] = min != null ? min : defaultVal;
 
         if (isZoomDep) {
-            const max = prop.property.evaluate(
-                prop.value, ctx.paramsNext, ctx.feature, ctx.featureState,
-                ctx.canonical, ctx.availableImages, prop.iconImageUseTheme, ctx.formattedSection
-            );
-            flat[flatOffset + 1] = max !== null && max !== undefined ? max : defaultVal;
+            const max = this._evalAt(prop, ctx.paramsNext, ctx);
+            evalFlatScratch[flatOffset + 1] = max != null ? max : defaultVal;
         } else {
-            flat[flatOffset + 1] = 0;
+            evalFlatScratch[flatOffset + 1] = 0;
         }
     }
 
@@ -578,103 +500,39 @@ export class SymbolPropertyBinderUBO {
         propName: string,
         isZoomDep: boolean,
         ctx: EvaluationContext,
-        activeAppearance: SymbolAppearance | null | undefined,
-        flat: Float32Array,
         flatOffset: number
     ): void {
-        const paint = this.layer.paint;
-        const appearanceName = propName as keyof AppearancePaintProps;
-        const useAppearanceProp = activeAppearance && activeAppearance.hasPaintProperty(appearanceName);
-        const prop = useAppearanceProp ?
-            activeAppearance.paintProperties.get(appearanceName) as unknown as PossiblyEvaluatedPropertyValue<[number, number]> | undefined :
-            paint.get(propName as keyof typeof paint._values) as unknown as PossiblyEvaluatedPropertyValue<[number, number]> | undefined;
+        const prop = this._resolveProp<[number, number]>(propName, ctx.activeAppearance);
 
-        if (!prop) {
-            flat[flatOffset] = 0; flat[flatOffset + 1] = 0; flat[flatOffset + 2] = 0; flat[flatOffset + 3] = 0;
-            return;
-        }
+        // translate is a DataConstantProperty at the layer level, so paint.get() returns the raw
+        // [number, number] with no isConstant() wrapper; the appearance path is a DataDrivenProperty
+        // (constant or not). Constants are never zoom-dependent, so the max half below stays 0.
+        // A missing/null value falls back to 0 at the write below, avoiding a per-feature allocation.
+        const min =
+            !prop ? undefined :
+            typeof prop.isConstant !== 'function' ? (prop as unknown as [number, number]) :
+            prop.isConstant() ? prop.constantOr(ZERO_VEC2) :
+            this._evalAt(prop, ctx.params, ctx);
 
-        // translate is a DataConstantProperty at the layer level (not data-driven), so paint.get()
-        // returns the raw [number, number] value directly — no isConstant() wrapper.
-        // The appearance path uses DataDrivenProperty and goes through the branches below.
-        if (typeof prop.isConstant !== 'function') {
-            const tv = (prop as unknown as [number, number]) || [0, 0];
-            flat[flatOffset] = tv[0]; flat[flatOffset + 1] = tv[1]; flat[flatOffset + 2] = 0; flat[flatOffset + 3] = 0;
-            return;
-        }
-
-        if (prop.isConstant()) {
-            const tv = prop.constantOr([0, 0]);
-            flat[flatOffset] = tv[0]; flat[flatOffset + 1] = tv[1]; flat[flatOffset + 2] = 0; flat[flatOffset + 3] = 0;
-            return;
-        }
-
-        const minVal: [number, number] = prop.property.evaluate(
-            prop.value, ctx.params, ctx.feature, ctx.featureState,
-            ctx.canonical, ctx.availableImages, prop.iconImageUseTheme, ctx.formattedSection
-        ) || [0, 0];
-
-        flat[flatOffset] = minVal[0];
-        flat[flatOffset + 1] = minVal[1];
+        evalFlatScratch[flatOffset] = min ? min[0] : 0;
+        evalFlatScratch[flatOffset + 1] = min ? min[1] : 0;
 
         if (isZoomDep) {
-            const maxVal: [number, number] = prop.property.evaluate(
-                prop.value, ctx.paramsNext, ctx.feature, ctx.featureState,
-                ctx.canonical, ctx.availableImages, prop.iconImageUseTheme, ctx.formattedSection
-            ) || [0, 0];
-            flat[flatOffset + 2] = maxVal[0];
-            flat[flatOffset + 3] = maxVal[1];
+            const max = this._evalAt(prop, ctx.paramsNext, ctx);
+            evalFlatScratch[flatOffset + 2] = max ? max[0] : 0;
+            evalFlatScratch[flatOffset + 3] = max ? max[1] : 0;
         } else {
-            flat[flatOffset + 2] = 0;
-            flat[flatOffset + 3] = 0;
+            evalFlatScratch[flatOffset + 2] = 0;
+            evalFlatScratch[flatOffset + 3] = 0;
         }
     }
 
     /**
-     * Gets or creates cached EvaluationParameters for the current zoom and brightness.
+     * Returns true if any appearance defines the given paint property (which forces it data-driven
+     * so per-feature values can differ).
      */
-    private _getCachedParams(brightness?: number | null): {params: EvaluationParameters; paramsNext: EvaluationParameters} {
-        if (this.cachedParams && this.cachedParamsNext && this.cachedBrightness === brightness) {
-            return {params: this.cachedParams, paramsNext: this.cachedParamsNext};
-        }
-        this.cachedParams = new EvaluationParameters(this.zoom, {brightness, worldview: this.worldview});
-        this.cachedParamsNext = new EvaluationParameters(this.zoom + 1, {brightness, worldview: this.worldview});
-        this.cachedBrightness = brightness;
-        return {params: this.cachedParams, paramsNext: this.cachedParamsNext};
-    }
-
-    /**
-     * Returns true if any appearance defines paint properties.
-     * When propName is provided, checks that specific property.
-     * When omitted, checks whether any icon/text paint property (as appropriate) is defined.
-     */
-    private _appearancesHavePaintProperties(propName?: keyof AppearancePaintProps): boolean {
-        const appearances = this.layer.getAppearances();
-        if (propName !== undefined) {
-            return appearances.some(a => a.hasPaintProperty(propName));
-        }
-        return this.isText ?
-            appearances.some(a => a.hasTextPaintProperties()) :
-            appearances.some(a => a.hasIconPaintProperties());
-    }
-
-    private _checkIfAllPropertiesAreConstant(layer: SymbolStyleLayer, isText: boolean): boolean {
-        const paint = layer.paint;
-        const prefix = isText ? 'text' : 'icon';
-        const props = [
-            `${prefix}-color`, `${prefix}-halo-color`, `${prefix}-opacity`,
-            `${prefix}-halo-width`, `${prefix}-halo-blur`, `${prefix}-emissive-strength`,
-            `${prefix}-occlusion-opacity`, 'symbol-z-offset', `${prefix}-translate`,
-        ];
-        for (const propName of props) {
-            const prop = paint.get(propName as keyof typeof paint._values);
-            if (prop && typeof prop === 'object' && 'isConstant' in prop && !prop.isConstant()) {
-                return false;
-            }
-        }
-        // Appearances can override paint properties per-feature, so deduplication is unsafe.
-        if (this._appearancesHavePaintProperties()) return false;
-        return true;
+    private _appearancesHavePaintProperties(propName: keyof AppearancePaintProps): boolean {
+        return this.layer.getAppearances().some(a => a.hasPaintProperty(propName));
     }
 
     /**
@@ -688,12 +546,13 @@ export class SymbolPropertyBinderUBO {
      */
     hasStateDependentPaint(layer: SymbolStyleLayer): boolean {
         const paint = layer.paint;
-        for (const def of this.propDefs) {
-            if (isPaintStateDependent(paint.get(def.name as keyof typeof paint._values))) return true;
+        const names = PROP_NAMES[+this.isText];
+        for (const name of names) {
+            if (isPaintStateDependent(paint.get(name as keyof typeof paint._values))) return true;
         }
         for (const appearance of layer.getAppearances() || []) {
-            for (const def of this.propDefs) {
-                const key = def.name as keyof AppearancePaintProps;
+            for (const name of names) {
+                const key = name as keyof AppearancePaintProps;
                 if (appearance.hasPaintProperty(key) && isPaintStateDependent(appearance.paintProperties.get(key))) {
                     return true;
                 }
@@ -703,29 +562,106 @@ export class SymbolPropertyBinderUBO {
     }
 
     /**
-     * Hash data-driven property values for deduplication.
-     * Returns an empty string when there are no data-driven properties (all constant).
+     * True when translate (property bit 8) is data-driven — its per-feature value lives in the UBO
+     * and is applied per-vertex in the shader, so the draw-time matrix must omit translate.
      */
-    private _hashDataDrivenValues(flat: Float32Array, header: SymbolPropertyHeader): string {
-        if (header.dataDrivenMask === 0) return ''; // All constant — single entry
-        const parts: string[] = [];
-        for (let i = 0; i < this.propDefs.length; i++) {
-            if ((header.dataDrivenMask & (1 << i)) === 0) continue;
-            const offset = SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[i];
-            const size = SymbolPropertiesUBO.EVAL_FLAT_SIZES[i];
-            let entry = String(flat[offset]);
-            for (let j = 1; j < size; j++) entry += `,${String(flat[offset + j])}`;
-            parts.push(entry);
-        }
-        return parts.join('|');
+    hasPerFeatureTranslate(): boolean {
+        return (this.header[HEADER_DATA_DRIVEN_MASK] & (1 << 8)) !== 0;
     }
 
     /**
      * Get the current number of batches.
      */
     getCurrentBatchIndex(): number {
-        if (!this.cachedHeader || this.maxFeaturesPerBatch === 0) return 0;
+        if (this.maxFeaturesPerBatch === 0) return 0;
         return Math.floor(this.featureCount / this.maxFeaturesPerBatch);
+    }
+
+    /**
+     * Write an already-evaluated property set into the UBO slot for the feature at insertion
+     * position `i`, re-deriving its batch/local index inline. Returns whether a write happened.
+     *
+     * The feature's global index equals its insertion position in the data-driven case (populateUBO
+     * pushes once and increments featureCount once per feature) and is 0 in the all-constant case
+     * (every feature deduplicates to entry 0). batch/local then follow from maxFeaturesPerBatch, with
+     * the same device-limit clamp populateUBO applies — so this reproduces the slot populateUBO chose
+     * without storing it per feature.
+     */
+    private _writeFeatureBlock(i: number, allValues: Float32Array): boolean {
+        const globalFeatureIndex = this.isAllConstant ? 0 : i;
+        let batchIndex = Math.floor(globalFeatureIndex / this.maxFeaturesPerBatch);
+        let localFeatureIndex = globalFeatureIndex % this.maxFeaturesPerBatch;
+        if (this._batchExceedsDeviceLimit(batchIndex)) {
+            batchIndex = 0;
+            localFeatureIndex = 0;
+        }
+        const ubo = this.ubos[batchIndex];
+        if (!ubo) return false;
+        ubo.writeDataDrivenBlock(allValues, localFeatureIndex);
+        return true;
+    }
+
+    // Each UBO batch consumes 3 binding points (header, properties, block-indices), so a batch whose
+    // highest binding point exceeds the device limit can't be bound. Such features fall back to batch 0
+    // / local 0 (sharing slot 0). populateUBO (worker) and _writeFeatureBlock (main, on update) apply
+    // this identical rule so a feature's update lands in the slot populate originally chose.
+    private _batchExceedsDeviceLimit(batchIndex: number): boolean {
+        return batchIndex * 3 + 2 >= this.maxUniformBufferBindings;
+    }
+
+    /**
+     * Rebuild the Feature for the entry at insertion position `i` from the vector tile, re-evaluate
+     * its paint properties (honoring feature-state and the current active appearance), and write the
+     * result into its UBO slot. Shared by the feature-state and dynamic-expression update paths.
+     */
+    private _reevaluateAt(
+        i: number,
+        vtLayer: VectorTileLayer,
+        canonical: CanonicalTileID,
+        availableImages: ImageId[],
+        featureStates: {[key: string | number]: FeatureState},
+        brightness?: number | null
+    ): void {
+        if (!vtLayer) return;
+        const vtFeatureIndex = this.allFeatureVtIndices[i];
+        const vtFeature = vtLayer.feature(vtFeatureIndex);
+        if (!vtFeature) return;
+
+        const featureId = this.allFeatureIds[i];
+        const featureState = featureId != null ? (featureStates[featureId] || {}) : {};
+
+        const feature: Feature = {
+            type: vtFeature.type,
+            id: featureId,
+            properties: vtFeature.properties || {},
+            geometry: []
+        };
+
+        const activeAppearance = this.activeAppearanceByVtIndex ? this.activeAppearanceByVtIndex.get(vtFeatureIndex) : undefined;
+        const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, undefined, activeAppearance);
+        this._writeFeatureBlock(i, allValues);
+    }
+
+    /**
+     * Build the featureId / vtFeatureIndex → positions lookup maps from the insertion-order arrays.
+     * Both maps are omitted from serialization and rebuilt lazily here on first main-thread use.
+     */
+    private _ensureRangeMaps(): void {
+        if (this.featureVertexRangesFromId) return;
+        this.featureVertexRangesFromId = new Map();
+        this.featureVertexRangesFromVtIndex = new Map();
+        for (let i = 0; i < this.allFeatureVtIndices.length; i++) {
+            const featureId = this.allFeatureIds[i];
+            if (featureId != null) {
+                let byId = this.featureVertexRangesFromId.get(featureId);
+                if (!byId) this.featureVertexRangesFromId.set(featureId, byId = []);
+                byId.push(i);
+            }
+            const vtFeatureIndex = this.allFeatureVtIndices[i];
+            let byVtIndex = this.featureVertexRangesFromVtIndex.get(vtFeatureIndex);
+            if (!byVtIndex) this.featureVertexRangesFromVtIndex.set(vtFeatureIndex, byVtIndex = []);
+            byVtIndex.push(i);
+        }
     }
 
     /**
@@ -737,85 +673,56 @@ export class SymbolPropertyBinderUBO {
         canonical: CanonicalTileID,
         availableImages: ImageId[],
         brightness?: number | null,
-        formattedSection?: FormattedSection,
-        context?: Context
+        formattedSection?: FormattedSection
     ): number {
         const featureId = feature.id;
-
-        // Build header on first feature
-        if (!this.cachedHeader) {
-            this.cachedHeader = this.buildHeader();
-            const max = SymbolPropertiesUBO.getMaxFeatureCount(this.cachedHeader, this.uboSizeDwords);
-            this.maxFeaturesPerBatch = isFinite(max) ? max : Number.MAX_SAFE_INTEGER;
-        }
-        const header = this.cachedHeader;
+        const header = this.header;
 
         // Evaluate all properties
         const allValues = this.evaluateAllProperties(feature, {}, canonical, availableImages, brightness, formattedSection);
 
-        // Deduplication: all-constant case means dataDrivenMask=0 → all features share entry 0
-        if (this.canDeduplicate) {
-            const hash = this._hashDataDrivenValues(allValues, header);
-            const existingIndex = this.propertyHashToUBOIndex.get(hash);
-            if (existingIndex !== undefined) {
-                const batchIndex = isFinite(this.maxFeaturesPerBatch) ? Math.floor(existingIndex / this.maxFeaturesPerBatch) : 0;
-                const localIndex = isFinite(this.maxFeaturesPerBatch) ? existingIndex % this.maxFeaturesPerBatch : existingIndex;
-                const featureRange: LocalFeatureVertexRange = {batchIndex, localFeatureIndex: localIndex, vtFeatureIndex, featureId};
-                this.allFeatures.push(featureRange);
-                if (featureId !== null && featureId !== undefined) {
-                    if (!this.featureVertexRangesFromId.has(featureId)) this.featureVertexRangesFromId.set(featureId, []);
-                    this.featureVertexRangesFromId.get(featureId).push(featureRange);
-                }
-                if (!this.featureVertexRangesFromVtIndex.has(vtFeatureIndex)) this.featureVertexRangesFromVtIndex.set(vtFeatureIndex, []);
-                this.featureVertexRangesFromVtIndex.get(vtFeatureIndex).push(featureRange);
-                return localIndex;
-            }
-            this.propertyHashToUBOIndex.set(hash, this.featureCount);
+        // Resolve the global entry index. All-constant binders carry no per-feature block (constants
+        // go through u_spp_* uniforms), so every feature shares entry 0 and only the first allocates.
+        // Otherwise each feature gets a fresh entry.
+        let globalFeatureIndex: number;
+        let isNewEntry: boolean;
+        if (this.isAllConstant) {
+            globalFeatureIndex = 0;
+            isNewEntry = this.featureCount === 0;
+            if (isNewEntry) this.featureCount = 1;
+        } else {
+            globalFeatureIndex = this.featureCount++;
+            isNewEntry = true;
         }
-
-        // Allocate a new entry
-        const globalFeatureIndex = this.featureCount++;
 
         // Determine batch and local index
-        const batchIndex = isFinite(this.maxFeaturesPerBatch) ? Math.floor(globalFeatureIndex / this.maxFeaturesPerBatch) : 0;
-        const localIndex = isFinite(this.maxFeaturesPerBatch) ? globalFeatureIndex % this.maxFeaturesPerBatch : globalFeatureIndex;
+        let batchIndex = Math.floor(globalFeatureIndex / this.maxFeaturesPerBatch);
+        let localIndex = globalFeatureIndex % this.maxFeaturesPerBatch;
 
-        // Validate batch index against device limit before allocating.
-        // Each batch uses 3 binding points (header, properties, block-indices).
-        // Clamp gracefully instead of crashing the worker — overflow features share slot 0
-        // and render with the first feature's properties, but the tile still loads.
-        const maxBindingPoints = context ? context.maxUniformBufferBindings : this.maxUniformBufferBindings;
-        if (batchIndex * 3 + 2 >= maxBindingPoints) {
-            warnOnce(`Too many symbol features: batch ${batchIndex} requires binding points up to ${batchIndex * 3 + 2}, device limit ${maxBindingPoints}. Some features will render incorrectly.`);
-            const clampedRange: LocalFeatureVertexRange = {batchIndex: 0, localFeatureIndex: 0, vtFeatureIndex, featureId};
-            this.allFeatures.push(clampedRange);
-            if (featureId !== null && featureId !== undefined) {
-                if (!this.featureVertexRangesFromId.has(featureId)) this.featureVertexRangesFromId.set(featureId, []);
-                this.featureVertexRangesFromId.get(featureId).push(clampedRange);
+        if (isNewEntry) {
+            // Validate batch index against device limit before allocating.
+            if (this._batchExceedsDeviceLimit(batchIndex)) {
+                // Clamp gracefully instead of crashing the worker — overflow features share slot 0
+                // and render with the first feature's properties, but the tile still loads.
+                warnOnce(`Too many symbol features: batch ${batchIndex} requires binding points up to ${batchIndex * 3 + 2}, device limit ${this.maxUniformBufferBindings}. Some features will render incorrectly.`);
+                batchIndex = 0;
+                localIndex = 0;
+            } else {
+                // Create new batch if needed (shares the layer's header array). GPU buffers are
+                // allocated lazily on the main thread after transfer; the worker passes no context.
+                if (!this.ubos[batchIndex]) {
+                    this.ubos[batchIndex] = new SymbolPropertiesUBO(null, batchIndex, this.uboSizeDwords, header);
+                }
+
+                // Write data-driven block for this feature (no constant block — u_spp_* handles constants)
+                this.ubos[batchIndex].writeDataDrivenBlock(allValues, localIndex);
             }
-            if (!this.featureVertexRangesFromVtIndex.has(vtFeatureIndex)) this.featureVertexRangesFromVtIndex.set(vtFeatureIndex, []);
-            this.featureVertexRangesFromVtIndex.get(vtFeatureIndex).push(clampedRange);
-            return 0;
         }
 
-        // Create new batch if needed and write the header
-        if (!this.ubos[batchIndex]) {
-            this.ubos[batchIndex] = new SymbolPropertiesUBO(context, batchIndex, this.uboSizeDwords);
-            this.ubos[batchIndex].writeHeader(header);
-        }
-
-        // Write data-driven block for this feature (no constant block — u_spp_* handles constants)
-        this.ubos[batchIndex].writeDataDrivenBlock(allValues, localIndex, header);
-
-        // Track feature for future updates
-        const featureRange: LocalFeatureVertexRange = {batchIndex, localFeatureIndex: localIndex, vtFeatureIndex, featureId};
-        this.allFeatures.push(featureRange);
-        if (featureId !== null && featureId !== undefined) {
-            if (!this.featureVertexRangesFromId.has(featureId)) this.featureVertexRangesFromId.set(featureId, []);
-            this.featureVertexRangesFromId.get(featureId).push(featureRange);
-        }
-        if (!this.featureVertexRangesFromVtIndex.has(vtFeatureIndex)) this.featureVertexRangesFromVtIndex.set(vtFeatureIndex, []);
-        this.featureVertexRangesFromVtIndex.get(vtFeatureIndex).push(featureRange);
+        // Record the feature in insertion order. Its position is its global index, from which
+        // _writeFeatureBlock re-derives batch/local; the lookup maps are built lazily on the main thread.
+        this.allFeatureVtIndices.push(vtFeatureIndex);
+        this.allFeatureIds.push(featureId);
 
         return localIndex;
     }
@@ -835,30 +742,13 @@ export class SymbolPropertyBinderUBO {
         this.layer = styleLayer;
         // Layer changed — constant uniform values may have new paint property values.
         this.cachedConstantUniforms = null;
-        if (!this.cachedHeader) return;
-        const header = this.cachedHeader;
 
+        this._ensureRangeMaps();
         for (const featureId of featureIds) {
-            const ranges = this.featureVertexRangesFromId.get(featureId);
-            if (!ranges) continue;
-            const featureState = featureStates[featureId] || {};
-
-            for (const range of ranges) {
-                if (!vtLayer) continue;
-                const vtFeature = vtLayer.feature(range.vtFeatureIndex);
-                if (!vtFeature) continue;
-
-                const feature: Feature = {
-                    type: vtFeature.type,
-                    id: featureId,
-                    properties: vtFeature.properties || {},
-                    geometry: []
-                };
-
-                const activeAppearance = this.activeAppearanceByVtIndex ? this.activeAppearanceByVtIndex.get(range.vtFeatureIndex) : undefined;
-                const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, undefined, activeAppearance);
-                if (!this.ubos[range.batchIndex]) continue;
-                this.ubos[range.batchIndex].writeDataDrivenBlock(allValues, range.localFeatureIndex, header);
+            const positions = this.featureVertexRangesFromId.get(featureId);
+            if (!positions) continue;
+            for (const i of positions) {
+                this._reevaluateAt(i, vtLayer, canonical, availableImages, featureStates, brightness);
             }
         }
     }
@@ -880,33 +770,13 @@ export class SymbolPropertyBinderUBO {
         this.layer = styleLayer;
         // Layer changed — constant uniform values may have new paint property values.
         this.cachedConstantUniforms = null;
-        if (!this.cachedHeader) return;
         // Skip per-feature re-evaluation when no data-driven properties: constant properties
         // are read from this.layer at draw time via getConstantUniformValues(), which was
         // already invalidated above.
-        if (this.cachedHeader.dataDrivenMask === 0) return;
-        const header = this.cachedHeader;
+        if (this.header[HEADER_DATA_DRIVEN_MASK] === 0) return;
 
-        for (const range of this.allFeatures) {
-            if (!vtLayer) continue;
-            const vtFeature = vtLayer.feature(range.vtFeatureIndex);
-            if (!vtFeature) continue;
-
-            const featureState = range.featureId !== undefined && range.featureId !== null ?
-                (featureStates[range.featureId] || {}) :
-                {};
-
-            const feature: Feature = {
-                type: vtFeature.type,
-                id: range.featureId,
-                properties: vtFeature.properties || {},
-                geometry: []
-            };
-
-            const activeAppearance = this.activeAppearanceByVtIndex ? this.activeAppearanceByVtIndex.get(range.vtFeatureIndex) : undefined;
-            const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, undefined, activeAppearance);
-            if (!this.ubos[range.batchIndex]) continue;
-            this.ubos[range.batchIndex].writeDataDrivenBlock(allValues, range.localFeatureIndex, header);
+        for (let i = 0; i < this.allFeatureVtIndices.length; i++) {
+            this._reevaluateAt(i, vtLayer, canonical, availableImages, featureStates, brightness);
         }
     }
 
@@ -930,19 +800,18 @@ export class SymbolPropertyBinderUBO {
         // on deserialized instances (worker → main thread transfer).
         if (!this.activeAppearanceByVtIndex) this.activeAppearanceByVtIndex = new Map();
         this.activeAppearanceByVtIndex.set(vtFeatureIndex, activeAppearance || null);
-        if (!this.cachedHeader) return false;
-        const header = this.cachedHeader;
-        if (header.dataDrivenMask === 0) return false; // All constant — nothing per-feature to write
+        if (this.header[HEADER_DATA_DRIVEN_MASK] === 0) return false; // All constant — nothing per-feature to write
 
+        this._ensureRangeMaps();
+        const positions = this.featureVertexRangesFromVtIndex.get(vtFeatureIndex);
+        if (!positions) return false;
+
+        // All positions for this vtFeatureIndex evaluate identically (same feature/state/appearance),
+        // so evaluate once and write the shared result into each slot.
+        const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, undefined, activeAppearance);
         let wrote = false;
-        const ranges = this.featureVertexRangesFromVtIndex.get(vtFeatureIndex);
-        if (ranges) {
-            for (const range of ranges) {
-                const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, undefined, activeAppearance);
-                if (!this.ubos[range.batchIndex]) continue;
-                this.ubos[range.batchIndex].writeDataDrivenBlock(allValues, range.localFeatureIndex, header);
-                wrote = true;
-            }
+        for (const i of positions) {
+            wrote = this._writeFeatureBlock(i, allValues) || wrote;
         }
         return wrote;
     }
@@ -958,9 +827,9 @@ export class SymbolPropertyBinderUBO {
      * or brightness change.
      */
     getConstantUniformValues(renderZoom: number, brightness?: number | null): ConstantUniformValues {
-        const header = this.cachedHeader;
-        const hasCameraExpr = !!(header && header.cameraMask);
-        const hasZoomDep = !!(header && header.zoomDependentMask);
+        const header = this.header;
+        const hasCameraExpr = !!this.cameraMask;
+        const hasZoomDep = !!header[HEADER_ZOOM_DEPENDENT_MASK];
 
         // Cache hit: zoom factors depend on renderZoom too, so we must also invalidate on
         // renderZoom change when any property is zoom-dependent.
@@ -973,54 +842,50 @@ export class SymbolPropertyBinderUBO {
         }
 
         const paint = this.layer.paint;
-        const propDefs = this.propDefs;
         const renderParams = hasCameraExpr ?
             new EvaluationParameters(renderZoom, {brightness, worldview: this.worldview}) :
             null;
         const emptyFeature: Feature = {type: 1, id: undefined, properties: {}, geometry: []};
+        const names = PROP_NAMES[+this.isText];
 
         const getColor = (propIdx: number): [number, number, number, number] => {
-            const def = propDefs[propIdx];
-            const prop = paint.get(def.name as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<Color> | undefined;
+            const name = names[propIdx];
+            const prop = paint.get(name as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<Color> | undefined;
             if (!prop) return [0, 0, 0, 1];
 
-            const useThemeProp = def.useThemeName ? (paint.get(def.useThemeName as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<string> | undefined) : undefined;
+            const useThemeProp = paint.get(`${name}-use-theme` as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<string> | undefined;
             const useThemeValue = useThemeProp && typeof useThemeProp !== 'string' ? useThemeProp.value : undefined;
             const ignoreLut = shouldIgnoreLut(useThemeValue, emptyFeature, {}, [], undefined, brightness, undefined, this.worldview);
             const effectiveLut = ignoreLut ? null : this.lut;
 
             // Camera expressions need re-evaluation at render zoom; constants use the
             // already-evaluated value from the style layer (no EvaluationParameters needed).
-            const isCamera = !!(header && (header.cameraMask & (1 << propIdx)));
-            let color: Color;
-            if (isCamera && renderParams) {
-                color = prop.property.evaluate(prop.value, renderParams, emptyFeature, {}, undefined, []);
-            } else {
-                color = prop.constantOr(Color.transparent);
-            }
-            const np = (color || Color.transparent).toNonPremultipliedRenderColor(effectiveLut);
-            return [np.r, np.g, np.b, np.a];
+            const isCamera = !!(this.cameraMask & (1 << propIdx));
+            const color = isCamera && renderParams ?
+                prop.property.evaluate(prop.value, renderParams, emptyFeature, {}, undefined, []) || Color.transparent :
+                prop.constantOr(Color.transparent);
+            return color.toNonPremultipliedRenderColor(effectiveLut).toArray01();
         };
 
         const getFloat = (propIdx: number, defaultVal: number): number => {
-            const def = propDefs[propIdx];
-            const prop = paint.get(def.name as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<number> | undefined;
+            const name = names[propIdx];
+            const prop = paint.get(name as keyof typeof paint._values) as PossiblyEvaluatedPropertyValue<number> | undefined;
             if (!prop) return defaultVal;
-            const isCamera = !!(header && (header.cameraMask & (1 << propIdx)));
+            const isCamera = !!(this.cameraMask & (1 << propIdx));
             if (isCamera && renderParams) {
                 const evaluated = prop.property.evaluate(prop.value, renderParams, emptyFeature, {}, undefined, []);
-                return evaluated !== null && evaluated !== undefined ? evaluated : defaultVal;
+                return evaluated != null ? evaluated : defaultVal;
             }
             return prop.constantOr(defaultVal);
         };
 
         // Precompute the zoom-interpolation factor for every zoom-dep property.
         // Step expressions encode the snap as zm == zM.
-        const zoomFactors = new Float32Array(9);
+        const zoomFactors = new Float32Array(PROP_COUNT);
         if (hasZoomDep) {
             const uZoom = renderZoom - Math.floor(renderZoom);
-            for (let i = 0; i < 9; i++) {
-                if ((header.zoomDependentMask & (1 << i)) === 0) continue;
+            for (let i = 0; i < PROP_COUNT; i++) {
+                if ((header[HEADER_ZOOM_DEPENDENT_MASK] & (1 << i)) === 0) continue;
                 const zm = this.sharedZoomRanges[i * 2];
                 const zM = this.sharedZoomRanges[i * 2 + 1];
                 zoomFactors[i] = zm === zM ?
@@ -1045,6 +910,17 @@ export class SymbolPropertyBinderUBO {
         this.cachedConstantRenderZoom = renderZoom;
         this.cachedConstantBrightness = brightness;
         return result;
+    }
+
+    /**
+     * Called once on the worker after all features are populated, before transfer. Trims each
+     * batch's oversized `propertiesData` staging array down to the bytes actually written so the
+     * dead tail doesn't cross the worker→main boundary.
+     */
+    finalize(): void {
+        for (const ubo of this.ubos) {
+            ubo.rightSizeForTransfer();
+        }
     }
 
     /**
@@ -1073,19 +949,16 @@ export class SymbolPropertyBinderUBO {
             ubo.destroy();
         }
         this.ubos = [];
-        this.featureVertexRangesFromId.clear();
-        this.featureVertexRangesFromVtIndex.clear();
-        this.allFeatures = [];
+        this.featureVertexRangesFromId = null;
+        this.featureVertexRangesFromVtIndex = null;
+        this.allFeatureVtIndices = [];
+        this.allFeatureIds = [];
         this.featureCount = 0;
-        this.cachedHeader = null;
         this.maxFeaturesPerBatch = 0;
-        if (this.propertyHashToUBOIndex) {
-            this.propertyHashToUBOIndex.clear();
-        }
     }
 }
 
 // 'layer' is omitted because SymbolStyleLayer is not serializable. It must be re-assigned on
 // the main thread before any main-thread method (getConstantUniformValues, bind, etc.) is called.
 // See draw_symbol.ts: `buffers.uboBinder.layer = layer` before drawSymbolElements().
-register(SymbolPropertyBinderUBO, 'SymbolPropertyBinderUBO', {omit: ['layer', 'cachedParams', 'cachedParamsNext', 'cachedBrightness', 'propertyHashToUBOIndex', 'cachedConstantUniforms', 'cachedConstantRenderZoom', 'cachedConstantBrightness', 'activeAppearanceByVtIndex', '_evalFlat']});
+register(SymbolPropertyBinderUBO, 'SymbolPropertyBinderUBO', {omit: ['layer', 'cachedConstantUniforms', 'cachedConstantRenderZoom', 'cachedConstantBrightness', 'activeAppearanceByVtIndex', 'featureVertexRangesFromId', 'featureVertexRangesFromVtIndex']});

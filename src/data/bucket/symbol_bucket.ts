@@ -332,7 +332,7 @@ export class SymbolBuffers {
     symbolInstanceIndices: number[];
 
     uboBinder: SymbolPropertyBinderUBO | null;
-    featureIdArray: StructArrayLayout1f4 | null | undefined;
+    featureIdArray: StructArrayLayout1f4;
     featureIdBuffer: VertexBuffer | null;
 
     cachedBatchIndices: number[] | null;
@@ -482,7 +482,7 @@ export class SymbolBuffers {
             // even though the shaders read uint8s
             this.opacityVertexBuffer.itemSize = 1;
 
-            if (this.featureIdArray && this.featureIdArray.length > 0) {
+            if (this.featureIdArray.length > 0) {
                 this.featureIdBuffer = context.createVertexBuffer(this.featureIdArray, featureIdAttributes.members, false);
             }
         }
@@ -1394,26 +1394,10 @@ class SymbolBucket implements Bucket {
             // Skip when all data-driven properties are light-constant: brightness doesn't affect
             // stored UBO values in that case (constant uniforms handle the rendering adjustment).
             if (isBrightnessChanged) {
-                if (this.text.uboBinder && !this.text.uboBinder.isLightConstant) {
-                    this.text.uboBinder.updateDynamicExpressions(
-                        layers[0] as SymbolStyleLayer,
-                        vtLayer,
-                        canonical,
-                        availableImages,
-                        states,
-                        brightness
-                    );
-                }
-
-                if (this.icon.uboBinder && !this.icon.uboBinder.isLightConstant) {
-                    this.icon.uboBinder.updateDynamicExpressions(
-                        layers[0] as SymbolStyleLayer,
-                        vtLayer,
-                        canonical,
-                        availableImages,
-                        states,
-                        brightness
-                    );
+                for (const binder of [this.text.uboBinder, this.icon.uboBinder]) {
+                    if (binder && !binder.isLightConstant) {
+                        binder.updateDynamicExpressions(layers[0] as SymbolStyleLayer, vtLayer, canonical, availableImages, states, brightness);
+                    }
                 }
             } else if (Object.keys(states).length > 0) {
                 // Update specific features when feature-state changes.
@@ -1422,10 +1406,9 @@ class SymbolBucket implements Bucket {
                 // updateFeaturePaintForAppearance below, so updateFeatures would only
                 // re-evaluate values that are about to be overwritten with the same data.
                 const symbolLayer = layers[0] as SymbolStyleLayer;
-                const textNeedsUpdate = this.text.uboBinder && this.text.uboBinder.hasStateDependentPaint(symbolLayer);
-                const iconNeedsUpdate = this.icon.uboBinder && this.icon.uboBinder.hasStateDependentPaint(symbolLayer);
+                const binders = [this.text.uboBinder, this.icon.uboBinder].filter(b => b && b.hasStateDependentPaint(symbolLayer));
 
-                if (textNeedsUpdate || iconNeedsUpdate) {
+                if (binders.length > 0) {
                     const featureIds = new Set<string | number>(Object.keys(states).map(id => {
                         // Convert to number only if it's a safe integer to avoid precision loss
                         const numId = Number(id);
@@ -1435,28 +1418,8 @@ class SymbolBucket implements Bucket {
                         return id;
                     }));
 
-                    if (textNeedsUpdate) {
-                        this.text.uboBinder.updateFeatures(
-                            featureIds,
-                            symbolLayer,
-                            vtLayer,
-                            canonical,
-                            availableImages,
-                            states,
-                            brightness
-                        );
-                    }
-
-                    if (iconNeedsUpdate) {
-                        this.icon.uboBinder.updateFeatures(
-                            featureIds,
-                            symbolLayer,
-                            vtLayer,
-                            canonical,
-                            availableImages,
-                            states,
-                            brightness
-                        );
+                    for (const binder of binders) {
+                        binder.updateFeatures(featureIds, symbolLayer, vtLayer, canonical, availableImages, states, brightness);
                     }
                 }
             }
@@ -1615,6 +1578,8 @@ class SymbolBucket implements Bucket {
             }
         }
 
+        const uboBinders = [this.text.uboBinder, this.icon.uboBinder];
+
         for (let s = 0; s < this.symbolInstances.length; s++) {
             const symbolInstance = this.symbolInstances.get(s);
             const featureData = this.getAppearanceFeatureData(symbolInstance.featureIndex);
@@ -1691,17 +1656,12 @@ class SymbolBucket implements Bucket {
                 const brightness = globalProperties ? globalProperties.brightness : null;
                 const fState = featureStateForThis || {};
                 const activeAppearance = activeAppearanceIndex >= 0 ? layer.appearances[activeAppearanceIndex] : null;
-                if (this.text.uboBinder) {
+                for (const binder of uboBinders) {
+                    if (!binder) continue;
                     // updateDynamicExpressions/updateFeatures, which set the layer, may not have
                     // been called for zoom/pitch-only condition changes so we do it here
-                    this.text.uboBinder.layer = layer;
-                    hasUboChanges = this.text.uboBinder.updateFeaturePaintForAppearance(vtFeatureIndex, evaluationFeature, fState, canonical, availableImages, brightness, activeAppearance) || hasUboChanges;
-                }
-                if (this.icon.uboBinder) {
-                    // updateDynamicExpressions/updateFeatures, which set the layer, may not have
-                    // been called for zoom/pitch-only condition changes so we do it here
-                    this.icon.uboBinder.layer = layer;
-                    hasUboChanges = this.icon.uboBinder.updateFeaturePaintForAppearance(vtFeatureIndex, evaluationFeature, fState, canonical, availableImages, brightness, activeAppearance) || hasUboChanges;
+                    binder.layer = layer;
+                    hasUboChanges = binder.updateFeaturePaintForAppearance(vtFeatureIndex, evaluationFeature, fState, canonical, availableImages, brightness, activeAppearance) || hasUboChanges;
                 }
             }
 
@@ -1846,15 +1806,14 @@ class SymbolBucket implements Bucket {
                     arrays.programConfigurations.populatePaintArrays(layoutVertexArray.length, feature, feature.index, {}, availableImages, canonical, brightness, sections && sections[sectionIndex], this.worldview);
                 }
 
-                if (arrays.uboBinder && arrays.featureIdArray) {
+                if (arrays.uboBinder) {
                     const uboIndex = arrays.uboBinder.populateUBO(
                         feature,
                         feature.index,
                         canonical,
                         availableImages,
                         brightness,
-                        sections && sections[sectionIndex],
-                        undefined  // context not available on worker thread
+                        sections && sections[sectionIndex]
                     );
                     lastUboIndex = uboIndex; // Track for null vertex padding
                     // Add feature ID for each vertex in this section
@@ -1874,7 +1833,7 @@ class SymbolBucket implements Bucket {
             this._addNullVertices(remainingQuads, layoutVertexArray, sizeVertex, globe, globeExtVertexArray, arrays, hasAnySecondaryIcon, segment, indexArray);
 
             // Add feature IDs for null vertices so they share the last section's UBO entry
-            if (arrays.uboBinder && arrays.featureIdArray && lastUboIndex >= 0) {
+            if (arrays.uboBinder && lastUboIndex >= 0) {
                 const nullVertexCount = remainingQuads * 4; // 4 vertices per quad
                 for (let v = 0; v < nullVertexCount; v++) {
                     arrays.featureIdArray.emplaceBack(lastUboIndex);

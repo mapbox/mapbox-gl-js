@@ -1,27 +1,26 @@
+import assert from '../../style-spec/util/assert';
 import {register} from '../../util/web_worker_transfer';
 
 import type Context from '../../gl/context';
 
 /**
- * Describes how paint properties are laid out in the UBO.
+ * The UBO layout header is a flat Uint32Array of 12 dwords (3 uvec4), built once per layer by
+ * SymbolPropertyBinderUBO.updateHeader() and uploaded to the GPU verbatim (matching GL Native and
+ * the shader's SymbolPropertyHeader struct). These constants name its dword slots:
  *
- * Property order (bit index 0-8): fill_color, halo_color, opacity,
- * halo_width, halo_blur, emissive_strength, occlusion_opacity, z_offset, translate.
+ *   [HEADER_DATA_DRIVEN_MASK]     bitmask: 1 = property goes in the per-feature data-driven block
+ *   [HEADER_ZOOM_DEPENDENT_MASK]  bitmask: 1 = property uses zoom interpolation (composite kind)
+ *   [HEADER_BLOCK_SIZE_VEC4]      size of the data-driven block in vec4 units (0 when no DD props)
+ *   [HEADER_OFFSETS + i]          dword offset of property i within the data-driven block
+ *                                 (only meaningful when property i's data-driven bit is set)
  *
- * dataDrivenMask          – bitmask: 1 = property goes in per-feature data-driven block
- * zoomDependentMask       – bitmask: 1 = property uses zoom interpolation (composite kind)
- * cameraMask              – bitmask: 1 = property is a camera (zoom-only) expression
- * dataDrivenBlockSizeVec4 – size of data-driven block in vec4 units (0 when dataDrivenMask=0)
- * offsets[i]              – dword offset of property i within the data-driven block
- *                           (only meaningful for properties with the dataDrivenMask bit set)
+ * Property order (bit index 0-8): fill_color, halo_color, opacity, halo_width, halo_blur,
+ * emissive_strength, occlusion_opacity, z_offset, translate.
  */
-export type SymbolPropertyHeader = {
-    dataDrivenMask: number;
-    zoomDependentMask: number;
-    cameraMask: number;
-    dataDrivenBlockSizeVec4: number;
-    offsets: [number, number, number, number, number, number, number, number, number];
-};
+export const HEADER_DATA_DRIVEN_MASK = 0;
+export const HEADER_ZOOM_DEPENDENT_MASK = 1;
+export const HEADER_BLOCK_SIZE_VEC4 = 2;
+export const HEADER_OFFSETS = 3;
 
 /**
  * A packed value for writing into the UBO's data-driven properties array.
@@ -54,46 +53,55 @@ export class SymbolPropertiesUBO {
     static readonly HEADER_DWORDS = 12; // 3 uvec4s (never changes)
     static readonly HEADER_BYTES = 48;  // HEADER_DWORDS * 4
 
-    // Flat evaluation buffer layout — per-property start offsets and slot counts in a Float32Array(EVAL_FLAT_TOTAL).
+    // Flat evaluation buffer layout — per-property start offset in a Float32Array(EVAL_FLAT_TOTAL).
     // fill_color[0..3], halo_color[4..7], opacity[8..9], halo_width[10..11],
     // halo_blur[12..13], emissive_strength[14..15], occlusion_opacity[16..17],
     // z_offset[18..19], translate[20..23].
     // Colors and translate always use 4 slots; scalars always use 2 (second = 0 for non-zoom).
     static readonly EVAL_FLAT_OFFSETS: readonly number[] = [0, 4, 8, 10, 12, 14, 16, 18, 20];
-    static readonly EVAL_FLAT_SIZES: readonly number[]   = [4, 4, 2,  2,  2,  2,  2,  2,  4];
     static readonly EVAL_FLAT_TOTAL = 24;
 
-    // Until we support layout properties in UBOs, blockIndicesData is just
-    // an identity mapping since deduplication happens at the vertex attribute level
-    // (duplicate features get the same index written into the vertex buffer, so no
-    // indirection is needed). When we move layout properties to UBO we'll use this
-    // array to deduplicate paint properties and add a new array for layout properties
-    // deduplication.
-    // Until we need that, we just create the identity-mapping once and create a copy
-    // of it
+    // The block-indices buffer is a pure identity mapping (blockIndices[i] = i): dedup currently
+    // happens at the vertex-attribute level (duplicate features get the same index written into the
+    // vertex buffer), so no indirection is needed here. Because it carries no per-instance state, all
+    // batches share one read-only template rather than each allocating — and serializing — its own
+    // 16 KB copy. When layout properties move to UBOs this will hold real per-layer indices and need
+    // to become per-instance again (it'll deduplicate paint properties, with a sibling array for
+    // layout properties); restore the per-instance copy then. uboSizeDwords is constant per session
+    // (derived from device limits), so a single template size is safe.
     private static _blockIndicesTemplate: Uint32Array | null = null;
+
+    private static getBlockIndices(propsDwords: number): Uint32Array {
+        let template = SymbolPropertiesUBO._blockIndicesTemplate;
+        if (!template) {
+            template = SymbolPropertiesUBO._blockIndicesTemplate = new Uint32Array(propsDwords);
+            for (let i = 0; i < propsDwords; i++) template[i] = i;
+        }
+        assert(template.length === propsDwords, 'block-indices template size mismatch across batches');
+        return template;
+    }
 
     propsDwords: number;           // dword count for u_properties
     totalBytes: number;            // byte size of each of properties / block-indices buffers
     headerData: Uint32Array;       // 12 uint32s (3 uvec4s)
     propertiesData: Float32Array;  // propsDwords floats — data-driven blocks only
-    blockIndicesData: Uint32Array; // propsDwords uint32s — identity: blockIndicesData[i] = i
     headerBuffer: WebGLBuffer | null;
     propertiesBuffer: WebGLBuffer | null;
     blockIndicesBuffer: WebGLBuffer | null;
     batchIndex: number;
     context: Context | null;
     // Dirty tracking: each flag/range marks data that needs uploading to GPU.
-    // headerDirty: set by writeHeader (writes are rare — header is built once).
+    // headerDirty: the header is built once and passed in at construction, so this just
+    // triggers a single upload, then stays false.
     // propsDirtyMin/Max: dword range touched by writeDataDrivenBlock; -1 means clean.
-    // blockIndicesDirty: identity mapping never changes at runtime after construction,
+    // blockIndicesDirty: the shared identity template is uploaded once per batch's GPU buffer,
     // so this clears after the first upload and stays false.
     _headerDirty: boolean;
     _propsDirtyMin: number;
     _propsDirtyMax: number;
     _blockIndicesDirty: boolean;
 
-    constructor(context: Context | null | undefined = null, batchIndex: number = 0, uboSizeDwords: number = 4096) {
+    constructor(context: Context | null, batchIndex: number, uboSizeDwords: number, header: Uint32Array) {
         this.batchIndex = batchIndex;
         this.headerBuffer = null;
         this.propertiesBuffer = null;
@@ -101,16 +109,9 @@ export class SymbolPropertiesUBO {
         this.context = context || null;
         this.propsDwords = uboSizeDwords;
         this.totalBytes = this.propsDwords * 4;
-        this.headerData = new Uint32Array(SymbolPropertiesUBO.HEADER_DWORDS);
+        // The header is built once per layer and shared (read-only) across all batches.
+        this.headerData = header;
         this.propertiesData = new Float32Array(this.propsDwords);
-
-        if (!SymbolPropertiesUBO._blockIndicesTemplate) {
-            SymbolPropertiesUBO._blockIndicesTemplate = new Uint32Array(this.propsDwords);
-            for (let i = 0; i < this.propsDwords; i++) {
-                SymbolPropertiesUBO._blockIndicesTemplate[i] = i;
-            }
-        }
-        this.blockIndicesData = new Uint32Array(SymbolPropertiesUBO._blockIndicesTemplate);
 
         // Initial state: header and blockIndices need uploading on first upload(); properties
         // gets dirtied as features are written.
@@ -150,47 +151,25 @@ export class SymbolPropertiesUBO {
     }
 
     /**
-     * Write the 3-uvec4 header from a SymbolPropertyHeader descriptor.
-     *
-     * Layout (matching GL Native):
-     *   u_header[0] = { dataDrivenMask, zoomDependentMask, dataDrivenBlockSizeVec4, offsets[0] }
-     *   u_header[1] = { offsets[1], offsets[2], offsets[3], offsets[4] }
-     *   u_header[2] = { offsets[5], offsets[6], offsets[7], offsets[8] }
-     */
-    writeHeader(header: SymbolPropertyHeader): void {
-        const h = this.headerData;
-        h[0]  = header.dataDrivenMask;
-        h[1]  = header.zoomDependentMask;
-        h[2]  = header.dataDrivenBlockSizeVec4;
-        h[3]  = header.offsets[0]; // fill_np_color
-        h[4]  = header.offsets[1]; // halo_np_color
-        h[5]  = header.offsets[2]; // opacity
-        h[6]  = header.offsets[3]; // halo_width
-        h[7]  = header.offsets[4]; // halo_blur
-        h[8]  = header.offsets[5]; // emissive_strength
-        h[9]  = header.offsets[6]; // occlusion_opacity
-        h[10] = header.offsets[7]; // z_offset
-        h[11] = header.offsets[8]; // translate
-        this._headerDirty = true;
-    }
-
-    /**
      * Write all data-driven properties for one feature from a flat evaluation buffer.
      *
      * The feature's block starts at dword offset: featureIndex * dataDrivenBlockSizeDwords.
      * (No constant block — constant properties are passed as u_spp_* uniforms at draw time.)
      * `flat` is a Float32Array(EVAL_FLAT_TOTAL) produced by evaluateAllProperties().
      */
-    writeDataDrivenBlock(flat: Float32Array, featureIndex: number, header: SymbolPropertyHeader): void {
-        const dataDrivenBlockSizeDwords = header.dataDrivenBlockSizeVec4 * 4;
+    writeDataDrivenBlock(flat: Float32Array, featureIndex: number): void {
+        const h = this.headerData;
+        const dataDrivenBlockSizeDwords = h[HEADER_BLOCK_SIZE_VEC4] * 4;
         if (dataDrivenBlockSizeDwords === 0) return;
         const base = featureIndex * dataDrivenBlockSizeDwords;
         if (base + dataDrivenBlockSizeDwords > this.propertiesData.length) {
             throw new Error(`UBO write out of bounds: feature index ${featureIndex} exceeds propertiesData capacity`);
         }
+        const dataDrivenMask = h[HEADER_DATA_DRIVEN_MASK];
+        const zoomDependentMask = h[HEADER_ZOOM_DEPENDENT_MASK];
         for (let i = 0; i < 9; i++) {
-            if ((header.dataDrivenMask & (1 << i)) === 0) continue;
-            this._copyFromFlat(base + header.offsets[i], i, flat, SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[i], header.zoomDependentMask);
+            if ((dataDrivenMask & (1 << i)) === 0) continue;
+            this._copyFromFlat(base + h[HEADER_OFFSETS + i], i, flat, SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[i], zoomDependentMask);
         }
         // Track dword range touched so upload() can do a partial bufferSubData.
         if (this._propsDirtyMin === -1 || base < this._propsDirtyMin) this._propsDirtyMin = base;
@@ -199,13 +178,22 @@ export class SymbolPropertiesUBO {
     }
 
     /**
-     * Maximum number of features that fit in one UBO batch given a header.
-     * Returns Infinity when dataDrivenBlockSizeVec4 is 0 (all properties constant).
+     * Shrink `propertiesData` to just the dwords actually written, called once on the worker
+     * after all features are populated and before transfer. `propertiesData` is allocated at the
+     * full UBO capacity (we don't know the final feature count while streaming), but typically
+     * only a small prefix is used; slicing here keeps the dead tail off the worker→main wire.
+     *
+     * `totalBytes` / `propsDwords` stay at full capacity — the GPU buffer is sized from those, and
+     * `upload()` only ever uploads the touched `_propsDirty*` range, so the trimmed CPU array still
+     * covers every write (including later main-thread feature-state updates, which only rewrite
+     * existing in-range blocks). A `.slice()` (not `.subarray()`) is required so the transferred
+     * ArrayBuffer is the trimmed length rather than a view over the full backing buffer.
      */
-    static getMaxFeatureCount(header: SymbolPropertyHeader, propsDwords: number = 4096): number {
-        const dataDrivenBlockSizeDwords = header.dataDrivenBlockSizeVec4 * 4;
-        if (dataDrivenBlockSizeDwords === 0) return Infinity;
-        return Math.floor(propsDwords / dataDrivenBlockSizeDwords);
+    rightSizeForTransfer(): void {
+        const used = this._propsDirtyMax === -1 ? 0 : this._propsDirtyMax;
+        if (used < this.propertiesData.length) {
+            this.propertiesData = this.propertiesData.slice(0, used);
+        }
     }
 
     /**
@@ -215,22 +203,12 @@ export class SymbolPropertiesUBO {
      * Non-zoom translate and zoom-dep scalars copy 2 dwords. Non-zoom scalars copy 1 dword.
      */
     private _copyFromFlat(dwordOffset: number, propIdx: number, flat: Float32Array, flatOffset: number, zoomDependentMask: number): void {
-        const pd = this.propertiesData;
         const isColor = propIdx < 2;
         const isVec2 = propIdx === 8;
         const isZoomDep = (zoomDependentMask & (1 << propIdx)) !== 0;
+        const count = isColor || (isVec2 && isZoomDep) ? 4 : (isVec2 || isZoomDep) ? 2 : 1;
 
-        if (isColor || (isVec2 && isZoomDep)) {
-            pd[dwordOffset]     = flat[flatOffset];
-            pd[dwordOffset + 1] = flat[flatOffset + 1];
-            pd[dwordOffset + 2] = flat[flatOffset + 2];
-            pd[dwordOffset + 3] = flat[flatOffset + 3];
-        } else if (isVec2 || isZoomDep) {
-            pd[dwordOffset]     = flat[flatOffset];
-            pd[dwordOffset + 1] = flat[flatOffset + 1];
-        } else {
-            pd[dwordOffset] = flat[flatOffset];
-        }
+        for (let k = 0; k < count; k++) this.propertiesData[dwordOffset + k] = flat[flatOffset + k];
     }
 
     /**
@@ -269,7 +247,7 @@ export class SymbolPropertiesUBO {
 
         if (this._blockIndicesDirty) {
             gl.bindBuffer(gl.UNIFORM_BUFFER, this.blockIndicesBuffer);
-            gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.blockIndicesData);
+            gl.bufferSubData(gl.UNIFORM_BUFFER, 0, SymbolPropertiesUBO.getBlockIndices(this.propsDwords));
             this._blockIndicesDirty = false;
             didAny = true;
         }

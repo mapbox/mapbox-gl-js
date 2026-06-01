@@ -1,5 +1,5 @@
 import {test, expect, describe} from '../../util/vitest';
-import {SymbolPropertiesUBO, type SymbolPropertyHeader} from '../../../src/data/bucket/symbol_properties_ubo';
+import {SymbolPropertiesUBO, HEADER_DATA_DRIVEN_MASK, HEADER_ZOOM_DEPENDENT_MASK, HEADER_BLOCK_SIZE_VEC4, HEADER_OFFSETS} from '../../../src/data/bucket/symbol_properties_ubo';
 import {SymbolPropertyBinderUBO} from '../../../src/data/bucket/symbol_property_binder_ubo';
 import {SymbolBuffers} from '../../../src/data/bucket/symbol_bucket';
 import {ProgramConfigurationSet} from '../../../src/data/program_configuration';
@@ -13,116 +13,94 @@ import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {SymbolLayerSpecification} from '../../../src/style-spec/types';
 
 describe('SymbolPropertiesUBO', () => {
-    function makeAllConstantHeader(): SymbolPropertyHeader {
-        // All 8 properties constant — no data-driven block; dataDrivenBlockSizeVec4 = 0.
-        // Offsets are unused for constant properties (u_spp_* uniforms carry the values).
-        return {
-            dataDrivenMask: 0,
-            zoomDependentMask: 0,
-            cameraMask: 0,
-            dataDrivenBlockSizeVec4: 0,
-            offsets: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        };
+    // Build a 12-dword header array (3 uvec4) from named fields, matching updateHeader's layout.
+    function makeHeader(dataDrivenMask: number, dataDrivenBlockSizeVec4: number, offsets: number[] = [], zoomDependentMask: number = 0): Uint32Array {
+        const header = new Uint32Array(SymbolPropertiesUBO.HEADER_DWORDS);
+        header[HEADER_DATA_DRIVEN_MASK] = dataDrivenMask;
+        header[HEADER_ZOOM_DEPENDENT_MASK] = zoomDependentMask;
+        header[HEADER_BLOCK_SIZE_VEC4] = dataDrivenBlockSizeVec4;
+        for (let i = 0; i < offsets.length; i++) header[HEADER_OFFSETS + i] = offsets[i];
+        return header;
     }
 
-    test('writeHeader encodes header data correctly', () => {
-        const ubo = new SymbolPropertiesUBO();
-        const header = makeAllConstantHeader();
-        ubo.writeHeader(header);
-
-        // Layout (3 uvec4s = 12 dwords):
-        //   h[0] = dataDrivenMask
-        //   h[1] = zoomDependentMask
-        //   h[2] = dataDrivenBlockSizeVec4
-        //   h[3..11] = offsets[0..8]
-        expect(ubo.headerData[0]).toEqual(0);   // dataDrivenMask
-        expect(ubo.headerData[1]).toEqual(0);   // zoomDependentMask
-        expect(ubo.headerData[2]).toEqual(0);   // dataDrivenBlockSizeVec4 (all-constant → 0)
-        expect(ubo.headerData[3]).toEqual(0);   // offsets[0] = fill_color
-        expect(ubo.headerData[4]).toEqual(0);   // offsets[1] = halo_color
-        expect(ubo.headerData[5]).toEqual(0);   // offsets[2] = opacity
-        expect(ubo.headerData[6]).toEqual(0);   // offsets[3] = halo_width
-        expect(ubo.headerData[11]).toEqual(0);  // offsets[8] = translate
+    test('constructor stores the header at the documented dword slots', () => {
+        // Layout (3 uvec4s = 12 dwords): [0]=dataDrivenMask, [1]=zoomDependentMask,
+        // [2]=dataDrivenBlockSizeVec4, [3..11]=offsets[0..8].
+        const ubo = new SymbolPropertiesUBO(null, 0, 4096, makeHeader(0, 0));
+        expect(ubo.headerData[HEADER_DATA_DRIVEN_MASK]).toEqual(0);
+        expect(ubo.headerData[HEADER_ZOOM_DEPENDENT_MASK]).toEqual(0);
+        expect(ubo.headerData[HEADER_BLOCK_SIZE_VEC4]).toEqual(0);
+        expect(ubo.headerData[HEADER_OFFSETS + 0]).toEqual(0); // offsets[0] = fill_color
+        expect(ubo.headerData[HEADER_OFFSETS + 8]).toEqual(0); // offsets[8] = translate
     });
 
     test('writeDataDrivenBlock stores feature data at correct offset', () => {
-        const ubo = new SymbolPropertiesUBO();
         // Only opacity is data-driven:
         //   data-driven block: opacity(1 dword) → pad to 4 → dataDrivenBlockSizeVec4 = 1
         //   constant properties go to u_spp_* uniforms, not the UBO buffer
-        const header: SymbolPropertyHeader = {
-            dataDrivenMask: 0b00000100,   // bit 2 = opacity
-            zoomDependentMask: 0,
-            cameraMask: 0,
-            dataDrivenBlockSizeVec4: 1,   // 1 vec4 = 4 dwords for the DD block
-            offsets: [0, 0, 0, 0, 0, 0, 0, 0, 0], // opacity DD offset = 0 (only DD prop)
-        };
-        ubo.writeHeader(header);
+        // bit 2 = opacity; opacity DD offset = 0 (only DD prop)
+        const ubo = new SymbolPropertiesUBO(null, 0, 4096, makeHeader(0b00000100, 1));
 
         // Feature 0 DD block: starts at dword featureIndex * dataDrivenBlockSizeDwords = 0 * 4 = 0
         // opacity is property index 2, flat offset = EVAL_FLAT_OFFSETS[2] = 8
         const flat = new Float32Array(SymbolPropertiesUBO.EVAL_FLAT_TOTAL);
         flat[SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[2]] = 0.9; // opacity = 0.9
 
-        ubo.writeDataDrivenBlock(flat, 0, header);
+        ubo.writeDataDrivenBlock(flat, 0);
 
         expect(ubo.propertiesData[0]).toBeCloseTo(0.9, 5); // opacity for feature 0
     });
 
     test('writeDataDrivenBlock for feature 1 is at correct offset', () => {
-        const ubo = new SymbolPropertiesUBO();
-        const header: SymbolPropertyHeader = {
-            dataDrivenMask: 0b00000100,
-            zoomDependentMask: 0,
-            cameraMask: 0,
-            dataDrivenBlockSizeVec4: 1,
-            offsets: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        };
-        ubo.writeHeader(header);
+        const ubo = new SymbolPropertiesUBO(null, 0, 4096, makeHeader(0b00000100, 1));
 
         // opacity is property index 2, flat offset = EVAL_FLAT_OFFSETS[2] = 8
         const flat = new Float32Array(SymbolPropertiesUBO.EVAL_FLAT_TOTAL);
         flat[SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[2]] = 1.0; // opacity = 1.0 for feature 1
 
-        ubo.writeDataDrivenBlock(flat, 1, header);
+        ubo.writeDataDrivenBlock(flat, 1);
 
         // Feature 1 DD block: 1 * 4 = 4 (dataDrivenBlockSizeDwords=4, featureIndex=1)
         expect(ubo.propertiesData[4]).toBeCloseTo(1.0, 5);
     });
 
-    test('getMaxFeatureCount returns correct value', () => {
-        // dataDrivenBlockSizeVec4=1 → dataDrivenBlockSizeDwords=4
-        // propsDwords = 4096
-        // maxFeatures = floor(4096) = 1024
-        const header: SymbolPropertyHeader = {
-            dataDrivenMask: 0b00000100,
-            zoomDependentMask: 0,
-            cameraMask: 0,
-            dataDrivenBlockSizeVec4: 1,
-            offsets: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        };
-        expect(SymbolPropertiesUBO.getMaxFeatureCount(header)).toEqual(1024);
-    });
-
-    test('getMaxFeatureCount returns Infinity when all constant', () => {
-        const header = makeAllConstantHeader();
-        expect(SymbolPropertiesUBO.getMaxFeatureCount(header)).toEqual(Infinity);
-    });
-
     test('propertiesData array has correct size', () => {
-        const ubo = new SymbolPropertiesUBO();
+        const ubo = new SymbolPropertiesUBO(null, 0, 4096, makeHeader(0, 0));
         // 1024 vec4s = 4096 floats
         expect(ubo.propertiesData.length).toEqual(4096);
     });
 
+    test('rightSizeForTransfer trims propertiesData to the written prefix', () => {
+        // opacity-only DD block (4 dwords); write 2 features, then trim.
+        const ubo = new SymbolPropertiesUBO(null, 0, 4096, makeHeader(0b00000100, 1));
+        const flat = new Float32Array(SymbolPropertiesUBO.EVAL_FLAT_TOTAL);
+        flat[SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[2]] = 0.9;
+        ubo.writeDataDrivenBlock(flat, 0);
+        ubo.writeDataDrivenBlock(flat, 1);
+
+        ubo.rightSizeForTransfer();
+
+        // 2 features * 4 dwords = 8, down from the full 4096.
+        expect(ubo.propertiesData.length).toEqual(8);
+        // Written value survives the trim.
+        expect(ubo.propertiesData[0]).toBeCloseTo(0.9, 5);
+    });
+
+    test('rightSizeForTransfer empties propertiesData when nothing was written', () => {
+        // All-constant binder (no DD block) writes nothing, so the full array is dead weight.
+        const ubo = new SymbolPropertiesUBO(null, 0, 4096, makeHeader(0, 0));
+        ubo.rightSizeForTransfer();
+        expect(ubo.propertiesData.length).toEqual(0);
+    });
+
     test('headerData array has correct size', () => {
-        const ubo = new SymbolPropertiesUBO();
+        const ubo = new SymbolPropertiesUBO(null, 0, 4096, makeHeader(0, 0));
         // 3 uvec4s = 12 uint32s
         expect(ubo.headerData.length).toEqual(12);
     });
 
     test('destroy cleans up resources', () => {
-        const ubo = new SymbolPropertiesUBO();
+        const ubo = new SymbolPropertiesUBO(null, 0, 4096, makeHeader(0, 0));
         // Created without context — all 3 GPU buffers start as null
         expect(ubo.headerBuffer).toBeNull();
         expect(ubo.propertiesBuffer).toBeNull();
@@ -167,31 +145,43 @@ describe('SymbolPropertyBinderUBO', () => {
             expect(binder.worldview).toEqual('US');
             expect(binder.featureCount).toEqual(0);
             expect(binder.ubos).toEqual([]);
-            expect(binder.featureVertexRangesFromId.size).toEqual(0);
-            expect(binder.allFeatures).toEqual([]);
+            expect(binder.featureVertexRangesFromId).toBeNull();
+            expect(binder.allFeatureVtIndices).toEqual([]);
+            expect(binder.allFeatureIds).toEqual([]);
+        });
+
+        test('maxFeaturesPerBatch fits data-driven blocks in the UBO', () => {
+            // data-driven opacity → 4-dword block → floor(4096 / 4) = 1024 per batch
+            const layer = createTestLayer({'text-opacity': ['get', 'opacity']});
+            const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
+            expect(binder.maxFeaturesPerBatch).toEqual(1024);
+        });
+
+        test('maxFeaturesPerBatch is unbounded when all properties are constant', () => {
+            const layer = createTestLayer({'text-opacity': 0.8});
+            const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
+            expect(binder.maxFeaturesPerBatch).toEqual(Number.MAX_SAFE_INTEGER);
         });
     });
 
-    describe('buildHeader', () => {
+    describe('updateHeader', () => {
         test('all-constant layer produces zero dataDrivenMask', () => {
             const layer = createTestLayer({
                 'text-color': 'red',
                 'text-opacity': 0.8,
             });
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
-            const header = binder.buildHeader();
 
-            expect(header.dataDrivenMask).toEqual(0);
-            expect(header.dataDrivenBlockSizeVec4).toEqual(0);
+            expect(binder.header[HEADER_DATA_DRIVEN_MASK]).toEqual(0);
+            expect(binder.header[HEADER_BLOCK_SIZE_VEC4]).toEqual(0);
         });
 
         test('data-driven opacity sets bit 2 in dataDrivenMask', () => {
             const layer = createTestLayer({'text-opacity': ['get', 'opacity']});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
-            const header = binder.buildHeader();
 
-            expect(header.dataDrivenMask & 0b00000100).not.toEqual(0); // bit 2 = opacity
-            expect(header.dataDrivenBlockSizeVec4).toBeGreaterThan(0);
+            expect(binder.header[HEADER_DATA_DRIVEN_MASK] & 0b00000100).not.toEqual(0); // bit 2 = opacity
+            expect(binder.header[HEADER_BLOCK_SIZE_VEC4]).toBeGreaterThan(0);
         });
 
         test('data-driven colors are vec4-aligned in data-driven block', () => {
@@ -201,14 +191,13 @@ describe('SymbolPropertyBinderUBO', () => {
                 'text-halo-color': ['get', 'halo_color'],
             });
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
-            const header = binder.buildHeader();
 
             // fill_color: first in block → offset 0 (vec4-aligned)
-            expect(header.offsets[0]).toEqual(0);
-            expect(header.offsets[0] % 4).toEqual(0);
+            expect(binder.header[HEADER_OFFSETS + 0]).toEqual(0);
+            expect(binder.header[HEADER_OFFSETS + 0] % 4).toEqual(0);
             // halo_color: after 4-dword fill_color → offset 4 (vec4-aligned)
-            expect(header.offsets[1]).toEqual(4);
-            expect(header.offsets[1] % 4).toEqual(0);
+            expect(binder.header[HEADER_OFFSETS + 1]).toEqual(4);
+            expect(binder.header[HEADER_OFFSETS + 1] % 4).toEqual(0);
         });
     });
 
@@ -216,8 +205,6 @@ describe('SymbolPropertyBinderUBO', () => {
         test('handles constant opacity', () => {
             const layer = createTestLayer({'text-opacity': 0.8});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
-            // Build header so evaluateAllProperties has zoomDependentMask
-            binder.cachedHeader = binder.buildHeader();
             const feature = createTestFeature({name: 'test'});
             const canonical = new CanonicalTileID(0, 0, 0);
 
@@ -230,7 +217,6 @@ describe('SymbolPropertyBinderUBO', () => {
         test('handles data-driven opacity from feature property', () => {
             const layer = createTestLayer({'text-opacity': ['get', 'opacity']});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
-            binder.cachedHeader = binder.buildHeader();
             const feature = createTestFeature({opacity: 0.75});
             const canonical = new CanonicalTileID(0, 0, 0);
 
@@ -242,7 +228,6 @@ describe('SymbolPropertyBinderUBO', () => {
         test('handles constant fill_color as [r,g,b,a]', () => {
             const layer = createTestLayer({'text-color': 'red', 'text-opacity': 0.8});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
-            binder.cachedHeader = binder.buildHeader();
             const feature = createTestFeature({name: 'test'});
             const canonical = new CanonicalTileID(0, 0, 0);
 
@@ -256,7 +241,6 @@ describe('SymbolPropertyBinderUBO', () => {
         test('missing properties return defaults', () => {
             const layer = createTestLayer({});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
-            binder.cachedHeader = binder.buildHeader();
             const feature = createTestFeature();
             const canonical = new CanonicalTileID(0, 0, 0);
 
@@ -310,30 +294,45 @@ describe('SymbolPropertyBinderUBO', () => {
             expect(binder.featureCount).toEqual(maxPerBatch + 1);
         });
 
-        test('tracks feature locations correctly across batches', () => {
+        test('all-constant binder collapses every feature into a single shared entry', () => {
+            // No data-driven property → constants go through u_spp_* uniforms, so all features
+            // share entry 0 in one batch regardless of count.
+            const layer = createTestLayer({'text-color': 'red'});
+            const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
+            const canonical = new CanonicalTileID(0, 0, 0);
+
+            for (let i = 0; i < 50; i++) {
+                expect(binder.populateUBO(createTestFeature({}, `feature-${i}`), i, canonical, [])).toEqual(0);
+            }
+
+            expect(binder.featureCount).toEqual(1);
+            expect(binder.ubos.length).toEqual(1);
+        });
+
+        test('re-derives feature locations across batches on update', () => {
             const layer = createTestLayer({'text-opacity': ['get', 'opacity']});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
             const canonical = new CanonicalTileID(0, 0, 0);
 
             const maxPerBatch = 1024;
-            // Fill up to the last entry of batch 0
-            for (let i = 0; i < maxPerBatch - 1; i++) {
-                binder.populateUBO(createTestFeature({opacity: i / maxPerBatch}, `feature-${i}`), i, canonical, []);
+            // Fill batch 0 (positions 0..maxPerBatch-1), then one more to open batch 1.
+            for (let i = 0; i <= maxPerBatch; i++) {
+                binder.populateUBO(createTestFeature({opacity: 0.5}, `feature-${i}`), i, canonical, []);
             }
-            binder.populateUBO(createTestFeature({opacity: 1.0}, `feature-last`), maxPerBatch - 1, canonical, []);
+            expect(binder.ubos.length).toEqual(2);
 
-            // First entry of batch 1
-            binder.populateUBO(createTestFeature({opacity: 0.5}, `feature-first-next`), maxPerBatch, canonical, []);
+            // On update, return a distinct opacity for the last entry of batch 0 and the first of
+            // batch 1, so the re-derived write slot is observable in propertiesData.
+            const vtLayer = {
+                feature: (idx: number) => createTestFeature({opacity: idx === maxPerBatch - 1 ? 0.7 : idx === maxPerBatch ? 0.3 : 0.5})
+            } as unknown as VectorTileLayer;
 
-            const rangesLast = binder.featureVertexRangesFromId.get('feature-last');
-            expect(rangesLast).toBeDefined();
-            expect(rangesLast[0].batchIndex).toEqual(0);
-            expect(rangesLast[0].localFeatureIndex).toEqual(maxPerBatch - 1);
+            binder.updateDynamicExpressions(layer, vtLayer, canonical, [], {});
 
-            const rangesFirstNext = binder.featureVertexRangesFromId.get('feature-first-next');
-            expect(rangesFirstNext).toBeDefined();
-            expect(rangesFirstNext[0].batchIndex).toEqual(1);
-            expect(rangesFirstNext[0].localFeatureIndex).toEqual(0);
+            // opacity sits at dword 0 of each feature's 4-dword block; last of batch 0 → local
+            // maxPerBatch-1, first of batch 1 → local 0.
+            expect(binder.ubos[0].propertiesData[(maxPerBatch - 1) * 4]).toBeCloseTo(0.7, 5);
+            expect(binder.ubos[1].propertiesData[0]).toBeCloseTo(0.3, 5);
         });
 
         test('handles features without IDs', () => {
@@ -345,38 +344,45 @@ describe('SymbolPropertyBinderUBO', () => {
             binder.populateUBO(feature, 0, canonical, []);
 
             expect(binder.featureCount).toEqual(1);
-            expect(binder.allFeatures.length).toEqual(1);
+            expect(binder.allFeatureVtIndices.length).toEqual(1);
+            binder['_ensureRangeMaps']();
             expect(binder.featureVertexRangesFromId.size).toEqual(0);
         });
 
         test('clamps gracefully when exceeding max binding points', () => {
             const layer = createTestLayer({'text-opacity': ['get', 'opacity']});
-            // Pass small maxUniformBufferBindings so the limit is hit quickly
-            const binder = new SymbolPropertyBinderUBO(layer, 10, null, true, '', 6);
+            // Small maxUniformBufferBindings (6) and a tiny UBO (8 dwords → 2 features/batch) so the
+            // limit is hit after a handful of features. batchIndex 2 needs bindings 6,7,8 > limit 6.
+            const binder = new SymbolPropertyBinderUBO(layer, 10, null, true, '', 6, 8);
             const canonical = new CanonicalTileID(0, 0, 0);
 
-            // Build header first so we know the batch size
-            binder.populateUBO(createTestFeature({opacity: 0.5}, 'seed'), 0, canonical, []);
             const maxPerBatch = binder.maxFeaturesPerBatch;
+            expect(maxPerBatch).toEqual(2);
 
-            // Manually push featureCount past the last allowed batch (batchIndex 1 would need bindings 3,4,5;
-            // batchIndex 2 would need 6,7,8 which exceeds limit 6)
-            binder.featureCount = 2 * maxPerBatch;
+            // Fill batches 0 and 1 (positions 0..3), all valid.
+            for (let i = 0; i < 2 * maxPerBatch; i++) {
+                binder.populateUBO(createTestFeature({opacity: i / 10}, `f-${i}`), i, canonical, []);
+            }
 
             const feature = createTestFeature({opacity: 0.5}, 'too-many');
 
-            // Should not throw — returns 0 (clamped to slot 0) and tracks the feature
+            // The next feature falls in batchIndex 2, which exceeds the limit. Should not throw —
+            // returns 0 (clamped to slot 0) and still tracks the feature.
             let returnedIndex: number | undefined;
             expect(() => {
-                returnedIndex = binder.populateUBO(feature, 1, canonical, []);
+                returnedIndex = binder.populateUBO(feature, 2 * maxPerBatch, canonical, []);
             }).not.toThrow();
             expect(returnedIndex).toEqual(0);
 
-            // Feature still tracked (for future updates)
-            const ranges = binder.featureVertexRangesFromId.get('too-many');
-            expect(ranges).toBeDefined();
-            expect(ranges[0].batchIndex).toEqual(0);
-            expect(ranges[0].localFeatureIndex).toEqual(0);
+            // Feature still tracked; on update its block re-derives to the clamped batch 0 / slot 0
+            // rather than the (nonexistent) batch 2. Distinct opacity for the overflow feature, written
+            // last, must end up in slot 0 — proving the clamp routed it there instead of dropping it.
+            const vtLayer = {
+                feature: (idx: number) => createTestFeature({opacity: idx === 2 * maxPerBatch ? 0.9 : 0.1})
+            } as unknown as VectorTileLayer;
+            expect(() => binder.updateDynamicExpressions(layer, vtLayer, canonical, [], {})).not.toThrow();
+            expect(binder.ubos.length).toEqual(2);
+            expect(binder.ubos[0].propertiesData[0]).toBeCloseTo(0.9, 5);
         });
     });
 
@@ -394,11 +400,11 @@ describe('SymbolPropertyBinderUBO', () => {
             binder.populateUBO(feature, 0, canonical, []);
 
             // Verify header: only opacity is data-driven
-            const header = binder.cachedHeader;
+            const header = binder.header;
             expect(header).not.toBeNull();
             // data-driven block: opacity(1 dword) → pad to 4 → dataDrivenBlockSizeVec4 = 1
             // constant properties go to u_spp_* uniforms
-            expect(header.dataDrivenBlockSizeVec4).toEqual(1);
+            expect(header[HEADER_BLOCK_SIZE_VEC4]).toEqual(1);
 
             const vtLayer = {
                 feature: () => feature
@@ -436,7 +442,6 @@ describe('SymbolPropertyBinderUBO', () => {
         test('returns defaults for an unstyled layer', () => {
             const layer = createTestLayer({});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
-            binder.cachedHeader = binder.buildHeader();
 
             const cv = binder.getConstantUniformValues(10);
 
@@ -451,7 +456,6 @@ describe('SymbolPropertyBinderUBO', () => {
         test('returns constant paint values', () => {
             const layer = createTestLayer({'text-opacity': 0.7, 'text-halo-width': 2.5});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
-            binder.cachedHeader = binder.buildHeader();
 
             const cv = binder.getConstantUniformValues(10);
 
@@ -462,7 +466,6 @@ describe('SymbolPropertyBinderUBO', () => {
         test('fill_np_color returns non-premultiplied RGBA', () => {
             const layer = createTestLayer({'text-color': 'red'});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
-            binder.cachedHeader = binder.buildHeader();
 
             const cv = binder.getConstantUniformValues(10);
 
@@ -476,7 +479,6 @@ describe('SymbolPropertyBinderUBO', () => {
         test('result is cached and returns the same object for repeated calls', () => {
             const layer = createTestLayer({'text-opacity': 0.5});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
-            binder.cachedHeader = binder.buildHeader();
 
             const cv1 = binder.getConstantUniformValues(10);
             const cv2 = binder.getConstantUniformValues(10);
@@ -487,7 +489,6 @@ describe('SymbolPropertyBinderUBO', () => {
         test('cache is invalidated when brightness changes', () => {
             const layer = createTestLayer({'text-opacity': 0.5});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
-            binder.cachedHeader = binder.buildHeader();
 
             const cv1 = binder.getConstantUniformValues(10, 0.5);
             const cv2 = binder.getConstantUniformValues(10, 0.9);
@@ -498,7 +499,6 @@ describe('SymbolPropertyBinderUBO', () => {
         test('cache is invalidated when updateDynamicExpressions reassigns the layer', () => {
             const layer = createTestLayer({'text-opacity': 0.5});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
-            binder.cachedHeader = binder.buildHeader();
 
             const cv1 = binder.getConstantUniformValues(10);
             expect(binder.cachedConstantUniforms).not.toBeNull();
@@ -612,8 +612,9 @@ describe('SymbolPropertyBinderUBO', () => {
 
             expect(binder.ubos).toEqual([]);
             expect(binder.featureCount).toEqual(0);
-            expect(binder.featureVertexRangesFromId.size).toEqual(0);
-            expect(binder.allFeatures).toEqual([]);
+            expect(binder.featureVertexRangesFromId).toBeNull();
+            expect(binder.allFeatureVtIndices).toEqual([]);
+            expect(binder.allFeatureIds).toEqual([]);
         });
     });
 });

@@ -897,6 +897,10 @@ export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: 
     if (showCollisionBoxes) {
         bucket.generateCollisionDebugBuffers(tileZoom, bucket.collisionBoxArray, sizes.textScaleFactor);
     }
+
+    // All features are populated now — trim the UBO staging arrays before the bucket is transferred.
+    if (bucket.text.uboBinder) bucket.text.uboBinder.finalize();
+    if (bucket.icon.uboBinder) bucket.icon.uboBinder.finalize();
 }
 
 function reconcileImagePosition(shapedIcon: PositionedIcon, atlasIconPositions: ImagePositionMap, iconPrimary: ImageVariant, iconSecondary: ImageVariant) {

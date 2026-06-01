@@ -496,8 +496,7 @@ function drawLayerSymbols(
 
             // When icon-translate is per-feature (appearances define it), the translate is stored
             // in the UBO and applied per-vertex in the shader. The matrix must have no translate.
-            const iconTranslateDataDriven = !!(bucket.icon.uboBinder && bucket.icon.uboBinder.cachedHeader &&
-                (bucket.icon.uboBinder.cachedHeader.dataDrivenMask & (1 << 8)));
+            const iconTranslateDataDriven = !!(bucket.icon.uboBinder && bucket.icon.uboBinder.hasPerFeatureTranslate());
             const effectiveIconTranslate: [number, number] = iconTranslateDataDriven ? [0, 0] : iconTranslate;
 
             const uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, effectiveIconTranslate, iconTranslateAnchor, true);
@@ -631,8 +630,7 @@ function drawLayerSymbols(
 
             // When text-translate is per-feature (appearances define it), the translate is stored
             // in the UBO and applied per-vertex in the shader. The matrix must have no translate.
-            const textTranslateDataDriven = !!(bucket.text.uboBinder && bucket.text.uboBinder.cachedHeader &&
-                (bucket.text.uboBinder.cachedHeader.dataDrivenMask & (1 << 8)));
+            const textTranslateDataDriven = !!(bucket.text.uboBinder && bucket.text.uboBinder.hasPerFeatureTranslate());
             const effectiveTextTranslate: [number, number] = textTranslateDataDriven ? [0, 0] : textTranslate;
 
             const uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, effectiveTextTranslate, textTranslateAnchor, true);
@@ -845,8 +843,7 @@ function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, lay
         const translateAnchor = isText ?
             layer.paint.get('text-translate-anchor') :
             layer.paint.get('icon-translate-anchor');
-        const hasPerFeatureTranslate = !!(buffers.uboBinder.cachedHeader &&
-            (buffers.uboBinder.cachedHeader.dataDrivenMask & (1 << 8)));
+        const hasPerFeatureTranslate = buffers.uboBinder.hasPerFeatureTranslate();
         const rotAngle = hasPerFeatureTranslate && translateAnchor === 'map' ?
             painter.transform.angle : 0;
         uniformValues['u_spp_translate_rotation'] = [Math.cos(rotAngle), Math.sin(rotAngle)];
