@@ -423,7 +423,11 @@ vec3 computeIndirectLightContribution(Material mat, float NdotV, vec3 normal)
         lightmapSample = texture(u_baseColorTexture, lightmapUv).rgb;
     #endif
 
-    vec3 tintedSurfaceColor = mixColorFast(mat.baseColor.rgb, u_lighting_ambient_color, 0.2);
+    #ifdef LIGHTING_3D_MODE
+        vec3 tintedSurfaceColor = mixColorFast(mat.baseColor.rgb, u_lighting_ambient_color, 0.2);
+    #else
+        vec3 tintedSurfaceColor = mat.baseColor.rgb;
+    #endif
     env_light += tintedSurfaceColor * lightmapSample * u_lightmapIntensity;
 #endif
     vec3 envBRDF = EnvBRDFApprox(mat.specularColor, mat.perceptualRoughness, NdotV);
