@@ -98,9 +98,6 @@ out highp vec4 v_pos_light_view_1;
 out highp float v_depth;
 #endif
 
-#ifdef USE_PAINT_PROPERTIES_UBO
-/// UBO-based paint property declarations.
-
 /// Maximum size of UBO (uniform buffer object).
 ///
 /// Specs guarantees a minimum of 16KB, but some devices support larger UBOs,
@@ -366,29 +363,12 @@ SymbolPaintProperties readSymbolPaintProperties() {
     return props;
 }
 
-#else 
-/// Pragma-based paint property declarations.
-
-#pragma mapbox: define highp vec4 fill_color
-#pragma mapbox: define highp vec4 halo_color
-#pragma mapbox: define lowp float opacity
-#pragma mapbox: define lowp float halo_width
-#pragma mapbox: define lowp float halo_blur
-#pragma mapbox: define lowp float emissive_strength
-#pragma mapbox: define lowp float occlusion_opacity
-#pragma mapbox: define highp float z_offset
-
-#endif // USE_PAINT_PROPERTIES_UBO
-
 vec2 unpack_opacity(uint packedOpacity) {
     return vec2(float(packedOpacity / 2u) / 127.0, float(packedOpacity & 1u));
 }
 
 void main() {
-
-#ifdef USE_PAINT_PROPERTIES_UBO
-    /// UBO-based paint property initializations.
-
+    // Paint property initializations.
     SymbolPaintProperties paint_properties = readSymbolPaintProperties();
     lowp float opacity = paint_properties.opacity;
     v_opacity = opacity;
@@ -403,20 +383,6 @@ void main() {
 #endif
     lowp float occlusion_opacity = paint_properties.occlusion_opacity;
     highp float z_offset = paint_properties.z_offset;
-
-#else
-    /// Pragma-based paint property initializations.
-
-    #pragma mapbox: initialize highp vec4 fill_color
-    #pragma mapbox: initialize highp vec4 halo_color
-    #pragma mapbox: initialize lowp float opacity
-    #pragma mapbox: initialize lowp float halo_width
-    #pragma mapbox: initialize lowp float halo_blur
-    #pragma mapbox: initialize lowp float emissive_strength
-    #pragma mapbox: initialize lowp float occlusion_opacity
-    #pragma mapbox: initialize highp float z_offset
-
-#endif // USE_PAINT_PROPERTIES_UBO
 
     vec2 a_pos = vec2(a_pos_offset.xy);
     vec2 a_offset = vec2(a_pos_offset.zw);
@@ -589,7 +555,6 @@ void main() {
 #endif
     gl_Position = mix(u_coord_matrix * vec4(pos, 1.0), AWAY, hidden);
 
-#ifdef USE_PAINT_PROPERTIES_UBO
     // Apply per-feature translate (in label-plane / viewport-pixel units).
     // Rotate by u_spp_translate_rotation to handle translate-anchor (identity for viewport anchor).
     // Adding (u_coord_matrix * vec4(rotated_tr, 0, 0)).xy to gl_Position is equivalent to
@@ -602,7 +567,6 @@ void main() {
         );
         gl_Position.xy += (u_coord_matrix * vec4(rotated_tr, 0.0, 0.0)).xy;
     }
-#endif
 
     float gamma_scale = gl_Position.w;
 

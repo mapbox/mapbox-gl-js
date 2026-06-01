@@ -54,9 +54,7 @@ in highp float v_depth;
 uniform highp sampler3D u_lutTexture;
 #endif
 
-#ifdef USE_PAINT_PROPERTIES_UBO
-/// UBO-based paint property declarations.
-
+/// Symbol paint properties.
 in lowp float v_opacity;
 #ifdef RENDER_SDF
 in lowp vec4 v_fill_np_color;
@@ -68,30 +66,14 @@ in lowp float v_halo_blur;
 in lowp float v_emissive_strength;
 #endif
 
-#else
-/// Pragma-based paint property declarations.
-
-#pragma mapbox: define highp vec4 fill_color
-#pragma mapbox: define highp vec4 halo_color
-#pragma mapbox: define lowp float opacity
-#pragma mapbox: define lowp float halo_width
-#pragma mapbox: define lowp float halo_blur
-#pragma mapbox: define lowp float emissive_strength
-
-#endif // USE_PAINT_PROPERTIES_UBO
-
 void main() {
-
-#ifdef USE_PAINT_PROPERTIES_UBO
-    /// UBO-based paint property initializations.
-
     lowp float opacity = v_opacity;
     lowp vec4 fill_color = vec4(0.0);
     lowp vec4 halo_color = vec4(0.0);
     lowp float halo_width = 0.0;
     lowp float halo_blur = 0.0;
 #ifdef RENDER_SDF
-    ///  Pre-multiply colors by alpha.
+    // Pre-multiply colors by alpha.
     fill_color = vec4(v_fill_np_color.rgb * v_fill_np_color.a, v_fill_np_color.a);
     halo_color = vec4(v_halo_np_color.rgb * v_halo_np_color.a, v_halo_np_color.a);
     halo_width = v_halo_width;
@@ -101,18 +83,6 @@ void main() {
 #ifdef LIGHTING_3D_MODE
     emissive_strength = v_emissive_strength;
 #endif
-
-#else
-    /// Pragma-based paint property initializations.
-
-    #pragma mapbox: initialize highp vec4 fill_color
-    #pragma mapbox: initialize highp vec4 halo_color
-    #pragma mapbox: initialize lowp float opacity
-    #pragma mapbox: initialize lowp float halo_width
-    #pragma mapbox: initialize lowp float halo_blur
-    #pragma mapbox: initialize lowp float emissive_strength
-
-#endif // USE_PAINT_PROPERTIES_UBO
 
     vec4 out_color;
     float fade_opacity = v_gamma_scale_size_fade_opacity[2];
