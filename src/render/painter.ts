@@ -46,7 +46,6 @@ import {LayerTypeMask} from '../../3d-style/util/conflation';
 import {ReplacementSource, ReplacementOrderLandmark, ReplacementOrderBuilding} from '../../3d-style/source/replacement_source';
 import {Standard, prepareStandard} from '../../modules/standard_main';
 import {lightsUniformValues} from '../../3d-style/render/lights';
-import {ShadowRenderer} from '../../3d-style/render/shadow_renderer';
 import {WireframeDebugCache} from './wireframe_cache';
 import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers';
 import Framebuffer from '../gl/framebuffer';
@@ -63,6 +62,7 @@ import type {StarsParams} from './draw_atmosphere';
 import type ImageManager from './image_manager';
 import type IndexBuffer from '../gl/index_buffer';
 import type ModelManager from '../../3d-style/render/model_manager';
+import type {ShadowRenderer} from '../../3d-style/render/shadow_renderer';
 import type ProgramConfiguration from '../data/program_configuration';
 import type Style from '../style/style';
 import type Transform from '../geo/transform';
@@ -175,7 +175,7 @@ async function setupHD() {
     });
 }
 
-async function setupStandard() {
+async function setupStandard(painter?: Painter) {
     await prepareStandard();
     Object.assign(draw, {
         model: Standard.drawModels,
@@ -183,6 +183,10 @@ async function setupStandard() {
     Object.assign(prepare, {
         model: Standard.prepare,
     });
+    if (painter && !painter._shadowRenderer) {
+        const SR = (Standard as {ShadowRenderer?: new (p: Painter) => ShadowRenderer}).ShadowRenderer;
+        if (SR) painter._shadowRenderer = new SR(painter);
+    }
 }
 
 /**
@@ -414,7 +418,6 @@ class Painter {
         this.minCutoffZoom = 0.0;
         this._fogVisible = false;
         this._cachedTileFogOpacities = {};
-        this._shadowRenderer = new ShadowRenderer(this);
 
         this._wireframeDebugCache = new WireframeDebugCache();
         this.renderDefaultNorthPole = true;
@@ -1113,6 +1116,8 @@ class Painter {
             orderedLayers = layerIds.map(id => layers[id]);
         }
 
+        if (this.style.enable3dLights() && !this._shadowRenderer) void setupStandard(this);
+
         const shadowRenderer = this._shadowRenderer;
         if (shadowRenderer) {
             shadowRenderer.updateShadowParameters(this.transform, this.style.directionalLight);
@@ -1596,7 +1601,7 @@ class Painter {
         if (!draw[layer.type]) {
             // Trigger lazy module loads so drawing will be possible once they load.
             if (layer.mayUse('HD')) void setupHD();
-            if (layer.mayUse('Standard')) void setupStandard();
+            if (layer.mayUse('Standard')) void setupStandard(painter);
         }
         this.gpuTimingEnd();
         PerformanceUtils.measureLowOverhead(PerformanceUtils.GROUP_RENDERING_DETAILED, `renderLayer: ${layer.type.toString()}`, startTime, undefined);

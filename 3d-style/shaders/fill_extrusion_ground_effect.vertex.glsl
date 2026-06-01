@@ -63,9 +63,9 @@ void main() {
 
 #ifdef SDF_SUBPASS
     v_pos = pos.xy;
-    // Shift the line segment against which we compute the signed distance values. 
+    // Shift the line segment against which we compute the signed distance values.
     // This allows us to achieve pleasant results without having to add additional
-    // vertices when fill-extrusion-edge-radius is non-zero. 
+    // vertices when fill-extrusion-edge-radius is non-zero.
     v_line_segment = vec4(p, q) + perp.xyxy * u_edge_radius;
     v_flood_light_radius_tile = flood_radius_tile;
     v_ao = vec2(u_ao.x, ao_radius);

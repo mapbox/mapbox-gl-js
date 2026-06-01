@@ -1,8 +1,13 @@
 import {modelUniforms, modelDepthUniforms} from './model_program';
+import {groundShadowUniforms} from './ground_shadow_program';
+import {fillExtrusionDepthUniforms, fillExtrusionGroundEffectUniforms} from '../../../src/render/program/fill_extrusion_program';
 
 export const programUniforms = {
     model: modelUniforms,
     modelDepth: modelDepthUniforms,
+    groundShadow: groundShadowUniforms,
+    fillExtrusionDepth: fillExtrusionDepthUniforms,
+    fillExtrusionGroundEffect: fillExtrusionGroundEffectUniforms,
 } as const;
 
 export type ProgramUniformsStandardType = {

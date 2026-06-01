@@ -13,7 +13,7 @@ import {lineBlendCompositeUniformValues, LINE_BLEND_MODE_MULTIPLY, LINE_BLEND_MO
 import {lineBlendReduceUniformValues} from './program/line_blend_reduce_program';
 import browser from '../util/browser';
 import {clamp, nextPowerOfTwo, warnOnce} from '../util/util';
-import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
+import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_utils';
 import {renderColorRamp} from '../util/color_ramp';
 import EXTENT from '../style-spec/data/extent';
 import ResolvedImage from '../style-spec/expression/types/resolved_image';

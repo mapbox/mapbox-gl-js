@@ -11,7 +11,7 @@ import {
 import {HD} from '../../modules/hd_main';
 import StencilMode from '../gl/stencil_mode';
 import browser from '../util/browser';
-import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
+import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_utils';
 
 import type ColorMode from '../gl/color_mode';
 import type Painter from './painter';

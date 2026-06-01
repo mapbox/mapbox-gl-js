@@ -61,7 +61,7 @@ import PauseablePlacement from './pauseable_placement';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
 import {validateCustomStyleLayer} from './style_layer/custom_style_layer';
 import {isFQID, makeFQID, getNameFromFQID, getInnerScopeFromFQID, getOuterScopeFromFQID} from '../util/fqid';
-import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_renderer';
+import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_utils';
 import ModelManager from '../../3d-style/render/model_manager';
 import {ProgramPrecompiler} from '../render/program_precompiler';
 import {RGBAImage} from '../util/image';

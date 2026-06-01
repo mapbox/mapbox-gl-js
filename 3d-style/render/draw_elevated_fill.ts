@@ -9,7 +9,7 @@ import {altitudeFromMercatorZ} from '../../src/geo/mercator_coordinate';
 import {easeIn} from '../../src/util/util';
 import {OrthographicPitchTranstionValue} from '../../src/geo/transform';
 import {number as lerp} from '../../src/style-spec/util/interpolate';
-import {calculateGroundShadowFactor} from './shadow_renderer';
+import {calculateGroundShadowFactor} from './shadow_utils';
 import {
     elevatedStructuresDepthUniformValues,
     elevatedStructuresUniformValues,

@@ -23,7 +23,7 @@ import {mercatorXfromLng, mercatorYfromLat, getMetersPerPixelAtLatitude} from '.
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
 import Color from '../style-spec/util/color';
 import {lerp} from '../style-spec/util/lerp';
-import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
+import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_utils';
 import {RGBAImage} from '../util/image';
 import Texture from './texture';
 import {Frustum} from '../util/primitives';

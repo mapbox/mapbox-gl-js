@@ -28,11 +28,11 @@ in highp float v_fog;
 #endif // SDF_SUBPASS
 
 void main() {
-// Note that these are used in only in draped mode. The simple clear to white is needed to ensure that the alpha channel is set to 1. 
+// Note that these are used in only in draped mode. The simple clear to white is needed to ensure that the alpha channel is set to 1.
 // This is necessary because the subsequent steps in both ground flood light and AO
 // encode DF values in tandem with gl.MIN blending mode where a value of 0 indicates the effect is fully present.
-// Once an effect is rendered, it's necessary to mark the alpha channel correctly taking into account the original values (encoded in the texture) which 
-// contain the layer emissive strength values. 
+// Once an effect is rendered, it's necessary to mark the alpha channel correctly taking into account the original values (encoded in the texture) which
+// contain the layer emissive strength values.
 #ifdef CLEAR_SUBPASS
     vec4 color = vec4(1.0);
 #ifdef CLEAR_FROM_TEXTURE

@@ -19,7 +19,7 @@ import {
     globeUseCustomAntiAliasing,
     getLatitudinalLod
 } from '../geo/projection/globe_util';
-import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
+import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_utils';
 import {getCutoffParams} from '../render/cutoff';
 
 import type Program from '../render/program';

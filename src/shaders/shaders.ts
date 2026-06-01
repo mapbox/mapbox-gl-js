@@ -40,8 +40,6 @@ import fillExtrusionVert from './fill_extrusion.vertex.glsl';
 import fillExtrusionPatternFrag from './fill_extrusion_pattern.fragment.glsl';
 import fillExtrusionPatternVert from './fill_extrusion_pattern.vertex.glsl';
 import hillshadePrepareFrag from './hillshade_prepare.fragment.glsl';
-import fillExtrusionGroundEffectFrag from './fill_extrusion_ground_effect.fragment.glsl';
-import fillExtrusionGroundEffectVert from './fill_extrusion_ground_effect.vertex.glsl';
 import hillshadePrepareVert from './hillshade_prepare.vertex.glsl';
 import hillshadeFrag from './hillshade.fragment.glsl';
 import hillshadeVert from './hillshade.vertex.glsl';
@@ -76,10 +74,6 @@ import starsVert from './stars.vertex.glsl';
 import occlusionFrag from './occlusion.fragment.glsl';
 import occlusionVert from './occlusion.vertex.glsl';
 // 3d-style related shaders
-import fillExtrusionDepthFrag from '../../3d-style/shaders/fill_extrusion_depth.fragment.glsl';
-import fillExtrusionDepthVert from '../../3d-style/shaders/fill_extrusion_depth.vertex.glsl';
-import groundShadowFrag from '../../3d-style/shaders/ground_shadow.fragment.glsl';
-import groundShadowVert from '../../3d-style/shaders/ground_shadow.vertex.glsl';
 import preludeShadowVert from '../../3d-style/shaders/_prelude_shadow.vertex.glsl';
 import preludeShadowFrag from '../../3d-style/shaders/_prelude_shadow.fragment.glsl';
 import preludeMaterialTableVert from './_prelude_material_table.vertex.glsl';
@@ -162,10 +156,7 @@ export default {
     lineBlendComposite: compile(lineBlendCompositeFrag, lineBlendCompositeVert),
     lineBlendReduce: compile(lineBlendReduceFrag, lineBlendReduceVert),
     fillExtrusion: compile(fillExtrusionFrag, fillExtrusionVert),
-    fillExtrusionDepth: compile(fillExtrusionDepthFrag, fillExtrusionDepthVert),
     fillExtrusionPattern: compile(fillExtrusionPatternFrag, fillExtrusionPatternVert),
-    groundShadow: compile(groundShadowFrag, groundShadowVert),
-    fillExtrusionGroundEffect: compile(fillExtrusionGroundEffectFrag, fillExtrusionGroundEffectVert),
     hillshadePrepare: compile(hillshadePrepareFrag, hillshadePrepareVert),
     hillshade: compile(hillshadeFrag, hillshadeVert),
     line: compile(lineFrag, lineVert),
