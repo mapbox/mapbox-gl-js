@@ -36,12 +36,12 @@
       ]
     }
   },
-  "pitch": 51,
-  "zoom": 17.3,
-  "bearing": -16.6,
+  "pitch": 54,
+  "zoom": 16.9,
+  "bearing": -24,
   "center": [
-    -122.39008,
-    37.778474
+    -84.400968,
+    33.75536
   ],
   "layers": [
     {
@@ -57,8 +57,7 @@
       "source": "file-system-tiles",
       "id": "landmarks",
       "paint": {
-        "model-opacity": 1.0,
-        "model-lightmap-intensity": 10
+        "model-lightmap-intensity": 0.7
       }
     }
   ]
