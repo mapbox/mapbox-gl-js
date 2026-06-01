@@ -17,7 +17,7 @@ type PrecompileTask = {
 
 const SHADOW_DEFINES: DynamicDefinesType[] = ['RENDER_SHADOWS', 'NORMAL_OFFSET'];
 
-// Programs whose `draw_*.ts` always appends draw-time defines (e.g. `DEPTH_D24`, `USE_PAINT_PROPERTIES_UBO`)
+// Programs whose `draw_*.ts` always appends draw-time defines (e.g. `DEPTH_D24`)
 // we don't know at precompile time. Their cache keys never match a default-params precompile, so every variant
 // we'd emit is wasted. Skip until we have a per-programId variant table for them.
 const PRECOMPILE_SKIP: Set<ProgramName> = new Set(['symbol', 'circle']);

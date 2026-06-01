@@ -35,7 +35,6 @@ type GlobalParams = {
     contextOptions?: {
         maxBindingPoints: number;
         maxUniformBlockSizeDwords: number;
-        disableSymbolUBO?: boolean
     }
 };
 

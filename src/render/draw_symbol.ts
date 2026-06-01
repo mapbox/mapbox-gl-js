@@ -387,8 +387,6 @@ function drawLayerSymbols(
         };
 
         const setUBODefines = (defines: DynamicDefinesType[]) => {
-            if (painter.context.disableSymbolUBO) return;
-            defines.push('USE_PAINT_PROPERTIES_UBO');
             // MAX_UBO_SIZE_VEC4: number of vec4 slots available for u_properties / u_block_indices.
             const uboSizeDwords = Math.floor(painter.context.maxUniformBlockSize / 4);
             const maxUBOSizeVec4 = Math.floor(uboSizeDwords / 4);
@@ -482,8 +480,7 @@ function drawLayerSymbols(
 
             setUBODefines(baseDefines);
 
-            const programConfig = context.disableSymbolUBO ? bucket.icon.programConfigurations.get(layer.id) : null;
-            const program = painter.getOrCreateProgram('symbol', {config: programConfig, defines: baseDefines});
+            const program = painter.getOrCreateProgram('symbol', {defines: baseDefines});
 
             const texSize: [number, number] = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
             const sizeData = bucket.iconSizeData;
@@ -603,8 +600,7 @@ function drawLayerSymbols(
 
             setUBODefines(baseDefines);
 
-            const programConfig = context.disableSymbolUBO ? bucket.text.programConfigurations.get(layer.id) : null;
-            const program = painter.getOrCreateProgram('symbol', {config: programConfig, defines: baseDefines});
+            const program = painter.getOrCreateProgram('symbol', {defines: baseDefines});
 
             let texSizeIcon: [number, number] = [0, 0];
             let atlasTextureIcon: Texture | null = null;

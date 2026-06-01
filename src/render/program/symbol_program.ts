@@ -49,8 +49,8 @@ export type SymbolUniformsType = {
     ['u_normal_scale']: Uniform1f;
     ['u_lutTexture']: Uniform1i;
     // Constant paint property uniforms (u_spp_* = Symbol Paint Properties).
-    // Used when USE_PAINT_PROPERTIES_UBO is defined; the shader reads these for
-    // properties that are not data-driven (isDataDriven == false in the header).
+    // The shader reads these for properties that are not data-driven
+    // (isDataDriven == false in the header).
     ['u_spp_fill_np_color']: Uniform4f;
     ['u_spp_halo_np_color']: Uniform4f;
     ['u_spp_opacity']: Uniform1f;
@@ -82,8 +82,7 @@ export type SymbolDefinesType =
     | 'RENDER_SDF'
     | 'RENDER_TEXT_AND_SYMBOL'
     | 'Z_OFFSET'
-    | 'APPLY_LUT_ON_GPU'
-    | 'USE_PAINT_PROPERTIES_UBO';
+    | 'APPLY_LUT_ON_GPU';
 
 const symbolUniforms = (context: Context): SymbolUniformsType => ({
     'u_is_size_zoom_constant': new Uniform1i(context),
@@ -210,8 +209,7 @@ const symbolUniformValues = (
         'u_inv_matrix': mat4.invert(mat4.create(), labelPlaneMatrix),
         'u_normal_scale': normalScale,
         'u_lutTexture': TextureSlots.LUT,
-        // Defaults for u_spp_* — overwritten per draw call in drawSymbolElements()
-        // when USE_PAINT_PROPERTIES_UBO is active.
+        // Defaults for u_spp_* — overwritten per draw call in drawSymbolElements().
         'u_spp_fill_np_color': [0, 0, 0, 1] as [number, number, number, number],
         'u_spp_halo_np_color': [0, 0, 0, 0] as [number, number, number, number],
         'u_spp_opacity': 1.0,

@@ -237,7 +237,6 @@ export type WorkerSourceOptions = {
     worldview?: string;
     maxUniformBufferBindings?: number;
     maxUniformBlockSizeDwords?: number;
-    disableSymbolUBO?: boolean | null;
 };
 
 export interface WorkerSourceConstructor {

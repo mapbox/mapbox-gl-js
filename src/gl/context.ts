@@ -28,7 +28,6 @@ export type ContextOptions = {
     extTextureFloatLinearForceOff?: boolean;
     extStandardDerivativesForceOff?: boolean;
     forceManualRenderingForInstanceIDShaders?: boolean;
-    forceDisableSymbolUBO?: boolean;
 };
 
 // metrics for a single stall (a draw-time wait for an unfinished compile)
@@ -113,7 +112,6 @@ class Context {
     extParallelShaderCompile: KHR_parallel_shader_compile | null;
 
     forceManualRenderingForInstanceIDShaders: boolean;
-    disableSymbolUBO: boolean;
 
     // Programs whose compile was kicked off but not yet finalized. Swept opportunistically
     // (frame start, idle, precompile batches) so finalize happens off the draw path.
@@ -182,8 +180,6 @@ class Context {
 
         // Force manual rendering for instanced draw calls having gl_InstanceID usage in the shader for PowerVR adapters
         this.forceManualRenderingForInstanceIDShaders = (options && !!options.forceManualRenderingForInstanceIDShaders) || (this.renderer && this.renderer.includes("PowerVR"));
-
-        this.disableSymbolUBO = (options && !!options.forceDisableSymbolUBO);
 
         if (!this.options.extTextureFloatLinearForceOff) {
             this.extTextureFloatLinear = gl.getExtension('OES_texture_float_linear');

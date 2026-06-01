@@ -480,8 +480,7 @@ class Style extends Evented<MapEvents> {
         if (this.map.painter && this.map.painter.context) {
             const maxBindingPoints = this.map.painter.context.maxUniformBufferBindings;
             const maxUniformBlockSizeDwords = Math.floor(this.map.painter.context.maxUniformBlockSize / 4);
-            const {disableSymbolUBO} = this.map.painter.context;
-            globalWorkerParams.contextOptions = {maxBindingPoints, maxUniformBlockSizeDwords, disableSymbolUBO};
+            globalWorkerParams.contextOptions = {maxBindingPoints, maxUniformBlockSizeDwords};
         }
 
         if (this.isRootStyle()) {

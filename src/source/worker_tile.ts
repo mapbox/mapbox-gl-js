@@ -102,7 +102,6 @@ class WorkerTile {
     indoor: IndoorTileOptions | null;
     maxUniformBufferBindings: number | null | undefined;
     maxUniformBlockSizeDwords: number | null | undefined;
-    disableSymbolUBO: boolean | null | undefined;
 
     status: 'parsing' | 'done';
     data: VectorTile;
@@ -391,8 +390,7 @@ class WorkerTile {
                         localizable,
                         availableImages,
                         maxUniformBufferBindings: this.maxUniformBufferBindings,
-                        maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords,
-                        disableSymbolUBO: this.disableSymbolUBO
+                        maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords
                     });
 
                     assert(this.tileTransform.projection.name === this.projection.name);

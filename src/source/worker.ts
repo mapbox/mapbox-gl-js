@@ -53,7 +53,6 @@ export default class MapWorker {
     brightness: number | null | undefined;
     maxUniformBufferBindings: number | null | undefined;
     maxUniformBlockSizeDwords: number | null | undefined;
-    disableSymbolUBO: boolean | null | undefined;
     worldview: string | undefined;
     rtlPluginParsingListeners: Array<Callback<boolean>>;
 
@@ -204,10 +203,9 @@ export default class MapWorker {
         Object.assign(config, params.config);
 
         if (params.contextOptions) {
-            const {maxBindingPoints, maxUniformBlockSizeDwords, disableSymbolUBO} = params.contextOptions;
+            const {maxBindingPoints, maxUniformBlockSizeDwords} = params.contextOptions;
             this.maxUniformBufferBindings = maxBindingPoints;
             this.maxUniformBlockSizeDwords = maxUniformBlockSizeDwords;
-            this.disableSymbolUBO = disableSymbolUBO;
         }
     }
 
@@ -424,7 +422,6 @@ export default class MapWorker {
                 worldview: this.worldview,
                 maxUniformBufferBindings: this.maxUniformBufferBindings,
                 maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords,
-                disableSymbolUBO: this.disableSymbolUBO,
             });
         } else if (tileProvider) {
             // Reload (e.g. setUrl/setTiles) re-broadcasts loadTileProvider with
