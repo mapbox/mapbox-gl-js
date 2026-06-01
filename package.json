@@ -78,7 +78,7 @@
     "kdbush": "^4.1.0",
     "martinez-polygon-clipping": "^0.8.1",
     "npm-run-all2": "^9.0.1",
-    "pbf": "^5.0.0",
+    "pbf": "^5.1.0",
     "pixelmatch": "^7.2.0",
     "playwright": "^1.60.0",
     "postcss": "^8.5.15",

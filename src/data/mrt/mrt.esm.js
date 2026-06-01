@@ -4,63 +4,71 @@
 import {LRUCache} from '../../util/lru';
 
 function readTileHeader(pbf, end) {
-  return pbf.readFields(readTileHeaderTag, {
+  const obj = {
     headerLength: 0,
     x: 0,
     y: 0,
     z: 0,
     layers: []
-  }, end);
-}
-function readTileHeaderTag(tag, obj, pbf) {
-  if (tag === 1) obj.headerLength = pbf.readFixed32();else if (tag === 2) obj.x = pbf.readVarint();else if (tag === 3) obj.y = pbf.readVarint();else if (tag === 4) obj.z = pbf.readVarint();else if (tag === 5) obj.layers.push(readLayer(pbf, pbf.readVarint() + pbf.pos));
+  };
+  let field;
+  while ((field = pbf.nextField(end))) {
+    if (field === 1) obj.headerLength = pbf.readFixed32();else if (field === 2) obj.x = pbf.readVarint();else if (field === 3) obj.y = pbf.readVarint();else if (field === 4) obj.z = pbf.readVarint();else if (field === 5) obj.layers.push(readLayer(pbf, pbf.readVarint() + pbf.pos));
+  }
+  return obj;
 }
 function readFilter(pbf, end) {
-  return pbf.readFields(readFilterTag, {}, end);
-}
-function readFilterTag(tag, obj, pbf) {
-  if (tag === 1) {
-    obj.delta_filter = readFilterDelta(pbf, pbf.readVarint() + pbf.pos);
-    obj.filter = 'delta_filter';
-  } else if (tag === 2) {
-    pbf.readVarint();
-    obj.filter = 'zigzag_filter';
-  } else if (tag === 3) {
-    pbf.readVarint();
-    obj.filter = 'bitshuffle_filter';
-  } else if (tag === 4) {
-    pbf.readVarint();
-    obj.filter = 'byteshuffle_filter';
+  const obj = {};
+  let field;
+  while ((field = pbf.nextField(end))) {
+    if (field === 1) {
+      obj.delta_filter = readFilterDelta(pbf, pbf.readVarint() + pbf.pos);
+      obj.filter = 'delta_filter';
+    } else if (field === 2) {
+      pbf.readVarint();
+      obj.filter = 'zigzag_filter';
+    } else if (field === 3) {
+      pbf.readVarint();
+      obj.filter = 'bitshuffle_filter';
+    } else if (field === 4) {
+      pbf.readVarint();
+      obj.filter = 'byteshuffle_filter';
+    }
   }
+  return obj;
 }
 function readFilterDelta(pbf, end) {
-  return pbf.readFields(readFilterDeltaTag, {
+  const obj = {
     blockSize: 0
-  }, end);
-}
-function readFilterDeltaTag(tag, obj, pbf) {
-  if (tag === 1) obj.blockSize = pbf.readVarint();
+  };
+  let field;
+  while ((field = pbf.nextField(end))) {
+    if (field === 1) obj.blockSize = pbf.readVarint();
+  }
+  return obj;
 }
 function readCodec(pbf, end) {
-  return pbf.readFields(readCodecTag, {}, end);
-}
-function readCodecTag(tag, obj, pbf) {
-  if (tag === 1) {
-    pbf.readVarint();
-    obj.codec = 'gzip_data';
-  } else if (tag === 2) {
-    pbf.readVarint();
-    obj.codec = 'jpeg_image';
-  } else if (tag === 3) {
-    pbf.readVarint();
-    obj.codec = 'webp_image';
-  } else if (tag === 4) {
-    pbf.readVarint();
-    obj.codec = 'png_image';
+  const obj = {};
+  let field;
+  while ((field = pbf.nextField(end))) {
+    if (field === 1) {
+      pbf.readVarint();
+      obj.codec = 'gzip_data';
+    } else if (field === 2) {
+      pbf.readVarint();
+      obj.codec = 'jpeg_image';
+    } else if (field === 3) {
+      pbf.readVarint();
+      obj.codec = 'webp_image';
+    } else if (field === 4) {
+      pbf.readVarint();
+      obj.codec = 'png_image';
+    }
   }
+  return obj;
 }
 function readDataIndexEntry(pbf, end) {
-  return pbf.readFields(readDataIndexEntryTag, {
+  const obj = {
     firstByte: 0,
     lastByte: 0,
     filters: [],
@@ -68,12 +76,13 @@ function readDataIndexEntry(pbf, end) {
     offset: 0,
     scale: 0,
     bands: []
-  }, end);
-}
-function readDataIndexEntryTag(tag, obj, pbf) {
+  };
   let deprecated_scale = 0;
   let deprecated_offset = 0;
-  if (tag === 1) obj.firstByte = pbf.readFixed64();else if (tag === 2) obj.lastByte = pbf.readFixed64();else if (tag === 3) obj.filters.push(readFilter(pbf, pbf.readVarint() + pbf.pos));else if (tag === 4) obj.codec = readCodec(pbf, pbf.readVarint() + pbf.pos);else if (tag === 5) deprecated_offset = pbf.readFloat();else if (tag === 6) deprecated_scale = pbf.readFloat();else if (tag === 7) obj.bands.push(pbf.readString());else if (tag === 8) obj.offset = pbf.readDouble();else if (tag === 9) obj.scale = pbf.readDouble();
+  let field;
+  while ((field = pbf.nextField(end))) {
+    if (field === 1) obj.firstByte = pbf.readFixed64();else if (field === 2) obj.lastByte = pbf.readFixed64();else if (field === 3) obj.filters.push(readFilter(pbf, pbf.readVarint() + pbf.pos));else if (field === 4) obj.codec = readCodec(pbf, pbf.readVarint() + pbf.pos);else if (field === 5) deprecated_offset = pbf.readFloat();else if (field === 6) deprecated_scale = pbf.readFloat();else if (field === 7) obj.bands.push(pbf.readString());else if (field === 8) obj.offset = pbf.readDouble();else if (field === 9) obj.scale = pbf.readDouble();
+  }
 
   // Overwrite these values if they're zero. Scale can never be zero, so this could only
   // mean it's being overwritten with something that is potentially valid (or at least
@@ -85,9 +94,10 @@ function readDataIndexEntryTag(tag, obj, pbf) {
   // was upgraded to double precision.
   if (obj.offset === 0) obj.offset = deprecated_offset;
   if (obj.scale === 0) obj.scale = deprecated_scale;
+  return obj;
 }
 function readLayer(pbf, end) {
-  return pbf.readFields(readLayerTag, {
+  const obj = {
     version: 0,
     name: '',
     units: '',
@@ -95,32 +105,35 @@ function readLayer(pbf, end) {
     buffer: 0,
     pixelFormat: 0,
     dataIndex: []
-  }, end);
-}
-function readLayerTag(tag, obj, pbf) {
-  if (tag === 1) obj.version = pbf.readVarint();else if (tag === 2) obj.name = pbf.readString();else if (tag === 3) obj.units = pbf.readString();else if (tag === 4) obj.tileSize = pbf.readVarint();else if (tag === 5) obj.buffer = pbf.readVarint();else if (tag === 6) obj.pixelFormat = pbf.readVarint();else if (tag === 7) obj.dataIndex.push(readDataIndexEntry(pbf, pbf.readVarint() + pbf.pos));
+  };
+  let field;
+  while ((field = pbf.nextField(end))) {
+    if (field === 1) obj.version = pbf.readVarint();else if (field === 2) obj.name = pbf.readString();else if (field === 3) obj.units = pbf.readString();else if (field === 4) obj.tileSize = pbf.readVarint();else if (field === 5) obj.buffer = pbf.readVarint();else if (field === 6) obj.pixelFormat = pbf.readVarint();else if (field === 7) obj.dataIndex.push(readDataIndexEntry(pbf, pbf.readVarint() + pbf.pos));
+  }
+  return obj;
 }
 function readNumericData(pbf, values) {
-  pbf.readFields(readNumericDataTag, values);
-}
-function readNumericDataTag(tag, values, pbf) {
-  if (tag === 2) {
-    readUint32Values(pbf, pbf.readVarint() + pbf.pos, values);
-  } else if (tag === 3) {
-    throw new Error('Not implemented');
+  let field;
+  while ((field = pbf.nextField())) {
+    if (field === 2) {
+      readUint32Values(pbf, pbf.readVarint() + pbf.pos, values);
+    } else if (field === 3) {
+      throw new Error('Not implemented');
+    }
   }
 }
 function readUint32Values(pbf, end, values) {
-  return pbf.readFields(readUint32ValuesTag, values, end);
-}
-function readUint32ValuesTag(tag, values, pbf) {
-  if (tag === 1) {
-    let i = 0;
-    const end = pbf.readVarint() + pbf.pos;
-    while (pbf.pos < end) {
-      values[i++] = pbf.readVarint();
+  let field;
+  while ((field = pbf.nextField(end))) {
+    if (field === 1) {
+      let i = 0;
+      const valuesEnd = pbf.readVarint() + pbf.pos;
+      while (pbf.pos < valuesEnd) {
+        values[i++] = pbf.readVarint();
+      }
     }
   }
+  return values;
 }
 
 /**
