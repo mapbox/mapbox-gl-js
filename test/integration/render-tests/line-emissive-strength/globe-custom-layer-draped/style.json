@@ -1,0 +1,86 @@
+{
+  "version": 8,
+  "metadata": {
+    "comment": "Data-driven line-emissive-strength on globe projection with a two-pass FBO custom layer (renderToTile). The line should show increasing brightness. The custom layer composites a semi-transparent green overlay.",
+    "test": {
+      "width": 64,
+      "height": 64,
+      "allowed": 0.0005,
+      "forceEmissiveFallback": true,
+      "operations": [
+        ["wait"],
+        ["addCustomLayer", "triangle-draped"],
+        ["wait"]
+      ]
+    }
+  },
+  "projection": {
+    "name": "globe"
+  },
+  "center": [0, 10],
+  "zoom": 0,
+  "pitch": 0,
+  "lights": [
+    {
+      "id": "ambient",
+      "type": "ambient",
+      "properties": {
+        "color": "hsl(0, 0%, 100%)",
+        "intensity": 0.5
+      }
+    },
+    {
+      "id": "directional",
+      "type": "directional",
+      "properties": {
+        "direction": [200, 40],
+        "color": "hsl(0, 0%, 100%)",
+        "intensity": 0.5
+      }
+    }
+  ],
+  "sources": {
+    "route": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {"strength": 0.5},
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [-60, 10],
+                [0, 10],
+                [60, 10]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "#111"}
+    },
+    {
+      "id": "route",
+      "type": "line",
+      "source": "route",
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "#ff6600",
+        "line-width": 16,
+        "line-emissive-strength": ["get", "strength"]
+      }
+    }
+  ]
+}
