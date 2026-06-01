@@ -1,4 +1,5 @@
 import drawBuilding from '../3d-style/render/draw_building';
+import {BuildingTileBorderManager} from '../3d-style/render/building_tile_border_manager';
 import IndoorManager from '../3d-style/style/indoor_manager';
 import drawRasterParticle, {prepare as prepareRasterParticle} from '../src/render/draw_raster_particle';
 import shaders from '../3d-style/shaders/shaders_hd';
@@ -31,6 +32,7 @@ import '../3d-style/data/bucket/building_bucket';
 export const HD = {
     loaded: true,
     drawBuilding,
+    BuildingTileBorderManager,
     drawRasterParticle,
     prepareRasterParticle,
     Rain,

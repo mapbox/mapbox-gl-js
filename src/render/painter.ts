@@ -36,7 +36,6 @@ import {default as drawDebug, drawDebugPadding, drawDebugQueryGeometry} from './
 import custom from './draw_custom';
 import sky from './draw_sky';
 import Atmosphere from './draw_atmosphere';
-import {BuildingTileBorderManager} from '../../3d-style/render/building_tile_border_manager';
 import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe_util';
 import {Terrain, defaultTerrainUniforms} from '../terrain/terrain';
 import {Debug} from '../util/debug';
@@ -221,7 +220,7 @@ class Painter {
     imageManager: ImageManager;
     glyphManager: GlyphManager;
     modelManager: ModelManager;
-    buildingTileBorderManager: BuildingTileBorderManager;
+    buildingTileBorderManager?: InstanceType<NonNullable<typeof HD.BuildingTileBorderManager>>;
     depthRangeFor3D: DepthRangeType;
     depthOcclusion: boolean;
     frcCoverageSnapshot: FrcCoverageSnapshot | null;
@@ -1195,13 +1194,15 @@ class Painter {
         }
 
         if (buildingLayer) {
-            if (!this.buildingTileBorderManager) {
-                this.buildingTileBorderManager = new BuildingTileBorderManager();
+            if (!this.buildingTileBorderManager && HD.BuildingTileBorderManager) {
+                this.buildingTileBorderManager = new HD.BuildingTileBorderManager();
             }
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            const buildingLayerSourceCache = this.style.getLayerSourceCache(buildingLayer);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            this.buildingTileBorderManager.updateBorders(buildingLayerSourceCache, buildingLayer);
+            if (this.buildingTileBorderManager) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                const buildingLayerSourceCache = this.style.getLayerSourceCache(buildingLayer);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                this.buildingTileBorderManager.updateBorders(buildingLayerSourceCache, buildingLayer);
+            }
         }
 
         // Following line is billing related code. Do not change. See LICENSE.txt
