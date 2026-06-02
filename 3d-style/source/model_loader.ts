@@ -235,6 +235,7 @@ function convertPrimitive(primitive: GLTFPrimitive, gltf: GLTF, textures: Array<
 
 function convertMeshes(gltf: GLTF, textures: Array<ModelTexture>): Array<Array<Mesh>> {
     const meshes: Mesh[][] = [];
+    if (!gltf.json.meshes) return meshes;
 
     for (const meshDesc of gltf.json.meshes) {
         const primitives: Mesh[] = [];
@@ -629,7 +630,7 @@ export default function convertModel(gltf: GLTF): Array<ModelNode> {
     // Find "Default Scene" by name; fall back to the GLTF default scene index
     let sceneIndex = scenes ? findScene(scenes, "Default Scene") : -1;
     if (sceneIndex < 0) sceneIndex = scene || 0;
-    const sceneNodes = scenes ? scenes[sceneIndex].nodes : [...nodes.keys()];
+    const sceneNodes: number[] = scenes && scenes[sceneIndex] ? scenes[sceneIndex].nodes || [] : [...nodes.keys()];
 
     const resultNodes: ModelNode[] = [];
     for (const nodeIdx of sceneNodes) {
