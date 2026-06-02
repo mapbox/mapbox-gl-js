@@ -14,6 +14,6 @@ export function color(from: Color, to: Color, t: number): Color {
 
 export function array(from: Array<number>, to: Array<number>, t: number): Array<number> {
     return from.map((d, i) => {
-        return number(d, to[i], t);
+        return number(d, to[i] as number, t);
     });
 }
