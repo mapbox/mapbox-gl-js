@@ -3,6 +3,7 @@ import browser from '../../util/browser';
 import {getLayoutProperties, getPaintProperties} from './raster_particle_style_layer_properties';
 import {renderColorRamp} from '../../util/color_ramp';
 
+import type {RuntimeModuleType} from '../style_layer';
 import type {PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {RGBAImage} from '../../util/image';
 import type {Map as MapboxMap} from '../../ui/map';
@@ -40,6 +41,10 @@ class RasterParticleStyleLayer extends StyleLayer {
         super(layer, properties, scope, lut, options);
         this._updateColorRamp();
         this.lastInvalidatedAt = browser.now();
+    }
+
+    override mayUse(type: RuntimeModuleType): boolean {
+        return type === 'HD';
     }
 
     override _clear() {
