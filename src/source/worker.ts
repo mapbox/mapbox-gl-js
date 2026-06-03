@@ -114,6 +114,7 @@ export default class MapWorker {
         delete this.availableImages[mapId];
         delete this.availableModels[mapId];
         delete this.workerSources[mapId];
+        delete this.isSpriteLoaded[mapId];
         callback();
     }
 
@@ -122,16 +123,12 @@ export default class MapWorker {
         callback();
     }
 
-    setReferrer(mapID: string, referrer: ActorMessages['setReferrer']['params']) {
-        this.referrer = referrer;
-    }
-
     spriteLoaded(mapId: number, params: ActorMessages['spriteLoaded']['params']) {
+        const {scope} = params;
         if (!this.isSpriteLoaded[mapId])
             this.isSpriteLoaded[mapId] = {};
 
-        const {scope, isLoaded} = params;
-        this.isSpriteLoaded[mapId][scope] = isLoaded;
+        this.isSpriteLoaded[mapId][scope] = true;
 
         if (!this.workerSources[mapId] || !this.workerSources[mapId][scope]) {
             return;
@@ -142,7 +139,7 @@ export default class MapWorker {
             for (const source in ws) {
                 const workerSource = ws[source];
                 if (workerSource instanceof VectorTileWorkerSource) {
-                    workerSource.isSpriteLoaded = isLoaded;
+                    workerSource.isSpriteLoaded = true;
                     workerSource.fire(new Event('isSpriteLoaded'));
                 }
             }
@@ -156,6 +153,10 @@ export default class MapWorker {
 
         const {scope, images} = params;
         this.availableImages[mapId][scope] = images;
+
+        if (params.isSpriteLoaded) {
+            this.spriteLoaded(mapId, {scope});
+        }
 
         if (!this.workerSources[mapId] || !this.workerSources[mapId][scope]) {
             callback();
@@ -198,20 +199,25 @@ export default class MapWorker {
         this.projections[mapId] = getProjection(config);
     }
 
-    setBrightness(mapId: number, brightness: ActorMessages['setBrightness']['params'], callback: ActorMessages['setBrightness']['callback']) {
-        this.brightness = brightness;
-        callback();
+    setGlobalParams(mapID: string, params: ActorMessages['setGlobalParams']['params']) {
+        this.referrer = params.referrer;
+        Object.assign(config, params.config);
+
+        if (params.contextOptions) {
+            const {maxBindingPoints, maxUniformBlockSizeDwords, disableSymbolUBO} = params.contextOptions;
+            this.maxUniformBufferBindings = maxBindingPoints;
+            this.maxUniformBlockSizeDwords = maxUniformBlockSizeDwords;
+            this.disableSymbolUBO = disableSymbolUBO;
+        }
     }
 
-    setContextParams(mapId: number, params: ActorMessages['setContextParams']['params'], callback: ActorMessages['setContextParams']['callback']) {
-        this.maxUniformBufferBindings = params.maxBindingPoints;
-        this.maxUniformBlockSizeDwords = params.maxUniformBlockSizeDwords;
-        this.disableSymbolUBO = params.disableSymbolUBO;
-        callback();
-    }
-
-    setWorldview(mapId: number, worldview: ActorMessages['setWorldview']['params'], callback: ActorMessages['setWorldview']['callback']) {
-        this.worldview = worldview;
+    upsertRenderParams(mapId: number, params: ActorMessages['upsertRenderParams']['params'], callback: ActorMessages['upsertRenderParams']['callback']) {
+        if (params.brightness !== undefined) {
+            this.brightness = params.brightness;
+        }
+        if (params.worldview !== undefined) {
+            this.worldview = params.worldview;
+        }
         callback();
     }
 
@@ -333,10 +339,6 @@ export default class MapWorker {
             for (const cb of this.rtlPluginParsingListeners) cb(e as Error);
             this.rtlPluginParsingListeners = [];
         }
-    }
-
-    setConfig(mapId: number, updates: ActorMessages['setConfig']['params']) {
-        Object.assign(config, updates);
     }
 
     getAvailableImages(mapId: number, scope: string): ImageId[] {

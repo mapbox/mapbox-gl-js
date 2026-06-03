@@ -19,6 +19,27 @@ import type {ImagePositionMap} from '../render/image_atlas';
 import type {TileJSON} from '../types/tilejson';
 import type {RequestParameters} from './ajax';
 
+type RenderParameters = {
+    brightness?: number;
+    worldview?: string;
+};
+
+type GlobalParams = {
+    referrer?: string;
+    config: {
+        API_URL?: string;
+        DRACO_URL?: string;
+        MESHOPT_URL?: string;
+        MESHOPT_SIMD_URL?: string;
+        BUILDING_GEN_URL?: string;
+    },
+    contextOptions?: {
+        maxBindingPoints: number;
+        maxUniformBlockSizeDwords: number;
+        disableSymbolUBO?: boolean
+    }
+};
+
 /**
  * Message registry maps message types to their data and result types.
  */
@@ -126,34 +147,23 @@ export type ActorMessages = {
         callback: ActorCallback<void>;
     };
 
-    'setBrightness': {
-        params: number;
+    'upsertRenderParams': {
+        params: RenderParameters;
         callback: ActorCallback<void>;
     };
 
-    'setContextParams': {
-        params: {maxBindingPoints: number; maxUniformBlockSizeDwords: number; disableSymbolUBO?: boolean};
-        callback: ActorCallback<void>;
-    };
-
-    'setWorldview': {
-        params: string;
-        callback: ActorCallback<void>;
-    };
-
-    'setConfig': {
-        params: {
-            API_URL?: string;
-            DRACO_URL?: string;
-            MESHOPT_URL?: string;
-            MESHOPT_SIMD_URL?: string;
-            BUILDING_GEN_URL?: string;
-        };
+    'setGlobalParams': {
+        params: GlobalParams;
         callback: ActorCallback<void>;
     };
 
     'setImages': {
-        params: {images: ImageId[]; scope: string;};
+        params: {images: ImageId[]; scope: string; isSpriteLoaded?: boolean};
+        callback: ActorCallback<void>;
+    };
+
+    'spriteLoaded': {
+        params: {scope: string;};
         callback: ActorCallback<void>;
     };
 
@@ -172,18 +182,8 @@ export type ActorMessages = {
         callback: void;
     };
 
-    'setReferrer': {
-        params: string;
-        callback: void;
-    };
-
     'setIndoorData': {
         params: IndoorData;
-        callback: void;
-    };
-
-    'spriteLoaded': {
-        params: {scope: string; isLoaded: boolean};
         callback: void;
     };
 

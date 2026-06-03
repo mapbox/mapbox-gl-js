@@ -467,15 +467,21 @@ class Style extends Evented<MapEvents> {
             this.dispatcher = new Dispatcher(getWorkerPool(), this);
         }
 
+        const globalWorkerParams: ActorMessages['setGlobalParams']['params'] = {
+            referrer: getReferrer(),
+            config: getBroadcastableConfig(),
+        };
+
         // Send UBO limits to workers so they can size batches correctly for this device.
         if (this.map.painter && this.map.painter.context) {
             const maxBindingPoints = this.map.painter.context.maxUniformBufferBindings;
             const maxUniformBlockSizeDwords = Math.floor(this.map.painter.context.maxUniformBlockSize / 4);
-            this.dispatcher.broadcast('setContextParams', {
-                maxBindingPoints,
-                maxUniformBlockSizeDwords,
-                disableSymbolUBO: this.map.painter.context.disableSymbolUBO
-            });
+            const {disableSymbolUBO} = this.map.painter.context;
+            globalWorkerParams.contextOptions = {maxBindingPoints, maxUniformBlockSizeDwords, disableSymbolUBO};
+        }
+
+        if (this.isRootStyle()) {
+            this.dispatcher.broadcast('setGlobalParams', globalWorkerParams);
         }
 
         if (options.imageManager) {
@@ -538,9 +544,6 @@ class Style extends Evented<MapEvents> {
         };
         this._styleColorThemeForScope = {};
         this._initialConfig = options.initialConfig;
-
-        this.dispatcher.broadcast('setReferrer', getReferrer());
-        this.dispatcher.broadcast('setConfig', getBroadcastableConfig());
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
@@ -916,7 +919,7 @@ class Style extends Evented<MapEvents> {
                 this._loadIconset(json.sprite);
             } else {
                 this.imageManager.setLoaded(true, this.scope);
-                this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
+                this.dispatcher.broadcast('spriteLoaded', {scope: this.scope});
             }
 
             // for style fragments, only set a glyphs url if it's not already set by the root style (GLJS-1345)
@@ -1585,11 +1588,10 @@ class Style extends Evented<MapEvents> {
                 for (const id in images) {
                     styleImageMap.set(ImageId.from(id), images[id]);
                 }
-                this.addImages(styleImageMap);
+                this.addImages(styleImageMap, true);
             }
 
             this.imageManager.setLoaded(true, this.scope);
-            this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
             this.fire(new Event('data', {dataType: 'style'}));
         });
     }
@@ -1651,11 +1653,10 @@ class Style extends Evented<MapEvents> {
                 for (const id in images) {
                     styleImageMap.set(ImageId.from(id), images[id]);
                 }
-                this.addImages(styleImageMap);
+                this.addImages(styleImageMap, true);
             }
 
             this.imageManager.setLoaded(true, this.scope);
-            this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
             this.fire(new Event('data', {dataType: 'style'}));
         });
     }
@@ -1912,14 +1913,23 @@ class Style extends Evented<MapEvents> {
 
         const brightness = this.calculateLightsBrightness();
         parameters.brightness = brightness || 0.0;
+
+        let renderParamsUpdated = false;
         if (brightness !== this._brightness) {
             this._brightness = brightness;
-            this.dispatcher.broadcast('setBrightness', brightness);
+            renderParamsUpdated = true;
         }
 
         if (parameters.worldview !== this._worldview) {
             this._worldview = parameters.worldview;
-            this.dispatcher.broadcast('setWorldview', this._worldview);
+            renderParamsUpdated = true;
+        }
+
+        if (renderParamsUpdated) {
+            this.dispatcher.broadcast('upsertRenderParams', {
+                brightness: this._brightness,
+                worldview: this._worldview
+            });
         }
 
         const changed = this._changes.isDirty();
@@ -2203,9 +2213,15 @@ class Style extends Evented<MapEvents> {
      * Broadcast the current set of available images to the Workers.
      * Note that this is a scoped method, so it will only update the images for the given scope.
      */
-    _updateWorkerImages() {
+    _updateWorkerImages(isSpriteLoaded = false) {
         this._availableImages = this.imageManager.listImages(this.scope);
-        this.dispatcher.broadcast('setImages', {scope: this.scope, images: this._availableImages});
+        const params: ActorMessages['setImages']['params'] = {scope: this.scope, images: this._availableImages};
+
+        if (isSpriteLoaded) {
+            params.isSpriteLoaded = true;
+        }
+
+        this.dispatcher.broadcast('setImages', params);
     }
 
     _updateWorkerModels() {
@@ -2219,7 +2235,7 @@ class Style extends Evented<MapEvents> {
      * @fires Map.event:data Fires `data` with `{dataType: 'style'}` to indicate that the set of available images has changed.
      * @returns {Style}
      */
-    addImages(images: StyleImageMap<ImageId>): this {
+    addImages(images: StyleImageMap<ImageId>, isSpriteLoaded?: boolean): this {
         if (images.size === 0) {
             return this;
         }
@@ -2231,7 +2247,7 @@ class Style extends Evented<MapEvents> {
             this._changes.updateImage(id, this.scope);
         }
 
-        this._updateWorkerImages();
+        this._updateWorkerImages(isSpriteLoaded);
         this.fire(new Event('data', {dataType: 'style'}));
         return this;
     }
@@ -2533,7 +2549,7 @@ class Style extends Evented<MapEvents> {
         }
 
         this._brightness = this.calculateLightsBrightness();
-        this.dispatcher.broadcast('setBrightness', this._brightness);
+        this.dispatcher.broadcast('upsertRenderParams', {brightness: this._brightness});
     }
 
     calculateLightsBrightness(): number | null | undefined {
@@ -3470,7 +3486,7 @@ class Style extends Evented<MapEvents> {
     setWorldview(worldview: string | undefined | null) {
         if (worldview === this._worldview) return;
         this._worldview = worldview;
-        this.dispatcher.broadcast('setWorldview', this._worldview);
+        this.dispatcher.broadcast('upsertRenderParams', {worldview: this._worldview});
         this.reloadSources();
     }
 
