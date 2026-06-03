@@ -4,7 +4,7 @@ import {getLayoutProperties, getPaintProperties} from './building_style_layer_pr
 import {checkIntersection, projectExtrusion} from '../../../src/style/style_layer/fill_extrusion_style_layer';
 import Point from '@mapbox/point-geometry';
 import assert from '../../../src/style-spec/util/assert';
-import {BuildingBucket, prepareHD} from '../../../modules/hd_worker';
+import {BuildingBucket, prepareBuildingGen} from '../../../modules/hd_worker';
 
 import type {Layout, Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../../../src/style/properties';
 import type {Bucket, BucketParameters} from '../../../src/data/bucket';
@@ -42,7 +42,7 @@ class BuildingStyleLayer extends StyleLayer {
     }
 
     override prepare(): Promise<void> {
-        return prepareHD();
+        return prepareBuildingGen();
     }
 
     override createBucket(parameters: BucketParameters<this>): BuildingBucket {

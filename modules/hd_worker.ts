@@ -27,4 +27,9 @@ export {
 // synchronously at bundle load time. ESM exposes the same shape but lazily.
 export const loaded = true;
 
-export async function prepareHD() { return waitForBuildingGen(); }
+// The HD JS chunk is always present in UMD, so `prepareHD` is a no-op. The building-gen
+// WASM is still fetched lazily on first use — only by the `building` layer via
+// `prepareBuildingGen`, matching the ESM split.
+export async function prepareHD() {}
+
+export async function prepareBuildingGen() { return waitForBuildingGen(); }
