@@ -341,6 +341,9 @@ class Style extends Evented<MapEvents> {
     _mergedOrder: Array<string>;
     _mergedLayers: Record<string, TypedStyleLayer>;
     _mergedIndoor: Record<string, Set<string>>;
+    // Whether indoor is actually turned on by config (an indoor-source layer is visible),
+    // not merely declared in the stylesheet. Cached so per-tile `isIndoorEnabled()` is cheap.
+    _indoorEnabled: boolean;
     _mergedSlots: Array<string>;
     _mergedSourceCaches: Record<string, SourceCache>;
     _mergedOtherSourceCaches: Record<string, SourceCache>;
@@ -435,6 +438,7 @@ class Style extends Evented<MapEvents> {
         this._drapedFirstOrder = [];
         this._mergedLayers = Object.create(null) as Style['_mergedLayers'];
         this._mergedIndoor = {};
+        this._indoorEnabled = false;
         this._mergedSourceCaches = {};
         // `_other/_symbol/_fillExtrusionSourceCaches` are indexed by the raw
         // source ID from the style JSON, so a source named "__proto__" would
@@ -1324,12 +1328,31 @@ class Style extends Evented<MapEvents> {
             }
         });
 
+        this._updateIndoorEnabled();
+    }
+
+    // Recompute whether indoor is actually active. Styles like Standard declare an `indoor`
+    // block unconditionally, but gate the indoor layers behind a config option (`showIndoor`,
+    // off by default). Loading the HD module — and parsing indoor data on the worker — is only
+    // worthwhile when at least one layer drawing from an indoor source is visible. Re-run on
+    // config changes so toggling that option turns indoor on/off without a tile-data probe.
+    _updateIndoorEnabled() {
+        const wasEnabled = this._indoorEnabled;
+        this._indoorEnabled = false;
         if (Object.keys(this._mergedIndoor).length > 0) {
-            // Preload HD on both threads so IndoorManager is ready before any tile arrives.
-            // The .then() defers _initIndoorManager until after the dynamic import resolves
-            // in ESM builds; in UMD prepareHDMain() returns a resolved promise so this is
-            // effectively synchronous. prepareHDWorker() is also called so bucket transfers
-            // from worker to main work correctly.
+            for (const fqid of this._mergedOrder) {
+                const layer = this._mergedLayers[fqid];
+                if (layer.visibility === 'none') continue;
+                if (this._mergedIndoor[makeFQID(layer.source, layer.scope)]) {
+                    this._indoorEnabled = true;
+                    break;
+                }
+            }
+        }
+        // Create the IndoorManager (and load HD on both threads) the first time indoor turns
+        // on. _initIndoorManager reloads indoor sources so the worker re-parses them once the
+        // manager — and thus the indoor tile options — are available.
+        if (this._indoorEnabled && !wasEnabled && !this.indoorManager) {
             void prepareHDMain().then(() => { this._initIndoorManager(); });
         }
     }
@@ -2719,7 +2742,7 @@ class Style extends Evented<MapEvents> {
     }
 
     isIndoorEnabled(): boolean {
-        return Object.keys(this._mergedIndoor).length > 0;
+        return this._indoorEnabled;
     }
 
     getIndoorSourceLayers(sourceId: string, scope: string): Set<string> | null {
@@ -2908,6 +2931,9 @@ class Style extends Evented<MapEvents> {
                 }
             }
         });
+
+        // Config may have flipped the indoor layers' visibility (e.g. `showIndoor`).
+        this._updateIndoorEnabled();
 
         this._changes.setDirty();
     }

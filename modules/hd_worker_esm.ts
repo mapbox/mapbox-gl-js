@@ -20,12 +20,12 @@ export let isFeatureCoveredByFrcMask: ((featureProperties: Record<string, unknow
 export let matchesCoverageSourceLayer: ((entries: string[], source: string, sourceLayer: string) => boolean) | undefined;
 export let symbolAnchorInFrcCoverage: ((coveragePolygons: FrcCoveragePolygons, properties: Record<string, unknown>, anchor: {x: number; y: number}, canonical: CanonicalTileID, coverageTileZoom: number | null) => boolean) | undefined;
 export let parseActiveFloors: ((data: VectorTile, indoorTileOptions: IndoorTileOptions, actor: Actor, tileID: CanonicalTileID) => Set<string> | undefined) | undefined;
+let waitForBuildingGen: (() => Promise<void> | null) | undefined;
 export let loaded = false;
 
 export async function prepareHD() {
     try {
         const mod = await import('./hd_worker_imports');
-        await mod.waitForBuildingGen();
         BuildingBucket = mod.BuildingBucket;
         parseElevationFeatures = mod.parseElevationFeatures;
         attachExtension = mod.attachExtension;
@@ -35,8 +35,17 @@ export async function prepareHD() {
         matchesCoverageSourceLayer = mod.matchesCoverageSourceLayer;
         symbolAnchorInFrcCoverage = mod.symbolAnchorInFrcCoverage;
         parseActiveFloors = mod.parseActiveFloors;
+        waitForBuildingGen = mod.waitForBuildingGen;
         loaded = true;
     } catch (error) {
         warnOnce('Could not load HD module.');
     }
+}
+
+// Procedural-building geometry needs the building-gen WASM on top of the HD JS chunk.
+// Kept separate from `prepareHD` so indoor / FRC / HD-elevation tiles — which only use
+// the JS hooks — don't trigger the (large) WASM fetch. Only the `building` layer awaits this.
+export async function prepareBuildingGen() {
+    await prepareHD();
+    if (waitForBuildingGen) await waitForBuildingGen();
 }
