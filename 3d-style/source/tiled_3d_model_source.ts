@@ -1,6 +1,6 @@
 import browser from '../../src/util/browser';
 import {Evented, ErrorEvent, Event} from '../../src/util/evented';
-import {ResourceType} from '../../src/util/ajax';
+import {ResourceType, isHttpNotFound} from '../../src/util/ajax';
 import loadTileJSON from '../../src/source/load_tilejson';
 import TileBounds from '../../src/source/tile_bounds';
 import {postTurnstileEvent} from '../../src/util/mapbox';
@@ -182,7 +182,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
         function done(this: Tiled3DModelSource, err?: AJAXError | null, data?: WorkerSourceVectorTileResult | null) {
             if (tile.aborted) return callback(null);
 
-            if (err && err.status !== 404) {
+            if (err && !isHttpNotFound(err)) {
                 return callback(err);
             }
 

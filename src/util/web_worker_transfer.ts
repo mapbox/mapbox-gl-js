@@ -86,10 +86,8 @@ register(Grid as Class<Grid>, 'Grid');
 delete Point.prototype.constructor;
 
 register(Color, 'Color');
-register(Error, 'Error');
 register(Formatted, 'Formatted');
 register(FormattedSection, 'FormattedSection');
-register(AJAXError, 'AJAXError');
 register(ResolvedImage, 'ResolvedImage');
 register(StylePropertyFunction, 'StylePropertyFunction');
 register(StyleExpression, 'StyleExpression', {omit: ['_evaluator']});
@@ -106,6 +104,18 @@ for (const name in expressions) {
 function isArrayBuffer(val: unknown): val is ArrayBuffer {
     return val && (val instanceof ArrayBuffer || (val.constructor && val.constructor.name === 'ArrayBuffer'));
 }
+
+const ERROR_CTORS: Record<string, ErrorConstructor> = {
+    Error,
+    TypeError,
+    RangeError,
+    SyntaxError,
+    ReferenceError,
+    URIError,
+    EvalError
+};
+
+const ERROR_PROPERTIES = new Set(['message', 'stack', 'cause', 'errors', 'name', 'class']);
 
 /**
  * Serialize the given object for transfer to or from a web worker.
@@ -182,6 +192,42 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         return input as Serialized;
     }
 
+    if (input instanceof Error) {
+        const err = input as Error & {cause?: unknown};
+        const ctorName = (err.constructor && err.constructor.name) || 'Error';
+
+        const cls =
+            err instanceof AJAXError ? 'AJAXError' :
+            err instanceof DOMException ? 'DOMException' :
+            err instanceof AggregateError ? 'AggregateError' :
+            (ERROR_CTORS[ctorName] ? ctorName : 'Error');
+
+        const out: SerializedObject = {
+            $name: '$Error',
+            class: cls,
+            name: err.name,
+            message: err.message
+        };
+
+        if (err.stack) out.stack = err.stack;
+        if ('cause' in err && err.cause !== err) out.cause = serialize(err.cause, transferables);
+
+        if (err instanceof AggregateError) {
+            out.errors = (err.errors as unknown[])
+                .filter((e) => e !== err)
+                .map((e) => serialize(e, transferables));
+        }
+
+        const obj = err as unknown as Record<string, unknown>;
+        for (const key in obj) {
+            if (!Object.hasOwn(obj, key)) continue;
+            if (ERROR_PROPERTIES.has(key)) continue;
+            out[key] = serialize(obj[key], transferables);
+        }
+
+        return out;
+    }
+
     // Null-prototype objects (e.g. Object.create(null)) have no inherited
     // `constructor`, so fall back to the plain-Object codepath. They serialize
     // as plain dicts and round-trip as regular {} on the worker side.
@@ -209,9 +255,6 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
             if (!Object.hasOwn(obj, key)) continue;
             if (omit.includes(key)) continue;
             properties[key] = serialize(obj[key], transferables);
-        }
-        if (input instanceof Error) {
-            properties['message'] = input.message;
         }
     } else {
         // make sure statically serialized object survives transfer of $name property
@@ -267,6 +310,38 @@ export function deserialize(input: Serialized): unknown {
 
     if (name === 'BigInt') {
         return BigInt(input.value as string);
+    }
+
+    if (name === '$Error') {
+        const cls = (input.class as string) || 'Error';
+        const errName = (input.name as string) || cls;
+        const message = input.message || '';
+
+        let err: Error;
+        if (cls === 'DOMException') {
+            err = new DOMException(message, errName);
+        } else if (cls === 'AggregateError') {
+            err = new AggregateError(((input.errors as Serialized[]) || []).map(deserialize), message);
+        } else if (cls === 'AJAXError') {
+            err = new AJAXError(input.statusText as string, input.status as number, input.url as string);
+        } else {
+            const C = ERROR_CTORS[cls] || Error;
+            err = new C(message);
+        }
+
+        // DOMException.name is readonly
+        if (cls !== 'DOMException') err.name = errName;
+        if (input.stack) err.stack = input.stack as string;
+        if ('cause' in input) (err as Error & {cause?: unknown}).cause = deserialize(input.cause);
+
+        const obj = err as unknown as Record<string, unknown>;
+        for (const key in input) {
+            if (!Object.hasOwn(input, key)) continue;
+            if (key === '$name' || ERROR_PROPERTIES.has(key)) continue;
+            obj[key] = deserialize(input[key]);
+        }
+
+        return err;
     }
 
     const {klass} = registry[name];

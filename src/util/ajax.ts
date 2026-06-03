@@ -77,15 +77,21 @@ export type ResponseCallback<T> = (
 ) => void;
 
 export class AJAXError extends Error {
-    status: number;
     url: string;
-    constructor(message: string, status: number, url: string) {
-        if (status === 401 && isMapboxHTTPURL(url)) {
-            message += ': you may have provided an invalid Mapbox access token. See https://docs.mapbox.com/api/overview/#access-tokens-and-token-scopes';
-        }
-        super(message);
-        this.status = status;
+    status: number;
+    statusText: string;
+
+    constructor(statusText: string, status: number, url: string) {
+        super();
         this.url = url;
+        this.statusText = statusText;
+        this.status = status;
+    }
+
+    override get message(): string {
+        return this.status === 401 && isMapboxHTTPURL(this.url) ?
+            `${this.statusText}: you may have provided an invalid Mapbox access token. See https://docs.mapbox.com/api/guides/#access-tokens-and-token-scopes` :
+            this.statusText;
     }
 
     override toString(): string {
@@ -93,7 +99,7 @@ export class AJAXError extends Error {
     }
 }
 
-export function isHttpNotFound(err: Error): boolean {
+export function isHttpNotFound(err: Error | AJAXError): boolean {
     return typeof err === 'object' && err !== null && 'status' in err && err.status === 404;
 }
 
@@ -159,14 +165,10 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
             if (response.ok) {
                 const cacheableResponse = cacheIgnoringSearch ? response.clone() : null;
                 return finishRequest(response, cacheableResponse, requestTime);
-            } else {
-                return callback(new AJAXError(response.statusText, response.status, requestParameters.url));
             }
-        }).catch((error: Error) => {
-            if (error.name === 'AbortError') {
-                // silence expected AbortError
-                return;
-            }
+            callback(new AJAXError(response.statusText, response.status, requestParameters.url));
+        }, (error: Error) => {
+            if (error.name === 'AbortError') return;
             callback(new Error(`${error.message} ${requestParameters.url}`));
         });
     };
