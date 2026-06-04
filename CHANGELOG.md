@@ -1,3 +1,40 @@
+## 3.25.0-rc.1
+
+### Breaking changes ⚠️
+
+- Switch the ESM entry point to named exports (`import * as mapboxgl from 'mapbox-gl/esm'`) so that modern bundlers can eliminate small unused parts of the code. Replace `mapboxgl.accessToken` with `Map` `accessToken` option. Most of the bundle still can't be statically eliminated, but this release also improves lazy loading of code at runtime, with more improvements on the way.
+
+## Features and improvements ✨
+
+- Extend `Map` `getLayerProperty` and `setLayerProperty` to support layer-level properties (`minzoom`, `maxzoom`, `filter`, `slot`, `appearances`)
+- Extend `TileProvider` API to accept `ImageBitmap` for `raster` and `raster-dem` providers.
+- Improve model loading and rendering performance.
+- Improve symbol rendering performance.
+- Improve performance of decoding and encoding vector tiles and other protobuf-encoded assets.
+- Improve color parsing performance, slightly improving load time for styles with many color values.
+- Extract indoor and part of the model rendering code to be loaded on demand when using the ESM entry point.
+- Add `GeolocateControl` `ready` event and `setShowAccuracyCircle`, `setShowUserHeading`, `setFitBoundsOptions`, `setShowUserLocation` methods.
+- Add `KeyboardHandler` `disablePan`/`enablePan` methods.
+- Add `DragRotateHandler` `disablePitch`/`enablePitch` methods.
+- Add `TouchZoomRotateHandler` `disableTapDragZoom`/`enableTapDragZoom` methods.
+- Expose `Map` `setLanguage`, `getLanguage`, `setWorldview`, `getWorldview` as stable public methods (previously private).
+- Remove all direct dependencies from `package.json` slightly improving NPM install size and time.
+- Improve anti-aliasing for lines with borders.
+- Implement automatic conflation of regular and HD road data in preparation for future Mapbox Standard updates.
+- Improve lightmap shading for model layers.
+
+## Bug fixes 🐞
+
+- Fix an issue that sometimes caused black boxes to appear instead of symbol icons.
+- Fix precision issues on tile borders for elevated roads.
+- Fix rendering issues for stacked underground roads.
+- Fix minor vulnerabilities related to Object prototype pollution from an untrusted style or tiles.
+- Fix the `Cutoff is currently disabled on terrain` warning on Standard style.
+- Fix appearance conditions validation to accept compound expressions.
+- Fix issues with model cutout fading via `model-line-cutout-mode` property.
+- Fix an issue with step expression evaluation for symbol layers.
+- Fix an issue with custom layer rendering alongside data-driven `line-emissive-strength`
+
 ## 3.24.0
 
 ## Features and improvements ✨
