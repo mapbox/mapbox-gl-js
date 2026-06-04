@@ -1,4 +1,3 @@
-import {PerformanceUtils} from './util/performance';
 import assert from './style-spec/util/assert';
 import {isSupported as supported} from '@mapbox/mapbox-gl-supported';
 import {version} from '../package.json';
@@ -25,7 +24,6 @@ import {getWorkerCount, setWorkerCount} from './util/worker_pool';
 import WorkerClass from './util/worker_class';
 import {prewarm, clearPrewarmedResources} from './util/worker_pool_factory';
 import {clearTileCache} from './util/tile_request_cache';
-import {WorkerPerformanceUtils} from './util/worker_performance_utils';
 import {FreeCameraOptions} from './ui/free_camera';
 import browser from './util/browser';
 
@@ -358,7 +356,7 @@ const exported = {
 };
 
 //This gets automatically stripped out in production builds.
-Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPerformanceMetrics, getPerformanceMetricsAsync: WorkerPerformanceUtils.getPerformanceMetricsAsync});
+Debug.extend(exported, {isSafari});
 
 /**
  * Gets the version of Mapbox GL JS in use as specified in `package.json`,

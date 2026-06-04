@@ -10,7 +10,6 @@ import type {OverscaledTileID} from '../source/tile_id';
 import type {PluginState} from '../source/rtl_text_plugin';
 import type {StyleImageMap} from '../style/style_image';
 import type {TDecodingResult, TProcessingBatch} from '../data/mrt/types';
-import type {WorkerPerformanceMetrics} from './performance';
 import type {WorkerSourceRequest, WorkerSourceTileRequest} from '../source/worker_source';
 import type {StyleModelMap} from '../style/style_mode';
 import type {IndoorData} from '../style/indoor_data';
@@ -102,11 +101,6 @@ export type ActorMessages = {
     'checkAtlasCache': {
         params: {descriptor: AtlasContentDescriptor; scope: string};
         callback: ActorCallback<{iconPositions: ImagePositionMap; patternPositions: ImagePositionMap; sourceHash: number} | null>;
-    };
-
-    'getWorkerPerformanceMetrics': {
-        params: void;
-        callback: ActorCallback<WorkerPerformanceMetrics>;
     };
 
     'loadTile': {

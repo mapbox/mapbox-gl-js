@@ -439,10 +439,6 @@ export default class MapWorker {
     enforceCacheSizeLimit(mapId: number, limit: ActorMessages['enforceCacheSizeLimit']['params']) {
         enforceCacheSizeLimit(limit);
     }
-
-    getWorkerPerformanceMetrics(mapId: number, params: ActorMessages['getWorkerPerformanceMetrics']['params'], callback: ActorMessages['getWorkerPerformanceMetrics']['callback']) {
-        callback(undefined, PerformanceUtils.getWorkerPerformanceMetrics());
-    }
 }
 
 if (isWorker(self)) {

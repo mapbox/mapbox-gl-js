@@ -1,7 +1,6 @@
 import browser from '../util/browser';
 import {Placement} from '../symbol/placement';
 import {algorithms} from '../symbol/placement_algorithms';
-import {PerformanceUtils} from '../util/performance';
 import {makeFQID} from '../util/fqid';
 
 import type Transform from '../geo/transform';
@@ -161,7 +160,6 @@ class PauseablePlacement {
                 const pausePlacement = inProgressLayer.continuePlacement(sortTileByY ? layerTilesInYOrder[sourceId] : layerTiles[sourceId], this.placement, this._showCollisionBoxes, layer, shouldPausePlacement, scaleFactor);
 
                 if (pausePlacement) {
-                    PerformanceUtils.recordPlacementTime(browser.now() - startTime);
                     // We didn't finish placing all layers within 2ms,
                     // but we can keep rendering with a partial placement
                     // We'll resume here on the next frame
@@ -173,7 +171,6 @@ class PauseablePlacement {
 
             this._currentPlacementIndex--;
         }
-        PerformanceUtils.recordPlacementTime(browser.now() - startTime);
         this._forceFullPlacement = false;
         this._done = true;
     }
