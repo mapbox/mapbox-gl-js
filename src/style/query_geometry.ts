@@ -233,9 +233,10 @@ export class QueryGeometry {
      * @param {Transform} transform The current map transform.
      * @param {boolean} use3D A boolean indicating whether to query 3D features.
      * @param {number} cameraWrap A wrap value for offsetting the camera position.
+     * @param {MercatorCoordinate} cameraMercator The camera position in mercator coordinates, constant across the query.
      * @returns {?TilespaceQueryGeometry} Returns `undefined` if the tile does not intersect.
      */
-    containsTile(tile: Tile, transform: Transform, use3D: boolean, cameraWrap: number = 0): TilespaceQueryGeometry | null | undefined {
+    containsTile(tile: Tile, transform: Transform, use3D: boolean, cameraWrap: number = 0, cameraMercator: MercatorCoordinate): TilespaceQueryGeometry | null | undefined {
         // The buffer around the query geometry is applied in screen-space.
         // transform._pixelsPerMercatorPixel is used to compensate any extra scaling applied from the currently active projection.
         // Floating point errors when projecting into tilespace could leave a feature
@@ -258,7 +259,6 @@ export class QueryGeometry {
         const tilespaceVec3s = this.screenGeometryMercator.polygon.map((p) => getTileVec3(tile.tileTransform, p, wrap));
         const tilespaceGeometry = tilespaceVec3s.map((v) => new Point(v[0], v[1]));
 
-        const cameraMercator = transform.getFreeCameraOptions().position || new MercatorCoordinate(0, 0, 0);
         const tilespaceCameraPosition = getTileVec3(tile.tileTransform, cameraMercator, wrap);
         const tilespaceRays = tilespaceVec3s.map((tileVec) => {
             const dir = vec3.sub(tileVec, tileVec, tilespaceCameraPosition);

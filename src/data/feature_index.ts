@@ -251,6 +251,7 @@ class FeatureIndex {
             geojsonFeature.layer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, feature, featureState, availableImages);
 
             // Iterate over all targets to check if the feature should be included and add feature variants if necessary
+            const evaluationParameters = new EvaluationParameters(this.tileID.overscaledZ, {worldview});
             let shouldInclude = false;
             for (const target of targets) {
                 this.updateFeatureProperties(geojsonFeature, target);
@@ -259,10 +260,10 @@ class FeatureIndex {
                     feature.properties = geojsonFeature.properties;
                     if (filter.needGeometry) {
                         const evaluationFeature = toEvaluationFeature(feature, true);
-                        if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), evaluationFeature, this.tileID.canonical)) {
+                        if (!filter.filter(evaluationParameters, evaluationFeature, this.tileID.canonical)) {
                             continue;
                         }
-                    } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), feature)) {
+                    } else if (!filter.filter(evaluationParameters, feature)) {
                         continue;
                     }
                 }
@@ -343,6 +344,7 @@ class FeatureIndex {
             geojsonFeature.layer = Object.assign({}, serializedLayer);
 
             // Iterate over all targets to check if the feature should be included and add feature variants if necessary
+            const evaluationParameters = new EvaluationParameters(this.tileID.overscaledZ, {worldview});
             let shouldInclude = false;
             for (const target of targets) {
                 this.updateFeatureProperties(geojsonFeature, target);
@@ -350,10 +352,10 @@ class FeatureIndex {
                 if (filter) {
                     feature.properties = geojsonFeature.properties;
                     if (filter.needGeometry) {
-                        if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), feature, this.tileID.canonical)) {
+                        if (!filter.filter(evaluationParameters, feature, this.tileID.canonical)) {
                             continue;
                         }
-                    } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), feature)) {
+                    } else if (!filter.filter(evaluationParameters, feature)) {
                         continue;
                     }
                 }

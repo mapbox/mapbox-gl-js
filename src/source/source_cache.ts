@@ -8,7 +8,7 @@ import {asyncAll, keysDifference, clamp} from '../util/util';
 import browser from '../util/browser';
 import {OverscaledTileID} from './tile_id';
 import SourceFeatureState from './source_state';
-import {mercatorXfromLng} from '../geo/mercator_coordinate';
+import MercatorCoordinate, {mercatorXfromLng} from '../geo/mercator_coordinate';
 import {isHttpNotFound} from '../util/ajax';
 
 import type {CanonicalTileID} from './tile_id';
@@ -1018,6 +1018,8 @@ class SourceCache extends Evented {
 
         const isGlobe = transform.projection.name === 'globe';
         const centerX = mercatorXfromLng(transform.center.lng);
+        // Camera position is constant across the query; compute it once rather than per tile.
+        const cameraMercator = transform.getFreeCameraOptions().position || new MercatorCoordinate(0, 0, 0);
 
         for (const tileID in this._tiles) {
             const tile = this._tiles[tileID];
@@ -1060,7 +1062,7 @@ class SourceCache extends Evented {
             }
 
             for (const wrap of tilesToCheck) {
-                const tileResult = queryGeometry.containsTile(tile, transform, use3DQuery, wrap);
+                const tileResult = queryGeometry.containsTile(tile, transform, use3DQuery, wrap, cameraMercator);
                 if (tileResult) {
                     tileResults.push(tileResult);
                 }
