@@ -14,15 +14,15 @@ export type BBox = [number, number, number, number];
 export function calculateSignedArea(ring: Ring): number {
     let sum = 0;
     for (let i = 0, len = ring.length, j = len - 1, p1: Point, p2: Point; i < len; j = i++) {
-        p1 = ring[i];
-        p2 = ring[j];
+        p1 = ring[i] as Point;
+        p2 = ring[j] as Point;
         sum += (p2.x - p1.x) * (p1.y + p2.y);
     }
     return sum;
 }
 
 function compareAreas(a: Ring, b: Ring): number {
-    return b.area - a.area;
+    return (b.area as number) - (a.area as number);
 }
 
 // classifies an array of rings into polygons with outer rings and holes
@@ -32,22 +32,22 @@ export function classifyRings(rings: Array<Ring>, maxRings: number): Array<Array
     if (len <= 1) return [rings];
 
     const polygons: Array<Array<Ring>> = [];
-    let polygon: Array<Ring>,
-        ccw: boolean;
+    let polygon: Array<Ring> | undefined,
+        ccw: boolean | undefined;
 
     for (let i = 0; i < len; i++) {
-        const area = calculateSignedArea(rings[i]);
+        const area = calculateSignedArea(rings[i] as Ring);
         if (area === 0) continue;
 
-        rings[i].area = Math.abs(area);
+        (rings[i] as Ring).area = Math.abs(area);
 
         if (ccw === undefined) ccw = area < 0;
 
         if (ccw === area < 0) {
             if (polygon) polygons.push(polygon);
-            polygon = [rings[i]];
+            polygon = [rings[i] as Ring];
         } else {
-            (polygon).push(rings[i]);
+            (polygon as Array<Ring>).push(rings[i] as Ring);
         }
     }
     if (polygon) polygons.push(polygon);
@@ -56,9 +56,10 @@ export function classifyRings(rings: Array<Ring>, maxRings: number): Array<Array
     // reason, we limit strip out all but the `maxRings` largest rings.
     if (maxRings > 1) {
         for (let j = 0; j < polygons.length; j++) {
-            if (polygons[j].length <= maxRings) continue;
-            quickselect(polygons[j], maxRings, 1, polygons[j].length - 1, compareAreas);
-            polygons[j] = polygons[j].slice(0, maxRings);
+            const currentPolygon = polygons[j] as Array<Ring>;
+            if (currentPolygon.length <= maxRings) continue;
+            quickselect(currentPolygon, maxRings, 1, currentPolygon.length - 1, compareAreas);
+            polygons[j] = currentPolygon.slice(0, maxRings);
         }
     }
 
@@ -66,10 +67,10 @@ export function classifyRings(rings: Array<Ring>, maxRings: number): Array<Array
 }
 
 export function updateBBox(bbox: BBox, coord: GeoJSON.Position) {
-    bbox[0] = Math.min(bbox[0], coord[0]);
-    bbox[1] = Math.min(bbox[1], coord[1]);
-    bbox[2] = Math.max(bbox[2], coord[0]);
-    bbox[3] = Math.max(bbox[3], coord[1]);
+    bbox[0] = Math.min(bbox[0], coord[0] as number);
+    bbox[1] = Math.min(bbox[1], coord[1] as number);
+    bbox[2] = Math.max(bbox[2], coord[0] as number);
+    bbox[3] = Math.max(bbox[3], coord[1] as number);
 }
 
 export function boxWithinBox(bbox1: BBox, bbox2: BBox): boolean {
@@ -81,15 +82,15 @@ export function boxWithinBox(bbox1: BBox, bbox2: BBox): boolean {
 }
 
 function onBoundary(p: GeoJSON.Position, p1: GeoJSON.Position, p2: GeoJSON.Position) {
-    const x1 = p[0] - p1[0];
-    const y1 = p[1] - p1[1];
-    const x2 = p[0] - p2[0];
-    const y2 = p[1] - p2[1];
+    const x1 = (p[0] as number) - (p1[0] as number);
+    const y1 = (p[1] as number) - (p1[1] as number);
+    const x2 = (p[0] as number) - (p2[0] as number);
+    const y2 = (p[1] as number) - (p2[1] as number);
     return (x1 * y2 - x2 * y1 === 0) && (x1 * x2 <= 0) && (y1 * y2 <= 0);
 }
 
 function rayIntersect(p: GeoJSON.Position, p1: GeoJSON.Position, p2: GeoJSON.Position) {
-    return ((p1[1] > p[1]) !== (p2[1] > p[1])) && (p[0] < (p2[0] - p1[0]) * (p[1] - p1[1]) / (p2[1] - p1[1]) + p1[0]);
+    return (((p1[1] as number) > (p[1] as number)) !== ((p2[1] as number) > (p[1] as number))) && ((p[0] as number) < ((p2[0] as number) - (p1[0] as number)) * ((p[1] as number) - (p1[1] as number)) / ((p2[1] as number) - (p1[1] as number)) + (p1[0] as number));
 }
 
 // ray casting algorithm for detecting if point is in polygon
@@ -100,10 +101,10 @@ export function pointWithinPolygon(
 ): boolean {
     let inside = false;
     for (let i = 0, len = rings.length; i < len; i++) {
-        const ring = rings[i];
+        const ring = rings[i] as Array<GeoJSON.Position>;
         for (let j = 0, len2 = ring.length, k = len2 - 1; j < len2; k = j++) {
-            const q1 = ring[k];
-            const q2 = ring[j];
+            const q1 = ring[k] as GeoJSON.Position;
+            const q2 = ring[j] as GeoJSON.Position;
             if (onBoundary(point, q1, q2)) return trueOnBoundary;
             if (rayIntersect(point, q1, q2)) inside = !inside;
         }
@@ -112,18 +113,18 @@ export function pointWithinPolygon(
 }
 
 function perp(v1: GeoJSON.Position, v2: GeoJSON.Position) {
-    return v1[0] * v2[1] - v1[1] * v2[0];
+    return (v1[0] as number) * (v2[1] as number) - (v1[1] as number) * (v2[0] as number);
 }
 
 // check if p1 and p2 are in different sides of line segment q1->q2
 function twoSided(p1: GeoJSON.Position, p2: GeoJSON.Position, q1: GeoJSON.Position, q2: GeoJSON.Position) {
     // q1->p1 (x1, y1), q1->p2 (x2, y2), q1->q2 (x3, y3)
-    const x1 = p1[0] - q1[0];
-    const y1 = p1[1] - q1[1];
-    const x2 = p2[0] - q1[0];
-    const y2 = p2[1] - q1[1];
-    const x3 = q2[0] - q1[0];
-    const y3 = q2[1] - q1[1];
+    const x1 = (p1[0] as number) - (q1[0] as number);
+    const y1 = (p1[1] as number) - (q1[1] as number);
+    const x2 = (p2[0] as number) - (q1[0] as number);
+    const y2 = (p2[1] as number) - (q1[1] as number);
+    const x3 = (q2[0] as number) - (q1[0] as number);
+    const y3 = (q2[1] as number) - (q1[1] as number);
     const det1 = x1 * y3 - x3 * y1;
     const det2 = x2 * y3 - x3 * y2;
     if ((det1 > 0 && det2 < 0) || (det1 < 0 && det2 > 0)) return true;
@@ -139,8 +140,8 @@ export function segmentIntersectSegment(
     // check if two segments are parallel or not
     // precondition is end point a, b is inside polygon, if line a->b is
     // parallel to polygon edge c->d, then a->b won't intersect with c->d
-    const vectorP = [b[0] - a[0], b[1] - a[1]];
-    const vectorQ = [d[0] - c[0], d[1] - c[1]];
+    const vectorP = [(b[0] as number) - (a[0] as number), (b[1] as number) - (a[1] as number)];
+    const vectorQ = [(d[0] as number) - (c[0] as number), (d[1] as number) - (c[1] as number)];
     if (perp(vectorQ, vectorP) === 0) return false;
 
     // If lines are intersecting with each other, the relative location should be:
@@ -159,7 +160,7 @@ export function computeBounds(points: Point[][]): Bounds {
     const min = new Point(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
     const max = new Point(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
 
-    for (const point of points[0]) {
+    for (const point of points[0] as Point[]) {
         if (min.x > point.x) min.x = point.x;
         if (min.y > point.y) min.y = point.y;
         if (max.x < point.x) max.x = point.x;

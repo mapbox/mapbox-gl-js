@@ -43,6 +43,7 @@
     "./src/style-spec/union-to-intersection.ts",
     "./src/style-spec/util/assert.ts",
     "./src/style-spec/util/deep_equal.ts",
+    "./src/style-spec/util/geometry_util.ts",
     "./src/style-spec/util/get_type.ts",
     "./src/style-spec/util/random.ts",
     "./src/style-spec/util/ref_properties.ts",
