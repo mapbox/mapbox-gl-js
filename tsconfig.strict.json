@@ -66,6 +66,7 @@
     "./src/ui/default_locale.ts",
     "./src/util/browser.ts",
     "./src/util/config.ts",
+    "./src/util/dictionary_coder.ts",
     "./src/util/offscreen_canvas_supported.ts",
     "./src/util/evented.ts",
     "./src/util/fqid.ts",

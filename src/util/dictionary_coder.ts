@@ -10,7 +10,7 @@ class DictionaryCoder {
         this._stringToNumber = {};
         this._numberToString = [];
         for (let i = 0; i < strings.length; i++) {
-            const string = strings[i];
+            const string = strings[i] as string;
             this._stringToNumber[string] = i;
             this._numberToString[i] = string;
         }
@@ -18,12 +18,12 @@ class DictionaryCoder {
 
     encode(string: string): number {
         assert(string in this._stringToNumber);
-        return this._stringToNumber[string];
+        return this._stringToNumber[string] as number;
     }
 
     decode(n: number): string {
         assert(n < this._numberToString.length);
-        return this._numberToString[n];
+        return this._numberToString[n] as string;
     }
 }
 
