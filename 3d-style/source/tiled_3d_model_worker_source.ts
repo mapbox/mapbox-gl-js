@@ -9,7 +9,6 @@ import EvaluationParameters from '../../src/style/evaluation_parameters';
 import {makeFQID} from "../../src/util/fqid";
 
 import type {CanonicalTileID} from '../../src/source/tile_id';
-import type Actor from '../../src/util/actor';
 import type StyleLayerIndex from '../../src/style/style_layer_index';
 import type {
     WorkerSource,
@@ -17,7 +16,8 @@ import type {
     WorkerSourceTileRequest,
     WorkerSourceTiled3dModelRequest,
     WorkerSourceVectorTileCallback,
-    WorkerSourceVectorTileResult
+    WorkerSourceVectorTileResult,
+    WorkerSourceActor
 } from '../../src/source/worker_source';
 import type Projection from '../../src/geo/projection/projection';
 import type ModelStyleLayer from '../style/style_layer/model_style_layer';
@@ -111,7 +111,7 @@ class Tiled3dWorkerTile {
 }
 
 class Tiled3dModelWorkerSource implements WorkerSource {
-    actor: Actor;
+    actor: WorkerSourceActor;
     layerIndex: StyleLayerIndex;
     availableImages: ImageId[];
     availableModels: StyleModelMap;

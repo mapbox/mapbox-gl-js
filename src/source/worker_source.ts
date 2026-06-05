@@ -1,4 +1,5 @@
 import type Actor from '../util/actor';
+import type {MainInbox} from '../util/actor_messages';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {AlphaImage} from '../util/image';
@@ -226,8 +227,13 @@ export interface WorkerSource {
     removeSource?: (params: {source: string}, callback: Callback<void>) => void;
 }
 
+/**
+ * The slice of {@link Actor} a {@link WorkerSource} is allowed to use.
+ */
+export type WorkerSourceActor = Pick<Actor<MainInbox>, 'send' | 'scheduler'>;
+
 export type WorkerSourceOptions = {
-    actor: Actor;
+    actor: WorkerSourceActor;
     layerIndex: StyleLayerIndex;
     availableImages: ImageId[];
     availableModels: StyleModelMap;

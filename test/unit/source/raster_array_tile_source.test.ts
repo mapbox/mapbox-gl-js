@@ -7,6 +7,7 @@ import {Evented} from '../../../src/util/evented';
 import {RGBAImage} from '../../../src/util/image';
 
 import type Actor from '../../../src/util/actor';
+import type {WorkerInbox} from '../../../src/util/actor_messages';
 import type Dispatcher from '../../../src/util/dispatcher';
 import type {Map as MapboxMap} from '../../../src/ui/map';
 
@@ -30,7 +31,7 @@ function createSource() {
 function createTile() {
     const tile = new RasterArrayTile(new OverscaledTileID(3, 0, 2, 1, 2), 512, 0);
     tile._isHeaderLoaded = true;
-    tile.actor = {send() {}} as unknown as Actor;
+    tile.actor = {send() {}} as unknown as Actor<WorkerInbox>;
     tile._mrt = new MapboxRasterTile(30);
     return tile;
 }

@@ -46,6 +46,7 @@ import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type {WorkerSourceVectorTileResult, WorkerSourceVectorTileCallback} from './worker_source';
 import type {FrcCoveragePolygons} from './frc_coverage_snapshot';
 import type Actor from '../util/actor';
+import type {WorkerInbox} from '../util/actor_messages';
 import type DEMData from '../data/dem_data';
 import type {AlphaImage, SpritePositions} from '../util/image';
 import type ImageAtlas from '../render/image_atlas';
@@ -143,7 +144,7 @@ class Tile {
     redoWhenDone: boolean;
     showCollisionBoxes: boolean;
     placementSource: unknown;
-    actor: Actor | null | undefined;
+    actor: Actor<WorkerInbox> | null | undefined;
     vtLayers: {
         [_: string]: VectorTileLayer;
     };

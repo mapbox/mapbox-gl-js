@@ -13,8 +13,8 @@ import type {
     WorkerSourceVectorTileRequest,
     WorkerSourceVectorTileResult,
     WorkerSourceVectorTileCallback,
+    WorkerSourceActor,
 } from './worker_source';
-import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type Scheduler from '../util/scheduler';
 import type {TaskMetadata} from '../util/scheduler';
@@ -33,7 +33,7 @@ import type {StyleModelMap} from '../style/style_mode';
  * @private
  */
 class VectorTileWorkerSource extends Evented implements WorkerSource {
-    actor: Actor;
+    actor: WorkerSourceActor;
     layerIndex: StyleLayerIndex;
     availableImages: ImageId[];
     availableModels: StyleModelMap;

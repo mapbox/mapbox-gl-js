@@ -10,6 +10,7 @@ import type {Map as MapboxMap} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type Actor from '../util/actor';
+import type {WorkerInbox} from '../util/actor_messages';
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
 import type {RequestParameters} from '../util/ajax';
@@ -96,7 +97,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     _options: GeoJSONSourceSpecification;
     workerOptions: GeoJSONWorkerOptions;
     map: MapboxMap;
-    actor: Actor;
+    actor: Actor<WorkerInbox>;
     _loaded: boolean;
     _coalesce: boolean | null | undefined;
     _metadataFired: boolean | null | undefined;

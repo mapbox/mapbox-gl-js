@@ -4,11 +4,11 @@ import {IndoorActiveFloorStrategy} from "../style/indoor_active_floor_strategy";
 
 import type {VectorTile, VectorTileFeature} from "@mapbox/vector-tile";
 import type {IndoorBuilding, IndoorData, IndoorTileOptions} from "../../src/style/indoor_data";
-import type Actor from "../../src/util/actor";
 import type {CanonicalTileID} from "../../src/source/tile_id";
+import type {WorkerSourceActor} from "../../src/source/worker_source";
 import type {Polygon, MultiPolygon} from "geojson";
 
-export function parseActiveFloors(data: VectorTile, indoorTileOptions: IndoorTileOptions, actor: Actor, tileID: CanonicalTileID): Set<string> | undefined {
+export function parseActiveFloors(data: VectorTile, indoorTileOptions: IndoorTileOptions, actor: WorkerSourceActor, tileID: CanonicalTileID): Set<string> | undefined {
     const activeFloorsVisible = indoorTileOptions.indoorState.activeFloorsVisible;
     if (!indoorTileOptions.sourceLayers) {
         return activeFloorsVisible ? indoorTileOptions.indoorState.activeFloors : undefined;

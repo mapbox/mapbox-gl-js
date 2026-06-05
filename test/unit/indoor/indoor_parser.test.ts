@@ -10,7 +10,7 @@ const mockTarget = {
     removeEventListener: () => {},
     postMessage: () => {}
 };
-const actor = new Actor(mockTarget as any, {} as any, 0);
+const actor = new Actor(mockTarget as any, {}, 0);
 actor.send = () => ({cancel: () => {}});
 
 describe('IndoorParser', () => {

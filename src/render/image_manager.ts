@@ -22,7 +22,7 @@ import type {FQID} from '../util/fqid';
 import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 import type {ImageProvider} from '../render/image_provider';
-import type {ActorMessages} from '../util/actor_messages';
+import type {MainInbox} from '../util/actor_messages';
 
 type Pattern = {
     bin: PotpackBox;
@@ -350,7 +350,7 @@ class ImageManager extends Evented {
         }
     }
 
-    rasterizeImages(params: ActorMessages['rasterizeImages']['params'], callback: ActorMessages['rasterizeImages']['callback']) {
+    rasterizeImages(params: MainInbox['rasterizeImages']['params'], callback: MainInbox['rasterizeImages']['callback']) {
         const imageWorkerTasks: ImageRasterizationWorkerTasks = new Map();
 
         const {iconTasks, patternTasks, scope} = params;

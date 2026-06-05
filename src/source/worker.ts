@@ -17,9 +17,8 @@ import {loadTileProvider} from './tile_provider';
 
 import type Projection from '../geo/projection/projection';
 import type {ImageId} from '../style-spec/expression/types/image_id';
-import type {TaskMetadata} from '../util/scheduler';
 import type {RtlTextPlugin} from './rtl_text_plugin';
-import type {ActorMessage, ActorMessages} from '../util/actor_messages';
+import type {MainInbox, WorkerInbox} from '../util/actor_messages';
 import type {WorkerSourceType, WorkerSource, WorkerSourceConstructor, WorkerSourceRequest} from './worker_source';
 import type {TileProvider} from './tile_provider';
 import type {StyleModelMap} from '../style/style_mode';
@@ -40,7 +39,7 @@ type WorkerSourceRegistry = WorkerScopeRegistry<Record<string, Record<string, Wo
  */
 export default class MapWorker {
     self: Worker;
-    actor: Actor;
+    actor: Actor<MainInbox>;
     layerIndexes: WorkerScopeRegistry<StyleLayerIndex>;
     availableImages: WorkerScopeRegistry<ImageId[]>;
     availableModels: WorkerScopeRegistry<StyleModelMap>;
@@ -59,7 +58,7 @@ export default class MapWorker {
     constructor(self: Worker) {
         PerformanceUtils.measure('workerEvaluateScript');
         this.self = self;
-        this.actor = new Actor(self, this);
+        this.actor = new Actor<MainInbox>(self, this);
 
         this.layerIndexes = {};
         this.availableImages = {};
@@ -108,7 +107,7 @@ export default class MapWorker {
         };
     }
 
-    clearCaches(mapId: number, params: ActorMessages['clearCaches']['params'], callback: ActorMessages['clearCaches']['callback']) {
+    clearCaches(mapId: number, params: WorkerInbox['clearCaches']['params'], callback: WorkerInbox['clearCaches']['callback']) {
         delete this.layerIndexes[mapId];
         delete this.availableImages[mapId];
         delete this.availableModels[mapId];
@@ -117,12 +116,12 @@ export default class MapWorker {
         callback();
     }
 
-    checkIfReady(mapID: string, params: ActorMessages['checkIfReady']['params'], callback: ActorMessages['checkIfReady']['callback']) {
+    checkIfReady(mapId: number, params: WorkerInbox['checkIfReady']['params'], callback: WorkerInbox['checkIfReady']['callback']) {
         // noop, used to check if a worker is fully set up and ready to receive messages
         callback();
     }
 
-    spriteLoaded(mapId: number, params: ActorMessages['spriteLoaded']['params']) {
+    spriteLoaded(mapId: number, params: WorkerInbox['spriteLoaded']['params']) {
         const {scope} = params;
         if (!this.isSpriteLoaded[mapId])
             this.isSpriteLoaded[mapId] = {};
@@ -145,7 +144,7 @@ export default class MapWorker {
         }
     }
 
-    setImages(mapId: number, params: ActorMessages['setImages']['params'], callback: ActorMessages['setImages']['callback']) {
+    setImages(mapId: number, params: WorkerInbox['setImages']['params'], callback: WorkerInbox['setImages']['callback']) {
         if (!this.availableImages[mapId]) {
             this.availableImages[mapId] = {};
         }
@@ -172,7 +171,7 @@ export default class MapWorker {
         callback();
     }
 
-    setModels(mapId: number, {scope, models}: ActorMessages['setModels']['params'], callback: ActorMessages['setModels']['callback']) {
+    setModels(mapId: number, {scope, models}: WorkerInbox['setModels']['params'], callback: WorkerInbox['setModels']['callback']) {
         if (!this.availableModels[mapId]) {
             this.availableModels[mapId] = {};
         }
@@ -194,11 +193,11 @@ export default class MapWorker {
         callback();
     }
 
-    setProjection(mapId: number, config: ActorMessages['setProjection']['params']) {
+    setProjection(mapId: number, config: WorkerInbox['setProjection']['params']) {
         this.projections[mapId] = getProjection(config);
     }
 
-    setGlobalParams(mapID: string, params: ActorMessages['setGlobalParams']['params']) {
+    setGlobalParams(mapId: number, params: WorkerInbox['setGlobalParams']['params']) {
         this.referrer = params.referrer;
         Object.assign(config, params.config);
 
@@ -209,7 +208,7 @@ export default class MapWorker {
         }
     }
 
-    upsertRenderParams(mapId: number, params: ActorMessages['upsertRenderParams']['params'], callback: ActorMessages['upsertRenderParams']['callback']) {
+    upsertRenderParams(mapId: number, params: WorkerInbox['upsertRenderParams']['params'], callback: WorkerInbox['upsertRenderParams']['callback']) {
         if (params.brightness !== undefined) {
             this.brightness = params.brightness;
         }
@@ -219,43 +218,43 @@ export default class MapWorker {
         callback();
     }
 
-    setLayers(mapId: number, params: ActorMessages['setLayers']['params'], callback: ActorMessages['setLayers']['callback']) {
+    setLayers(mapId: number, params: WorkerInbox['setLayers']['params'], callback: WorkerInbox['setLayers']['callback']) {
         this.getLayerIndex(mapId, params.scope).replace(params.layers, params.options);
         callback();
     }
 
-    updateLayers(mapId: number, params: ActorMessages['updateLayers']['params'], callback: ActorMessages['updateLayers']['callback']) {
+    updateLayers(mapId: number, params: WorkerInbox['updateLayers']['params'], callback: WorkerInbox['updateLayers']['callback']) {
         this.getLayerIndex(mapId, params.scope).update(params.layers, params.removedIds, params.options);
         callback();
     }
 
-    loadTile(mapId: number, params: ActorMessages['loadTile']['params'], callback: ActorMessages['loadTile']['callback']) {
+    loadTile(mapId: number, params: WorkerInbox['loadTile']['params'], callback: WorkerInbox['loadTile']['callback']) {
         assert(params.type);
         params.projection = this.projections[mapId] || this.defaultProjection;
         this.getWorkerSource(mapId, params).loadTile(params, callback);
     }
 
-    decodeRasterArray(mapId: number, params: ActorMessages['decodeRasterArray']['params'], callback: ActorMessages['decodeRasterArray']['callback']) {
+    decodeRasterArray(mapId: number, params: WorkerInbox['decodeRasterArray']['params'], callback: WorkerInbox['decodeRasterArray']['callback']) {
         (this.getWorkerSource(mapId, params) as RasterArrayTileWorkerSource).decodeRasterArray(params, callback);
     }
 
-    reloadTile(mapId: number, params: ActorMessages['reloadTile']['params'], callback: ActorMessages['reloadTile']['callback']) {
+    reloadTile(mapId: number, params: WorkerInbox['reloadTile']['params'], callback: WorkerInbox['reloadTile']['callback']) {
         assert(params.type);
         params.projection = this.projections[mapId] || this.defaultProjection;
         this.getWorkerSource(mapId, params).reloadTile(params, callback);
     }
 
-    abortTile(mapId: number, params: ActorMessages['abortTile']['params'], callback: ActorMessages['abortTile']['callback']) {
+    abortTile(mapId: number, params: WorkerInbox['abortTile']['params'], callback: WorkerInbox['abortTile']['callback']) {
         assert(params.type);
         this.getWorkerSource(mapId, params).abortTile(params, callback);
     }
 
-    removeTile(mapId: number, params: ActorMessages['removeTile']['params'], callback: ActorMessages['removeTile']['callback']) {
+    removeTile(mapId: number, params: WorkerInbox['removeTile']['params'], callback: WorkerInbox['removeTile']['callback']) {
         assert(params.type);
         this.getWorkerSource(mapId, params).removeTile(params, callback);
     }
 
-    removeSource(mapId: number, params: ActorMessages['removeSource']['params'], callback: ActorMessages['removeSource']['callback']) {
+    removeSource(mapId: number, params: WorkerInbox['removeSource']['params'], callback: WorkerInbox['removeSource']['callback']) {
         assert(params.type);
         assert(params.scope);
         assert(params.source);
@@ -283,7 +282,7 @@ export default class MapWorker {
      * Called via broadcast from the main thread.
      * @private
      */
-    loadTileProvider(mapId: number, params: ActorMessages['loadTileProvider']['params'], callback: ActorMessages['loadTileProvider']['callback']) {
+    loadTileProvider(mapId: number, params: WorkerInbox['loadTileProvider']['params'], callback: WorkerInbox['loadTileProvider']['callback']) {
         loadTileProvider(params.name, params.url)
             .then((ProviderClass) => {
                 const tileProvider = new ProviderClass(params.options);
@@ -305,7 +304,7 @@ export default class MapWorker {
             .catch((err: unknown) => callback(err instanceof Error ? err : new Error(String(err))));
     }
 
-    async syncRTLPluginState(mapId: number, state: ActorMessages['syncRTLPluginState']['params'], callback: ActorMessages['syncRTLPluginState']['callback']) {
+    async syncRTLPluginState(mapId: number, state: WorkerInbox['syncRTLPluginState']['params'], callback: WorkerInbox['syncRTLPluginState']['callback']) {
         if (globalRTLTextPlugin.isParsed()) {
             callback(null, true);
             return;
@@ -397,14 +396,9 @@ export default class MapWorker {
             this.isSpriteLoaded[mapId] = {};
 
         if (!workerSources[mapId][scope][type][source]) {
-            // use a wrapped actor so that we can attach a target mapId param
-            // to any messages invoked by the WorkerSource
-            const actor = {
-                send: <T extends ActorMessage>(type: T, data: ActorMessages[T]['params'], callback: ActorMessages[T]['callback'], _targetMapId: number, mustQueue: boolean, metadata: TaskMetadata) => {
-                    return this.actor.send(type, data, callback, mapId, mustQueue, metadata);
-                },
-                scheduler: this.actor.scheduler
-            } as Actor;
+            // one worker actor serves many maps
+            // bind the owning mapId so the WorkerSource's replies route to the right map
+            const actor = this.actor.getWorkerSourceActor(mapId);
 
             const WorkerSourceConstructor = this.workerSourceTypes[type as WorkerSourceType];
             if (!WorkerSourceConstructor) {
@@ -433,9 +427,10 @@ export default class MapWorker {
         return workerSources[mapId][scope][type][source];
     }
 
-    enforceCacheSizeLimit(mapId: number, limit: ActorMessages['enforceCacheSizeLimit']['params']) {
+    enforceCacheSizeLimit(mapId: number, limit: WorkerInbox['enforceCacheSizeLimit']['params']) {
         enforceCacheSizeLimit(limit);
     }
+
 }
 
 if (isWorker(self)) {

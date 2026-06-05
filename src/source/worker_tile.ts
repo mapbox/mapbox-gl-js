@@ -30,7 +30,6 @@ import type {VectorTile} from '@mapbox/vector-tile';
 import type {CanonicalTileID} from './tile_id';
 import type Projection from '../geo/projection/projection';
 import type {Bucket, PopulateParameters, ImageDependenciesMap, IndexedFeature} from '../data/bucket';
-import type Actor from '../util/actor';
 import type StyleLayer from '../style/style_layer';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type StyleLayerIndex from '../style/style_layer_index';
@@ -38,6 +37,7 @@ import type {StyleImageMap} from '../style/style_image';
 import type {
     WorkerSourceVectorTileRequest,
     WorkerSourceVectorTileCallback,
+    WorkerSourceActor,
 } from '../source/worker_source';
 import type {PromoteIdSpecification} from '../style-spec/types';
 import type {TileTransform} from '../geo/projection/tile_transform';
@@ -156,7 +156,7 @@ class WorkerTile {
         return true;
     }
 
-    parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: ImageId[], availableModels: StyleModelMap, actor: Actor, callback: WorkerSourceVectorTileCallback) {
+    parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: ImageId[], availableModels: StyleModelMap, actor: WorkerSourceActor, callback: WorkerSourceVectorTileCallback) {
         // Tile-level HD gate. If any layer in this tile's source may use HD and the HD
         // module hasn't loaded yet on this worker, wait for it before parsing. Otherwise
         // the bucket creation loop would skip `HD.attachExtension` and any features that
@@ -188,7 +188,7 @@ class WorkerTile {
         this._parseAfterHD(data, layerIndex, availableImages, availableModels, actor, callback);
     }
 
-    _parseAfterHD(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: ImageId[], availableModels: StyleModelMap, actor: Actor, callback: WorkerSourceVectorTileCallback) {
+    _parseAfterHD(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: ImageId[], availableModels: StyleModelMap, actor: WorkerSourceActor, callback: WorkerSourceVectorTileCallback) {
         const m = PerformanceUtils.beginMeasure('parseTile1');
         this.status = 'parsing';
         this.data = data;

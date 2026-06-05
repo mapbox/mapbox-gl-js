@@ -23,6 +23,7 @@ import type {Cancelable} from '../types/cancelable';
 import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
 import type {TileJSON} from '../types/tilejson';
 import type Actor from '../util/actor';
+import type {WorkerInbox} from '../util/actor_messages';
 import type {LoadVectorTileResult} from './load_vector_tile';
 import type {WorkerSourceVectorTileRequest, WorkerSourceVectorTileResult} from './worker_source';
 
@@ -81,7 +82,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
     isTileClipped?: boolean;
     _tileJSONRequest?: Cancelable | null;
     _loaded: boolean;
-    _tileWorkers: Record<string, Actor>;
+    _tileWorkers: Record<string, Actor<WorkerInbox>>;
     _deduped: DedupedRequest;
     vectorLayers?: Array<SourceVectorLayer>;
     vectorLayerIds?: Array<string>;

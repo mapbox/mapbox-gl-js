@@ -22,7 +22,7 @@ export function prewarm() {
 
 export function getGlobalDispatcher(): Dispatcher {
     if (!globalDispatcher) {
-        globalDispatcher = new Dispatcher(getGlobalWorkerPool(), {});
+        globalDispatcher = new Dispatcher(getGlobalWorkerPool(), undefined);
     }
     return globalDispatcher;
 }

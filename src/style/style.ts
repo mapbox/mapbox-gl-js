@@ -132,7 +132,7 @@ import type {QrfQuery, QrfTarget, QueryResult} from '../source/query_features';
 import type {GeoJSONFeature, FeaturesetDescriptor, TargetDescriptor, default as Feature} from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
 import type {SerializedExpression} from '../style-spec/expression/expression';
-import type {ActorMessages} from '../util/actor_messages';
+import type {MainInbox, WorkerInbox} from '../util/actor_messages';
 import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {CustomSourceInterface} from '../source/custom_source';
 import type {CanvasSourceSpecification} from '../source/canvas_source';
@@ -471,7 +471,7 @@ class Style extends Evented<MapEvents> {
             this.dispatcher = new Dispatcher(getWorkerPool(), this);
         }
 
-        const globalWorkerParams: ActorMessages['setGlobalParams']['params'] = {
+        const globalWorkerParams: WorkerInbox['setGlobalParams']['params'] = {
             referrer: getReferrer(),
             config: getBroadcastableConfig(),
         };
@@ -2237,7 +2237,7 @@ class Style extends Evented<MapEvents> {
      */
     _updateWorkerImages(isSpriteLoaded = false) {
         this._availableImages = this.imageManager.listImages(this.scope);
-        const params: ActorMessages['setImages']['params'] = {scope: this.scope, images: this._availableImages};
+        const params: WorkerInbox['setImages']['params'] = {scope: this.scope, images: this._availableImages};
 
         if (isSpriteLoaded) {
             params.isSpriteLoaded = true;
@@ -2749,7 +2749,7 @@ class Style extends Evented<MapEvents> {
         return this._mergedIndoor[fqid];
     }
 
-    setIndoorData(mapId: string, params: ActorMessages['setIndoorData']['params']) {
+    setIndoorData(mapId: undefined, params: MainInbox['setIndoorData']['params']) {
         if (this.indoorManager) this.indoorManager.setIndoorData(params);
     }
 
@@ -4872,7 +4872,7 @@ class Style extends Evented<MapEvents> {
 
     // Callbacks from web workers
 
-    getImages(mapId: number, params: ActorMessages['getImages']['params'], callback: ActorMessages['getImages']['callback']) {
+    getImages(mapId: undefined, params: MainInbox['getImages']['params'], callback: MainInbox['getImages']['callback']) {
         this.imageManager.getImages(params.icons.concat(params.patterns), params.scope, callback);
 
         // Apply queued image changes before setting the tile's dependencies so that the tile
@@ -4906,11 +4906,11 @@ class Style extends Evented<MapEvents> {
         }
     }
 
-    rasterizeImages(mapId: string, params: ActorMessages['rasterizeImages']['params'], callback: ActorMessages['rasterizeImages']['callback']) {
+    rasterizeImages(mapId: undefined, params: MainInbox['rasterizeImages']['params'], callback: MainInbox['rasterizeImages']['callback']) {
         this.imageManager.rasterizeImages(params, callback);
     }
 
-    checkAtlasCache(mapId: string, params: ActorMessages['checkAtlasCache']['params'], callback: ActorMessages['checkAtlasCache']['callback']) {
+    checkAtlasCache(mapId: undefined, params: MainInbox['checkAtlasCache']['params'], callback: MainInbox['checkAtlasCache']['callback']) {
         // Check if we have a cached atlas matching this descriptor
         const cachedAtlas = this.imageManager.imageAtlasCache.findCachedAtlas(params.descriptor);
 
@@ -4925,7 +4925,7 @@ class Style extends Evented<MapEvents> {
         }
     }
 
-    getGlyphs(mapId: string, params: ActorMessages['getGlyphs']['params'], callback: ActorMessages['getGlyphs']['callback']) {
+    getGlyphs(mapId: undefined, params: MainInbox['getGlyphs']['params'], callback: MainInbox['getGlyphs']['callback']) {
         this.glyphManager.getGlyphs(params.stacks, callback);
     }
 

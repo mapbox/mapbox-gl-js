@@ -3,9 +3,8 @@ import {PbfReader} from 'pbf';
 import {getArrayBuffer} from '../util/ajax';
 import {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
 
-import type Actor from '../util/actor';
 import type {Callback} from '../types/callback';
-import type {ActorMessages} from '../util/actor_messages';
+import type {WorkerInbox} from '../util/actor_messages';
 import type {OverscaledTileID} from './tile_id';
 import type {
     WorkerSource,
@@ -13,6 +12,7 @@ import type {
     WorkerSourceTileRequest,
     WorkerSourceRasterArrayTileRequest,
     WorkerSourceRasterArrayTileCallback,
+    WorkerSourceActor,
 } from './worker_source';
 
 MapboxRasterTile.setPbf(PbfReader);
@@ -76,7 +76,7 @@ class RasterArrayWorkerTile {
 }
 
 class RasterArrayTileWorkerSource implements WorkerSource {
-    actor: Actor;
+    actor: WorkerSourceActor;
     loading: Record<number, RasterArrayWorkerTile>;
     loaded: Record<number, RasterArrayWorkerTile>;
 
@@ -135,7 +135,7 @@ class RasterArrayTileWorkerSource implements WorkerSource {
         callback();
     }
 
-    decodeRasterArray(params: ActorMessages['decodeRasterArray']['params'], callback: ActorMessages['decodeRasterArray']['callback']) {
+    decodeRasterArray(params: WorkerInbox['decodeRasterArray']['params'], callback: WorkerInbox['decodeRasterArray']['callback']) {
         MapboxRasterTile.performDecoding(params.buffer, params.task)
             .then(result => callback(null, result))
             .catch((error: Error) => callback(error));

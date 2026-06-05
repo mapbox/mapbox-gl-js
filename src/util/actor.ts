@@ -2,13 +2,13 @@ import {bindAll, isWorker} from './util';
 import {serialize, deserialize} from './web_worker_transfer';
 import Scheduler from './scheduler';
 
-import type MapWorker from '../source/worker';
 import type {Serialized} from './web_worker_transfer';
 import type {Transferable} from '../types/transferable';
 import type {Cancelable} from '../types/cancelable';
 import type {Callback} from '../types/callback';
 import type {TaskMetadata} from './scheduler';
-import type {ActorMessage, ActorMessages} from './actor_messages';
+import type {WorkerSource, WorkerSourceRequest} from '../source/worker_source';
+import type {ActorMessage, ActorInbox} from './actor_messages';
 import '../types/worker';
 
 export type Task = {
@@ -25,28 +25,50 @@ export type Task = {
 export type ActorCallback<T = unknown> = Callback<T> & {metadata?: TaskMetadata};
 
 /**
+ * Constraint that lets {@link Actor#send} index `Outbox[T]` generically.
+ * @private
+ */
+type MessageMap = {[type: string]: {params: unknown; callback: unknown}};
+
+/**
+ * Dispatch-table view of the parent used by {@link Actor#processTask}: handlers
+ * keyed by message name, plus `getWorkerSource` for dynamic `sourcetype.method`
+ * messages.
+ * @private
+ */
+type ActorParent = {
+    [K in keyof ActorInbox]: (mapId: number, params: ActorInbox[K]['params'], callback: ActorInbox[K]['callback']) => void;
+} & {
+    getWorkerSource?: (mapId: number, params: WorkerSourceRequest) => WorkerSource;
+};
+
+/**
  * An implementation of the [Actor design pattern](http://en.wikipedia.org/wiki/Actor_model)
  * that maintains the relationship between asynchronous tasks and the objects
  * that spin them off - in this case, tasks like parsing parts of styles,
  * owned by the styles
  *
+ * `Outbox` is the inbox this actor sends to: a worker-side actor (parent
+ * {@link MapWorker}) is an `Actor<MainInbox>`; a main-side actor (parent
+ * {@link Style}) is an `Actor<WorkerInbox>`.
+ *
  * @param {WebWorker} target
- * @param {WebWorker} parent
- * @param {string|number} mapId A unique identifier for the Map instance using this Actor.
+ * @param {unknown} parent
+ * @param {number} [mapId] A unique identifier for the Map instance using this Actor.
  * @private
  */
-class Actor {
+class Actor<Outbox extends MessageMap> {
     target: Worker;
-    parent: MapWorker;
+    parent: ActorParent;
     name?: string;
     mapId?: number;
     callbacks: Record<number, ActorCallback<ActorMessage>>;
     cancelCallbacks: Record<string | number, Cancelable>;
     scheduler: Scheduler;
 
-    constructor(target: Worker, parent: MapWorker, mapId?: number) {
+    constructor(target: Worker, parent: unknown, mapId?: number) {
         this.target = target;
-        this.parent = parent;
+        this.parent = parent as ActorParent;
         this.mapId = mapId;
         this.callbacks = {};
         this.cancelCallbacks = {};
@@ -63,10 +85,10 @@ class Actor {
      * @param targetMapId A particular mapId to which to send this message.
      * @private
      */
-    send<T extends ActorMessage>(
+    send<T extends keyof Outbox>(
         type: T,
-        data: ActorMessages[T]['params'],
-        callback?: ActorMessages[T]['callback'],
+        data: Outbox[T]['params'],
+        callback?: Outbox[T]['callback'],
         targetMapId?: number,
         mustQueue: boolean = false,
         callbackMetadata?: TaskMetadata,
@@ -77,13 +99,14 @@ class Actor {
         // linearly increasing ID could produce collisions.
         const id = Math.round((Math.random() * 1e18)).toString(36).substring(0, 10);
         if (callback) {
-            callback.metadata = callbackMetadata;
-            this.callbacks[id] = callback;
+            const actorCallback = callback as ActorCallback<ActorMessage>;
+            actorCallback.metadata = callbackMetadata;
+            this.callbacks[id] = actorCallback;
         }
         const buffers: Set<Transferable> = new Set();
         this.target.postMessage({
             id,
-            type,
+            type: type as ActorMessage,
             hasCallback: !!callback,
             targetMapId,
             mustQueue,
@@ -103,6 +126,21 @@ class Actor {
                     sourceMapId: this.mapId
                 });
             }
+        };
+    }
+
+    /**
+     * A send-only view bound to `mapId`, for {@link WorkerSource}s. One worker-side
+     * actor serves many maps and has no `mapId` of its own, so its outbound messages
+     * must carry the owning map's id as `targetMapId`.
+     * @private
+     */
+    getWorkerSourceActor(mapId: number): Pick<Actor<Outbox>, 'send' | 'scheduler'> {
+        return {
+            scheduler: this.scheduler,
+            send: (type, data, callback, _targetMapId, mustQueue, callbackMetadata) => {
+                return this.send(type, data, callback, mapId, mustQueue, callbackMetadata);
+            },
         };
     }
 
@@ -178,6 +216,10 @@ class Actor {
             } : () => {};
 
             const params = deserialize(task.data);
+
+            // `task.type` is a message name ('loadTile', etc.) or a runtime
+            // `sourcetype.method` (WorkerSource types register via Map#addSourceType).
+            // Both dispatch by runtime string, so the handler lookup is untyped.
             if (this.parent[task.type]) {
                 // task.type == 'loadTile', 'removeTile', etc.
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call

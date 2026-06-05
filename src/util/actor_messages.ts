@@ -39,9 +39,9 @@ type GlobalParams = {
 };
 
 /**
- * Message registry maps message types to their data and result types.
+ * Messages a {@link MapWorker} receives from the main thread.
  */
-export type ActorMessages = {
+export type WorkerInbox = {
     'abortTile': {
         params: WorkerSourceTileRequest;
         callback: ActorCallback<void>;
@@ -87,29 +87,9 @@ export type ActorMessages = {
         callback: ActorCallback<LoadGeoJSONResult>;
     };
 
-    'getGlyphs': {
-        params: {stacks: FontStacks; uid?: number};
-        callback: ActorCallback<GlyphMap>;
-    };
-
-    'getImages': {
-        params: {icons: ImageId[]; patterns: ImageId[]; scope: string; source: string; tileID: OverscaledTileID};
-        callback: ActorCallback<{images: StyleImageMap<StringifiedImageId>; versions: Map<string, number>}>;
-    };
-
-    'checkAtlasCache': {
-        params: {descriptor: AtlasContentDescriptor; scope: string};
-        callback: ActorCallback<{iconPositions: ImagePositionMap; patternPositions: ImagePositionMap; sourceHash: number} | null>;
-    };
-
     'loadTile': {
         params: WorkerSourceTileRequest;
         callback: ActorCallback<unknown>;
-    };
-
-    'rasterizeImages': {
-        params: {scope: string; iconTasks: ImageRasterizationTasks; patternTasks: ImageRasterizationTasks};
-        callback: ActorCallback<RasterizedImageMap>;
     };
 
     'loadTileProvider': {
@@ -175,11 +155,6 @@ export type ActorMessages = {
         callback: void;
     };
 
-    'setIndoorData': {
-        params: IndoorData;
-        callback: void;
-    };
-
     'syncRTLPluginState': {
         params: PluginState;
         callback: ActorCallback<boolean>;
@@ -191,4 +166,42 @@ export type ActorMessages = {
     };
 };
 
-export type ActorMessage = keyof ActorMessages;
+/**
+ * Messages {@link Style} receives back from a worker.
+ */
+export type MainInbox = {
+    'getGlyphs': {
+        params: {stacks: FontStacks; uid?: number};
+        callback: ActorCallback<GlyphMap>;
+    };
+
+    'getImages': {
+        params: {icons: ImageId[]; patterns: ImageId[]; scope: string; source: string; tileID: OverscaledTileID};
+        callback: ActorCallback<{images: StyleImageMap<StringifiedImageId>; versions: Map<string, number>}>;
+    };
+
+    'checkAtlasCache': {
+        params: {descriptor: AtlasContentDescriptor; scope: string};
+        callback: ActorCallback<{iconPositions: ImagePositionMap; patternPositions: ImagePositionMap; sourceHash: number} | null>;
+    };
+
+    'rasterizeImages': {
+        params: {scope: string; iconTasks: ImageRasterizationTasks; patternTasks: ImageRasterizationTasks};
+        callback: ActorCallback<RasterizedImageMap>;
+    };
+
+    'setIndoorData': {
+        params: IndoorData;
+        callback: void;
+    };
+};
+
+/**
+ * The union of all messages that can be sent between the main thread and a worker.
+ */
+export type ActorInbox = WorkerInbox & MainInbox;
+
+/**
+ * Every message name across both directions.
+ */
+export type ActorMessage = keyof WorkerInbox | keyof MainInbox;
