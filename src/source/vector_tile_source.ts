@@ -389,7 +389,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                             cacheControl: expiryData.cacheControl,
                         };
 
-                        if (tile.actor) tile.actor.send('loadTile', params, done.bind(this), undefined, true);
+                        if (tile.actor) tile.actor.send('loadTile', params, done.bind(this));
                     }
                 }, true);
 
@@ -397,7 +397,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
 
             } else {
 
-                tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
+                tile.request = tile.actor.send('loadTile', params, done.bind(this));
             }
 
         } else if (tile.state === 'loading') {

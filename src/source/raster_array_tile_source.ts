@@ -143,7 +143,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
             tile.request = tile.fetchHeader(undefined, done.bind(this));
         } else {
             // Load and parse the entire tile in Worker
-            tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
+            tile.request = tile.actor.send('loadTile', params, done.bind(this));
         }
     }
 
@@ -382,7 +382,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
             this._loadTilePending[tile.uid].forEach(cb => cb(null, data));
             this._loadTileLoaded[tile.uid] = true;
             delete this._loadTilePending[tile.uid];
-        }, undefined, true);
+        });
     }
 
     queryRasterArrayValueByAllBands(lngLat: LngLat, tile: RasterArrayTile, params: RasterQueryParameters): Promise<RasterQueryResult> {

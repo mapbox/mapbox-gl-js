@@ -252,7 +252,7 @@ class RasterArrayTile extends Tile implements Tile {
                 task
             };
 
-            const workerJob = actor.send('decodeRasterArray', params, onDataDecoded, undefined, true);
+            const workerJob = actor.send('decodeRasterArray', params, onDataDecoded);
 
             if (layerId !== null) {
                 const workQueue = this._workQueuePerLayer.get(layerId) || [];

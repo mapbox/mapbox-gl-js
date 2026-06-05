@@ -506,7 +506,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             tile.loadVectorData(data, this.map.painter, message === 'reloadTile');
 
             return callback(null);
-        }, undefined, message === 'loadTile');
+        });
     }
 
     abortTile(tile: Tile) {

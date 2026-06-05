@@ -180,7 +180,7 @@ describe('VectorTileSource', () => {
             });
 
             source.dispatcher = wrapDispatcher({
-                send: withAsync((type, params, _, __, ___, doneRef) => {
+                send: withAsync((type, params, _, doneRef) => {
                     expect(type).toEqual('loadTile');
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(expectedURL).toEqual(params.request.url);

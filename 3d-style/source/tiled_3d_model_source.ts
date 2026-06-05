@@ -161,7 +161,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
         if (!tile.actor || tile.state === 'expired') {
             tile.actor = this.dispatcher.getActor();
 
-            tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
+            tile.request = tile.actor.send('loadTile', params, done.bind(this));
         } else if (tile.state === 'loading') {
             // schedule tile reloading after it has been loaded
             tile.reloadCallback = callback;

@@ -12,14 +12,13 @@ import type {ActorMessage, ActorInbox} from './actor_messages';
 import '../types/worker';
 
 export type Task = {
-    type: ActorMessage | '<response>' | '<cancel>';
+    type: ActorMessage | '<response>';
     id?: string;
     data?: Serialized;
     error?: Serialized;
     targetMapId?: number;
     sourceMapId?: number;
     hasCallback?: boolean;
-    mustQueue?: boolean;
 };
 
 export type ActorCallback<T = unknown> = Callback<T> & {metadata?: TaskMetadata};
@@ -37,7 +36,7 @@ type MessageMap = {[type: string]: {params: unknown; callback: unknown}};
  * @private
  */
 type ActorParent = {
-    [K in keyof ActorInbox]: (mapId: number, params: ActorInbox[K]['params'], callback: ActorInbox[K]['callback']) => void;
+    [K in keyof ActorInbox]: (mapId: number, params: unknown, callback: unknown) => void;
 } & {
     getWorkerSource?: (mapId: number, params: WorkerSourceRequest) => WorkerSource;
 };
@@ -63,7 +62,6 @@ class Actor<Outbox extends MessageMap> {
     name?: string;
     mapId?: number;
     callbacks: Record<number, ActorCallback<ActorMessage>>;
-    cancelCallbacks: Record<string | number, Cancelable>;
     scheduler: Scheduler;
 
     constructor(target: Worker, parent: unknown, mapId?: number) {
@@ -71,7 +69,6 @@ class Actor<Outbox extends MessageMap> {
         this.parent = parent as ActorParent;
         this.mapId = mapId;
         this.callbacks = {};
-        this.cancelCallbacks = {};
         bindAll(['receive'], this);
         this.target.addEventListener('message', this.receive, false);
         this.scheduler = new Scheduler();
@@ -90,7 +87,6 @@ class Actor<Outbox extends MessageMap> {
         data: Outbox[T]['params'],
         callback?: Outbox[T]['callback'],
         targetMapId?: number,
-        mustQueue: boolean = false,
         callbackMetadata?: TaskMetadata,
     ): Cancelable | undefined {
         // We're using a string ID instead of numbers because they are being used as object keys
@@ -109,22 +105,13 @@ class Actor<Outbox extends MessageMap> {
             type: type as ActorMessage,
             hasCallback: !!callback,
             targetMapId,
-            mustQueue,
             sourceMapId: this.mapId,
             data: serialize(data, buffers)
         }, buffers as unknown as Transferable[]);
         return {
             cancel: () => {
-                if (callback) {
-                    // Set the callback to null so that it never fires after the request is aborted.
-                    delete this.callbacks[id];
-                }
-                this.target.postMessage({
-                    id,
-                    type: '<cancel>',
-                    targetMapId,
-                    sourceMapId: this.mapId
-                });
+                // Drop the callback; the worker still runs the task to completion, we just ignore its result.
+                delete this.callbacks[id];
             }
         };
     }
@@ -138,8 +125,8 @@ class Actor<Outbox extends MessageMap> {
     getWorkerSourceActor(mapId: number): Pick<Actor<Outbox>, 'send' | 'scheduler'> {
         return {
             scheduler: this.scheduler,
-            send: (type, data, callback, _targetMapId, mustQueue, callbackMetadata) => {
-                return this.send(type, data, callback, mapId, mustQueue, callbackMetadata);
+            send: (type, data, callback, _targetMapId, callbackMetadata) => {
+                return this.send(type, data, callback, mapId, callbackMetadata);
             },
         };
     }
@@ -155,38 +142,21 @@ class Actor<Outbox extends MessageMap> {
             return;
         }
 
-        if (data.type === '<cancel>') {
-            // Remove the original request from the queue. This is only possible if it
-            // hasn't been kicked off yet. The id will remain in the queue, but because
-            // there is no associated task, it will be dropped once it's time to execute it.
-            const cancel = this.cancelCallbacks[id];
-            delete this.cancelCallbacks[id];
-            if (cancel) {
-                cancel.cancel();
-            }
+        if (isWorker(self)) {
+            // Worker tasks go through the scheduler so they run in priority order and yield between
+            // each other instead of blocking the message loop.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const callback = this.callbacks[id];
+            const metadata = (callback && (callback as ActorCallback).metadata) || {type: 'message'};
+            this.scheduler.add(() => this.processTask(id, data), metadata);
         } else {
-            if (data.mustQueue || isWorker(self)) {
-                // for worker tasks that are often cancelled, such as loadTile, store them before actually
-                // processing them. This is necessary because we want to keep receiving <cancel> messages.
-                // Some tasks may take a while in the worker thread, so before executing the next task
-                // in our queue, postMessage preempts this and <cancel> messages can be processed.
-                // We're using a MessageChannel object to get throttle the process() flow to one at a time.
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                const callback = this.callbacks[id];
-                const metadata = (callback && (callback as ActorCallback).metadata) || {type: 'message'};
-                const cancel = this.scheduler.add(() => this.processTask(id, data), metadata);
-                if (cancel) this.cancelCallbacks[id] = cancel;
-            } else {
-                // In the main thread, process messages immediately so that other work does not slip in
-                // between getting partial data back from workers.
-                this.processTask(id, data);
-            }
+            // In the main thread, process messages immediately so that other work does not slip in
+            // between getting partial data back from workers.
+            this.processTask(id, data);
         }
     }
 
     processTask(id: string, task: Task) {
-        // Always delete since we are no longer cancellable
-        delete this.cancelCallbacks[id];
         if (task.type === '<response>') {
             // The done() function in the counterpart has been called, and we are now
             // firing the callback in the originating actor, if there is one.
@@ -219,10 +189,8 @@ class Actor<Outbox extends MessageMap> {
 
             // `task.type` is a message name ('loadTile', etc.) or a runtime
             // `sourcetype.method` (WorkerSource types register via Map#addSourceType).
-            // Both dispatch by runtime string, so the handler lookup is untyped.
             if (this.parent[task.type]) {
                 // task.type == 'loadTile', 'removeTile', etc.
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 this.parent[task.type](task.sourceMapId, params, done);
             } else if (this.parent.getWorkerSource) {
                 // task.type == sourcetype.method

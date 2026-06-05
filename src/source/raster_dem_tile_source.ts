@@ -76,7 +76,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
 
         if (!tile.actor || tile.state === 'expired') {
             tile.actor = this.dispatcher.getActor();
-            tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
+            tile.request = tile.actor.send('loadTile', params, done.bind(this));
         }
 
         function done(this: RasterDEMTileSource, err?: Error | null, result?: WorkerSourceDEMTileResult | null) {

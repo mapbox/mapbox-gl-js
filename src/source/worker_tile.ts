@@ -621,7 +621,7 @@ class WorkerTile {
                             glyphMap = result;
                             maybePrepare();
                         }
-                    }, undefined, false, taskMetadata);
+                    }, undefined, taskMetadata);
                 } else {
                     glyphMap = {};
                 }
@@ -642,7 +642,7 @@ class WorkerTile {
                             imageVersions.set(id, version);
                         }
                         maybePrepare();
-                    }, undefined, false, taskMetadata);
+                    }, undefined, taskMetadata);
                 } else {
                     iconMap = new Map();
                     patternMap = new Map();
