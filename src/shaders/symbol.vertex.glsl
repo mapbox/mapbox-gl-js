@@ -167,9 +167,6 @@ struct SymbolPropertyHeader {
 };
 
 /// Constant paint properties values shared for all features.
-///
-/// Note: "spp" prefix (Symbol Paint Properties) is needed to avoid name conflicts
-/// with pragma-based paint property declarations.
 uniform lowp vec4 u_spp_fill_np_color;
 uniform lowp vec4 u_spp_halo_np_color;
 uniform lowp float u_spp_opacity;
