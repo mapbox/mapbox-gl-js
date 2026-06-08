@@ -5,18 +5,25 @@ import {describe, test, expect, afterEach, afterAll, onTestFailed, onTestFinishe
 import {readIconSet} from '../../src/data/usvg/usvg_pb_decoder';
 import {renderIcon} from '../../src/data/usvg/usvg_pb_renderer';
 import {allowed, ignores, scales, formatName} from './utils';
-import {readArrayBuffer} from '../util/read_array_buffer';
 // @ts-expect-error - virtual modules are not typed
-import {fixtures} from 'virtual:usvg-fixtures';
+import {fixtures, iconsets} from 'virtual:usvg-fixtures';
 
-async function getIconSet(iconsetPath) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    const pbf = new PbfReader(await readArrayBuffer(iconsetPath));
-    const iconSet = readIconSet(pbf);
-    return iconSet;
+function base64ToUint8Array(base64: string) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
 }
 
-describe('uSVG', async () => {
+function getIconSet(suite: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+    const pbf = new PbfReader(base64ToUint8Array(iconsets[suite]));
+    return readIconSet(pbf);
+}
+
+describe('uSVG', () => {
     const diffs = {};
     const passed = [];
     const failed = [];
@@ -65,8 +72,8 @@ describe('uSVG', async () => {
         await server.commands.writeFile('test/usvg/vitest/index.html', html);
     });
 
-    const testIconSet = async (iconsetPath: string) => {
-        const iconset = await getIconSet(iconsetPath);
+    const testIconSet = (suite: string) => {
+        const iconset = getIconSet(suite);
 
         for (const icon of iconset.icons.sort((a, b) => a.name.localeCompare(b.name))) {
             for (const scale of scales) {
@@ -89,46 +96,47 @@ describe('uSVG', async () => {
                     const actualImageData = renderIcon(icon, {sx: scale, sy: scale, params: {}});
                     const {width, height, data} = actualImageData;
 
-                    // align canvas sizes with the image size
-                    diffCanvas.width = actualCanvas.width = expectedCanvas.width = width;
-                    diffCanvas.height = actualCanvas.height = expectedCanvas.height = height;
-                    page.viewport(width * 3, height);
-
-                    actualContext.putImageData(actualImageData, 0, 0);
-
-                    // Render expected icon
+                    // Decode the expected PNG fixture to pixels
+                    expectedCanvas.width = width;
+                    expectedCanvas.height = height;
                     const expectedImage = new Image();
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expectedImage.src = `data:image/png;base64,${fixtures[name]}`;
                     await new Promise((resolve) => {
                         expectedImage.onload = resolve;
                     });
-
-                    expectedContext.drawImage(expectedImage, 0, 0, expectedCanvas.width, expectedCanvas.height);
-                    const expectedImageData = expectedContext.getImageData(0, 0, expectedCanvas.width, expectedCanvas.height);
+                    expectedContext.drawImage(expectedImage, 0, 0, width, height);
+                    const expectedImageData = expectedContext.getImageData(0, 0, width, height);
 
                     // Compare images
-                    diffCanvas.width = width;
-                    diffCanvas.height = height;
-                    const diffImageData = diffContext.createImageData(diffCanvas.width, diffCanvas.height);
-
+                    const diffImageData = diffContext.createImageData(width, height);
                     const options = {
                         threshold: 0.2,
                         checkerboard: false
                     };
                     const diff = pixelmatch(data, expectedImageData.data, diffImageData.data, width, height, options) / (width * height);
-
                     diffs[name] = diff;
-                    diffContext.putImageData(diffImageData, 0, 0);
-                    await page.screenshot({element: document.body, path: `./vitest/${name}.png`});
 
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-                    expect(diff).toBeLessThanOrEqual(allowed[icon.name]?.[scale] ?? defaultAllowedDiff);
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+                    const allowedDiff = allowed[icon.name]?.[scale] ?? defaultAllowedDiff;
+
+                    // Only capture a screenshot for failures — it's expensive, and the report only shows failures
+                    if (diff > allowedDiff) {
+                        diffCanvas.width = actualCanvas.width = width;
+                        diffCanvas.height = actualCanvas.height = height;
+                        page.viewport(width * 3, height);
+                        actualContext.putImageData(actualImageData, 0, 0);
+                        diffContext.putImageData(diffImageData, 0, 0);
+                        await page.screenshot({element: document.body, path: `./vitest/${name}.png`});
+                    }
+
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                    expect(diff).toBeLessThanOrEqual(allowedDiff);
                 });
             }
         }
     };
 
-    await testIconSet('test/usvg/test-suite/test-suite.iconset');
-    await testIconSet('test/usvg/mapbox_usvg_pb_test_suite/test-suite.iconset');
+    testIconSet('test-suite');
+    testIconSet('mapbox_usvg_pb_test_suite');
 });
