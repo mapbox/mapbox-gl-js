@@ -1604,6 +1604,7 @@ class Style extends Evented<MapEvents> {
         this._spriteRequest = loadSprite(url, this.map._requestManager, (err, images) => {
             this._spriteRequest = null;
             if (err) {
+                this.dispatcher.broadcast('spriteLoaded', {scope: this.scope});
                 this.fire(new ErrorEvent(err));
             } else if (images) {
                 const styleImageMap: StyleImageMap<ImageId> = new Map();
@@ -1668,6 +1669,7 @@ class Style extends Evented<MapEvents> {
                 if (isFallbackExists) {
                     this._loadSprite(url);
                 } else {
+                    this.dispatcher.broadcast('spriteLoaded', {scope: this.scope});
                     this.fire(new ErrorEvent(err));
                 }
             } else if (images) {
@@ -2259,6 +2261,9 @@ class Style extends Evented<MapEvents> {
      */
     addImages(images: StyleImageMap<ImageId>, isSpriteLoaded?: boolean): this {
         if (images.size === 0) {
+            if (isSpriteLoaded) {
+                this.dispatcher.broadcast('spriteLoaded', {scope: this.scope});
+            }
             return this;
         }
         for (const [id, image] of images.entries()) {

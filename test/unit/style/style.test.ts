@@ -2904,6 +2904,67 @@ test('Style#addImages', async () => {
     );
 });
 
+test('Style#addImages broadcasts spriteLoaded when the sprite is empty', async () => {
+    const style = new Style(new StubMap());
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    style.loadJSON(createStyleJSON());
+    await waitFor(style, 'style.load');
+
+    vi.spyOn(style.dispatcher, 'broadcast');
+
+    // An empty sprite resolves with no images. The worker still needs the
+    // 'spriteLoaded' broadcast or it defers tile parsing forever.
+    style.addImages(new Map(), true);
+
+    expect(style.dispatcher.broadcast).toHaveBeenCalledWith(
+        'spriteLoaded',
+        {scope: ''}
+    );
+});
+
+test('Style#addImages does not broadcast spriteLoaded for an empty image set unrelated to a sprite', async () => {
+    const style = new Style(new StubMap());
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    style.loadJSON(createStyleJSON());
+    await waitFor(style, 'style.load');
+
+    vi.spyOn(style.dispatcher, 'broadcast');
+
+    style.addImages(new Map());
+
+    expect(style.dispatcher.broadcast).not.toHaveBeenCalledWith(
+        'spriteLoaded',
+        {scope: ''}
+    );
+});
+
+test('Style#_loadSprite broadcasts spriteLoaded when the sprite fails to load', async () => {
+    mockFetch({
+        'sprite.*json': () => Promise.resolve(new Response(null, {status: 404, statusText: 'Not Found'})),
+        'sprite.*png': () => Promise.resolve(new Response(null, {status: 404, statusText: 'Not Found'}))
+    });
+
+    const style = new Style(new StubMap());
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    style.loadJSON(createStyleJSON());
+    await waitFor(style, 'style.load');
+
+    vi.spyOn(style.dispatcher, 'broadcast');
+    const errorSpy = vi.fn();
+    style.on('error', errorSpy);
+
+    style._loadSprite('http://example.com/sprite');
+    await waitFor(style, 'data');
+
+    // A failed sprite request must still notify the worker so it stops
+    // deferring tile parsing.
+    expect(style.dispatcher.broadcast).toHaveBeenCalledWith(
+        'spriteLoaded',
+        {scope: ''}
+    );
+    expect(errorSpy).toHaveBeenCalled();
+});
+
 test('Style#updateImage', async () => {
     const style = new Style(new StubMap());
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
