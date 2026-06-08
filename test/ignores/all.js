@@ -296,7 +296,10 @@ const skip = [
     "render-tests/hd-sd-transition/elevated-hd-sd-mid-reverse",
     "render-tests/hd-sd-transition/elevated-hd-sd-landuse",
     "render-tests/hd-sd-transition/hd-on-remove-import",
-    "render-tests/hd-sd-transition/sd-on-steady"
+    "render-tests/hd-sd-transition/sd-on-steady",
+
+    // https://mapbox.atlassian.net/browse/GLJS-1855
+    "render-tests/appearance/text-field"
 ];
 
 export default {todo, skip};

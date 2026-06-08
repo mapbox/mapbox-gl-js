@@ -1,0 +1,42 @@
+{
+  "_comment": "text-field can't be used in appearances, but we can redefine a base color and it shouldn't change color of parts with explicitly redefined color",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "pixelRatio": 2,
+      "height": 64,
+      "width": 64
+    }
+  },
+  "camera": {"camera-projection": "orthographic"},
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [0, 0]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": ["format", "Blood", {"text-color": "#490805"}, " and ", {}, "wine", {"text-color": "#7b0323"}],
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": 8
+      },
+      "appearances": [
+        {
+          "condition": true,
+          "properties": {
+            "text-color": "#eec0c8"
+          }
+        }
+      ]
+    }
+  ]
+}
