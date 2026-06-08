@@ -12,8 +12,6 @@ const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
 
 const UUID_V4_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const IOS_DEVICE_RE = /\b(iPad|iPhone|iPod)\b/;
-const SAFARI_BUG_OS_RE = /CPU (OS|iPhone OS) (15_4|15_5) like Mac OS X/;
 
 /**
  * Converts an angle in degrees to radians
@@ -641,42 +639,6 @@ export function getExpiryDataFromHeaders(responseHeaders: Headers | Map<string, 
     const cacheControl = responseHeaders.get('cache-control');
     const expires = responseHeaders.get('expires');
     return {cacheControl, expires};
-}
-
-let _isSafari: boolean | null = null;
-
-export function _resetSafariCheckForTest() {
-    _isSafari = null;
-}
-
-/**
- * Returns true when run in WebKit derived browsers.
- * This is used as a workaround for a memory leak in Safari caused by using Transferable objects to
- * transfer data between WebWorkers and the main thread.
- * https://github.com/mapbox/mapbox-gl-js/issues/8771
- *
- * This should be removed once the underlying Safari issue is fixed.
- *
- * @private
- * @param scope {WindowOrWorkerGlobalScope} Since this function is used both on the main thread and WebWorker context,
- *      let the calling scope pass in the global scope object.
- * @returns {boolean}
- */
-export function isSafari(scope: WindowOrWorkerGlobalScope): boolean {
-    if (_isSafari == null) {
-        const userAgent = (scope as Window).navigator ? (scope as Window).navigator.userAgent : null;
-        _isSafari = !!(scope as {safari?: boolean}).safari ||
-        !!(userAgent && (IOS_DEVICE_RE.test(userAgent) || (!!userAgent.match('Safari') && !userAgent.match('Chrome'))));
-    }
-    return _isSafari;
-}
-
-export function isSafariWithAntialiasingBug(scope: WindowOrWorkerGlobalScope): boolean | null | undefined {
-    const userAgent: Navigator['userAgent'] = (scope as Window).navigator ? (scope as Window).navigator.userAgent : null;
-    if (!isSafari(scope)) return false;
-    // 15.4 is known to be buggy.
-    // 15.5 may or may not include the fix. Mark it as buggy to be on the safe side.
-    return !!(userAgent && (userAgent.match('Version/15.4') || userAgent.match('Version/15.5') || userAgent.match(SAFARI_BUG_OS_RE)));
 }
 
 export function isFullscreen(): boolean {

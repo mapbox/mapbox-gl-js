@@ -16,8 +16,6 @@ import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from './geo/mercator_coordinate';
 import {Evented} from './util/evented';
 import config, {setAccessToken, setBaseApiUrl, setMaxParallelImageRequests, getDracoUrl, setDracoUrl, getMeshoptUrl, setMeshoptUrl, getBuildingGenUrl, setBuildingGenUrl} from './util/config';
-import {Debug} from './util/debug';
-import {isSafari} from './util/util';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
 import {addTileProvider} from './source/tile_provider';
 import {getWorkerCount, setWorkerCount} from './util/worker_pool';
@@ -354,9 +352,6 @@ const exported = {
      */
     restoreNow: browser.restoreNow
 };
-
-//This gets automatically stripped out in production builds.
-Debug.extend(exported, {isSafari});
 
 /**
  * Gets the version of Mapbox GL JS in use as specified in `package.json`,

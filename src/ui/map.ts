@@ -1,5 +1,5 @@
 import {version} from '../../package.json';
-import {asyncAll, deepEqual, bindAll, warnOnce, uniqueId, isSafariWithAntialiasingBug} from '../util/util';
+import {asyncAll, deepEqual, bindAll, warnOnce, uniqueId} from '../util/util';
 import browser from '../util/browser';
 import * as DOM from '../util/dom';
 import {getImage, ResourceType} from '../util/ajax';
@@ -613,12 +613,6 @@ export class Map extends Camera {
 
         if (options.maxPitch != null && options.maxPitch > defaultMaxPitch) {
             throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
-        }
-
-        // disable antialias with OS/iOS 15.4 and 15.5 due to rendering bug
-        if (options.antialias && isSafariWithAntialiasingBug(window)) {
-            options.antialias = false;
-            warnOnce('Antialiasing is disabled for this WebGL context to avoid browser bug: https://github.com/mapbox/mapbox-gl-js/issues/11609');
         }
 
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies, null, null);
