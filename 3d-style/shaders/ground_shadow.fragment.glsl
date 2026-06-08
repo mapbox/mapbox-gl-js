@@ -26,7 +26,20 @@ void main() {
     shadow = mix(shadow, vec3(1.0), 1.0 - applyCutout(vec4(1.0), 0.0).r);
 #endif
 #ifdef FEATURE_CUTOUT
-    shadow = mix(shadow, vec3(1.0), get_cutout_factors(gl_FragCoord).y);
+    vec2 uv = gl_FragCoord.xy * u_inv_viewport_size.xy;
+#ifdef FLIP_Y
+    uv.y = 1.0 - uv.y;
+#endif
+
+    highp float cutoutFactor = get_cutout_factors(gl_FragCoord).y;
+    highp float cutoutDepthNDC = sample_cutout_depth_bilinear(u_cutout_depth_image, uv);
+    highp float fragDepthNDC = gl_FragCoord.z / u_feature_cutout_params.w;
+    // Prevent cutting above ground
+    highp float groundThreshold = -0.001;
+    highp float groundLimit = clamp((fragDepthNDC + groundThreshold - cutoutDepthNDC) / groundThreshold + 0.5, 0.0, 1.0);
+    cutoutFactor = mix(0.0, cutoutFactor, groundLimit);
+
+    shadow = mix(shadow, vec3(1.0), cutoutFactor);
 #endif
 
     glFragColor = vec4(shadow, 1.0);
