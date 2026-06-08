@@ -2,9 +2,93 @@ import {isValue} from '../values';
 import {NumberType} from '../types';
 import {classifyRings, updateBBox, boxWithinBox, pointWithinPolygon, segmentIntersectSegment} from '../../util/geometry_util';
 import {lngFromMercatorX, latFromMercatorY} from '../../util/mercator';
-import CheapRuler from "cheap-ruler";
 import TinyQueue from "tinyqueue";
 import EXTENT from '../../data/extent';
+
+// Geodesic scale factors (cheap-ruler math): meters per degree lon/lat at a given latitude.
+// Only the three distance operations used in this file are implemented.
+const RE = 6378.137; // WGS84 equatorial radius (km)
+const FE = 1 / 298.257223563; // WGS84 flattening
+const E2 = FE * (2 - FE);
+const RAD = Math.PI / 180;
+
+function lngLatScale(lat: number): [number, number] {
+    const m = RAD * RE * 1000;
+    const coslat = Math.cos(lat * RAD);
+    const w2 = 1 / (1 - E2 * (1 - coslat * coslat));
+    const w = Math.sqrt(w2);
+    return [m * w * coslat, m * w * w2 * (1 - E2)]; // [kx, ky]
+}
+
+function wrapLng(deg: number): number {
+    while (deg < -180) deg += 360;
+    while (deg > 180) deg -= 360;
+    return deg;
+}
+
+function rulerDistance(a: [number, number], b: [number, number], kx: number, ky: number): number {
+    const dx = wrapLng(a[0] - b[0]) * kx;
+    const dy = (a[1] - b[1]) * ky;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+function rulerPointToSegmentDistance(p: [number, number], a: [number, number], b: [number, number], kx: number, ky: number): number {
+    let x = a[0];
+    let y = a[1];
+    let dx = wrapLng(b[0] - x) * kx;
+    let dy = (b[1] - y) * ky;
+
+    if (dx !== 0 || dy !== 0) {
+        const t = (wrapLng(p[0] - x) * kx * dx + (p[1] - y) * ky * dy) / (dx * dx + dy * dy);
+        if (t > 1) {
+            x = b[0];
+            y = b[1];
+        } else if (t > 0) {
+            x += (dx / kx) * t;
+            y += (dy / ky) * t;
+        }
+    }
+
+    dx = wrapLng(p[0] - x) * kx;
+    dy = (p[1] - y) * ky;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+function rulerPointOnLine(line: Array<[number, number]>, p: [number, number], kx: number, ky: number): [number, number] {
+    let minDist = Infinity;
+    let minX = line[0][0];
+    let minY = line[0][1];
+
+    for (let i = 0; i < line.length - 1; i++) {
+        let x = line[i][0];
+        let y = line[i][1];
+        let dx = wrapLng(line[i + 1][0] - x) * kx;
+        let dy = (line[i + 1][1] - y) * ky;
+        let t = 0;
+
+        if (dx !== 0 || dy !== 0) {
+            t = (wrapLng(p[0] - x) * kx * dx + (p[1] - y) * ky * dy) / (dx * dx + dy * dy);
+            if (t > 1) {
+                x = line[i + 1][0];
+                y = line[i + 1][1];
+            } else if (t > 0) {
+                x += (dx / kx) * t;
+                y += (dy / ky) * t;
+            }
+        }
+
+        dx = wrapLng(p[0] - x) * kx;
+        dy = (p[1] - y) * ky;
+        const sqDist = dx * dx + dy * dy;
+        if (sqDist < minDist) {
+            minDist = sqDist;
+            minX = x;
+            minY = y;
+        }
+    }
+
+    return [minX, minY];
+}
 
 import type Point from "@mapbox/point-geometry";
 import type ParsingContext from '../parsing_context';
@@ -102,7 +186,7 @@ function getPolygonBBox(polygon: Array<Array<[number, number]>>) {
 // Calculate the distance between two bounding boxes.
 // Calculate the delta in x and y direction, and use two fake points {0.0, 0.0} and {dx, dy} to calculate the distance.
 // Distance will be 0.0 if bounding box are overlapping.
-function bboxToBBoxDistance(bbox1: BBox, bbox2: BBox, ruler: CheapRuler) {
+function bboxToBBoxDistance(bbox1: BBox, bbox2: BBox, kx: number, ky: number) {
     if (isDefaultBBOX(bbox1) || isDefaultBBOX(bbox2)) {
         return NaN;
     }
@@ -124,7 +208,7 @@ function bboxToBBoxDistance(bbox1: BBox, bbox2: BBox, ruler: CheapRuler) {
     if (bbox1[3] < bbox2[1]) {
         dy = bbox2[1] - bbox1[3];
     }
-    return ruler.distance([0.0, 0.0], [dx, dy]);
+    return rulerDistance([0.0, 0.0], [dx, dy], kx, ky);
 }
 
 export function getLngLatPoint(coord: Point, canonical: CanonicalTileID, extent: number = EXTENT): [number, number] {
@@ -142,35 +226,35 @@ function getLngLatPoints(coordinates: Array<Point>, canonical: CanonicalTileID):
     return coords;
 }
 
-function pointToLineDistance(point: [number, number], line: Array<[number, number]>, ruler: CheapRuler) {
-    const nearestPoint = ruler.pointOnLine(line, point).point;
-    return ruler.distance(point, nearestPoint);
+function pointToLineDistance(point: [number, number], line: Array<[number, number]>, kx: number, ky: number) {
+    const nearestPoint = rulerPointOnLine(line, point, kx, ky);
+    return rulerDistance(point, nearestPoint, kx, ky);
 }
 
-function pointsToLineDistance(points: Array<[number, number]>, rangeA: IndexRange, line: Array<[number, number]>, rangeB: IndexRange, ruler: CheapRuler) {
+function pointsToLineDistance(points: Array<[number, number]>, rangeA: IndexRange, line: Array<[number, number]>, rangeB: IndexRange, kx: number, ky: number) {
     const subLine = line.slice(rangeB[0], rangeB[1] + 1);
     let dist = Infinity;
     for (let i = rangeA[0]; i <= rangeA[1]; ++i) {
-        if ((dist = Math.min(dist, pointToLineDistance(points[i], subLine, ruler))) === 0.0) return 0.0;
+        if ((dist = Math.min(dist, pointToLineDistance(points[i], subLine, kx, ky))) === 0.0) return 0.0;
     }
     return dist;
 }
 
 // precondition is two segments are not intersecting with each other
-function segmentToSegmentDistance(p1: [number, number], p2: [number, number], q1: [number, number], q2: [number, number], ruler: CheapRuler) {
+function segmentToSegmentDistance(p1: [number, number], p2: [number, number], q1: [number, number], q2: [number, number], kx: number, ky: number) {
     const dist1 = Math.min(
-        ruler.pointToSegmentDistance(p1, q1, q2),
-        ruler.pointToSegmentDistance(p2, q1, q2)
+        rulerPointToSegmentDistance(p1, q1, q2, kx, ky),
+        rulerPointToSegmentDistance(p2, q1, q2, kx, ky)
     );
     const dist2 = Math.min(
-        ruler.pointToSegmentDistance(q1, p1, p2),
-        ruler.pointToSegmentDistance(q2, p1, p2)
+        rulerPointToSegmentDistance(q1, p1, p2, kx, ky),
+        rulerPointToSegmentDistance(q2, p1, p2, kx, ky)
     );
 
     return Math.min(dist1, dist2);
 }
 
-function lineToLineDistance(line1: Array<[number, number]>, range1: IndexRange, line2: Array<[number, number]>, range2: IndexRange, ruler: CheapRuler) {
+function lineToLineDistance(line1: Array<[number, number]>, range1: IndexRange, line2: Array<[number, number]>, range2: IndexRange, kx: number, ky: number) {
     if (!isRangeSafe(range1, line1.length) || !isRangeSafe(range2, line2.length)) {
         return NaN;
     }
@@ -178,26 +262,26 @@ function lineToLineDistance(line1: Array<[number, number]>, range1: IndexRange, 
     for (let i = range1[0]; i < range1[1]; ++i) {
         for (let j = range2[0]; j < range2[1]; ++j) {
             if (segmentIntersectSegment(line1[i], line1[i + 1], line2[j], line2[j + 1])) return 0.0;
-            dist = Math.min(dist, segmentToSegmentDistance(line1[i], line1[i + 1], line2[j], line2[j + 1], ruler));
+            dist = Math.min(dist, segmentToSegmentDistance(line1[i], line1[i + 1], line2[j], line2[j + 1], kx, ky));
         }
     }
     return dist;
 }
 
-function pointsToPointsDistance(pointSet1: Array<[number, number]>, range1: IndexRange, pointSet2: Array<[number, number]>, range2: IndexRange, ruler: CheapRuler) {
+function pointsToPointsDistance(pointSet1: Array<[number, number]>, range1: IndexRange, pointSet2: Array<[number, number]>, range2: IndexRange, kx: number, ky: number) {
     if (!isRangeSafe(range1, pointSet1.length) || !isRangeSafe(range2, pointSet2.length)) {
         return NaN;
     }
     let dist = Infinity;
     for (let i = range1[0]; i <= range1[1]; ++i) {
         for (let j = range2[0]; j <= range2[1]; ++j) {
-            if ((dist = Math.min(dist, ruler.distance(pointSet1[i], pointSet2[j]))) === 0.0) return dist;
+            if ((dist = Math.min(dist, rulerDistance(pointSet1[i], pointSet2[j], kx, ky))) === 0.0) return dist;
         }
     }
     return dist;
 }
 
-function pointToPolygonDistance(point: [number, number], polygon: Array<Array<[number, number]>>, ruler: CheapRuler) {
+function pointToPolygonDistance(point: [number, number], polygon: Array<Array<[number, number]>>, kx: number, ky: number) {
     if (pointWithinPolygon(point, polygon, true /*trueOnBoundary*/)) return 0.0;
     let dist = Infinity;
     for (const ring of polygon) {
@@ -207,14 +291,14 @@ function pointToPolygonDistance(point: [number, number], polygon: Array<Array<[n
             return NaN;
         }
         if (ring[0] !== ring[ringLen - 1]) {
-            if ((dist = Math.min(dist, ruler.pointToSegmentDistance(point, ring[ringLen - 1], ring[0]))) === 0.0) return dist;
+            if ((dist = Math.min(dist, rulerPointToSegmentDistance(point, ring[ringLen - 1], ring[0], kx, ky))) === 0.0) return dist;
         }
-        if ((dist = Math.min(dist, pointToLineDistance(point, ring, ruler))) === 0.0) return dist;
+        if ((dist = Math.min(dist, pointToLineDistance(point, ring, kx, ky))) === 0.0) return dist;
     }
     return dist;
 }
 
-function lineToPolygonDistance(line: Array<[number, number]>, range: IndexRange, polygon: Array<Array<[number, number]>>, ruler: CheapRuler) {
+function lineToPolygonDistance(line: Array<[number, number]>, range: IndexRange, polygon: Array<Array<[number, number]>>, kx: number, ky: number) {
     if (!isRangeSafe(range, line.length)) {
         return NaN;
     }
@@ -226,7 +310,7 @@ function lineToPolygonDistance(line: Array<[number, number]>, range: IndexRange,
         for (const ring of polygon) {
             for (let j = 0, len = ring.length, k = len - 1; j < len; k = j++) {
                 if (segmentIntersectSegment(line[i], line[i + 1], ring[k], ring[j])) return 0.0;
-                dist = Math.min(dist, segmentToSegmentDistance(line[i], line[i + 1], ring[k], ring[j], ruler));
+                dist = Math.min(dist, segmentToSegmentDistance(line[i], line[i + 1], ring[k], ring[j], kx, ky));
             }
         }
     }
@@ -242,10 +326,10 @@ function polygonIntersect(polygon1: Array<Array<[number, number]>>, polygon2: Ar
     return false;
 }
 
-function polygonToPolygonDistance(polygon1: Array<Array<[number, number]>>, polygon2: Array<Array<[number, number]>>, ruler: CheapRuler, currentMiniDist: number = Infinity) {
+function polygonToPolygonDistance(polygon1: Array<Array<[number, number]>>, polygon2: Array<Array<[number, number]>>, kx: number, ky: number, currentMiniDist: number = Infinity) {
     const bbox1 = getPolygonBBox(polygon1);
     const bbox2 = getPolygonBBox(polygon2);
-    if (currentMiniDist !== Infinity && bboxToBBoxDistance(bbox1, bbox2, ruler) >= currentMiniDist) {
+    if (currentMiniDist !== Infinity && bboxToBBoxDistance(bbox1, bbox2, kx, ky) >= currentMiniDist) {
         return currentMiniDist;
     }
     if (boxWithinBox(bbox1, bbox2)) {
@@ -259,7 +343,7 @@ function polygonToPolygonDistance(polygon1: Array<Array<[number, number]>>, poly
             for (const ring2 of polygon2) {
                 for (let j = 0, len2 = ring2.length, k = len2 - 1; j < len2; k = j++) {
                     if (segmentIntersectSegment(ring1[l], ring1[i], ring2[k], ring2[j])) return 0.0;
-                    dist = Math.min(dist, segmentToSegmentDistance(ring1[l], ring1[i], ring2[k], ring2[j], ruler));
+                    dist = Math.min(dist, segmentToSegmentDistance(ring1[l], ring1[i], ring2[k], ring2[j], kx, ky));
                 }
             }
         }
@@ -267,17 +351,17 @@ function polygonToPolygonDistance(polygon1: Array<Array<[number, number]>>, poly
     return dist;
 }
 
-function updateQueue(distQueue: TinyQueue<DistPair>, miniDist: number, ruler: CheapRuler, pointSet1: Array<[number, number]>, pointSet2: Array<[number, number]>, r1: IndexRange | null, r2: IndexRange | null) {
+function updateQueue(distQueue: TinyQueue<DistPair>, miniDist: number, kx: number, ky: number, pointSet1: Array<[number, number]>, pointSet2: Array<[number, number]>, r1: IndexRange | null, r2: IndexRange | null) {
     if (r1 === null || r2 === null) return;
-    const tempDist = bboxToBBoxDistance(getBBox(pointSet1, r1), getBBox(pointSet2, r2), ruler);
+    const tempDist = bboxToBBoxDistance(getBBox(pointSet1, r1), getBBox(pointSet2, r2), kx, ky);
     // Insert new pair to the queue if the bbox distance is less than miniDist, the pair with biggest distance will be at the top
     if (tempDist < miniDist) distQueue.push({dist: tempDist, range1: r1, range2: r2});
 }
 
 // Divide and conquer, the time complexity is O(n*lgn), faster than Brute force O(n*n)
 // Most of the time, use index for in-place processing.
-function pointSetToPolygonDistance(pointSets: Array<[number, number]>, isLine: boolean, polygon: Array<Array<[number, number]>>, ruler: CheapRuler, currentMiniDist: number = Infinity) {
-    let miniDist = Math.min(ruler.distance(pointSets[0], polygon[0][0]), currentMiniDist);
+function pointSetToPolygonDistance(pointSets: Array<[number, number]>, isLine: boolean, polygon: Array<Array<[number, number]>>, kx: number, ky: number, currentMiniDist: number = Infinity) {
+    let miniDist = Math.min(rulerDistance(pointSets[0], polygon[0][0], kx, ky), currentMiniDist);
     if (miniDist === 0.0) return miniDist;
     const initialDistPair: DistPair = {
         dist: 0,
@@ -297,22 +381,22 @@ function pointSetToPolygonDistance(pointSets: Array<[number, number]>, isLine: b
         if (getRangeSize(range) <= setThreshold) {
             if (!isRangeSafe(range, pointSets.length)) return NaN;
             if (isLine) {
-                const tempDist = lineToPolygonDistance(pointSets, range, polygon, ruler);
+                const tempDist = lineToPolygonDistance(pointSets, range, polygon, kx, ky);
                 if ((miniDist = Math.min(miniDist, tempDist)) === 0.0) return miniDist;
             } else {
                 for (let i = range[0]; i <= range[1]; ++i) {
-                    const tempDist = pointToPolygonDistance(pointSets[i], polygon, ruler);
+                    const tempDist = pointToPolygonDistance(pointSets[i], polygon, kx, ky);
                     if ((miniDist = Math.min(miniDist, tempDist)) === 0.0) return miniDist;
                 }
             }
         } else {
             const newRanges = splitRange(range, isLine);
             if (newRanges[0] !== null) {
-                const tempDist = bboxToBBoxDistance(getBBox(pointSets, newRanges[0]), polyBBox, ruler);
+                const tempDist = bboxToBBoxDistance(getBBox(pointSets, newRanges[0]), polyBBox, kx, ky);
                 if (tempDist < miniDist) distQueue.push({dist: tempDist, range1: newRanges[0], range2: [0, 0]});
             }
             if (newRanges[1] !== null) {
-                const tempDist = bboxToBBoxDistance(getBBox(pointSets, newRanges[1]), polyBBox, ruler);
+                const tempDist = bboxToBBoxDistance(getBBox(pointSets, newRanges[1]), polyBBox, kx, ky);
                 if (tempDist < miniDist) distQueue.push({dist: tempDist, range1: newRanges[1], range2: [0, 0]});
             }
         }
@@ -320,8 +404,8 @@ function pointSetToPolygonDistance(pointSets: Array<[number, number]>, isLine: b
     return miniDist;
 }
 
-function pointSetsDistance(pointSet1: Array<[number, number]>, isLine1: boolean, pointSet2: Array<[number, number]>, isLine2: boolean, ruler: CheapRuler, currentMiniDist: number = Infinity) {
-    let miniDist = Math.min(currentMiniDist, ruler.distance(pointSet1[0], pointSet2[0]));
+function pointSetsDistance(pointSet1: Array<[number, number]>, isLine1: boolean, pointSet2: Array<[number, number]>, isLine2: boolean, kx: number, ky: number, currentMiniDist: number = Infinity) {
+    let miniDist = Math.min(currentMiniDist, rulerDistance(pointSet1[0], pointSet2[0], kx, ky));
     if (miniDist === 0.0) return miniDist;
     const initialDistPair: DistPair = {
         dist: 0,
@@ -344,55 +428,55 @@ function pointSetsDistance(pointSet1: Array<[number, number]>, isLine1: boolean,
                 return NaN;
             }
             if (isLine1 && isLine2) {
-                miniDist = Math.min(miniDist, lineToLineDistance(pointSet1, rangeA, pointSet2, rangeB, ruler));
+                miniDist = Math.min(miniDist, lineToLineDistance(pointSet1, rangeA, pointSet2, rangeB, kx, ky));
             } else if (!isLine1 && !isLine2) {
-                miniDist = Math.min(miniDist, pointsToPointsDistance(pointSet1, rangeA, pointSet2, rangeB, ruler));
+                miniDist = Math.min(miniDist, pointsToPointsDistance(pointSet1, rangeA, pointSet2, rangeB, kx, ky));
             } else if (isLine1 && !isLine2) {
-                miniDist = Math.min(miniDist, pointsToLineDistance(pointSet2, rangeB, pointSet1, rangeA, ruler));
+                miniDist = Math.min(miniDist, pointsToLineDistance(pointSet2, rangeB, pointSet1, rangeA, kx, ky));
             } else if (!isLine1 && isLine2) {
-                miniDist = Math.min(miniDist, pointsToLineDistance(pointSet1, rangeA, pointSet2, rangeB, ruler));
+                miniDist = Math.min(miniDist, pointsToLineDistance(pointSet1, rangeA, pointSet2, rangeB, kx, ky));
             }
             if (miniDist === 0.0) return miniDist;
         } else {
             const newRangesA = splitRange(rangeA, isLine1);
             const newRangesB = splitRange(rangeB, isLine2);
-            updateQueue(distQueue, miniDist, ruler, pointSet1, pointSet2, newRangesA[0], newRangesB[0]);
-            updateQueue(distQueue, miniDist, ruler, pointSet1, pointSet2, newRangesA[0], newRangesB[1]);
-            updateQueue(distQueue, miniDist, ruler, pointSet1, pointSet2, newRangesA[1], newRangesB[0]);
-            updateQueue(distQueue, miniDist, ruler, pointSet1, pointSet2, newRangesA[1], newRangesB[1]);
+            updateQueue(distQueue, miniDist, kx, ky, pointSet1, pointSet2, newRangesA[0], newRangesB[0]);
+            updateQueue(distQueue, miniDist, kx, ky, pointSet1, pointSet2, newRangesA[0], newRangesB[1]);
+            updateQueue(distQueue, miniDist, kx, ky, pointSet1, pointSet2, newRangesA[1], newRangesB[0]);
+            updateQueue(distQueue, miniDist, kx, ky, pointSet1, pointSet2, newRangesA[1], newRangesB[1]);
         }
     }
     return miniDist;
 }
 
-function pointSetToLinesDistance(pointSet: Array<[number, number]>, isLine: boolean, lines: Array<Array<[number, number]>>, ruler: CheapRuler, currentMiniDist: number = Infinity) {
+function pointSetToLinesDistance(pointSet: Array<[number, number]>, isLine: boolean, lines: Array<Array<[number, number]>>, kx: number, ky: number, currentMiniDist: number = Infinity) {
     let dist = currentMiniDist;
     const bbox1 = getBBox(pointSet, [0, pointSet.length - 1]);
     for (const line of lines) {
-        if (dist !== Infinity && bboxToBBoxDistance(bbox1, getBBox(line, [0, line.length - 1]), ruler) >= dist) continue;
-        dist = Math.min(dist, pointSetsDistance(pointSet, isLine, line, true /*isLine*/, ruler, dist));
+        if (dist !== Infinity && bboxToBBoxDistance(bbox1, getBBox(line, [0, line.length - 1]), kx, ky) >= dist) continue;
+        dist = Math.min(dist, pointSetsDistance(pointSet, isLine, line, true /*isLine*/, kx, ky, dist));
         if (dist === 0.0) return dist;
     }
     return dist;
 }
 
-function pointSetToPolygonsDistance(points: Array<[number, number]>, isLine: boolean, polygons: Array<Array<Array<[number, number]>>>, ruler: CheapRuler, currentMiniDist: number = Infinity) {
+function pointSetToPolygonsDistance(points: Array<[number, number]>, isLine: boolean, polygons: Array<Array<Array<[number, number]>>>, kx: number, ky: number, currentMiniDist: number = Infinity) {
     let dist = currentMiniDist;
     const bbox1 = getBBox(points, [0, points.length - 1]);
     for (const polygon of polygons) {
-        if (dist !== Infinity && bboxToBBoxDistance(bbox1, getPolygonBBox(polygon), ruler) >= dist) continue;
-        const tempDist = pointSetToPolygonDistance(points, isLine, polygon, ruler, dist);
+        if (dist !== Infinity && bboxToBBoxDistance(bbox1, getPolygonBBox(polygon), kx, ky) >= dist) continue;
+        const tempDist = pointSetToPolygonDistance(points, isLine, polygon, kx, ky, dist);
         if (isNaN(tempDist)) return tempDist;
         if ((dist = Math.min(dist, tempDist)) === 0.0) return dist;
     }
     return dist;
 }
 
-function polygonsToPolygonsDistance(polygons1: Array<Array<Array<[number, number]>>>, polygons2: Array<Array<Array<[number, number]>>>, ruler: CheapRuler) {
+function polygonsToPolygonsDistance(polygons1: Array<Array<Array<[number, number]>>>, polygons2: Array<Array<Array<[number, number]>>>, kx: number, ky: number) {
     let dist = Infinity;
     for (const polygon1 of polygons1) {
         for (const polygon2 of polygons2) {
-            const tempDist = polygonToPolygonDistance(polygon1, polygon2, ruler, dist);
+            const tempDist = polygonToPolygonDistance(polygon1, polygon2, kx, ky, dist);
             if (isNaN(tempDist)) return tempDist;
             if ((dist = Math.min(dist, tempDist)) === 0.0) return dist;
         }
@@ -407,18 +491,18 @@ function pointsToGeometryDistance(originGeometry: Array<Array<Point>>, canonical
             lngLatPoints.push(getLngLatPoint(point, canonical));
         }
     }
-    const ruler = new CheapRuler(lngLatPoints[0][1], 'meters');
+    const [kx, ky] = lngLatScale(lngLatPoints[0][1]);
     if (geometry.type === 'Point' || geometry.type === 'MultiPoint' || geometry.type === 'LineString') {
         return pointSetsDistance(lngLatPoints, false /*isLine*/,
             (geometry.type === 'Point' ? [geometry.coordinates] : geometry.coordinates) as Array<[number, number]>,
-            geometry.type === 'LineString' /*isLine*/, ruler);
+            geometry.type === 'LineString' /*isLine*/, kx, ky);
     }
     if (geometry.type === 'MultiLineString') {
-        return pointSetToLinesDistance(lngLatPoints, false /*isLine*/, geometry.coordinates as Array<Array<[number, number]>>, ruler);
+        return pointSetToLinesDistance(lngLatPoints, false /*isLine*/, geometry.coordinates as Array<Array<[number, number]>>, kx, ky);
     }
     if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
         return pointSetToPolygonsDistance(lngLatPoints, false /*isLine*/,
-            (geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates) as Array<Array<Array<[number, number]>>>, ruler);
+            (geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates) as Array<Array<Array<[number, number]>>>, kx, ky);
     }
     return null;
 }
@@ -432,16 +516,16 @@ function linesToGeometryDistance(originGeometry: Array<Array<Point>>, canonical:
         }
         lngLatLines.push(lngLatLine);
     }
-    const ruler = new CheapRuler(lngLatLines[0][0][1], 'meters');
+    const [kx, ky] = lngLatScale(lngLatLines[0][0][1]);
     if (geometry.type === 'Point' || geometry.type === 'MultiPoint' || geometry.type === 'LineString') {
         return pointSetToLinesDistance(
             (geometry.type === 'Point' ? [geometry.coordinates] : geometry.coordinates) as Array<[number, number]>,
-            geometry.type === 'LineString' /*isLine*/, lngLatLines, ruler);
+            geometry.type === 'LineString' /*isLine*/, lngLatLines, kx, ky);
     }
     if (geometry.type === 'MultiLineString') {
         let dist = Infinity;
         for (let i = 0; i < geometry.coordinates.length; i++) {
-            const tempDist = pointSetToLinesDistance(geometry.coordinates[i] as Array<[number, number]>, true /*isLine*/, lngLatLines, ruler, dist);
+            const tempDist = pointSetToLinesDistance(geometry.coordinates[i] as Array<[number, number]>, true /*isLine*/, lngLatLines, kx, ky, dist);
             if (isNaN(tempDist)) return tempDist;
             if ((dist = Math.min(dist, tempDist)) === 0.0) return dist;
         }
@@ -452,7 +536,7 @@ function linesToGeometryDistance(originGeometry: Array<Array<Point>>, canonical:
         for (let i = 0; i < lngLatLines.length; i++) {
             const tempDist = pointSetToPolygonsDistance(lngLatLines[i], true /*isLine*/,
                 (geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates) as Array<Array<Array<[number, number]>>>,
-                ruler, dist);
+                kx, ky, dist);
             if (isNaN(tempDist)) return tempDist;
             if ((dist = Math.min(dist, tempDist)) === 0.0) return dist;
         }
@@ -470,16 +554,16 @@ function polygonsToGeometryDistance(originGeometry: Array<Array<Point>>, canonic
         }
         lngLatPolygons.push(lngLatPolygon);
     }
-    const ruler = new CheapRuler(lngLatPolygons[0][0][0][1], 'meters');
+    const [kx, ky] = lngLatScale(lngLatPolygons[0][0][0][1]);
     if (geometry.type === 'Point' || geometry.type === 'MultiPoint' || geometry.type === 'LineString') {
         return pointSetToPolygonsDistance(
             (geometry.type === 'Point' ? [geometry.coordinates] : geometry.coordinates) as Array<[number, number]>,
-            geometry.type === 'LineString' /*isLine*/, lngLatPolygons, ruler);
+            geometry.type === 'LineString' /*isLine*/, lngLatPolygons, kx, ky);
     }
     if (geometry.type === 'MultiLineString') {
         let dist = Infinity;
         for (let i = 0; i < geometry.coordinates.length; i++) {
-            const tempDist = pointSetToPolygonsDistance(geometry.coordinates[i] as Array<[number, number]>, true /*isLine*/, lngLatPolygons, ruler, dist);
+            const tempDist = pointSetToPolygonsDistance(geometry.coordinates[i] as Array<[number, number]>, true /*isLine*/, lngLatPolygons, kx, ky, dist);
             if (isNaN(tempDist)) return tempDist;
             if ((dist = Math.min(dist, tempDist)) === 0.0) return dist;
         }
@@ -488,7 +572,7 @@ function polygonsToGeometryDistance(originGeometry: Array<Array<Point>>, canonic
     if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
         return polygonsToPolygonsDistance(
             (geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates) as Array<Array<Array<[number, number]>>>,
-            lngLatPolygons, ruler);
+            lngLatPolygons, kx, ky);
     }
     return null;
 }

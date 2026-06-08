@@ -39,7 +39,7 @@ export const plugins = ({mode, format, minified, production, test, keepClassName
     }),
     production ? strip({
         sourceMap: true,
-        functions: ['assert', 'assert.*', 'PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*', 'DevTools.*', 'StyleBOMUtils.*'],
+        functions: ['assert', 'assert.*', 'PerformanceUtils.*', 'Debug.*', 'DevTools.*', 'StyleBOMUtils.*'],
         include: ['**/*.ts']
     }) : null,
     test ? replace({
