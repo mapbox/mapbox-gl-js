@@ -396,7 +396,7 @@ export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 
 }
 
 export async function loadGLTF(url: string, signal?: AbortSignal): Promise<GLTF> {
-    const buffer = await makeAsyncRequest<ArrayBuffer>({url, type: 'arrayBuffer'}, signal);
+    const {data: buffer} = await makeAsyncRequest<ArrayBuffer>({url, type: 'arrayBuffer'}, signal);
     return decodeGLTF(buffer, 0, url, signal);
 }
 

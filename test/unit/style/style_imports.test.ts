@@ -2931,7 +2931,9 @@ describe('Style#setConfigProperty', () => {
 
         style.dispatcher.broadcast = function (key, value) {
             expect(key).toEqual('updateLayers');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(value.scope).toEqual('standard');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(value.removedIds).toEqual([]);
             const fqid = makeFQID('showBackground', 'standard');
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -3683,15 +3685,10 @@ test('Style#_updateTilesForChangedImages', async () => {
     sourceCache._tiles[tileID.key] = tile;
     vi.spyOn(tile, 'setDependencies');
 
-    await new Promise((resolve) => {
-        expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(false);
+    expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(false);
 
-        style.getImages(0, {icons: [imageId], patterns: [], source: 'geojson', scope: 'basemap', tileID}, (err, result) => {
-            expect(err).toBeFalsy();
-            expect(result.images.size).toEqual(0);
-            resolve();
-        });
-    });
+    const result = await style.getImages(0, {icons: [imageId], patterns: [], source: 'geojson', scope: 'basemap', tileID});
+    expect(result.images.size).toEqual(0);
 
     expect(style._updateTilesForChangedImages).toHaveBeenCalledTimes(1);
     expect(sourceCache.setDependencies).toHaveBeenCalledTimes(2);

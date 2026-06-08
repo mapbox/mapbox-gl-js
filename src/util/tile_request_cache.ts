@@ -154,7 +154,7 @@ let globalEntryCounter = Infinity;
 export function cacheEntryPossiblyAdded(dispatcher: Dispatcher) {
     globalEntryCounter++;
     if (globalEntryCounter > cacheCheckThreshold) {
-        dispatcher.getActor().send('enforceCacheSizeLimit', cacheLimit);
+        dispatcher.getActor().send('enforceCacheSizeLimit', cacheLimit, {skipResult: true});
         globalEntryCounter = 0;
     }
 }

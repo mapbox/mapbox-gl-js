@@ -350,7 +350,7 @@ class ImageManager extends Evented {
         }
     }
 
-    rasterizeImages(params: MainInbox['rasterizeImages']['params'], callback: MainInbox['rasterizeImages']['callback']) {
+    rasterizeImages(params: MainInbox['rasterizeImages']['params'], callback: Callback<MainInbox['rasterizeImages']['result']>) {
         const imageWorkerTasks: ImageRasterizationWorkerTasks = new Map();
 
         const {iconTasks, patternTasks, scope} = params;

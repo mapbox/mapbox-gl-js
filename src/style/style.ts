@@ -555,9 +555,9 @@ class Style extends Evented<MapEvents> {
                 pluginStatus: event.pluginStatus,
                 pluginURL: event.pluginURL
             };
-            self.dispatcher.broadcast('syncRTLPluginState', state, (err, results: boolean[]) => {
-                triggerPluginCompletionEvent(err);
-                if (results) {
+            self.dispatcher.broadcast('syncRTLPluginState', state, {keepResult: true})
+                .then((results: boolean[]) => {
+                    triggerPluginCompletionEvent(null);
                     const allComplete = results.every((elem) => elem);
                     if (allComplete) {
                         for (const id in self._sourceCaches) {
@@ -568,8 +568,10 @@ class Style extends Evented<MapEvents> {
                             }
                         }
                     }
-                }
-            });
+                })
+                .catch((err: Error) => {
+                    triggerPluginCompletionEvent(err);
+                });
         });
 
         this.on('data', (event) => {
@@ -4875,65 +4877,6 @@ class Style extends Evented<MapEvents> {
         this.glyphManager.setURL(url);
     }
 
-    // Callbacks from web workers
-
-    getImages(mapId: undefined, params: MainInbox['getImages']['params'], callback: MainInbox['getImages']['callback']) {
-        this.imageManager.getImages(params.icons.concat(params.patterns), params.scope, callback);
-
-        // Apply queued image changes before setting the tile's dependencies so that the tile
-        // is not reloaded unecessarily. Without this forced update the reload could happen in cases
-        // like this one:
-        // - icons contains "my-image"
-        // - imageManager.getImages(...) triggers `onstyleimagemissing`
-        // - the user adds "my-image" within the callback
-        // - addImage adds "my-image" to this._changes.changedImages
-        // - the next frame triggers a reload of this tile even though it already has the latest version
-        this._updateTilesForChangedImages();
-
-        const iconDeps = params.icons.map(id => ImageId.toString(id));
-        const patternDeps = params.patterns.map(id => ImageId.toString(id));
-        const setDependencies = (sourceCache: SourceCache) => {
-            if (sourceCache) {
-                sourceCache.setDependencies(params.tileID.key, 'icons', iconDeps);
-                sourceCache.setDependencies(params.tileID.key, 'patterns', patternDeps);
-            }
-        };
-
-        const fqid = makeFQID(params.source, params.scope);
-        setDependencies(this._mergedOtherSourceCaches[fqid]);
-        setDependencies(this._mergedSymbolSourceCaches[fqid]);
-
-        if (params.icons.some(id => id.iconsetId) || params.patterns.some(id => id.iconsetId)) {
-            // If the image is an iconset, we need another render cycle
-            // to mark the raster-array tiles as used so we will
-            // request them during Style#updateImageProviders
-            this.fire(new Event('data', {dataType: 'style'}));
-        }
-    }
-
-    rasterizeImages(mapId: undefined, params: MainInbox['rasterizeImages']['params'], callback: MainInbox['rasterizeImages']['callback']) {
-        this.imageManager.rasterizeImages(params, callback);
-    }
-
-    checkAtlasCache(mapId: undefined, params: MainInbox['checkAtlasCache']['params'], callback: MainInbox['checkAtlasCache']['callback']) {
-        // Check if we have a cached atlas matching this descriptor
-        const cachedAtlas = this.imageManager.imageAtlasCache.findCachedAtlas(params.descriptor);
-
-        if (cachedAtlas && cachedAtlas.contentDescriptor) {
-            callback(null, {
-                iconPositions: cachedAtlas.iconPositions,
-                patternPositions: cachedAtlas.patternPositions,
-                sourceHash: cachedAtlas.contentDescriptor.hash
-            });
-        } else {
-            callback(null, null);
-        }
-    }
-
-    getGlyphs(mapId: undefined, params: MainInbox['getGlyphs']['params'], callback: MainInbox['getGlyphs']['callback']) {
-        this.glyphManager.getGlyphs(params.stacks, callback);
-    }
-
     getOwnSourceCache(source: string): SourceCache | undefined {
         return this._otherSourceCaches[source];
     }
@@ -5037,6 +4980,83 @@ class Style extends Evented<MapEvents> {
             delete this.terrain;
             delete this.stylesheet.terrain;
         }
+    }
+
+    // Callbacks from web workers
+
+    async getImages(mapId: undefined, params: MainInbox['getImages']['params']): Promise<MainInbox['getImages']['result']> {
+        const resultPromise = new Promise<MainInbox['getImages']['result']>((resolve, reject) => {
+            this.imageManager.getImages(params.icons.concat(params.patterns), params.scope, (err, result) => {
+                if (err) reject(err);
+                else resolve(result);
+            });
+        });
+
+        // Apply queued image changes before setting the tile's dependencies so that the tile
+        // is not reloaded unecessarily. Without this forced update the reload could happen in cases
+        // like this one:
+        // - icons contains "my-image"
+        // - imageManager.getImages(...) triggers `onstyleimagemissing`
+        // - the user adds "my-image" within the callback
+        // - addImage adds "my-image" to this._changes.changedImages
+        // - the next frame triggers a reload of this tile even though it already has the latest version
+        this._updateTilesForChangedImages();
+
+        const iconDeps = params.icons.map(id => ImageId.toString(id));
+        const patternDeps = params.patterns.map(id => ImageId.toString(id));
+        const setDependencies = (sourceCache: SourceCache) => {
+            if (sourceCache) {
+                sourceCache.setDependencies(params.tileID.key, 'icons', iconDeps);
+                sourceCache.setDependencies(params.tileID.key, 'patterns', patternDeps);
+            }
+        };
+
+        const fqid = makeFQID(params.source, params.scope);
+        setDependencies(this._mergedOtherSourceCaches[fqid]);
+        setDependencies(this._mergedSymbolSourceCaches[fqid]);
+
+        if (params.icons.some(id => id.iconsetId) || params.patterns.some(id => id.iconsetId)) {
+            // If the image is an iconset, we need another render cycle
+            // to mark the raster-array tiles as used so we will
+            // request them during Style#updateImageProviders
+            this.fire(new Event('data', {dataType: 'style'}));
+        }
+
+        return resultPromise;
+    }
+
+    async rasterizeImages(mapId: undefined, params: MainInbox['rasterizeImages']['params']): Promise<MainInbox['rasterizeImages']['result']> {
+        return new Promise((resolve, reject) => {
+            this.imageManager.rasterizeImages(params, (err, result) => {
+                if (err) reject(err);
+                else resolve(result);
+            });
+        });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    async checkAtlasCache(mapId: undefined, params: MainInbox['checkAtlasCache']['params']): Promise<MainInbox['checkAtlasCache']['result']> {
+        // Check if we have a cached atlas matching this descriptor
+        const cachedAtlas = this.imageManager.imageAtlasCache.findCachedAtlas(params.descriptor);
+
+        if (cachedAtlas && cachedAtlas.contentDescriptor) {
+            return {
+                iconPositions: cachedAtlas.iconPositions,
+                patternPositions: cachedAtlas.patternPositions,
+                sourceHash: cachedAtlas.contentDescriptor.hash
+            };
+        }
+
+        return null;
+    }
+
+    async getGlyphs(mapId: undefined, params: MainInbox['getGlyphs']['params']): Promise<MainInbox['getGlyphs']['result']> {
+        return new Promise((resolve, reject) => {
+            this.glyphManager.getGlyphs(params.stacks, (err, result) => {
+                if (err) reject(err);
+                else resolve(result);
+            });
+        });
     }
 }
 

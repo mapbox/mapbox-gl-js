@@ -16,7 +16,7 @@ export function parseActiveFloors(data: VectorTile, indoorTileOptions: IndoorTil
     const sourceLayers = calculateIndoorSourceLayers(indoorTileOptions.sourceLayers, new Set(Object.keys(data.layers)));
     const indoorState = indoorTileOptions.indoorState;
     const indoorData = parseData(data, sourceLayers, indoorState.activeFloors, indoorState.selectedFloorId, tileID);
-    actor.send('setIndoorData', indoorData);
+    actor.send('setIndoorData', indoorData, {skipResult: true});
     return activeFloorsVisible ? indoorData.activeFloors : undefined;
 }
 

@@ -198,7 +198,7 @@ class RasterArrayTile extends Tile implements Tile {
         });
     }
 
-    fetchBand(sourceLayer: string, layerId: string | null, band: string | number, callback: Callback<TDecodingResult[] | null | undefined>, cancelable: boolean = true): Cancelable {
+    fetchBand(sourceLayer: string, layerId: string | null, band: string | number, callback: Callback<TDecodingResult[] | null | undefined>): Cancelable {
         // If header is not loaded, bail out of rendering.
         // Repaint on reload is handled by appropriate callbacks.
         const mrt = this._mrt;
@@ -252,13 +252,13 @@ class RasterArrayTile extends Tile implements Tile {
                 task
             };
 
-            const workerJob = actor.send('decodeRasterArray', params, onDataDecoded);
+            const decodeRequest = actor.sendCancelable('decodeRasterArray', params, {}, onDataDecoded);
 
             if (layerId !== null) {
                 const workQueue = this._workQueuePerLayer.get(layerId) || [];
 
                 workQueue.push(() => {
-                    if (workerJob) workerJob.cancel();
+                    decodeRequest.cancel();
                     task.cancel();
                 });
 

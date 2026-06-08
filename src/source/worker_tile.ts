@@ -44,7 +44,7 @@ import type {TileTransform} from '../geo/projection/tile_transform';
 import type {LUT} from "../util/lut";
 import type {GlyphMap} from '../render/glyph_manager';
 import type {ImagePositionMap} from '../render/image_atlas';
-import type {RasterizedImageMap, ImageRasterizationTasks} from '../render/image_manager';
+import type {ImageRasterizationTasks} from '../render/image_manager';
 import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {ImageVariant, StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 import type {StyleModelMap} from '../style/style_mode';
@@ -490,7 +490,7 @@ class WorkerTile {
                     }
 
                     if (iconRasterizationTasks.size || patternRasterizationTasks.size) {
-                        this.rasterizeTask = actor.send('rasterizeImages', {scope: this.scope, iconTasks: iconRasterizationTasks, patternTasks: patternRasterizationTasks}, (err: Error, rasterizedImages: RasterizedImageMap) => {
+                        this.rasterizeTask = actor.sendCancelable('rasterizeImages', {scope: this.scope, iconTasks: iconRasterizationTasks, patternTasks: patternRasterizationTasks}, {}, (err, rasterizedImages) => {
                             if (!err) {
                                 for (const [id, data] of rasterizedImages.entries()) {
                                     if (iconMap.has(id)) iconMap.set(id, Object.assign(iconMap.get(id), {data}));
@@ -579,28 +579,27 @@ class WorkerTile {
                     const sortedPatterns = sortImagesMap(patternMap, variantCache);
                     const descriptor = new AtlasContentDescriptor(sortedIcons, sortedPatterns, imageVersions, this.lut, variantCache);
 
-                    actor.send('checkAtlasCache', {descriptor, scope: this.scope}, (err: Error, cachedPositions: {iconPositions: ImagePositionMap; patternPositions: ImagePositionMap; sourceHash: number} | null) => {
-                        if (err) {
-                            warnOnce(`[Worker] Error checking atlas cache: ${err.message}`);
-                        }
+                    actor.send('checkAtlasCache', {descriptor, scope: this.scope})
+                        .then((cachedPositions) => {
+                            let imageAtlasForTransfer: ImageAtlas | ImageAtlasReference;
+                            let positions: {iconPositions: ImagePositionMap; patternPositions: ImagePositionMap};
 
-                        // Phase 2: Create atlas or use cached positions
-                        let imageAtlasForTransfer: ImageAtlas | ImageAtlasReference;
-                        let positions: {iconPositions: ImagePositionMap; patternPositions: ImagePositionMap};
+                            if (cachedPositions) {
+                                imageAtlasForTransfer = new ImageAtlasReference(cachedPositions.sourceHash);
+                                positions = cachedPositions;
+                            } else {
+                                const imageAtlas = new ImageAtlas(iconMap, patternMap, this.lut, imageVersions);
+                                imageAtlasForTransfer = imageAtlas;
+                                positions = imageAtlas;
+                            }
 
-                        if (cachedPositions) {
-                            // Cache hit: Create reference for transfer, use cached positions for buckets
-                            imageAtlasForTransfer = new ImageAtlasReference(cachedPositions.sourceHash);
-                            positions = cachedPositions;
-                        } else {
-                            // Cache miss: Create full atlas, use it for both transfer and buckets
+                            completeBucketProcessing(imageAtlasForTransfer, positions);
+                        })
+                        .catch((err: Error) => {
+                            if (err.name !== 'AbortError') warnOnce(`[Worker] Error checking atlas cache: ${err.message}`);
                             const imageAtlas = new ImageAtlas(iconMap, patternMap, this.lut, imageVersions);
-                            imageAtlasForTransfer = imageAtlas;
-                            positions = imageAtlas;
-                        }
-
-                        completeBucketProcessing(imageAtlasForTransfer, positions);
-                    });
+                            completeBucketProcessing(imageAtlas, imageAtlas);
+                        });
                 } else {
                     // No images but has symbol layout (text-only symbols) - complete synchronously
                     // Provide empty position maps for text-only symbols
@@ -615,13 +614,19 @@ class WorkerTile {
             if (!this.extraShadowCaster) {
                 const stacks = mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
                 if (Object.keys(stacks).length) {
-                    actor.send('getGlyphs', {uid: this.uid, stacks}, (err, result: GlyphMap) => {
-                        if (!error) {
-                            error = err;
-                            glyphMap = result;
-                            maybePrepare();
-                        }
-                    }, undefined, taskMetadata);
+                    actor.send('getGlyphs', {uid: this.uid, stacks}, {metadata: taskMetadata})
+                        .then((result: GlyphMap) => {
+                            if (!error) {
+                                glyphMap = result;
+                                maybePrepare();
+                            }
+                        })
+                        .catch((err: Error) => {
+                            if (!error) {
+                                error = err;
+                                maybePrepare();
+                            }
+                        });
                 } else {
                     glyphMap = {};
                 }
@@ -631,18 +636,24 @@ class WorkerTile {
                 const icons = Array.from(options.iconDependencies.keys()).map((id) => ImageId.parse(id));
                 const patterns = Array.from(options.patternDependencies.keys()).map((id) => ImageId.parse(id));
                 if (icons.length || patterns.length) {
-                    actor.send('getImages', {icons, patterns, source: this.source, scope: this.scope, tileID: this.tileID}, (err: Error, getImagesResult: {images: StyleImageMap<StringifiedImageId>; versions: Map<string, number>}) => {
-                        if (error) return;
-                        error = err;
-                        iconMap = new Map();
-                        patternMap = new Map();
-                        iconRasterizationTasks = this.updateImageMapAndGetImageTaskQueue(iconMap, getImagesResult.images, options.iconDependencies);
-                        patternRasterizationTasks = this.updateImageMapAndGetImageTaskQueue(patternMap, getImagesResult.images, options.patternDependencies);
-                        for (const [id, version] of getImagesResult.versions.entries()) {
-                            imageVersions.set(id, version);
-                        }
-                        maybePrepare();
-                    }, undefined, taskMetadata);
+                    actor.send('getImages', {icons, patterns, source: this.source, scope: this.scope, tileID: this.tileID}, {metadata: taskMetadata})
+                        .then((getImagesResult) => {
+                            if (error) return;
+                            iconMap = new Map();
+                            patternMap = new Map();
+                            iconRasterizationTasks = this.updateImageMapAndGetImageTaskQueue(iconMap, getImagesResult.images, options.iconDependencies);
+                            patternRasterizationTasks = this.updateImageMapAndGetImageTaskQueue(patternMap, getImagesResult.images, options.patternDependencies);
+                            for (const [id, version] of getImagesResult.versions.entries()) {
+                                imageVersions.set(id, version);
+                            }
+                            maybePrepare();
+                        })
+                        .catch((err: Error) => {
+                            if (!error) {
+                                error = err;
+                                maybePrepare();
+                            }
+                        });
                 } else {
                     iconMap = new Map();
                     patternMap = new Map();

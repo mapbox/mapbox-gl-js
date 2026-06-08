@@ -22,7 +22,6 @@ import type {MainInbox, WorkerInbox} from '../util/actor_messages';
 import type {WorkerSourceType, WorkerSource, WorkerSourceConstructor, WorkerSourceRequest} from './worker_source';
 import type {TileProvider} from './tile_provider';
 import type {StyleModelMap} from '../style/style_mode';
-import type {Callback} from '../types/callback';
 
 /**
  * Generic type for grouping items by mapId and style scope.
@@ -33,6 +32,11 @@ type WorkerScopeRegistry<T> = Record<string, Record<string, T>>;
  * WorkerSources grouped by mapId, style scope, sourceType, and sourceId.
  */
 type WorkerSourceRegistry = WorkerScopeRegistry<Record<string, Record<string, WorkerSource>>>;
+
+type RTLParsingListener = {
+    resolve: (value: boolean) => void;
+    reject: (err: Error) => void;
+};
 
 /**
  * @private
@@ -53,7 +57,7 @@ export default class MapWorker {
     maxUniformBufferBindings: number | null | undefined;
     maxUniformBlockSizeDwords: number | null | undefined;
     worldview: string | undefined;
-    rtlPluginParsingListeners: Array<Callback<boolean>>;
+    rtlPluginParsingListeners: Array<RTLParsingListener>;
 
     constructor(self: Worker) {
         PerformanceUtils.measure('workerEvaluateScript');
@@ -100,25 +104,23 @@ export default class MapWorker {
             globalRTLTextPlugin['processBidirectionalText'] = rtlTextPlugin.processBidirectionalText;
             globalRTLTextPlugin['processStyledBidirectionalText'] = rtlTextPlugin.processStyledBidirectionalText;
 
-            for (const callback of this.rtlPluginParsingListeners) {
-                callback(null, true);
+            for (const {resolve} of this.rtlPluginParsingListeners) {
+                resolve(true);
             }
             this.rtlPluginParsingListeners = [];
         };
     }
 
-    clearCaches(mapId: number, params: WorkerInbox['clearCaches']['params'], callback: WorkerInbox['clearCaches']['callback']) {
+    clearCaches(mapId: number, _params: WorkerInbox['clearCaches']['params']) {
         delete this.layerIndexes[mapId];
         delete this.availableImages[mapId];
         delete this.availableModels[mapId];
         delete this.workerSources[mapId];
         delete this.isSpriteLoaded[mapId];
-        callback();
     }
 
-    checkIfReady(mapId: number, params: WorkerInbox['checkIfReady']['params'], callback: WorkerInbox['checkIfReady']['callback']) {
+    checkIfReady(_mapId: number, _params: WorkerInbox['checkIfReady']['params']) {
         // noop, used to check if a worker is fully set up and ready to receive messages
-        callback();
     }
 
     spriteLoaded(mapId: number, params: WorkerInbox['spriteLoaded']['params']) {
@@ -144,7 +146,7 @@ export default class MapWorker {
         }
     }
 
-    setImages(mapId: number, params: WorkerInbox['setImages']['params'], callback: WorkerInbox['setImages']['callback']) {
+    setImages(mapId: number, params: WorkerInbox['setImages']['params']) {
         if (!this.availableImages[mapId]) {
             this.availableImages[mapId] = {};
         }
@@ -157,7 +159,6 @@ export default class MapWorker {
         }
 
         if (!this.workerSources[mapId] || !this.workerSources[mapId][scope]) {
-            callback();
             return;
         }
 
@@ -167,11 +168,9 @@ export default class MapWorker {
                 ws[source].availableImages = images;
             }
         }
-
-        callback();
     }
 
-    setModels(mapId: number, {scope, models}: WorkerInbox['setModels']['params'], callback: WorkerInbox['setModels']['callback']) {
+    setModels(mapId: number, {scope, models}: WorkerInbox['setModels']['params']) {
         if (!this.availableModels[mapId]) {
             this.availableModels[mapId] = {};
         }
@@ -179,7 +178,6 @@ export default class MapWorker {
         this.availableModels[mapId][scope] = models;
 
         if (!this.workerSources[mapId] || !this.workerSources[mapId][scope]) {
-            callback();
             return;
         }
 
@@ -189,8 +187,6 @@ export default class MapWorker {
                 ws[source].availableModels = models;
             }
         }
-
-        callback();
     }
 
     setProjection(mapId: number, config: WorkerInbox['setProjection']['params']) {
@@ -208,53 +204,50 @@ export default class MapWorker {
         }
     }
 
-    upsertRenderParams(mapId: number, params: WorkerInbox['upsertRenderParams']['params'], callback: WorkerInbox['upsertRenderParams']['callback']) {
+    upsertRenderParams(mapId: number, params: WorkerInbox['upsertRenderParams']['params']) {
         if (params.brightness !== undefined) {
             this.brightness = params.brightness;
         }
         if (params.worldview !== undefined) {
             this.worldview = params.worldview;
         }
-        callback();
     }
 
-    setLayers(mapId: number, params: WorkerInbox['setLayers']['params'], callback: WorkerInbox['setLayers']['callback']) {
+    setLayers(mapId: number, params: WorkerInbox['setLayers']['params']) {
         this.getLayerIndex(mapId, params.scope).replace(params.layers, params.options);
-        callback();
     }
 
-    updateLayers(mapId: number, params: WorkerInbox['updateLayers']['params'], callback: WorkerInbox['updateLayers']['callback']) {
+    updateLayers(mapId: number, params: WorkerInbox['updateLayers']['params']) {
         this.getLayerIndex(mapId, params.scope).update(params.layers, params.removedIds, params.options);
-        callback();
     }
 
-    loadTile(mapId: number, params: WorkerInbox['loadTile']['params'], callback: WorkerInbox['loadTile']['callback']) {
+    loadTile(mapId: number, params: WorkerInbox['loadTile']['params']): Promise<WorkerInbox['loadTile']['result']> {
         assert(params.type);
         params.projection = this.projections[mapId] || this.defaultProjection;
-        this.getWorkerSource(mapId, params).loadTile(params, callback);
+        return this.getWorkerSource(mapId, params).loadTile(params);
     }
 
-    decodeRasterArray(mapId: number, params: WorkerInbox['decodeRasterArray']['params'], callback: WorkerInbox['decodeRasterArray']['callback']) {
-        (this.getWorkerSource(mapId, params) as RasterArrayTileWorkerSource).decodeRasterArray(params, callback);
+    decodeRasterArray(mapId: number, params: WorkerInbox['decodeRasterArray']['params']): Promise<WorkerInbox['decodeRasterArray']['result']> {
+        return (this.getWorkerSource(mapId, params) as RasterArrayTileWorkerSource).decodeRasterArray(params);
     }
 
-    reloadTile(mapId: number, params: WorkerInbox['reloadTile']['params'], callback: WorkerInbox['reloadTile']['callback']) {
+    reloadTile(mapId: number, params: WorkerInbox['reloadTile']['params']): Promise<WorkerInbox['reloadTile']['result']> {
         assert(params.type);
         params.projection = this.projections[mapId] || this.defaultProjection;
-        this.getWorkerSource(mapId, params).reloadTile(params, callback);
+        return this.getWorkerSource(mapId, params).reloadTile(params);
     }
 
-    abortTile(mapId: number, params: WorkerInbox['abortTile']['params'], callback: WorkerInbox['abortTile']['callback']) {
+    abortTile(mapId: number, params: WorkerInbox['abortTile']['params']): Promise<void> | void {
         assert(params.type);
-        this.getWorkerSource(mapId, params).abortTile(params, callback);
+        return this.getWorkerSource(mapId, params).abortTile(params);
     }
 
-    removeTile(mapId: number, params: WorkerInbox['removeTile']['params'], callback: WorkerInbox['removeTile']['callback']) {
+    removeTile(mapId: number, params: WorkerInbox['removeTile']['params']): Promise<void> | void {
         assert(params.type);
-        this.getWorkerSource(mapId, params).removeTile(params, callback);
+        return this.getWorkerSource(mapId, params).removeTile(params);
     }
 
-    removeSource(mapId: number, params: WorkerInbox['removeSource']['params'], callback: WorkerInbox['removeSource']['callback']) {
+    removeSource(mapId: number, params: WorkerInbox['removeSource']['params']): Promise<void> | void {
         assert(params.type);
         assert(params.scope);
         assert(params.source);
@@ -270,9 +263,7 @@ export default class MapWorker {
         delete this.workerSources[mapId][params.scope][params.type][params.source];
 
         if (worker.removeSource !== undefined) {
-            worker.removeSource(params, callback);
-        } else {
-            callback();
+            return worker.removeSource(params);
         }
     }
 
@@ -282,59 +273,55 @@ export default class MapWorker {
      * Called via broadcast from the main thread.
      * @private
      */
-    loadTileProvider(mapId: number, params: WorkerInbox['loadTileProvider']['params'], callback: WorkerInbox['loadTileProvider']['callback']) {
-        loadTileProvider(params.name, params.url)
-            .then((ProviderClass) => {
-                const tileProvider = new ProviderClass(params.options);
+    async loadTileProvider(mapId: number, params: WorkerInbox['loadTileProvider']['params']): Promise<WorkerInbox['loadTileProvider']['result']> {
+        const ProviderClass = await loadTileProvider(params.name, params.url);
+        const tileProvider = new ProviderClass(params.options);
 
-                this.getWorkerSource(mapId, {
-                    type: params.type,
-                    source: params.source,
-                    scope: params.scope,
-                } as WorkerSourceRequest, tileProvider);
+        this.getWorkerSource(mapId, {
+            type: params.type,
+            source: params.source,
+            scope: params.scope,
+        } as WorkerSourceRequest, tileProvider);
 
-                if (tileProvider.load && params.request) {
-                    return tileProvider.load({request: params.request});
-                }
+        if (tileProvider.load && params.request) {
+            return tileProvider.load({request: params.request});
+        }
 
-                return null;
-            })
-            .then((tileJSON) => callback(null, tileJSON))
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string
-            .catch((err: unknown) => callback(err instanceof Error ? err : new Error(String(err))));
+        return null;
     }
 
-    async syncRTLPluginState(mapId: number, state: WorkerInbox['syncRTLPluginState']['params'], callback: WorkerInbox['syncRTLPluginState']['callback']) {
+    async syncRTLPluginState(_mapId: number, state: WorkerInbox['syncRTLPluginState']['params']): Promise<WorkerInbox['syncRTLPluginState']['result']> {
         if (globalRTLTextPlugin.isParsed()) {
-            callback(null, true);
-            return;
+            return true;
         }
         if (globalRTLTextPlugin.isParsing()) {
-            this.rtlPluginParsingListeners.push(callback);
-            return;
+            return new Promise((resolve, reject) => {
+                this.rtlPluginParsingListeners.push({resolve, reject});
+            });
         }
 
         globalRTLTextPlugin.setState(state);
         const pluginURL = globalRTLTextPlugin.getPluginURL();
         if (!globalRTLTextPlugin.isLoaded() || globalRTLTextPlugin.isParsed() || globalRTLTextPlugin.isParsing()) {
-            callback(null, false);
-            return;
+            return false;
         }
 
         globalRTLTextPlugin.setState({pluginStatus: rtlPluginStatus.parsing, pluginURL});
         try {
             await import(/* webpackIgnore: true */ /* @vite-ignore */ pluginURL);
-
             if (globalRTLTextPlugin.isParsed()) {
-                callback(null, true);
-            } else {
-                this.rtlPluginParsingListeners.push(callback);
+                // registerRTLTextPlugin (the only path to `parsed`) already resolved
+                // and cleared the waiting listeners during import eval.
+                return true;
             }
-        } catch (e) {
+            return new Promise<boolean>((resolve, reject) => {
+                this.rtlPluginParsingListeners.push({resolve, reject});
+            });
+        } catch (e: unknown) {
             globalRTLTextPlugin.setState({pluginStatus: rtlPluginStatus.error, pluginURL});
-            callback(e as Error);
-            for (const cb of this.rtlPluginParsingListeners) cb(e as Error);
+            for (const {reject} of this.rtlPluginParsingListeners) reject(e as Error);
             this.rtlPluginParsingListeners = [];
+            throw e;
         }
     }
 
@@ -396,8 +383,8 @@ export default class MapWorker {
             this.isSpriteLoaded[mapId] = {};
 
         if (!workerSources[mapId][scope][type][source]) {
-            // one worker actor serves many maps
-            // bind the owning mapId so the WorkerSource's replies route to the right map
+            // One worker actor serves many maps; bind the owning mapId so the
+            // WorkerSource's replies route back to the right map.
             const actor = this.actor.getWorkerSourceActor(mapId);
 
             const WorkerSourceConstructor = this.workerSourceTypes[type as WorkerSourceType];
@@ -427,7 +414,7 @@ export default class MapWorker {
         return workerSources[mapId][scope][type][source];
     }
 
-    enforceCacheSizeLimit(mapId: number, limit: WorkerInbox['enforceCacheSizeLimit']['params']) {
+    enforceCacheSizeLimit(_mapId: number, limit: WorkerInbox['enforceCacheSizeLimit']['params']) {
         enforceCacheSizeLimit(limit);
     }
 

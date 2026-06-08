@@ -185,22 +185,19 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             type: this.type,
             options,
             request,
-        }, (err, results) => {
-            if (controller.signal.aborted) return;
-
-            if (err) {
-                callback(err);
-                return;
-            }
-
-            const tileJSON = results ? results.find((r: Partial<TileJSON> | null) => r != null) : null;
-            const result = processTileJSON(this._options, tileJSON, this.map._requestManager);
-            if (result instanceof Error) {
-                callback(result);
-            } else {
-                callback(null, result);
-            }
-        });
+        }, {keepResult: true, signal: controller.signal})
+            .then((results) => {
+                const tileJSON = results ? results.find((r) => r != null) : null;
+                const result = processTileJSON(this._options, tileJSON, this.map._requestManager);
+                if (result instanceof Error) {
+                    callback(result);
+                } else {
+                    callback(null, result);
+                }
+            })
+            .catch((err: Error) => {
+                if (err.name !== 'AbortError') callback(err);
+            });
 
         return {cancel: () => controller.abort()};
     }
@@ -389,7 +386,9 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                             cacheControl: expiryData.cacheControl,
                         };
 
-                        if (tile.actor) tile.actor.send('loadTile', params, done.bind(this));
+                        if (tile.actor) {
+                            tile.request = tile.actor.sendCancelable('loadTile', params, {}, done.bind(this));
+                        }
                     }
                 }, true);
 
@@ -397,7 +396,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
 
             } else {
 
-                tile.request = tile.actor.send('loadTile', params, done.bind(this));
+                tile.request = tile.actor.sendCancelable('loadTile', params, {}, done.bind(this));
             }
 
         } else if (tile.state === 'loading') {
@@ -406,7 +405,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
 
         } else {
 
-            tile.request = tile.actor.send('reloadTile', params, done.bind(this));
+            tile.request = tile.actor.sendCancelable('reloadTile', params, {}, done.bind(this));
         }
 
         function done(this: VectorTileSource, err?: Error | null, data?: WorkerSourceVectorTileResult | null) {
@@ -471,13 +470,13 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             delete tile.request;
         }
         if (tile.actor) {
-            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope});
+            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope}, {skipResult: true});
         }
     }
 
     unloadTile(tile: Tile, _?: Callback<undefined> | null) {
         if (tile.actor) {
-            tile.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope});
+            tile.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope}, {skipResult: true});
         }
         tile.destroy();
     }

@@ -27,10 +27,10 @@ describe('QueryFeatures#source', () => {
         }, {
             getActor() {
                 return {
-                    send(type, params, callback) { return callback ? callback() : undefined; }
+                    async send() {}
                 };
             }
-        } as Dispatcher, this);
+        } as unknown as Dispatcher, this);
         const sourceCache = new SourceCache('test', source);
         const result = querySourceFeatures(sourceCache, {});
         expect(result).toEqual([]);

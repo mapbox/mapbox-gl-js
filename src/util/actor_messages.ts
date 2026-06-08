@@ -1,4 +1,3 @@
-import type {ActorCallback} from './actor';
 import type {ConfigOptions} from '../style-spec/types/config_options';
 import type {GlyphMap, FontStacks} from '../render/glyph_manager';
 import type {ImageId, StringifiedImageId} from '../style-spec/expression/types/image_id';
@@ -44,52 +43,52 @@ type GlobalParams = {
 export type WorkerInbox = {
     'abortTile': {
         params: WorkerSourceTileRequest;
-        callback: ActorCallback<void>;
+        result: void;
     };
 
     'checkIfReady': {
         params: void;
-        callback: ActorCallback<void>;
+        result: void;
     };
 
     'clearCaches': {
         params: void;
-        callback: ActorCallback<void>;
+        result: void;
     };
 
     'decodeRasterArray': {
         params: WorkerSourceTileRequest & {buffer: ArrayBuffer; task: TProcessingBatch};
-        callback: ActorCallback<TDecodingResult[]>;
+        result: TDecodingResult[];
     };
 
     'enforceCacheSizeLimit': {
         params: number;
-        callback: void;
+        result: void;
     };
 
     'geojson.getClusterChildren': {
         params: {clusterId: number; source: string; scope: string;};
-        callback: ActorCallback<GeoJSON.Feature[]>;
+        result: GeoJSON.Feature[];
     };
 
     'geojson.getClusterExpansionZoom': {
         params: {clusterId: number; source: string; scope: string;};
-        callback: ActorCallback<number>;
+        result: number;
     };
 
     'geojson.getClusterLeaves': {
         params: {source: string; scope: string; clusterId: number; limit: number; offset: number;};
-        callback: ActorCallback<GeoJSON.Feature[]>;
+        result: GeoJSON.Feature[];
     };
 
     'geojson.loadData': {
         params: LoadGeoJSONRequest;
-        callback: ActorCallback<LoadGeoJSONResult>;
+        result: LoadGeoJSONResult;
     };
 
     'loadTile': {
         params: WorkerSourceTileRequest;
-        callback: ActorCallback<unknown>;
+        result: unknown;
     };
 
     'loadTileProvider': {
@@ -102,67 +101,67 @@ export type WorkerInbox = {
             options: Partial<SourceSpecification>;
             request?: RequestParameters;
         };
-        callback: ActorCallback<Partial<TileJSON> | null>;
+        result: Partial<TileJSON> | null;
     };
 
     'reloadTile': {
         params: WorkerSourceTileRequest;
-        callback: ActorCallback<unknown>;
+        result: unknown;
     };
 
     'removeSource': {
         params: WorkerSourceRequest;
-        callback: ActorCallback<void>;
+        result: void;
     };
 
     'removeTile': {
         params: WorkerSourceTileRequest;
-        callback: ActorCallback<void>;
+        result: void;
     };
 
     'upsertRenderParams': {
         params: RenderParameters;
-        callback: ActorCallback<void>;
+        result: void;
     };
 
     'setGlobalParams': {
         params: GlobalParams;
-        callback: ActorCallback<void>;
+        result: void;
     };
 
     'setImages': {
         params: {images: ImageId[]; scope: string; isSpriteLoaded?: boolean};
-        callback: ActorCallback<void>;
+        result: void;
     };
 
     'spriteLoaded': {
         params: {scope: string;};
-        callback: ActorCallback<void>;
+        result: void;
     };
 
     'setLayers': {
         params: {layers: LayerSpecification[]; scope: string; options: ConfigOptions};
-        callback: ActorCallback<void>;
+        result: void;
     };
 
     'setModels': {
         params: {models: StyleModelMap; scope: string;};
-        callback: ActorCallback<void>;
+        result: void;
     };
 
     'setProjection': {
         params: ProjectionSpecification;
-        callback: void;
+        result: void;
     };
 
     'syncRTLPluginState': {
         params: PluginState;
-        callback: ActorCallback<boolean>;
+        result: boolean;
     };
 
     'updateLayers': {
         params: {layers: LayerSpecification[]; removedIds: string[]; scope: string; options: ConfigOptions};
-        callback: ActorCallback<void>;
+        result: void;
     };
 };
 
@@ -172,27 +171,27 @@ export type WorkerInbox = {
 export type MainInbox = {
     'getGlyphs': {
         params: {stacks: FontStacks; uid?: number};
-        callback: ActorCallback<GlyphMap>;
+        result: GlyphMap;
     };
 
     'getImages': {
         params: {icons: ImageId[]; patterns: ImageId[]; scope: string; source: string; tileID: OverscaledTileID};
-        callback: ActorCallback<{images: StyleImageMap<StringifiedImageId>; versions: Map<string, number>}>;
+        result: {images: StyleImageMap<StringifiedImageId>; versions: Map<string, number>};
     };
 
     'checkAtlasCache': {
         params: {descriptor: AtlasContentDescriptor; scope: string};
-        callback: ActorCallback<{iconPositions: ImagePositionMap; patternPositions: ImagePositionMap; sourceHash: number} | null>;
+        result: {iconPositions: ImagePositionMap; patternPositions: ImagePositionMap; sourceHash: number} | null;
     };
 
     'rasterizeImages': {
         params: {scope: string; iconTasks: ImageRasterizationTasks; patternTasks: ImageRasterizationTasks};
-        callback: ActorCallback<RasterizedImageMap>;
+        result: RasterizedImageMap;
     };
 
     'setIndoorData': {
         params: IndoorData;
-        callback: void;
+        result: void;
     };
 };
 

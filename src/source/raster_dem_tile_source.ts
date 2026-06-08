@@ -40,22 +40,19 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
             type: this.type,
             options,
             request,
-        }, (err, results) => {
-            if (controller.signal.aborted) return;
-
-            if (err) {
-                callback(err);
-                return;
-            }
-
-            const tileJSON = results ? results.find((r: Partial<TileJSON> | null) => r != null) : null;
-            const result = processTileJSON(this._options, tileJSON, this.map._requestManager);
-            if (result instanceof Error) {
-                callback(result);
-            } else {
-                callback(null, result);
-            }
-        });
+        }, {keepResult: true, signal: controller.signal})
+            .then((results) => {
+                const tileJSON = results ? results.find((r) => r != null) : null;
+                const result = processTileJSON(this._options, tileJSON, this.map._requestManager);
+                if (result instanceof Error) {
+                    callback(result);
+                } else {
+                    callback(null, result);
+                }
+            })
+            .catch((err: Error) => {
+                if (err.name !== 'AbortError') callback(err);
+            });
 
         return {cancel: () => controller.abort()};
     }
@@ -76,7 +73,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
 
         if (!tile.actor || tile.state === 'expired') {
             tile.actor = this.dispatcher.getActor();
-            tile.request = tile.actor.send('loadTile', params, done.bind(this));
+            tile.request = tile.actor.sendCancelable('loadTile', params, {}, done.bind(this));
         }
 
         function done(this: RasterDEMTileSource, err?: Error | null, result?: WorkerSourceDEMTileResult | null) {
@@ -116,7 +113,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
             delete tile.request;
         }
         if (tile.actor) {
-            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope});
+            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope}, {skipResult: true});
         }
         if (callback) callback();
     }

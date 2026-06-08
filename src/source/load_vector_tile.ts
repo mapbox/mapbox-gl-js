@@ -126,6 +126,6 @@ export function loadVectorTile(
         this.deduped.entries[key] = {result: [null, params.data]};
     }
 
-    const callbackMetadata: TaskMetadata = {type: 'parseTile', renderSourceType: params.renderSourceType, zoom: params.tileZoom};
-    return this.deduped.request(key, callbackMetadata, makeRequest, callback);
+    const metadata: TaskMetadata = {type: 'parseTile', renderSourceType: params.renderSourceType, zoom: params.tileZoom};
+    return this.deduped.request(key, metadata, makeRequest, callback);
 }

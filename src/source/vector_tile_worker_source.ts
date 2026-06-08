@@ -18,11 +18,12 @@ import type {
 import type StyleLayerIndex from '../style/style_layer_index';
 import type Scheduler from '../util/scheduler';
 import type {TaskMetadata} from '../util/scheduler';
-import type {LoadVectorData, LoadVectorDataCallback} from './load_vector_tile';
+import type {LoadVectorData, LoadVectorDataCallback, LoadVectorTileResult} from './load_vector_tile';
 import type {Cancelable} from '../types/cancelable';
 import type {TileProvider} from './tile_provider';
 import type {ImageId} from '../style-spec/expression/types/image_id';
 import type {StyleModelMap} from '../style/style_mode';
+import type {ExpiryData} from './tile';
 
 /**
  * The {@link WorkerSource} implementation that supports {@link VectorTileSource}.
@@ -122,110 +123,158 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
      * {@link VectorTileWorkerSource#loadTileData} for fetching raw tile data.
      * @private
      */
-    loadTile(params: WorkerSourceVectorTileRequest, callback: WorkerSourceVectorTileCallback) {
-        const uid = params.uid;
+    _fetchTileData(workerTile: WorkerTile, params: WorkerSourceVectorTileRequest): Promise<LoadVectorTileResult | null | undefined> {
+        return new Promise((resolve, reject) => {
+            workerTile.abort = this.loadTileData(params, (err, response) => {
+                if (err) reject(err);
+                else resolve(response);
+            });
+        });
+    }
 
+    async _parse(workerTile: WorkerTile, params: WorkerSourceVectorTileRequest): Promise<WorkerSourceVectorTileResult | null | undefined> {
+        // When the sprite isn't ready, defer until Style emits 'spriteLoaded' (surfaced here as 'isSpriteLoaded').
+        const deferred = !this.isSpriteLoaded;
+        if (deferred) {
+            await this.once('isSpriteLoaded');
+        }
+
+        return new Promise<WorkerSourceVectorTileResult | null | undefined>((resolve, reject) => {
+            const runParse = () => workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.availableModels, this.actor, (err, result) => {
+                if (err) reject(err);
+                else resolve(result);
+            });
+
+            // Tiles that waited for the sprite are routed through the scheduler so parsing is prioritized by zoom/type.
+            if (deferred && this.scheduler) {
+                const metadata: TaskMetadata = {type: 'parseTile', renderSourceType: params.renderSourceType, zoom: params.tileZoom};
+                this.scheduler.add(runParse, metadata);
+            } else {
+                runParse();
+            }
+        });
+    }
+
+    async loadTile(params: WorkerSourceVectorTileRequest): Promise<WorkerSourceVectorTileResult | null | undefined> {
+        const uid = params.uid;
         const requestParam = params && params.request;
         const perf = requestParam && requestParam.collectResourceTiming;
 
         const workerTile = this.loading[uid] = new WorkerTile(params);
         workerTile.maxUniformBufferBindings = this.maxUniformBufferBindings;
         workerTile.maxUniformBlockSizeDwords = this.maxUniformBlockSizeDwords;
-        workerTile.abort = this.loadTileData(params, (err, response) => {
-            const aborted = !this.loading[uid];
 
-            delete this.loading[uid];
-
-            workerTile.cancelRasterize();
-
-            if (aborted || err || !response) {
-                workerTile.status = 'done';
-                if (!aborted) this.loaded[uid] = workerTile;
-                return callback(err);
-            }
-
-            const rawTileData = response.rawData;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const cacheControl: Record<string, any> = {};
-            const expiryData = getExpiryDataFromHeaders(response.responseHeaders);
-            if (expiryData && expiryData.expires) cacheControl.expires = expiryData.expires;
-            if (expiryData && expiryData.cacheControl) cacheControl.cacheControl = expiryData.cacheControl;
-
-            // response.vectorTile will be present in the GeoJSON worker case (which inherits from this class)
-            // because we stub the vector tile interface around JSON data instead of parsing it directly
-            workerTile.vectorTile = response.vectorTile || new VectorTile(new PbfReader(rawTileData));
-            const parseTile = () => {
-                const WorkerSourceVectorTileCallback = (err?: Error | null, result?: WorkerSourceVectorTileResult | null) => {
-                    if (err || !result) return callback(err);
-
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const resourceTiming: Record<string, any> = {};
-                    if (perf) {
-                        // Transferring a copy of rawTileData because the worker needs to retain its copy.
-                        const resourceTimingData = getPerformanceMeasurement(requestParam);
-                        // it's necessary to eval the result of getEntriesByName() here via parse/stringify
-                        // late evaluation in the main thread causes TypeError: illegal invocation
-                        if (resourceTimingData.length > 0) {
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                            resourceTiming.resourceTiming = JSON.parse(JSON.stringify(resourceTimingData));
-                        }
-                    }
-                    callback(null, Object.assign({rawTileData: rawTileData.slice(0), responseHeaders: response.responseHeaders}, result, cacheControl, resourceTiming));
-                };
-                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.availableModels, this.actor, WorkerSourceVectorTileCallback);
-            };
-
-            if (this.isSpriteLoaded) {
-                parseTile();
+        const reload = (err: Error | null, result?: WorkerSourceVectorTileResult | null) => {
+            const reloadCallback = workerTile.reloadCallback;
+            if (!reloadCallback) return;
+            delete workerTile.reloadCallback;
+            if (err || !result) {
+                reloadCallback(err, null);
             } else {
-                // Defer tile parsing until sprite is ready. Style emits 'spriteLoaded' event, which triggers the 'isSpriteLoaded' event here.
-                this.once('isSpriteLoaded', () => {
-                    if (this.scheduler) {
-                        const metadata: TaskMetadata = {type: 'parseTile', renderSourceType: params.renderSourceType, zoom: params.tileZoom};
-                        this.scheduler.add(parseTile, metadata);
-                    } else {
-                        parseTile();
-                    }
-                });
+                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.availableModels, this.actor, reloadCallback);
             }
+        };
 
-            this.loaded = this.loaded || {};
-            this.loaded[uid] = workerTile;
-        });
+        let response: LoadVectorTileResult | null | undefined;
+        let dataErr: unknown;
+        try {
+            response = await this._fetchTileData(workerTile, params);
+        } catch (err) {
+            dataErr = err;
+        }
+
+        const aborted = !this.loading[uid];
+        delete this.loading[uid];
+        workerTile.cancelRasterize();
+
+        if (dataErr || aborted || !response) {
+            workerTile.status = 'done';
+            if (!aborted) this.loaded[uid] = workerTile;
+            if (dataErr) throw dataErr;
+            return null;
+        }
+
+        const rawTileData = response.rawData;
+        const cacheControl: ExpiryData = {};
+        const expiryData = getExpiryDataFromHeaders(response.responseHeaders);
+        if (expiryData && expiryData.expires) cacheControl.expires = expiryData.expires;
+        if (expiryData && expiryData.cacheControl) cacheControl.cacheControl = expiryData.cacheControl;
+
+        // response.vectorTile will be present in the GeoJSON worker case (which inherits from this class)
+        // because we stub the vector tile interface around JSON data instead of parsing it directly
+        workerTile.vectorTile = response.vectorTile || new VectorTile(new PbfReader(rawTileData));
+
+        this.loaded = this.loaded || {};
+        this.loaded[uid] = workerTile;
+
+        let result: WorkerSourceVectorTileResult | null | undefined;
+        try {
+            result = await this._parse(workerTile, params);
+        } catch (err) {
+            reload(err as Error);
+            throw err;
+        }
+
+        if (!result) {
+            reload(null, null);
+            return null;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const resourceTiming: Record<string, any> = {};
+        if (perf) {
+            // Transferring a copy of rawTileData because the worker needs to retain its copy.
+            const resourceTimingData = getPerformanceMeasurement(requestParam);
+            // it's necessary to eval the result of getEntriesByName() here via parse/stringify
+            // late evaluation in the main thread causes TypeError: illegal invocation
+            if (resourceTimingData.length > 0) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                resourceTiming.resourceTiming = JSON.parse(JSON.stringify(resourceTimingData));
+            }
+        }
+
+        const finalResult = Object.assign({rawTileData: rawTileData.slice(0), responseHeaders: response.responseHeaders}, result, cacheControl, resourceTiming);
+
+        reload(null, result);
+
+        return finalResult;
     }
 
     /**
      * Implements {@link WorkerSource#reloadTile}.
      * @private
      */
-    reloadTile(params: WorkerSourceVectorTileRequest, callback: WorkerSourceVectorTileCallback) {
-        const loaded = this.loaded,
-            uid = params.uid;
+    async reloadTile(params: WorkerSourceVectorTileRequest): Promise<WorkerSourceVectorTileResult | undefined | null> {
+        const loaded = this.loaded;
+        const uid = params.uid;
 
         if (loaded && loaded[uid]) {
-            const workerTile = loaded[uid];
-            workerTile.updateParameters(params);
-            const done = (err?: Error | null, data?: WorkerSourceVectorTileResult | null) => {
-                const reloadCallback = workerTile.reloadCallback;
-                if (reloadCallback) {
-                    delete workerTile.reloadCallback;
-                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.availableModels, this.actor, reloadCallback);
-                }
-                callback(err, data);
-            };
+            return new Promise((resolve, reject) => {
+                const workerTile = loaded[uid];
+                workerTile.updateParameters(params);
+                const done: WorkerSourceVectorTileCallback = (err, data) => {
+                    const reloadCallback = workerTile.reloadCallback;
+                    if (reloadCallback) {
+                        delete workerTile.reloadCallback;
+                        workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.availableModels, this.actor, reloadCallback);
+                    }
+                    if (err) reject(err);
+                    else resolve(data);
+                };
 
-            if (workerTile.status === 'parsing') {
-                workerTile.reloadCallback = done;
-            } else if (workerTile.status === 'done') {
-                // if there was no vector tile data on the initial load, don't try and re-parse tile
-                if (workerTile.vectorTile) {
-                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.availableModels, this.actor, done);
+                if (workerTile.status === 'parsing') {
+                    workerTile.reloadCallback = done;
+                } else if (workerTile.status === 'done') {
+                    // if there was no vector tile data on the initial load, don't try and re-parse tile
+                    if (workerTile.vectorTile) {
+                        workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.availableModels, this.actor, done);
+                    } else {
+                        done();
+                    }
                 } else {
-                    done();
+                    resolve(undefined);
                 }
-            }
-        } else {
-            callback(null, undefined);
+            });
         }
     }
 
@@ -233,27 +282,25 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
      * Implements {@link WorkerSource#abortTile}.
      * @private
      */
-    abortTile(params: WorkerSourceTileRequest, callback: WorkerSourceVectorTileCallback) {
+    abortTile(params: WorkerSourceTileRequest): void {
         const uid = params.uid;
         const tile = this.loading[uid];
         if (tile) {
             if (tile.abort) tile.abort();
             delete this.loading[uid];
         }
-        callback();
     }
 
     /**
      * Implements {@link WorkerSource#removeTile}.
      * @private
      */
-    removeTile(params: WorkerSourceTileRequest, callback: WorkerSourceVectorTileCallback) {
+    removeTile(params: WorkerSourceTileRequest): void {
         const loaded = this.loaded,
             uid = params.uid;
         if (loaded && loaded[uid]) {
             delete loaded[uid];
         }
-        callback();
     }
 }
 

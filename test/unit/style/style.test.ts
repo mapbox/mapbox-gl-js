@@ -62,7 +62,8 @@ describe('Style', () => {
         });
         vi.spyOn(Style, 'registerForPluginStateChange');
         const style = new Style(new StubMap());
-        vi.spyOn(style.dispatcher, 'broadcast').mockImplementation(() => {});
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        vi.spyOn(style.dispatcher, 'broadcast').mockImplementation(() => Promise.resolve([]));
         expect(Style.registerForPluginStateChange).toHaveBeenCalledTimes(1);
 
         setRTLTextPlugin("/plugin.js",);
@@ -475,6 +476,7 @@ test('Style#update', () => {
             expect(key).toEqual('updateLayers');
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(value.layers.map((layer) => { return layer.id; })).toEqual(['first', 'third']);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(value.removedIds).toEqual(['second']);
         };
 
@@ -3056,15 +3058,10 @@ test('Style#_updateTilesForChangedImages', async () => {
     sourceCache._tiles[tileID.key] = tile;
     vi.spyOn(tile, 'setDependencies');
 
-    await new Promise((resolve) => {
-        expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(false);
+    expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(false);
 
-        style.getImages(0, {icons: [imageId], patterns: [], source: 'geojson', scope: '', tileID}, (err, result) => {
-            expect(err).toBeFalsy();
-            expect(result.images.size).toEqual(0);
-            resolve();
-        });
-    });
+    const result = await style.getImages(0, {icons: [imageId], patterns: [], source: 'geojson', scope: '', tileID});
+    expect(result.images.size).toEqual(0);
 
     expect(style._updateTilesForChangedImages).toHaveBeenCalledTimes(1);
     expect(sourceCache.setDependencies).toHaveBeenCalledTimes(2);

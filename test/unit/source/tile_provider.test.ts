@@ -83,15 +83,11 @@ test('loadTileData with provider - happy path with TileDataResponse', async () =
 
 test('loadTile with provider - null response produces 404 that triggers SourceCache overscaling', async () => {
     const source = makeSource(vi.fn().mockResolvedValue(null));
-    const callback = vi.fn();
 
-    source.loadTile(makeParams(), callback);
-    await vi.waitFor(() => expect(callback).toHaveBeenCalled());
-
-    // loadTile propagates the error from loadTileData to its callback.
+    // loadTile propagates the error from loadTileData as a rejection.
     // SourceCache._tileLoaded checks isHttpNotFound(err) to decide
     // whether to look up a parent tile for overscaling.
-    const err = callback.mock.calls[0][0] as Error;
+    const err = await source.loadTile(makeParams()).catch(e => e) as Error;
     expect(err).toBeInstanceOf(Error);
     expect(err.message).toBe('Tile not found');
     expect(isHttpNotFound(err)).toBe(true);

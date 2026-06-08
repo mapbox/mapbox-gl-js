@@ -6,8 +6,16 @@ import {OverscaledTileID} from '../../../src/source/tile_id';
 import GeoJSONSource from '../../../src/source/geojson_source';
 import Transform from '../../../src/geo/transform';
 import LngLat from '../../../src/geo/lng_lat';
+import Actor from '../../../src/util/actor';
 
 const wrapDispatcher = (dispatcher) => {
+    /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment */
+    if (dispatcher.send && !dispatcher.sendCancelable) {
+        const send = dispatcher.send.bind(dispatcher);
+        dispatcher.send = (type, data, options) => Promise.resolve(send(type, data, options));
+        dispatcher.sendCancelable = Actor.prototype.sendCancelable;
+    }
+    /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment */
     return {
         getActor() {
             return dispatcher;
@@ -16,7 +24,7 @@ const wrapDispatcher = (dispatcher) => {
 };
 
 const mockDispatcher = wrapDispatcher({
-    send() {}
+    async send() {}
 });
 
 const hawkHill = {
@@ -61,12 +69,7 @@ describe('GeoJSONSource#setData', () => {
         opts = Object.assign(opts, {data: {}});
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new GeoJSONSource('id', opts, wrapDispatcher({
-            send(type, data, callback) {
-                if (callback) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    return setTimeout(callback, 0);
-                }
-            }
+            async send() {}
         }));
     }
 
@@ -101,12 +104,11 @@ describe('GeoJSONSource#setData', () => {
                 transformRequest: (url) => { return {url}; }
             }
         };
-        source.actor.send = function (type, params, cb) {
+        // eslint-disable-next-line @typescript-eslint/require-await
+        source.actor.send = async function (type, params) {
             if (type === 'geojson.loadData') {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(params.request.collectResourceTiming).toBeTruthy();
-
-                setTimeout(cb, 0);
             }
         };
         source.setData('http://localhost/nonexistent');
@@ -123,7 +125,8 @@ describe('GeoJSONSource#update', () => {
 
     test('sends initial loadData request to dispatcher', () => {
         const mockDispatcher = wrapDispatcher({
-            send(message) {
+            // eslint-disable-next-line @typescript-eslint/require-await
+            async send(message) {
                 expect(message).toEqual('geojson.loadData');
             }
         });
@@ -136,7 +139,7 @@ describe('GeoJSONSource#update', () => {
 
         return new Promise((resolve) => {
             const mockDispatcher = wrapDispatcher({
-                send(message, args, callback) {
+                send(message, args) {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                     const ids = JSON.parse(args.data).features.map(f => f.id);
                     if (count++ === 0) {
@@ -145,9 +148,7 @@ describe('GeoJSONSource#update', () => {
                         expect(ids).to.deep.equal([2, 3]);
                         resolve();
                     }
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    setTimeout(callback);
-                    return true;
+                    return new Promise(r => { setTimeout(r, 0); });
                 }
             });
 
@@ -161,7 +162,8 @@ describe('GeoJSONSource#update', () => {
 
     test('forwards geojson-vt options with worker request', () => {
         const mockDispatcher = wrapDispatcher({
-            send(message, params) {
+            // eslint-disable-next-line @typescript-eslint/require-await
+            async send(message, params) {
                 expect(message).toEqual('geojson.loadData');
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(params.geojsonVtOptions).toEqual({
@@ -186,7 +188,8 @@ describe('GeoJSONSource#update', () => {
 
     test('forwards Supercluster options with worker request', () => {
         const mockDispatcher = wrapDispatcher({
-            send(message, params) {
+            // eslint-disable-next-line @typescript-eslint/require-await
+            async send(message, params) {
                 expect(message).toEqual('geojson.loadData');
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(params.superclusterOptions).toEqual({
@@ -225,12 +228,7 @@ describe('GeoJSONSource#update', () => {
     });
     test('fires event when metadata loads', async () => {
         const mockDispatcher = wrapDispatcher({
-            send(message, args, callback) {
-                if (callback) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    setTimeout(callback, 0);
-                }
-            }
+            async send() {}
         });
 
         const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
@@ -246,12 +244,8 @@ describe('GeoJSONSource#update', () => {
 
     test('fires "error"', async () => {
         const mockDispatcher = wrapDispatcher({
-            send(message, args, callback) {
-                if (callback) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    setTimeout(callback, 0, 'error');
-                }
-            }
+            // eslint-disable-next-line @typescript-eslint/require-await
+            async send() { throw new Error('error'); }
         });
 
         const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
@@ -267,7 +261,7 @@ describe('GeoJSONSource#update', () => {
         await new Promise(resolve => {
 
             source.on('error', (err) => {
-                expect(err.error).toEqual('error');
+                expect(err.error.message).toEqual('error');
                 resolve();
             });
 
@@ -280,13 +274,10 @@ describe('GeoJSONSource#update', () => {
 
         await new Promise(resolve => {
             const mockDispatcher = wrapDispatcher({
-                send(message, args, callback) {
+                // eslint-disable-next-line @typescript-eslint/require-await
+                async send(message) {
                     if (message === 'geojson.loadData' && --expectedLoadDataCalls <= 0) {
                         resolve();
-                    }
-                    if (callback) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                        setTimeout(callback, 0);
                     }
                 }
             });

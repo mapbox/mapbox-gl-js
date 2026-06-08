@@ -16,6 +16,7 @@ import {makeFQID} from '../util/fqid';
 import {getExpiryDataFromHeaders} from '../util/util';
 
 import type RasterArrayTile from './raster_array_tile';
+import type {ExpiryData} from './tile';
 import type Texture from '../render/texture';
 import type Dispatcher from '../util/dispatcher';
 import type {Map as MapboxMap} from '../ui/map';
@@ -23,6 +24,7 @@ import type {Evented} from '../util/evented';
 import type {Callback} from '../types/callback';
 import type {AJAXError} from '../util/ajax';
 import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
+import type {RasterArrayTileLoadResult} from './raster_array_tile_worker_source';
 import type {TextureDescriptor} from './raster_array_tile';
 import type {StyleImage, StyleImageMap} from '../style/style_image';
 import type {RasterArraySourceSpecification} from '../style-spec/types';
@@ -105,7 +107,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         tile.requestParams = request;
         if (!tile.actor) tile.actor = this.dispatcher.getActor();
 
-        const done = (error?: AJAXError | null, data?: MapboxRasterTile | ArrayBuffer | null, responseHeaders?: Headers) => {
+        const done = (error?: AJAXError | null, data?: MapboxRasterTile | ArrayBuffer | null, expiryData?: ExpiryData) => {
             delete tile.request;
 
             if (tile.aborted) {
@@ -120,8 +122,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
                 return callback(error);
             }
 
-            if (this.map._refreshExpiredTiles && data) {
-                const expiryData = getExpiryDataFromHeaders(responseHeaders);
+            if (this.map._refreshExpiredTiles && data && expiryData) {
                 tile.setExpiryData(expiryData);
             }
 
@@ -140,10 +141,16 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
 
         if (this.partial) {
             // Load only the tile header in the main thread
-            tile.request = tile.fetchHeader(undefined, done.bind(this));
+            tile.request = tile.fetchHeader(undefined, (error, data, headers) => {
+                done.call(this, error as AJAXError, data, getExpiryDataFromHeaders(headers));
+            });
         } else {
             // Load and parse the entire tile in Worker
-            tile.request = tile.actor.send('loadTile', params, done.bind(this));
+            tile.request = tile.actor.sendCancelable('loadTile', params, {}, (err, result: RasterArrayTileLoadResult | null | undefined) => {
+                if (err) return done.call(this, err as AJAXError);
+                if (!result) return done.call(this, null, null);
+                done.call(this, null, result.mrt, {expires: result.expires, cacheControl: result.cacheControl});
+            });
         }
     }
 
@@ -154,7 +161,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         }
 
         if (tile.actor) {
-            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope});
+            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope}, {skipResult: true});
         }
     }
 
@@ -321,7 +328,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
                                     resolve(queryResult);
                                 }
                             });
-                        }, false);
+                        });
                     }
                 }
             }
@@ -357,32 +364,29 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
             partial: false
         };
 
-        tile.actor.send('loadTile', requestParams, (error: AJAXError | null, data?: MapboxRasterTile, responseHeaders?: Headers) => {
-            if (error) {
+        tile.actor.send('loadTile', requestParams)
+            .then((data: unknown) => {
+                const result = data as RasterArrayTileLoadResult | null | undefined;
+                if (!result) {
+                    this._loadTilePending[tile.uid].forEach(cb => cb(null, null));
+                    delete this._loadTilePending[tile.uid];
+                    return;
+                }
+                const mrtData = result.mrt;
+                if (this.map._refreshExpiredTiles) {
+                    tile.setExpiryData({expires: result.expires, cacheControl: result.cacheControl});
+                }
+                tile._mrt = mrtData;
+                tile._isHeaderLoaded = true;
+                tile.state = 'loaded';
+                this._loadTilePending[tile.uid].forEach(cb => cb(null, mrtData));
+                this._loadTileLoaded[tile.uid] = true;
+                delete this._loadTilePending[tile.uid];
+            })
+            .catch((error: Error) => {
                 this._loadTilePending[tile.uid].forEach(cb => cb(error, null));
                 delete this._loadTilePending[tile.uid];
-                return;
-            }
-
-            if (!data) {
-                this._loadTilePending[tile.uid].forEach(cb => cb(null, null));
-                delete this._loadTilePending[tile.uid];
-                return;
-            }
-
-            if (this.map._refreshExpiredTiles && data) {
-                const expiryData = getExpiryDataFromHeaders(responseHeaders);
-                tile.setExpiryData(expiryData);
-            }
-
-            tile._mrt = data;
-            tile._isHeaderLoaded = true;
-            tile.state = 'loaded';
-
-            this._loadTilePending[tile.uid].forEach(cb => cb(null, data));
-            this._loadTileLoaded[tile.uid] = true;
-            delete this._loadTilePending[tile.uid];
-        });
+            });
     }
 
     queryRasterArrayValueByAllBands(lngLat: LngLat, tile: RasterArrayTile, params: RasterQueryParameters): Promise<RasterQueryResult> {

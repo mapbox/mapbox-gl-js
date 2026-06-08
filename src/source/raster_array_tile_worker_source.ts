@@ -1,9 +1,8 @@
 import '../data/mrt_data';
 import {PbfReader} from 'pbf';
-import {getArrayBuffer} from '../util/ajax';
+import {makeAsyncRequest} from '../util/ajax';
 import {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
 
-import type {Callback} from '../types/callback';
 import type {WorkerInbox} from '../util/actor_messages';
 import type {OverscaledTileID} from './tile_id';
 import type {
@@ -11,11 +10,16 @@ import type {
     WorkerSourceOptions,
     WorkerSourceTileRequest,
     WorkerSourceRasterArrayTileRequest,
-    WorkerSourceRasterArrayTileCallback,
     WorkerSourceActor,
 } from './worker_source';
 
 MapboxRasterTile.setPbf(PbfReader);
+
+export type RasterArrayTileLoadResult = {
+    mrt: MapboxRasterTile;
+    expires?: string;
+    cacheControl?: string;
+};
 
 const MRT_DECODED_BAND_CACHE_SIZE = 30;
 
@@ -43,35 +47,30 @@ class RasterArrayWorkerTile {
         this.source = params.source;
     }
 
-    parse(buffer: ArrayBuffer, callback: Callback<MapboxRasterTile>) {
+    async parse(buffer: ArrayBuffer): Promise<MapboxRasterTile> {
         const mrt = this._mrt;
         this.status = 'parsing';
         this._entireBuffer = buffer;
 
-        try {
-            mrt.parseHeader(buffer);
-            this._isHeaderLoaded = true;
+        mrt.parseHeader(buffer);
+        this._isHeaderLoaded = true;
 
-            const decodingTasks = [];
-            for (const layerId in mrt.layers) {
-                const layer = mrt.getLayer(layerId);
-                const range = layer.getDataRange(layer.getBandList());
-                const task = mrt.createDecodingTask(range);
+        const decodingTasks = [];
+        for (const layerId in mrt.layers) {
+            const layer = mrt.getLayer(layerId);
+            const range = layer.getDataRange(layer.getBandList());
+            const task = mrt.createDecodingTask(range);
 
-                const bufferSlice = buffer.slice(range.firstByte, range.lastByte + 1);
-                const decodingTask = MapboxRasterTile.performDecoding(bufferSlice, task)
+            const bufferSlice = buffer.slice(range.firstByte, range.lastByte + 1);
+            decodingTasks.push(
+                MapboxRasterTile.performDecoding(bufferSlice, task)
                     .then(result => task.complete(null, result))
-                    .catch((error: Error) => task.complete(error, null));
-
-                decodingTasks.push(decodingTask);
-            }
-
-            Promise.allSettled(decodingTasks)
-                .then(() => callback(null, mrt))
-                .catch((error: Error) => callback(error));
-        } catch (error) {
-            callback(error as Error);
+                    .catch((error: Error) => task.complete(error, null))
+            );
         }
+
+        await Promise.allSettled(decodingTasks);
+        return mrt;
     }
 }
 
@@ -86,59 +85,54 @@ class RasterArrayTileWorkerSource implements WorkerSource {
         this.loaded = {};
     }
 
-    loadTile(params: WorkerSourceRasterArrayTileRequest, callback: WorkerSourceRasterArrayTileCallback) {
+    async loadTile(params: WorkerSourceRasterArrayTileRequest): Promise<RasterArrayTileLoadResult | null | undefined> {
         const uid = params.uid;
-        const requestParam = params.request;
-
+        const controller = new AbortController();
         const workerTile = this.loading[uid] = new RasterArrayWorkerTile(params);
-        const {cancel} = getArrayBuffer(requestParam, (error?: Error, buffer?: ArrayBuffer, headers?: Headers) => {
-            const aborted = !this.loading[uid];
-            delete this.loading[uid];
+        workerTile.abort = () => controller.abort();
 
-            if (aborted || error || !buffer) {
+        try {
+            const {data, expires, cacheControl} = await makeAsyncRequest<ArrayBuffer>(Object.assign(params.request, {type: 'arrayBuffer'}), controller.signal);
+            if (!data) {
                 workerTile.status = 'done';
-                if (!aborted) this.loaded[uid] = workerTile;
-                return callback(error);
+                this.loaded[uid] = workerTile;
+                return null;
             }
-
-            workerTile.parse(buffer, (error?: Error | null, mrt?: MapboxRasterTile) => {
-                if (error || !mrt) return callback(error);
-                callback(null, mrt, headers);
-            });
-
             this.loaded[uid] = workerTile;
-        });
-
-        workerTile.abort = cancel;
+            const mrt = await workerTile.parse(data);
+            return {mrt, expires, cacheControl};
+        } catch (err) {
+            if (err instanceof DOMException && err.name === 'AbortError') return null;
+            workerTile.status = 'done';
+            this.loaded[uid] = workerTile;
+            throw err;
+        } finally {
+            delete this.loading[uid];
+        }
     }
 
-    reloadTile(params: WorkerSourceRasterArrayTileRequest, callback: WorkerSourceRasterArrayTileCallback) {
+    async reloadTile(_params: WorkerSourceRasterArrayTileRequest) {
         // No-op in the RasterArrayTileWorkerSource class
-        callback(null, undefined);
     }
 
-    abortTile(params: WorkerSourceTileRequest, callback: Callback<void>) {
+    abortTile(params: WorkerSourceTileRequest): void {
         const uid = params.uid;
         const workerTile = this.loading[uid];
         if (workerTile) {
             if (workerTile.abort) workerTile.abort();
             delete this.loading[uid];
         }
-        callback();
     }
 
-    removeTile(params: WorkerSourceTileRequest, callback: Callback<void>) {
+    removeTile(params: WorkerSourceTileRequest): void {
         const uid = params.uid;
         if (this.loaded[uid]) {
             delete this.loaded[uid];
         }
-        callback();
     }
 
-    decodeRasterArray(params: WorkerInbox['decodeRasterArray']['params'], callback: WorkerInbox['decodeRasterArray']['callback']) {
-        MapboxRasterTile.performDecoding(params.buffer, params.task)
-            .then(result => callback(null, result))
-            .catch((error: Error) => callback(error));
+    async decodeRasterArray(params: WorkerInbox['decodeRasterArray']['params']): Promise<WorkerInbox['decodeRasterArray']['result']> {
+        return MapboxRasterTile.performDecoding(params.buffer, params.task);
     }
 }
 

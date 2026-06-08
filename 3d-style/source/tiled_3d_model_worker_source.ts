@@ -1,4 +1,4 @@
-import {getArrayBuffer} from '../../src/util/ajax';
+import {makeAsyncRequest} from '../../src/util/ajax';
 import FeatureIndex from '../../src/data/feature_index';
 import {process3DTile} from './model_loader';
 import {tileToMeter} from '../../src/geo/mercator_coordinate';
@@ -39,6 +39,7 @@ class Tiled3dWorkerTile {
     reloadCallback: WorkerSourceVectorTileCallback | null | undefined;
     brightness: number | null | undefined;
     worldview: string | undefined;
+    abort?: () => void;
 
     constructor(params: WorkerSourceTiled3dModelRequest, brightness?: number | null, worldview?: string) {
         this.tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
@@ -55,12 +56,11 @@ class Tiled3dWorkerTile {
         this.worldview = worldview;
     }
 
-    parse(
+    async parse(
         data: ArrayBuffer,
         layerIndex: StyleLayerIndex,
         params: WorkerSourceTiled3dModelRequest,
-        callback: WorkerSourceVectorTileCallback,
-    ): void {
+    ): Promise<WorkerSourceVectorTileResult> {
         this.status = 'parsing';
         const tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
         const buckets: Tiled3dModelBucket[] = [];
@@ -69,44 +69,43 @@ class Tiled3dWorkerTile {
         featureIndex.bucketLayerIDs = [];
         featureIndex.is3DTile = true;
 
-        load3DTile(data)
-            .then(gltf => {
-                const hasMapboxMeshFeatures: boolean = (gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('MAPBOX_mesh_features')) ||
-                                            (gltf.json.asset.extras && gltf.json.asset.extras['MAPBOX_mesh_features']);
+        const gltf = await load3DTile(data);
 
-                const hasMeshoptCompression = gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('EXT_meshopt_compression');
+        const hasMapboxMeshFeatures: boolean =
+            (gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('MAPBOX_mesh_features')) ||
+            (gltf.json.asset.extras && gltf.json.asset.extras['MAPBOX_mesh_features']);
 
-                const parameters = new EvaluationParameters(this.zoom, {brightness: this.brightness, worldview: this.worldview});
-                for (const sourceLayerId in layerFamilies) {
-                    for (const family of layerFamilies[sourceLayerId]) {
-                        const layer = family[0] as ModelStyleLayer;
-                        featureIndex.bucketLayerIDs.push(family.map((l) => makeFQID(l.id, l.scope)));
-                        layer.recalculate(parameters, []);
-                        // Nodes are created per layer which allows styling when multiple model layers are referencing the same source
-                        const nodes = process3DTile(gltf, 1.0 / tileToMeter(params.tileID.canonical));
+        const hasMeshoptCompression = gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('EXT_meshopt_compression');
 
-                        const bucket = new Tiled3dModelBucket(family as Array<ModelStyleLayer>, nodes, tileID, hasMapboxMeshFeatures, hasMeshoptCompression, this.brightness, featureIndex, this.worldview);
-                        // Upload to GPU without waiting for evaluation if we are in diffuse path
-                        if (!hasMapboxMeshFeatures) bucket.needsUpload = true;
-                        buckets.push(bucket);
-                        // do the first evaluation in the worker to avoid stuttering
-                        bucket.evaluate(layer);
-                    }
-                }
+        const parameters = new EvaluationParameters(this.zoom, {brightness: this.brightness, worldview: this.worldview});
+        for (const sourceLayerId in layerFamilies) {
+            for (const family of layerFamilies[sourceLayerId]) {
+                const layer = family[0] as ModelStyleLayer;
+                featureIndex.bucketLayerIDs.push(family.map((l) => makeFQID(l.id, l.scope)));
+                layer.recalculate(parameters, []);
+                // Nodes are created per layer which allows styling when multiple model layers are referencing the same source
+                const nodes = process3DTile(gltf, 1.0 / tileToMeter(params.tileID.canonical));
 
-                this.status = 'done';
+                const bucket = new Tiled3dModelBucket(family as Array<ModelStyleLayer>, nodes, tileID, hasMapboxMeshFeatures, hasMeshoptCompression, this.brightness, featureIndex, this.worldview);
+                // Upload to GPU without waiting for evaluation if we are in diffuse path
+                if (!hasMapboxMeshFeatures) bucket.needsUpload = true;
+                buckets.push(bucket);
+                // do the first evaluation in the worker to avoid stuttering
+                bucket.evaluate(layer);
+            }
+        }
 
-                callback(null, {
-                    buckets,
-                    featureIndex,
-                    collisionBoxArray: null,
-                    glyphAtlasImage: null,
-                    lineAtlas: null,
-                    imageAtlas: null,
-                    brightness: null,
-                });
-            })
-            .catch((err: Error) => callback(new Error(err.message)));
+        this.status = 'done';
+
+        return {
+            buckets,
+            featureIndex,
+            collisionBoxArray: null,
+            glyphAtlasImage: null,
+            lineAtlas: null,
+            imageAtlas: null,
+            brightness: null,
+        };
     }
 }
 
@@ -136,36 +135,48 @@ class Tiled3dModelWorkerSource implements WorkerSource {
      * Implements {@link WorkerSource#loadTile}.
      * @private
      */
-    loadTile(params: WorkerSourceTiled3dModelRequest, callback: WorkerSourceVectorTileCallback) {
+    async loadTile(params: WorkerSourceTiled3dModelRequest): Promise<WorkerSourceVectorTileResult | null | undefined> {
         const uid = params.uid;
+        const controller = new AbortController();
         const workerTile = this.loading[uid] = new Tiled3dWorkerTile(params, this.brightness, this.worldview);
-        getArrayBuffer(params.request, (err?: Error | null, data?: ArrayBuffer | null) => {
-            const aborted = !this.loading[uid];
+        workerTile.abort = () => controller.abort();
+
+        const reload = (err: Error | null, result?: WorkerSourceVectorTileResult | null) => {
+            const reloadCallback = workerTile.reloadCallback;
+            if (!reloadCallback) return;
+            delete workerTile.reloadCallback;
+            reloadCallback(err, result);
+        };
+
+        let data: ArrayBuffer | null | undefined;
+        try {
+            ({data} = await makeAsyncRequest<ArrayBuffer>(Object.assign(params.request, {type: 'arrayBuffer'}), controller.signal));
+        } catch (err) {
             delete this.loading[uid];
+            workerTile.status = 'done';
+            this.loaded[uid] = workerTile;
+            if (err instanceof DOMException && err.name === 'AbortError') return null;
+            throw err;
+        }
 
-            if (aborted || err) {
-                workerTile.status = 'done';
-                if (!aborted) this.loaded[uid] = workerTile;
-                return callback(err);
-            }
+        delete this.loading[uid];
 
-            if (!data || data.byteLength === 0) {
-                workerTile.status = 'done';
-                this.loaded[uid] = workerTile;
-                return callback();
-            }
+        if (!data || data.byteLength === 0) {
+            workerTile.status = 'done';
+            this.loaded[uid] = workerTile;
+            return null;
+        }
 
-            const workerSourceVectorTileCallback = (err?: Error | null, result?: WorkerSourceVectorTileResult | null) => {
-                workerTile.status = 'done';
-                this.loaded = this.loaded || {};
-                this.loaded[uid] = workerTile;
-
-                if (err || !result) callback(err);
-                else callback(null, result);
-            };
-
-            workerTile.parse(data, this.layerIndex, params, workerSourceVectorTileCallback);
-        });
+        try {
+            const result = await workerTile.parse(data, this.layerIndex, params);
+            this.loaded[uid] = workerTile;
+            reload(null, result);
+            return result;
+        } catch (err) {
+            this.loaded[uid] = workerTile;
+            reload(err as Error);
+            throw err;
+        }
     }
 
     /**
@@ -173,30 +184,21 @@ class Tiled3dModelWorkerSource implements WorkerSource {
      * Re-parses a tile that has already been loaded. Yields the same data as {@link WorkerSource#loadTile}.
      * @private
      */
-    reloadTile(params: WorkerSourceTiled3dModelRequest, callback: WorkerSourceVectorTileCallback) {
-        const loaded = this.loaded;
-        const uid = params.uid;
-        if (loaded && loaded[uid]) {
-            const workerTile = loaded[uid];
-            workerTile.projection = params.projection;
-            workerTile.brightness = params.brightness;
+    async reloadTile(params: WorkerSourceTiled3dModelRequest): Promise<WorkerSourceVectorTileResult | null | undefined> {
+        const workerTile = this.loaded && this.loaded[params.uid];
+        if (!workerTile) return;
 
-            const done = (err?: Error | null, data?: WorkerSourceVectorTileResult | null) => {
-                const reloadCallback = workerTile.reloadCallback;
-                if (reloadCallback) {
-                    delete workerTile.reloadCallback;
-                    this.loadTile(params, callback);
-                }
-                callback(err, data);
-            };
+        workerTile.projection = params.projection;
+        workerTile.brightness = params.brightness;
 
-            if (workerTile.status === 'parsing') {
-                workerTile.reloadCallback = done;
-            } else if (workerTile.status === 'done') {
-                // do the request again
-                this.loadTile(params, callback);
-            }
+        if (workerTile.status === 'parsing') {
+            // Wait for the in-flight parse to finish before reloading.
+            await new Promise<void>((resolve, reject) => {
+                workerTile.reloadCallback = (err) => { if (err) reject(err); else resolve(); };
+            });
         }
+
+        return this.loadTile(params);
     }
 
     /**
@@ -204,13 +206,13 @@ class Tiled3dModelWorkerSource implements WorkerSource {
      * Aborts loading a tile that is in progress.
      * @private
      */
-    abortTile(params: WorkerSourceTileRequest, callback: WorkerSourceVectorTileCallback) {
+    abortTile(params: WorkerSourceTileRequest): void {
         const uid = params.uid;
         const tile = this.loading[uid];
         if (tile) {
+            if (tile.abort) tile.abort();
             delete this.loading[uid];
         }
-        callback();
     }
 
     /**
@@ -218,13 +220,12 @@ class Tiled3dModelWorkerSource implements WorkerSource {
      * Removes this tile from any local caches.
      * @private
      */
-    removeTile(params: WorkerSourceTileRequest, callback: WorkerSourceVectorTileCallback) {
+    removeTile(params: WorkerSourceTileRequest): void {
         const loaded = this.loaded,
             uid = params.uid;
         if (loaded && loaded[uid]) {
             delete loaded[uid];
         }
-        callback();
     }
 
 }

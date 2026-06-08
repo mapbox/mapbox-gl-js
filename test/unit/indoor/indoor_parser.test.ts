@@ -4,14 +4,16 @@ import {parseActiveFloors} from '../../../3d-style/source/indoor_parser';
 import {CanonicalTileID} from '../../../src/source/tile_id';
 import Actor from '../../../src/util/actor';
 
+import type {MainInbox} from '../../../src/util/actor_messages';
+
 // Mock Actor
 const mockTarget = {
     addEventListener: () => {},
     removeEventListener: () => {},
     postMessage: () => {}
 };
-const actor = new Actor(mockTarget as any, {}, 0);
-actor.send = () => ({cancel: () => {}});
+const actor = new Actor<MainInbox>(mockTarget as any, {}, 0);
+actor.send = async () => {};
 
 describe('IndoorParser', () => {
     test('parses buildings with center_lat and center_lon', () => {
@@ -45,11 +47,11 @@ describe('IndoorParser', () => {
         };
 
         let parsedData: any;
-        actor.send = (type, data) => {
+        actor.send = async (type: string, data: unknown) => {
             if (type === 'setIndoorData') {
                 parsedData = data;
             }
-            return {cancel: () => {}};
+            return Promise.resolve();
         };
 
         parseActiveFloors(data as any, indoorTileOptions as any, actor, new CanonicalTileID(0, 0, 0));
@@ -101,11 +103,11 @@ describe('IndoorParser', () => {
         };
 
         let parsedData: any;
-        actor.send = (type, data) => {
+        actor.send = async (type: string, data: unknown) => {
             if (type === 'setIndoorData') {
                 parsedData = data;
             }
-            return {cancel: () => {}};
+            return Promise.resolve();
         };
 
         parseActiveFloors(data as any, indoorTileOptions as any, actor, new CanonicalTileID(0, 0, 0));

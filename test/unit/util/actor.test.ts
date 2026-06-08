@@ -4,7 +4,7 @@ import {describe, test, expect} from '../../util/vitest';
 import Actor from '../../../src/util/actor';
 
 describe('Actor', () => {
-    test('forwards responses to correct callback', async () => {
+    test('forwards responses to correct Promise', async () => {
         class WorkerStub {
             listeners = [];
             addEventListener(type, listener) {
@@ -28,18 +28,13 @@ describe('Actor', () => {
         const m1 = new Actor(worker, {}, 1);
         const m2 = new Actor(worker, {}, 2);
 
-        await new Promise(resolve => {
-            m1.send('test', {value: 1729}, (err, response) => {
-                expect(err).toBeFalsy();
-                expect(response).toEqual({value: 1729});
-            });
-            m2.send('test', {value: 4104}, (err, response) => {
-                expect(err).toBeFalsy();
-                expect(response).toEqual({value: 4104});
-                resolve();
-            });
+        const [r1, r2] = await Promise.all([
+            m1.send('test', {value: 1729}),
+            m2.send('test', {value: 4104}),
+        ]);
 
-        });
+        expect(r1).toEqual({value: 1729});
+        expect(r2).toEqual({value: 4104});
     });
 
     test('targets worker-initiated messages to correct map instance', async () => {
@@ -51,7 +46,7 @@ describe('Actor', () => {
 
             postMessage({id, sourceMapId, targetMapId, type, data}) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                this[type](sourceMapId, data, id, type, targetMapId);
+                if (this[type]) this[type](sourceMapId, data, id, type, targetMapId);
             }
             test(mapId, data, id, type, targetMapId) {
                 for (const listener of this.listeners) {
@@ -76,7 +71,7 @@ describe('Actor', () => {
                 }
             }, 2);
 
-            workerActor.send('test', {}, () => {}, 1);
+            workerActor.send('test', {}, {targetMapId: 1});
         });
     });
 
@@ -91,4 +86,51 @@ describe('Actor', () => {
         }, {}, null);
         actor.remove();
     });
+
+    test('AbortSignal aborts a pending request — Promise rejects with AbortError, posts only the request', async () => {
+        const postMessages = [];
+        class WorkerStub {
+            listeners = [];
+            addEventListener(type, listener) { this.listeners.push(listener); }
+            postMessage(msg) { postMessages.push(msg); }
+        }
+
+        const worker = new WorkerStub();
+        const actor = new Actor(worker, {}, 1);
+
+        const controller = new AbortController();
+        const promise = actor.send('getGlyphs', {stacks: {}}, {signal: controller.signal});
+
+        controller.abort();
+
+        await expect(promise).rejects.toSatisfy(
+            (err) => err instanceof DOMException && err.name === 'AbortError'
+        );
+
+        // Cancellation is caller-side only: aborting rejects the pending request and posts nothing
+        // to the worker, so only the original getGlyphs request was ever sent.
+        expect(postMessages).toHaveLength(1);
+    });
+
+    test('remove() rejects in-flight requests with AbortError', async () => {
+        class WorkerStub {
+            listeners = [];
+            addEventListener(type, listener) { this.listeners.push(listener); }
+            removeEventListener() {}
+            postMessage() { /* never responds */ }
+        }
+
+        const worker = new WorkerStub();
+        const actor = new Actor(worker, {}, 1);
+
+        const promise = actor.send('getGlyphs', {stacks: {}});
+        // Attach the rejection handler before remove() so the synchronous rejection is never unhandled.
+        const assertion = expect(promise).rejects.toSatisfy(
+            (err) => err instanceof DOMException && err.name === 'AbortError'
+        );
+        actor.remove();
+
+        await assertion;
+    });
+
 });

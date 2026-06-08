@@ -10,7 +10,7 @@ import {getProjection} from '../../../src/geo/projection/index';
 const actor = {send: () => {}};
 
 describe('reloadTile', () => {
-    test('does not rebuild vector data unless data has changed', () => {
+    test('does not rebuild vector data unless data has changed', async () => {
         const layers = [
             {
                 id: 'mylayer',
@@ -41,52 +41,29 @@ describe('reloadTile', () => {
             projection: getProjection({name: 'mercator'})
         };
 
-        function addData(callback) {
-            source.loadData({source: 'sourceId', data: JSON.stringify(geoJson)}, (err) => {
-                expect(err).toEqual(null);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                callback();
-            });
-        }
+        await source.loadData({source: 'sourceId', data: JSON.stringify(geoJson)});
 
-        function reloadTile(callback) {
-            source.reloadTile(tileParams, (err, data) => {
-                expect(err).toEqual(null);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                return callback(data);
-            });
-        }
+        // first call should load vector data from geojson
+        const firstData = await source.reloadTile(tileParams);
+        expect(loadVectorCallCount).toEqual(1);
 
-        addData(() => {
-            // first call should load vector data from geojson
-            let firstData: any;
-            reloadTile(data => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                firstData = data;
-            });
-            expect(loadVectorCallCount).toEqual(1);
+        // second call won't give us new rawTileData
+        const secondData = await source.reloadTile(tileParams);
+        expect('rawTileData' in secondData).toBeFalsy();
+        secondData.rawTileData = firstData.rawTileData;
+        expect(secondData).toEqual(firstData);
 
-            // second call won't give us new rawTileData
-            reloadTile(data => {
-                expect('rawTileData' in data).toBeFalsy();
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                data.rawTileData = firstData.rawTileData;
-                expect(data).toEqual(firstData);
-            });
+        // also shouldn't call loadVectorData again
+        expect(loadVectorCallCount).toEqual(1);
 
-            // also shouldn't call loadVectorData again
-            expect(loadVectorCallCount).toEqual(1);
+        // replace geojson data
+        await source.loadData({source: 'sourceId', data: JSON.stringify(geoJson)});
 
-            // replace geojson data
-            addData(() => {
-                // should call loadVectorData again after changing geojson data
-                reloadTile(data => {
-                    expect('rawTileData' in data).toBeTruthy();
-                    expect(data).toEqual(firstData);
-                });
-                expect(loadVectorCallCount).toEqual(2);
-            });
-        });
+        // should call loadVectorData again after changing geojson data
+        const thirdData = await source.reloadTile(tileParams);
+        expect('rawTileData' in thirdData).toBeTruthy();
+        expect(thirdData).toEqual(firstData);
+        expect(loadVectorCallCount).toEqual(2);
     });
 });
 
@@ -106,7 +83,7 @@ describe('resourceTiming', () => {
         }
     };
 
-    test('loadData - url', () => {
+    test('loadData - url', async () => {
         const exampleResourceTiming = {
             connectEnd: 473,
             connectStart: 473,
@@ -134,19 +111,15 @@ describe('resourceTiming', () => {
         const source = new GeoJSONWorkerSource({actor, layerIndex, availableImages: [], availableModels: [], isSpriteLoaded: true});
         source.loadGeoJSON = (params, callback) => { return callback(null, geoJson); };
 
-        source.loadData({source: 'testSource', request: {url: 'http://localhost/nonexistent', collectResourceTiming: true}}, (err, result) => {
-            expect(err).toEqual(null);
-            expect(result.resourceTiming.testSource).toStrictEqual([exampleResourceTiming]); // got expected resource timing
-        });
+        const result = await source.loadData({source: 'testSource', request: {url: 'http://localhost/nonexistent', collectResourceTiming: true}});
+        expect(result.resourceTiming.testSource).toStrictEqual([exampleResourceTiming]); // got expected resource timing
     });
 
-    test('loadData - data', () => {
+    test('loadData - data', async () => {
         const layerIndex = new StyleLayerIndex(layers);
         const source = new GeoJSONWorkerSource({actor, layerIndex, availableImages: [], availableModels: [], isSpriteLoaded: true});
 
-        source.loadData({source: 'testSource', data: JSON.stringify(geoJson)}, (err, result) => {
-            expect(err).toEqual(null);
-            expect(result.resourceTiming).toEqual(undefined);
-        });
+        const result = await source.loadData({source: 'testSource', data: JSON.stringify(geoJson)});
+        expect(result.resourceTiming).toEqual(undefined);
     });
 });

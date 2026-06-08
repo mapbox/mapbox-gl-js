@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-misused-promises */
 import {describe, test, expect, vi} from '../../util/vitest';
 import Dispatcher from '../../../src/util/dispatcher';
 import {createWorker} from '../../../src/util/web_worker';
@@ -30,7 +31,7 @@ describe('Dispatcher', () => {
         const ids: Array<any> = [];
         function Actor(target, parent, mapId) { ids.push(mapId); }
         vi.spyOn(Dispatcher, 'Actor', 'get').mockImplementation(() => Actor);
-        vi.spyOn(Dispatcher.prototype, 'broadcast').mockImplementation(() => {});
+        vi.spyOn(Dispatcher.prototype, 'broadcast').mockImplementation(() => Promise.resolve([]));
         vi.spyOn(WorkerPool, 'workerCount', 'get').mockImplementation(() => 1);
 
         const workerPool = new WorkerPool();
@@ -41,11 +42,10 @@ describe('Dispatcher', () => {
     test('#remove destroys actors', () => {
         const actorsRemoved: Array<any> = [];
         function Actor() {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             this.remove = function () { actorsRemoved.push(this); };
         }
         vi.spyOn(Dispatcher, 'Actor', 'get').mockImplementation(() => Actor);
-        vi.spyOn(Dispatcher.prototype, 'broadcast').mockImplementation(() => {});
+        vi.spyOn(Dispatcher.prototype, 'broadcast').mockImplementation(() => Promise.resolve([]));
         vi.spyOn(WorkerPool, 'workerCount', 'get').mockImplementation(() => 4);
 
         const workerPool = new WorkerPool();
@@ -53,5 +53,24 @@ describe('Dispatcher', () => {
         dispatcher.remove();
         expect(actorsRemoved.length).toEqual(4);
     });
+
+    test('broadcast with keepResult: true resolves with results in actor order', async () => {
+        const responses = [{a: 1}, {a: 2}, {a: 3}];
+        let i = 0;
+        function Actor() {
+            const idx = i++;
+            this.send = () => Promise.resolve(responses[idx]);
+            this.remove = () => {};
+        }
+        vi.spyOn(Dispatcher, 'Actor', 'get').mockImplementation(() => Actor);
+        vi.spyOn(WorkerPool, 'workerCount', 'get').mockImplementation(() => 3);
+
+        const workerPool = new WorkerPool();
+        const dispatcher = new Dispatcher(workerPool, {});
+
+        const result = await dispatcher.broadcast('getWorkerPerformanceMetrics', undefined, {keepResult: true});
+        expect(result).toEqual(responses);
+    });
+
 });
 

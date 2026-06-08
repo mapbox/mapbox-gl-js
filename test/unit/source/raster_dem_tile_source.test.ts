@@ -18,9 +18,8 @@ function createSource(options: Partial<RasterDEMSourceSpecification>, transformC
         send() {},
         getActor() {
             return {
-                send() {
-                    return {cancel() {}};
-                }
+                send() { return new Promise(() => {}); },
+                sendCancelable() { return {cancel() {}}; }
             };
         }
     } as unknown as Dispatcher;
@@ -122,8 +121,12 @@ describe('RasterTileSource', () => {
             send() {},
             getActor() {
                 return {
-                    send: (_type: string, _params: unknown, cb: (err?: Error | null, result?: unknown) => void) => {
-                        Promise.resolve().then(() => cb(null, null));
+                    // eslint-disable-next-line @typescript-eslint/require-await
+                    async send(_type: string, _params: unknown) { return null; },
+                    sendCancelable(type: string, params: unknown, _options: unknown, callback: (err?: Error | null, result?: unknown) => void) {
+                        Promise.resolve(this.send(type, params))
+                            .then((result) => callback(null, result))
+                            .catch((err: Error) => { if (err.name !== 'AbortError') callback(err); });
                         return {cancel() {}};
                     }
                 };
@@ -236,13 +239,11 @@ describe('RasterDEMTileSource provider', () => {
         config.TILE_PROVIDER_URLS[providerName] = moduleUrl;
 
         const {broadcastResult, broadcastError} = overrides;
-        const broadcastSpy = vi.fn((_type: string, _data: unknown, cb?: (err: Error | null, result?: unknown[]) => void) => {
-            if (!cb) return;
+        const broadcastSpy = vi.fn((_type: string, _data: unknown, _signal?: AbortSignal) => {
             if (broadcastError) {
-                cb(broadcastError);
-            } else {
-                cb(null, broadcastResult !== undefined ? broadcastResult : [null]);
+                return Promise.reject(broadcastError);
             }
+            return Promise.resolve(broadcastResult !== undefined ? broadcastResult : [null]);
         });
 
         const dispatcher = {
@@ -272,7 +273,7 @@ describe('RasterDEMTileSource provider', () => {
         return {source, broadcastSpy};
     }
 
-    test('broadcasts loadTileProvider when provider resolves', () => {
+    test('broadcasts loadTileProvider when provider resolves', async () => {
         const name = nextProvider();
         const {source, broadcastSpy} = createProviderSource(name, {
             provider: name,
@@ -282,12 +283,13 @@ describe('RasterDEMTileSource provider', () => {
         expect(broadcastSpy).toHaveBeenCalledWith(
             'loadTileProvider',
             expect.objectContaining({name, source: 'id', type: 'raster-dem'}),
-            expect.any(Function),
+            expect.anything(),
         );
+        await waitFor(source, 'data');
         expect(source.tiles).toEqual(['http://example.com/{z}/{x}/{y}.png']);
     });
 
-    test('uses provider TileJSON when workers return it', () => {
+    test('uses provider TileJSON when workers return it', async () => {
         const name = nextProvider();
         const tileJSON = {
             tiles: ['http://provider.example.com/{z}/{x}/{y}.png'],
@@ -296,18 +298,20 @@ describe('RasterDEMTileSource provider', () => {
         };
         const {source} = createProviderSource(name, {provider: name}, {broadcastResult: [tileJSON]});
 
+        await waitFor(source, 'data');
         expect(source.tiles).toEqual(['http://provider.example.com/{z}/{x}/{y}.png']);
         expect(source.minzoom).toEqual(2);
         expect(source.maxzoom).toEqual(16);
     });
 
-    test('falls back to options.tiles when workers return no TileJSON', () => {
+    test('falls back to options.tiles when workers return no TileJSON', async () => {
         const name = nextProvider();
         const {source} = createProviderSource(name, {
             provider: name,
             tiles: ['http://example.com/{z}/{x}/{y}.png'],
         }, {broadcastResult: [null]});
 
+        await waitFor(source, 'data');
         expect(source.tiles).toEqual(['http://example.com/{z}/{x}/{y}.png']);
         expect(source._loaded).toBe(true);
     });

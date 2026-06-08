@@ -9,8 +9,16 @@ import {Evented} from '../../../src/util/evented';
 import {RequestManager} from '../../../src/util/mapbox';
 import sourceFixture from '../../fixtures/source.json';
 import config from '../../../src/util/config';
+import Actor from '../../../src/util/actor';
 
 const wrapDispatcher = (dispatcher) => {
+    /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment */
+    if (dispatcher.send && !dispatcher.sendCancelable) {
+        const send = dispatcher.send.bind(dispatcher);
+        dispatcher.send = (type, data, options) => Promise.resolve(send(type, data, options));
+        dispatcher.sendCancelable = Actor.prototype.sendCancelable;
+    }
+    /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment */
     return {
         getActor() {
             return dispatcher;
@@ -20,7 +28,7 @@ const wrapDispatcher = (dispatcher) => {
 };
 
 const mockDispatcher = wrapDispatcher({
-    send() {}
+    send() { return new Promise(() => {}); }
 });
 
 function createSource(options, {transformCallback, customAccessToken} = {}) {
@@ -169,7 +177,7 @@ describe('VectorTileSource', () => {
 
     function testScheme(scheme, expectedURL) {
         test(`scheme "${scheme}"`, async () => {
-            const {wait, withAsync} = doneAsync();
+            const {wait, doneRef} = doneAsync();
             const source = createSource({
                 minzoom: 1,
                 maxzoom: 10,
@@ -180,13 +188,14 @@ describe('VectorTileSource', () => {
             });
 
             source.dispatcher = wrapDispatcher({
-                send: withAsync((type, params, _, doneRef) => {
+                send(type, params) {
                     expect(type).toEqual('loadTile');
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(expectedURL).toEqual(params.request.url);
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     doneRef.resolve();
-                })
+                    return new Promise(() => {});
+                }
             });
 
             source.on('data', (e) => {
@@ -217,6 +226,7 @@ describe('VectorTileSource', () => {
                     expect(type).toEqual('loadTile');
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(expectedURL).toEqual(params.request.url);
+                    return new Promise(() => {});
                 }
             });
 
@@ -491,10 +501,9 @@ describe('VectorTileSource', () => {
         });
         const events: Array<any> = [];
         source.dispatcher = wrapDispatcher({
-            send(type, params, cb: () => void) {
+            send(type) {
                 events.push(type);
-                if (cb) setTimeout(cb, 0);
-                return 1;
+                return Promise.resolve({});
             }
         });
 
@@ -606,15 +615,13 @@ describe('VectorTileSource', () => {
             collectResourceTiming: true
         });
         source.dispatcher = wrapDispatcher({
-            send(type, params, cb: () => void) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                expect(params.request.collectResourceTiming).toBeTruthy();
-                setTimeout(cb, 0);
-
-                // do nothing for cache size check dispatch
-                source.dispatcher = mockDispatcher;
-
-                return 1;
+            send(type, params) {
+                if (type === 'loadTile') {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    expect(params.request.collectResourceTiming).toBeTruthy();
+                    source.dispatcher = mockDispatcher;
+                }
+                return new Promise(() => {});
             }
         });
 
@@ -713,12 +720,12 @@ describe('VectorTileSource', () => {
         });
 
         source.dispatcher = wrapDispatcher({
-            send(type, params, cb) {
-                // Simulate a non-AJAX error (no .status property)
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                Promise.resolve().then(() => cb(new Error('parse failed'), null));
-                source.dispatcher = mockDispatcher;
-                return 1;
+            send(type) {
+                if (type === 'loadTile') {
+                    source.dispatcher = mockDispatcher;
+                    return Promise.reject(new Error('parse failed'));
+                }
+                return new Promise(() => {});
             }
         });
 
@@ -785,11 +792,11 @@ describe('VectorTileSource provider', () => {
         overrides: {dispatcherOverrides?: object; mapOverrides?: object; broadcastResult?: unknown[]} = {},
     ) {
         const {dispatcherOverrides, mapOverrides, broadcastResult} = overrides;
-        const broadcastSpy = vi.fn((_type: string, _data: unknown, cb?: (err: null, result: unknown[]) => void) => {
-            if (cb) cb(null, broadcastResult !== undefined ? broadcastResult : [null]);
+        const broadcastSpy = vi.fn((_type: string, _data: unknown, _signal?: AbortSignal) => {
+            return Promise.resolve(broadcastResult !== undefined ? broadcastResult : [null]);
         });
         const dispatcher = {
-            getActor() { return {send() {}}; },
+            getActor() { return {send() { return new Promise(() => {}); }}; },
             ready: true,
             broadcast: broadcastSpy,
             ...dispatcherOverrides,
@@ -857,7 +864,7 @@ describe('VectorTileSource provider', () => {
         expect(e.error.message).toMatch(new RegExp(`TileProvider "${name}" is not registered`));
     });
 
-    test('broadcasts loadTileProvider to workers', () => {
+    test('broadcasts loadTileProvider to workers', async () => {
         const name = nextProvider();
         const moduleUrl = 'http://example.com/provider.js';
         config.TILE_PROVIDER_URLS[name] = moduleUrl;
@@ -869,12 +876,13 @@ describe('VectorTileSource provider', () => {
         expect(broadcastSpy).toHaveBeenCalledWith(
             'loadTileProvider',
             expect.objectContaining({name, url: moduleUrl, source: 'id', type: 'vector'}),
-            expect.any(Function)
+            expect.anything()
         );
+        await waitFor(source, 'data');
         expect(source.tiles).toEqual(['http://example.com/{z}/{x}/{y}.mvt']);
     });
 
-    test('uses provider TileJSON when workers return it', () => {
+    test('uses provider TileJSON when workers return it', async () => {
         const name = nextProvider();
         const tileJSON = {
             tiles: ['http://provider.example.com/{z}/{x}/{y}.mvt'],
@@ -887,6 +895,7 @@ describe('VectorTileSource provider', () => {
             broadcastResult: [tileJSON],
         });
 
+        await waitFor(source, 'data');
         expect(source.tiles).toEqual(['http://provider.example.com/{z}/{x}/{y}.mvt']);
         expect(source.minzoom).toEqual(2);
         expect(source.maxzoom).toEqual(16);
@@ -908,11 +917,11 @@ describe('VectorTileSource provider autodetection', () => {
         overrides: {broadcastResult?: unknown[]} = {},
     ) {
         const {broadcastResult} = overrides;
-        const broadcastSpy = vi.fn((_type: string, _data: unknown, cb?: (err: null, result: unknown[]) => void) => {
-            if (cb) cb(null, broadcastResult !== undefined ? broadcastResult : [null]);
+        const broadcastSpy = vi.fn((_type: string, _data: unknown, _signal?: AbortSignal) => {
+            return Promise.resolve(broadcastResult !== undefined ? broadcastResult : [null]);
         });
         const dispatcher = {
-            getActor() { return {send() {}}; },
+            getActor() { return {send() { return new Promise(() => {}); }}; },
             ready: true,
             broadcast: broadcastSpy,
         };
@@ -952,7 +961,7 @@ describe('VectorTileSource provider autodetection', () => {
         expect(broadcastSpy).toHaveBeenCalledWith(
             'loadTileProvider',
             expect.objectContaining({name: 'pmtiles'}),
-            expect.any(Function)
+            expect.anything()
         );
     });
 
@@ -979,7 +988,7 @@ describe('VectorTileSource provider autodetection', () => {
         expect(broadcastSpy).toHaveBeenCalledWith(
             'loadTileProvider',
             expect.objectContaining({name: 'custom', url: 'https://example.com/custom.js'}),
-            expect.any(Function)
+            expect.anything()
         );
         delete config.TILE_PROVIDER_URLS['custom'];
     });
@@ -1003,7 +1012,7 @@ describe('VectorTileSource provider autodetection', () => {
         expect(broadcastSpy).toHaveBeenCalledWith(
             'loadTileProvider',
             expect.objectContaining({url: 'https://api.mapbox.cn/mapbox-gl-js/mock-provider.js'}),
-            expect.any(Function)
+            expect.anything()
         );
     });
 

@@ -1,6 +1,6 @@
 import DEMData from '../data/dem_data';
-import {getArrayBuffer} from '../util/ajax';
-import {getExpiryDataFromHeaders, prevPowerOfTwo} from '../util/util';
+import {makeAsyncRequest} from '../util/ajax';
+import {prevPowerOfTwo} from '../util/util';
 
 import type {TileProvider} from './tile_provider';
 import type {DEMSourceEncoding} from '../data/dem_data';
@@ -10,8 +10,7 @@ import type {
     WorkerSourceOptions,
     WorkerSourceTileRequest,
     WorkerSourceDEMTileRequest,
-    WorkerSourceDEMTileCallback,
-    WorkerSourceVectorTileCallback
+    WorkerSourceDEMTileResult,
 } from './worker_source';
 
 class RasterDEMTileWorkerSource implements WorkerSource {
@@ -25,34 +24,26 @@ class RasterDEMTileWorkerSource implements WorkerSource {
         this.loading = {};
     }
 
-    loadTile(params: WorkerSourceDEMTileRequest, callback: WorkerSourceDEMTileCallback) {
+    async loadTile(params: WorkerSourceDEMTileRequest): Promise<WorkerSourceDEMTileResult | null> {
         const uid = params.uid;
+        const controller = new AbortController();
+        this.loading[uid] = {cancel: () => controller.abort()};
 
         if (this.tileProvider) {
-            const controller = new AbortController();
-            this.loading[uid] = {cancel: () => controller.abort()};
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.loadTileWithProvider(this.tileProvider, uid, params, controller, callback);
-            return;
+            return this.loadTileWithProvider(this.tileProvider, uid, params, controller);
         }
 
-        const {cancel} = getArrayBuffer(params.request, (err?: Error | null, buffer?: ArrayBuffer | null, headers?: Headers) => {
-            const aborted = !this.loading[uid];
+        try {
+            const {data, expires, cacheControl} = await makeAsyncRequest<ArrayBuffer>(Object.assign(params.request, {type: 'arrayBuffer'}), controller.signal);
+            if (!data) return null;
+            const result = await this.decodeTile(uid, data, params.encoding);
+            return Object.assign(result, {expires, cacheControl});
+        } catch (err) {
+            if (err instanceof DOMException && err.name === 'AbortError') return null;
+            throw err;
+        } finally {
             delete this.loading[uid];
-
-            if (aborted || err || !buffer) {
-                return callback(err);
-            }
-
-            this.decodeTile(uid, buffer, params.encoding)
-                .then((result) => {
-                    const {expires, cacheControl} = getExpiryDataFromHeaders(headers);
-                    callback(null, Object.assign(result, {expires, cacheControl}));
-                })
-                .catch((e: Error) => callback(e));
-        });
-
-        this.loading[uid] = {cancel};
+        }
     }
 
     async decodeTile(uid: number, buffer: ArrayBuffer | ImageBitmap, encoding: DEMSourceEncoding): Promise<{dem: DEMData; borderReady: boolean}> {
@@ -69,57 +60,53 @@ class RasterDEMTileWorkerSource implements WorkerSource {
         return {dem, borderReady};
     }
 
-    async loadTileWithProvider(provider: TileProvider<ArrayBuffer | ImageBitmap>, uid: number, params: WorkerSourceDEMTileRequest, controller: AbortController, callback: WorkerSourceDEMTileCallback) {
+    async loadTileWithProvider(provider: TileProvider<ArrayBuffer | ImageBitmap>, uid: number, params: WorkerSourceDEMTileRequest, controller: AbortController): Promise<WorkerSourceDEMTileResult | null> {
         const {z, x, y} = params.tileID.canonical;
         try {
             const response = await provider.loadTile({z, x, y}, {request: params.request, signal: controller.signal});
 
-            if (controller.signal.aborted) return callback(null, null);
+            if (controller.signal.aborted) return null;
 
             if (response == null) {
                 const err: Error & {status?: number} = new Error('Tile not found');
                 err.status = 404;
-                return callback(err);
+                throw err;
             }
 
-            if (response.data == null) return callback(null, null);
+            if (response.data == null) return null;
 
             const result = await this.decodeTile(uid, response.data, params.encoding);
 
-            if (controller.signal.aborted) return callback(null, null);
+            if (controller.signal.aborted) return null;
 
-            callback(null, Object.assign(result, {
+            return Object.assign(result, {
                 expires: response.expires,
                 cacheControl: response.cacheControl,
-            }));
+            });
         } catch (err) {
-            if (controller.signal.aborted) return callback(null, null);
-            if (err instanceof DOMException && err.name === 'AbortError') return callback(null, null);
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string
-            callback(err instanceof Error ? err : new Error(String(err)));
+            if (controller.signal.aborted) return null;
+            if (err instanceof DOMException && err.name === 'AbortError') return null;
+            throw err;
         } finally {
             delete this.loading[uid];
         }
     }
 
-    reloadTile(params: WorkerSourceDEMTileRequest, callback: WorkerSourceDEMTileCallback) {
+    async reloadTile(_params: WorkerSourceDEMTileRequest) {
         // No-op: DEM tiles have no persistent worker-side state to reload
-        callback(null, null);
     }
 
-    abortTile(params: WorkerSourceTileRequest, callback: WorkerSourceVectorTileCallback) {
+    abortTile(params: WorkerSourceTileRequest): void {
         const uid = params.uid;
         const tile = this.loading[uid];
         if (tile) {
             tile.cancel();
             delete this.loading[uid];
         }
-        callback();
     }
 
-    removeTile(params: WorkerSourceTileRequest, callback: WorkerSourceVectorTileCallback) {
+    removeTile(_params: WorkerSourceTileRequest): void {
         // No-op in the RasterDEMTileWorkerSource class
-        callback();
     }
 
     getImageData(imgBitmap: ImageBitmap, padding: number): ImageData {
