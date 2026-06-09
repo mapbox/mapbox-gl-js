@@ -4,20 +4,13 @@
 
 uniform lowp float u_device_pixel_ratio;
 uniform highp float u_width_scale;
-uniform highp float u_floor_width_scale;
 uniform float u_alpha_discard_threshold;
 uniform lowp float u_opacity_multiplier;
-uniform highp vec2 u_trim_offset;
-uniform highp vec2 u_trim_fade_range;
-uniform highp vec2 u_trim_gradient_mix_range;
-uniform lowp vec4 u_trim_color;
-uniform bool u_emissive_in_shadows;
 uniform bool u_clip_to_tile_borders;
 
 in vec4 v_width2_dilute;
 in vec2 v_normal;
 in float v_gamma_scale;
-in highp vec3 v_uv;
 in vec2 v_tile_pos;
 
 #ifdef ELEVATED_ROADS
@@ -29,6 +22,7 @@ in float stub_side;
 
 #ifdef RENDER_LINE_DASH
 uniform sampler2D u_dash_image;
+uniform highp float u_floor_width_scale;
 
 in vec2 v_tex;
 #endif
@@ -37,8 +31,19 @@ in vec2 v_tex;
 in vec3 v_elevation_id_col;
 #endif
 
+#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
+in highp vec3 v_uv;
+#endif
+
 #ifdef RENDER_LINE_GRADIENT
 uniform sampler2D u_gradient_image;
+#endif
+
+#ifdef RENDER_LINE_TRIM_OFFSET
+uniform highp vec2 u_trim_offset;
+uniform highp vec2 u_trim_fade_range;
+uniform highp vec2 u_trim_gradient_mix_range;
+uniform lowp vec4 u_trim_color;
 #endif
 
 #ifdef INDICATOR_CUTOUT
@@ -46,6 +51,7 @@ in highp float v_z_offset;
 #endif
 
 #ifdef RENDER_SHADOWS
+uniform bool u_emissive_in_shadows;
 uniform vec3 u_ground_shadow_factor;
 
 in highp vec4 v_pos_light_view_0;

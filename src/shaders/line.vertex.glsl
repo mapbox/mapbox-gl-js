@@ -46,7 +46,6 @@ uniform float u_width_scale;
 // Note: This value is zero if line-z-offset has feature dependencies,
 // in that case the value is passed as a vertex attribute instead of a uniform.
 uniform float u_z_offset;
-uniform highp float u_floor_width_scale;
 
 #ifdef RENDER_LINE_CURVE
 // Encodes curve control points in 3x3 matrices for x, y, z
@@ -73,7 +72,6 @@ float sample_elevation(vec2 apos) {
 out vec2 v_normal;
 out vec4 v_width2_dilute; // xy fow width, z for dilute of whole line w for dilute of border
 out float v_gamma_scale;
-out highp vec3 v_uv;
 out vec2 v_tile_pos;
 
 #ifdef ELEVATED_ROADS
@@ -84,9 +82,14 @@ out float stub_side;
 #endif
 
 #ifdef RENDER_LINE_DASH
+uniform highp float u_floor_width_scale;
 uniform vec2 u_texsize;
 uniform float u_tile_units_to_pixels;
 out vec2 v_tex;
+#endif
+
+#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
+out highp vec3 v_uv;
 #endif
 
 #ifdef RENDER_LINE_GRADIENT
