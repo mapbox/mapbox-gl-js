@@ -299,7 +299,12 @@ const skip = [
     "render-tests/hd-sd-transition/sd-on-steady",
 
     // https://mapbox.atlassian.net/browse/GLJS-1855
-    "render-tests/appearance/text-field"
+    "render-tests/appearance/text-field",
+
+    // https://mapbox.atlassian.net/browse/GLJS-1856
+    "render-tests/appearance/icon-image-cross-fade/two-to-two",
+    "render-tests/appearance/icon-image-cross-fade/one-to-two",
+    "render-tests/appearance/icon-image-cross-fade/two-to-one"
 ];
 
 export default {todo, skip};

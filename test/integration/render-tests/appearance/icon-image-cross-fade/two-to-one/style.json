@@ -1,0 +1,47 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "pixelRatio": 2,
+      "height": 32,
+      "width": 32
+    }
+  },
+  "camera": {"camera-projection": "orthographic"},
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "GeometryCollection",
+        "geometries": [
+          {
+            "type": "Point",
+            "coordinates": [0, 0]
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "point",
+      "paint": {
+        "icon-image-cross-fade": 0.5
+      },
+      "layout": {
+        "icon-image": ["image", "bakery-12", "bank-12"]
+      },
+      "appearances": [
+        {
+          "condition": true,
+          "properties": {
+            "icon-image": "music-12"
+          }
+        }
+      ]
+    }
+  ]
+}
