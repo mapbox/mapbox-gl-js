@@ -429,7 +429,7 @@ class Style extends Evented<MapEvents> {
         this.importsCache = options.importsCache || new Map();
         this.resolvedImports = options.resolvedImports || new Set();
 
-        this.transition = Object.assign({}, defaultTransition);
+        this.transition = {...defaultTransition};
 
         this._buildingIndex = new BuildingIndex(this);
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
@@ -807,7 +807,7 @@ class Style extends Evented<MapEvents> {
         let config: ConfigSpecification | undefined;
         const initialConfig = this._initialConfig && this._initialConfig[scope];
         if (importSpec.config || initialConfig) {
-            config = Object.assign({}, importSpec.config, initialConfig);
+            config = {...importSpec.config, ...initialConfig};
         }
 
         const style = new Style(this.map, {
@@ -886,11 +886,11 @@ class Style extends Evented<MapEvents> {
         // it as an import with the well-known ID "basemap" to make sure that we don't expose the internals.
         if (this._isInternalStyle(json)) {
             const basemap = {id: 'basemap', data: json, url: ''};
-            const style = Object.assign({}, empty, {imports: [basemap]}, json.center ? {center: json.center} : {},
-                json.bearing ? {bearing: json.bearing} : {},
-                json.pitch ? {pitch: json.pitch} : {},
-                json.zoom ? {zoom: json.zoom} : {},
-                json.light ? {light: json.light} : {}) as StyleSpecification;
+            const style = ({...empty, imports: [basemap], ...(json.center ? {center: json.center} : {}),
+                ...(json.bearing ? {bearing: json.bearing} : {}),
+                ...(json.pitch ? {pitch: json.pitch} : {}),
+                ...(json.zoom ? {zoom: json.zoom} : {}),
+                ...(json.light ? {light: json.light} : {})}) as StyleSpecification;
             this._importedAsBasemap = true;
             this._load(style, validate);
             return;
@@ -1170,7 +1170,7 @@ class Style extends Evented<MapEvents> {
         // Use perspective camera as a fallback if no camera is specified
         this.camera = camera || {'camera-projection': 'perspective'};
         this.projection = projection || {name: 'mercator'};
-        this.transition = Object.assign({}, defaultTransition, transition);
+        this.transition = {...defaultTransition, ...transition};
 
         this.mergeSources();
         this.mergeLayers();
@@ -1481,7 +1481,7 @@ class Style extends Evented<MapEvents> {
     }
 
     setCamera(camera: CameraSpecification): Style {
-        this.stylesheet.camera = Object.assign({}, this.stylesheet.camera, camera);
+        this.stylesheet.camera = {...this.stylesheet.camera, ...camera};
         this.camera = this.stylesheet.camera;
         return this;
     }
@@ -2797,11 +2797,9 @@ class Style extends Evented<MapEvents> {
             return;
         }
 
-        this.options.set(fqid, Object.assign({}, expressions, {
-            value: expression,
+        this.options.set(fqid, {...expressions, value: expression,
             default: defaultExpression,
-            minValue, maxValue, stepValue, type, values
-        }));
+            minValue, maxValue, stepValue, type, values});
 
         this.updateConfigDependencies(key);
     }
@@ -3506,13 +3504,13 @@ class Style extends Evented<MapEvents> {
     }
 
     setTransition(transition?: TransitionSpecification | null): Style {
-        this.stylesheet.transition = Object.assign({}, this.stylesheet.transition, transition);
+        this.stylesheet.transition = {...this.stylesheet.transition, ...transition};
         this.transition = this.stylesheet.transition;
         return this;
     }
 
     getTransition(): TransitionSpecification {
-        return Object.assign({}, this.stylesheet.transition);
+        return {...this.stylesheet.transition};
     }
 
     setWorldview(worldview: string | undefined | null) {
@@ -3738,7 +3736,7 @@ class Style extends Evented<MapEvents> {
         const targets: QrfTarget[] = [];
 
         if (params && params.target) {
-            targets.push(Object.assign({}, params, {targetId, filter}));
+            targets.push({...params, targetId, filter});
         } else {
             // Query all root-level featuresets
             const featuresetDescriptors = this.getFeaturesetDescriptors();
@@ -3788,11 +3786,9 @@ class Style extends Evented<MapEvents> {
                 return;
             }
 
-            querySourceCache.layers[styleLayer.fqid].targets.push(Object.assign({}, target, {
-                namespace: selector.namespace,
+            querySourceCache.layers[styleLayer.fqid].targets.push({...target, namespace: selector.namespace,
                 properties: selector.properties,
-                uniqueFeatureID: selector.uniqueFeatureID
-            }));
+                uniqueFeatureID: selector.uniqueFeatureID});
         };
 
         for (const target of targets) {
@@ -3991,7 +3987,7 @@ class Style extends Evented<MapEvents> {
                 options = Object.assign(options, {source: id});
             }
 
-            const validationOptions = Object.assign({}, options);
+            const validationOptions = {...options};
             const validationProps: {style?: StyleSpecification} = {};
 
             if (this.terrain && isUpdating) {
@@ -4288,14 +4284,12 @@ class Style extends Evented<MapEvents> {
         }
 
         // Fallback to the default glyphs URL if none is specified
-        const style = Object.assign({}, this.serialize());
+        const style = {...this.serialize()};
 
-        return emitValidationErrors(this, validate.call(validateStyle, Object.assign({
-            key,
+        return emitValidationErrors(this, validate.call(validateStyle, {key,
             style,
             value,
-            styleSpec
-        }, props)));
+            styleSpec, ...props}));
     }
 
     _remove() {

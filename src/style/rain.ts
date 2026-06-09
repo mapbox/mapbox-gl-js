@@ -78,7 +78,7 @@ class Rain extends Evented {
             return;
         }
 
-        const properties = Object.assign({}, rain);
+        const properties = {...rain};
         const rainSpec = styleSpec.rain as Record<PropertyKey, StylePropertySpecification>;
         for (const name of Object.keys(rainSpec)) {
             // Fallback to use default style specification when the properties wasn't set
@@ -118,11 +118,9 @@ class Rain extends Evented {
             return false;
         }
 
-        return emitValidationErrors(this, validate.call(validateStyle, Object.assign({
-            value,
+        return emitValidationErrors(this, validate.call(validateStyle, {value,
             style: {glyphs: true, sprite: true},
-            styleSpec
-        })));
+            styleSpec}));
     }
 }
 

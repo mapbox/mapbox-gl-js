@@ -225,16 +225,14 @@ describe('StyleLayer#setLayoutProperty', () => {
 
 describe('StyleLayer#serialize', () => {
     function createSymbolLayer(layer) {
-        return Object.assign({
-            id: 'symbol',
+        return {id: 'symbol',
             type: 'symbol',
             paint: {
                 'text-color': 'blue'
             },
             layout: {
                 'text-transform': 'uppercase'
-            }
-        }, layer);
+            }, ...layer};
     }
 
     test('serializes layers', () => {
@@ -299,8 +297,7 @@ describe('StyleLayer#serialize', () => {
 
 describe('StyleLayer#serialize', () => {
     function createSymbolLayer(layer) {
-        return Object.assign({
-            id: 'symbol',
+        return {id: 'symbol',
             type: 'symbol',
             paint: {
                 'text-color': 'blue'
@@ -323,8 +320,7 @@ describe('StyleLayer#serialize', () => {
                         "icon-size": 1
                     }
                 }
-            ]
-        }, layer);
+            ], ...layer};
     }
 
     test('serializes layers', () => {
@@ -371,8 +367,7 @@ describe('StyleLayer#serialize', () => {
 
 describe('StyleLayer#appearances', () => {
     function createSymbolLayer(layer): SymbolLayerSpecification {
-        return Object.assign({
-            id: 'symbol',
+        return {id: 'symbol',
             type: 'symbol',
             paint: {
                 'text-color': 'blue'
@@ -420,8 +415,7 @@ describe('StyleLayer#appearances', () => {
                         "icon-size": 1
                     }
                 }
-            ]
-        }, layer);
+            ], ...layer};
     }
 
     test('Correctly parses appearances', () => {

@@ -132,7 +132,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                 });
             },
             filter(options) {
-                return validateFilter(Object.assign({layerType: type}, options));
+                return validateFilter({layerType: type, ...options});
             },
             layout(options) {
                 return validateObject({
@@ -144,7 +144,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                     styleSpec: options.styleSpec,
                     objectElementValidators: {
                         '*'(options: PropertyValidatorOptions) {
-                            return validateLayoutProperty(Object.assign({layerType: type}, options));
+                            return validateLayoutProperty({layerType: type, ...options});
                         }
                     }
                 });
@@ -159,7 +159,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                     styleSpec: options.styleSpec,
                     objectElementValidators: {
                         '*'(options: PropertyValidatorOptions) {
-                            return validatePaintProperty(Object.assign({layerType: type, layer}, options));
+                            return validatePaintProperty({layerType: type, layer, ...options});
                         }
                     }
                 });
@@ -172,7 +172,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                     valueSpec: options.valueSpec,
                     style: options.style,
                     styleSpec: options.styleSpec,
-                    arrayElementValidator: (options) => validateAppearance(Object.assign({layerType: type, layer}, options) as AppearanceValidatorOptions)
+                    arrayElementValidator: (options) => validateAppearance(({layerType: type, layer, ...(options as object)}) as AppearanceValidatorOptions)
                 });
                 // Check non-repeated names on a given layer
                 const appearances = Array.isArray(options.value) ? options.value : [];

@@ -232,7 +232,7 @@ export class Rain extends PrecipitationBase {
                 structuredClone(painter._debugParams.rainVignetteParamsOverride) :
                 structuredClone(this._vignetteParams);
             const rp = painter._debugParams.rainRevealParamsOverride ?
-                Object.assign({}, painter._debugParams.rainRevealParamsOverride) :
+                ({...painter._debugParams.rainRevealParamsOverride}) :
                 {revealStart: 0, revealRange: 0.01};
 
             debugParams = {

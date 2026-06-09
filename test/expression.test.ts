@@ -110,7 +110,7 @@ if (process.argv[1] === __filename && process.argv.length > 2) {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 run('js', {ignores, tests}, (fixture) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const spec = Object.assign({}, fixture.propertySpec);
+    const spec = {...fixture.propertySpec};
     let availableImages: any;
     let canonical: any;
 

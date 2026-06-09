@@ -286,11 +286,9 @@ describe('rtl text detection', () => {
 
 function createVectorData(options?: {buckets?: Bucket[]; rawTileData?: ArrayBuffer}): WorkerSourceVectorTileResult {
     const collisionBoxArray = new CollisionBoxArray();
-    return Object.assign({
-        collisionBoxArray: deserialize(serialize(collisionBoxArray)),
+    return ({collisionBoxArray: deserialize(serialize(collisionBoxArray)),
         featureIndex: deserialize(serialize(new FeatureIndex(new OverscaledTileID(1, 0, 1, 1, 1)))),
-        buckets: []
-    }, options) as WorkerSourceVectorTileResult;
+        buckets: [], ...options}) as WorkerSourceVectorTileResult;
 }
 
 function createPainter(styleStub = {}): Painter {

@@ -28,6 +28,7 @@ import {debugUniformValues} from '../../src/render/program/debug_program';
 import Color from '../../src/style-spec/util/color';
 import {lerp} from '../../src/style-spec/util/lerp';
 
+import type EvaluationParameters from '../../src/style/evaluation_parameters';
 import type Program from '../../src/render/program';
 import type Transform from '../../src/geo/transform';
 import type ModelBucket from '../data/bucket/model_bucket';
@@ -480,7 +481,7 @@ function drawFootprint(painter: Painter, layer: ModelStyleLayer, node: ModelNode
 // Evaluate feature state for node names
 function evaluateFeatureStateForNodeOverrides(layer: ModelStyleLayer, featureId: string | number, featureState: FeatureState, featureProperties: Record<string, unknown>, nodeNamesToEvaluate: string[], nodeOverrides: ModelNodeOverrides) {
     for (const nodeId of nodeNamesToEvaluate) {
-        const partProperties = Object.assign({}, featureProperties);
+        const partProperties = {...featureProperties};
         partProperties['part'] = nodeId;
 
         const part: Feature = {
@@ -499,7 +500,7 @@ function evaluateFeatureStateForNodeOverrides(layer: ModelStyleLayer, featureId:
 // Evaluate feature state for material names
 function evaluateFeatureStateForMaterialOverrides(layer: ModelStyleLayer, featureId: string | number, featureState: FeatureState, featureProperties: Record<string, unknown>, materialNamesToEvaluate: string[], materialOverrides: ModelMaterialOverrides) {
     for (const materialId of materialNamesToEvaluate) {
-        const partProperties = Object.assign({}, featureProperties);
+        const partProperties = {...featureProperties};
         partProperties['part'] = materialId;
 
         const part: Feature = {
@@ -831,7 +832,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
 
     const modelIdUnevaluatedProperty = layer._unevaluatedLayout._values['model-id'];
 
-    const evaluationParameters = Object.assign({}, layer.layout.get("model-id").parameters);
+    const evaluationParameters = {...layer.layout.get("model-id").parameters} as EvaluationParameters;
 
     const layerIndex = painter.style.order.indexOf(layer.fqid);
 

@@ -43,11 +43,9 @@ export default mergeConfig(baseConfig, defineConfig({
     test: {
         setupFiles: ['./test/integration/render-tests/setup.ts'],
         include: ['test/integration/render-tests/index.test.ts'],
-        browser: Object.assign({
-            headless: isCI,
+        browser: {headless: isCI,
             ui: false,
-            viewport: {width: 1280, height: 720},
-        }, browser),
+            viewport: {width: 1280, height: 720}, ...browser},
     },
     plugins: [
         setupIntegrationTestsMiddlewares({

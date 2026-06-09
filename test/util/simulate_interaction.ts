@@ -18,7 +18,7 @@ const events: Record<string, any> = {};
 
 events.click = function (target, options) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    options = Object.assign({bubbles: true}, options);
+    options = {bubbles: true, ...options};
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const MouseEvent = window(target).MouseEvent;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -31,9 +31,9 @@ events.click = function (target, options) {
 
 events.drag = function (target, mousedownOptions, mouseUpOptions) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    mousedownOptions = Object.assign({bubbles: true}, mousedownOptions);
+    mousedownOptions = {bubbles: true, ...mousedownOptions};
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    mouseUpOptions = Object.assign({bubbles: true}, mouseUpOptions);
+    mouseUpOptions = {bubbles: true, ...mouseUpOptions};
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const MouseEvent = window(target).MouseEvent;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -46,7 +46,7 @@ events.drag = function (target, mousedownOptions, mouseUpOptions) {
 
 events.dblclick = function (target, options) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    options = Object.assign({bubbles: true}, options);
+    options = {bubbles: true, ...options};
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const MouseEvent = window(target).MouseEvent;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -68,7 +68,7 @@ events.dblclick = function (target, options) {
 ['keydown', 'keyup', 'keypress'].forEach((event) => {
     events[event] = function (target, options) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        options = Object.assign({bubbles: true}, options);
+        options = {bubbles: true, ...options};
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const KeyboardEvent = window(target).KeyboardEvent;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -79,7 +79,7 @@ events.dblclick = function (target, options) {
 ['mouseup', 'mousedown', 'mouseover', 'mousemove', 'mouseout'].forEach((event) => {
     events[event] = function (target, options) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        options = Object.assign({bubbles: true}, options);
+        options = {bubbles: true, ...options};
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const MouseEvent = window(target).MouseEvent;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -90,7 +90,7 @@ events.dblclick = function (target, options) {
 ['wheel', 'mousewheel'].forEach((event) => {
     events[event] = function (target, options) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        options = Object.assign({bubbles: true}, options);
+        options = {bubbles: true, ...options};
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const WheelEvent = window(target).WheelEvent;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -127,7 +127,7 @@ export function constructTouch(target, options) {
         });
         const defaultTouches = event.endsWith('end') || event.endsWith('cancel') ? [] : [touch];
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        options = Object.assign({bubbles: true, touches: defaultTouches}, options);
+        options = {bubbles: true, touches: defaultTouches, ...options};
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const TouchEvent = window(target).TouchEvent;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -138,7 +138,7 @@ export function constructTouch(target, options) {
 ['focus', 'blur'].forEach((event) => {
     events[event] = function (target, options) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        options = Object.assign({bubbles: true}, options);
+        options = {bubbles: true, ...options};
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const FocusEvent = window(target).FocusEvent;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access

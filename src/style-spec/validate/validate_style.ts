@@ -14,12 +14,11 @@ export default function validateStyle(style: unknown, styleSpec: StyleReference 
         key: options.key || '',
         value: style,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        valueSpec: Object.assign(
-            {},
-            styleSpec.$root,
+        valueSpec: {
+            ...styleSpec.$root,
             // Skip validation of the root properties that are not defined in the style spec (e.g. 'owner').
-            {'*': {type: '*'}},
-        ),
+            '*': {type: '*'},
+        },
         styleSpec,
         style,
         objectElementValidators: {

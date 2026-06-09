@@ -63,7 +63,7 @@ describe('Map#getStyle', () => {
                 return acc;
             }, {});
 
-        const fogWithDefaults = Object.assign({}, fogDefaults, fog);
+        const fogWithDefaults = {...fogDefaults, ...fog};
         expect(map.getStyle()).toEqual(Object.assign(createStyle(), {fog: fogWithDefaults}));
         expect(map.getFog()).toBeTruthy();
     });

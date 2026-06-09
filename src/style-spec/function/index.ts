@@ -33,7 +33,7 @@ export function createFunction(parameters, propertySpec) {
 
     if (isColor) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        parameters = Object.assign({}, parameters);
+        parameters = {...parameters};
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (parameters.stops) {

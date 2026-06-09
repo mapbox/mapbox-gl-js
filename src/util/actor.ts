@@ -147,7 +147,7 @@ class Actor<Outbox extends MessageMap> {
         callback: (err?: Error | null, result?: Outbox[T]['result']) => void
     ): Cancelable {
         const controller = new AbortController();
-        this.send(type, data, Object.assign({}, options, {signal: controller.signal}))
+        this.send(type, data, {...options, signal: controller.signal})
             .then((result) => callback(null, result))
             .catch((err: Error) => { if (err.name !== 'AbortError') callback(err); });
         return {cancel: () => controller.abort()};
@@ -163,10 +163,10 @@ class Actor<Outbox extends MessageMap> {
         return {
             scheduler: this.scheduler,
             send: <T extends keyof Outbox>(type: T, data: Outbox[T]['params'], options?: {signal?: AbortSignal; metadata?: TaskMetadata; skipResult?: boolean}) => {
-                return this.send(type, data, Object.assign({}, options, {targetMapId: mapId}));
+                return this.send(type, data, {...options, targetMapId: mapId});
             },
             sendCancelable: <T extends keyof Outbox>(type: T, data: Outbox[T]['params'], options: {metadata?: TaskMetadata}, callback: (err?: Error | null, result?: Outbox[T]['result']) => void) => {
-                return this.sendCancelable(type, data, Object.assign({}, options, {targetMapId: mapId}), callback);
+                return this.sendCancelable(type, data, {...options, targetMapId: mapId}, callback);
             },
         };
     }

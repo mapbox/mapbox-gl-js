@@ -111,7 +111,7 @@ class SymbolAppearance {
 
         const layoutSerialized = this.unevaluatedLayout ? this.unevaluatedLayout.serialize() : {};
         const paintSerialized = this.unevaluatedPaint ? this.unevaluatedPaint.serialize() : {};
-        const merged = Object.assign({}, layoutSerialized, paintSerialized);
+        const merged = {...layoutSerialized, ...paintSerialized};
         if (Object.keys(merged).length > 0) {
             result['properties'] = merged;
         }

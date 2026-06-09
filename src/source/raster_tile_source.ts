@@ -98,7 +98,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
         this.tileSize = 512;
         this._loaded = false;
 
-        this._options = Object.assign({type: 'raster'}, options);
+        this._options = {type: 'raster', ...options};
         Object.assign(this, pick(options, ['url', 'scheme', 'tileSize']));
     }
 
@@ -264,7 +264,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
     }
 
     serialize(): RasterSourceSpecification | RasterDEMSourceSpecification | RasterArraySourceSpecification {
-        return Object.assign({}, this._options);
+        return {...this._options};
     }
 
     hasTile(tileID: OverscaledTileID): boolean {

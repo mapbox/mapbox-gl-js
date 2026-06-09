@@ -115,7 +115,7 @@ export default class Marker extends Evented<MarkerEvents> {
         // For backward compatibility -- the constructor used to accept the element as a
         // required first argument, before it was made optional.
         if (options instanceof HTMLElement || legacyOptions) {
-            options = Object.assign({element: options}, legacyOptions);
+            options = {element: options as HTMLElement, ...legacyOptions};
         }
 
         bindAll([

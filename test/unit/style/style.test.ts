@@ -27,11 +27,9 @@ import {StubMap, newStubStyle} from './utils';
 import {makeFQID} from '../../../src/util/fqid';
 
 function createStyleJSON(properties) {
-    return Object.assign({
-        "version": 8,
+    return {"version": 8,
         "sources": {},
-        "layers": []
-    }, properties);
+        "layers": [], ...properties};
 }
 
 function createSource() {

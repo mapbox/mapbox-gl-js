@@ -94,10 +94,11 @@ function createStructArrayLayoutType({
         if (memo.length > 0 && memo.at(-1).type === member.type) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const last = memo.at(-1);
-            return memo.slice(0, -1).concat(Object.assign({}, last, {
+            return memo.slice(0, -1).concat({
+                ...last,
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 components: last.components + member.components,
-            }));
+            });
         }
         return memo.concat(member);
     }, []);

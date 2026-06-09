@@ -217,7 +217,7 @@ export class DevTools implements IControl {
             }
         }
 
-        const folder = this._addFolder(this._pane, Object.assign({title: name}, options));
+        const folder = this._addFolder(this._pane, {title: name, ...options});
         const entry = this._folders.get(folder);
         if (entry) entry.name = name;
 
@@ -275,13 +275,13 @@ export class DevTools implements IControl {
                     }
                 }
 
-                const sub = this._addFolder(folder, Object.assign({title: name}, options));
+                const sub = this._addFolder(folder, {title: name, ...options});
                 const subEntry = this._folders.get(sub);
                 if (subEntry) subEntry.name = name;
                 return this._createFolderHandle(sub);
             },
             addReadonly: <T extends object>(target: T, key: keyof T, params?: BindingParams): BindingApi => {
-                return folder.addBinding(target, key, Object.assign({}, params, {readonly: true}));
+                return folder.addBinding(target, key, {...params, readonly: true});
             },
             folder
         };

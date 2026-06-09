@@ -264,7 +264,7 @@ describe('VectorTileSource', () => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             source.map.painter = painter;
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            source.map.transform = Object.assign({}, source.map.transform, {zoom: mapZoom});
+            source.map.transform = {...source.map.transform, zoom: mapZoom};
 
             source.dispatcher = wrapDispatcher({
                 send(type, params) {

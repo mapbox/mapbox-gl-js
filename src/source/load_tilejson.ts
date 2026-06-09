@@ -25,7 +25,7 @@ export function parseTileJSONRequest(source: TileJSONLike, requestManager: Reque
         undefined;
 
     const options: TileJSONLike = request ?
-        Object.assign({}, source, {url: request.url}) :
+        ({...source, url: request.url}) :
         source;
 
     return {request, options};
@@ -120,7 +120,7 @@ export function processTileJSON(options: Options, tileJSON: Partial<TileJSON>, r
 
     const result: TileJSON = pick(
         // explicit source options take precedence over TileJSON
-        Object.assign({}, tileJSON as TileJSON, options),
+        {...tileJSON as TileJSON, ...options},
         ['tilejson', 'tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'extra_bounds', 'scheme', 'tileSize', 'encoding', 'vector_layers', 'raster_layers', 'worldview_options', 'worldview_default', 'worldview']
     );
 

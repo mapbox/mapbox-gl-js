@@ -194,7 +194,7 @@ describe('Map#projection', () => {
             expect(map.painter.clearBackgroundTiles).toHaveBeenCalledTimes(2);
 
             // Runtime api overrides stylesheet projection
-            style.setState(Object.assign({}, style.serialize(), {projection: {name: 'naturalEarth'}}));
+            style.setState({...style.serialize(), projection: {name: 'naturalEarth'}});
             expect(style.serialize().projection.name).toEqual('naturalEarth');
             expect(map.transform.getProjection().name).toEqual('winkelTripel');
             expect(map.painter.clearBackgroundTiles).toHaveBeenCalledTimes(2);
@@ -317,7 +317,7 @@ describe('Map#projection', () => {
             expect(map.getProjection().name).toEqual('albers');
 
             // setStyle with diffing
-            map.setStyle(Object.assign({}, map.getStyle(), {projection: {name: 'winkelTripel'}}));
+            map.setStyle({...map.getStyle(), projection: {name: 'winkelTripel'}});
             expect(map.getProjection().name).toEqual('albers');
             expect(map.style.stylesheet.projection.name).toEqual('winkelTripel');
 

@@ -47,7 +47,7 @@ class ScaleControl implements IControl {
     options: ScaleControlOptions;
 
     constructor(options: ScaleControlOptions = {}) {
-        this.options = Object.assign({}, defaultOptions, options);
+        this.options = {...defaultOptions, ...options};
 
         bindAll([
             '_update',

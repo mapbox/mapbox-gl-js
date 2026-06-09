@@ -30,11 +30,12 @@ export default function validateImport(options: ImportValidatorOptions): Validat
         enumerable: false
     });
 
-    let errors = validateObject(Object.assign({}, options, {
+    let errors = validateObject({
+        ...options,
         value: importSpec,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         valueSpec: styleSpec.import
-    }));
+    });
 
     // Empty string is reserved for the root style id
     if (unbundle(importSpec.id) === '') {

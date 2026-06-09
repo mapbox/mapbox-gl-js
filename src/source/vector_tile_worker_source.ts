@@ -233,7 +233,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             }
         }
 
-        const finalResult = Object.assign({rawTileData: rawTileData.slice(0), responseHeaders: response.responseHeaders}, result, cacheControl, resourceTiming);
+        const finalResult = {rawTileData: rawTileData.slice(0), responseHeaders: response.responseHeaders, ...result, ...cacheControl, ...resourceTiming} as WorkerSourceVectorTileResult;
 
         reload(null, result);
 

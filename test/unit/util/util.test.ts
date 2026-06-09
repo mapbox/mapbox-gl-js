@@ -29,7 +29,7 @@ describe('util', () => {
     expect(easeCubicInOut(1)).toEqual(1);
     expect(keysDifference({a: 1}, {})).toEqual(['a']);
     expect(keysDifference({a: 1}, {a: 1})).toEqual([]);
-    expect(Object.assign({a: 1}, {b: 2})).toEqual({a: 1, b: 2});
+    expect({a: 1, b: 2}).toEqual({a: 1, b: 2});
     expect(pick({a: 1, b: 2, c: 3}, ['a', 'c'])).toEqual({a: 1, c: 3});
     expect(pick({a: 1, b: 2, c: 3}, ['a', 'c', 'd'])).toEqual({a: 1, c: 3});
     expect(typeof uniqueId() === 'number').toBeTruthy();

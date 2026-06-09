@@ -6,11 +6,9 @@ import {getRequestBody, mockFetch} from '../../../util/network';
 import {performanceEvent_} from '../../../../src/util/mapbox';
 
 function createStyleJSON(properties) {
-    return Object.assign({
-        "version": 8,
+    return {"version": 8,
         "sources": {},
-        "layers": []
-    }, properties);
+        "layers": [], ...properties};
 }
 
 describe('Map', () => {

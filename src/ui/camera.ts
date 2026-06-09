@@ -281,7 +281,7 @@ class Camera extends Evented<MapEvents> {
      */
     panBy(offset: PointLike, options?: AnimationOptions, eventData?: EventData): this {
         offset = Point.convert(offset).mult(-1);
-        return this.panTo(this.transform.center, Object.assign({offset}, options), eventData);
+        return this.panTo(this.transform.center, {offset, ...options}, eventData);
     }
 
     /**
@@ -302,9 +302,7 @@ class Camera extends Evented<MapEvents> {
      * @see [Example: Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
     panTo(lnglat: LngLatLike, options?: AnimationOptions, eventData?: EventData): this {
-        return this.easeTo(Object.assign({
-            center: lnglat
-        }, options), eventData);
+        return this.easeTo({center: lnglat, ...options}, eventData);
     }
 
     /**
@@ -363,9 +361,7 @@ class Camera extends Evented<MapEvents> {
      * });
      */
     zoomTo(zoom: number, options?: AnimationOptions | null, eventData?: EventData): this {
-        return this.easeTo(Object.assign({
-            zoom
-        }, options), eventData);
+        return this.easeTo({zoom, ...options}, eventData);
     }
 
     /**
@@ -496,9 +492,7 @@ class Camera extends Evented<MapEvents> {
      * map.rotateTo(30, {duration: 2000});
      */
     rotateTo(bearing: number, options?: EasingOptions, eventData?: EventData): this {
-        return this.easeTo(Object.assign({
-            bearing
-        }, options), eventData);
+        return this.easeTo({bearing, ...options}, eventData);
     }
 
     /**
@@ -516,7 +510,7 @@ class Camera extends Evented<MapEvents> {
      * map.resetNorth({duration: 2000});
      */
     resetNorth(options?: EasingOptions, eventData?: EventData): this {
-        this.rotateTo(0, Object.assign({duration: 1000}, options), eventData);
+        this.rotateTo(0, {duration: 1000, ...options}, eventData);
         return this;
     }
 
@@ -535,11 +529,9 @@ class Camera extends Evented<MapEvents> {
      * map.resetNorthPitch({duration: 2000});
      */
     resetNorthPitch(options?: EasingOptions, eventData?: EventData): this {
-        this.easeTo(Object.assign({
-            bearing: 0,
+        this.easeTo({bearing: 0,
             pitch: 0,
-            duration: 1000
-        }, options), eventData);
+            duration: 1000, ...options}, eventData);
         return this;
     }
 
@@ -628,20 +620,18 @@ class Camera extends Evented<MapEvents> {
 
     _extendPadding(padding: PaddingOptions | null | undefined | number): Required<PaddingOptions> {
         const defaultPadding = {top: 0, right: 0, bottom: 0, left: 0};
-        if (padding == null) return Object.assign({}, defaultPadding, this.transform.padding);
+        if (padding == null) return {...defaultPadding, ...this.transform.padding};
 
         if (typeof padding === 'number') {
             return {top: padding, bottom: padding, right: padding, left: padding};
         }
 
-        return Object.assign({}, defaultPadding, padding);
+        return {...defaultPadding, ...padding};
     }
 
     _extendCameraOptions(options?: CameraOptions): FullCameraOptions {
-        options = Object.assign({
-            offset: [0, 0],
-            maxZoom: this.transform.maxZoom
-        }, options);
+        options = {offset: [0, 0],
+            maxZoom: this.transform.maxZoom, ...options} as FullCameraOptions;
 
         options.padding = this._extendPadding(options.padding);
 
@@ -851,7 +841,7 @@ class Camera extends Evented<MapEvents> {
     queryTerrainElevation(lnglat: LngLatLike, options?: ElevationQueryOptions | null): number | null | undefined {
         const elevation = this.transform.elevation;
         if (elevation) {
-            options = Object.assign({}, {exaggerated: true}, options);
+            options = {exaggerated: true, ...options};
             return elevation.getAtPoint(MercatorCoordinate.fromLngLat(lnglat), null, options.exaggerated);
         }
         return null;
@@ -1337,11 +1327,9 @@ class Camera extends Evented<MapEvents> {
     ): this {
         this._stop(false, options.easeId);
 
-        options = Object.assign({
-            offset: [0, 0],
+        options = {offset: [0, 0],
             duration: 500,
-            easing: defaultEasing
-        }, options);
+            easing: defaultEasing, ...options};
 
         if (options.animate === false || this._prefersReducedMotion(options)) options.duration = 0;
 
@@ -1610,12 +1598,10 @@ class Camera extends Evented<MapEvents> {
 
         this.stop();
 
-        options = Object.assign({
-            offset: [0, 0],
+        options = {offset: [0, 0],
             speed: 1.2,
             curve: 1.42,
-            easing: defaultEasing
-        }, options);
+            easing: defaultEasing, ...options};
 
         const tr = this.transform,
             startZoom = this.getZoom(),

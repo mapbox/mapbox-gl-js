@@ -19,7 +19,7 @@ export class ErrorEvent extends Event<EventRegistry, 'error'> {
     error: ErrorLike;
 
     constructor(error: ErrorLike, data: EventData = {}) {
-        super('error', Object.assign({error}, data));
+        super('error', {error, ...data});
     }
 }
 

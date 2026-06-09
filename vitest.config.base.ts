@@ -12,7 +12,7 @@ const defaultReporters: InlineConfig['reporters'] = isCI ?
     [['default']];
 
 export function chromiumBrowser(extraLaunchOptions: Record<string, unknown> = {}): BrowserConfigOptions {
-    const launchOptions = Object.assign({channel: isCI ? 'chromium' : 'chrome'}, extraLaunchOptions);
+    const launchOptions = {channel: isCI ? 'chromium' : 'chrome', ...extraLaunchOptions};
     return {
         provider: playwright({launchOptions}),
         instances: [{browser: 'chromium'}],

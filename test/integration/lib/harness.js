@@ -42,14 +42,12 @@ export default async function (directory, implementation, options, run) {
 
             style.metadata = style.metadata || {};
             const testName = `${path.basename(directory)}/${id}`;
-            style.metadata.test = Object.assign({
-                id,
+            style.metadata.test = {id,
                 skip: ignores.skip.includes(testName) || ignores.todo.includes(testName),
                 width: 512,
                 height: 512,
                 pixelRatio: 1,
-                allowed: 0.00015
-            }, style.metadata.test);
+                allowed: 0.00015, ...style.metadata.test};
 
             return style;
         })

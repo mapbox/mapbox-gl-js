@@ -679,7 +679,7 @@ class MetricsEvent extends TelemetryEvent {
             this.refreshUUID();
         }
 
-        const payload: MetricsEventPayload = Object.assign({}, this.data, {sessionId: this.anonId});
+        const payload = {...this.data, sessionId: this.anonId} as MetricsEventPayload;
 
         this.queueRequest({
             timestamp: Date.now(),

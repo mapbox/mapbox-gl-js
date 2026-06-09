@@ -107,7 +107,7 @@ class Fog extends Evented {
             return;
         }
 
-        const properties = Object.assign({}, fog);
+        const properties = {...fog};
         for (const name of Object.keys(fogReference)) {
             if (properties[name] === undefined) {
                 properties[name] = fogReference[name].default;
@@ -207,11 +207,11 @@ class Fog extends Evented {
             return false;
         }
 
-        return emitValidationErrors(this, validate.call(validateStyle, Object.assign({
+        return emitValidationErrors(this, validate.call(validateStyle, {
             value,
             style: {glyphs: true, sprite: true},
             styleSpec
-        })));
+        }));
     }
 }
 

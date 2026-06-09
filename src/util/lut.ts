@@ -30,7 +30,7 @@ export function evaluateColorThemeProperties(
     configOptions?: ConfigOptions | null,
     worldview?: string
 ): PossiblyEvaluated<Props> {
-    const properties = Object.assign({}, values);
+    const properties = {...values};
     for (const name of Object.keys(colorThemeReference)) {
         // Fallback to use default style specification when the properties wasn't set
         if (properties[name] === undefined) {

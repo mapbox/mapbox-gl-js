@@ -25,11 +25,12 @@ export default function validateFilter(options: FilterValidatorOptions): Validat
         // We default to a layerType of `fill` because that points to a non-dynamic filter definition within the style-spec.
         const layerType = options.layerType || 'fill';
 
-        return validateExpression(Object.assign({}, options, {
+        return validateExpression({
+            ...options,
             expressionContext: 'filter' as const,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             valueSpec: options.styleSpec[`filter_${layerType}`]
-        }));
+        });
     } else {
         return validateNonExpressionFilter(options);
     }

@@ -703,7 +703,7 @@ class WorkerTile {
                     imageMap.set(imageVariantStr, image);
                 } else if (!imageRasterizationTasks.has(imageVariantStr)) {
                     imageRasterizationTasks.set(imageVariantStr, imageVariant);
-                    imageMap.set(imageVariantStr, Object.assign({}, image));
+                    imageMap.set(imageVariantStr, {...image});
                 }
             }
         }

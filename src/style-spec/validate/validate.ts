@@ -117,10 +117,11 @@ export default function validate(options: ValidatorOptions, arrayAsExpression: b
         return errors;
     }
 
-    const errors = validateObject(Object.assign({}, options, {
+    const errors = validateObject({
+        ...options,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         valueSpec: valueSpec.type ? styleSpec[valueSpec.type] : valueSpec
-    }));
+    });
 
     return errors;
 }

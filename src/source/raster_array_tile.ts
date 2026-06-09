@@ -142,7 +142,7 @@ class RasterArrayTile extends Tile implements Tile {
     ): Cancelable {
         const mrt = this._mrt = new MapboxRasterTile(MRT_DECODED_BAND_CACHE_SIZE);
 
-        const headerRequestParams = Object.assign({}, this.requestParams, {headers: {Range: `bytes=0-${fetchLength - 1}`}});
+        const headerRequestParams = {...this.requestParams, headers: {Range: `bytes=0-${fetchLength - 1}`}};
 
         // A buffer, in case range requests were ignored
         this.entireBuffer = null;
@@ -313,7 +313,7 @@ class RasterArrayTile extends Tile implements Tile {
             // TODO: can we decode without slicing and duplicating memory?
             onDataLoaded(null, this.entireBuffer.slice(range.firstByte, range.lastByte + 1));
         } else {
-            const rangeRequestParams = Object.assign({}, this.requestParams, {headers: {Range: `bytes=${range.firstByte}-${range.lastByte}`}});
+            const rangeRequestParams = {...this.requestParams, headers: {Range: `bytes=${range.firstByte}-${range.lastByte}`}};
             const request = getArrayBuffer(rangeRequestParams, onDataLoaded);
 
             if (layerId !== null) {

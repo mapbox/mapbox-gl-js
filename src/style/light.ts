@@ -91,12 +91,10 @@ class Light extends Evented {
             return false;
         }
 
-        return emitValidationErrors(this, validate.call(validateStyle, Object.assign({
-            value,
+        return emitValidationErrors(this, validate.call(validateStyle, {value,
             // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
             style: {glyphs: true, sprite: true},
-            styleSpec
-        })));
+            styleSpec}));
     }
 }
 

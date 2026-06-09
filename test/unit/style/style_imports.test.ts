@@ -16,11 +16,9 @@ import browser from '../../../src/util/browser';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
 
 function createStyleJSON(properties) {
-    return Object.assign({
-        version: 8,
+    return {version: 8,
         sources: {},
-        layers: []
-    }, properties);
+        layers: [], ...properties};
 }
 
 describe('Style#loadURL', () => {

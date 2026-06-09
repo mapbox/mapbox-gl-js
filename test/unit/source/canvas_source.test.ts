@@ -14,10 +14,8 @@ function createSource(options) {
     c.height = 20;
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    options = Object.assign({
-        canvas: 'id',
-        coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]],
-    }, options);
+    options = {canvas: 'id',
+        coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]], ...options};
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     const source = new CanvasSource('id', options, {send() {}}, options.eventedParent);

@@ -33,8 +33,8 @@ export default function validateAppearance(options: AppearanceValidatorOptions):
         style: options.style,
         styleSpec: options.styleSpec,
         objectElementValidators: {
-            condition: (options) => validateCondition(Object.assign({layer, layerType}, options)),
-            properties: (options) => validateProperties(Object.assign({layer, layerType}, options)),
+            condition: (options) => validateCondition({layer, layerType, ...options}),
+            properties: (options) => validateProperties({layer, layerType, ...options}),
         }
     });
 
@@ -65,7 +65,8 @@ function validateProperties(options: AppearanceValidatorOptions): Array<Validati
             continue;
         }
 
-        const propertyValidationOptions = Object.assign({}, options, {
+        const propertyValidationOptions = {
+            ...options,
             key: `${options.key}.${propertyKey}`,
             object: properties,
             objectKey: propertyKey,
@@ -73,7 +74,7 @@ function validateProperties(options: AppearanceValidatorOptions): Array<Validati
             layerType,
             value: properties[propertyKey] as unknown,
             valueSpec: (propertyType === 'paint' ? paintProperties[propertyKey] : layoutProperties[propertyKey]),
-        });
+        };
 
         errors.push(...validateProperty(propertyValidationOptions, propertyType));
     }

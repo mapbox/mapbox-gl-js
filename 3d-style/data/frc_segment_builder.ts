@@ -76,7 +76,7 @@ export function buildFrcLevelSegments(
             if (!frcSegments.has(currentFrc)) {
                 frcSegments.set(currentFrc, []);
             }
-            frcSegments.get(currentFrc).push(Object.assign({}, sortedSegment));
+            frcSegments.get(currentFrc).push({...sortedSegment});
         }
     };
 
@@ -98,10 +98,11 @@ export function buildFrcLevelSegments(
         if (triSegment.frc !== currentFrc) {
             closeCurrentSegment();
             currentFrc = triSegment.frc;
-            sortedSegment = Object.assign({}, sortedSegment, {
+            sortedSegment = {
+                ...sortedSegment,
                 primitiveOffset: sortedTriangles.length / 3,
                 primitiveLength: 0,
-            });
+            };
         }
 
         for (let i = triSegment.start; i < triSegment.end; i++) {

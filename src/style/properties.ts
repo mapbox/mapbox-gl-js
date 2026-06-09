@@ -161,7 +161,7 @@ class TransitionablePropertyValue<T, R> {
 
     transitioned(parameters: TransitionParameters, prior: TransitioningPropertyValue<T, R>): TransitioningPropertyValue<T, R> {
         return new TransitioningPropertyValue(this.property, this.value, prior,
-            Object.assign({}, parameters.transition, this.transition), parameters.now);
+            ({...parameters.transition, ...this.transition}), parameters.now);
     }
 
     untransitioned(): TransitioningPropertyValue<T, R> {

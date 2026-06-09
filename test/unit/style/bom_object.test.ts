@@ -5,11 +5,9 @@ import {mockFetch} from '../../util/network';
 import {newStubStyle} from './utils';
 
 function createStyleJSON(properties) {
-    return Object.assign({
-        version: 8,
+    return {version: 8,
         sources: {},
-        layers: []
-    }, properties);
+        layers: [], ...properties};
 }
 
 describe('Style#getBOMObject', () => {

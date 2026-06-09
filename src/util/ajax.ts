@@ -283,7 +283,7 @@ export async function makeAsyncRequest<T>(
     return new Promise((resolve, reject) => {
         const cancelable = makeRequest(requestParameters, (err, data, headers) => {
             if (err) reject(err);
-            else resolve(Object.assign({data: data as T}, getExpiryDataFromHeaders(headers)));
+            else resolve({data: data as T, ...getExpiryDataFromHeaders(headers)});
         });
 
         if (signal) {

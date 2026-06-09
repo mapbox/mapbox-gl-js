@@ -59,7 +59,7 @@ describe('RasterTileSource', () => {
         };
         const source = createSource(options, transformSpy);
         source.load();
-        expect(source.serialize()).toEqual(Object.assign({type: "raster-dem"}, options));
+        expect(source.serialize()).toEqual({type: "raster-dem", ...options});
         await waitFor(source, 'data');
     });
 

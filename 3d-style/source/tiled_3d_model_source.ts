@@ -189,7 +189,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     }
 
     serialize(): ModelSourceSpecification {
-        return Object.assign({}, this._options);
+        return {...this._options};
     }
 }
 

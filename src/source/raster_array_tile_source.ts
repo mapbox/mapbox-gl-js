@@ -73,7 +73,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         this.partial = true;
         this._loadTilePending = {};
         this._loadTileLoaded = {};
-        this._options = Object.assign({type: 'raster-array'}, options);
+        this._options = {type: 'raster-array', ...options};
     }
 
     triggerRepaint(tile: RasterArrayTile) {
@@ -263,7 +263,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
 
         const textureDescriptor = tile.textureDescriptorPerLayer.get(layer.id);
 
-        return Object.assign({}, textureDescriptor, {texture: tile.texturePerLayer.get(layer.id)});
+        return {...textureDescriptor, texture: tile.texturePerLayer.get(layer.id)};
     }
 
     /**

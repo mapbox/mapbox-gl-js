@@ -111,7 +111,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
         this._loaded = false;
 
         Object.assign(this, pick(options, ['url', 'scheme', 'tileSize', 'promoteId']));
-        this._options = Object.assign({type: 'vector'}, options);
+        this._options = {type: 'vector', ...options};
 
         this._collectResourceTiming = !!options.collectResourceTiming;
 
@@ -301,7 +301,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
     }
 
     serialize(): VectorSourceSpecification {
-        return Object.assign({}, this._options);
+        return {...this._options};
     }
 
     loadTile(tile: Tile, callback: Callback<WorkerSourceVectorTileResult>) {

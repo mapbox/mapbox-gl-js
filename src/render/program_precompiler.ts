@@ -77,14 +77,15 @@ export class ProgramPrecompiler {
         // Each axis defaults to false (matching `currentGlobalDefines` when overrides are absent at runtime). `params` carries
         // layer-derived params (config, lut, layer-default `overrideFog`); special-purpose programs omit it.
         const emit = (programId: ProgramName, defines: DynamicDefinesType[] = [], opts: {params?: CreateProgramParams, fog?: boolean, terrain?: boolean, globe?: boolean, rtt?: boolean} = {}) => {
-            this._queue.push({programId, params: Object.assign({}, opts.params, {
+            this._queue.push({programId, params: {
+                ...opts.params,
                 defines,
                 overrideFog: !!opts.fog,
                 overrideTerrain: !!opts.terrain,
                 overrideGlobe: !!opts.globe,
                 overrideRtt: !!opts.rtt,
-                precompiled: true
-            })});
+                precompiled: true,
+            }});
         };
 
         for (const layer of layers) {

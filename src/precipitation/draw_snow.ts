@@ -229,7 +229,7 @@ export class Snow extends PrecipitationBase {
                 structuredClone(this._vignetteParams);
 
             const rp = painter._debugParams.snowRevealParamsOverride ?
-                Object.assign({}, painter._debugParams.snowRevealParamsOverride) :
+                ({...painter._debugParams.snowRevealParamsOverride}) :
                 {revealStart: 0, revealRange: 0.01};
 
             debugParams = {

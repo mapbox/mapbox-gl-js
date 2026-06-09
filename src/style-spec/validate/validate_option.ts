@@ -19,7 +19,8 @@ export default function validateOption(options: ValidatorOptions): ValidationErr
     const isArrayOption = isObject(optionValue) && unbundle(optionValue.array) === true;
     const declaredType = !isArrayOption && isObject(optionValue) ? unbundle(optionValue.type) : undefined;
 
-    return validateObject(Object.assign({}, options, {
+    return validateObject({
+        ...options,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         valueSpec: styleSpec.option,
         objectElementValidators: declaredType ? {
@@ -28,10 +29,8 @@ export default function validateOption(options: ValidatorOptions): ValidationErr
             // permissive validation, mirroring the runtime parser's narrowing
             // in style.ts/parser.cpp.
             default: (elementOptions: ValidatorOptions): ValidationError[] => (Array.isArray(elementOptions.value) ?
-                validateSpec(Object.assign({}, elementOptions, {
-                    valueSpec: Object.assign({}, elementOptions.valueSpec, {type: declaredType}),
-                })) :
+                validateSpec({...elementOptions, valueSpec: {...elementOptions.valueSpec, type: declaredType} as typeof elementOptions.valueSpec}) :
                 validateSpec(elementOptions)),
         } : undefined,
-    }));
+    });
 }

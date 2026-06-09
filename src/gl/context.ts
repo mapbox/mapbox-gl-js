@@ -155,7 +155,7 @@ class Context {
         this.pixelStoreUnpack = new PixelStoreUnpack(this);
         this.pixelStoreUnpackPremultiplyAlpha = new PixelStoreUnpackPremultiplyAlpha(this);
         this.pixelStoreUnpackFlipY = new PixelStoreUnpackFlipY(this);
-        this.options = options ? Object.assign({}, options) : {};
+        this.options = options ? ({...options}) : {};
 
         if (!this.options.extTextureFilterAnisotropicForceOff) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

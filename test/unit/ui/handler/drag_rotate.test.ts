@@ -9,7 +9,7 @@ import browser from '../../../../src/util/browser';
 function createMap(options) {
     vi.spyOn(Map.prototype, '_detectMissingCSS').mockImplementation(() => {});
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    return new Map(Object.assign({container: DOM.create('div', '', window.document.body), testMode: true}, options));
+    return new Map({container: DOM.create('div', '', window.document.body), testMode: true, ...options});
 }
 
 test('DragRotateHandler#isActive', () => {

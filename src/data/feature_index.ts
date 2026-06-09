@@ -246,7 +246,7 @@ class FeatureIndex {
             geojsonFeature.source = serializedLayer.source;
             geojsonFeature.sourceLayer = serializedLayer['source-layer'];
 
-            geojsonFeature.layer = Object.assign({}, serializedLayer);
+            geojsonFeature.layer = {...serializedLayer};
             geojsonFeature.layer.paint = evaluateProperties(serializedLayer.paint, styleLayer.paint, feature, featureState, availableImages);
             geojsonFeature.layer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, feature, featureState, availableImages);
 
@@ -341,7 +341,7 @@ class FeatureIndex {
             geojsonFeature.source = serializedLayer.source;
             geojsonFeature.sourceLayer = serializedLayer['source-layer'];
 
-            geojsonFeature.layer = Object.assign({}, serializedLayer);
+            geojsonFeature.layer = {...serializedLayer};
 
             // Iterate over all targets to check if the feature should be included and add feature variants if necessary
             const evaluationParameters = new EvaluationParameters(this.tileID.overscaledZ, {worldview});

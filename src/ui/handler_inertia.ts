@@ -11,25 +11,17 @@ const defaultInertiaOptions = {
     easing: bezier(0, 0, 0.3, 1),
 };
 
-const defaultPanInertiaOptions = Object.assign({
-    deceleration: 2500,
-    maxSpeed: 1400
-}, defaultInertiaOptions);
+const defaultPanInertiaOptions = {deceleration: 2500,
+    maxSpeed: 1400, ...defaultInertiaOptions};
 
-const defaultZoomInertiaOptions = Object.assign({
-    deceleration: 20,
-    maxSpeed: 1400
-}, defaultInertiaOptions);
+const defaultZoomInertiaOptions = {deceleration: 20,
+    maxSpeed: 1400, ...defaultInertiaOptions};
 
-const defaultBearingInertiaOptions = Object.assign({
-    deceleration: 1000,
-    maxSpeed: 360
-}, defaultInertiaOptions);
+const defaultBearingInertiaOptions = {deceleration: 1000,
+    maxSpeed: 360, ...defaultInertiaOptions};
 
-const defaultPitchInertiaOptions = Object.assign({
-    deceleration: 1000,
-    maxSpeed: 90
-}, defaultInertiaOptions);
+const defaultPitchInertiaOptions = {deceleration: 1000,
+    maxSpeed: 90, ...defaultInertiaOptions};
 
 export type InertiaOptions = {
     linearity: number;
@@ -115,7 +107,7 @@ export default class HandlerInertia {
         const easeOptions: EasingOptions & {easeId?: string; noMoveStart?: boolean} = {};
 
         if (deltas.pan.mag()) {
-            const result = calculateEasing(deltas.pan.mag(), duration, Object.assign({}, defaultPanInertiaOptions, panInertiaOptions || {}));
+            const result = calculateEasing(deltas.pan.mag(), duration, {...defaultPanInertiaOptions, ...panInertiaOptions || {}});
             easeOptions.offset = deltas.pan.mult(result.amount / deltas.pan.mag());
             easeOptions.center = this._map.transform.center;
             extendDuration(easeOptions, result);

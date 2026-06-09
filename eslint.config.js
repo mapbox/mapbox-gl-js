@@ -156,9 +156,6 @@ export default tseslint.config(
             'no-multiple-empty-lines': ['error', {max: 1}],
             'no-restricted-syntax': ['error',
                 {
-                    selector: 'ObjectExpression > SpreadElement',
-                    message: 'Spread syntax is not allowed for object assignments. Use Object.assign() or other methods instead.',
-                }, {
                     selector: 'ClassProperty[value]',
                     message: 'ClassProperty values are not allowed.',
                 }, {
@@ -187,6 +184,7 @@ export default tseslint.config(
                 message: 'importScripts is not allowed. Use dynamic import() instead.',
             }],
             'prefer-object-has-own': 'error',
+            'prefer-object-spread': 'error',
 
             // TypeScript
             '@typescript-eslint/unbound-method': 'off',
@@ -242,7 +240,7 @@ export default tseslint.config(
             }],
 
             // e18e (disabled for browser compatibility)
-            'e18e/prefer-spread-syntax': 'off',       // Object spread not allowed (affects some downstream bundlers)
+            'e18e/prefer-spread-syntax': 'off',       // also rewrites .concat/Array.from (array-spread regressions); object spread enforced via core prefer-object-spread
             'e18e/prefer-nullish-coalescing': 'off',  // ?? not allowed (affects some downstream bundlers)
             'e18e/prefer-array-to-sorted': 'off',     // Not available until Safari 16
             'e18e/prefer-array-to-reversed': 'off',   // Not available until Safari 16
