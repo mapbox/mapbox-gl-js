@@ -52,7 +52,9 @@ uniform bool u_is_size_feature_constant;
 uniform highp float u_size_t; // used to interpolate between zoom stops when size is a composite function
 uniform highp float u_size; // used when size is both zoom and feature constant
 uniform mat4 u_matrix;
+#ifdef RENDER_SHADOWS
 uniform mat4 u_inv_matrix;
+#endif
 uniform mat4 u_label_plane_matrix;
 uniform mat4 u_coord_matrix;
 uniform bool u_is_text;
@@ -63,9 +65,15 @@ uniform highp float u_aspect_ratio;
 uniform highp float u_camera_to_center_distance;
 uniform float u_fade_change;
 uniform vec2 u_texsize;
+#ifdef PROJECTION_GLOBE_VIEW
 uniform vec3 u_up_vector;
+#endif
+#ifdef RENDER_TEXT_AND_SYMBOL
 uniform vec2 u_texsize_icon;
+#endif
+#ifdef RENDER_SDF
 uniform bool u_is_halo;
+#endif
 
 #ifdef PROJECTION_GLOBE_VIEW
 uniform vec3 u_tile_id;
@@ -82,7 +90,9 @@ out vec2 v_tex_a;
 out vec2 v_tex_b;
 #endif
 
+#ifdef RENDER_SDF
 out float v_draw_halo;
+#endif
 out vec3 v_gamma_scale_size_fade_opacity;
 #ifdef RENDER_TEXT_AND_SYMBOL
 out float is_sdf;
@@ -116,13 +126,17 @@ out highp float v_depth;
 
 /// Paint properties for a symbol layer.
 struct SymbolPaintProperties {
+#ifdef RENDER_SDF
     /// Non-premultiplied render fill color.
     vec4 fill_np_color;
     /// Non-premultiplied render halo color.
     vec4 halo_np_color;
+#endif
     float opacity;
+#ifdef RENDER_SDF
     float halo_width;
     float halo_blur;
+#endif
     float emissive_strength;
     float occlusion_opacity;
     float z_offset;
@@ -155,11 +169,15 @@ struct SymbolPropertyHeader {
     /// Size of the data-driven block should be aligned to vec4.
     uint dataDrivenBlockSizeVec4;
     /// Property types and aligned block offsets for each property.
+#ifdef RENDER_SDF
     PropertyType fill_np_color;
     PropertyType halo_np_color;
+#endif
     PropertyType opacity;
+#ifdef RENDER_SDF
     PropertyType halo_width;
     PropertyType halo_blur;
+#endif
     PropertyType emissive_strength;
     PropertyType occlusion_opacity;
     PropertyType z_offset;
@@ -167,11 +185,15 @@ struct SymbolPropertyHeader {
 };
 
 /// Constant paint properties values shared for all features.
+#ifdef RENDER_SDF
 uniform lowp vec4 u_spp_fill_np_color;
 uniform lowp vec4 u_spp_halo_np_color;
+#endif
 uniform lowp float u_spp_opacity;
+#ifdef RENDER_SDF
 uniform lowp float u_spp_halo_width;
 uniform lowp float u_spp_halo_blur;
+#endif
 uniform lowp float u_spp_emissive_strength;
 uniform lowp float u_spp_occlusion_opacity;
 uniform highp float u_spp_z_offset;
@@ -179,11 +201,15 @@ uniform highp float u_spp_z_offset;
 uniform lowp vec2 u_spp_translate_rotation;
 
 /// Per-property zoom interpolation factor. Only meaningful for zoom-dependent properties.
+#ifdef RENDER_SDF
 uniform highp float u_spp_fill_color_zoom_factor;
 uniform highp float u_spp_halo_color_zoom_factor;
+#endif
 uniform highp float u_spp_opacity_zoom_factor;
+#ifdef RENDER_SDF
 uniform highp float u_spp_halo_width_zoom_factor;
 uniform highp float u_spp_halo_blur_zoom_factor;
+#endif
 uniform highp float u_spp_emissive_strength_zoom_factor;
 uniform highp float u_spp_occlusion_opacity_zoom_factor;
 uniform highp float u_spp_z_offset_zoom_factor;
@@ -216,12 +242,14 @@ layout(std140) uniform SymbolPaintPropertiesIndexUniform {
 
 /// Symbol paint properties need to be interpolated and passed to the fragment shader.
 out lowp float v_opacity;
+
 #ifdef RENDER_SDF
 out lowp vec4 v_fill_np_color;
 out lowp vec4 v_halo_np_color;
 out lowp float v_halo_width;
 out lowp float v_halo_blur;
 #endif
+
 #ifdef LIGHTING_3D_MODE
 out lowp float v_emissive_strength;
 #endif
@@ -240,11 +268,19 @@ SymbolPropertyHeader readSymbolPropertiesHeader() {
     uint dataDrivenMask            = u_spp_header.header[0][0];
     uint zoomDependentMask         = u_spp_header.header[0][1];
     header.dataDrivenBlockSizeVec4 = u_spp_header.header[0][2];
+
+#ifdef RENDER_SDF
     header.fill_np_color     = getPropertyType(0u, dataDrivenMask, zoomDependentMask, u_spp_header.header[0][3], u_spp_fill_color_zoom_factor);
     header.halo_np_color     = getPropertyType(1u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][0], u_spp_halo_color_zoom_factor);
+#endif
+
     header.opacity           = getPropertyType(2u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][1], u_spp_opacity_zoom_factor);
+
+#ifdef RENDER_SDF
     header.halo_width        = getPropertyType(3u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][2], u_spp_halo_width_zoom_factor);
     header.halo_blur         = getPropertyType(4u, dataDrivenMask, zoomDependentMask, u_spp_header.header[1][3], u_spp_halo_blur_zoom_factor);
+#endif
+
     header.emissive_strength = getPropertyType(5u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][0], u_spp_emissive_strength_zoom_factor);
     header.occlusion_opacity = getPropertyType(6u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][1], u_spp_occlusion_opacity_zoom_factor);
     header.z_offset          = getPropertyType(7u, dataDrivenMask, zoomDependentMask, u_spp_header.header[2][2], u_spp_z_offset_zoom_factor);
@@ -298,6 +334,7 @@ uint getDataDrivenBlockOffsetVec4(uint dataDrivenBlockSizeVec4) {
     return blockIndex * dataDrivenBlockSizeVec4;
 }
 
+#ifdef RENDER_SDF
 /// Read a color property from the UBO.
 /// Non-zoom: vec4 at offsetDwords = [RG, BA, pad, pad]; decode packed vec2.
 /// Zoom-dep: vec4 at offsetDwords = [minRG, minBA, maxRG, maxBA]; mix via the property's
@@ -313,6 +350,7 @@ vec4 readColorProperty(PropertyType propertyType, uint dataDrivenBlockSizeVec4) 
     }
     return color;
 }
+#endif
 
 /// Read a vec2 property (translate) from the UBO.
 /// Non-zoom: 2 consecutive floats [tx, ty] within the same vec4 (offset%4 <= 2).
@@ -348,11 +386,19 @@ SymbolPaintProperties readSymbolPaintProperties() {
     SymbolPropertyHeader header = readSymbolPropertiesHeader();
     uint sizeVec4 = header.dataDrivenBlockSizeVec4;
     SymbolPaintProperties props;
+
+#ifdef RENDER_SDF
     props.fill_np_color        = header.fill_np_color.isDataDriven     ? readColorProperty(header.fill_np_color, sizeVec4)     : u_spp_fill_np_color;
     props.halo_np_color        = header.halo_np_color.isDataDriven     ? readColorProperty(header.halo_np_color, sizeVec4)     : u_spp_halo_np_color;
+#endif
+
     props.opacity              = header.opacity.isDataDriven           ? readFloatProperty(header.opacity, sizeVec4)           : u_spp_opacity;
+
+#ifdef RENDER_SDF
     props.halo_width           = header.halo_width.isDataDriven        ? readFloatProperty(header.halo_width, sizeVec4)        : u_spp_halo_width;
     props.halo_blur            = header.halo_blur.isDataDriven         ? readFloatProperty(header.halo_blur, sizeVec4)         : u_spp_halo_blur;
+#endif
+
     props.emissive_strength    = header.emissive_strength.isDataDriven ? readFloatProperty(header.emissive_strength, sizeVec4) : u_spp_emissive_strength;
     props.occlusion_opacity    = header.occlusion_opacity.isDataDriven ? readFloatProperty(header.occlusion_opacity, sizeVec4) : u_spp_occlusion_opacity;
     props.z_offset             = header.z_offset.isDataDriven          ? readFloatProperty(header.z_offset, sizeVec4)          : u_spp_z_offset;
@@ -369,12 +415,14 @@ void main() {
     SymbolPaintProperties paint_properties = readSymbolPaintProperties();
     lowp float opacity = paint_properties.opacity;
     v_opacity = opacity;
+
 #ifdef RENDER_SDF
     v_fill_np_color = paint_properties.fill_np_color;
     v_halo_np_color = paint_properties.halo_np_color;
     v_halo_width = paint_properties.halo_width;
     v_halo_blur = paint_properties.halo_blur;
 #endif
+
 #ifdef LIGHTING_3D_MODE
     v_emissive_strength = paint_properties.emissive_strength;
 #endif
@@ -568,7 +616,9 @@ void main() {
     float gamma_scale = gl_Position.w;
 
     // Cast to float is required to fix a rendering error in Swiftshader
+#ifdef RENDER_SDF
     v_draw_halo = (u_is_halo && float(gl_InstanceID) == 0.0) ? 1.0 : 0.0;
+#endif
 
     v_gamma_scale_size_fade_opacity = vec3(gamma_scale, size, out_fade_opacity);
     v_tex_a = a_tex / u_texsize;

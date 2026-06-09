@@ -6,12 +6,15 @@
 #define ICON 0.0
 
 uniform sampler2D u_texture;
+#ifdef RENDER_TEXT_AND_SYMBOL
 uniform sampler2D u_texture_icon;
+#endif
+#ifdef RENDER_SDF
 uniform highp float u_gamma_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform bool u_is_text;
-uniform bool u_is_halo;
 uniform lowp float u_scale_factor;
+#endif
 // Boolean-config transition fragment alpha multiplier (dual-pass: originals + deltas).
 uniform lowp float u_opacity_multiplier;
 #ifdef ICON_TRANSITION
@@ -35,7 +38,9 @@ in vec2 v_tex_a;
 in vec2 v_tex_b;
 #endif
 
+#ifdef RENDER_SDF
 in float v_draw_halo;
+#endif
 in vec3 v_gamma_scale_size_fade_opacity;
 #ifdef RENDER_TEXT_AND_SYMBOL
 in float is_sdf;
@@ -62,6 +67,7 @@ in lowp vec4 v_halo_np_color;
 in lowp float v_halo_width;
 in lowp float v_halo_blur;
 #endif
+
 #ifdef LIGHTING_3D_MODE
 in lowp float v_emissive_strength;
 #endif
@@ -79,6 +85,7 @@ void main() {
     halo_width = v_halo_width;
     halo_blur = v_halo_blur;
 #endif
+
     lowp float emissive_strength = 0.0;
 #ifdef LIGHTING_3D_MODE
     emissive_strength = v_emissive_strength;
