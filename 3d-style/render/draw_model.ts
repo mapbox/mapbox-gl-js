@@ -1255,7 +1255,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     const distanceToCamera = vec3.distance(cameraPos, lodNodeCenterScratch) * metersPerPixel;
                     // Rendering can get paused and thus the LOD transition may stop. Therefore don't use the full time-step,
                     // such that when rendering is resumed, the transition smoothly continues.
-                    updateModelLod(nodeInfo, distanceToCamera, Math.min(painter._debugParams.dt, 1000 / 30), painter._debugParams.lodSwitchDistance, painter._debugParams.lodSwitchFadeDuration);
+                    updateModelLod(nodeInfo, distanceToCamera, Math.min(painter.frameTimeDelta, 1000 / 30), painter._debugParams.lodSwitchDistance, painter._debugParams.lodSwitchFadeDuration);
                 }
 
                 if (!isShadowPass && frontCutoffEnabled) {

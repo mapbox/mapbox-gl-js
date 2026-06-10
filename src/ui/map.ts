@@ -4602,6 +4602,7 @@ export class Map extends Camera {
                 gpuTiming: !!this.listens('gpu-timing-layer'),
                 gpuTimingDeferredRender: !!this.listens('gpu-timing-deferred-render'),
                 speedIndexTiming: this.speedIndexTiming,
+                paintStartTimeStamp,
             });
         }
 

@@ -122,6 +122,7 @@ type PainterOptions = {
     isInitialLoad: boolean;
     speedIndexTiming: boolean;
     wireframe: WireframeOptions;
+    paintStartTimeStamp: number;
 };
 
 type TileBoundsBuffers = {
@@ -231,6 +232,8 @@ class Painter {
     frcCoverageRenderer: FrcCoverageRenderer | null;
     opaquePassCutoff: number;
     frameCounter: number;
+    frameTimeDelta: number;
+    lastPaintStartTimeStamp: number;
     renderPass: RenderPass;
     currentLayer: number;
     currentStencilSource: string | null | undefined;
@@ -280,8 +283,6 @@ class Painter {
         averageFPS: number;
         fpsHistory: Array<number>;
         fpsWindow: number;
-        dt: number;
-        timeStamp: number;
         continousRedraw: boolean;
         enabledLayers: Record<string, boolean>;
         // buildings
@@ -348,8 +349,6 @@ class Painter {
             averageFPS: 0,
             fpsHistory: [],
             fpsWindow: 30,
-            dt: 0,
-            timeStamp: browser.now(),
             continousRedraw: false,
             enabledLayers: { },
             buildingsShowNormals: false,
@@ -383,7 +382,7 @@ class Painter {
             }
 
             this.updateAverageFPS = () => {
-                const fps = this._debugParams.dt === 0 ? 0 : 1000.0 / this._debugParams.dt;
+                const fps = this.frameTimeDelta === 0 ? 0 : 1000.0 / this.frameTimeDelta;
 
                 this._debugParams.fpsHistory.push(fps);
                 if (this._debugParams.fpsHistory.length > this._debugParams.fpsWindow) {
@@ -408,6 +407,8 @@ class Painter {
         this.deferredRenderGpuTimeQueries = [];
         this.gpuTimers = {};
         this.frameCounter = 0;
+        this.frameTimeDelta = 0;
+        this.lastPaintStartTimeStamp = 0;
         this._shadowCullCache = null;
         this._backgroundTiles = {};
 
@@ -831,12 +832,10 @@ class Painter {
         // Prevents later uniform-set / draw calls in this frame from triggering sync stalls.
         this.context.sweepPendingPrograms();
 
-        Debug.run(() => {
-            // Update time delta and current timestamp
-            const curTime = browser.now();
-            this._debugParams.dt = curTime - this._debugParams.timeStamp;
-            this._debugParams.timeStamp = curTime;
+        this.frameTimeDelta = this.lastPaintStartTimeStamp === 0 ? 0 : options.paintStartTimeStamp - this.lastPaintStartTimeStamp;
+        this.lastPaintStartTimeStamp = options.paintStartTimeStamp;
 
+        Debug.run(() => {
             this.updateAverageFPS();
         });
 
