@@ -168,7 +168,7 @@ test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTil
     expect(parse).not.toHaveBeenCalled();
 });
 
-test('VectorTileWorkerSource#loadTile forwards cache headers from response headers Map', async () => {
+test('VectorTileWorkerSource#loadTile forwards response headers', async () => {
     const headers = new Headers();
     headers.set('Cache-Control', 'max-age=30');
     headers.set('Expires', 'Thu, 01 Jan 2099 00:00:00 GMT');
@@ -177,7 +177,7 @@ test('VectorTileWorkerSource#loadTile forwards cache headers from response heade
         return callback(null, {
             vectorTile: new VectorTile(new PbfReader(rawTileData)),
             rawData: rawTileData,
-            responseHeaders: new Map(headers.entries())
+            headers
         });
     }
 
@@ -198,8 +198,8 @@ test('VectorTileWorkerSource#loadTile forwards cache headers from response heade
         projection: getProjection({name: 'mercator'}),
         request: {url: 'http://localhost:2900/faketile.pbf'}
     });
-    expect(res.cacheControl).toBe('max-age=30');
-    expect(res.expires).toBe('Thu, 01 Jan 2099 00:00:00 GMT');
+    expect(res.headers.get('cache-control')).toBe('max-age=30');
+    expect(res.headers.get('expires')).toBe('Thu, 01 Jan 2099 00:00:00 GMT');
 });
 
 test('VectorTileWorkerSource rejects ImageBitmap from provider with an error', async () => {

@@ -4,7 +4,6 @@ import WorkerTile from './worker_tile';
 import {getPerformanceMeasurement} from '../util/performance';
 import {Evented} from '../util/evented';
 import {loadVectorTile, DedupedRequest} from './load_vector_tile';
-import {getExpiryDataFromHeaders} from '../util/util';
 
 import type {
     WorkerSource,
@@ -23,7 +22,6 @@ import type {Cancelable} from '../types/cancelable';
 import type {TileProvider} from './tile_provider';
 import type {ImageId} from '../style-spec/expression/types/image_id';
 import type {StyleModelMap} from '../style/style_mode';
-import type {ExpiryData} from './tile';
 
 /**
  * The {@link WorkerSource} implementation that supports {@link VectorTileSource}.
@@ -106,11 +104,11 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                 return callback(new Error('Vector tiles require ArrayBuffer data'));
             }
 
-            const headers = new Map<string, string>();
+            const headers = new Headers();
             if (response.expires) headers.set('expires', response.expires);
             if (response.cacheControl) headers.set('cache-control', response.cacheControl);
 
-            callback(null, {rawData: response.data, responseHeaders: headers});
+            callback(null, {rawData: response.data, headers});
         } catch (err) {
             if (controller.signal.aborted) return;
             // eslint-disable-next-line @typescript-eslint/no-base-to-string
@@ -195,10 +193,6 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
         }
 
         const rawTileData = response.rawData;
-        const cacheControl: ExpiryData = {};
-        const expiryData = getExpiryDataFromHeaders(response.responseHeaders);
-        if (expiryData && expiryData.expires) cacheControl.expires = expiryData.expires;
-        if (expiryData && expiryData.cacheControl) cacheControl.cacheControl = expiryData.cacheControl;
 
         // response.vectorTile will be present in the GeoJSON worker case (which inherits from this class)
         // because we stub the vector tile interface around JSON data instead of parsing it directly
@@ -233,7 +227,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             }
         }
 
-        const finalResult = {rawTileData: rawTileData.slice(0), responseHeaders: response.responseHeaders, ...result, ...cacheControl, ...resourceTiming} as WorkerSourceVectorTileResult;
+        const finalResult = {rawTileData: rawTileData.slice(0), headers: response.headers, ...result, ...resourceTiming} as WorkerSourceVectorTileResult;
 
         reload(null, result);
 

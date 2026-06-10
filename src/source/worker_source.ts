@@ -81,8 +81,7 @@ export type WorkerSourceVectorTileRequest = WorkerSourceTileRequest & {
     zoom: number;
     data?: {
         rawData: ArrayBuffer;
-        expires?: string;
-        cacheControl?: string;
+        headers: Headers;
     };
     extraShadowCaster?: boolean;
     renderSourceType?: RenderSourceType | null;
@@ -144,13 +143,11 @@ export type WorkerSourceVectorTileResult = {
     rawTileData?: ArrayBuffer;
     resourceTiming?: Array<PerformanceResourceTiming>;
     brightness: number;
-    responseHeaders?: Map<string, string>;
+    headers?: Headers;
     // Only used for benchmarking:
     glyphMap?: GlyphMap;
     iconMap?: StyleImageMap<StringifiedImageVariant>;
     glyphPositions?: GlyphPositions;
-    cacheControl?: string;
-    expires?: string;
     frcCoveragePolygons?: FrcCoveragePolygons;
     hasDeferredRoadStructure?: boolean;
 };
@@ -164,8 +161,7 @@ export type WorkerSourceDEMTileRequest = WorkerSourceTileRequest & {
 export type WorkerSourceDEMTileResult = {
     dem: DEMData;
     borderReady: boolean;
-    expires?: string;
-    cacheControl?: string;
+    headers: Headers;
 };
 
 export type WorkerSourceRasterArrayTileRequest = WorkerSourceTileRequest & {

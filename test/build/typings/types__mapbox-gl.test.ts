@@ -1346,6 +1346,7 @@ expectType<mapboxgl.Map>(
         // @ts-expect-error - incompatible originalEvent does not exist on 'sourcedata' event
         expectType<undefined>(ev.originalEvent);
         expectType<"source">(ev.dataType);
+        expectType<Headers | undefined>(ev.responseHeaders);
     }),
 );
 expectType<mapboxgl.Map>(

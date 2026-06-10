@@ -13,10 +13,9 @@ import {getPointLonLat} from '../data/mrt/mrt.query';
 import LngLat from '../geo/lng_lat';
 import browser from '../util/browser';
 import {makeFQID} from '../util/fqid';
-import {getExpiryDataFromHeaders} from '../util/util';
+import {parseExpiryData} from '../util/util';
 
 import type RasterArrayTile from './raster_array_tile';
-import type {ExpiryData} from './tile';
 import type Texture from '../render/texture';
 import type Dispatcher from '../util/dispatcher';
 import type {Map as MapboxMap} from '../ui/map';
@@ -107,7 +106,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         tile.requestParams = request;
         if (!tile.actor) tile.actor = this.dispatcher.getActor();
 
-        const done = (error?: AJAXError | null, data?: MapboxRasterTile | ArrayBuffer | null, expiryData?: ExpiryData) => {
+        const done = (error?: AJAXError | null, data?: MapboxRasterTile | ArrayBuffer | null, headers?: Headers) => {
             delete tile.request;
 
             if (tile.aborted) {
@@ -122,8 +121,8 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
                 return callback(error);
             }
 
-            if (this.map._refreshExpiredTiles && data && expiryData) {
-                tile.setExpiryData(expiryData);
+            if (this.map._refreshExpiredTiles && data) {
+                tile.setExpiryData(parseExpiryData(headers));
             }
 
             if (this.partial && tile.state !== 'expired') {
@@ -142,14 +141,14 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         if (this.partial) {
             // Load only the tile header in the main thread
             tile.request = tile.fetchHeader(undefined, (error, data, headers) => {
-                done.call(this, error as AJAXError, data, getExpiryDataFromHeaders(headers));
+                done.call(this, error as AJAXError, data, headers);
             });
         } else {
             // Load and parse the entire tile in Worker
             tile.request = tile.actor.sendCancelable('loadTile', params, {}, (err, result: RasterArrayTileLoadResult | null | undefined) => {
                 if (err) return done.call(this, err as AJAXError);
                 if (!result) return done.call(this, null, null);
-                done.call(this, null, result.mrt, {expires: result.expires, cacheControl: result.cacheControl});
+                done.call(this, null, result.mrt, result.headers);
             });
         }
     }
@@ -374,7 +373,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
                 }
                 const mrtData = result.mrt;
                 if (this.map._refreshExpiredTiles) {
-                    tile.setExpiryData({expires: result.expires, cacheControl: result.cacheControl});
+                    tile.setExpiryData(parseExpiryData(result.headers));
                 }
                 tile._mrt = mrtData;
                 tile._isHeaderLoaded = true;

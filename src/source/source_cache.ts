@@ -314,8 +314,8 @@ class SourceCache extends Evented {
         if (this._source.type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
         this._state.initializeTileState(tile, this.map ? this.map.painter : null);
 
-        let responseHeaders: Map<string, string> = new Map();
-        if (data && data.responseHeaders) responseHeaders = data.responseHeaders;
+        let responseHeaders: Headers = new Headers();
+        if (data && data.headers) responseHeaders = data.headers;
 
         this._source.fire(new Event('data', {dataType: 'source', tile, coord: tile.tileID, 'sourceCacheId': this.id, responseHeaders}));
     }

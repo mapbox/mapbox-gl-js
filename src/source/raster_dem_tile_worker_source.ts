@@ -34,10 +34,11 @@ class RasterDEMTileWorkerSource implements WorkerSource {
         }
 
         try {
-            const {data, expires, cacheControl} = await makeAsyncRequest<ArrayBuffer>(Object.assign(params.request, {type: 'arrayBuffer'}), controller.signal);
+            const {data, headers} = await makeAsyncRequest<ArrayBuffer>(Object.assign(params.request, {type: 'arrayBuffer'}), controller.signal);
             if (!data) return null;
-            const result = await this.decodeTile(uid, data, params.encoding);
-            return Object.assign(result, {expires, cacheControl});
+            const result = await this.decodeTile(uid, data, params.encoding) as WorkerSourceDEMTileResult;
+            result.headers = headers;
+            return result;
         } catch (err) {
             if (err instanceof DOMException && err.name === 'AbortError') return null;
             throw err;
@@ -75,14 +76,15 @@ class RasterDEMTileWorkerSource implements WorkerSource {
 
             if (response.data == null) return null;
 
-            const result = await this.decodeTile(uid, response.data, params.encoding);
+            const result = await this.decodeTile(uid, response.data, params.encoding) as WorkerSourceDEMTileResult;
 
             if (controller.signal.aborted) return null;
 
-            return Object.assign(result, {
-                expires: response.expires,
-                cacheControl: response.cacheControl,
-            });
+            const headers = new Headers();
+            if (response.expires) headers.set('expires', response.expires);
+            if (response.cacheControl) headers.set('cache-control', response.cacheControl);
+            result.headers = headers;
+            return result;
         } catch (err) {
             if (controller.signal.aborted) return null;
             if (err instanceof DOMException && err.name === 'AbortError') return null;

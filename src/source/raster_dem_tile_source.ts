@@ -1,4 +1,5 @@
 import {ResourceType} from '../util/ajax';
+import {parseExpiryData} from '../util/util';
 import {OverscaledTileID} from './tile_id';
 import {parseTileJSONRequest} from './load_tilejson';
 import {processTileJSON} from './tile_provider';
@@ -90,7 +91,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
             }
 
             if (result) {
-                if (this.map._refreshExpiredTiles) tile.setExpiryData(result);
+                if (this.map._refreshExpiredTiles) tile.setExpiryData(parseExpiryData(result.headers));
 
                 if (!result.borderReady && !tile.neighboringTiles) {
                     tile.neighboringTiles = this._getNeighboringTiles(tile.tileID);

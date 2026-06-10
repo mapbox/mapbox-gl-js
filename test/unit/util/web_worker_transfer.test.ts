@@ -201,3 +201,14 @@ test('serialize null-prototype object (e.g. Object.create(null) dictionaries)', 
     expect(deserialized.foo).toEqual('https://example.com/model.gltf');
     expect(deserialized.bar).toEqual(42);
 });
+
+test('round-trips Headers as a Headers instance with values intact', () => {
+    const headers = new Headers();
+    headers.set('Cache-Control', 'max-age=300');
+    headers.set('Expires', 'Thu, 01 Jan 2099 00:00:00 GMT');
+
+    const result = roundTrip(headers) as Headers;
+    expect(result).toBeInstanceOf(Headers);
+    expect(result.get('cache-control')).toBe('max-age=300');
+    expect(result.get('expires')).toBe('Thu, 01 Jan 2099 00:00:00 GMT');
+});

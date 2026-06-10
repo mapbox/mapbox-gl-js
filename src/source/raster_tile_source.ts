@@ -1,4 +1,4 @@
-import {getExpiryDataFromHeaders, pick} from '../util/util';
+import {parseExpiryData, pick} from '../util/util';
 import {getImage, ResourceType} from '../util/ajax';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import loadTileJSON, {parseTileJSONRequest} from './load_tilejson';
@@ -297,7 +297,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
 
                 if (!data) return callback(null);
 
-                const expiryData = getExpiryDataFromHeaders(responseHeaders);
+                const expiryData = parseExpiryData(responseHeaders);
                 if (this.map._refreshExpiredTiles) tile.setExpiryData(expiryData);
                 tile.setTexture(data, this.map.painter);
                 tile.state = 'loaded';

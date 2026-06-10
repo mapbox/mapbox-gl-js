@@ -178,6 +178,10 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         return properties;
     }
 
+    if (input instanceof Headers) {
+        return {'$name': 'Headers', entries: [...input]} satisfies SerializedObject;
+    }
+
     if (input instanceof Set) {
         const properties: SerializedObject = {'$name': 'Set'};
         let idx = 0;
@@ -297,6 +301,10 @@ export function deserialize(input: Serialized): unknown {
             map.set(deserialize(entries[i]), deserialize(entries[i + 1]));
         }
         return map;
+    }
+
+    if (name === 'Headers') {
+        return new Headers(input.entries as HeadersInit);
     }
 
     if (name === 'Set') {

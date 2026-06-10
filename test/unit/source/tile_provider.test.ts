@@ -67,7 +67,7 @@ test('loadTileData with provider - happy path with TileDataResponse', async () =
 
     expect(callback).toHaveBeenCalledWith(null, {
         rawData: data,
-        responseHeaders: new Map([
+        headers: new Headers([
             ['cache-control', 'max-age=300'],
             ['expires', 'Thu, 01 Jan 2099 00:00:00 GMT'],
         ]),

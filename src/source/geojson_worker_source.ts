@@ -98,7 +98,7 @@ function loadGeoJSONTile(this: GeoJSONWorkerSource, params: WorkerSourceVectorTi
     // across `VectorTileSource` and `GeoJSONSource` data.
     const rawData = writePbf(layers).buffer as ArrayBuffer;
 
-    callback(null, {vectorTile, rawData});
+    callback(null, {vectorTile, rawData, headers: new Headers()});
 }
 
 /**

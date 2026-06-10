@@ -7,6 +7,7 @@ import deepEqual from '../style-spec/util/deep_equal';
 import type {vec4} from 'gl-matrix';
 import type {Range} from '../../3d-style/elevation/elevation_feature';
 import type {Callback} from '../types/callback';
+import type {ExpiryData} from '../source/tile';
 
 const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
@@ -634,7 +635,7 @@ export function parseCacheControl(cacheControl: string): Record<string, number> 
     return header as Record<string, number>;
 }
 
-export function getExpiryDataFromHeaders(responseHeaders: Headers | Map<string, string> | undefined) {
+export function parseExpiryData(responseHeaders: Headers | undefined): ExpiryData {
     if (!responseHeaders) return {cacheControl: undefined, expires: undefined};
     const cacheControl = responseHeaders.get('cache-control');
     const expires = responseHeaders.get('expires');

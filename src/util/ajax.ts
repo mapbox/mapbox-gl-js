@@ -1,4 +1,4 @@
-import {warnOnce, isWorker, getExpiryDataFromHeaders} from './util';
+import {warnOnce, isWorker} from './util';
 import {isMapboxHTTPURL, hasCacheDefeatingSku} from './mapbox_url';
 import config from './config';
 import assert from '../style-spec/util/assert';
@@ -275,7 +275,7 @@ export const getArrayBuffer = function (
 export async function makeAsyncRequest<T>(
     requestParameters: RequestParameters,
     signal?: AbortSignal
-): Promise<{data: T; cacheControl?: string; expires?: string}> {
+): Promise<{data: T; headers: Headers}> {
     if (signal && signal.aborted) {
         throw new DOMException('Aborted', 'AbortError');
     }
@@ -283,7 +283,7 @@ export async function makeAsyncRequest<T>(
     return new Promise((resolve, reject) => {
         const cancelable = makeRequest(requestParameters, (err, data, headers) => {
             if (err) reject(err);
-            else resolve({data: data as T, ...getExpiryDataFromHeaders(headers)});
+            else resolve({data: data as T, headers: headers || new Headers()});
         });
 
         if (signal) {

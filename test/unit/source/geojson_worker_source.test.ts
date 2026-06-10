@@ -51,6 +51,7 @@ describe('reloadTile', () => {
         const secondData = await source.reloadTile(tileParams);
         expect('rawTileData' in secondData).toBeFalsy();
         secondData.rawTileData = firstData.rawTileData;
+        secondData.headers = firstData.headers;
         expect(secondData).toEqual(firstData);
 
         // also shouldn't call loadVectorData again

@@ -422,7 +422,7 @@ export type MapSourceDataEvent = {
     tile?: Tile;
     coord?: Tile['tileID'];
     resourceTiming?: PerformanceResourceTiming[],
-    responseHeaders?: Map<string, string>;
+    responseHeaders?: Headers;
 };
 
 /**

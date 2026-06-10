@@ -10,7 +10,7 @@ import type {default as Scheduler, TaskMetadata} from '../util/scheduler';
 export type LoadVectorTileResult = {
     rawData: ArrayBuffer;
     vectorTile?: VectorTile;
-    responseHeaders?: Map<string, string>;
+    headers?: Headers;
 };
 
 /**
@@ -111,7 +111,7 @@ export function loadVectorTile(
                 callback(null, {
                     rawData: data,
                     vectorTile: skipParse ? undefined : new VectorTile(new PbfReader(data)),
-                    responseHeaders: new Map(responseHeaders.entries())
+                    headers: responseHeaders
                 });
             }
         });

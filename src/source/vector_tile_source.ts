@@ -1,5 +1,5 @@
 import {Event, ErrorEvent, Evented} from '../util/evented';
-import {getExpiryDataFromHeaders, pick} from '../util/util';
+import {parseExpiryData, pick} from '../util/util';
 import loadTileJSON, {parseTileJSONRequest} from './load_tilejson';
 import {postTurnstileEvent} from '../util/mapbox';
 import TileBounds from './tile_bounds';
@@ -378,12 +378,10 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                     if (err || !data) {
                         done.call(this, err);
                     } else {
-                        const expiryData = getExpiryDataFromHeaders(data.responseHeaders);
                         // the worker will skip the network request if the data is already there
                         params.data = {
                             rawData: data.rawData.slice(0),
-                            expires: expiryData.expires,
-                            cacheControl: expiryData.cacheControl,
+                            headers: data.headers,
                         };
 
                         if (tile.actor) {
@@ -419,7 +417,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             if (data && data.resourceTiming)
                 tile.resourceTiming = data.resourceTiming;
 
-            if (this.map._refreshExpiredTiles && data) tile.setExpiryData(data);
+            if (this.map._refreshExpiredTiles && data) tile.setExpiryData(parseExpiryData(data.headers));
 
             // Tiles carrying HD or Standard extensions can't be deserialized until the
             // relevant module is loaded on the main thread — unregistered classes throw

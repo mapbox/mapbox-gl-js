@@ -17,8 +17,7 @@ MapboxRasterTile.setPbf(PbfReader);
 
 export type RasterArrayTileLoadResult = {
     mrt: MapboxRasterTile;
-    expires?: string;
-    cacheControl?: string;
+    headers: Headers;
 };
 
 const MRT_DECODED_BAND_CACHE_SIZE = 30;
@@ -92,7 +91,7 @@ class RasterArrayTileWorkerSource implements WorkerSource {
         workerTile.abort = () => controller.abort();
 
         try {
-            const {data, expires, cacheControl} = await makeAsyncRequest<ArrayBuffer>(Object.assign(params.request, {type: 'arrayBuffer'}), controller.signal);
+            const {data, headers} = await makeAsyncRequest<ArrayBuffer>(Object.assign(params.request, {type: 'arrayBuffer'}), controller.signal);
             if (!data) {
                 workerTile.status = 'done';
                 this.loaded[uid] = workerTile;
@@ -100,7 +99,7 @@ class RasterArrayTileWorkerSource implements WorkerSource {
             }
             this.loaded[uid] = workerTile;
             const mrt = await workerTile.parse(data);
-            return {mrt, expires, cacheControl};
+            return {mrt, headers};
         } catch (err) {
             if (err instanceof DOMException && err.name === 'AbortError') return null;
             workerTile.status = 'done';
