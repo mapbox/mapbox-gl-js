@@ -141,7 +141,8 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 
         const useGroundEffects = lighting3DMode && noPattern && (immediateMode || rtt);
         if (useGroundEffects && !Standard.drawGroundEffect) {
-            void prepareStandard();
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            prepareStandard();
         }
         if (useGroundEffects && Standard.drawGroundEffect) {
             assert(immediateMode ? !rtt : !!rtt);
