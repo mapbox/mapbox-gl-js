@@ -11416,27 +11416,6 @@
       },
       "transition": true
     },
-    "model-lightmap-intensity": {
-      "type": "number",
-      "default": 0.0,
-      "minimum": 0,
-      "doc": "Controls the intensity of the model lightmap contribution. Values less than or equal to 0.001 are treated as off.",
-      "private": true,
-      "experimental": true,
-      "expression": {
-        "interpolated": true,
-        "parameters": ["zoom"]
-      },
-      "sdk-support": {
-          "basic functionality": {
-          "js": "3.25.0",
-          "android": "11.25.0",
-          "ios": "11.25.0"
-        }
-      },
-      "property-type": "data-constant",
-      "transition": true
-    },
     "model-type": {
       "type": "enum",
       "values": {

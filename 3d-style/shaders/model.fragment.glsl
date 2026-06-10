@@ -19,7 +19,6 @@ uniform vec4 u_emissiveFactor;
 uniform float u_metallicFactor;
 uniform float u_roughnessFactor;
 uniform float u_emissive_strength;
-uniform float u_lightmapIntensity;
 
 
 in highp vec4 v_position_height;
@@ -34,10 +33,6 @@ in float v_depth_shadows;
 #ifdef OCCLUSION_TEXTURE_TRANSFORM
 // offset[0], offset[1], scale[0], scale[1]
 uniform vec4 u_occlusionTextureTransform;
-#endif
-
-#ifdef USE_LIGHTMAP
-vec3 lightmapSample;
 #endif
 
 #pragma mapbox: define-attribute highp vec3 normal_3f
@@ -133,20 +128,6 @@ vec3 sRGBToLinear(vec3 srgbIn) {
     return pow(srgbIn, vec3(2.2));
 }
 
-// Luminance-preserving color blend
-vec3 mixColorFast(vec3 base, vec3 target, float factor) {
-    float baseL = dot(base, vec3(0.2126, 0.7152, 0.0722));
-    float targetL = dot(target, vec3(0.2126, 0.7152, 0.0722));
-
-    if (targetL < 1e-4) {
-        return base;
-    }
-
-    vec3 result = target * (baseL / targetL);
-
-    return mix(base, result, clamp(factor, 0.0, 1.0));
-}
-
 float calculate_NdotL(vec3 normal, vec3 lightDir) {
     // Use slightly modified dot product for lambertian diffuse shading. This increase the range of NdotL to cover surfaces facing up to 45 degrees away from the light source.
     // This allows us to trade some realism for performance/usability as a single light source is enough to shade the scene.
@@ -195,9 +176,6 @@ vec4 getBaseColor() {
     // texture Color
 #if defined (HAS_TEXTURE_u_baseColorTexture) && defined (HAS_ATTRIBUTE_a_uv_2f)
     vec4 texColor = texture(u_baseColorTexture, uv_2f);
-    #if defined(USE_LIGHTMAP) && !defined(OCCLUSION_TEXTURE_TRANSFORM)
-        lightmapSample = texColor.rgb;
-    #endif
     if(u_alphaMask) {
         if (texColor.w < u_alphaCutoff) {
             discard;
@@ -535,26 +513,6 @@ vec4 finalColor;
     ao = (texture(u_occlusionTexture, uv).x - 1.0) * u_aoIntensity + 1.0;
     color *= ao;
 #endif
-
-#if defined(USE_LIGHTMAP) && defined(HAS_TEXTURE_u_baseColorTexture) && defined(HAS_ATTRIBUTE_a_uv_2f)
-    #ifdef OCCLUSION_TEXTURE_TRANSFORM
-        vec2 lightmapUv = uv_2f.xy * u_occlusionTextureTransform.zw + u_occlusionTextureTransform.xy;
-        lightmapSample = texture(u_baseColorTexture, lightmapUv).rgb;
-    #endif
-
-    float lightmapBrightness = max(lightmapSample.r, max(lightmapSample.g, lightmapSample.b));
-    float lightmapEnergy = lightmapBrightness * u_lightmapIntensity;
-    float lightmapMixFactor = 0.6 * min(1.0, lightmapBrightness);
-
-    color *= max(1.0, lightmapEnergy);
-    color = mixColorFast(color, lightmapSample, lightmapMixFactor);
-
-    if (mat.baseColor.a < 0.99) {
-        float maxFactor = max(1.0, u_lightmapIntensity);
-        mat.baseColor.a = clamp(lightmapEnergy / maxFactor, 0.0, 1.0);
-    }
-#endif
-
     // Emission
     vec4 emissive = u_emissiveFactor;
 

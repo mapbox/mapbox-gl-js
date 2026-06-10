@@ -81,10 +81,6 @@ const zeroCameraPos: [number, number, number] = [0, 0, 0];
 // on top of the per-tile cascade*tile cache. Lazily grown to the active cascade count.
 const shadowLightMatrices: Float64Array[] = [];
 
-// Below this lightmap intensity the contribution is negligible, so we skip the
-// USE_LIGHTMAP shader path entirely instead of branching on the uniform at runtime.
-const LIGHTMAP_INTENSITY_THRESHOLD = 0.001;
-
 type ModelParameters = {
     zScaleMatrix: mat4;
     negCameraPosMatrix: mat4;
@@ -1461,10 +1457,6 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             programOptions.defines.push('DIFFUSE_SHADED');
                         }
 
-                        if (layer.paint.get('model-lightmap-intensity') > LIGHTMAP_INTENSITY_THRESHOLD) {
-                            programOptions.defines.push('USE_LIGHTMAP');
-                        }
-
                         if (singleCascade) {
                             programOptions.defines.push('SHADOWS_SINGLE_CASCADE');
                         }
@@ -1548,10 +1540,8 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                                 program.fixedDefines.includes('LIGHTING_3D_MODE')
                         );
 
-                        // z-prepass is needed for landmark cutoff. Skipped for translucent parts —
-                        // otherwise depth-write here breaks USE_LIGHTMAP in the color pass.
-                        // Should check per-mesh, not per-node, to keep the prepass for opaque meshes of mixed nodes.
-                        if (!isLight && sortedNode.opacity < 1.0 && !nodeInfo.hasTranslucentParts) {
+                        if (!isLight && (nodeInfo.hasTranslucentParts || sortedNode.opacity < 1.0)) {
+
                             program.draw(painter, context.gl.TRIANGLES, depthModeRW, StencilMode.disabled, ColorMode.disabled, CullFaceMode.backCCW,
                                 uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
                                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

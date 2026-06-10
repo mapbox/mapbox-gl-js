@@ -1405,11 +1405,6 @@ export type ModelLayerSpecification = {
         "model-color-use-theme"?: PropertyValueSpecification<string>,
         "model-color-mix-intensity"?: DataDrivenPropertyValueSpecification<number>,
         "model-color-mix-intensity-transition"?: TransitionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
-        "model-lightmap-intensity"?: PropertyValueSpecification<number>,
-        "model-lightmap-intensity-transition"?: TransitionSpecification,
         "model-type"?: "common-3d" | "location-indicator",
         "model-cast-shadows"?: boolean,
         "model-receive-shadows"?: boolean,
