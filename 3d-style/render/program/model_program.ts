@@ -39,14 +39,13 @@ export type ModelUniformsType = {
     ['u_emissionTexture']: Uniform1i;
     ['u_lutTexture']: Uniform1i;
     ['u_color_mix']: Uniform4f;
-    ['u_lightmapIntensity']: Uniform1f;
     ['u_aoIntensity']: Uniform1f;
     ['u_emissive_strength']: Uniform1f;
     ['u_occlusionTextureTransform']: Uniform4f;
     ['u_dithered_discard_threshold']: Uniform1f;
 };
 
-export type ModelDefinesType = 'DIFFUSE_SHADED' | 'SHADOWS_SINGLE_CASCADE' | 'OCCLUSION_TEXTURE_TRANSFORM' | 'DITHERED_DISCARD' | 'USE_LIGHTMAP';
+export type ModelDefinesType = 'DIFFUSE_SHADED' | 'SHADOWS_SINGLE_CASCADE' | 'OCCLUSION_TEXTURE_TRANSFORM' | 'DITHERED_DISCARD';
 
 const modelUniforms = (context: Context): ModelUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
@@ -72,7 +71,6 @@ const modelUniforms = (context: Context): ModelUniformsType => ({
     'u_emissionTexture': new Uniform1i(context),
     'u_lutTexture': new Uniform1i(context),
     'u_color_mix': new Uniform4f(context),
-    'u_lightmapIntensity': new Uniform1f(context),
     'u_aoIntensity': new Uniform1f(context),
     'u_emissive_strength': new Uniform1f(context),
     'u_occlusionTextureTransform': new Uniform4f(context),
@@ -117,7 +115,6 @@ const modelUniformValues = (
     const lightColor = light.properties.get('color').toNonPremultipliedRenderColor(null);
 
     const aoIntensity = layer.paint.get('model-ambient-occlusion-intensity');
-    const lightmapIntensity = layer.paint.get('model-lightmap-intensity');
 
     const colorMix = layer.paint.get('model-color').constantOr(Color.white).toNonPremultipliedRenderColor(null);
     colorMix.a = layer.paint.get('model-color-mix-intensity').constantOr(0.0);
@@ -162,7 +159,6 @@ const modelUniformValues = (
         'u_emissionTexture': TextureSlots.Emission,
         'u_lutTexture': TextureSlots.LUT,
         'u_color_mix': colorMix.toArray01(),
-        'u_lightmapIntensity': lightmapIntensity,
         'u_aoIntensity': aoIntensity,
         'u_emissive_strength': emissiveStrength,
         'u_occlusionTextureTransform': occlusionTextureTransform ? occlusionTextureTransform : [0, 0, 0, 0] as [number, number, number, number],

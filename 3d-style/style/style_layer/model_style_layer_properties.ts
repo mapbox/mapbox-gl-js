@@ -35,7 +35,6 @@ export type PaintProps = {
     "model-translation": DataDrivenProperty<[number, number, number]>;
     "model-color": DataDrivenProperty<Color>;
     "model-color-mix-intensity": DataDrivenProperty<number>;
-    "model-lightmap-intensity": DataConstantProperty<number>;
     "model-type": DataConstantProperty<"common-3d" | "location-indicator">;
     "model-cast-shadows": DataConstantProperty<boolean>;
     "model-receive-shadows": DataConstantProperty<boolean>;
@@ -58,7 +57,6 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "model-translation": new DataDrivenProperty(styleSpec["paint_model"]["model-translation"]),
     "model-color": new DataDrivenProperty(styleSpec["paint_model"]["model-color"]),
     "model-color-mix-intensity": new DataDrivenProperty(styleSpec["paint_model"]["model-color-mix-intensity"]),
-    "model-lightmap-intensity": new DataConstantProperty(styleSpec["paint_model"]["model-lightmap-intensity"]),
     "model-type": new DataConstantProperty(styleSpec["paint_model"]["model-type"]),
     "model-cast-shadows": new DataConstantProperty(styleSpec["paint_model"]["model-cast-shadows"]),
     "model-receive-shadows": new DataConstantProperty(styleSpec["paint_model"]["model-receive-shadows"]),
