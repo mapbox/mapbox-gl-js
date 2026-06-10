@@ -1,67 +1,51 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>Mapbox GL JS debug page</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="../dist/mapbox-gl.css" />
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-        }
-
-        html,
-        body,
-        #map {
-            height: 100%;
-        }
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
     </style>
 </head>
-
 <body>
     <div id="map"></div>
-
     <script type="module">
         import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
         import {getAccessToken} from './access_token_generated.js';
-        const accessToken = getAccessToken();
 
         mapboxgl.addTileProvider('pmtiles', new URL('../plugins/mapbox-gl-pmtiles-provider/dist/mapbox-gl-pmtiles-provider.js', import.meta.url).href);
 
-        const style = await fetch(`https://api.mapbox.com/styles/v1/mapbox/standard-satellite?access_token=${accessToken}`)
-            .then(response => response.json())
-            .then(style => {
-                const baseURL = new URL('../test/integration/tiles', location.href).href;
-                style.sources = {
-                    'composite': {
-                        type: 'vector',
-                        url: baseURL + '/streets-v8-z0-z3.pmtiles'
-                    },
-                    'mapbox-dem': {
-                        type: 'raster-dem',
-                        tileSize: 256,
-                        url: baseURL + '/terrain-dem.pmtiles'
-                    },
-                    'mapbox://mapbox.satellite': {
-                        type: 'raster',
-                        tileSize: 256,
-                        url: baseURL + '/satellite-z0-z3.pmtiles'
-                    },
-                };
-                return style;
+        const map = window.map = new mapboxgl.Map({
+            accessToken: getAccessToken(),
+            container: 'map',
+            style: 'mapbox://styles/mapbox/standard',
+            zoom: 1.78,
+            center: [-103.64548, 51.14245]
+        });
+
+        map.on('load', () => {
+            map.addSource('pmtiles-earthquakes', {
+                type: 'vector',
+                url: 'https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.pmtiles'
             });
 
-        const map = window.map = new mapboxgl.Map({
-            accessToken: accessToken,
-            container: 'map',
-            zoom: 4,
-            center: [-112, 41],
-            hash: true,
-            style
+            map.addLayer({
+                id: 'pmtiles-vector-layer',
+                type: 'circle',
+                source: 'pmtiles-earthquakes',
+                'source-layer': 'earthquakes',
+                paint: {
+                    'circle-color': 'transparent',
+                    'circle-stroke-color': 'teal',
+                    'circle-stroke-width': 0.5,
+                    'circle-radius': 3,
+                    'circle-emissive-strength': 1
+                }
+            });
         });
     </script>
 </body>
-
 </html>
