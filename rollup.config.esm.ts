@@ -34,6 +34,7 @@ function esmConfig(dir: string, workerSuffix: string, emitVisualizer = false): R
                 // and can silently change when the module graph topology shifts
                 if (chunk.moduleIds.some(id => id.endsWith('/src/ui/map.ts'))) return 'core.js';
                 if (chunk.moduleIds.some(id => id.endsWith('/3d-style/data/bucket/building_bucket.ts'))) return 'hd.common.js';
+                if (chunk.moduleIds.some(id => id.endsWith('/3d-style/render/draw_ground_effect.ts'))) return 'hd_standard.common.js';
                 return 'shared.js'; // catch-all: the large gl-matrix / startup utilities chunk
             },
             experimentalMinChunkSize: 5000,

@@ -97,20 +97,6 @@ export type FillExtrusionPatternUniformsType = {
     ['u_opacity']: Uniform1f;
     ['u_pattern_transition']: Uniform1f
 };
-export type FillExtrusionGroundEffectUniformsType = {
-    ['u_matrix']: UniformMatrix4f;
-    ['u_opacity']: Uniform1f;
-    ['u_ao_pass']: Uniform1f;
-    ['u_meter_to_tile']: Uniform1f;
-    ['u_ao']: Uniform2f;
-    ['u_flood_light_intensity']: Uniform1f;
-    ['u_flood_light_color']: Uniform3f;
-    ['u_attenuation']: Uniform1f;
-    ['u_edge_radius']: Uniform1f;
-    ['u_fb']: Uniform1i;
-    ['u_fb_size']: Uniform1f;
-    ['u_dynamic_offset']: Uniform1f;
-};
 
 const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
@@ -174,21 +160,6 @@ const fillExtrusionPatternUniforms = (context: Context): FillExtrusionPatternUni
     'u_tile_units_to_pixels': new Uniform1f(context),
     'u_opacity': new Uniform1f(context),
     'u_pattern_transition': new Uniform1f(context)
-});
-
-const fillExtrusionGroundEffectUniforms = (context: Context): FillExtrusionGroundEffectUniformsType => ({
-    'u_matrix': new UniformMatrix4f(context),
-    'u_opacity': new Uniform1f(context),
-    'u_ao_pass': new Uniform1f(context),
-    'u_meter_to_tile': new Uniform1f(context),
-    'u_ao': new Uniform2f(context),
-    'u_flood_light_intensity': new Uniform1f(context),
-    'u_flood_light_color': new Uniform3f(context),
-    'u_attenuation': new Uniform1f(context),
-    'u_edge_radius': new Uniform1f(context),
-    'u_fb': new Uniform1i(context),
-    'u_fb_size': new Uniform1f(context),
-    'u_dynamic_offset': new Uniform1f(context),
 });
 
 const identityMatrix = mat4.create();
@@ -309,36 +280,6 @@ const fillExtrusionPatternUniformValues = (
     return Object.assign(uniformValues, patternUniformValues(painter, tile, patternTransition), heightFactorUniform);
 };
 
-const fillExtrusionGroundEffectUniformValues = (
-    painter: Painter,
-    matrix: mat4,
-    opacity: number,
-    aoPass: boolean,
-    meterToTile: number,
-    ao: [number, number],
-    floodLightIntensity: number,
-    floodLightColor: [number, number, number],
-    attenuation: number,
-    edgeRadius: number,
-    fbSize: number,
-): UniformValues<FillExtrusionGroundEffectUniformsType> => {
-    const uniformValues = {
-        'u_matrix': matrix as Float32Array,
-        'u_opacity': opacity,
-        'u_ao_pass': aoPass ? 1 : 0,
-        'u_meter_to_tile': meterToTile,
-        'u_ao': ao,
-        'u_flood_light_intensity': floodLightIntensity,
-        'u_flood_light_color': floodLightColor,
-        'u_attenuation': attenuation,
-        'u_edge_radius': edgeRadius,
-        'u_fb': 0,
-        'u_fb_size': fbSize,
-        'u_dynamic_offset': 1,
-    };
-    return uniformValues;
-};
-
 export {
     fillExtrusionUniforms,
     fillExtrusionDepthUniforms,
@@ -346,6 +287,4 @@ export {
     fillExtrusionUniformValues,
     fillExtrusionDepthUniformValues,
     fillExtrusionPatternUniformValues,
-    fillExtrusionGroundEffectUniforms,
-    fillExtrusionGroundEffectUniformValues
 };
