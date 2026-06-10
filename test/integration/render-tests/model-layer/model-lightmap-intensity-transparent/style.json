@@ -32,7 +32,7 @@
       "type": "batched-model",
       "maxzoom": 14,
       "tiles": [
-        "local://models/landmark/mbx-no-lightmap/{x}-{y}-{z}.glb"
+        "local://models/landmark/mbx-lightmap/{x}-{y}-{z}.glb"
       ]
     }
   },
@@ -58,7 +58,21 @@
       "id": "landmarks",
       "paint": {
         "model-opacity": 1.0,
-        "model-lightmap-intensity": 10
+        "model-lightmap-intensity": 10,
+        "model-color": [
+          "match",
+          ["get", "part"],
+          "lamp",
+          "hsla(0, 0%, 100%, 0)",
+          "rgba(255, 255, 255, 1)"
+        ],
+        "model-color-mix-intensity": [
+          "match",
+          ["get", "part"],
+          "window",
+          1.0,
+          0.0
+        ]
       }
     }
   ]
