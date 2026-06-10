@@ -417,15 +417,6 @@ vec3 computeIndirectLightContribution(Material mat, float NdotV, vec3 normal)
     float ambient_factor = calculate_ambient_directional_factor(normal);
     env_light = u_lighting_ambient_color * ambient_factor;
 #endif
-#if defined(USE_LIGHTMAP) && defined(HAS_TEXTURE_u_baseColorTexture) && defined(HAS_ATTRIBUTE_a_uv_2f)
-    #ifdef OCCLUSION_TEXTURE_TRANSFORM
-        vec2 lightmapUv = uv_2f.xy * u_occlusionTextureTransform.zw + u_occlusionTextureTransform.xy;
-        lightmapSample = texture(u_baseColorTexture, lightmapUv).rgb;
-    #endif
-
-    vec3 tintedSurfaceColor = mixColorFast(mat.baseColor.rgb, u_lighting_ambient_color, 0.2);
-    env_light += tintedSurfaceColor * lightmapSample * u_lightmapIntensity;
-#endif
     vec3 envBRDF = EnvBRDFApprox(mat.specularColor, mat.perceptualRoughness, NdotV);
     vec3 indirectSpecular =  envBRDF * env_light;
     vec3 indirectDiffuse = mat.diffuseColor * env_light;
@@ -539,6 +530,26 @@ vec4 finalColor;
     ao = (texture(u_occlusionTexture, uv).x - 1.0) * u_aoIntensity + 1.0;
     color *= ao;
 #endif
+
+#if defined(USE_LIGHTMAP) && defined(HAS_TEXTURE_u_baseColorTexture) && defined(HAS_ATTRIBUTE_a_uv_2f)
+    #ifdef OCCLUSION_TEXTURE_TRANSFORM
+        vec2 lightmapUv = uv_2f.xy * u_occlusionTextureTransform.zw + u_occlusionTextureTransform.xy;
+        lightmapSample = texture(u_baseColorTexture, lightmapUv).rgb;
+    #endif
+
+    float lightmapBrightness = max(lightmapSample.r, max(lightmapSample.g, lightmapSample.b));
+    float lightmapEnergy = lightmapBrightness * u_lightmapIntensity;
+    float lightmapMixFactor = 0.6 * min(1.0, lightmapBrightness);
+
+    color *= max(1.0, lightmapEnergy);
+    color = mixColorFast(color, lightmapSample, lightmapMixFactor);
+
+    if (mat.baseColor.a < 0.99) {
+        float maxFactor = max(1.0, u_lightmapIntensity);
+        mat.baseColor.a = clamp(lightmapEnergy / maxFactor, 0.0, 1.0);
+    }
+#endif
+
     // Emission
     vec4 emissive = u_emissiveFactor;
 
