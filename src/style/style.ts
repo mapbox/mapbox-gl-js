@@ -975,7 +975,8 @@ class Style extends Evented<MapEvents> {
             // HD hasn't resolved yet. Re-run setup and re-merge after the module loads so the
             // coverage source cache is properly created and merged.
             if (hasPendingHdCoverage) {
-                void prepareHDMain().then(() => {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                prepareHDMain().then(() => {
                     if (!this.map) return;
                     for (const layerId in this._layers) {
                         this._updateHdCoverageSourceCache(this._layers[layerId]);
@@ -1354,7 +1355,8 @@ class Style extends Evented<MapEvents> {
         // on. _initIndoorManager reloads indoor sources so the worker re-parses them once the
         // manager — and thus the indoor tile options — are available.
         if (this._indoorEnabled && !wasEnabled && !this.indoorManager) {
-            void prepareHDMain().then(() => { this._initIndoorManager(); });
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            prepareHDMain().then(() => { this._initIndoorManager(); });
         }
     }
 
@@ -2028,16 +2030,20 @@ class Style extends Evented<MapEvents> {
                     // called here (rather than inside prepare()) because importing hd_main
                     // from style_layer.ts would drag the main-only chunk into the worker
                     // bundle.
-                    void layer.prepare();
-                    void prepareHDMain();
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    layer.prepare();
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    prepareHDMain();
                 }
 
                 if (layer.mayUse('Standard')) {
                     // Same pattern as HD: preload Standard on both threads before the first
                     // tile carrying ModelBucket/Tiled3dModelBucket arrives. `layer.prepare()`
                     // triggers worker-side load; `prepareStandardMain()` triggers main-side.
-                    void layer.prepare();
-                    void prepareStandardMain();
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    layer.prepare();
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    prepareStandardMain();
                 }
 
                 const sourceCache = this.getLayerSourceCache(layer);

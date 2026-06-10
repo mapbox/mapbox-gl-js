@@ -1115,7 +1115,8 @@ class Painter {
             orderedLayers = layerIds.map(id => layers[id]);
         }
 
-        if (this.style.enable3dLights() && !this._shadowRenderer) void setupStandard(this);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        if (this.style.enable3dLights() && !this._shadowRenderer) setupStandard(this);
 
         const shadowRenderer = this._shadowRenderer;
         if (shadowRenderer) {
@@ -1167,7 +1168,8 @@ class Painter {
 
         // Load HD for precipitation functionality
         if ((snow || rain) && !HD.loaded) {
-            void prepareHD();
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            prepareHD();
         }
 
         if (snow && !this._snow && HD.Snow) {
@@ -1601,8 +1603,10 @@ class Painter {
         }
         if (!draw[layer.type]) {
             // Trigger lazy module loads so drawing will be possible once they load.
-            if (layer.mayUse('HD')) void setupHD();
-            if (layer.mayUse('Standard')) void setupStandard(painter);
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            if (layer.mayUse('HD')) setupHD();
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            if (layer.mayUse('Standard')) setupStandard(painter);
         }
         this.gpuTimingEnd();
         PerformanceUtils.measureLowOverhead(PerformanceUtils.GROUP_RENDERING_DETAILED, `renderLayer: ${layer.type.toString()}`, startTime, undefined);

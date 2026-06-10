@@ -36,7 +36,7 @@ test('worker source messages dispatched to the correct map instance', () => {
         };
     } as unknown as WorkerSourceConstructor);
 
-    void worker.loadTile(999, {
+    worker.loadTile(999, {
         uid: 0,
         type: 'test',
         source: 'source',

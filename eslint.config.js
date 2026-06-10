@@ -201,6 +201,7 @@ export default tseslint.config(
                 ignoreRestSiblings: true,
             }],
             '@typescript-eslint/no-non-null-assertion': 'error',
+            '@typescript-eslint/no-floating-promises': ['error', {ignoreVoid: false}],
             '@typescript-eslint/no-misused-promises': 'error',
             '@typescript-eslint/ban-ts-comment': ['error', {'ts-expect-error': true}],
 
