@@ -371,7 +371,7 @@ class Painter {
             starsParamsOverride: null,
             show3DModelFootprints: false,
             showElevationIdDebug: false,
-            lodSwitchDistance: 5000,
+            lodSwitchDistance: -1,
             lodSwitchFadeDuration: 0.5
         };
 

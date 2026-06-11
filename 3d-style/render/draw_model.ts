@@ -1259,9 +1259,38 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     lodNodeCenterScratch[1] = (min[1] + max[1]) * 0.5;
                     lodNodeCenterScratch[2] = (min[2] + max[2]) * 0.5;
                     const distanceToCamera = vec3.distance(cameraPos, lodNodeCenterScratch) * metersPerPixel;
-                    // Rendering can get paused and thus the LOD transition may stop. Therefore don't use the full time-step,
-                    // such that when rendering is resumed, the transition smoothly continues.
-                    updateModelLod(nodeInfo, distanceToCamera, Math.min(painter.frameTimeDelta, 1000 / 30), painter._debugParams.lodSwitchDistance, painter._debugParams.lodSwitchFadeDuration);
+
+                    const overrideDistance = painter._debugParams.lodSwitchDistance;
+                    const hasOverride = overrideDistance >= 0;
+
+                    if (hasOverride && overrideDistance >= 9999) {
+                        // LOD disabled: snap to full detail regardless of distance.
+                        nodeInfo.targetLod = 0;
+                    } else {
+                        let switchAtDistance: number;
+                        if (hasOverride) {
+                            switchAtDistance = overrideDistance;
+                        } else {
+                            // Size-based heuristics: derive switch distance from AABB dimensions,
+                            // matching gl-native constants (minDist=2000, range=3000).
+                            const physicalHeight = (max[2] - min[2]) * metersPerPixel * scale[2];
+                            const physicalWidth = Math.max(max[0] - min[0], max[1] - min[1]) * metersPerPixel * Math.max(scale[0], scale[1]);
+                            let sizeFactor: number;
+                            if (physicalHeight >= 30) {
+                                sizeFactor = 1.0;   // large
+                            } else if (physicalWidth >= 80) {
+                                sizeFactor = 0.5;   // flat (wide but not tall)
+                            } else if (Math.max(physicalHeight, physicalWidth) >= 20) {
+                                sizeFactor = 0.25;  // small
+                            } else {
+                                sizeFactor = 0.0;   // tiny
+                            }
+                            switchAtDistance = 2000 + sizeFactor * 3000;
+                        }
+                        // Rendering can get paused and thus the LOD transition may stop. Therefore don't use the full time-step,
+                        // such that when rendering is resumed, the transition smoothly continues.
+                        updateModelLod(nodeInfo, distanceToCamera, Math.min(painter.frameTimeDelta, 1000 / 30), switchAtDistance, painter._debugParams.lodSwitchFadeDuration);
+                    }
                 }
 
                 if (!isShadowPass && frontCutoffEnabled) {

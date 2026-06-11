@@ -585,7 +585,7 @@ export class DevTools implements IControl {
         this._addParameter(folder, map, 'showLayers2DWireframe');
         this._addParameter(folder, map, 'showLayers3DWireframe');
         this._addParameter(folder, map, '_scaleFactor', {label: 'scaleFactor', min: 0.1, max: 10.0, step: 0.1}, () => map.setScaleFactor(map._scaleFactor));
-        this._addParameter(folder, map.painter._debugParams, 'lodSwitchDistance', {min: 0, max: 10000, step: 100}, () => map.triggerRepaint());
+        this._addParameter(folder, map.painter._debugParams, 'lodSwitchDistance', {min: -1, max: 10000, step: 100}, () => map.triggerRepaint());
         this._addParameter(folder, map.painter._debugParams, 'lodSwitchFadeDuration', {min: 0, max: 5, step: 0.1}, () => map.triggerRepaint());
 
         const layersFolder = this._addFolder(folder, {title: 'Enabled Layers'});
