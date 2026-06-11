@@ -1,8 +1,8 @@
 import {toString} from './types';
-import ParsingContext from './parsing_context';
 import assert from '../util/assert';
 
 import type EvaluationContext from './evaluation_context';
+import type ParsingContext from './parsing_context';
 import type {Expression, ExpressionRegistry, SerializedExpression} from './expression';
 import type {Type} from './types';
 import type {Value} from './values';
@@ -89,7 +89,7 @@ class CompoundExpression implements Expression {
             // errors between overload attempts; the other fields are
             // identical across attempts.
             if (signatureContext === null) {
-                signatureContext = new ParsingContext(context.registry, context.path, null, context.scope, [], context._scope, context.options, context.iconImageUseTheme);
+                signatureContext = context._forkForSignature();
             } else {
                 signatureContext.errors.length = 0;
             }
