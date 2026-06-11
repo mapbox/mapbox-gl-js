@@ -81,6 +81,8 @@ const modelUniforms = (context: Context): ModelUniformsType => ({
 
 const emptyMat4 = new Float32Array(mat4.identity([]));
 
+const zeroVec3: [number, number, number] = [0, 0, 0];
+
 const modelUniformValues = (
     matrix: mat4,
     lightingMatrix: mat4,
@@ -99,22 +101,30 @@ const modelUniformValues = (
     occlusionTextureTransform?: [number, number, number, number] | null,
     materialOverride?: MaterialOverride | null,
     modelColorMix?: [number, number, number, number],
-    ditheredDiscardThreshold: number = 1.0
+    ditheredDiscardThreshold: number = 1.0,
+    lighting3DMode: boolean = false,
 ): UniformValues<ModelUniformsType> => {
 
-    const light = painter.style.light;
-    const _lp = light.properties.get('position');
-    const lightPos: [number, number, number] = [-_lp.x, -_lp.y, _lp.z];
-    const lightMat = mat3.create();
-    const anchor = light.properties.get('anchor');
-    if (anchor === 'viewport') {
-        mat3.fromRotation(lightMat, -painter.transform.angle);
-        vec3.transformMat3(lightPos, lightPos, lightMat);
+    let lightPos: [number, number, number] = zeroVec3;
+    let lightIntensity = 0;
+    let lightColorArr: [number, number, number] = zeroVec3;
+
+    if (!lighting3DMode) {
+        const light = painter.style.light;
+        const _lp = light.properties.get('position');
+        lightPos = [-_lp.x, -_lp.y, _lp.z];
+        const anchor = light.properties.get('anchor');
+        if (anchor === 'viewport') {
+            const lightMat = mat3.create();
+            mat3.fromRotation(lightMat, -painter.transform.angle);
+            vec3.transformMat3(lightPos, lightPos, lightMat);
+        }
+        const lightColor = light.properties.get('color').toNonPremultipliedRenderColor(null);
+        lightIntensity = light.properties.get('intensity');
+        lightColorArr = [lightColor.r, lightColor.g, lightColor.b];
     }
 
     const alphaMask = material.alphaMode === 'MASK';
-
-    const lightColor = light.properties.get('color').toNonPremultipliedRenderColor(null);
 
     const aoIntensity = layer.paint.get('model-ambient-occlusion-intensity');
     const lightmapIntensity = layer.paint.get('model-lightmap-intensity');
@@ -144,8 +154,8 @@ const modelUniformValues = (
         'u_normal_matrix': normalMatrix as Float32Array,
         'u_node_matrix': (nodeMatrix ? nodeMatrix : emptyMat4) as Float32Array,
         'u_lightpos': lightPos,
-        'u_lightintensity': light.properties.get('intensity'),
-        'u_lightcolor': [lightColor.r, lightColor.g, lightColor.b] as [number, number, number],
+        'u_lightintensity': lightIntensity,
+        'u_lightcolor': lightColorArr,
         'u_camera_pos': cameraPos,
         'u_opacity': opacity,
         'u_baseTextureIsAlpha': 0,

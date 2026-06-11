@@ -475,14 +475,15 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
                 layer.paint.get('fill-extrusion-translate-anchor'));
 
             const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
+            const lighting3DMode = program.fixedDefines.includes('LIGHTING_3D_MODE');
             if (image) {
                 uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineWidthScale, coord,
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    tile, heightLift, heightAlignment, baseAlignment, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, patternTransition);
+                    tile, heightLift, heightAlignment, baseAlignment, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, patternTransition, lighting3DMode);
             } else {
                 uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineWidthScale, coord,
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    heightLift, heightAlignment, baseAlignment, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity, groundShadowFactor, frontCutoffParams);
+                    heightLift, heightAlignment, baseAlignment, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity, groundShadowFactor, frontCutoffParams, lighting3DMode);
             }
         }
 

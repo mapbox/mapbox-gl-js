@@ -242,25 +242,6 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
 
     const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
     const emissiveStrength = layer.paint.get('model-emissive-strength').constantOr(0.0);
-    const uniformValues = modelUniformValues(
-        sortedMesh.worldViewProjection,
-        lightingMatrixScratch,
-        normalMatrixScratch,
-        null,
-        painter,
-
-        opacity,
-        pbr.baseColorFactor,
-        material.emissiveFactor,
-        pbr.metallicFactor,
-        pbr.roughnessFactor,
-        material,
-        emissiveStrength,
-        layer,
-        undefined,
-        undefined,
-        sortedMesh.materialOverride,
-        sortedMesh.modelColor);
 
     const programOptions: CreateProgramParams = {
         defines: []
@@ -293,6 +274,27 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     }
 
     const program = painter.getOrCreateProgram('model', programOptions);
+
+    const uniformValues = modelUniformValues(
+        sortedMesh.worldViewProjection,
+        lightingMatrixScratch,
+        normalMatrixScratch,
+        null,
+        painter,
+        opacity,
+        pbr.baseColorFactor,
+        material.emissiveFactor,
+        pbr.metallicFactor,
+        pbr.roughnessFactor,
+        material,
+        emissiveStrength,
+        layer,
+        undefined,
+        undefined,
+        sortedMesh.materialOverride,
+        sortedMesh.modelColor,
+        1.0,
+        program.fixedDefines.includes('LIGHTING_3D_MODE'));
 
     painter.uploadCommonUniforms(context, program, null, fogMatrix, cutoffParams);
 
@@ -1021,7 +1023,6 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Model
                     instancedNormalMatrixPlaceholder,
                     null,
                     painter,
-
                     layerOpacity,
                     pbr.baseColorFactor,
                     material.emissiveFactor,
@@ -1030,7 +1031,12 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Model
                     material,
                     emissiveStrength,
                     layer,
-                    cameraPos
+                    cameraPos,
+                    undefined,
+                    undefined,
+                    undefined,
+                    1.0,
+                    program.fixedDefines.includes('LIGHTING_3D_MODE')
                 );
                 if (shadowRenderer) {
                     if (!renderData.shadowUniformsInitialized) {
@@ -1509,7 +1515,8 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                                 occlusionTextureTransform,
                                 undefined,
                                 undefined,
-                                threshold
+                                threshold,
+                                program.fixedDefines.includes('LIGHTING_3D_MODE')
                         );
 
                         // z-prepass is needed for landmark cutoff. Skipped for translucent parts —

@@ -5,9 +5,11 @@
 #include "_prelude_material_table.vertex.glsl"
 
 uniform mat4 u_matrix;
+#ifndef LIGHTING_3D_MODE
 uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
+#endif
 uniform float u_vertical_gradient;
 uniform lowp float u_opacity;
 uniform float u_edge_radius;

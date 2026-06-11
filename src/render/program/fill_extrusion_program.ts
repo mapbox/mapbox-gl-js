@@ -163,6 +163,7 @@ const fillExtrusionPatternUniforms = (context: Context): FillExtrusionPatternUni
 });
 
 const identityMatrix = mat4.create();
+const zeroVec3: [number, number, number] = [0, 0, 0];
 
 const fillExtrusionUniformValues = (
     matrix: mat4,
@@ -184,26 +185,34 @@ const fillExtrusionUniformValues = (
     floodLightIntensity: number,
     groundShadowFactor: [number, number, number],
     frontCutoffParams: [number, number, number] = [0, 0, 1],
+    lighting3DMode: boolean = false,
 ): UniformValues<FillExtrusionUniformsType> => {
-    const light = painter.style.light;
-    const _lp = light.properties.get('position');
-    const lightPos: [number, number, number] = [_lp.x, _lp.y, _lp.z];
-    const lightMat = mat3.create();
-    const anchor = light.properties.get('anchor');
-    if (anchor === 'viewport') {
-        mat3.fromRotation(lightMat, -painter.transform.angle);
-        vec3.transformMat3(lightPos, lightPos, lightMat);
+    let lightPos: [number, number, number] = zeroVec3;
+    let lightIntensity = 0;
+    let lightColor: [number, number, number] = zeroVec3;
+
+    if (!lighting3DMode) {
+        const light = painter.style.light;
+        const _lp = light.properties.get('position');
+        lightPos = [_lp.x, _lp.y, _lp.z];
+        const anchor = light.properties.get('anchor');
+        if (anchor === 'viewport') {
+            const lightMat = mat3.create();
+            mat3.fromRotation(lightMat, -painter.transform.angle);
+            vec3.transformMat3(lightPos, lightPos, lightMat);
+        }
+        const c = light.properties.get('color').toPremultipliedRenderColor(null);
+        lightIntensity = light.properties.get('intensity');
+        lightColor = [c.r, c.g, c.b];
     }
 
-    const lightColor = light.properties.get('color').toPremultipliedRenderColor(null);
     const tr = painter.transform;
 
     const uniformValues = {
         'u_matrix': matrix as Float32Array,
         'u_lightpos': lightPos,
-        'u_lightintensity': light.properties.get('intensity'),
-
-        'u_lightcolor': [lightColor.r, lightColor.g, lightColor.b] as [number, number, number],
+        'u_lightintensity': lightIntensity,
+        'u_lightcolor': lightColor,
         'u_vertical_gradient': +shouldUseVerticalGradient,
         'u_opacity': opacity,
         'u_tile_id': [0, 0, 0] as [number, number, number],
@@ -269,11 +278,12 @@ const fillExtrusionPatternUniformValues = (
     invMatrix: mat4,
     floodLightColor: [number, number, number],
     verticalScale: number,
-    patternTransition: number
+    patternTransition: number,
+    lighting3DMode: boolean = false,
 ): UniformValues<FillExtrusionPatternUniformsType> => {
     const uniformValues = fillExtrusionUniformValues(
         matrix, painter, shouldUseVerticalGradient, opacity, aoIntensityRadius, edgeRadius, lineWidthScale, coord,
-        heightLift, heightAlignment, baseAlignment, zoomTransition, mercatorCenter, invMatrix, floodLightColor, verticalScale, 1.0, [0, 0, 0]);
+        heightLift, heightAlignment, baseAlignment, zoomTransition, mercatorCenter, invMatrix, floodLightColor, verticalScale, 1.0, [0, 0, 0], [0, 0, 1], lighting3DMode);
     const heightFactorUniform = {
         'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
     };

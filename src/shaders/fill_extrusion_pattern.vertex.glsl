@@ -12,9 +12,11 @@ uniform float u_vertical_gradient;
 uniform lowp float u_opacity;
 uniform float u_width_scale;
 
+#ifndef LIGHTING_3D_MODE
 uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
+#endif
 
 in ivec4 a_pos_normal_ed;
 

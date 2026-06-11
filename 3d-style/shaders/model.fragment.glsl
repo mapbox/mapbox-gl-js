@@ -8,9 +8,11 @@ uniform float u_opacity;
 uniform float u_dithered_discard_threshold;
 #endif
 
+#ifndef LIGHTING_3D_MODE
 uniform vec3 u_lightcolor;
 uniform vec3 u_lightpos;
 uniform float u_lightintensity;
+#endif
 
 uniform vec4 u_baseColorFactor;
 uniform vec4 u_emissiveFactor;
@@ -502,8 +504,8 @@ void main() {
     }
 #endif
 
-    vec3 lightDir = u_lightpos;
-    vec3 lightColor = u_lightcolor;
+    vec3 lightDir;
+    vec3 lightColor;
 
 #ifdef LIGHTING_3D_MODE
     lightDir = u_lighting_directional_dir;
@@ -511,6 +513,9 @@ void main() {
     // as a new citizen, better to not change legacy code convention.
     lightDir.xy = -lightDir.xy;
     lightColor = u_lighting_directional_color;
+#else
+    lightDir = u_lightpos;
+    lightColor = u_lightcolor;
 #endif
 
 vec4 finalColor;
