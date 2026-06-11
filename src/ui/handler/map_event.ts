@@ -40,6 +40,10 @@ export class MapEventHandler implements Handler {
         this._map.fire(new MapMouseEvent(e.type as 'mouseup', this._map, e));
     }
 
+    mouseupWindow(e: MouseEvent) {
+        this._map.fire(new MapMouseEvent('mouseupWindow', this._map, e));
+    }
+
     preclick(e: MouseEvent) {
         const synth = new MouseEvent('preclick', e);
         this._map.fire(new MapMouseEvent(synth.type as 'preclick', this._map, synth));
@@ -124,6 +128,10 @@ export class BlockableMapEventHandler {
     mousemove(e: MouseEvent) {
         // mousemove map events should not be fired when interaction handlers (pan, rotate, etc) are active
         this._map.fire(new MapMouseEvent(e.type as 'mousemove', this._map, e));
+    }
+
+    mousemoveWindow(e: MouseEvent) {
+        this._map.fire(new MapMouseEvent('mousemoveWindow', this._map, e));
     }
 
     mousedown() {
