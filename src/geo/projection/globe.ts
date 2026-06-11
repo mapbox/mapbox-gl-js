@@ -4,6 +4,8 @@ import {latLngToECEF} from '../lng_lat';
 import {degToRad} from '../../util/util';
 import MercatorCoordinate, {
     mercatorZfromAltitude,
+    mercatorXfromLng,
+    mercatorYfromLat,
 } from '../mercator_coordinate';
 import Mercator from './mercator';
 import Point from '@mapbox/point-geometry';
@@ -64,6 +66,63 @@ export default class Globe extends Mercator {
 
         const upScale = mercatorZfromAltitude(1, 0) * EXTENT * elevation;
         vec3.scaleAndAdd(pos, pos, up, upScale);
+
+        // During the globe-to-mercator transition, interpolate between globe and mercator
+        // positions to match the morphing that happens in the shader rendering.
+        // The interpolation happens in ECEF space before transformation to world/screen space.
+        const transition = globeToMercatorTransition(tr.zoom);
+        if (transition > 0) {
+            // Calculate mercator position relative to center and transform it to ECEF space.
+            // This mimics what the shader does with u_inv_rot_matrix.
+            const mercatorX = mercatorXfromLng(lngLat.lng);
+            const mercatorY = mercatorYfromLat(lngLat.lat);
+            const centerX = mercatorXfromLng(tr.center.lng);
+            const centerY = mercatorYfromLat(tr.center.lat);
+
+            // Mercator delta from center (in [0,1] mercator space)
+            let deltaX = mercatorX - centerX;
+            const deltaY = mercatorY - centerY;
+
+            // Wrap deltaX to handle antimeridian
+            if (deltaX > 0.5) deltaX -= 1;
+            if (deltaX < -0.5) deltaX += 1;
+
+            // Mercator position in flat plane coordinates (like the shader's mercator_tile)
+            // deltaX/Y are in mercator [0,1] space, scale to EXTENT
+            const mercatorFlat: vec3 = [
+                deltaX * EXTENT,
+                deltaY * EXTENT,
+                EXTENT / (2.0 * Math.PI)  // Constant z for flat mercator plane
+            ];
+
+            // Transform mercator flat position to ECEF space using an inversion matrix
+            // similar to what the shader does with u_inv_rot_matrix.
+            const invMatrix = mat4.identity(new Float64Array(16));
+            mat4.rotateY(invMatrix, invMatrix, degToRad(tr.center.lng));
+            mat4.rotateX(invMatrix, invMatrix, degToRad(tr.center.lat));
+            mat4.scale(invMatrix, invMatrix, [tr._pixelsPerMercatorPixel, tr._pixelsPerMercatorPixel, 1.0]);
+
+            const mercatorECEF: vec3 = [0, 0, 0];
+            vec3.transformMat4(mercatorECEF, mercatorFlat, invMatrix);
+
+            // Add elevation to match globe
+            vec3.scaleAndAdd(mercatorECEF, mercatorECEF, up, upScale * tr._pixelsPerMercatorPixel);
+
+            // Interpolate in ECEF space
+            const interpolatedECEF: vec3 = [
+                interpolate(pos[0], mercatorECEF[0], transition),
+                interpolate(pos[1], mercatorECEF[1], transition),
+                interpolate(pos[2], mercatorECEF[2], transition)
+            ];
+
+            // Transform to screen space
+            const matrix = mat4.identity(new Float64Array(16));
+            mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
+            vec3.transformMat4(interpolatedECEF, interpolatedECEF, matrix);
+
+            return new Point(interpolatedECEF[0], interpolatedECEF[1]);
+        }
+
         const matrix = mat4.identity(new Float64Array(16));
         mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
         vec3.transformMat4(pos, pos, matrix);
