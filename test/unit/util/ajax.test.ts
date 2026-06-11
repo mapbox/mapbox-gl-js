@@ -4,9 +4,11 @@ import {vi, describe, test, expect} from '../../util/vitest';
 import {getPNGResponse} from '../../util/network';
 import {
     getArrayBuffer,
+    getData,
     getJSON,
     postData,
     getImage,
+    getVideo,
     resetImageRequestQueue
 } from '../../../src/util/ajax';
 import config from '../../../src/util/config';
@@ -21,67 +23,14 @@ describe('ajax', () => {
             });
         });
 
-        await new Promise(resolve => {
-            getArrayBuffer({url: ''}, (error) => {
-                expect(error.status).toEqual(404);
-                resolve();
-            });
-        });
+        await expect(getArrayBuffer({url: ''})).rejects.toMatchObject({status: 404});
     });
 
-    test('getJSON', async () => {
-        // eslint-disable-next-line @typescript-eslint/require-await
-        vi.spyOn(window, 'fetch').mockImplementation(async () => {
-            return new window.Response('{"foo": "bar"}', {
-                status: 200,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-        });
+    test('getArrayBuffer network failure keeps the request URL in the message', async () => {
+        vi.spyOn(window, 'fetch').mockRejectedValue(new TypeError('Failed to fetch'));
 
-        await new Promise(resolve => {
-            getJSON({url: ''}, (error, body) => {
-                expect(error).toBeFalsy();
-                expect(body).toEqual({foo: 'bar'});
-                resolve();
-            });
-        });
-    });
-
-    test('getJSON, invalid syntax', async () => {
-        // eslint-disable-next-line @typescript-eslint/require-await
-        vi.spyOn(window, 'fetch').mockImplementation(async () => {
-            return new window.Response('how do i even', {
-                status: 200,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-        });
-
-        await new Promise(resolve => {
-            getJSON({url: ''}, (error) => {
-                expect(error).toBeTruthy();
-                resolve();
-            });
-        });
-    });
-
-    test('getJSON, 404', async () => {
-        // eslint-disable-next-line @typescript-eslint/require-await
-        vi.spyOn(window, 'fetch').mockImplementation(async () => {
-            return new window.Response('', {
-                status: 404
-            });
-        });
-
-        await new Promise(resolve => {
-            getJSON({url: ''}, (error) => {
-                expect(error.status).toEqual(404);
-                resolve();
-            });
-        });
+        const url = 'https://example.com/tile.pbf?access_token=pk.test';
+        await expect(getArrayBuffer({url})).rejects.toThrow(`Failed to fetch ${url}`);
     });
 
     test('getJSON, 401: non-Mapbox domain', async () => {
@@ -93,12 +42,9 @@ describe('ajax', () => {
             });
         });
 
-        await new Promise(resolve => {
-            getJSON({url: ''}, (error) => {
-                expect(error.status).toEqual(401);
-                expect(error.message).toEqual("Unauthorized");
-                resolve();
-            });
+        await expect(getJSON({url: ''})).rejects.toMatchObject({
+            status: 401,
+            message: "Unauthorized"
         });
     });
 
@@ -111,39 +57,13 @@ describe('ajax', () => {
             });
         });
 
-        await new Promise(resolve => {
-            getJSON({url: 'api.mapbox.com'}, (error) => {
-                expect(error.status).toEqual(401);
-                expect(error.message).toEqual(
-                    "Unauthorized: you may have provided an invalid Mapbox access token. See https://docs.mapbox.com/api/guides/#access-tokens-and-token-scopes"
-                );
-                resolve();
-            });
+        await expect(getJSON({url: 'api.mapbox.com'})).rejects.toMatchObject({
+            status: 401,
+            message: "Unauthorized: you may have provided an invalid Mapbox access token. See https://docs.mapbox.com/api/guides/#access-tokens-and-token-scopes"
         });
     });
 
-    test('makeRequest gets correct headers when using fetch', async () => {
-        // eslint-disable-next-line @typescript-eslint/require-await
-        vi.spyOn(window, 'fetch').mockImplementation(async () => {
-            return new window.Response('{"foo": "bar"}', {
-                status: 200,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-random-header': 'random-value'
-                }
-            });
-        });
-
-        await new Promise(resolve => {
-            getJSON({url: ''}, (error, body, headers) => {
-                expect(headers.get('X-random-header')).toEqual('random-value');
-                expect(headers.get('Content-Type')).toEqual('application/json');
-                resolve();
-            });
-        });
-    });
-
-    test('makeRequest gets correct headers when using XMLHttpRequest', async () => {
+    test('getJSON gets correct headers when using XMLHttpRequest', async () => {
         vi.spyOn(window, 'XMLHttpRequest').mockImplementation(function () {
             const responseHeadersRef: {current: Record<string, string>} = {
                 current: {}
@@ -180,14 +100,9 @@ describe('ajax', () => {
             };
         });
 
-        await new Promise(resolve => {
-            getJSON({url: 'file://random'}, (error, body, headers) => {
-                expect(error).toBeNull();
-                expect(headers.get('X-random-header')).toEqual('random-value');
-                expect(headers.get('Content-Type')).toEqual('application/json');
-                resolve();
-            });
-        });
+        const {headers} = await getJSON({url: 'file://random'});
+        expect(headers.get('x-random-header')).toEqual('random-value');
+        expect(headers.get('content-type')).toEqual('application/json');
     });
 
     test('postData, 204(no content): no error', async () => {
@@ -198,12 +113,7 @@ describe('ajax', () => {
             });
         });
 
-        await new Promise(resolve => {
-            postData({url: 'api.mapbox.com'}, (error) => {
-                expect(error).toEqual(null);
-                resolve();
-            });
-        });
+        await expect(postData({url: 'api.mapbox.com'})).resolves.toBeDefined();
     });
 
     test('getImage respects maxParallelImageRequests', async () => {
@@ -259,6 +169,49 @@ describe('ajax', () => {
         }
 
         expect(requests.length).toEqual(maxRequests + 1);
+    });
+
+    test('getImage does not deliver to callback when cancelled mid-body-read', async () => {
+        // Prep async work first, then drain any in-flight requests leaked by earlier tests
+        // (they decrement the shared queue counter as they settle) before resetting, so the
+        // counter is clean and cancel() below can't underflow it.
+        const body = await getPNGResponse();
+        await new Promise(r => { setTimeout(r, 0); });
+        resetImageRequestQueue();
+
+        // Resolve fetch immediately but hold the body read, so cancel() lands in the window
+        // after fetch resolved (the abort is therefore not surfaced as an AbortError) but
+        // before the body completes. The pre-Promise Cancelable contract dropped the callback
+        // here; the Promise bridge must preserve that or it resurrects stale ImageSource state.
+        let resolveBody: () => void;
+        vi.spyOn(window, 'fetch').mockImplementation(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            headers: new Headers({'Content-Type': 'image/png'}),
+            arrayBuffer: () => new Promise((resolve) => { resolveBody = () => resolve(body); }),
+        }));
+
+        // Make the image-bitmap conversion resolve on a controlled microtask so the success
+        // delivery is deterministic; otherwise the real decode might just not have fired yet
+        // by the assertion, masking a missing guard.
+        const createImageBitmap = vi.spyOn(window, 'createImageBitmap').mockResolvedValue({} as ImageBitmap);
+
+        const callback = vi.fn();
+        const request = getImage({url: ''}, callback);
+
+        // Let the chain advance past the post-fetch abort check, into the body read.
+        await new Promise(r => { setTimeout(r, 0); });
+        expect(typeof resolveBody).toBe('function');
+
+        request.cancel();
+        resolveBody();
+
+        // Flush the microtasks the conversion + callback would otherwise use.
+        await new Promise(r => { setTimeout(r, 0); });
+
+        expect(createImageBitmap).not.toHaveBeenCalled();
+        expect(callback).not.toHaveBeenCalled();
     });
 
     test('getImage requests that were once queued are still abortable', () => {
@@ -325,56 +278,126 @@ describe('ajax', () => {
         });
     });
 
-    test.skip('getImage retains cache control headers when using arrayBufferToImage', async () => {
-        resetImageRequestQueue();
-
-        const headers = {
-            'Content-Type': 'image/webp',
-            'Cache-Control': 'max-age=43200,s-maxage=604800',
-            'Expires': 'Wed, 21 Oct 2099 07:28:00 GMT'
-        };
-
+    test('getJSON resolves with {data, headers: Headers}', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async () => {
-            return new window.Response(await getPNGResponse(), {
+            return new window.Response('{"foo":1}', {
                 status: 200,
-                headers
+                headers: {'Content-Type': 'application/json', 'X-Custom': 'yes'}
             });
         });
 
-        await new Promise(resolve => {
-            getImage({url: ''}, (err, img, cacheControl, expires) => {
-                if (err) expect.unreachable();
-                expect(cacheControl).toEqual(headers['Cache-Control']);
-                expect(expires).toEqual(headers['Expires']);
-                resolve();
-            });
-
-        });
+        const result = await getJSON({url: ''});
+        expect(result.data).toEqual({foo: 1});
+        expect(result.headers).toBeInstanceOf(Headers);
+        expect(result.headers.get('x-custom')).toEqual('yes');
     });
 
-    test.skip('getImage retains cache control headers when using arrayBufferToImageBitmap', async () => {
-        resetImageRequestQueue();
-
-        const headers = {
-            'Content-Type': 'image/webp',
-            'Cache-Control': 'max-age=43200,s-maxage=604800',
-            'Expires': 'Wed, 21 Oct 2015 07:28:00 GMT'
-        };
-
+    test('getData rejects immediately when signal already aborted', async () => {
+        const controller = new AbortController();
+        controller.abort();
+        let fetchCalled = false;
+        // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async () => {
-            return new window.Response(await getPNGResponse(), {
-                status: 200,
-                headers
+            fetchCalled = true;
+            return new window.Response('', {status: 200});
+        });
+
+        await expect(getData({url: ''}, controller.signal)).rejects.toMatchObject({name: 'AbortError'});
+        expect(fetchCalled).toEqual(false);
+    });
+
+    test('getArrayBuffer rejects with AbortError when signal fires mid-flight', async () => {
+        const controller = new AbortController();
+        vi.spyOn(window, 'fetch').mockImplementation((req) => {
+            return new Promise((_, reject) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                req.signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
+                controller.abort();
             });
         });
 
-        await new Promise(resolve => {
-            getImage({url: ''}, (err, img, cacheControl, expires) => {
-                if (err) expect.unreachable();
-                expect(cacheControl).toEqual(headers['Cache-Control']);
-                expect(expires).toEqual(headers['Expires']);
-                resolve();
-            });
+        await expect(getArrayBuffer({url: ''}, controller.signal)).rejects.toMatchObject({name: 'AbortError'});
+    });
+
+    test('getData XHR path: abort calls xhr.abort() and rejects AbortError', async () => {
+        const controller = new AbortController();
+        let xhrAborted = false;
+        vi.spyOn(window, 'XMLHttpRequest').mockImplementation(function () {
+            this.open = () => {};
+            this.setRequestHeader = () => {};
+            this.send = () => { setTimeout(() => controller.abort(), 0); };
+            this.abort = () => { xhrAborted = true; };
         });
+
+        await expect(getData({url: 'file://test'}, controller.signal)).rejects.toMatchObject({name: 'AbortError'});
+        expect(xhrAborted).toEqual(true);
+    });
+
+    test('getData XHR abort listener removed after normal resolution (no leak)', async () => {
+        const controller = new AbortController();
+        let listenerCount = 0;
+        const origAdd = controller.signal.addEventListener.bind(controller.signal);
+        const origRemove = controller.signal.removeEventListener.bind(controller.signal);
+        vi.spyOn(controller.signal, 'addEventListener').mockImplementation((type, fn, opts) => {
+            if (type === 'abort') listenerCount++;
+            origAdd(type, fn, opts);
+        });
+        vi.spyOn(controller.signal, 'removeEventListener').mockImplementation((type, fn) => {
+            if (type === 'abort') listenerCount--;
+            origRemove(type, fn);
+        });
+
+        vi.spyOn(window, 'XMLHttpRequest').mockImplementation(function () {
+            this.open = () => {};
+            this.setRequestHeader = () => {};
+            this.send = () => {
+                setTimeout(() => {
+                    this.status = 200;
+                    this.response = 'hello';
+                    this.getAllResponseHeaders = () => '';
+                    this.onload(new Event('load'));
+                }, 0);
+            };
+            this.abort = () => {};
+        });
+
+        await getData({url: 'file://test'}, controller.signal);
+        expect(listenerCount).toEqual(0);
+    });
+
+    test('getJSON parse error rejects with parse error', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
+        vi.spyOn(window, 'fetch').mockImplementation(async () => {
+            return new window.Response('not json', {status: 200, headers: {'Content-Type': 'application/json'}});
+        });
+
+        await expect(getJSON({url: ''})).rejects.toBeInstanceOf(SyntaxError);
+    });
+
+    test('getVideo resolves with the video element when onloadstart fires', async () => {
+        const video = document.createElement('video');
+        vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+            return tag === 'video' ? video : ({} as HTMLSourceElement);
+        });
+        video.appendChild = vi.fn();
+
+        const promise = getVideo(['https://example.com/video.mp4']);
+        video.onloadstart(new Event('loadstart'));
+
+        await expect(promise).resolves.toBe(video);
+    });
+
+    test('getVideo rejects with the URLs in the message when onerror fires', async () => {
+        const video = document.createElement('video');
+        vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+            return tag === 'video' ? video : ({} as HTMLSourceElement);
+        });
+        video.appendChild = vi.fn();
+
+        const promise = getVideo(['https://example.com/video.mp4', 'https://example.com/video.webm']);
+        video.onerror(new Event('error'));
+
+        await expect(promise).rejects.toThrow('https://example.com/video.mp4, https://example.com/video.webm');
     });
 });

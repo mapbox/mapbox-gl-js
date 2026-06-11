@@ -27,16 +27,27 @@ export default function (
     let json: SpriteData | undefined, image: ImageBitmap | undefined, error: Error | undefined;
     const format = browser.devicePixelRatio > 1 ? '@2x' : '';
 
-    let jsonRequest: Cancelable | null | undefined = getJSON(requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON), (err?: Error | null, data?: object) => {
-        jsonRequest = null;
-        if (!error) {
-            error = err;
-            json = data as SpriteData;
-            maybeComplete();
-        }
-    });
+    const jsonController = new AbortController();
+    let jsonRequest: Cancelable | null | undefined = {cancel: () => jsonController.abort()};
+    const requestParameters = requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON);
+    getJSON<SpriteData>(requestParameters, jsonController.signal)
+        .then(({data}) => {
+            jsonRequest = null;
+            if (!error) {
+                json = data;
+                maybeComplete();
+            }
+        })
+        .catch((err: Error) => {
+            jsonRequest = null;
+            if (!error && err.name !== 'AbortError') {
+                error = err;
+                maybeComplete();
+            }
+        });
 
-    let imageRequest: Cancelable | null | undefined = getImage(requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.png'), ResourceType.SpriteImage), (err, img) => {
+    const imageRequestParameters = requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.png'), ResourceType.SpriteImage);
+    let imageRequest: Cancelable | null | undefined = getImage(imageRequestParameters, (err, img) => {
         imageRequest = null;
         if (!error) {
             error = err;

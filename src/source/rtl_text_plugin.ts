@@ -94,14 +94,12 @@ export const downloadRTLTextPlugin = function () {
     pluginStatus = rtlPluginStatus.loading;
     sendPluginStateToWorker();
     if (pluginURL) {
-        getArrayBuffer({url: pluginURL}, (error) => {
-            if (error) {
-                triggerPluginCompletionEvent(error);
-            } else {
+        getArrayBuffer({url: pluginURL})
+            .then(() => {
                 pluginStatus = rtlPluginStatus.loaded;
                 sendPluginStateToWorker();
-            }
-        });
+            })
+            .catch((err: Error) => { triggerPluginCompletionEvent(err); });
     }
 };
 

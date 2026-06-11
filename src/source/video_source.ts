@@ -65,11 +65,8 @@ class VideoSource extends ImageSource<'video'> {
             this.urls.push(this.map._requestManager.transformRequest(url, ResourceType.Source).url);
         }
 
-        getVideo(this.urls, (err, video) => {
-            this._loaded = true;
-            if (err) {
-                this.fire(new ErrorEvent(err));
-            } else if (video) {
+        getVideo(this.urls)
+            .then((video) => {
                 this.video = video;
                 this.video.loop = true;
 
@@ -88,8 +85,9 @@ class VideoSource extends ImageSource<'video'> {
                 }
 
                 this._finishLoading();
-            }
-        });
+            })
+            .catch((err: Error) => this.fire(new ErrorEvent(err)))
+            .finally(() => { this._loaded = true; });
     }
 
     /**

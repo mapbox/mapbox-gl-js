@@ -56,7 +56,7 @@ function isNullBodyStatus(status: Response["status"]): boolean {
     return [101, 103, 204, 205, 304].includes(status);
 }
 
-export function cachePut(request: Request, response: Response, requestTime: number) {
+export async function cachePut(request: Request, response: Response, requestTime: number): Promise<void> {
     cacheOpen();
     if (sharedCache == null) return;
 
@@ -66,10 +66,8 @@ export function cachePut(request: Request, response: Response, requestTime: numb
     const options: ResponseOptions = {
         status: response.status,
         statusText: response.statusText,
-        headers: new Headers()
+        headers: new Headers(response.headers)
     };
-
-    response.headers.forEach((v, k) => options.headers.set(k, v));
 
     if (cacheControl['max-age']) {
         options.headers.set('Expires', new Date(requestTime + cacheControl['max-age'] * 1000).toUTCString());
@@ -96,43 +94,42 @@ export function cachePut(request: Request, response: Response, requestTime: numb
 
     cacheOpen();
     if (sharedCache == null) return;
-    sharedCache
-        .then(cache => cache.put(strippedURL, clonedResponse))
-        .catch((e: Error) => warnOnce(e.message));
+    try {
+        const cache = await sharedCache;
+        await cache.put(strippedURL, clonedResponse);
+    } catch (e) {
+        warnOnce((e as Error).message);
+    }
 }
 
-export function cacheGet(
+export async function cacheGet(
     request: Request,
-    callback: (error?: Error, response?: Response, fresh?: boolean) => void,
-): void {
+): Promise<{response: Response; fresh: boolean} | null> {
     cacheOpen();
-    if (sharedCache == null) return callback(null);
+    if (sharedCache == null) return null;
 
-    sharedCache
-        .then(cache => {
-            let strippedURL = stripQueryParameters(request.url, {persistentParams: PERSISTENT_PARAMS});
+    const cache = await sharedCache;
 
-            const range = request.headers.get('Range');
-            if (range) strippedURL = setQueryParameters(strippedURL, {range});
+    let strippedURL = stripQueryParameters(request.url, {persistentParams: PERSISTENT_PARAMS});
 
-            // manually strip URL instead of `ignoreSearch: true` because of a known
-            // performance issue in Chrome https://github.com/mapbox/mapbox-gl-js/issues/8431
-            cache.match(strippedURL)
-                .then(response => {
-                    const fresh = isFresh(response);
+    const range = request.headers.get('Range');
+    if (range) strippedURL = setQueryParameters(strippedURL, {range});
 
-                    // Reinsert into cache so that order of keys in the cache is the order of access.
-                    // This line makes the cache a LRU instead of a FIFO cache.
-                    cache.delete(strippedURL).catch(callback);
-                    if (fresh) {
-                        cache.put(strippedURL, response.clone()).catch(callback);
-                    }
+    // manually strip URL instead of `ignoreSearch: true` because of a known
+    // performance issue in Chrome https://github.com/mapbox/mapbox-gl-js/issues/8431
+    const response = await cache.match(strippedURL);
+    if (!response) return null;
 
-                    callback(null, response, fresh);
-                })
-                .catch(callback);
-        })
-        .catch(callback);
+    const fresh = isFresh(response);
+
+    // Reinsert into cache so that order of keys in the cache is the order of access.
+    // This line makes the cache a LRU instead of a FIFO cache.
+    cache.delete(strippedURL).catch((e: Error) => warnOnce(e.message));
+    if (fresh) {
+        cache.put(strippedURL, response.clone()).catch((e: Error) => warnOnce(e.message));
+    }
+
+    return {response, fresh};
 }
 
 function isFresh(response: Response) {

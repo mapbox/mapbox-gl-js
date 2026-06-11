@@ -1,5 +1,5 @@
 import DEMData from '../data/dem_data';
-import {makeAsyncRequest} from '../util/ajax';
+import {getArrayBuffer} from '../util/ajax';
 import {prevPowerOfTwo} from '../util/util';
 
 import type {TileProvider} from './tile_provider';
@@ -34,7 +34,7 @@ class RasterDEMTileWorkerSource implements WorkerSource {
         }
 
         try {
-            const {data, headers} = await makeAsyncRequest<ArrayBuffer>(Object.assign(params.request, {type: 'arrayBuffer'}), controller.signal);
+            const {data, headers} = await getArrayBuffer(params.request, controller.signal);
             if (!data) return null;
             const result = await this.decodeTile(uid, data, params.encoding) as WorkerSourceDEMTileResult;
             result.headers = headers;

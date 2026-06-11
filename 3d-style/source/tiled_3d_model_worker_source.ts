@@ -1,4 +1,4 @@
-import {makeAsyncRequest} from '../../src/util/ajax';
+import {getArrayBuffer} from '../../src/util/ajax';
 import FeatureIndex from '../../src/data/feature_index';
 import {process3DTile} from './model_loader';
 import {tileToMeter} from '../../src/geo/mercator_coordinate';
@@ -150,7 +150,8 @@ class Tiled3dModelWorkerSource implements WorkerSource {
 
         let data: ArrayBuffer | null | undefined;
         try {
-            ({data} = await makeAsyncRequest<ArrayBuffer>(Object.assign(params.request, {type: 'arrayBuffer'}), controller.signal));
+            const response = await getArrayBuffer(params.request, controller.signal);
+            data = response.data;
         } catch (err) {
             delete this.loading[uid];
             workerTile.status = 'done';

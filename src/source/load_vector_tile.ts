@@ -98,8 +98,17 @@ export function loadVectorTile(
     const key = JSON.stringify(params.request);
 
     const makeRequest: VectorDataRequest = (callback: LoadVectorDataCallback) => {
-        const request = getArrayBuffer(params.request, (err?: Error | null, data?: ArrayBuffer | null, responseHeaders?: Headers) => {
-            if (err) {
+        const controller = new AbortController();
+        getArrayBuffer(params.request, controller.signal)
+            .then(({data, headers}) => {
+                callback(null, {
+                    rawData: data,
+                    vectorTile: skipParse ? undefined : new VectorTile(new PbfReader(data)),
+                    headers
+                });
+            })
+            .catch((err: Error) => {
+                if (err.name === 'AbortError') return;
                 // HTTP 404 on a sparse tileset: the tile intentionally doesn't exist.
                 // Convert to empty result — no parent fallback for HTTP sources.
                 if (isHttpNotFound(err)) {
@@ -107,16 +116,9 @@ export function loadVectorTile(
                 } else {
                     callback(err);
                 }
-            } else if (data) {
-                callback(null, {
-                    rawData: data,
-                    vectorTile: skipParse ? undefined : new VectorTile(new PbfReader(data)),
-                    headers: responseHeaders
-                });
-            }
-        });
+            });
         return () => {
-            request.cancel();
+            controller.abort();
             callback(null, null);
         };
     };

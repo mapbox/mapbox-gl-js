@@ -6,7 +6,7 @@ import {warnOnce} from '../../src/util/util';
 import {DracoDecoderModule} from './draco_decoder_gltf';
 import {MeshoptDecoderModule} from './meshopt_decoder';
 import {PerformanceUtils} from '../../src/util/performance';
-import {makeAsyncRequest} from '../../src/util/ajax';
+import {getArrayBuffer} from '../../src/util/ajax';
 
 import type {vec3, mat4, quat} from 'gl-matrix';
 import type {TextureImage} from '../../src/render/texture';
@@ -396,7 +396,7 @@ export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 
 }
 
 export async function loadGLTF(url: string, signal?: AbortSignal): Promise<GLTF> {
-    const {data: buffer} = await makeAsyncRequest<ArrayBuffer>({url, type: 'arrayBuffer'}, signal);
+    const {data: buffer} = await getArrayBuffer({url}, signal);
     return decodeGLTF(buffer, 0, url, signal);
 }
 

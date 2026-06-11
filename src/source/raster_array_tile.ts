@@ -147,39 +147,38 @@ class RasterArrayTile extends Tile implements Tile {
         // A buffer, in case range requests were ignored
         this.entireBuffer = null;
 
-        this.request = getArrayBuffer(headerRequestParams, (error?: Error | null, dataBuffer?: ArrayBuffer | null, headers?: Headers) => {
-            if (error) {
-                callback(error);
-                return;
-            }
+        const controller = new AbortController();
+        this.request = {cancel: () => controller.abort()};
+        getArrayBuffer(headerRequestParams, controller.signal)
+            .then(({data: dataBuffer, headers}) => {
+                try {
+                    const headerLength = mrt.getHeaderLength(dataBuffer);
+                    if (headerLength > fetchLength) {
+                        this.request = this.fetchHeader(headerLength, callback);
+                        return;
+                    }
 
-            try {
-                const headerLength = mrt.getHeaderLength(dataBuffer);
-                if (headerLength > fetchLength) {
-                    this.request = this.fetchHeader(headerLength, callback);
-                    return;
+                    // Parse the header only
+                    mrt.parseHeader(dataBuffer);
+                    this._isHeaderLoaded = true;
+
+                    // If the received data covers all possible byte ranges (i.e. if the range request was
+                    // ignored by the server), then cache the buffer and neglect range requests.
+                    let lastByte = 0;
+                    for (const layer of Object.values(mrt.layers)) {
+                        lastByte = Math.max(lastByte, layer.dataIndex.at(-1).lastByte);
+                    }
+
+                    if (dataBuffer.byteLength >= lastByte) {
+                        this.entireBuffer = dataBuffer;
+                    }
+
+                    callback(null, (this.entireBuffer || dataBuffer), headers);
+                } catch (error) {
+                    callback(error as Error);
                 }
-
-                // Parse the header only
-                mrt.parseHeader(dataBuffer);
-                this._isHeaderLoaded = true;
-
-                // If the received data covers all possible byte ranges (i.e. if the range request was
-                // ignored by the server), then cache the buffer and neglect range requests.
-                let lastByte = 0;
-                for (const layer of Object.values(mrt.layers)) {
-                    lastByte = Math.max(lastByte, layer.dataIndex.at(-1).lastByte);
-                }
-
-                if (dataBuffer.byteLength >= lastByte) {
-                    this.entireBuffer = dataBuffer;
-                }
-
-                callback(null, (this.entireBuffer || dataBuffer), headers);
-            } catch (error) {
-                callback(error as Error);
-            }
-        });
+            })
+            .catch((err: Error) => { if (err.name !== 'AbortError') callback(err); });
 
         return this.request;
     }
@@ -314,7 +313,11 @@ class RasterArrayTile extends Tile implements Tile {
             onDataLoaded(null, this.entireBuffer.slice(range.firstByte, range.lastByte + 1));
         } else {
             const rangeRequestParams = {...this.requestParams, headers: {Range: `bytes=${range.firstByte}-${range.lastByte}`}};
-            const request = getArrayBuffer(rangeRequestParams, onDataLoaded);
+            const controller = new AbortController();
+            getArrayBuffer(rangeRequestParams, controller.signal)
+                .then(({data: buffer}) => onDataLoaded(null, buffer))
+                .catch((err: Error) => { if (err.name !== 'AbortError') onDataLoaded(err); });
+            const request = {cancel: () => controller.abort()};
 
             if (layerId !== null) {
                 const fetchQueue = this._fetchQueuePerLayer.get(layerId) || [];

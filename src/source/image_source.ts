@@ -310,7 +310,8 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
             return;
         }
 
-        this._imageRequest = getImage(this.map._requestManager.transformRequest(this.url, ResourceType.Image), (err, image) => {
+        const request = this.map._requestManager.transformRequest(this.url, ResourceType.Image);
+        this._imageRequest = getImage(request, (err, image) => {
             this._imageRequest = null;
             this._loaded = true;
             if (err) {

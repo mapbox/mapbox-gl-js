@@ -9,37 +9,26 @@ describe('tile_request_cache', () => {
         cacheClose();
     });
 
-    test('cachePut, no window.caches', () => {
+    test('cachePut, no window.caches', async () => {
         delete window.caches;
 
-        let result: any;
-        try {
-            result = cachePut({url: ''});
-            expect(result).toBeFalsy();
-        } catch (e: any) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            expect.unreacheble('should not result in error');
-        }
+        await expect(cachePut({url: ''})).resolves.toBeUndefined();
     });
 
-    test('cacheGet, no window.caches', () => {
+    test('cacheGet, no window.caches', async () => {
         delete window.caches;
 
-        cacheGet({url: ''}, (result) => {
-            expect(result).toEqual(null);
-        });
+        const result = await cacheGet({url: ''});
+        expect(result).toEqual(null);
     });
 
-    test('cacheGet, cache open error', () => {
+    test('cacheGet, cache open error', async () => {
         window.caches.open = vi.fn().mockRejectedValue(new Error('The operation is insecure'));
 
-        cacheGet(new Request(''), (error) => {
-            expect(error).toBeTruthy();
-            expect(error.message).toEqual('The operation is insecure');
-        });
+        await expect(cacheGet(new Request(''))).rejects.toThrow('The operation is insecure');
     });
 
-    test('cacheGet, cache match error', () => {
+    test('cacheGet, cache match error', async () => {
         const fakeCache = vi.fn();
         const fakeURL = new Request('someurl').url;
         fakeCache.match = vi.fn().mockImplementation((url) => {
@@ -49,10 +38,7 @@ describe('tile_request_cache', () => {
         });
         window.caches.open = vi.fn().mockResolvedValue(fakeCache);
 
-        cacheGet(new Request(fakeURL), (error) => {
-            expect(error).toBeTruthy();
-            expect(error.message).toEqual('ohno');
-        });
+        await expect(cacheGet(new Request(fakeURL))).rejects.toThrow('ohno');
     });
 
     test('cacheGet, happy path', async () => {
@@ -79,22 +65,17 @@ describe('tile_request_cache', () => {
 
         window.caches.open = vi.fn().mockImplementation(() => Promise.resolve(fakeCache));
 
-        await new Promise(resolve => {
-            // ensure that the language, worldview, and jobid query parameters are retained,
-            // the Range header is added to the query string, but other query parameters are stripped
-            const request = new Request(`someurl?language=es&worldview=US&jobid=12345&accessToken=foo`);
-            request.headers.set('Range', 'bytes=0-');
+        // ensure that the language, worldview, and jobid query parameters are retained,
+        // the Range header is added to the query string, but other query parameters are stripped
+        const request = new Request(`someurl?language=es&worldview=US&jobid=12345&accessToken=foo`);
+        request.headers.set('Range', 'bytes=0-');
 
-            cacheGet(request, (error, response, fresh) => {
-                expect(error).toBeFalsy();
-                expect(fakeCache.match).toHaveBeenCalledWith(cachedRequest.url);
-                expect(fakeCache.delete).toHaveBeenCalledWith(cachedRequest.url);
-                expect(response).toBeTruthy();
-                expect(response.body).toEqual('yay');
-                expect(fresh).toBeTruthy();
-                expect(fakeCache.put).toHaveBeenCalledWith(cachedRequest.url, cachedResponse);
-                resolve();
-            });
-        });
+        const {response, fresh} = await cacheGet(request);
+        expect(fakeCache.match).toHaveBeenCalledWith(cachedRequest.url);
+        expect(fakeCache.delete).toHaveBeenCalledWith(cachedRequest.url);
+        expect(response).toBeTruthy();
+        expect(response.body).toEqual('yay');
+        expect(fresh).toBeTruthy();
+        expect(fakeCache.put).toHaveBeenCalledWith(cachedRequest.url, cachedResponse);
     });
 });

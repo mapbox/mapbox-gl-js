@@ -23,7 +23,6 @@ import {getLivePerformanceMetrics} from '../util/live_performance';
 
 import type {ResourceType as ResourceTypeEnum, RequestParameters} from './ajax';
 import type {LivePerformanceData} from '../util/live_performance';
-import type {Cancelable} from '../types/cancelable';
 import type {TileJSON} from '../types/tilejson';
 import type {Map as MapboxMap} from "../ui/map";
 
@@ -332,7 +331,7 @@ export class TelemetryEvent {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     queue: Array<any>;
     type: TelemetryEventType;
-    pendingRequest: Cancelable | null | undefined;
+    pendingRequest: boolean;
     _customAccessToken: string | null | undefined;
 
     constructor(type: TelemetryEventType) {
@@ -341,7 +340,7 @@ export class TelemetryEvent {
         this.anonIdTimestamp = null;
         this.eventData = {};
         this.queue = [];
-        this.pendingRequest = null;
+        this.pendingRequest = false;
     }
 
     getStorageKey(domain?: string | null): string {
@@ -449,12 +448,20 @@ export class TelemetryEvent {
             body: JSON.stringify([finalPayload])
         };
 
-        this.pendingRequest = postData(request, (error) => {
-            this.pendingRequest = null;
-            callback(error);
-            this.saveEventData();
-            this.processRequests(customAccessToken);
-        });
+        this.pendingRequest = true;
+        postData(request)
+            .then(() => {
+                this.pendingRequest = false;
+                callback(null);
+                this.saveEventData();
+                this.processRequests(customAccessToken);
+            })
+            .catch((err: Error) => {
+                this.pendingRequest = false;
+                callback(err);
+                this.saveEventData();
+                this.processRequests(customAccessToken);
+            });
     }
 
     queueRequest(event: unknown, customAccessToken?: string | null) {
@@ -727,12 +734,20 @@ export class MapSessionAPI extends TelemetryEvent {
             }
         };
 
-        this.pendingRequest = getData(request, (error) => {
-            this.pendingRequest = null;
-            callback(error);
-            this.saveEventData();
-            this.processRequests(customAccessToken);
-        });
+        this.pendingRequest = true;
+        getData(request)
+            .then(() => {
+                this.pendingRequest = false;
+                callback(null);
+                this.saveEventData();
+                this.processRequests(customAccessToken);
+            })
+            .catch((err: Error) => {
+                this.pendingRequest = false;
+                callback(err);
+                this.saveEventData();
+                this.processRequests(customAccessToken);
+            });
     }
 
     getSessionAPI(mapId: number, skuToken: string, customAccessToken: string | null | undefined, callback: EventCallback) {

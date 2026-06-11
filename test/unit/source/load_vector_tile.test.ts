@@ -5,6 +5,40 @@ import {mockFetch} from '../../util/network';
 import {DedupedRequest, loadVectorTile} from '../../../src/source/load_vector_tile';
 
 describe('loadVectorTile', () => {
+    test('partial dedup abort: one caller aborts, survivor resolves with data', async () => {
+        expect.assertions(2);
+
+        mockFetch({
+            'http://example.com/0/0/0.pbf': () => new Response(new ArrayBuffer(8), {status: 200})
+        });
+
+        const deduped = new DedupedRequest();
+        const params = {
+            request: {url: 'http://example.com/0/0/0.pbf'},
+            uid: 1,
+            tileID: {overscaledZ: 0, wrap: 0, canonical: {z: 0, x: 0, y: 0}},
+            tileZoom: 0,
+            zoom: 0,
+        };
+
+        await new Promise<void>((resolve) => {
+            const cancelA = loadVectorTile.call({deduped}, params, (_err, _data) => {
+                // Caller A cancelled before this fires — should not be called
+                expect.unreachable();
+            });
+
+            loadVectorTile.call({deduped}, params, (err, data) => {
+                // Caller B survives
+                expect(err).toBe(null);
+                expect(data).not.toBe(null);
+                resolve();
+            });
+
+            // Cancel A immediately
+            cancelA();
+        });
+    });
+
     test('converts AJAXError(404) to null result', async () => {
         expect.assertions(2);
 

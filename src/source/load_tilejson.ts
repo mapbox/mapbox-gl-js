@@ -166,7 +166,12 @@ export default function loadTileJSON(
     }
 
     if (options.url) {
-        return getJSON(requestManager.transformRequest(requestManager.normalizeSourceURL(options.url, null, language, worldview), ResourceType.Source), loaded);
+        const controller = new AbortController();
+        const requestParameters = requestManager.transformRequest(requestManager.normalizeSourceURL(options.url, null, language, worldview), ResourceType.Source);
+        getJSON<Partial<TileJSON>>(requestParameters, controller.signal)
+            .then(({data}) => loaded(null, data))
+            .catch((err: Error) => { if (err.name !== 'AbortError') loaded(err); });
+        return {cancel: () => controller.abort()};
     } else {
         return browser.frame(() => {
             const {data, ...tileJSON} = options;

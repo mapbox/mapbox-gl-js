@@ -236,7 +236,9 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         // ie: /foo/bar.json or http://example.com/bar.json
         // but not ../foo/bar.json
         if (params.request) {
-            getJSON(params.request, callback);
+            getJSON<FeatureCollectionOrFeature>(params.request)
+                .then(({data}) => callback(null, data))
+                .catch((err: Error) => callback(err));
         } else if (typeof params.data === 'string') {
             // delay loading by one tick to hopefully let GC clean up the previous index (if present)
             setTimeout(() => {

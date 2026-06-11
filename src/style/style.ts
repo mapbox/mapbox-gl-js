@@ -647,13 +647,17 @@ class Style extends Evented<MapEvents> {
         if (typeof style === 'string') {
             const url = this.map._requestManager.normalizeStyleURL(style);
             const request = this.map._requestManager.transformRequest(url, ResourceType.Style);
-            getJSON(request, (error?: Error | null, json?: StyleSpecification) => {
-                if (error) {
-                    this.fire(new ErrorEvent(error));
-                } else if (json) {
+            const controller = new AbortController();
+            getJSON<StyleSpecification>(request, controller.signal)
+                .then(({data: json}) => {
+                    this._request = null;
                     handleStyle(json, onStarted);
-                }
-            });
+                })
+                .catch((err: Error) => {
+                    this._request = null;
+                    if (err.name !== 'AbortError') this.fire(new ErrorEvent(err));
+                });
+            this._request = {cancel: () => controller.abort()};
         } else if (typeof style === 'object') {
             handleStyle(style, onStarted);
         }
@@ -679,15 +683,18 @@ class Style extends Evented<MapEvents> {
         if (cachedImport) return this._load(cachedImport, validate);
 
         const request = this.map._requestManager.transformRequest(url, ResourceType.Style);
-        this._request = getJSON(request, (error?: Error, json?: StyleSpecification) => {
-            this._request = null;
-            if (error) {
-                this.fire(new ErrorEvent(error));
-            } else if (json) {
+        const controller = new AbortController();
+        getJSON<StyleSpecification>(request, controller.signal)
+            .then(({data: json}) => {
+                this._request = null;
                 this.importsCache.set(url, json);
-                return this._load(json, validate);
-            }
-        });
+                this._load(json, validate);
+            })
+            .catch((err: Error) => {
+                this._request = null;
+                if (err.name !== 'AbortError') this.fire(new ErrorEvent(err));
+            });
+        this._request = {cancel: () => controller.abort()};
     }
 
     loadJSON(json: StyleSpecification, options: StyleSetterOptions = {}): void {

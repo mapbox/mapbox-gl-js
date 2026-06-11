@@ -39,31 +39,31 @@ export function loadIconset(
     requestManager: RequestManager,
     callback: Callback<StyleImages>
 ) {
-    return getArrayBuffer(requestManager.transformRequest(requestManager.normalizeIconsetURL(loadURL), ResourceType.Iconset), (err, data) => {
-        if (err) {
-            callback(err);
-            return;
-        }
+    const controller = new AbortController();
+    const request = requestManager.transformRequest(requestManager.normalizeIconsetURL(loadURL), ResourceType.Iconset);
+    getArrayBuffer(request, controller.signal)
+        .then(({data}) => {
+            const result: StyleImages = {};
 
-        const result: StyleImages = {};
+            const iconSet = readIconSet(new PbfReader(data));
 
-        const iconSet = readIconSet(new PbfReader(data));
+            for (const icon of iconSet.icons) {
+                const styleImage: StyleImage = {
+                    version: 1,
+                    pixelRatio: browser.devicePixelRatio,
+                    content: getContentArea(icon),
+                    stretchX: icon.metadata ? getStretchArea(icon.metadata.stretch_x_areas) : undefined,
+                    stretchY: icon.metadata ? getStretchArea(icon.metadata.stretch_y_areas) : undefined,
+                    sdf: false,
+                    usvg: true,
+                    icon,
+                };
 
-        for (const icon of iconSet.icons) {
-            const styleImage: StyleImage = {
-                version: 1,
-                pixelRatio: browser.devicePixelRatio,
-                content: getContentArea(icon),
-                stretchX: icon.metadata ? getStretchArea(icon.metadata.stretch_x_areas) : undefined,
-                stretchY: icon.metadata ? getStretchArea(icon.metadata.stretch_y_areas) : undefined,
-                sdf: false,
-                usvg: true,
-                icon,
-            };
+                result[icon.name] = styleImage;
+            }
 
-            result[icon.name] = styleImage;
-        }
-
-        callback(null, result);
-    });
+            callback(null, result);
+        })
+        .catch((err: Error) => { if (err.name !== 'AbortError') callback(err); });
+    return {cancel: () => controller.abort()};
 }

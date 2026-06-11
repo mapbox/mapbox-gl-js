@@ -47,7 +47,7 @@ describe('reloadTile', () => {
         const firstData = await source.reloadTile(tileParams);
         expect(loadVectorCallCount).toEqual(1);
 
-        // second call won't give us new rawTileData
+        // second call won't give us new rawTileData or headers (no network request)
         const secondData = await source.reloadTile(tileParams);
         expect('rawTileData' in secondData).toBeFalsy();
         secondData.rawTileData = firstData.rawTileData;

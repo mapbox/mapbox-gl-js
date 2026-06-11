@@ -2840,7 +2840,8 @@ export class Map extends Camera {
      * @see [Example: Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      */
     loadImage(url: string, callback: Callback<ImageBitmap | HTMLImageElement | ImageData>) {
-        getImage(this._requestManager.transformRequest(url, ResourceType.Image), (err, img) => {
+        const request = this._requestManager.transformRequest(url, ResourceType.Image);
+        getImage(request, (err, img) => {
             callback(err, img);
         });
     }

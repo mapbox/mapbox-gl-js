@@ -1155,6 +1155,7 @@ describe("mapbox", () => {
                 let reqBody = JSON.parse(await reqToday.requestBody)[0];
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                 equalWithPrecision(new Date(reqBody.created).valueOf(), today, 100);
+                await new Promise(r => { setTimeout(r, 0); });
 
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 const reqTomorrow = window.server.requests[1];
@@ -1503,6 +1504,8 @@ describe("mapbox", () => {
                 let reqBody = JSON.parse(await reqOne.requestBody)[0];
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                 equalWithPrecision(new Date(reqBody.created).valueOf(), now, 100);
+                // allow the Promise chain to settle so the next request is queued
+                await new Promise(r => { setTimeout(r, 0); });
 
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 const reqTwo = window.server.requests[1];
@@ -1512,6 +1515,7 @@ describe("mapbox", () => {
                 reqBody = JSON.parse(await reqTwo.requestBody)[0];
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                 equalWithPrecision(new Date(reqBody.created).valueOf(), now, 100);
+                await new Promise(r => { setTimeout(r, 0); });
 
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 const reqThree = window.server.requests[2];
@@ -1577,15 +1581,17 @@ describe("mapbox", () => {
             sessionAPI.getSession(1, skuToken, () => {});
 
             await new Promise(resolve => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                const req = window.server.requests[0];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                expect(req.url).toEqual(
-                    `${config.API_URL + config.SESSION_PATH}?sku=${skuToken}&access_token=pk.new.*`
-                );
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                expect(req.method).toEqual('GET');
-                resolve();
+                setTimeout(() => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    const req = window.server.requests[0];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    expect(req.url).toEqual(
+                        `${config.API_URL + config.SESSION_PATH}?sku=${skuToken}&access_token=pk.new.*`
+                    );
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    expect(req.method).toEqual('GET');
+                    resolve();
+                }, 0);
             });
         });
     });

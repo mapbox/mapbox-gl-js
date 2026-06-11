@@ -1,6 +1,6 @@
 import '../data/mrt_data';
 import {PbfReader} from 'pbf';
-import {makeAsyncRequest} from '../util/ajax';
+import {getArrayBuffer} from '../util/ajax';
 import {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
 
 import type {WorkerInbox} from '../util/actor_messages';
@@ -91,7 +91,7 @@ class RasterArrayTileWorkerSource implements WorkerSource {
         workerTile.abort = () => controller.abort();
 
         try {
-            const {data, headers} = await makeAsyncRequest<ArrayBuffer>(Object.assign(params.request, {type: 'arrayBuffer'}), controller.signal);
+            const {data, headers} = await getArrayBuffer(params.request, controller.signal);
             if (!data) {
                 workerTile.status = 'done';
                 this.loaded[uid] = workerTile;

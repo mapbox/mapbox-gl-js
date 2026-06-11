@@ -385,6 +385,12 @@ describe('util', () => {
             expect(result.cacheControl).toBe('max-age=60');
             expect(result.expires).toBe('Thu, 01 Jan 2099 00:00:00 GMT');
         });
+
+        test('returns null values for a Headers missing both keys (downstream guards tolerate)', () => {
+            const result = parseExpiryData(new Headers());
+            expect(result.cacheControl).toBeNull();
+            expect(result.expires).toBeNull();
+        });
     });
 
     test('validateUuid', () => {

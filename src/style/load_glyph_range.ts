@@ -27,16 +27,14 @@ export function loadGlyphRange(
             .replace('{range}', `${begin}-${end}`),
         ResourceType.Glyphs);
 
-    getArrayBuffer(request, (err?: Error, data?: ArrayBuffer) => {
-        if (err) {
-            callback(err);
-        } else if (data) {
+    getArrayBuffer(request)
+        .then(({data}) => {
             const glyphs: Record<string, StyleGlyph> = {};
             const glyphData = parseGlyphPBF(data);
             for (const glyph of glyphData.glyphs) {
                 glyphs[glyph.id] = glyph;
             }
             callback(null, {glyphs, ascender: glyphData.ascender, descender: glyphData.descender});
-        }
-    });
+        })
+        .catch((err: Error) => { if (err.name !== 'AbortError') callback(err); });
 }
