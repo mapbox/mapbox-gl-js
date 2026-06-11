@@ -310,8 +310,7 @@ export type RainSpecification = {
 };
 
 export type CameraSpecification = {
-    "camera-projection"?: PropertyValueSpecification<"perspective" | "orthographic">,
-    "camera-projection-transition"?: TransitionSpecification
+    "camera-projection"?: "perspective" | "orthographic"
 };
 
 export type ColorThemeSpecification = {

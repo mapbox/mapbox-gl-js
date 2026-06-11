@@ -6653,13 +6653,6 @@
           "doc": "Projection where objects are of the same scale regardless of whether they are far away or near to the camera. Parallel lines remains parallel and there is no vanishing point."
         }
       },
-      "transition": true,
-      "expression": {
-        "interpolated": true,
-        "parameters": [
-          "zoom"
-        ]
-      },
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
