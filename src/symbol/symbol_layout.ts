@@ -872,7 +872,11 @@ export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: 
     availableImages: ImageId[], canonical: CanonicalTileID, tileZoom: number, projection: Projection, brightness: number | null, imageMap: StyleImageMap<StringifiedImageVariant>, imageAtlas: {iconPositions: ImagePositionMap}) {
 
     bucket.iconAtlasPositions = imageAtlas.iconPositions;
-    const {featureData, hasAnySecondaryIcon, sizes, textAlongLine, symbolPlacement, coverageFrcMask, coveragePolygons, coverageTileZoom, symbolAnchorInFrcCoverage} = bucketData;
+    const {featureData, sizes, textAlongLine, symbolPlacement, coverageFrcMask, coveragePolygons, coverageTileZoom, symbolAnchorInFrcCoverage} = bucketData;
+    // An appearance may introduce a secondary icon even when the layout icon has
+    // no secondary. Include bucket.hasAnySecondaryIcon so transitioning vertices are created and the
+    // iconTransitioningVertexBuffer is populated for appearance-driven cross-fades.
+    const hasAnySecondaryIcon = bucketData.hasAnySecondaryIcon || bucket.hasAnySecondaryIcon;
 
     for (const data of featureData) {
         const {shapedIcon, verticallyShapedIcon, feature, shapedTextOrientations, shapedText, layoutTextSize, layoutIconSize,

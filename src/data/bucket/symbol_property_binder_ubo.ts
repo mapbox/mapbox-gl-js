@@ -132,11 +132,12 @@ export class SymbolPropertyBinderUBO {
     maxUniformBufferBindings: number;
 
     // Per-feature tracking, in insertion (populate) order. One entry per populateUBO call;
-    // the entry's index IS the feature's global index (see _writeFeatureBlock), so batch/local
-    // need not be stored. These two parallel arrays are the only feature-tracking state
-    // transferred worker→main; the lookup maps below are rebuilt lazily on the main thread.
+    // the entry's index IS the feature's global index (see _writeFeatureBlock).
+    // These parallel arrays are the only feature-tracking state transferred worker→main,
+    // the lookup maps below are rebuilt lazily on the main thread.
     allFeatureVtIndices: number[];                          // vector-tile feature index per entry
     allFeatureIds: Array<string | number | undefined>;      // feature id per entry (if any)
+    allFormattedSections: Array<FormattedSection | null>;   // formatted section per entry (for per-section color overrides)
 
     // Lazily built on the main thread (omitted from serialization). Map a featureId / vtFeatureIndex
     // to the positions in allFeature* that reference it, for O(1) targeted updates.
@@ -196,6 +197,7 @@ export class SymbolPropertyBinderUBO {
 
         this.allFeatureVtIndices = [];
         this.allFeatureIds = [];
+        this.allFormattedSections = [];
         this.featureVertexRangesFromId = null;
         this.featureVertexRangesFromVtIndex = null;
         this.ubos = [];
@@ -343,14 +345,24 @@ export class SymbolPropertyBinderUBO {
     /**
      * Resolve a paint property by name, preferring the active appearance's override when it
      * defines that property, otherwise the layer's paint. Shared by all three evaluate paths.
+     *
+     * When formattedSection is provided and the layer's property has a section override for it
+     * (e.g. per-section text-color in a formatted text-field), the section's explicit value
+     * takes precedence over the appearance. Return the layer's prop so its FormatSectionOverride
+     * correctly returns the section color.
      */
-    private _resolveProp<T>(propName: string, activeAppearance: SymbolAppearance | null | undefined): PossiblyEvaluatedPropertyValue<T> | undefined {
+    private _resolveProp<T>(propName: string, activeAppearance: SymbolAppearance | null | undefined,
+        formattedSection?: FormattedSection): PossiblyEvaluatedPropertyValue<T> | undefined {
+        const paint = this.layer.paint;
+        const layerProp = paint.get(propName as keyof typeof paint._values) as unknown as PossiblyEvaluatedPropertyValue<T>;
         const appearanceName = propName as keyof AppearancePaintProps;
         if (activeAppearance && activeAppearance.hasPaintProperty(appearanceName)) {
+            if (formattedSection && layerProp && layerProp.property.overrides && layerProp.property.overrides.hasOverride(formattedSection)) {
+                return layerProp;
+            }
             return activeAppearance.paintProperties.get(appearanceName) as unknown as PossiblyEvaluatedPropertyValue<T> | undefined;
         }
-        const paint = this.layer.paint;
-        return paint.get(propName as keyof typeof paint._values) as unknown as PossiblyEvaluatedPropertyValue<T> | undefined;
+        return layerProp;
     }
 
     /** Evaluate a property at the given zoom params, with the verbose shared argument list filled in. */
@@ -372,7 +384,7 @@ export class SymbolPropertyBinderUBO {
         ctx: EvaluationContext,
         flatOffset: number
     ): void {
-        const prop = this._resolveProp<Color>(propName, ctx.activeAppearance);
+        const prop = this._resolveProp<Color>(propName, ctx.activeAppearance, ctx.formattedSection);
 
         if (!prop) {
             evalFlatScratch[flatOffset] = 0;
@@ -638,7 +650,8 @@ export class SymbolPropertyBinderUBO {
         };
 
         const activeAppearance = this.activeAppearanceByVtIndex ? this.activeAppearanceByVtIndex.get(vtFeatureIndex) : undefined;
-        const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, undefined, activeAppearance);
+        const formattedSection = this.allFormattedSections ? this.allFormattedSections[i] : undefined;
+        const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, formattedSection || undefined, activeAppearance);
         this._writeFeatureBlock(i, allValues);
     }
 
@@ -723,6 +736,7 @@ export class SymbolPropertyBinderUBO {
         // _writeFeatureBlock re-derives batch/local; the lookup maps are built lazily on the main thread.
         this.allFeatureVtIndices.push(vtFeatureIndex);
         this.allFeatureIds.push(featureId);
+        this.allFormattedSections.push(formattedSection || null);
 
         return localIndex;
     }
@@ -806,11 +820,13 @@ export class SymbolPropertyBinderUBO {
         const positions = this.featureVertexRangesFromVtIndex.get(vtFeatureIndex);
         if (!positions) return false;
 
-        // All positions for this vtFeatureIndex evaluate identically (same feature/state/appearance),
-        // so evaluate once and write the shared result into each slot.
-        const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, undefined, activeAppearance);
+        // Evaluate per slot: sections of a formatted text-field each have their own UBO entry
+        // and may have per-section paint overrides (e.g. text-color from format expression).
+        // Re-use the stored formattedSection so those overrides take precedence over the appearance.
         let wrote = false;
         for (const i of positions) {
+            const formattedSection = this.allFormattedSections ? this.allFormattedSections[i] : undefined;
+            const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, formattedSection || undefined, activeAppearance);
             wrote = this._writeFeatureBlock(i, allValues) || wrote;
         }
         return wrote;
