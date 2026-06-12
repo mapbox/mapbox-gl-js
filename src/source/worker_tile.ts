@@ -22,7 +22,7 @@ import {PROPERTY_ELEVATION_ID} from '../../3d-style/elevation/elevation_constant
 import * as HD from '../../modules/hd_worker';
 import * as Standard from '../../modules/standard_worker';
 import {ImageId} from '../style-spec/expression/types/image_id';
-import {RenderSourceType} from './tile';
+import {RenderSourceType} from './render_source_type';
 import {HD_ROAD_COVERAGE_SOURCE_LAYER} from './frc_coverage_snapshot';
 
 import type {FrcCoveragePolygons, FrcCoverageParams} from './frc_coverage_snapshot';

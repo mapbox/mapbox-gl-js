@@ -1,6 +1,7 @@
 import assert from '../style-spec/util/assert';
 import Point from '@mapbox/point-geometry';
-import Tile, {RenderSourceType} from './tile';
+import Tile from './tile';
+import {RenderSourceType} from './render_source_type';
 import RasterArrayTile from './raster_array_tile';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import TileCache from './tile_cache';

@@ -1,7 +1,6 @@
 import StyleLayer from '../style_layer';
 import {getLayoutProperties, getPaintProperties} from './raster_style_layer_properties';
 import {renderColorRamp} from '../../util/color_ramp';
-import ImageSource from '../../source/image_source';
 
 import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {RGBAImage} from '../../util/image';
@@ -9,6 +8,7 @@ import type {PaintProps} from './raster_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';
 import type Texture from '../../render/texture';
 import type SourceCache from '../../source/source_cache';
+import type ImageSource from '../../source/image_source';
 import type {LUT} from "../../util/lut";
 import type {ProgramName} from '../../render/program';
 
@@ -57,9 +57,12 @@ class RasterStyleLayer extends StyleLayer {
 
     override isDraped(sourceCache?: SourceCache | null): boolean {
         // Special handling for raster, where the drapeability depends on the source
-        if (sourceCache && sourceCache._source instanceof ImageSource) {
+        const source = sourceCache ? sourceCache._source : null;
+        // image/video/canvas sources (the only ones with pole flags) are not draped at the poles
+        if (source && (source.type === 'image' || source.type === 'video' || source.type === 'canvas')) {
             // If tile ID is missing, it's rendered outside of the tile pyramid (eg. poles)
-            if (sourceCache._source.onNorthPole || sourceCache._source.onSouthPole) {
+            const imageSource = source as ImageSource;
+            if (imageSource.onNorthPole || imageSource.onSouthPole) {
                 return false;
             }
         }

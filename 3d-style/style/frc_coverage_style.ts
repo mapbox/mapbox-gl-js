@@ -1,6 +1,6 @@
 import {FrcCoverageManager} from '../source/frc_coverage_manager';
 import SourceCache from '../../src/source/source_cache';
-import {RenderSourceType} from '../../src/source/tile';
+import {RenderSourceType} from '../../src/source/render_source_type';
 import {HD_ROAD_COVERAGE_SOURCE_LAYER} from '../../src/source/frc_coverage_snapshot';
 import {makeFQID} from '../../src/util/fqid';
 

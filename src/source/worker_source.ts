@@ -20,7 +20,7 @@ import type Projection from '../geo/projection/projection';
 import type {LUT} from '../util/lut';
 import type {Callback} from '../types/callback';
 import type {ImageId} from '../style-spec/expression/types/image_id';
-import type {RenderSourceType} from './tile';
+import type {RenderSourceType} from './render_source_type';
 import type {FrcCoverageParams, FrcCoveragePolygons} from './frc_coverage_snapshot';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 import type {StyleModelMap} from '../style/style_mode';

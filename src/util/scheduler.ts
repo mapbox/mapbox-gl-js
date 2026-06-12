@@ -1,7 +1,7 @@
 import ThrottledInvoker from './throttled_invoker';
 import {bindAll, isWorker} from './util';
 import {PerformanceUtils} from './performance';
-import {RenderSourceType} from '../source/tile';
+import {RenderSourceType} from '../source/render_source_type';
 
 import type {Cancelable} from '../types/cancelable';
 

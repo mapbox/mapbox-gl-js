@@ -45,7 +45,7 @@ import {
 } from '../source/source';
 import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures, shouldSkipFeatureVariant} from '../source/query_features';
 import SourceCache from '../source/source_cache';
-import {RenderSourceType} from '../source/tile';
+import {RenderSourceType} from '../source/render_source_type';
 import BuildingIndex from '../source/building_index';
 import styleSpec from '../style-spec/reference/latest';
 import {getGlobalWorkerPool as getWorkerPool} from '../util/worker_pool_factory';
