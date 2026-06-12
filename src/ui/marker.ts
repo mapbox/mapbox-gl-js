@@ -3,7 +3,7 @@ import Point from '@mapbox/point-geometry';
 import * as DOM from '../util/dom';
 import LngLat from '../geo/lng_lat';
 import smartWrap from '../util/smart_wrap';
-import {bindAll, radToDeg, smoothstep} from '../util/util';
+import {bindAll, radToDeg, smoothstep, warnOnce} from '../util/util';
 import {anchorTranslate} from './anchor';
 import {Event, Evented} from '../util/evented';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_constants';
@@ -52,7 +52,7 @@ type MarkerEvents = {
  * Creates a marker component.
  *
  * @param {Object} [options]
- * @param {HTMLElement} [options.element] DOM element to use as a marker. The default is a light blue, droplet-shaped SVG marker.
+ * @param {HTMLElement} [options.element] DOM element to use as a marker. The default is a light blue, droplet-shaped SVG marker. The marker root is positioned via `transform` and must keep `position: absolute` (provided by the built-in `.mapboxgl-marker` class). If your custom element needs `position: relative` to anchor absolutely-positioned descendants, apply that rule to a child of the marker root instead.
  * @param {string} [options.anchor='center'] A string indicating the part of the Marker that should be positioned closest to the coordinate set via {@link Marker#setLngLat}.
  * Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
  * @param {PointLike} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
@@ -266,6 +266,18 @@ export default class Marker extends Evented<MarkerEvents> {
         map._addMarker(this);
         this.setDraggable(this._draggable);
         this._update();
+
+        // Markers are positioned via `transform: translate(...)` on a `position: absolute`
+        // root (provided by the `.mapboxgl-marker` class). If a user-supplied element
+        // overrides `position` to anything that participates in normal flow, additional
+        // markers stack vertically in the canvas container instead of sharing the same
+        // origin, and pins after the first land at incorrect screen positions.
+        if (!this._defaultMarker && typeof window !== 'undefined' && window.getComputedStyle) {
+            const position = window.getComputedStyle(this._element).position;
+            if (position !== 'absolute' && position !== 'fixed') {
+                warnOnce(`Marker element has computed CSS \`position: ${position}\`, expected \`absolute\`. Mapbox positions markers via \`transform\` on a \`position: absolute\` root; overriding it (often via a user style like \`position: relative\` on the marker root) breaks placement of additional markers. Move that rule to a child of the marker element instead.`);
+            }
+        }
 
         // If we attached the `click` listener to the marker element, the popup
         // would close once the event propogated to `map` due to the
