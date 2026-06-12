@@ -9,7 +9,7 @@ import ignoreLinuxFirefox from '../../ignores/linux-firefox.js';
 import {parseStyle, parseOptions, getActualImage, calculateDiff, diffCanvas, diffCtx, getActualImageDataURL, mapRef, fakeCanvasContainer} from './utils.js';
 // @ts-expect-error Cannot find module 'virtual:integration-tests' or its corresponding type declarations.
 import {integrationTests} from 'virtual:integration-tests';
-import {getStatsHTML, updateHTML} from '../../util/html_generator';
+import {getStatsHTML, updateHTML, registerIgnoredNotRun} from '../../util/html_generator';
 import {mapboxgl} from '../lib/mapboxgl.js';
 import {sendFragment, sendBrowserDiagnostics} from '../lib/utils';
 
@@ -91,15 +91,22 @@ type TestMetadata = {
     minDiff: number;
     allowed: number;
     status: string;
+    ignoredOutcome?: string;
+    color?: string;
+    width?: number;
+    height?: number;
     actual?: string;
     expected?: string;
     expectedPath?: string;
     imgDiff?: string;
+    error?: Error;
 }
 
 let reportFragment: string | undefined;
 
 const getTest = (renderTestName: string) => async () => {
+    const fullTestName = `render-tests/${renderTestName}`;
+    const isTodo = ignores.todo.includes(fullTestName);
     let errorMessage: string | undefined;
     try {
         const renderTest = integrationTests[renderTestName];
@@ -128,8 +135,16 @@ const getTest = (renderTestName: string) => async () => {
             name: renderTestName,
             minDiff: Math.round(100000 * minDiff) / 100000,
             allowed: options.allowed,
+            width: w,
+            height: h,
             status: pass ? 'passed' : 'failed',
         };
+
+        if (isTodo) {
+            testMetaData.status = 'ignored';
+            testMetaData.color = '#9E9E9E';
+            testMetaData.ignoredOutcome = pass ? 'passed' : 'failed';
+        }
 
         if (minDiffImage && expectedIndex !== -1 && (import.meta.env.VITE_CI === 'false' || !pass)) {
             diffCanvas.width = w;
@@ -157,7 +172,13 @@ const getTest = (renderTestName: string) => async () => {
 
         reportFragment = updateHTML(testMetaData);
     } catch (error) {
-        reportFragment = updateHTML({
+        reportFragment = updateHTML(isTodo ? {
+            name: renderTestName,
+            status: 'ignored',
+            color: '#9E9E9E',
+            ignoredOutcome: 'failed',
+            error,
+        } : {
             name: renderTestName,
             status: 'failed',
             error,
@@ -170,10 +191,12 @@ const getTest = (renderTestName: string) => async () => {
 };
 
 const {ignores, timeout} = getEnvironmentParams();
+const skippedTests: string[] = [];
 
 Object.keys(integrationTests).forEach((testName) => {
     const renderTestName = `render-tests/${testName}`;
     if (ignores.skip.includes(renderTestName)) {
+        skippedTests.push(testName);
         test.skip(testName, getTest(testName));
     } else if (ignores.todo.includes(renderTestName)) {
         test.todo(testName, getTest(testName));
@@ -183,6 +206,9 @@ Object.keys(integrationTests).forEach((testName) => {
 });
 
 afterAll(async () => {
+    for (const testName of skippedTests) {
+        await sendFragment(reportFragmentIdx++, registerIgnoredNotRun(testName));
+    }
     await sendBrowserDiagnostics();
     await sendFragment(0, getStatsHTML());
     // We cannot use `server.commands.writeFile` here because the HTML file is large

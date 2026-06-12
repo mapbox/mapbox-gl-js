@@ -11,7 +11,7 @@ import {applyOperations} from '../lib/operation-handlers.js';
 import {deepEqual, generateDiffLog} from '../lib/json-diff.js';
 // @ts-expect-error Cannot find module 'virtual:integration-tests' or its corresponding type declarations.
 import {integrationTests} from 'virtual:integration-tests';
-import {getStatsHTML, setupHTML, updateHTML} from '../../util/html_generator';
+import {getStatsHTML, setupHTML, updateHTML, registerIgnoredNotRun} from '../../util/html_generator';
 import {mapboxgl} from '../lib/mapboxgl.js';
 import {sendFragment, sendBrowserDiagnostics} from '../lib/utils';
 import {transformRequest} from '../lib/transform-request.js';
@@ -56,11 +56,14 @@ type TestMetadata = {
     name: string;
     minDiff: number;
     status: string;
+    ignoredOutcome?: string;
+    color?: string;
     errors: Error[];
     actual?: string;
     expected?: string;
     expectedPath?: string;
     imgDiff?: string;
+    error?: Error;
 }
 
 const container = document.createElement('div');
@@ -74,6 +77,8 @@ let map;
 let reportFragment: string | undefined;
 
 const getTest = (queryTestName) => async () => {
+    const fullTestName = `query-tests/${queryTestName}`;
+    const isTodo = ignores.todo.includes(fullTestName);
     let errorMessage: string | undefined;
     try {
         const queryTest = integrationTests[queryTestName];
@@ -135,6 +140,8 @@ const getTest = (queryTestName) => async () => {
         const testMetaData: TestMetadata = {
             name: queryTestName,
             actual: map.getCanvas().toDataURL(),
+            width: options.width,
+            height: options.height,
             minDiff: options.minDiff || 0,
             status: 'passed',
             errors: []
@@ -160,6 +167,12 @@ const getTest = (queryTestName) => async () => {
 
         testMetaData.status = success ? 'passed' : 'failed';
 
+        if (isTodo) {
+            testMetaData.status = 'ignored';
+            testMetaData.color = '#9E9E9E';
+            testMetaData.ignoredOutcome = success ? 'passed' : 'failed';
+        }
+
         if (import.meta.env.VITE_CI === 'false' && import.meta.env.VITE_UPDATE === 'true') {
             await server.commands.writeFile(`${testPath}/expected.json`, jsonDiff.replace('+ ', '').trim());
         } else if (import.meta.env.VITE_CI === 'false') {
@@ -171,7 +184,14 @@ const getTest = (queryTestName) => async () => {
 
         if (!success) errorMessage = `Query test ${queryTestName} failed`;
     } catch (error) {
-        reportFragment = updateHTML({
+        reportFragment = updateHTML(isTodo ? {
+            name: queryTestName,
+            status: 'ignored',
+            color: '#9E9E9E',
+            ignoredOutcome: 'failed',
+            error,
+            errors: []
+        } : {
             name: queryTestName,
             status: 'failed',
             error,
@@ -185,10 +205,12 @@ const getTest = (queryTestName) => async () => {
 };
 
 const {ignores, timeout} = getEnvironmentParams();
+const skippedTests: string[] = [];
 
 Object.keys(integrationTests).forEach((testName) => {
     const queryTestName = `query-tests/${testName}`;
     if (ignores.skip.includes(queryTestName)) {
+        skippedTests.push(testName);
         test.skip(testName, getTest(testName));
     } else if (ignores.todo.includes(queryTestName)) {
         test.todo(testName, getTest(testName));
@@ -199,6 +221,9 @@ Object.keys(integrationTests).forEach((testName) => {
 
 afterAll(async () => {
     document.body.removeChild(container);
+    for (const testName of skippedTests) {
+        await sendFragment(reportFragmentIdx++, registerIgnoredNotRun(testName));
+    }
     await sendBrowserDiagnostics();
     await sendFragment(0, getStatsHTML());
     // We cannot use `server.commands.writeFile` here because the HTML file is large
