@@ -11,7 +11,7 @@ import Terrain, {DrapeRenderMode} from './terrain';
 import Fog from './fog';
 import Snow from './snow';
 import Rain from './rain';
-import {pick, clone, deepEqual, filterObject, cartesianPositionToSpherical, warnOnce} from '../util/util';
+import {pick, deepEqual, filterObject, cartesianPositionToSpherical, warnOnce} from '../util/util';
 import {getJSON, getReferrer, ResourceType} from '../util/ajax';
 import {isMapboxURL} from '../util/mapbox_url';
 import {stripQueryParameters} from '../util/url';
@@ -918,7 +918,7 @@ class Style extends Evented<MapEvents> {
             this.addSource(id, json.sources[id], {validate: false, isInitialLoad: true});
         }
 
-        this.stylesheet = clone(json);
+        this.stylesheet = structuredClone(json);
 
         const proceedWithStyleLoad = () => {
             if (json.iconsets) {
@@ -2212,7 +2212,7 @@ class Style extends Evented<MapEvents> {
 
         if (emitValidationErrors(this, validateStyle(nextState))) return false;
 
-        nextState = clone(nextState);
+        nextState = structuredClone(nextState);
         nextState.layers = deref(nextState.layers);
 
         const changes = diffStyles(this.serialize(), nextState)
@@ -2984,7 +2984,7 @@ class Style extends Evented<MapEvents> {
         } else {
             if (typeof layerObject.source === 'object') {
                 this.addSource(id, layerObject.source);
-                layerObject = clone(layerObject);
+                layerObject = structuredClone(layerObject);
                 layerObject = (Object.assign(layerObject, {source: id}));
             }
 
@@ -3242,7 +3242,7 @@ class Style extends Evented<MapEvents> {
             return;
         }
 
-        layer.filter = clone(filter);
+        layer.filter = structuredClone(filter);
         this._updateLayer(layer);
     }
 
@@ -3254,7 +3254,7 @@ class Style extends Evented<MapEvents> {
     getFilter(layerId: string): FilterSpecification | null | undefined {
         const layer = this._checkLayer(layerId);
         if (!layer) return;
-        return clone(layer.filter);
+        return structuredClone(layer.filter);
     }
 
     setLayoutProperty<T extends keyof LayoutSpecification>(layerId: string, name: T, value: LayoutSpecification[T], options: StyleSetterOptions = {}) {
@@ -4000,7 +4000,7 @@ class Style extends Evented<MapEvents> {
             if ("source" in options && typeof options.source === 'object') {
                 const id = 'terrain-dem-src';
                 this.addSource(id, options.source);
-                options = clone(options);
+                options = structuredClone(options);
                 options = Object.assign(options, {source: id});
             }
 

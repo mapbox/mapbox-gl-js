@@ -10,16 +10,16 @@
 #
 #   Browser        | Limiting Feature      | Min
 #   ---------------|-----------------------|----
-#   Chrome         | Object.hasOwn         | 93
+#   Chrome         | structuredClone       | 98
 #   Safari         | Array.at              | 15.4
 #   Firefox        | Object.hasOwn         | 115
-#   Edge           | Object.hasOwn         | 93
-#   Chrome Android | Object.hasOwn         | 93
+#   Edge           | structuredClone       | 98
+#   Chrome Android | structuredClone       | 98
 #   iOS Safari     | Array.at              | 15.4
 
 chrome >= 93
 safari >= 15.4
 firefox >= 115
-edge >= 93
-and_chr >= 93
+edge >= 98
+and_chr >= 98
 ios_saf >= 15.4

@@ -2,7 +2,7 @@
 // @ts-nocheck
 import Point from '@mapbox/point-geometry';
 import {describe, test, expect} from '../../util/vitest';
-import {mapValue, degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, parseExpiryData, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle} from '../../../src/util/util';
+import {mapValue, degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, mapObject, filterObject, deepEqual, arraysIntersect, isCounterClockwise, parseCacheControl, parseExpiryData, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle} from '../../../src/util/util';
 
 const EPSILON = 1e-8;
 
@@ -263,36 +263,6 @@ describe('util', () => {
         expect(deepEqual(a, null)).toBeFalsy();
         expect(deepEqual(null, c)).toBeFalsy();
         expect(deepEqual(null, null)).toBeTruthy();
-    });
-
-    describe('clone', () => {
-        test('array', () => {
-            const input = [false, 1, 'two'];
-            const output = clone(input);
-            expect(input).not.toBe(output);
-            expect(input).toEqual(output);
-        });
-
-        test('object', () => {
-            const input = {a: false, b: 1, c: 'two'};
-            const output = clone(input);
-            expect(input).not.toBe(output);
-            expect(input).toEqual(output);
-        });
-
-        test('deep object', () => {
-            const input = {object: {a: false, b: 1, c: 'two'}};
-            const output = clone(input);
-            expect(input.object).not.toBe(output.object);
-            expect(input.object).toEqual(output.object);
-        });
-
-        test('deep array', () => {
-            const input = {array: [false, 1, 'two']};
-            const output = clone(input);
-            expect(input.array).not.toBe(output.array);
-            expect(input.array).toEqual(output.array);
-        });
     });
 
     describe('arraysIntersect', () => {

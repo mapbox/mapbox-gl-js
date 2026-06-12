@@ -1,5 +1,5 @@
 import assert from '../style-spec/util/assert';
-import {clone, easeCubicInOut, sphericalDirectionToCartesian, sphericalPositionToCartesian} from '../util/util';
+import {easeCubicInOut, sphericalDirectionToCartesian, sphericalPositionToCartesian} from '../util/util';
 import * as interpolate from '../style-spec/util/interpolate';
 import {number as interpolateValue} from '../style-spec/util/interpolate';
 import {normalizePropertyExpression} from '../style-spec/expression/index';
@@ -209,7 +209,7 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
     }
 
     getValue<S extends keyof Props, T>(name: S): PropertyValueSpecification<T> | undefined {
-        return clone(this._values[name].value.value as PropertyValueSpecification<T> | undefined);
+        return structuredClone(this._values[name].value.value as PropertyValueSpecification<T> | undefined);
     }
 
     setValue<S extends keyof Props, T>(name: S, value?: PropertyValueSpecification<T>) {
@@ -218,7 +218,7 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
         }
         // Note that we do not _remove_ an own property in the case where a value is being reset
         // to the default: the transition might still be non-default.
-        this._values[name].value = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._scope, this._options, this._iconImageUseTheme);
+        this._values[name].value = new PropertyValue(this._values[name].property, value === null ? undefined : structuredClone(value), this._scope, this._options, this._iconImageUseTheme);
         if (this._values[name].value.expression.configDependencies) {
             this.configDependencies = new Set([...this.configDependencies, ...this._values[name].value.expression.configDependencies]);
             this._isIndoorDependent = this._isIndoorDependent || this._values[name].value.isIndoorDependent();
@@ -245,14 +245,14 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
     }
 
     getTransition<S extends keyof Props>(name: S): TransitionSpecification | undefined {
-        return clone(this._values[name].transition);
+        return structuredClone(this._values[name].transition);
     }
 
     setTransition<S extends keyof Props>(name: S, value?: TransitionSpecification) {
         if (!Object.hasOwn(this._values, name)) {
             this._values[name] = new TransitionablePropertyValue(this._values[name].property) as TransitionablePropertyValues<Props>[S];
         }
-        this._values[name].transition = clone(value) || undefined;
+        this._values[name].transition = structuredClone(value) || undefined;
     }
 
     serialize(): PropertyValueSpecifications<Props> {
@@ -474,11 +474,11 @@ export class Layout<Props extends {
     }
 
     getValue<S extends keyof Props, T>(name: S): PropertyValueSpecification<T> | void {
-        return clone(this._values[name].value as PropertyValueSpecification<T> | void);
+        return structuredClone(this._values[name].value as PropertyValueSpecification<T> | void);
     }
 
     setValue<S extends keyof Props>(name: S, value: unknown) {
-        this._values[name] = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._scope, this._options, this._iconImageUseTheme) as PropertyValues<Props>[S];
+        this._values[name] = new PropertyValue(this._values[name].property, value === null ? undefined : structuredClone(value), this._scope, this._options, this._iconImageUseTheme) as PropertyValues<Props>[S];
         if (this._values[name].expression.configDependencies) {
             this.configDependencies = new Set([...this.configDependencies, ...this._values[name].expression.configDependencies]);
             this._isIndoorDependent = this._isIndoorDependent || this._values[name].isIndoorDependent();
