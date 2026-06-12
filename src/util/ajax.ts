@@ -5,9 +5,6 @@ import {warnOnce, isWorker} from './util';
 import {cacheGet, cachePut} from './tile_request_cache';
 import {isMapboxHTTPURL, hasCacheDefeatingSku} from './mapbox_url';
 
-import type {Callback} from '../types/callback';
-import type {Cancelable} from '../types/cancelable';
-
 /**
  * The type of a resource.
  * @private
@@ -289,25 +286,56 @@ function sameOrigin(url: string) {
     return a.protocol === location.protocol && a.host === location.host;
 }
 
-function arrayBufferToImageBitmap(data: ArrayBuffer, callback: Callback<ImageBitmap>) {
-    const blob: Blob = new Blob([new Uint8Array(data)], {type: 'image/png'});
-    createImageBitmap(blob).then((imgBitmap) => {
-        callback(null, imgBitmap);
-    }).catch((e) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        callback(new Error(`Could not load image because of ${e.message}. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.`));
-    });
-}
-
-let imageQueue: Array<{requestParameters: RequestParameters; callback: ResponseCallback<ImageBitmap>; cancelled: boolean; cancel: () => void}>;
-let numImageRequests: number;
+// Limit concurrent image loads to help with raster sources performance on big screens.
+// See https://github.com/mapbox/mapbox-gl-js/issues/1470.
+let imageRequestQueue: Array<() => void>;
+let activeImageRequests: number;
 export const resetImageRequestQueue = () => {
-    imageQueue = [];
-    numImageRequests = 0;
+    imageRequestQueue = [];
+    activeImageRequests = 0;
 };
 resetImageRequestQueue();
 
-export function getImage(requestParameters: RequestParameters, callback: ResponseCallback<ImageBitmap>): Cancelable {
+function acquireImageRequest(signal?: AbortSignal): Promise<() => void> {
+    return new Promise((resolve, reject) => {
+        if (signal && signal.aborted) {
+            reject(new DOMException('Aborted', 'AbortError'));
+            return;
+        }
+
+        const release = () => {
+            assert(activeImageRequests > 0);
+            const next = imageRequestQueue.shift();
+            if (next) {
+                next();
+            } else {
+                activeImageRequests--;
+            }
+        };
+
+        if (activeImageRequests < config.MAX_PARALLEL_IMAGE_REQUESTS) {
+            activeImageRequests++;
+            resolve(release);
+            return;
+        }
+
+        const dequeue = () => {
+            if (signal) signal.removeEventListener('abort', cancel);
+            resolve(release);
+        };
+
+        const cancel = () => {
+            const index = imageRequestQueue.indexOf(dequeue);
+            if (index !== -1) imageRequestQueue.splice(index, 1);
+            reject(new DOMException('Aborted', 'AbortError'));
+        };
+
+        if (signal) signal.addEventListener('abort', cancel);
+        imageRequestQueue.push(dequeue);
+    });
+}
+
+export async function getImage(requestParameters: RequestParameters, signal?: AbortSignal): Promise<RequestResponse<ImageBitmap>> {
     if (webpSupported.supported) {
         if (!requestParameters.headers) {
             requestParameters.headers = {};
@@ -315,60 +343,24 @@ export function getImage(requestParameters: RequestParameters, callback: Respons
         requestParameters.headers['accept'] = 'image/webp,*/*';
     }
 
-    // limit concurrent image loads to help with raster sources performance on big screens
-    if (numImageRequests >= config.MAX_PARALLEL_IMAGE_REQUESTS) {
-        const queued = {
-            requestParameters,
-            callback,
-            cancelled: false,
-            cancel() { this.cancelled = true; }
-        };
-        imageQueue.push(queued);
-        return queued;
+    const release = await acquireImageRequest(signal);
+    try {
+        // fetch the image as an ArrayBuffer rather than via an <img> element so it shares the HTTP cache
+        const {data, headers} = await getArrayBuffer(requestParameters, signal);
+        let bitmap: ImageBitmap;
+        try {
+            bitmap = await createImageBitmap(new Blob([new Uint8Array(data)], {type: 'image/png'}));
+        } catch (e) {
+            throw new Error(`Could not load image because of ${(e as Error).message}. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.`, {cause: e});
+        }
+        // A late-resolving body must not deliver after abort, or it resurrects torn-down ImageSource state.
+        if (signal && signal.aborted) {
+            throw new DOMException('Aborted', 'AbortError');
+        }
+        return {data: bitmap, headers};
+    } finally {
+        release();
     }
-    numImageRequests++;
-
-    let advanced = false;
-    const advanceImageRequestQueue = () => {
-        if (advanced) return;
-        advanced = true;
-        numImageRequests--;
-        assert(numImageRequests >= 0);
-        while (imageQueue.length && numImageRequests < config.MAX_PARALLEL_IMAGE_REQUESTS) {
-            const request = imageQueue.shift();
-            const {requestParameters, callback, cancelled} = request;
-            if (!cancelled) {
-                request.cancel = getImage(requestParameters, callback).cancel;
-            }
-        }
-    };
-
-    // fetch the image as an ArrayBuffer rather than via an <img> element so it shares the HTTP cache
-    // see https://github.com/mapbox/mapbox-gl-js/issues/1470
-    const controller = new AbortController();
-    // A request cancelled while its body is in flight must never reach the callback, or it
-    // resurrects stale ImageSource state after updateImage/onRemove. `controller.abort()` alone
-    // doesn't cover the case where the body resolved before cancel ran, so guard on a flag too.
-    let cancelled = false;
-    getArrayBuffer(requestParameters, controller.signal)
-        .then(({data, headers}) => {
-            advanceImageRequestQueue();
-            if (cancelled) return;
-            arrayBufferToImageBitmap(data, (err, imgBitmap) => callback(err, imgBitmap, headers));
-        })
-        .catch((err: Error) => {
-            advanceImageRequestQueue();
-            if (cancelled) return;
-            if (err.name !== 'AbortError') callback(err);
-        });
-
-    return {
-        cancel: () => {
-            cancelled = true;
-            controller.abort();
-            advanceImageRequestQueue();
-        }
-    };
 }
 
 export async function getVideo(urls: Array<string>): Promise<HTMLVideoElement> {

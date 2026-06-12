@@ -19,7 +19,7 @@ function createSource(options: Partial<RasterDEMSourceSpecification>, transformC
         getActor() {
             return {
                 send() { return new Promise(() => {}); },
-                sendCancelable() { return {cancel() {}}; }
+                sendCancelable() { return new AbortController(); }
             };
         }
     } as unknown as Dispatcher;
@@ -127,7 +127,7 @@ describe('RasterTileSource', () => {
                         Promise.resolve(this.send(type, params))
                             .then((result) => callback(null, result))
                             .catch((err: Error) => { if (err.name !== 'AbortError') callback(err); });
-                        return {cancel() {}};
+                        return new AbortController();
                     }
                 };
             }

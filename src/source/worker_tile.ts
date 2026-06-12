@@ -110,7 +110,7 @@ class WorkerTile {
     abort: () => void | null | undefined;
     reloadCallback?: WorkerSourceVectorTileCallback | null | undefined;
     vectorTile: VectorTile;
-    rasterizeTask: {cancel: () => void} | null | undefined;
+    rasterizeTask: AbortController | null | undefined;
 
     constructor(params: WorkerSourceVectorTileRequest) {
         this.tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
@@ -713,7 +713,7 @@ class WorkerTile {
 
     cancelRasterize() {
         if (this.rasterizeTask) {
-            this.rasterizeTask.cancel();
+            this.rasterizeTask.abort();
         }
     }
 }

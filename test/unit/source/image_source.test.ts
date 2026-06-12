@@ -280,6 +280,34 @@ describe('ImageSource', () => {
         await waitFor(source, 'data');
     });
 
+    test('aborting an in-flight load never assigns the image', async () => {
+        let resolveBody: () => void;
+        const body = await getPNGResponse();
+        mockFetch({
+            // Resolve the response but hold the body read so the abort lands mid-load.
+            '/image.png': () => Promise.resolve({
+                ok: true,
+                status: 200,
+                statusText: 'OK',
+                headers: new Headers({'Content-Type': 'image/png'}),
+                arrayBuffer: () => new Promise((resolve) => { resolveBody = () => resolve(body); }),
+            })
+        });
+        const source = createSource({url: '/image.png'});
+        source.onAdd(new StubMap());
+
+        await new Promise(r => { setTimeout(r, 0); });
+        expect(typeof resolveBody).toBe('function');
+
+        source.onRemove();
+        resolveBody();
+        await new Promise(r => { setTimeout(r, 0); });
+
+        expect(source.image).toBeUndefined();
+        expect(source._loaded).toBe(false);
+        expect(source._imageRequest).toBe(null);
+    });
+
     test('cancels image request when onRemove is called', () => {
         const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
         mockFetch({

@@ -6,7 +6,6 @@ import '../types/worker';
 
 import type {Serialized} from './web_worker_transfer';
 import type {Transferable} from '../types/transferable';
-import type {Cancelable} from '../types/cancelable';
 import type {TaskMetadata} from './scheduler';
 import type {WorkerSource, WorkerSourceRequest} from '../source/worker_source';
 import type {ActorMessage, ActorInbox} from './actor_messages';
@@ -136,7 +135,7 @@ class Actor<Outbox extends MessageMap> {
     /**
      * Convenience wrapper around {@link send} for the common callback + cancellation pattern:
      * fires the message with a fresh AbortController, routes the result to a node-style callback,
-     * swallows AbortError, and returns a {@link Cancelable} that aborts the request.
+     * swallows AbortError, and returns the {@link AbortController} so the caller can abort the request.
      *
      * @private
      */
@@ -145,12 +144,12 @@ class Actor<Outbox extends MessageMap> {
         data: Outbox[T]['params'],
         options: {targetMapId?: number; metadata?: TaskMetadata},
         callback: (err?: Error | null, result?: Outbox[T]['result']) => void
-    ): Cancelable {
+    ): AbortController {
         const controller = new AbortController();
         this.send(type, data, {...options, signal: controller.signal})
             .then((result) => callback(null, result))
             .catch((err: Error) => { if (err.name !== 'AbortError') callback(err); });
-        return {cancel: () => controller.abort()};
+        return controller;
     }
 
     /**

@@ -278,32 +278,39 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
 
         if (this._tileProvider) {
             const controller = new AbortController();
-            tile.request = {cancel: () => controller.abort()};
+            tile.request = controller;
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.loadTileWithProvider(tile, this._tileProvider, request, controller, callback);
         } else {
-            tile.request = getImage(request, (error, data, responseHeaders) => {
+            const controller = new AbortController();
+            tile.request = controller;
+            getImage(request, controller.signal).then(({data, headers}) => {
                 delete tile.request;
 
+                // A cancelled request rejects AbortError and lands in .catch, so only tile.aborted
+                // can reach here.
                 if (tile.aborted) {
                     tile.state = 'unloaded';
                     return callback(null);
                 }
 
-                if (error) {
-                    tile.state = 'errored';
-                    return callback(error);
-                }
-
-                if (!data) return callback(null);
-
-                const expiryData = parseExpiryData(responseHeaders);
+                const expiryData = parseExpiryData(headers);
                 if (this.map._refreshExpiredTiles) tile.setExpiryData(expiryData);
                 tile.setTexture(data, this.map.painter);
                 tile.state = 'loaded';
 
                 cacheEntryPossiblyAdded(this.dispatcher);
                 callback(null);
+            }).catch((err: Error) => {
+                delete tile.request;
+
+                if (err.name === 'AbortError') {
+                    tile.state = 'unloaded';
+                    return callback(null);
+                }
+
+                tile.state = 'errored';
+                callback(err);
             });
         }
     }
@@ -371,7 +378,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
 
     abortTile(tile: Tile, callback?: Callback<undefined>) {
         if (tile.request) {
-            tile.request.cancel();
+            tile.request.abort();
             delete tile.request;
         }
         if (callback) callback();

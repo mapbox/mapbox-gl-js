@@ -116,73 +116,174 @@ describe('ajax', () => {
         await expect(postData({url: 'api.mapbox.com'})).resolves.toBeDefined();
     });
 
-    test('getImage respects maxParallelImageRequests', async () => {
-        const requests: Array<any> = [];
-        vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
-            requests.push(req);
+    test('getImage resolves with {data: ImageBitmap, headers}', async () => {
+        resetImageRequestQueue();
 
+        vi.spyOn(window, 'fetch').mockImplementation(async () => {
             return new window.Response(await getPNGResponse(), {
                 status: 200,
-                headers: {
-                    'Content-Type': 'image/png'
-                }
+                headers: {'Content-Type': 'image/png', 'Cache-Control': 'max-age=100'}
             });
         });
 
-        const maxRequests = config.MAX_PARALLEL_IMAGE_REQUESTS;
-
-        await new Promise(resolve => {
-            function callback(err) {
-                if (err) return;
-                // last request is only added after we got a response from one of the previous ones
-                expect(requests.length).toEqual(maxRequests + 1);
-                resolve();
-            }
-
-            for (let i = 0; i < maxRequests + 1; i++) {
-                getImage({url: ''}, callback);
-            }
-
-            expect(requests.length).toEqual(maxRequests);
-        });
+        const {data, headers} = await getImage({url: ''});
+        expect(data).toBeInstanceOf(ImageBitmap);
+        expect(headers.get('Cache-Control')).toEqual('max-age=100');
     });
 
-    test('getImage cancelling frees up request for maxParallelImageRequests', () => {
+    test('getImage rejects with the supported-image-type message on undecodable data', async () => {
+        resetImageRequestQueue();
+
+        vi.spyOn(window, 'fetch').mockImplementation(() => Promise.resolve(new window.Response('not an image', {
+            status: 200,
+            headers: {'Content-Type': 'image/png'}
+        })));
+        vi.spyOn(window, 'createImageBitmap').mockRejectedValue(new Error('boom'));
+
+        await expect(getImage({url: ''})).rejects.toThrow(/supported image type such as PNG or JPEG/);
+    });
+
+    test('getImage respects maxParallelImageRequests', async () => {
         resetImageRequestQueue();
 
         const requests: Array<any> = [];
-        vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+        const resolveFetch: Array<(r: Response) => void> = [];
+        vi.spyOn(window, 'fetch').mockImplementation((req) => {
             requests.push(req);
+            return new Promise<Response>((resolve) => { resolveFetch.push(resolve); });
+        });
+        // Mock the decode so a settled request releases its slot deterministically within one tick.
+        vi.spyOn(window, 'createImageBitmap').mockResolvedValue({} as ImageBitmap);
 
-            return new window.Response(await getPNGResponse(), {
+        const maxRequests = config.MAX_PARALLEL_IMAGE_REQUESTS;
+
+        const promises: Array<Promise<unknown>> = [];
+        for (let i = 0; i < maxRequests + 1; i++) {
+            promises.push(getImage({url: ''}).catch(() => {}));
+        }
+
+        const waitUntil = async (predicate: () => boolean) => {
+            // eslint-disable-next-line no-await-in-loop
+            for (let i = 0; i < 50 && !predicate(); i++) await new Promise(r => { setTimeout(r, 0); });
+        };
+
+        // only maxRequests reach the network; the extra one is queued behind the throttle
+        await new Promise(r => { setTimeout(r, 0); });
+        expect(requests.length).toEqual(maxRequests);
+
+        // settle one in-flight request → its freed slot is handed to the queued request, which fetches
+        resolveFetch[0](new window.Response('', {
+            status: 200,
+            headers: {'Content-Type': 'image/png'}
+        }));
+        await waitUntil(() => requests.length === maxRequests + 1);
+        expect(requests.length).toEqual(maxRequests + 1);
+
+        // drain the rest so nothing leaks into the next test
+        for (let i = 1; i < resolveFetch.length; i++) {
+            resolveFetch[i](new window.Response('', {
                 status: 200,
-                headers: {
-                    'Content-Type': 'image/png'
-                }
+                headers: {'Content-Type': 'image/png'}
+            }));
+        }
+        await Promise.all(promises);
+    });
+
+    test('getImage aborting an in-flight request frees a slot for a queued one', async () => {
+        resetImageRequestQueue();
+
+        const requests: Array<any> = [];
+        const resolveFetch: Array<(r: Response) => void> = [];
+        vi.spyOn(window, 'fetch').mockImplementation((req) => {
+            requests.push(req);
+            return new Promise<Response>((resolve, reject) => {
+                resolveFetch.push(resolve);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                req.signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
             });
         });
 
         const maxRequests = config.MAX_PARALLEL_IMAGE_REQUESTS;
 
+        const controllers: Array<AbortController> = [];
+        const promises: Array<Promise<unknown>> = [];
         for (let i = 0; i < maxRequests + 1; i++) {
-            getImage({url: ''}, expect.unreachable).cancel();
+            const controller = new AbortController();
+            controllers.push(controller);
+            promises.push(getImage({url: ''}, controller.signal).catch(() => {}));
         }
 
+        await new Promise(r => { setTimeout(r, 0); });
+        expect(requests.length).toEqual(maxRequests);
+
+        // abort an in-flight request → getArrayBuffer rejects, slot released to the queued request
+        controllers[0].abort();
+        await new Promise(r => { setTimeout(r, 0); });
         expect(requests.length).toEqual(maxRequests + 1);
+
+        controllers.forEach(c => c.abort());
+        await Promise.all(promises);
     });
 
-    test('getImage does not deliver to callback when cancelled mid-body-read', async () => {
-        // Prep async work first, then drain any in-flight requests leaked by earlier tests
-        // (they decrement the shared queue counter as they settle) before resetting, so the
-        // counter is clean and cancel() below can't underflow it.
+    test('getImage requests that were once queued are still abortable', async () => {
+        resetImageRequestQueue();
+
+        const serverRequests: Array<any> = [];
+        const resolveFetch: Array<(r: Response) => void> = [];
+        vi.spyOn(window, 'fetch').mockImplementation((req) => {
+            serverRequests.push(req);
+            return new Promise<Response>((resolve, reject) => {
+                resolveFetch.push(resolve);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                req.signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
+            });
+        });
+
+        const maxRequests = config.MAX_PARALLEL_IMAGE_REQUESTS;
+
+        const controllers: Array<AbortController> = [];
+        const promises: Array<Promise<unknown>> = [];
+        for (let i = 0; i < maxRequests; i++) {
+            const controller = new AbortController();
+            controllers.push(controller);
+            promises.push(getImage({url: ''}, controller.signal).catch(() => {}));
+        }
+
+        await new Promise(r => { setTimeout(r, 0); });
+        // the limit of allowed requests is reached
+        expect(serverRequests.length).toEqual(maxRequests);
+
+        // this request is queued behind the throttle and never reaches the network
+        const queuedController = new AbortController();
+        const queuedURL = 'this-is-the-queued-request';
+        const queued = getImage({url: queuedURL}, queuedController.signal).catch(() => {});
+
+        await new Promise(r => { setTimeout(r, 0); });
+        expect(serverRequests.length).toEqual(maxRequests);
+
+        // abort while still queued → it is removed from the queue and never issues a request
+        queuedController.abort();
+        await new Promise(r => { setTimeout(r, 0); });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        expect(serverRequests.some(r => r.url.includes(queuedURL))).toBe(false);
+        await queued;
+
+        // freeing an in-flight slot now goes to nothing queued, but the throttle still admits new work
+        controllers.forEach(c => c.abort());
+        await Promise.all(promises);
+    });
+
+    test('getImage does not deliver when cancelled mid-body-read', async () => {
+        // Prep async work first, then drain any in-flight requests leaked by earlier tests before
+        // resetting, so the shared queue counter is clean.
         const body = await getPNGResponse();
         await new Promise(r => { setTimeout(r, 0); });
         resetImageRequestQueue();
 
-        // Resolve fetch immediately but hold the body read, so cancel() lands in the window
-        // after fetch resolved (the abort is therefore not surfaced as an AbortError) but
-        // before the body completes. The pre-Promise Cancelable contract dropped the callback
-        // here; the Promise bridge must preserve that or it resurrects stale ImageSource state.
+        // Resolve fetch immediately but hold the body read, so abort() lands in the window after
+        // fetch resolved (not surfaced as an AbortError by fetch itself) but before the body
+        // completes. getImage must re-check the signal after the await and reject rather than
+        // resolve, or it resurrects stale ImageSource state after updateImage/onRemove.
         let resolveBody: () => void;
         vi.spyOn(window, 'fetch').mockImplementation(() => Promise.resolve({
             ok: true,
@@ -191,90 +292,41 @@ describe('ajax', () => {
             headers: new Headers({'Content-Type': 'image/png'}),
             arrayBuffer: () => new Promise((resolve) => { resolveBody = () => resolve(body); }),
         }));
+        vi.spyOn(window, 'createImageBitmap').mockResolvedValue({} as ImageBitmap);
 
-        // Make the image-bitmap conversion resolve on a controlled microtask so the success
-        // delivery is deterministic; otherwise the real decode might just not have fired yet
-        // by the assertion, masking a missing guard.
-        const createImageBitmap = vi.spyOn(window, 'createImageBitmap').mockResolvedValue({} as ImageBitmap);
+        const controller = new AbortController();
+        const onResolve = vi.fn();
+        const onReject = vi.fn();
+        getImage({url: ''}, controller.signal).then(onResolve, onReject);
 
-        const callback = vi.fn();
-        const request = getImage({url: ''}, callback);
-
-        // Let the chain advance past the post-fetch abort check, into the body read.
+        // Let the chain advance into the held body read.
         await new Promise(r => { setTimeout(r, 0); });
         expect(typeof resolveBody).toBe('function');
 
-        request.cancel();
+        controller.abort();
         resolveBody();
 
-        // Flush the microtasks the conversion + callback would otherwise use.
         await new Promise(r => { setTimeout(r, 0); });
 
-        expect(createImageBitmap).not.toHaveBeenCalled();
-        expect(callback).not.toHaveBeenCalled();
-    });
-
-    test('getImage requests that were once queued are still abortable', () => {
-        resetImageRequestQueue();
-
-        const serverRequests: Array<any> = [];
-        vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
-            serverRequests.push(req);
-
-            return new window.Response(await getPNGResponse(), {
-                status: 200,
-                headers: {
-                    'Content-Type': 'image/png'
-                }
-            });
-        });
-
-        const maxRequests = config.MAX_PARALLEL_IMAGE_REQUESTS;
-
-        const requests: Array<any> = [];
-        for (let i = 0; i < maxRequests; i++) {
-            requests.push(getImage({url: ''}, () => {}));
-        }
-
-        // the limit of allowed requests is reached
-        expect(serverRequests.length).toEqual(maxRequests);
-
-        const queuedURL = 'this-is-the-queued-request';
-        const queued = getImage({url: queuedURL}, () => expect.unreachable());
-
-        // the new requests is queued because the limit is reached
-        expect(serverRequests.length).toEqual(maxRequests);
-
-        // cancel the first request to let the queued request start
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        requests[0].cancel();
-        expect(serverRequests.length).toEqual(maxRequests + 1);
-
-        // abort the previously queued request and confirm that it is aborted
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const queuedRequest = serverRequests.at(-1);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        expect(queuedRequest.url).toMatch(queuedURL);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        expect(queuedRequest.signal.aborted).toEqual(false);
-        queued.cancel();
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        expect(queuedRequest.signal.aborted).toEqual(true);
+        expect(onResolve).not.toHaveBeenCalled();
+        expect(onReject).toHaveBeenCalledTimes(1);
+        expect(onReject.mock.calls[0][0]).toMatchObject({name: 'AbortError'});
     });
 
     test('getImage sends accept/webp when supported', async () => {
         resetImageRequestQueue();
 
-        await new Promise(resolve => {
+        await new Promise<void>(resolve => {
             vi.spyOn(window, 'fetch').mockImplementation((req) => {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 expect(req.headers.get('accept').includes('image/webp')).toBeTruthy();
                 resolve();
+                return new Promise<Response>(() => {});
             });
 
             webpSupported.supported = true;
 
-            getImage({url: ''}, () => {});
+            getImage({url: ''}).catch(() => {});
         });
     });
 

@@ -57,7 +57,6 @@ import type {CanonicalTileID, OverscaledTileID} from './tile_id';
 import type Framebuffer from '../gl/framebuffer';
 import type Transform from '../geo/transform';
 import type {FeatureStates, LayerFeatureStates} from './source_state';
-import type {Cancelable} from '../types/cancelable';
 import type {FilterSpecification} from '../style-spec/types';
 import type {TilespaceQueryGeometry} from '../style/query_geometry';
 import type VertexBuffer from '../gl/vertex_buffer';
@@ -162,7 +161,7 @@ class Tile {
     aborted: boolean | null | undefined;
     needsHillshadePrepare: boolean | null | undefined;
     needsDEMTextureUpload: boolean | null | undefined;
-    request: Cancelable | null | undefined;
+    request: AbortController | null | undefined;
     texture: Texture | null | undefined | UserManagedTexture;
     emissiveTexture: Texture | null | undefined | UserManagedTexture;
     hillshadeFBO: Framebuffer | null | undefined;

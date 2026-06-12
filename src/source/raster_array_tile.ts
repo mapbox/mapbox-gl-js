@@ -139,7 +139,7 @@ class RasterArrayTile extends Tile implements Tile {
     fetchHeader(
         fetchLength: number | null | undefined = FIRST_TRY_HEADER_LENGTH,
         callback: ResponseCallback<ArrayBuffer | null | undefined>,
-    ): Cancelable {
+    ): AbortController {
         const mrt = this._mrt = new MapboxRasterTile(MRT_DECODED_BAND_CACHE_SIZE);
 
         const headerRequestParams = {...this.requestParams, headers: {Range: `bytes=0-${fetchLength - 1}`}};
@@ -148,7 +148,7 @@ class RasterArrayTile extends Tile implements Tile {
         this.entireBuffer = null;
 
         const controller = new AbortController();
-        this.request = {cancel: () => controller.abort()};
+        this.request = controller;
         getArrayBuffer(headerRequestParams, controller.signal)
             .then(({data: dataBuffer, headers}) => {
                 try {
@@ -257,7 +257,7 @@ class RasterArrayTile extends Tile implements Tile {
                 const workQueue = this._workQueuePerLayer.get(layerId) || [];
 
                 workQueue.push(() => {
-                    decodeRequest.cancel();
+                    decodeRequest.abort();
                     task.cancel();
                 });
 
@@ -317,12 +317,11 @@ class RasterArrayTile extends Tile implements Tile {
             getArrayBuffer(rangeRequestParams, controller.signal)
                 .then(({data: buffer}) => onDataLoaded(null, buffer))
                 .catch((err: Error) => { if (err.name !== 'AbortError') onDataLoaded(err); });
-            const request = {cancel: () => controller.abort()};
 
             if (layerId !== null) {
                 const fetchQueue = this._fetchQueuePerLayer.get(layerId) || [];
                 fetchQueue.push(() => {
-                    request.cancel();
+                    controller.abort();
                     task.cancel();
                 });
                 if (!this._fetchQueuePerLayer.has(layerId)) {

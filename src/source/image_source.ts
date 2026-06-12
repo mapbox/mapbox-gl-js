@@ -20,7 +20,6 @@ import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
-import type {Cancelable} from '../types/cancelable';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type {ProjectedPoint} from '../geo/projection/projection';
@@ -261,7 +260,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
     elevatedGlobeGridMatrix: Float32Array | null | undefined;
     _loaded: boolean;
     _dirty: boolean;
-    _imageRequest: Cancelable | null | undefined;
+    _imageRequest: AbortController | null | undefined;
     perspectiveTransform: [number, number];
     elevatedGlobePerspectiveTransform: [number, number];
 
@@ -311,21 +310,26 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
         }
 
         const request = this.map._requestManager.transformRequest(this.url, ResourceType.Image);
-        this._imageRequest = getImage(request, (err, image) => {
+        const controller = new AbortController();
+        this._imageRequest = controller;
+        getImage(request, controller.signal).then(({data}) => {
             this._imageRequest = null;
             this._loaded = true;
-            if (err) {
-                this.fire(new ErrorEvent(err));
-            } else if (image) {
-                this.image = image;
-                this._dirty = true;
-                this.width = this.image.width;
-                this.height = this.image.height;
-                if (newCoordinates) {
-                    this.coordinates = newCoordinates;
-                }
-                this._finishLoading();
+            this.image = data;
+            this._dirty = true;
+            this.width = this.image.width;
+            this.height = this.image.height;
+            if (newCoordinates) {
+                this.coordinates = newCoordinates;
             }
+            this._finishLoading();
+        }).catch((err: Error) => {
+            // A cancelled load rejects AbortError; leave _loaded/_imageRequest untouched so a
+            // late settle can't resurrect state after updateImage/onRemove already moved on.
+            if (err.name === 'AbortError') return;
+            this._imageRequest = null;
+            this._loaded = true;
+            this.fire(new ErrorEvent(err));
         });
     }
 
@@ -378,7 +382,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (this._imageRequest && options.url !== this.options.url) {
-            this._imageRequest.cancel();
+            this._imageRequest.abort();
             this._imageRequest = null;
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -415,7 +419,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
 
     onRemove(_: Map) {
         if (this._imageRequest) {
-            this._imageRequest.cancel();
+            this._imageRequest.abort();
             this._imageRequest = null;
         }
         if (this.texture && !(this.texture instanceof UserManagedTexture)) this.texture.destroy();

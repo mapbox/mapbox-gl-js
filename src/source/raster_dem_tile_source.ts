@@ -110,7 +110,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
 
     override abortTile(tile: Tile, callback?: Callback<undefined>) {
         if (tile.request) {
-            tile.request.cancel();
+            tile.request.abort();
             delete tile.request;
         }
         if (tile.actor) {

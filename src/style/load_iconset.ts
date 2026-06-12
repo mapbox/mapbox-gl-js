@@ -37,11 +37,11 @@ function getStretchArea(stretchArea: [number, number][] | undefined): [number, n
 export function loadIconset(
     loadURL: string,
     requestManager: RequestManager,
+    signal: AbortSignal,
     callback: Callback<StyleImages>
 ) {
-    const controller = new AbortController();
     const request = requestManager.transformRequest(requestManager.normalizeIconsetURL(loadURL), ResourceType.Iconset);
-    getArrayBuffer(request, controller.signal)
+    getArrayBuffer(request, signal)
         .then(({data}) => {
             const result: StyleImages = {};
 
@@ -65,5 +65,4 @@ export function loadIconset(
             callback(null, result);
         })
         .catch((err: Error) => { if (err.name !== 'AbortError') callback(err); });
-    return {cancel: () => controller.abort()};
 }

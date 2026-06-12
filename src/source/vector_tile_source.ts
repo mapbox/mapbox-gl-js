@@ -390,7 +390,11 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                     }
                 }, true);
 
-                tile.request = {cancel};
+                // loadVectorTile still uses the callback + cancel-fn contract, so bridge its
+                // cancel onto a controller to keep tile.request a uniform AbortController.
+                const controller = new AbortController();
+                controller.signal.addEventListener('abort', cancel, {once: true});
+                tile.request = controller;
 
             } else {
 
@@ -464,7 +468,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
 
     abortTile(tile: Tile) {
         if (tile.request) {
-            tile.request.cancel();
+            tile.request.abort();
             delete tile.request;
         }
         if (tile.actor) {

@@ -286,7 +286,6 @@ describe('WorkerTile frcCoverage / modularization gate', () => {
     test('HdRoadCoverage tile parses hd_road_coverage layer into frcCoveragePolygons', () => {
         const layerIndex = makeRoadLayerIndex();
         // Build a stand-in for the hd_road_coverage VectorTileLayer that the parser consumes.
-        const EXTENT = 8192;
         const partialRing = [
             new Point(100, 100),
             new Point(1000, 100),
@@ -314,8 +313,6 @@ describe('WorkerTile frcCoverage / modularization gate', () => {
                 expect(Array.isArray(result.frcCoveragePolygons)).toBe(true);
                 expect(result.frcCoveragePolygons.length).toBe(1);
                 expect(result.frcCoveragePolygons[0].frcMask).toBe(0b101);
-                // Suppress unused var warning
-                void EXTENT;
                 resolve();
             });
         });

@@ -356,7 +356,7 @@ class Style extends Evented<MapEvents> {
     _featuresetSelectors: Record<string, Array<FeaturesetSelector>>;
 
     _request: Cancelable | null | undefined;
-    _spriteRequest: Cancelable | null | undefined;
+    _spriteRequest: AbortController | null | undefined;
     _layers: {
         [_: string]: TypedStyleLayer;
     };
@@ -1612,7 +1612,9 @@ class Style extends Evented<MapEvents> {
      * @fires Map.event:data Fires `data` with `{dataType: 'style'}` to indicate that sprite loading is complete.
      */
     _loadSprite(url: string) {
-        this._spriteRequest = loadSprite(url, this.map._requestManager, (err, images) => {
+        const controller = new AbortController();
+        this._spriteRequest = controller;
+        loadSprite(url, this.map._requestManager, controller.signal, (err, images) => {
             this._spriteRequest = null;
             if (err) {
                 this.dispatcher.broadcast('spriteLoaded', {scope: this.scope});
@@ -1673,7 +1675,9 @@ class Style extends Evented<MapEvents> {
         // At runtime _spriteFormat is always 'auto'
         const isFallbackExists = this.map._spriteFormat === 'auto';
 
-        this._spriteRequest = loadIconset(url, this.map._requestManager, (err, images) => {
+        const controller = new AbortController();
+        this._spriteRequest = controller;
+        loadIconset(url, this.map._requestManager, controller.signal, (err, images) => {
             this._spriteRequest = null;
             if (err) {
                 // Try to fallback to raster sprite
@@ -4315,7 +4319,7 @@ class Style extends Evented<MapEvents> {
             this._request = null;
         }
         if (this._spriteRequest) {
-            this._spriteRequest.cancel();
+            this._spriteRequest.abort();
             this._spriteRequest = null;
         }
 

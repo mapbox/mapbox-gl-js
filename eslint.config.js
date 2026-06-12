@@ -179,7 +179,7 @@ export default tseslint.config(
                     message: 'importScripts is not allowed. Use dynamic import() instead.',
                 }
             ],
-            'no-void': ['error', {allowAsStatement: true}],
+            'no-void': 'error',
             'no-restricted-globals': ['error', {
                 name: 'importScripts',
                 message: 'importScripts is not allowed. Use dynamic import() instead.',

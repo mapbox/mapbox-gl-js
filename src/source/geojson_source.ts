@@ -12,7 +12,6 @@ import type Tile from './tile';
 import type Actor from '../util/actor';
 import type {WorkerInbox} from '../util/actor_messages';
 import type {Callback} from '../types/callback';
-import type {Cancelable} from '../types/cancelable';
 import type {RequestParameters} from '../util/ajax';
 import type {MapSourceDataEvent} from '../ui/events';
 import type {GeoJSONWorkerOptions} from './geojson_worker_source';
@@ -102,7 +101,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     _coalesce: boolean | null | undefined;
     _metadataFired: boolean | null | undefined;
     _collectResourceTiming: boolean;
-    _pendingLoad: Cancelable | null | undefined;
+    _pendingLoad: AbortController | null | undefined;
     _partialReload: boolean;
 
     hasTile: undefined;
@@ -414,7 +413,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         // so that other geojson-like source types can easily reuse this
         // implementation
         const controller = new AbortController();
-        this._pendingLoad = {cancel: () => controller.abort()};
+        this._pendingLoad = controller;
 
         try {
             // The runtime type is `${this.type}.loadData` so geojson-like source types can reuse
@@ -534,7 +533,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
 
     abortTile(tile: Tile) {
         if (tile.request) {
-            tile.request.cancel();
+            tile.request.abort();
             delete tile.request;
         }
         tile.aborted = true;
@@ -547,7 +546,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
 
     onRemove(_: MapboxMap) {
         if (this._pendingLoad) {
-            this._pendingLoad.cancel();
+            this._pendingLoad.abort();
         }
     }
 

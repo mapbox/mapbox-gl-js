@@ -155,7 +155,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
 
     override abortTile(tile: RasterArrayTile) {
         if (tile.request) {
-            tile.request.cancel();
+            tile.request.abort();
             delete tile.request;
         }
 

@@ -5,7 +5,6 @@ import {RGBAImage} from '../util/image';
 import type {StyleImages} from './style_image';
 import type {RequestManager} from '../util/mapbox';
 import type {Callback} from '../types/callback';
-import type {Cancelable} from '../types/cancelable';
 
 type SpriteData = Record<string, {
     width: number;
@@ -22,24 +21,21 @@ type SpriteData = Record<string, {
 export default function (
     baseURL: string,
     requestManager: RequestManager,
+    signal: AbortSignal,
     callback: Callback<StyleImages>,
-): Cancelable {
+) {
     let json: SpriteData | undefined, image: ImageBitmap | undefined, error: Error | undefined;
     const format = browser.devicePixelRatio > 1 ? '@2x' : '';
 
-    const jsonController = new AbortController();
-    let jsonRequest: Cancelable | null | undefined = {cancel: () => jsonController.abort()};
     const requestParameters = requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON);
-    getJSON<SpriteData>(requestParameters, jsonController.signal)
+    getJSON<SpriteData>(requestParameters, signal)
         .then(({data}) => {
-            jsonRequest = null;
             if (!error) {
                 json = data;
                 maybeComplete();
             }
         })
         .catch((err: Error) => {
-            jsonRequest = null;
             if (!error && err.name !== 'AbortError') {
                 error = err;
                 maybeComplete();
@@ -47,14 +43,19 @@ export default function (
         });
 
     const imageRequestParameters = requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.png'), ResourceType.SpriteImage);
-    let imageRequest: Cancelable | null | undefined = getImage(imageRequestParameters, (err, img) => {
-        imageRequest = null;
-        if (!error) {
-            error = err;
-            image = img;
-            maybeComplete();
-        }
-    });
+    getImage(imageRequestParameters, signal)
+        .then(({data}) => {
+            if (!error) {
+                image = data;
+                maybeComplete();
+            }
+        })
+        .catch((err: Error) => {
+            if (!error && err.name !== 'AbortError') {
+                error = err;
+                maybeComplete();
+            }
+        });
 
     function maybeComplete() {
         if (error) {
@@ -82,17 +83,4 @@ export default function (
             callback(null, result);
         }
     }
-
-    return {
-        cancel() {
-            if (jsonRequest) {
-                jsonRequest.cancel();
-                jsonRequest = null;
-            }
-            if (imageRequest) {
-                imageRequest.cancel();
-                imageRequest = null;
-            }
-        }
-    };
 }

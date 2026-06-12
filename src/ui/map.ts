@@ -2841,9 +2841,8 @@ export class Map extends Camera {
      */
     loadImage(url: string, callback: Callback<ImageBitmap | HTMLImageElement | ImageData>) {
         const request = this._requestManager.transformRequest(url, ResourceType.Image);
-        getImage(request, (err, img) => {
-            callback(err, img);
-        });
+        // No signal: loadImage exposes no cancellation, so getImage never rejects AbortError here.
+        getImage(request).then(({data}) => callback(null, data)).catch(callback);
     }
 
     /**
