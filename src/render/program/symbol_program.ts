@@ -24,6 +24,7 @@ export type SymbolUniformsType = {
     ['u_label_plane_matrix']: UniformMatrix4f;
     ['u_coord_matrix']: UniformMatrix4f;
     ['u_is_text']: Uniform1i;
+    ['u_is_sdf']: Uniform1i;
     ['u_elevation_from_sea']: Uniform1i;
     ['u_pitch_with_map']: Uniform1i;
     ['u_texsize']: Uniform2f;
@@ -81,7 +82,6 @@ export type SymbolDefinesType =
     | 'ICON_TRANSITION'
     | 'PITCH_WITH_MAP_TERRAIN'
     | 'PROJECTED_POS_ON_VIEWPORT'
-    | 'RENDER_SDF'
     | 'RENDER_TEXT_AND_SYMBOL'
     | 'Z_OFFSET'
     | 'APPLY_LUT_ON_GPU';
@@ -99,6 +99,7 @@ const symbolUniforms = (context: Context): SymbolUniformsType => ({
     'u_label_plane_matrix': new UniformMatrix4f(context),
     'u_coord_matrix': new UniformMatrix4f(context),
     'u_is_text': new Uniform1i(context),
+    'u_is_sdf': new Uniform1i(context),
     'u_elevation_from_sea': new Uniform1i(context),
     'u_pitch_with_map': new Uniform1i(context),
     'u_texsize': new Uniform2f(context),
@@ -158,6 +159,7 @@ const symbolUniformValues = (
     glCoordMatrix: mat4,
     elevationFromSea: boolean,
     isText: boolean,
+    isSDF: boolean,
     texSize: [number, number],
     texSizeIcon: [number, number],
     isHalo: boolean,
@@ -188,6 +190,7 @@ const symbolUniformValues = (
         'u_label_plane_matrix': labelPlaneMatrix,
         'u_coord_matrix': glCoordMatrix,
         'u_is_text': +isText,
+        'u_is_sdf': +isSDF,
         'u_elevation_from_sea': elevationFromSea ? 1.0 : 0.0,
         'u_pitch_with_map': +pitchWithMap,
         'u_texsize': texSize,
@@ -204,7 +207,7 @@ const symbolUniformValues = (
         'u_up_vector': [0, -1, 0] as [number, number, number],
         'u_color_adj_mat': colorAdjustmentMatrix,
         'u_icon_transition': transition ? transition : 0.0,
-        'u_gamma_scale': pitchWithMap ? painter.transform.getCameraToCenterDistance(projection) * Math.cos(painter.terrain ? 0 : painter.transform._pitch) : 1,
+        'u_gamma_scale': isSDF ? (pitchWithMap ? painter.transform.getCameraToCenterDistance(projection) * Math.cos(painter.terrain ? 0 : painter.transform._pitch) : 1) : 0,
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_is_halo': +isHalo,
         'u_scale_factor': scaleFactor ? scaleFactor : 1.0,

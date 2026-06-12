@@ -466,10 +466,6 @@ function drawLayerSymbols(
                 baseDefines.push('COLOR_ADJUSTMENT');
             }
 
-            if (bucket.sdfIcons) {
-                baseDefines.push('RENDER_SDF');
-            }
-
             if (renderWithShadows) {
                 baseDefines.push('RENDER_SHADOWS', 'NORMAL_OFFSET');
             }
@@ -515,7 +511,7 @@ function drawLayerSymbols(
 
             const colorAdjustmentMatrix = layer.getColorAdjustmentMatrix(iconSaturation, iconContrast, iconBrightnessMin, iconBrightnessMax);
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter,
-                matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, false, texSize, [0, 0], true, coord, globeToMercator, mercatorCenter, invMatrix,
+                matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, false, bucket.sdfIcons, texSize, [0, 0], true, coord, globeToMercator, mercatorCenter, invMatrix,
                 cameraUpVector, bucket.getProjection(), groundShadowFactor, orientationNormalScale, colorAdjustmentMatrix, transitionProgress, null);
 
             const atlasTexture = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
@@ -586,8 +582,6 @@ function drawLayerSymbols(
                 baseDefines.push('RENDER_TEXT_AND_SYMBOL');
             }
 
-            baseDefines.push('RENDER_SDF');
-
             if (renderWithShadows) {
                 baseDefines.push('RENDER_SHADOWS', 'NORMAL_OFFSET');
             }
@@ -651,7 +645,7 @@ function drawLayerSymbols(
             const cameraUpVector = bucketIsGlobeProjection ? globeCameraUp : mercatorCameraUp;
 
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, textPitchWithMap, painter,
-                matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, true, texSize, texSizeIcon, true, coord, globeToMercator, mercatorCenter, invMatrix,
+                matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, true, true, texSize, texSizeIcon, true, coord, globeToMercator, mercatorCenter, invMatrix,
                 cameraUpVector, bucket.getProjection(), groundShadowFactor, orientationNormalScale, null, null, textScaleFactor);
 
             const atlasTexture = tile.glyphAtlasTexture ? tile.glyphAtlasTexture : null;
