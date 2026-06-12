@@ -1,9 +1,44 @@
-import {Pane} from 'tweakpane';
+import {Pane as TweakpanePane} from 'tweakpane';
 import {bindAll} from '../../util/util';
 import * as DOM from '../../util/dom';
 
 import type {Map as MapboxMap, IControl, ControlPosition} from '../map';
-import type {FolderApi, FolderParams, BindingApi, BindingParams, ButtonApi} from '@tweakpane/core';
+
+type BindingParams = Record<string, unknown>;
+
+type FolderParams = BindingParams & {
+    title: string;
+};
+
+type ButtonApi = {
+    on: (event: 'click', callback: () => void) => void;
+};
+
+type BindingApi = {
+    label?: string;
+    element: HTMLElement;
+    on: (event: 'change', callback: (event: {value: unknown}) => void) => void;
+};
+
+type FolderApi = {
+    title: string;
+    element: HTMLElement;
+    expanded: boolean;
+    disabled?: boolean;
+    children: Array<{expanded?: boolean}>;
+    addBinding: <T extends object>(target: T, key: keyof T, params?: BindingParams) => BindingApi;
+    addButton: (options: {title: string}) => ButtonApi;
+    addFolder: (options: FolderParams) => FolderApi;
+    dispose: () => void;
+    on: (event: 'fold', callback: () => void) => void;
+};
+
+type PaneApi = FolderApi & {
+    dispose: () => void;
+    exportState: () => unknown;
+    importState: (state: unknown) => void;
+    refresh: () => void;
+};
 
 interface FileSystemWritableFileStream {
     write: (data: string) => Promise<void>;
@@ -112,7 +147,7 @@ const CSS = `
  */
 export class DevTools implements IControl {
     _map: MapboxMap;
-    _pane: Pane;
+    _pane: PaneApi;
 
     _container: HTMLElement;
     _styleElement: HTMLStyleElement;
@@ -148,11 +183,11 @@ export class DevTools implements IControl {
 
         const container = this._container = DOM.create('div', 'mapboxgl-ctrl mapbox-devtools');
 
-        const pane = this._pane = new Pane({
+        const pane = this._pane = new TweakpanePane({
             title: 'devtools',
             container,
             expanded: this._savedState ? this._savedState.paneExpanded : false
-        });
+        }) as PaneApi;
 
         pane.on('fold', this._onFold);
 
@@ -387,7 +422,7 @@ export class DevTools implements IControl {
         });
     }
 
-    _addFolder(parent: FolderApi | Pane, options: FolderParams): FolderApi {
+    _addFolder(parent: FolderApi | PaneApi, options: FolderParams): FolderApi {
         const folder = parent.addFolder(options);
         folder.on('fold', this._onFold);
         this._folders.set(folder, {title: options.title, bindings: new Map()});
