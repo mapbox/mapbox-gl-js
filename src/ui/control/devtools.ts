@@ -32,12 +32,17 @@ declare global {
 type Callback = (value?: unknown) => void;
 
 export type DevToolsFolder = {
-    addBinding: <T extends object>(target: T, key: keyof T, params?: BindingParams, callback?: Callback) => void;
-    addButton: (title: string, callback: () => void) => ButtonApi;
-    addSubFolder: (name: string, options?: Partial<FolderParams>) => DevToolsFolder;
-    addReadonly: <T extends object>(target: T, key: keyof T, params?: BindingParams) => BindingApi;
-    folder: FolderApi;
+    addBinding: <T extends object>(target: T, key: keyof T, params?: Record<string, unknown>, callback?: Callback) => void;
+    addButton: (title: string, callback: () => void) => void;
+    addSubFolder: (name: string, options?: Record<string, unknown>) => DevToolsFolder;
+    addReadonly: <T extends object>(target: T, key: keyof T, params?: Record<string, unknown>) => void;
+    folder: {children: ReadonlyArray<unknown>; expanded: boolean; disabled: boolean};
 };
+
+export interface IDevTools {
+    addFolder: (name: string, options?: Record<string, unknown>) => DevToolsFolder;
+    removeFolder: (name: string) => void;
+}
 
 type Metadata = {
     target: Record<string, unknown>;

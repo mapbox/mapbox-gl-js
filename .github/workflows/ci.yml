@@ -47,11 +47,10 @@ jobs:
     - run: npm run build-all
     - run: npm run build-style-spec
     - run: npm run build-css
+    - run: npm run build-dts
     - run: npm run test-build
     - run: xvfb-run -a npm run test-esm
     - run: xvfb-run -a npm run test-csp
-    - run: npm run build-dts
-    - run: npm run build-dts-esm
     - run: npm run build -w vite-build-test
     - run: npm run build -w webpack-build-test
     - run: npm run test -w typescript-build-test

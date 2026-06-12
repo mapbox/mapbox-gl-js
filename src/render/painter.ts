@@ -78,7 +78,7 @@ import type {Source, ISource} from '../source/source';
 import type {UniformBindings} from './uniform_binding';
 import type {CrossTileID, VariableOffset} from '../symbol/placement';
 import type {TypedStyleLayer, CoreStyleLayer, HDStyleLayer, StandardStyleLayer} from '../style/style_layer/typed_style_layer';
-import type {DevTools} from '../ui/control/devtools';
+import type {IDevTools} from '../ui/control/devtools';
 import type {ShadowCullCache} from './draw_fill_extrusion';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
@@ -273,7 +273,7 @@ class Painter {
     _fogVisible: boolean;
     _cachedTileFogOpacities: Record<number, [number, number]>;
     _shadowRenderer?: ShadowRenderer;
-    _devtools?: DevTools;
+    _devtools?: IDevTools;
     _wireframeDebugCache: WireframeDebugCache;
 
     updateAverageFPS?: () => void;

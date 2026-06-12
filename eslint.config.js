@@ -70,6 +70,7 @@ const IGNORED_PATHS = [
     './test/build/webpack/**/*',
     './test/build/typings/**/*',
     './test/build/style-spec.test.js',
+    './dts.config.cjs',
 ];
 
 export default tseslint.config(
