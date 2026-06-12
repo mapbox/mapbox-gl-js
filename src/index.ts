@@ -278,14 +278,6 @@ const exported = {
         WorkerClass.workerClass = klass;
     },
 
-    get workerParams(): WorkerOptions {
-        return WorkerClass.workerParams;
-    },
-
-    set workerParams(params: WorkerOptions) {
-        WorkerClass.workerParams = params;
-    },
-
     /**
      * Provides an interface for loading Draco decoding library (draco_decoder_gltf.wasm v1.5.6) from a self-hosted URL.
      * This needs to be set only once, and before any call to `new mapboxgl.Map(..)` takes place.

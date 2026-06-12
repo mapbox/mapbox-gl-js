@@ -1,13 +1,7 @@
-/* global globalThis */
+import WorkerClass from '../../src/util/worker_class';
 
-import mapboxgl from '../../src/index';
-
-if (!globalThis.defined) {
-    mapboxgl.workerParams = {
-        type: 'module'
-    };
-
-    mapboxgl.workerUrl = '/src/source/worker.ts';
-
-    globalThis.defined = true;
+if (!WorkerClass.workerUrl) {
+    // Internal, test-only: load the untranspiled worker source as an ES module.
+    WorkerClass.workerParams = {type: 'module'};
+    WorkerClass.workerUrl = '/src/source/worker.ts';
 }

@@ -5,14 +5,10 @@ import WorkerClass from '../../src/util/worker_class';
 import {prewarm} from '../../src/util/worker_pool_factory';
 import {markTestBaseline, cleanupTestMaps} from '../util/vitest';
 
-if (!globalThis.defined) {
-    WorkerClass.workerParams = {
-        type: 'module'
-    };
-
+if (!WorkerClass.workerUrl) {
+    // Internal, test-only: load the untranspiled worker source as an ES module.
+    WorkerClass.workerParams = {type: 'module'};
     WorkerClass.workerUrl = '/src/source/worker.ts';
-
-    globalThis.defined = true;
 }
 
 // Keep the shared WorkerPool alive across all tests in this iframe. Without
