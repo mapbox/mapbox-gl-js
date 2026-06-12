@@ -1,3 +1,9 @@
+## 3.24.1
+
+## Bug fixes 🐞
+
+- Fix an issue with custom layer rendering alongside data-driven `line-emissive-strength`.
+
 ## 3.24.0
 
 ## Features and improvements ✨
