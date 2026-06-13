@@ -2,6 +2,9 @@
   "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
   "version": "3.25.0-rc.1",
+  "bugs": {
+    "url": "https://github.com/mapbox/mapbox-gl-js/issues"
+  },
   "main": "dist/mapbox-gl.js",
   "style": "dist/mapbox-gl.css",
   "types": "dist/mapbox-gl.d.ts",
