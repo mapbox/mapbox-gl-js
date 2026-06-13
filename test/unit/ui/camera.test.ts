@@ -1104,7 +1104,39 @@ describe('camera', () => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const transform = camera.cameraForBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0});
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -100.5, lat: 34.7171});
+            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -96.5558, lat: 32.0833});
+        });
+
+        test('asymmetrical left padding shifts center', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const camera = createCamera();
+            const bb = [[-133, 16], [-68, 50]];
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            const noPadding = camera.cameraForBounds(bb, {padding: {top: 0, right: 0, bottom: 0, left: 0}});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            const leftPadding = camera.cameraForBounds(bb, {padding: {top: 0, right: 0, bottom: 0, left: 100}});
+
+            // With left padding, the center shifts left (more negative lng) to offset the bounds
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+            expect(leftPadding.center.lng).toBeLessThan(noPadding.center.lng);
+            // Zoom should decrease to accommodate the padding
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+            expect(leftPadding.zoom).toBeLessThan(noPadding.zoom);
+        });
+
+        test('symmetric padding does not shift center', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const camera = createCamera();
+            const bb = [[-133, 16], [-68, 50]];
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            const noPadding = camera.cameraForBounds(bb);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            const symPadding = camera.cameraForBounds(bb, {padding: {top: 50, right: 50, bottom: 50, left: 50}});
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(fixedLngLat(noPadding.center, 4)).toEqual(fixedLngLat(symPadding.center, 4));
         });
 
         test('bearing and asymmetrical padding', () => {
@@ -1115,7 +1147,7 @@ describe('camera', () => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const transform = camera.cameraForBounds(bb, {bearing: 90, padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0});
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -100.5, lat: 34.7171});
+            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -103.3761, lat: 31.7099});
         });
 
         test(
@@ -1130,7 +1162,7 @@ describe('camera', () => {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 const transform = camera.cameraForBounds(bb, {bearing: 90, padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0});
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                expect(fixedLngLat(transform.center, 4)).toEqual({lng: -100.5, lat: 34.7171});
+                expect(fixedLngLat(transform.center, 4)).toEqual({lng: -103.3761, lat: 31.7099});
             }
         );
 
@@ -1164,7 +1196,7 @@ describe('camera', () => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const transform = camera.cameraForBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, offset: [0, 100]});
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -100.5, lat: 46.6292});
+            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -96.5558, lat: 44.4189});
         });
 
         test('bearing, asymmetrical padding, and offset', () => {
@@ -1175,7 +1207,7 @@ describe('camera', () => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const transform = camera.cameraForBounds(bb, {bearing: 90, padding: {top: 10, right: 75, bottom: 50, left: 25}, offset: [0, 100], duration: 0});
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -100.5, lat: 45.6619});
+            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -103.3761, lat: 43.0929});
         });
 
         test('unable to fit', () => {
@@ -1441,7 +1473,7 @@ describe('camera', () => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             camera.fitBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0});
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -100.5, lat: 34.7171});
+            expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -96.5558, lat: 32.0833});
         });
 
         test('padding object with pitch', () => {
@@ -1452,7 +1484,7 @@ describe('camera', () => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             camera.fitBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0, pitch: 30});
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -100.5, lat: 34.7171});
+            expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -96.5558, lat: 32.4408});
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(camera.getPitch()).toEqual(30);
         });
