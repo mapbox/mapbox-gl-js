@@ -473,3 +473,4 @@ describe('StyleLayer#appearances', () => {
 
     });
 });
+

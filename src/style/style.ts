@@ -3,6 +3,7 @@ import murmur3 from '../util/murmur3';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import StyleChanges from './style_changes';
 import createStyleLayer from './create_style_layer';
+import {LayerExpressionDependencies} from './layer_expression_dependencies';
 import loadSprite from './load_sprite';
 import ImageManager from '../render/image_manager';
 import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager';
@@ -262,8 +263,7 @@ export type StyleOptions = {
     initialConfig?: {
         [key: string]: ConfigSpecification;
     };
-    configDependentLayers?: Set<string>;
-    indoorDependentLayers?: Set<string>;
+    layerExpressionDependencies?: Map<string, LayerExpressionDependencies>;
 };
 
 export type StyleSetterOptions = {
@@ -384,8 +384,9 @@ class Style extends Evented<MapEvents> {
     _availableModels: StyleModelMap;
     _markersNeedUpdate: boolean;
     _brightness: number | null | undefined;
-    _configDependentLayers: Set<string>;
-    _indoorDependentLayers: Set<string>;
+    // Expression dependencies of every layer in the style tree, keyed by layer
+    // fqid and shared by reference between the root style and its fragments.
+    _layerExpressionDependencies: Map<string, LayerExpressionDependencies>;
     _config: ConfigSpecification | null | undefined;
     _initialConfig: {
         [key: string]: ConfigSpecification;
@@ -535,8 +536,7 @@ class Style extends Evented<MapEvents> {
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.options = options.configOptions ? options.configOptions : new Map();
-        this._configDependentLayers = options.configDependentLayers ? options.configDependentLayers : new Set();
-        this._indoorDependentLayers = options.indoorDependentLayers ? options.indoorDependentLayers : new Set();
+        this._layerExpressionDependencies = options.layerExpressionDependencies ? options.layerExpressionDependencies : new Map<string, LayerExpressionDependencies>();
         this._config = options.config;
         this._styleColorTheme = {
             lut: null,
@@ -832,8 +832,7 @@ class Style extends Evented<MapEvents> {
             config,
             configOptions: this.options,
             colorThemeOverride: importSpec["color-theme"],
-            configDependentLayers: this._configDependentLayers,
-            indoorDependentLayers: this._indoorDependentLayers
+            layerExpressionDependencies: this._layerExpressionDependencies
         });
 
         // Bubble all events fired by the style to the map.
@@ -848,7 +847,7 @@ class Style extends Evented<MapEvents> {
         if (!initialLoad) {
             this.updateConfigDependencies();
         }
-        this._updateLayers(this._indoorDependentLayers);
+        this._updateLayers(this._dependentLayerIds((deps) => deps.isIndoorDependent));
         this.map._triggerCameraUpdate(this.camera);
 
         // During root's initial-load batch, sibling fragments share a single
@@ -961,8 +960,7 @@ class Style extends Evented<MapEvents> {
             let hasPendingHdCoverage = false;
             for (const layer of layers) {
                 const styleLayer = createStyleLayer(layer, this.scope, this._styleColorTheme.lut, this.options);
-                if (styleLayer.expressionDependencies.configDependencies.size !== 0) this._configDependentLayers.add(styleLayer.fqid);
-                if (styleLayer.expressionDependencies.isIndoorDependent) this._indoorDependentLayers.add(styleLayer.fqid);
+                this._layerExpressionDependencies.set(styleLayer.fqid, new LayerExpressionDependencies(styleLayer));
                 this._hasAppearances = this._hasAppearances || styleLayer.getAppearances().length !== 0;
                 styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
                 this._layers[styleLayer.id] = styleLayer;
@@ -2778,7 +2776,7 @@ class Style extends Evented<MapEvents> {
     }
 
     updateIndoorDependentLayers() {
-        this._updateLayers(this._indoorDependentLayers);
+        this._updateLayers(this._dependentLayerIds((deps) => deps.isIndoorDependent));
         this.map._styleDirty = true;
         this.map.triggerRepaint();
     }
@@ -2907,10 +2905,10 @@ class Style extends Evented<MapEvents> {
         }
     }
 
-    _updateLayers(layerIds: Set<string>, condition: (layer: TypedStyleLayer) => boolean = () => true) {
+    _updateLayers(layerIds: Iterable<string>) {
         for (const id of layerIds) {
             const layer = this.getLayer(id);
-            if (layer && condition(layer)) {
+            if (layer) {
                 layer.possiblyEvaluateVisibility();
                 this._updateLayer(layer);
                 this._changes.setDirty();
@@ -2918,10 +2916,18 @@ class Style extends Evented<MapEvents> {
         }
     }
 
+    _dependentLayerIds(predicate: (deps: LayerExpressionDependencies) => boolean): Array<string> {
+        const ids: Array<string> = [];
+        for (const [id, deps] of this._layerExpressionDependencies) {
+            if (predicate(deps)) ids.push(id);
+        }
+        return ids;
+    }
+
     updateConfigDependencies(configKey?: string) {
-        this._updateLayers(this._configDependentLayers, (layer) => {
-            return configKey ? layer.expressionDependencies.configDependencies.has(configKey) : true;
-        });
+        this._updateLayers(this._dependentLayerIds((deps) => {
+            return configKey ? deps.hasConfigDependency(configKey) : deps.isConfigDependent;
+        }));
 
         if (this.ambientLight) {
             this.ambientLight.updateConfig(this.options);
@@ -2998,9 +3004,7 @@ class Style extends Evented<MapEvents> {
             layer.setEventedParent(this, {layer: {id}});
         }
 
-        const fqid = makeFQID(layer.source, layer.scope);
-        if (layer.expressionDependencies.configDependencies.size !== 0) this._configDependentLayers.add(fqid);
-        if (layer.expressionDependencies.isIndoorDependent) this._indoorDependentLayers.add(fqid);
+        this._layerExpressionDependencies.set(layer.fqid, new LayerExpressionDependencies(layer));
 
         let index = this._order.length;
         if (before) {
@@ -3125,8 +3129,7 @@ class Style extends Evented<MapEvents> {
         this._changes.setDirty();
         this._handleLayerOrderChange();
 
-        this._configDependentLayers.delete(layer.fqid);
-        this._indoorDependentLayers.delete(layer.fqid);
+        this._layerExpressionDependencies.delete(layer.fqid);
         this._changes.removeLayer(layer);
 
         const sourceCache = this.getOwnLayerSourceCache(layer);
@@ -3232,8 +3235,11 @@ class Style extends Evented<MapEvents> {
             return;
         }
 
+        const dependencies = this._layerExpressionDependencies.get(layer.fqid);
+
         if (filter === null || filter === undefined) {
             layer.filter = undefined;
+            if (dependencies) dependencies.invalidateFilter();
             this._updateLayer(layer);
             return;
         }
@@ -3243,6 +3249,7 @@ class Style extends Evented<MapEvents> {
         }
 
         layer.filter = structuredClone(filter);
+        if (dependencies) dependencies.invalidateFilter();
         this._updateLayer(layer);
     }
 
@@ -3282,8 +3289,6 @@ class Style extends Evented<MapEvents> {
         }
 
         layer.setLayoutProperty(name, value);
-        if (layer.expressionDependencies.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
-        if (layer.expressionDependencies.isIndoorDependent) this._indoorDependentLayers.add(layer.fqid);
         this._updateLayer(layer);
     }
 
@@ -3365,8 +3370,6 @@ class Style extends Evented<MapEvents> {
         }
 
         const requiresRelayout = layer.setPaintProperty(name, value);
-        if (layer.expressionDependencies.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
-        if (layer.expressionDependencies.isIndoorDependent) this._indoorDependentLayers.add(layer.fqid);
         if (requiresRelayout) {
             this._updateLayer(layer);
         }

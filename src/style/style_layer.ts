@@ -4,9 +4,8 @@ import {Layout, Transitionable, PossiblyEvaluated, PossiblyEvaluatedPropertyValu
 import {supportsPropertyExpression} from '../style-spec/util/properties';
 import featureFilter from '../style-spec/feature_filter/index';
 import {makeFQID} from '../util/fqid';
-import {createExpression, type FeatureState} from '../style-spec/expression/index';
+import {type FeatureState} from '../style-spec/expression/index';
 import {isStateConstant} from '../style-spec/expression/is_constant';
-import latest from '../style-spec/reference/latest';
 import assert from '../style-spec/util/assert';
 import SymbolAppearance from './appearance';
 
@@ -49,11 +48,6 @@ type LayerRenderingStats = {
 // Symbols are draped only on native and for certain cases only
 const drapedLayers = new Set(['fill', 'line', 'background', 'hillshade', 'raster']);
 
-type LayerExpressionDependencies = {
-    isIndoorDependent: boolean;
-    configDependencies: Set<string>;
-};
-
 class StyleLayer extends Evented {
     id: string;
     fqid: string;
@@ -68,7 +62,6 @@ class StyleLayer extends Evented {
     maxzoom: number | null | undefined;
     filter: FilterSpecification | undefined;
     visibility: 'visible' | 'none' | undefined;
-    expressionDependencies: LayerExpressionDependencies;
     iconImageUseTheme: string | null | undefined;
     appearances: Array<SymbolAppearance>;
     appearancesVersion: number;
@@ -114,10 +107,6 @@ class StyleLayer extends Evented {
 
         this._featureFilter = {filter: () => true, needGeometry: false, needFeature: false};
         this._filterCompiled = false;
-        this.expressionDependencies = {
-            isIndoorDependent: false,
-            configDependencies: new Set()
-        };
 
         if (layer.type === 'custom') return;
 
@@ -129,16 +118,6 @@ class StyleLayer extends Evented {
             this.source = layer.source;
             this.sourceLayer = layer['source-layer'];
             this.filter = layer.filter;
-
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const filterSpec = latest[`filter_${layer.type}`];
-            assert(filterSpec);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            const compiledStaticFilter = createExpression(this.filter, filterSpec);
-            if (compiledStaticFilter.result !== 'error') {
-                this.expressionDependencies.configDependencies = new Set([...this.expressionDependencies.configDependencies, ...compiledStaticFilter.value.configDependencies]);
-                this.expressionDependencies.isIndoorDependent = this.expressionDependencies.isIndoorDependent || compiledStaticFilter.value.isIndoorDependent;
-            }
         }
 
         if (layer.slot) this.slot = layer.slot;
@@ -149,8 +128,6 @@ class StyleLayer extends Evented {
 
         if (properties.layout) {
             this._unevaluatedLayout = new Layout(properties.layout, this.scope, options, this.iconImageUseTheme);
-            this.expressionDependencies.configDependencies = new Set([...this.expressionDependencies.configDependencies, ...this._unevaluatedLayout.configDependencies]);
-            this.expressionDependencies.isIndoorDependent = this.expressionDependencies.isIndoorDependent || this._unevaluatedLayout.isIndoorDependent();
         }
 
         if (properties.paint) {
@@ -164,9 +141,6 @@ class StyleLayer extends Evented {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.setLayoutProperty(property, layer.layout[property]);
             }
-            this.expressionDependencies.configDependencies = new Set([...this.expressionDependencies.configDependencies, ...this._transitionablePaint.configDependencies]);
-            this.expressionDependencies.isIndoorDependent = this.expressionDependencies.isIndoorDependent || this._transitionablePaint.isIndoorDependent();
-
             this._transitioningPaint = this._transitionablePaint.untransitioned();
             this.paint = new PossiblyEvaluated(properties.paint);
         }
@@ -203,8 +177,6 @@ class StyleLayer extends Evented {
         if (!specProps[name]) return; // skip unrecognized properties
 
         layout.setValue(name, value);
-        this.expressionDependencies.configDependencies = new Set([...this.expressionDependencies.configDependencies, ...layout.configDependencies]);
-        this.expressionDependencies.isIndoorDependent = this.expressionDependencies.isIndoorDependent || layout.isIndoorDependent();
         if (name === 'visibility') {
             this.possiblyEvaluateVisibility();
         }
@@ -266,8 +238,6 @@ class StyleLayer extends Evented {
         const oldValue = transitionable.value;
 
         paint.setValue(name, value as PropertyValueSpecification<unknown>);
-        this.expressionDependencies.configDependencies = new Set([...this.expressionDependencies.configDependencies, ...paint.configDependencies]);
-        this.expressionDependencies.isIndoorDependent = this.expressionDependencies.isIndoorDependent || paint.isIndoorDependent();
         this._handleSpecialPaintPropertyUpdate(name);
 
         const newValue = paint._values[name].value;

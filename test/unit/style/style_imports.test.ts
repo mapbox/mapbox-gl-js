@@ -2976,6 +2976,49 @@ describe('Style#setConfigProperty', () => {
         style.setConfigProperty('standard', 'showBackground', true);
         expect(layer.getLayoutProperty('visibility')).toEqual('visible');
     });
+
+    test('Tracks config dependencies introduced by a runtime filter change', async () => {
+        const {style} = newStubStyle();
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const initialStyle = createStyleJSON({
+            imports: [{
+                id: 'standard',
+                url: '/standard.json',
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                data: createStyleJSON({
+                    sources: {
+                        geo: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}
+                    },
+                    layers: [{
+                        id: 'circle',
+                        type: 'circle',
+                        source: 'geo',
+                        filter: ['==', ['get', 'kind'], 'a']
+                    }],
+                    schema: {kind: {default: 'a'}}
+                })
+            }]
+        });
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(initialStyle);
+
+        await waitFor(style, "style.load");
+
+        const layerFqid = makeFQID('circle', 'standard');
+        expect(style._layerExpressionDependencies.get(layerFqid).isConfigDependent).toBe(false);
+
+        const fragmentStyle = style.getFragmentStyle('standard');
+        fragmentStyle.setFilter('circle', ['==', ['get', 'kind'], ['config', 'kind']]);
+
+        // The dependency map holds live references shared across fragments, so the
+        // root style observes the dependency introduced by the filter change.
+        expect(style._layerExpressionDependencies.get(layerFqid).hasConfigDependency('kind')).toBe(true);
+
+        fragmentStyle.setFilter('circle', null);
+        expect(style._layerExpressionDependencies.get(layerFqid).isConfigDependent).toBe(false);
+    });
 });
 
 describe('Style initial config load', () => {
@@ -3014,7 +3057,7 @@ describe('Style initial config load', () => {
         // The layer is config-dependent, so it should be tracked as such.
         const layerFqid = makeFQID('circle', 'standard');
         const fragmentStyle = style.getFragmentStyle('standard');
-        expect(fragmentStyle._configDependentLayers.has(layerFqid)).toBe(true);
+        expect(fragmentStyle._layerExpressionDependencies.get(layerFqid).isConfigDependent).toBe(true);
 
         // But because the layer was constructed with a live reference to the
         // shared options Map, no source-cache reload should have been queued
