@@ -99,7 +99,6 @@ export default class DEMData {
             values[this._idx(dim, dim)] = values[this._idx(dim - 1, dim - 1)];
         }
 
-        // Convert to float
         const unpack = sourceEncoding === "terrarium" ? unpackTerrarium : unpackMapbox;
         for (let i = 0; i < values.length; ++i) {
             const byteIdx = i * 4;

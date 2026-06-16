@@ -343,11 +343,11 @@ describe('DemMinMaxQuadTree', () => {
 
             let dist = tree.raycast(minx, miny, maxx, maxy, [0, 0, 50], [0, 0, -1]);
             expect(dist).toBeTruthy();
-            expect(dist).toEqual(34.5);
+            expect(dist).toEqual(34);
 
             dist = tree.raycast(minx, miny, maxx, maxy, [-32, 0, 32], [0.707, 0, -0.707]);
             expect(dist).toBeTruthy();
-            expect(fixedNum(dist, 3)).toEqual(34.3);
+            expect(fixedNum(dist, 3)).toEqual(33.946);
 
             dist = tree.raycast(minx, miny, maxx, maxy, [16, 0, 32.01], [-0.707, 0, -0.707]);
             expect(dist).toBeFalsy();
@@ -398,17 +398,95 @@ describe('DemMinMaxQuadTree', () => {
 
             let dist = tree.raycast(minx, miny, maxx, maxy, [0, 0, 50], [0, 0, -1], 0.5);
             expect(dist).toBeTruthy();
-            expect(dist).toEqual(42.25);
+            expect(dist).toEqual(42);
             expect(dist > tree.raycast(minx, miny, maxx, maxy,  [0, 0, 50], [0, 0, -1])).toBeTruthy();
 
             dist = tree.raycast(minx, miny, maxx, maxy, [-32, 0, 32], [0.707, 0, -0.707], 0.5);
             expect(dist).toBeTruthy();
-            expect(fixedNum(dist, 3)).toEqual(37.954);
+            expect(fixedNum(dist, 3)).toEqual(37.718);
             expect(
                 dist > tree.raycast(minx, miny, maxx, maxy, [-32, 0, 32], [0.707, 0, -0.707])
             ).toBeTruthy();
 
             dist = tree.raycast(minx, miny, maxx, maxy, [16, 0, 32.01], [-0.707, 0, -0.707], 0.5);
+            expect(dist).toBeFalsy();
+        });
+    });
+});
+
+describe('Terrain raycast', () => {
+    describe('mip-0 accurate min/max', () => {
+        test('captures peak at interior texel not sampled by corners', () => {
+            const size = 32;
+            const padding = 1;
+            const elevation = fillElevation(size, padding, 0);
+            // Texel (4,4) sits in the interior of block (0,0) — never hit by 4-corner sampling
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            elevation[idx(4, 4, size, padding)] = 100;
+            const dem = mockDEMfromElevation(size, padding, elevation);
+
+            const mips = buildDemMipmap(dem);
+            // Block (0,0) at mip[0] must now capture the 100m peak
+            expect(mips[0].maximums[0]).toBeCloseTo(100, 0);
+            // All other blocks stay at 0
+            expect(mips[0].maximums[1]).toBeCloseTo(0, 0);
+        });
+
+        test('propagates accurate max to parent nodes', () => {
+            const size = 32;
+            const padding = 1;
+            const elevation = fillElevation(size, padding, 0);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            elevation[idx(4, 4, size, padding)] = 100;
+            const dem = mockDEMfromElevation(size, padding, elevation);
+            const tree = new DemMinMaxQuadTree(dem);
+            // Root node must reflect the true peak
+            expect(tree.maximums[0]).toBeCloseTo(100, 0);
+        });
+    });
+
+    describe('DDA leaf intersection', () => {
+        test('detects interior peak missed by 4-corner triangle test', () => {
+            const size = 32;
+            const padding = 1;
+            const elevation = fillElevation(size, padding, 0);
+            // Texel (4,4): interior of block (0,0) in a 32-dim DEM
+            // Old 4-corner test samples ~texels (0, 7.5) and would not hit this peak
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            elevation[idx(4, 4, size, padding)] = 100;
+            const dem = mockDEMfromElevation(size, padding, elevation);
+            const tree = new DemMinMaxQuadTree(dem);
+
+            // World bounds of the tile: [-1,1]×[-1,1]
+            // Block (0,0) covers world [-1,-0.5]×[-1,-0.5], cell (4,4) within it covers [-0.75,-0.6875]
+            // Shoot from inside that cell straight down from above the peak
+            const dist = tree.raycast(-1, -1, 1, 1, [-0.72, -0.72, 101], [0, 0, -1]);
+
+            // With DDA: finds the peak triangle (e00=100m) → hits at t < 101
+            // Without DDA: flat corners ≈ 0 → would hit at t ≈ 101
+            expect(dist).toBeTruthy();
+            expect(dist).toBeLessThan(100);
+        });
+
+        test('still detects flat plane correctly', () => {
+            const size = 32;
+            const padding = 1;
+            const dem = mockDEMfromElevation(size, padding, fillElevation(size, padding, 10));
+            const tree = new DemMinMaxQuadTree(dem);
+
+            const dist = tree.raycast(-1, -1, 1, 1, [0, 0, 11], [0, 0, -1]);
+            expect(dist).toBeTruthy();
+            expect(dist).toEqual(1.0);
+        });
+
+        test('does not hit when ray starts below terrain', () => {
+            const size = 32;
+            const padding = 1;
+            const dem = mockDEMfromElevation(size, padding, fillElevation(size, padding, 10));
+            const tree = new DemMinMaxQuadTree(dem);
+
+            // Ray is horizontal below the terrain surface — should not hit
+            const dist = tree.raycast(-1, -1, 1, 1, [-1, 0, 9], [1, 0, 0]);
             expect(dist).toBeFalsy();
         });
     });

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Terrain raycast debug</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            padding: 8px 12px;
+            font: 12px/1.5 monospace;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<div id="info">Click to sample terrain raycast</div>
+
+<script src="../dist/mapbox-gl-dev.js"></script>
+<script type="module">
+import {getAccessToken} from './access_token_generated.js';
+
+const map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
+    container: 'map',
+    zoom: 13.5,
+    center: [-122.45814, 37.76159],
+    style: 'mapbox://styles/mapbox/streets-v11',
+    hash: true,
+    projection: 'globe',
+});
+
+map.addControl(new mapboxgl.NavigationControl());
+map.addControl(new mapboxgl.ScaleControl());
+
+map.on('style.load', () => {
+    map.addSource('mapbox-dem', {
+        type: 'raster-dem',
+        url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        tileSize: 514,
+        maxzoom: 14
+    });
+    map.setTerrain({source: 'mapbox-dem', exaggeration: 2.0});
+    map.setFog({});
+
+    map.addSource('samples', {
+        type: 'geojson',
+        data: {type: 'FeatureCollection', features: []}
+    });
+    map.addLayer({
+        id: 'samples',
+        type: 'circle',
+        source: 'samples',
+        paint: {
+            'circle-radius': 4,
+            'circle-color': '#ff00ff',
+            'circle-pitch-alignment': 'viewport',
+            'circle-pitch-scale': 'viewport'
+        }
+    });
+});
+
+// Sample a 21×21 grid of points (±100px, step 10px) centred on (px, py).
+// Returns timing in ms.
+function sample(px, py) {
+    const features = [];
+    const t0 = performance.now();
+    for (let dy = -100; dy <= 100; dy += 10) {
+        for (let dx = -100; dx <= 100; dx += 10) {
+            const ll = map.unproject(new mapboxgl.Point(px + dx, py + dy));
+            features.push({
+                type: 'Feature',
+                geometry: {type: 'Point', coordinates: [ll.lng, ll.lat]}
+            });
+        }
+    }
+    const elapsed = performance.now() - t0;
+    map.getSource('samples').setData({type: 'FeatureCollection', features});
+    return elapsed;
+}
+
+map.on('load', () => {
+    const c = map.getCanvas();
+    const ms = sample(c.width / window.devicePixelRatio / 2, c.height / window.devicePixelRatio / 2);
+    document.getElementById('info').textContent = `Loaded — ${features_count()} samples in ${ms.toFixed(1)} ms`;
+});
+
+map.on('click', (e) => {
+    const ms = sample(e.point.x, e.point.y);
+    document.getElementById('info').textContent =
+        `Click (${e.point.x.toFixed(0)}, ${e.point.y.toFixed(0)}) — ${features_count()} samples in ${ms.toFixed(1)} ms`;
+    console.log(`raycast: ${ms.toFixed(2)} ms for ${features_count()} points`);
+});
+
+function features_count() { return 21 * 21; }
+</script>
+</body>
+</html>

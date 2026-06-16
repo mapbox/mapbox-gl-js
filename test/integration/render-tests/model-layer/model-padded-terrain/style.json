@@ -62,7 +62,7 @@
       "source": "mapbox",
       "source-layer": "road",
       "paint": {
-          "line-color": "lightyellow",
+          "line-color": "black",
           "line-width": 10,
           "line-opacity": 0.3
       }
