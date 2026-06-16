@@ -831,6 +831,9 @@ function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, lay
         uniformValues['u_spp_occlusion_opacity_zoom_factor'] = zf[6];
         uniformValues['u_spp_z_offset_zoom_factor']          = zf[7];
         uniformValues['u_spp_translate_zoom_factor']         = zf[8];
+        // Fractional render zoom; drives the zoom factor for appearance-zoom-stops properties
+        // where the [zm, zM] range lives in the UBO block rather than in the shared factors above.
+        uniformValues['u_spp_zoom_fraction'] = renderZoom - Math.floor(renderZoom);
         // Compute translate-anchor rotation for per-feature translate (appearances).
         // When translate is data-driven (bit 8 of dataDrivenMask), u_coord_matrix has no translate
         // baked in (set to [0,0] in drawLayerSymbols). The shader applies per-feature translate

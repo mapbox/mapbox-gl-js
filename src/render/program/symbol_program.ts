@@ -71,6 +71,8 @@ export type SymbolUniformsType = {
     ['u_spp_occlusion_opacity_zoom_factor']: Uniform1f;
     ['u_spp_z_offset_zoom_factor']: Uniform1f;
     ['u_spp_translate_zoom_factor']: Uniform1f;
+    // Fractional render zoom; drives per-feature zoom factors for appearances with differing stops.
+    ['u_spp_zoom_fraction']: Uniform1f;
     ['u_opacity_multiplier']: Uniform1f;
 };
 
@@ -139,6 +141,7 @@ const symbolUniforms = (context: Context): SymbolUniformsType => ({
     'u_spp_occlusion_opacity_zoom_factor': new Uniform1f(context),
     'u_spp_z_offset_zoom_factor': new Uniform1f(context),
     'u_spp_translate_zoom_factor': new Uniform1f(context),
+    'u_spp_zoom_fraction': new Uniform1f(context),
     'u_opacity_multiplier': new Uniform1f(context),
 });
 
@@ -228,6 +231,7 @@ const symbolUniformValues = (
         'u_spp_occlusion_opacity_zoom_factor': 0.0,
         'u_spp_z_offset_zoom_factor': 0.0,
         'u_spp_translate_zoom_factor': 0.0,
+        'u_spp_zoom_fraction': 0.0,
         'u_opacity_multiplier': 1.0,
     };
 

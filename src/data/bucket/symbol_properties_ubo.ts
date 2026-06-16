@@ -9,7 +9,10 @@ import type Context from '../../gl/context';
  * the shader's SymbolPropertyHeader struct). These constants name its dword slots:
  *
  *   [HEADER_DATA_DRIVEN_MASK]     bitmask: 1 = property goes in the per-feature data-driven block
- *   [HEADER_ZOOM_DEPENDENT_MASK]  bitmask: 1 = property uses zoom interpolation (composite kind)
+ *   [HEADER_ZOOM_DEPENDENT_MASK]  low 16 bits: 1 = property uses zoom interpolation (composite kind).
+ *                                 high 16 bits (>> HEADER_APPEARANCE_ZOOM_STOPS_SHIFT): 1 = appearances
+ *                                 override this property with differing zoom stops, so its zoom range
+ *                                 [zm, zM] is stored per feature in  the data-driven block
  *   [HEADER_BLOCK_SIZE_VEC4]      size of the data-driven block in vec4 units (0 when no DD props)
  *   [HEADER_OFFSETS + i]          dword offset of property i within the data-driven block
  *                                 (only meaningful when property i's data-driven bit is set)
@@ -21,6 +24,9 @@ export const HEADER_DATA_DRIVEN_MASK = 0;
 export const HEADER_ZOOM_DEPENDENT_MASK = 1;
 export const HEADER_BLOCK_SIZE_VEC4 = 2;
 export const HEADER_OFFSETS = 3;
+
+// Bit shift for the appearance-zoom-stops flags packed into the high half of the HEADER_ZOOM_DEPENDENT_MASK dword.
+export const HEADER_APPEARANCE_ZOOM_STOPS_SHIFT = 16;
 
 /**
  * A packed value for writing into the UBO's data-driven properties array.
@@ -56,10 +62,13 @@ export class SymbolPropertiesUBO {
     // Flat evaluation buffer layout — per-property start offset in a Float32Array(EVAL_FLAT_TOTAL).
     // fill_color[0..3], halo_color[4..7], opacity[8..9], halo_width[10..11],
     // halo_blur[12..13], emissive_strength[14..15], occlusion_opacity[16..17],
-    // z_offset[18..19], translate[20..23].
+    // z_offset[18..19], translate[20..23]
+    // Each property also gets a 2-slot [zm, zM] zoom range starting at EVAL_FLAT_ZOOM_OFFSETS[i]
+    // ([24,25] … [40,41]); only written for appearance-zoom-stops properties.
     // Colors and translate always use 4 slots; scalars always use 2 (second = 0 for non-zoom).
     static readonly EVAL_FLAT_OFFSETS: readonly number[] = [0, 4, 8, 10, 12, 14, 16, 18, 20];
-    static readonly EVAL_FLAT_TOTAL = 24;
+    static readonly EVAL_FLAT_ZOOM_OFFSETS: readonly number[] = [24, 26, 28, 30, 32, 34, 36, 38, 40];
+    static readonly EVAL_FLAT_TOTAL = 42;
 
     // The block-indices buffer is a pure identity mapping (blockIndices[i] = i): dedup currently
     // happens at the vertex-attribute level (duplicate features get the same index written into the
@@ -167,9 +176,10 @@ export class SymbolPropertiesUBO {
         }
         const dataDrivenMask = h[HEADER_DATA_DRIVEN_MASK];
         const zoomDependentMask = h[HEADER_ZOOM_DEPENDENT_MASK];
+        const appearanceZoomStopsMask = zoomDependentMask >>> HEADER_APPEARANCE_ZOOM_STOPS_SHIFT;
         for (let i = 0; i < 9; i++) {
             if ((dataDrivenMask & (1 << i)) === 0) continue;
-            this._copyFromFlat(base + h[HEADER_OFFSETS + i], i, flat, SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[i], zoomDependentMask);
+            this._copyFromFlat(base + h[HEADER_OFFSETS + i], i, flat, SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[i], zoomDependentMask, appearanceZoomStopsMask);
         }
         // Track dword range touched so upload() can do a partial bufferSubData.
         if (this._propsDirtyMin === -1 || base < this._propsDirtyMin) this._propsDirtyMin = base;
@@ -201,14 +211,25 @@ export class SymbolPropertiesUBO {
      *
      * Colors (propIdx < 2) and zoom-dep translate always copy 4 dwords.
      * Non-zoom translate and zoom-dep scalars copy 2 dwords. Non-zoom scalars copy 1 dword.
+     *
+     * Appearance-zoom-stops properties additionally carry a [zm, zM] pair, written after
+     * the value data: at relative dwords +4/+5 for colors/translate (the next vec4) and +2/+3 for
+     * scalars (the third/fourth dword of the value's vec4).
      */
-    private _copyFromFlat(dwordOffset: number, propIdx: number, flat: Float32Array, flatOffset: number, zoomDependentMask: number): void {
+    private _copyFromFlat(dwordOffset: number, propIdx: number, flat: Float32Array, flatOffset: number, zoomDependentMask: number, appearanceZoomStopsMask: number): void {
         const isColor = propIdx < 2;
         const isVec2 = propIdx === 8;
         const isZoomDep = (zoomDependentMask & (1 << propIdx)) !== 0;
         const count = isColor || (isVec2 && isZoomDep) ? 4 : (isVec2 || isZoomDep) ? 2 : 1;
 
-        for (let k = 0; k < count; k++) this.propertiesData[dwordOffset + k] = flat[flatOffset + k];
+        this.propertiesData.set(flat.subarray(flatOffset, flatOffset + count), dwordOffset);
+
+        if ((appearanceZoomStopsMask & (1 << propIdx)) !== 0) {
+            const zoomRel = isColor || isVec2 ? 4 : 2;
+            const zStart = SymbolPropertiesUBO.EVAL_FLAT_ZOOM_OFFSETS[propIdx];
+            this.propertiesData[dwordOffset + zoomRel] = flat[zStart];
+            this.propertiesData[dwordOffset + zoomRel + 1] = flat[zStart + 1];
+        }
     }
 
     /**
