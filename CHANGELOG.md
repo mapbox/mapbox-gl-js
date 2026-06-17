@@ -1,4 +1,4 @@
-## 3.25.0-rc.1
+## 3.25.0
 
 ### Breaking changes ⚠️
 
@@ -21,7 +21,6 @@
 - Remove all direct dependencies from `package.json` slightly improving NPM install size and time.
 - Improve anti-aliasing for lines with borders.
 - Implement automatic conflation of regular and HD road data in preparation for future Mapbox Standard updates.
-- Improve lightmap shading for model layers.
 
 ## Bug fixes 🐞
 
