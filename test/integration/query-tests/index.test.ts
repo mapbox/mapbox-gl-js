@@ -11,7 +11,7 @@ import {applyOperations} from '../lib/operation-handlers.js';
 import {deepEqual, generateDiffLog} from '../lib/json-diff.js';
 // @ts-expect-error Cannot find module 'virtual:integration-tests' or its corresponding type declarations.
 import {integrationTests} from 'virtual:integration-tests';
-import {getStatsHTML, setupHTML, updateHTML, registerIgnoredNotRun} from '../../util/html_generator';
+import {getStatsHTML, setupHTML, updateHTML, registerSkipped} from '../../util/html_generator';
 import {mapboxgl} from '../lib/mapboxgl.js';
 import {sendFragment, sendBrowserDiagnostics} from '../lib/utils';
 import {transformRequest} from '../lib/transform-request.js';
@@ -42,21 +42,25 @@ function getEnvironmentParams() {
 
         return {
             ignores: {
-                todo: [...ignoresPlatformSpecific.todo, ...ignoresAll.todo],
-                skip: [...ignoresPlatformSpecific.skip, ...ignoresAll.skip]
+                skip: Array.from(new Set([...ignoresPlatformSpecific.skip, ...ignoresAll.skip]))
             },
             timeout
         };
     } else {
-        return {ignores: ignoresAll, timeout};
+        return {
+            ignores: {
+                skip: ignoresAll.skip
+            },
+            timeout
+        };
     }
 }
 
 type TestMetadata = {
     name: string;
     minDiff: number;
+    testPath: string;
     status: string;
-    ignoredOutcome?: string;
     color?: string;
     errors: Error[];
     actual?: string;
@@ -77,8 +81,6 @@ let map;
 let reportFragment: string | undefined;
 
 const getTest = (queryTestName) => async () => {
-    const fullTestName = `query-tests/${queryTestName}`;
-    const isTodo = ignores.todo.includes(fullTestName);
     let errorMessage: string | undefined;
     try {
         const queryTest = integrationTests[queryTestName];
@@ -139,6 +141,7 @@ const getTest = (queryTestName) => async () => {
 
         const testMetaData: TestMetadata = {
             name: queryTestName,
+            testPath: `${testPath}/style.json`,
             actual: map.getCanvas().toDataURL(),
             width: options.width,
             height: options.height,
@@ -167,12 +170,6 @@ const getTest = (queryTestName) => async () => {
 
         testMetaData.status = success ? 'passed' : 'failed';
 
-        if (isTodo) {
-            testMetaData.status = 'ignored';
-            testMetaData.color = '#9E9E9E';
-            testMetaData.ignoredOutcome = success ? 'passed' : 'failed';
-        }
-
         if (import.meta.env.VITE_CI === 'false' && import.meta.env.VITE_UPDATE === 'true') {
             await server.commands.writeFile(`${testPath}/expected.json`, jsonDiff.replace('+ ', '').trim());
         } else if (import.meta.env.VITE_CI === 'false') {
@@ -184,14 +181,7 @@ const getTest = (queryTestName) => async () => {
 
         if (!success) errorMessage = `Query test ${queryTestName} failed`;
     } catch (error) {
-        reportFragment = updateHTML(isTodo ? {
-            name: queryTestName,
-            status: 'ignored',
-            color: '#9E9E9E',
-            ignoredOutcome: 'failed',
-            error,
-            errors: []
-        } : {
+        reportFragment = updateHTML({
             name: queryTestName,
             status: 'failed',
             error,
@@ -212,8 +202,6 @@ Object.keys(integrationTests).forEach((testName) => {
     if (ignores.skip.includes(queryTestName)) {
         skippedTests.push(testName);
         test.skip(testName, getTest(testName));
-    } else if (ignores.todo.includes(queryTestName)) {
-        test.todo(testName, getTest(testName));
     } else {
         test(testName, {timeout}, getTest(testName));
     }
@@ -222,7 +210,8 @@ Object.keys(integrationTests).forEach((testName) => {
 afterAll(async () => {
     document.body.removeChild(container);
     for (const testName of skippedTests) {
-        await sendFragment(reportFragmentIdx++, registerIgnoredNotRun(testName));
+        const testPath = integrationTests[testName]?.path;
+        await sendFragment(reportFragmentIdx++, registerSkipped(testName, testPath ? `${testPath}/style.json` : undefined));
     }
     await sendBrowserDiagnostics();
     await sendFragment(0, getStatsHTML());

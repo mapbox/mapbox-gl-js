@@ -1,14 +1,12 @@
 import {compile} from 'yeahjs';
 
-type TestStatus = 'passed' | 'failed' | 'ignored';
-
-type IgnoredOutcome = 'not run' | 'passed' | 'failed';
+type TestStatus = 'passed' | 'failed' | 'skipped';
 
 export type TestReportData = {
     name: string;
     status: TestStatus;
     color?: string;
-    ignoredOutcome?: IgnoredOutcome;
+    testPath?: string;
     width?: number;
     height?: number;
     actual?: string;
@@ -37,8 +35,8 @@ type ReportWindow = Window & {updateState?: () => void};
 const renderResultHTML = compile(`
   <div class="test <%= r.status %>">
     <h2><span class="label" style="background: <%= r.color %>"><%= r.status %></span> <%= r.name %></h2>
-    <% if (r.ignoredOutcome) { %>
-      <p class="ignore-outcome"><strong>Outcome:</strong> <% if (r.ignoredOutcome === 'failed') { %><span class="ignore-outcome-failed">FAILED</span><% } else { %><%= r.ignoredOutcome %><% } %></p>
+    <% if (r.testPath) { %>
+      <p class="diff"><strong>Test path:</strong> <%= r.testPath %></p>
     <% } %>
     <% if (r.showImages !== false && !r.error) { %>
       <% if (r.isRenderTest && (r.actual || r.expected)) { %>
@@ -63,10 +61,10 @@ const renderResultHTML = compile(`
     <% if (r.error) { %>
       <p style="color: red"><strong>Test Error:</strong> <%= r.errorMessage %></p>
     <% } %>
-    <% if (r.allowed !== undefined) { %>
+    <% if (r.status !== 'skipped' && r.allowed !== undefined) { %>
       <p class="diff"><strong>Allowed:</strong> <%= r.allowed %></p>
     <% } %>
-    <% if (r.minDiff !== undefined) { %>
+    <% if (r.status !== 'skipped' && r.minDiff !== undefined) { %>
       <p class="diff"><strong>Diff:</strong> <%= r.minDiff === 0 ? 'none' : r.minDiff %></p>
     <% } %>
     <% if (r.expectedPath) { %>
@@ -96,8 +94,6 @@ img { margin: 0 10px 10px 0; border: 1px dotted #ccc; image-rendering: pixelated
 .tests { border-top: 1px dotted #bbb; margin-top: 10px; }
 .diff { color: #777; }
 .ignore-reason { color: #555; font-style: italic; }
-.ignore-outcome { color: #555; }
-.ignore-outcome-failed { color: red; font-weight: bold; }
 .test p, .test pre { margin: 0 0 10px; }
 .test pre { font-size: 14px; }
 .label { color: white; font-size: 18px; padding: 2px 6px 3px; border-radius: 3px; margin-right: 3px; vertical-align: bottom; display: inline-block; }
@@ -114,8 +110,8 @@ const reportScript = `
 function isPassedTest(row) {
     return row.classList.contains('passed') || row.classList.contains('passed-metrics-failed');
 }
-function isIgnoredTest(row) {
-    return row.classList.contains('ignored');
+function isSkippedTest(row) {
+    return row.classList.contains('skipped');
 }
 function isFailedTest(row) {
     return row.classList.contains('failed');
@@ -123,9 +119,9 @@ function isFailedTest(row) {
 function updateState() {
     const showPassedCheckbox = document.getElementById('checkbox-show-passed');
     const showPassed = showPassedCheckbox ? showPassedCheckbox.checked : false;
-    const showIgnored = document.getElementById('checkbox-show-ignored').checked;
+    const showSkipped = document.getElementById('checkbox-show-skipped').checked;
     for (const row of document.querySelectorAll('.test')) {
-        const show = isFailedTest(row) || (showPassed && isPassedTest(row)) || (showIgnored && isIgnoredTest(row));
+        const show = isFailedTest(row) || (showPassed && isPassedTest(row)) || (showSkipped && isSkippedTest(row));
         row.classList.toggle('hide', !show);
     }
 }
@@ -133,7 +129,7 @@ const showPassedCheckbox = document.getElementById('checkbox-show-passed');
 if (showPassedCheckbox) {
     showPassedCheckbox.addEventListener('change', function (e) { updateState(); });
 }
-document.getElementById('checkbox-show-ignored').addEventListener('change', function (e) { updateState(); });
+document.getElementById('checkbox-show-skipped').addEventListener('change', function (e) { updateState(); });
 document.getElementById('checkbox-img-hover').addEventListener('change', function (e) {
     if (document.getElementById('checkbox-img-hover').checked == false){
 
@@ -178,14 +174,14 @@ function showActual(prefixId) {
 
 const stats: Stats = {
     passed: 0,
-    ignored: 0,
+    skipped: 0,
     failed: 0,
 };
 
 const colors: Record<TestStatus, string> = {
     passed: 'green',
     failed: 'red',
-    ignored: '#9E9E9E',
+    skipped: '#9E9E9E',
 };
 
 let resultsContainer: HTMLDivElement | undefined;
@@ -217,7 +213,7 @@ function updateStatsDisplay(): void {
     }
 
     const passedLabel = isCI() ? `${stats.passed} passed (hidden)` : `${stats.passed} passed`;
-    statsSummary.textContent = `${passedLabel}, ${stats.ignored} ignored, ${failedCount()} failed.`;
+    statsSummary.textContent = `${passedLabel}, ${stats.skipped} skipped, ${failedCount()} failed.`;
 }
 
 function shouldAddToReport(testData: TestReportData): boolean {
@@ -226,8 +222,7 @@ function shouldAddToReport(testData: TestReportData): boolean {
 }
 
 function shouldShowImages(testData: TestReportData): boolean {
-    if (testData.ignoredOutcome === 'not run') return false;
-    if (testData.status === 'ignored' && testData.ignoredOutcome === 'passed' && isCI()) return false;
+    if (testData.status === 'skipped') return false;
     return true;
 }
 
@@ -258,7 +253,7 @@ function decorateTestData(testData: TestReportData): DecoratedTestData {
 
 function getFilterCheckboxesHTML(minimizeReport = isCI()): string {
     const showPassedCheckbox = minimizeReport ? '' : '<label><input type="checkbox" id="checkbox-show-passed">Show passed tests</label>\n';
-    return `${showPassedCheckbox}<label><input type="checkbox" id="checkbox-show-ignored">Show ignored tests</label>
+    return `${showPassedCheckbox}<label><input type="checkbox" id="checkbox-show-skipped">Show skipped tests</label>
 <label><input type="checkbox" id="checkbox-img-hover" checked>Toggle images on Hover</label>`;
 }
 
@@ -266,12 +261,12 @@ function runReportUpdateState(): void {
     (window as ReportWindow).updateState?.();
 }
 
-export function registerIgnoredNotRun(name: string): string {
+export function registerSkipped(name: string, testPath?: string): string {
     return updateHTML({
         name,
-        status: 'ignored',
-        color: colors.ignored,
-        ignoredOutcome: 'not run',
+        status: 'skipped',
+        color: colors.skipped,
+        testPath,
     });
 }
 
@@ -362,8 +357,6 @@ export function updateHTML(testData: TestReportData): string {
 export type DiagnosticInfo = {
     platform: string;
     generatedAt: string;
-    testSuite?: string;
-    configFile?: string;
     reproduceCommand?: string;
     userAgent?: string;
     os?: string;
@@ -391,8 +384,6 @@ export function getDiagnosticsHTML(diag: DiagnosticInfo): string {
         ['Platform', diag.platform],
         ['Generated', diag.generatedAt],
         ['Duration', diag.durationMs !== undefined ? formatDuration(diag.durationMs) : undefined],
-        ['Test suite', diag.testSuite],
-        ['Config file', diag.configFile],
         ['Reproduce locally', diag.reproduceCommand],
         ['Browser', diag.browser],
         ['Operating system', diag.os],

@@ -1,4 +1,4 @@
-const todo = [
+const skip = [
     // Appearance is slightly offset and diff is > 0.01
     "render-tests/icon-image/stretchable-content",
 
@@ -57,10 +57,8 @@ const todo = [
     "render-tests/building/faux-facade/feature-state",
     "render-tests/building/faux-facade/shadows-supported",
     "render-tests/building/faux-facade/window-ao",
-    "render-tests/building/faux-facade/overlapping-walls"
-];
+    "render-tests/building/faux-facade/overlapping-walls",
 
-const skip = [
     // Timing out on CI.
     // Tracked in https://github.com/mapbox/mapbox-gl-js/issues/12407
     "render-tests/skybox/atmosphere-terrain",
@@ -88,4 +86,4 @@ const skip = [
     "render-tests/model-layer/landmark-shadows-terrain", // Terrain makes fill extrusion height different in chrome
     "render-tests/model-layer/buildings-trees-shadows-fog-terrain-cutoff"   // Slight but acceptable variation in some of the smoothed edges
 ];
-export default {todo, skip};
+export default {skip};

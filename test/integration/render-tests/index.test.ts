@@ -9,7 +9,7 @@ import ignoreLinuxFirefox from '../../ignores/linux-firefox.js';
 import {parseStyle, parseOptions, getActualImage, calculateDiff, diffCanvas, diffCtx, getActualImageDataURL, mapRef, fakeCanvasContainer} from './utils.js';
 // @ts-expect-error Cannot find module 'virtual:integration-tests' or its corresponding type declarations.
 import {integrationTests} from 'virtual:integration-tests';
-import {getStatsHTML, updateHTML, registerIgnoredNotRun} from '../../util/html_generator';
+import {getStatsHTML, updateHTML, registerSkipped} from '../../util/html_generator';
 import {mapboxgl} from '../lib/mapboxgl.js';
 import {sendFragment, sendBrowserDiagnostics} from '../lib/utils';
 
@@ -37,13 +37,17 @@ function getEnvironmentParams() {
 
         return {
             ignores: {
-                todo: [...ignoresPlatformSpecific.todo, ...ignoresAll.todo],
-                skip: [...ignoresPlatformSpecific.skip, ...ignoresAll.skip]
+                skip: Array.from(new Set([...ignoresPlatformSpecific.skip, ...ignoresAll.skip]))
             },
             timeout
         };
     } else {
-        return {ignores: ignoresAll, timeout};
+        return {
+            ignores: {
+                skip: ignoresAll.skip
+            },
+            timeout
+        };
     }
 }
 
@@ -90,8 +94,8 @@ type TestMetadata = {
     name: string;
     minDiff: number;
     allowed: number;
+    testPath: string;
     status: string;
-    ignoredOutcome?: string;
     color?: string;
     width?: number;
     height?: number;
@@ -105,8 +109,6 @@ type TestMetadata = {
 let reportFragment: string | undefined;
 
 const getTest = (renderTestName: string) => async () => {
-    const fullTestName = `render-tests/${renderTestName}`;
-    const isTodo = ignores.todo.includes(fullTestName);
     let errorMessage: string | undefined;
     try {
         const renderTest = integrationTests[renderTestName];
@@ -133,18 +135,13 @@ const getTest = (renderTestName: string) => async () => {
         const pass = minDiff <= options.allowed;
         const testMetaData: TestMetadata = {
             name: renderTestName,
+            testPath: `${testPath}/style.json`,
             minDiff: Math.round(100000 * minDiff) / 100000,
             allowed: options.allowed,
             width: w,
             height: h,
             status: pass ? 'passed' : 'failed',
         };
-
-        if (isTodo) {
-            testMetaData.status = 'ignored';
-            testMetaData.color = '#9E9E9E';
-            testMetaData.ignoredOutcome = pass ? 'passed' : 'failed';
-        }
 
         if (minDiffImage && expectedIndex !== -1 && (import.meta.env.VITE_CI === 'false' || !pass)) {
             diffCanvas.width = w;
@@ -172,13 +169,7 @@ const getTest = (renderTestName: string) => async () => {
 
         reportFragment = updateHTML(testMetaData);
     } catch (error) {
-        reportFragment = updateHTML(isTodo ? {
-            name: renderTestName,
-            status: 'ignored',
-            color: '#9E9E9E',
-            ignoredOutcome: 'failed',
-            error,
-        } : {
+        reportFragment = updateHTML({
             name: renderTestName,
             status: 'failed',
             error,
@@ -198,8 +189,6 @@ Object.keys(integrationTests).forEach((testName) => {
     if (ignores.skip.includes(renderTestName)) {
         skippedTests.push(testName);
         test.skip(testName, getTest(testName));
-    } else if (ignores.todo.includes(renderTestName)) {
-        test.todo(testName, getTest(testName));
     } else {
         test(testName, {timeout}, getTest(testName));
     }
@@ -207,7 +196,8 @@ Object.keys(integrationTests).forEach((testName) => {
 
 afterAll(async () => {
     for (const testName of skippedTests) {
-        await sendFragment(reportFragmentIdx++, registerIgnoredNotRun(testName));
+        const testPath = integrationTests[testName]?.path;
+        await sendFragment(reportFragmentIdx++, registerSkipped(testName, testPath ? `${testPath}/style.json` : undefined));
     }
     await sendBrowserDiagnostics();
     await sendFragment(0, getStatsHTML());

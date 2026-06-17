@@ -29,7 +29,7 @@ export default async function (directory, implementation, options, run) {
     const server = createServer();
 
     const testFilter = options.tests || [];
-    const ignores = options.ignores || {'todo': [], 'skip': []};
+    const ignores = options.ignores || {skip: []};
 
     let sequence = fs.globSync(`**/${options.fixtureFilename || 'style.json'}`, {cwd: directory})
         .sort((a, b) => a.localeCompare(b, 'en'))
@@ -43,7 +43,7 @@ export default async function (directory, implementation, options, run) {
             style.metadata = style.metadata || {};
             const testName = `${path.basename(directory)}/${id}`;
             style.metadata.test = {id,
-                skip: ignores.skip.includes(testName) || ignores.todo.includes(testName),
+                skip: ignores.skip.includes(testName),
                 width: 512,
                 height: 512,
                 pixelRatio: 1,

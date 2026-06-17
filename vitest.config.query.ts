@@ -22,7 +22,6 @@ export default mergeConfig(baseConfig, defineConfig({
     plugins: [
         setupIntegrationTestsMiddlewares({
             reportPath: 'test/integration/query-tests/query-tests.html',
-            suiteName: 'query-tests',
         }),
         integrationTests({suiteDirs: suiteDirs('query-tests')}),
         serveDistPlugin(),

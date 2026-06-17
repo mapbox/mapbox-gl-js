@@ -3,7 +3,7 @@
  * NOTE: When skipping a GL JS test, it also needs to be skipped in Native at projects/gl-native/metrics/ignores/platform-all.json
  */
 
-const todo = [
+const skip = [
     // "https://github.com/mapbox/mapbox-gl-js/issues/2716
     "query-tests/regressions/mapbox-gl-js#4494",
     // To be ported: https://mapbox.atlassian.net/browse/GLJS-892
@@ -106,9 +106,6 @@ const todo = [
     // https://mapbox.atlassian.net/browse/GLJS-1189
     "render-tests/background-pattern/image-update/delayed/same-size-before-color-theme-change",
 
-];
-
-const skip = [
     // Pattern should be seamless across tile edges
     // https://github.com/mapbox/mapbox-gl-js/issues/11221
     "render-tests/background-pattern/projected",
@@ -300,4 +297,4 @@ const skip = [
 
 ];
 
-export default {todo, skip};
+export default {skip};

@@ -1,9 +1,8 @@
-const todo = [
+const skip = [
     // Raster resampling is broken on Linux in Chrome
     // https://github.com/mapbox/mapbox-gl-js/issues/7331
-    "render-tests/globe/globe-transforms/north-pole"
-];
-const skip = [
+    "render-tests/globe/globe-transforms/north-pole",
+
     // Timing out
     // https://mapbox.atlassian.net/browse/GLJS-398
     "render-tests/model-layer/buildings-trees-shadows-fog-terrain",
@@ -12,4 +11,4 @@ const skip = [
     "render-tests/model-layer/landmark-shadows-terrain" // Terrain makes fill extrusion height different in chrome
 ];
 
-export default {todo, skip};
+export default {skip};

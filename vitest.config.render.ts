@@ -50,7 +50,6 @@ export default mergeConfig(baseConfig, defineConfig({
     plugins: [
         setupIntegrationTestsMiddlewares({
             reportPath: 'test/integration/render-tests/render-tests.html',
-            suiteName: 'render-tests',
         }),
         integrationTests({suiteDirs: suiteDirs('render-tests'), includeImages: true}),
         serveDistPlugin(),

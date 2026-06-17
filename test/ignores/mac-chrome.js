@@ -1,4 +1,4 @@
-const todo = [
+const skip = [
     // Appearance is slightly offset and diff is > 0.01
     "render-tests/icon-image/stretchable-content",
 
@@ -40,10 +40,8 @@ const todo = [
 
     // Debug rendering
     "render-tests/terrain/wireframe",
-    "render-tests/wireframe/globe-high-exaggeration"
-];
+    "render-tests/wireframe/globe-high-exaggeration",
 
-const skip = [
     // Flaky tests:
 
     // Test is occasionally blank:
@@ -65,4 +63,4 @@ const skip = [
     "render-tests/model-layer/landmark-z-offset-terrain-fix-griffith" // flakey
 ];
 
-export default {todo, skip};
+export default {skip};
