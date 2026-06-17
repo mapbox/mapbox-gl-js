@@ -20,7 +20,6 @@ import config, {setAccessToken, setBaseApiUrl, setMaxParallelImageRequests, getD
 import {Debug} from './util/debug';
 import {isSafari} from './util/util';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
-import {setSdkInfo} from './util/mapbox';
 import {addTileProvider} from './source/tile_provider';
 import {getWorkerCount, setWorkerCount} from './util/worker_pool';
 import WorkerClass from './util/worker_class';
@@ -29,8 +28,16 @@ import {clearTileCache} from './util/tile_request_cache';
 import {WorkerPerformanceUtils} from './util/worker_performance_utils';
 import {FreeCameraOptions} from './ui/free_camera';
 import browser from './util/browser';
+import {isMapboxHTTPCDNURL} from './util/mapbox_url';
+import {setSdkInfo, setBundleDistribution} from './util/mapbox';
 
 import type {Class} from './types/class';
+
+// Detect whether this UMD/CSP bundle was served from the Mapbox CDN (telemetry only).
+// Classic scripts expose their URL via `document.currentScript`; the `typeof document`
+// guard keeps the bundle importable in Node/SSR.
+const currentScript = typeof document !== 'undefined' ? document.currentScript as HTMLScriptElement | null : null;
+setBundleDistribution(currentScript && currentScript.src && isMapboxHTTPCDNURL(currentScript.src) ? 'cdn' : 'other');
 
 // Explicit type re-exports
 export type * from './ui/events';

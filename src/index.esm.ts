@@ -1,6 +1,13 @@
 import assert from './style-spec/util/assert';
 import _Point from '@mapbox/point-geometry';
 import {version as _version} from '../package.json';
+import {setBundleDistribution} from './util/mapbox';
+import {isMapboxHTTPCDNURL} from './util/mapbox_url';
+
+// Detect whether this ESM bundle was served from the Mapbox CDN (telemetry only).
+// `import.meta.url` is the module URL; bundlers rewrite it to a local URL, yielding 'other'.
+// eslint-disable-next-line no-restricted-syntax -- this file is the ESM-only entry, never bundled as UMD
+setBundleDistribution(isMapboxHTTPCDNURL(import.meta.url) ? 'cdn' : 'other');
 
 // Source class instance types — returned by map.getSource()
 export type * from './source/source_types';

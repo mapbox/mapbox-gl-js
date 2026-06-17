@@ -16,7 +16,7 @@ import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
  *
  * @param {Object} options
  * @param {string | 'dev' | 'production'} [options.mode] - build mode
- * @param {string | 'esm' | 'umd'} [options.format] - output format
+ * @param {'umd' | 'csp' | 'esm'} [options.format] - bundle format, reported as `bundleFormat` in telemetry
  * @param {boolean} [options.minified] - whether to minify the output
  * @param {boolean} [options.production] - whether this is a production build
  * @param {boolean} [options.test] - whether this is a test build
@@ -31,7 +31,7 @@ export const plugins = ({mode, format, minified, production, test, keepClassName
         sourceMap: true,
         tsconfig: './tsconfig.browser.json',
         define: {
-            'import.meta.env': JSON.stringify({mode}),
+            'import.meta.env': JSON.stringify({mode, format}),
         }
     }),
     json({
