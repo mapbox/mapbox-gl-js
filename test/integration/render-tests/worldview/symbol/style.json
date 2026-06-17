@@ -4,7 +4,8 @@
       "test": {
         "worldview": "AD",
         "width": 50,
-        "height": 50
+        "height": 50,
+        "allowed": 0.0025
       }
     },
     "sources": {
