@@ -778,6 +778,8 @@ describe("mapbox", () => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(mapLoadEvent["enabled.telemetry"]).toEqual(false);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(mapLoadEvent.version).toEqual('2.2');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(!!mapLoadEvent.userId).toBeTruthy();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(!!mapLoadEvent.created).toBeTruthy();
@@ -1205,6 +1207,34 @@ describe("mapbox", () => {
             expect(!!mapLoadEvent.userId).toBeTruthy();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(!!mapLoadEvent.created).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(mapLoadEvent.version).toEqual('2.2');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(mapLoadEvent.sdkInfo).toBeUndefined();
+        });
+
+        test('setSdkInfo ignores invalid values', async () => {
+            mapbox.setSdkInfo('not a valid value!');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            event.postMapLoadEvent(1, skuToken);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            const reqBody = await window.server.requests[0].requestBody;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            const mapLoadEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(mapLoadEvent.sdkInfo).toBeUndefined();
+        });
+
+        test('includes sdkInfo when set via setSdkInfo', async () => {
+            mapbox.setSdkInfo('FlutterPlugin/3.0.0-beta.1');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            event.postMapLoadEvent(1, skuToken);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            const reqBody = await window.server.requests[0].requestBody;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            const mapLoadEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(mapLoadEvent.sdkInfo).toEqual('FlutterPlugin/3.0.0-beta.1');
         });
 
         test('does not POST when mapboxgl.ACCESS_TOKEN is not set', () => {

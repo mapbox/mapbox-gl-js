@@ -20,6 +20,7 @@ import config, {setAccessToken, setBaseApiUrl, setMaxParallelImageRequests, getD
 import {Debug} from './util/debug';
 import {isSafari} from './util/util';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
+import {setSdkInfo} from './util/mapbox';
 import {addTileProvider} from './source/tile_provider';
 import {getWorkerCount, setWorkerCount} from './util/worker_pool';
 import WorkerClass from './util/worker_class';
@@ -88,6 +89,7 @@ const exported = {
     supported,
     setRTLTextPlugin,
     getRTLTextPluginStatus,
+    setSdkInfo,
     addTileProvider,
     Map,
     NavigationControl,

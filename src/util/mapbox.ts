@@ -322,6 +322,28 @@ function isTelemetryEnabled(customAccessToken?: string | null): boolean {
     return true;
 }
 
+let sdkInfo: string | undefined;
+
+const SDK_INFO_RE = /^[\w.+-]+(\/[\w.+-]+)?$/;
+
+const EVENT_SCHEMA_VERSION = '2.2';
+
+/**
+ * Internal API used by Mapbox wrapper SDKs (e.g. the Flutter or React Native bridges) to
+ * self-identify in telemetry. Not part of the public API and subject to change. Pass a
+ * `Name/version` string (e.g. `'FlutterPlugin/3.0.0'`); call once at startup before any maps
+ * are created, as events from earlier maps won't carry it.
+ *
+ * @private
+ */
+export function setSdkInfo(info: string) {
+    if (typeof info !== 'string' || info.length > 64 || !SDK_INFO_RE.test(info)) {
+        warnOnce(`Invalid SDK info "${info}"; expected a "Name/version" string. Ignoring.`);
+        return;
+    }
+    sdkInfo = info;
+}
+
 type TelemetryEventType = 'appUserTurnstile' | 'map.load' | 'map.auth' | 'gljs.performance' | 'style.load' | 'metrics';
 
 export class TelemetryEvent {
@@ -543,13 +565,16 @@ export class MapLoadEvent extends TelemetryEvent {
             this.refreshUUID();
         }
 
-        const additionalPayload = {
+        const additionalPayload: Record<string, unknown> = {
+            version: EVENT_SCHEMA_VERSION,
             sdkIdentifier: 'mapbox-gl-js',
             sdkVersion,
             skuId: SKU_ID,
             skuToken: this.skuToken,
             userId: this.anonId
         };
+
+        if (sdkInfo) additionalPayload.sdkInfo = sdkInfo;
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.postEvent(timestamp, additionalPayload, (err) => {
@@ -832,13 +857,16 @@ export class TurnstileEvent extends TelemetryEvent {
             return;
         }
 
-        const additionalPayload = {
+        const additionalPayload: Record<string, unknown> = {
+            version: EVENT_SCHEMA_VERSION,
             sdkIdentifier: 'mapbox-gl-js',
             sdkVersion,
             skuId: SKU_ID,
             "enabled.telemetry": false,
             userId: this.anonId
         };
+
+        if (sdkInfo) additionalPayload.sdkInfo = sdkInfo;
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.postEvent(nextUpdate, additionalPayload, (err) => {
