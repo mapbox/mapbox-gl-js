@@ -17,7 +17,7 @@ const config = (input: InputOption, file: string, format: ModuleFormat): RollupO
         banner
     },
     treeshake: {preset: 'recommended', moduleSideEffects: (id) => !id.endsWith('devtools.ts')},
-    plugins: plugins({minified: true, production: true, keepClassNames: true, test: false, mode: 'production'})
+    plugins: plugins({minified: true, production: true, keepClassNames: true, test: false, mode: 'production', format: 'csp'})
 });
 
 export default [

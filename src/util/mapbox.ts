@@ -343,6 +343,16 @@ export function setSdkInfo(info: string) {
     sdkInfo = info;
 }
 
+// Whether the running bundle was served from the Mapbox CDN (vs. self-hosted or bundled into
+// the consumer's app), reported as the `bundleDistribution` telemetry field. The entry files
+// (index.ts / index.esm.ts) inspect their own script URL locally and pass only the resulting
+// enum here at import time — no URL is ever retained or transmitted.
+let bundleDistribution: 'cdn' | 'other' = 'other';
+
+export function setBundleDistribution(distribution: 'cdn' | 'other') {
+    bundleDistribution = distribution;
+}
+
 type TelemetryEventType = 'appUserTurnstile' | 'map.load' | 'map.auth' | 'gljs.performance' | 'style.load' | 'metrics';
 
 export class TelemetryEvent {
@@ -578,7 +588,9 @@ export class MapLoadEvent extends TelemetryEvent {
             sdkVersion,
             skuId: SKU_ID,
             skuToken: this.skuToken,
-            userId: this.anonId
+            userId: this.anonId,
+            bundleFormat: import.meta.env.format || 'unknown',
+            bundleDistribution
         };
 
         if (sdkInfo) additionalPayload.sdkInfo = sdkInfo;
@@ -878,7 +890,9 @@ export class TurnstileEvent extends TelemetryEvent {
             sdkVersion,
             skuId: SKU_ID,
             "enabled.telemetry": false,
-            userId: this.anonId
+            userId: this.anonId,
+            bundleFormat: import.meta.env.format || 'unknown',
+            bundleDistribution
         };
 
         if (sdkInfo) additionalPayload.sdkInfo = sdkInfo;

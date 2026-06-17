@@ -783,6 +783,10 @@ describe("mapbox", () => {
             expect(!!mapLoadEvent.userId).toBeTruthy();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(!!mapLoadEvent.created).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(mapLoadEvent.bundleFormat).toEqual('unknown');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(mapLoadEvent.bundleDistribution).toEqual('other');
         });
 
         test('does not POST when mapboxgl.ACCESS_TOKEN is not set', () => {
@@ -1212,6 +1216,10 @@ describe("mapbox", () => {
             expect(mapLoadEvent.version).toEqual('2.2');
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(mapLoadEvent.sdkInfo).toBeUndefined();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(mapLoadEvent.bundleFormat).toEqual('unknown');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(mapLoadEvent.bundleDistribution).toEqual('other');
         });
 
         test('setSdkInfo ignores invalid values', async () => {
@@ -1665,6 +1673,34 @@ describe("mapbox", () => {
 
         test('returns null for invalid base64 payload', () => {
             expect(mapbox.parseAccessToken('a.!!!.c')).toBeNull();
+        });
+    });
+
+    describe('setBundleDistribution', () => {
+        let event: any;
+        const skuToken = '1234567890123';
+        beforeEach(() => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            window.useFakeXMLHttpRequest();
+            event = new mapbox.MapLoadEvent();
+        });
+        afterEach(() => {
+            // Reset the module-level state set by these tests (default is 'other').
+            mapbox.setBundleDistribution('other');
+        });
+
+        async function getBundleDistribution(): Promise<string> {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            const reqBody = await window.server.requests[0].requestBody;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            return JSON.parse(reqBody.slice(1, reqBody.length - 1)).bundleDistribution;
+        }
+
+        test('payload reflects the bundleDistribution set via setBundleDistribution', async () => {
+            mapbox.setBundleDistribution('cdn');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            event.postMapLoadEvent(1, skuToken);
+            expect(await getBundleDistribution()).toEqual('cdn');
         });
     });
 });
