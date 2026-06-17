@@ -311,6 +311,11 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
         const lutForScope = this.map.style ? this.map.style.getLut(this.scope) : null;
         const lut = lutForScope ? {image: lutForScope.image.clone()} : null;
 
+        // Enable cross-source elevation while HD is loading so unmatched ids defer (not parse flat).
+        // Inert on non-elevation styles (no hd-road-markup buckets).
+        const crossSourceElevationEnabled = !!(this.map.style &&
+            (this.map.style._crossSourceElevationActive || !HD.loaded));
+
         const params: WorkerSourceVectorTileRequest = {
             request,
             data: undefined,
@@ -349,6 +354,11 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                     sourceLayers: painter ? painter.frcCoverageSourceLayers : ['road', 'structure'],
                 };
             })(),
+            // style.terrain is synchronous; painter.terrain lags one frame.
+            terrainEnabled: !!(this.map.style && this.map.style.terrain),
+            crossSourceElevationEnabled,
+            elevation: HD.buildElevationRequestParams ?
+                HD.buildElevationRequestParams(this.map, tile, crossSourceElevationEnabled) : null,
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
             extraShadowCaster: tile.isExtraShadowCaster,
             tessellationStep: this.map._tessellationStep,

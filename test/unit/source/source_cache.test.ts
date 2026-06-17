@@ -2157,6 +2157,15 @@ test('sortCoordinatesByDistance', () => {
     sourceCache.getSource().onAdd();
 });
 
+test('sortCoordinatesByDistance without transform', () => {
+    const {sourceCache} = createSourceCache({});
+    const coords = [
+        new OverscaledTileID(2, 0, 2, 1, 1),
+        new OverscaledTileID(2, 0, 2, 0, 0),
+    ];
+    expect(sourceCache.sortCoordinatesByDistance(coords)).toStrictEqual(coords);
+});
+
 describe('shadow caster tiles', () => {
     const transform = new Transform();
     transform.resize(512, 512);

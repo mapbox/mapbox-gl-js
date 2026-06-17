@@ -358,7 +358,7 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                 programConfiguration.updatePaintBuffers();
             }
 
-            if (elevated) {
+            if (elevated && !renderElevatedRoads) {
                 assert(painter.terrain);
                 painter.terrain.setupElevationDraw(tile, program);
             }
@@ -488,13 +488,17 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
 
         // No need for tile clipping, a single pass only even for transparent lines.
         const stencilMode3D = useStencilMaskRenderPass ? painter.stencilModeFor3D() : StencilMode.disabled;
-        painter.forceTerrainMode = true;
+        if (elevationReference !== 'hd-road-markup') {
+            painter.forceTerrainMode = true;
+        }
         renderTiles(coords, definesValues, depthMode, stencilMode3D, true, true);
         if (useStencilMaskRenderPass) {
             renderTiles(coords, definesValues, depthMode, stencilMode3D, true, false);
         }
         // It is important that this precedes resetStencilClippingMasks as in gl-js we don't clear stencil for terrain.
-        painter.forceTerrainMode = false;
+        if (elevationReference !== 'hd-road-markup') {
+            painter.forceTerrainMode = false;
+        }
     }
 
     // Second pass: per-FRC-level stencil passes for polygon coverage

@@ -124,13 +124,11 @@ export class FillHDExtension {
         const elevatedGeometry = new Array<ElevatedGeometry>();
 
         if (!this.elevationMode) return false;
-        // Layers using vector sources should always use the precomputed elevation.
-        // In case of geojson sources the elevation snapshot will be used instead.
-        const tiledElevation = getElevationFeature(feature, elevationFeatures);
-        if (tiledElevation) {
+        const tiled = getElevationFeature(feature, elevationFeatures, undefined, canonical);
+        if (tiled) {
             const clipped = this.clipPolygonsToTile(polygons, ELEVATION_CLIP_MARGIN);
             if (clipped.length > 0) {
-                elevatedGeometry.push({polygons: clipped, elevationFeature: tiledElevation, elevationTileID: canonical});
+                elevatedGeometry.push({polygons: clipped, elevationFeature: tiled.feature, elevationTileID: tiled.tileId});
             }
         } else {
             // No elevation data — fall through to the core flat-fill path.

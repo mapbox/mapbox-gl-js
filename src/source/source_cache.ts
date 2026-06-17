@@ -1096,6 +1096,7 @@ class SourceCache extends Evented {
     }
 
     sortCoordinatesByDistance(coords: Array<OverscaledTileID>): Array<OverscaledTileID> {
+        if (!this.transform) return coords.slice(); // dedicated provider caches may exist before the first update() sets transform
         const sortedCoords = coords.slice();
 
         const camPos = this.transform._camera.position;

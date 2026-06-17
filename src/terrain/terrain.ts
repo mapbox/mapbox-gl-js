@@ -645,6 +645,8 @@ export class Terrain extends Elevation {
         for (const fqid in sourceCaches) {
             const sourceCache = sourceCaches[fqid];
             if (!sourceCache.used) continue;
+            // Provider caches created mid-frame carry no draped geometry; skip.
+            if (!sourceCache.transform) continue;
             if (sourceCache !== this.sourceCache) this.resetTileLookupCache(sourceCache.id);
             this._setupProxiedCoordsForOrtho(sourceCache, sourcesCoords[fqid], previousProxyToSource);
             if (sourceCache.usedForTerrain) continue;

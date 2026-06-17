@@ -22,6 +22,8 @@ import type {Callback} from '../types/callback';
 import type {ImageId} from '../style-spec/expression/types/image_id';
 import type {RenderSourceType} from './render_source_type';
 import type {FrcCoverageParams, FrcCoveragePolygons} from './frc_coverage_snapshot';
+import type {ElevationFeature} from '../../3d-style/elevation/elevation_feature';
+import type {ElevationParams} from './elevation_coverage_snapshot';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 import type {StyleModelMap} from '../style/style_mode';
 import type {IndoorTileOptions} from '../style/indoor_data.js';
@@ -86,6 +88,9 @@ export type WorkerSourceVectorTileRequest = WorkerSourceTileRequest & {
     extraShadowCaster?: boolean;
     renderSourceType?: RenderSourceType | null;
     frcCoverage?: FrcCoverageParams | null;
+    elevation?: ElevationParams | null;
+    crossSourceElevationEnabled?: boolean;
+    terrainEnabled?: boolean;
     partial?: boolean;
     tessellationStep?: number // test purpose only;
     worldview?: string | null;
@@ -150,6 +155,8 @@ export type WorkerSourceVectorTileResult = {
     glyphPositions?: GlyphPositions;
     frcCoveragePolygons?: FrcCoveragePolygons;
     hasDeferredRoadStructure?: boolean;
+    parsedElevationFeatures?: ElevationFeature[];
+    hasDeferredElevationFeatures?: boolean;
 };
 
 export type WorkerSourceDEMTileRequest = WorkerSourceTileRequest & {

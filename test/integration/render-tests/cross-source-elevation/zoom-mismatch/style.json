@@ -1,0 +1,154 @@
+{
+    "_comment": "Consumer maxzoom 16, provider maxzoom 18 — elevation must gather from all overlapping finer provider tiles.",
+    "version": 8,
+    "metadata": {
+        "test": {
+            "mapMode": "static",
+            "width": 512,
+            "height": 256
+        }
+    },
+    "center": [
+        13.280683,
+        52.500601
+    ],
+    "zoom": 18.32,
+    "pitch": 63,
+    "bearing": -3.2,
+    "sources": {
+        "hd-roads": {
+            "type": "vector",
+            "tileSize": 512,
+            "maxzoom": 18,
+            "tiles": [
+                "local://tiles/hd/hd-road-{z}-{x}-{y}.mvt"
+            ],
+            "vector_layers": [
+                {
+                    "id": "hd_road_polygon"
+                },
+                {
+                    "id": "hd_road_elevation"
+                }
+            ]
+        },
+        "hd-traffic": {
+            "type": "vector",
+            "tileSize": 512,
+            "maxzoom": 16,
+            "tiles": [
+                "local://tiles/traffic/traffic-hd-{z}-{x}-{y}.mvt"
+            ]
+        }
+    },
+    "lights": [
+        {
+            "id": "ambient",
+            "type": "ambient",
+            "properties": {
+                "color": "hsl(0, 0%, 100%)",
+                "intensity": 0.8
+            }
+        },
+        {
+            "id": "directional",
+            "type": "directional",
+            "properties": {
+                "direction": [
+                    "literal",
+                    [
+                        180,
+                        20
+                    ]
+                ],
+                "color": "hsl(0, 0%, 100%)",
+                "intensity": 0.2
+            }
+        }
+    ],
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "rgb(234, 243, 240)"
+            }
+        },
+        {
+            "id": "road-base",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_polygon",
+            "filter": [
+                "match",
+                [
+                    "get",
+                    "class"
+                ],
+                [
+                    "road",
+                    "bridge"
+                ],
+                true,
+                false
+            ],
+            "layout": {
+                "fill-elevation-reference": "hd-road-base"
+            },
+            "paint": {
+                "fill-color": "hsl(212, 25%, 76%)"
+            }
+        },
+        {
+            "id": "elevated-traffic",
+            "type": "line",
+            "source": "hd-traffic",
+            "source-layer": "traffic",
+            "layout": {
+                "line-cap": "round",
+                "line-elevation-reference": "hd-road-markup"
+            },
+            "filter": [
+                "all",
+                [
+                    "has",
+                    "3d_elevation_id"
+                ],
+                [
+                    ">=",
+                    [
+                        "get",
+                        "congestion_numeric"
+                    ],
+                    40
+                ]
+            ],
+            "paint": {
+                "line-width": [
+                    "interpolate",
+                    [
+                        "exponential",
+                        1.5
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    16,
+                    6,
+                    20,
+                    16
+                ],
+                "line-color": [
+                    "step",
+                    [
+                        "get",
+                        "congestion_numeric"
+                    ],
+                    "#d6820a",
+                    70,
+                    "#cc1100"
+                ]
+            }
+        }
+    ]
+}

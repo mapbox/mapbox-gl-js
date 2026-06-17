@@ -34,6 +34,7 @@ import type {Bucket} from '../data/bucket';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type {WorkerSourceVectorTileResult, WorkerSourceVectorTileCallback} from './worker_source';
 import type {FrcCoveragePolygons} from './frc_coverage_snapshot';
+import type {ElevationFeature} from '../../3d-style/elevation/elevation_feature';
 import type Actor from '../util/actor';
 import type {WorkerInbox} from '../util/actor_messages';
 import type DEMData from '../data/dem_data';
@@ -100,6 +101,9 @@ function getPixelPosMatrix(transform: Transform, tileID: OverscaledTileID) {
     return Float32Array.from(t);
 }
 
+// Assigned on main thread (single-threaded) so generations are unique across workers.
+let _elevationGenerationCounter = 0;
+
 /**
  * A tile object is the combination of a Coordinate, which defines
  * its place, as well as a unique ID and data tracking for its content
@@ -139,6 +143,10 @@ class Tile {
     renderSourceType: RenderSourceType | null | undefined;
     frcCoveragePolygons: FrcCoveragePolygons | null | undefined;
     hasDeferredRoadStructure: boolean;
+    parsedElevationFeatures: ElevationFeature[] | undefined;
+    // Monotonic parse generation for change detection (avoids content comparison).
+    parsedElevationGeneration: number;
+    hasDeferredElevationFeatures: boolean;
     isExtraShadowCaster: boolean | null | undefined;
     isRaster: boolean | null | undefined;
     _tileTransform: TileTransform;
@@ -290,6 +298,12 @@ class Tile {
             this.frcCoveragePolygons = data.frcCoveragePolygons;
         }
         this.hasDeferredRoadStructure = !!data.hasDeferredRoadStructure;
+        if (data.parsedElevationFeatures !== undefined) {
+            this.parsedElevationFeatures = data.parsedElevationFeatures;
+            // Fresh generation on every parse result (empty array = content too).
+            this.parsedElevationGeneration = ++_elevationGenerationCounter;
+        }
+        this.hasDeferredElevationFeatures = !!data.hasDeferredElevationFeatures;
 
         this.hasSymbolBuckets = false;
         this.hasTunnelGeometry = !!data.hasTunnelGeometry;

@@ -2,8 +2,9 @@
 import {describe, test, expect} from '../../util/vitest';
 import {PbfReader} from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
-import {EdgeIterator, ElevationFeature, ElevationFeatures, type Edge, type Range, type Vertex} from '../../../3d-style/elevation/elevation_feature';
-import {getElevationFeature} from '../../../3d-style/elevation/get_elevation_feature';
+import {EdgeIterator, ElevationFeature, ElevationFeatureSampler, ElevationFeatures, mergeElevationFeatures, type Edge, type Range, type Vertex} from '../../../3d-style/elevation/elevation_feature';
+import {getElevationFeature, getOverlappingElevationParts} from '../../../3d-style/elevation/get_elevation_feature';
+import {serialize, deserialize} from '../../../src/util/web_worker_transfer';
 // @ts-expect-error: Cannot find module
 import vectorTileStubZ14 from '../../fixtures/elevation/14-8717-5683.mvt?arraybuffer';
 // @ts-expect-error: Cannot find module
@@ -13,6 +14,7 @@ import {CanonicalTileID} from '../../../src/source/tile_id';
 import {HD_ELEVATION_SOURCE_LAYER, PROPERTY_ELEVATION_ID} from '../../../3d-style/elevation/elevation_constants';
 import Point from '@mapbox/point-geometry';
 
+import type {Transferable} from '../../../src/types/transferable';
 import type {BucketFeature} from '../../../src/data/bucket';
 import type {Bounds} from '../../../src/style-spec/util/geometry_util';
 
@@ -355,31 +357,256 @@ describe('ElevationFeature', () => {
     test('#getElevationFeature', () => {
         const feature = {};
         feature['properties'] = {};
+        const canonical = {z: 14, x: 1, y: 2, key: 0} as CanonicalTileID;
 
         const ids = [{id: 1}, {id: 2}, {id: 3}];
 
         {
-            const actual = getElevationFeature(feature as BucketFeature, []);
+            const actual = getElevationFeature(feature as BucketFeature, [], undefined, canonical);
             expect(actual).toBeUndefined();
         }
 
         {
-            const actual = getElevationFeature(feature as BucketFeature, ids as ElevationFeature[]);
+            const actual = getElevationFeature(feature as BucketFeature, ids as ElevationFeature[], undefined, canonical);
             expect(actual).toBeUndefined();
         }
 
         {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             feature['properties'][PROPERTY_ELEVATION_ID] = 4;
-            const actual = getElevationFeature(feature as BucketFeature, ids as ElevationFeature[]);
+            const actual = getElevationFeature(feature as BucketFeature, ids as ElevationFeature[], undefined, canonical);
             expect(actual).toBeUndefined();
         }
 
         {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             feature['properties'][PROPERTY_ELEVATION_ID] = 2;
-            const actual = getElevationFeature(feature as BucketFeature, ids as ElevationFeature[]);
-            expect(actual).toMatchObject({id: 2});
+            const actual = getElevationFeature(feature as BucketFeature, ids as ElevationFeature[], undefined, canonical);
+            expect(actual).toMatchObject({feature: {id: 2}, tileId: canonical});
         }
+    });
+});
+
+// Cross-tile elevation: consumer tiles sample features from covering provider tiles
+// using forward/inverse coordinate transforms.
+describe('ElevationFeatureSampler cross-tile', () => {
+    const elevationTile = new CanonicalTileID(14, 100, 200);
+    const sampleTile = new CanonicalTileID(15, 201, 400);
+
+    test('forward and inverse transforms round-trip', () => {
+        const forward = new ElevationFeatureSampler(sampleTile, elevationTile);   // consumer -> elevation
+        const inverse = new ElevationFeatureSampler(elevationTile, sampleTile);   // elevation -> consumer
+
+        expect(forward.zScale).toBeCloseTo(0.5, 6);
+        expect(inverse.zScale).toBeCloseTo(2.0, 6);
+
+        for (const p of [vec2.fromValues(0, 0), vec2.fromValues(1234, 5678), vec2.fromValues(8192, 8192)]) {
+            const round = inverse.pointTransform(forward.pointTransform(p));
+            expect(round[0]).toBeCloseTo(p[0], 4);
+            expect(round[1]).toBeCloseTo(p[1], 4);
+        }
+    });
+
+    test('pointElevation samples an elevation-tile feature from child-tile coordinates', () => {
+        const elevTile = new CanonicalTileID(14, 100, 200);
+        const childTile = new CanonicalTileID(15, 200, 400);
+
+        const safeArea: Bounds = {min: new Point(0, 0), max: new Point(4096, 4096)};
+        const vertices: Vertex[] = [
+            {position: vec2.fromValues(0, 0), height: 0.0, extent: 1.0},
+            {position: vec2.fromValues(2000, 0), height: 10.0, extent: 1.0},
+        ];
+        const edges: Edge[] = [{a: 0, b: 1}];
+        const feature = new ElevationFeature(0, safeArea, undefined, vertices, edges, 1.0);
+
+        const crossTile = new ElevationFeatureSampler(childTile, elevTile);  // child -> parent
+        const sameTile = new ElevationFeatureSampler(elevTile, elevTile);    // identity
+
+        // Child (1000,0) maps to parent (500,0): t = 500/2000 -> height 2.5. Same-tile is identity (5.0).
+        expect(crossTile.pointElevation(new Point(1000, 0), feature, 0)).toBeCloseTo(2.5, 4);
+        expect(sameTile.pointElevation(new Point(1000, 0), feature, 0)).toBeCloseTo(5.0, 4);
+        expect(crossTile.pointElevation(new Point(4000, 0), feature, 0)).toBeCloseTo(10.0, 4);
+    });
+
+    test('EdgeIterator places elevation-tile cut lines in child-tile coordinates', () => {
+        const elevTile = new CanonicalTileID(14, 100, 200);
+        const childTile = new CanonicalTileID(15, 200, 400);
+
+        const safeArea: Bounds = {min: new Point(0, 0), max: new Point(4096, 4096)};
+        const vertices: Vertex[] = [
+            {position: vec2.fromValues(0, 0), height: 0.0, extent: 1.0},
+            {position: vec2.fromValues(2000, 0), height: -1.0, extent: 1.0},
+        ];
+        const edges: Edge[] = [{a: 0, b: 1}];
+        const feature = new ElevationFeature(0, safeArea, null, vertices, edges, 1.0);
+
+        const inverse = new ElevationFeatureSampler(elevTile, childTile);
+
+        const plain = new EdgeIterator(feature, 20.0);
+        const scaled = new EdgeIterator(feature, 20.0, inverse);
+
+        const [plainA0] = plain.get();
+        const [scaledA0] = scaled.get();
+        expect(plainA0).toMatchObject(new Point(0, -40));
+        expect(scaledA0).toMatchObject(new Point(0, -40));
+
+        plain.next();
+        scaled.next();
+        const [plainA1] = plain.get();
+        const [scaledA1] = scaled.get();
+        expect(plainA1.x).toBe(2000);
+        expect(scaledA1.x).toBe(4000);
+    });
+});
+
+describe('ElevationFeature worker serialization', () => {
+    const safeArea: Bounds = {min: new Point(0, 0), max: new Point(4096, 4096)};
+
+    function sampleHeights(feature: ElevationFeature): number[] {
+        return [
+            feature.pointElevation(new Point(0, 0)),
+            feature.pointElevation(new Point(1000, 2048)),
+            feature.pointElevation(new Point(3000, 2048)),
+        ];
+    }
+
+    test('varying geometry round-trip preserves pointElevation', () => {
+        const vertices: Vertex[] = [
+            {position: vec2.fromValues(0, 2048), height: 0.0, extent: 1.0},
+            {position: vec2.fromValues(4096, 2048), height: 10.0, extent: 1.0},
+        ];
+        const original = new ElevationFeature(1, safeArea, undefined, vertices, [{a: 0, b: 1}], 1.0);
+        const roundTripped = deserialize(serialize(original)) as ElevationFeature;
+
+        expect(roundTripped).not.toBe(original);
+        expect(roundTripped instanceof ElevationFeature).toBe(true);
+        expect(roundTripped.vertices.length).toBe(original.vertices.length);
+
+        const before = sampleHeights(original);
+        const after = sampleHeights(roundTripped);
+        for (let i = 0; i < before.length; i++) {
+            expect(after[i]).toBeCloseTo(before[i], 4);
+        }
+    });
+
+    test('empty varying round-trip preserves ground sampling', () => {
+        const original = new ElevationFeature(4242, safeArea, undefined, [], [], 1.0);
+        const roundTripped = deserialize(serialize(original)) as ElevationFeature;
+
+        expect(roundTripped.constantHeight).toBeUndefined();
+        expect(roundTripped.vertices).toHaveLength(0);
+        expect(roundTripped.edges).toHaveLength(0);
+        expect(roundTripped.pointElevation(new Point(1000, 2048))).toBe(0.0);
+    });
+
+    test('constant-height round-trip', () => {
+        const original = new ElevationFeature(9, safeArea, 5.0);
+        const roundTripped = deserialize(serialize(original)) as ElevationFeature;
+
+        expect(roundTripped.constantHeight).toBe(5.0);
+        expect(roundTripped.pointElevation(new Point(-100, 500))).toBe(5.0);
+        expect(roundTripped.safeArea.min.x).toBe(0);
+        expect(roundTripped.safeArea).not.toBe(original.safeArea);
+    });
+
+    test('deserialize tolerates missing optional geometry arrays', () => {
+        const vertices: Vertex[] = [
+            {position: vec2.fromValues(0, 2048), height: 0.0, extent: 1.0},
+            {position: vec2.fromValues(4096, 2048), height: 10.0, extent: 1.0},
+        ];
+        const original = new ElevationFeature(3, safeArea, undefined, vertices, [{a: 0, b: 1}], 1.0);
+        const payload = ElevationFeature.serialize(original) as Record<string, unknown>;
+        delete payload.vertexProps;
+
+        const copy = ElevationFeature.deserialize(payload as Parameters<typeof ElevationFeature.deserialize>[0]);
+        expect(copy.vertices).toHaveLength(2);
+        expect(copy.vertexProps).toHaveLength(0);
+        expect(copy.edges).toHaveLength(1);
+    });
+
+    test('serialize does not detach main-thread vec2 buffers', () => {
+        const vertices: Vertex[] = [
+            {position: vec2.fromValues(10, 20), height: 1.0, extent: 1.0},
+            {position: vec2.fromValues(30, 40), height: 2.0, extent: 1.0},
+        ];
+        const original = new ElevationFeature(2, safeArea, undefined, vertices, [{a: 0, b: 1}], 1.0);
+        const position = original.vertices[0].position;
+        const before = position[0];
+        const buffer = ArrayBuffer.isView(position) ? position.buffer : null;
+
+        const transferables = new Set<Transferable>();
+        serialize(original, transferables);
+
+        expect(position[0]).toBe(before);
+        if (buffer instanceof ArrayBuffer) {
+            expect(transferables.has(buffer)).toBe(false);
+        }
+    });
+});
+
+// Cross-zoom merge: fold multiple provider parts into one consumer-framed feature.
+describe('mergeElevationFeatures cross-zoom cojoin', () => {
+    const ELEV_ID = 4242;
+    const consumer = new CanonicalTileID(14, 100, 200);
+    const leftChild = new CanonicalTileID(15, 200, 400);
+    const rightChild = new CanonicalTileID(15, 201, 400);
+    const unrelated = new CanonicalTileID(15, 250, 450);
+
+    const safeArea: Bounds = {min: new Point(0, 0), max: new Point(4096, 4096)};
+
+    function makeLeftFeature(): ElevationFeature {
+        const vertices: Vertex[] = [
+            {position: vec2.fromValues(0, 2048), height: 0.0, extent: 1.0},
+            {position: vec2.fromValues(4096, 2048), height: 10.0, extent: 1.0},
+        ];
+        return new ElevationFeature(ELEV_ID, safeArea, undefined, vertices, [{a: 0, b: 1}], 1.0);
+    }
+
+    function makeEmptyFeature(): ElevationFeature {
+        return new ElevationFeature(ELEV_ID, safeArea, undefined, [], [], 1.0);
+    }
+
+    test('an empty-vertex part samples to ground', () => {
+        const empty = makeEmptyFeature();
+        expect(empty.constantHeight).toBeUndefined();
+        expect(empty.edges).toHaveLength(0);
+        expect(empty.pointElevation(new Point(1000, 2048))).toBe(0.0);
+        expect(empty.pointElevation(new Point(3000, 2048))).toBe(0.0);
+    });
+
+    test('getOverlappingElevationParts gathers covering parts and excludes non-overlapping tiles', () => {
+        const feature = {properties: {[PROPERTY_ELEVATION_ID]: ELEV_ID}} as unknown as BucketFeature;
+        const registry = [
+            {tileId: leftChild, feature: makeLeftFeature()},
+            {tileId: rightChild, feature: makeEmptyFeature()},
+            {tileId: unrelated, feature: makeLeftFeature()},
+            {tileId: leftChild, feature: new ElevationFeature(ELEV_ID + 1, safeArea, 5.0)},
+        ];
+
+        const parts = getOverlappingElevationParts(feature, registry, consumer);
+        const tileIds = parts.map(p => `${p.tileId.x}/${p.tileId.y}`).sort();
+        expect(tileIds).toEqual(['200/400', '201/400']);
+    });
+
+    test('merged feature samples a continuous curve across the whole consumer tile', () => {
+        const merged = mergeElevationFeatures(consumer, [
+            {tileId: leftChild, feature: makeLeftFeature()},
+            {tileId: rightChild, feature: makeEmptyFeature()},
+        ]);
+
+        expect(merged.pointElevation(new Point(1024, 2048))).toBeCloseTo(5.0, 4);
+
+        // Right half extends the left edge instead of dropping to ground.
+        const rightHeight = merged.pointElevation(new Point(3000, 2048));
+        expect(rightHeight).toBeGreaterThan(0.0);
+        expect(rightHeight).toBeCloseTo(10.0, 4);
+    });
+
+    test('a single overlapping part is returned as-is', () => {
+        const feature = {properties: {[PROPERTY_ELEVATION_ID]: ELEV_ID}} as unknown as BucketFeature;
+        const parts = getOverlappingElevationParts(feature, [
+            {tileId: leftChild, feature: makeLeftFeature()},
+        ], consumer);
+        expect(parts).toHaveLength(1);
     });
 });

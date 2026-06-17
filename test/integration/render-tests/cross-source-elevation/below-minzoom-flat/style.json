@@ -1,0 +1,202 @@
+{
+    "_comment": "Below the provider minzoom, traffic with 3d_elevation_id must drape flat on the ground, not hide or defer.",
+    "version": 8,
+    "metadata": {
+        "test": {
+            "mapMode": "static",
+            "width": 512,
+            "height": 256
+        }
+    },
+    "center": [
+        4.865859,
+        52.339836
+    ],
+    "zoom": 12.51,
+    "pitch": 38,
+    "bearing": 19.2,
+    "sources": {
+        "hd-roads": {
+            "type": "vector",
+            "tileSize": 512,
+            "minzoom": 14,
+            "maxzoom": 18,
+            "tiles": [
+                "local://tiles/hd/hd-road-{z}-{x}-{y}.mvt"
+            ],
+            "vector_layers": [
+                {
+                    "id": "hd_road_polygon"
+                },
+                {
+                    "id": "hd_road_elevation"
+                }
+            ]
+        },
+        "hd-traffic": {
+            "type": "vector",
+            "tileSize": 512,
+            "maxzoom": 12,
+            "tiles": [
+                "local://tiles/traffic/traffic-hd-{z}-{x}-{y}.mvt"
+            ]
+        },
+        "composite": {
+            "type": "vector",
+            "maxzoom": 16,
+            "tiles": [
+                "local://tiles/hd/composite-{z}-{x}-{y}.mvt"
+            ]
+        }
+    },
+    "lights": [
+        {
+            "id": "ambient",
+            "type": "ambient",
+            "properties": {
+                "color": "hsl(0, 0%, 100%)",
+                "intensity": 0.8
+            }
+        },
+        {
+            "id": "directional",
+            "type": "directional",
+            "properties": {
+                "direction": [
+                    "literal",
+                    [
+                        180,
+                        20
+                    ]
+                ],
+                "color": "hsl(0, 0%, 100%)",
+                "intensity": 0.2
+            }
+        }
+    ],
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "rgb(234, 243, 240)"
+            }
+        },
+        {
+            "id": "road-base",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_polygon",
+            "layout": {
+                "fill-elevation-reference": "hd-road-base"
+            },
+            "paint": {
+                "fill-color": "hsl(212, 25%, 76%)"
+            }
+        },
+        {
+            "id": "road-secondary-tertiary-case",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "filter": ["match", ["get", "class"], ["secondary", "tertiary"], true, false],
+            "paint": {
+                "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 12, 1, 18, 10],
+                "line-color": "hsl(214, 22%, 48%)"
+            }
+        },
+        {
+            "id": "road-primary-case",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "filter": ["==", ["get", "class"], "primary"],
+            "paint": {
+                "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 12, 1.5, 18, 14],
+                "line-color": "hsl(214, 22%, 48%)"
+            }
+        },
+        {
+            "id": "road-motorway-trunk-case",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "filter": ["match", ["get", "class"], ["motorway", "trunk"], true, false],
+            "paint": {
+                "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 12, 2, 18, 18],
+                "line-color": "hsl(214, 22%, 48%)"
+            }
+        },
+        {
+            "id": "road-secondary-tertiary",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "filter": ["match", ["get", "class"], ["secondary", "tertiary"], true, false],
+            "paint": {
+                "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 12, 0.5, 18, 8],
+                "line-color": "hsl(214, 18%, 68%)"
+            }
+        },
+        {
+            "id": "road-primary",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "filter": ["==", ["get", "class"], "primary"],
+            "paint": {
+                "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 12, 0.75, 18, 10],
+                "line-color": "hsl(214, 18%, 68%)"
+            }
+        },
+        {
+            "id": "road-motorway-trunk",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "filter": ["match", ["get", "class"], ["motorway", "trunk"], true, false],
+            "paint": {
+                "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 12, 1, 18, 14],
+                "line-color": "hsl(214, 18%, 68%)"
+            }
+        },
+        {
+            "id": "elevated-traffic",
+            "type": "line",
+            "source": "hd-traffic",
+            "source-layer": "traffic",
+            "layout": {
+                "line-cap": "round",
+                "line-elevation-reference": "hd-road-markup"
+            },
+            "filter": [
+                "all",
+                [
+                    "has",
+                    "3d_elevation_id"
+                ],
+                [
+                    ">=",
+                    [
+                        "get",
+                        "congestion_numeric"
+                    ],
+                    40
+                ]
+            ],
+            "paint": {
+                "line-width": 4,
+                "line-color": [
+                    "step",
+                    [
+                        "get",
+                        "congestion_numeric"
+                    ],
+                    "#d6820a",
+                    80,
+                    "#cc1100"
+                ]
+            }
+        }
+    ]
+}

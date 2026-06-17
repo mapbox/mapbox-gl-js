@@ -6,6 +6,7 @@ import {getElevationFeature} from '../../elevation/get_elevation_feature';
 
 import type {ElevationFeature} from '../../elevation/elevation_feature';
 import type {BucketFeature} from '../../../src/data/bucket';
+import type {CanonicalTileID} from '../../../src/source/tile_id';
 import type CircleBucket from '../../../src/data/bucket/circle_bucket';
 import type CircleStyleLayer from '../../../src/style/style_layer/circle_style_layer';
 import type HeatmapStyleLayer from '../../../src/style/style_layer/heatmap_style_layer';
@@ -35,8 +36,13 @@ export class CircleHDExtension {
         this.hasElevation = false;
     }
 
-    beginFeature(feature: BucketFeature, elevationFeatures: ElevationFeature[] | undefined): void {
-        this.currentFeatureElevation = getElevationFeature(feature, elevationFeatures);
+    beginFeature(
+        feature: BucketFeature,
+        elevationFeatures: ElevationFeature[] | undefined,
+        canonical: CanonicalTileID,
+    ): void {
+        const tiled = getElevationFeature(feature, elevationFeatures, undefined, canonical);
+        this.currentFeatureElevation = tiled ? tiled.feature : undefined;
     }
 
     writeVertexQuad(x: number, y: number): void {

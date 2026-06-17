@@ -8,6 +8,8 @@ import {Snow} from '../src/precipitation/draw_snow';
 import {programUniforms} from '../3d-style/render/program/program_uniforms_hd';
 import {drawElevatedStructures, drawElevatedFillShadows, drawDepthPrepass, drawGroundShadowMask} from '../3d-style/render/draw_elevated_fill';
 import {HdCoverageState, updateFrcCoverage, updateHdCoverageSourceCache, updateFrcCoverageFadeRange} from '../3d-style/style/frc_coverage_style';
+import {HdElevationState, setupAndUpdateElevationCoverage, updateElevationCoverage, updateHdElevationSourceCache, markElevationIngestSourceCachesUsed, updateCrossSourceElevationGate, handleTerrainToggle} from '../3d-style/style/elevation_coverage_style';
+import {buildElevationRequestParams} from '../3d-style/source/elevation_coverage_snapshot';
 import {FrcCoverageRenderer} from '../3d-style/render/frc_coverage_renderer';
 import {
     drawFillFrcCoverageFirstPass,
@@ -28,6 +30,7 @@ import '../3d-style/data/bucket/symbol_hd_extension';
 // fill/line/circle/symbol core buckets that carry an `hdExt`) isn't registered by core.
 // Without this import, deserializing any tile containing a BuildingBucket would throw.
 import '../3d-style/data/bucket/building_bucket';
+import '../3d-style/elevation/elevation_feature';
 
 export const HD = {
     loaded: true,
@@ -48,6 +51,14 @@ export const HD = {
     updateFrcCoverage,
     updateHdCoverageSourceCache,
     updateFrcCoverageFadeRange,
+    HdElevationState,
+    setupAndUpdateElevationCoverage,
+    updateElevationCoverage,
+    updateHdElevationSourceCache,
+    markElevationIngestSourceCachesUsed,
+    updateCrossSourceElevationGate,
+    handleTerrainToggle,
+    buildElevationRequestParams,
     FrcCoverageRenderer,
     drawFillFrcCoverageFirstPass,
     drawFillFrcCoverageSecondPass,

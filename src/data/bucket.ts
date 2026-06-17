@@ -20,6 +20,7 @@ import type {TileFootprint} from '../../3d-style/util/conflation';
 import type {LUT} from "../util/lut";
 import type {ImageVariant} from '../style-spec/expression/types/image_variant';
 import type {ElevationFeature} from '../../3d-style/elevation/elevation_feature';
+import type {ElevationParams} from '../source/elevation_coverage_snapshot';
 import type {ImageId, StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {StyleModelMap} from '../style/style_mode';
 import type {GlobalProperties} from '../style-spec/expression';
@@ -62,6 +63,12 @@ export type PopulateParameters = {
     scaleFactor: number;
     showElevationIdDebug: boolean;
     elevationFeatures: ElevationFeature[] | undefined;
+    /// Cross-source elevation registry (line layers only).
+    elevationParams: ElevationParams | null | undefined;
+    /// True when cross-source elevation is active for this style.
+    crossSourceElevationEnabled: boolean;
+    // True when terrain is enabled — HD road-markup lines drape flat.
+    terrainEnabled: boolean;
     activeFloors: Set<string> | undefined;
 };
 

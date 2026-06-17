@@ -455,7 +455,7 @@ class ModelBucket implements Bucket {
         geometry: Array<Array<Point>>,
         evaluationFeature: EvaluationFeature,
         elevationFeatures?: ElevationFeature[],
-        canonical?: CanonicalTileID
+        canonical?: CanonicalTileID,
     ): string {
         const layer = this.layers[0];
         const modelIdProperty = layer.layout.get('model-id');
@@ -482,7 +482,8 @@ class ModelBucket implements Bucket {
         // Query elevation feature once per feature
         let tiledElevation: ElevationFeature | undefined;
         if (elevationFeatures) {
-            tiledElevation = getElevationFeature(feature, elevationFeatures);
+            const tiledResult = getElevationFeature(feature, elevationFeatures, undefined, canonical);
+            tiledElevation = tiledResult ? tiledResult.feature : undefined;
         }
 
         for (const geometries of geometry) {

@@ -1,15 +1,16 @@
 import assert from '../../../src/style-spec/util/assert';
 import Point from '@mapbox/point-geometry';
 import {register} from '../../../src/util/web_worker_transfer';
-import {ELEVATION_CLIP_MARGIN, MARKUP_ELEVATION_BIAS} from '../../elevation/elevation_constants';
-import {ElevationFeatureSampler, EdgeIterator, elevationIdDebugColor, type ElevationFeature, type Range} from '../../elevation/elevation_feature';
-import {getElevationFeature} from '../../elevation/get_elevation_feature';
+import {ELEVATION_CLIP_MARGIN, MARKUP_ELEVATION_BIAS, PROPERTY_ELEVATION_ID} from '../../elevation/elevation_constants';
+import {ElevationFeatureSampler, EdgeIterator, elevationIdDebugColor, mergeElevationFeatures, type ElevationFeature, type Range} from '../../elevation/elevation_feature';
+import {getElevationFeature, getOverlappingElevationParts} from '../../elevation/get_elevation_feature';
 import {tileToMeter} from '../../../src/geo/mercator_coordinate';
 import {clipLines, lineSubdivision, type LineInfo} from '../../../src/util/line_clipping';
 import EXTENT from '../../../src/style-spec/data/extent';
 import {FrcSegmentData, buildFrcLevelSegments} from '../frc_segment_builder';
 import {featureFrcLevel, matchesCoverageSourceLayer} from '../frc_road_classes';
 
+import type {ElevationParams} from '../../../src/source/elevation_coverage_snapshot';
 import type {CanonicalTileID} from '../../../src/source/tile_id';
 import type {BucketFeature} from '../../../src/data/bucket';
 import type LineBucket from '../../../src/data/bucket/line_bucket';
@@ -40,9 +41,13 @@ export class LineHDExtension {
     elevationEnabled: boolean;
     heightRange: Range | undefined;
     frcData: FrcSegmentData | undefined;
+    hasDeferredElevationFeatures: boolean;
+    // Caches cross-zoom merged parts for features sharing an id; nulled after populate (endPopulate).
+    mergedFeatureCache: Map<number, ElevationFeature> | undefined;
 
     constructor(elevationEnabled: boolean, frcEnabled: boolean) {
         this.elevationEnabled = elevationEnabled;
+        this.hasDeferredElevationFeatures = false;
         if (frcEnabled) {
             this.frcData = new FrcSegmentData();
         }
@@ -96,6 +101,8 @@ export class LineHDExtension {
         geometry: Array<Array<Point>>,
         canonical: CanonicalTileID,
         elevationFeatures: ElevationFeature[] | undefined,
+        elevationParams: ElevationParams | null | undefined,
+        crossSourceElevationEnabled: boolean,
         join: string,
         cap: string,
         miterLimit: number,
@@ -103,36 +110,100 @@ export class LineHDExtension {
         bucket: LineBucket,
     ): boolean {
         if (!this.elevationEnabled) return false;
-        const tiledElevation = getElevationFeature(feature, elevationFeatures);
-        if (tiledElevation) {
-            const clippedLines = clipLines(geometry, -ELEVATION_CLIP_MARGIN, -ELEVATION_CLIP_MARGIN, EXTENT + ELEVATION_CLIP_MARGIN, EXTENT + ELEVATION_CLIP_MARGIN);
-            const preparedLines = this.prepareElevatedLines(clippedLines, tiledElevation, canonical);
 
-            // Construct renderable geometries
-            for (const line of preparedLines) {
-                const vertexOffset = bucket.layoutVertexArray.length;
-                bucket.addLine(line, feature, canonical, join, cap, miterLimit, roundLimit);
+        // Under terrain, HD road-markup lines drape flat — skip elevation lookup.
+        if (!bucket.terrainEnabled) {
+            const tiled = getElevationFeature(feature, elevationFeatures, elevationParams ? elevationParams.registry : undefined, canonical);
+            const hasId = feature.properties != null &&
+                Object.hasOwn(feature.properties, PROPERTY_ELEVATION_ID) &&
+                !Number.isNaN(+feature.properties[PROPERTY_ELEVATION_ID]);
 
-                // Populate height information for each vertex
-                const sampler = new ElevationFeatureSampler(canonical, canonical);
-                const col = bucket.showElevationIdDebug ? elevationIdDebugColor(tiledElevation.id) : null;
-                for (let i = vertexOffset; i < bucket.layoutVertexArray.length; i++) {
-                    const point = new Point(bucket.layoutVertexArray.int16[i * 6] >> 1, bucket.layoutVertexArray.int16[i * 6 + 1] >> 1);
+            // Defer/hide only applies to lines; circle/fill render flat on a miss.
 
-                    const height = sampler.pointElevation(point, tiledElevation, MARKUP_ELEVATION_BIAS);
-                    this.updateHeightRange(height);
+            // Providers still loading — defer instead of hiding so the feature
+            // can appear once the right provider tile arrives.
+            if (!tiled && hasId && crossSourceElevationEnabled &&
+                (!elevationParams || !elevationParams.allProvidersReady)) {
+                this.hasDeferredElevationFeatures = true;
+                return true;
+            }
 
-                    bucket.zOffsetVertexArray.emplaceBack(height, 0.0, 0.0, 0.0);
-                    if (col) {
-                        bucket.elevationIdColVertexArray.emplaceBack(col[0], col[1], col[2]);
-                    } else if (bucket.showElevationIdDebug) {
-                        bucket.elevationIdColVertexArray.emplaceBack(0.0, 0.0, 0.0);
+            if (tiled) {
+                // When the consumer tile is coarser than the provider, the elevation curve is
+                // split across several finer tiles. Merge those parts so sampling covers the
+                // whole line instead of just one tile's slice.
+                let elevation = tiled.feature;
+                let elevationTileId = tiled.tileId;
+                if (!tiled.tileId.equals(canonical)) {
+                    const cached = this.mergedFeatureCache ? this.mergedFeatureCache.get(elevation.id) : undefined;
+                    if (cached) {
+                        elevation = cached;
+                        elevationTileId = canonical;
+                    } else {
+                        const parts = getOverlappingElevationParts(feature, elevationParams ? elevationParams.registry : undefined, canonical);
+                        if (parts.length > 1) {
+                            elevation = mergeElevationFeatures(canonical, parts);
+                            elevationTileId = canonical;
+                            if (!this.mergedFeatureCache) this.mergedFeatureCache = new Map();
+                            this.mergedFeatureCache.set(elevation.id, elevation);
+                        }
                     }
                 }
+                const clippedLines = clipLines(geometry, -ELEVATION_CLIP_MARGIN, -ELEVATION_CLIP_MARGIN, EXTENT + ELEVATION_CLIP_MARGIN, EXTENT + ELEVATION_CLIP_MARGIN);
+                const preparedLines = this.prepareElevatedLines(clippedLines, elevation, elevationTileId, canonical);
 
-                assert(bucket.layoutVertexArray.length === bucket.zOffsetVertexArray.length);
+                for (const line of preparedLines) {
+                    const vertexOffset = bucket.layoutVertexArray.length;
+                    bucket.addLine(line, feature, canonical, join, cap, miterLimit, roundLimit);
+
+                    const sampler = new ElevationFeatureSampler(canonical, elevationTileId);
+                    const col = bucket.showElevationIdDebug ? elevationIdDebugColor(elevation.id) : null;
+                    for (let i = vertexOffset; i < bucket.layoutVertexArray.length; i++) {
+                        const point = new Point(bucket.layoutVertexArray.int16[i * 6] >> 1, bucket.layoutVertexArray.int16[i * 6 + 1] >> 1);
+
+                        const height = sampler.pointElevation(point, elevation, MARKUP_ELEVATION_BIAS);
+                        this.updateHeightRange(height);
+
+                        if (i < bucket.zOffsetVertexArray.length) {
+                            bucket.zOffsetVertexArray.float32[i * 4] = height;
+                        } else {
+                            bucket.zOffsetVertexArray.emplaceBack(height, 0.0, 0.0, 0.0);
+                        }
+                        if (col) {
+                            if (i < bucket.elevationIdColVertexArray.length) {
+                                bucket.elevationIdColVertexArray.float32[i * 3] = col[0];
+                                bucket.elevationIdColVertexArray.float32[i * 3 + 1] = col[1];
+                                bucket.elevationIdColVertexArray.float32[i * 3 + 2] = col[2];
+                            } else {
+                                bucket.elevationIdColVertexArray.emplaceBack(col[0], col[1], col[2]);
+                            }
+                        } else if (bucket.showElevationIdDebug) {
+                            if (i < bucket.elevationIdColVertexArray.length) {
+                                bucket.elevationIdColVertexArray.float32[i * 3] = 0.0;
+                                bucket.elevationIdColVertexArray.float32[i * 3 + 1] = 0.0;
+                                bucket.elevationIdColVertexArray.float32[i * 3 + 2] = 0.0;
+                            } else {
+                                bucket.elevationIdColVertexArray.emplaceBack(0.0, 0.0, 0.0);
+                            }
+                        }
+                    }
+
+                    assert(bucket.layoutVertexArray.length === bucket.zOffsetVertexArray.length);
+                }
+                return true;
             }
-            return true;
+
+            if (hasId &&
+                crossSourceElevationEnabled &&
+                elevationParams &&
+                elevationParams.allProvidersReady &&
+                elevationParams.hasCoveringTile) {
+                // Provider tile covers this area but the id has no match — hide.
+                // (When no provider tile covers the area, fall through to flat below.)
+                return true;
+            }
+
+            // No elevation match — render flat. A later provider tile arrival will trigger reparse.
         }
 
         // Feature is not elevated but is rendered as part of (road) elevated bucket.
@@ -160,7 +231,7 @@ export class LineHDExtension {
         return true;
     }
 
-    private prepareElevatedLines(lines: Point[][], elevation: ElevationFeature, tileID: CanonicalTileID): Point[][] {
+    private prepareElevatedLines(lines: Point[][], elevation: ElevationFeature, elevationTileID: CanonicalTileID, tileID: CanonicalTileID): Point[][] {
         if (elevation.constantHeight != null) {
             return lines;
         }
@@ -169,9 +240,10 @@ export class LineHDExtension {
         const splitLines: Point[][] = [];
 
         const metersToTile = 1.0 / tileToMeter(tileID);
+        const sampler = elevationTileID.equals(tileID) ? null : new ElevationFeatureSampler(elevationTileID, tileID);
 
         for (const line of lines) {
-            lineSubdivision(line, new EdgeIterator(elevation, metersToTile), false, splitLines);
+            lineSubdivision(line, new EdgeIterator(elevation, metersToTile, sampler), false, splitLines);
         }
 
         return splitLines;
@@ -184,6 +256,11 @@ export class LineHDExtension {
         } else {
             this.heightRange = {min: height, max: height};
         }
+    }
+
+    /// Clear the cross-zoom merge cache so it doesn't survive to serialization.
+    endPopulate(): void {
+        this.mergedFeatureCache = undefined;
     }
 }
 

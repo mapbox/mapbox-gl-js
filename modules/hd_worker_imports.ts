@@ -40,3 +40,21 @@ export function attachExtension(bucket: Bucket, coverageSourceLayers: string[] |
         maybeAttachSymbolHDExt(bucket);
     }
 }
+
+/**
+ * True when any bucket deferred elevation lookup pending provider readiness.
+ *
+ * Cross-source defer is line-only: `LineHDExtension` is the sole bucket type that
+ * sets `hasDeferredElevationFeatures` when an id is present but providers haven't settled.
+ *
+ * @private
+ */
+export function anyDeferredElevationFeatures(buckets: Record<string, Bucket>): boolean {
+    for (const key in buckets) {
+        const bucket = buckets[key];
+        if (bucket instanceof LineBucket && bucket.hdExt && bucket.hdExt.hasDeferredElevationFeatures) {
+            return true;
+        }
+    }
+    return false;
+}

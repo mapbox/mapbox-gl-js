@@ -1,0 +1,146 @@
+{
+    "_comment": "Consumer loads before the provider is in the style; adding hd-roads must reparse id-bearing lines onto the deck. Lines without ids stay flat.",
+    "version": 8,
+    "metadata": {
+        "test": {
+            "mapMode": "static",
+            "width": 512,
+            "height": 256,
+            "allowed": 0.001,
+            "spriteFormat": "raster",
+            "operations": [
+                [
+                    "wait"
+                ],
+                [
+                    "wait"
+                ],
+                [
+                    "setStyle",
+                    "local://render-tests/cross-source-elevation/partial-tile-parse/style-with-provider.json"
+                ],
+                [
+                    "wait"
+                ],
+                [
+                    "wait"
+                ],
+                [
+                    "wait"
+                ]
+            ]
+        }
+    },
+    "center": [
+        2.391902,
+        48.826727
+    ],
+    "zoom": 18.27,
+    "pitch": 61.5,
+    "bearing": -97.3,
+    "lights": [
+        {
+            "id": "ambient",
+            "type": "ambient",
+            "properties": {
+                "color": "hsl(0, 0%, 100%)",
+                "intensity": 0.9
+            }
+        },
+        {
+            "id": "directional",
+            "type": "directional",
+            "properties": {
+                "cast-shadows": false,
+                "direction": [
+                    "literal",
+                    [
+                        180,
+                        25
+                    ]
+                ],
+                "color": "hsl(0, 0%, 100%)",
+                "intensity": 0.35
+            }
+        }
+    ],
+    "sources": {
+        "hd-traffic": {
+            "type": "vector",
+            "tileSize": 512,
+            "maxzoom": 18,
+            "tiles": [
+                "local://tiles/traffic/traffic-hd-{z}-{x}-{y}.mvt"
+            ]
+        }
+    },
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "hsl(220, 20%, 92%)"
+            }
+        },
+        {
+            "id": "elevated-traffic",
+            "type": "line",
+            "source": "hd-traffic",
+            "source-layer": "traffic",
+            "layout": {
+                "line-cap": "round",
+                "line-elevation-reference": "hd-road-markup"
+            },
+            "filter": [
+                "all",
+                [
+                    "has",
+                    "3d_elevation_id"
+                ],
+                [
+                    ">=",
+                    [
+                        "get",
+                        "congestion_numeric"
+                    ],
+                    40
+                ]
+            ],
+            "paint": {
+                "line-width": 7,
+                "line-color": "#cc1100"
+            }
+        },
+        {
+            "id": "plain-traffic",
+            "type": "line",
+            "source": "hd-traffic",
+            "source-layer": "traffic",
+            "layout": {
+                "line-cap": "round"
+            },
+            "filter": [
+                "all",
+                [
+                    "!",
+                    [
+                        "has",
+                        "3d_elevation_id"
+                    ]
+                ],
+                [
+                    ">=",
+                    [
+                        "get",
+                        "congestion_numeric"
+                    ],
+                    40
+                ]
+            ],
+            "paint": {
+                "line-width": 7,
+                "line-color": "#00b4d8"
+            }
+        }
+    ]
+}

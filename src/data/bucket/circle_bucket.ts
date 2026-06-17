@@ -220,7 +220,7 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
     }
 
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, availableImages: ImageId[], canonical: CanonicalTileID, projection?: Projection | null, brightness?: number | null, elevationFeatures?: ElevationFeature[]) {
-        if (this.hdExt) this.hdExt.beginFeature(feature, elevationFeatures);
+        if (this.hdExt) this.hdExt.beginFeature(feature, elevationFeatures, canonical);
 
         for (const ring of geometry) {
             for (const point of ring) {

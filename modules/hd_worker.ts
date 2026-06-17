@@ -9,6 +9,7 @@ import {
     matchesCoverageSourceLayer,
     symbolAnchorInFrcCoverage,
     parseActiveFloors,
+    anyDeferredElevationFeatures,
 } from './hd_worker_imports';
 
 export {
@@ -21,6 +22,7 @@ export {
     matchesCoverageSourceLayer,
     symbolAnchorInFrcCoverage,
     parseActiveFloors,
+    anyDeferredElevationFeatures,
 };
 
 // Live in UMD builds: HD is always loaded because all symbols are resolved

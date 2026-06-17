@@ -4,7 +4,12 @@ import {vi} from 'vitest';
 import {describe, test, expect, waitFor, doneAsync, afterEach} from '../../util/vitest';
 import {mockFetch} from '../../util/network';
 import VectorTileSource from '../../../src/source/vector_tile_source';
-import {OverscaledTileID} from '../../../src/source/tile_id';
+import {OverscaledTileID, CanonicalTileID} from '../../../src/source/tile_id';
+import {RenderSourceType} from '../../../src/source/render_source_type';
+import {HD} from '../../../modules/hd_main';
+import {ElevationFeature} from '../../../3d-style/elevation/elevation_feature';
+import {ElevationCoverageSnapshot} from '../../../3d-style/source/elevation_coverage_snapshot';
+import EXTENT from '../../../src/style-spec/data/extent';
 import {Evented} from '../../../src/util/evented';
 import {RequestManager} from '../../../src/util/mapbox';
 import sourceFixture from '../../fixtures/source.json';
@@ -443,6 +448,144 @@ describe('VectorTileSource', () => {
                 tileID: new OverscaledTileID(14, 0, 14, 1, 1),
             });
             expect(frc.sourceLayers).toEqual(['(sd-traffic)traffic']);
+        });
+    });
+
+    function captureElevationParams({painter, tileID, renderSourceType, crossSourceEnabled}) {
+        return new Promise((resolve) => {
+            const source = createSource({
+                minzoom: 0,
+                maxzoom: 22,
+                tiles: ["http://example.com/{z}/{x}/{y}.png"]
+            });
+
+            if (crossSourceEnabled) {
+                source.map.style._crossSourceElevationActive = true;
+            }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            source.map.painter = painter;
+            source.map.transform = {...source.map.transform, zoom: 14};
+
+            source.dispatcher = wrapDispatcher({
+                send(type, params) {
+                    if (type === 'loadTile') {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                        resolve(params.elevation);
+                    }
+                }
+            });
+
+            source.on('data', (e) => {
+                if (e.sourceDataType === 'metadata') {
+                    source.loadTile({
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                        tileID,
+                        uid: 0,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                        renderSourceType: renderSourceType != null ? renderSourceType : RenderSourceType.Other,
+                    }, () => {});
+                }
+            });
+        });
+    }
+
+    describe('elevation params', () => {
+        test('painter.elevationCoverageSnapshot=null → elevation=null', async () => {
+            const elevation = await captureElevationParams({
+                painter: {
+                    _debugParams: {showElevationIdDebug: false},
+                    elevationCoverageSnapshot: null,
+                },
+                tileID: new OverscaledTileID(14, 0, 14, 8800, 5373),
+            });
+            expect(elevation).toBeNull();
+        });
+
+        test('HdRoadElevation render source → elevation=null', async () => {
+            const tileId = new CanonicalTileID(14, 8800, 5373);
+            const snapshot = new ElevationCoverageSnapshot([{
+                sourceFQID: 'roads',
+                tileId,
+                features: [new ElevationFeature(1, {min: 0, max: EXTENT}, 5.0)],
+            }]);
+            const elevation = await captureElevationParams({
+                painter: {
+                    _debugParams: {showElevationIdDebug: false},
+                    elevationCoverageSnapshot: snapshot,
+                },
+                tileID: new OverscaledTileID(14, 0, 14, 8800, 5373),
+                renderSourceType: RenderSourceType.HdRoadElevation,
+            });
+            expect(elevation).toBeNull();
+        });
+
+        test('style.terrain set → terrainEnabled=true and elevation=null', async () => {
+            // Under terrain, HD road-markup lines drape flat: the worker is
+            // told terrain is on and no snapshot is shipped, even when one exists on the painter.
+            const tileId = new CanonicalTileID(14, 8800, 5373);
+            const snapshot = new ElevationCoverageSnapshot([{
+                sourceFQID: 'roads',
+                tileId,
+                features: [new ElevationFeature(42, {min: 0, max: EXTENT}, 8.0)],
+            }]);
+            const params = await new Promise((resolve) => {
+                const source = createSource({
+                    minzoom: 0,
+                    maxzoom: 22,
+                    tiles: ["http://example.com/{z}/{x}/{y}.png"]
+                });
+                source.map.painter = {_debugParams: {showElevationIdDebug: false}, elevationCoverageSnapshot: snapshot};
+                source.map.style.terrain = {};
+                source.map.transform = {...source.map.transform, zoom: 14};
+                source.dispatcher = wrapDispatcher({
+                    send(type, p) { if (type === 'loadTile') resolve(p); }
+                });
+                source.on('data', (e) => {
+                    if (e.sourceDataType === 'metadata') {
+                        source.loadTile({tileID: new OverscaledTileID(14, 0, 14, 8800, 5373), uid: 0, renderSourceType: RenderSourceType.Other}, () => {});
+                    }
+                });
+            });
+            expect(params.terrainEnabled).toBe(true);
+            expect(params.elevation).toBeNull();
+        });
+
+        test('snapshot present → buildElevationRequestParams payload attached', async () => {
+            expect(typeof HD.buildElevationRequestParams).toBe('function');
+            const tileId = new CanonicalTileID(14, 8800, 5373);
+            const feature = new ElevationFeature(42, {min: 0, max: EXTENT}, 8.0);
+            const snapshot = new ElevationCoverageSnapshot([{
+                sourceFQID: 'roads',
+                tileId,
+                features: [feature],
+            }]);
+            const elevation = await captureElevationParams({
+                painter: {
+                    _debugParams: {showElevationIdDebug: false},
+                    elevationCoverageSnapshot: snapshot,
+                },
+                tileID: new OverscaledTileID(14, 0, 14, 8800, 5373),
+                crossSourceEnabled: true,
+            });
+            expect(elevation).not.toBeNull();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(elevation.registry.length).toBe(1);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(elevation.registry[0].feature.id).toBe(42);
+        });
+
+        test('cross-source enabled but no snapshot → empty-registry stub', async () => {
+            // Every feature renders flat; once a covering provider tile loads the snapshot
+            // changes and this tile reparses.
+            const elevation = await captureElevationParams({
+                painter: {
+                    _debugParams: {showElevationIdDebug: false},
+                    elevationCoverageSnapshot: null,
+                },
+                tileID: new OverscaledTileID(14, 0, 14, 8800, 5373),
+                crossSourceEnabled: true,
+            });
+            expect(elevation).toEqual({registry: [], hasCoveringTile: false, allProvidersReady: false});
         });
     });
 

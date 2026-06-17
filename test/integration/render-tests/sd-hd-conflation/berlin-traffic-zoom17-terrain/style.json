@@ -1,0 +1,802 @@
+{
+  "_comment": "With terrain on, cross-source HD traffic lines drape flat on the DEM instead of elevating or hiding.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 600,
+      "height": 600,
+      "allowed": 0.001,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "wait"
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "center": [
+    13.27969,
+    52.50241
+  ],
+  "zoom": 17.0,
+  "bearing": -7.6,
+  "pitch": 50,
+  "lights": [
+    {
+      "id": "ambient",
+      "type": "ambient",
+      "properties": {
+        "color": "hsl(0, 0%, 100%)",
+        "intensity": 0.8
+      }
+    },
+    {
+      "id": "directional",
+      "type": "directional",
+      "properties": {
+        "cast-shadows": true,
+        "direction": [
+          "literal",
+          [
+            180,
+            20
+          ]
+        ],
+        "color": "hsl(0, 0%, 100%)",
+        "intensity": 0.4
+      }
+    }
+  ],
+  "sources": {
+    "terrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/no/{z}-{x}-{y}.terrain.512.png"
+      ],
+      "maxzoom": 15,
+      "tileSize": 512
+    }
+  },
+  "layers": [],
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "",
+      "data": {
+        "version": 8,
+        "sources": {
+          "composite": {
+            "tiles": [
+              "local://tiles/hd/composite-{z}-{x}-{y}.mvt"
+            ],
+            "type": "vector",
+            "maxzoom": 14
+          },
+          "sd-traffic": {
+            "tiles": [
+              "local://tiles/traffic/traffic-sd-{z}-{x}-{y}.mvt"
+            ],
+            "type": "vector",
+            "maxzoom": 14
+          }
+        },
+        "layers": [
+          {
+            "id": "background",
+            "type": "background",
+            "paint": {
+              "background-color": "hsl(40, 10%, 90%)"
+            }
+          },
+          {
+            "id": "road-motorway-trunk",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "filter": [
+              "all",
+              [
+                "match",
+                [
+                  "get",
+                  "class"
+                ],
+                [
+                  "motorway",
+                  "trunk"
+                ],
+                true,
+                false
+              ],
+              [
+                "match",
+                [
+                  "get",
+                  "structure"
+                ],
+                [
+                  "none",
+                  "ford"
+                ],
+                true,
+                false
+              ],
+              [
+                "case",
+                [
+                  "<",
+                  [
+                    "zoom"
+                  ],
+                  14
+                ],
+                true,
+                [
+                  "!=",
+                  [
+                    "get",
+                    "hd_covered"
+                  ],
+                  "true"
+                ]
+              ]
+            ],
+            "paint": {
+              "line-width": [
+                "interpolate",
+                [
+                  "exponential",
+                  1.5
+                ],
+                [
+                  "zoom"
+                ],
+                14,
+                3,
+                18,
+                20
+              ],
+              "line-color": "hsl(210, 100%, 40%)"
+            }
+          },
+          {
+            "id": "road-primary",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "filter": [
+              "all",
+              [
+                "==",
+                [
+                  "get",
+                  "class"
+                ],
+                "primary"
+              ],
+              [
+                "match",
+                [
+                  "get",
+                  "structure"
+                ],
+                [
+                  "none",
+                  "ford"
+                ],
+                true,
+                false
+              ],
+              [
+                "case",
+                [
+                  "<",
+                  [
+                    "zoom"
+                  ],
+                  14
+                ],
+                true,
+                [
+                  "!=",
+                  [
+                    "get",
+                    "hd_covered"
+                  ],
+                  "true"
+                ]
+              ]
+            ],
+            "paint": {
+              "line-width": [
+                "interpolate",
+                [
+                  "exponential",
+                  1.5
+                ],
+                [
+                  "zoom"
+                ],
+                14,
+                5,
+                18,
+                14
+              ],
+              "line-color": "hsl(300, 100%, 50%)"
+            }
+          },
+          {
+            "id": "road-secondary-tertiary",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "filter": [
+              "all",
+              [
+                "match",
+                [
+                  "get",
+                  "class"
+                ],
+                [
+                  "secondary",
+                  "tertiary"
+                ],
+                true,
+                false
+              ],
+              [
+                "match",
+                [
+                  "get",
+                  "structure"
+                ],
+                [
+                  "none",
+                  "ford"
+                ],
+                true,
+                false
+              ],
+              [
+                "case",
+                [
+                  "<",
+                  [
+                    "zoom"
+                  ],
+                  14
+                ],
+                true,
+                [
+                  "!=",
+                  [
+                    "get",
+                    "hd_covered"
+                  ],
+                  "true"
+                ]
+              ]
+            ],
+            "paint": {
+              "line-width": [
+                "interpolate",
+                [
+                  "exponential",
+                  1.5
+                ],
+                [
+                  "zoom"
+                ],
+                14,
+                3,
+                18,
+                8
+              ],
+              "line-color": "hsl(200, 100%, 45%)"
+            }
+          },
+          {
+            "id": "road-street",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "filter": [
+              "all",
+              [
+                "match",
+                [
+                  "get",
+                  "class"
+                ],
+                [
+                  "street",
+                  "street_limited"
+                ],
+                true,
+                false
+              ],
+              [
+                "match",
+                [
+                  "get",
+                  "structure"
+                ],
+                [
+                  "none",
+                  "ford"
+                ],
+                true,
+                false
+              ],
+              [
+                "case",
+                [
+                  "<",
+                  [
+                    "zoom"
+                  ],
+                  14
+                ],
+                true,
+                [
+                  "!=",
+                  [
+                    "get",
+                    "hd_covered"
+                  ],
+                  "true"
+                ]
+              ]
+            ],
+            "paint": {
+              "line-width": [
+                "interpolate",
+                [
+                  "exponential",
+                  1.5
+                ],
+                [
+                  "zoom"
+                ],
+                14,
+                2,
+                18,
+                8
+              ],
+              "line-color": "hsl(80, 100%, 40%)"
+            }
+          },
+          {
+            "id": "sd-traffic",
+            "type": "line",
+            "source": "sd-traffic",
+            "source-layer": "traffic",
+            "minzoom": 12,
+            "filter": [
+              "all",
+              [
+                ">=",
+                [
+                  "get",
+                  "congestion"
+                ],
+                40
+              ],
+              [
+                "<=",
+                [
+                  "get",
+                  "congestion"
+                ],
+                99
+              ]
+            ],
+            "paint": {
+              "line-width": [
+                "interpolate",
+                [
+                  "exponential",
+                  1.5
+                ],
+                [
+                  "zoom"
+                ],
+                14,
+                6,
+                18,
+                10
+              ],
+              "line-offset": [
+                "interpolate",
+                [
+                  "exponential",
+                  1.5
+                ],
+                [
+                  "zoom"
+                ],
+                16,
+                [
+                  "match",
+                  [
+                    "get",
+                    "driving_side"
+                  ],
+                  "right",
+                  8.5,
+                  -8.5
+                ]
+              ],
+              "line-emissive-strength": 1,
+              "line-color": [
+                "step",
+                [
+                  "get",
+                  "congestion"
+                ],
+                "hsla(0, 0%, 0%, 0)",
+                40,
+                "#e77423",
+                60,
+                "#cc1100",
+                80,
+                "#80002a"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "hd-roads-config",
+      "url": "",
+      "config": {
+        "sdCoverageFadeRange": [
+          14.4,
+          14.9
+        ],
+        "sdCoverageSourceLayers": [
+          "(sd-traffic)traffic"
+        ],
+        "showHDTraffic": true
+      },
+      "data": {
+        "version": 8,
+        "schema": {
+          "sdCoverageFadeRange": {
+            "default": [
+              0,
+              0
+            ],
+            "type": "number",
+            "array": true
+          },
+          "sdCoverageSourceLayers": {
+            "default": [
+              "road",
+              "structure"
+            ],
+            "type": "string",
+            "array": true
+          },
+          "showHDTraffic": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "sources": {
+          "hd-roads": {
+            "tiles": [
+              "local://tiles/hd/hd-road-{z}-{x}-{y}.mvt"
+            ],
+            "type": "vector",
+            "maxzoom": 14
+          },
+          "hd-traffic": {
+            "tiles": [
+              "local://tiles/traffic/traffic-hd-{z}-{x}-{y}.mvt"
+            ],
+            "type": "vector",
+            "maxzoom": 14
+          }
+        },
+        "layers": [
+          {
+            "id": "hd-coverage-helper",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_coverage",
+            "paint": {
+              "fill-color": "rgba(255, 0, 0, 1)",
+              "fill-opacity": 0
+            }
+          },
+          {
+            "id": "hd-area",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_polygon",
+            "minzoom": 14,
+            "layout": {
+              "fill-elevation-reference": "hd-road-base",
+              "fill-construct-bridge-guard-rail": true
+            },
+            "filter": [
+              "match",
+              [
+                "get",
+                "class"
+              ],
+              [
+                "bridge",
+                "road"
+              ],
+              true,
+              false
+            ],
+            "paint": {
+              "fill-color": "hsl(220, 15%, 60%)"
+            }
+          },
+          {
+            "id": "hd-traffic",
+            "type": "line",
+            "source": "hd-traffic",
+            "source-layer": "traffic",
+            "minzoom": 14.4,
+            "layout": {
+              "line-cross-slope": 0,
+              "line-cap": "round",
+              "line-elevation-reference": "hd-road-markup",
+              "visibility": [
+                "case",
+                [
+                  "config",
+                  "showHDTraffic"
+                ],
+                "visible",
+                "none"
+              ]
+            },
+            "filter": [
+              "all",
+              [
+                ">=",
+                [
+                  "get",
+                  "congestion_numeric"
+                ],
+                40
+              ],
+              [
+                "<=",
+                [
+                  "get",
+                  "congestion_numeric"
+                ],
+                99
+              ],
+              [
+                "step",
+                [
+                  "zoom"
+                ],
+                [
+                  "match",
+                  [
+                    "get",
+                    "class"
+                  ],
+                  [
+                    "motorway",
+                    "motorway_link",
+                    "trunk",
+                    "trunk_link",
+                    "primary",
+                    "primary_link",
+                    "secondary",
+                    "secondary_link"
+                  ],
+                  true,
+                  false
+                ],
+                13,
+                [
+                  "match",
+                  [
+                    "get",
+                    "class"
+                  ],
+                  [
+                    "motorway",
+                    "motorway_link",
+                    "trunk",
+                    "trunk_link",
+                    "primary",
+                    "primary_link",
+                    "secondary",
+                    "secondary_link",
+                    "tertiary",
+                    "tertiary_link"
+                  ],
+                  true,
+                  false
+                ],
+                15,
+                [
+                  "match",
+                  [
+                    "get",
+                    "class"
+                  ],
+                  [
+                    "motorway",
+                    "motorway_link",
+                    "trunk",
+                    "trunk_link",
+                    "primary",
+                    "primary_link",
+                    "secondary",
+                    "tertiary",
+                    "tertiary_link",
+                    "secondary_link",
+                    "street",
+                    "street_limited",
+                    "service"
+                  ],
+                  true,
+                  false
+                ]
+              ]
+            ],
+            "paint": {
+              "line-width": [
+                "interpolate",
+                [
+                  "exponential",
+                  1.5
+                ],
+                [
+                  "zoom"
+                ],
+                16,
+                5,
+                17,
+                6,
+                18,
+                8
+              ],
+              "line-translate": [
+                0,
+                0
+              ],
+              "line-color": [
+                "step",
+                [
+                  "get",
+                  "congestion_numeric"
+                ],
+                "hsla(0, 0%, 0%, 0)",
+                40,
+                "#e77423",
+                60,
+                "#cc1100",
+                80,
+                "#80002a"
+              ],
+              "line-offset": [
+                "interpolate",
+                [
+                  "exponential",
+                  1.5
+                ],
+                [
+                  "zoom"
+                ],
+                6,
+                [
+                  "case",
+                  [
+                    "==",
+                    [
+                      "get",
+                      "source"
+                    ],
+                    "sd"
+                  ],
+                  1.25,
+                  0
+                ],
+                16,
+                [
+                  "case",
+                  [
+                    "==",
+                    [
+                      "get",
+                      "source"
+                    ],
+                    "sd"
+                  ],
+                  [
+                    "match",
+                    [
+                      "get",
+                      "class"
+                    ],
+                    [
+                      "motorway",
+                      "motorway_link",
+                      "trunk",
+                      "trunk_link"
+                    ],
+                    1,
+                    2
+                  ],
+                  0
+                ],
+                20,
+                [
+                  "case",
+                  [
+                    "==",
+                    [
+                      "get",
+                      "source"
+                    ],
+                    "sd"
+                  ],
+                  [
+                    "match",
+                    [
+                      "get",
+                      "class"
+                    ],
+                    [
+                      "motorway",
+                      "motorway_link",
+                      "trunk",
+                      "trunk_link"
+                    ],
+                    10,
+                    15
+                  ],
+                  0
+                ]
+              ],
+              "line-emissive-strength": 1,
+              "line-occlusion-opacity": 0.5,
+              "line-opacity": [
+                "interpolate",
+                [
+                  "linear"
+                ],
+                [
+                  "zoom"
+                ],
+                14.4,
+                0.2,
+                14.9,
+                1,
+                16.5,
+                1,
+                17.5,
+                0.65
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "terrain": {
+    "source": "terrain",
+    "exaggeration": 0.1
+  }
+}

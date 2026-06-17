@@ -52,6 +52,7 @@ import {OcclusionParams} from './occlusion_params';
 import {PerformanceUtils} from '../util/performance';
 
 import type {FrcCoverageSnapshot} from '../source/frc_coverage_snapshot';
+import type {ElevationCoverageSnapshot} from '../source/elevation_coverage_snapshot';
 import type {FrcCoverageRenderer} from '../../3d-style/render/frc_coverage_renderer';
 import type {RainParams} from '../precipitation/draw_rain';
 import type {SnowParams} from '../precipitation/draw_snow';
@@ -225,6 +226,8 @@ class Painter {
     depthRangeFor3D: DepthRangeType;
     depthOcclusion: boolean;
     frcCoverageSnapshot: FrcCoverageSnapshot | null;
+    elevationCoverageSnapshot: ElevationCoverageSnapshot | null;
+    elevationProvidersReady: boolean | undefined;
     frcCoverageFadeRange: [number, number] | null;
     frcCoverageSourceLayers: string[];
     // Lazy-constructed when the HD chunk loads (HD.FrcCoverageRenderer).
@@ -340,6 +343,8 @@ class Painter {
         this.frameCopies = [];
         this.loadTimeStamps = [];
         this.frcCoverageSnapshot = null;
+        this.elevationCoverageSnapshot = null;
+        this.elevationProvidersReady = undefined;
         this.frcCoverageFadeRange = null;
         this.frcCoverageSourceLayers = [];
         // Built when HD module is available (UMD: always; ESM: after prepareHD()).

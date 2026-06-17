@@ -8,5 +8,6 @@ export const RenderSourceType = {
     Symbol: 1,
     FillExtrusion: 2,
     HdRoadCoverage: 3,
+    HdRoadElevation: 4,
 } as const;
 export type RenderSourceType = typeof RenderSourceType[keyof typeof RenderSourceType];

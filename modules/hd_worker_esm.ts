@@ -20,6 +20,7 @@ export let isFeatureCoveredByFrcMask: ((featureProperties: Record<string, unknow
 export let matchesCoverageSourceLayer: ((entries: string[], source: string, sourceLayer: string) => boolean) | undefined;
 export let symbolAnchorInFrcCoverage: ((coveragePolygons: FrcCoveragePolygons, properties: Record<string, unknown>, anchor: {x: number; y: number}, canonical: CanonicalTileID, coverageTileZoom: number | null) => boolean) | undefined;
 export let parseActiveFloors: ((data: VectorTile, indoorTileOptions: IndoorTileOptions, actor: WorkerSourceActor, tileID: CanonicalTileID) => Set<string> | undefined) | undefined;
+export let anyDeferredElevationFeatures: ((buckets: Record<string, Bucket>) => boolean) | undefined;
 let waitForBuildingGen: (() => Promise<void> | null) | undefined;
 export let loaded = false;
 
@@ -35,6 +36,7 @@ export async function prepareHD() {
         matchesCoverageSourceLayer = mod.matchesCoverageSourceLayer;
         symbolAnchorInFrcCoverage = mod.symbolAnchorInFrcCoverage;
         parseActiveFloors = mod.parseActiveFloors;
+        anyDeferredElevationFeatures = mod.anyDeferredElevationFeatures;
         waitForBuildingGen = mod.waitForBuildingGen;
         loaded = true;
     } catch (error) {

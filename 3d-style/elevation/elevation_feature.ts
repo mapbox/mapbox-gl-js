@@ -11,14 +11,59 @@ import Point from "@mapbox/point-geometry";
 import {number as interpolate} from '../../src/style-spec/util/interpolate';
 import {mulberry32} from '../../src/style-spec/util/random';
 
+// Module-level scratch: instance fields would be dropped by Object.create across the worker boundary.
+const scratchVec2 = [vec2.create(), vec2.create(), vec2.create(), vec2.create(), vec2.create(), vec2.create(), vec2.create()];
+// Separate scratch pair — getClosestEdge may run during the merge.
+const _mergeSafeMin = vec2.create();
+const _mergeSafeMax = vec2.create();
+
 import type {VectorTileLayer} from "@mapbox/vector-tile";
 import type {CanonicalTileID} from "../../src/source/tile_id";
 import type {Bounds} from "../../src/style-spec/util/geometry_util";
+import type {Transferable} from '../../src/types/transferable';
+
+type SerializedPoint = {x: number; y: number};
+type SerializedSafeArea = {min: SerializedPoint; max: SerializedPoint};
+type SerializedVec2Pair = [number, number];
+
+type SerializedElevationFeature = {
+    id: number;
+    constantHeight?: number;
+    heightRange: Range;
+    safeArea: SerializedSafeArea;
+    vertices?: Array<{position: SerializedVec2Pair; height: number; extent: number; index?: number}>;
+    vertexProps?: Array<{dir: SerializedVec2Pair}>;
+    edges?: Array<Edge>;
+    edgeProps?: Array<{vec: SerializedVec2Pair; dir: SerializedVec2Pair; len: number}>;
+};
+
+function vec2ToPair(v: vec2): SerializedVec2Pair {
+    return [v[0], v[1]];
+}
+
+function pairToVec2(p: SerializedVec2Pair): vec2 {
+    return vec2.fromValues(p[0], p[1]);
+}
+
+function safeAreaToPayload(safeArea: Bounds): SerializedSafeArea {
+    return {
+        min: {x: safeArea.min.x, y: safeArea.min.y},
+        max: {x: safeArea.max.x, y: safeArea.max.y},
+    };
+}
+
+function safeAreaFromPayload(safeArea: SerializedSafeArea): Bounds {
+    return {
+        min: new Point(safeArea.min.x, safeArea.min.y),
+        max: new Point(safeArea.max.x, safeArea.max.y),
+    };
+}
 
 export interface Vertex {
     position: vec2;
     height: number;
     extent: number;
+    index?: number;
 }
 
 export interface Edge {
@@ -48,11 +93,13 @@ export class EdgeIterator {
 
     feature: ElevationFeature;
     metersToTile: number;
+    sampler: ElevationFeatureSampler | null;
     index: number;
 
-    constructor(feature: ElevationFeature, metersToTile: number) {
+    constructor(feature: ElevationFeature, metersToTile: number, sampler: ElevationFeatureSampler | null = null) {
         this.feature = feature;
         this.metersToTile = metersToTile;
+        this.sampler = sampler;
         this.index = 0;
     }
 
@@ -66,9 +113,10 @@ export class EdgeIterator {
         const perpX = dir[1];
         const perpY = -dir[0];
         const dist = (vertex.extent + 1) * this.metersToTile;
+        const position = this.sampler ? this.sampler.pointTransform(vertex.position) : vertex.position;
 
-        const a = new Point(Math.trunc(vertex.position[0] + perpX * dist), Math.trunc(vertex.position[1] + perpY * dist));
-        const b = new Point(Math.trunc(vertex.position[0] - perpX * dist), Math.trunc(vertex.position[1] - perpY * dist));
+        const a = new Point(Math.trunc(position[0] + perpX * dist), Math.trunc(position[1] + perpY * dist));
+        const b = new Point(Math.trunc(position[0] - perpX * dist), Math.trunc(position[1] - perpY * dist));
 
         return [a, b];
     }
@@ -107,6 +155,9 @@ export class ElevationFeature {
 
         this.vertices = vertices;
         this.edges = edges;
+        for (let i = 0; i < this.vertices.length; i++) {
+            this.vertices[i].index = this.vertices[i].index !== undefined ? this.vertices[i].index : i;
+        }
 
         // Check that edges are valid
         this.edges = this.edges.filter(edge => edge.a < this.vertices.length &&
@@ -202,8 +253,6 @@ export class ElevationFeature {
         return this.heightRange.max <= -TUNNEL_THRESHOLD_METERS;
     }
 
-    private  _tmpVec2 = [vec2.create(), vec2.create(), vec2.create(), vec2.create(), vec2.create(), vec2.create(), vec2.create()];
-
     private getClosestEdge(point: Point): [number, number] | undefined {
         if (this.edges.length === 0) {
             return undefined;
@@ -213,7 +262,7 @@ export class ElevationFeature {
         let closestDist = Number.POSITIVE_INFINITY;
         let closestT = 0.0;
 
-        const [pa, pb, papb, paPoint, aPoint, perpDir, pointVec] = this._tmpVec2;
+        const [pa, pb, papb, paPoint, aPoint, perpDir, pointVec] = scratchVec2;
 
         vec2.set(pointVec, point.x, point.y);
         // The ray direction will be updated for each iteration of the loop.
@@ -308,6 +357,7 @@ export class ElevationFeature {
                 position: vec2.scale(pos, pos, 0.5),
                 height: 0.5 * (aHeight + bHeight),
                 extent: 0.5 * (aExtent + bExtent),
+                index: 0.5 * ((this.vertices[a].index !== undefined ? this.vertices[a].index : a) + (this.vertices[b].index !== undefined ? this.vertices[b].index : b)),
             });
 
             const dir = vec2.add(vec2.create(), aDir, bDir);
@@ -363,6 +413,85 @@ export class ElevationFeature {
         const vecB = vec3.lerp(bVec, bStart, bEnd, t);
         return vec3.squaredDistance(vecA, vecB);
     }
+
+    /// Encode as plain number pairs — structured-clone would detach the Float32Array backing buffers.
+    static serialize(feature: ElevationFeature, _transferables?: Set<Transferable>): SerializedElevationFeature {
+        const payload: SerializedElevationFeature = {
+            id: feature.id,
+            heightRange: {min: feature.heightRange.min, max: feature.heightRange.max},
+            safeArea: safeAreaToPayload(feature.safeArea),
+        };
+
+        if (feature.constantHeight != null) {
+            payload.constantHeight = feature.constantHeight;
+            return payload;
+        }
+
+        if (feature.vertices.length === 0) {
+            payload.vertices = [];
+            payload.vertexProps = [];
+            payload.edges = [];
+            payload.edgeProps = [];
+            return payload;
+        }
+
+        payload.vertices = feature.vertices.map((vertex) => ({
+            position: vec2ToPair(vertex.position),
+            height: vertex.height,
+            extent: vertex.extent,
+            index: vertex.index,
+        }));
+        payload.vertexProps = feature.vertexProps.map((props) => ({dir: vec2ToPair(props.dir)}));
+        payload.edges = feature.edges.map((edge) => ({a: edge.a, b: edge.b}));
+        payload.edgeProps = feature.edgeProps.map((props) => ({
+            vec: vec2ToPair(props.vec),
+            dir: vec2ToPair(props.dir),
+            len: props.len,
+        }));
+        return payload;
+    }
+
+    static deserialize(input: SerializedElevationFeature): ElevationFeature {
+        const safeArea = safeAreaFromPayload(input.safeArea);
+
+        if (input.constantHeight != null) {
+            return new ElevationFeature(input.id, safeArea, input.constantHeight);
+        }
+
+        if (!input.vertices || input.vertices.length === 0) {
+            const empty = Object.create(ElevationFeature.prototype) as ElevationFeature;
+            empty.id = input.id;
+            empty.constantHeight = undefined;
+            empty.heightRange = {min: input.heightRange.min, max: input.heightRange.max};
+            empty.safeArea = safeArea;
+            empty.vertices = [];
+            empty.vertexProps = [];
+            empty.edges = [];
+            empty.edgeProps = [];
+            return empty;
+        }
+
+        const copy = Object.create(ElevationFeature.prototype) as ElevationFeature;
+        copy.id = input.id;
+        copy.constantHeight = undefined;
+        copy.heightRange = {min: input.heightRange.min, max: input.heightRange.max};
+        copy.safeArea = safeArea;
+        copy.vertices = input.vertices.map((vertex) => ({
+            position: pairToVec2(vertex.position),
+            height: vertex.height,
+            extent: vertex.extent,
+            index: vertex.index,
+        }));
+        // Optional arrays: degrade to [] when absent (same as edges / edgeProps below).
+        copy.vertexProps = (input.vertexProps || []).map((props) => ({dir: pairToVec2(props.dir)}));
+        copy.edges = (input.edges || []).map((edge) => ({a: edge.a, b: edge.b}));
+        copy.edgeProps = (input.edgeProps || []).map((props) => ({
+            vec: pairToVec2(props.vec),
+            dir: pairToVec2(props.dir),
+            len: props.len,
+        }));
+        return copy;
+    }
 }
 
 export abstract class ElevationFeatures {
@@ -415,7 +544,7 @@ export abstract class ElevationFeatures {
 
             while (vCurrent !== vEnd && vertices[vCurrent].id === feature.id) {
                 const vertex = vertices[vCurrent];
-                outVertices.push({position: vertex.position, height: vertex.height, extent: vertex.extent});
+                outVertices.push({position: vertex.position, height: vertex.height, extent: vertex.extent, index: vertex.idx});
 
                 if (vCurrent !== vFirst && vertices[vCurrent - 1].idx === vertex.idx - 1) {
                     const idx = vCurrent - vFirst;
@@ -455,6 +584,15 @@ export class ElevationFeatureSampler {
         this.yOffset = (sampleTileId.y * this.zScale - elevationTileId.y) * EXTENT;
     }
 
+    pointTransform(point: vec2): vec2 {
+        return vec2.fromValues(point[0] * this.zScale + this.xOffset, point[1] * this.zScale + this.yOffset);
+    }
+
+    pointTransformInPlace(v: vec2): void {
+        v[0] = v[0] * this.zScale + this.xOffset;
+        v[1] = v[1] * this.zScale + this.yOffset;
+    }
+
     constantElevation(elevation: ElevationFeature, bias: number): number | undefined {
         if (elevation.constantHeight == null) return undefined;
 
@@ -479,6 +617,71 @@ export class ElevationFeatureSampler {
         const stepHeight = height >= 0.0 ? height : Math.abs(0.5 * height);
         return height + bias * smoothstep(0.0, bias, stepHeight);
     }
+}
+
+/// Merge elevation parts from multiple provider tiles into one curve in
+/// `consumerTileId` space. Each part only covers its own tile's slice —
+/// without merging, points outside that slice sample as ground (z=0).
+///
+/// `parts` must all share the same feature id and be non-empty. Higher-zoom parts take
+/// priority when deduplicating vertices by curve index.
+export function mergeElevationFeatures(consumerTileId: CanonicalTileID, parts: {tileId: CanonicalTileID, feature: ElevationFeature}[]): ElevationFeature {
+    assert(parts.length > 0);
+
+    // Higher zoom level first so that duplicate curve indices keep the finer vertex.
+    const sorted = parts.slice().sort((a, b) => b.tileId.z - a.tileId.z);
+
+    const min = new Point(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+    const max = new Point(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+    const mergedVertices: Vertex[] = [];
+
+    for (const part of sorted) {
+        const sampler = new ElevationFeatureSampler(part.tileId, consumerTileId);
+        for (const vertex of part.feature.vertices) {
+            mergedVertices.push({
+                position: sampler.pointTransform(vertex.position),
+                height: vertex.height,
+                extent: vertex.extent,
+                index: vertex.index,
+            });
+        }
+
+        const safeArea = part.feature.safeArea;
+        _mergeSafeMin[0] = safeArea.min.x; _mergeSafeMin[1] = safeArea.min.y;
+        _mergeSafeMax[0] = safeArea.max.x; _mergeSafeMax[1] = safeArea.max.y;
+        sampler.pointTransformInPlace(_mergeSafeMin);
+        sampler.pointTransformInPlace(_mergeSafeMax);
+        min.x = Math.min(min.x, _mergeSafeMin[0], _mergeSafeMax[0]);
+        min.y = Math.min(min.y, _mergeSafeMin[1], _mergeSafeMax[1]);
+        max.x = Math.max(max.x, _mergeSafeMin[0], _mergeSafeMax[0]);
+        max.y = Math.max(max.y, _mergeSafeMin[1], _mergeSafeMax[1]);
+    }
+
+    const bounds: Bounds = {min, max};
+
+    if (sorted[0].feature.constantHeight != null) {
+        return new ElevationFeature(sorted[0].feature.id, bounds, sorted[0].feature.constantHeight);
+    }
+
+    // Sort by curve index, drop duplicates (first = highest zoom from the sort above).
+    mergedVertices.sort((a, b) => a.index - b.index);
+    const deduped: Vertex[] = [];
+    for (const vertex of mergedVertices) {
+        if (deduped.length === 0 || deduped.at(-1).index !== vertex.index) {
+            deduped.push(vertex);
+        }
+    }
+
+    // Connect consecutive vertices whose curve indices are adjacent (gaps mark separate spans).
+    const edges: Edge[] = [];
+    for (let i = 1; i < deduped.length; i++) {
+        if (deduped[i].index - deduped[i - 1].index <= 1.0) {
+            edges.push({a: i - 1, b: i});
+        }
+    }
+
+    const metersToTile = 1.0 / tileToMeter(consumerTileId);
+    return new ElevationFeature(sorted[0].feature.id, bounds, undefined, deduped, edges, metersToTile);
 }
 
 register(ElevationFeature, 'ElevationFeature');
