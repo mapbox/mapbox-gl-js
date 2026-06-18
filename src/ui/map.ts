@@ -401,7 +401,8 @@ const defaultOptions = {
  * When `'client'` (the default), each font in a comma-separated fontstack is loaded individually and missing glyphs are filled from subsequent fallback fonts on the client.
  * When `'server'`, the full fontstack string is passed as-is to the glyph server, which must support server-side fontstack composition.
  * @param {RequestTransformFunction} [options.transformRequest=null] A callback run before the Map makes a request for an external URL. The callback can be used to modify the url, set headers, or set the credentials property for cross-origin requests.
- * Expected to return a {@link RequestParameters} object with a `url` property and optionally `headers` and `credentials` properties.
+ * Expected to return a {@link RequestParameters} object with a `url` property and optionally `headers` and `credentials` properties, or a `Promise` resolving to one. Returning a `Promise` lets the callback resolve values asynchronously before each request, for example to refresh an auth token.
+ * The callback receives a third `options` argument with an optional `signal` ({@link AbortSignal}) that aborts when the request is cancelled.
  * @param {boolean} [options.collectResourceTiming=false] If `true`, Resource Timing API information will be collected for requests made by GeoJSON and Vector Tile web workers (this information is normally inaccessible from the main Javascript thread). Information will be returned in a `resourceTiming` property of relevant `data` events.
  * @param {number} [options.fadeDuration=300] Controls the duration of the fade-in/fade-out animation for label collisions, in milliseconds. This setting affects all symbol layers. This setting does not affect the duration of runtime styling transitions or raster tile cross-fading.
  * @param {boolean} [options.respectPrefersReducedMotion=true] If set to `true`, the map will respect the user's `prefers-reduced-motion` browser setting and apply a reduced motion mode, minimizing animations and transitions. When set to `false`, the map will always ignore the `prefers-reduced-motion` settings, regardless of the user's preference, making all animations essential.
@@ -442,6 +443,16 @@ const defaultOptions = {
  *                 credentials: 'include'  // Include cookies for cross-origin requests
  *             };
  *         }
+ *     }
+ * });
+ * @example
+ * const map = new mapboxgl.Map({
+ *     container: 'map',
+ *     style: 'mapbox://styles/mapbox/streets-v11',
+ *     // `transformRequest` may also be async: await a value, then return the rewritten request.
+ *     transformRequest: async (url, resourceType, options) => {
+ *         const token = await getFreshToken({signal: options && options.signal});
+ *         return {url: `${url}?token=${token}`};
  *     }
  * });
  * @see [Example: Display a map on a webpage](https://docs.mapbox.com/mapbox-gl-js/example/simple-map/)
@@ -2840,9 +2851,12 @@ export class Map extends Camera {
      * @see [Example: Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      */
     loadImage(url: string, callback: Callback<ImageBitmap | HTMLImageElement | ImageData>) {
-        const request = this._requestManager.transformRequest(url, ResourceType.Image);
-        // No signal: loadImage exposes no cancellation, so getImage never rejects AbortError here.
-        getImage(request).then(({data}) => callback(null, data)).catch(callback);
+        const load = async () => {
+            const request = await this._requestManager.transformRequest(url, ResourceType.Image);
+            const {data} = await getImage(request);
+            return data;
+        };
+        load().then((data) => callback(null, data)).catch(callback);
     }
 
     /**

@@ -221,7 +221,7 @@ describe('RasterTileSource', () => {
         });
     });
 
-    test('abortTile aborts an in-flight image request and unloads the tile', async () => {
+    test('abortTile aborts an in-flight image request and settles silently', async () => {
         mockFetch({
             '/source.json': () => new Response(JSON.stringify({
                 minzoom: 0,
@@ -254,9 +254,11 @@ describe('RasterTileSource', () => {
             setTimeout(resolve, 0);
         });
 
-        expect(tile.state).toEqual('unloaded');
+        // The loader settles the abort silently with callback(null); SourceCache (via tile.destroy)
+        // owns the 'unloaded' transition, so the loader must not mark the tile errored here.
         expect(callback).toHaveBeenCalledWith(null);
         expect(tile.setTexture).not.toHaveBeenCalled();
+        expect(tile.state).not.toEqual('errored');
     });
 
     test('cancels TileJSON request if removed', () => {

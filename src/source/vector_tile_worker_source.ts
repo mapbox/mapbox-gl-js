@@ -153,7 +153,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
         });
     }
 
-    async loadTile(params: WorkerSourceVectorTileRequest): Promise<WorkerSourceVectorTileResult | null | undefined> {
+    async loadTile(params: WorkerSourceVectorTileRequest): Promise<WorkerSourceVectorTileResult | null> {
         const uid = params.uid;
         const requestParam = params && params.request;
         const perf = requestParam && requestParam.collectResourceTiming;

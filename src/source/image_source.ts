@@ -294,7 +294,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
         this._dirty = false;
     }
 
-    load(newCoordinates?: Coordinates, loaded?: boolean) {
+    async load(newCoordinates?: Coordinates, loaded?: boolean) {
         this._loaded = loaded || false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
 
@@ -309,10 +309,11 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
             return;
         }
 
-        const request = this.map._requestManager.transformRequest(this.url, ResourceType.Image);
         const controller = new AbortController();
         this._imageRequest = controller;
-        getImage(request, controller.signal).then(({data}) => {
+        try {
+            const request = await this.map._requestManager.transformRequest(this.url, ResourceType.Image, controller.signal);
+            const {data} = await getImage(request, controller.signal);
             this._imageRequest = null;
             this._loaded = true;
             this.image = data;
@@ -323,14 +324,14 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
                 this.coordinates = newCoordinates;
             }
             this._finishLoading();
-        }).catch((err: Error) => {
-            // A cancelled load rejects AbortError; leave _loaded/_imageRequest untouched so a
-            // late settle can't resurrect state after updateImage/onRemove already moved on.
-            if (err.name === 'AbortError') return;
+        } catch (err) {
+            // Swallow only our own cancellation; a late settle must not resurrect state after
+            // updateImage/onRemove moved on. Other errors must surface.
+            if (controller.signal.aborted) return;
             this._imageRequest = null;
             this._loaded = true;
-            this.fire(new ErrorEvent(err));
-        });
+            this.fire(new ErrorEvent(err as Error));
+        }
     }
 
     loaded(): boolean {
@@ -387,6 +388,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         this.options.url = options.url;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.load(options.coordinates, this._loaded);
         return this;
     }
@@ -414,6 +416,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
 
     onAdd(map: Map) {
         this.map = map;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.load();
     }
 

@@ -655,18 +655,18 @@ class Style extends Evented<MapEvents> {
 
         if (typeof style === 'string') {
             const url = this.map._requestManager.normalizeStyleURL(style);
-            const request = this.map._requestManager.transformRequest(url, ResourceType.Style);
             const controller = new AbortController();
-            getJSON<StyleSpecification>(request, controller.signal)
-                .then(({data: json}) => {
-                    this._request = null;
-                    handleStyle(json, onStarted);
-                })
-                .catch((err: Error) => {
-                    this._request = null;
-                    if (err.name !== 'AbortError') this.fire(new ErrorEvent(err));
-                });
             this._request = {cancel: () => controller.abort()};
+            const load = async () => {
+                const request = await this.map._requestManager.transformRequest(url, ResourceType.Style, controller.signal);
+                const {data: json} = await getJSON<StyleSpecification>(request, controller.signal);
+                this._request = null;
+                handleStyle(json, onStarted);
+            };
+            load().catch((err: Error) => {
+                this._request = null;
+                if (!controller.signal.aborted) this.fire(new ErrorEvent(err));
+            });
         } else if (typeof style === 'object') {
             handleStyle(style, onStarted);
         }
@@ -691,19 +691,19 @@ class Style extends Evented<MapEvents> {
         const cachedImport = this.importsCache.get(url);
         if (cachedImport) return this._load(cachedImport, validate);
 
-        const request = this.map._requestManager.transformRequest(url, ResourceType.Style);
         const controller = new AbortController();
-        getJSON<StyleSpecification>(request, controller.signal)
-            .then(({data: json}) => {
-                this._request = null;
-                this.importsCache.set(url, json);
-                this._load(json, validate);
-            })
-            .catch((err: Error) => {
-                this._request = null;
-                if (err.name !== 'AbortError') this.fire(new ErrorEvent(err));
-            });
         this._request = {cancel: () => controller.abort()};
+        const load = async () => {
+            const request = await this.map._requestManager.transformRequest(url, ResourceType.Style, controller.signal);
+            const {data: json} = await getJSON<StyleSpecification>(request, controller.signal);
+            this._request = null;
+            this.importsCache.set(url, json);
+            this._load(json, validate);
+        };
+        load().catch((err: Error) => {
+            this._request = null;
+            if (!controller.signal.aborted) this.fire(new ErrorEvent(err));
+        });
     }
 
     loadJSON(json: StyleSpecification, options: StyleSetterOptions = {}): void {
@@ -1695,6 +1695,7 @@ class Style extends Evented<MapEvents> {
 
         const controller = new AbortController();
         this._spriteRequest = controller;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         loadIconset(url, this.map._requestManager, controller.signal, (err, images) => {
             this._spriteRequest = null;
             if (err) {

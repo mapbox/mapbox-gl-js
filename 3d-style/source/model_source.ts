@@ -99,8 +99,9 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         }
     }
 
-    private loadGLTFFromURI(uri: string, signal?: AbortSignal): Promise<GLTF> {
-        return loadGLTF(this.map._requestManager.transformRequest(uri, ResourceType.Model).url, signal);
+    private async loadGLTFFromURI(uri: string, signal?: AbortSignal): Promise<GLTF> {
+        const request = await this.map._requestManager.transformRequest(uri, ResourceType.Model, signal);
+        return loadGLTF(request.url, signal);
     }
 
     private async loadModel(modelId: string, modelSpec: ModelSourceModelSpecification, signal: AbortSignal): Promise<void> {
@@ -120,9 +121,8 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
             this.models.push(model);
             modelInfo.model = model;
         } catch (err: unknown) {
-            if (err instanceof Error && err.name === 'AbortError') return;
-            const message = err instanceof Error ? err.message : 'Unknown error';
-            this.fire(new ErrorEvent(new Error(`Could not load model ${modelId} from ${modelSpec.uri}: ${message}`)));
+            if (signal.aborted) return;
+            this.fire(new ErrorEvent(new Error(`Could not load model ${modelId} from ${modelSpec.uri}`, {cause: err})));
         }
     }
 

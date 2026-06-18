@@ -111,7 +111,8 @@ class CanvasSource extends ImageSource<'canvas'> {
      * @memberof CanvasSource
      */
 
-    override load() {
+    // eslint-disable-next-line @typescript-eslint/require-await
+    override async load() {
         this._loaded = true;
         if (!this.canvas) {
             this.canvas = (this.options.canvas instanceof HTMLCanvasElement) ?
@@ -166,6 +167,7 @@ class CanvasSource extends ImageSource<'canvas'> {
 
     override onAdd(map: Map) {
         this.map = map;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.load();
         if (this.canvas) {
             if (this.animate) this.play();

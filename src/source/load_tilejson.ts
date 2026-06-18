@@ -19,9 +19,9 @@ export type Options = Extract<SourceSpecification, TileJSONLike> & TileJSONLike 
  * Computes the transformed request URL and provider options from source options.
  * @private
  */
-export function parseTileJSONRequest(source: TileJSONLike, requestManager: RequestManager): {options: TileJSONLike; request?: RequestParameters} {
+export async function parseTileJSONRequest(source: TileJSONLike, requestManager: RequestManager, signal?: AbortSignal): Promise<{options: TileJSONLike; request?: RequestParameters}> {
     const request = (source.url && !source.tiles) ?
-        requestManager.transformRequest(source.url, ResourceType.Source) :
+        await requestManager.transformRequest(source.url, ResourceType.Source, signal) :
         undefined;
 
     const options: TileJSONLike = request ?
@@ -167,10 +167,12 @@ export default function loadTileJSON(
 
     if (options.url) {
         const controller = new AbortController();
-        const requestParameters = requestManager.transformRequest(requestManager.normalizeSourceURL(options.url, null, language, worldview), ResourceType.Source);
-        getJSON<Partial<TileJSON>>(requestParameters, controller.signal)
-            .then(({data}) => loaded(null, data))
-            .catch((err: Error) => { if (err.name !== 'AbortError') loaded(err); });
+        const load = async () => {
+            const requestParameters = await requestManager.transformRequest(requestManager.normalizeSourceURL(options.url, null, language, worldview), ResourceType.Source, controller.signal);
+            const {data} = await getJSON<Partial<TileJSON>>(requestParameters, controller.signal);
+            loaded(null, data);
+        };
+        load().catch((err: Error) => { if (!controller.signal.aborted) loaded(err); });
         return {cancel: () => controller.abort()};
     } else {
         return browser.frame(() => {

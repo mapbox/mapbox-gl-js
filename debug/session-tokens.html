@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id="map"></div>
+
+<script type="module">
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import {getAccessToken} from './access_token_generated.js';
+
+let session = null;
+function authenticate(signal) {
+    if (signal) {
+        signal.addEventListener('abort', () => console.log('request aborted'), {once: true});
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    if (!session || now >= session.exp) {
+        session = {token: Date.now().toString(), exp: now + 30};
+    }
+
+    return session;
+}
+
+const map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
+    container: 'map',
+    hash: true,
+    zoom: 12.5,
+    center: [-122.4194, 37.7749],
+    transformRequest: async (url, resourceType, {signal}) => {
+        const {token} = await authenticate(signal);
+
+        const u = new URL(url);
+        u.searchParams.set('ts', token);
+
+        return {url: u.toString()};
+    }
+});
+
+</script>
+</body>
+</html>

@@ -27,35 +27,27 @@ export default function (
     let json: SpriteData | undefined, image: ImageBitmap | undefined, error: Error | undefined;
     const format = browser.devicePixelRatio > 1 ? '@2x' : '';
 
-    const requestParameters = requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON);
-    getJSON<SpriteData>(requestParameters, signal)
-        .then(({data}) => {
-            if (!error) {
-                json = data;
-                maybeComplete();
-            }
-        })
-        .catch((err: Error) => {
-            if (!error && err.name !== 'AbortError') {
-                error = err;
-                maybeComplete();
-            }
-        });
+    function settle(err: Error | undefined) {
+        // Stay silent only on our own cancellation (signal.aborted), not on a user transform's own rejection.
+        if (error || (err && signal.aborted)) return;
+        if (err) error = err;
+        maybeComplete();
+    }
 
-    const imageRequestParameters = requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.png'), ResourceType.SpriteImage);
-    getImage(imageRequestParameters, signal)
-        .then(({data}) => {
-            if (!error) {
-                image = data;
-                maybeComplete();
-            }
-        })
-        .catch((err: Error) => {
-            if (!error && err.name !== 'AbortError') {
-                error = err;
-                maybeComplete();
-            }
-        });
+    async function loadJSON() {
+        const requestParameters = await requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON, signal);
+        const {data} = await getJSON<SpriteData>(requestParameters, signal);
+        if (!error) json = data;
+    }
+
+    async function loadImage() {
+        const requestParameters = await requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.png'), ResourceType.SpriteImage, signal);
+        const {data} = await getImage(requestParameters, signal);
+        if (!error) image = data;
+    }
+
+    loadJSON().then(() => settle(undefined), (err: Error) => settle(err));
+    loadImage().then(() => settle(undefined), (err: Error) => settle(err));
 
     function maybeComplete() {
         if (error) {

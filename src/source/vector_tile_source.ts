@@ -25,6 +25,7 @@ import type {TileJSON} from '../types/tilejson';
 import type Actor from '../util/actor';
 import type {WorkerInbox} from '../util/actor_messages';
 import type {LoadVectorTileResult} from './load_vector_tile';
+import type {RequestParameters} from '../util/ajax';
 import type {WorkerSourceVectorTileRequest, WorkerSourceVectorTileResult} from './worker_source';
 
 /**
@@ -172,32 +173,38 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             loadTileJSON(this._options, this.map._requestManager, language, worldview, done);
     }
 
-    loadTileJSONWithProvider(tileProvider: {name: string; url: string}, callback: Callback<TileJSON>) {
+    loadTileJSONWithProvider(tileProvider: {name: string; url: string}, callback: Callback<TileJSON>): Cancelable {
         this.provider = tileProvider.name;
-        const {request, options} = parseTileJSONRequest(this._options, this.map._requestManager);
-
         const controller = new AbortController();
-        this.dispatcher.broadcast('loadTileProvider', {
-            name: tileProvider.name,
-            url: tileProvider.url,
-            source: this.id,
-            scope: this.scope,
-            type: this.type,
-            options,
-            request,
-        }, {keepResult: true, signal: controller.signal})
-            .then((results) => {
-                const tileJSON = results ? results.find((r) => r != null) : null;
-                const result = processTileJSON(this._options, tileJSON, this.map._requestManager);
-                if (result instanceof Error) {
-                    callback(result);
-                } else {
-                    callback(null, result);
-                }
-            })
-            .catch((err: Error) => {
-                if (err.name !== 'AbortError') callback(err);
-            });
+
+        const load = async () => {
+            const {request, options} = await parseTileJSONRequest(this._options, this.map._requestManager, controller.signal);
+            if (controller.signal.aborted) return;
+
+            const results = await this.dispatcher.broadcast('loadTileProvider', {
+                name: tileProvider.name,
+                url: tileProvider.url,
+                source: this.id,
+                scope: this.scope,
+                type: this.type,
+                options,
+                request,
+            }, {keepResult: true, signal: controller.signal});
+
+            if (controller.signal.aborted) return;
+
+            const tileJSON = results ? results.find((r) => r != null) : null;
+            const result = processTileJSON(this._options, tileJSON, this.map._requestManager);
+            if (result instanceof Error) {
+                callback(result);
+            } else {
+                callback(null, result);
+            }
+        };
+
+        load().catch((err: Error) => {
+            if (!controller.signal.aborted) callback(err);
+        });
 
         return {cancel: () => controller.abort()};
     }
@@ -304,10 +311,36 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
         return {...this._options};
     }
 
-    loadTile(tile: Tile, callback: Callback<WorkerSourceVectorTileResult>) {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    async loadTile(tile: Tile, callback: Callback<WorkerSourceVectorTileResult | null>): Promise<void> {
         const tileUrl = tile.tileID.canonical.url(this.tiles, this.scheme);
         const url = this.map._requestManager.normalizeTileURL(tileUrl);
-        const request = this.map._requestManager.transformRequest(url, ResourceType.Tile);
+
+        // Pick actor + state branch synchronously: this gates the re-entrant loadTile dedupe below.
+        const isFresh = !tile.actor || tile.state === 'expired';
+        if (!isFresh && tile.state === 'loading') {
+            // schedule tile reloading after it has been loaded
+            tile.reloadCallback = callback;
+            return;
+        }
+        if (isFresh) {
+            tile.actor = this._tileWorkers[url] = this._tileWorkers[url] || this.dispatcher.getActor();
+        }
+
+        const controller = new AbortController();
+        tile.request = controller;
+
+        try {
+            const request = await this.map._requestManager.transformRequest(url, ResourceType.Tile, controller.signal);
+            if (controller.signal.aborted) return callback(null);
+            this.dispatchTile(tile, url, tileUrl, request, controller, isFresh, callback);
+        } catch (err) {
+            if (controller.signal.aborted) return callback(null);
+            callback(err as Error);
+        }
+    }
+
+    private dispatchTile(tile: Tile, url: string, tileUrl: string, request: RequestParameters, controller: AbortController, isFresh: boolean, callback: Callback<WorkerSourceVectorTileResult>) {
         const lutForScope = this.map.style ? this.map.style.getLut(this.scope) : null;
         const lut = lutForScope ? {image: lutForScope.image.clone()} : null;
 
@@ -376,15 +409,14 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
 
         params.request.collectResourceTiming = this._collectResourceTiming;
 
-        if (!tile.actor || tile.state === 'expired') {
-            tile.actor = this._tileWorkers[url] = this._tileWorkers[url] || this.dispatcher.getActor();
-
+        if (isFresh) {
             // if workers are not ready to receive messages yet, use the idle time to preemptively
             // load tiles on the main thread and pass the result instead of requesting a worker to do so.
             // Provider tiles are fetched by the provider on workers, so skip main-thread preloading.
             if (!this.dispatcher.ready && !this.provider) {
 
                 const cancel = loadVectorTile.call({deduped: this._deduped}, params, (err?: Error | null, data?: LoadVectorTileResult | null) => {
+                    if (tile.aborted) return;
                     if (err || !data) {
                         done.call(this, err);
                     } else {
@@ -400,23 +432,15 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                     }
                 }, true);
 
-                // loadVectorTile still uses the callback + cancel-fn contract, so bridge its
-                // cancel onto a controller to keep tile.request a uniform AbortController.
-                const controller = new AbortController();
+                // loadVectorTile uses a cancel-fn, not a signal; bridge it onto the controller so tile.request stays uniform.
                 controller.signal.addEventListener('abort', cancel, {once: true});
-                tile.request = controller;
 
             } else {
 
                 tile.request = tile.actor.sendCancelable('loadTile', params, {}, done.bind(this));
             }
 
-        } else if (tile.state === 'loading') {
-            // schedule tile reloading after it has been loaded
-            tile.reloadCallback = callback;
-
         } else {
-
             tile.request = tile.actor.sendCancelable('reloadTile', params, {}, done.bind(this));
         }
 
@@ -469,6 +493,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                 callback(null, data);
 
                 if (tile.reloadCallback) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this.loadTile(tile, tile.reloadCallback);
                     tile.reloadCallback = null;
                 }

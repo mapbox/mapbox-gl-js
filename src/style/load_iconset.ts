@@ -34,35 +34,36 @@ function getStretchArea(stretchArea: [number, number][] | undefined): [number, n
     return stretchArea.map(([l, r]) => [l * browser.devicePixelRatio, r * browser.devicePixelRatio]);
 }
 
-export function loadIconset(
+export async function loadIconset(
     loadURL: string,
     requestManager: RequestManager,
     signal: AbortSignal,
     callback: Callback<StyleImages>
 ) {
-    const request = requestManager.transformRequest(requestManager.normalizeIconsetURL(loadURL), ResourceType.Iconset);
-    getArrayBuffer(request, signal)
-        .then(({data}) => {
-            const result: StyleImages = {};
+    try {
+        const request = await requestManager.transformRequest(requestManager.normalizeIconsetURL(loadURL), ResourceType.Iconset, signal);
+        const {data} = await getArrayBuffer(request, signal);
+        const result: StyleImages = {};
 
-            const iconSet = readIconSet(new PbfReader(data));
+        const iconSet = readIconSet(new PbfReader(data));
 
-            for (const icon of iconSet.icons) {
-                const styleImage: StyleImage = {
-                    version: 1,
-                    pixelRatio: browser.devicePixelRatio,
-                    content: getContentArea(icon),
-                    stretchX: icon.metadata ? getStretchArea(icon.metadata.stretch_x_areas) : undefined,
-                    stretchY: icon.metadata ? getStretchArea(icon.metadata.stretch_y_areas) : undefined,
-                    sdf: false,
-                    usvg: true,
-                    icon,
-                };
+        for (const icon of iconSet.icons) {
+            const styleImage: StyleImage = {
+                version: 1,
+                pixelRatio: browser.devicePixelRatio,
+                content: getContentArea(icon),
+                stretchX: icon.metadata ? getStretchArea(icon.metadata.stretch_x_areas) : undefined,
+                stretchY: icon.metadata ? getStretchArea(icon.metadata.stretch_y_areas) : undefined,
+                sdf: false,
+                usvg: true,
+                icon,
+            };
 
-                result[icon.name] = styleImage;
-            }
+            result[icon.name] = styleImage;
+        }
 
-            callback(null, result);
-        })
-        .catch((err: Error) => { if (err.name !== 'AbortError') callback(err); });
+        callback(null, result);
+    } catch (err) {
+        if (!signal.aborted) callback(err as Error);
+    }
 }

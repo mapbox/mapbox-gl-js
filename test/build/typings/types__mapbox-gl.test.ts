@@ -958,6 +958,11 @@ expectType<mapboxgl.TransformRequestFunction>((url: string, resourceType?: mapbo
     method: "POST",
     collectResourceTiming: true,
 }));
+// An async transform observing the abort signal is also assignable.
+expectType<mapboxgl.TransformRequestFunction>(async (url: string, resourceType?: mapboxgl.ResourceType, options?: {signal?: AbortSignal}) => {
+    options && options.signal;
+    return {url};
+});
 
 /*
  * Map

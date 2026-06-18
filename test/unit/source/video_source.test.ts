@@ -45,6 +45,16 @@ describe('VideoSource', () => {
         expect(serialized.coordinates).toEqual(newCoordinates);
     });
 
+    test('serialize reports configured urls before load resolves the transform', () => {
+        const urls = ["cropped.mp4", "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm"];
+        const source = createSource({type: 'video', urls});
+
+        // urls is empty until load() resolves its async transforms; serialize() must still
+        // report the configured urls so getStyle()/diffing never sees a transient empty list.
+        expect(source.urls).toBeUndefined();
+        expect(source.serialize().urls).toEqual(urls);
+    });
+
     //test video retrieval by first supplying the video element directly
     test('gets video', () => {
         const el = window.document.createElement('video');

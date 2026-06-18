@@ -402,20 +402,24 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
 
         options.scope = this.scope;
         const data = this._data;
-        if (typeof data === 'string') {
-            options.request = this.map._requestManager.transformRequest(browser.resolveURL(data), ResourceType.Source);
-            options.request.collectResourceTiming = this._collectResourceTiming;
-        } else {
-            options.data = JSON.stringify(data);
-        }
 
-        // target {this.type}.loadData rather than literally geojson.loadData,
-        // so that other geojson-like source types can easily reuse this
-        // implementation
+        // Register _pendingLoad before any await, so a same-tick _updateWorkerData hits the coalesce guard.
         const controller = new AbortController();
         this._pendingLoad = controller;
 
         try {
+            if (typeof data === 'string') {
+                options.request = await this.map._requestManager.transformRequest(browser.resolveURL(data), ResourceType.Source, controller.signal);
+                if (controller.signal.aborted) {
+                    this._pendingLoad = null;
+                    this._coalesce = false;
+                    return;
+                }
+                options.request.collectResourceTiming = this._collectResourceTiming;
+            } else {
+                options.data = JSON.stringify(data);
+            }
+
             // The runtime type is `${this.type}.loadData` so geojson-like source types can reuse
             // this path, but every variant returns a LoadGeoJSONResult-shaped reply.
             const result = await this.actor.send(`${this.type}.loadData` as 'geojson.loadData', options, {signal: controller.signal});
@@ -423,17 +427,17 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             this._pendingLoad = null;
             // although GeoJSON sources contain no metadata, we fire this event at first
             // to let the SourceCache know its ok to start requesting tiles.
-            const data: MapSourceDataEvent = {dataType: 'source', sourceDataType: this._metadataFired ? 'content' : 'metadata'};
+            const dataEvent: MapSourceDataEvent = {dataType: 'source', sourceDataType: this._metadataFired ? 'content' : 'metadata'};
             const geojsonResult = result;
             if (this._collectResourceTiming && geojsonResult && geojsonResult.resourceTiming && geojsonResult.resourceTiming[this.id]) {
-                data.resourceTiming = geojsonResult.resourceTiming[this.id];
+                dataEvent.resourceTiming = geojsonResult.resourceTiming[this.id];
             }
             if (append) this._partialReload = true;
-            this.fire(new Event('data', data));
+            this.fire(new Event('data', dataEvent));
             this._partialReload = false;
             this._metadataFired = true;
         } catch (err) {
-            if ((err as Error).name === 'AbortError') {
+            if (controller.signal.aborted) {
                 this._pendingLoad = null;
                 // the load was cancelled (e.g. source removed); drop any queued coalesced update
                 this._coalesce = false;

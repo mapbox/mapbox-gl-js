@@ -56,38 +56,49 @@ class VideoSource extends ImageSource<'video'> {
         this.options = options;
     }
 
-    override load() {
+    override async load() {
         this._loaded = false;
         const options = this.options;
 
-        this.urls = [];
-        for (const url of options.urls) {
-            this.urls.push(this.map._requestManager.transformRequest(url, ResourceType.Source).url);
+        // onRemove aborts _imageRequest, so thread its signal into the transform to cancel a mid-transform load.
+        const controller = new AbortController();
+        this._imageRequest = controller;
+
+        try {
+            const urls = await Promise.all(options.urls.map(async url => {
+                const params = await this.map._requestManager.transformRequest(url, ResourceType.Source, controller.signal);
+                return params.url;
+            }));
+            if (controller.signal.aborted) return;
+            this.urls = urls;
+            const video = await getVideo(urls);
+            if (controller.signal.aborted) return;
+
+            this._imageRequest = null;
+            this.video = video;
+            this.video.loop = true;
+
+            // Prevent the video from taking over the screen in iOS
+            this.video.setAttribute('playsinline', '');
+
+            // Start repainting when video starts playing. hasTransition() will then return
+            // true to trigger additional frames as long as the videos continues playing.
+            this.video.addEventListener('playing', () => {
+                this.map.triggerRepaint();
+            });
+
+            if (this.map) {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                this.video.play();
+            }
+
+            this._finishLoading();
+        } catch (err) {
+            if (controller.signal.aborted) return;
+            this.fire(new ErrorEvent(err as Error));
+        } finally {
+            this._loaded = true;
         }
-
-        getVideo(this.urls)
-            .then((video) => {
-                this.video = video;
-                this.video.loop = true;
-
-                // Prevent the video from taking over the screen in iOS
-                this.video.setAttribute('playsinline', '');
-
-                // Start repainting when video starts playing. hasTransition() will then return
-                // true to trigger additional frames as long as the videos continues playing.
-                this.video.addEventListener('playing', () => {
-                    this.map.triggerRepaint();
-                });
-
-                if (this.map) {
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                    this.video.play();
-                }
-
-                this._finishLoading();
-            })
-            .catch((err: Error) => this.fire(new ErrorEvent(err)))
-            .finally(() => { this._loaded = true; });
     }
 
     /**
@@ -153,6 +164,7 @@ class VideoSource extends ImageSource<'video'> {
     override onAdd(map: Map) {
         if (this.map) return;
         this.map = map;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.load();
         if (this.video) {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -220,7 +232,8 @@ class VideoSource extends ImageSource<'video'> {
     override serialize(): VideoSourceSpecification {
         return {
             type: 'video',
-            urls: this.urls,
+            // Report configured URLs: getStyle()/diffing must not see the transient empty urls mid-transform.
+            urls: this.options.urls,
             coordinates: this.coordinates
         };
     }

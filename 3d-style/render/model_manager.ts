@@ -45,22 +45,20 @@ class ModelManager extends Evented {
         this.numModelsLoading = Object.create(null) as ModelManager['numModelsLoading'];
     }
 
-    loadModel(id: string, url: string): Promise<Model | null | undefined> {
-        return loadGLTF(this.requestManager.transformRequest(url, ResourceType.Model).url)
-            .then(gltf => {
-                const nodes = convertModel(gltf);
-                const model = new Model(id, url, undefined, undefined, nodes);
-                model.computeBoundsAndApplyParent();
-                return model;
-            })
-            .catch((err) => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                if (err && err.status === 404) {
-                    return null;
-                }
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                this.fire(new ErrorEvent(new Error(`Could not load model ${id} from ${url}: ${err.message}`)));
-            });
+    async loadModel(id: string, url: string): Promise<Model | null | undefined> {
+        try {
+            const request = await this.requestManager.transformRequest(url, ResourceType.Model);
+            if (!this.modelByURL[url]) return null;
+
+            const gltf = await loadGLTF(request.url);
+            const nodes = convertModel(gltf);
+            const model = new Model(id, url, undefined, undefined, nodes);
+            model.computeBoundsAndApplyParent();
+            return model;
+        } catch (e) {
+            if ((e as {status?: number}).status === 404) return null;
+            this.fire(new ErrorEvent(new Error(`Could not load model ${id} from ${url}`, {cause: e})));
+        }
     }
 
     load(modelUris: {

@@ -917,6 +917,44 @@ describe('VectorTileSource', () => {
             });
         }
     });
+
+    test('aborting a tile while its transform is pending issues no worker message', async () => {
+        let resolveTransform;
+        const transformCallback = vi.fn(() => new Promise((resolve) => { resolveTransform = resolve; }));
+
+        const source = createSource({
+            minzoom: 0,
+            maxzoom: 22,
+            tiles: ["http://example.com/{z}/{x}/{y}.png"]
+        }, {transformCallback});
+
+        let sendCalled = false;
+        source.dispatcher = wrapDispatcher({
+            send(type) {
+                if (type === 'loadTile' || type === 'reloadTile') sendCalled = true;
+                return new Promise(() => {});
+            }
+        });
+
+        source.tiles = ["http://example.com/{z}/{x}/{y}.png"];
+        const tile = {tileID: new OverscaledTileID(10, 0, 10, 5, 5), state: 'loading'};
+        let callbackErr = 'unset';
+        source.loadTile(tile, (err) => { callbackErr = err; });
+
+        expect(transformCallback).toHaveBeenCalledTimes(1);
+        expect(tile.request).toBeTruthy();
+
+        // Abort mid-transform, then let the transform resolve.
+        tile.aborted = true;
+        source.abortTile(tile);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        resolveTransform({url: 'http://example.com/10/5/5.png'});
+
+        await new Promise(resolve => { setTimeout(resolve, 0); });
+
+        expect(sendCalled).toEqual(false);
+        expect(callbackErr).toEqual(null);
+    });
 });
 
 describe('VectorTileSource provider', () => {
@@ -1016,12 +1054,12 @@ describe('VectorTileSource provider', () => {
             tiles: ['http://example.com/{z}/{x}/{y}.mvt'],
         });
 
+        await waitFor(source, 'data');
         expect(broadcastSpy).toHaveBeenCalledWith(
             'loadTileProvider',
             expect.objectContaining({name, url: moduleUrl, source: 'id', type: 'vector'}),
             expect.anything()
         );
-        await waitFor(source, 'data');
         expect(source.tiles).toEqual(['http://example.com/{z}/{x}/{y}.mvt']);
     });
 
@@ -1094,13 +1132,14 @@ describe('VectorTileSource provider autodetection', () => {
         return {source, broadcastSpy, dispatcher};
     }
 
-    test('autodetects provider from .pmtiles URL extension', () => {
+    test('autodetects provider from .pmtiles URL extension', async () => {
         config.TILE_PROVIDER_URLS['pmtiles'] = '/mapbox-gl-js/mock-provider.js';
 
         const {broadcastSpy} = createAutodetectSource({
             url: 'https://example.com/tiles.pmtiles',
         });
 
+        await new Promise(resolve => { setTimeout(resolve, 0); });
         expect(broadcastSpy).toHaveBeenCalledWith(
             'loadTileProvider',
             expect.objectContaining({name: 'pmtiles'}),
@@ -1119,7 +1158,7 @@ describe('VectorTileSource provider autodetection', () => {
         expect(broadcastSpy).not.toHaveBeenCalled();
     });
 
-    test('does not autodetect when provider is explicitly set', () => {
+    test('does not autodetect when provider is explicitly set', async () => {
         config.TILE_PROVIDER_URLS['pmtiles'] = '/mapbox-gl-js/mock-provider.js';
         config.TILE_PROVIDER_URLS['custom'] = 'https://example.com/custom.js';
 
@@ -1128,6 +1167,7 @@ describe('VectorTileSource provider autodetection', () => {
             provider: 'custom',
         });
 
+        await new Promise(resolve => { setTimeout(resolve, 0); });
         expect(broadcastSpy).toHaveBeenCalledWith(
             'loadTileProvider',
             expect.objectContaining({name: 'custom', url: 'https://example.com/custom.js'}),
@@ -1144,7 +1184,7 @@ describe('VectorTileSource provider autodetection', () => {
         expect(broadcastSpy).not.toHaveBeenCalled();
     });
 
-    test('resolves relative provider URL against API_URL', () => {
+    test('resolves relative provider URL against API_URL', async () => {
         config.TILE_PROVIDER_URLS['pmtiles'] = '/mapbox-gl-js/mock-provider.js';
         config.API_URL = 'https://api.mapbox.cn';
 
@@ -1152,6 +1192,7 @@ describe('VectorTileSource provider autodetection', () => {
             url: 'https://example.com/tiles.pmtiles',
         });
 
+        await new Promise(resolve => { setTimeout(resolve, 0); });
         expect(broadcastSpy).toHaveBeenCalledWith(
             'loadTileProvider',
             expect.objectContaining({url: 'https://api.mapbox.cn/mapbox-gl-js/mock-provider.js'}),

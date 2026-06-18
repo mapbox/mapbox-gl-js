@@ -19,6 +19,15 @@ const map = new mapboxgl.Map({
 
 const transformRequest: mapboxgl.RequestTransformFunction = (url: string, resourceType?: mapboxgl.ResourceType): mapboxgl.RequestParameters => {return {url}};
 
+// An async transform observing the abort signal is assignable.
+const asyncTransformRequest: mapboxgl.RequestTransformFunction = async (url: string, resourceType?: mapboxgl.ResourceType, options?: {signal?: AbortSignal}): Promise<mapboxgl.RequestParameters> => {
+    options && options.signal;
+    return {url};
+};
+
+// @ts-expect-error — a transform returning a non-RequestParameters value does not compile.
+const badTransformRequest: mapboxgl.RequestTransformFunction = (url: string): string => url;
+
 //
 // Events
 //

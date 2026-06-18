@@ -90,6 +90,18 @@ const map = new Map({
 map.on('load', () => {});
 map.remove();
 
+// transformRequest accepts both sync and async callbacks.
+const syncTransform: RequestTransformFunction = (url) => ({url});
+const asyncTransform: RequestTransformFunction = async (url, _resourceType, options) => {
+    options && options.signal;
+    return {url};
+};
+void syncTransform;
+void asyncTransform;
+// @ts-expect-error — a transform returning a non-RequestParameters value does not compile.
+const badTransform: RequestTransformFunction = (url) => url;
+void badTransform;
+
 // Controls
 map.addControl(new NavigationControl(), 'top-left' satisfies ControlPosition);
 map.addControl(new GeolocateControl());

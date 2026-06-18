@@ -35,7 +35,7 @@ const TILE_PATH_RE = /^(\/v4\/|\/(raster|rasterarrays)\/v1\/)/;
 const ACCESS_TOKEN_PARAM_RE = /^access_token=(.*)$/;
 
 export type ResourceType = keyof typeof ResourceTypeEnum;
-export type RequestTransformFunction = (url: string, resourceTypeEnum?: ResourceType) => RequestParameters;
+export type RequestTransformFunction = (url: string, resourceType?: ResourceType, options?: {signal?: AbortSignal}) => RequestParameters | Promise<RequestParameters>;
 
 type UrlObject = {
     protocol: string;
@@ -72,12 +72,11 @@ export class RequestManager {
         return Date.now() > this._skuTokenExpiresAt;
     }
 
-    transformRequest(url: string, type: ResourceType): RequestParameters {
-        if (this._transformRequestFn) {
-            return this._transformRequestFn(url, type) || {url};
-        }
-
-        return {url};
+    async transformRequest(url: string, type: ResourceType, abortSignal?: AbortSignal): Promise<RequestParameters> {
+        if (!this._transformRequestFn) return {url};
+        const options = abortSignal ? {signal: abortSignal} : {};
+        const params = await this._transformRequestFn(url, type, options);
+        return params || {url};
     }
 
     normalizeStyleURL(url: string, accessToken?: string): string {

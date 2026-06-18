@@ -30,60 +30,75 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
 
     override loadTileJSONWithProvider(tileProvider: {name: string; url: string}, callback: Callback<TileJSON>): Cancelable {
         this.provider = tileProvider.name;
-        const {request, options} = parseTileJSONRequest(this._options, this.map._requestManager);
-
         const controller = new AbortController();
-        this.dispatcher.broadcast('loadTileProvider', {
-            name: tileProvider.name,
-            url: tileProvider.url,
-            source: this.id,
-            scope: this.scope,
-            type: this.type,
-            options,
-            request,
-        }, {keepResult: true, signal: controller.signal})
-            .then((results) => {
-                const tileJSON = results ? results.find((r) => r != null) : null;
-                const result = processTileJSON(this._options, tileJSON, this.map._requestManager);
-                if (result instanceof Error) {
-                    callback(result);
-                } else {
-                    callback(null, result);
-                }
-            })
-            .catch((err: Error) => {
-                if (err.name !== 'AbortError') callback(err);
-            });
+
+        const load = async () => {
+            const {request, options} = await parseTileJSONRequest(this._options, this.map._requestManager, controller.signal);
+            if (controller.signal.aborted) return;
+
+            const results = await this.dispatcher.broadcast('loadTileProvider', {
+                name: tileProvider.name,
+                url: tileProvider.url,
+                source: this.id,
+                scope: this.scope,
+                type: this.type,
+                options,
+                request,
+            }, {keepResult: true, signal: controller.signal});
+
+            if (controller.signal.aborted) return;
+
+            const tileJSON = results ? results.find((r) => r != null) : null;
+            const result = processTileJSON(this._options, tileJSON, this.map._requestManager);
+            if (result instanceof Error) {
+                callback(result);
+            } else {
+                callback(null, result);
+            }
+        };
+
+        load().catch((err: Error) => {
+            if (!controller.signal.aborted) callback(err);
+        });
 
         return {cancel: () => controller.abort()};
     }
 
-    override loadTile(tile: Tile, callback: Callback<undefined>) {
+    override async loadTile(tile: Tile, callback: Callback<undefined>): Promise<void> {
+        if (tile.actor && tile.state !== 'expired') return;
+
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
-        const request = this.map._requestManager.transformRequest(url, ResourceType.Tile);
 
-        const params: WorkerSourceDEMTileRequest = {
-            uid: tile.uid,
-            tileID: tile.tileID,
-            source: this.id,
-            type: this.type,
-            scope: this.scope,
-            request,
-            encoding: this.encoding,
-        };
+        // tile.actor stays synchronous so an abort/reload sees the live actor immediately.
+        tile.actor = this.dispatcher.getActor();
+        const controller = new AbortController();
+        tile.request = controller;
 
-        if (!tile.actor || tile.state === 'expired') {
-            tile.actor = this.dispatcher.getActor();
+        try {
+            const request = await this.map._requestManager.transformRequest(url, ResourceType.Tile, controller.signal);
+            if (controller.signal.aborted) return callback(null);
+
+            const params: WorkerSourceDEMTileRequest = {
+                uid: tile.uid,
+                tileID: tile.tileID,
+                source: this.id,
+                type: this.type,
+                scope: this.scope,
+                request,
+                encoding: this.encoding,
+            };
+
             tile.request = tile.actor.sendCancelable('loadTile', params, {}, done.bind(this));
+        } catch (err) {
+            if (controller.signal.aborted) return callback(null);
+            tile.state = 'errored';
+            callback(err as Error);
         }
 
         function done(this: RasterDEMTileSource, err?: Error | null, result?: WorkerSourceDEMTileResult | null) {
             delete tile.request;
 
-            if (tile.aborted) {
-                tile.state = 'unloaded';
-                return callback(null);
-            }
+            if (tile.aborted) return callback(null);
 
             if (err) {
                 tile.state = 'errored';

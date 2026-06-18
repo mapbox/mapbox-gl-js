@@ -53,6 +53,7 @@ class GlyphLoader {
         callback: Callback<GlyphRange>
     ): void {
         if (this.fontstackCompositing === 'server') {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             GlyphLoader.loadGlyphRange(fontstack, range, urlTemplate, requestManager, callback);
             return;
         }
@@ -136,6 +137,7 @@ class GlyphLoader {
         const callbacks: Array<Callback<GlyphRange>> = [callback];
         this.pendingRequests.set(cacheKey, callbacks);
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         GlyphLoader.loadGlyphRange(font, range, urlTemplate, requestManager, (err, result) => {
             // Cache the result (even null for failed requests, to avoid retrying)
             if (!err) {

@@ -92,6 +92,45 @@ describe("mapbox", () => {
             );
         });
 
+        describe('.transformRequest', () => {
+            test('resolves {url} when no transform function is set', async () => {
+                const m = new mapbox.RequestManager();
+                expect(await m.transformRequest('http://example.com/x', 'Source')).toEqual({url: 'http://example.com/x'});
+            });
+
+            test('resolves a sync transform return value', async () => {
+                const m = new mapbox.RequestManager(url => ({url: `${url}?a=1`}));
+                expect(await m.transformRequest('http://example.com/x', 'Source')).toEqual({url: 'http://example.com/x?a=1'});
+            });
+
+            test('resolves an async transform return value', async () => {
+                // eslint-disable-next-line @typescript-eslint/require-await
+                const m = new mapbox.RequestManager(async url => ({url: `${url}?a=1`}));
+                expect(await m.transformRequest('http://example.com/x', 'Source')).toEqual({url: 'http://example.com/x?a=1'});
+            });
+
+            test('resolves {url} when the transform returns a falsy value', async () => {
+                const m = new mapbox.RequestManager(() => undefined);
+                expect(await m.transformRequest('http://example.com/x', 'Source')).toEqual({url: 'http://example.com/x'});
+            });
+
+            test('a sync-throwing transform rejects rather than throwing synchronously', async () => {
+                const m = new mapbox.RequestManager(() => { throw new Error('boom'); });
+                const promise = m.transformRequest('http://example.com/x', 'Source');
+                await expect(promise).rejects.toThrow('boom');
+            });
+
+            test('forwards the signal to the transform when passed, and omits it otherwise', async () => {
+                let seenOptions: {signal?: AbortSignal} | undefined;
+                const m = new mapbox.RequestManager((url, type, options) => { seenOptions = options; return {url}; });
+                const controller = new AbortController();
+                await m.transformRequest('http://example.com/x', 'Source', controller.signal);
+                expect(seenOptions.signal).toBe(controller.signal);
+                await m.transformRequest('http://example.com/x', 'Source');
+                expect(seenOptions.signal).toBeUndefined();
+            });
+        });
+
         webpSupported.supported = false;
 
         describe('.normalizeStyleURL', () => {

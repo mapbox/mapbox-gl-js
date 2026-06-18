@@ -107,7 +107,8 @@ describe('RasterTileSource', () => {
             setExpiryData() {}
         } as unknown as Tile;
         source.loadTile(tile, () => {});
-        // transformRequest is called synchronously when building params for the worker
+        // transformRequest is invoked synchronously (before the first await), even though its
+        // result is now awaited before the worker message is built.
         expect(transformSpy).toHaveBeenCalledTimes(1);
         expect(transformSpy.mock.calls[0][0]).toEqual('http://example.com/10/5/5.png');
         expect(transformSpy.mock.calls[0][1]).toEqual('Tile');
@@ -280,12 +281,12 @@ describe('RasterDEMTileSource provider', () => {
             tiles: ['http://example.com/{z}/{x}/{y}.png'],
         });
 
+        await waitFor(source, 'data');
         expect(broadcastSpy).toHaveBeenCalledWith(
             'loadTileProvider',
             expect.objectContaining({name, source: 'id', type: 'raster-dem'}),
             expect.anything(),
         );
-        await waitFor(source, 'data');
         expect(source.tiles).toEqual(['http://example.com/{z}/{x}/{y}.png']);
     });
 
