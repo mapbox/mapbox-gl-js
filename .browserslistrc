@@ -7,19 +7,20 @@
 #   - Object.hasOwn
 #   - Array.at
 #   - async/await
+#   - AbortSignal.throwIfAborted()
 #
-#   Browser        | Limiting Feature      | Min
-#   ---------------|-----------------------|----
-#   Chrome         | structuredClone       | 98
-#   Safari         | Array.at              | 15.4
-#   Firefox        | Object.hasOwn         | 115
-#   Edge           | structuredClone       | 98
-#   Chrome Android | structuredClone       | 98
-#   iOS Safari     | Array.at              | 15.4
+#   Browser        | Limiting Feature          | Min
+#   ---------------|---------------------------|----
+#   Chrome         | AbortSignal.throwIfAborted() | 100
+#   Safari         | Array.at                  | 15.4
+#   Firefox        | Object.hasOwn             | 115
+#   Edge           | AbortSignal.throwIfAborted() | 100
+#   Chrome Android | AbortSignal.throwIfAborted() | 100
+#   iOS Safari     | Array.at                  | 15.4
 
-chrome >= 93
+chrome >= 100
 safari >= 15.4
 firefox >= 115
-edge >= 98
-and_chr >= 98
+edge >= 100
+and_chr >= 100
 ios_saf >= 15.4
