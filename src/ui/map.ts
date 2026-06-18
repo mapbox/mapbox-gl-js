@@ -4746,7 +4746,7 @@ export class Map extends Camera {
                     height: this.painter.height,
                     interactionRange: this._interactionRange,
                     visibilityHidden: this._visibilityHidden,
-                    terrainEnabled: !!this.painter.style.getTerrain(),
+                    terrainEnabled: this.painter.style.hasTerrain(),
                     fogEnabled: !!this.painter.style.getFog(),
                     projection: this.getProjection().name,
                     zoom: this.transform.zoom,

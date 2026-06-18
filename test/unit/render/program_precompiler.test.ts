@@ -22,6 +22,7 @@ function createStyle(overrides = {}) {
     return {
         stylesheet: {},
         fog: null,
+        hasTerrain: () => false,
         getTerrain: () => null,
         _styleColorTheme: {lut: null},
         // buildQueue gates cartesian/special-purpose enumeration on KHR availability via
@@ -155,7 +156,7 @@ test('buildQueue adds fog variant when style.fog is set', () => {
 test('buildQueue adds RTT variant when terrain is set', () => {
     const pp = new ProgramPrecompiler();
     const layer = createLayer({minzoom: 0, maxzoom: 1});
-    pp.buildQueue([layer], {zoom: 0}, createStyle({stylesheet: {terrain: {source: 'x'}}}));
+    pp.buildQueue([layer], {zoom: 0}, createStyle({stylesheet: {terrain: {source: 'x'}}, hasTerrain: () => true}));
     // base + terrain-axis variant + RTT exclusive variant
     const tasks = layerTasks(pp);
     expect(tasks.length).toBe(3);
@@ -179,7 +180,7 @@ test('buildQueue creates all three variants when fog and terrain both present', 
     pp.buildQueue(
         [layer],
         {zoom: 0},
-        createStyle({fog: {}, stylesheet: {terrain: {source: 'x'}}})
+        createStyle({fog: {}, stylesheet: {terrain: {source: 'x'}}, hasTerrain: () => true})
     );
     // cartesian {terrain × fog} = 4 + exclusive RTT = 5
     expect(layerTasks(pp).length).toBe(5);
@@ -205,6 +206,7 @@ test('buildQueue without KHR_parallel_shader_compile emits guaranteed-needed var
     // Style features that would normally trigger cartesian + transition-targeted enumeration.
     const style = createStyle({
         fog: {},
+        hasTerrain: () => true,
         stylesheet: {terrain: {source: 'x'}},
         projection: {name: 'globe'},
         map: {
@@ -228,6 +230,7 @@ test('buildQueue without KHR appends USE_MRT1 to RTT variants in mrt-fallback mo
     const layer = createLayer({getProgramIds: () => ['fill']});
     const style = createStyle({
         stylesheet: {terrain: {source: 'x'}},
+        hasTerrain: () => true,
         map: {
             painter: {context: {extParallelShaderCompile: null}, getShaderSource: () => null, emissiveMode: 'mrt-fallback'},
             isMoving: () => false

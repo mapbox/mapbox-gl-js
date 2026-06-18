@@ -52,11 +52,8 @@ export class ProgramPrecompiler {
         this._queue = [];
         this._needsBuild = false;
 
-        // Use resolved style state (post-imports/config), not the raw stylesheet — Standard resolves terrain and projection
-        // via style imports, so `stylesheet.terrain` and `stylesheet.projection` can be undefined while the effective style has them.
-        const stylesheet = style.stylesheet;
         const hasFog = !!style.fog;
-        const hasTerrain = !!(style.getTerrain() || (stylesheet && stylesheet.terrain));
+        const hasTerrain = style.hasTerrain();
         const hasGlobe = !!(style.projection && style.projection.name === 'globe');
         const hasTerrainOrGlobe = hasTerrain || hasGlobe;
         const hasShadows = !!(style.directionalLight && style.directionalLight.shadowsEnabled());

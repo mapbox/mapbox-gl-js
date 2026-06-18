@@ -1605,8 +1605,7 @@ class Style extends Evented<MapEvents> {
         this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
 
         if (this.map.transform.projection.requiresDraping) {
-            const hasTerrain = (this.getTerrain() || this.stylesheet.terrain) && !this.disableElevatedTerrain;
-            if (!hasTerrain) {
+            if (!this.hasTerrain()) {
                 this.setTerrainForDraping();
             }
         } else if (this.terrainSetForDrapingOnly()) {
@@ -3964,8 +3963,12 @@ class Style extends Evented<MapEvents> {
         this.light.updateTransitions(parameters);
     }
 
+    hasTerrain(): boolean {
+        return !!this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.elevated;
+    }
+
     getTerrain(): TerrainSpecification | null | undefined {
-        return this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.elevated ? this.terrain.get() : null;
+        return this.hasTerrain() ? this.terrain.get() : null;
     }
 
     setTerrainForDraping() {
