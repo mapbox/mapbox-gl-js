@@ -46,6 +46,7 @@ import type VertexBuffer from '../../src/gl/vertex_buffer';
 import type {CutoffParams} from '../../src/render/cutoff';
 import type {LUT} from "../../src/util/lut";
 import type {ModelUniformsType, ModelDepthUniformsType} from '../render/program/model_program';
+import type {LightOverrides} from './lights';
 
 export default drawModels;
 
@@ -96,6 +97,7 @@ type SortedMesh = {
     modelOpacity: number;
     materialOverride?: MaterialOverride;
     modelColor?: [number, number, number, number];
+    lightOverrides?: LightOverrides;
     node: ModelNode;
     modelMatrix: mat4;
 };
@@ -292,7 +294,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
         1.0,
         program.fixedDefines.includes('LIGHTING_3D_MODE'));
 
-    painter.uploadCommonUniforms(context, program, null, fogMatrix, cutoffParams);
+    painter.uploadCommonUniforms(context, program, null, fogMatrix, cutoffParams, sortedMesh.lightOverrides);
 
     const isShadowPass = painter.renderPass === 'shadow';
 
@@ -339,7 +341,7 @@ export function prepare(layer: ModelStyleLayer, sourceCache: SourceCache, painte
     }
 }
 
-function prepareMeshes(painter: Painter, node: ModelNode, modelMatrix: mat4, projectionMatrix: mat4, modelIndex: number, transparentMeshes: Array<SortedMesh>, opaqueMeshes: Array<SortedMesh>, materialOverrides: ModelMaterialOverrides, modelOpacity: number, modelColorMix?: [number, number, number, number]) {
+function prepareMeshes(painter: Painter, node: ModelNode, modelMatrix: mat4, projectionMatrix: mat4, modelIndex: number, transparentMeshes: Array<SortedMesh>, opaqueMeshes: Array<SortedMesh>, materialOverrides: ModelMaterialOverrides, modelOpacity: number, modelColorMix?: [number, number, number, number], lightOverrides?: LightOverrides) {
 
     const transform = painter.transform;
 
@@ -368,7 +370,7 @@ function prepareMeshes(painter: Painter, node: ModelNode, modelMatrix: mat4, pro
             if (materialOverride && materialOverride.opacity <= 0) continue;
 
             if (mesh.material.alphaMode !== 'BLEND') {
-                const opaqueMesh: SortedMesh = {mesh, depth: 0.0, modelIndex, worldViewProjection, nodeModelMatrix, isLightMesh, materialOverride, modelOpacity, modelColor: modelColorMix, node, modelMatrix};
+                const opaqueMesh: SortedMesh = {mesh, depth: 0.0, modelIndex, worldViewProjection, nodeModelMatrix, isLightMesh, materialOverride, modelOpacity, modelColor: modelColorMix, lightOverrides, node, modelMatrix};
                 opaqueMeshes.push(opaqueMesh);
                 continue;
             }
@@ -376,13 +378,13 @@ function prepareMeshes(painter: Painter, node: ModelNode, modelMatrix: mat4, pro
             const centroidPos = vec3.transformMat4([], mesh.centroid, worldViewProjection);
             // Filter meshes behind the camera if in perspective mode
             if (!transform.isOrthographic && centroidPos[2] <= 0.0) continue;
-            const transparentMesh: SortedMesh = {mesh, depth: centroidPos[2], modelIndex, worldViewProjection, nodeModelMatrix, isLightMesh, materialOverride, modelOpacity, modelColor: modelColorMix, node, modelMatrix};
+            const transparentMesh: SortedMesh = {mesh, depth: centroidPos[2], modelIndex, worldViewProjection, nodeModelMatrix, isLightMesh, materialOverride, modelOpacity, modelColor: modelColorMix, lightOverrides, node, modelMatrix};
             transparentMeshes.push(transparentMesh);
         }
     }
     if (node.children) {
         for (const child of node.children) {
-            prepareMeshes(painter, child, modelMatrix, projectionMatrix, modelIndex, transparentMeshes, opaqueMeshes, materialOverrides, modelOpacity, modelColorMix);
+            prepareMeshes(painter, child, modelMatrix, projectionMatrix, modelIndex, transparentMeshes, opaqueMeshes, materialOverrides, modelOpacity, modelColorMix, lightOverrides);
         }
     }
 }
@@ -629,7 +631,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         const modelParameters = {zScaleMatrix, negCameraPosMatrix};
         modelParametersVector.push(modelParameters);
         for (const node of model.nodes) {
-            prepareMeshes(painter, node, model.matrix, painter.transform.expandedFarZProjMatrix, modelIndex, transparentMeshes, opaqueMeshes, model.materialOverrides, modelOpacity);
+            prepareMeshes(painter, node, model.matrix, painter.transform.expandedFarZProjMatrix, modelIndex, transparentMeshes, opaqueMeshes, model.materialOverrides, modelOpacity, undefined, model.lightOverrides);
         }
         modelIndex++;
     }

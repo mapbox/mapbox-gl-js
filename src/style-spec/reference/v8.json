@@ -1336,6 +1336,24 @@
          "doc": "Override the orientation of the model node in euler angles [x, y, z]."
        }
   },
+   "modelLightOverrides": {
+    "light-ambient-color": {
+      "type": "color",
+      "doc": "Override the color of ambient lights."
+    },
+    "light-ambient-intensity": {
+      "type": "number",
+      "doc": "Override the intensity of light-ambient-color (on a scale from 0 to 1)."
+    },
+     "light-directional-color": {
+      "type": "color",
+      "doc": "Override the color of directional lights."
+    },
+    "light-directional-intensity": {
+      "type": "number",
+      "doc": "Override the intensity of light-directional-color (on a scale from 0 to 1)."
+    }
+  },
   "modelNodeOverrides": {
     "*": {
        "type": "modelNodeOverride",
@@ -1392,6 +1410,11 @@
         "period": 360,
         "units": "degrees",
         "doc": "Orientation of the model in euler angles [x, y, z]."
+      },
+      "lightOverrides": {
+        "type": "modelLightOverrides",
+        "required": false,
+        "doc": "A collection of light overrides."
       },
       "nodeOverrides": {
         "type": "modelNodeOverrides",
