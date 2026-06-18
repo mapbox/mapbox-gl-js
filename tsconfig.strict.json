@@ -73,6 +73,7 @@
     "./src/util/is_char_in_unicode_block.ts",
     "./src/util/is_wasm_simd_supported.ts",
     "./src/util/mapbox_url.ts",
+    "./src/util/murmur3.ts",
     "./src/util/object.ts",
     "./src/util/resolve_tokens.ts",
     "./src/util/sanitize.ts",
