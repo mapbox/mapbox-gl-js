@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import {describe, test, expect, waitFor} from '../../util/vitest';
+import {describe, test, expect, waitFor, vi} from '../../util/vitest';
 import {mockFetch} from '../../util/network';
 import Tiled3DModelSource from '../../../3d-style/source/tiled_3d_model_source';
 import {Evented} from '../../../src/util/evented';
@@ -77,5 +77,22 @@ describe('Tiled3DModelSource', () => {
             expect(source.maxzoom).toEqual(10);
             expect(source.attribution).toEqual("Mapbox");
         }
+    });
+
+    test('abortTile aborts the in-flight request and tells the worker to cancel', () => {
+        const source = createSource({
+            type: 'batched-model',
+            tiles: ["http://example.com/{z}/{x}/{y}.glb"]
+        });
+
+        const controller = new AbortController();
+        const send = vi.fn();
+        const tile = {uid: 42, request: controller, actor: {send}};
+
+        source.abortTile(tile);
+
+        expect(controller.signal.aborted).toBe(true);
+        expect(tile.request).toBeUndefined();
+        expect(send).toHaveBeenCalledWith('abortTile', expect.objectContaining({uid: 42, type: 'batched-model', source: 'id'}), {skipResult: true});
     });
 });

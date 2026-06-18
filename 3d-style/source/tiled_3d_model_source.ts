@@ -53,7 +53,6 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     map: Map;
 
     onRemove: undefined;
-    abortTile: undefined;
     unloadTile: undefined;
     prepare: undefined;
     afterUpdate: undefined;
@@ -186,6 +185,16 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
             }
 
             tile.request = tile.actor.sendCancelable('reloadTile', params, {}, done);
+        }
+    }
+
+    abortTile(tile: Tile) {
+        if (tile.request) {
+            tile.request.abort();
+            delete tile.request;
+        }
+        if (tile.actor) {
+            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope}, {skipResult: true});
         }
     }
 
