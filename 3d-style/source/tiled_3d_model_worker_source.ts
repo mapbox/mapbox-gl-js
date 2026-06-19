@@ -156,7 +156,7 @@ class Tiled3dModelWorkerSource implements WorkerSource {
             delete this.loading[uid];
             workerTile.status = 'done';
             this.loaded[uid] = workerTile;
-            if (err instanceof DOMException && err.name === 'AbortError') return null;
+            if (controller.signal.aborted) return null;
             throw err;
         }
 

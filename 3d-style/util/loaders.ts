@@ -352,7 +352,7 @@ export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 
         await Promise.all(bufferLoads);
     }
 
-    if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
+    if (signal) signal.throwIfAborted();
 
     const assetLoads: Promise<unknown>[] = [];
     const dracoUsed = extensionsUsed && extensionsUsed.includes(DRACO_EXT);
@@ -374,7 +374,7 @@ export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 
         await Promise.all(assetLoads);
     }
 
-    if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
+    if (signal) signal.throwIfAborted();
 
     if (dracoUsed && meshes) {
         for (const {primitives} of meshes) {

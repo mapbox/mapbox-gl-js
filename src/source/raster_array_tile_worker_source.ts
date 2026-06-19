@@ -101,7 +101,7 @@ class RasterArrayTileWorkerSource implements WorkerSource {
             const mrt = await workerTile.parse(data);
             return {mrt, headers};
         } catch (err) {
-            if (err instanceof DOMException && err.name === 'AbortError') return null;
+            if (controller.signal.aborted) return null;
             workerTile.status = 'done';
             this.loaded[uid] = workerTile;
             throw err;

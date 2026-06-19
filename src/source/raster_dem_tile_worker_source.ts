@@ -40,7 +40,7 @@ class RasterDEMTileWorkerSource implements WorkerSource {
             result.headers = headers;
             return result;
         } catch (err) {
-            if (err instanceof DOMException && err.name === 'AbortError') return null;
+            if (controller.signal.aborted) return null;
             throw err;
         } finally {
             delete this.loading[uid];
@@ -87,7 +87,6 @@ class RasterDEMTileWorkerSource implements WorkerSource {
             return result;
         } catch (err) {
             if (controller.signal.aborted) return null;
-            if (err instanceof DOMException && err.name === 'AbortError') return null;
             throw err;
         } finally {
             delete this.loading[uid];

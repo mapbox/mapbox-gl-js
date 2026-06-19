@@ -178,7 +178,7 @@ class RasterArrayTile extends Tile implements Tile {
                     callback(error as Error);
                 }
             })
-            .catch((err: Error) => { if (err.name !== 'AbortError') callback(err); });
+            .catch((err: Error) => { if (!controller.signal.aborted) callback(err); });
 
         return this.request;
     }
@@ -316,7 +316,7 @@ class RasterArrayTile extends Tile implements Tile {
             const controller = new AbortController();
             getArrayBuffer(rangeRequestParams, controller.signal)
                 .then(({data: buffer}) => onDataLoaded(null, buffer))
-                .catch((err: Error) => { if (err.name !== 'AbortError') onDataLoaded(err); });
+                .catch((err: Error) => { if (!controller.signal.aborted) onDataLoaded(err); });
 
             if (layerId !== null) {
                 const fetchQueue = this._fetchQueuePerLayer.get(layerId) || [];

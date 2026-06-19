@@ -108,7 +108,7 @@ export function loadVectorTile(
                 });
             })
             .catch((err: Error) => {
-                if (err.name === 'AbortError') return;
+                if (controller.signal.aborted) return;
                 // HTTP 404 on a sparse tileset: the tile intentionally doesn't exist.
                 // Convert to empty result — no parent fallback for HTTP sources.
                 if (isHttpNotFound(err)) {

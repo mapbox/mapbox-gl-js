@@ -102,7 +102,7 @@ class Actor<Outbox extends MessageMap> {
         const buffers: Set<Transferable> = new Set();
 
         if (signal && signal.aborted) {
-            return Promise.reject(new DOMException('Aborted', 'AbortError'));
+            return Promise.reject(signal.reason as Error);
         }
 
         this.target.postMessage({
@@ -122,7 +122,7 @@ class Actor<Outbox extends MessageMap> {
             if (signal) {
                 const abortHandler = () => {
                     this.pendingResponses.delete(id);
-                    reject(new DOMException('Aborted', 'AbortError'));
+                    reject(signal.reason as Error);
                 };
                 signal.addEventListener('abort', abortHandler, {once: true});
                 entry.detach = () => signal.removeEventListener('abort', abortHandler);

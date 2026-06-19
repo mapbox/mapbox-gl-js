@@ -157,7 +157,7 @@ async function makeFetchRequest<T>(requestParameters: RequestParameters, signal?
             if ((err as Error).message !== 'SecurityError') warnOnce((err as Error).toString());
         }
         if (cached && cached.fresh) {
-            if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
+            if (signal) signal.throwIfAborted();
             return readResponse<T>(requestParameters, cached.response);
         }
     }
@@ -173,7 +173,7 @@ async function makeFetchRequest<T>(requestParameters: RequestParameters, signal?
         throw new Error(`${(err as Error).message} ${requestParameters.url}`, {cause: err});
     }
 
-    if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
+    if (signal) signal.throwIfAborted();
     if (!fetched.ok) throw new AJAXError(fetched.statusText, fetched.status, requestParameters.url);
 
     // Clone before reading the body; cache the clone after the read completes. Aborting
@@ -195,7 +195,7 @@ async function makeXMLHttpRequest<T>(requestParameters: RequestParameters, signa
         const onAbort = () => {
             signal.removeEventListener('abort', onAbort);
             xhr.abort();
-            reject(new DOMException('Aborted', 'AbortError'));
+            reject(signal.reason as Error);
         };
 
         if (signal) {
@@ -253,9 +253,7 @@ async function makeXMLHttpRequest<T>(requestParameters: RequestParameters, signa
 }
 
 async function makeRequest<T>(requestParameters: RequestParameters, signal?: AbortSignal): Promise<RequestResponse<T>> {
-    if (signal && signal.aborted) {
-        throw new DOMException('Aborted', 'AbortError');
-    }
+    if (signal) signal.throwIfAborted();
 
     if (isFileURL(requestParameters.url)) {
         return makeXMLHttpRequest<T>(requestParameters, signal);
@@ -299,7 +297,7 @@ resetImageRequestQueue();
 function acquireImageRequest(signal?: AbortSignal): Promise<() => void> {
     return new Promise((resolve, reject) => {
         if (signal && signal.aborted) {
-            reject(new DOMException('Aborted', 'AbortError'));
+            reject(signal.reason as Error);
             return;
         }
 
@@ -327,7 +325,7 @@ function acquireImageRequest(signal?: AbortSignal): Promise<() => void> {
         const cancel = () => {
             const index = imageRequestQueue.indexOf(dequeue);
             if (index !== -1) imageRequestQueue.splice(index, 1);
-            reject(new DOMException('Aborted', 'AbortError'));
+            reject(signal.reason as Error);
         };
 
         if (signal) signal.addEventListener('abort', cancel);
@@ -354,9 +352,7 @@ export async function getImage(requestParameters: RequestParameters, signal?: Ab
             throw new Error(`Could not load image because of ${(e as Error).message}. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.`, {cause: e});
         }
         // A late-resolving body must not deliver after abort, or it resurrects torn-down ImageSource state.
-        if (signal && signal.aborted) {
-            throw new DOMException('Aborted', 'AbortError');
-        }
+        if (signal) signal.throwIfAborted();
         return {data: bitmap, headers};
     } finally {
         release();
