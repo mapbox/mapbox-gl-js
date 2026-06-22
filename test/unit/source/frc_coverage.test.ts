@@ -73,6 +73,19 @@ describe('frc_road_classes', () => {
         test('missing class returns null', () => {
             expect(featureFrcLevel({})).toBeNull();
         });
+
+        test('incident_class used as fallback when class is absent', () => {
+            expect(featureFrcLevel({'incident_class': 'motorway'})).toBe(0);
+            expect(featureFrcLevel({'incident_class': 'primary'})).toBe(2);
+        });
+
+        test('class takes precedence over incident_class', () => {
+            expect(featureFrcLevel({'class': 'motorway', 'incident_class': 'service'})).toBe(0);
+        });
+
+        test('unknown incident_class returns null', () => {
+            expect(featureFrcLevel({'incident_class': 'aeroway'})).toBeNull();
+        });
     });
 
     describe('isFeatureCoveredByFrcMask', () => {
@@ -100,6 +113,11 @@ describe('frc_road_classes', () => {
             expect(isFeatureCoveredByFrcMask({class: 'trunk'}, mask)).toBe(true);
             expect(isFeatureCoveredByFrcMask({class: 'primary'}, mask)).toBe(true);
             expect(isFeatureCoveredByFrcMask({class: 'secondary'}, mask)).toBe(false);
+        });
+
+        test('incident_class fallback works in coverage check', () => {
+            expect(isFeatureCoveredByFrcMask({'incident_class': 'motorway'}, 0b1)).toBe(true);
+            expect(isFeatureCoveredByFrcMask({'incident_class': 'motorway'}, 0b10)).toBe(false);
         });
     });
 

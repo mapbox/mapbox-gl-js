@@ -13,10 +13,13 @@ const roadTypeToFrcMap: Record<string, number> = {
 };
 
 export function featureFrcLevel(featureProperties: Record<string, unknown>): number | null {
-    const cls = featureProperties['class'];
-    if (typeof cls !== 'string') return null;
-    const frc = roadTypeToFrcMap[cls];
-    return frc !== undefined ? frc : null;
+    for (const key of ['class', 'incident_class']) {
+        const cls = featureProperties[key];
+        if (typeof cls !== 'string') continue;
+        const frc = roadTypeToFrcMap[cls];
+        if (frc !== undefined) return frc;
+    }
+    return null;
 }
 
 export function isFeatureCoveredByFrcMask(featureProperties: Record<string, unknown>, frcMask: number): boolean {
