@@ -81,6 +81,15 @@
         <label>Front Right <input type="range" id="doors-front-right" min="0" max="1" step="0.01" value="0"></label>
         <h4>Lights</h4>
         <label>Brake <input type="range" id="brake-lights" min="0" max="1" step="0.01" value="0"></label>
+        <h4>Material Overrides</h4>
+        <h4>Style Lights</h4>
+        <label>Ambient <input type="range" id="style-ambient" min="0" max="2" step="0.01" value="0.4"></label>
+        <label>Directional <input type="range" id="style-directional" min="0" max="2" step="0.01" value="0.6"></label>
+        <h4>Light Overrides</h4>
+        <label>Ambient <input type="range" id="light-ambient" min="0" max="1.0" step="0.01" value="1"></label>
+        <label>Ambient Color <input type="color" id="light-ambient-color" value="#ffffff"></label>
+        <label>Directional <input type="range" id="light-directional" min="0" max="1.0" step="0.01" value="1"></label>
+        <label>Directional Color <input type="color" id="light-directional-color" value="#ffffff"></label>
     </div>
     <div id='map'></div>
 
@@ -331,13 +340,29 @@
             style
         });
 
+        const styleLightParams = {
+            ambientIntensity: 0.4,
+            directionalIntensity: 0.6
+        };
+
+        function updateStyleLights() {
+            map.setLights([
+                { type: 'ambient', id: 'environment', properties: { intensity: styleLightParams.ambientIntensity } },
+                { type: 'directional', id: 'sun_light', properties: { intensity: styleLightParams.directionalIntensity, 'cast-shadows': true, 'shadow-intensity': 1.0 } }
+            ]);
+        }
+
         const egoCarParams = {
             doorsFrontLeft: 0.5,
             doorsFrontRight: 0,
             trunk: 0,
             hood: 0,
             brakeLights: 0,
-            color: { r: 255, g: 255, b: 255, a: 1 }
+            color: { r: 255, g: 255, b: 255, a: 1 },
+            lightOverridesAmbientIntensity: 1.0,
+            lightOverridesDirectionalIntensity: 1.0,
+            lightOverridesAmbientColor: { r: 255, g: 255, b: 255 },
+            lightOverridesDirectionalColor: { r: 255, g: 255, b: 255 }
         };
 
         function mix(t, a, b) {
@@ -368,10 +393,16 @@
                         "uri": "/test/integration/models/ego_car.glb",
                         "position": [-74.0138, 40.7154],
                         "orientation": [0, 0, 0],
+                        "lightOverrides": {
+                            "light-ambient-intensity": egoCarParams.lightOverridesAmbientIntensity,
+                            "light-ambient-color": [egoCarParams.lightOverridesAmbientColor.r / 255, egoCarParams.lightOverridesAmbientColor.g / 255, egoCarParams.lightOverridesAmbientColor.b / 255],
+                            "light-directional-intensity": egoCarParams.lightOverridesDirectionalIntensity,
+                            "light-directional-color": [egoCarParams.lightOverridesDirectionalColor.r / 255, egoCarParams.lightOverridesDirectionalColor.g / 255, egoCarParams.lightOverridesDirectionalColor.b / 255]
+                        },
                         "materialOverrides": {
                             "body": {
                                 "model-color": [egoCarParams.color.r / 255.0, egoCarParams.color.g / 255.0, egoCarParams.color.b / 255.0],
-                                "model-color-mix-intensity": 1.0
+                                "model-color-mix-intensity": 1.0,
                             },
                             "lights_brakes": {
                                 "model-color": [0.88, 0.0, 0.0],
@@ -436,11 +467,35 @@
         });
 
         [
+            ['style-ambient',      'ambientIntensity'],
+            ['style-directional',  'directionalIntensity'],
+        ].forEach(([id, key]) => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', () => {
+                styleLightParams[key] = parseFloat(el.value);
+                updateStyleLights();
+            });
+        });
+
+        [
+            ['light-ambient-color',     'lightOverridesAmbientColor'],
+            ['light-directional-color', 'lightOverridesDirectionalColor'],
+        ].forEach(([id, key]) => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', () => {
+                egoCarParams[key] = hexToRgb(el.value);
+                updateModelState();
+            });
+        });
+
+        [
             ['trunk',            'trunk'],
             ['hood',             'hood'],
             ['doors-front-left', 'doorsFrontLeft'],
             ['doors-front-right','doorsFrontRight'],
             ['brake-lights',     'brakeLights'],
+            ['light-ambient',    'lightOverridesAmbientIntensity'],
+            ['light-directional','lightOverridesDirectionalIntensity'],
         ].forEach(([id, key]) => {
             const el = document.getElementById(id);
             el.value = egoCarParams[key];

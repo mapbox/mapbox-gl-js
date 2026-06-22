@@ -376,6 +376,7 @@ ${tsObjectDeclaration('SourcesSpecification', spec.sources)}
 
 ${tsObjectDeclaration('ModelsSpecification', spec.models)}
 
+${tsObjectDeclaration('ModelLightOverridesSpecification', spec.modelLightOverrides)}
 ${tsObjectDeclaration('ModelNodeOverrideSpecification', spec.modelNodeOverride)}
 ${tsObjectDeclaration('ModelNodeOverridesSpecification', spec.modelNodeOverrides)}
 ${tsObjectDeclaration('ModelMaterialOverrideSpecification', spec.modelMaterialOverride)}

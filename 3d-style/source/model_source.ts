@@ -12,7 +12,7 @@ import type Dispatcher from '../../src/util/dispatcher';
 import type {Map as MapboxMap} from '../../src/ui/map';
 import type {Callback} from '../../src/types/callback';
 import type {ISource, SourceEvents} from '../../src/source/source';
-import type {ModelMaterialOverrideSpecification, ModelNodeOverrideSpecification, ModelSourceModelSpecification, ModelSourceModelsSpecification, ModelSourceSpecification} from '../../src/style-spec/types';
+import type {ColorSpecification, ModelMaterialOverrideSpecification, ModelNodeOverrideSpecification, ModelSourceModelSpecification, ModelSourceModelsSpecification, ModelSourceSpecification} from '../../src/style-spec/types';
 
 type ModelSourceModelInfo = {
     modelSpec: ModelSourceModelSpecification;
@@ -167,6 +167,19 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
     }
 
+    private static arrayFromColorSpecification(colorSpec: ColorSpecification | undefined) : [number, number, number] | undefined {
+        const colorValue = colorSpec as number[] | string | undefined;
+        if (colorValue === undefined) return undefined;
+        if (Array.isArray(colorValue)) {
+            return [colorValue[0], colorValue[1], colorValue[2]];
+        }
+        const convertedColor = Color.parse(colorValue);
+        if (convertedColor) {
+            return [convertedColor.r, convertedColor.g, convertedColor.b];
+        }
+        return undefined;
+    }
+
     private static applyModelSpecification(model: Model, modelSpec: ModelSourceModelSpecification) {
         if (modelSpec.nodeOverrides) {
             ModelSource.convertNodeOverrides(model, modelSpec.nodeOverrides);
@@ -182,6 +195,20 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         }
         if (modelSpec.featureProperties) {
             model.featureProperties = modelSpec.featureProperties as Record<string, unknown>;
+        }
+        if (modelSpec['lightOverrides']) {
+            const lo = modelSpec['lightOverrides'] as Record<string, unknown>;
+            const ambientColor = ModelSource.arrayFromColorSpecification(lo['light-ambient-color'] as ColorSpecification | undefined);
+            const directionalColor = ModelSource.arrayFromColorSpecification(lo['light-directional-color'] as ColorSpecification | undefined);
+
+            model.lightOverrides = {
+                ambientIntensity: lo['light-ambient-intensity'] as number | undefined,
+                ambientColor,
+                directionalIntensity: lo['light-directional-intensity'] as number | undefined,
+                directionalColor,
+            };
+        } else {
+            model.lightOverrides = undefined;
         }
     }
 

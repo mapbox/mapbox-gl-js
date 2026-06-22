@@ -71,7 +71,7 @@ import type GlyphManager from './glyph_manager';
 import type {ContextOptions} from '../gl/context';
 import type {CutoffParams} from '../render/cutoff';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
-import type {LightsUniformsType} from '../../3d-style/render/lights';
+import type {LightOverrides, LightsUniformsType} from '../../3d-style/render/lights';
 import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id';
 import type {ProgramName} from './program';
 import type {ProgramUniformsType, DynamicDefinesType} from './program/program_uniforms';
@@ -1903,20 +1903,20 @@ class Painter {
         }
     }
 
-    uploadCommonLightUniforms(context: Context, program: Program<LightsUniformsType>) {
+    uploadCommonLightUniforms(context: Context, program: Program<LightsUniformsType>, lightOverrides?: LightOverrides) {
         if (this.style.enable3dLights()) {
             const directionalLight = this.style.directionalLight;
             const ambientLight = this.style.ambientLight;
 
             if (directionalLight && ambientLight) {
-                const lightsUniforms = lightsUniformValues(directionalLight, ambientLight, this.style);
+                const lightsUniforms = lightsUniformValues(directionalLight, ambientLight, this.style, lightOverrides);
                 program.setLightsUniformValues(context, lightsUniforms);
             }
         }
     }
 
-    uploadCommonUniforms(context: Context, program: Program<ProgramUniformsType[ProgramName]>, tileID?: UnwrappedTileID | null, fogMatrix?: mat4 | null, cutoffParams?: CutoffParams | null) {
-        this.uploadCommonLightUniforms(context, program as unknown as Program<LightsUniformsType>);
+    uploadCommonUniforms(context: Context, program: Program<ProgramUniformsType[ProgramName]>, tileID?: UnwrappedTileID | null, fogMatrix?: mat4 | null, cutoffParams?: CutoffParams | null, lightOverrides?: LightOverrides) {
+        this.uploadCommonLightUniforms(context, program as unknown as Program<LightsUniformsType>, lightOverrides);
 
         // Fog is not enabled when rendering to texture so we
         // can safely skip uploading uniforms in that case

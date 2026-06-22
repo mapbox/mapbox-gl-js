@@ -10,6 +10,13 @@ import type {UniformValues} from '../../src/render/uniform_binding';
 import type {LightProps as Ambient} from '../style/ambient_light_properties';
 import type {LightProps as Directional} from '../style/directional_light_properties';
 
+export type LightOverrides = {
+    ambientIntensity?: number,
+    ambientColor?: [number, number, number],
+    directionalIntensity?: number,
+    directionalColor?: [number, number, number]
+};
+
 export type LightsUniformsType = {
     ['u_lighting_ambient_color']: Uniform3f;
     ['u_lighting_directional_dir']: Uniform3f;
@@ -65,19 +72,34 @@ function calculateGroundRadiance(dir: vec3, dirColor: [number, number, number], 
     return linearVec3TosRGB(radiance);
 }
 
-export const lightsUniformValues = (directional: Lights<Directional>, ambient: Lights<Ambient>, style: Style): UniformValues<LightsUniformsType> => {
+export const lightsUniformValues = (directional: Lights<Directional>, ambient: Lights<Ambient>, style: Style, lightOverrides?: LightOverrides): UniformValues<LightsUniformsType> => {
 
     const direction = directional.properties.get('direction');
 
     const dirIgnoreLut = directional.properties.get('color-use-theme') === 'none';
     const directionalColor = directional.properties.get('color').toNonPremultipliedRenderColor(dirIgnoreLut ? null : style.getLut(directional.scope)).toArray01();
-    const directionalIntensity = directional.properties.get('intensity');
+    let directionalIntensity = directional.properties.get('intensity');
 
     const ambIgnoreLut = ambient.properties.get('color-use-theme') === 'none';
     const ambientColor = ambient.properties.get('color').toNonPremultipliedRenderColor(ambIgnoreLut ? null : style.getLut(ambient.scope)).toArray01();
-    const ambientIntensity = ambient.properties.get('intensity');
+    let ambientIntensity = ambient.properties.get('intensity');
 
     const dirVec: [number, number, number] = [direction.x, direction.y, direction.z];
+
+    if (lightOverrides) {
+        if (lightOverrides.ambientIntensity !== undefined) ambientIntensity = lightOverrides.ambientIntensity;
+        if (lightOverrides.directionalIntensity !== undefined) directionalIntensity = lightOverrides.directionalIntensity;
+        if (lightOverrides.ambientColor !== undefined) {
+            ambientColor[0] = lightOverrides.ambientColor[0];
+            ambientColor[1] = lightOverrides.ambientColor[1];
+            ambientColor[2] = lightOverrides.ambientColor[2];
+        }
+        if (lightOverrides.directionalColor !== undefined) {
+            directionalColor[0] = lightOverrides.directionalColor[0];
+            directionalColor[1] = lightOverrides.directionalColor[1];
+            directionalColor[2] = lightOverrides.directionalColor[2];
+        }
+    }
 
     const ambientColorLinear = sRGBToLinearAndScale(ambientColor, ambientIntensity);
 
