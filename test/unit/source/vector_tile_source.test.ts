@@ -23,6 +23,9 @@ const wrapDispatcher = (dispatcher) => {
         dispatcher.send = (type, data, options) => Promise.resolve(send(type, data, options));
         dispatcher.sendCancelable = Actor.prototype.sendCancelable;
     }
+    if (dispatcher.send && !dispatcher.notify) {
+        dispatcher.notify = () => {};
+    }
     /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment */
     return {
         getActor() {
@@ -664,7 +667,8 @@ describe('VectorTileSource', () => {
                 source.loadTile(tile, () => {});
                 expect(tile.state).toEqual('loading');
                 source.loadTile(tile, withAsync((_, __, doneRef) => {
-                    expect(events).toStrictEqual(['loadTile', 'tileLoaded', 'enforceCacheSizeLimit', 'reloadTile', 'tileLoaded']);
+                    // `enforceCacheSizeLimit` is now fire-and-forget (notify), so the send-spy no longer records it.
+                    expect(events).toStrictEqual(['loadTile', 'tileLoaded', 'reloadTile', 'tileLoaded']);
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     doneRef.resolve();
                 }));
@@ -970,16 +974,16 @@ describe('VectorTileSource provider', () => {
     function createProviderSource(
         providerName: string,
         options: Record<string, unknown>,
-        overrides: {dispatcherOverrides?: object; mapOverrides?: object; broadcastResult?: unknown[]} = {},
+        overrides: {dispatcherOverrides?: object; mapOverrides?: object; sendResult?: unknown[]} = {},
     ) {
-        const {dispatcherOverrides, mapOverrides, broadcastResult} = overrides;
-        const broadcastSpy = vi.fn((_type: string, _data: unknown, _signal?: AbortSignal) => {
-            return Promise.resolve(broadcastResult !== undefined ? broadcastResult : [null]);
+        const {dispatcherOverrides, mapOverrides, sendResult} = overrides;
+        const sendSpy = vi.fn((_type: string, _data: unknown, _signal?: AbortSignal) => {
+            return Promise.resolve(sendResult !== undefined ? sendResult : [null]);
         });
         const dispatcher = {
             getActor() { return {send() { return new Promise(() => {}); }}; },
             ready: true,
-            broadcast: broadcastSpy,
+            send: sendSpy,
             ...dispatcherOverrides,
         };
 
@@ -1006,7 +1010,7 @@ describe('VectorTileSource provider', () => {
             ...mapOverrides,
         } as unknown as Parameters<typeof source.onAdd>[0]);
 
-        return {source, broadcastSpy, dispatcher};
+        return {source, sendSpy, dispatcher};
     }
 
     test('fires error when provider is not registered', async () => {
@@ -1020,7 +1024,7 @@ describe('VectorTileSource provider', () => {
         }, {
             getActor() { return {send() {}}; },
             ready: true,
-            broadcast: vi.fn(),
+            send: vi.fn(),
         }, null);
 
         // Listen before onAdd since the error fires synchronously
@@ -1045,17 +1049,17 @@ describe('VectorTileSource provider', () => {
         expect(e.error.message).toMatch(new RegExp(`TileProvider "${name}" is not registered`));
     });
 
-    test('broadcasts loadTileProvider to workers', async () => {
+    test('sends loadTileProvider to workers', async () => {
         const name = nextProvider();
         const moduleUrl = 'http://example.com/provider.js';
         config.TILE_PROVIDER_URLS[name] = moduleUrl;
 
-        const {source, broadcastSpy} = createProviderSource(name, {
+        const {source, sendSpy} = createProviderSource(name, {
             tiles: ['http://example.com/{z}/{x}/{y}.mvt'],
         });
 
         await waitFor(source, 'data');
-        expect(broadcastSpy).toHaveBeenCalledWith(
+        expect(sendSpy).toHaveBeenCalledWith(
             'loadTileProvider',
             expect.objectContaining({name, url: moduleUrl, source: 'id', type: 'vector'}),
             expect.anything()
@@ -1073,7 +1077,7 @@ describe('VectorTileSource provider', () => {
         config.TILE_PROVIDER_URLS[name] = 'http://example.com/provider.js';
 
         const {source} = createProviderSource(name, {url: 'pmtiles://my-archive.pmtiles'}, {
-            broadcastResult: [tileJSON],
+            sendResult: [tileJSON],
         });
 
         await waitFor(source, 'data');
@@ -1095,16 +1099,16 @@ describe('VectorTileSource provider autodetection', () => {
 
     function createAutodetectSource(
         options: Record<string, unknown>,
-        overrides: {broadcastResult?: unknown[]} = {},
+        overrides: {sendResult?: unknown[]} = {},
     ) {
-        const {broadcastResult} = overrides;
-        const broadcastSpy = vi.fn((_type: string, _data: unknown, _signal?: AbortSignal) => {
-            return Promise.resolve(broadcastResult !== undefined ? broadcastResult : [null]);
+        const {sendResult} = overrides;
+        const sendSpy = vi.fn((_type: string, _data: unknown, _signal?: AbortSignal) => {
+            return Promise.resolve(sendResult !== undefined ? sendResult : [null]);
         });
         const dispatcher = {
             getActor() { return {send() { return new Promise(() => {}); }}; },
             ready: true,
-            broadcast: broadcastSpy,
+            send: sendSpy,
         };
 
         const source = new VectorTileSource(
@@ -1129,18 +1133,18 @@ describe('VectorTileSource provider autodetection', () => {
             },
         } as unknown as Parameters<typeof source.onAdd>[0]);
 
-        return {source, broadcastSpy, dispatcher};
+        return {source, sendSpy, dispatcher};
     }
 
     test('autodetects provider from .pmtiles URL extension', async () => {
         config.TILE_PROVIDER_URLS['pmtiles'] = '/mapbox-gl-js/mock-provider.js';
 
-        const {broadcastSpy} = createAutodetectSource({
+        const {sendSpy} = createAutodetectSource({
             url: 'https://example.com/tiles.pmtiles',
         });
 
         await new Promise(resolve => { setTimeout(resolve, 0); });
-        expect(broadcastSpy).toHaveBeenCalledWith(
+        expect(sendSpy).toHaveBeenCalledWith(
             'loadTileProvider',
             expect.objectContaining({name: 'pmtiles'}),
             expect.anything()
@@ -1150,25 +1154,25 @@ describe('VectorTileSource provider autodetection', () => {
     test('does not autodetect when provider is false', () => {
         config.TILE_PROVIDER_URLS['pmtiles'] = '/mapbox-gl-js/mock-provider.js';
 
-        const {broadcastSpy} = createAutodetectSource({
+        const {sendSpy} = createAutodetectSource({
             url: 'https://example.com/tiles.pmtiles',
             provider: false,
         });
 
-        expect(broadcastSpy).not.toHaveBeenCalled();
+        expect(sendSpy).not.toHaveBeenCalled();
     });
 
     test('does not autodetect when provider is explicitly set', async () => {
         config.TILE_PROVIDER_URLS['pmtiles'] = '/mapbox-gl-js/mock-provider.js';
         config.TILE_PROVIDER_URLS['custom'] = 'https://example.com/custom.js';
 
-        const {broadcastSpy} = createAutodetectSource({
+        const {sendSpy} = createAutodetectSource({
             url: 'https://example.com/tiles.pmtiles',
             provider: 'custom',
         });
 
         await new Promise(resolve => { setTimeout(resolve, 0); });
-        expect(broadcastSpy).toHaveBeenCalledWith(
+        expect(sendSpy).toHaveBeenCalledWith(
             'loadTileProvider',
             expect.objectContaining({name: 'custom', url: 'https://example.com/custom.js'}),
             expect.anything()
@@ -1177,23 +1181,23 @@ describe('VectorTileSource provider autodetection', () => {
     });
 
     test('does not autodetect when URL has no matching extension', () => {
-        const {broadcastSpy} = createAutodetectSource({
+        const {sendSpy} = createAutodetectSource({
             url: 'https://example.com/tilejson.json',
         });
 
-        expect(broadcastSpy).not.toHaveBeenCalled();
+        expect(sendSpy).not.toHaveBeenCalled();
     });
 
     test('resolves relative provider URL against API_URL', async () => {
         config.TILE_PROVIDER_URLS['pmtiles'] = '/mapbox-gl-js/mock-provider.js';
         config.API_URL = 'https://api.mapbox.cn';
 
-        const {broadcastSpy} = createAutodetectSource({
+        const {sendSpy} = createAutodetectSource({
             url: 'https://example.com/tiles.pmtiles',
         });
 
         await new Promise(resolve => { setTimeout(resolve, 0); });
-        expect(broadcastSpy).toHaveBeenCalledWith(
+        expect(sendSpy).toHaveBeenCalledWith(
             'loadTileProvider',
             expect.objectContaining({url: 'https://api.mapbox.cn/mapbox-gl-js/mock-provider.js'}),
             expect.anything()

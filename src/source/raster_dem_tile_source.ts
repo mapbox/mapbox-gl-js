@@ -36,7 +36,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
             const {request, options} = await parseTileJSONRequest(this._options, this.map._requestManager, controller.signal);
             if (controller.signal.aborted) return;
 
-            const results = await this.dispatcher.broadcast('loadTileProvider', {
+            const results = await this.dispatcher.send('loadTileProvider', {
                 name: tileProvider.name,
                 url: tileProvider.url,
                 source: this.id,
@@ -44,7 +44,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
                 type: this.type,
                 options,
                 request,
-            }, {keepResult: true, signal: controller.signal});
+            }, {signal: controller.signal});
 
             if (controller.signal.aborted) return;
 
@@ -129,7 +129,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
             delete tile.request;
         }
         if (tile.actor) {
-            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope}, {skipResult: true});
+            tile.actor.notify('abortTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope});
         }
         if (callback) callback();
     }

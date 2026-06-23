@@ -86,13 +86,13 @@ describe('Tiled3DModelSource', () => {
         });
 
         const controller = new AbortController();
-        const send = vi.fn();
-        const tile = {uid: 42, request: controller, actor: {send}};
+        const notify = vi.fn();
+        const tile = {uid: 42, request: controller, actor: {notify}};
 
         source.abortTile(tile);
 
         expect(controller.signal.aborted).toBe(true);
         expect(tile.request).toBeUndefined();
-        expect(send).toHaveBeenCalledWith('abortTile', expect.objectContaining({uid: 42, type: 'batched-model', source: 'id'}), {skipResult: true});
+        expect(notify).toHaveBeenCalledWith('abortTile', expect.objectContaining({uid: 42, type: 'batched-model', source: 'id'}));
     });
 });

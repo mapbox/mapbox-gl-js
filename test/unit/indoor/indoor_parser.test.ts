@@ -13,7 +13,7 @@ const mockTarget = {
     postMessage: () => {}
 };
 const actor = new Actor<MainInbox>(mockTarget as any, {}, 0);
-actor.send = async () => {};
+actor.notify = () => {};
 
 describe('IndoorParser', () => {
     test('parses buildings with center_lat and center_lon', () => {
@@ -47,11 +47,10 @@ describe('IndoorParser', () => {
         };
 
         let parsedData: any;
-        actor.send = async (type: string, data: unknown) => {
+        actor.notify = (type: string, data: unknown) => {
             if (type === 'setIndoorData') {
                 parsedData = data;
             }
-            return Promise.resolve();
         };
 
         parseActiveFloors(data as any, indoorTileOptions as any, actor, new CanonicalTileID(0, 0, 0));
@@ -103,11 +102,10 @@ describe('IndoorParser', () => {
         };
 
         let parsedData: any;
-        actor.send = async (type: string, data: unknown) => {
+        actor.notify = (type: string, data: unknown) => {
             if (type === 'setIndoorData') {
                 parsedData = data;
             }
-            return Promise.resolve();
         };
 
         parseActiveFloors(data as any, indoorTileOptions as any, actor, new CanonicalTileID(0, 0, 0));

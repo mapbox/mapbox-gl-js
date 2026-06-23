@@ -60,15 +60,14 @@ describe('Style', () => {
         });
         vi.spyOn(Style, 'registerForPluginStateChange');
         const style = new Style(new StubMap());
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        vi.spyOn(style.dispatcher, 'broadcast').mockImplementation(() => Promise.resolve([]));
+        vi.spyOn(style.dispatcher, 'send').mockImplementation(() => Promise.resolve([]));
         expect(Style.registerForPluginStateChange).toHaveBeenCalledTimes(1);
 
         setRTLTextPlugin("/plugin.js",);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        expect(style.dispatcher.broadcast.mock.calls[0][0]).toEqual("syncRTLPluginState");
+        expect(style.dispatcher.send.mock.calls[0][0]).toEqual("syncRTLPluginState");
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        expect(style.dispatcher.broadcast.mock.calls[0][1]).toEqual({
+        expect(style.dispatcher.send.mock.calls[0][1]).toEqual({
             pluginStatus: 'deferred',
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             pluginURL: expect.stringContaining("/plugin.js")
@@ -474,7 +473,6 @@ test('Style#update', () => {
             expect(key).toEqual('updateLayers');
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(value.layers.map((layer) => { return layer.id; })).toEqual(['first', 'third']);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(value.removedIds).toEqual(['second']);
         };
 

@@ -17,7 +17,6 @@ export type Task = {
     error?: Serialized;
     targetMapId?: number;
     sourceMapId?: number;
-    skipResult?: boolean;
 };
 
 type PendingResponse = {
@@ -82,18 +81,17 @@ class Actor<Outbox extends MessageMap> {
     }
 
     /**
-     * Sends a message from a main-thread map to a Worker or from a Worker back to
-     * a main-thread map instance.
+     * Sends a message from a main-thread map to a Worker or from a Worker back to a
+     * main-thread map instance, and resolves with the worker's result. Registers a pending
+     * response and is cancelable via `signal`. Use {@link Actor#notify} if you don't need a response.
      *
      * @param type The name of the target method to invoke or '[source-type].[source-name].name' for a method on a WorkerSource.
      * @param data The message payload.
-     * @param options Optional send options. When `skipResult: true`, the worker skips posting a response and the call returns void.
+     * @param options Optional send options (`signal` to cancel, `targetMapId`, scheduler `metadata`).
      * @private
      */
-    send<T extends keyof Outbox>(type: T, data: Outbox[T]['params'], options: {skipResult: true; targetMapId?: number}): void;
-    send<T extends keyof Outbox>(type: T, data: Outbox[T]['params'], options?: {signal?: AbortSignal; targetMapId?: number; metadata?: TaskMetadata}): Promise<Outbox[T]['result']>;
-    send<T extends keyof Outbox>(type: T, data: Outbox[T]['params'], options?: {signal?: AbortSignal; targetMapId?: number; metadata?: TaskMetadata; skipResult?: boolean}): Promise<Outbox[T]['result']> | void {
-        const {signal, targetMapId, metadata, skipResult = false} = options || {};
+    send<T extends keyof Outbox>(type: T, data: Outbox[T]['params'], options?: {signal?: AbortSignal; targetMapId?: number; metadata?: TaskMetadata}): Promise<Outbox[T]['result']> {
+        const {signal, targetMapId, metadata} = options || {};
         // We're using a string ID instead of numbers because they are being used as object keys
         // anyway, and thus stringified implicitly. We use random IDs because an actor may receive
         // message from multiple other actors which could run in different execution context. A
@@ -109,12 +107,9 @@ class Actor<Outbox extends MessageMap> {
             id,
             type: type as ActorMessage,
             targetMapId,
-            skipResult,
             sourceMapId: this.mapId,
             data: serialize(data, buffers)
         }, [...buffers]);
-
-        if (skipResult) return;
 
         return new Promise((resolve, reject) => {
             const entry: PendingResponse = {resolve, reject, metadata: metadata || DEFAULT_METADATA};
@@ -130,6 +125,22 @@ class Actor<Outbox extends MessageMap> {
 
             this.pendingResponses.set(id, entry);
         });
+    }
+
+    /**
+     * Sends a message without awaiting for response. Use {@link Actor#send} if you need to await a response.
+     * @private
+     */
+    notify<T extends keyof Outbox>(type: T, data: Outbox[T]['params'], options?: {targetMapId?: number}): void {
+        const {targetMapId} = options || {};
+        const buffers: Set<Transferable> = new Set();
+
+        this.target.postMessage({
+            type: type as ActorMessage,
+            targetMapId,
+            sourceMapId: this.mapId,
+            data: serialize(data, buffers)
+        }, [...buffers]);
     }
 
     /**
@@ -158,11 +169,14 @@ class Actor<Outbox extends MessageMap> {
      * must carry the owning map's id as `targetMapId`.
      * @private
      */
-    getWorkerSourceActor(mapId: number): Pick<Actor<Outbox>, 'send' | 'sendCancelable' | 'scheduler'> {
+    getWorkerSourceActor(mapId: number): Pick<Actor<Outbox>, 'send' | 'notify' | 'sendCancelable' | 'scheduler'> {
         return {
             scheduler: this.scheduler,
-            send: <T extends keyof Outbox>(type: T, data: Outbox[T]['params'], options?: {signal?: AbortSignal; metadata?: TaskMetadata; skipResult?: boolean}) => {
+            send: <T extends keyof Outbox>(type: T, data: Outbox[T]['params'], options?: {signal?: AbortSignal; metadata?: TaskMetadata}) => {
                 return this.send(type, data, {...options, targetMapId: mapId});
+            },
+            notify: <T extends keyof Outbox>(type: T, data: Outbox[T]['params']) => {
+                this.notify(type, data, {targetMapId: mapId});
             },
             sendCancelable: <T extends keyof Outbox>(type: T, data: Outbox[T]['params'], options: {metadata?: TaskMetadata}, callback: (err?: Error | null, result?: Outbox[T]['result']) => void) => {
                 return this.sendCancelable(type, data, {...options, targetMapId: mapId}, callback);
@@ -175,8 +189,6 @@ class Actor<Outbox extends MessageMap> {
         if (!data) return;
 
         const id = data.id;
-        if (!id) return;
-
         if (data.targetMapId && this.mapId !== data.targetMapId) {
             return;
         }
@@ -221,47 +233,51 @@ class Actor<Outbox extends MessageMap> {
                     entry.reject(err as Error);
                 }
             }
-        } else {
-            const buffers: Set<Transferable> = new Set();
-            const params = deserialize(task.data);
 
-            // `task.type` is a message name ('loadTile', etc.) or a runtime
-            // `sourcetype.method` (WorkerSource types register via Map#addSourceType).
-            // Both dispatch by runtime string, so the handler lookup is untyped.
-            try {
-                let result: unknown;
-                if (this.parent[task.type]) {
-                    // task.type == 'loadTile', 'removeTile', etc.
-                    result = await this.parent[task.type](task.sourceMapId, params);
-                } else if (this.parent.getWorkerSource) {
-                    // task.type == sourcetype.method
-                    const keys = task.type.split('.');
-                    const {source, scope} = params as {source: string; scope: string};
-                    const workerSource = this.parent.getWorkerSource(task.sourceMapId, {type: keys[0], source, scope, uid: 0});
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                    result = await workerSource[keys[1]](params);
-                } else {
-                    throw new Error(`Could not find function ${task.type}`);
-                }
-                if (!task.skipResult) {
-                    this.target.postMessage({
-                        id,
-                        type: '<response>',
-                        sourceMapId: this.mapId,
-                        error: null,
-                        data: serialize(result, buffers)
-                    }, [...buffers]);
-                }
-            } catch (err) {
-                assert(!task.skipResult, 'Tasks that skip results should not throw errors');
-                this.target.postMessage({
-                    id,
-                    type: '<response>',
-                    sourceMapId: this.mapId,
-                    error: serialize(err),
-                    data: null
-                }, []);
+            return;
+        }
+
+        const buffers: Set<Transferable> = new Set();
+        const params = deserialize(task.data);
+
+        // `task.type` is a message name ('loadTile', etc.) or a runtime
+        // `sourcetype.method` (WorkerSource types register via Map#addSourceType).
+        // Both dispatch by runtime string, so the handler lookup is untyped.
+        try {
+            let result: unknown;
+            if (this.parent[task.type]) {
+                // task.type == 'loadTile', 'removeTile', etc.
+                result = await this.parent[task.type](task.sourceMapId, params);
+            } else if (this.parent.getWorkerSource) {
+                // task.type == sourcetype.method
+                const keys = task.type.split('.');
+                const {source, scope} = params as {source: string; scope: string};
+                const workerSource = this.parent.getWorkerSource(task.sourceMapId, {type: keys[0], source, scope, uid: 0});
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                result = await workerSource[keys[1]](params);
+            } else {
+                throw new Error(`Could not find function ${task.type}`);
             }
+
+            if (!id) return;
+
+            this.target.postMessage({
+                id,
+                type: '<response>',
+                sourceMapId: this.mapId,
+                error: null,
+                data: serialize(result, buffers)
+            }, [...buffers]);
+        } catch (err) {
+            if (!id) assert(false, `"${task.type}" threw: ${(err as Error).message}`);
+
+            this.target.postMessage({
+                id,
+                type: '<response>',
+                sourceMapId: this.mapId,
+                error: serialize(err),
+                data: null
+            }, []);
         }
     }
 

@@ -15,6 +15,9 @@ const wrapDispatcher = (dispatcher) => {
         dispatcher.send = (type, data, options) => Promise.resolve(send(type, data, options));
         dispatcher.sendCancelable = Actor.prototype.sendCancelable;
     }
+    if (dispatcher.send && !dispatcher.notify) {
+        dispatcher.notify = () => {};
+    }
     /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment */
     return {
         getActor() {

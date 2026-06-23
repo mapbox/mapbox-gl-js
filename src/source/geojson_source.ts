@@ -422,7 +422,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
 
             // The runtime type is `${this.type}.loadData` so geojson-like source types can reuse
             // this path, but every variant returns a LoadGeoJSONResult-shaped reply.
-            const result = await this.actor.send(`${this.type}.loadData` as 'geojson.loadData', options, {signal: controller.signal});
+            const result = await this.actor.send(`${this.type}.loadData`, options, {signal: controller.signal});
             this._loaded = true;
             this._pendingLoad = null;
             // although GeoJSON sources contain no metadata, we fire this event at first
@@ -544,7 +544,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     }
 
     unloadTile(tile: Tile, _?: Callback<undefined> | null) {
-        this.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope}, {skipResult: true});
+        this.actor.notify('removeTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope});
         tile.destroy();
     }
 

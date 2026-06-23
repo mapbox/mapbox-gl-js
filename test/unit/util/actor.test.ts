@@ -75,6 +75,60 @@ describe('Actor', () => {
         });
     });
 
+    test('notify returns undefined, posts the message, and registers no pending response', () => {
+        const postMessages = [];
+        class WorkerStub {
+            listeners = [];
+            addEventListener(type, listener) { this.listeners.push(listener); }
+            postMessage(msg) { postMessages.push(msg); }
+        }
+
+        const worker = new WorkerStub();
+        const actor = new Actor(worker, {}, 1);
+
+        const result = actor.notify('removeTile', {uid: 0});
+
+        expect(result).toBeUndefined();
+        expect(postMessages).toHaveLength(1);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(postMessages[0].type).toEqual('removeTile');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(postMessages[0].id).toBeUndefined();
+        expect(actor.pendingResponses.size).toEqual(0);
+    });
+
+    test('a notify message (no id) skips the success response', async () => {
+        const postMessages = [];
+        class WorkerStub {
+            listeners = [];
+            addEventListener(type, listener) { this.listeners.push(listener); }
+            postMessage(msg) { postMessages.push(msg); }
+        }
+
+        const worker = new WorkerStub();
+        const actor = new Actor(worker, {removeTile() { return 'ok'; }}, 1);
+
+        await actor.processTask(undefined, {type: 'removeTile', data: null});
+
+        expect(postMessages).toHaveLength(0);
+    });
+
+    test('a notify handler error asserts, not posted back', async () => {
+        const postMessages = [];
+        class WorkerStub {
+            listeners = [];
+            addEventListener(type, listener) { this.listeners.push(listener); }
+            postMessage(msg) { postMessages.push(msg); }
+        }
+
+        const worker = new WorkerStub();
+        const actor = new Actor(worker, {removeTile() { throw new Error('boom'); }}, 1);
+
+        await expect(actor.processTask(undefined, {type: 'removeTile', data: null}))
+            .rejects.toThrow(/boom/);
+        expect(postMessages).toHaveLength(0);
+    });
+
     test('#remove unbinds event listener', () => {
         const actor = new Actor({
             addEventListener(type, callback, useCapture) {

@@ -41,29 +41,30 @@ class Dispatcher {
         // track whether all workers are instantiated and ready to receive messages;
         // used for optimizations on initial map load
         this.ready = false;
-        this.broadcast('checkIfReady', null, {keepResult: true}).then(() => { this.ready = true; }).catch(() => {});
+        this.send('checkIfReady', null).then(() => { this.ready = true; }).catch(() => {});
     }
 
     /**
-     * Broadcast a message to all Workers.
-     *
-     * By default, broadcasts are fire-and-forget and return `void`. Pass `{keepResult: true}` to
-     * receive a Promise that resolves with the array of per-worker results (or rejects if any worker rejects).
+     * Sends a message to every Worker and resolves with the per-worker results in actor order.
+     * Use {@link Dispatcher#broadcast} when you don't need the results.
      *
      * @private
      */
-    broadcast<T extends keyof WorkerInbox>(type: T, data: WorkerInbox[T]['params'], options: {keepResult: true; signal?: AbortSignal}): Promise<Array<WorkerInbox[T]['result']>>;
-    broadcast<T extends keyof WorkerInbox>(type: T, data?: WorkerInbox[T]['params']): void;
-    broadcast<T extends keyof WorkerInbox>(type: T, data?: WorkerInbox[T]['params'], options?: {keepResult?: boolean; signal?: AbortSignal}): Promise<Array<WorkerInbox[T]['result']>> | void {
+    send<T extends keyof WorkerInbox>(type: T, data: WorkerInbox[T]['params'], options?: {signal?: AbortSignal}): Promise<Array<WorkerInbox[T]['result']>> {
         assert(this.actors.length);
-        const {signal, keepResult = false} = options || {};
+        return Promise.all(this.actors.map(actor => actor.send(type, data, options)));
+    }
 
-        if (keepResult) {
-            return Promise.all(this.actors.map(actor => actor.send(type, data, {signal})));
-        }
-
+    /**
+     * Broadcasts a fire-and-forget message to every Worker.
+     * Use {@link Dispatcher#send} when you need the results.
+     *
+     * @private
+     */
+    broadcast<T extends keyof WorkerInbox>(type: T, data?: WorkerInbox[T]['params']): void {
+        assert(this.actors.length);
         for (const actor of this.actors) {
-            actor.send(type, data, {skipResult: true});
+            actor.notify(type, data);
         }
     }
 

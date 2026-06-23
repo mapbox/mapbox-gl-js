@@ -2929,9 +2929,7 @@ describe('Style#setConfigProperty', () => {
 
         style.dispatcher.broadcast = function (key, value) {
             expect(key).toEqual('updateLayers');
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(value.scope).toEqual('standard');
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(value.removedIds).toEqual([]);
             const fqid = makeFQID('showBackground', 'standard');
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -3080,9 +3078,9 @@ describe('Style initial config load', () => {
 
         const broadcastedKeys: string[] = [];
         const originalBroadcast = style.dispatcher.broadcast.bind(style.dispatcher);
-        style.dispatcher.broadcast = function (key, value, callback) {
+        style.dispatcher.broadcast = function (key, value) {
             broadcastedKeys.push(key);
-            return originalBroadcast(key, value, callback);
+            return originalBroadcast(key, value);
         };
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

@@ -181,7 +181,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             const {request, options} = await parseTileJSONRequest(this._options, this.map._requestManager, controller.signal);
             if (controller.signal.aborted) return;
 
-            const results = await this.dispatcher.broadcast('loadTileProvider', {
+            const results = await this.dispatcher.send('loadTileProvider', {
                 name: tileProvider.name,
                 url: tileProvider.url,
                 source: this.id,
@@ -189,7 +189,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                 type: this.type,
                 options,
                 request,
-            }, {keepResult: true, signal: controller.signal});
+            }, {signal: controller.signal});
 
             if (controller.signal.aborted) return;
 
@@ -507,13 +507,13 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             delete tile.request;
         }
         if (tile.actor) {
-            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope}, {skipResult: true});
+            tile.actor.notify('abortTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope});
         }
     }
 
     unloadTile(tile: Tile, _?: Callback<undefined> | null) {
         if (tile.actor) {
-            tile.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope}, {skipResult: true});
+            tile.actor.notify('removeTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope});
         }
         tile.destroy();
     }

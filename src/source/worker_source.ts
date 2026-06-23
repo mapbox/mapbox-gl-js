@@ -231,7 +231,7 @@ export interface WorkerSource {
  * `Pick` so the signatures can't drift. Worker sources only send back to the
  * main thread, hence `Actor<MainInbox>`.
  */
-export type WorkerSourceActor = Pick<Actor<MainInbox>, 'send' | 'sendCancelable' | 'scheduler'>;
+export type WorkerSourceActor = Pick<Actor<MainInbox>, 'send' | 'notify' | 'sendCancelable' | 'scheduler'>;
 
 export type WorkerSourceOptions = {
     actor: WorkerSourceActor;
