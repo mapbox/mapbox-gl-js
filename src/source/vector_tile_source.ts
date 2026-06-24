@@ -346,8 +346,9 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
 
         // Enable cross-source elevation while HD is loading so unmatched ids defer (not parse flat).
         // Inert on non-elevation styles (no hd-road-markup buckets).
+        const crossSourceElevationActive = !!(this.map.style && this.map.style._crossSourceElevationActive);
         const crossSourceElevationEnabled = !!(this.map.style &&
-            (this.map.style._crossSourceElevationActive || !HD.loaded));
+            (crossSourceElevationActive || !HD.loaded));
 
         const params: WorkerSourceVectorTileRequest = {
             request,
@@ -391,7 +392,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             terrainEnabled: !!(this.map.style && this.map.style.terrain),
             crossSourceElevationEnabled,
             elevation: HD.buildElevationRequestParams ?
-                HD.buildElevationRequestParams(this.map, tile, crossSourceElevationEnabled) : null,
+                HD.buildElevationRequestParams(this.map, tile, crossSourceElevationActive) : null,
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
             extraShadowCaster: tile.isExtraShadowCaster,
             tessellationStep: this.map._tessellationStep,

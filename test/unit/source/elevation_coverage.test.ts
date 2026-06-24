@@ -796,9 +796,9 @@ describe('HD elevation eager/lazy split (hd_main_esm)', () => {
         const {HD, prepareHD} = mod;
 
         expect(typeof HD.updateFrcCoverageFadeRange).toBe('function');
+        expect(typeof HD.buildElevationRequestParams).toBe('function');
         expect(HD.loaded).toBeFalsy();
         expect(HD.setupAndUpdateElevationCoverage).toBeUndefined();
-        expect(HD.buildElevationRequestParams).toBeUndefined();
         expect(HD.HdElevationState).toBeUndefined();
         expect(HD.updateElevationCoverage).toBeUndefined();
         expect(HD.updateHdElevationSourceCache).toBeUndefined();
