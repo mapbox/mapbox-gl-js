@@ -3412,6 +3412,8 @@ describe('Style HD coverage source-cache wiring', () => {
             paint: {'fill-color': 'red', 'fill-opacity': 0}
         });
         await waitFor(style, 'style.load');
+        // Wait for HD Module to be loaded
+        await vi.waitUntil(() => style._hdCoverage !== null, {timeout: 2000});
 
         expect(style._hdCoverage).not.toBeNull();
         // The dedicated cache key is `hd-road-coverage:<sourceId>`.
@@ -3439,6 +3441,8 @@ describe('Style HD coverage source-cache wiring', () => {
         await waitFor(style, 'style.load');
 
         const cacheKey = `hd-road-coverage:hd-roads`;
+        // Wait for HD module to be loaded
+        await vi.waitUntil(() => style._sourceCaches[cacheKey] !== undefined, {timeout: 2000});
         expect(style._sourceCaches[cacheKey]).toBeDefined();
         // Only one coverage cache total for this source.
         const coverageKeys = Object.keys(style._sourceCaches).filter(k => k.startsWith('hd-road-coverage:'));

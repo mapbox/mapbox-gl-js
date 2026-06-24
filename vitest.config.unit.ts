@@ -1,5 +1,6 @@
 import {basename as pathBasename} from 'node:path';
 import {readFileSync, globSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
 import {mergeConfig, defineConfig} from 'vitest/config';
 import baseConfig, {isCI, chromiumBrowser} from './vitest.config.base';
 
@@ -66,6 +67,20 @@ function styleSpecFixtures() {
 }
 
 export default mergeConfig(baseConfig, defineConfig({
+    resolve: {
+        alias: [
+            // Mirror the Rollup ESM substitution so unit tests exercise the real
+            // lazy-loading path instead of the always-loaded static versions.
+            {
+                find: /.*\/modules\/hd_main$/,
+                replacement: fileURLToPath(new URL('./modules/hd_main_esm.ts', import.meta.url)),
+            },
+            {
+                find: /.*\/modules\/standard_main$/,
+                replacement: fileURLToPath(new URL('./modules/standard_main_esm.ts', import.meta.url)),
+            },
+        ],
+    },
     // Forbid Vite's on-demand dep discovery so it can't reload the page mid-run.
     // Only CJS deps (those needing ESM interop) must be listed; pure-ESM deps
     // work without it.

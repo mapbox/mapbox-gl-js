@@ -24,6 +24,8 @@ export class StubMap extends Evented {
 
     setCamera() {}
 
+    _update() {}
+
     _getMapId() {
         return 1;
     }
