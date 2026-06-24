@@ -161,7 +161,7 @@ export function sortImagesMap(
         if (a.variant.sx !== b.variant.sx) return a.variant.sx - b.variant.sx;
         if (a.variant.sy !== b.variant.sy) return a.variant.sy - b.variant.sy;
 
-        return 0;
+        return a.key.localeCompare(b.key);
     });
 
     const sorted = new Map<StringifiedImageVariant, StyleImage>();
