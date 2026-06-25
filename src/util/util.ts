@@ -448,6 +448,21 @@ export function filterObject<T extends Record<PropertyKey, unknown>>(
 }
 
 /**
+ * Deeply clones two objects.
+ *
+ * @private
+ */
+export function clone<T>(input: T): T {
+    if (Array.isArray(input)) {
+        return input.map(clone) as T;
+    } else if (typeof input === 'object' && input) {
+        return mapObject(input as Record<PropertyKey, unknown>, clone) as T;
+    } else {
+        return input;
+    }
+}
+
+/**
  * Maps a value from a range between [min, max] to the range [outMin, outMax]
  *
  * @private
