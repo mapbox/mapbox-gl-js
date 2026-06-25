@@ -9,6 +9,9 @@
         [
           "wait"
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web-windows-chrome", "reason": "Timing out on CI. Tracked in https://github.com/mapbox/mapbox-gl-js/issues/12407"}
       ]
     }
   },

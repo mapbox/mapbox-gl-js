@@ -7,6 +7,10 @@
         "queryGeometry": [
           300,
           285
+        ],
+        "skip-test": [
+          {"platform-tag-contains": "web", "reason": "Extremely flaky: https://github.com/mapbox/mapbox-gl-js/issues/11726"},
+          {"platform-tag-contains": "native-linux", "reason": "flaky, needs investigation"}
         ]
       }
     },

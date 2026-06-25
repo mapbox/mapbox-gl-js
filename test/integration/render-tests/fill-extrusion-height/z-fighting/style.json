@@ -9,6 +9,9 @@
         ["setPaintProperty", "extrusion", "fill-extrusion-ambient-occlusion-intensity", 0.001],
         ["setPaintProperty", "extrusion-pattern", "fill-extrusion-ambient-occlusion-intensity", 0.001],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native-macos", "reason": "Difference in pattern depending on GPU"}
       ]
     }
   },

@@ -4,7 +4,10 @@
     "test": {
       "height": 256,
       "width": 256,
-      "operations": []
+      "operations": [],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - gl-native specific zero exaggeration behavior is covered in internal tests"}
+      ]
     }
   },
   "sources": {

@@ -4,7 +4,10 @@
     "test": {
       "height": 512,
       "width": 512,
-      "allowed": 0.0008
+      "allowed": 0.0008,
+      "skip-test": [
+        {"platform-tag-contains": "native-android", "reason": "Hard cutoff shadow issue that is not present on Android Mali. https://github.com/mapbox/mapbox-gl-native-internal/pull/5693"}
+      ]
     }
   },
   "lights": [

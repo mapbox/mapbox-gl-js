@@ -13,6 +13,12 @@
         ["setZoom", 0],
         ["wait"],
         ["setSize", 128, 1024]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Implemented for mapbox-gl-native only"},
+        {"platform-tag-contains": "native-linux", "reason": "skip - https://github.com/mapbox/mapbox-3d-team/issues/212"},
+        {"platform-tag-contains": "native-macos", "reason": "skip - https://github.com/mapbox/mapbox-3d-team/issues/212"},
+        {"platform-tag-contains": "native-ios-metal", "reason": "skip - https://github.com/mapbox/mapbox-3d-team/issues/212"}
       ]
     }
   },

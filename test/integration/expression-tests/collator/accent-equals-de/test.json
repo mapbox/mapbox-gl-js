@@ -63,5 +63,12 @@
       ],
       ["case", ["==", ["get", "rhs"], "ue"], true, false]
     ]
+  },
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "Locale-specific behavior changes based on platform."}
+      ]
+    }
   }
 }

@@ -4,7 +4,10 @@
     "test": {
       "height": 256,
       "width": 256,
-      "operations": []
+      "operations": [],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "ignore - fill extrusion hidden on terrain opening"}
+      ]
     }
   },
   "terrain": {

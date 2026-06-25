@@ -5,7 +5,10 @@
     "test": {
       "pixelRatio": 2,
       "height": 64,
-      "width": 64
+      "width": 64,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-3954"}
+      ]
     }
   },
   "camera": {"camera-projection": "orthographic"},

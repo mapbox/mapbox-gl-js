@@ -4,7 +4,10 @@
     "test": {
       "width": 1024,
       "height": 1024,
-      "allowed": 0.00018
+      "allowed": 0.00018,
+      "skip-test": [
+        {"platform-tag-contains": "native-ios", "reason": "Needs to be investigated, specular hightligths not working"}
+      ]
     }
   },
   "center": [

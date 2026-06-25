@@ -10,6 +10,9 @@
           {"color": "red"}
         ],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - To be ported https://github.com/mapbox/mapbox-gl-js-internal/pull/1925"}
       ]
     }
   },

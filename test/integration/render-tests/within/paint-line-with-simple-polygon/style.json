@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "width": 300,
-      "height": 200
+      "height": 200,
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "https://github.com/mapbox/mapbox-gl-js/issues/7023"}
+      ]
     }
   },
   "zoom": 3,

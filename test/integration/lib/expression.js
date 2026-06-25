@@ -76,6 +76,12 @@ function deepEqual(a, b) {
     return true;
 }
 
+function deriveNodePlatformTag() {
+    const osMap = {darwin: 'macos', linux: 'linux', win32: 'windows'};
+    const os = osMap[process.platform] || process.platform;
+    return `web-${os}-node`;
+}
+
 /**
  * Run the expression suite.
  *
@@ -85,12 +91,14 @@ function deepEqual(a, b) {
  * @param {Array<string>} [options.tests] - Array of test names to run; tests not in the array will be skipped.
  * @param {{ skip: string[]; }} [options.ignores] - Object with a skip array containing test names to ignore.
  * @param {string} [options.fixtureFilename]
+ * @param {string} [options.platformTag]
  * @param {Function} runExpressionTest - A function that runs a single expression test fixture.
  * @returns {undefined} Terminates the process when testing is complete.
  */
 export function run(implementation, options, runExpressionTest) {
     const directory = path.join(__dirname, '../expression-tests');
     options.fixtureFilename = 'test.json';
+    options.platformTag = options.platformTag || deriveNodePlatformTag();
     harness(directory, implementation, options, (fixture, params, done) => {
         try {
             const result = runExpressionTest(fixture, params);

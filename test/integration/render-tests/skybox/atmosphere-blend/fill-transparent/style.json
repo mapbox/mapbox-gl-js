@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "height": 256,
-      "width": 512
+      "width": 512,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "Fails on OpenGL due to near field cut-off of fill extrusions"}
+      ]
     }
   },
   "sources": {

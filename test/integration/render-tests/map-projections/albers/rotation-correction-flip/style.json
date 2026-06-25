@@ -8,7 +8,10 @@
           "center": [10, 30]
       },
       "width": 64,
-      "height": 64
+      "height": 64,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"}
+      ]
     }
   },
   "zoom": 11,

@@ -18,6 +18,11 @@
         [
           "wait"
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Flaky https://github.com/mapbox/mapbox-gl-js/issues/10314"},
+        {"platform-tag-contains": "native-android-gl-powervr", "reason": "To be fixed - https://mapbox.atlassian.net/browse/MAPSNAT-3865"},
+        {"platform-tag-contains": "native-macos", "reason": "skip - padding debug option is not implemented in metal renderer"}
       ]
     }
   },

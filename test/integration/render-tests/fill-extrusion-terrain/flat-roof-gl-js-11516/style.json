@@ -8,6 +8,9 @@
       "allowed": 0.0009,
       "operations": [
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
       ]
     }
   },

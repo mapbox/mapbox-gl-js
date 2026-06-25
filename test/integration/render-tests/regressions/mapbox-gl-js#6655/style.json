@@ -18,6 +18,9 @@
         [
           "wait"
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - port https://github.com/mapbox/mapbox-gl-js/pull/6263 - needs issue"}
       ]
     }
   },

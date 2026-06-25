@@ -4,7 +4,10 @@
     "test": {
       "width": 1024,
       "height": 1024,
-      "allowed": 0.00025
+      "allowed": 0.00025,
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Flaky, https://mapbox.atlassian.net/browse/GLJS-608"}
+      ]
     }
   },
   "center": [

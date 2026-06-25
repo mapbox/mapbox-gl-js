@@ -4,7 +4,11 @@
     "test": {
       "debug": true,
       "collisionDebug": true,
-      "mapMode": "tile"
+      "mapMode": "tile",
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Mapbox-gl-js does not support tile-mode"},
+        {"platform-tag-contains": "native", "reason": "Slight difference because of anti-aliasing"}
+      ]
     }
   },
   "center": [

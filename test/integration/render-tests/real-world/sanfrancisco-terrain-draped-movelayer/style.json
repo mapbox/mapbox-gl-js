@@ -23,6 +23,9 @@
         ["moveLayer", "road_major", "road_minor"],
         ["moveLayer", "contour-line", "building"],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/10412"}
       ]
     }
   },

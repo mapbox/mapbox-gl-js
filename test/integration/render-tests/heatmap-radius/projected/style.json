@@ -8,7 +8,10 @@
         ["setProjection", "albers"],
         ["wait"]
       ],
-      "description": "Contains two expected images (for ubyte-based rendering and half-float-based); one of them should pass depending on platform."
+      "description": "Contains two expected images (for ubyte-based rendering and half-float-based); one of them should pass depending on platform.",
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"}
+      ]
     }
   },
   "center": [

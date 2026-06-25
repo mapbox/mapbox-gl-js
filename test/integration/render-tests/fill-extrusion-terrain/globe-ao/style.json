@@ -8,6 +8,9 @@
       "allowed": 0.0004,
       "operations": [
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - https://github.com/mapbox/mapbox-3d-team/issues/181"}
       ]
     }
   },

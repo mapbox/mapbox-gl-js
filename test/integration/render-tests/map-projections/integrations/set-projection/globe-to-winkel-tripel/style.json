@@ -80,6 +80,9 @@
         ["wait"],
         ["setProjection", "winkelTripel"],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"}
       ]
     }
   },

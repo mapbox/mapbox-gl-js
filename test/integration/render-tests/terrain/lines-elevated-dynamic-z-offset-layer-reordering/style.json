@@ -8,6 +8,9 @@
       "operations": [
         ["setZoom", 12],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - needs fix https://mapbox.atlassian.net/browse/MAPSNAT-2492"}
       ]
     }
   },

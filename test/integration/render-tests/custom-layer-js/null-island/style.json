@@ -9,6 +9,9 @@
               "addCustomLayer",
               "null-island"
           ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - js specific"}
       ]
     }
   },

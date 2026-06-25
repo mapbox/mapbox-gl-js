@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "width": 64,
-      "height": 64
+      "height": 64,
+      "skip-test": [
+        {"platform-tag-contains": "native-android", "reason": "https://github.com/mapbox/mapbox-gl-native-internal/issues/1809"}
+      ]
     }
   },
   "sources": {

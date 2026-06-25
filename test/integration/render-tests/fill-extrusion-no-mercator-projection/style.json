@@ -6,6 +6,9 @@
       "operations": [
         ["setProjection", "albers"],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - needs issue"}
       ]
     }
 

@@ -5,7 +5,10 @@
       "pixelRatio": 2,
       "height": 128,
       "width": 128,
-      "allowed": 0.00021
+      "allowed": 0.00021,
+      "skip-test": [
+        {"platform-tag-contains": "native-ios", "reason": "Needs to be investigated and fixed."}
+      ]
     }
   },
   "center": [ 0, 0 ],

@@ -4,7 +4,10 @@
     "test": {
       "width": 64,
       "height": 64,
-      "collisionDebug": true
+      "collisionDebug": true,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-3730"}
+      ]
     }
   },
   "sources": {

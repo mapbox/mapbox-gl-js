@@ -11,6 +11,9 @@
         "com.mapbox.maps.experimental.limit_fill_holes_per_zoom_level",
         true
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "limit number of holes experimental for native"}
       ]
     }
   },

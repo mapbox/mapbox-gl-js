@@ -13,6 +13,10 @@
           "1708329600"
         ],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native-android", "reason": "Could be related to https://mapbox.atlassian.net/browse/GLJS-844"},
+        {"platform-tag-contains": "native-ios", "reason": "Could be related to https://mapbox.atlassian.net/browse/GLJS-844"}
       ]
     }
   },

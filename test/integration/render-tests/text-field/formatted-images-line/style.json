@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "height": 160,
-      "width": 100
+      "width": 100,
+      "skip-test": [
+        {"platform-tag-contains": "native-ios", "reason": "Needs to be investigated and fixed."}
+      ]
     }
   },
   "center": [ -0.0055, 0.0065 ],

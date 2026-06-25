@@ -7,6 +7,9 @@
         ["wait"],
         ["forceContextRestart"],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip not implemented"}
       ]
     }
   },

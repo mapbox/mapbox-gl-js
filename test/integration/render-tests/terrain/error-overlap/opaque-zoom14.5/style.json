@@ -8,6 +8,9 @@
         [
           "wait", 1500
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native-macos", "reason": "Flaky"}
       ]
     }
   },

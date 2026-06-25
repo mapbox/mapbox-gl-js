@@ -15,7 +15,10 @@
                 64
             ],
             "queryOptions": {
-            }
+            },
+            "skip-test": [
+                {"platform-tag-contains": "native", "reason": "skip - no querySourceFeatures in mbgl-node; needs issue"}
+            ]
         }
     },
     "zoom": 0,

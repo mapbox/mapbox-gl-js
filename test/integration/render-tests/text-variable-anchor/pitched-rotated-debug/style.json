@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "height": 256,
-      "collisionDebug": true
+      "collisionDebug": true,
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Non-deterministiic when rendered in browser"}
+      ]
     }
   },
   "center": [

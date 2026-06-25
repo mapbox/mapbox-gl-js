@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "width": 512,
-      "height": 512
+      "height": 512,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+      ]
     }
   },
   "sources": {

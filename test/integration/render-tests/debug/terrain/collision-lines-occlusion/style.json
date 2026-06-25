@@ -9,6 +9,9 @@
             "description": "Covers placement and collision for elevated text. There is also text completely behind terrain that shouldn't be visible.",
             "operations": [
                 ["waitFrameReady", 30]
+            ],
+            "skip-test": [
+                {"platform-tag-contains": "native", "reason": "skip - not implemented in gl-native yet"}
             ]
         }
     },

@@ -19,6 +19,9 @@
           "duration":0
         }],
         ["wait", 100]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
       ]
     }
   },

@@ -8,7 +8,10 @@
                 ["waitFrameReady", 30]
             ],
             "allowed": 0.00025,
-            "spriteFormat": "raster"
+            "spriteFormat": "raster",
+            "skip-test": [
+                {"platform-tag-contains": "swiftshader", "reason": "skip - https://mapbox.atlassian.net/browse/MAPSNAT-3820"}
+            ]
         }
     },
     "center": [

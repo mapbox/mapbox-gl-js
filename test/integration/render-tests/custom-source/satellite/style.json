@@ -24,6 +24,10 @@
           }
         ],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web-macos-safari", "reason": "Inconsistent debug rendering"},
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
       ]
     }
   },

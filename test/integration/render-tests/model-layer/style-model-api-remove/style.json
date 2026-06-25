@@ -8,6 +8,9 @@
         ["addModel", "tree-diffuse", "./models/tree.glb"],
         ["wait"],
         ["removeModel", "tree-diffuse"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - needs fixing https://mapbox.atlassian.net/browse/GLJS-1290"}
       ]
     }
   },

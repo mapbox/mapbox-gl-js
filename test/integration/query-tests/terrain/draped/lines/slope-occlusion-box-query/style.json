@@ -7,6 +7,10 @@
         "queryGeometry": [
             [285, 270],
             [315, 300]
+        ],
+        "skip-test": [
+          {"platform-tag-contains": "web", "reason": "Non-deterministic"},
+          {"platform-tag-contains": "native-linux", "reason": "https://mapbox.atlassian.net/browse/MAPS3D-1928"}
         ]
       }
     },

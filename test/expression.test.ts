@@ -4,8 +4,6 @@ import {createPropertyExpression} from '../src/style-spec/expression/index';
 import {isFunction} from '../src/style-spec/function/index';
 import convertFunction from '../src/style-spec/function/convert';
 import {toString} from '../src/style-spec/expression/types';
-// eslint-disable-next-line import-x/extensions
-import ignores from './ignores/all';
 import {CanonicalTileID} from '../src/source/tile_id';
 import MercatorCoordinate from '../src/geo/mercator_coordinate';
 import tileTransform, {getTilePoint} from '../src/geo/projection/tile_transform';
@@ -108,7 +106,7 @@ if (process.argv[1] === __filename && process.argv.length > 2) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-run('js', {ignores, tests}, (fixture) => {
+run('js', {tests}, (fixture) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const spec = {...fixture.propertySpec};
     let availableImages: any;

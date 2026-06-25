@@ -9,6 +9,9 @@
         ["wait"],
         ["wait"],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "gl-native only: indicator cutout with front cutoff"}
       ]
     }
   },

@@ -11,6 +11,10 @@
         ["setCenter", [-87.6942445, 41.8703965]],
         ["lookAtPoint", [-87.6942445, 41.8703965], [-1, -1, 0]],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web-windows-chrome", "reason": "Occasionally crashing with 'Error occured during [\"wait\"]':"},
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
       ]
     }
   },

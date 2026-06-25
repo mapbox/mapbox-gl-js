@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "height": 512,
-      "allowed": 0.0015
+      "allowed": 0.0015,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - to be ported"}
+      ]
     }
   },
   "transition": {

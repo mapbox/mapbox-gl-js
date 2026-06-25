@@ -14,5 +14,12 @@
     },
     "outputs": [true, true],
     "serialized": ["is-supported-script", ["string", ["get", "x"]]]
+  },
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "This tests RTL text plugin behavior specific to GL JS"}
+      ]
+    }
   }
 }

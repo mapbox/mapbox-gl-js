@@ -4,7 +4,10 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.004
+      "allowed": 0.004,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+      ]
     }
   },
   "center": [0.236, 42.762],

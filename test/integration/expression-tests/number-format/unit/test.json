@@ -24,5 +24,12 @@
         "unit": ["string", ["get", "unit"]]
       }
     ]
+  },
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "ignore - not implemented in gl-native"}
+      ]
+    }
   }
 }

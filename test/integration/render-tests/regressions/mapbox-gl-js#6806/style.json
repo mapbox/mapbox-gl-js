@@ -5,7 +5,10 @@
       "height": 64,
       "width": 64,
       "allowed": 0.0008,
-      "description": "Contains two expected images (for ubyte-based rendering and half-float-based); one of them should pass depending on platform."
+      "description": "Contains two expected images (for ubyte-based rendering and half-float-based); one of them should pass depending on platform.",
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "pending https://github.com/mapbox/mapbox-gl-js/pull/6812"}
+      ]
     }
   },
   "center": [

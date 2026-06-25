@@ -14,6 +14,9 @@
           512,
           512
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "needs investigation"}
       ]
     }
   },

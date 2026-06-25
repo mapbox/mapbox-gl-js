@@ -7,6 +7,9 @@
       "allowed": 0.00061,
       "operations": [
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "swiftshader", "reason": "Antialiasing"}
       ]
     }
   },

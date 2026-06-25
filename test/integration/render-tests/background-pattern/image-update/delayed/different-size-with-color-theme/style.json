@@ -16,6 +16,9 @@
           "marker",
           "./image/marker_20x20.png"
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Support image updates with different size"}
       ]
     }
   },

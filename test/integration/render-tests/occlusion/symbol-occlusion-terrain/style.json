@@ -10,6 +10,9 @@
           "waitFrameReady",
           30
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "swiftshader", "reason": "skip - check swiftshader occlusion query support"}
       ]
     }
   },

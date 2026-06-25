@@ -12,6 +12,11 @@
         ["setZoom", 13 ],
         ["setCenter", [-87.7442445, 41.8403965] ],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Mapbox-gl-js does not support tile-mode"},
+        {"platform-tag-contains": "native-linux", "reason": "skip - lineWidth"},
+        {"platform-tag-contains": "native-ios-metal", "reason": "Debug tile borders not rendered correctly with Metal"}
       ]
     }
   },

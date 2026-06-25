@@ -4,7 +4,10 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.001
+      "allowed": 0.001,
+      "skip-test": [
+        {"platform-tag-contains": "native-android-gl-powervr", "reason": "To be fixed - https://mapbox.atlassian.net/browse/MAPSNAT-3867"}
+      ]
     }
   },
   "zoom": 5.95,

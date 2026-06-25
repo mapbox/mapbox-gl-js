@@ -40,5 +40,12 @@
       }
     ],
     "serialized": ["split", ["string", ["get", "str"]], ["string", ["get", "deliminator"]]]
+  },
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "ignore"}
+      ]
+    }
   }
 }

@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "width": 100,
-      "height": 100
+      "height": 100,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "Skip - port https://github.com/mapbox/mapbox-sdk/pull/2747 to gl-js"}
+      ]
     }
   },
   "zoom": 2,

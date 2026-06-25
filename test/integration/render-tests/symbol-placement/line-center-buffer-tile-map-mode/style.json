@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "debug": true,
-      "mapMode": "tile"
+      "mapMode": "tile",
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Mapbox-gl-js does not support tile-mode"}
+      ]
     }
   },
   "center": [

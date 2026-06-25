@@ -4,7 +4,10 @@
     "test": {
       "height": 100,
       "width": 200,
-      "queryGeometry": [98, 57]
+      "queryGeometry": [98, 57],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "needs investigation"}
+      ]
     }
   },
   "center": [-113.32694547094238, 35.93455626259847],

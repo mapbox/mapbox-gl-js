@@ -9,6 +9,9 @@
         ["wait"],
         ["setFog", {}],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - to be ported https://mapbox.atlassian.net/browse/MAPSNAT-1959"}
       ]
     }
   },

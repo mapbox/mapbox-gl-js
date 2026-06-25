@@ -42,6 +42,9 @@
         [
           "wait"
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "Wrong size for actual image reported. TODO."}
       ]
     }
   },

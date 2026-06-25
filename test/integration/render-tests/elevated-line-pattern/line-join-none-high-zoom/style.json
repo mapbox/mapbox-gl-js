@@ -5,7 +5,12 @@
       "pixelRatio": 2,
       "width": 360,
       "height": 120,
-      "allowed": 0.00968
+      "allowed": 0.00968,
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "pattern issues"},
+        {"platform-tag-contains": "native", "reason": "Skip - port https://github.com/mapbox/mapbox-sdk/pull/2747 to gl-js"},
+        {"platform-tag-contains": "native-ios", "reason": "To be fixed https://mapbox.atlassian.net/browse/MAPS3D-1544"}
+      ]
     }
   },
   "center": [

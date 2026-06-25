@@ -7,6 +7,9 @@
             "allowed": 0.005,
             "operations": [
                 ["sleep", 100]
+            ],
+            "skip-test": [
+                {"platform-tag-contains": "native", "reason": "Skip - not yet implemented in gl-native"}
             ]
         }
     },

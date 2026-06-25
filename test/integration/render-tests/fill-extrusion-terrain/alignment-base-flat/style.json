@@ -7,6 +7,9 @@
       "allowed": 0.001,
       "operations": [
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "swiftshader", "reason": "Wrong clear color"}
       ]
     }
   },

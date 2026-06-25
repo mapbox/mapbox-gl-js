@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "height": 128,
-      "width": 128
+      "width": 128,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPS3D-1623"}
+      ]
     }
   },
   "zoom": 4.2,

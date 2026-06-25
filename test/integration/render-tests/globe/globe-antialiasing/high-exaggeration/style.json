@@ -8,6 +8,9 @@
       "operations": [
         ["setProjection", "globe"],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web-windows-chrome", "reason": "Globe is sometimes missing"}
       ]
       }
   },

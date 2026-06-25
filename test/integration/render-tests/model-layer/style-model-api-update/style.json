@@ -9,6 +9,9 @@
         ["wait"],
         ["addModel", "tree", "/models/nested-cubes.glb"],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - timing out on missing files from cache"}
       ]
     }
   },

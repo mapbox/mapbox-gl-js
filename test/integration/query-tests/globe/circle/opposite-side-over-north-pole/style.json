@@ -7,6 +7,10 @@
       "queryGeometry": [
         [230, 40],
         [345, 65]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Needs baseline update"},
+        {"platform-tag-contains": "native", "reason": "Invalid URIs - https://github.com/mapbox/mapbox-gl-js/pull/11836"}
       ]
     }
   },

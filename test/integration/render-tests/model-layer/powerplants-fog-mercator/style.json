@@ -9,6 +9,9 @@
         ["setProjection", "globe"],
         ["wait"],
         ["setZoom", 6.01]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - lighting not correct in globe?"}
       ]
     }
   },

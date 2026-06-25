@@ -7,6 +7,9 @@
       "width": 1024,
       "operations": [
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - dem/vector/trees tiles need to be updated"}
       ]
     }
   },

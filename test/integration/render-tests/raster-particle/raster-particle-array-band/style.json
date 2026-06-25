@@ -7,6 +7,9 @@
       "allowed": 0.0003,
       "operations": [
         ["wait", 100]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native-android", "reason": "Needs to be investigated and fixed"}
       ]
     }
   },

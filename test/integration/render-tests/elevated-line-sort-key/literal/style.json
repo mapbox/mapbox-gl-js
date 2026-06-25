@@ -3,7 +3,11 @@
   "metadata": {
     "test": {
       "height": 32,
-      "width": 32
+      "width": 32,
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "z-fighting issues"},
+        {"platform-tag-contains": "native", "reason": "skip - Known issues https://mapbox.atlassian.net/browse/MAPS3D-1494"}
+      ]
     }
   },
   "center": [0, 0],

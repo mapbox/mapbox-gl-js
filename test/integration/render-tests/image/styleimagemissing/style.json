@@ -14,6 +14,9 @@
             "icon-image": ["image", "rocket"]
           }
         }]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - https://mapbox.atlassian.net/browse/GLJS-1285"}
       ]
     }
   },

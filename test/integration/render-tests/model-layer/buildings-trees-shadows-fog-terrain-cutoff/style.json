@@ -7,6 +7,10 @@
       "width": 1024,
       "operations": [
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web-linux-chrome", "reason": "Timing out https://mapbox.atlassian.net/browse/GLJS-398"},
+        {"platform-tag-contains": "web-windows-chrome", "reason": "Slight but acceptable variation in some of the smoothed edges"}
       ]
     }
   },

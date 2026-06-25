@@ -9,6 +9,10 @@
         ["wait"],
         ["setZoom", 15.28],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Flaky in CI, covered by unit tests"},
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
       ]
     }
   },

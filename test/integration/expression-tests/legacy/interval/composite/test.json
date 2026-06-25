@@ -50,5 +50,12 @@
       1,
       ["step", ["number", ["get", "p"]], 2, 1, 3]
     ]
+  },
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/12747"}
+      ]
+    }
   }
 }

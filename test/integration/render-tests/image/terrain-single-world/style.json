@@ -9,6 +9,9 @@
         ["wait"],
         ["setRenderWorldCopies", false],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
       ]
     }
   },

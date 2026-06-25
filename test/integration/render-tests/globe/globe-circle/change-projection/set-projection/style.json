@@ -12,6 +12,9 @@
         ["wait"],
         ["setProjection", "globe"],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web-windows-chrome", "reason": "Occasionally crashing with 'Error occured during [\"wait\"]':"}
       ]
     }
   },

@@ -11,6 +11,13 @@
           "exaggeration": 0.05
         }],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Deferred for globe view"},
+        {"platform-tag-contains": "web-macos-safari", "reason": "Inconsistencies with fill pattern. Some are visibly noticeable, others subtle. Possibly nonodeterministic rendering."},
+        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-js/issues/3327"},
+        {"platform-tag-contains": "native-linux", "reason": "flaky, https://mapbox.atlassian.net/browse/MAPSNAT-867"},
+        {"platform-tag-contains": "native-macos", "reason": "Difference in pattern depending on GPU"}
       ]
     }
   },

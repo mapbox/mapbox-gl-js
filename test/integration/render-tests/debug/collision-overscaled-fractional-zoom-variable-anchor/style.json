@@ -3,7 +3,12 @@
   "metadata": {
     "test": {
       "collisionDebug": true,
-      "height": 256
+      "height": 256,
+      "skip-test": [
+        {"platform-tag-contains": "web-macos-chrome", "reason": "Due to incorrect resampling or antialasing, shifted icons appear pixelated. Likely related to the above issue. Difs here are small, but the appearance is worse."},
+        {"platform-tag-contains": "web-windows-chrome", "reason": "Due to incorrect resampling or antialasing, shifted icons appear pixelated. Likely related to the above issue. Difs here are small, but the appearance is worse."},
+        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/3841"}
+      ]
     }
   },
   "center": [

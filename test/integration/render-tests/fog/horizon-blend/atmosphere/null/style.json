@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "height": 100,
-      "width": 512
+      "width": 512,
+      "skip-test": [
+        {"platform-tag-contains": "native-android-gl-powervr", "reason": "To be fixed - https://mapbox.atlassian.net/browse/MAPSNAT-3865"}
+      ]
     }
   },
   "sources": {},

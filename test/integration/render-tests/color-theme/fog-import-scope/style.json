@@ -12,6 +12,9 @@
           "exaggeration": 1.0
         }],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native-linux", "reason": "https://mapbox.atlassian.net/browse/MAPS3D-1929"}
       ]
     }
   },

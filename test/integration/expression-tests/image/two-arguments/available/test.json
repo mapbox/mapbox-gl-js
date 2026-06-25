@@ -16,5 +16,12 @@
     },
     "outputs": [false, false, false, true],
     "serialized": ["to-boolean", ["image", "first", "second"]]
+  },
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "https://mapbox.atlassian.net/browse/GLJS-1005"}
+      ]
+    }
   }
 }

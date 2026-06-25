@@ -85,6 +85,9 @@
             "fog": {}
           }],
           ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native-macos", "reason": "Difference depending on the GPU"}
       ]
     }
   },

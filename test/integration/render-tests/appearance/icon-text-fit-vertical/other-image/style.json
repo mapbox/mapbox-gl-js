@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "width": 128,
-      "height": 128
+      "height": 128,
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Broken in similar way as gl-native https://mapbox.atlassian.net/browse/MAPSNAT-3474"}
+      ]
     }
   },
   "sources": {

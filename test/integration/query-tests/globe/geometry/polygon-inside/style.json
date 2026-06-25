@@ -14,6 +14,9 @@
           220,
           320
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/3286"}
       ]
     }
   },

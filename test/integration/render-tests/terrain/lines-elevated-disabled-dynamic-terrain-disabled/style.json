@@ -5,6 +5,9 @@
       "height": 300,
       "width": 512,
       "operations": [
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - needs fix https://mapbox.atlassian.net/browse/MAPSNAT-2492"}
       ]
     }
   },

@@ -10,5 +10,12 @@
     },
     "outputs": [[1, 2]],
     "serialized": [1, 2]
+  },
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "ignore - gl-native parses arrays as expressions"}
+      ]
+    }
   }
 }

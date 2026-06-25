@@ -8,6 +8,9 @@
             "queryGeometry": [
                 [220, 260],
                 [290, 330]
+            ],
+            "skip-test": [
+                {"platform-tag-contains": "native", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/3286"}
             ]
         }
     },

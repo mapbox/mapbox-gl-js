@@ -11,6 +11,10 @@
           "exaggeration": 0.0001
         }],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web-windows-chrome", "reason": "Timing out on CI. Tracked in https://github.com/mapbox/mapbox-gl-js/issues/12407"},
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
       ]
     }
   },

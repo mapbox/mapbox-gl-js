@@ -6,7 +6,10 @@
             "allowed": 0.0015,
             "showLayers3DWireframe": true,
             "showElevatedStructuresWireframe": true,
-            "spriteFormat": "raster"
+            "spriteFormat": "raster",
+            "skip-test": [
+                {"platform-tag-contains": "native-android-gl-mali", "reason": "To be fixed https://mapbox.atlassian.net/browse/MAPSPERF-86"}
+            ]
         }
     },
     "center": [

@@ -229,5 +229,12 @@
         }
       }
     ]
+  },
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "ignore - precision issues"}
+      ]
+    }
   }
 }

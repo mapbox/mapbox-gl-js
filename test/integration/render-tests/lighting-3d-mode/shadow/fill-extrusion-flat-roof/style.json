@@ -4,7 +4,10 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0006
+      "allowed": 0.0006,
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Unimplemented in -js: https://mapbox.atlassian.net/browse/MAPS3D-671"}
+      ]
     }
   },
   "lights": [

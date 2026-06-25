@@ -4,7 +4,11 @@
     "test": {
       "width": 112,
       "height": 64,
-      "allowed": 0.00075
+      "allowed": 0.00075,
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "blur issues"},
+        {"platform-tag-contains": "native", "reason": "skip - Known issues https://mapbox.atlassian.net/browse/MAPS3D-1494"}
+      ]
     }
   },
   "sources": {

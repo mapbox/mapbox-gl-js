@@ -5,7 +5,11 @@
             "collisionDebug": true,
             "width": 512,
             "height": 2048,
-            "description": "This is the line-label equivalent of issue #5911. The middle feature barely misses the bottom feature and barely collides with the top feature, so that the test can detect a small change in either direction."
+            "description": "This is the line-label equivalent of issue #5911. The middle feature barely misses the bottom feature and barely collides with the top feature, so that the test can detect a small change in either direction.",
+            "skip-test": [
+                {"platform-tag-contains": "native-android", "reason": "Needs to be investigated and fixed."},
+                {"platform-tag-contains": "native-ios", "reason": "Needs to be investigated and fixed."}
+            ]
         }
     },
     "center": [

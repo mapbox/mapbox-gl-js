@@ -4,7 +4,10 @@
     "test": {
       "mapMode": "tile",
       "height": 512,
-      "width": 512
+      "width": 512,
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Mapbox-gl-js does not support tile-mode"}
+      ]
     }
   },
   "center": [

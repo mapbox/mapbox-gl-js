@@ -5,7 +5,10 @@
       "height": 512,
       "width": 512,
       "allowed": 0.00001,
-      "operations": []
+      "operations": [],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Dithering of fog is always enabled in GL-JS"}
+      ]
     }
   },
   "center": [

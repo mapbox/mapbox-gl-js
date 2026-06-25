@@ -4,7 +4,10 @@
     "test": {
       "height": 256,
       "width": 256,
-      "allowed": 0.0005
+      "allowed": 0.0005,
+      "skip-test": [
+        {"platform-tag-contains": "swiftshader", "reason": "antialiasing"}
+      ]
     }
   },
   "center": [-113.26903, 35.9954],

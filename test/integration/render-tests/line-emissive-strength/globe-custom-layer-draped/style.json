@@ -11,6 +11,9 @@
         ["wait"],
         ["addCustomLayer", "triangle-draped"],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - js specific"}
       ]
     }
   },

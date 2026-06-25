@@ -11,6 +11,9 @@
         ["setCenter", [-87.6942445, 41.9703965] ],
         ["lookAtPoint", [-87.6942445, 41.8703965], [1, 0, 0]],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
       ]
     }
   },

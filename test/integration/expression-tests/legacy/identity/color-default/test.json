@@ -19,5 +19,12 @@
     },
     "outputs": [[1, 0, 0, 1], [0, 0, 1, 1], [1, 0, 0, 1]],
     "serialized": ["to-color", ["get", "p"], "red"]
+  },
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/12747"}
+      ]
+    }
   }
 }

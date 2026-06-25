@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "height": 128,
-      "width": 128
+      "width": 128,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - To be ported https://mapbox.atlassian.net/browse/MAPSNAT-1681"}
+      ]
     }
   },
   "zoom": 4.2,

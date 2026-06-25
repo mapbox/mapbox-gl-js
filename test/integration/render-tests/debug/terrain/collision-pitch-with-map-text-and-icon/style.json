@@ -11,6 +11,12 @@
           "source": "rgbterrain"
         }],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web-windows-chrome", "reason": "Occasionally crashing with 'Error occured during [\"wait\"]':"},
+        {"platform-tag-contains": "native-macos", "reason": "Metal rendering differences"},
+        {"platform-tag-contains": "swiftshader", "reason": "skip - swiftshader debugging needed"},
+        {"platform-tag-contains": "native-ios-metal", "reason": "Box collision not ported yet"}
       ]
     }
   },

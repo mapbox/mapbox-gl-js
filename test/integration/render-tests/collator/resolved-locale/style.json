@@ -4,7 +4,10 @@
     "test": {
       "height": 64,
       "width": 128,
-      "description": "We use a render test for the collator expression because it has an Android-specific implementation and we don't have an Android expression test suite. For other platforms, see the collator expression tests."
+      "description": "We use a render test for the collator expression because it has an Android-specific implementation and we don't have an Android expression test suite. For other platforms, see the collator expression tests.",
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "Some test platforms don't resolve 'en' locale"}
+      ]
     }
   },
   "sources": {

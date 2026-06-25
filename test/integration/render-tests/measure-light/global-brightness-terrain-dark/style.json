@@ -36,6 +36,11 @@
         [
           "wait"
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native-macos", "reason": "skip - https://mapbox.atlassian.net/browse/MAPSNAT-1436 Needs investigation"},
+        {"platform-tag-contains": "swiftshader", "reason": "Diff is higher than allowed"},
+        {"platform-tag-contains": "native-ios-metal", "reason": "aliasing"}
       ]
     }
   },

@@ -26,5 +26,12 @@
       1,
       ["to-string", ["get", "b"]]
     ]
+  },
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/12747"}
+      ]
+    }
   }
 }

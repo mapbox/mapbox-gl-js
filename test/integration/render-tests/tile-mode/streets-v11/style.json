@@ -8,7 +8,10 @@
             "operations": [
                 [ "setStyle",  "mapbox://styles/mapbox/streets-v11"]
             ],
-            "pixelRatio": 2
+            "pixelRatio": 2,
+            "skip-test": [
+                {"platform-tag-contains": "web", "reason": "Mapbox-gl-js does not support tile-mode"}
+            ]
         }
     },
     "center": [-73.9959, 40.7106],

@@ -4,7 +4,12 @@
     "test": {
       "debug": true,
       "mapMode": "tile",
-      "allowed": 0.0005
+      "allowed": 0.0005,
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Mapbox-gl-js does not support tile-mode"},
+        {"platform-tag-contains": "native", "reason": "Slight difference because of anti-aliasing"},
+        {"platform-tag-contains": "native-android", "reason": "https://github.com/mapbox/api-gl/issues/1265"}
+      ]
     }
   },
   "center": [

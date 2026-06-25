@@ -30,5 +30,12 @@
       ],
       "en"
     ]
+  },
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "Even the 'en' locale may not be present on some test systems."}
+      ]
+    }
   }
 }

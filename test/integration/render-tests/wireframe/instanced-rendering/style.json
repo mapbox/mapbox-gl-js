@@ -8,6 +8,9 @@
       "showLayers3DWireframe": true,
       "operations": [
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - To be ported"}
       ]
     }
   },

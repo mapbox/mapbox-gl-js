@@ -4,7 +4,11 @@
     "test": {
       "height": 256,
       "width": 256,
-      "operations": []
+      "operations": [],
+      "skip-test": [
+        {"platform-tag-contains": "native-android", "reason": "Failed in iOS, https://mapbox.atlassian.net/browse/MAPS3D-1757"},
+        {"platform-tag-contains": "native-ios", "reason": "Failed in iOS, https://mapbox.atlassian.net/browse/MAPS3D-1757"}
+      ]
     }
   },
   "sources": {

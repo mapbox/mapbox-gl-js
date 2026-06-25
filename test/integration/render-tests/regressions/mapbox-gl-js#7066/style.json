@@ -4,7 +4,12 @@
     "test": {
       "pixelRatio": 10,
       "width": 24,
-      "height": 24
+      "height": 24,
+      "skip-test": [
+        {"platform-tag-contains": "native-ios", "reason": "Antialiasing"},
+        {"platform-tag-contains": "native-linux", "reason": "Failing with mbgl-render-test"},
+        {"platform-tag-contains": "native-macos", "reason": "Failing with mbgl-render-test"}
+      ]
     }
   },
   "sources": {

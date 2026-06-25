@@ -3,7 +3,11 @@
   "metadata": {
     "test": {
       "width": 512,
-      "height": 512
+      "height": 512,
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "GLTF interleaved arrays not supported in -js"},
+        {"platform-tag-contains": "native-ios", "reason": "Incorrect opacity in textures"}
+      ]
     }
   },
   "center": [

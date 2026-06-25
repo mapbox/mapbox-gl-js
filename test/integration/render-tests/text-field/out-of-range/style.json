@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "height": 32,
-      "width": 128
+      "width": 128,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - check in native if porting is needed https://mapbox.atlassian.net/browse/RICO-10069"}
+      ]
     }
   },
   "center": [0, 0],

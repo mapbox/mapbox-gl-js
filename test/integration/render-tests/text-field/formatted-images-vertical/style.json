@@ -4,7 +4,10 @@
     "test": {
       "height": 168,
       "width": 128,
-      "allowed": 0.00024
+      "allowed": 0.00024,
+      "skip-test": [
+        {"platform-tag-contains": "native-ios", "reason": "Needs to be investigated and fixed."}
+      ]
     }
   },
   "center": [ 0, 0 ],

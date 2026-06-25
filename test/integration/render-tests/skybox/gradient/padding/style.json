@@ -18,6 +18,9 @@
         [
           "wait"
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native-macos", "reason": "skip - padding debug option is not implemented in metal renderer"}
       ]
     }
   },

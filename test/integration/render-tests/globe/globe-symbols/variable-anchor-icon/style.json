@@ -7,6 +7,9 @@
       "operations": [
         ["setProjection", "globe"],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native-linux", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/3106"}
       ]
     }
   },

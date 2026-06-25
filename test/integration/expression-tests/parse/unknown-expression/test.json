@@ -5,5 +5,12 @@
       "result": "error",
       "errors": [{"key": "[1][4]", "error": "Expected number but found array."}]
     }
+  },
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "ignore - gl-native parses arrays as expressions"}
+      ]
+    }
   }
 }

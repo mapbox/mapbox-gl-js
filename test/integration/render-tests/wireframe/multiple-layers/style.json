@@ -6,7 +6,10 @@
       "height": 512,
       "showLayers2DWireframe": true,
       "showLayers3DWireframe": true,
-      "allowed": 0.008
+      "allowed": 0.008,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - needs issue"}
+      ]
     }
   },
   "lights": [

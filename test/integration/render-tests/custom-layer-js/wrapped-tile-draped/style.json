@@ -50,6 +50,9 @@
         ["wait"],
         ["addCustomLayer", "wrapped-tile-draped"],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - GL JS specific"}
       ]
     }
   },

@@ -6,6 +6,11 @@
         "operations": [
           ["setProjection", "globe"],
           ["wait"]
+        ],
+        "skip-test": [
+          {"platform-tag-contains": "web-macos-chrome", "reason": "Globe sometimes missing"},
+          {"platform-tag-contains": "web-windows-chrome", "reason": "Occasionally crashing with 'Error occured during [\"wait\"]':"},
+          {"platform-tag-contains": "native-linux", "reason": "skip - Requires support for standard derivatives"}
         ]
         }
     },

@@ -150,7 +150,6 @@ export function setupIntegrationTestsMiddlewares({reportPath}: {reportPath: stri
                 const shardId = process.env.POOL_SHARD_ID;
                 const totalShards = process.env.POOL_SHARDS;
                 const diagnostics: DiagnosticInfo = {
-                    platform: 'Mapbox GL JS (Web)',
                     generatedAt: new Date().toISOString(),
                     reproduceCommand: detectReproduceCommand(),
                     spriteFormat: process.env.SPRITE_FORMAT,

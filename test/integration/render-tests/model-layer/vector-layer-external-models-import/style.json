@@ -6,6 +6,9 @@
       "allowed": 0.00025,
       "operations": [
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - needs fix https://mapbox.atlassian.net/browse/MAPSNAT-2117"}
       ]
     }
   },

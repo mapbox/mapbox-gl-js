@@ -48,6 +48,9 @@
         ["wait"],
         ["addImage", "rocket", "./image/rocket.png"],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "https://mapbox.atlassian.net/browse/GLJS-1005"}
       ]
     }
   },

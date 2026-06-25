@@ -7,7 +7,10 @@
       "addFakeCanvas": {
           "id": "fake-canvas",
           "image": "./image/rocket.png"
-      }
+      },
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - js specific"}
+      ]
     }
   },
   "center": [

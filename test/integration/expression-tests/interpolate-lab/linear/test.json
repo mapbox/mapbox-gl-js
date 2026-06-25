@@ -36,5 +36,12 @@
       11,
       ["to-color", ["get", "color"]]
     ]
+  },
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/8720"}
+      ]
+    }
   }
 }

@@ -18,6 +18,9 @@
         [
           "wait"
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - config filter not yet supported https://mapbox.atlassian.net/browse/MAPSNAT-1876"}
       ]
     }
   },

@@ -5,7 +5,10 @@
       "width": 512,
       "height": 512,
       "allowed": 0.005,
-      "debug": true
+      "debug": true,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - GL JS specific"}
+      ]
     }
   },
   "center": [-135, 45],

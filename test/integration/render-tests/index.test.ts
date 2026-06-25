@@ -1,54 +1,23 @@
 import {server} from 'vitest/browser';
 import {test, assert, afterEach, afterAll} from 'vitest';
-import ignoresAll from '../../ignores/all.js';
-import ignoreWindowsChrome from '../../ignores/windows-chrome.js';
-import ignoreMacChrome from '../../ignores/mac-chrome.js';
-import ignoreMacSafari from '../../ignores/mac-safari.js';
-import ignoreLinuxChrome from '../../ignores/linux-chrome.js';
-import ignoreLinuxFirefox from '../../ignores/linux-firefox.js';
 import {parseStyle, parseOptions, getActualImage, calculateDiff, diffCanvas, diffCtx, getActualImageDataURL, mapRef, fakeCanvasContainer} from './utils.js';
 // @ts-expect-error Cannot find module 'virtual:integration-tests' or its corresponding type declarations.
 import {integrationTests} from 'virtual:integration-tests';
 import {getStatsHTML, updateHTML, registerSkipped} from '../../util/html_generator';
 import {mapboxgl} from '../lib/mapboxgl.js';
-import {sendFragment, sendBrowserDiagnostics} from '../lib/utils';
+import {sendFragment, sendBrowserDiagnostics, detectPlatformTagFromUserAgent, matchSkipTestRule, type SkipRuleMatch} from '../lib/utils';
 
 function getEnvironmentParams() {
     let timeout = 30000;
-    if (import.meta.env.VITE_CI === 'true') {
-        let ignoresPlatformSpecific;
-        const ua = navigator.userAgent;
-        const browser = ua.includes('Firefox') ? 'firefox' :
-            ua.includes('Edge') ? 'edge' :
-            ua.includes('Chrome') ? 'chrome' :
-            ua.includes('Safari') ? 'safari' :
-            null;
-
-        // On CI, MacOS and Windows run on virtual machines.
-        // Windows runs are especially slow so we increase the timeout.
-        if (ua.includes('Macintosh')) {
-            ignoresPlatformSpecific = browser === 'safari' ? ignoreMacSafari : ignoreMacChrome;
-        } else if (ua.includes('Linux')) {
-            ignoresPlatformSpecific = browser === 'firefox' ? ignoreLinuxFirefox : ignoreLinuxChrome;
-        } else if (ua.includes('Windows')) {
-            ignoresPlatformSpecific = ignoreWindowsChrome;
-            timeout = 150000; // 2:30
-        } else {  throw new Error(`Can't determine OS with user agent: ${ua}`); }
-
-        return {
-            ignores: {
-                skip: Array.from(new Set([...ignoresPlatformSpecific.skip, ...ignoresAll.skip]))
-            },
-            timeout
-        };
-    } else {
-        return {
-            ignores: {
-                skip: ignoresAll.skip
-            },
-            timeout
-        };
+    const platformTag = detectPlatformTagFromUserAgent(navigator.userAgent);
+    if (!platformTag) {
+        throw new Error(`Unable to determine a valid platform-tag from user agent: ${navigator.userAgent}`);
     }
+    if (import.meta.env.VITE_CI === 'true' && platformTag === 'web-windows-chrome') {
+        // On CI, Windows runs on virtual machines and are especially slow.
+        timeout = 150000; // 2:30
+    }
+    return {timeout, platformTag};
 }
 
 type ImageDataWithCanvas = {
@@ -108,9 +77,13 @@ type TestMetadata = {
 
 let reportFragment: string | undefined;
 
-const getTest = (renderTestName: string) => async () => {
+const getTest = (renderTestName: string, preflightError?: unknown) => async () => {
     let errorMessage: string | undefined;
     try {
+        if (preflightError) {
+            throw preflightError;
+        }
+
         const renderTest = integrationTests[renderTestName];
         const testPath = renderTest.path;
         const style = parseStyle(renderTest);
@@ -181,13 +154,16 @@ const getTest = (renderTestName: string) => async () => {
     }
 };
 
-const {ignores, timeout} = getEnvironmentParams();
-const skippedTests: string[] = [];
+const {timeout, platformTag} = getEnvironmentParams();
+const skippedTests: Record<string, SkipRuleMatch> = {};
 
 Object.keys(integrationTests).forEach((testName) => {
-    const renderTestName = `render-tests/${testName}`;
-    if (ignores.skip.includes(renderTestName)) {
-        skippedTests.push(testName);
+    const style = integrationTests[testName]?.style;
+    const {match: skipMatch, validationError} = matchSkipTestRule(style?.metadata?.test?.['skip-test'], platformTag);
+    if (validationError) {
+        test(testName, {timeout}, getTest(testName, new Error(validationError)));
+    } else if (skipMatch) {
+        skippedTests[testName] = skipMatch;
         test.skip(testName, getTest(testName));
     } else {
         test(testName, {timeout}, getTest(testName));
@@ -195,9 +171,17 @@ Object.keys(integrationTests).forEach((testName) => {
 });
 
 afterAll(async () => {
-    for (const testName of skippedTests) {
+    for (const [testName, skipMatch] of Object.entries(skippedTests)) {
         const testPath = integrationTests[testName]?.path;
-        await sendFragment(reportFragmentIdx++, registerSkipped(testName, testPath ? `${testPath}/style.json` : undefined));
+        await sendFragment(
+            reportFragmentIdx++,
+            registerSkipped(
+                testName,
+                testPath ? `${testPath}/style.json` : undefined,
+                skipMatch.reasons,
+                skipMatch.rules
+            )
+        );
     }
     await sendBrowserDiagnostics();
     await sendFragment(0, getStatsHTML());

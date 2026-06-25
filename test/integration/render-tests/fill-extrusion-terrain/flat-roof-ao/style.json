@@ -7,6 +7,9 @@
       "operations": [
         ["setLight", {"intensity": 0.2}],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native-linux", "reason": "Antialiasing"}
       ]
     }
   },

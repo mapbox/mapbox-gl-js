@@ -5,7 +5,10 @@
       "height": 512,
       "width": 512,
       "allowed": 0.0017,
-      "showLayers3DWireframe": true
+      "showLayers3DWireframe": true,
+      "skip-test": [
+        {"platform-tag-contains": "native-android-gl-mali", "reason": "To be fixed https://mapbox.atlassian.net/browse/MAPSPERF-86"}
+      ]
     }
   },
   "sources": {

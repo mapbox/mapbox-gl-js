@@ -4,7 +4,10 @@
     "test": {
       "width": 1024,
       "height": 1024,
-      "allowed": 0.00045
+      "allowed": 0.00045,
+      "skip-test": [
+        {"platform-tag-contains": "native-ios", "reason": "Flaky"}
+      ]
     }
   },
   "center": [

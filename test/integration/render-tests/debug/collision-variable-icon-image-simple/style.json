@@ -5,7 +5,11 @@
       "height": 128,
       "width": 128,
       "allowed": 0.00019,
-      "collisionDebug": true
+      "collisionDebug": true,
+      "skip-test": [
+        {"platform-tag-contains": "web-macos-safari", "reason": "Debug visualizations"},
+        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/3841"}
+      ]
     }
   },
   "center": [ 0, 0 ],

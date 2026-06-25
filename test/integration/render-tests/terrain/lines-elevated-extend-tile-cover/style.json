@@ -4,7 +4,10 @@
     "test": {
       "height": 300,
       "width": 512,
-      "allowed": 0.00224
+      "allowed": 0.00224,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - needs fix https://mapbox.atlassian.net/browse/MAPSNAT-2492"}
+      ]
     }
   },
   "center": [-113.2893740232018, 35.970763029437904],

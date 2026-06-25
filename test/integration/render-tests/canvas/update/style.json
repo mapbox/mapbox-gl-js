@@ -11,6 +11,9 @@
       "operations": [
           ["wait"],
           ["updateFakeCanvas", "canvas", "./image/1.png", "./image/0.png"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - js specific"}
       ]
     }
   },

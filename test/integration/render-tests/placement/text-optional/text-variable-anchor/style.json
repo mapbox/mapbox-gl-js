@@ -3,7 +3,10 @@
    "metadata": {
     "test": {
       "width": 256,
-      "height": 256
+      "height": 256,
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "https://mapbox.atlassian.net/browse/GLJS-1295"}
+      ]
     }
   },
   "zoom": 2,

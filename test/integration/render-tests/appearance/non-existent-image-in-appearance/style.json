@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "height": 32,
-      "width": 32
+      "width": 32,
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Broken in similar way as gl-native https://mapbox.atlassian.net/browse/MAPSNAT-3482"}
+      ]
     }
   },
   "camera": {"camera-projection": "orthographic"},

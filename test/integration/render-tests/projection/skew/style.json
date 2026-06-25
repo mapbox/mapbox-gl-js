@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "axonometric": true,
-      "skew": [-1, -1]
+      "skew": [-1, -1],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "axonometric rendering in gl-js tbd"}
+      ]
     }
   },
   "sources": {

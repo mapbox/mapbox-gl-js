@@ -14,6 +14,9 @@
           "parallels": [-90, -90]
         }],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"}
       ]
     }
   },

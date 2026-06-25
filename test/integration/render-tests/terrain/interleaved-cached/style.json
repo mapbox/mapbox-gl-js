@@ -4,7 +4,10 @@
     "test": {
       "height": 200,
       "width": 200,
-      "allowed": 0.004
+      "allowed": 0.004,
+      "skip-test": [
+        {"platform-tag-contains": "native-linux", "reason": "Antialiasing"}
+      ]
     }
   },
   "center": [-113.2697514325975, 35.962383122262054],

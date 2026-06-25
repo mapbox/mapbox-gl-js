@@ -18,6 +18,10 @@
         [
           "wait"
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native-macos", "reason": "skip - padding debug option is not implemented in metal renderer"},
+        {"platform-tag-contains": "native-ios-metal", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/16212"}
       ]
     }
   },

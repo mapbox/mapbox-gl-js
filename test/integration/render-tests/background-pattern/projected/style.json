@@ -7,6 +7,10 @@
       "operations": [
         ["setProjection", "albers"],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Pattern should be seamless across tile edges https://github.com/mapbox/mapbox-gl-js/issues/11221"},
+        {"platform-tag-contains": "native", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"}
       ]
     }
   },

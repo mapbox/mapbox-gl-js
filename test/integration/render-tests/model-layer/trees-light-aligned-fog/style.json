@@ -7,6 +7,9 @@
       "operations": [
         ["setPaintProperty", "tree-layer", "model-color-mix-intensity", 0.0],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - to be ported"}
       ]
     }
   },

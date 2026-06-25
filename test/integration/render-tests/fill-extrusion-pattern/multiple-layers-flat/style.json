@@ -11,6 +11,10 @@
           "exaggeration": 0.03
         }],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Inconsistent fill extrusion height rendering across tile boundaries https://github.com/mapbox/mapbox-gl-js/issues/10181"},
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
       ]
     }
   },

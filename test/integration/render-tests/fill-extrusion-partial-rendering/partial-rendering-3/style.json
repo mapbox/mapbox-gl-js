@@ -15,6 +15,10 @@
           "Expect reduced vertex count due to precise frustum culling. ~3/4 * 112399"
         ],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Not implemented in gl-js"},
+        {"platform-tag-contains": "native", "reason": "skip - needs to be backported to GL-JS https://mapbox.atlassian.net/browse/GLJS-774"}
       ]
     }
   },

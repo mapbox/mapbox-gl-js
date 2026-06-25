@@ -3,7 +3,11 @@
   "metadata": {
     "test": {
       "width": 128,
-      "height": 64
+      "height": 64,
+      "skip-test": [
+        {"platform-tag-contains": "native-android", "reason": "To be fixed https://mapbox.atlassian.net/browse/MAPSNAT-1551"},
+        {"platform-tag-contains": "native-ios", "reason": "To be fixed https://mapbox.atlassian.net/browse/MAPSNAT-1551"}
+      ]
     }
   },
   "zoom": 0,

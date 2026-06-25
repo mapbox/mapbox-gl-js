@@ -33,6 +33,10 @@
                 ["wait"],
                 ["setZoom", 5.5],
                 ["wait"]
+            ],
+            "skip-test": [
+                {"platform-tag-contains": "native-ios", "reason": "skip metal shader issue: https://mapbox.atlassian.net/browse/MAPSNAT-2740"},
+                {"platform-tag-contains": "native-macos", "reason": "skip metal shader issue: https://mapbox.atlassian.net/browse/MAPSNAT-2740"}
             ]
         }
     },

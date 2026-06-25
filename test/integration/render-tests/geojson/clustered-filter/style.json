@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "width": 256,
-      "height": 128
+      "height": 128,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-js/pull/9864"}
+      ]
     }
   },
   "center": [

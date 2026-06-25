@@ -12,6 +12,9 @@
           "exaggeration": 1.5
         }],
         ["waitFrameReady", 30]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native-ios-metal", "reason": "Minor aliasing issues, metal specific expectation?"}
       ]
     }
   },

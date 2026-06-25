@@ -2,7 +2,10 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256
+      "height": 256,
+      "skip-test": [
+        {"platform-tag-contains": "native-linux", "reason": "Flaky on Linux: https://github.com/mapbox/mapbox-gl-native/issues/14859"}
+      ]
     }
   },
   "center": [

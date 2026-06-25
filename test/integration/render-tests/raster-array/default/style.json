@@ -6,6 +6,10 @@
       "height": 256,
       "operations": [
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native-android", "reason": "Fails due to https://mapbox.atlassian.net/browse/GLJS-844"},
+        {"platform-tag-contains": "native-ios", "reason": "Could be related to https://mapbox.atlassian.net/browse/GLJS-844"}
       ]
     }
   },

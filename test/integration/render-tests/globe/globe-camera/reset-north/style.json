@@ -8,6 +8,9 @@
       "operations": [
         ["resetNorth"],
         ["wait", 1000]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web-macos-chrome", "reason": "Globe sometimes missing"}
       ]
     }
   },

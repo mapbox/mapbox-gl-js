@@ -8,6 +8,10 @@
         ["wait"],
         ["setPaintProperty", "line", "line-pattern", "border-dot-13"],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "pattern issues"},
+        {"platform-tag-contains": "native", "reason": "skip - Known issues https://mapbox.atlassian.net/browse/MAPS3D-1494"}
       ]
     }
   },

@@ -17,6 +17,8 @@ export type TestReportData = {
     minDiff?: number;
     jsonDiff?: string;
     error?: Error;
+    skippedReasons?: string[];
+    matchedSkipRules?: string[];
 };
 
 type DecoratedTestData = TestReportData & {
@@ -75,6 +77,24 @@ const renderResultHTML = compile(`
         <summary><strong style="color: red">JSON Diff</strong></summary>
         <pre><%= r.jsonDiff %></pre>
       </details>
+    <% } %>
+    <% if (r.status === 'skipped') { %>
+      <%
+        const reasons = r.skippedReasons || [];
+        const rules = r.matchedSkipRules || [];
+        const count = Math.max(reasons.length, rules.length);
+        for (let i = 0; i < count; i++) {
+          const rule = rules[i];
+          const reason = reasons[i];
+      %>
+        <% if (rule && reason) { %>
+          <p class="ignore-reason"><strong>Skip reason:</strong> <%= rule %> - <%= reason %></p>
+        <% } else if (rule) { %>
+          <p class="ignore-reason"><strong>Skip reason:</strong> <%= rule %></p>
+        <% } else if (reason) { %>
+          <p class="ignore-reason"><strong>Skip reason:</strong> <%= reason %></p>
+        <% } %>
+      <% } %>
     <% } %>
   </div>
 `, {locals: ['r']});
@@ -261,12 +281,14 @@ function runReportUpdateState(): void {
     (window as ReportWindow).updateState?.();
 }
 
-export function registerSkipped(name: string, testPath?: string): string {
+export function registerSkipped(name: string, testPath?: string, skippedReasons?: string[], matchedSkipRules?: string[]): string {
     return updateHTML({
         name,
         status: 'skipped',
         color: colors.skipped,
         testPath,
+        skippedReasons,
+        matchedSkipRules,
     });
 }
 
@@ -355,7 +377,7 @@ export function updateHTML(testData: TestReportData): string {
 }
 
 export type DiagnosticInfo = {
-    platform: string;
+    platformTag?: string;
     generatedAt: string;
     reproduceCommand?: string;
     userAgent?: string;
@@ -370,7 +392,8 @@ export type DiagnosticInfo = {
 };
 
 function formatDuration(ms: number): string {
-    const totalSeconds = Math.round(ms / 1000);
+    if (ms <= 0) return '0sec';
+    const totalSeconds = Math.max(1, Math.ceil(ms / 1000));
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
@@ -381,7 +404,7 @@ function formatDuration(ms: number): string {
 
 export function getDiagnosticsHTML(diag: DiagnosticInfo): string {
     const rows: Array<[string, string | undefined]> = [
-        ['Platform', diag.platform],
+        ['Platform-Tag', diag.platformTag],
         ['Generated', diag.generatedAt],
         ['Duration', diag.durationMs !== undefined ? formatDuration(diag.durationMs) : undefined],
         ['Reproduce locally', diag.reproduceCommand],

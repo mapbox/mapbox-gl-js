@@ -12,6 +12,9 @@
           "exaggeration": 1.0
         }],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web-linux-chrome", "reason": "Timing out https://mapbox.atlassian.net/browse/GLJS-398"}
       ]
     }
   },

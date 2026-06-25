@@ -6,6 +6,9 @@
             "height": 512,
             "queryGeometry": [
                 [0, 0], [512, 512]
+            ],
+            "skip-test": [
+                {"platform-tag-contains": "native", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/3286"}
             ]
         }
     },

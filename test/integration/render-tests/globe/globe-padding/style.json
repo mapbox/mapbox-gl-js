@@ -14,6 +14,10 @@
           "right": 0.0
         }],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native-linux", "reason": "flaky, https://mapbox.atlassian.net/browse/MAPSNAT-1236"},
+        {"platform-tag-contains": "native-macos", "reason": "Flaky"}
       ]
     }
   },

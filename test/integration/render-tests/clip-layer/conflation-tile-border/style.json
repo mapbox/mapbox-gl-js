@@ -107,6 +107,9 @@
           }
         ],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - needs native expectation/line rendering differences"}
       ]
     }
   },

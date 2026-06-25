@@ -25,5 +25,12 @@
     },
     "outputs": ["-1", "0", "1", "-1"],
     "serialized": ["match", ["get", "p"], "0", "0", "1", "1", "-1"]
+  },
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/12747"}
+      ]
+    }
   }
 }

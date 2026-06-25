@@ -11,6 +11,10 @@
           "source": "rgbterrain"
         }],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "swiftshader", "reason": "skip - swiftshader debugging needed"},
+        {"platform-tag-contains": "native-ios-metal", "reason": "Box collision not ported yet"}
       ]
     }
   },

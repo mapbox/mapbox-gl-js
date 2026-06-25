@@ -6,6 +6,9 @@
         "operations": [
           ["setProjection", "globe"],
           ["wait"]
+        ],
+        "skip-test": [
+          {"platform-tag-contains": "web-macos-chrome", "reason": "Globe sometimes missing"}
         ]
         }
     },

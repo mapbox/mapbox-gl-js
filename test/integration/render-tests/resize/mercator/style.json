@@ -10,6 +10,9 @@
         ["setZoom", 0],
         ["wait"],
         ["setSize", 128, 1024]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Implemented for mapbox-gl-native only"}
       ]
     }
   },

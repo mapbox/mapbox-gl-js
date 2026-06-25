@@ -4,7 +4,11 @@
     "test": {
       "allowed": 0.00355,
       "pixelRatio": 2,
-      "height": 256
+      "height": 256,
+      "skip-test": [
+        {"platform-tag-contains": "native-android", "reason": "To be fixed https://mapbox.atlassian.net/browse/MAPS3D-1544"},
+        {"platform-tag-contains": "native-ios", "reason": "To be fixed https://mapbox.atlassian.net/browse/MAPS3D-1544"}
+      ]
     }
   },
   "center": [

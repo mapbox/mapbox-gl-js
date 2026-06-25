@@ -18,6 +18,9 @@
         [
           "wait"
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "JS callbacks for image generation is not supported"}
       ]
     }
   },

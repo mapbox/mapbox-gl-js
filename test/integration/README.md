@@ -115,15 +115,33 @@ How much adjusting `allowed` is acceptable depends on the test, but values >= .0
 
 Larger `allowed` values are acceptable for testing debug features that will not be directly used by customers.
 
-## Ignores
+## Skipping tests with `skip-test`
 
-If a test fails on a run with too large a difference to adjust the "allowed," it can be added to the corresponding [ignore file](../ignore) for the browser or operating system.
+Render/query test skips are configured in each test's `style.json`, under `metadata.test["skip-test"]`.
+`skip-test` must be an **array** of rule objects, each with a `platform-tag-contains` substring and a `reason`:
 
-Ignores include tests under `"todo"` and `"skip"`. `"todo"` tests show up in test results but do not trigger a failing run. Most tests failing on one platform should be marked as "ignore." This allows us to notice if the tests start passing.
+```json
+"metadata": {
+  "test": {
+    "skip-test": [
+      {"platform-tag-contains": "mac-safari", "reason": "Flaky in Safari"},
+      {"platform-tag-contains": "windows", "reason": "Temporarily disabled while fixing regression"},
+      {"platform-tag-contains": "", "reason": "Skip on all platforms"}
+    ]
+  }
+}
+```
 
-Tests under `"skip"` will not run at all. Tests should be skipped if they trigger crashes or if they are flaky (to prevent falsely concluding that the test is a non-issue).
+For GL JS browser runs, platform tags look like `web-<os>-<browser>` (for example `web-mac-safari`, `web-linux-firefox`, `web-windows-chrome`).
 
-Ignored tests should link to an issue explaining the reason for ignoring the test.
+Rule matching behavior:
+
+- The value of `platform-tag-contains` is matched as a substring of the platform tag.
+- An empty string matches all platforms (use to skip everywhere).
+- Rules are validated: every non-empty rule must be a substring of at least one known platform tag.
+- All matching rules trigger a skip; multiple rules may match and all their reasons are reported.
+
+Use clear reasons and link the tracking issue whenever possible.
 
 ## Reading Vector Tile Fixtures
 

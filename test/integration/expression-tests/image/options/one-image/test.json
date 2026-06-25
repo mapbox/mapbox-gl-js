@@ -22,5 +22,12 @@
       {"primaryId": {"name": "poi_circle"}, "available": false}
     ],
     "serialized": ["image", "poi_circle", {"params": {"fill_color": ["to-color", ["get", "main_color"]]}}]
+  },
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/GLJS-1240 - waiting for serialized color in GL JS to be non-premultiplied"}
+      ]
+    }
   }
 }

@@ -10,6 +10,9 @@
         ["setZoom", 15 ],
         ["setCenter", [-122.448635, 37.7669995] ],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/10412"}
       ]
     }
   },

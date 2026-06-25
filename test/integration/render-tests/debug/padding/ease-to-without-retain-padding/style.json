@@ -19,6 +19,9 @@
           },
           ["wait"]
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "retainPadding is not supported"}
       ]
     }
   },

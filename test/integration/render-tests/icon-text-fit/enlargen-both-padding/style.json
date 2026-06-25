@@ -4,7 +4,10 @@
     "test": {
       "width": 150,
       "height": 64,
-      "allowed": 0.005
+      "allowed": 0.005,
+      "skip-test": [
+        {"platform-tag-contains": "native-ios", "reason": "Needs to be investigated and fixed."}
+      ]
     }
   },
   "camera": {"camera-projection": "orthographic"},

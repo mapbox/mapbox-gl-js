@@ -21,6 +21,9 @@
             "queryGeometry": [
                 32,
                 16
+            ],
+            "skip-test": [
+                {"platform-tag-contains": "native", "reason": "Port https://github.com/mapbox/mapbox-gl-js/pull/9198"}
             ]
         }
     },

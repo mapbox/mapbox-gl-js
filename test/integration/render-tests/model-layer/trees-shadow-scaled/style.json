@@ -27,6 +27,9 @@
             "hover": true
           }
         ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - to be ported"}
       ]
     }
   },

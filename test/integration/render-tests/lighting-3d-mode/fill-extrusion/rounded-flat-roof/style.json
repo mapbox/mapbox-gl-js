@@ -4,7 +4,10 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0006
+      "allowed": 0.0006,
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "fill-extrusion-rounded-roof not implemented in -js"}
+      ]
     }
   },
   "lights": [

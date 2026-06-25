@@ -10,6 +10,9 @@
         ["wait"],
         ["setZoom", 3.0],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native-android", "reason": "Fill extrusion ambient occlusion difference"}
       ]
     }
   },

@@ -8,6 +8,9 @@
             "operations": [
                 ["wait"],
                 ["wait"]
+            ],
+            "skip-test": [
+                {"platform-tag-contains": "web", "reason": "Requires support for hd-roads-markup/elevationId - not yet supported in gl-js"}
             ]
         }
     },

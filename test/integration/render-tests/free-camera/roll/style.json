@@ -12,6 +12,9 @@
         ["lookAtPoint", [-87.6942445, 41.8703965], [1, 1, 1]],
         ["setZoom", 13 ],
         ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
       ]
     }
   },

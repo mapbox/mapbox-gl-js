@@ -5,7 +5,10 @@
       "collisionDebug": true,
       "width": 500,
       "height": 500,
-      "allowed": 0.009
+      "allowed": 0.009,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/3841"}
+      ]
     }
   },
   "center": [
