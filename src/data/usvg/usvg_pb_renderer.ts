@@ -21,8 +21,6 @@ class ColorReplacements {
         for (const [key, value] of Object.entries(params)) {
             if (variablesMap.has(key)) {
                 replacements.set(variablesMap.get(key).toString(), value);
-            } else {
-                console.warn(`Ignoring unknown image variable "${key}"`);
             }
         }
 
