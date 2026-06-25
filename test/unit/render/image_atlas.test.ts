@@ -75,6 +75,26 @@ describe('sortImagesMap', () => {
         expect(keys[2]).toEqual(icon2);
     });
 
+    test('orders variants with same name and scale but different color params deterministically (GLJS #13689)', () => {
+        // Parametric SVG icons tinted per-feature share the same name and scale but
+        // differ only in color params. The packing order must not depend on Map
+        // insertion order, otherwise two atlases with identical content hashes can
+        // end up with different pixel layouts and getOrCache swaps tinted icons.
+        const green = new ImageVariant('circle-glow', {params: {fill: new Color(0.13, 0.77, 0.37, 1)}, sx: 0.7, sy: 0.7}).toString();
+        const gray = new ImageVariant('circle-glow', {params: {fill: new Color(0.5, 0.5, 0.5, 1)}, sx: 0.7, sy: 0.7}).toString();
+
+        const greenFirst = sortImagesMap(new Map([
+            [green, createMockImage('circle-glow')],
+            [gray, createMockImage('circle-glow')]
+        ]));
+        const grayFirst = sortImagesMap(new Map([
+            [gray, createMockImage('circle-glow')],
+            [green, createMockImage('circle-glow')]
+        ]));
+
+        expect(Array.from(greenFirst.keys())).toEqual(Array.from(grayFirst.keys()));
+    });
+
     test('populates variant cache when provided', () => {
         const iconId = createImageVariantId('icon', 1, 1);
         const markerId = createImageVariantId('marker', 2, 2);
