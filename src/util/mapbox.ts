@@ -26,6 +26,7 @@ import type {LivePerformanceData} from '../util/live_performance';
 import type {TileJSON} from '../types/tilejson';
 import type {Map as MapboxMap} from "../ui/map";
 
+// eslint-disable-next-line import-x/extensions -- Rollup resolves .d.ts by the ".d" part; renaming would break resolution
 import '../types/import-meta.d';
 
 const IMAGE_EXTENSION_RE = /(\.(png|jpg)\d*)(?=$)/;
