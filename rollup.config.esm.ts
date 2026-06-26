@@ -68,6 +68,14 @@ function esmConfig(dir: string, workerSuffix: string, emitVisualizer = false): R
                 sourcemap: false,
                 title: 'GL JS ESM bundle',
             }),
+            emitVisualizer && visualizer({
+                filename: `${dir}bundle-stats.json`,
+                template: 'raw-data',
+                gzipSize: true,
+                brotliSize: false,
+                sourcemap: false,
+                projectRoot: process.cwd(),
+            }),
         ],
     };
 }
