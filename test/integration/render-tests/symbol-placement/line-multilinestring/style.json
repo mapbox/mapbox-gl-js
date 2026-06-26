@@ -1,0 +1,69 @@
+{
+  "version": 8,
+  "_comment": "Labels should appear along each ring of a MultiLineString independently, and along adjacent LineString features separately (no merging)",
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256
+    }
+  },
+  "center": [0, 0],
+  "zoom": 1,
+  "camera": {"camera-projection": "orthographic"},
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "geometry": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [[-60, 25], [0, 25]]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "MultiLineString",
+              "coordinates": [
+                [[0, 25], [60, 25]],
+                [[-60, -25], [60, -25]]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "labels",
+      "type": "symbol",
+      "source": "geometry",
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 1,
+        "text-field": "AB",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": 16,
+        "text-allow-overlap": true,
+        "text-ignore-placement": true
+      },
+      "paint": {
+        "text-color": "black"
+      }
+    }
+  ]
+}

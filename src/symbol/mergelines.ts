@@ -50,12 +50,12 @@ export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
         const geom = feature.geometry;
         const text = feature.text ? feature.text.toString() : null;
 
-        if (!text) {
+        if (!text || geom.length > 1) {
             add(k);
             continue;
         }
 
-        const leftKey = getKey(text, geom),
+        const leftKey = getKey(text, geom, false),
             rightKey = getKey(text, geom, true);
 
         if ((leftKey in rightIndex) && (rightKey in leftIndex) && (rightIndex[leftKey] !== leftIndex[rightKey])) {

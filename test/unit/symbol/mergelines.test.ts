@@ -35,3 +35,19 @@ test('mergeLines handles circular lines', () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     expect(mergeLines(makeFeatures([['a', 0, 1, 2], ['a', 2, 3, 4], ['a', 4, 0]]))).toEqual(makeFeatures([['a', 0, 1, 2, 3, 4, 0]]));
 });
+
+test('mergeLines passes MultiLineString features through without merging', () => {
+    const multiFeature = {text: 'a', geometry: [
+        [new Point(0, 0), new Point(1, 0), new Point(2, 0)],
+        [new Point(10, 0), new Point(11, 0), new Point(12, 0)],
+    ]};
+    // Adjacent single-ring feature whose endpoint matches ring 0 of the MultiLineString
+    const bridge = {text: 'a', geometry: [[new Point(2, 0), new Point(3, 0), new Point(4, 0)]]};
+    const result = mergeLines([multiFeature, bridge]);
+    // MultiLineString is unchanged — both rings preserved, no merge with bridge
+    expect(result.length).toBe(2);
+    expect(result[0].geometry.length).toBe(2);
+    expect(result[0].geometry[0].map((p) => p.x)).toEqual([0, 1, 2]);
+    expect(result[0].geometry[1].map((p) => p.x)).toEqual([10, 11, 12]);
+    expect(result[1].geometry[0].map((p) => p.x)).toEqual([2, 3, 4]);
+});
