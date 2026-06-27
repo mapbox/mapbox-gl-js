@@ -16,6 +16,10 @@ import {createSymbolBucket} from '../../util/create_symbol_layer';
 import {getProjection} from '../../../src/geo/projection/index';
 import vectorStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 import glyphData from '../../fixtures/fontstack-glyphs.json';
+import SegmentVector from '../../../src/data/segment';
+import SymbolBucket from '../../../src/data/bucket/symbol_bucket';
+import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
+import featureFilter from '../../../src/style-spec/feature_filter/index';
 
 import type CollisionIndex from '../../../src/symbol/collision_index';
 import type {BucketPart} from '../../../src/symbol/placement';
@@ -144,5 +148,62 @@ test('SymbolBucket detects rtl text mixed with ltr text', () => {
     mixedBucket.populate([{feature}], options);
 
     expect(mixedBucket.hasRTLText).toBeTruthy();
+});
+
+test('sortFeatures multi-segment: disables sorting when multiple segments exist', () => {
+    // When a tile has enough symbols to overflow MAX_VERTEX_ARRAY_LENGTH, multiple render
+    // segments are created. Viewport-y sorting across segment boundaries is unsupported
+    // so sortFeatures must disable sorting by setting sortFeaturesByY to false and returning early
+    const projection = getProjection({name: 'mercator'});
+    const originalMax = SegmentVector.MAX_VERTEX_ARRAY_LENGTH;
+    SegmentVector.MAX_VERTEX_ARRAY_LENGTH = 20;
+
+    try {
+        const layer = new SymbolStyleLayer({
+            id: 'test-multi-seg',
+            type: 'symbol',
+            layout: {
+                'text-font': ['Test'],
+                'text-field': 'abcdefghij',
+                'symbol-z-order': 'viewport-y',
+                'text-allow-overlap': true
+            },
+            filter: featureFilter()
+        }, '');
+        layer.recalculate({zoom: 0});
+
+        const collisionBoxArrayLocal = new CollisionBoxArray();
+        const bucket = new SymbolBucket({
+            overscaling: 1,
+            zoom: 0,
+            collisionBoxArray: collisionBoxArrayLocal,
+            layers: [layer],
+            projection: {name: 'mercator'}
+        });
+
+        bucket.populate([{feature}, {feature}, {feature}, {feature}, {feature}], {iconDependencies: {}, glyphDependencies: {}});
+
+        const glyphMap = {'Test': {}};
+        for (const id in glyphData.glyphs) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            glyphMap['Test'][id] = glyphData.glyphs[id].rect;
+        }
+
+        const bucketData = performSymbolLayout(bucket, {'Test': glyphData}, glyphMap, null, null, null, null, null, null, projection);
+        postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
+
+        // Verify precondition: sortFeaturesByY must be true before calling sortFeatures.
+        expect(bucket.sortFeaturesByY).toBe(true);
+
+        bucket.sortFeatures(Math.PI / 4);
+
+        // Multiple segments must have been created by the reduced MAX_VERTEX_ARRAY_LENGTH.
+        expect(bucket.text.segments.get().length).toBeGreaterThan(1);
+
+        // The guard must have disabled sorting to prevent cross-segment index corruption.
+        expect(bucket.sortFeaturesByY).toBe(false);
+    } finally {
+        SegmentVector.MAX_VERTEX_ARRAY_LENGTH = originalMax;
+    }
 });
 

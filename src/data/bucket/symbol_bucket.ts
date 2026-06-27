@@ -665,9 +665,6 @@ class SymbolBucket implements Bucket {
     sortedAngle: number;
     featureSortOrder: Array<number>;
 
-    // Cache for per-segment sorting optimization (symbols never change batches)
-    symbolsByBatch: Map<number, Array<{index: number; rotatedY: number; featureIndex: number}>> | null;
-
     collisionCircleArray: Array<number>;
     placementInvProjMatrix: mat4;
     placementViewportMatrix: mat4;
@@ -2246,10 +2243,10 @@ class SymbolBucket implements Bucket {
         // The index array buffer is rewritten to reference the (unchanged) vertices in the
         // sorted order.
 
-        // With multiple segments (from UBO batching), sort within each segment independently
-        const hasMultipleSegments = this.text.segments.get().length > 1 || this.icon.segments.get().length > 1;
-        if (hasMultipleSegments) {
-            this.sortFeaturesWithinSegments();
+        // Viewport-y sorting is not supported when symbols span multiple render segments.
+        // Multiple segments occur when a tile has enough symbols to overflow MAX_VERTEX_ARRAY_LENGTH.
+        if (this.text.segments.get().length > 1 || this.icon.segments.get().length > 1) {
+            this.sortFeaturesByY = false;
             return;
         }
 
@@ -2281,166 +2278,6 @@ class SymbolBucket implements Bucket {
             if (icon >= 0) this.addIndicesForPlacedSymbol(this.icon, icon);
             if (iconVertical >= 0) this.addIndicesForPlacedSymbol(this.icon, iconVertical);
         }
-
-        if (this.text.indexBuffer) this.text.indexBuffer.updateData(this.text.indexArray);
-        if (this.icon.indexBuffer) this.icon.indexBuffer.updateData(this.icon.indexArray);
-    }
-
-    /**
-     * Get or create the symbols-by-batch grouping with caching.
-     * Symbols are grouped by UBO batch and sorted by viewport Y position.
-     */
-    private getOrCreateSortedSymbolsByBatch(sin: number, cos: number): Map<number, Array<{index: number; rotatedY: number; featureIndex: number}>> {
-        const activeBinder = (this.text.uboBinder && this.text.uboBinder.maxFeaturesPerBatch > 0) ?
-            this.text.uboBinder :
-            (this.icon.uboBinder && this.icon.uboBinder.maxFeaturesPerBatch > 0) ?
-                this.icon.uboBinder : null;
-        assert(activeBinder, 'sortFeaturesWithinSegments requires a valid UBO binder with maxFeaturesPerBatch > 0');
-        const batchSize = activeBinder.maxFeaturesPerBatch;
-
-        if (!this.symbolsByBatch) {
-            // First time - create and cache the batch grouping
-            this.symbolsByBatch = new Map();
-
-            for (let i = 0; i < this.symbolInstances.length; i++) {
-                const symbol = this.symbolInstances.get(i);
-                const batchIndex = Math.floor(i / batchSize);
-                const rotatedY = Math.round(sin * symbol.tileAnchorX + cos * symbol.tileAnchorY) | 0;
-
-                if (!this.symbolsByBatch.has(batchIndex)) {
-                    this.symbolsByBatch.set(batchIndex, []);
-                }
-                this.symbolsByBatch.get(batchIndex).push({
-                    index: i,
-                    rotatedY,
-                    featureIndex: symbol.featureIndex
-                });
-            }
-        } else {
-            // Already grouped - just update rotatedY values for the new angle
-            for (const batch of this.symbolsByBatch.values()) {
-                for (const item of batch) {
-                    const symbol = this.symbolInstances.get(item.index);
-                    item.rotatedY = Math.round(sin * symbol.tileAnchorX + cos * symbol.tileAnchorY) | 0;
-                }
-            }
-        }
-
-        // Sort each batch by viewport Y position
-        for (const batch of this.symbolsByBatch.values()) {
-            batch.sort((a, b) => {
-                return (a.rotatedY - b.rotatedY) || (b.featureIndex - a.featureIndex);
-            });
-        }
-
-        return this.symbolsByBatch;
-    }
-
-    /**
-     * Rebuild text segment indices in sorted order within each segment.
-     */
-    private rebuildTextSegmentIndices(
-        textSegments: Array<Segment>,
-        symbolsByBatch: Map<number, Array<{index: number; rotatedY: number; featureIndex: number}>>
-    ) {
-        for (const textSegment of textSegments) {
-            const batchIndex = textSegment.batchIndex;
-            if (batchIndex === undefined) continue;
-
-            const batchSymbols = symbolsByBatch.get(batchIndex);
-            if (!batchSymbols) {
-                textSegment.primitiveOffset = this.text.indexArray.length;
-                textSegment.primitiveLength = 0;
-                continue;
-            }
-
-            textSegment.primitiveOffset = this.text.indexArray.length;
-            const startLength = this.text.indexArray.length;
-
-            for (const {index: symbolIndex} of batchSymbols) {
-                const symbol = this.symbolInstances.get(symbolIndex);
-                const {
-                    rightJustifiedTextSymbolIndex: right,
-                    centerJustifiedTextSymbolIndex: center,
-                    leftJustifiedTextSymbolIndex: left,
-                    verticalPlacedTextSymbolIndex: vertical
-                } = symbol;
-
-                if (right >= 0) this.addIndicesForPlacedSymbol(this.text, right);
-                if (center >= 0 && center !== right) this.addIndicesForPlacedSymbol(this.text, center);
-                if (left >= 0 && left !== center && left !== right) this.addIndicesForPlacedSymbol(this.text, left);
-                if (vertical >= 0) this.addIndicesForPlacedSymbol(this.text, vertical);
-            }
-
-            textSegment.primitiveLength = this.text.indexArray.length - startLength;
-        }
-    }
-
-    /**
-     * Rebuild icon segment indices in sorted order within each segment.
-     */
-    private rebuildIconSegmentIndices(
-        iconSegments: Array<Segment>,
-        symbolsByBatch: Map<number, Array<{index: number; rotatedY: number; featureIndex: number}>>
-    ) {
-        for (const iconSegment of iconSegments) {
-            const batchIndex = iconSegment.batchIndex;
-            if (batchIndex === undefined) continue;
-
-            const batchSymbols = symbolsByBatch.get(batchIndex);
-            if (!batchSymbols) {
-                iconSegment.primitiveOffset = this.icon.indexArray.length;
-                iconSegment.primitiveLength = 0;
-                continue;
-            }
-
-            iconSegment.primitiveOffset = this.icon.indexArray.length;
-            const startLength = this.icon.indexArray.length;
-
-            for (const {index: symbolIndex} of batchSymbols) {
-                const symbol = this.symbolInstances.get(symbolIndex);
-                const {
-                    placedIconSymbolIndex: icon,
-                    verticalPlacedIconSymbolIndex: iconVertical
-                } = symbol;
-
-                if (icon >= 0) this.addIndicesForPlacedSymbol(this.icon, icon);
-                if (iconVertical >= 0) this.addIndicesForPlacedSymbol(this.icon, iconVertical);
-            }
-
-            iconSegment.primitiveLength = this.icon.indexArray.length - startLength;
-        }
-    }
-
-    /**
-     * Sort features within each segment independently.
-     * Each segment corresponds to a UBO batch - we rebuild index arrays per-segment.
-     */
-    sortFeaturesWithinSegments() {
-        this.featureSortOrder = [];
-
-        const sin = Math.sin(this.sortedAngle);
-        const cos = Math.cos(this.sortedAngle);
-
-        // Get sorted symbols grouped by batch (cached for performance)
-        const symbolsByBatch = this.getOrCreateSortedSymbolsByBatch(sin, cos);
-
-        // Build featureSortOrder in batch order
-        const sortedBatches = Array.from(symbolsByBatch.keys()).sort((a, b) => a - b);
-        for (const batchIndex of sortedBatches) {
-            const batchSymbols = symbolsByBatch.get(batchIndex);
-            for (const {index: symbolIndex} of batchSymbols) {
-                const symbol = this.symbolInstances.get(symbolIndex);
-                this.featureSortOrder.push(symbol.featureIndex);
-            }
-        }
-
-        // Clear and rebuild index arrays with sorted symbols per segment
-        this.text.indexArray.clear();
-        this.icon.indexArray.clear();
-
-        this.rebuildTextSegmentIndices(this.text.segments.get(), symbolsByBatch);
-        this.rebuildIconSegmentIndices(this.icon.segments.get(), symbolsByBatch);
 
         if (this.text.indexBuffer) this.text.indexBuffer.updateData(this.text.indexArray);
         if (this.icon.indexBuffer) this.icon.indexBuffer.updateData(this.icon.indexArray);
