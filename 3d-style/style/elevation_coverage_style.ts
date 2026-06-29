@@ -2,6 +2,7 @@ import {ElevationCoverageManager} from '../source/elevation_coverage_manager';
 import SourceCache from '../../src/source/source_cache';
 import {RenderSourceType} from '../../src/source/render_source_type';
 import {getNameFromFQID, getOuterScopeFromFQID, makeFQID} from '../../src/util/fqid';
+import {terrainEnabled} from '../../src/style/terrain';
 
 import type Tile from '../../src/source/tile';
 import type {TypedStyleLayer} from '../../src/style/style_layer/typed_style_layer';
@@ -44,7 +45,6 @@ function layerUsesHdRoadSourceLayer(layer: TypedStyleLayer): boolean {
 }
 
 /// True when every provider-only source has finished loading.
-/// Dual-role sources are excluded to avoid circular deferral.
 function areElevationProvidersReady(style: Style, providerFQIDs: Set<string>): boolean {
     for (const fqid of providerFQIDs) {
         const sc = resolveIngestSourceCache(style, fqid) as unknown as SourceCacheTiles | undefined;
@@ -109,7 +109,7 @@ export function collectElevationProviderSourceFQIDs(style: Style): Set<string> {
     return providers;
 }
 
-/// True when a consumer resolves elevation from a different source.
+/// True when a consumer gets elevation from a different source.
 export function needsCrossSourceElevation(style: Style): boolean {
     const consumers = collectElevationConsumerSourceFQIDs(style);
     if (consumers.size === 0) return false;
@@ -125,15 +125,11 @@ export function needsCrossSourceElevation(style: Style): boolean {
 /// Recompute the cached cross-source gate after a source change.
 export function updateCrossSourceElevationGate(style: Style): void {
     style._crossSourceElevationActive = needsCrossSourceElevation(style);
-    if (Object.keys(style._mergedHdRoadElevationSourceCaches).length === 0) return;
+    // HdElevationState only needed once dedicated elevation caches exist.
+    const hdCaches = style._mergedHdRoadElevationSourceCaches;
+    if (!hdCaches || Object.keys(hdCaches).length === 0) return;
     if (!style._hdElevation) style._hdElevation = new HdElevationState();
     style._hdElevation._needsCrossSourceElevation = style._crossSourceElevationActive;
-}
-
-/// Reparse consumer tiles after terrain on/off (flat ↔ elevated geometry).
-export function handleTerrainToggle(style: Style, hadTerrain: boolean): void {
-    if (hadTerrain === !!style.terrain) return;
-    reparseElevationConsumerTiles(style);
 }
 
 /// Cached cross-source gate; refreshed on source change and each frame.
@@ -141,10 +137,7 @@ export function crossSourceElevationEnabledForStyle(style: Style): boolean {
     return style._crossSourceElevationActive === true;
 }
 
-/// Sources whose tiles feed the elevation snapshot (providers and dual-role).
-/// This is exactly every source with an hd_road_* source-layer: provider-only
-/// and dual-role sources together make up the full set, so no consumer/provider
-/// split is needed.
+/// Sources whose tiles are scanned to build the cross-source snapshot.
 export function collectElevationIngestSourceFQIDs(style: Style): Set<string> {
     const ingest = new Set<string>();
     for (const layerId in style._mergedLayers) {
@@ -166,16 +159,19 @@ export function markElevationIngestSourceCachesUsed(style: Style): void {
     }
 }
 
-/// Reload consumer tiles (optionally filtered). Skips non-consumers like raster-dem.
+/// Reload hd-road-markup consumer tiles.
 export function reparseElevationConsumerTiles(
     style: Style,
     shouldReload?: (tile: Tile) => boolean,
+    includeSameSourceConsumers?: boolean,
 ): void {
-    // Skip dual-role ingest sources — reparsing them causes a reload loop.
     const consumerFQIDs = collectElevationConsumerSourceFQIDs(style);
     if (consumerFQIDs.size === 0) return;
-    const ingestFQIDs = collectElevationIngestSourceFQIDs(style);
-    for (const fqid of ingestFQIDs) consumerFQIDs.delete(fqid);
+    if (!includeSameSourceConsumers) {
+        // Same-source: elevation is parsed from the consumer tile itself.
+        const ingestFQIDs = collectElevationIngestSourceFQIDs(style);
+        for (const fqid of ingestFQIDs) consumerFQIDs.delete(fqid);
+    }
     if (consumerFQIDs.size === 0) return;
 
     const caches = [style._mergedOtherSourceCaches, style._mergedSymbolSourceCaches];
@@ -200,12 +196,14 @@ export class HdElevationState {
     manager: ElevationCoverageManager;
     _needsCrossSourceElevation: boolean;
     _ingestFQIDs: Set<string>;
+    _terrainActiveLast: boolean | undefined;
 
     constructor() {
         this.elevationSourceCaches = {};
         this.manager = new ElevationCoverageManager();
         this._needsCrossSourceElevation = false;
         this._ingestFQIDs = new Set();
+        this._terrainActiveLast = undefined;
     }
 }
 
@@ -237,18 +235,27 @@ function deactivateCrossSourceElevation(style: Style): void {
     style._hdElevation._needsCrossSourceElevation = false;
     style._hdElevation._ingestFQIDs.clear();
     style._hdElevation.manager.clear();
+    style._hdElevation._terrainActiveLast = undefined;
 }
 
 /// Setup provider caches, merge fragments, ingest tiles, and reparse consumers.
 export function setupAndUpdateElevationCoverage(style: Style): void {
-    // Under terrain: skip. Use style.terrain, not painter.terrain (lags a frame). Keep gate for toggle.
-    if (style.terrain) {
-        if (style.map.painter) style.map.painter.elevationCoverageSnapshot = null;
+    if (!hasElevationConsumers(style)) {
+        deactivateCrossSourceElevation(style);
         return;
     }
 
-    if (!hasElevationConsumers(style)) {
-        deactivateCrossSourceElevation(style);
+    const terrainActive = terrainEnabled(style, style.map && style.map.transform);
+    if (!style._hdElevation) style._hdElevation = new HdElevationState();
+    const prevTerrainActive = style._hdElevation._terrainActiveLast;
+    style._hdElevation._terrainActiveLast = terrainActive;
+    const flipped = prevTerrainActive !== undefined && prevTerrainActive !== terrainActive;
+    if (flipped) {
+        reparseElevationConsumerTiles(style, undefined, true);
+    }
+
+    if (terrainActive) {
+        if (style.map.painter) style.map.painter.elevationCoverageSnapshot = null;
         return;
     }
 
@@ -258,9 +265,12 @@ export function setupAndUpdateElevationCoverage(style: Style): void {
         return;
     }
 
-    if (!style._hdElevation) {
-        style._hdElevation = new HdElevationState();
+    // First frame with cross-source active and terrain inactive: reparse consumers so they
+    // pick up elevation immediately rather than waiting for a snapshot change.
+    if (prevTerrainActive === undefined) {
+        reparseElevationConsumerTiles(style, undefined, true);
     }
+
     const state = style._hdElevation;
     state._needsCrossSourceElevation = true;
     style._crossSourceElevationActive = true;
@@ -308,8 +318,8 @@ export function updateHdElevationSourceCache(style: Style, state: HdElevationSta
 
 /// Ingest provider tiles and reparse consumers whose covering changed.
 export function updateElevationCoverage(style: Style, state: HdElevationState) {
-    // Under terrain: clear snapshot (lines drape flat).
-    if (style.terrain) {
+    // Active terrain: markup lines drape flat, no snapshot.
+    if (terrainEnabled(style, style.map && style.map.transform)) {
         state.manager.clear();
         if (style.map.painter) style.map.painter.elevationCoverageSnapshot = null;
         return;

@@ -1,4 +1,5 @@
 import {RenderSourceType} from '../../src/source/render_source_type';
+import {terrainEnabled} from '../../src/style/terrain';
 
 import type {
     ElevationCoverageSnapshot as IElevationCoverageSnapshot,
@@ -95,9 +96,8 @@ export function buildElevationRequestParams(
     crossSourceElevationEnabled: boolean,
 ): ElevationParams | null {
     if (tile.renderSourceType === RenderSourceType.HdRoadElevation) return null;
-    // Under terrain: skip snapshot — HD road-markup lines drape flat.
-    // style.terrain is synchronous; painter.terrain lags one frame.
-    if (map.style && map.style.terrain) return null;
+    // Active terrain: lines drape flat instead of using the snapshot.
+    if (terrainEnabled(map.style, map.transform)) return null;
     if (!crossSourceElevationEnabled) return null;
     const snapshot = map.painter ? map.painter.elevationCoverageSnapshot : null;
     // Defaults false (defer) until providers settle.

@@ -17,7 +17,7 @@ import {RGBAImage} from '../../../src/util/image';
 import MercatorCoordinate, {MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import styleSpec from '../../../src/style-spec/reference/latest';
-import Terrain from '../../../src/style/terrain';
+import Terrain, {terrainEnabled} from '../../../src/style/terrain';
 import Tile from '../../../src/source/tile';
 import {VertexMorphing} from '../../../src/terrain/draw_terrain_raster';
 import {fixedLngLat, fixedCoord, fixedPoint} from '../../util/fixed';
@@ -2172,5 +2172,45 @@ describe('#hasCanvasFingerprintNoise', () => {
         await waitFor(map, 'render');
 
         expect(!!map.painter.terrain).toBeFalsy();
+    });
+});
+
+describe('terrainEnabled', () => {
+    const transform = {zoom: 16, projection: {requiresDraping: false}};
+    const drapingTransform = {zoom: 16, projection: {requiresDraping: true}};
+    const zoomDependent = (exagAtZoom) => ({
+        isZoomDependent: () => true,
+        getExaggeration: () => exagAtZoom,
+    });
+    const constant = {
+        isZoomDependent: () => false,
+        getExaggeration: () => 1,
+    };
+
+    test('false when there is no style', () => {
+        expect(terrainEnabled(null, transform)).toEqual(false);
+        expect(terrainEnabled(undefined, transform)).toEqual(false);
+    });
+
+    test('false when the style has no terrain', () => {
+        expect(terrainEnabled({terrain: null}, transform)).toEqual(false);
+        expect(terrainEnabled({}, transform)).toEqual(false);
+    });
+
+    test('true with terrain but no transform (cannot evaluate exaggeration)', () => {
+        expect(terrainEnabled({terrain: constant}, null)).toEqual(true);
+    });
+
+    test('true under a draping projection regardless of exaggeration', () => {
+        expect(terrainEnabled({terrain: zoomDependent(0)}, drapingTransform)).toEqual(true);
+    });
+
+    test('true for constant (non-zoom-dependent) terrain', () => {
+        expect(terrainEnabled({terrain: constant}, transform)).toEqual(true);
+    });
+
+    test('zoom-dependent terrain follows exaggeration at the current zoom', () => {
+        expect(terrainEnabled({terrain: zoomDependent(1)}, transform)).toEqual(true);
+        expect(terrainEnabled({terrain: zoomDependent(0)}, transform)).toEqual(false);
     });
 });

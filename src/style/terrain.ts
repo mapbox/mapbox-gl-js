@@ -118,3 +118,17 @@ class Terrain extends Evented {
 }
 
 export default Terrain;
+
+/// True when terrain is enabled at the current zoom.
+/// Zero exaggeration on zoom-dependent terrain counts as disabled.
+export function terrainEnabled(
+    style: {terrain?: Terrain | null} | null | undefined,
+    transform: {zoom: number; projection: {requiresDraping: boolean}} | null | undefined,
+): boolean {
+    const terrain = style ? style.terrain : null;
+    if (!terrain) return false;
+    if (!transform) return true; // conservative: can't evaluate exaggeration, assume active
+    if (transform.projection.requiresDraping) return true;
+    if (!terrain.isZoomDependent()) return true;
+    return terrain.getExaggeration(transform.zoom) > 0;
+}

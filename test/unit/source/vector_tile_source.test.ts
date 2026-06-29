@@ -462,9 +462,6 @@ describe('VectorTileSource', () => {
                 tiles: ["http://example.com/{z}/{x}/{y}.png"]
             });
 
-            if (crossSourceEnabled) {
-                source.map.style._crossSourceElevationActive = true;
-            }
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             source.map.painter = painter;
             source.map.transform = {...source.map.transform, zoom: 14};
@@ -480,6 +477,9 @@ describe('VectorTileSource', () => {
 
             source.on('data', (e) => {
                 if (e.sourceDataType === 'metadata') {
+                    if (crossSourceEnabled) {
+                        source.map.style._crossSourceElevationActive = true;
+                    }
                     source.loadTile({
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         tileID,
@@ -538,8 +538,8 @@ describe('VectorTileSource', () => {
                     tiles: ["http://example.com/{z}/{x}/{y}.png"]
                 });
                 source.map.painter = {_debugParams: {showElevationIdDebug: false}, elevationCoverageSnapshot: snapshot};
-                source.map.style.terrain = {};
-                source.map.transform = {...source.map.transform, zoom: 14};
+                source.map.style.terrain = {isZoomDependent: () => false, getExaggeration: () => 1};
+                source.map.transform = {...source.map.transform, zoom: 14, projection: {requiresDraping: false}};
                 source.dispatcher = wrapDispatcher({
                     send(type, p) { if (type === 'loadTile') resolve(p); }
                 });
