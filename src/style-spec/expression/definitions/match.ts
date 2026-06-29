@@ -50,28 +50,27 @@ class Match implements Expression {
                 labels = [labels];
             }
 
-            const labelContext = context.concat(i);
             if ((labels as unknown[]).length === 0) {
-                return labelContext.error('Expected at least one branch label.');
+                return context.error('Expected at least one branch label.', i);
             }
 
             for (const label of (labels as unknown[])) {
                 if (typeof label !== 'number' && typeof label !== 'string') {
-                    return labelContext.error(`Branch labels must be numbers or strings.`);
+                    return context.error(`Branch labels must be numbers or strings.`, i);
                 } else if (typeof label === 'number' && Math.abs(label) > Number.MAX_SAFE_INTEGER) {
-                    return labelContext.error(`Branch labels must be integers no larger than ${Number.MAX_SAFE_INTEGER}.`);
+                    return context.error(`Branch labels must be integers no larger than ${Number.MAX_SAFE_INTEGER}.`, i);
 
                 } else if (typeof label === 'number' && Math.floor(label) !== label) {
-                    return labelContext.error(`Numeric branch labels must be integer values.`);
+                    return context.error(`Numeric branch labels must be integer values.`, i);
 
                 } else if (!inputType) {
                     inputType = typeOf(label);
-                } else if (labelContext.checkSubtype(inputType, typeOf(label))) {
+                } else if (context.checkSubtype(inputType, typeOf(label), i)) {
                     return null;
                 }
 
                 if (typeof cases[String(label)] !== 'undefined') {
-                    return labelContext.error('Branch labels must be unique.');
+                    return context.error('Branch labels must be unique.', i);
                 }
 
                 cases[String(label)] = outputs.length;
@@ -91,7 +90,7 @@ class Match implements Expression {
 
         assert(inputType && outputType);
 
-        if (input.type.kind !== 'value' && context.concat(1).checkSubtype((inputType), input.type)) {
+        if (input.type.kind !== 'value' && context.checkSubtype((inputType), input.type, 1)) {
             return null;
         }
 

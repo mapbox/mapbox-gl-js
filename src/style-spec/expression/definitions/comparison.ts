@@ -102,12 +102,12 @@ function makeComparison(
             let lhs = context.parse(args[1], 1, ValueType);
             if (!lhs) return null;
             if (!isComparableType(op, lhs.type)) {
-                return context.concat(1).error(`"${op}" comparisons are not supported for type '${toString(lhs.type)}'.`);
+                return context.error(`"${op}" comparisons are not supported for type '${toString(lhs.type)}'.`, 1);
             }
             let rhs = context.parse(args[2], 2, ValueType);
             if (!rhs) return null;
             if (!isComparableType(op, rhs.type)) {
-                return context.concat(2).error(`"${op}" comparisons are not supported for type '${toString(rhs.type)}'.`);
+                return context.error(`"${op}" comparisons are not supported for type '${toString(rhs.type)}'.`, 2);
             }
 
             if (

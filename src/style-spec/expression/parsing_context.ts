@@ -23,6 +23,7 @@ import type {ConfigOptions} from '../types/config_options';
  */
 class ParsingContext {
     registry: ExpressionRegistry;
+    path: Array<number | string>;
     scope: Scope;
     errors: Array<ParsingError>;
     _scope: string | null | undefined;
@@ -35,14 +36,6 @@ class ParsingContext {
     // `expectedType`.
     expectedType: Type | null | undefined;
 
-    // Lazy path: materialized from _parentCtx on first read of `path` or `key`.
-    // When _path is non-null the parent link fields are unused.
-    private _path: Array<number | string> | null;
-    private _parentCtx: ParsingContext | null;
-    private _pathIndex: number | null;
-    private _pathKey: string | null;
-    private _key: string | undefined;
-
     constructor(
         registry: ExpressionRegistry,
         path: Array<number | string> = [],
@@ -54,10 +47,7 @@ class ParsingContext {
         iconImageUseTheme?: string
     ) {
         this.registry = registry;
-        this._path = path;
-        this._parentCtx = null;
-        this._pathIndex = null;
-        this._pathKey = null;
+        this.path = path;
         this.scope = scope;
         this.errors = errors;
         this.expectedType = expectedType;
@@ -66,29 +56,13 @@ class ParsingContext {
         this.iconImageUseTheme = iconImageUseTheme;
     }
 
-    get path(): Array<number | string> {
-        if (this._path === null) {
-            // Materialize the path from the parent chain exactly once.
-            let base = this._parentCtx.path;
-            if (this._pathIndex !== null) base = base.concat(this._pathIndex);
-            if (this._pathKey !== null) base = base.concat(this._pathKey);
-            this._path = base;
-            this._parentCtx = null;
-        }
-        return this._path;
-    }
-
     get key(): string {
-        if (this._key === undefined) {
-            const path = this.path;
-            let key = '';
-            for (let i = 0; i < path.length; i++) {
-                const part = path[i];
-                key += typeof part === 'string' ? `['${part}']` : `[${part}]`;
-            }
-            this._key = key;
+        let key = '';
+        for (let i = 0; i < this.path.length; i++) {
+            const part = this.path[i];
+            key += typeof part === 'string' ? `['${part}']` : `[${part}]`;
         }
-        return this._key;
+        return key;
     }
 
     /**
@@ -108,7 +82,17 @@ class ParsingContext {
         } = {},
     ): Expression | null | void {
         if (index || expectedType) {
-            return this.concat(index, null, expectedType, bindings)._parse(expr, options);
+            const prevExpectedType = this.expectedType;
+            const prevScope = this.scope;
+            if (bindings) this.scope = this.scope.concat(bindings);
+            this.expectedType = expectedType || null;
+            const pushed = typeof index === 'number';
+            if (pushed) this.path.push(index);
+            const result = this._parse(expr, options);
+            if (pushed) this.path.pop();
+            this.expectedType = prevExpectedType;
+            this.scope = prevScope;
+            return result;
         }
         return this._parse(expr, options);
     }
@@ -131,7 +115,18 @@ class ParsingContext {
             typeAnnotation?: 'assert' | 'coerce' | 'omit';
         } = {},
     ): Expression | null | void {
-        return this.concat(index, key, expectedType, bindings)._parse(expr, options);
+        const prevExpectedType = this.expectedType;
+        const prevScope = this.scope;
+        if (bindings) this.scope = this.scope.concat(bindings);
+        this.expectedType = expectedType || null;
+        this.path.push(index);
+        this.path.push(key);
+        const result = this._parse(expr, options);
+        this.path.pop();
+        this.path.pop();
+        this.expectedType = prevExpectedType;
+        this.scope = prevScope;
+        return result;
     }
 
     _parse(
@@ -219,9 +214,12 @@ class ParsingContext {
         bindings?: Array<[string, Expression]>,
     ): ParsingContext {
         const scope = bindings ? this.scope.concat(bindings) : this.scope;
-        const child = new ParsingContext(
+        const path = this.path.slice();
+        if (typeof index === 'number') path.push(index);
+        if (typeof key === 'string') path.push(key);
+        return new ParsingContext(
             this.registry,
-            undefined,
+            path,
             expectedType || null,
             scope,
             this.errors,
@@ -229,22 +227,6 @@ class ParsingContext {
             this.options,
             this.iconImageUseTheme
         );
-        // Lazily link to parent; path array is only materialized when `path` or
-        // `key` is actually read (i.e. on error paths).
-        if (typeof index === 'number' || typeof key === 'string') {
-            child._path = null;
-            child._parentCtx = this;
-            child._pathIndex = typeof index === 'number' ? index : null;
-            child._pathKey = typeof key === 'string' ? key : null;
-        } else {
-            // No new path segments — share the already-materialized (or still-lazy)
-            // path from this context without any allocation.
-            child._path = this._path;
-            child._parentCtx = this._parentCtx;
-            child._pathIndex = this._pathIndex;
-            child._pathKey = this._pathKey;
-        }
-        return child;
     }
 
     /**
@@ -254,9 +236,9 @@ class ParsingContext {
      * @private
      */
     _forkForSignature(): ParsingContext {
-        const child = new ParsingContext(
+        return new ParsingContext(
             this.registry,
-            undefined,
+            this.path.slice(),
             null,
             this.scope,
             [],
@@ -264,11 +246,6 @@ class ParsingContext {
             this.options,
             this.iconImageUseTheme
         );
-        child._path = this._path;
-        child._parentCtx = this._parentCtx;
-        child._pathIndex = this._pathIndex;
-        child._pathKey = this._pathKey;
-        return child;
     }
 
     /**
