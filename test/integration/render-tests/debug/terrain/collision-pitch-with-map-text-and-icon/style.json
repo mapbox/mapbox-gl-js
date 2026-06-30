@@ -3,7 +3,6 @@
   "metadata": {
     "test": {
       "height": 256,
-      "allowed": 0.0025,
       "collisionDebug": true,
       "operations": [
         ["wait"],
@@ -17,6 +16,11 @@
         {"platform-tag-contains": "native-macos", "reason": "Metal rendering differences"},
         {"platform-tag-contains": "swiftshader", "reason": "skip - swiftshader debugging needed"},
         {"platform-tag-contains": "native-ios-metal", "reason": "Box collision not ported yet"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0025},
+        {"platform-tag-contains": "native", "threshold": 0.015},
+        {"platform-tag-contains": "native-android", "threshold": 0.015}
       ]
     }
   },

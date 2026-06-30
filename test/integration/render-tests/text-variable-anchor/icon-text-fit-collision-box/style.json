@@ -4,8 +4,10 @@
     "test": {
       "height": 128,
       "width": 128,
-      "allowed": 0.01222,
-      "collisionDebug": true
+      "collisionDebug": true,
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.01222}
+      ]
     }
   },
   "camera": {"camera-projection": "orthographic"},

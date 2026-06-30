@@ -6,7 +6,6 @@
       "width": 256,
       "description": "Check highly exaggerated terrain wireframe overlay",
       "showTerrainWireframe": true,
-      "allowed": 0.041,
       "operations": [
         ["wait"],
         ["setTerrain", null],
@@ -19,6 +18,9 @@
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "ignore - unstable network metrics"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.041}
       ]
     }
   },

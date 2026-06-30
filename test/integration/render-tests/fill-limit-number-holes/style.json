@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.0025,
+      
       "width": 512,
       "height": 512,
       "operations" : [
@@ -14,6 +14,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "limit number of holes experimental for native"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0025}
       ]
     }
   },

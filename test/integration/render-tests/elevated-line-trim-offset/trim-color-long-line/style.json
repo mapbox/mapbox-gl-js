@@ -4,7 +4,9 @@
     "test": {
       "width": 150,
       "height": 150,
-      "allowed": 0.0005
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0005}
+      ]
     }
   },
   "zoom": 16.0,

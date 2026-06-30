@@ -4,7 +4,10 @@
     "test": {
       "height": 512,
       "width": 512,
-      "allowed": 0.001
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001},
+        {"platform-tag-contains": "swiftshader", "threshold": 0.0013}
+      ]
     }
   },
   "center": [72.42, 37.062],

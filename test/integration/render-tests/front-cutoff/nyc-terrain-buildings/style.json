@@ -4,7 +4,6 @@
     "test": {
       "width": 760,
       "height": 688,
-      "allowed": 0.005,
       "operations": [
         ["setPadding", {"top": 300, "left": 0, "bottom": 0, "right": 0}],
         [
@@ -34,6 +33,9 @@
         ["wait"],
         ["wait"],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.005}
       ]
     }
   },

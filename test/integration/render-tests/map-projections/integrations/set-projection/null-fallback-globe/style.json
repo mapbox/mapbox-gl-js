@@ -4,7 +4,6 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0003,
       "operations": [
         ["setStyle", {
           "version": 8,
@@ -85,6 +84,9 @@
         ["wait"],
         ["setProjection", null],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0003}
       ]
     }
   },

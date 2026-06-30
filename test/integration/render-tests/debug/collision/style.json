@@ -4,9 +4,11 @@
     "test": {
       "collisionDebug": true,
       "height": 256,
-      "allowed": 0.017,
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/3841"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.017}
       ]
     }
   },

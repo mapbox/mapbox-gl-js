@@ -3,7 +3,9 @@
   "metadata": {
     "test": {
       "height": 256,
-      "allowed": 0.0005
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0005}
+      ]
     }
   },
   "sources": {

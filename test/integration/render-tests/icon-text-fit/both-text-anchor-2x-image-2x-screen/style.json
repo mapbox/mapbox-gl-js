@@ -6,7 +6,10 @@
       "pixelRatio": 2,
       "width": 200,
       "height": 150,
-      "allowed": 0.001
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001},
+        {"platform-tag-contains": "native", "threshold": 0.0005}
+      ]
     }
   },
   "camera": {"camera-projection": "orthographic"},

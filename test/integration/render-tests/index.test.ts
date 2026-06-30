@@ -62,7 +62,8 @@ async function getExpectedImages(currentTestName: string, renderTest: Record<str
 type TestMetadata = {
     name: string;
     minDiff: number;
-    allowed: number;
+    imageThreshold: number;
+    imageThresholdRule?: string;
     testPath: string;
     status: string;
     color?: string;
@@ -87,7 +88,7 @@ const getTest = (renderTestName: string, preflightError?: unknown) => async () =
         const renderTest = integrationTests[renderTestName];
         const testPath = renderTest.path;
         const style = parseStyle(renderTest);
-        const options = parseOptions(renderTest, style);
+        const options = parseOptions(renderTest, style, platformTag);
 
         const [expectedImages, {actualImageData, w, h}] = await Promise.all([
             getExpectedImages(renderTestName, renderTest),
@@ -105,12 +106,13 @@ const getTest = (renderTestName: string, preflightError?: unknown) => async () =
         }
 
         const {minDiff, minDiffImage, expectedIndex, minImageSrc} = calculateDiff(actualImageData, expectedImages.map(({imageData, src}) => ({data: imageData.data, src})), {w, h}, options['diff-calculation-threshold']);
-        const pass = minDiff <= options.allowed;
+        const pass = minDiff <= options.imageThreshold;
         const testMetaData: TestMetadata = {
             name: renderTestName,
             testPath: `${testPath}/style.json`,
             minDiff: Math.round(100000 * minDiff) / 100000,
-            allowed: options.allowed,
+            imageThreshold: options.imageThreshold,
+            imageThresholdRule: options.imageThresholdRule,
             width: w,
             height: h,
             status: pass ? 'passed' : 'failed',

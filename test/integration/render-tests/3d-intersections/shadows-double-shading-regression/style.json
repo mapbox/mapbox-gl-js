@@ -3,7 +3,6 @@
     "metadata": {
         "test": {
             "mapMode": "static",
-            "allowed": 0.0003,
             "operations": [
                 [
                     "wait"
@@ -22,7 +21,12 @@
                     "wait"
                 ]
             ],
-            "spriteFormat": "raster"
+            "spriteFormat": "raster",
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.0003},
+                {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.001},
+                {"platform-tag-contains": "swiftshader", "threshold": 0.00012}
+            ]
         }
     },
     "center": [

@@ -2,13 +2,18 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.00049,
+      
       "pixelRatio": 2,
       "height": 64,
       "width": 64,
       "operations": [
             ["wait"]
-        ]
+        ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00049},
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.0008},
+        {"platform-tag-contains": "native-android-gl-powervr", "threshold": 0.0008}
+      ]
     }
   },
   "sources": {

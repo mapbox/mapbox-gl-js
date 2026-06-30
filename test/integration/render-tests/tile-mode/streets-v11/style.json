@@ -4,7 +4,6 @@
         "test": {
             "mapMode":"tile",
             "debug": "true",
-            "allowed": 0.0005,
             "operations": [
                 [ "setStyle",  "mapbox://styles/mapbox/streets-v11"]
             ],
@@ -14,6 +13,10 @@
             ],
             "ignore-metrics": [
                 {"platform-tag-contains": "native", "reason": "ignored due to flaky metrics results"}
+            ],
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.0005},
+                {"platform-tag-contains": "native", "threshold": 0.02}
             ]
         }
     },

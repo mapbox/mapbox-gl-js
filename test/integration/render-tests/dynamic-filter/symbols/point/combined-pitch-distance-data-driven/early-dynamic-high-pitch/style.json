@@ -5,7 +5,10 @@
         "collisionDebug": true,
         "height": 264,
         "width": 400,
-        "operations": [["wait"]]
+        "operations": [["wait"]],
+        "image-threshold": [
+          {"platform-tag-contains": "native", "threshold": 0.003}
+        ]
       }
     },
     "center": [-120.30344797631889, 38.11726797649675],

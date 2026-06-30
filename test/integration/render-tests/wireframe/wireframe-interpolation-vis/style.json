@@ -4,12 +4,14 @@
     "test": {
       "height": 256,
       "width": 256,
-      "allowed": 0.008,
       "description": "Visualize terrain wireframe for the purpose of catching interpolation errors",
       "showTerrainWireframe": true,
       "showLayers3DWireframe": false,
       "operations": [
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.008}
       ]
     }
   },

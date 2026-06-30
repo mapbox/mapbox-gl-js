@@ -4,7 +4,10 @@
     "test": {
       "width": 256,
       "height": 256,
-      "allowed": 0.0002
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0002},
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.0004}
+      ]
     }
   },
   "projection": {

@@ -3,7 +3,6 @@
     "metadata": {
         "test": {
             "mapMode": "static",
-            "allowed": 0.00025,
             "spriteFormat": "raster",
             "operations": [
                 ["wait"],
@@ -16,6 +15,9 @@
                 {"platform-tag-contains": "native", "reason": "Flaky, under development"},
                 {"platform-tag-contains": "native", "reason": "Flaky"},
                 {"platform-tag-contains": "native-android", "reason": "Flaky"}
+            ],
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.00025}
             ]
         }
     },

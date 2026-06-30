@@ -5,7 +5,9 @@
         "collisionDebug": true,
         "height": 264,
         "width": 400,
-        "allowed": 0.0003
+        "image-threshold": [
+          {"platform-tag-contains": "", "threshold": 0.0003}
+        ]
       }
     },
     "center": [-120.30344797631889, 38.11726797649675],

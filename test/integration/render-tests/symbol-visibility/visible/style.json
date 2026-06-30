@@ -3,11 +3,13 @@
   "metadata": {
     "test": {
       "height": 256,
-      "allowed": 0.003,
       "skip-test": [
         {"platform-tag-contains": "web-macos-chrome", "reason": "Due to incorrect resampling or antialasing, shifted icons appear pixelated. Likely related to the above issue. Difs here are small, but the appearance is worse."},
         {"platform-tag-contains": "web-windows-chrome", "reason": "Due to incorrect resampling or antialasing, shifted icons appear pixelated. Likely related to the above issue. Difs here are small, but the appearance is worse."},
         {"platform-tag-contains": "native-ios", "reason": "Needs to be investigated and fixed."}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.003}
       ]
     }
   },

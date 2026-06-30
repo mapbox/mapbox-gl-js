@@ -5,7 +5,6 @@
         "fadeDuration": 100,
         "width": 512,
         "height": 512,
-        "allowed": 0.002,
         "description": "This test ensures that symbols with allow-overlap: true are always visible, even if they get included in a placement where they are outside of the collision grid. Before the fix, this test showed partially transparent icons in the right quarter of the viewport.",
         "operations": [
           ["wait", 100],
@@ -24,6 +23,9 @@
         "skip-test": [
             {"platform-tag-contains": "web-macos-chrome", "reason": "Due to incorrect resampling or antialasing, shifted icons appear pixelated. Likely related to the above issue. Difs here are small, but the appearance is worse."},
             {"platform-tag-contains": "web-windows-chrome", "reason": "Due to incorrect resampling or antialasing, shifted icons appear pixelated. Likely related to the above issue. Difs here are small, but the appearance is worse."}
+        ],
+        "image-threshold": [
+            {"platform-tag-contains": "", "threshold": 0.002}
         ]
     }
   },

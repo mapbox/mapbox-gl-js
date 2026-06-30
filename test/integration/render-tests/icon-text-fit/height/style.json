@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "width": 96,
-      "height": 64
+      "height": 64,
+      "image-threshold": [
+        {"platform-tag-contains": "native", "threshold": 0.001}
+      ]
     }
   },
   "camera": {"camera-projection": "orthographic"},

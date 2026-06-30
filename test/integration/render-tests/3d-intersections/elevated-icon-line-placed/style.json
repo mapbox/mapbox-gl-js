@@ -4,8 +4,10 @@
         "test": {
             "_comment": "Regression test: HD-elevated symbol layer that is icon-only and line-placed (`symbol-elevation-reference: hd-road-markup` + `symbol-placement: line` + `icon-image` with no `text-field`). This combination used to trip `assert(index >= 0)` in SymbolInstanceArray.get because `SymbolHDExtension.getElevationFeatureForPlacedSymbol` (formerly `getElevationFeatureForText`) indexed the bucket's empty text buffer regardless of which buffer the caller was iterating.",
             "mapMode": "static",
-            "allowed": 0.00025,
-            "spriteFormat": "raster"
+            "spriteFormat": "raster",
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.00025}
+            ]
         }
     },
     "center": [

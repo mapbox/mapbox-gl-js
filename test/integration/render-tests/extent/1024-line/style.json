@@ -2,7 +2,11 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.0005
+      
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0005},
+        {"platform-tag-contains": "native", "threshold": 0.006}
+      ]
     }
   },
   "center": [

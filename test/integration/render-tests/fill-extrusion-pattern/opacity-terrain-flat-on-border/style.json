@@ -19,6 +19,11 @@
         {"platform-tag-contains": "native-linux", "reason": "flaky, https://mapbox.atlassian.net/browse/MAPSNAT-867"},
         {"platform-tag-contains": "native-macos", "reason": "Difference in pattern depending on GPU"},
         {"platform-tag-contains": "swiftshader", "reason": "skip - swiftshader debugging needed"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.00025},
+        {"platform-tag-contains": "native-android-gl-powervr", "threshold": 0.00025},
+        {"platform-tag-contains": "swiftshader", "threshold": 0.0004}
       ]
     }
   },

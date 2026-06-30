@@ -5,7 +5,9 @@
       "height": 256,
       "width": 256,
       "operations": [],
-      "allowed": 0.0002
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0002}
+      ]
     }
   },
   "lights": [

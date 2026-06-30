@@ -2,12 +2,15 @@
   "version": 8,
    "metadata": {
     "test": {
-      "allowed": 0.0021,
+      
       "width": 512,
       "height": 512,
       "showLayers3DWireframe": true,
       "operations": [
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0021}
       ]
     }
   },

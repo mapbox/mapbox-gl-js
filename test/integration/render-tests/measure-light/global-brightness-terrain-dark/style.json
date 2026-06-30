@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.003,
+      
       "height": 256,
       "width": 256,
       "operations": [
@@ -41,6 +41,10 @@
         {"platform-tag-contains": "native-macos", "reason": "skip - https://mapbox.atlassian.net/browse/MAPSNAT-1436 Needs investigation"},
         {"platform-tag-contains": "swiftshader", "reason": "Diff is higher than allowed"},
         {"platform-tag-contains": "native-ios-metal", "reason": "aliasing"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.003},
+        {"platform-tag-contains": "swiftshader", "threshold": 0.0005}
       ]
     }
   },

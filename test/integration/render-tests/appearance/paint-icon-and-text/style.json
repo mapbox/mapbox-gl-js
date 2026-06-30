@@ -2,10 +2,13 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.001,
+      
       "spriteFormat": "raster",
       "height": 64,
-      "width": 64
+      "width": 64,
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001}
+      ]
     }
   },
   "sources": {

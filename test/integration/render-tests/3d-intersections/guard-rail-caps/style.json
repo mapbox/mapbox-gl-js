@@ -5,10 +5,12 @@
             "width": 512,
             "height": 256,
             "mapMode": "static",
-            "allowed": 0.00025,
             "spriteFormat": "raster",
             "skip-test": [
                 {"platform-tag-contains": "native", "reason": "Broken data at local://tiles/3d-intersections/17-21056-50815.mvt"}
+            ],
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.00025}
             ]
         }
     },

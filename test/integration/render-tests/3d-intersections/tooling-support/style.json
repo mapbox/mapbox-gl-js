@@ -3,10 +3,12 @@
     "metadata": {
         "test": {
             "mapMode": "static",
-            "allowed": 0.00025,
             "spriteFormat": "raster",
             "skip-test": [
                 {"platform-tag-contains": "native", "reason": "skip - GL JS specific"}
+            ],
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.00025}
             ]
         }
     },

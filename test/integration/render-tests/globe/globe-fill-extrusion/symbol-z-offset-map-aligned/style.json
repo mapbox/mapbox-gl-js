@@ -5,12 +5,14 @@
     "test": {
       "height": 512,
       "width": 512,
-      "allowed": 0.0007,
       "operations": [
         ["wait"]
       ],
       "skip-test": [
         {"platform-tag-contains": "web-windows-chrome", "reason": "Flaky on windows platform only:"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0007}
       ]
     }
   },

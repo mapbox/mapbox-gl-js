@@ -4,7 +4,6 @@
       "test": {
         "height": 256,
         "width": 256,
-        "allowed": 0.0008,
         "operations": [
           ["setStyle", {
             "version": 8,
@@ -62,6 +61,9 @@
         ],
         "skip-test": [
           {"platform-tag-contains": "native-macos", "reason": "Difference depending on the GPU"}
+        ],
+        "image-threshold": [
+          {"platform-tag-contains": "", "threshold": 0.0008}
         ]
       }
     },

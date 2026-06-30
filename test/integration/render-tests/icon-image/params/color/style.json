@@ -4,7 +4,10 @@
     "test": {
       "pixelRatio": 2,
       "width": 64,
-      "height": 64
+      "height": 64,
+      "image-threshold": [
+        {"platform-tag-contains": "native", "threshold": 0.0006}
+      ]
     }
   },
   "sources": {

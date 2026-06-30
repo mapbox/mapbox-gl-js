@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.001,
+      
       "spriteFormat": "raster",
       "height": 64,
       "width": 64,
@@ -26,6 +26,9 @@
         }, {
           "state-5": true
         }]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001}
       ]
     }
   },

@@ -4,7 +4,6 @@
     "test": {
       "width": 1024,
       "height": 768,
-      "allowed": 0.005,
       "fontstackCompositing": "server",
       "operations": [
         [
@@ -14,6 +13,9 @@
         ["wait"],
         ["wait"],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.005}
       ]
     }
   },

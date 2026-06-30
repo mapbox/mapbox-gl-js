@@ -2,10 +2,13 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.00198,
+      
       "height": 256,
       "width": 256,
-      "operations": []
+      "operations": [],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00198}
+      ]
     }
   },
   "lights": [

@@ -4,7 +4,6 @@
     "test": {
       "width": 256,
       "height": 256,
-      "allowed": 0.00025,
       "operations": [
         [
           "wait"
@@ -34,6 +33,9 @@
         [
           "wait"
         ]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00025}
       ]
     }
   },

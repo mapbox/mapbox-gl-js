@@ -3,10 +3,12 @@
   "metadata": {
     "test": {
       "height": 256,
-      "allowed": 0.0002,
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "opacity issues"},
         {"platform-tag-contains": "native", "reason": "skip - Known issues https://mapbox.atlassian.net/browse/MAPS3D-1494"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0002}
       ]
     }
   },

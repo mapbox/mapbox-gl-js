@@ -4,7 +4,10 @@
     "test": {
       "pixelRatio": 2,
       "height": 256,
-      "allowed": 0.00352
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00352},
+        {"platform-tag-contains": "native-android", "threshold": 0.025}
+      ]
     }
   },
   "center": [

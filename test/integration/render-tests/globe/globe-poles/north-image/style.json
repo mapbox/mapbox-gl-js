@@ -4,7 +4,9 @@
     "test": {
       "height": 444,
       "width": 632,
-      "allowed": 0.003
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.003}
+      ]
     }
   },
   "center": [ -138.27, 76.09 ],

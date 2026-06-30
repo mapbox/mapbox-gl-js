@@ -3,10 +3,12 @@
    "metadata": {
     "test": {
       "debug": "true",
-      "allowed": 0.0003,
       "width": 512,
       "height": 512,
       "operations": [
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0003}
       ]
     }
   },

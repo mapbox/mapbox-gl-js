@@ -4,7 +4,6 @@
     "test": {
       "width": 256,
       "height": 256,
-      "allowed": 0.006,
       "operations": [
         ["wait", 100],
         ["wait", 100],
@@ -20,6 +19,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "skip - https://mapbox.atlassian.net/browse/MAPSNAT-2181"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.006}
       ]
     }
   },

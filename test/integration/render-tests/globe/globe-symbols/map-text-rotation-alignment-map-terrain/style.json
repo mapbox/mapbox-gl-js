@@ -4,10 +4,13 @@
     "test": {
       "width": 256,
       "height": 256,
-      "allowed": 0.001,
       "operations": [
         ["setProjection", "globe"],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001},
+        {"platform-tag-contains": "native", "threshold": 0.0013}
       ]
     }
   },

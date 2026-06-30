@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "width": 256,
-      "height": 128
+      "height": 128,
+      "image-threshold": [
+        {"platform-tag-contains": "native-android", "threshold": 0.017}
+      ]
     }
   },
   "zoom": 1,

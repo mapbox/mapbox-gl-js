@@ -4,7 +4,6 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.00065,
       "operations": [
         ["setStyle", {
           "version": 8,
@@ -80,6 +79,11 @@
         ["wait"],
         ["setProjection", "mercator"],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00065},
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.001},
+        {"platform-tag-contains": "native-android-gl-powervr", "threshold": 0.001}
       ]
     }
   },

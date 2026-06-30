@@ -3,7 +3,6 @@
   "metadata": {
     "test": {
       "height": 256,
-      "allowed": 0.0008,
       "operations": [
         ["setLight", {"intensity": 0.2}],
         ["wait"]
@@ -13,6 +12,9 @@
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky network metrics"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0008}
       ]
     }
   },

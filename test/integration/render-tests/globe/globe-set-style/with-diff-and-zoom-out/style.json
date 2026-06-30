@@ -4,7 +4,6 @@
     "test": {
       "height": 256,
       "width": 256,
-      "allowed": 0.0008,
       "operations": [
         ["setZoom", 0],
         ["wait"],
@@ -27,6 +26,9 @@
           ]
         }],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0008}
       ]
     }
   },

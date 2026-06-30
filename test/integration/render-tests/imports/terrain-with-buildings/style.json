@@ -4,9 +4,11 @@
     "test": {
       "height": 512,
       "width": 512,
-      "allowed": 0.0015,
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-1665"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0015}
       ]
     }
   },

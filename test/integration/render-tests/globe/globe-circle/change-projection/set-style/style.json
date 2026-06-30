@@ -4,7 +4,6 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0009,
       "operations": [
         ["setStyle", {
           "version": 8,
@@ -74,6 +73,9 @@
           "fog": {}
         }],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0009}
       ]
     }
   },

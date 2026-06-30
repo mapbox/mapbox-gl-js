@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.001,
+      
       "pixelRatio": 2,
       "height": 64,
       "width": 64,
@@ -12,6 +12,9 @@
         ["wait"],
         ["setFeatureState", {"source": "geojson", "id": 1}, {"hover": false}],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001}
       ]
     }
   },

@@ -4,9 +4,12 @@
     "test": {
       "width": 64,
       "height": 64,
-      "allowed": 0.001,
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001},
+        {"platform-tag-contains": "native-android-gl-powervr", "threshold": 0.0015}
       ]
     }
   },

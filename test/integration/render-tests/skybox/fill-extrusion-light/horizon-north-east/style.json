@@ -4,9 +4,12 @@
     "test": {
       "height": 256,
       "width": 256,
-      "allowed": 0.0002,
       "skip-test": [
         {"platform-tag-contains": "native-android-gl-powervr", "reason": "To be fixed - https://mapbox.atlassian.net/browse/MAPSNAT-3865"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0002},
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.002}
       ]
     }
   },

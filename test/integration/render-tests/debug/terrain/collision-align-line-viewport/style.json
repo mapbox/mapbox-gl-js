@@ -3,7 +3,6 @@
   "metadata": {
     "test": {
       "height": 256,
-      "allowed": 0.01,
       "collisionDebug": true,
       "operations": [
         ["wait"],
@@ -18,6 +17,10 @@
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "flaky due to occlusion/waitFrameReady"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.01},
+        {"platform-tag-contains": "native-android", "threshold": 0.0046}
       ]
     }
   },

@@ -4,10 +4,12 @@
     "test": {
       "width": 100,
       "height": 100,
-      "allowed": 0.00075,
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "possibly related to incorrect line progress values near line-joins and line-caps"},
         {"platform-tag-contains": "native", "reason": "skip - Known issues https://mapbox.atlassian.net/browse/MAPS3D-1494"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00075}
       ]
     }
   },

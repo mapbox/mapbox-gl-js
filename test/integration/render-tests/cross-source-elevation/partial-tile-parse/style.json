@@ -6,7 +6,6 @@
             "mapMode": "static",
             "width": 512,
             "height": 256,
-            "allowed": 0.001,
             "spriteFormat": "raster",
             "operations": [
                 [
@@ -28,6 +27,9 @@
                 [
                     "wait"
                 ]
+            ],
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.001}
             ]
         }
     },

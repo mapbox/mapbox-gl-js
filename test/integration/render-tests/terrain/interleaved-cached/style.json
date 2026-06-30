@@ -4,9 +4,11 @@
     "test": {
       "height": 200,
       "width": 200,
-      "allowed": 0.004,
       "skip-test": [
         {"platform-tag-contains": "native-linux", "reason": "Antialiasing"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.004}
       ]
     }
   },

@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.00025,
+      
       "width": 64,
       "height": 64,
       "operations": [
@@ -28,6 +28,9 @@
         [
           "wait"
         ]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00025}
       ]
     }
   },

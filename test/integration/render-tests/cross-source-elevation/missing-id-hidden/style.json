@@ -6,7 +6,9 @@
             "mapMode": "static",
             "width": 512,
             "height": 256,
-            "allowed": 0.00025
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.00025}
+            ]
         }
     },
     "center": [

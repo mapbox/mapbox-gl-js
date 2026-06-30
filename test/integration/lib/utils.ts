@@ -106,6 +106,11 @@ function ruleMatchesPlatformTag(rule: string, platformTag: string): boolean {
     return rule.length === 0 || platformTag.includes(rule);
 }
 
+export type ImageThresholdRuleMatch = {
+    rule: string;
+    value: number;
+};
+
 function isValidPlatformTagRule(rule: string): boolean {
     return rule.length === 0 || KNOWN_PLATFORM_TAGS.some((platformTag) => platformTag.includes(rule));
 }
@@ -142,8 +147,7 @@ export function matchSkipTestRule(skipTestValue: unknown, platformTag: string | 
         if (!ruleValue || typeof ruleValue !== 'object' || Array.isArray(ruleValue)) {
             return {
                 validationError:
-                    `Invalid skip-test rule at index ${index}. Expected an object with ` +
-                    '"platform-tag-contains" and "reason" keys.'
+                    `Invalid skip-test rule at index ${index}. Expected an object with "platform-tag-contains" and "reason" keys.`
             };
         }
 
@@ -152,8 +156,7 @@ export function matchSkipTestRule(skipTestValue: unknown, platformTag: string | 
             if (!allowedSkipRuleKeys.has(key)) {
                 return {
                     validationError:
-                        `Unknown key "${key}" in skip-test rule at index ${index}. ` +
-                        'Allowed keys: platform-tag-contains, reason.'
+                        `Unknown key "${key}" in skip-test rule at index ${index}. Allowed keys: platform-tag-contains, reason.`
                 };
             }
         }
@@ -161,8 +164,7 @@ export function matchSkipTestRule(skipTestValue: unknown, platformTag: string | 
         if (!('platform-tag-contains' in skipRule) || !('reason' in skipRule)) {
             return {
                 validationError:
-                    `Invalid skip-test rule at index ${index}. Missing required keys ` +
-                    '"platform-tag-contains" and/or "reason".'
+                    `Invalid skip-test rule at index ${index}. Missing required keys "platform-tag-contains" and/or "reason".`
             };
         }
 
@@ -178,9 +180,7 @@ export function matchSkipTestRule(skipTestValue: unknown, platformTag: string | 
         if (!isValidPlatformTagRule(rule)) {
             return {
                 validationError:
-                    `Invalid platform-tag rule "${rule}" in skip-test. ` +
-                    `Rule must match at least one known platform-tag by substring. ` +
-                    `Known tags: ${KNOWN_PLATFORM_TAGS.join(', ')}`
+                    `Invalid platform-tag rule "${rule}" in skip-test. Rule must match at least one known platform-tag by substring. Known tags: ${KNOWN_PLATFORM_TAGS.join(', ')}`
             };
         }
         rawRules.push(rule);
@@ -198,6 +198,79 @@ export function matchSkipTestRule(skipTestValue: unknown, platformTag: string | 
     }
 
     return {match: {rules: matchedRules, reasons: matchedReasons}};
+}
+
+type ImageThresholdRule = {
+    'platform-tag-contains': string;
+    threshold: number;
+};
+
+export type ImageThresholdEvaluation = {
+    match?: ImageThresholdRuleMatch;
+    validationError?: string;
+};
+
+/** Evaluates `image-threshold` rules against the platform tag. Last matching rule wins. */
+export function matchImageThresholdRule(imageThresholdValue: unknown, platformTag: string | undefined): ImageThresholdEvaluation {
+    if (!platformTag) return {};
+    if (!imageThresholdValue) return {};
+    if (!Array.isArray(imageThresholdValue)) {
+        return {
+            validationError:
+                'image-threshold must be an array of objects with "platform-tag-contains" and "threshold" keys'
+        };
+    }
+
+    const allowedKeys = new Set(['platform-tag-contains', 'threshold']);
+    let lastMatch: ImageThresholdRuleMatch | undefined;
+
+    for (const [index, ruleValue] of imageThresholdValue.entries()) {
+        if (!ruleValue || typeof ruleValue !== 'object' || Array.isArray(ruleValue)) {
+            return {
+                validationError:
+                    `Invalid image-threshold rule at index ${index}. Expected an object with "platform-tag-contains" and "threshold" keys.`
+            };
+        }
+
+        const ruleObj = ruleValue as Record<string, unknown>;
+        for (const key of Object.keys(ruleObj)) {
+            if (!allowedKeys.has(key)) {
+                return {
+                    validationError:
+                        `Unknown key "${key}" in image-threshold rule at index ${index}. Allowed keys: platform-tag-contains, threshold.`
+                };
+            }
+        }
+
+        if (!('platform-tag-contains' in ruleObj) || !('threshold' in ruleObj)) {
+            return {
+                validationError:
+                    `Invalid image-threshold rule at index ${index}. Missing required keys "platform-tag-contains" and/or "threshold".`
+            };
+        }
+
+        if (typeof ruleObj['platform-tag-contains'] !== 'string' || typeof ruleObj.threshold !== 'number') {
+            return {
+                validationError:
+                    `Invalid image-threshold rule at index ${index}. "platform-tag-contains" must be a string and "threshold" must be a number.`
+            };
+        }
+
+        const typedRule = ruleObj as ImageThresholdRule;
+        const rule = typedRule['platform-tag-contains'];
+        if (!isValidPlatformTagRule(rule)) {
+            return {
+                validationError:
+                    `Invalid platform-tag rule "${rule}" in image-threshold. Rule must match at least one known platform-tag by substring. Known tags: ${KNOWN_PLATFORM_TAGS.join(', ')}`
+            };
+        }
+
+        if (ruleMatchesPlatformTag(rule, platformTag)) {
+            lastMatch = {rule, value: typedRule.threshold};
+        }
+    }
+
+    return lastMatch ? {match: lastMatch} : {};
 }
 
 const suiteStartTime = Date.now();

@@ -4,11 +4,13 @@
     "test": {
       "height": 256,
       "width": 256,
-      "allowed": 0.001,
       "description": "Contains two expected images (for ubyte-based rendering and half-float-based); one of them should pass depending on platform.",
       "operations": [
         ["setProjection", "globe"],
         [ "wait" ]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001}
       ]
     }
   },

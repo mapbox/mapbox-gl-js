@@ -4,10 +4,12 @@
     "test": {
       "height": 256,
       "width": 256,
-      "allowed": 0.004,
       "description": "Catch a regression where builings would appear partly below or above the terrain due to oudated projection matrix",
       "operations": [
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.004}
       ]
     }
   },

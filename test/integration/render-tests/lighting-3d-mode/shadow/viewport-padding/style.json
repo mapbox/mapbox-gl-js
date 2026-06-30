@@ -4,7 +4,6 @@
     "test": {
       "height": 256,
       "width": 512,
-      "allowed": 0.0025,
       "operations": [
         ["setProjection", "globe"],
         ["setPadding", {
@@ -20,6 +19,9 @@
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0025}
       ]
     }
   },

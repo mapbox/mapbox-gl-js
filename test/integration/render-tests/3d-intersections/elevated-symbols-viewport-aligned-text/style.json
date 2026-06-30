@@ -3,8 +3,11 @@
     "metadata": {
         "test": {
             "mapMode": "static",
-            "allowed": 0.00025,
-            "spriteFormat": "raster"
+            "spriteFormat": "raster",
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.00025},
+                {"platform-tag-contains": "metal", "threshold": 0.0005}
+            ]
         }
     },
     "center": [

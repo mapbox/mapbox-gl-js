@@ -4,13 +4,16 @@
     "test": {
       "height": 512,
       "width": 512,
-      "allowed": 0.001,
       "skip-test": [
         {"platform-tag-contains": "web-macos-safari", "reason": "Looks good but diff is too high"}
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky metrics"},
         {"platform-tag-contains": "native-android", "reason": "Flaky"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001},
+        {"platform-tag-contains": "swiftshader", "threshold": 0.0013}
       ]
     }
   },

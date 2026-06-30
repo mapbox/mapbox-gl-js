@@ -3,7 +3,6 @@
   "metadata": {
     "test": {
       "height": 512,
-      "allowed": 0.0015,
       "operations": [
         ["addSource", 
         "trees", 
@@ -30,6 +29,9 @@
       "queryGeometry": [
         165,
         279
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0015}
       ]
     }
   },

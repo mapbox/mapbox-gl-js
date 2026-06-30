@@ -3,9 +3,11 @@
   "metadata": {
     "test": {
       "showOverdrawInspector": true,
-      "allowed":  0.0003,
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/15638"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0003}
       ]
     }
   },

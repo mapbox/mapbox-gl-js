@@ -5,7 +5,9 @@
         "worldview": "AD",
         "width": 50,
         "height": 50,
-        "allowed": 0.0025
+        "image-threshold": [
+          {"platform-tag-contains": "", "threshold": 0.0025}
+        ]
       }
     },
     "sources": {

@@ -2,8 +2,11 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.0004,
-      "operations": []
+      
+      "operations": [],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0004}
+      ]
     }
   },
   "zoom": 0.99,

@@ -13,7 +13,8 @@ export type TestReportData = {
     expected?: string;
     expectedPath?: string;
     imgDiff?: string;
-    allowed?: number;
+    imageThreshold?: number;
+    imageThresholdRule?: string;
     minDiff?: number;
     jsonDiff?: string;
     error?: Error;
@@ -63,8 +64,8 @@ const renderResultHTML = compile(`
     <% if (r.error) { %>
       <p style="color: red"><strong>Test Error:</strong> <%= r.errorMessage %></p>
     <% } %>
-    <% if (r.status !== 'skipped' && r.allowed !== undefined) { %>
-      <p class="diff"><strong>Allowed:</strong> <%= r.allowed %></p>
+    <% if (r.status !== 'skipped' && r.imageThreshold !== undefined) { %>
+      <p class="diff"><strong>Image Threshold<% if (r.imageThresholdRule !== undefined) { %> (<%= r.imageThresholdRule === '' ? '""' : r.imageThresholdRule %>)<% } %>:</strong> <%= r.imageThreshold %></p>
     <% } %>
     <% if (r.status !== 'skipped' && r.minDiff !== undefined) { %>
       <p class="diff"><strong>Diff:</strong> <%= r.minDiff === 0 ? 'none' : r.minDiff %></p>
@@ -262,7 +263,7 @@ function decorateTestData(testData: TestReportData): DecoratedTestData {
         showImages: shouldShowImages(testData),
         domId: testData.name,
         domIdJs: escapeJsString(testData.name),
-        isRenderTest: testData.allowed !== undefined,
+        isRenderTest: testData.imageThreshold !== undefined,
         attempt: testId.get(testData.name),
     };
     if (testData.error) {

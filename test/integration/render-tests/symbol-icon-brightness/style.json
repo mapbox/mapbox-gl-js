@@ -4,8 +4,10 @@
     "test": {
       "height": 128,
       "width": 128,
-      "allowed": 0.0135,
-      "diff-calculation-threshold": 0.06
+      "diff-calculation-threshold": 0.06,
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0135}
+      ]
     }
   },
   "center": [

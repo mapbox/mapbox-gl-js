@@ -1,7 +1,10 @@
 {
   "_comment": "Verifies that pure-zoom step expressions update correctly after a zoom change. At initial zoom 2.5, only one icon grp=a (step 2.25) is visible. After setZoom(2.9): grp=b (step 2.75) must become visible because 2.9 exceeds its threshold; grp=c (step 2.95) must remain hidden because 2.9 < 2.95",
   "version": 8,
-  "metadata": {"test": {"height": 64, "width": 128, "allowed": 0.001, "operations": [["wait"], ["setZoom", 2.9]]}},
+  "metadata": {"test": {"height": 64, "width": 128, "operations": [["wait"], ["setZoom", 2.9]],
+    "image-threshold": [
+      {"platform-tag-contains": "", "threshold": 0.001}
+    ]}},
   "center": [0, 0],
   "zoom": 2.5,
   "sprite": "local://sprites/sprite",

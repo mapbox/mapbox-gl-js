@@ -4,7 +4,6 @@
     "test": {
       "height": 300,
       "width": 512,
-      "allowed": 0.00224,
       "operations": [
         ["wait"],
         ["setZoom", 12.17],
@@ -15,6 +14,9 @@
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Unstable network metrics"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00224}
       ]
     }
   },

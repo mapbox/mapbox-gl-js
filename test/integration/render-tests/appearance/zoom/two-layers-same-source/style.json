@@ -2,13 +2,16 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.00074,
+      
       "pixelRatio": 2,
       "height": 64,
       "width": 64,
       "operations": [
         ["wait"],
         ["setZoom", 0.5]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00074}
       ]
     }
   },

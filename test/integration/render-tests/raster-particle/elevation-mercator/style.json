@@ -4,12 +4,14 @@
     "test": {
       "width": 256,
       "height": 256,
-      "allowed": 0.0003,
       "operations": [
         ["wait", 100]
       ],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "skip - https://mapbox.atlassian.net/browse/MAPSNAT-2267"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0003}
       ]
     }
   },

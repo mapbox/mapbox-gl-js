@@ -4,9 +4,12 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0003,
       "skip-test": [
         {"platform-tag-contains": "native-ios", "reason": "Needs to be investigated and fixed."}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0003},
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.0015}
       ]
     }
   },

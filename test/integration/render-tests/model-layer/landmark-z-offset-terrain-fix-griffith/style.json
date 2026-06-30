@@ -2,7 +2,7 @@
   "version": 8,
    "metadata": {
     "test": {
-      "allowed": 0.000852,
+      
       "width": 512,
       "height": 700,
       "operations" :[
@@ -18,6 +18,9 @@
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.000852}
       ]
     }
   },

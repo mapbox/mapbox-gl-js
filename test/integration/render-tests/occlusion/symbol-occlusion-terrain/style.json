@@ -4,7 +4,6 @@
     "test": {
       "height": 100,
       "width": 200,
-      "allowed": 0.002,
       "operations": [
         [
           "waitFrameReady",
@@ -16,6 +15,9 @@
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "flaky due to occlusion/waitFrameReady"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.002}
       ]
     }
   },

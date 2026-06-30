@@ -4,7 +4,6 @@
         "test": {
             "width": 200,
             "height": 200,
-            "allowed": 0.01,
             "collisionDebug": true,
             "description": "Covers placement and collision for elevated text. There is also text completely behind terrain that shouldn't be visible.",
             "operations": [
@@ -15,6 +14,9 @@
             ],
             "ignore-metrics": [
                 {"platform-tag-contains": "native", "reason": "flaky due to occlusion/waitFrameReady"}
+            ],
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.01}
             ]
         }
     },

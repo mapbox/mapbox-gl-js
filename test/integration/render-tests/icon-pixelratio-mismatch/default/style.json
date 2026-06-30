@@ -3,8 +3,12 @@
   "metadata": {
     "test": {
       "pixelRatio": 0.5,
-      "allowed": 0.006,
-      "height": 256
+      "height": 256,
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.006},
+        {"platform-tag-contains": "swiftshader", "threshold": 0.0055},
+        {"platform-tag-contains": "metal", "threshold": 0.0059}
+      ]
     }
   },
   "center": [

@@ -5,11 +5,13 @@
     "test": {
       "width": 1024,
       "height": 768,
-      "allowed": 0.0003,
       "operations": [
         ["wait"],
         ["wait"],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0003}
       ]
     }
   },

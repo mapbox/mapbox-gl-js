@@ -6,11 +6,13 @@
       "width": 128,
       "height": 128,
       "pixelRatio": 2,
-      "allowed": 0.002,
       "operations": [
         ["wait"],
         ["setCameraPosition", [10, 10, 6]],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.002}
       ]
     }
   },

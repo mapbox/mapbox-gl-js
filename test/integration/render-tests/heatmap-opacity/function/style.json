@@ -4,7 +4,10 @@
     "test": {
       "height": 32,
       "width": 128,
-      "description": "Contains two expected images (for ubyte-based rendering and half-float-based); one of them should pass depending on platform."
+      "description": "Contains two expected images (for ubyte-based rendering and half-float-based); one of them should pass depending on platform.",
+      "image-threshold": [
+        {"platform-tag-contains": "native", "threshold": 0.0003}
+      ]
     }
   },
   "center": [

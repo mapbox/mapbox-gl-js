@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.001,
+      
       "width": 256,
       "height": 256,
       "skip-test": [
@@ -11,6 +11,9 @@
         {"platform-tag-contains": "web-macos-safari", "reason": "Inconsistent star placement"},
         {"platform-tag-contains": "web-windows-chrome", "reason": "Antialiasing results in a slightly different appearance for icon pattern on globe. Appearance is still good but the dif is too high (this could use a platform-specific expected.png)"},
         {"platform-tag-contains": "native", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/3425"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001}
       ]
     }
   },

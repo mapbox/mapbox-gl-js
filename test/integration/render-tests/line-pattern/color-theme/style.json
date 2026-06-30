@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "width": 64,
-      "height": 64
+      "height": 64,
+      "image-threshold": [
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.007}
+      ]
     }
   },
   "color-theme": {

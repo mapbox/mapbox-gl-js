@@ -4,7 +4,6 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0003,
       "operations": [
         [
           "setStyle",
@@ -52,6 +51,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "started failing after https://github.com/mapbox/mapbox-gl-native/pull/16091"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0003}
       ]
     }
   },

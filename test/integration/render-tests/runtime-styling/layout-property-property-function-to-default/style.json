@@ -4,7 +4,6 @@
     "test": {
       "width": 64,
       "height": 64,
-      "allowed": 0.0084,
       "operations": [
         [
           "setLayoutProperty",
@@ -19,6 +18,9 @@
       "skip-test": [
         {"platform-tag-contains": "native-ios", "reason": "skip before fixing issue: http://mapbox.atlassian.net/browse/MAPSNAT-2780"},
         {"platform-tag-contains": "native-macos", "reason": "skip before fixing issue: http://mapbox.atlassian.net/browse/MAPSNAT-2780"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0084}
       ]
     }
   },

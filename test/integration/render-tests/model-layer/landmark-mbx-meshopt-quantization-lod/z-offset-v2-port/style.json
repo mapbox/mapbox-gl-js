@@ -2,7 +2,7 @@
   "version": 8,
    "metadata": {
     "test": {
-      "allowed": 0.0012,
+      
       "width": 1024,
       "height": 1024,
       "operations": [
@@ -15,6 +15,10 @@
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"},
         {"platform-tag-contains": "native-android", "reason": "Flaky, under development"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0012},
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.0025}
       ]
     }
   },

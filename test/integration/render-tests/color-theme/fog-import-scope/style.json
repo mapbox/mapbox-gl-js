@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.00085,
+      
       "height": 512,
       "width": 512,
       "operations": [
@@ -15,6 +15,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "native-linux", "reason": "https://mapbox.atlassian.net/browse/MAPS3D-1929"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00085}
       ]
     }
   },

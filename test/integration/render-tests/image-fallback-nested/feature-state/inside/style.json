@@ -4,7 +4,6 @@
     "test": {
       "width": 64,
       "height": 64,
-      "allowed": 0.0015,
       "operations": [
         [
           "setFeatureState",
@@ -32,6 +31,9 @@
         [
           "wait"
         ]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0015}
       ]
     }
   },

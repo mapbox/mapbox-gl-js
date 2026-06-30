@@ -4,8 +4,10 @@
         "test": {
             "width": 128,
             "height": 256,
-            "allowed": 0.005,
-            "collisionDebug": true
+            "collisionDebug": true,
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.005}
+            ]
         }
     },
     "sources": {

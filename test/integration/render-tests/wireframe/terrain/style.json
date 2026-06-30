@@ -6,7 +6,6 @@
       "width": 256,
       "description": "Check terrain wireframe overlay",
       "showTerrainWireframe": true,
-      "allowed": 0.033,
       "operations": [
         ["wait"],
         ["setTerrain", null],
@@ -15,6 +14,9 @@
           "source": "rgbterrain"
         }],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.033}
       ]
     }
   },

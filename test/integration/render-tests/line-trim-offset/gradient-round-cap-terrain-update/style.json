@@ -4,12 +4,14 @@
     "test": {
       "width": 100,
       "height": 100,
-      "allowed": 0.0004,
       "operations": [
         ["wait"],
         ["wait"],
         ["setPaintProperty", "line", "line-trim-offset", [0.0, 0.2]],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0004}
       ]
     }
   },

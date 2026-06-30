@@ -1,6 +1,9 @@
 {
   "version": 8,
-  "metadata": {"test": {"height": 64, "width": 128, "allowed": 0.001}},
+  "metadata": {"test": {"height": 64, "width": 128,
+    "image-threshold": [
+      {"platform-tag-contains": "", "threshold": 0.001}
+    ]}},
   "center": [0, 0],
   "zoom": 2.5,
   "sprite": "local://sprites/sprite",

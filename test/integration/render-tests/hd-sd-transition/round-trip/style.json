@@ -4,7 +4,6 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.00025,
       "spriteFormat": "raster",
       "operations": [
         [
@@ -55,6 +54,9 @@
         [
           "wait"
         ]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00025}
       ]
     }
   },

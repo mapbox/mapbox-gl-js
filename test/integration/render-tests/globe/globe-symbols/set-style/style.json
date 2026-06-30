@@ -6,7 +6,6 @@
     "test": {
       "height": 512,
       "width": 512,
-      "allowed": 0.0009,
       "operations": [
         ["setProjection", "globe"],
         ["wait"],
@@ -141,6 +140,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "native-linux", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/3106"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0009}
       ]
     }
   },

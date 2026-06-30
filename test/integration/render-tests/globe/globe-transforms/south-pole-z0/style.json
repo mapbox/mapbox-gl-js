@@ -2,9 +2,12 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.001,
+      
       "width": 256,
-      "height": 256
+      "height": 256,
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001}
+      ]
     }
   },
   "projection": {"name": "globe"},

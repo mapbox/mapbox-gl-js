@@ -3,7 +3,6 @@
     "metadata": {
         "test": {
             "mapMode": "static",
-            "allowed": 0.00045,
             "operations": [
                 ["wait"],
                 ["wait"],
@@ -16,7 +15,10 @@
                 ],
                 ["wait"]
             ],
-            "spriteFormat": "raster"
+            "spriteFormat": "raster",
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.00045}
+            ]
         }
     },
     "center": [

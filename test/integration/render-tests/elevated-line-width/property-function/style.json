@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "height": 256,
-      "allowed": 0.0002
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0002},
+        {"platform-tag-contains": "native", "threshold": 0.0008}
+      ]
     }
   },
   "center": [

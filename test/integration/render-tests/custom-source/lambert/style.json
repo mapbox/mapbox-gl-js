@@ -4,7 +4,6 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.005,
       "operations": [
         [
           "addCustomSource",
@@ -29,6 +28,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.005}
       ]
     }
   },

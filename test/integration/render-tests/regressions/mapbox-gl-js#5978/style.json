@@ -2,10 +2,16 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.0023,
+      
       "pixelRatio": 2,
       "width": 64,
-      "height": 64
+      "height": 64,
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0023},
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.0035},
+        {"platform-tag-contains": "native-android-gl-powervr", "threshold": 0.007},
+        {"platform-tag-contains": "metal", "threshold": 0.0035}
+      ]
     }
   },
   "sprite": "local://sprites/standard",

@@ -8,6 +8,9 @@
       "collisionDebug": true,
       "operations": [
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.008}
       ]
     }
   },

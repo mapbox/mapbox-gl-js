@@ -4,7 +4,6 @@
     "test": {
       "width": 1500,
       "height": 1000,
-      "allowed": 0.0012,
       "operations": [
         ["wait"],
         ["setStyle", {
@@ -43,6 +42,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "skip - js specific"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0012}
       ]
     }
   },

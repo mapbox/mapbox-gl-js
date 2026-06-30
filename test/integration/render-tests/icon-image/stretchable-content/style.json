@@ -4,10 +4,12 @@
     "test": {
       "width": 200,
       "height": 150,
-      "allowed": 0.02,
       "skip-test": [
         {"platform-tag-contains": "web-macos-chrome", "reason": "Appearance is slightly offset and diff is > 0.01"},
         {"platform-tag-contains": "web-windows-chrome", "reason": "Appearance is slightly offset and diff is > 0.01"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.02}
       ]
     }
   },

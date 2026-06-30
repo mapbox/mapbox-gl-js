@@ -3,10 +3,12 @@
   "metadata": {
     "test": {
       "height": 256,
-      "allowed": 0.0011,
       "skip-test": [
         {"platform-tag-contains": "web-macos-chrome", "reason": "Due to incorrect resampling or antialasing, shifted icons appear pixelated. Likely related to the above issue. Difs here are small, but the appearance is worse."},
         {"platform-tag-contains": "web-windows-chrome", "reason": "Due to incorrect resampling or antialasing, shifted icons appear pixelated. Likely related to the above issue. Difs here are small, but the appearance is worse."}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0011}
       ]
     }
   },

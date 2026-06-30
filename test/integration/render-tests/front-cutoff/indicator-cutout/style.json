@@ -4,7 +4,6 @@
     "test": {
       "width": 1024,
       "height": 768,
-      "allowed": 0.005,
       "operations": [
         ["wait"],
         ["wait"],
@@ -12,6 +11,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "gl-native only: indicator cutout with front cutoff"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.005}
       ]
     }
   },

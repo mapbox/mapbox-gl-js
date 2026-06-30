@@ -4,7 +4,6 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.00025,
       "spriteFormat": "raster",
       "operations": [
         [
@@ -37,6 +36,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "gl-native only: animated config change (pinBooleanTransitionProgress) is not supported in gl-js."}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00025}
       ]
     }
   },

@@ -4,11 +4,13 @@
     "test": {
       "height": 300,
       "width": 512,
-      "allowed": 0.0021,
       "operations": [
       ],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "skip - bug with line metrics on multi line string features https://mapbox.atlassian.net/browse/MAPSNAT-2492"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0021}
       ]
     }
   },

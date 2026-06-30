@@ -4,10 +4,12 @@
     "test": {
       "debug": true,
       "height": 256,
-      "allowed": 0.0022,
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "inconsistent text rendering with canvas on different platforms"},
         {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/3841"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0022}
       ]
     }
   },

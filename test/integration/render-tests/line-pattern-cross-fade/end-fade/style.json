@@ -4,7 +4,10 @@
     "test": {
       "height": 64,
       "width": 64,
-      "allowed": 0.01002
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.01002},
+        {"platform-tag-contains": "native-android-gl-powervr", "threshold": 0.012}
+      ]
     }
   },
   "zoom": 5,

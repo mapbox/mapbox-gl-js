@@ -4,7 +4,6 @@
     "test": {
       "width": 128,
       "height": 128,
-      "allowed": 0.0244,
       "operations": [
         [
           "addImage",
@@ -29,6 +28,9 @@
           "./image/marker_18x18.png"
         ],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0244}
       ]
     }
   },

@@ -4,7 +4,10 @@
     "test": {
       "width": 128,
       "height": 64,
-      "pixelRatio": 2
+      "pixelRatio": 2,
+      "image-threshold": [
+        {"platform-tag-contains": "native", "threshold": 0.0005}
+      ]
     }
   },
   "camera": {"camera-projection": "orthographic"},

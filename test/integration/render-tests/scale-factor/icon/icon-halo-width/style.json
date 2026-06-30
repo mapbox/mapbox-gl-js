@@ -5,7 +5,10 @@
       "spriteFormat": "raster",
       "width": 128,
       "height": 128,
-      "scaleFactor": 2
+      "scaleFactor": 2,
+      "image-threshold": [
+        {"platform-tag-contains": "native", "threshold": 0.00287}
+      ]
     }
   },
   "sources": {

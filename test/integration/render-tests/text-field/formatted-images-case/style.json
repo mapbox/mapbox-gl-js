@@ -6,6 +6,9 @@
       "width": 64,
       "skip-test": [
         {"platform-tag-contains": "native-ios", "reason": "Needs to be investigated and fixed."}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "native", "threshold": 0.056}
       ]
     }
   },

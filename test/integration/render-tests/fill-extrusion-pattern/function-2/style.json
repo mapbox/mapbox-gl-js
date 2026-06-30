@@ -2,11 +2,14 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.0007,
+      
       "height": 256,
       "skip-test": [
         {"platform-tag-contains": "web-macos-safari", "reason": "Inconsistencies with fill pattern. Some are visibly noticeable, others subtle. Possibly nonodeterministic rendering."},
         {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-js/issues/3327"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0007}
       ]
     }
   },

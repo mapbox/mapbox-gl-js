@@ -4,12 +4,14 @@
     "test": {
       "height": 200,
       "width": 200,
-      "allowed": 0.0037,
       "collisionDebug": true,
       "operations": [
         [
           "wait", 1500
         ]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0037}
       ]
     }
   },

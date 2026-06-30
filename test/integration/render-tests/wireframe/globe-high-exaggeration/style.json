@@ -4,7 +4,6 @@
     "test": {
       "width": 1000,
       "height": 512,
-      "allowed": 0.08,
       "showTerrainWireframe": true,
       "interactive": false,
       "operations": [
@@ -23,6 +22,9 @@
         {"platform-tag-contains": "web-macos-safari", "reason": "Debug visualizations"},
         {"platform-tag-contains": "web-windows-chrome", "reason": "Debug rendering"},
         {"platform-tag-contains": "native", "reason": "skip - needs setPitchBearing operation port"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.08}
       ]
     }
   },

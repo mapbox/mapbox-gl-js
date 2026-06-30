@@ -5,6 +5,7 @@ import {mercatorZfromAltitude} from '../../../src/geo/mercator_coordinate.js';
 import {setupHTML} from '../../util/html_generator.js';
 import {applyOperations} from '../lib/operation-handlers.js';
 import {mapboxgl} from '../lib/mapboxgl.js';
+import {matchImageThresholdRule} from '../lib/utils.js';
 import {renderTestNow} from '../lib/constants.js';
 import {transformRequest} from '../lib/transform-request.js';
 
@@ -50,15 +51,24 @@ export function parseStyle(currentFixture) {
     return style;
 }
 
-export function parseOptions(currentFixture, style) {
+export function parseOptions(currentFixture, style, platformTag) {
+    const defaultImageThreshold = 0.00015;
+    const testMetadata = (style.metadata && style.metadata.test) || {};
+    const {match: matchedImageThreshold, validationError: imageThresholdError} = matchImageThresholdRule(testMetadata['image-threshold'], platformTag);
+    if (imageThresholdError) {
+        console.warn(`image-threshold validation error: ${imageThresholdError}`);
+    }
+
     const options = {
         width: 512,
         height: 512,
         pixelRatio: 1,
-        allowed: 0.00015,
+        imageThreshold: matchedImageThreshold ? matchedImageThreshold.value : defaultImageThreshold,
+        imageThresholdRule: matchedImageThreshold ? matchedImageThreshold.rule : undefined,
         'diff-calculation-threshold': 0.1285,
-        ...((style.metadata && style.metadata.test) || {})
+        ...testMetadata
     };
+    delete options['image-threshold']; // handled above; don't let it leak into the options object
 
     if (import.meta.env.VITE_SPRITE_FORMAT !== 'null' && !options.spriteFormat) {
         options.spriteFormat = import.meta.env.VITE_SPRITE_FORMAT;

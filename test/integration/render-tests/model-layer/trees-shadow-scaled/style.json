@@ -4,7 +4,6 @@
     "test": {
       "width": 400,
       "height": 400,
-      "allowed": 0.0015,
       "operations": [
         ["wait"],
         [
@@ -33,6 +32,9 @@
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0015}
       ]
     }
   },

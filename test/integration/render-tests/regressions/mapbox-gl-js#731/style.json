@@ -2,9 +2,12 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.0005,
+      
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0005}
       ]
     }
   },

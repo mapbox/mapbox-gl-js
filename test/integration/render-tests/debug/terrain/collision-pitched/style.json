@@ -5,7 +5,6 @@
       "collisionDebug": true,
       "width": 500,
       "height": 500,
-      "allowed": 0.005,
       "description": "Tiles in front get elevation (TODO use exaggeration later) of >700km (defined by 1-0-0.terrain.512.png). This pushes terrain and symbols over tiles in back.",
       "operations": [
         ["sleep", 500]
@@ -13,6 +12,9 @@
       "skip-test": [
         {"platform-tag-contains": "native-macos", "reason": "Needs to be investigated and fixed"},
         {"platform-tag-contains": "native-ios-metal", "reason": "Metal rendering differences"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.005}
       ]
     }
   },

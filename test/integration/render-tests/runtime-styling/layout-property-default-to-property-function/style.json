@@ -4,7 +4,6 @@
     "test": {
       "width": 64,
       "height": 64,
-      "allowed": 0.00318,
       "operations": [
         [
           "setLayoutProperty",
@@ -18,6 +17,9 @@
         [
           "wait"
         ]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00318}
       ]
     }
   },

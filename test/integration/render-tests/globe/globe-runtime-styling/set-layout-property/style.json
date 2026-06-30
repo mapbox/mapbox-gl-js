@@ -11,6 +11,9 @@
         ["wait"],
         ["setLayoutProperty", "symbol", "icon-rotate", 10],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "native", "threshold": 0.0002}
       ]
     }
   },

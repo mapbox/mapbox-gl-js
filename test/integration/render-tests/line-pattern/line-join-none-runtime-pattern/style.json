@@ -2,13 +2,17 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.00228,
+      
       "pixelRatio": 2,
       "height": 256,
       "operations": [
         ["wait"],
         ["setPaintProperty", "line", "line-pattern", "border-dot-13"],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00228},
+        {"platform-tag-contains": "native-android", "threshold": 0.017}
       ]
     }
   },

@@ -2,10 +2,14 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.00037,
+      
       "pixelRatio": 2,
       "height": 64,
-      "width": 64
+      "width": 64,
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00037},
+        {"platform-tag-contains": "metal", "threshold": 0.0004}
+      ]
     }
   },
   "camera": {"camera-projection": "orthographic"},

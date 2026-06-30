@@ -4,10 +4,12 @@
     "test": {
       "debug": true,
       "height": 256,
-      "allowed": 0.02975,
       "skip-test": [
         {"platform-tag-contains": "web-macos-safari", "reason": "Debug visualizations"},
         {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/15510"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.02975}
       ]
     }
   },

@@ -2,13 +2,17 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.0005,
+      
       "mapMode": "tile",
       "debug": true,
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Mapbox-gl-js does not support tile-mode"},
         {"platform-tag-contains": "native-linux", "reason": "https://github.com/mapbox/mapbox-gl-native-internal/issues/523"},
         {"platform-tag-contains": "swiftshader", "reason": "https://github.com/mapbox/mapbox-gl-native-internal/issues/523"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0005},
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.006}
       ]
     }
   },

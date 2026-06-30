@@ -25,8 +25,10 @@
                     "wait"
                 ]
             ],
-            "allowed": 0.00051,
-            "spriteFormat": "raster"
+            "spriteFormat": "raster",
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.00051}
+            ]
         }
     },
     "center": [

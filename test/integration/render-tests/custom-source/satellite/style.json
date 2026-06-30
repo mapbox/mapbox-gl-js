@@ -4,7 +4,6 @@
     "test": {
       "debug": true,
       "height": 256,
-      "allowed": 0.02975,
       "operations": [
         [
           "addCustomSource",
@@ -28,6 +27,9 @@
       "skip-test": [
         {"platform-tag-contains": "web-macos-safari", "reason": "Inconsistent debug rendering"},
         {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.02975}
       ]
     }
   },

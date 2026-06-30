@@ -4,10 +4,12 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0011,
       "skip-test": [
         {"platform-tag-contains": "web-macos-safari", "reason": "Globe during transition is slightly offset. Subtle enough to not be a problem, but diff is high."},
         {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0011}
       ]
     }
   },

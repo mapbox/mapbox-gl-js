@@ -3,7 +3,6 @@
   "metadata": {
     "test": {
       "height": 512,
-      "allowed": 0.008,
       "operations": [
         ["wait"],
         ["setPaintProperty", "extrusion", "fill-extrusion-ambient-occlusion-intensity", 0.001],
@@ -12,6 +11,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "native-macos", "reason": "Difference in pattern depending on GPU"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.008}
       ]
     }
   },

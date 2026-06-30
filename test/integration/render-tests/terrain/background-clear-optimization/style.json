@@ -2,13 +2,17 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.00033,
+      
       "height": 256,
       "width": 256,
       "operations": [
         [
           "wait", 100
         ]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00033},
+        {"platform-tag-contains": "swiftshader", "threshold": 0.0006}
       ]
     }
   },

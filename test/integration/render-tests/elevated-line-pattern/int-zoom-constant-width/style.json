@@ -2,12 +2,16 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.00355,
+      
       "pixelRatio": 2,
       "height": 256,
       "skip-test": [
         {"platform-tag-contains": "native-android", "reason": "To be fixed https://mapbox.atlassian.net/browse/MAPS3D-1544"},
         {"platform-tag-contains": "native-ios", "reason": "To be fixed https://mapbox.atlassian.net/browse/MAPS3D-1544"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00355},
+        {"platform-tag-contains": "native-android", "threshold": 0.025}
       ]
     }
   },

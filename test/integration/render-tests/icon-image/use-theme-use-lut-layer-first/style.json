@@ -2,10 +2,13 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.0012,
+      
       "height": 64,
       "width": 64,
-      "pixelRatio": 2
+      "pixelRatio": 2,
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0012}
+      ]
     }
   },
   "color-theme": {

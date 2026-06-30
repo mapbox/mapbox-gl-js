@@ -5,7 +5,10 @@
         "collisionDebug": true,
         "height": 264,
         "width": 400,
-        "allowed": 0.00062
+        "image-threshold": [
+          {"platform-tag-contains": "", "threshold": 0.00062},
+          {"platform-tag-contains": "native", "threshold": 0.004}
+        ]
       }
     },
     "center": [-120.30344797631889, 38.11726797649675],

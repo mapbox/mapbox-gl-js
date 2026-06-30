@@ -2,11 +2,14 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.001,
+      
       "pixelRatio": 2,
       "height": 64,
       "width": 128,
-      "_comment": "Verifies that appearance conditions accept compound expressions that were previously blocked by the validator: 'all' (feature 1 → bakery icon), 'has' (feature 2 → rotated icon), 'any'+'id' (feature 3 → small icon). Without the fix each of these operators would be rejected as 'not an allowed parameter', causing the style to fail to load."
+      "_comment": "Verifies that appearance conditions accept compound expressions that were previously blocked by the validator: 'all' (feature 1 → bakery icon), 'has' (feature 2 → rotated icon), 'any'+'id' (feature 3 → small icon). Without the fix each of these operators would be rejected as 'not an allowed parameter', causing the style to fail to load.",
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001}
+      ]
     }
   },
   "sources": {

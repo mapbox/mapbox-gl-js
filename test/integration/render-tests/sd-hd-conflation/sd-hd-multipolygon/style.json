@@ -5,7 +5,6 @@
     "test": {
       "width": 1024,
       "height": 768,
-      "allowed": 0.001,
       "operations": [
         [
           "wait"
@@ -17,7 +16,10 @@
           "wait"
         ]
       ],
-      "spriteFormat": "raster"
+      "spriteFormat": "raster",
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001}
+      ]
     }
   },
   "center": [

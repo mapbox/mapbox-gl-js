@@ -4,9 +4,11 @@
     "test": {
       "width": 512,
       "height": 768,
-      "allowed": 0.008,
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.008}
       ]
     }
   },

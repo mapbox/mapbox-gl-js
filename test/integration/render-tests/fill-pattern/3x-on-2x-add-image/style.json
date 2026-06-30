@@ -4,7 +4,6 @@
     "test": {
       "width": 64,
       "height": 64,
-      "allowed": 0.001,
       "pixelRatio": 2,
       "operations": [
         [
@@ -72,6 +71,9 @@
         [
           "wait"
         ]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001}
       ]
     }
   },

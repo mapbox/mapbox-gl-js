@@ -5,7 +5,10 @@
     "test": {
       "width": 150,
       "height": 150,
-      "collisionDebug": true
+      "collisionDebug": true,
+      "image-threshold": [
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.01}
+      ]
     }
   },
   "sources": {

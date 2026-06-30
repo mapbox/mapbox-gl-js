@@ -4,11 +4,14 @@
     "test": {
       "width": 200,
       "height": 150,
-      "allowed":  0.00025,
       "skip-test": [
         {"platform-tag-contains": "web-macos-chrome", "reason": "Bug: missing icons. https://github.com/mapbox/mapbox-gl-js/issues/12409"},
         {"platform-tag-contains": "web-windows-chrome", "reason": "Bug: missing icons. https://github.com/mapbox/mapbox-gl-js/issues/12409"},
         {"platform-tag-contains": "native-android", "reason": "Temporarily fails as android test app does not derefence symbolinks in sprites folder."}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00025},
+        {"platform-tag-contains": "native", "threshold": 0.0015}
       ]
     }
   },

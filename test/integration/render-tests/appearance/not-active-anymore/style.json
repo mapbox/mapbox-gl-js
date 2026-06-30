@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.00074,
+      
       "pixelRatio": 2,
       "height": 64,
       "width": 64,
@@ -12,7 +12,10 @@
             ["wait"],
             ["setZoom", 10],
             ["wait"]
-        ]
+        ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00074}
+      ]
     }
   },
   "camera": {"camera-projection": "orthographic"},

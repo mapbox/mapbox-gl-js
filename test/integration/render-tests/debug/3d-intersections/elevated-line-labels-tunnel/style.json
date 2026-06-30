@@ -8,10 +8,12 @@
                 ["wait"],
                 ["waitFrameReady", 30]
             ],
-            "allowed": 0.00025,
             "spriteFormat": "raster",
             "ignore-metrics": [
                 {"platform-tag-contains": "native", "reason": "Flaky"}
+            ],
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.00025}
             ]
         }
     },

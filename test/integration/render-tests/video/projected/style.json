@@ -4,13 +4,15 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0005,
       "operations": [
         ["setProjection", "albers"],
         ["wait"]
       ],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "skip - https://github.com/mapbox/mapbox-gl-native/issues/601"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0005}
       ]
     }
   },

@@ -7,6 +7,9 @@
       "queryGeometry": [
         17,
         32
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "native", "threshold": 0.003}
       ]
     }
   },

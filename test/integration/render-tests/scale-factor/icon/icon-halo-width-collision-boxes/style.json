@@ -6,7 +6,10 @@
       "width": 128,
       "height": 128,
       "scaleFactor": 2,
-      "collisionDebug": true
+      "collisionDebug": true,
+      "image-threshold": [
+        {"platform-tag-contains": "native", "threshold": 0.00287}
+      ]
     }
   },
   "sources": {

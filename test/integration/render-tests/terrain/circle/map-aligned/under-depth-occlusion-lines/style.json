@@ -4,9 +4,11 @@
     "test": {
       "height": 100,
       "width": 200,
-      "allowed": 0.0008,
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky terrain network metrics"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0008}
       ]
     }
   },

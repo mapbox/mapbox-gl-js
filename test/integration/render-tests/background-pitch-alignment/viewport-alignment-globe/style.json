@@ -4,13 +4,15 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0006,
       "operations": [
         ["setProjection", "globe"],
         ["wait"]
       ],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "skip - To be ported https://mapbox.atlassian.net/browse/MAPSNAT-2397"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0006}
       ]
     }
   },

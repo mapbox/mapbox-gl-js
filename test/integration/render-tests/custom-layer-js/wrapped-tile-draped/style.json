@@ -4,7 +4,6 @@
     "test": {
       "width": 1024,
       "height": 256,
-      "allowed": 0.0012,
       "operations": [
         ["wait"],
         ["setStyle", {
@@ -53,6 +52,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "skip - GL JS specific"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0012}
       ]
     }
   },

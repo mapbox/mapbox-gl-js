@@ -3,10 +3,12 @@
   "metadata": {
     "test": {
       "height": 256,
-      "allowed": 0.00081,
       "operations": [
         ["setProjection", "globe"],
         [ "wait" ]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00081}
       ]
     }
   },

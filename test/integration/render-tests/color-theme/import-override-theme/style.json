@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.00085,
+      
       "height": 512,
       "width": 512,
       "operations": [
@@ -15,6 +15,10 @@
           }
         ],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00085},
+        {"platform-tag-contains": "native-android-gl-powervr", "threshold": 0.005}
       ]
     }
   },

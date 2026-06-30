@@ -2,7 +2,7 @@
   "version": 8,
    "metadata": {
     "test": {
-      "allowed": 0.0005,
+      
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Needs updated model fixtures"},
         {"platform-tag-contains": "native-android", "reason": "MAPSNAT-3819: skip to stay within Firebase timout, move to internal tests once available - covered by new LOD counterpart"},
@@ -10,6 +10,10 @@
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0005},
+        {"platform-tag-contains": "native", "threshold": 0.0006}
       ]
     }
   },

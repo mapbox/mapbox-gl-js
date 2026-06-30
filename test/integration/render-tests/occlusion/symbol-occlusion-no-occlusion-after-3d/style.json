@@ -5,12 +5,14 @@
       "pixelRatio": 2,
       "height": 512,
       "width": 512,
-      "allowed": 0.00055,
       "operations": [
         [
           "waitFrameReady",
           30
         ]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00055}
       ]
     }
   },

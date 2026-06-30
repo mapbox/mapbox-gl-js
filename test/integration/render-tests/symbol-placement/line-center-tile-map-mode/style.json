@@ -5,9 +5,12 @@
       "collisionDebug": true,
       "debug": true,
       "mapMode": "tile",
-      "allowed": 0.0002,
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Mapbox-gl-js does not support tile-mode"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0002},
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.0025}
       ]
     }
   },

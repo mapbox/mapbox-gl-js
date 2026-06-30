@@ -5,7 +5,6 @@
       "width": 64,
       "height": 32,
       "pixelRatio": 2,
-      "allowed": 0.0005,
       "operations": [
         [
           "wait"
@@ -59,6 +58,9 @@
         [
           "wait"
         ]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0005}
       ]
     }
   },

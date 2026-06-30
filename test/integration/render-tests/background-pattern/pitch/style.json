@@ -5,7 +5,10 @@
       "width": 64,
       "height": 64,
       "pixelRatio": 2,
-      "allowed": 0.0005
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0005},
+        {"platform-tag-contains": "native", "threshold": 0.0012}
+      ]
     }
   },
   "zoom": 2,

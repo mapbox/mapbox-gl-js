@@ -3,7 +3,9 @@
     "metadata": {
         "test": {
             "mapMode": "static",
-            "allowed": 0.001
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.001}
+            ]
         }
     },
     "center": [0, 0],

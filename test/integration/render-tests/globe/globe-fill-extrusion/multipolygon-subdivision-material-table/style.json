@@ -5,10 +5,12 @@
     "test": {
       "height": 512,
       "width": 512,
-      "allowed": 0.0007,
       "useMaterialTable": true,
       "operations": [
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0007}
       ]
     }
   },

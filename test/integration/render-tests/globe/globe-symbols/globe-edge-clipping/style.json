@@ -4,10 +4,12 @@
     "test": {
       "height": 512,
       "width": 512,
-      "allowed": 0.0009,
       "operations": [
         ["setProjection", "globe"],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0009}
       ]
     }
   },

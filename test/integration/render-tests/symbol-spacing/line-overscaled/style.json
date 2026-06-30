@@ -2,9 +2,14 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.00028,
+      
       "pixelRatio": 2,
-      "height": 256
+      "height": 256,
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00028},
+        {"platform-tag-contains": "native-android", "threshold": 0.00029},
+        {"platform-tag-contains": "metal", "threshold": 0.0004}
+      ]
     }
   },
   "center": [

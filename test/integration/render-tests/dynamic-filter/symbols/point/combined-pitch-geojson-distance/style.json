@@ -4,8 +4,10 @@
         "test": {
             "height": 200,
             "width": 300,
-            "allowed": 0.001,
-            "operations": [["wait"]]
+            "operations": [["wait"]],
+            "image-threshold": [
+                {"platform-tag-contains": "", "threshold": 0.001}
+            ]
         }
     },
     "center": [0, 0],

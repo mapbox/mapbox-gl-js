@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.00056,
+      
       "pixelRatio": 2,
       "fadeDuration": 1000,
       "width": 64,
@@ -27,6 +27,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/10619"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00056}
       ]
     }
   },

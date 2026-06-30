@@ -2,7 +2,7 @@
   "version": 8,
    "metadata": {
     "test": {
-      "allowed": 0.00154,
+      
       "width": 512,
       "height": 512,
       "operations": [
@@ -10,6 +10,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "web-windows-chrome", "reason": "Procedural buildings has a few differences all over the place, with no discernible cause. The appearance looks acceptable."}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00154}
       ]
     }
   },

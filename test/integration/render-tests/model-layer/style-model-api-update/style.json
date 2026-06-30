@@ -3,7 +3,6 @@
   "metadata": {
     "test": {
       "height": 512,
-      "allowed": 0.00035,
       "operations": [
         ["addModel", "tree", "/models/tree.glb"],
         ["wait"],
@@ -15,6 +14,9 @@
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00035}
       ]
     }
   },

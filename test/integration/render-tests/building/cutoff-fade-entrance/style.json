@@ -2,10 +2,14 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.000699,
+      
       "height": 256,
       "width": 256,
       "operations": [
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.000699},
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.002}
       ]
     }
   },

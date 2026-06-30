@@ -4,10 +4,13 @@
     "test": {
       "height": 512,
       "width": 512,
-      "allowed": 0.00001,
       "operations": [],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Dithering of fog is always enabled in GL-JS"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 1e-05},
+        {"platform-tag-contains": "swiftshader", "threshold": 4e-05}
       ]
     }
   },

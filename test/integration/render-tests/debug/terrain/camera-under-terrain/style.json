@@ -4,10 +4,12 @@
     "test": {
       "height": 256,
       "width": 256,
-      "allowed": 0.0006,
       "skip-test": [
         {"platform-tag-contains": "swiftshader", "reason": "skip - swiftshader debugging needed"},
         {"platform-tag-contains": "native-ios-metal", "reason": "Hillshade lighting artifacts"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0006}
       ]
     }
   },
