@@ -11,6 +11,7 @@ import {makeFQID} from '../util/fqid';
 import {isMapboxURL} from '../util/mapbox_url';
 import {resolveTileProvider, processTileJSON} from './tile_provider';
 import {HD, prepareHD} from '../../modules/hd_main';
+import {terrainEnabled} from '../style/terrain';
 import {Standard, prepareStandard} from '../../modules/standard_main';
 
 import type {ISource, SourceEvents, SourceVectorLayer} from './source';
@@ -141,6 +142,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
                 this._setTileJSON(tileJSON);
+                if (HD.updateCrossSourceElevationGate && this.map.style) HD.updateCrossSourceElevationGate(this.map.style);
                 postTurnstileEvent(tileJSON.tiles, this.map._requestManager._customAccessToken);
                 // `content` is included here to prevent a race condition where `Style#updateSources` is called
                 // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives
@@ -388,8 +390,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                     sourceLayers: painter ? painter.frcCoverageSourceLayers : ['road', 'structure'],
                 };
             })(),
-            // style.terrain is synchronous; painter.terrain lags one frame.
-            terrainEnabled: !!(this.map.style && this.map.style.terrain),
+            terrainEnabled: terrainEnabled(this.map.style, this.map.transform),
             crossSourceElevationEnabled,
             elevation: HD.buildElevationRequestParams ?
                 HD.buildElevationRequestParams(this.map, tile, crossSourceElevationActive) : null,

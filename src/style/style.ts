@@ -3991,10 +3991,6 @@ class Style extends Evented<MapEvents> {
     setTerrain(terrainOptions?: TerrainSpecification | TerrainSpecificationUpdate | null, drapeRenderMode: number = DrapeRenderMode.elevated) {
         this._checkLoaded();
 
-        // Terrain on/off must reparse HD road-markup tiles. setTerrain(null) on a draping
-        // projection re-adds draping terrain, so !!terrain stays true → no reparse (correct).
-        const hadTerrain = !!this.terrain;
-
         // Disabling
         if (!terrainOptions) {
             // This check prevents removing draping terrain not from #applyProjectionUpdate
@@ -4018,7 +4014,6 @@ class Style extends Evented<MapEvents> {
 
             this._force3DLayerUpdate();
             this._markersNeedUpdate = true;
-            if (HD.handleTerrainToggle) HD.handleTerrainToggle(this, hadTerrain);
             return;
         }
 
@@ -4087,7 +4082,6 @@ class Style extends Evented<MapEvents> {
         this.mergeTerrain();
         this.updateDrapeFirstLayers();
         this._markersNeedUpdate = true;
-        if (HD.handleTerrainToggle) HD.handleTerrainToggle(this, hadTerrain);
     }
 
     _createFog(fogOptions: FogSpecification) {

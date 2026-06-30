@@ -27,6 +27,22 @@ function mkCoverageTile(sourceFQID: string, tileId: CanonicalTileID, features: E
     return {sourceFQID, tileId, features, generation};
 }
 
+function mkMergedSourceCaches(fqids: string[]) {
+    const caches = {};
+    for (const fqid of fqids) {
+        caches[fqid] = {};
+    }
+    return caches;
+}
+
+function mkCrossSourceStyle(layers = mkCrossSourceLayers()) {
+    return {
+        _mergedLayers: layers,
+        _mergedOtherSourceCaches: mkMergedSourceCaches(['provider', 'consumer']),
+        _mergedSymbolSourceCaches: {},
+    };
+}
+
 // Line layer with hd-road-markup elevation on the 'consumer' source.
 function mkConsumerLayers() {
     return {
@@ -262,20 +278,51 @@ describe('crossSourceElevationEnabledForStyle', () => {
 
 describe('needsCrossSourceElevation', () => {
     test('same-source 3d-intersections shape → false', () => {
-        const style = {_mergedLayers: mkSameSourceLayers()};
+        const style = {
+            _mergedLayers: mkSameSourceLayers(),
+            _mergedOtherSourceCaches: mkMergedSourceCaches([]),
+        };
         expect(needsCrossSourceElevation(style)).toBe(false);
         expect(collectElevationProviderSourceFQIDs(style).size).toBe(0);
+        expect(collectElevationIngestSourceFQIDs(style)).toEqual(new Set(['hd-roads']));
     });
 
     test('Berlin import shape → true', () => {
-        const style = {_mergedLayers: mkBerlinLayers()};
+        const scope = 'hd-roads-config';
+        const providerFqid = makeFQID('hd-roads', scope);
+        const style = {
+            _mergedLayers: mkBerlinLayers(),
+            _mergedOtherSourceCaches: mkMergedSourceCaches([providerFqid]),
+        };
         expect(needsCrossSourceElevation(style)).toBe(true);
-        expect(collectElevationProviderSourceFQIDs(style)).toEqual(new Set([makeFQID('hd-roads', 'hd-roads-config')]));
-        expect(collectElevationIngestSourceFQIDs(style)).toEqual(new Set([makeFQID('hd-roads', 'hd-roads-config')]));
+        expect(collectElevationProviderSourceFQIDs(style)).toEqual(new Set([providerFqid]));
+        expect(collectElevationIngestSourceFQIDs(style)).toEqual(new Set([providerFqid]));
     });
 
     test('hd-roads consumer + unrelated streets vector source → false', () => {
-        const style = {_mergedLayers: mkFalsePositiveLayers()};
+        const style = {
+            _mergedLayers: mkFalsePositiveLayers(),
+            _mergedOtherSourceCaches: mkMergedSourceCaches(['streets']),
+        };
+        expect(needsCrossSourceElevation(style)).toBe(false);
+    });
+
+    test('same-source → gate false, source in ingest set (worker parses own MVT)', () => {
+        const style = {
+            _mergedLayers: mkSameSourceLayers(),
+            _mergedOtherSourceCaches: mkMergedSourceCaches(['hd-roads']),
+        };
+        expect(needsCrossSourceElevation(style)).toBe(false);
+        expect(collectElevationIngestSourceFQIDs(style)).toEqual(new Set(['hd-roads']));
+    });
+
+    test('provider source with no styled hd_road_* layers → not detected', () => {
+        const providerFqid = makeFQID('elevation-provider', '');
+        const style = {
+            _mergedLayers: mkConsumerLayers(),
+            _mergedOtherSourceCaches: mkMergedSourceCaches([providerFqid]),
+        };
+        expect(collectElevationProviderSourceFQIDs(style)).toEqual(new Set());
         expect(needsCrossSourceElevation(style)).toBe(false);
     });
 });
@@ -335,6 +382,8 @@ describe('setupAndUpdateElevationCoverage', () => {
         const painter = {elevationCoverageSnapshot: {stale: true}};
         const style = {
             _mergedLayers: mkSameSourceLayers(),
+            _mergedOtherSourceCaches: mkMergedSourceCaches([]),
+            _mergedSymbolSourceCaches: {},
             mergeSources,
             forEachFragmentStyle: vi.fn(),
             map: {painter},
@@ -343,7 +392,10 @@ describe('setupAndUpdateElevationCoverage', () => {
         setupAndUpdateElevationCoverage(style);
 
         expect(mergeSources).not.toHaveBeenCalled();
-        expect(style._hdElevation).toBeUndefined();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(style._hdElevation._needsCrossSourceElevation).toBeFalsy();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(style._hdElevation._ingestFQIDs.size).toBe(0);
         expect(painter.elevationCoverageSnapshot).toBe(null);
     });
 
@@ -372,11 +424,35 @@ describe('setupAndUpdateElevationCoverage', () => {
         expect(providerCache.used).toBe(false);
     });
 
+    test('deactivation resets _terrainActiveLast so reactivation reparses consumers', () => {
+        const providerCache = {used: false, _tiles: {}, _sourceLoaded: true};
+        const state = mkCrossSourceState(['provider']);
+        // Was last seen with terrain inactive; deactivation must clear this so a
+        // later reactivation is treated as a first frame (prevTerrainActive undefined).
+        state._terrainActiveLast = false;
+        const style = {
+            _mergedLayers: mkSameSourceLayers(),
+            _hdElevation: state,
+            _mergedHdRoadElevationSourceCaches: {},
+            _mergedOtherSourceCaches: {provider: providerCache},
+            _mergedSymbolSourceCaches: {},
+            mergeSources: vi.fn(),
+            forEachFragmentStyle: vi.fn(),
+            map: {painter: {elevationCoverageSnapshot: {stale: true}}},
+        };
+
+        setupAndUpdateElevationCoverage(style);
+
+        expect(state._terrainActiveLast).toBe(undefined);
+    });
+
     test('deactivateCrossSourceElevation is a no-op when state is already clean', () => {
         const state = new HdElevationState();
         const clearSpy = vi.spyOn(state.manager, 'clear');
         const style = {
             _mergedLayers: mkSameSourceLayers(),
+            _mergedOtherSourceCaches: mkMergedSourceCaches([]),
+            _mergedSymbolSourceCaches: {},
             _hdElevation: state,
             map: {painter: {elevationCoverageSnapshot: null}},
         };
@@ -384,6 +460,52 @@ describe('setupAndUpdateElevationCoverage', () => {
         clearSpy.mockClear();
         setupAndUpdateElevationCoverage(style);
         expect(clearSpy).not.toHaveBeenCalled();
+    });
+
+    test('terrain becoming active (zoom-dependent flip) nulls snapshot and reparses consumers', () => {
+        const canonical = new CanonicalTileID(14, 8800, 5373);
+        const consumerTile = {tileID: {canonical}, hasDeferredElevationFeatures: false};
+        const consumerReload = vi.fn();
+        const state = new HdElevationState();
+        state._terrainActiveLast = false;
+        const painter = {elevationCoverageSnapshot: {stale: true}};
+        const style = {
+            _mergedLayers: mkConsumerLayers(),
+            _mergedOtherSourceCaches: {consumer: {_tiles: {'1': consumerTile}, _reloadTile: consumerReload}},
+            _mergedSymbolSourceCaches: {},
+            _hdElevation: state,
+            mergeSources: vi.fn(),
+            forEachFragmentStyle: vi.fn(),
+            terrain: {isZoomDependent: () => false},
+            map: {painter, transform: {zoom: 14, projection: {requiresDraping: false}}},
+        };
+
+        setupAndUpdateElevationCoverage(style);
+
+        expect(consumerReload).toHaveBeenCalledWith(1, 'reloading');
+        expect(painter.elevationCoverageSnapshot).toBe(null);
+        expect(state._terrainActiveLast).toBe(true);
+    });
+
+    test('zoom-dependent terrain flattened to 0 is treated as inactive → snapshot built', () => {
+        const providerCache = {used: false, _tiles: {}, _sourceLoaded: true};
+        const painter = {elevationCoverageSnapshot: {stale: true}};
+        const style = {
+            _mergedLayers: mkSameSourceLayers(),
+            _hdElevation: mkCrossSourceState(['provider']),
+            _mergedHdRoadElevationSourceCaches: {},
+            _mergedOtherSourceCaches: {provider: providerCache},
+            _mergedSymbolSourceCaches: {},
+            mergeSources: vi.fn(),
+            forEachFragmentStyle: vi.fn(),
+            terrain: {isZoomDependent: () => true, getExaggeration: () => 0},
+            map: {painter, transform: {zoom: 19, projection: {requiresDraping: false}}},
+        };
+
+        setupAndUpdateElevationCoverage(style);
+
+        expect(style._hdElevation._needsCrossSourceElevation).toBe(false);
+        expect(style._hdElevation._terrainActiveLast).toBe(undefined);
     });
 
     test('cross-source ingests from consumer cache without dedicated elevation cache', () => {
@@ -403,7 +525,7 @@ describe('setupAndUpdateElevationCoverage', () => {
         const style = {
             _mergedLayers: mkBerlinLayers(),
             _mergedHdRoadElevationSourceCaches: {},
-            _mergedOtherSourceCaches: {},
+            _mergedOtherSourceCaches: {[providerFqid]: {getSource: () => vectorSource}},
             _mergedSymbolSourceCaches: {},
             _hdElevation: undefined,
             _sourceCaches: {},
@@ -431,11 +553,11 @@ describe('PureProviderElevationCacheGetsUpdatedTest', () => {
         const providerCache = {used: false, _tiles: {}, _sourceLoaded: true};
         const state = mkCrossSourceState(['provider']);
         const style = {
+            ...mkCrossSourceStyle(mkConsumerLayers()),
             _hdElevation: state,
             _mergedHdRoadElevationSourceCaches: {},
             _mergedOtherSourceCaches: {provider: providerCache},
             _mergedSymbolSourceCaches: {},
-            _mergedLayers: mkConsumerLayers(),
             map: {painter: {elevationCoverageSnapshot: null}},
         };
         updateElevationCoverage(style, state);
@@ -458,13 +580,13 @@ describe('updateElevationCoverage reparse (covering tile)', () => {
         };
         const reloadSpy = vi.fn();
         const style = {
+            ...mkCrossSourceStyle(mkConsumerLayers()),
             _mergedHdRoadElevationSourceCaches: {},
             _mergedOtherSourceCaches: {
                 provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
                 consumer: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
-            _mergedLayers: mkConsumerLayers(),
             map: {painter: {elevationCoverageSnapshot: null}},
         };
 
@@ -488,13 +610,13 @@ describe('updateElevationCoverage reparse (covering tile)', () => {
         };
         const reloadSpy = vi.fn();
         const style = {
+            ...mkCrossSourceStyle(mkConsumerLayers()),
             _mergedHdRoadElevationSourceCaches: {},
             _mergedOtherSourceCaches: {
                 provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
                 consumer: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
-            _mergedLayers: mkConsumerLayers(),
             map: {painter: {elevationCoverageSnapshot: null}},
         };
 
@@ -518,13 +640,13 @@ describe('updateElevationCoverage reparse (covering tile)', () => {
         };
         const reloadSpy = vi.fn();
         const style = {
+            ...mkCrossSourceStyle(mkConsumerLayers()),
             _mergedHdRoadElevationSourceCaches: {},
             _mergedOtherSourceCaches: {
                 provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
                 consumer: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
-            _mergedLayers: mkConsumerLayers(),
             map: {painter: {elevationCoverageSnapshot: null}},
         };
         const state = mkCrossSourceState(['provider']);
@@ -551,13 +673,13 @@ describe('updateElevationCoverage reparse (covering tile)', () => {
         };
         const reloadSpy = vi.fn();
         const style = {
+            ...mkCrossSourceStyle(mkConsumerLayers()),
             _mergedHdRoadElevationSourceCaches: {},
             _mergedOtherSourceCaches: {
                 provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
                 consumer: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
-            _mergedLayers: mkConsumerLayers(),
             map: {painter: {elevationCoverageSnapshot: null}},
         };
         const state = mkCrossSourceState(['provider']);
@@ -586,13 +708,13 @@ describe('updateElevationCoverage reparse (covering tile)', () => {
         };
         const reloadSpy = vi.fn();
         const style = {
+            ...mkCrossSourceStyle(mkConsumerLayers()),
             _mergedHdRoadElevationSourceCaches: {},
             _mergedOtherSourceCaches: {
                 provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
                 terrain: {_tiles: {'1': nonConsumerTile}, _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
-            _mergedLayers: mkConsumerLayers(),
             map: {painter: {elevationCoverageSnapshot: null}},
         };
 
@@ -613,13 +735,13 @@ describe('updateElevationCoverage reparse (covering tile)', () => {
         const consumerTile = {tileID: {canonical}, hasDeferredElevationFeatures: true};
         const reloadSpy = vi.fn();
         const style = {
+            ...mkCrossSourceStyle(),
             _mergedHdRoadElevationSourceCaches: {},
             _mergedOtherSourceCaches: {
                 provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
                 consumer: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
-            _mergedLayers: mkCrossSourceLayers(),
             map: {painter: {elevationCoverageSnapshot: null}},
         };
         const state = mkCrossSourceState(['provider']);
@@ -650,13 +772,13 @@ describe('updateElevationCoverage reparse (covering tile)', () => {
         };
         const consumerTile = {tileID: {canonical}, hasDeferredElevationFeatures: false};
         const style = {
+            ...mkCrossSourceStyle(),
             _mergedHdRoadElevationSourceCaches: {},
             _mergedOtherSourceCaches: {
                 provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
                 consumer: {_tiles: {'1': consumerTile}, _reloadTile: vi.fn()},
             },
             _mergedSymbolSourceCaches: {},
-            _mergedLayers: mkCrossSourceLayers(),
             map: {painter: {elevationCoverageSnapshot: null}},
         };
         const state = mkCrossSourceState(['provider']);
@@ -688,13 +810,13 @@ describe('updateElevationCoverage under terrain', () => {
         };
         const reloadSpy = vi.fn();
         const style = {
+            ...mkCrossSourceStyle(mkConsumerLayers()),
             _mergedHdRoadElevationSourceCaches: {},
             _mergedOtherSourceCaches: {
                 provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
                 consumer: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
-            _mergedLayers: mkConsumerLayers(),
             terrain: {},
             map: {painter: {terrain: {}, elevationCoverageSnapshot: {stale: true}}},
         };
@@ -772,12 +894,12 @@ describe('reparseElevationConsumerTiles (terrain toggle)', () => {
         const consumerReload = vi.fn();
         const nonConsumerReload = vi.fn();
         const style = {
+            ...mkCrossSourceStyle(mkConsumerLayers()),
             _mergedOtherSourceCaches: {
                 consumer: {_tiles: {'1': consumerTile}, _reloadTile: consumerReload},
                 terrain: {_tiles: {'1': nonConsumerTile}, _reloadTile: nonConsumerReload},
             },
             _mergedSymbolSourceCaches: {},
-            _mergedLayers: mkConsumerLayers(),
         };
 
         reparseElevationConsumerTiles(style);
@@ -803,7 +925,6 @@ describe('HD elevation eager/lazy split (hd_main_esm)', () => {
         expect(HD.updateElevationCoverage).toBeUndefined();
         expect(HD.updateHdElevationSourceCache).toBeUndefined();
         expect(HD.updateCrossSourceElevationGate).toBeUndefined();
-        expect(HD.handleTerrainToggle).toBeUndefined();
 
         await prepareHD();
         expect(HD.loaded).toBe(true);
@@ -813,7 +934,6 @@ describe('HD elevation eager/lazy split (hd_main_esm)', () => {
         expect(typeof HD.updateElevationCoverage).toBe('function');
         expect(typeof HD.updateHdElevationSourceCache).toBe('function');
         expect(typeof HD.updateCrossSourceElevationGate).toBe('function');
-        expect(typeof HD.handleTerrainToggle).toBe('function');
     });
 
     test('prepareHD() is idempotent — second call leaves elevation exports stable', async () => {
