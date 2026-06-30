@@ -1,3 +1,25 @@
+## 3.26.0-rc.1
+
+### Breaking changes ⚠️
+
+- Remove `transition` and `interpolated` flags from the `camera-projection` style property — enum properties cannot be transitioned, so these flags were incorrect.
+
+### Features and improvements ✨
+
+- Add support for async `transformRequest`: the callback can now return a `Promise` and receives an `AbortSignal`, enabling patterns such as refreshing an auth token before each request.
+- Add `lightOverrides` to model source, allowing per-model light configuration independent of the global style light setup.
+- Expose `setWorkerUrl` for the ESM entry point.
+- Make published TypeScript declarations self-contained, fixing consumer builds that failed with `skipLibCheck: false`.
+- Improve terrain raycast accuracy for mouse events, camera fitting, and other pointer interactions.
+- Improve landmark model LOD switching with size-based distance heuristics for better rendering performance.
+
+### Bug fixes 🐞
+
+- Fix `hd-road-markup` elevated lines rendering flat with zero-exaggeration terrain.
+- Fix `viewport-y` symbol sorting causing a `Vertex buffer is not big enough for the draw call` error when a symbol bucket had multiple segments.
+- Fix multilinestrings not displaying labels correctly.
+- Fix parametric colors sometimes loading the wrong cached image.
+
 ## 3.25.0
 
 ### Breaking changes ⚠️
