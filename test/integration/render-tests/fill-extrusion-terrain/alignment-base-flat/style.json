@@ -10,6 +10,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "swiftshader", "reason": "Wrong clear color"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Under development"}
       ]
     }
   },

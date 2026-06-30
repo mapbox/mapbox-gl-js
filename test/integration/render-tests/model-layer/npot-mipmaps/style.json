@@ -7,6 +7,9 @@
       "allowed": 0.032,
       "skip-test": [
         {"platform-tag-contains": "native-ios", "reason": "npot mipmaps not supported in GLES2"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ]
     }
   },

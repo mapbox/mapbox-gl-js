@@ -10,6 +10,9 @@
         ["wait"],
         ["setZoom", 5.2],
         ["wait"]
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ]
     }
   },

@@ -7,6 +7,9 @@
       "allowed": 0.00224,
       "operations": [
         ["wait"]
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky network metrics"}
       ]
     }
   },

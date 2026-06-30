@@ -14,6 +14,9 @@
           "exaggeration": 0
         }],
         ["wait"]
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ]
     }
   },

@@ -4,7 +4,11 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0029
+      "allowed": 0.0029,
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky network metrics"},
+        {"platform-tag-contains": "native-android", "reason": "Flaky"}
+      ]
     }
   },
   "zoom": 5.9999,

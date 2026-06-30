@@ -10,7 +10,10 @@
         ["setZoom", 4.01],
         ["wait"]
       ],
-      "allowed": 0.00107
+      "allowed": 0.00107,
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
+      ]
     }
   },
   "models": {

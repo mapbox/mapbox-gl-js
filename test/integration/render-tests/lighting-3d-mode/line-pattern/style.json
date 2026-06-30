@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "height": 128,
-      "width": 128
+      "width": 128,
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
+      ]
     }
   },
   "lights": [

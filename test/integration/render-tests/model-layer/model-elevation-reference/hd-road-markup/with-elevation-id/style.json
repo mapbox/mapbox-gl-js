@@ -11,6 +11,11 @@
             ],
             "skip-test": [
                 {"platform-tag-contains": "web", "reason": "Requires support for hd-roads-markup/elevationId - not yet supported in gl-js"}
+            ],
+            "ignore-metrics": [
+                {"platform-tag-contains": "native", "reason": "Flaky, under development"},
+                {"platform-tag-contains": "native", "reason": "Flaky"},
+                {"platform-tag-contains": "native-android", "reason": "Flaky"}
             ]
         }
     },

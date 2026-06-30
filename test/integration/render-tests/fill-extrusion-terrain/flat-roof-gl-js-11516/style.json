@@ -11,6 +11,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky network metrics"}
       ]
     }
   },

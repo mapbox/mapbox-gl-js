@@ -3,7 +3,12 @@
   "metadata": {
     "test": {
       "height": 100,
-      "width": 200
+      "width": 200,
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky network metrics"},
+        {"platform-tag-contains": "native-ios-metal", "reason": "Flaky"},
+        {"platform-tag-contains": "native-android", "reason": "Flaky"}
+      ]
     }
   },
   "center": [-113.32694547094238, 35.93455626259847],

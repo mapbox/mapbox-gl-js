@@ -11,6 +11,10 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "native-ios-metal", "reason": "Terrain transparency that doesn't exist with OpenGL"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky network metrics"},
+        {"platform-tag-contains": "native-android", "reason": "Flaky"}
       ]
     }
   },

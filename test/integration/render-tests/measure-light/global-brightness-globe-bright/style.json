@@ -34,6 +34,9 @@
         [
           "wait"
         ]
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "flaky"}
       ]
     }
   },

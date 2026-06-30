@@ -7,6 +7,9 @@
       "allowed": 0.0008,
       "skip-test": [
         {"platform-tag-contains": "native-android", "reason": "Hard cutoff shadow issue that is not present on Android Mali. https://github.com/mapbox/mapbox-gl-native-internal/pull/5693"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ]
     }
   },

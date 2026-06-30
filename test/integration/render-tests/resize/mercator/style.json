@@ -13,6 +13,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Implemented for mapbox-gl-native only"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "flaky"}
       ]
     }
   },

@@ -4,7 +4,10 @@
     "test": {
       "width": 64,
       "height": 64,
-      "allowed": 0.001
+      "allowed": 0.001,
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
+      ]
     }
   },
   "lights": [

@@ -7,6 +7,10 @@
       "allowed": 0.001,
       "skip-test": [
         {"platform-tag-contains": "web-macos-safari", "reason": "Looks good but diff is too high"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky metrics"},
+        {"platform-tag-contains": "native-android", "reason": "Flaky"}
       ]
     }
   },

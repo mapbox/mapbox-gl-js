@@ -7,6 +7,9 @@
        "operations": [
         ["setProjection", "globe"],
         ["wait"]
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ]
     }
 

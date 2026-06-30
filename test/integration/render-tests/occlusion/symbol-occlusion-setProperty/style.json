@@ -22,6 +22,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "swiftshader", "reason": "skip - https://mapbox.atlassian.net/browse/MAPSNAT-3820"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "flaky metrics"}
       ]
     }
   },

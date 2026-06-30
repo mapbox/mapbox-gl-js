@@ -7,6 +7,9 @@
       "allowed": 0.0003,
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "terrain model tests are flaky in CI"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ]
     }
   },

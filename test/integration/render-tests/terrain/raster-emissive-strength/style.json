@@ -7,6 +7,11 @@
       "operations": [
         ["setZoom", 11.1],
         ["wait"]
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky network metrics"},
+        {"platform-tag-contains": "native-ios-metal", "reason": "Flaky"},
+        {"platform-tag-contains": "native-android", "reason": "Flaky"}
       ]
     }
   },

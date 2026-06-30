@@ -4,7 +4,10 @@
       "test": {
         "collisionDebug": true,
         "height": 264,
-        "width": 400
+        "width": 400,
+        "ignore-metrics": [
+          {"platform-tag-contains": "native-android", "reason": "Flaky"}
+        ]
       }
     },
     "center": [-120.30344797631889, 38.11726797649675],

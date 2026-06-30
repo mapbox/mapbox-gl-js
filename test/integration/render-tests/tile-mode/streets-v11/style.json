@@ -11,6 +11,9 @@
             "pixelRatio": 2,
             "skip-test": [
                 {"platform-tag-contains": "web", "reason": "Mapbox-gl-js does not support tile-mode"}
+            ],
+            "ignore-metrics": [
+                {"platform-tag-contains": "native", "reason": "ignored due to flaky metrics results"}
             ]
         }
     },

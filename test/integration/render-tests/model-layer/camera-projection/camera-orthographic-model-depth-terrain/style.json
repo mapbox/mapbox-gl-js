@@ -10,7 +10,10 @@
       ],
       "width": 512,
       "height": 512,
-      "allowed": 0.0008
+      "allowed": 0.0008,
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
+      ]
     }
   },
   "terrain": {

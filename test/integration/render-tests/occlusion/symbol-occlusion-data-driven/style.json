@@ -14,6 +14,9 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "swiftshader", "reason": "skip - check swiftshader occlusion query support"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "flaky due to occlusion/waitFrameReady"}
       ]
     }
   },

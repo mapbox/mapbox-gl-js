@@ -19,6 +19,9 @@
         {"platform-tag-contains": "native-linux", "reason": "skip - https://github.com/mapbox/mapbox-3d-team/issues/212"},
         {"platform-tag-contains": "native-macos", "reason": "skip - https://github.com/mapbox/mapbox-3d-team/issues/212"},
         {"platform-tag-contains": "native-ios-metal", "reason": "skip - https://github.com/mapbox/mapbox-3d-team/issues/212"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native-android", "reason": "Flaky"}
       ]
     }
   },

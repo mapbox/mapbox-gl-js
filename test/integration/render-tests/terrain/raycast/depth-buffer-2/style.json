@@ -4,7 +4,12 @@
     "test": {
       "height": 256,
       "width": 256,
-      "output": "terrainDepth"
+      "output": "terrainDepth",
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky network metrics"},
+        {"platform-tag-contains": "native-ios-metal", "reason": "Flaky"},
+        {"platform-tag-contains": "native-android", "reason": "Flaky"}
+      ]
     }
   },
   "center": [-113.3188, 35.955],

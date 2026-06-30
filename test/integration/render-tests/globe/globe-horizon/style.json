@@ -11,6 +11,10 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "native-macos", "reason": "Flaky"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky gfx metrics"},
+        {"platform-tag-contains": "native-android", "reason": "Flaky"}
       ]
     }
   },

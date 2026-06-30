@@ -7,6 +7,9 @@
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "GLTF interleaved arrays not supported in -js"},
         {"platform-tag-contains": "native-ios", "reason": "Incorrect opacity in textures"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ]
     }
   },

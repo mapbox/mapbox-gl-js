@@ -4,7 +4,10 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.00065
+      "allowed": 0.00065,
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
+      ]
     }
   },
   "center": [

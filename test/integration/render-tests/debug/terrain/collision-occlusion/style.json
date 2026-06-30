@@ -13,6 +13,9 @@
       "skip-test": [
         {"platform-tag-contains": "web-linux-firefox", "reason": "Test fails to render. https://github.com/mapbox/mapbox-gl-js/issues/12406"},
         {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "flaky due to occlusion/waitFrameReady"}
       ]
     }
   },

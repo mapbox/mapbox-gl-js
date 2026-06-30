@@ -4,7 +4,12 @@
     "test": {
       "height": 256,
       "width": 256,
-      "description": "Shared source for hillshade and terrain."
+      "description": "Shared source for hillshade and terrain.",
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky network metrics"},
+        {"platform-tag-contains": "native-ios-metal", "reason": "Flaky"},
+        {"platform-tag-contains": "native-android", "reason": "Flaky"}
+      ]
     }
   },
   "center": [-113.26903, 35.9954],

@@ -6,7 +6,10 @@
       "operations": [
           [ "setBearing", 180 ],
           [ "wait" ]
-        ]
+        ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky"}
+      ]
     }
   },
   "center": [

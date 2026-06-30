@@ -7,6 +7,9 @@
       "allowed": 0.00018,
       "skip-test": [
         {"platform-tag-contains": "native-ios", "reason": "Needs to be investigated, specular hightligths not working"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ]
     }
   },

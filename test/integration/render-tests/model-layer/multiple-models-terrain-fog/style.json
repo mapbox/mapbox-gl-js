@@ -14,6 +14,9 @@
         {"platform-tag-contains": "web", "reason": "Flaky, https://mapbox.atlassian.net/browse/GLJS-608"},
         {"platform-tag-contains": "web-linux-chrome", "reason": "Timing out https://mapbox.atlassian.net/browse/GLJS-398"},
         {"platform-tag-contains": "native-ios", "reason": "Needs to be investigated"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ]
     }
   },

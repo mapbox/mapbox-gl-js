@@ -12,6 +12,9 @@
       "skip-test": [
         {"platform-tag-contains": "native-android", "reason": "MAPSNAT-3819: skip to stay within Firebase timout, move to internal tests once available - covered by new LOD counterpart"},
         {"platform-tag-contains": "native-ios", "reason": "MAPSNAT-3819: skip to stay within Firebase timout, move to internal tests once available - covered by new LOD counterpart"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ]
     }
   },

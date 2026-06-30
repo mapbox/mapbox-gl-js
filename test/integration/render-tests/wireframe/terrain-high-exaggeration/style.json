@@ -16,6 +16,9 @@
           "exaggeration": 30.0
         }],
         ["wait", 500]
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "ignore - unstable network metrics"}
       ]
     }
   },

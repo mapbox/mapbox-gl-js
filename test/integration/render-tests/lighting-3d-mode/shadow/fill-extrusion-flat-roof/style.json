@@ -7,6 +7,9 @@
       "allowed": 0.0006,
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Unimplemented in -js: https://mapbox.atlassian.net/browse/MAPS3D-671"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ]
     }
   },

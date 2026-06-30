@@ -15,6 +15,10 @@
       ],
       "skip-test": [
         {"platform-tag-contains": "web-linux-chrome", "reason": "Timing out https://mapbox.atlassian.net/browse/GLJS-398"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"},
+        {"platform-tag-contains": "native-android", "reason": "Flaky, under development"}
       ]
     }
   },

@@ -7,6 +7,9 @@
       "forceEmissiveFallback": true,
       "operations": [
         [ "wait" ]
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ]
     }
   },

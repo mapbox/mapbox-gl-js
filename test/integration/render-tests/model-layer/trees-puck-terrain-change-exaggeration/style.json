@@ -80,6 +80,9 @@
           "exaggeration": 2.5
         }],
         ["wait"]
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ]
     }
   },

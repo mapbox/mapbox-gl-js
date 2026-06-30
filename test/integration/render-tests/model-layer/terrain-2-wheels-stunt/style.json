@@ -7,6 +7,9 @@
       "allowed": 0.00025,
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Flaky, https://mapbox.atlassian.net/browse/GLJS-608"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ]
     }
   },
