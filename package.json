@@ -152,6 +152,7 @@
     "prepublishOnly": "run-s build-all build-css build-style-spec build-dts",
     "print-release-url": "node build/print-release-url.js",
     "size": "size-limit",
+    "bundle-size-diff": "bash internal/scripts/bundle-size-diff.sh",
     "codegen": "tsx ./build/generate-style-code.ts && tsx ./build/generate-struct-arrays.ts && tsx ./build/generate-typed-style-spec.ts",
     "tsc": "tsc --build tsconfig.json",
     "publish-release": "./build/publish.ts",
