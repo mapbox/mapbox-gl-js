@@ -1,0 +1,171 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "operations": [
+        [
+          "wait"
+        ]
+      ],
+      "_comment": "Ground-elevated line over terrain at pitch 55° must remain visible."
+    }
+  },
+  "center": [
+    13.5735,
+    47.28875
+  ],
+  "zoom": 16,
+  "pitch": 55,
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 15,
+      "tileSize": 256
+    },
+    "line": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              13.5695,
+              47.284
+            ],
+            [
+              13.569833,
+              47.284396
+            ],
+            [
+              13.570167,
+              47.284792
+            ],
+            [
+              13.5705,
+              47.285187
+            ],
+            [
+              13.570833,
+              47.285583
+            ],
+            [
+              13.571167,
+              47.285979
+            ],
+            [
+              13.5715,
+              47.286375
+            ],
+            [
+              13.571833,
+              47.286771
+            ],
+            [
+              13.572167,
+              47.287167
+            ],
+            [
+              13.5725,
+              47.287562
+            ],
+            [
+              13.572833,
+              47.287958
+            ],
+            [
+              13.573167,
+              47.288354
+            ],
+            [
+              13.5735,
+              47.28875
+            ],
+            [
+              13.573833,
+              47.289146
+            ],
+            [
+              13.574167,
+              47.289542
+            ],
+            [
+              13.5745,
+              47.289938
+            ],
+            [
+              13.574833,
+              47.290333
+            ],
+            [
+              13.575167,
+              47.290729
+            ],
+            [
+              13.5755,
+              47.291125
+            ],
+            [
+              13.575833,
+              47.291521
+            ],
+            [
+              13.576167,
+              47.291917
+            ],
+            [
+              13.5765,
+              47.292313
+            ],
+            [
+              13.576833,
+              47.292708
+            ],
+            [
+              13.577167,
+              47.293104
+            ],
+            [
+              13.5775,
+              47.2935
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "rgb(233, 229, 220)"
+      }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "line",
+      "layout": {
+        "line-elevation-reference": "ground",
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 12,
+        "line-color": "rgba(0,128,255,1)",
+        "line-z-offset": 0.01,
+        "line-depth-occlusion-factor": 0.5
+      }
+    }
+  ],
+  "bearing": 0
+}
