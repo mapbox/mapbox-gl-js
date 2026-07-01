@@ -1,6 +1,8 @@
 #include "_prelude_fog.fragment.glsl"
 #include "_prelude_shadow.fragment.glsl"
 #include "_prelude_lighting.glsl"
+#include "_prelude_indicator_cutout.fragment.glsl"
+#include "_prelude_feature_cutout.fragment.glsl"
 
 const float window_depth = 0.5; // meters
 const float ao_radius = 0.2; // meters
@@ -240,7 +242,7 @@ void main() {
     {
         float ditherOpacity = cutoutGroundRoofOpacity(v_ground_roof);
         if (ditherOpacity < 1.0) {
-            int index = (int(gl_FragCoord.x) % 4) * 4 + (int(gl_FragCoord.y) % 4);
+            int index = viewport_dither_index(gl_FragCoord.xy);
             if (ditherOpacity < DITHER_THRESHOLDS[index]) {
                 discard;
             }
@@ -253,7 +255,7 @@ void main() {
 
 #ifdef RENDER_FRONT_CUTOFF
     if (v_front_cutoff_opacity < 1.0) {
-        int index = (int(gl_FragCoord.x) % 4) * 4 + (int(gl_FragCoord.y) % 4);
+        int index = viewport_dither_index(gl_FragCoord.xy);
         if (v_front_cutoff_opacity < DITHER_THRESHOLDS[index]) {
             discard;
         }

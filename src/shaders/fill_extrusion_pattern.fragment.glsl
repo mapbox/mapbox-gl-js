@@ -1,5 +1,6 @@
 #include "_prelude_fog.fragment.glsl"
 #include "_prelude_lighting.glsl"
+#include "_prelude_indicator_cutout.fragment.glsl"
 
 uniform vec2 u_texsize;
 

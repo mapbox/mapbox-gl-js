@@ -1,6 +1,7 @@
 #include "_prelude_fog.fragment.glsl"
 #include "_prelude_lighting.glsl"
 #include "_prelude_shadow.fragment.glsl"
+#include "_prelude_feature_cutout.fragment.glsl"
 
 in highp vec2 v_pos;
 

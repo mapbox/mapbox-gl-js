@@ -8,17 +8,20 @@
     uniform vec3 u_tile_br_up;
     uniform vec3 u_tile_bl_up;
     uniform float u_tile_up_scale;
-    vec3 elevationVector(vec2 pos) {
-        vec2 uv = pos / EXTENT;
-        vec3 up = normalize(mix(
-            mix(u_tile_tl_up, u_tile_tr_up, uv.xxx),
-            mix(u_tile_bl_up, u_tile_br_up, uv.xxx),
-            uv.yyy));
-        return up * u_tile_up_scale;
-    }
-#else // PROJECTION_GLOBE_VIEW
-    vec3 elevationVector(vec2 pos) { return vec3(0, 0, 1); }
 #endif // PROJECTION_GLOBE_VIEW
+
+vec3 elevationVector(vec2 pos) {
+#ifdef PROJECTION_GLOBE_VIEW
+    vec2 uv = pos / EXTENT;
+    vec3 up = normalize(mix(
+        mix(u_tile_tl_up, u_tile_tr_up, uv.xxx),
+        mix(u_tile_bl_up, u_tile_br_up, uv.xxx),
+        uv.yyy));
+    return up * u_tile_up_scale;
+#else // PROJECTION_GLOBE_VIEW
+    return vec3(0, 0, 1);
+#endif // PROJECTION_GLOBE_VIEW
+}
 
 #ifdef TERRAIN
 
@@ -79,24 +82,6 @@
         #endif // TERRAIN_DEM_FLOAT_FORMAT
     }
 
-    #ifdef TERRAIN_VERTEX_MORPHING
-        float elevation(vec2 apos) {
-            #ifdef ZERO_EXAGGERATION
-                return 0.0;
-            #endif // ZERO_EXAGGERATION
-            float nextElevation = currentElevation(apos);
-            float prevElevation = prevElevation(apos);
-            return mix(prevElevation, nextElevation, u_dem_lerp);
-        }
-    #else // TERRAIN_VERTEX_MORPHING
-        float elevation(vec2 apos) {
-            #ifdef ZERO_EXAGGERATION
-                return 0.0;
-            #endif // ZERO_EXAGGERATION
-            return currentElevation(apos);
-        }
-    #endif // TERRAIN_VERTEX_MORPHING
-
     // BEGIN: code for fill-extrusion height offseting
     // When making changes here please also update associated JS ports in src/style/style_layer/fill-extrusion-style-layer.js
     // This is so that rendering changes are reflected on CPU side for feature querying.
@@ -144,11 +129,24 @@
 
     // END: code for fill-extrusion height offseting
 
+#endif // TERRAIN
+
+float elevation(vec2 apos) {
+#ifdef TERRAIN
+    #ifdef ZERO_EXAGGERATION
+        return 0.0;
+    #endif // ZERO_EXAGGERATION
+    #ifdef TERRAIN_VERTEX_MORPHING
+        float nextElevation = currentElevation(apos);
+        float prevElevation = prevElevation(apos);
+        return mix(prevElevation, nextElevation, u_dem_lerp);
+    #else // TERRAIN_VERTEX_MORPHING
+        return currentElevation(apos);
+    #endif // TERRAIN_VERTEX_MORPHING
 #else // TERRAIN
-
-    float elevation(vec2 pos) { return 0.0; }
-
-#endif
+    return 0.0;
+#endif // TERRAIN
+}
 
 #ifdef DEPTH_OCCLUSION
 

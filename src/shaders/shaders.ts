@@ -63,6 +63,7 @@ import preludeFogVert from './_prelude_fog.vertex.glsl';
 import preludeFogFrag from './_prelude_fog.fragment.glsl';
 import preludeLighting from './_prelude_lighting.glsl';
 import preludeRasterArrayFrag from './_prelude_raster_array.glsl';
+import preludeIndicatorCutoutFrag from './_prelude_indicator_cutout.fragment.glsl';
 import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
 import globeFrag from './globe_raster.fragment.glsl';
@@ -81,11 +82,16 @@ import preludeMaterialTableVert from './_prelude_material_table.vertex.glsl';
 import type {ShaderSource} from '../render/program';
 import type {DynamicDefinesType} from '../render/program/program_uniforms';
 
-const INCLUDE_REGEX = /#include\s+"([^"]+)"/g;
+const INCLUDE_REGEX = /^#include\s+"([^"]+)"\s*\r?\n/gm;
 const PRAGMA_REGEX = /#pragma mapbox: ([\w\-]+) ([\w]+) ([\w]+) ([\w]+)/g;
 
 const IDENTIFIER_REGEX = /\b[A-Za-z_][A-Za-z0-9_]*\b/g;
 const PREPROCESSOR_KEYWORDS = new Set(['ifdef', 'ifndef', 'elif', 'if', 'defined']);
+
+// Feature cutout is gl-native only. Shared GLSL #includes this prelude, but gl-js never
+// enables FEATURE_CUTOUT, so a comment stub is enough for include resolution and define tracking.
+const preludeFeatureCutoutFrag = '// feature cutout (gl-native only)\n';
+const preludeFeatureCutoutVert = '// feature cutout (gl-native only)\n';
 
 const commonDefines: Set<DynamicDefinesType> = new Set();
 parseUsedPreprocessorDefines(preludeCommon, commonDefines);
@@ -100,7 +106,10 @@ export const includeMap: Record<string, string> = {
     '_prelude_fog.fragment.glsl': preludeFogFrag,
     '_prelude_shadow.fragment.glsl': preludeShadowFrag,
     '_prelude_lighting.glsl': preludeLighting,
-    '_prelude_raster_array.glsl': preludeRasterArrayFrag
+    '_prelude_raster_array.glsl': preludeRasterArrayFrag,
+    '_prelude_indicator_cutout.fragment.glsl': preludeIndicatorCutoutFrag,
+    '_prelude_feature_cutout.fragment.glsl': preludeFeatureCutoutFrag,
+    '_prelude_feature_cutout.vertex.glsl': preludeFeatureCutoutVert
 };
 
 // Populated during precompilation

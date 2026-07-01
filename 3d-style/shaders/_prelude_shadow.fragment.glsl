@@ -12,11 +12,29 @@ uniform vec2 u_fade_range;
 uniform mediump vec3 u_shadow_direction;
 uniform highp vec3 u_shadow_bias;
 
+// Metal/SPIRV-Cross depth-compare sampling needs Y negated when mapping light-view NDC to
+// shadow-map UV. Vulkan and GL do not define SHADOW_MAP_FLIP_Y.
+highp vec2 shadow_map_ndc_to_uv(highp vec2 ndc_xy) {
+#ifdef SHADOW_MAP_FLIP_Y
+    return ndc_xy * vec2(0.5, -0.5) + 0.5;
+#else
+    return ndc_xy * 0.5 + 0.5;
+#endif
+}
+
+highp vec3 shadow_map_ndc_to_sample_space(highp vec3 ndc) {
+#ifdef CLIP_ZERO_TO_ONE
+    return vec3(shadow_map_ndc_to_uv(ndc.xy), ndc.z);
+#else
+    return vec3(shadow_map_ndc_to_uv(ndc.xy), ndc.z * 0.5 + 0.5);
+#endif
+}
+
 float shadow_sample(sampler2DShadow shadowmap, highp vec3 pos, highp float bias) {
 #ifdef CLIP_ZERO_TO_ONE
-    highp vec3 coord = vec3(pos.xy * 0.5 + 0.5, pos.z - bias);
+    highp vec3 coord = vec3(shadow_map_ndc_to_uv(pos.xy), pos.z - bias);
 #else
-    highp vec3 coord = vec3(pos.xy * 0.5 + 0.5, pos.z * 0.5 + 0.5 - bias);
+    highp vec3 coord = vec3(shadow_map_ndc_to_uv(pos.xy), pos.z * 0.5 + 0.5 - bias);
 #endif
     return texture(shadowmap, coord);
 }
@@ -95,7 +113,7 @@ highp vec2 compute_receiver_plane_depth_bias(highp vec3 pos_dx, highp vec3 pos_d
     return biasUV;
 }
 float shadowed_light_factor_plane_bias(highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
-    highp vec3 light_view_pos0_xyz = light_view_pos0.xyz / light_view_pos0.w * 0.5 + 0.5;
+    highp vec3 light_view_pos0_xyz = shadow_map_ndc_to_sample_space(light_view_pos0.xyz / light_view_pos0.w);
     highp vec3 light_view_pos0_ddx = dFdx(light_view_pos0_xyz);
     highp vec3 light_view_pos0_ddy = dFdy(light_view_pos0_xyz);
     highp vec2 plane_depth_bias = compute_receiver_plane_depth_bias(light_view_pos0_ddx, light_view_pos0_ddy);

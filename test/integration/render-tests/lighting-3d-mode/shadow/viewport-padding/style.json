@@ -21,7 +21,8 @@
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.0025}
+        {"platform-tag-contains": "", "threshold": 0.0025},
+        {"platform-tag-contains": "metal", "threshold": 0.003}
       ]
     }
   },

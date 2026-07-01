@@ -1,6 +1,8 @@
 #include "_prelude_fog.fragment.glsl"
 #include "_prelude_lighting.glsl"
 #include "_prelude_shadow.fragment.glsl"
+#include "_prelude_indicator_cutout.fragment.glsl"
+#include "_prelude_feature_cutout.fragment.glsl"
 
 uniform lowp float u_device_pixel_ratio;
 uniform highp float u_width_scale;

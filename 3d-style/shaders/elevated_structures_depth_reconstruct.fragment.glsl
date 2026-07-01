@@ -1,3 +1,5 @@
+#include "_prelude_feature_cutout.fragment.glsl"
+
 #ifdef DEPTH_RECONSTRUCTION
 in float v_height;
 #endif

@@ -1,5 +1,5 @@
 #include "_prelude_fog.fragment.glsl"
-#include "_prelude_lighting.glsl"
+#include "_prelude_feature_cutout.fragment.glsl"
 
 uniform vec4 u_color;
 uniform float u_opacity;
@@ -16,10 +16,7 @@ void main() {
     // Here we only apply cutout when the background layer is rendered with viewport pitch alignment.
     // So we don't need to consider the depth difference between the fragment and the cutout depth, 
     // and can directly use the cutout factor from texture to modulate the color.
-    vec2 uv = gl_FragCoord.xy * u_inv_viewport_size.xy;
-#ifdef FLIP_Y
-    uv.y = 1.0 - uv.y;
-#endif
+    vec2 uv = fragcoord_to_viewport_uv(gl_FragCoord.xy, u_inv_viewport_size.xy);
     float factorTex = min(texture(u_cutout_factor_image, uv).r, 1.0);
     float cutoutFactor = (1.0 - u_feature_cutout_params.x) * factorTex;
     out_color = u_color * (1.0 - cutoutFactor);

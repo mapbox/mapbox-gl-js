@@ -1,5 +1,6 @@
 #include "_prelude_fog.vertex.glsl"
 #include "_prelude_shadow.vertex.glsl"
+#include "_prelude_feature_cutout.vertex.glsl"
 
 in vec3 a_pos_3f;
 

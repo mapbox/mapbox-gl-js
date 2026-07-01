@@ -1,4 +1,6 @@
 #include "_prelude_shadow.fragment.glsl"
+#include "_prelude_indicator_cutout.fragment.glsl"
+#include "_prelude_feature_cutout.fragment.glsl"
 
 precision highp float;
 
