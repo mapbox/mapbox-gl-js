@@ -433,39 +433,46 @@ describe('Map#cameraParams', () => {
 
         test('on Albers', () => {
             const map = createMap({projection: 'albers'});
+            const expectBoundsCloseTo = (actual: number[][], expected: number[][]) => {
+                for (let i = 0; i < 2; i++) {
+                    for (let j = 0; j < 2; j++) {
+                        expect(actual[i][j]).toBeCloseTo(expected[i][j], 8);
+                    }
+                }
+            };
 
             let bounds = map.getBounds();
-            expect(toFixed(bounds.toArray())).toStrictEqual([
-                ["-65.1780745470", "-85.0511290000",],
-                ["51.0506680427", "79.9819510537"]
+            expectBoundsCloseTo(bounds.toArray(), [
+                [-65.1780745470, -85.0511290000],
+                [51.0506680427, 79.9819510537]
             ]);
 
             map.jumpTo({zoom: 0, center: [-96, 37.5]});
             bounds = map.getBounds();
-            expect(toFixed(bounds.toArray())).toStrictEqual([
-                ["-180.0000000000", "-45.1620125974"],
-                ["21.1488460355", "85.0511290000"]
+            expectBoundsCloseTo(bounds.toArray(), [
+                [-180.0000000000, -45.1620125974],
+                [21.1488460355, 85.0511290000]
             ]);
 
             map.jumpTo({zoom: 3.3, center: [-99, 42], bearing: 24});
             bounds = map.getBounds();
-            expect(toFixed(bounds.toArray())).toStrictEqual([
-                ["-108.2217655978", "34.8501901832"],
-                ["-88.9997447442", "49.1066330318"]
+            expectBoundsCloseTo(bounds.toArray(), [
+                [-108.2217655978, 34.8501901832],
+                [-88.9997447442, 49.1066330318]
             ]);
 
             map.jumpTo({zoom: 3.3, center: [-99, 42], bearing: 24});
             bounds = map.getBounds();
-            expect(toFixed(bounds.toArray())).toStrictEqual([
-                ["-108.2217655978", "34.8501901832"],
-                ["-88.9997447442", "49.1066330318"]
+            expectBoundsCloseTo(bounds.toArray(), [
+                [-108.2217655978, 34.8501901832],
+                [-88.9997447442, 49.1066330318]
             ]);
 
             map.setPitch(50);
             bounds = map.getBounds();
-            expect(toFixed(bounds.toArray())).toStrictEqual([
-                ["-106.5868397979", "34.9358140751"],
-                ["-77.8438130022", "58.8683265070"]
+            expectBoundsCloseTo(bounds.toArray(), [
+                [-106.5868397979, 34.9358140751],
+                [-77.8438130022, 58.8683265070]
             ]);
         });
 

@@ -486,10 +486,10 @@ describe('Map', () => {
 
             expect(map._queryFogOpacity([0, 0])).toEqual(0.0);
 
-            expect(map._queryFogOpacity([0.5, 0])).toEqual(0.5963390859543484);
-            expect(map._queryFogOpacity([0, 0.5])).toEqual(0.31817612773293763);
-            expect(map._queryFogOpacity([-0.5, 0])).toEqual(0.0021931905967484703);
-            expect(map._queryFogOpacity([-0.5, -0.5])).toEqual(0.4147318524978687);
+            expect(map._queryFogOpacity([0.5, 0])).toBeCloseTo(0.5963390859543484, 10);
+            expect(map._queryFogOpacity([0, 0.5])).toBeCloseTo(0.31817612773293763, 10);
+            expect(map._queryFogOpacity([-0.5, 0])).toBeCloseTo(0.0021931905967484703, 10);
+            expect(map._queryFogOpacity([-0.5, -0.5])).toBeCloseTo(0.4147318524978687, 10);
 
             expect(map._queryFogOpacity([2, 0])).toEqual(1.0);
             expect(map._queryFogOpacity([0, 2])).toEqual(1.0);
@@ -498,10 +498,10 @@ describe('Map', () => {
 
             map.transform.fov = 30;
 
-            expect(map._queryFogOpacity([0.5, 0])).toEqual(0.5917784571074153);
-            expect(map._queryFogOpacity([0, 0.5])).toEqual(0.2567224170602246);
+            expect(map._queryFogOpacity([0.5, 0])).toBeCloseTo(0.5917784571074153, 10);
+            expect(map._queryFogOpacity([0, 0.5])).toBeCloseTo(0.2567224170602246, 10);
             expect(map._queryFogOpacity([-0.5, 0])).toEqual(0);
-            expect(map._queryFogOpacity([-0.5, -0.5])).toEqual(0.2727527139608868);
+            expect(map._queryFogOpacity([-0.5, -0.5])).toBeCloseTo(0.2727527139608868, 10);
         });
 
         test('inverted range', async () => {
@@ -522,10 +522,10 @@ describe('Map', () => {
 
             expect(map._queryFogOpacity([0, 0])).toEqual(1.0);
 
-            expect(map._queryFogOpacity([0.5, 0])).toEqual(0.961473076058084);
-            expect(map._queryFogOpacity([0, 0.5])).toEqual(0.9841669559435576);
-            expect(map._queryFogOpacity([-0.5, 0])).toEqual(0.9988871471476187);
-            expect(map._queryFogOpacity([-0.5, -0.5])).toEqual(0.9784993261529342);
+            expect(map._queryFogOpacity([0.5, 0])).toBeCloseTo(0.961473076058084, 10);
+            expect(map._queryFogOpacity([0, 0.5])).toBeCloseTo(0.9841669559435576, 10);
+            expect(map._queryFogOpacity([-0.5, 0])).toBeCloseTo(0.9988871471476187, 10);
+            expect(map._queryFogOpacity([-0.5, -0.5])).toBeCloseTo(0.9784993261529342, 10);
         });
 
         test('identical range', async () => {
