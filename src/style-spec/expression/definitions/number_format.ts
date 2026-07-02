@@ -61,13 +61,13 @@ export default class NumberFormat implements Expression {
         }
 
         let minFractionDigits = null;
-        if (options['min-fraction-digits']) {
+        if (options['min-fraction-digits'] !== undefined) {
             minFractionDigits = context.parseObjectValue(options['min-fraction-digits'], 2, 'min-fraction-digits', NumberType);
             if (!minFractionDigits) return null;
         }
 
         let maxFractionDigits = null;
-        if (options['max-fraction-digits']) {
+        if (options['max-fraction-digits'] !== undefined) {
             maxFractionDigits = context.parseObjectValue(options['max-fraction-digits'], 2, 'max-fraction-digits', NumberType);
             if (!maxFractionDigits) return null;
         }

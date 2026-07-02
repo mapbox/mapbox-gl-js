@@ -1,0 +1,28 @@
+{
+  "expression": [
+    "number-format",
+    3.7,
+    {
+      "max-fraction-digits": ["get", "max"]
+    }
+  ],
+  "inputs": [
+    [{}, {"properties": {"max": 0}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": ["4"],
+    "serialized": [
+      "number-format",
+      3.7,
+      {
+        "max-fraction-digits": ["number", ["get", "max"]]
+      }
+    ]
+  }
+}
