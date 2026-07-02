@@ -169,7 +169,7 @@ void main() {
 #endif
 
 #ifdef FEATURE_CUTOUT
-    out_color = apply_feature_cutout(out_color, gl_FragCoord, cutout_factors.x);
+    out_color = apply_feature_cutout(out_color, gl_FragCoord, cutout_factors.x, 0.0);
 #endif
 
     glFragColor = out_color;

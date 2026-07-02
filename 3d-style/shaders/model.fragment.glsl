@@ -594,7 +594,7 @@ vec4 finalColor;
     apply_feature_cutout_dither(gl_FragCoord, v_cutout_factor);
 #else
 #ifdef FEATURE_CUTOUT
-    finalColor = apply_feature_cutout(finalColor, gl_FragCoord, get_cutout_factors(gl_FragCoord).x);
+    finalColor = apply_feature_cutout(finalColor, gl_FragCoord, get_cutout_factors(gl_FragCoord).x, 0.0);
 #endif
 #endif
 
