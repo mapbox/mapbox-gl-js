@@ -1,4 +1,4 @@
-## 3.26.0-rc.1
+## 3.26.0
 
 ### Breaking changes ⚠️
 
@@ -6,9 +6,6 @@
 
 ### Features and improvements ✨
 
-- Add support for async `transformRequest`: the callback can now return a `Promise` and receives an `AbortSignal`, enabling patterns such as refreshing an auth token before each request.
-- Add `lightOverrides` to model source, allowing per-model light configuration independent of the global style light setup.
-- Expose `setWorkerUrl` for the ESM entry point.
 - Make published TypeScript declarations self-contained, fixing consumer builds that failed with `skipLibCheck: false`.
 - Improve terrain raycast accuracy for mouse events, camera fitting, and other pointer interactions.
 - Improve landmark model LOD switching with size-based distance heuristics for better rendering performance.
@@ -43,6 +40,9 @@
 - Remove all direct dependencies from `package.json` slightly improving NPM install size and time.
 - Improve anti-aliasing for lines with borders.
 - Implement automatic conflation of regular and HD road data in preparation for future Mapbox Standard updates.
+- Add support for async `transformRequest`: the callback can now return a `Promise` and receives an `AbortSignal`, enabling patterns such as refreshing an auth token before each request.
+- Add `lightOverrides` to model source, allowing per-model light configuration independent of the global style light setup.
+- Expose `setWorkerUrl` for the ESM entry point.
 
 ## Bug fixes 🐞
 
