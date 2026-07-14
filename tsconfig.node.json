@@ -40,6 +40,8 @@
     "./test/build/vite/**/*",
     "./test/build/webpack/**/*",
     "./test/build/typings/**/*",
+    "./test/build/scenarios/**/*",
+    "./test/build/browser-check.cjs",
     "./test/build/style-spec.test.js"
   ]
 }

@@ -66,8 +66,9 @@ const IGNORED_PATHS = [
     './test/integration/tiles/**/*',
     './test/integration/tilesets/**/*',
     './test/integration/lib/operation-handlers.js',
-    './test/build/vite/**/*',
-    './test/build/webpack/**/*',
+    './test/build/{vite,webpack}/**/*',
+    './test/build/scenarios/**/*',
+    './test/build/browser-check.cjs',
     './test/build/typings/**/*',
     './test/build/style-spec.test.js',
 ];

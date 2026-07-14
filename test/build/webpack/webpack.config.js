@@ -2,10 +2,11 @@
 const path = require('path');
 
 module.exports = {
+  context: __dirname,
   entry: {
     csp: './csp.js',
-    esm: './esm.js',
-    umd: './umd.js'
+    esm: '../scenarios/pmtiles-esm.js',
+    umd: '../scenarios/pmtiles-umd.js'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),

@@ -20,6 +20,9 @@
 
 let shared, worker, mapboxgl;
 
+// Use `self` to avoid mangling by downstream minifier
+if (typeof self !== 'undefined') self.__mapboxImport = (u) => import(/* webpackIgnore: true */ /* @vite-ignore */ u);
+
 function define(_, chunk) {
     if (!shared) {
         shared = chunk;
@@ -33,6 +36,7 @@ function define(_, chunk) {
         const workerBundleString =
             "self.onerror = function() { console.error('An error occurred while parsing the WebWorker bundle. This is most likely due to improper transpilation by Babel; please see https://docs.mapbox.com/mapbox-gl-js/guides/install/#transpiling'); }; " +
             "var sharedChunk = {}; " +
+            "self.__mapboxImport = (u) => import(u); " +
             "(" + shared + ")(undefined, sharedChunk); " +
             "(" + worker + ")(undefined, sharedChunk); " +
             "self.onerror = null;";

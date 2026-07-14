@@ -4,14 +4,13 @@
   "version": "0.0.0",
   "main": "index.js",
   "scripts": {
-    "prebuild": "./pretest.sh",
-    "build": "webpack --mode=development"
+    "build": "./pretest.sh && webpack --mode=development",
+    "test": "npm run build && node --test"
   },
   "devDependencies": {
     "@babel/core": "^8.0.1",
     "@babel/preset-env": "^8.0.2",
     "babel-loader": "^10.0.0",
-    "url-loader": "^4.1.1",
     "webpack": "^5.108.4",
     "webpack-cli": "^7.2.1",
     "worker-loader": "^3.0.6"

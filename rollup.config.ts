@@ -27,7 +27,8 @@ function buildType(build: string, minified: string) {
 const outputFile = buildType(BUILD, MINIFY);
 
 const bundlePreludeSource = fs.readFileSync(fileURLToPath(new URL('./rollup/bundle_prelude.js', import.meta.url)), 'utf8');
-const bundlePrelude = production ? transformSync(bundlePreludeSource, {target: browserslistToEsbuild(), minify: true}).code : bundlePreludeSource;
+// Not minified: it would strip the import() ignore comments that stop downstream bundlers rewriting the worker's import().
+const bundlePrelude = production ? transformSync(bundlePreludeSource, {target: browserslistToEsbuild()}).code : bundlePreludeSource;
 
 function preserveDynamicImport(): Plugin {
     return {
@@ -38,7 +39,7 @@ function preserveDynamicImport(): Plugin {
             return false;
         },
         renderDynamicImport() {
-            return {left: 'import(', right: ')'};
+            return {left: 'self.__mapboxImport(', right: ')'};
         }
     };
 }

@@ -4,10 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "prebuild": "./pretest.sh",
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "./pretest.sh && vite build",
+    "test": "npm run build && node --test"
   },
   "devDependencies": {
     "vite": "^8.1.4"
