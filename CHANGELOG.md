@@ -1,3 +1,24 @@
+## 3.27.0-rc.1
+
+### Features and improvements ✨
+
+- Upgrade to Typescript 7
+- Add cross-source HD roads elevation for symbols
+- Improve character rotation logic for some CJK characters in vertical text rendering mode
+
+### Bug fixes 🐞
+
+- Fix raster-array out of bounds assertion error for non-mecator projections
+- Fix error when object-property strings were used in expressions
+- Fix wrong access token used on multi-map environments
+- Fix `number-format` dropping `min/max-fraction-digits` when they were 0
+- Fix line-aligned label placement during globe-mercator transition
+- Fix crash when using style expressions with prototype-derived keys
+- Fix atlas cache returning another scope images
+- Fix `Style#{get,set,remove}FeatureState` with `{target: {layerId}}` so imported-layer targets resolve against their own fragment's sources instead of the root style's
+- Fix missing building along tile borders
+- Fix dynamic imports in UMD
+
 ## 3.26.0
 
 ### Breaking changes ⚠️
