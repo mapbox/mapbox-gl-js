@@ -163,6 +163,13 @@ describe('Elevation', () => {
         });
     });
 
+    test('mapbox-gl-js#13665: removeSource before the first render under globe projection does not throw', async () => {
+        const map = createMap({projection: 'globe'});
+        await waitFor(map, 'style.load');
+        map.addSource('repro-src', {type: 'geojson', data: {type: 'FeatureCollection', features: []}});
+        expect(() => map.removeSource('repro-src')).not.toThrowError();
+    });
+
     test('style diff=false removes dem source', async () => {
         const map = createMap();
         await waitFor(map, "style.load");
