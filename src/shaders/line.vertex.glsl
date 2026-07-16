@@ -27,10 +27,9 @@ out vec3 v_elevation_id_col;
 in float a_elevation_ground_scale;
 #endif
 
-// Includes in order: a_uv_x, a_split_index, a_line_progress
-// to reduce attribute count on older devices.
-// Only line-gradient and line-trim-offset will requires a_packed info.
-#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET) || defined(RENDER_LINE_CURVE)
+// Includes in order: a_uv_x, a_split_index, a_line_progress to reduce attribute count on older devices.
+// Only line-gradient, line-border-gradient and line-trim-offset will requires a_packed info.
+#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_BORDER_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET) || defined(RENDER_LINE_CURVE)
 in highp vec3 a_packed;
 #endif
 
@@ -88,11 +87,11 @@ uniform float u_tile_units_to_pixels;
 out vec2 v_tex;
 #endif
 
-#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
+#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_BORDER_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
 out highp vec3 v_uv;
 #endif
 
-#ifdef RENDER_LINE_GRADIENT
+#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_BORDER_GRADIENT)
 uniform float u_image_height;
 #endif
 
@@ -218,7 +217,7 @@ void main() {
 #endif
 
     highp float line_progress = 0.0;
-#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET) || defined(RENDER_LINE_CURVE)
+#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_BORDER_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET) || defined(RENDER_LINE_CURVE)
     line_progress = a_packed[2];
 #endif
 
@@ -444,10 +443,10 @@ void main() {
     v_gamma_scale = 1.0;
 #endif
 
-#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
+#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_BORDER_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
     highp float a_uv_x = a_packed[0];
     float a_split_index = a_packed[1];
-#ifdef RENDER_LINE_GRADIENT
+#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_BORDER_GRADIENT)
     highp float texel_height = 1.0 / u_image_height;
     highp float half_texel_height = 0.5 * texel_height;
 

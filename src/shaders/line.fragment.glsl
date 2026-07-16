@@ -31,12 +31,16 @@ in vec2 v_tex;
 in vec3 v_elevation_id_col;
 #endif
 
-#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
+#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_BORDER_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
 in highp vec3 v_uv;
 #endif
 
 #ifdef RENDER_LINE_GRADIENT
 uniform sampler2D u_gradient_image;
+#endif
+
+#ifdef RENDER_LINE_BORDER_GRADIENT
+uniform sampler2D u_border_gradient_image;
 #endif
 
 #ifdef RENDER_LINE_TRIM_OFFSET
@@ -142,7 +146,7 @@ void main() {
 
     highp vec4 out_color;
 #ifdef RENDER_LINE_GRADIENT
-    // For gradient lines, v_uv.xy are the coord specify where the texture will be simpled.
+    // For gradient lines, v_uv.xy are the coord specify where the texture will be sampled.
     out_color = texture(u_gradient_image, v_uv.xy);
 #else
     out_color = color;
@@ -187,6 +191,11 @@ void main() {
     float edge2 = border_width * u_width_scale + ANTIALIASING;
     float alpha2 = smoothstep(edge2 - pxStep, edge2 + pxStep, delta);
     if (alpha2 < 1.) {
+#ifdef RENDER_LINE_BORDER_GRADIENT
+        // line-border-gradient takes precedence over border_color and the auto-derived border color.
+        vec4 border_gradient_color = texture(u_border_gradient_image, v_uv.xy);
+        out_color = mix(border_gradient_color * trim_alpha, out_color, alpha2);
+#else
         if (border_color.a == 0.0) {
 #ifndef RENDER_LINE_GRADIENT
             float Y = (out_color.a > 0.01) ? luminance(out_color.rgb / out_color.a) : 1.; // out_color is premultiplied
@@ -203,6 +212,7 @@ void main() {
         } else {
             out_color = mix(border_color * trim_alpha, out_color, alpha2);
         }
+#endif
         out_color *= v_width2_dilute.w;
     }
 #endif
