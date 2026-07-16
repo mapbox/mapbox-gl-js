@@ -1,0 +1,61 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "description": "Regression test for public-13702: setPaintProperty on symbol text-halo-color must render even when the style has a root-level zero-duration transition. Without the fix the halo stays white (cached constant symbol paint is never invalidated when no transition is live); with the fix it renders red.",
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "setPaintProperty",
+          "symbol",
+          "text-halo-color",
+          "red"
+        ]
+      ]
+    }
+  },
+  "transition": {
+    "duration": 0,
+    "delay": 0
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "black"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": "ABC",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-color": "black",
+        "text-halo-width": 2,
+        "text-halo-color": "white"
+      }
+    }
+  ]
+}
