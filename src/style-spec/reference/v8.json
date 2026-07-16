@@ -8954,6 +8954,48 @@
       },
       "property-type": "data-driven"
     },
+    "line-border-gradient": {
+      "type": "color",
+      "experimental": true,
+      "doc": "A gradient used to color the border of a line feature at various distances along its length. Defined using a `step` or `interpolate` expression which outputs a color for each corresponding `line-progress` input value. `line-progress` is a percentage of the line feature's total length as measured on the webmercator projected coordinate plane (a `number` between `0` and `1`). Takes precedence over `line-border-color`. Has no effect unless `line-border-width` is greater than zero. Can only be used with GeoJSON sources that specify `\"lineMetrics\": true`.",
+      "example": [
+        "step",
+        [
+          "line-progress"
+        ],
+        "blue",
+        0.5,
+        "gray"
+      ],
+      "use-theme": true,
+      "transition": false,
+      "requires": [
+        {
+          "!": "line-pattern"
+        },
+        {
+          "source": "geojson",
+          "has": {
+            "lineMetrics": true
+          }
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.28.0",
+          "android": "11.28.0",
+          "ios": "11.28.0"
+        },
+        "data-driven styling": {}
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "line-progress"
+        ]
+      },
+      "property-type": "color-ramp"
+    },
     "line-occlusion-opacity": {
       "type": "number",
       "default": 0,

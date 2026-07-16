@@ -63,6 +63,7 @@ export type PaintProps = {
     "line-emissive-strength": DataDrivenProperty<number>;
     "line-border-width": DataDrivenProperty<number>;
     "line-border-color": DataDrivenProperty<Color>;
+    "line-border-gradient": ColorRampProperty;
     "line-occlusion-opacity": DataConstantProperty<number>;
     "line-blend-mode": DataConstantProperty<"default" | "multiply" | "additive">;
     "line-blend-additive-clamp": DataConstantProperty<number>;
@@ -70,6 +71,7 @@ export type PaintProps = {
     "line-gradient-use-theme": DataDrivenProperty<string>;
     "line-trim-color-use-theme": DataDrivenProperty<string>;
     "line-border-color-use-theme": DataDrivenProperty<string>;
+    "line-border-gradient-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
@@ -92,6 +94,7 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "line-emissive-strength": new DataDrivenProperty(styleSpec["paint_line"]["line-emissive-strength"]),
     "line-border-width": new DataDrivenProperty(styleSpec["paint_line"]["line-border-width"]),
     "line-border-color": new DataDrivenProperty(styleSpec["paint_line"]["line-border-color"]),
+    "line-border-gradient": new ColorRampProperty(styleSpec["paint_line"]["line-border-gradient"]),
     "line-occlusion-opacity": new DataConstantProperty(styleSpec["paint_line"]["line-occlusion-opacity"]),
     "line-blend-mode": new DataConstantProperty(styleSpec["paint_line"]["line-blend-mode"]),
     "line-blend-additive-clamp": new DataConstantProperty(styleSpec["paint_line"]["line-blend-additive-clamp"]),
@@ -99,4 +102,5 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "line-gradient-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
     "line-trim-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
     "line-border-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
+    "line-border-gradient-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

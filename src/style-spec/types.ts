@@ -760,6 +760,11 @@ export type LineLayerSpecification = {
         "line-border-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "line-border-color-transition"?: TransitionSpecification,
         "line-border-color-use-theme"?: PropertyValueSpecification<string>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "line-border-gradient"?: ColorSpecification | ExpressionSpecification,
+        "line-border-gradient-use-theme"?: PropertyValueSpecification<string>,
         "line-occlusion-opacity"?: PropertyValueSpecification<number>,
         "line-occlusion-opacity-transition"?: TransitionSpecification,
         /**
