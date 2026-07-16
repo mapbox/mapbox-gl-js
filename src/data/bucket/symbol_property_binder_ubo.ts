@@ -170,6 +170,11 @@ export class SymbolPropertyBinderUBO {
     cachedConstantUniforms: ConstantUniformValues | null;
     cachedConstantRenderZoom: number | null;
     cachedConstantBrightness: number | null | undefined;
+    // Identity of the layer.paint object the cache was computed from. layer.recalculate() produces a
+    // fresh paint object on every Style.update() a paint/config change triggers, so an identity change
+    // means constant paint values may have changed. Guards against a stale cached color when a paint
+    // update does not come with a live transition (e.g. root transition {duration: 0}); see #13702.
+    cachedConstantPaint: object | null;
 
     // Tracks current active appearance per vtFeatureIndex (main-thread only, excluded from serialization).
     activeAppearanceByVtIndex?: Map<number, SymbolAppearance | null>;
@@ -214,6 +219,7 @@ export class SymbolPropertyBinderUBO {
         this.cachedConstantUniforms = null;
         this.cachedConstantRenderZoom = null;
         this.cachedConstantBrightness = undefined;
+        this.cachedConstantPaint = null;
 
         this.activeAppearanceByVtIndex = null;
 
@@ -1016,9 +1022,13 @@ export class SymbolPropertyBinderUBO {
 
         // Cache hit: zoom factors depend on renderZoom too, so we must also invalidate on
         // renderZoom change when any property is zoom-dependent.
+        // cachedConstantPaint guards against stale constant colors when a paint update arrives without
+        // a live transition (e.g. root transition {duration: 0}); layer.recalculate() produces a fresh
+        // layer.paint object whenever a paint/config change is applied.
         // Truthy check (not !== null) because the field may be undefined after worker→main
         // transfer (constructor is not called during deserialization, omitted fields stay undefined).
         if (this.cachedConstantUniforms &&
+                this.cachedConstantPaint === this.layer.paint &&
                 this.cachedConstantBrightness === brightness &&
                 ((!hasCameraExpr && !hasZoomDep) || this.cachedConstantRenderZoom === renderZoom)) {
             return this.cachedConstantUniforms;
@@ -1092,6 +1102,7 @@ export class SymbolPropertyBinderUBO {
         this.cachedConstantUniforms = result;
         this.cachedConstantRenderZoom = renderZoom;
         this.cachedConstantBrightness = brightness;
+        this.cachedConstantPaint = this.layer.paint;
         return result;
     }
 
@@ -1144,4 +1155,4 @@ export class SymbolPropertyBinderUBO {
 // 'layer' is omitted because SymbolStyleLayer is not serializable. It must be re-assigned on
 // the main thread before any main-thread method (getConstantUniformValues, bind, etc.) is called.
 // See draw_symbol.ts: `buffers.uboBinder.layer = layer` before drawSymbolElements().
-register(SymbolPropertyBinderUBO, 'SymbolPropertyBinderUBO', {omit: ['layer', 'cachedConstantUniforms', 'cachedConstantRenderZoom', 'cachedConstantBrightness', 'activeAppearanceByVtIndex', 'featureVertexRangesFromId', 'featureVertexRangesFromVtIndex']});
+register(SymbolPropertyBinderUBO, 'SymbolPropertyBinderUBO', {omit: ['layer', 'cachedConstantUniforms', 'cachedConstantRenderZoom', 'cachedConstantBrightness', 'cachedConstantPaint', 'activeAppearanceByVtIndex', 'featureVertexRangesFromId', 'featureVertexRangesFromVtIndex']});
