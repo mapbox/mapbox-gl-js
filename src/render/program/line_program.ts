@@ -21,6 +21,7 @@ export type LineUniformsType = {
     ['u_units_to_pixels']: Uniform2f;
     ['u_dash_image']: Uniform1i;
     ['u_gradient_image']: Uniform1i;
+    ['u_border_gradient_image']: Uniform1i;
     ['u_image_height']: Uniform1f;
     ['u_texsize']: Uniform2f;
     ['u_tile_units_to_pixels']: Uniform1f;
@@ -57,7 +58,7 @@ export type LinePatternUniformsType = {
     ['u_opacity_multiplier']: Uniform1f;
 };
 
-export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'LINE_JOIN_NONE' | 'ELEVATED' | 'ELEVATED_ROADS' | 'VARIABLE_LINE_WIDTH' | 'VARIABLE_LINE_EMISSIVE_STRENGTH' | 'CROSS_SLOPE_VERTICAL' | 'CROSS_SLOPE_HORIZONTAL' | 'ELEVATION_REFERENCE_SEA' | 'ELEVATION_GROUND_SCALE' | 'LINE_PATTERN_TRANSITION' | 'USE_MRT1' | 'DUAL_SOURCE_BLENDING' | 'LINE_BLEND_MULTIPLY' | 'LINE_BLEND_ADDITIVE' | 'DEBUG_ELEVATION_ID';
+export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_BORDER_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'LINE_JOIN_NONE' | 'ELEVATED' | 'ELEVATED_ROADS' | 'VARIABLE_LINE_WIDTH' | 'VARIABLE_LINE_EMISSIVE_STRENGTH' | 'CROSS_SLOPE_VERTICAL' | 'CROSS_SLOPE_HORIZONTAL' | 'ELEVATION_REFERENCE_SEA' | 'ELEVATION_GROUND_SCALE' | 'LINE_PATTERN_TRANSITION' | 'USE_MRT1' | 'DUAL_SOURCE_BLENDING' | 'LINE_BLEND_MULTIPLY' | 'LINE_BLEND_ADDITIVE' | 'DEBUG_ELEVATION_ID';
 
 const lineUniforms = (context: Context): LineUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
@@ -68,6 +69,7 @@ const lineUniforms = (context: Context): LineUniformsType => ({
     'u_units_to_pixels': new Uniform2f(context),
     'u_dash_image': new Uniform1i(context),
     'u_gradient_image': new Uniform1i(context),
+    'u_border_gradient_image': new Uniform1i(context),
     'u_image_height': new Uniform1f(context),
     'u_texsize': new Uniform2f(context),
     'u_tile_units_to_pixels': new Uniform1f(context),
@@ -135,6 +137,7 @@ const lineUniformValues = (
         ],
         'u_dash_image': 0,
         'u_gradient_image': 1,
+        'u_border_gradient_image': 2,
         'u_image_height': imageHeight,
         'u_texsize': hasDash(layer) && tile.lineAtlasTexture ? tile.lineAtlasTexture.size : [0, 0],
         'u_tile_units_to_pixels': calculateTileRatio(tile, painter.transform),
@@ -223,6 +226,7 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
 
     const hasBorder = layer.paint.get('line-border-width').constantOr(1.0) !== 0.0;
     if (hasBorder) values.push('RENDER_LINE_BORDER');
+    if (hasBorder && layer.paint.get('line-border-gradient')) values.push('RENDER_LINE_BORDER_GRADIENT');
 
     const hasJoinNone = layer.layout.get('line-join').constantOr('miter') === 'none';
 

@@ -96,6 +96,8 @@ class LineStyleLayer extends StyleLayer {
 
     gradientVersion: number;
     stepInterpolant: boolean;
+    borderGradientVersion: number;
+    borderStepInterpolant: boolean;
 
     hasElevatedBuckets: boolean;
     hasNonElevatedBuckets: boolean;
@@ -115,6 +117,7 @@ class LineStyleLayer extends StyleLayer {
             this.layout = new PossiblyEvaluated(properties.layout);
         }
         this.gradientVersion = 0;
+        this.borderGradientVersion = 0;
         this.hasElevatedBuckets = false;
         this.hasNonElevatedBuckets = false;
         this.lineBlendFbos = null;
@@ -131,11 +134,22 @@ class LineStyleLayer extends StyleLayer {
             // The gradient texture bakes in LUT-transformed colors; toggling
             // use-theme changes the effective LUT and requires regeneration.
             this.gradientVersion = (this.gradientVersion + 1) % Number.MAX_SAFE_INTEGER;
+        } else if (name === 'line-border-gradient') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+            const expression: ZoomConstantExpression<'source'> = ((this._transitionablePaint._values['line-border-gradient'].value.expression) as any);
+            this.borderStepInterpolant = expression._styleExpression && expression._styleExpression.expression instanceof Step;
+            this.borderGradientVersion = (this.borderGradientVersion + 1) % Number.MAX_SAFE_INTEGER;
+        } else if (name === 'line-border-gradient-use-theme') {
+            this.borderGradientVersion = (this.borderGradientVersion + 1) % Number.MAX_SAFE_INTEGER;
         }
     }
 
     gradientExpression(): StylePropertyExpression {
         return this._transitionablePaint._values['line-gradient'].value.expression;
+    }
+
+    borderGradientExpression(): StylePropertyExpression {
+        return this._transitionablePaint._values['line-border-gradient'].value.expression;
     }
 
     widthExpression(): StylePropertyExpression {

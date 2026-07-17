@@ -27,6 +27,8 @@ import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type LineStyleLayer from '../style/style_layer/line_style_layer';
 import type LineBucket from '../data/bucket/line_bucket';
+import type {GradientTexture} from '../data/bucket/line_bucket';
+import type {StylePropertyExpression} from '../style-spec/expression/index';
 import type Program from './program';
 import type ProgramConfiguration from '../data/program_configuration';
 import type SegmentVector from '../data/segment';
@@ -144,6 +146,8 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
         (painter.depthOcclusion && occlusionOpacity > 0 && occlusionOpacity < 1);
 
     const gradient = layer.paint.get('line-gradient');
+    const borderGradient = layer.paint.get('line-border-width').constantOr(1.0) !== 0.0 ?
+        layer.paint.get('line-border-gradient') : null;
 
     const programId = image ? 'linePattern' : 'line';
 
@@ -307,12 +311,18 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                 linePatternUniformValues(painter, tile, layer, matrix, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd], groundShadowFactor, patternTransition) :
                 lineUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd], groundShadowFactor);
 
-            if (gradient) {
-                const layerGradient = bucket.gradients[layer.id];
+            const updateAndBindGradientTexture = (
+                layerGradient: GradientTexture,
+                gradientVersion: number,
+                stepInterpolant: boolean,
+                expression: StylePropertyExpression,
+                ignoreLut: boolean,
+                textureUnit: number
+            ) => {
                 let gradientTexture = layerGradient.texture;
-                if (layer.gradientVersion !== layerGradient.version) {
+                if (gradientVersion !== layerGradient.version) {
                     let textureResolution = 256;
-                    if (layer.stepInterpolant) {
+                    if (stepInterpolant) {
                         const sourceMaxZoom = sourceCache.getSource().maxzoom;
                         const potentialOverzoom = coord.canonical.z === sourceMaxZoom ?
                             Math.ceil(1 << (painter.transform.maxZoom - coord.canonical.z)) : 1;
@@ -323,9 +333,8 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                         const maxTextureCoverage = lineLength * maxTilePixelSize * potentialOverzoom;
                         textureResolution = clamp(nextPowerOfTwo(maxTextureCoverage), 256, context.maxTextureSize);
                     }
-                    const ignoreLut = layer.paint.get('line-gradient-use-theme').constantOr('default') === 'none';
                     layerGradient.gradient = renderColorRamp({
-                        expression: layer.gradientExpression(),
+                        expression,
                         evaluationKey: 'lineProgress',
                         resolution: textureResolution,
                         image: layerGradient.gradient || undefined,
@@ -337,11 +346,26 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                     } else {
                         layerGradient.texture = new Texture(context, layerGradient.gradient, gl.RGBA8);
                     }
-                    layerGradient.version = layer.gradientVersion;
+                    layerGradient.version = gradientVersion;
                     gradientTexture = layerGradient.texture;
                 }
-                context.activeTexture.set(gl.TEXTURE1);
-                gradientTexture.bind(layer.stepInterpolant ? gl.NEAREST : gl.LINEAR, gl.CLAMP_TO_EDGE);
+                context.activeTexture.set(textureUnit);
+                gradientTexture.bind(stepInterpolant ? gl.NEAREST : gl.LINEAR, gl.CLAMP_TO_EDGE);
+            };
+
+            if (gradient) {
+                updateAndBindGradientTexture(
+                    bucket.gradients[layer.id], layer.gradientVersion, layer.stepInterpolant,
+                    layer.gradientExpression(),
+                    layer.paint.get('line-gradient-use-theme').constantOr('default') === 'none',
+                    gl.TEXTURE1);
+            }
+            if (borderGradient) {
+                updateAndBindGradientTexture(
+                    bucket.borderGradients[layer.id], layer.borderGradientVersion, layer.borderStepInterpolant,
+                    layer.borderGradientExpression(),
+                    layer.paint.get('line-border-gradient-use-theme').constantOr('default') === 'none',
+                    gl.TEXTURE2);
             }
             if (dasharray) {
                 context.activeTexture.set(gl.TEXTURE0);
