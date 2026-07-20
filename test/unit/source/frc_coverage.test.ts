@@ -245,6 +245,21 @@ describe('FrcCoverageSnapshot', () => {
         expect(snap.getFullCoverageMask(new CanonicalTileID(14, 8796, 5373))).toBe(0b101);
     });
 
+    test('getFullCoverageMask: mixed full-tile 255 + partial path 256 → only 255', () => {
+        // Munich-style mixed tile: HD fully covers some road classes and only partly
+        // covers others — only the fully covered classes should count as full coverage.
+        const full = new FrcCoveragePolygon(255, []);
+        const path = new FrcCoveragePolygon(256, [squareRing(EXTENT - 100, EXTENT - 100, 50)]);
+        const snap = new FrcCoverageSnapshot([{
+            tileId: new CanonicalTileID(14, 8716, 5685),
+            polygons: [full, path],
+            frcMask: 511,
+        }]);
+        expect(snap.tiles[0].frcMask).toBe(511);
+        expect(path.hasGeometry()).toBe(true);
+        expect(snap.getFullCoverageMask(new CanonicalTileID(16, 34864, 22740))).toBe(255);
+    });
+
     test('getFullCoverageMask: coverage tile with frcMask=0 returns null', () => {
         const snap = new FrcCoverageSnapshot([{tileId: new CanonicalTileID(13, 4398, 2686), polygons: [], frcMask: 0}]);
         expect(snap.getFullCoverageMask(new CanonicalTileID(14, 8796, 5373))).toBeNull();

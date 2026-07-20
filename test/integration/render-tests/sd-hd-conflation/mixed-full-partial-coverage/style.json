@@ -1,0 +1,152 @@
+{
+  "_comment": "Mixed HD coverage: some road classes are fully covered and others only partly. Fully covered SD (magenta primary line + P symbols) must disappear; partly covered SD (cyan pedestrian line + E symbols) may remain only where HD does not cover it.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256,
+      "operations": [
+        ["wait"],
+        ["wait"],
+        ["wait"]
+      ],
+      "spriteFormat": "raster",
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.002}
+      ]
+    }
+  },
+  "center": [0.010986328125, -0.010986327855709422],
+  "zoom": 15.1,
+  "bearing": 0,
+  "pitch": 0,
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "sd": {
+      "type": "vector",
+      "tiles": ["local://tiles/frc-mixed/mixed-{z}-{x}-{y}.mvt"],
+      "maxzoom": 14
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "rgb(240, 240, 240)"
+      }
+    },
+    {
+      "id": "sd-primary",
+      "type": "line",
+      "source": "sd",
+      "source-layer": "road",
+      "filter": ["==", ["get", "class"], "primary"],
+      "paint": {
+        "line-color": "rgb(255, 0, 255)",
+        "line-width": 8
+      }
+    },
+    {
+      "id": "sd-pedestrian",
+      "type": "line",
+      "source": "sd",
+      "source-layer": "road",
+      "filter": ["==", ["get", "class"], "pedestrian"],
+      "paint": {
+        "line-color": "rgb(0, 180, 255)",
+        "line-width": 6
+      }
+    },
+    {
+      "id": "sd-primary-symbols",
+      "type": "symbol",
+      "source": "sd",
+      "source-layer": "road",
+      "filter": ["==", ["get", "class"], "primary"],
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 40,
+        "text-field": "P",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": 22,
+        "text-rotation-alignment": "viewport",
+        "text-keep-upright": true,
+        "text-allow-overlap": true,
+        "text-ignore-placement": true
+      },
+      "paint": {
+        "text-color": "rgb(255, 0, 255)",
+        "text-halo-color": "rgb(0, 0, 0)",
+        "text-halo-width": 1
+      }
+    },
+    {
+      "id": "sd-pedestrian-symbols",
+      "type": "symbol",
+      "source": "sd",
+      "source-layer": "road",
+      "filter": ["==", ["get", "class"], "pedestrian"],
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 40,
+        "text-field": "E",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": 22,
+        "text-rotation-alignment": "viewport",
+        "text-keep-upright": true,
+        "text-allow-overlap": true,
+        "text-ignore-placement": true
+      },
+      "paint": {
+        "text-color": "rgb(0, 140, 60)",
+        "text-halo-color": "rgb(255, 255, 255)",
+        "text-halo-width": 1
+      }
+    }
+  ],
+  "imports": [
+    {
+      "id": "hd-roads-config",
+      "url": "",
+      "config": {
+        "sdCoverageFadeRange": [14, 14],
+        "sdCoverageSourceLayers": ["(sd)road"]
+      },
+      "data": {
+        "version": 8,
+        "schema": {
+          "sdCoverageFadeRange": {
+            "default": [0, 0],
+            "type": "number",
+            "array": true
+          },
+          "sdCoverageSourceLayers": {
+            "default": ["road", "structure"],
+            "type": "string",
+            "array": true
+          }
+        },
+        "sources": {
+          "hd-roads": {
+            "type": "vector",
+            "tiles": ["local://tiles/frc-mixed/mixed-{z}-{x}-{y}.mvt"],
+            "maxzoom": 14
+          }
+        },
+        "layers": [
+          {
+            "id": "hd-coverage-helper",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_coverage",
+            "paint": {
+              "fill-color": "rgba(255, 0, 0, 1)",
+              "fill-opacity": 0
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
