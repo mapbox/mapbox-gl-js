@@ -11,7 +11,7 @@ import {isMapboxHTTPURL, hasCacheDefeatingSku} from './mapbox_url';
  * @readonly
  * @enum {string}
  */
-const ResourceType = {
+export const ResourceType = {
     Unknown: 'Unknown',
     Style: 'Style',
     Source: 'Source',
@@ -24,37 +24,39 @@ const ResourceType = {
     Model: 'Model'
 } as const;
 
-export {ResourceType};
-
 Object.freeze(ResourceType);
 
 /**
- * A `RequestParameters` object to be returned from Map.options.transformRequest callbacks.
+ * The type of resource being requested in a {@link RequestTransformFunction}.
+ *
+ * @enum {string}
+ * @property {string} Unknown An unknown resource.
+ * @property {string} Style A style resource.
+ * @property {string} Source A source resource.
+ * @property {string} Tile A tile resource.
+ * @property {string} Glyphs A glyphs resource.
+ * @property {string} SpriteImage A sprite image resource.
+ * @property {string} SpriteJSON A sprite JSON resource.
+ * @property {string} Iconset An iconset resource.
+ * @property {string} Image An image resource.
+ * @property {string} Model A model resource.
+ * @see {@link RequestTransformFunction}
+ */
+export type ResourceType = keyof typeof ResourceType;
+
+/**
+ * A `RequestParameters` object to be returned from the {@link Map} `transformRequest` option callback.
  * @typedef {Object} RequestParameters
  * @property {string} url The URL to be requested.
- * @property {Object} headers The headers to be sent with the request.
- * @property {string} method Request method `'GET' | 'POST' | 'PUT'`.
- * @property {string} body Request body.
- * @property {string} type Response body type to be returned `'string' | 'json' | 'arrayBuffer'`.
- * @property {string} credentials `'same-origin'|'include'` Use 'include' to send cookies with cross-origin requests.
- * @property {boolean} collectResourceTiming If true, Resource Timing API information will be collected for these transformed requests and returned in a resourceTiming property of relevant data events.
- * @property {string} referrerPolicy A string representing the request's referrerPolicy. For more information and possible values, see the [Referrer-Policy HTTP header page](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy).
- * @example
- * // use transformRequest to modify requests that begin with `http://myHost`
- * const map = new Map({
- *     container: 'map',
- *     style: 'mapbox://styles/mapbox/streets-v11',
- *     transformRequest: (url, resourceType) => {
- *         if (resourceType === 'Source' && url.indexOf('http://myHost') > -1) {
- *             return {
- *                 url: url.replace('http', 'https'),
- *                 headers: {'my-custom-header': true},
- *                 credentials: 'include'  // Include cookies for cross-origin requests
- *             };
- *         }
- *     }
- * });
- *
+ * @property {Object} [headers] The headers to be sent with the request.
+ * @property {string} [method='GET'] Request method, one of `'GET' | 'POST' | 'PUT'`.
+ * @property {string} [body] Request body.
+ * @property {string} [type='string'] Response body type to be returned, one of `'string' | 'json' | 'arrayBuffer'`.
+ * @property {string} [credentials] Cross-origin credentials mode, one of `'same-origin' | 'include'`. Use `'include'` to send cookies with cross-origin requests.
+ * @property {boolean} [collectResourceTiming=false] If `true`, Resource Timing API information will be collected for these transformed requests and returned in a `resourceTiming` property of relevant `data` events.
+ * @property {string} [referrerPolicy] A string representing the request's referrerPolicy. For more information and possible values, see the [Referrer-Policy HTTP header page](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy).
+ * @see {@link RequestTransformFunction}
+ * @see {@link ResourceType}
  */
 export type RequestParameters = {
     url: string;
@@ -66,6 +68,53 @@ export type RequestParameters = {
     collectResourceTiming?: boolean;
     referrerPolicy?: ReferrerPolicy;
 };
+
+/**
+ * A callback run before the Map makes a request for an external URL, used to rewrite the URL, attach headers, or set the credentials property for cross-origin requests.
+ * The callback may return a {@link RequestParameters} object synchronously, or a `Promise` that resolves to one when the parameters need to be computed asynchronously — useful when each request needs a credential that has to be fetched at runtime, such as a [temporary access token](https://docs.mapbox.com/api/accounts/tokens/#create-a-temporary-token).
+ *
+ * @callback RequestTransformFunction
+ * @param {string} url The URL to be requested.
+ * @param {ResourceType} [resourceType] The type of resource being requested.
+ * @param {Object} [options] Options including an `AbortSignal` that will be aborted if the request is cancelled.
+ * @param {AbortSignal} [options.signal] An `AbortSignal` that will be aborted if the request is cancelled. Pass this to any async work (e.g. a `fetch` call) inside the callback so that the work is cancelled together with the request.
+ * @returns {RequestParameters | Promise<RequestParameters>} The modified request parameters, or a `Promise` that resolves to them.
+ *
+ * @example
+ * const map = new mapboxgl.Map({
+ *     container: 'map',
+ *     style: 'mapbox://styles/mapbox/standard',
+ *     transformRequest: (url, resourceType) => {
+ *         // Use `transformRequest` to modify requests that begin with `http://myHost`.
+ *         if (resourceType === 'Source' && url.startsWith('http://myHost')) {
+ *             return {
+ *                 url: url.replace('http', 'https'),
+ *                 headers: {'my-custom-header': true},
+ *                 credentials: 'include'
+ *             };
+ *         }
+ *     }
+ * });
+ *
+ * @example
+ * let tokenCache;
+ * const map = new mapboxgl.Map({
+ *     container: 'map',
+ *     style: 'mapbox://styles/mapbox/standard',
+ *     transformRequest: async (url, resourceType, {signal}) => {
+ *         if (!tokenCache || Date.now() > new Date(tokenCache.expires).getTime()) {
+ *             const response = await fetch('https://example.com/token', {signal});
+ *             tokenCache = await response.json(); // {token, expires}
+ *         }
+ *         return {url, headers: {Authorization: `Bearer ${tokenCache.token}`}};
+ *     }
+ * });
+ *
+ * @see {@link RequestParameters}
+ * @see {@link ResourceType}
+ * @see {@link Map}
+ */
+export type RequestTransformFunction = (url: string, resourceType?: ResourceType, options?: {signal?: AbortSignal}) => RequestParameters | Promise<RequestParameters>;
 
 export type ResponseCallback<T> = (
     error?: Error | DOMException | AJAXError | null,

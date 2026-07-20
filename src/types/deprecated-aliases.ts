@@ -2,7 +2,7 @@ import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {MapOptions} from '../ui/map';
 import type {FeatureSelector} from '../style/style';
 import type {ErrorEvent} from '../util/evented';
-import type {RequestTransformFunction} from '../util/mapbox';
+import type {RequestTransformFunction} from '../util/ajax';
 import type {MapEvent, MapMouseEvent, MapTouchEvent} from '../ui/events';
 import type {
     Source,

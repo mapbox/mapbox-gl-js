@@ -10,7 +10,7 @@ import config from '../../../src/util/config';
 import type Tile from '../../../src/source/tile';
 import type Dispatcher from '../../../src/util/dispatcher';
 import type {Map as MapboxMap} from '../../../src/ui/map';
-import type {RequestTransformFunction} from '../../../src/util/mapbox';
+import type {RequestTransformFunction} from '../../../src/util/ajax';
 import type {RasterDEMSourceSpecification} from '../../../src/style-spec/types';
 
 function createSource(options: Partial<RasterDEMSourceSpecification>, transformCallback?: RequestTransformFunction) {

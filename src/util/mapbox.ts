@@ -21,7 +21,7 @@ import {uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode
 import {postData, getData} from './ajax';
 import {getLivePerformanceMetrics} from '../util/live_performance';
 
-import type {ResourceType as ResourceTypeEnum, RequestParameters} from './ajax';
+import type {ResourceType, RequestParameters, RequestTransformFunction} from './ajax';
 import type {LivePerformanceData} from '../util/live_performance';
 import type {TileJSON} from '../types/tilejson';
 import type {Map as MapboxMap} from "../ui/map";
@@ -34,9 +34,6 @@ const TILE_V4_PREFIX_RE = /^.+\/v4\//;
 const EXTENSION_RE = /\.[\w]+$/;
 const TILE_PATH_RE = /^(\/v4\/|\/(raster|rasterarrays)\/v1\/)/;
 const ACCESS_TOKEN_PARAM_RE = /^access_token=(.*)$/;
-
-export type ResourceType = keyof typeof ResourceTypeEnum;
-export type RequestTransformFunction = (url: string, resourceType?: ResourceType, options?: {signal?: AbortSignal}) => RequestParameters | Promise<RequestParameters>;
 
 type UrlObject = {
     protocol: string;
