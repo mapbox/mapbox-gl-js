@@ -1,5 +1,5 @@
 import {test, expect, describe} from '../../util/vitest';
-import {SymbolPropertiesUBO, HEADER_DATA_DRIVEN_MASK, HEADER_ZOOM_DEPENDENT_MASK, HEADER_BLOCK_SIZE_VEC4, HEADER_OFFSETS} from '../../../src/data/bucket/symbol_properties_ubo';
+import {SymbolPropertiesUBO, HEADER_DATA_DRIVEN_MASK, HEADER_DZR_MASK, HEADER_BLOCK_SIZE_VEC4, HEADER_OFFSETS} from '../../../src/data/bucket/symbol_properties_ubo';
 import {SymbolPropertyBinderUBO} from '../../../src/data/bucket/symbol_property_binder_ubo';
 import {SymbolBuffers} from '../../../src/data/bucket/symbol_bucket';
 import {ProgramConfigurationSet} from '../../../src/data/program_configuration';
@@ -13,22 +13,22 @@ import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {SymbolLayerSpecification} from '../../../src/style-spec/types';
 
 describe('SymbolPropertiesUBO', () => {
-    // Build a 12-dword header array (3 uvec4) from named fields, matching updateHeader's layout.
-    function makeHeader(dataDrivenMask: number, dataDrivenBlockSizeVec4: number, offsets: number[] = [], zoomDependentMask: number = 0): Uint32Array {
+    // Build a 16-dword header array (4 uvec4) from named fields, matching updateHeader's layout.
+    function makeHeader(dataDrivenMask: number, dataDrivenBlockSizeVec4: number, offsets: number[] = [], dzrMask: number = 0): Uint32Array {
         const header = new Uint32Array(SymbolPropertiesUBO.HEADER_DWORDS);
         header[HEADER_DATA_DRIVEN_MASK] = dataDrivenMask;
-        header[HEADER_ZOOM_DEPENDENT_MASK] = zoomDependentMask;
+        header[HEADER_DZR_MASK] = dzrMask;
         header[HEADER_BLOCK_SIZE_VEC4] = dataDrivenBlockSizeVec4;
         for (let i = 0; i < offsets.length; i++) header[HEADER_OFFSETS + i] = offsets[i];
         return header;
     }
 
     test('constructor stores the header at the documented dword slots', () => {
-        // Layout (3 uvec4s = 12 dwords): [0]=dataDrivenMask, [1]=zoomDependentMask,
-        // [2]=dataDrivenBlockSizeVec4, [3..11]=offsets[0..8].
+        // Layout (4 uvec4s = 16 dwords): [0]=dataDrivenMask, [1]=dzrMask,
+        // [2]=dataDrivenBlockSizeVec4, [3..11]=offsets[0..8], [12..15]=shared color zoom ranges.
         const ubo = new SymbolPropertiesUBO(null, 0, 4096, makeHeader(0, 0));
         expect(ubo.headerData[HEADER_DATA_DRIVEN_MASK]).toEqual(0);
-        expect(ubo.headerData[HEADER_ZOOM_DEPENDENT_MASK]).toEqual(0);
+        expect(ubo.headerData[HEADER_DZR_MASK]).toEqual(0);
         expect(ubo.headerData[HEADER_BLOCK_SIZE_VEC4]).toEqual(0);
         expect(ubo.headerData[HEADER_OFFSETS + 0]).toEqual(0); // offsets[0] = fill_color
         expect(ubo.headerData[HEADER_OFFSETS + 8]).toEqual(0); // offsets[8] = translate
@@ -95,8 +95,8 @@ describe('SymbolPropertiesUBO', () => {
 
     test('headerData array has correct size', () => {
         const ubo = new SymbolPropertiesUBO(null, 0, 4096, makeHeader(0, 0));
-        // 3 uvec4s = 12 uint32s
-        expect(ubo.headerData.length).toEqual(12);
+        // 4 uvec4s = 16 uint32s
+        expect(ubo.headerData.length).toEqual(16);
     });
 
     test('destroy cleans up resources', () => {
@@ -184,20 +184,51 @@ describe('SymbolPropertyBinderUBO', () => {
             expect(binder.header[HEADER_BLOCK_SIZE_VEC4]).toBeGreaterThan(0);
         });
 
-        test('data-driven colors are vec4-aligned in data-driven block', () => {
-            // When both colors are data-driven their offsets must be multiples of 4 (vec4 boundary).
+        test('non-zoom-dependent colors and scalars each take a single vec4 slot', () => {
+            // These colors are plain ['get', ...] expressions — data-driven but not zoom-dependent
+            // (Independent), so they take 1 vec4 each; their zoom range comes from the header
+            // instead of a second per-feature slot.
             const layer = createTestLayer({
                 'text-color': ['get', 'fill_color'],
                 'text-halo-color': ['get', 'halo_color'],
+                'text-opacity': ['get', 'opacity'],
             });
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
 
-            // fill_color: first in block → offset 0 (vec4-aligned)
+            // fill_color: first in block → offset 0
             expect(binder.header[HEADER_OFFSETS + 0]).toEqual(0);
-            expect(binder.header[HEADER_OFFSETS + 0] % 4).toEqual(0);
-            // halo_color: after 4-dword fill_color → offset 4 (vec4-aligned)
-            expect(binder.header[HEADER_OFFSETS + 1]).toEqual(4);
-            expect(binder.header[HEADER_OFFSETS + 1] % 4).toEqual(0);
+            // halo_color: after fill_color's 1-vec4 slot → offset 1
+            expect(binder.header[HEADER_OFFSETS + 1]).toEqual(1);
+            // opacity: after halo_color's 1-vec4 slot → offset 2
+            expect(binder.header[HEADER_OFFSETS + 2]).toEqual(2);
+            // Total block size: 1 (fill_color) + 1 (halo_color) + 1 (opacity) = 3 vec4.
+            expect(binder.header[HEADER_BLOCK_SIZE_VEC4]).toEqual(3);
+        });
+
+        test('a color with appearances that disagree on zoom stops (DifferentZoomRanges) takes 2 vec4', () => {
+            // text-color itself is a plain 'get' (data-driven, not zoom-dependent at the layer
+            // level); two appearances override it with composite expressions whose first zoom
+            // stop falls at a different point within (floorZoom, floorZoom+1), so their computed
+            // [zm, zM] disagree — that's what flips this property to DifferentZoomRanges.
+            const layer = createTestLayer({
+                'text-color': ['get', 'fill_color'],
+                'text-opacity': ['get', 'opacity'],
+            });
+            const appearanceA = {
+                hasPaintProperty: (name: string) => name === 'text-color',
+                getUnevaluatedPaintProperty: () => ({expression: {kind: 'composite', zoomStops: [10.3, 15], interpolationType: {name: 'linear'}}})
+            };
+            const appearanceB = {
+                hasPaintProperty: (name: string) => name === 'text-color',
+                getUnevaluatedPaintProperty: () => ({expression: {kind: 'composite', zoomStops: [10.7, 15], interpolationType: {name: 'linear'}}})
+            };
+            layer.getAppearances = () => [appearanceA, appearanceB] as unknown as ReturnType<SymbolStyleLayer['getAppearances']>;
+            const binder = new SymbolPropertyBinderUBO(layer, 10.5, null, true);
+
+            // fill_color (DifferentZoomRanges): 2 vec4 → offset 0, then opacity at offset 2.
+            expect(binder.header[HEADER_OFFSETS + 0]).toEqual(0);
+            expect(binder.header[HEADER_OFFSETS + 2]).toEqual(2);
+            expect(binder.header[HEADER_BLOCK_SIZE_VEC4]).toEqual(3);
         });
     });
 

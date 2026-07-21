@@ -4,50 +4,75 @@ import {register} from '../../util/web_worker_transfer';
 import type Context from '../../gl/context';
 
 /**
- * The UBO layout header is a flat Uint32Array of 12 dwords (3 uvec4), built once per layer by
+ * The UBO layout header is a flat Uint32Array of 16 dwords (4 uvec4), built once per layer by
  * SymbolPropertyBinderUBO.updateHeader() and uploaded to the GPU verbatim (matching GL Native and
- * the shader's SymbolPropertyHeader struct). These constants name its dword slots:
+ * the shader's header UBO). These constants name its dword slots:
  *
  *   [HEADER_DATA_DRIVEN_MASK]     bitmask: 1 = property goes in the per-feature data-driven block
- *   [HEADER_ZOOM_DEPENDENT_MASK]  low 16 bits: 1 = property uses zoom interpolation (composite kind).
- *                                 high 16 bits (>> HEADER_APPEARANCE_ZOOM_STOPS_SHIFT): 1 = appearances
- *                                 override this property with differing zoom stops, so its zoom range
- *                                 [zm, zM] is stored per feature in  the data-driven block
+ *   [HEADER_DZR_MASK]             bitmask (bit i per property): 1 = this property's own block slot
+ *                                 carries a per-feature zoom range [zm, zM], rather than sharing one
+ *                                 across the layer and read from HEADER_SHARED_ZOOM — and the block
+ *                                 is 2 vec4 instead of 1. For colors this means appearances override
+ *                                 the property with differing zoom stops (DifferentZoomRanges); for
+ *                                 translate — which has no HEADER_SHARED_ZOOM slot to share — this
+ *                                 means the property is zoom-dependent at all (SameZoomRange or
+ *                                 DifferentZoomRanges). The shader reads bits 0/1 (fill_color/
+ *                                 halo_color) to pick the zoom-range source branchlessly and bit 8
+ *                                 (translate) to pick whether to mix at all; the bit doesn't
+ *                                 otherwise affect block sizing/offsets beyond the 1-vs-2 vec4
+ *                                 split above. The broader Independent/SameZoomRange/
+ *                                 DifferentZoomRanges classification each property needs on the CPU
+ *                                 lives in SymbolPropertyBinderUBO.zoomDependency, not here —
+ *                                 matching GL Native, whose header likewise carries only the DZR
+ *                                 bits the shader consumes.
  *   [HEADER_BLOCK_SIZE_VEC4]      size of the data-driven block in vec4 units (0 when no DD props)
- *   [HEADER_OFFSETS + i]          dword offset of property i within the data-driven block
+ *   [HEADER_OFFSETS + i]          vec4-unit offset of property i within the data-driven block
  *                                 (only meaningful when property i's data-driven bit is set)
+ *   [HEADER_SHARED_ZOOM + 0..3]   [fillZm, fillZM, haloZm, haloZM] (as raw float bits, see
+ *                                 floatToBits) — the shared [zm, zM] zoom range for fill/halo color
+ *                                 when NOT DifferentZoomRanges (Independent: {0,0}; SameZoomRange:
+ *                                 the one range shared by every feature). Read by the shader instead
+ *                                 of a per-feature block slot in that case.
  *
  * Property order (bit index 0-8): fill_color, halo_color, opacity, halo_width, halo_blur,
  * emissive_strength, occlusion_opacity, z_offset, translate.
+ *
+ * Every data-driven property occupies a fixed, zoom-ready slot so the shader decode is branchless
+ * and uniform for constant / zoom-interpolated / appearance-zoom-stops cases alike (one `zoomFactor`
+ * + one `mix`); non-zoom values simply duplicate min into max:
+ *   float:                                  1 vec4  [min, max, zm, zM]
+ *   translate (vec2), not zoom-dependent:   1 vec4  [tx, ty, tx, ty] (zoom range read as [0, 0])
+ *   translate (vec2), zoom-dependent:       2 vec4  [tx_min, ty_min, tx_max, ty_max],
+ *                                                    [zm, zM, pad, pad] (translate has no
+ *                                                    HEADER_SHARED_ZOOM slot, so it always carries
+ *                                                    its own zoom range when zoom-dependent)
+ *   color, Independent/SameZoomRange:       1 vec4  [packMin0, packMin1, packMax0, packMax1]
+ *                                                    (zoom range read from HEADER_SHARED_ZOOM)
+ *   color, DifferentZoomRanges:             2 vec4  [packMin0, packMin1, packMax0, packMax1],
+ *                                                    [zm, zM, pad, pad]
  */
 export const HEADER_DATA_DRIVEN_MASK = 0;
-export const HEADER_ZOOM_DEPENDENT_MASK = 1;
+export const HEADER_DZR_MASK = 1;
 export const HEADER_BLOCK_SIZE_VEC4 = 2;
 export const HEADER_OFFSETS = 3;
+// [fillZm, fillZM, haloZm, haloZM], packed as float bits — see HEADER_SHARED_ZOOM doc above.
+export const HEADER_SHARED_ZOOM = 12;
 
-// Bit shift for the appearance-zoom-stops flags packed into the high half of the HEADER_ZOOM_DEPENDENT_MASK dword.
-export const HEADER_APPEARANCE_ZOOM_STOPS_SHIFT = 16;
-
-/**
- * A packed value for writing into the UBO's data-driven properties array.
- *
- * Colors (property indices 0-1) — always non-premultiplied; the fragment shader premultiplies:
- *   non-zoom → [packed0, packed1, 0, 0]  (2 floats via packUint8ToFloat + 2 padding)
- *   zoom-dep → [packColor(min)[0], packColor(min)[1], packColor(max)[0], packColor(max)[1]]
- * Floats (property indices 2-7):
- *   non-zoom → single number
- *   zoom-dep → [min, max]
- * Vec2 (property index 8, translate):
- *   non-zoom → [tx, ty]
- *   zoom-dep → [tx_min, ty_min, tx_max, ty_max] (vec4-aligned in the data block)
- */
-export type PropertyValue = number | [number, number] | [number, number, number, number];
+// Scratch buffer for reinterpreting a float's bit pattern as a uint32 (mirrors GLSL's
+// floatBitsToUint), so shared zoom ranges can be packed into the uint32 header alongside the
+// other integer fields.
+const _floatBitsScratchF32 = new Float32Array(1);
+const _floatBitsScratchU32 = new Uint32Array(_floatBitsScratchF32.buffer);
+export function floatToBits(value: number): number {
+    _floatBitsScratchF32[0] = value;
+    return _floatBitsScratchU32[0];
+}
 
 /**
  * Manages Uniform Buffer Objects (UBOs) for symbol paint properties.
  *
  * Uses 3 separate GPU buffers per batch aligned with the GL Native UBO layout:
- *   - Header buffer  (SymbolPaintPropertiesHeaderUniform): 3 uvec4 layout descriptor
+ *   - Header buffer  (SymbolPaintPropertiesHeaderUniform): 4 uvec4 layout descriptor
  *   - Properties buffer (SymbolPaintPropertiesUniform):   per-feature data-driven blocks
  *   - Block indices buffer (SymbolPaintPropertiesIndexUniform): feature→block index mapping
  *
@@ -56,19 +81,18 @@ export type PropertyValue = number | [number, number] | [number, number, number,
  * Constant properties are NOT stored here — they are passed as u_spp_* uniforms.
  */
 export class SymbolPropertiesUBO {
-    static readonly HEADER_DWORDS = 12; // 3 uvec4s (never changes)
-    static readonly HEADER_BYTES = 48;  // HEADER_DWORDS * 4
+    static readonly HEADER_DWORDS = 16; // 4 uvec4s (never changes)
+    static readonly HEADER_BYTES = 64;  // HEADER_DWORDS * 4
 
-    // Flat evaluation buffer layout — per-property start offset in a Float32Array(EVAL_FLAT_TOTAL).
-    // fill_color[0..3], halo_color[4..7], opacity[8..9], halo_width[10..11],
-    // halo_blur[12..13], emissive_strength[14..15], occlusion_opacity[16..17],
-    // z_offset[18..19], translate[20..23]
-    // Each property also gets a 2-slot [zm, zM] zoom range starting at EVAL_FLAT_ZOOM_OFFSETS[i]
-    // ([24,25] … [40,41]); only written for appearance-zoom-stops properties.
-    // Colors and translate always use 4 slots; scalars always use 2 (second = 0 for non-zoom).
-    static readonly EVAL_FLAT_OFFSETS: readonly number[] = [0, 4, 8, 10, 12, 14, 16, 18, 20];
-    static readonly EVAL_FLAT_ZOOM_OFFSETS: readonly number[] = [24, 26, 28, 30, 32, 34, 36, 38, 40];
-    static readonly EVAL_FLAT_TOTAL = 42;
+    // Flat evaluation buffer layout — per-property start offset in a Float32Array(EVAL_FLAT_TOTAL),
+    // mirroring the data-driven block's zoom-ready slot shape exactly (see the layout doc above), so
+    // writeDataDrivenBlock/_copyFromFlat below are unconditional contiguous copies:
+    //   fill_color[0..7], halo_color[8..15]        — [value(4), zoomRange(4)] each
+    //   opacity[16..19], halo_width[20..23], halo_blur[24..27], emissive_strength[28..31],
+    //   occlusion_opacity[32..35], z_offset[36..39] — [min, max, zm, zM] each
+    //   translate[40..47]                           — [value(4), zoomRange(4)]
+    static readonly EVAL_FLAT_OFFSETS: readonly number[] = [0, 8, 16, 20, 24, 28, 32, 36, 40];
+    static readonly EVAL_FLAT_TOTAL = 48;
 
     // The block-indices buffer is a pure identity mapping (blockIndices[i] = i): dedup currently
     // happens at the vertex-attribute level (duplicate features get the same index written into the
@@ -92,7 +116,7 @@ export class SymbolPropertiesUBO {
 
     propsDwords: number;           // dword count for u_properties
     totalBytes: number;            // byte size of each of properties / block-indices buffers
-    headerData: Uint32Array;       // 12 uint32s (3 uvec4s)
+    headerData: Uint32Array;       // 16 uint32s (4 uvec4s)
     propertiesData: Float32Array;  // propsDwords floats — data-driven blocks only
     headerBuffer: WebGLBuffer | null;
     propertiesBuffer: WebGLBuffer | null;
@@ -100,8 +124,9 @@ export class SymbolPropertiesUBO {
     batchIndex: number;
     context: Context | null;
     // Dirty tracking: each flag/range marks data that needs uploading to GPU.
-    // headerDirty: the header is built once and passed in at construction, so this just
-    // triggers a single upload, then stays false.
+    // headerDirty: true after construction (triggers the first upload) and again whenever
+    // markHeaderDirty() is called — the HEADER_SHARED_ZOOM slots can change at runtime (see
+    // SymbolPropertyBinderUBO._recomputeSharedRanges), unlike the rest of the header.
     // propsDirtyMin/Max: dword range touched by writeDataDrivenBlock; -1 means clean.
     // blockIndicesDirty: the shared identity template is uploaded once per batch's GPU buffer,
     // so this clears after the first upload and stays false.
@@ -160,6 +185,15 @@ export class SymbolPropertiesUBO {
     }
 
     /**
+     * Marks the header buffer for re-upload. Call after mutating `headerData` in place post-
+     * construction (currently only HEADER_SHARED_ZOOM, refreshed by
+     * SymbolPropertyBinderUBO._recomputeSharedRanges on runtime paint-property changes).
+     */
+    markHeaderDirty(): void {
+        this._headerDirty = true;
+    }
+
+    /**
      * Write all data-driven properties for one feature from a flat evaluation buffer.
      *
      * The feature's block starts at dword offset: featureIndex * dataDrivenBlockSizeDwords.
@@ -175,11 +209,9 @@ export class SymbolPropertiesUBO {
             throw new Error(`UBO write out of bounds: feature index ${featureIndex} exceeds propertiesData capacity`);
         }
         const dataDrivenMask = h[HEADER_DATA_DRIVEN_MASK];
-        const zoomDependentMask = h[HEADER_ZOOM_DEPENDENT_MASK];
-        const appearanceZoomStopsMask = zoomDependentMask >>> HEADER_APPEARANCE_ZOOM_STOPS_SHIFT;
         for (let i = 0; i < 9; i++) {
             if ((dataDrivenMask & (1 << i)) === 0) continue;
-            this._copyFromFlat(base + h[HEADER_OFFSETS + i], i, flat, SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[i], zoomDependentMask, appearanceZoomStopsMask);
+            this._copyFromFlat(base + h[HEADER_OFFSETS + i] * 4, i, flat);
         }
         // Track dword range touched so upload() can do a partial bufferSubData.
         if (this._propsDirtyMin === -1 || base < this._propsDirtyMin) this._propsDirtyMin = base;
@@ -207,29 +239,23 @@ export class SymbolPropertiesUBO {
     }
 
     /**
-     * Copy one property's values from the flat evaluation buffer into propertiesData.
-     *
-     * Colors (propIdx < 2) and zoom-dep translate always copy 4 dwords.
-     * Non-zoom translate and zoom-dep scalars copy 2 dwords. Non-zoom scalars copy 1 dword.
-     *
-     * Appearance-zoom-stops properties additionally carry a [zm, zM] pair, written after
-     * the value data: at relative dwords +4/+5 for colors/translate (the next vec4) and +2/+3 for
-     * scalars (the third/fourth dword of the value's vec4).
+     * Copy one property's slot from the flat evaluation buffer into propertiesData. Scalars
+     * always copy 4 dwords (just the packed value). Colors and translate copy 4 dwords (just the
+     * value) unless this property's HEADER_DZR_MASK bit is set, where they copy 8 (value vec4 +
+     * [zm, zM, pad, pad]) — see the HEADER_DZR_MASK doc above. The flat buffer's layout (see
+     * EVAL_FLAT_OFFSETS) always has room for the full 8, so slicing a smaller prefix when not
+     * needed is safe.
      */
-    private _copyFromFlat(dwordOffset: number, propIdx: number, flat: Float32Array, flatOffset: number, zoomDependentMask: number, appearanceZoomStopsMask: number): void {
+    private _copyFromFlat(dwordOffset: number, propIdx: number, flat: Float32Array): void {
         const isColor = propIdx < 2;
-        const isVec2 = propIdx === 8;
-        const isZoomDep = (zoomDependentMask & (1 << propIdx)) !== 0;
-        const count = isColor || (isVec2 && isZoomDep) ? 4 : (isVec2 || isZoomDep) ? 2 : 1;
-
-        this.propertiesData.set(flat.subarray(flatOffset, flatOffset + count), dwordOffset);
-
-        if ((appearanceZoomStopsMask & (1 << propIdx)) !== 0) {
-            const zoomRel = isColor || isVec2 ? 4 : 2;
-            const zStart = SymbolPropertiesUBO.EVAL_FLAT_ZOOM_OFFSETS[propIdx];
-            this.propertiesData[dwordOffset + zoomRel] = flat[zStart];
-            this.propertiesData[dwordOffset + zoomRel + 1] = flat[zStart + 1];
+        const isTranslate = propIdx === 8;
+        let size = 4;
+        if (isColor || isTranslate) {
+            const isDzr = ((this.headerData[HEADER_DZR_MASK] >>> propIdx) & 1) !== 0;
+            size = isDzr ? 8 : 4;
         }
+        const flatOffset = SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[propIdx];
+        this.propertiesData.set(flat.subarray(flatOffset, flatOffset + size), dwordOffset);
     }
 
     /**

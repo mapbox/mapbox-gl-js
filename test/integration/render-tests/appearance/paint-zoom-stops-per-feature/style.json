@@ -1,12 +1,13 @@
 {
   "version": 8,
-  "metadata": {"test": {"height": 64, "width": 128, "allowed": 0.001}},
+  "metadata": {"test": {"height": 64, "width": 256, "allowed": 0.001}},
   "center": [0, 0],
   "zoom": 2.5,
   "sprite": "local://sprites/sprite",
   "sources": {"geojson": {"type": "geojson","data": {"type": "FeatureCollection","features": [
-    {"type": "Feature","properties": {"grp": "a", "on": 1},"geometry": {"type": "Point","coordinates": [-3, 0]}},
-    {"type": "Feature","properties": {"grp": "b", "on": 1},"geometry": {"type": "Point","coordinates": [3, 0]}}
+    {"type": "Feature","properties": {"grp": "a", "on": 1},"geometry": {"type": "Point","coordinates": [-10, 0]}},
+    {"type": "Feature","properties": {"grp": "b", "on": 1},"geometry": {"type": "Point","coordinates": [0, 0]}},
+    {"type": "Feature","properties": {"grp": "c", "on": 1},"geometry": {"type": "Point","coordinates": [10, 0]}}
   ]}}},
   "layers": [
     {"id": "background","type": "background","paint": {"background-color": "white"}},
@@ -14,8 +15,9 @@
      "layout": {"icon-image": "building-12"},
      "paint": {"icon-opacity": 1},
      "appearances": [
-       {"name": "a","condition": ["==", ["get", "grp"], "a"],"properties": {"icon-opacity": ["step", ["zoom"], 0, 2.25, ["get", "on"]]}},
-       {"name": "b","condition": ["==", ["get", "grp"], "b"],"properties": {"icon-opacity": ["step", ["zoom"], 0, 2.75, ["get", "on"]]}}
+       {"name": "a","condition": ["==", ["get", "grp"], "a"],"properties": {"icon-opacity": ["step", ["zoom"], 0, 2.25, ["get", "on"]], "icon-translate": ["step", ["zoom"], [0, 0], 2.25, [20, -20]]}},
+       {"name": "b","condition": ["==", ["get", "grp"], "b"],"properties": {"icon-opacity": ["step", ["zoom"], 0, 2.5, ["get", "on"]]}},
+       {"name": "c","condition": ["==", ["get", "grp"], "c"],"properties": {"icon-opacity": ["step", ["zoom"], 0, 2.75, ["get", "on"]]}}
      ]}
   ]
 }

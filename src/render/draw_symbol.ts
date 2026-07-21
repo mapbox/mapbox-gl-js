@@ -814,20 +814,15 @@ function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, lay
         uniformValues['u_spp_emissive_strength'] = cv.emissive_strength;
         uniformValues['u_spp_occlusion_opacity'] = cv.occlusion_opacity;
         uniformValues['u_spp_z_offset']          = cv.z_offset;
-        // Per-property precomputed zoom interpolation factor
-        const zf = cv.zoomFactors;
-        uniformValues['u_spp_fill_color_zoom_factor']        = zf[0];
-        uniformValues['u_spp_halo_color_zoom_factor']        = zf[1];
-        uniformValues['u_spp_opacity_zoom_factor']           = zf[2];
-        uniformValues['u_spp_halo_width_zoom_factor']        = zf[3];
-        uniformValues['u_spp_halo_blur_zoom_factor']         = zf[4];
-        uniformValues['u_spp_emissive_strength_zoom_factor'] = zf[5];
-        uniformValues['u_spp_occlusion_opacity_zoom_factor'] = zf[6];
-        uniformValues['u_spp_z_offset_zoom_factor']          = zf[7];
-        uniformValues['u_spp_translate_zoom_factor']         = zf[8];
-        // Fractional render zoom; drives the zoom factor for appearance-zoom-stops properties
-        // where the [zm, zM] range lives in the UBO block rather than in the shared factors above.
-        uniformValues['u_spp_zoom_fraction'] = renderZoom - Math.floor(renderZoom);
+        // Render zoom's offset from the bucket's own floor zoom (the floor captured at bucket
+        // construction, against which every stored [zm, zM] range is relative — see
+        // SymbolPropertyBinderUBO._floorZoom / _computeZoomRange). Using Math.floor(renderZoom)
+        // here instead would desync from that baked floor whenever the two floors differ (e.g. a
+        // tile whose bucket was built at zoom 10 still rendering while the camera is at zoom 9.x),
+        // and at the exact integer-zoom crossing would snap the fraction from ~0 to ~1
+        // (or vice versa) even though nothing about the underlying property changed — visible as
+        // an icon jump when crossing a floor zoom downward.
+        uniformValues['u_spp_zoom_fraction'] = renderZoom - buffers.uboBinder._floorZoom;
         // Compute translate-anchor rotation for per-feature translate (appearances).
         // When translate is data-driven (bit 8 of dataDrivenMask), u_coord_matrix has no translate
         // baked in (set to [0,0] in drawLayerSymbols). The shader applies per-feature translate
