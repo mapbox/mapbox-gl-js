@@ -3,6 +3,7 @@ import {mergeConfig, defineConfig} from 'vitest/config';
 import {playwright} from '@vitest/browser-playwright';
 import baseConfig, {isCI, chromiumBrowser} from './vitest.config.base';
 import {integrationTests, setupIntegrationTestsMiddlewares, serveDistPlugin, suiteDirs} from './vitest.config.common';
+import {agentForwardingPlugin} from './test/integration/lib/agent-forwarding';
 
 import type {BrowserConfigOptions} from 'vitest/node';
 
@@ -56,5 +57,6 @@ export default mergeConfig(baseConfig, defineConfig({
         }),
         integrationTests({suiteDirs: suiteDirs('render-tests'), includeImages: true}),
         serveDistPlugin(),
+        agentForwardingPlugin(),
     ],
 }));
