@@ -3092,6 +3092,7 @@
       "experimental": true,
       "sdk-support": {
         "basic functionality": {
+          "js": "3.7.0",
           "android": "11.9.0",
           "ios": "11.9.0"
         }
