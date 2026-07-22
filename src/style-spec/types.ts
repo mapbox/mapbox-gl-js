@@ -898,9 +898,6 @@ export type SymbolLayerSpecification = {
         "icon-color-contrast"?: number | ExpressionSpecification,
         "icon-color-brightness-min"?: number | ExpressionSpecification,
         "icon-color-brightness-max"?: number | ExpressionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "symbol-z-offset"?: DataDrivenPropertyValueSpecification<number>,
         "symbol-z-offset-transition"?: TransitionSpecification
     },

@@ -10251,7 +10251,6 @@
       "default": 0,
       "minimum": 0,
       "transition": true,
-      "experimental": true,
       "appearance": true,
       "sdk-support": {
         "basic functionality": {
