@@ -1647,6 +1647,14 @@
             }
           }
         },
+        "placement-group": {
+          "doc": "Marks a placement priority group relative to other layers, going from lower to higher priority. Symbols from groups with higher priorities will be placed first",
+          "sdk-support": {
+            "basic functionality": {}
+          },
+          "private": true,
+          "experimental": true
+        },
         "clip": {
           "doc": "Layer that removes 3D content from map.",
           "sdk-support": {
@@ -1667,7 +1675,7 @@
     },
     "source": {
       "type": "string",
-      "doc": "Name of a source description to be used for this layer. Required for all layer types except `background` and `slot`."
+      "doc": "Name of a source description to be used for this layer. Required for all layer types except `background`, `slot`, and `placement-group`."
     },
     "source-layer": {
       "type": "string",
@@ -10316,6 +10324,56 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "placement-priority": {
+      "type": "number",
+      "doc": "In-group placement priority. Higher values are placed first within the symbol's placement group.",
+      "default": 0,
+      "minimum": 0,
+      "transition": false,
+      "appearance": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "pitch",
+          "feature",
+          "feature-state",
+          "measure-light",
+          "distance-from-center"
+        ]
+      },
+      "property-type": "data-driven",
+      "sdk-support": {
+        "basic functionality": {},
+        "data-driven styling": {}
+      },
+      "private": true,
+      "experimental": true
+    },
+    "placement-group": {
+      "type": "string",
+      "doc": "Assigns this symbol layer to the specified placement-group layer, placing its symbols as if they were drawn within that group. When unset, the layer's symbols use an implicitly created placement group located at the same position as the symbol layer.",
+      "transition": false,
+      "appearance": true,
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "pitch",
+          "feature",
+          "feature-state",
+          "measure-light",
+          "distance-from-center"
+        ]
+      },
+      "property-type": "data-driven",
+      "sdk-support": {
+        "basic functionality": {},
+        "data-driven styling": {}
+      },
+      "private": true,
+      "experimental": true
     }
   },
   "paint_raster": {
