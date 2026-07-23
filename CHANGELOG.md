@@ -1,4 +1,4 @@
-## 3.27.0-rc.1
+## 3.27.0
 
 ### Features and improvements ✨
 
@@ -18,6 +18,8 @@
 - Fix `Style#{get,set,remove}FeatureState` with `{target: {layerId}}` so imported-layer targets resolve against their own fragment's sources instead of the root style's
 - Fix missing building along tile borders
 - Fix dynamic imports in UMD
+- Fix import.meta crash under modern bundlers
+- Fix `setPaintProperty` on symbol properties with a transition duration of 0
 
 ## 3.26.0
 
