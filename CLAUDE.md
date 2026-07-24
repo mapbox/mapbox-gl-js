@@ -107,7 +107,6 @@ debug/ # served by `npm start`
 - Don't use `!.` for non-null assertions (hides potential null issues)
 - Don't use `?.` or `??` operators (hides null handling, harder to debug)
 - Use `assert` for invariants
-- Object spread (`{...obj}`) is banned, use `Object.assign()` instead
 - Use `import type` for type-only imports
 - No TODO/FIXME comments in committed code
 

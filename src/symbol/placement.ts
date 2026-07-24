@@ -8,8 +8,8 @@ import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projecti
 import EXTENT from '../style-spec/data/extent';
 import {clamp} from '../util/util';
 import * as projection from './projection';
-import {getAnchorAlignment, WritingMode} from './shaping';
-import {evaluateVariableOffset, getAnchorJustification} from './symbol_layout';
+import {getAnchorAlignment, WritingMode} from './shaping_shared';
+import {evaluateVariableOffset, getAnchorJustification} from './symbol_layout_shared';
 import {evaluateSizeForZoom} from './symbol_size';
 
 import type {ReplacementSource} from '../../3d-style/source/replacement_source';
@@ -23,8 +23,8 @@ import type Tile from '../source/tile';
 import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id';
 import type {FogState} from '../style/fog_helpers';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
-import type {Orientation} from './shaping';
-import type {TextAnchor} from './symbol_layout';
+import type {Orientation} from './shaping_shared';
+import type {TextAnchor} from './symbol_layout_shared';
 import type {Feature} from '../style-spec/expression/index';
 import type {InterpolatedSize} from './symbol_size';
 import type {FilterExpression} from '../style-spec/feature_filter/index';

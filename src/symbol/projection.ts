@@ -1,7 +1,7 @@
 import Point from '@mapbox/point-geometry';
 import {mat2, mat4, vec3, vec4} from 'gl-matrix';
 import {addDynamicAttributes, updateGlobeVertexNormal} from '../data/bucket/symbol_bucket';
-import {WritingMode} from '../symbol/shaping';
+import {WritingMode} from '../symbol/shaping_shared';
 import {calculateGlobeLabelMatrix, globeToMercatorTransition} from '../geo/projection/globe_util';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
 import EXTENT from '../style-spec/data/extent';

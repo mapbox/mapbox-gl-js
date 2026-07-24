@@ -8,7 +8,7 @@ import {warnOnce} from '../util/util';
 
 import type {ImagePosition} from '../render/image_atlas';
 import type Anchor from './anchor';
-import type {PositionedIcon, Shaping} from './shaping';
+import type {PositionedIcon, Shaping} from './shaping_shared';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {Feature} from '../style-spec/expression/index';
 import type {StyleImageMap} from '../style/style_image';

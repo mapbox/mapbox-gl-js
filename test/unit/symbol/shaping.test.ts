@@ -2,12 +2,11 @@
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import * as shaping from '../../../src/symbol/shaping';
+import {WritingMode, shapeIcon, fitIconToText} from '../../../src/symbol/shaping_shared';
 import Formatted, {FormattedSection} from '../../../src/style-spec/expression/types/formatted';
 import ResolvedImage from '../../../src/style-spec/expression/types/resolved_image';
 import {ICON_PADDING, ImagePosition} from '../../../src/render/image_atlas';
 import fontstackGlyphs from '../../fixtures/fontstack-glyphs.json';
-
-const WritingMode = shaping.WritingMode;
 
 describe('shaping', () => {
     const oneEm = 24;
@@ -154,7 +153,7 @@ describe('shapeIcon', () => {
     });
 
     test('text-anchor: center', () => {
-        expect(shaping.shapeIcon(imagePosition, undefined, [0, 0], 'center')).toEqual({
+        expect(shapeIcon(imagePosition, undefined, [0, 0], 'center')).toEqual({
             top: -10,
             bottom: 10,
             left: -10,
@@ -163,7 +162,7 @@ describe('shapeIcon', () => {
             imageSecondary: undefined
         });
 
-        expect(shaping.shapeIcon(imagePosition, undefined, [4, 7], 'center')).toEqual({
+        expect(shapeIcon(imagePosition, undefined, [4, 7], 'center')).toEqual({
             top: -3,
             bottom: 17,
             left: -6,
@@ -174,7 +173,7 @@ describe('shapeIcon', () => {
     });
 
     test('text-anchor: left', () => {
-        expect(shaping.shapeIcon(imagePosition, undefined, [0, 0], 'left')).toEqual({
+        expect(shapeIcon(imagePosition, undefined, [0, 0], 'left')).toEqual({
             top: -10,
             bottom: 10,
             left: 0,
@@ -183,7 +182,7 @@ describe('shapeIcon', () => {
             imageSecondary: undefined
         });
 
-        expect(shaping.shapeIcon(imagePosition, undefined, [4, 7], 'left')).toEqual({
+        expect(shapeIcon(imagePosition, undefined, [4, 7], 'left')).toEqual({
             top: -3,
             bottom: 17,
             left: 4,
@@ -194,7 +193,7 @@ describe('shapeIcon', () => {
     });
 
     test('text-anchor: bottom-right', () => {
-        expect(shaping.shapeIcon(imagePosition, undefined, [0, 0], 'bottom-right')).toEqual({
+        expect(shapeIcon(imagePosition, undefined, [0, 0], 'bottom-right')).toEqual({
             top: -20,
             bottom: 0,
             left: -20,
@@ -203,7 +202,7 @@ describe('shapeIcon', () => {
             imageSecondary: undefined
         });
 
-        expect(shaping.shapeIcon(imagePosition, undefined, [4, 7], 'bottom-right')).toEqual({
+        expect(shapeIcon(imagePosition, undefined, [4, 7], 'bottom-right')).toEqual({
             top: -13,
             bottom: 7,
             left: -16,
@@ -239,7 +238,7 @@ describe('fitIconToText', () => {
 
     test('icon-text-fit: width', () => {
         expect(
-            shaping.fitIconToText(shapedIcon, shapedText, 'width', [0, 0, 0, 0], [0, 0], 24 / glyphSize)
+            fitIconToText(shapedIcon, shapedText, 'width', [0, 0, 0, 0], [0, 0], 24 / glyphSize)
         ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
@@ -251,7 +250,7 @@ describe('fitIconToText', () => {
         });
 
         expect(
-            shaping.fitIconToText(shapedIcon, shapedText, 'width', [0, 0, 0, 0], [3, 7], 24 / glyphSize)
+            fitIconToText(shapedIcon, shapedText, 'width', [0, 0, 0, 0], [3, 7], 24 / glyphSize)
         ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
@@ -263,7 +262,7 @@ describe('fitIconToText', () => {
         });
 
         expect(
-            shaping.fitIconToText(shapedIcon, shapedText, 'width', [0, 0, 0, 0], [0, 0], 12 / glyphSize)
+            fitIconToText(shapedIcon, shapedText, 'width', [0, 0, 0, 0], [0, 0], 12 / glyphSize)
         ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
@@ -276,7 +275,7 @@ describe('fitIconToText', () => {
 
         // Ignores padding for top/bottom, since the icon is only stretched to the text's width but not height
         expect(
-            shaping.fitIconToText(shapedIcon, shapedText, 'width', [5, 10, 5, 10], [0, 0], 12 / glyphSize)
+            fitIconToText(shapedIcon, shapedText, 'width', [5, 10, 5, 10], [0, 0], 12 / glyphSize)
         ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
@@ -290,7 +289,7 @@ describe('fitIconToText', () => {
 
     test('icon-text-fit: height', () => {
         expect(
-            shaping.fitIconToText(shapedIcon, shapedText, 'height', [0, 0, 0, 0], [0, 0], 24 / glyphSize)
+            fitIconToText(shapedIcon, shapedText, 'height', [0, 0, 0, 0], [0, 0], 24 / glyphSize)
         ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
@@ -302,7 +301,7 @@ describe('fitIconToText', () => {
         });
 
         expect(
-            shaping.fitIconToText(shapedIcon, shapedText, 'height', [0, 0, 0, 0], [3, 7], 24 / glyphSize)
+            fitIconToText(shapedIcon, shapedText, 'height', [0, 0, 0, 0], [3, 7], 24 / glyphSize)
         ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
@@ -314,7 +313,7 @@ describe('fitIconToText', () => {
         });
 
         expect(
-            shaping.fitIconToText(shapedIcon, shapedText, 'height', [0, 0, 0, 0], [0, 0], 12 / glyphSize)
+            fitIconToText(shapedIcon, shapedText, 'height', [0, 0, 0, 0], [0, 0], 12 / glyphSize)
         ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
@@ -327,7 +326,7 @@ describe('fitIconToText', () => {
 
         // Ignores padding for left/right, since the icon is only stretched to the text's height but not width
         expect(
-            shaping.fitIconToText(shapedIcon, shapedText, 'height', [5, 10, 5, 10], [0, 0], 12 / glyphSize)
+            fitIconToText(shapedIcon, shapedText, 'height', [5, 10, 5, 10], [0, 0], 12 / glyphSize)
         ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
@@ -341,7 +340,7 @@ describe('fitIconToText', () => {
 
     test('icon-text-fit: both', () => {
         expect(
-            shaping.fitIconToText(shapedIcon, shapedText, 'both', [0, 0, 0, 0], [0, 0], 24 / glyphSize)
+            fitIconToText(shapedIcon, shapedText, 'both', [0, 0, 0, 0], [0, 0], 24 / glyphSize)
         ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
@@ -353,7 +352,7 @@ describe('fitIconToText', () => {
         });
 
         expect(
-            shaping.fitIconToText(shapedIcon, shapedText, 'both', [0, 0, 0, 0], [3, 7], 24 / glyphSize)
+            fitIconToText(shapedIcon, shapedText, 'both', [0, 0, 0, 0], [3, 7], 24 / glyphSize)
         ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
@@ -365,7 +364,7 @@ describe('fitIconToText', () => {
         });
 
         expect(
-            shaping.fitIconToText(shapedIcon, shapedText, 'both', [0, 0, 0, 0], [0, 0], 12 / glyphSize)
+            fitIconToText(shapedIcon, shapedText, 'both', [0, 0, 0, 0], [0, 0], 12 / glyphSize)
         ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
@@ -377,7 +376,7 @@ describe('fitIconToText', () => {
         });
 
         expect(
-            shaping.fitIconToText(shapedIcon, shapedText, 'both', [5, 10, 5, 10], [0, 0], 12 / glyphSize)
+            fitIconToText(shapedIcon, shapedText, 'both', [5, 10, 5, 10], [0, 0], 12 / glyphSize)
         ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
@@ -389,7 +388,7 @@ describe('fitIconToText', () => {
         });
 
         expect(
-            shaping.fitIconToText(shapedIcon, shapedText, 'both', [0, 5, 10, 15], [0, 0], 12 / glyphSize)
+            fitIconToText(shapedIcon, shapedText, 'both', [0, 5, 10, 15], [0, 0], 12 / glyphSize)
         ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,

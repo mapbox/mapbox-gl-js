@@ -9,9 +9,9 @@ import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import {addDynamicAttributes} from '../data/bucket/symbol_bucket';
 import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_utils';
-import {getAnchorAlignment, WritingMode} from '../symbol/shaping';
+import {getAnchorAlignment, WritingMode} from '../symbol/shaping_shared';
 import ONE_EM from '../symbol/one_em';
-import {evaluateVariableOffset} from '../symbol/symbol_layout';
+import {evaluateVariableOffset} from '../symbol/symbol_layout_shared';
 import {
     mercatorXfromLng,
     mercatorYfromLat

@@ -238,6 +238,15 @@
       ]
     },
     {
+      "limit": "600 kb",
+      "name": "ESM Core main thread (brotli)",
+      "path": [
+        "dist/esm/mapbox-gl.js",
+        "dist/esm/core*.js",
+        "dist/esm/shared*.js"
+      ]
+    },
+    {
       "gzip": true,
       "limit": "600 kb",
       "name": "UMD bundle (gzip)",

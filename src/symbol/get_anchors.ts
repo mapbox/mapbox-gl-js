@@ -3,7 +3,7 @@ import Anchor from '../symbol/anchor';
 import checkMaxAngle from './check_max_angle';
 
 import type Point from '@mapbox/point-geometry';
-import type {Shaping, PositionedIcon} from './shaping';
+import type {Shaping, PositionedIcon} from './shaping_shared';
 
 export {getAnchors, getCenterAnchor};
 
