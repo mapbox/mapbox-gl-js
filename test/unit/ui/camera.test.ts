@@ -204,6 +204,64 @@ describe('camera', () => {
         });
     });
 
+    /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
+    describe('#field of view', () => {
+        test('default vertical field of view', () => {
+            const camera = createCamera();
+            expect(fixedNum(camera.getVerticalFieldOfView(), 2)).toEqual(36.87);
+        });
+
+        test('setVerticalFieldOfView sets and getVerticalFieldOfView returns it', () => {
+            const camera = createCamera();
+            camera.setVerticalFieldOfView(30);
+            expect(camera.getVerticalFieldOfView()).toEqual(30);
+        });
+
+        test('vertical field of view is clamped to [0.01, 60]', () => {
+            const camera = createCamera();
+            camera.setVerticalFieldOfView(1000);
+            expect(camera.getVerticalFieldOfView()).toEqual(60);
+            camera.setVerticalFieldOfView(0);
+            expect(camera.getVerticalFieldOfView()).toEqual(0.01);
+        });
+
+        test('horizontal field of view is derived from vertical and aspect ratio', () => {
+            const camera = createCamera();
+            camera.transform.resize(1024, 512);
+            camera.setVerticalFieldOfView(30);
+            const aspect = 1024 / 512;
+            const expected = 2 * Math.atan(Math.tan((30 * Math.PI / 180) * 0.5) * aspect) * 180 / Math.PI;
+            expect(fixedNum(camera.getHorizontalFieldOfView(), 4)).toEqual(fixedNum(expected, 4));
+        });
+
+        test('jumpTo sets vertical field of view', () => {
+            const camera = createCamera();
+            camera.jumpTo({fov: 25});
+            expect(camera.getVerticalFieldOfView()).toEqual(25);
+        });
+
+        test('easeTo animates to the target vertical field of view', () => {
+            const camera = createCamera();
+            camera.easeTo({fov: 50, duration: 0});
+            expect(camera.getVerticalFieldOfView()).toEqual(50);
+        });
+
+        test('flyTo applies vertical field of view', () => {
+            const camera = createCamera();
+            camera.flyTo({center: [100, 0], fov: 45, duration: 0});
+            expect(fixedNum(camera.getVerticalFieldOfView(), 4)).toEqual(45);
+        });
+
+        test('flyTo applies vertical field of view under prefers-reduced-motion', () => {
+            const camera = createCamera();
+            camera._respectPrefersReducedMotion = true;
+            vi.spyOn(browser, 'prefersReducedMotion', 'get').mockReturnValue(true);
+            camera.flyTo({center: [100, 0], fov: 45});
+            expect(fixedNum(camera.getVerticalFieldOfView(), 4)).toEqual(45);
+        });
+    });
+    /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
+
     describe('#setCenter', () => {
         // Choose initial zoom to avoid center being constrained by mercator latitude limits.
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

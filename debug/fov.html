@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page — field of view</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+    <style>
+        body { margin: 0; font: 12px/1.4 monospace; }
+        #map { position: absolute; inset: 0; }
+        #panel { position: absolute; top: 10px; left: 10px; z-index: 1; background: #fff; padding: 8px; }
+        #slider { width: 200px; }
+    </style>
+</head>
+
+<body>
+<div id="panel">
+    <div>vertical <span id="v">–</span>° / horizontal <span id="h">–</span>°</div>
+    <input id="slider" type="range" min="0.01" max="60" step="0.01" value="36.87">
+    <button id="ease">easeTo 15</button>
+</div>
+<div id="map"></div>
+
+<script type="module">
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import {getAccessToken} from './access_token_generated.js';
+
+const map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
+    container: 'map',
+    style: 'mapbox://styles/mapbox/standard',
+    center: [-74.0066, 40.7135],
+    zoom: 15.5,
+    pitch: 60,
+    bearing: -20
+});
+
+map.on('render', () => {
+    document.getElementById('v').textContent = map.getVerticalFieldOfView().toFixed(2);
+    document.getElementById('h').textContent = map.getHorizontalFieldOfView().toFixed(2);
+});
+
+document.getElementById('slider').addEventListener('input', (e) => map.setVerticalFieldOfView(+e.target.value));
+document.getElementById('ease').addEventListener('click', () => map.easeTo({fov: 15, duration: 2000}));
+</script>
+
+</body>
+</html>

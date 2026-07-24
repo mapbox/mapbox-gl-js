@@ -538,6 +538,11 @@ class Transform {
         return 2 * Math.atan((1.0 / this.aspect) / focalLength);
     }
 
+    // `_fov` is the vertical field of view.
+    get horizontalFov(): number {
+        return radToDeg(2 * Math.atan(Math.tan(this._fov * 0.5) * this.aspect));
+    }
+
     get averageElevation(): number {
         return this._averageElevation;
     }
