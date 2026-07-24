@@ -1,0 +1,33 @@
+{
+  "version": 8,
+  "sources": {
+    "vector": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v8"
+    }
+  },
+  "layers": [
+    {
+      "id": "group",
+      "type": "placement-group"
+    },
+    {
+      "id": "symbols-invalid-priority",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "poi_label",
+      "paint": {
+        "placement-priority": "not-a-number"
+      }
+    },
+    {
+      "id": "symbols-invalid-group",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "poi_label",
+      "paint": {
+        "placement-group": 42
+      }
+    }
+  ]
+}

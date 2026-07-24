@@ -13,6 +13,7 @@ import type RasterParticleStyleLayer from './raster_particle_style_layer';
 import type RasterStyleLayer from './raster_style_layer';
 import type SkyStyleLayer from './sky_style_layer';
 import type SlotStyleLayer from './slot_style_layer';
+import type PlacementGroupStyleLayer from './placement_group_style_layer';
 import type SymbolStyleLayer from './symbol_style_layer';
 import type {LUT} from '../../util/lut';
 import type {ConfigOptions} from '../properties';
@@ -27,7 +28,8 @@ export type TypedStyleLayerConstructor = new (
 
 export type FeaturelessStyleLayer =
     | ClipStyleLayer
-    | SlotStyleLayer;
+    | SlotStyleLayer
+    | PlacementGroupStyleLayer;
 
 export type CoreStyleLayer =
     | BackgroundStyleLayer

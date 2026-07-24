@@ -1,0 +1,10 @@
+[
+  {
+    "message": "layers[1].paint.placement-priority: number expected, string found",
+    "line": 20
+  },
+  {
+    "message": "layers[2].paint.placement-group: string expected, number found",
+    "line": 29
+  }
+]

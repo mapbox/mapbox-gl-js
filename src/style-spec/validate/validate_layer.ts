@@ -72,7 +72,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
         } else {
             type = unbundle(parent.type) as string;
         }
-    } else if (!(type === 'background' || type === 'sky' || type === 'slot')) {
+    } else if (!(type === 'background' || type === 'sky' || type === 'slot' || type === 'placement-group')) {
         if (!layer.source) {
             errors.push(new ValidationError(key, layer, 'missing required property "source"'));
         } else if (!isString(layer.source)) {

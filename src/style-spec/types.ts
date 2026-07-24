@@ -904,7 +904,15 @@ export type SymbolLayerSpecification = {
         "icon-color-brightness-min"?: number | ExpressionSpecification,
         "icon-color-brightness-max"?: number | ExpressionSpecification,
         "symbol-z-offset"?: DataDrivenPropertyValueSpecification<number>,
-        "symbol-z-offset-transition"?: TransitionSpecification
+        "symbol-z-offset-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "placement-priority"?: DataDrivenPropertyValueSpecification<number>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "placement-group"?: DataDrivenPropertyValueSpecification<string>
     },
     "appearances"?: Array<AppearanceSpecification>
 };
@@ -1524,6 +1532,21 @@ export type SlotLayerSpecification = {
     "paint"?: never
 };
 
+export type PlacementGroupLayerSpecification = {
+    "id": string,
+    "type": "placement-group",
+    "metadata"?: unknown,
+    "source"?: never,
+    "source-layer"?: never,
+    "slot"?: string,
+    "minzoom"?: never,
+    "maxzoom"?: never,
+    "filter"?: never,
+    "appearances"?: Array<AppearanceSpecification>,
+    "layout"?: never,
+    "paint"?: never
+};
+
 export type ClipLayerSpecification = {
     "id": string,
     "type": "clip",
@@ -1563,6 +1586,7 @@ export type LayerSpecification =
     | BackgroundLayerSpecification
     | SkyLayerSpecification
     | SlotLayerSpecification
+    | PlacementGroupLayerSpecification
     | ClipLayerSpecification;
 
 export type LayoutSpecification = UnionToIntersection<NonNullable<LayerSpecification['layout']>>;
@@ -1667,6 +1691,11 @@ export type SkyLayer = SkyLayerSpecification;
  * @deprecated Use `SlotLayerSpecification` instead.
  */
 export type SlotLayer = SlotLayerSpecification;
+
+/**
+ * @deprecated Use `PlacementGroupLayerSpecification` instead.
+ */
+export type PlacementGroupLayer = PlacementGroupLayerSpecification;
 
 /**
  * @deprecated Use `ClipLayerSpecification` instead.

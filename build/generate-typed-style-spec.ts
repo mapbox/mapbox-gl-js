@@ -217,7 +217,7 @@ function tsLayer(key) {
         delete layer.layout;
     }
 
-    if (key === 'background' || key === 'sky' || key === 'slot') {
+    if (key === 'background' || key === 'sky' || key === 'slot' || key === 'placement-group') {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         layer.source = {type: 'never'};
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -229,7 +229,7 @@ function tsLayer(key) {
         layer.source.required = true;
     }
 
-    if (key === 'slot') {
+    if (key === 'slot' || key === 'placement-group') {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         layer.minzoom = {type: 'never'};
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

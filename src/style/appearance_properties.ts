@@ -53,6 +53,8 @@ export type AppearancePaintProps = {
     "text-halo-blur": DataDrivenProperty<number>;
     "text-translate": DataDrivenProperty<[number, number]>;
     "symbol-z-offset": DataDrivenProperty<number>;
+    "placement-priority": DataDrivenProperty<number>;
+    "placement-group": DataDrivenProperty<string>;
     "icon-color-use-theme": DataDrivenProperty<string>;
     "icon-halo-color-use-theme": DataDrivenProperty<string>;
     "text-color-use-theme": DataDrivenProperty<string>;
@@ -78,6 +80,8 @@ export const getAppearancePaintProperties = (): Properties<AppearancePaintProps>
     "text-halo-blur": new DataDrivenProperty(styleSpec["paint_symbol"]["text-halo-blur"]),
     "text-translate": new DataDrivenProperty(styleSpec["paint_symbol"]["text-translate"]),
     "symbol-z-offset": new DataDrivenProperty(styleSpec["paint_symbol"]["symbol-z-offset"]),
+    "placement-priority": new DataDrivenProperty(styleSpec["paint_symbol"]["placement-priority"]),
+    "placement-group": new DataDrivenProperty(styleSpec["paint_symbol"]["placement-group"]),
     "icon-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
     "icon-halo-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
     "text-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),

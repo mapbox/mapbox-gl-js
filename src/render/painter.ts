@@ -1631,7 +1631,7 @@ class Painter {
         const startTime = PerformanceUtils.now();
         this.gpuTimingStart(layer);
         if ((!painter.transform.projection.unsupportedLayers || !painter.transform.projection.unsupportedLayers.includes(layer.type) ||
-            (painter.terrain && layer.type === 'custom')) && layer.type !== 'clip' && layer.type !== 'slot' && draw[layer.type]) {
+            (painter.terrain && layer.type === 'custom')) && layer.type !== 'clip' && layer.type !== 'slot' && layer.type !== 'placement-group' && draw[layer.type]) {
             draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets, this.options.isInitialLoad);
         }
         if (!draw[layer.type]) {

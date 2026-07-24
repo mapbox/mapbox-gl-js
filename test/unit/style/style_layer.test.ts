@@ -3,6 +3,7 @@
 import {describe, test, expect} from '../../util/vitest';
 import createStyleLayer from '../../../src/style/create_style_layer';
 import FillStyleLayer from '../../../src/style/style_layer/fill_style_layer';
+import PlacementGroupStyleLayer from '../../../src/style/style_layer/placement_group_style_layer';
 import Color from '../../../src/style-spec/util/color';
 
 import type {SymbolLayerSpecification} from '../../../src';
@@ -474,3 +475,31 @@ describe('StyleLayer#appearances', () => {
     });
 });
 
+describe('StyleLayer#globalPlacementPriorities', () => {
+    test('instantiates a source-less placement-group layer', () => {
+        const layer = createStyleLayer({id: 'group', type: 'placement-group'});
+
+        expect(layer instanceof PlacementGroupStyleLayer).toBeTruthy();
+    });
+
+    test('parses placement-priority and placement-group symbol paint properties', () => {
+        const symbolLayer: SymbolLayerSpecification = {
+            id: 'symbol',
+            type: 'symbol',
+            source: 'source',
+            'source-layer': 'source-layer',
+            paint: {
+                'placement-priority': 5,
+                'placement-group': 'group'
+            }
+        };
+
+        const styleLayer = createStyleLayer(symbolLayer);
+        styleLayer.recalculate({zoom: 0, zoomHistory: {}});
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(styleLayer.paint.get('placement-priority').value).toEqual({kind: 'constant', value: 5});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(styleLayer.paint.get('placement-group').value).toEqual({kind: 'constant', value: 'group'});
+    });
+});

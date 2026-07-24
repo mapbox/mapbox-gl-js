@@ -1,0 +1,44 @@
+{
+  "version": 8,
+  "sources": {
+    "vector": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v8"
+    }
+  },
+  "layers": [
+    {
+      "id": "group",
+      "type": "placement-group"
+    },
+    {
+      "id": "symbols",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "poi_label",
+      "paint": {
+        "placement-priority": 5,
+        "placement-group": "group"
+      }
+    },
+    {
+      "id": "symbols-appearance",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "poi_label",
+      "paint": {
+        "placement-priority": 0
+      },
+      "appearances": [
+        {
+          "name": "selected",
+          "condition": ["feature-state", "select"],
+          "properties": {
+            "placement-priority": 10,
+            "placement-group": "group"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -144,6 +144,8 @@ export type PaintProps = {
     "icon-color-brightness-min": DataConstantProperty<number>;
     "icon-color-brightness-max": DataConstantProperty<number>;
     "symbol-z-offset": DataDrivenProperty<number>;
+    "placement-priority": DataDrivenProperty<number>;
+    "placement-group": DataDrivenProperty<string>;
     "icon-color-use-theme": DataDrivenProperty<string>;
     "icon-halo-color-use-theme": DataDrivenProperty<string>;
     "text-color-use-theme": DataDrivenProperty<string>;
@@ -176,6 +178,8 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "icon-color-brightness-min": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-brightness-min"]),
     "icon-color-brightness-max": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-brightness-max"]),
     "symbol-z-offset": new DataDrivenProperty(styleSpec["paint_symbol"]["symbol-z-offset"]),
+    "placement-priority": new DataDrivenProperty(styleSpec["paint_symbol"]["placement-priority"]),
+    "placement-group": new DataDrivenProperty(styleSpec["paint_symbol"]["placement-group"]),
     "icon-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
     "icon-halo-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
     "text-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
