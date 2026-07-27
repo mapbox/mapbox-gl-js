@@ -266,7 +266,7 @@ class RasterArrayTile extends Tile implements Tile {
             const send = () => {
                 if (aborted) return;
                 const params = {
-                    type: 'raster-array',
+                    type: 'raster-array' as const,
                     source: this.source,
                     scope: this.scope,
                     tileID: this.tileID,

@@ -762,6 +762,20 @@ describe('Style#removeSource', () => {
         expect(sourceCache.clearTiles).toHaveBeenCalledTimes(1);
     });
 
+    test('tells the workers to discard the source', async () => {
+        const style = new Style(new StubMap());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(createStyleJSON({
+            sources: {'source-id': createGeoJSONSource()}
+        }));
+
+        await waitFor(style, "style.load");
+        vi.spyOn(style.dispatcher, 'broadcast');
+        style.removeSource('source-id');
+
+        expect(style.dispatcher.broadcast).toHaveBeenCalledWith('removeSource', {type: 'geojson', source: 'source-id', scope: ''});
+    });
+
     test('throws on non-existence', async () => {
         const style = new Style(new StubMap());
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -2466,33 +2480,6 @@ describe('Style#query*Features', () => {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 style.queryRenderedFeatures([0, 0], {}, transform);
             }).not.toThrowError();
-        });
-    });
-});
-
-describe('Style#addSourceType', () => {
-    const _types = {'existing'() {}};
-
-    beforeEach(() => {
-        vi.spyOn(Style, 'getSourceType').mockImplementation(name => _types[name]);
-        vi.spyOn(Style, 'setSourceType').mockImplementation((name, create) => {
-            _types[name] = create;
-        });
-    });
-
-    test('adds factory function', () => {
-        const style = new Style(new StubMap());
-        const SourceType = function () {};
-
-        style.addSourceType('foo', SourceType, () => {
-            expect(_types['foo']).toEqual(SourceType);
-        });
-    });
-
-    test('refuses to add new type over existing name', () => {
-        const style = new Style(new StubMap());
-        style.addSourceType('existing', () => {}, (err) => {
-            expect(err).toBeTruthy();
         });
     });
 });

@@ -90,13 +90,6 @@ export default class MapWorker {
         // [mapId][scope][sourceType][sourceName] => worker source instance
         this.workerSources = {};
 
-        this.self.registerWorkerSource = (name: string, WorkerSource: WorkerSourceConstructor) => {
-            if (this.workerSourceTypes[name]) {
-                throw new Error(`Worker source with name "${name}" already registered.`);
-            }
-            this.workerSourceTypes[name] = WorkerSource;
-        };
-
         // The RTL text plugin self-registers here during module eval.
         this.self.registerRTLTextPlugin = (rtlTextPlugin: RtlTextPlugin) => {
             if (globalRTLTextPlugin.isParsed()) {
@@ -301,23 +294,22 @@ export default class MapWorker {
         return forMap[scope][type][source];
     }
 
-    removeSource(mapId: number, params: WorkerInbox['removeSource']['params']): Promise<void> | void {
-        assert(params.type);
-        assert(params.scope);
-        assert(params.source);
+    async removeSource(mapId: number, params: WorkerInbox['removeSource']['params']): Promise<void> {
+        const {type, source, scope} = params;
+        assert(type);
+        // The root style's scope is the empty string, so only `undefined` is a bad value.
+        assert(scope !== undefined);
+        assert(source);
 
-        if (!this.workerSources[mapId] ||
-            !this.workerSources[mapId][params.scope] ||
-            !this.workerSources[mapId][params.scope][params.type] ||
-            !this.workerSources[mapId][params.scope][params.type][params.source]) {
-            return;
-        }
+        const forType = this.workerSources[mapId] && this.workerSources[mapId][scope] && this.workerSources[mapId][scope][type];
+        // Source types with no worker implementation ('raster', 'image', 'custom', …) have no entry.
+        const workerSource = forType && forType[source];
+        if (!workerSource) return;
 
-        const worker = this.workerSources[mapId][params.scope][params.type][params.source];
-        delete this.workerSources[mapId][params.scope][params.type][params.source];
+        delete forType[source];
 
-        if (worker.removeSource !== undefined) {
-            return worker.removeSource(params);
+        if (workerSource.removeSource) {
+            await workerSource.removeSource({source});
         }
     }
 
@@ -335,7 +327,7 @@ export default class MapWorker {
             type: params.type,
             source: params.source,
             scope: params.scope,
-        } as WorkerSourceRequest, tileProvider);
+        }, tileProvider);
 
         if (tileProvider.load && params.request) {
             return tileProvider.load({request: params.request});
@@ -441,7 +433,7 @@ export default class MapWorker {
             // WorkerSource's replies route back to the right map.
             const actor = this.actor.getWorkerSourceActor(mapId);
 
-            const WorkerSourceConstructor = this.workerSourceTypes[type as WorkerSourceType];
+            const WorkerSourceConstructor = this.workerSourceTypes[type];
             if (!WorkerSourceConstructor) {
                 throw new Error(`Unknown worker source type "${type}".`);
             }

@@ -51,7 +51,7 @@ export type SourceVectorLayer = {
  * @param {string} id The id for the source. Must not be used by any existing source.
  * @param {Object} options Source options, specific to the source type (except for `options.type`, which is always
  * required).
- * @param {string} options.type The source type, matching the value of `name` used in {@link Style#addSourceType}.
+ * @param {string} options.type The source type.
  * @param {Dispatcher} dispatcher A {@link Dispatcher} instance, which can be used to send messages to the workers.
  *
  * @fires Map.event:data Fires `data` with `{dataType: 'source', sourceDataType: 'metadata'}`
@@ -110,8 +110,6 @@ export interface ISource<T = Source['type']> extends Evented<SourceEvents> {
     readonly _clear?: () => void;
 }
 
-export type SourceClass = Class<ISource>;
-
 const sourceTypes: Partial<Record<Source['type'], Class<ISource>>> = {
     vector,
     raster,
@@ -130,8 +128,7 @@ export type SourceType = Source['type'];
  *
  * @param id
  * @param {Object} source A source definition object compliant with
- * [`mapbox-gl-style-spec`](https://www.mapbox.com/mapbox-gl-style-spec/#sources) or, for a third-party source type,
-  * with that type's requirements.
+ * [`mapbox-gl-style-spec`](https://www.mapbox.com/mapbox-gl-style-spec/#sources).
  * @param {Dispatcher} dispatcher
  * @returns {Source}
  */
@@ -163,7 +160,3 @@ export const getType = function (name: string): Class<ISource> | undefined {
 export const setType = function (name: string, type: Class<ISource>) {
     sourceTypes[name as Source['type']] = type;
 };
-
-export interface Actor {
-    send: (type: string, data: unknown, callback: Callback<unknown>) => void;
-}

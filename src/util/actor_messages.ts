@@ -9,7 +9,8 @@ import type {OverscaledTileID} from '../source/tile_id';
 import type {PluginState} from '../source/rtl_text_plugin';
 import type {StyleImageMap} from '../style/style_image';
 import type {TDecodingResult, TProcessingBatch} from '../data/mrt/types';
-import type {WorkerSourceRequest, WorkerSourceTileRequest} from '../source/worker_source';
+import type {Source} from '../source/source';
+import type {WorkerSourceTileRequest, WorkerSourceType} from '../source/worker_source';
 import type {StyleModelMap} from '../style/style_mode';
 import type {IndoorData} from '../style/indoor_data';
 import type {AtlasContentDescriptor} from '../render/atlas_content_descriptor';
@@ -105,7 +106,7 @@ export type WorkerInbox = {
             url: string;
             source: string;
             scope: string;
-            type: string;
+            type: WorkerSourceType;
             options: Partial<SourceSpecification>;
             request?: RequestParameters;
         };
@@ -118,7 +119,8 @@ export type WorkerInbox = {
     };
 
     'removeSource': {
-        params: WorkerSourceRequest;
+        // Every source kind reaches here, not just the worker-backed ones.
+        params: {type: Source['type']; source: string; scope: string};
         result: void;
     };
 

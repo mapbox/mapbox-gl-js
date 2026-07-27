@@ -43,7 +43,6 @@ import {QueryGeometry} from '../style/query_geometry';
 import {
     create as createSource,
     getType as getSourceType,
-    setType as setSourceType,
 } from '../source/source';
 import {isLazySourceType, ensureSourceType} from '../source/lazy_source_types';
 import LazySource from '../source/lazy_source';
@@ -114,7 +113,6 @@ import type {
     LayerBaseSpecification,
     TerrainSpecificationUpdate
 } from '../style-spec/types';
-import type {Callback} from '../types/callback';
 import type {StyleImage, StyleImageMap} from './style_image';
 import type Transform from '../geo/transform';
 import type {Map as MapboxMap} from '../ui/map';
@@ -129,7 +127,7 @@ import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type {Validator, ValidationErrors} from './validate_style';
 import type {FeatureState, StyleExpression} from '../style-spec/expression/index';
 import type {PointLike} from '../types/point-like';
-import type {ISource, Source, SourceClass} from '../source/source';
+import type {ISource, Source} from '../source/source';
 import type {TransitionParameters, ConfigOptions} from './properties';
 import type {QrfQuery, QrfTarget, QueryResult} from '../source/query_features';
 import type {GeoJSONFeature, FeaturesetDescriptor, TargetDescriptor, default as Feature} from '../util/vectortile_to_geojson';
@@ -417,9 +415,6 @@ class Style extends Evented<MapEvents> {
 
     _hasDataDrivenEmissive: boolean;
 
-    // exposed to allow stubbing by unit tests
-    static getSourceType: typeof getSourceType;
-    static setSourceType: typeof setSourceType;
     static registerForPluginStateChange: typeof registerForPluginStateChange;
 
     constructor(map: MapboxMap, options: StyleOptions = {}) {
@@ -2580,6 +2575,10 @@ class Style extends Evented<MapEvents> {
         source.setEventedParent(null);
         if (source.onRemove)
             source.onRemove(this.map);
+
+        // Tiles are spread across all workers, so every worker may hold an instance.
+        this.dispatcher.broadcast('removeSource', {type: source.type, source: id, scope: source.scope});
+
         this._changes.setDirty();
         return this;
     }
@@ -4031,15 +4030,6 @@ class Style extends Evented<MapEvents> {
         return results;
     }
 
-    addSourceType(name: string, SourceType: SourceClass, callback: Callback<undefined>): void {
-        if (Style.getSourceType(name)) {
-            return callback(new Error(`A source type called "${name}" already exists.`));
-        }
-
-        Style.setSourceType(name, SourceType);
-        return callback(null, null);
-    }
-
     getFlatLight(): LightSpecification {
         return this.light.getLight();
     }
@@ -5196,8 +5186,6 @@ class Style extends Evented<MapEvents> {
     }
 }
 
-Style.getSourceType = getSourceType;
-Style.setSourceType = setSourceType;
 Style.registerForPluginStateChange = registerForPluginStateChange;
 
 export default Style;
