@@ -158,12 +158,6 @@ export default tseslint.config(
                     selector: 'ClassProperty[value]',
                     message: 'ClassProperty values are not allowed.',
                 }, {
-                    selector: 'LogicalExpression[operator=\'??\']',
-                    message: 'Nullish coalescing is not allowed.',
-                }, {
-                    selector: 'ChainExpression',
-                    message: 'Optional chaining is not allowed.',
-                }, {
                     selector: 'MemberExpression[object.type=\'MetaProperty\'][property.name=\'url\']',
                     message: 'import.meta.url is not available in the UMD bundle.',
                 }, {
@@ -241,7 +235,6 @@ export default tseslint.config(
 
             // e18e (disabled for browser compatibility)
             'e18e/prefer-spread-syntax': 'off',       // also rewrites .concat/Array.from (array-spread regressions); object spread enforced via core prefer-object-spread
-            'e18e/prefer-nullish-coalescing': 'off',  // ?? not allowed (affects some downstream bundlers)
             'e18e/prefer-array-to-sorted': 'off',     // Not available until Safari 16
             'e18e/prefer-array-to-reversed': 'off',   // Not available until Safari 16
             'e18e/prefer-url-canparse': 'off',        // Not available until Safari 17

@@ -485,7 +485,7 @@ describe('VectorTileSource', () => {
                         tileID,
                         uid: 0,
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                        renderSourceType: renderSourceType != null ? renderSourceType : RenderSourceType.Other,
+                        renderSourceType: renderSourceType ?? RenderSourceType.Other,
                     }, () => {});
                 }
             });

@@ -383,7 +383,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                 const aboveFadeMax = tile.tileID.overscaledZ >= Math.ceil(fadeRange[1]);
                 const frcMaskFromSnapshot = (snapshot && aboveFadeMax) ? snapshot.getFullCoverageMask(tile.tileID.canonical) : null;
                 return {
-                    frcMask: aboveFadeMax ? (frcMaskFromSnapshot != null ? frcMaskFromSnapshot : null) : null,
+                    frcMask: aboveFadeMax ? (frcMaskFromSnapshot ?? null) : null,
                     resolved: belowCoverageZoom || snapshot != null,
                     polygons: (covTile && covTile.frcMask !== 0) ? covTile.polygons : null,
                     tileZoom: (covTile && covTile.frcMask !== 0) ? covTile.tileId.z : null,

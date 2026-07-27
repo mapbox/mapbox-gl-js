@@ -83,9 +83,7 @@ const exported = {
     get prefersReducedMotion(): boolean {
         if (!window.matchMedia) return false;
         // Lazily initialize media query.
-        if (reducedMotionQuery == null) {
-            reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-        }
+        reducedMotionQuery ??= window.matchMedia('(prefers-reduced-motion: reduce)');
         return reducedMotionQuery.matches;
     },
 

@@ -65,9 +65,7 @@ class Config implements Expression {
 
     static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Config | null | void {
         let type = context.expectedType;
-        if (type === null || type === undefined) {
-            type = ValueType;
-        }
+        type ??= ValueType;
         if (args.length < 2 || args.length > 3) {
             return context.error(`Invalid number of arguments for 'config' expression.`);
         }

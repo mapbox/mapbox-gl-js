@@ -1069,7 +1069,7 @@ export class Map extends Camera {
      */
     setMinZoom(minZoom?: number | null): this {
 
-        minZoom = minZoom === null || minZoom === undefined ? defaultMinZoom : minZoom;
+        minZoom = minZoom ?? defaultMinZoom;
 
         if (minZoom >= defaultMinZoom && minZoom <= this.transform.maxZoom) {
             this.transform.minZoom = minZoom;
@@ -1110,7 +1110,7 @@ export class Map extends Camera {
      */
     setMaxZoom(maxZoom?: number | null): this {
 
-        maxZoom = maxZoom === null || maxZoom === undefined ? defaultMaxZoom : maxZoom;
+        maxZoom = maxZoom ?? defaultMaxZoom;
 
         if (maxZoom >= this.transform.minZoom) {
             this.transform.maxZoom = maxZoom;
@@ -1150,7 +1150,7 @@ export class Map extends Camera {
      */
     setMinPitch(minPitch?: number | null): this {
 
-        minPitch = minPitch === null || minPitch === undefined ? defaultMinPitch : minPitch;
+        minPitch = minPitch ?? defaultMinPitch;
 
         if (minPitch < defaultMinPitch) {
             throw new Error(`minPitch must be greater than or equal to ${defaultMinPitch}`);
@@ -1195,7 +1195,7 @@ export class Map extends Camera {
      */
     setMaxPitch(maxPitch?: number | null): this {
 
-        maxPitch = maxPitch === null || maxPitch === undefined ? defaultMaxPitch : maxPitch;
+        maxPitch = maxPitch ?? defaultMaxPitch;
 
         if (maxPitch > defaultMaxPitch) {
             throw new Error(`maxPitch must be less than or equal to ${defaultMaxPitch}`);
