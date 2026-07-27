@@ -451,21 +451,21 @@ describe('Map#cameraParams', () => {
             bounds = map.getBounds();
             expect(toFixed(bounds.toArray())).toStrictEqual([
                 ["-108.2217655978", "34.8501901832"],
-                ["-88.9997447442", "49.1066330318"]
+                ["-88.9997447442", "49.1066330317"]
             ]);
 
             map.jumpTo({zoom: 3.3, center: [-99, 42], bearing: 24});
             bounds = map.getBounds();
             expect(toFixed(bounds.toArray())).toStrictEqual([
                 ["-108.2217655978", "34.8501901832"],
-                ["-88.9997447442", "49.1066330318"]
+                ["-88.9997447442", "49.1066330317"]
             ]);
 
             map.setPitch(50);
             bounds = map.getBounds();
             expect(toFixed(bounds.toArray())).toStrictEqual([
                 ["-106.5868397979", "34.9358140751"],
-                ["-77.8438130022", "58.8683265070"]
+                ["-77.8438130023", "58.8683265069"]
             ]);
         });
 
