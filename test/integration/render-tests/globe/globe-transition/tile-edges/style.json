@@ -4,6 +4,7 @@
     "test": {
       "width": 640,
       "height": 512,
+      "pixelRatio": 0.5,
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
       ],

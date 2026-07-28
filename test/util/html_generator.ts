@@ -43,7 +43,7 @@ const renderResultHTML = compile(`
     <% if (r.testPath) { %>
       <p class="diff"><strong>Test path:</strong> <%= r.testPath %></p>
     <% } %>
-    <% if (r.showImages !== false && !r.error) { %>
+    <% if (r.showImages !== false && (!r.error || r.actual || r.expected)) { %>
       <% if (r.isRenderTest && (r.actual || r.expected)) { %>
         <span class="img-container" onmouseover="showExpected('<%= r.domIdJs %>')" onmouseout="showActual('<%= r.domIdJs %>')">
           <p class="img-label" id="<%= r.domId %>-label">Actual Result (hover mouse to show expected)</p>
@@ -151,6 +151,10 @@ function updateState() {
         const show = isFailedTest(row) || (showPassed && isPassedTest(row)) || (showSkipped && isSkippedTest(row));
         row.classList.toggle('hide', !show);
     }
+    const embedHint = document.getElementById('embed-passed-hint');
+    if (embedHint) {
+        embedHint.classList.toggle('hide', !showPassed);
+    }
 }
 const showPassedCheckbox = document.getElementById('checkbox-show-passed');
 if (showPassedCheckbox) {
@@ -215,6 +219,7 @@ let resultsContainer: HTMLDivElement | undefined;
 let statsFailedHeader: HTMLHeadingElement | undefined;
 let statsSummary: HTMLParagraphElement | undefined;
 let refreshReportFilters: () => void = () => {};
+let embedPassedImagesForRun = false;
 
 // Latest known status per test, so a test that fails then passes on retry is
 // counted once, by its final outcome.
@@ -307,10 +312,12 @@ function decorateTestData(testData: TestReportData, attempts: number, failedAtte
 
 // Passed tests are always included now (hidden behind the "Show passed tests"
 // checkbox), so the checkbox is always rendered.
-function getFilterCheckboxesHTML(): string {
+function getFilterCheckboxesHTML(embedPassedImages: boolean): string {
+    const hint = embedPassedImages ? '' : `
+<p id="embed-passed-hint" class="hide" style="color: red; font-weight: bold;">Passed-test images are not embedded in this report. Re-run with EMBED_PASSED_IMAGES=true to include them.</p>`;
     return `<label><input type="checkbox" id="checkbox-show-passed">Show passed tests</label>
 <label><input type="checkbox" id="checkbox-show-skipped">Show skipped tests</label>
-<label><input type="checkbox" id="checkbox-img-hover" checked>Toggle images on Hover</label>`;
+<label><input type="checkbox" id="checkbox-img-hover" checked>Toggle images on Hover</label>${hint}`;
 }
 
 function runReportUpdateState(): void {
@@ -328,7 +335,9 @@ export function registerSkipped(name: string, testPath?: string, skippedReasons?
     });
 }
 
-export function setupHTML(): void {
+export function setupHTML(embedPassedImages: boolean): void {
+    embedPassedImagesForRun = embedPassedImages;
+
     const style = document.createElement('style');
     document.head.appendChild(style);
     style.appendChild(document.createTextNode(pageCss));
@@ -337,7 +346,7 @@ export function setupHTML(): void {
     statsFailedHeader.textContent = 'All tests passed!';
     document.body.appendChild(statsFailedHeader);
 
-    const filterFragment = document.createRange().createContextualFragment(getFilterCheckboxesHTML());
+    const filterFragment = document.createRange().createContextualFragment(getFilterCheckboxesHTML(embedPassedImages));
     document.body.appendChild(filterFragment);
 
     statsSummary = document.createElement('p');
@@ -369,7 +378,7 @@ function installReportFilterHandlers(): void {
 
 export function getStatsHTML(): string {
     if (statsFailedHeader && statsSummary) {
-        return `${statsFailedHeader.outerHTML}\n${getFilterCheckboxesHTML()}\n${statsSummary.outerHTML}`;
+        return `${statsFailedHeader.outerHTML}\n${getFilterCheckboxesHTML(embedPassedImagesForRun)}\n${statsSummary.outerHTML}`;
     }
 
     return '';
@@ -489,6 +498,7 @@ export function getHTML(statsContent: string, testsContent: string, diagnosticsC
       <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
           <title>GL JS | Render tests results</title>
           <style>${pageCss}</style>
       </head>

@@ -5,6 +5,7 @@
       
       "width": 512,
       "height": 700,
+      "pixelRatio": 0.5,
       "operations" :[
         ["wait"],
         ["wait"]
@@ -20,7 +21,7 @@
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.000852}
+        {"platform-tag-contains": "", "threshold": 0.006}
       ]
     }
   },

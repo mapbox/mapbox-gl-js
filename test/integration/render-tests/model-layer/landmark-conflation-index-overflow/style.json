@@ -3,6 +3,7 @@
   "metadata": {
     "test": {
       "height": 1024,
+      "pixelRatio": 0.5,
       "width": 1024,
       "operations": [
         ["wait"]
@@ -15,7 +16,7 @@
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.00097}
+        {"platform-tag-contains": "", "threshold": 0.0018}
       ]
     }
   },

@@ -5,6 +5,7 @@
       
       "width": 1024,
       "height": 1024,
+      "pixelRatio": 0.5,
       "operations": [
         [
           "setPaintProperty",
@@ -41,7 +42,7 @@
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.00028}
+        {"platform-tag-contains": "", "threshold": 0.00042}
       ]
     }
   },

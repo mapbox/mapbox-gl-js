@@ -119,18 +119,29 @@ const getTest = (renderTestName: string, preflightError?: unknown) => async () =
             throw new Error(`No expected image found for ${renderTestName} on platform-tag "${platformTag}". Please run the test with UPDATE=true to generate one.`);
         }
 
-        const {diff, diffImage} = expectedImage
-            ? calculateDiff(actualImageData, expectedImage.imageData.data, {w, h}, options['diff-calculation-threshold'])
-            : {diff: Infinity, diffImage: undefined};
-        const pass = diff <= options.imageThreshold;
+        // calculateDiff throws (rather than returning a diff) when the actual and
+        // expected images differ in size -- most often because an expected.png wasn't
+        // regenerated after a width/height/pixelRatio change. Catch that here, instead
+        // of letting it fall into the generic catch below, so the report can still
+        // embed the actual/expected images alongside the error instead of just the
+        // bare error text.
+        let diff = Infinity;
+        let diffImage: Uint8ClampedArray | undefined;
+        let diffError: unknown;
+        if (expectedImage) {
+            try {
+                ({diff, diffImage} = calculateDiff(actualImageData, expectedImage.imageData.data, {w, h}, options['diff-calculation-threshold']));
+            } catch (e) {
+                diffError = e;
+            }
+        }
+        const pass = !diffError && diff <= options.imageThreshold;
         const testMetaData: TestMetadata = {
             name: renderTestName,
             testPath: `${testPath}/style.json`,
-            minDiff: Math.round(100000 * diff) / 100000,
+            minDiff: diffError ? undefined : Math.round(100000 * diff) / 100000,
             imageThreshold: options.imageThreshold,
             imageThresholdRule: options.imageThresholdRule,
-            width: w,
-            height: h,
             status: pass ? 'passed' : 'failed',
         };
 
@@ -138,7 +149,19 @@ const getTest = (renderTestName: string, preflightError?: unknown) => async () =
             testMetaData.matchedExpectedFile = decodeURIComponent(expectedImage.src.split('/').pop() || '');
         }
 
-        if (diffImage && (!pass || embedPassedImages)) {
+        if (diffError) {
+            // Sizes differ, so the images can't be compared pixel-for-pixel or shown
+            // side-by-side at a shared width/height -- embed them at their own natural
+            // size instead of a diff image.
+            testMetaData.error = diffError instanceof Error ? diffError : new Error(String(diffError));
+            testMetaData.actual = actual;
+            if (expectedImage) testMetaData.expected = expectedImage.canvas.toDataURL();
+        } else {
+            testMetaData.width = w;
+            testMetaData.height = h;
+        }
+
+        if (!diffError && diffImage && (!pass || embedPassedImages)) {
             diffCanvas.width = w;
             diffCanvas.height = h;
             const diffImageData = new ImageData(diffImage, w, h);
@@ -161,6 +184,8 @@ const getTest = (renderTestName: string, preflightError?: unknown) => async () =
             // silently preferring a higher-priority expected-<tag>.png that update left untouched.
             const updateProp = expectedImage ? expectedImage.prop : 'expected';
             await server.commands.writeFile(`${testPath}/${updateProp}.png`, actual.split(',')[1], {encoding: 'base64'});
+        } else if (diffError) {
+            errorMessage = `Render test ${renderTestName} failed with error: ${diffError}`;
         } else if (!pass) {
             errorMessage = `Render test ${renderTestName} failed with ${diff} diff`;
         }

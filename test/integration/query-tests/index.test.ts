@@ -10,7 +10,7 @@ import {mapboxgl} from '../lib/mapboxgl.js';
 import {sendFragment, sendBrowserDiagnostics, detectPlatformTagFromUserAgent, matchSkipTestRule, type SkipRuleMatch} from '../lib/utils';
 import {transformRequest} from '../lib/transform-request.js';
 
-setupHTML();
+setupHTML(import.meta.env.VITE_EMBED_PASSED_IMAGES === 'true');
 
 function getEnvironmentParams() {
     let timeout = 30000;

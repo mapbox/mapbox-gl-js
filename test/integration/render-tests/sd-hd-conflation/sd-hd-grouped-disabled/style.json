@@ -5,6 +5,7 @@
     "test": {
       "width": 1024,
       "height": 768,
+      "pixelRatio": 0.5,
       "spriteFormat": "raster",
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.001}

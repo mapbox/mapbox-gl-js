@@ -4,6 +4,7 @@
     "test": {
       "width": 1024,
       "height": 1024,
+      "pixelRatio": 0.5,
       "skip-test": [
         {"platform-tag-contains": "native-ios", "reason": "Flaky"}
       ],

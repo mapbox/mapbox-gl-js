@@ -5,6 +5,7 @@
     "test": {
       "width": 1024,
       "height": 768,
+      "pixelRatio": 0.5,
       "operations": [
         ["wait"],
         ["wait"],

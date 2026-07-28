@@ -5,6 +5,7 @@
     "test": {
       "width": 900,
       "height": 900,
+      "pixelRatio": 0.5,
       "spriteFormat": "raster",
       "operations": [
         ["wait"],

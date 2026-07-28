@@ -3,6 +3,7 @@
   "metadata": {
     "test": {
       "height": 300,
+      "pixelRatio": 0.5,
       "width": 1024,
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "skip - needs fix https://mapbox.atlassian.net/browse/MAPSNAT-2492"}

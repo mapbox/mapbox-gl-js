@@ -3,6 +3,7 @@
   "metadata": {
     "test": {
       "height": 444,
+      "pixelRatio": 0.5,
       "width": 632,
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.003}

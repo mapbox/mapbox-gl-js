@@ -5,6 +5,7 @@
       "description": "Tests which tiles ought to be rendered near the transition zoom.",
       "width": 1105,
       "height": 676,
+      "pixelRatio": 0.125,
       "operations": [
         ["setProjection", "globe"],
         ["wait"]

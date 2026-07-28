@@ -27,7 +27,7 @@ fakeCanvasContainer.style.top = '10px';
 fakeCanvasContainer.style.left = '10px';
 document.body.appendChild(fakeCanvasContainer);
 
-setupHTML();
+setupHTML(import.meta.env.VITE_EMBED_PASSED_IMAGES === 'true');
 
 export const {canvas: diffCanvas, ctx: diffCtx} = createCanvas();
 export const {canvas: actualCanvas, ctx: actualCtx} = createCanvas();

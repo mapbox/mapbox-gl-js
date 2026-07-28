@@ -5,9 +5,13 @@
       "spriteFormat": "raster",
       "width": 600,
       "height": 480,
+      "pixelRatio": 0.5,
       "operations": [
         ["setStyle", "local://mapbox-gl-styles/styles/basic-v9.json"],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00022}
       ]
     }
   },

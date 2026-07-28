@@ -5,6 +5,7 @@
       
       "width": 1024,
       "height": 1024,
+      "pixelRatio": 0.5,
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Conflation needs to be implemented first"},
         {"platform-tag-contains": "native-android", "reason": "MAPSNAT-3819: skip to stay within Firebase timout, move to internal tests once available - covered by new LOD counterpart"},

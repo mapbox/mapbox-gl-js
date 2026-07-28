@@ -4,6 +4,7 @@
     "test": {
       
       "height": 1024,
+      "pixelRatio": 0.5,
       "width": 1024,
       "operations": [
         ["wait"],

@@ -3,7 +3,8 @@
   "metadata": {
     "test": {
       "width": 500,
-      "height": 800
+      "height": 800,
+      "pixelRatio": 0.5
     }
   },
   "zoom": 15,

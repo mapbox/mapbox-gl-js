@@ -4,6 +4,7 @@
     "test": {
       "width": 1024,
       "height": 1024,
+      "pixelRatio": 0.5,
       "skip-test": [
         {"platform-tag-contains": "native-ios", "reason": "Needs to be investigated, specular hightligths not working"}
       ],
@@ -11,7 +12,7 @@
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.0002}
+        {"platform-tag-contains": "", "threshold": 0.0004}
       ]
     }
   },

@@ -4,6 +4,7 @@
     "test": {
       "width": 1024,
       "height": 256,
+      "pixelRatio": 0.5,
       "operations": [
         ["wait"],
         ["setStyle", {
