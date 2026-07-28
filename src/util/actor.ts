@@ -6,7 +6,7 @@ import {serialize, deserialize} from './web_worker_transfer';
 import type {Serialized} from './web_worker_transfer';
 import type {Transferable} from '../types/transferable';
 import type {TaskMetadata} from './scheduler';
-import type {WorkerSource, WorkerSourceRequest} from '../source/worker_source';
+import type {WorkerSource, WorkerSourceRequest, WorkerSourceType} from '../source/worker_source';
 import type {ActorMessage, ActorInbox} from './actor_messages';
 
 export type Task = {
@@ -239,9 +239,9 @@ class Actor<Outbox extends MessageMap> {
         const buffers: Set<Transferable> = new Set();
         const params = deserialize(task.data);
 
-        // `task.type` is a message name ('loadTile', etc.) or a runtime
-        // `sourcetype.method` (WorkerSource types register via Map#addSourceType).
-        // Both dispatch by runtime string, so the handler lookup is untyped.
+        // `task.type` is either a MapWorker method name ('loadTile', etc.) or
+        // `<sourcetype>.<method>` addressing a WorkerSource method directly (only
+        // the `geojson.*` messages use this). Dispatch is by string either way.
         try {
             let result: unknown;
             if (this.parent[task.type]) {
@@ -251,7 +251,7 @@ class Actor<Outbox extends MessageMap> {
                 // task.type == sourcetype.method
                 const keys = task.type.split('.');
                 const {source, scope} = params as {source: string; scope: string};
-                const workerSource = this.parent.getWorkerSource(task.sourceMapId, {type: keys[0], source, scope, uid: 0});
+                const workerSource = this.parent.getWorkerSource(task.sourceMapId, {type: keys[0] as WorkerSourceType, source, scope});
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 result = await workerSource[keys[1]](params);
             } else {

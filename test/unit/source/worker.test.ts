@@ -27,18 +27,18 @@ test('worker source messages dispatched to the correct map instance', () => {
         return Promise.resolve();
     };
 
-    _self.registerWorkerSource('test', function (this: WorkerSource, {actor}) {
+    worker.workerSourceTypes['vector'] = function (this: WorkerSource, {actor}) {
         this.loadTile = async function () {
             // we expect the map id to get appended in the call to the "real"
             // actor.send()
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             await actor.send('main thread task', {});
         };
-    } as unknown as WorkerSourceConstructor);
+    } as unknown as WorkerSourceConstructor;
 
     worker.loadTile(999, {
         uid: 0,
-        type: 'test',
+        type: 'vector',
         source: 'source',
         scope: 'scope',
         tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0}} as OverscaledTileID
@@ -48,10 +48,21 @@ test('worker source messages dispatched to the correct map instance', () => {
 test('worker sources should be scoped', () => {
     const worker = new MapWorker(_self);
 
-    _self.registerWorkerSource('sourceType', function () {} as unknown as WorkerSourceConstructor);
+    worker.workerSourceTypes['vector'] = function () {} as unknown as WorkerSourceConstructor;
 
-    const a = worker.getWorkerSource(999, {type: 'sourceType', source: 'sourceId', scope: 'scope1', uid: 0});
-    const b = worker.getWorkerSource(999, {type: 'sourceType', source: 'sourceId', scope: 'scope2', uid: 0});
+    const a = worker.getWorkerSource(999, {type: 'vector', source: 'sourceId', scope: 'scope1'});
+    const b = worker.getWorkerSource(999, {type: 'vector', source: 'sourceId', scope: 'scope2'});
 
     expect(a).not.toBe(b);
+});
+
+test('removeSource discards the worker source instance', async () => {
+    const worker = new MapWorker(_self);
+
+    worker.workerSourceTypes['vector'] = function () {} as unknown as WorkerSourceConstructor;
+    worker.getWorkerSource(999, {type: 'vector', source: 'sourceId', scope: 'scope'});
+
+    await worker.removeSource(999, {type: 'vector', source: 'sourceId', scope: 'scope'});
+
+    expect(worker.getExistingWorkerSource(999, {type: 'vector', source: 'sourceId', scope: 'scope'})).toBeUndefined();
 });

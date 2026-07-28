@@ -1,6 +1,5 @@
 import type MapWorker from '../source/worker';
 import type {RtlTextPlugin} from '../source/rtl_text_plugin';
-import type {WorkerSourceConstructor, WorkerSource, WorkerSourceRequest} from '../source/worker_source';
 
 // Ambient augmentations of the environment's built-in DOM types. This file is
 // intentionally never imported: tsconfig `include` still pulls it into the
@@ -30,8 +29,6 @@ declare global {
     // Worker plumbing attached to the worker global scope.
     interface Worker {
         worker: MapWorker;
-        registerWorkerSource?: (name: string, WorkerSource: WorkerSourceConstructor) => void;
-        getWorkerSource?: (mapId: number, params: WorkerSourceRequest) => WorkerSource;
         registerRTLTextPlugin?: (rtlTextPlugin: RtlTextPlugin) => void;
     }
 

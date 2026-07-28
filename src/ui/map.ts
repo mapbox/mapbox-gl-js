@@ -95,7 +95,7 @@ import type {
     ColorThemeSpecification,
     TerrainSpecificationUpdate,
 } from '../style-spec/types';
-import type {Source, SourceClass} from '../source/source';
+import type {Source} from '../source/source';
 import type {EasingOptions} from './camera';
 import type {ContextOptions} from '../gl/context';
 import type {GeoJSONFeature, FeaturesetDescriptor, TargetFeature, TargetDescriptor} from '../util/vectortile_to_geojson';
@@ -2580,19 +2580,6 @@ export class Map extends Camera {
      */
     areTilesLoaded(): boolean {
         return this.style.areTilesLoaded();
-    }
-
-    /**
-     * Adds a [custom source type](#Custom Sources), making it available for use with
-     * {@link Map#addSource}.
-     * @private
-     * @param {string} name The name of the source type; source definition objects use this name in the `{type: ...}` field.
-     * @param {Function} SourceType A {@link Source} constructor.
-     * @param {Function} callback Called when the source type is ready or with an error argument if there is an error.
-     */
-    addSourceType(name: string, SourceType: SourceClass, callback: Callback<void>) {
-        this._lazyInitEmptyStyle();
-        this.style.addSourceType(name, SourceType, callback);
     }
 
     /**

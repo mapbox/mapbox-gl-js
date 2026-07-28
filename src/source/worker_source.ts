@@ -43,8 +43,7 @@ export type WorkerSourceType =
  * The parameters passed to the {@link MapWorker#getWorkerSource}.
  */
 export type WorkerSourceRequest = {
-    type: string; // The source type must be a string, because we can register new source types dynamically.
-    uid: number;
+    type: WorkerSourceType;
     source: string;
     scope: string;
 };
@@ -55,6 +54,7 @@ export type WorkerSourceRequest = {
  * {@link WorkerSource#removeTile}.
  */
 export type WorkerSourceTileRequest = WorkerSourceRequest & {
+    uid: number;
     tileID?: OverscaledTileID;
     request?: RequestParameters;
     projection?: Projection;
@@ -188,7 +188,6 @@ export type WorkerSourceVectorTileCallback = Callback<WorkerSourceVectorTileResu
  * implementation may also be targeted by the {@link Source} via
  * `dispatcher.getActor().send('source-type.methodname', params, {signal})`.
  *
- * @see {@link Map#addSourceType}
  * @private
  */
 export interface WorkerSource {
@@ -217,8 +216,8 @@ export interface WorkerSource {
     removeTile: (params: WorkerSourceTileRequest) => void | Promise<void>;
     /**
      * Tells the WorkerSource to abort in-progress tasks and release resources.
-     * The foreground Source is responsible for ensuring that 'removeSource' is
-     * the last message sent to the WorkerSource.
+     * Sent by {@link Style#removeSource} after the source's tiles are cleared, so
+     * it is the last message the WorkerSource receives.
      */
     removeSource?: (params: {source: string}) => Promise<void>;
 }
