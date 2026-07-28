@@ -104,7 +104,6 @@ debug/ # served by `npm start`
 
 - Prefer named exports over default exports
 - Modules export classes or functions (no namespace objects)
-- Don't use `!.` for non-null assertions (hides potential null issues)
 - Don't use `?.` or `??` operators (hides null handling, harder to debug)
 - Use `assert` for invariants
 - Use `import type` for type-only imports
