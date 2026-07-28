@@ -36,7 +36,7 @@ npm run test-unit -- test/unit/style-spec/spec.test.ts -t 'Style#addImage'
 
 npm run test-render -- -t "background-color"
 # Regenerate expected.png baselines (inspect diffs before committing!)
-UPDATE=1 npm run test-render -- -t "<pattern>"
+UPDATE=true npm run test-render -- -t "<pattern>"
 
 npm run test-typings
 ```

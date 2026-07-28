@@ -7,7 +7,7 @@ import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 // we have to handle this edge case here because we have test fixtures for this
-// edge case, and we don't want UPDATE=1 to mess with them
+// edge case, and we don't want to force update to mess with them
 function stringify(v) {
     let s = compactStringify(v);
     // http://timelessrepo.com/json-isnt-a-javascript-subset

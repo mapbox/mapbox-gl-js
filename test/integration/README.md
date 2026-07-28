@@ -116,7 +116,7 @@ To add a new render test:
 3. Generate an `expected.png` image from the given style by running the new test with the `UPDATE` flag enabled:
 
    ```shell
-   $ UPDATE=1 npm run test-render -t render-tests/<property-name>/<new-test-name>
+   $ UPDATE=true npm run test-render -t render-tests/<property-name>/<new-test-name>
    ```
 
    The test will appear to fail, but you'll now see a new `expected.png` in the test directory.
@@ -127,7 +127,7 @@ To add a new render test:
 
 ### Updating baselines
 
-`UPDATE=1 npm run test-render -- -t <pattern>` accepts a new baseline for existing tests, too. The runner writes back to the **resolved** expectation filename — for example, if `expected-web-linux.png` was the matched baseline for the current run, that file is updated, not `expected.png`. For brand-new tests with no expected image yet, it writes `expected.png`. Always inspect the resulting image diffs before committing.
+`UPDATE=true npm run test-render -- -t <pattern>` accepts a new baseline for existing tests, too. The runner writes back to the **resolved** expectation filename — for example, if `expected-web-linux.png` was the matched baseline for the current run, that file is updated, not `expected.png`. For brand-new tests with no expected image yet, it writes `expected.png`. Always inspect the resulting image diffs before committing.
 
 ## Platform Tags
 
