@@ -1007,7 +1007,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
                 this.footprintsIndices.resize(this.footprintsIndices.length + indices.length);
                 this.footprintsIndices.uint16.set(indices, footprintIndexOffset);
 
-                const buildingOrFeatureId = buildingId != null ? buildingId : feature.id;
+                const buildingOrFeatureId = buildingId ?? feature.id;
                 this.buildingIds.add(buildingOrFeatureId);
                 this.footprintsMin.x = Math.min(this.footprintsMin.x, footprintBoundsMin.x);
                 this.footprintsMin.y = Math.min(this.footprintsMin.y, footprintBoundsMin.y);

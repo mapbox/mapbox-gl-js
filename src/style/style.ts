@@ -2146,7 +2146,7 @@ class Style extends Evented<MapEvents> {
 
         // Apply accumulated source-max-zoom overrides
         for (const fqid in this._mergedFillExtrusionSourceCaches) {
-            this._mergedFillExtrusionSourceCaches[fqid].setMaxzoomOverride(feSourceMaxZooms[fqid] != null ? feSourceMaxZooms[fqid] : null);
+            this._mergedFillExtrusionSourceCaches[fqid].setMaxzoomOverride(feSourceMaxZooms[fqid] ?? null);
         }
 
         if (this.terrain && layersUpdated) {

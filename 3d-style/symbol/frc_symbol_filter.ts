@@ -25,7 +25,7 @@ export function symbolAnchorInFrcCoverage(
 
     // Transform anchor from symbol tile coords to coverage tile coords
     let px = anchor.x, py = anchor.y;
-    const covZ = coverageTileZoom != null ? coverageTileZoom : canonical.z;
+    const covZ = coverageTileZoom ?? canonical.z;
     if (canonical.z !== covZ) {
         const dz = canonical.z - covZ;
         const scale = 1 << dz;

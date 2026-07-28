@@ -319,7 +319,7 @@ export default class Model {
         this.uri = uri;
         this.position = position != null ? new LngLat(position[0], position[1]) : new LngLat(0, 0);
 
-        this.orientation = orientation != null ? orientation : [0, 0, 0];
+        this.orientation = orientation ?? [0, 0, 0];
         this.nodes = nodes;
         this.uploaded = false;
         this.aabb = new Aabb([Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]);

@@ -697,12 +697,12 @@ export class SymbolPropertyBinderUBO {
             prop.isConstant() ? prop.constantOr(defaultVal) :
             this._evalAt(prop, ctx.params, ctx);
 
-        const minVal = min != null ? min : defaultVal;
+        const minVal = min ?? defaultVal;
         evalFlatScratch[flatOffset] = minVal;
 
         if (isZoomDep) {
             const max = this._evalAt(prop, ctx.paramsNext, ctx);
-            evalFlatScratch[flatOffset + 1] = max != null ? max : defaultVal;
+            evalFlatScratch[flatOffset + 1] = max ?? defaultVal;
         } else {
             evalFlatScratch[flatOffset + 1] = minVal;
         }
@@ -1104,7 +1104,7 @@ export class SymbolPropertyBinderUBO {
             const isCamera = !!(this.cameraMask & (1 << propIdx));
             if (isCamera && renderParams) {
                 const evaluated = prop.property.evaluate(prop.value, renderParams, emptyFeature, {}, undefined, []);
-                return evaluated != null ? evaluated : defaultVal;
+                return evaluated ?? defaultVal;
             }
             return prop.constantOr(defaultVal);
         };

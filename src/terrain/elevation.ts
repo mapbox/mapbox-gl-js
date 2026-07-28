@@ -82,7 +82,7 @@ export class Elevation {
         }
 
         // Force a cast to null for both null and undefined
-        if (defaultIfNotLoaded == null) defaultIfNotLoaded = null;
+        defaultIfNotLoaded ??= null;
 
         const src = this._source();
         if (!src) return defaultIfNotLoaded;

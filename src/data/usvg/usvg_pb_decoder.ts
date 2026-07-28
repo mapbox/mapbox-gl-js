@@ -118,33 +118,21 @@ export function postProcessIcon(icon: Icon): Icon {
     if (metadata.content_area) {
         const {content_area: contentArea} = metadata;
 
-        if (contentArea.left == null) {
-            contentArea.left = 0;
-        }
+        contentArea.left ??= 0;
 
-        if (contentArea.top == null) {
-            contentArea.top = contentArea.left;
-        }
+        contentArea.top ??= contentArea.left;
 
-        if (contentArea.width == null) {
-            contentArea.width = icon.usvg_tree.width;
-        }
+        contentArea.width ??= icon.usvg_tree.width;
 
-        if (contentArea.height == null) {
-            contentArea.height = contentArea.width;
-        }
+        contentArea.height ??= contentArea.width;
     }
 
     if (metadata.text_placeholder) {
         const {text_placeholder: textPlaceholder} = metadata;
 
-        if (textPlaceholder.top == null) {
-            textPlaceholder.top = textPlaceholder.left;
-        }
+        textPlaceholder.top ??= textPlaceholder.left;
 
-        if (textPlaceholder.height == null) {
-            textPlaceholder.height = textPlaceholder.width;
-        }
+        textPlaceholder.height ??= textPlaceholder.width;
     }
 
     if (metadata.stretch_x && metadata.stretch_x.length) {
@@ -517,13 +505,9 @@ export function readMask(pbf: PbfReader, end?: number): Mask {
         else if (field === 7) mask.children.push(readNode(pbf, pbf.readVarint() + pbf.pos));
     }
 
-    if (mask.height == null) {
-        mask.height = mask.width;
-    }
+    mask.height ??= mask.width;
 
-    if (mask.top == null) {
-        mask.top = mask.left;
-    }
+    mask.top ??= mask.left;
 
     return mask;
 }

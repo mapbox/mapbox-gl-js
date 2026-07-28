@@ -269,9 +269,7 @@ export class TouchPitchHandler extends TwoTouchHandler {
         // One finger has moved and the other has not.
         // If enough time has passed, decide it is not a pitch.
         if (!movedA || !movedB) {
-            if (this._firstMove == null) {
-                this._firstMove = timeStamp;
-            }
+            this._firstMove ??= timeStamp;
 
             if (timeStamp - this._firstMove < ALLOWED_SINGLE_TOUCH_TIME) {
                 // still waiting for a movement from the second finger

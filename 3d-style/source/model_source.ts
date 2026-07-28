@@ -142,7 +142,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
                 existingInfo.modelSpec = modelSpec;
                 const model = existingInfo.model;
                 model.position = modelSpec.position != null ? new LngLat(modelSpec.position[0], modelSpec.position[1]) : new LngLat(0, 0);
-                model.orientation = modelSpec.orientation != null ? modelSpec.orientation : [0, 0, 0];
+                model.orientation = modelSpec.orientation ?? [0, 0, 0];
                 ModelSource.applyModelSpecification(model, modelSpec);
                 model.computeBoundsAndApplyParent();
                 this.models.push(model);

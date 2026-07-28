@@ -233,8 +233,8 @@ class Transform {
         this._minZoom = minZoom || DEFAULT_MIN_ZOOM;
         this._maxZoom = maxZoom || 22;
 
-        this._minPitch = (minPitch === undefined || minPitch === null) ? 0 : minPitch;
-        this._maxPitch = (maxPitch === undefined || maxPitch === null) ? 60 : maxPitch;
+        this._minPitch = minPitch ?? 0;
+        this._maxPitch = maxPitch ?? 60;
 
         this.setProjection(projection);
         this.setMaxBounds(bounds);
@@ -1867,7 +1867,7 @@ class Transform {
      * @private
      */
     pointRayIntersection(p: Point, z?: number | null): RayIntersectionResult {
-        const targetZ = (z !== undefined && z !== null) ? z : this._centerAltitude;
+        const targetZ = z ?? this._centerAltitude;
         // Since we don't know the correct projected z value for the point,
         // unproject two points to get a line and then find the point on that
         // line with z=0.
@@ -2790,7 +2790,7 @@ class Transform {
         // drape raster overscale artifacts or cut terrain (see under it) as it gets clipped on
         // near plane. Returned value is in mercator coordinates.
         const MAX_DRAPE_OVERZOOM = 4;
-        const zoom = Math.min((this._seaLevelZoom != null ? this._seaLevelZoom : this._zoom), this._maxZoom) + MAX_DRAPE_OVERZOOM;
+        const zoom = Math.min((this._seaLevelZoom ?? this._zoom), this._maxZoom) + MAX_DRAPE_OVERZOOM;
         return this._mercatorZfromZoom(zoom);
     }
 
