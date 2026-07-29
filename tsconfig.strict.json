@@ -109,6 +109,9 @@
     "./src/style-spec/error/parsing_error.ts",
     "./src/util/url.ts",
     "./src/util/worker_pool.ts",
-    "./src/style-spec/expression/types/resolved_image.ts"
+    "./src/style-spec/expression/types/resolved_image.ts",
+    "./src/data/mrt/types.d.ts",
+    "./src/style-spec/expression/types/formatted.ts",
+    "./src/style-spec/rollup.config.dts.ts"
   ]
 }
