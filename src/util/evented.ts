@@ -20,6 +20,7 @@ export class ErrorEvent extends Event<EventRegistry, 'error'> {
 
     constructor(error: ErrorLike, data: EventData = {}) {
         super('error', {error, ...data});
+        this.error = error;
     }
 }
 
@@ -40,11 +41,11 @@ export type EventOf<R extends EventRegistry, T extends keyof R, Target = unknown
 
 type Listener<R extends EventRegistry, T extends keyof R, Target = unknown> = (event: EventOf<R, T, Target>) => void;
 
-type Listeners<R extends EventRegistry, Target = unknown> = {
-    [T in keyof R]?: Array<Listener<R, T, Target>>;
+type Listeners<R extends EventRegistry> = {
+    [T in keyof R]?: Array<Listener<R, T, never>>;
 };
 
-function _addEventListener<R extends EventRegistry, T extends keyof R>(type: T, listener: Listener<R, T, Evented<R>>, listenerList: Listeners<R>) {
+function _addEventListener<R extends EventRegistry, T extends keyof R>(type: T, listener: Listener<R, T, never>, listenerList: Listeners<R>) {
     const listenerExists = listenerList[type] && listenerList[type].includes(listener);
     if (!listenerExists) {
         listenerList[type] = listenerList[type] || [];
@@ -52,8 +53,8 @@ function _addEventListener<R extends EventRegistry, T extends keyof R>(type: T, 
     }
 }
 
-function _removeEventListener<R extends EventRegistry, T extends keyof R>(type: T, listener: Listener<R, T, Evented<R>>, listenerList: Listeners<R>) {
-    if (listenerList && listenerList[type]) {
+function _removeEventListener<R extends EventRegistry, T extends keyof R>(type: T, listener: Listener<R, T, never>, listenerList: Listeners<R>) {
+    if (listenerList[type]) {
         const index = listenerList[type].indexOf(listener);
         if (index !== -1) {
             listenerList[type].splice(index, 1);
@@ -71,8 +72,8 @@ function _removeEventListener<R extends EventRegistry, T extends keyof R>(type: 
  * @mixin Evented
  */
 export class Evented<R extends EventRegistry = EventRegistry> {
-    _listeners: Listeners<R>;
-    _oneTimeListeners: Listeners<R>;
+    _listeners: Listeners<R> = {};
+    _oneTimeListeners: Listeners<R> = {};
     _eventedParent?: Evented;
     _eventedParentData?: EventData | (() => EventData);
 
@@ -86,7 +87,6 @@ export class Evented<R extends EventRegistry = EventRegistry> {
      * @returns {Object} Returns itself to allow for method chaining.
      */
     on<T extends keyof R |(string & {})>(type: T, listener: Listener<R, T, this>): this {
-        this._listeners = this._listeners || {};
         _addEventListener(type, listener, this._listeners);
 
         return this;
@@ -125,7 +125,6 @@ export class Evented<R extends EventRegistry = EventRegistry> {
             });
         }
 
-        this._oneTimeListeners = this._oneTimeListeners || {};
         _addEventListener(type, listener, this._oneTimeListeners);
 
         return this;
@@ -146,16 +145,16 @@ export class Evented<R extends EventRegistry = EventRegistry> {
             event.target = this;
 
             // make sure adding or removing listeners inside other listeners won't cause an infinite loop
-            const listeners = this._listeners && this._listeners[type] ? this._listeners[type].slice() : [];
+            const listeners = this._listeners[type] ? this._listeners[type].slice() : [];
 
             for (const listener of listeners) {
-                listener.call(this, event as EventOf<R, T, this>);
+                listener.call(this, event as EventOf<R, T, never>);
             }
 
-            const oneTimeListeners = this._oneTimeListeners && this._oneTimeListeners[type] ? this._oneTimeListeners[type].slice() : [];
+            const oneTimeListeners = this._oneTimeListeners[type] ? this._oneTimeListeners[type].slice() : [];
             for (const listener of oneTimeListeners) {
                 _removeEventListener(type, listener, this._oneTimeListeners);
-                listener.call(this, event as EventOf<R, T, this>);
+                listener.call(this, event as EventOf<R, T, never>);
             }
 
             const parent = this._eventedParent;
@@ -187,8 +186,8 @@ export class Evented<R extends EventRegistry = EventRegistry> {
      */
     listens<T extends keyof R |(string & {})>(type: T): boolean {
         return !!(
-            (this._listeners && this._listeners[type] && this._listeners[type].length > 0) ||
-            (this._oneTimeListeners && this._oneTimeListeners[type] && this._oneTimeListeners[type].length > 0) ||
+            (this._listeners[type] && this._listeners[type].length > 0) ||
+            (this._oneTimeListeners[type] && this._oneTimeListeners[type].length > 0) ||
             (this._eventedParent && this._eventedParent.listens(type as string))
         );
     }

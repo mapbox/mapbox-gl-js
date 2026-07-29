@@ -1,12 +1,11 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
+    "strict": true,
     "composite": true,
     "emitDeclarationOnly": true,
     "outDir": "./rollup/build/types-strict",
     "rootDir": ".",
-    "strictNullChecks": true,
-    "noImplicitAny": true
   },
   "include": [
     "./src/style-spec/data/**/*",

@@ -14,6 +14,7 @@ export default class WorkerPool {
     name?: string;
     constructor(name?: string) {
         this.active = {};
+        this.workers = null;
         this.name = name;
     }
 

@@ -31,7 +31,7 @@ class FeatureWrapper implements VectorTileFeatureLike {
 
     extent: number;
     type: 1 | 2 | 3;
-    id: number;
+    id: number | undefined;
     properties: {
         [_: string]: string | number | boolean;
     };
