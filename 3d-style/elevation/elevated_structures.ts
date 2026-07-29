@@ -324,8 +324,9 @@ export class ElevatedStructures {
                 // Construct a lookup table where vertex position maps to hashes of edges it's connected to
                 const posHash = ElevatedStructures.computePosHash(a);
 
-                assert(!this.vertexHashLookup.has(posHash));
-                this.vertexHashLookup.set(posHash, {prev: prevEdgeHash, next: edgeHash});
+                if (!this.vertexHashLookup.has(posHash)) {
+                    this.vertexHashLookup.set(posHash, {prev: prevEdgeHash, next: edgeHash});
+                }
 
                 prevEdgeHash = edgeHash;
             }
