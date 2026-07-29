@@ -66,11 +66,21 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
     const rasterOpacity = layer.paint.get('raster-opacity');
     if (rasterOpacity === 0) return;
-
+    const isDrapingAllowed = layer.paint.get('raster-allow-draping');
     const isGlobeProjection = painter.transform.projection.name === 'globe';
-    const renderingWithElevation = layer.paint.get('raster-elevation') !== 0.0;
+    let rasterElevation = layer.paint.get('raster-elevation');
+    let rasterElevationReferenceIsGround = layer.paint.get('raster-elevation-reference') === 'ground';
+
+    // Apply elevation and ground reference if layer is not allowed for draping
+    if (!isDrapingAllowed && rasterElevation === 0) {
+        rasterElevation = 0.001;
+        rasterElevationReferenceIsGround = true;
+    }
+
+    const renderingWithElevation = rasterElevation > 0.0;
+    const isElevationReferenceTerrainGroundLevel = painter.terrain && painter.terrain.exaggeration() > 0 && renderingWithElevation && rasterElevationReferenceIsGround;
+
     const renderingElevatedOnGlobe = renderingWithElevation && isGlobeProjection;
-    const isElevationReferenceTerrainGroundLevel = painter.terrain && painter.terrain.exaggeration() > 0 && renderingWithElevation && layer.paint.get('raster-elevation-reference') === 'ground';
     const renderingElevatedOnTerrain = !isGlobeProjection && isElevationReferenceTerrainGroundLevel;
 
     if (painter.renderElevatedRasterBackface && !renderingElevatedOnGlobe) {
@@ -105,10 +115,10 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const stencilMode = renderingWithElevation ? painter.stencilModeFor3D() : StencilMode.disabled;
         if (source.onNorthPole) {
 
-            drawPole(true, null, painter, sourceCache, layer, emissiveStrength, rasterConfig, CullFaceMode.disabled, stencilMode);
+            drawPole(rasterElevation, true, null, painter, sourceCache, layer, emissiveStrength, rasterConfig, CullFaceMode.disabled, stencilMode);
         } else {
 
-            drawPole(false, null, painter, sourceCache, layer, emissiveStrength, rasterConfig, CullFaceMode.disabled, stencilMode);
+            drawPole(rasterElevation, false, null, painter, sourceCache, layer, emissiveStrength, rasterConfig, CullFaceMode.disabled, stencilMode);
         }
         return;
     }
@@ -253,7 +263,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 fade,
                 layer,
                 perspectiveTransform,
-                renderingWithElevation ? layer.paint.get('raster-elevation') : 0.0,
+                rasterElevation,
                 RASTER_COLOR_TEXTURE_UNIT,
                 rasterColorMix,
                 rasterColorOffset,
@@ -312,7 +322,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                     program.draw(painter, gl.TRIANGLES, depthMode, elevatedStencilMode || stencilMode, painter.colorModeForRenderPass(), cullFaceMode, uniformValues, layer.id, buffer, indexBuffer, segments);
                 }
             } else if (renderingElevatedOnTerrain) {
-                depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+                depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
+
                 painter.terrain.setupElevationDraw(tile, program);
                 painter.uploadCommonUniforms(context, program, tile.tileID.toUnwrapped());
 
@@ -342,11 +353,11 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 const bottomCap = coord.canonical.y === (1 << coord.canonical.z) - 1;
                 if (topCap) {
 
-                    drawPole(true, coord, painter, sourceCache, layer, emissiveStrength, rasterConfig, cullFaceMode, elevatedStencilMode || StencilMode.disabled);
+                    drawPole(rasterElevation, true, coord, painter, sourceCache, layer, emissiveStrength, rasterConfig, cullFaceMode, elevatedStencilMode || StencilMode.disabled);
                 }
                 if (bottomCap) {
 
-                    drawPole(false, coord, painter, sourceCache, layer, emissiveStrength, rasterConfig, cullFaceMode === CullFaceMode.frontCW ? CullFaceMode.backCW : CullFaceMode.frontCW, elevatedStencilMode || StencilMode.disabled);
+                    drawPole(rasterElevation, false, coord, painter, sourceCache, layer, emissiveStrength, rasterConfig, cullFaceMode === CullFaceMode.frontCW ? CullFaceMode.backCW : CullFaceMode.frontCW, elevatedStencilMode || StencilMode.disabled);
                 }
             }
         }
@@ -365,7 +376,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     painter.resetStencilClippingMasks();
 }
 
-function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, emissiveStrength: number, rasterConfig: RasterConfig, cullFaceMode: CullFaceMode, stencilMode: StencilMode) {
+function drawPole(rasterElevation: number, isNorth: boolean, coord: OverscaledTileID | null | undefined, painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, emissiveStrength: number, rasterConfig: RasterConfig, cullFaceMode: CullFaceMode, stencilMode: StencilMode) {
     const source = sourceCache.getSource();
     const sharedBuffers = painter.globeSharedBuffers;
     if (!sharedBuffers) return;
@@ -420,7 +431,7 @@ function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, 
         indexBuffer,
         segment
     ] = coord ? sharedBuffers.getPoleBuffers(coord.canonical.z, false) : sharedBuffers.getPoleBuffers(0, true);
-    const elevation = layer.paint.get('raster-elevation');
+    const elevation = rasterElevation;
     let vertexBuffer: VertexBuffer;
     if (isNorth) {
         vertexBuffer = northPoleBuffer;

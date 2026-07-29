@@ -40,6 +40,7 @@ export type PaintProps = {
     "raster-array-band": DataConstantProperty<string>;
     "raster-elevation": DataConstantProperty<number>;
     "raster-elevation-reference": DataConstantProperty<"sea" | "ground">;
+    "raster-allow-draping": DataConstantProperty<boolean>;
     "raster-color-use-theme": DataDrivenProperty<string>;
 };
 
@@ -60,5 +61,6 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "raster-array-band": new DataConstantProperty(styleSpec["paint_raster"]["raster-array-band"]),
     "raster-elevation": new DataConstantProperty(styleSpec["paint_raster"]["raster-elevation"]),
     "raster-elevation-reference": new DataConstantProperty(styleSpec["paint_raster"]["raster-elevation-reference"]),
+    "raster-allow-draping": new DataConstantProperty(styleSpec["paint_raster"]["raster-allow-draping"]),
     "raster-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

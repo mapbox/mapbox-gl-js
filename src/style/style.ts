@@ -4538,7 +4538,7 @@ class Style extends Evented<MapEvents> {
             const layer = this._mergedLayers[id];
             if (layer.type === 'building') {
                 sourcesForBuildingLayers.add(layer.source);
-            } else if (layer.type === 'raster' && layer.paint && layer.paint.get('raster-elevation-reference') === 'ground') {
+            } else if (layer.type === 'raster' && layer.paint && (layer.paint.get('raster-elevation-reference') === 'ground' || (layer.paint.get('raster-allow-draping') === false))) {
                 sourcesWithRasterElevatedOverTerrain.add(layer.source);
             }
             if (layer.hasElevation() && !sourcesWithElevatedLayers.has(layer.source)) {

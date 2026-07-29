@@ -1,0 +1,118 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "ignore-metrics": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "Flaky network metrics"
+        }
+      ],
+      "image-threshold": [
+        {
+          "platform-tag-contains": "",
+          "threshold": 0.0003
+        }
+      ]
+    }
+  },
+  "zoom": 2.5,
+  "pitch": 0.0,
+  "center": [
+    0,
+    0
+  ],
+  "projection": {
+    "name": "globe"
+  },
+  "fog": {
+    "star-intensity": 0
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(10, 30, 170, 1)",
+        "intensity": 1.0
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(0, 0, 0, 1)"
+      }
+    }
+  ],
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    },
+    "image-2": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/circle.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "image-1": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/cross.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "black"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "image-1",
+      "type": "raster",
+      "source": "image-1",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-opacity": 0.5,
+        "raster-allow-draping": false,
+        "raster-emissive-strength": 1.0
+      }
+    },
+    {
+      "id": "image-2",
+      "type": "raster",
+      "source": "image-2",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-opacity": 0.5,
+        "raster-allow-draping": false,
+        "raster-emissive-strength": 1.0
+      }
+    }
+  ]
+}

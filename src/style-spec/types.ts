@@ -1256,7 +1256,11 @@ export type RasterLayerSpecification = {
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
-        "raster-elevation-reference"?: "sea" | "ground" | ExpressionSpecification
+        "raster-elevation-reference"?: "sea" | "ground" | ExpressionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "raster-allow-draping"?: boolean
     },
     "appearances"?: Array<AppearanceSpecification>
 };
