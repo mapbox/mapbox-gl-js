@@ -1,3 +1,31 @@
+## 3.28.0-rc.1
+
+### Breaking changes ⚠️
+- Disable `text-variable-anchor` when appearances are present.
+
+### Features and improvements ✨
+- Introduce _experimental_ `map.getVerticalFieldOfView()`, `map.setVerticalFieldOfView()`, and read-only `map.getHorizontalFieldOfView()` and an animatable `fov` camera option.
+- Expose `line-border-width` and `line-border-color` as public paint properties.
+- Introduce _experimental_ `line-border-gradient` property for rendering gradient borders on lines.
+- Add support for Meshopt v1 compressed models.
+- Support string color values for the `model-color` in a model source.
+- Add `map.resetFeatureStates()` to clear all feature states for a featureset or layer.
+- Expose `map.getSchema()`/`map.setSchema()` for managing the imported style's schema.
+- Extract development and debug code from the ESM bundle into a separate module.
+- Extract more model code from the ESM core bundle.
+- Extract `raster-array` layer as a separate ESM module.
+- Reduce the bundle size by restructuring style, program, symbol, and expression code.
+- Remove experimental flag from layer appearances.
+- Improve symbol layer performance.
+- Reduce redundant repaints and checks during initial load.
+
+### Bug fixes 🐞
+- Fix double rotation of the FF5C character in vertical text rendering.
+- Preserve live gesture when camera setter is called from inside a drag/move handler.
+- Stop overwriting the `pointerEvents` of markers set by the user.
+- Fix models with vertex alpha 0 appearing black.
+- Fix incorrect rendering of fill extrusions with `fill-extrusion-edge-radius` at low zoom levels in some cases.
+
 ## 3.27.0
 
 ### Features and improvements ✨
