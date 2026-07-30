@@ -107,6 +107,7 @@
     "./src/placement/placement_rules.ts",
     "./src/placement/symbol_source.ts",
     "./src/style-spec/error/parsing_error.ts",
+    "./src/style-spec/read_style.ts",
     "./src/util/url.ts",
     "./src/util/worker_pool.ts",
     "./src/style-spec/expression/types/resolved_image.ts",

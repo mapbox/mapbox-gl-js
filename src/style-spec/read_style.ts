@@ -87,7 +87,7 @@ function parseTokens(s: string, tokens: number[]) {
         let lo = 0, hi = lineOffsets.length - 1;
         while (lo < hi) {
             const mid = (lo + hi + 1) >> 1;
-            if (lineOffsets[mid] <= pos) lo = mid;
+            if (lineOffsets[mid]! <= pos) lo = mid;
             else hi = mid - 1;
         }
         return lo + 1;
@@ -104,7 +104,7 @@ function parseTokens(s: string, tokens: number[]) {
         const end = tokens[i + 2];
         i += 3;
 
-        const line = lineNum(start);
+        const line = lineNum(start!);
 
         if (type === LBRACE) {
             const obj = setLine({}, line);
