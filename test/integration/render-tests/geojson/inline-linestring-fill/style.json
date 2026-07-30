@@ -3,11 +3,7 @@
   "metadata": {
     "test": {
       "width": 64,
-      "height": 64,
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "Current behavior is arbitrary"},
-        {"platform-tag-contains": "native", "reason": "current behavior is arbitrary"}
-      ]
+      "height": 64
     }
   },
   "sources": {

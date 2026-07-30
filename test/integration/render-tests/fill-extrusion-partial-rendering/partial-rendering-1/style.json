@@ -15,10 +15,6 @@
         ],
         ["wait"]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "Not implemented in gl-js"},
-        {"platform-tag-contains": "native", "reason": "skip - needs to be backported to GL-JS https://mapbox.atlassian.net/browse/GLJS-774"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0009}
       ]

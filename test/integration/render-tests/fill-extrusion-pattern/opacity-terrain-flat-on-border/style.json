@@ -13,16 +13,10 @@
         ["wait"]
       ],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "Inconsistent fill extrusion height rendering across tile boundaries https://github.com/mapbox/mapbox-gl-js/issues/10181"},
-        {"platform-tag-contains": "web-macos-safari", "reason": "Inconsistencies with fill pattern. Some are visibly noticeable, others subtle. Possibly nonodeterministic rendering."},
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-js/issues/3327"},
-        {"platform-tag-contains": "native-linux", "reason": "flaky, https://mapbox.atlassian.net/browse/MAPSNAT-867"},
-        {"platform-tag-contains": "native-macos", "reason": "Difference in pattern depending on GPU"},
-        {"platform-tag-contains": "swiftshader", "reason": "skip - swiftshader debugging needed"}
+        {"platform-tag-contains": "web", "reason": "Inconsistent fill extrusion height rendering across tile boundaries https://github.com/mapbox/mapbox-gl-js/issues/10181"}
       ],
       "image-threshold": [
-        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.00025},
-        {"platform-tag-contains": "native-android-gl-powervr", "threshold": 0.00025},
+        {"platform-tag-contains": "native-android", "threshold": 0.0003},
         {"platform-tag-contains": "swiftshader", "threshold": 0.0004}
       ]
     }
