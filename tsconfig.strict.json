@@ -18,6 +18,7 @@
     "./src/types/import-meta.d.ts",
     "./3d-style/elevation/elevation_constants.ts",
     "./3d-style/render/texture_slots.ts",
+    "./3d-style/util/building_gen.ts",
     "./3d-style/util/draco_decoder_gltf.ts",
     "./3d-style/util/meshopt_decoder.ts",
     "./src/geo/projection/globe_constants.ts",

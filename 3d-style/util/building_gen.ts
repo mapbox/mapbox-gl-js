@@ -1,5 +1,5 @@
 export type Style = {
-    normalScale: number[],
+    normalScale: [number, number, number],
     tileToMeters: number
 };
 
@@ -93,7 +93,7 @@ export class BuildingGen {
     readStringBuffer(ptr: number): string {
         let str = '';
         while (this.module.heapU8[ptr] !== 0) {
-            str += String.fromCharCode(this.module.heapU8[ptr]);
+            str += String.fromCharCode(this.module.heapU8[ptr]!);
             ++ptr;
         }
         return str;
