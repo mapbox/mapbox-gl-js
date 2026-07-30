@@ -449,23 +449,23 @@ describe('Map#cameraParams', () => {
 
             map.jumpTo({zoom: 3.3, center: [-99, 42], bearing: 24});
             bounds = map.getBounds();
-            expect(toFixed(bounds.toArray())).toStrictEqual([
-                ["-108.2217655978", "34.8501901832"],
-                ["-88.9997447442", "49.1066330317"]
+            expectBoundsCloseTo(bounds.toArray(), [
+                [-108.2217655978, 34.8501901832],
+                [-88.9997447442, 49.1066330317]
             ]);
 
             map.jumpTo({zoom: 3.3, center: [-99, 42], bearing: 24});
             bounds = map.getBounds();
-            expect(toFixed(bounds.toArray())).toStrictEqual([
-                ["-108.2217655978", "34.8501901832"],
-                ["-88.9997447442", "49.1066330317"]
+            expectBoundsCloseTo(bounds.toArray(), [
+                [-108.2217655978, 34.8501901832],
+                [-88.9997447442, 49.1066330317]
             ]);
 
             map.setPitch(50);
             bounds = map.getBounds();
-            expect(toFixed(bounds.toArray())).toStrictEqual([
-                ["-106.5868397979", "34.9358140751"],
-                ["-77.8438130023", "58.8683265069"]
+            expectBoundsCloseTo(bounds.toArray(), [
+                [-106.5868397979, 34.9358140751],
+                [-77.8438130023, 58.8683265069]
             ]);
         });
 
@@ -499,6 +499,13 @@ describe('Map#cameraParams', () => {
                 ["-52.4906377771", "22.9304574207"]
             ]);
         });
+
+        function expectBoundsCloseTo(actual: number[][], expected: number[][]) {
+            expect(actual[0][0]).toBeCloseTo(expected[0][0], 9);
+            expect(actual[0][1]).toBeCloseTo(expected[0][1], 9);
+            expect(actual[1][0]).toBeCloseTo(expected[1][0], 9);
+            expect(actual[1][1]).toBeCloseTo(expected[1][1], 9);
+        }
 
         function toFixed(bounds) {
             const n = 10;

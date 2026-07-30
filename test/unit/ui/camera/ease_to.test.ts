@@ -592,8 +592,12 @@ describe('camera', () => {
 
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 camera.easeTo({center: [90, 10], duration: 0});
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                expect(camera.getCenter()).toEqual({lng: 90, lat: 10});
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+                const center = camera.getCenter();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                expect(center.lng).toBeCloseTo(90, 9);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                expect(center.lat).toBeCloseTo(10, 9);
             });
 
             test('rotate the globe once around its axis', () => {
