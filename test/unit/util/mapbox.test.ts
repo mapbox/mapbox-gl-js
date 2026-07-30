@@ -580,6 +580,37 @@ describe("mapbox", () => {
         });
     });
 
+    describe('postEvent X-Mapbox-Agent header', () => {
+        afterEach(() => {
+            delete window.__mapboxAgent;
+        });
+
+        test('adds the header when window.__mapboxAgent is set (e.g. by the test-only agent-forwarding driver)', async () => {
+            window.__mapboxAgent = 'claude-code';
+            const fetchSpy = vi.spyOn(window, 'fetch').mockResolvedValue(new window.Response());
+            const event = new mapbox.TelemetryEvent('map.load');
+
+            await new Promise<void>((resolve) => {
+                event.postEvent(Date.now(), {}, () => resolve());
+            });
+
+            const request = fetchSpy.mock.calls[0][0] as Request;
+            expect(request.headers.get('X-Mapbox-Agent')).toEqual('claude-code');
+        });
+
+        test('omits the header entirely (never sends "unknown") when window.__mapboxAgent is not set', async () => {
+            const fetchSpy = vi.spyOn(window, 'fetch').mockResolvedValue(new window.Response());
+            const event = new mapbox.TelemetryEvent('map.load');
+
+            await new Promise<void>((resolve) => {
+                event.postEvent(Date.now(), {}, () => resolve());
+            });
+
+            const request = fetchSpy.mock.calls[0][0] as Request;
+            expect(request.headers.has('X-Mapbox-Agent')).toBe(false);
+        });
+    });
+
     describe('self-hosted telemetry suppression', () => {
         function makeExpirationToken(expiration: number): string {
             const header = btoa(JSON.stringify({typ: 'JWT', alg: 'ES256'}));

@@ -474,11 +474,25 @@ export class TelemetryEvent {
         };
 
         const finalPayload = additionalPayload ? Object.assign(payload, additionalPayload) : payload;
+        const headers: Record<string, string> = {
+            'Content-Type': 'text/plain' //Skip the pre-flight OPTIONS request
+        };
+
+        // Test tooling only: when this repo's own test suite is driven by an
+        // AI coding agent (e.g. Claude Code, Codex, Cursor), the Playwright/
+        // Cypress test driver sets `window.__mapboxAgent` before any page
+        // script runs (see test/integration/lib/agent-forwarding.ts). Tag the
+        // request so agent-driven test traffic is visibly attributed
+        // server-side. `window` is guarded defensively as it is absent in
+        // worker contexts, and the property is never set outside of that
+        // test driver, so this is a no-op everywhere else (e.g. `npm run dev`).
+        if (typeof window !== 'undefined' && window.__mapboxAgent) {
+            headers['X-Mapbox-Agent'] = window.__mapboxAgent;
+        }
+
         const request: RequestParameters = {
             url: formatUrl(eventsUrlObject),
-            headers: {
-                'Content-Type': 'text/plain' //Skip the pre-flight OPTIONS request
-            },
+            headers,
             body: JSON.stringify([finalPayload])
         };
 

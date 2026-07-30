@@ -36,6 +36,13 @@ declare global {
     interface Window {
         showSaveFilePicker?: (options?: FilePickerOptions) => Promise<FileSystemFileHandle>;
         showOpenFilePicker?: (options?: FilePickerOptions) => Promise<FileSystemFileHandle[]>;
+
+        // Test-only: set by test/integration/lib/agent-forwarding.ts before
+        // any page script runs, when this repo's own test suite is driven by
+        // an AI coding agent. Read defensively by
+        // `TelemetryEvent.postEvent` (src/util/mapbox.ts) to tag the
+        // events/v2 request; never set outside that test driver.
+        __mapboxAgent?: string;
     }
 
     // Safari-only compass heading on device orientation events.

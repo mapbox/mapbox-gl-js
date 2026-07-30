@@ -1,6 +1,7 @@
 import {mergeConfig, defineConfig} from 'vitest/config';
 import baseConfig, {isCI, chromiumBrowser} from './vitest.config.base';
 import {integrationTests, setupIntegrationTestsMiddlewares, serveDistPlugin, suiteDirs} from './vitest.config.common';
+import {agentForwardingPlugin} from './test/integration/lib/agent-forwarding';
 
 export default mergeConfig(baseConfig, defineConfig({
     define: {
@@ -28,5 +29,6 @@ export default mergeConfig(baseConfig, defineConfig({
         }),
         integrationTests({suiteDirs: suiteDirs('query-tests')}),
         serveDistPlugin(),
+        agentForwardingPlugin(),
     ],
 }));
