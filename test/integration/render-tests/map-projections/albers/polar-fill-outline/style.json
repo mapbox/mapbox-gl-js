@@ -1,0 +1,93 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "description": "Separates polar Albers background, fill, outline, and point rendering.",
+      "operations": [
+        ["setProjection", {
+          "name": "albers",
+          "center": [-38, 0],
+          "parallels": [90, 90]
+        }],
+        ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"}
+      ]
+    }
+  },
+  "center": [12.5683, 55.6761],
+  "sources": {
+    "polar-cap": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [-180, 70],
+                [-120, 70],
+                [-60, 70],
+                [0, 70],
+                [60, 70],
+                [120, 70],
+                [180, 70],
+                [180, 89],
+                [-180, 89],
+                [-180, 70]
+              ]]
+            }
+          }
+        ]
+      }
+    },
+    "pole": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [-38, 89]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#203040"
+      }
+    },
+    {
+      "id": "polar-cap-fill",
+      "type": "fill",
+      "source": "polar-cap",
+      "paint": {
+        "fill-color": "#ffffff"
+      }
+    },
+    {
+      "id": "polar-cap-outline",
+      "type": "line",
+      "source": "polar-cap",
+      "paint": {
+        "line-color": "#000000",
+        "line-width": 3
+      }
+    },
+    {
+      "id": "pole",
+      "type": "circle",
+      "source": "pole",
+      "paint": {
+        "circle-color": "#ff0000",
+        "circle-radius": 8
+      }
+    }
+  ]
+}

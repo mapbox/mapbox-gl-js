@@ -1,0 +1,47 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "description": "Isolates vector-tile water fill at the south-pole Albers singularity.",
+      "operations": [
+        ["setProjection", {
+          "name": "albers",
+          "center": [-40, 0],
+          "parallels": [-90, -90]
+        }],
+        ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"}
+      ]
+    }
+  },
+  "center": [12.5683, 55.6761],
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v7"
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#ff0000"
+      }
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "#0000ff",
+        "fill-antialias": false
+      }
+    }
+  ]
+}
