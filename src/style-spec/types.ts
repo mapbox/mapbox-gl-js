@@ -1230,6 +1230,10 @@ export type RasterLayerSpecification = {
         "raster-color-mix-transition"?: TransitionSpecification,
         "raster-color-range"?: PropertyValueSpecification<[number, number]>,
         "raster-color-range-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "raster-color-scale"?: "linear" | "log" | ExpressionSpecification,
         "raster-hue-rotate"?: PropertyValueSpecification<number>,
         "raster-hue-rotate-transition"?: TransitionSpecification,
         "raster-brightness-min"?: PropertyValueSpecification<number>,

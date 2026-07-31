@@ -1,0 +1,14 @@
+[
+  {
+    "message": "layers[2].paint.raster-color-scale: expected one of [linear, log], \"logarithmic\" found",
+    "line": 37
+  },
+  {
+    "message": "layers[3].paint.raster-color-scale: zoom expressions not supported",
+    "line": 47
+  },
+  {
+    "message": "layers[4].paint.raster-color-scale: data expressions not supported",
+    "line": 57
+  }
+]

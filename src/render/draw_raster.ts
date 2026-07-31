@@ -546,6 +546,11 @@ function configureRaster(
         if (inputResampling === 'linear') defines.push('RASTER_ARRAY_LINEAR');
         resampling = gl.NEAREST;
 
+        // Support log-scaled color ramps for raster array data sources
+        if (isRasterColor && layer.paint.get('raster-color-scale') === 'log') {
+            defines.push('RASTER_COLOR_SCALE_LOG');
+        }
+
         if (!range) {
             if (source.rasterLayers) {
                 const foundLayer = source.rasterLayers.find(({id}) => id === layer.sourceLayer);

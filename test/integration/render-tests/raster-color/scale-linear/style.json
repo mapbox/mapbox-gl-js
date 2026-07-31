@@ -1,0 +1,101 @@
+{
+  "version": 8,
+  "_comment": "Control for raster-color/scale-log.",
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128,
+      "image-threshold": [
+        {
+          "platform-tag-contains": "",
+          "threshold": 0.00125
+        },
+        {
+          "platform-tag-contains": "web-linux",
+          "threshold": 0.019
+        }
+      ],
+      "operations": [
+        [
+          "wait"
+        ]
+      ],
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "raster-color-scale is only supported in gl-js for now"
+        }
+      ]
+    }
+  },
+  "center": [
+    135.0053045734985,
+    36.00653610439714
+  ],
+  "zoom": 4,
+  "transition": {
+    "duration": 0
+  },
+  "sources": {
+    "precipitations": {
+      "type": "raster-array",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mrt"
+      ],
+      "raster_layers": [
+        {
+          "id": "Total Precip",
+          "fields": {
+            "range": [
+              0,
+              14
+            ],
+            "tilesize": 512,
+            "buffer": 1,
+            "bands": [
+              "1708304400"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#222222"
+      }
+    },
+    {
+      "id": "precipitations",
+      "type": "raster",
+      "source": "precipitations",
+      "source-layer": "Total Precip",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-color-range": [
+          0,
+          350
+        ],
+        "raster-color-range-transition": {
+          "duration": 0
+        },
+        "raster-color": [
+          "step",
+          [
+            "raster-value"
+          ],
+          "rgba(0,0,0,0)",
+          0.05,
+          "#ffffff",
+          0.35,
+          "#00e5ff",
+          1.5,
+          "#2171b5"
+        ]
+      }
+    }
+  ]
+}

@@ -49,13 +49,14 @@ export type RasterUniformsType = {
     ['u_colorization_mix']: Uniform4f;
     ['u_colorization_offset']: Uniform1f;
     ['u_color_ramp']: Uniform1i;
+    ['u_color_ramp_size']: Uniform1f;
     ['u_texture_offset']: Uniform2f;
     ['u_texture_res']: Uniform2f;
     ['u_emissive_strength']: Uniform1f;
     ['u_zbias_factor']: Uniform1f;
 };
 
-export type RasterDefinesType = 'RASTER_COLOR' | 'RENDER_CUTOFF' | 'RASTER_ARRAY' | 'RASTER_ARRAY_LINEAR' | 'ELEVATION_REFERENCE_GROUND';
+export type RasterDefinesType = 'RASTER_COLOR' | 'RENDER_CUTOFF' | 'RASTER_ARRAY' | 'RASTER_ARRAY_LINEAR' | 'ELEVATION_REFERENCE_GROUND' | 'RASTER_COLOR_SCALE_LOG';
 
 const rasterUniforms = (context: Context): RasterUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
@@ -82,6 +83,7 @@ const rasterUniforms = (context: Context): RasterUniformsType => ({
     'u_colorization_mix': new Uniform4f(context),
     'u_colorization_offset': new Uniform1f(context),
     'u_color_ramp': new Uniform1i(context),
+    'u_color_ramp_size': new Uniform1f(context),
     'u_texture_offset': new Uniform2f(context),
     'u_texture_res': new Uniform2f(context),
     'u_emissive_strength': new Uniform1f(context),
@@ -143,6 +145,7 @@ const rasterUniformValues = (
     'u_colorization_mix': computeRasterColorMix(COLOR_RAMP_RES, colorMix, colorRange),
     'u_colorization_offset': computeRasterColorOffset(COLOR_RAMP_RES, colorOffset, colorRange),
     'u_color_ramp': colorRampUnit,
+    'u_color_ramp_size': COLOR_RAMP_RES,
     'u_texture_offset': [
         buffer / (tileSize + 2 * buffer),
         tileSize / (tileSize + 2 * buffer)

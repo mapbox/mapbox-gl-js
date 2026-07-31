@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>GLJS-1612 raster-color: linear vs log</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body { height: 100%; }
+        #maps { display: flex; height: 100%; }
+        .pane { position: relative; flex: 1 1 50%; }
+        .pane + .pane { border-left: 2px solid #fff; }
+        .map { position: absolute; inset: 0; }
+        .tag {
+            position: absolute; top: 10px; left: 10px; z-index: 10;
+            background: rgb(0 0 0 / 72%); color: #fff;
+            font: 13px/1.4 monospace; padding: 5px 9px; border-radius: 4px;
+            pointer-events: none; max-width: 46%;
+        }
+        .rampbg, .ramp { position: absolute; bottom: 0; left: 0; width: 100%; height: 28px; }
+        .rampbg { z-index: 9; background: repeating-conic-gradient(#ccc 0% 25%, white 0% 50%) 50% / 16px 16px; }
+        .ramp { z-index: 10; image-rendering: pixelated; }
+        #hover {
+            display: none; position: fixed; z-index: 30;
+            background: rgb(255 255 255 / 92%); color: #000;
+            font: 12px/1 monospace; padding: 4px 8px; border-radius: 3px;
+            box-shadow: 0 0 2px rgb(0 0 0 / 50%); pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="maps">
+        <div class="pane">
+            <div id="mapLinear" class="map"></div>
+            <div class="tag">raster-color-scale: linear (default)</div>
+            <div class="rampbg"></div>
+            <canvas class="ramp" id="rampLinear"></canvas>
+        </div>
+        <div class="pane">
+            <div id="mapLog" class="map"></div>
+            <div class="tag">raster-color-scale: log</div>
+            <div class="rampbg"></div>
+            <canvas class="ramp" id="rampLog"></canvas>
+        </div>
+    </div>
+    <div id="hover"></div>
+
+    <script type='module'>
+        import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+        import {getAccessToken} from './access_token_generated.js';
+
+        const SOURCE_LAYER = 'Total Precip';
+        const CENTER = [135.0053045734985, 36.00653610439714];
+        const ZOOM = 4;
+
+        const stepColor = [
+            'step',
+            ['raster-value'],
+            'rgba(0, 0, 0, 0)', // transparent = no data
+            0.09, 'rgb(242, 242, 255)', // white
+            0.95, 'rgb(160, 210, 255)', // light blue
+            4.95, 'rgb(33, 140, 255)',  // mid blue
+            9.95, 'rgb(0, 65, 255)',    // blue
+            19.95, 'rgb(250, 245, 0)',  // yellow
+            29.95, 'rgb(255, 153, 0)',  // orange
+            49.5, 'rgb(255, 40, 0)',    // red
+            79.9, 'rgb(180, 0, 104)'    // purple
+        ];
+
+        const hover = document.getElementById('hover');
+
+        // Draw a map's baked color ramp (layer.colorRamp) into its bottom strip.
+        function drawRamp(map, rampId) {
+            const layer = map.style && map.style._mergedLayers && map.style._mergedLayers['precipitations'];
+            const img = layer && layer.colorRamp;
+            if (!img || !img.data) return;
+            const canvas = document.getElementById(rampId);
+            canvas.width = img.width;
+            canvas.height = img.height;
+            canvas.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(img.data), img.width, img.height), 0, 0);
+        }
+
+        // Create a map where `raster-color-scale` equals 'linear' or 'log'.
+        function createMap(container, rasterColorScale, rampId) {
+            const map = new mapboxgl.Map({
+                accessToken: getAccessToken(),
+                container,
+                style: 'mapbox://styles/mapbox/standard-satellite',
+                center: CENTER,
+                zoom: ZOOM,
+                projection: 'mercator',
+                preserveDrawingBuffer: true,
+                attributionControl: false,
+            });
+
+            map.on('style.load', () => {
+                map.addSource('precipitations', {
+                    type: 'raster-array',
+                    url: 'mapbox://mapboxsatellite.msm-precip-demo'
+                });
+                map.addLayer({
+                    id: 'precipitations',
+                    source: 'precipitations',
+                    'source-layer': SOURCE_LAYER,
+                    type: 'raster',
+                    slot: 'top',
+                    paint: {
+                        'raster-opacity': 0.9,
+                        'raster-color-range': [0, 197],
+                        'raster-color': stepColor,
+                        'raster-color-scale': rasterColorScale,
+                        'raster-resampling': 'nearest',
+                        'raster-color-range-transition': {duration: 0},
+                        'raster-fade-duration': 0,
+                    }
+                });
+
+                map.on('idle', () => drawRamp(map, rampId));
+
+                map.on('mousemove', async ({lngLat, point}) => {
+                    const band = map.getSource('precipitations').rasterLayers
+                        ?.find(({id}) => id === SOURCE_LAYER)?.fields.bands[0];
+                    const queried = await map.queryRasterValue('precipitations', lngLat, {layerName: SOURCE_LAYER});
+                    const value = queried && queried[SOURCE_LAYER] && queried[SOURCE_LAYER][band] && queried[SOURCE_LAYER][band][0];
+                    if (value == null) { hover.style.display = 'none'; return; }
+                    const rect = map.getContainer().getBoundingClientRect();
+                    hover.style.display = 'block';
+                    hover.style.left = `${rect.left + point.x + 12}px`;
+                    hover.style.top = `${rect.top + point.y + 12}px`;
+                    hover.textContent = `raster-value = ${value.toFixed(4)}`;
+                });
+                map.on('mouseout', () => { hover.style.display = 'none'; });
+            });
+
+            return map;
+        }
+
+        const mapLinear = window.mapLinear = createMap('mapLinear', 'linear', 'rampLinear');
+        const mapLog = window.mapLog = createMap('mapLog', 'log', 'rampLog');
+
+        // Keep the two cameras in sync, either direction, without feedback loops.
+        let syncing = false;
+        function link(from, to) {
+            from.on('move', () => {
+                if (syncing) return;
+                syncing = true;
+                to.jumpTo({
+                    center: from.getCenter(),
+                    zoom: from.getZoom(),
+                    bearing: from.getBearing(),
+                    pitch: from.getPitch(),
+                });
+                syncing = false;
+            });
+        }
+        link(mapLinear, mapLog);
+        link(mapLog, mapLinear);
+    </script>
+</body>
+
+</html>

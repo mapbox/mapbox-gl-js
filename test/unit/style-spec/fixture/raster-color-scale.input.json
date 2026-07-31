@@ -1,0 +1,61 @@
+{
+  "version": 8,
+  "sources": {
+    "precipitation": {
+      "type": "raster-array",
+      "url": "mapbox://mapbox.precipitation-v1"
+    }
+  },
+  "layers": [
+    {
+      "id": "scale-linear",
+      "type": "raster",
+      "source": "precipitation",
+      "paint": {
+        "raster-color-range": [0, 350],
+        "raster-color": ["step", ["raster-value"], "rgba(0, 0, 0, 0)", 0.05, "#ffffff", 0.35, "#00e5ff", 1.5, "#2171b5"],
+        "raster-color-scale": "linear"
+      }
+    },
+    {
+      "id": "scale-log",
+      "type": "raster",
+      "source": "precipitation",
+      "paint": {
+        "raster-color-range": [0, 350],
+        "raster-color": ["step", ["raster-value"], "rgba(0, 0, 0, 0)", 0.05, "#ffffff", 0.35, "#00e5ff", 1.5, "#2171b5"],
+        "raster-color-scale": "log"
+      }
+    },
+    {
+      "id": "scale-invalid-enum",
+      "type": "raster",
+      "source": "precipitation",
+      "paint": {
+        "raster-color-range": [0, 350],
+        "raster-color": ["step", ["raster-value"], "rgba(0, 0, 0, 0)", 0.05, "#ffffff", 0.35, "#00e5ff", 1.5, "#2171b5"],
+        "raster-color-scale": "logarithmic"
+      }
+    },
+    {
+      "id": "scale-zoom-expression",
+      "type": "raster",
+      "source": "precipitation",
+      "paint": {
+        "raster-color-range": [0, 350],
+        "raster-color": ["step", ["raster-value"], "rgba(0, 0, 0, 0)", 0.05, "#ffffff", 0.35, "#00e5ff", 1.5, "#2171b5"],
+        "raster-color-scale": ["step", ["zoom"], "linear", 5, "log"]
+      }
+    },
+    {
+      "id": "scale-data-expression",
+      "type": "raster",
+      "source": "precipitation",
+      "paint": {
+        "raster-color-range": [0, 350],
+        "raster-color": ["step", ["raster-value"], "rgba(0, 0, 0, 0)", 0.05, "#ffffff", 0.35, "#00e5ff", 1.5, "#2171b5"],
+        "raster-color-scale": ["get", "scale"]
+      }
+    }
+  ]
+}

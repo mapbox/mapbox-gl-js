@@ -35,6 +35,7 @@ uniform sampler2D u_color_ramp;
 uniform highp vec4 u_colorization_mix;
 uniform highp float u_colorization_offset;
 uniform vec2 u_texture_res;
+uniform highp float u_color_ramp_size;
 #endif
 
 
@@ -62,6 +63,16 @@ void main() {
 #endif
     // Divide the scalar value by "alpha" to smoothly fade to no data
     if (value.y > 0.0) value.x /= value.y;
+
+#ifdef RASTER_COLOR_SCALE_LOG
+    // Remap the texcoord as the ramp was baked with a log value distribution
+    // (with un-center and re-center before and after).
+    // MUST be the exact inverse used for baking the ramp — if the two diverge, every color is wrong.
+    float N = u_color_ramp_size;
+    float vNorm = max((value.x - 0.5 / N) * N / (N - 1.0), 0.0);
+    vNorm = log(vNorm * (10.0 - 1.0) + 1.0) / log(10.0);
+    value.x = 0.5 / N + vNorm * (N - 1.0) / N;
+#endif
 #else
     color = mix(texture(u_image0, v_pos0), texture(u_image1, v_pos1), u_fade_t);
     value = vec2(u_colorization_offset + dot(color.rgb, u_colorization_mix.rgb), color.a);
