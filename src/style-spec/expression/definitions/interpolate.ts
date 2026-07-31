@@ -111,7 +111,7 @@ class Interpolate implements Expression {
 
         const stops: Stops = [];
 
-        let outputType: Type = null;
+        let outputType: Type | null = null;
         if (operator === 'interpolate-hcl' || operator === 'interpolate-lab') {
             outputType = ColorType;
         } else if (context.expectedType && context.expectedType.kind !== 'value') {
@@ -129,7 +129,7 @@ class Interpolate implements Expression {
                 return context.error('Input/output pairs for "interpolate" expressions must be defined using literal numeric values (not computed expressions) for the input values.', labelKey);
             }
 
-            if (stops.length && stops.at(-1)[0] >= label) {
+            if (stops.length && stops.at(-1)![0] >= label) {
                 return context.error('Input/output pairs for "interpolate" expressions must be arranged with input values in strictly ascending order.', labelKey);
             }
 
@@ -139,15 +139,15 @@ class Interpolate implements Expression {
             stops.push([label, parsed]);
         }
 
-        if (outputType.kind !== 'number' &&
-            outputType.kind !== 'color' &&
+        if (outputType!.kind !== 'number' &&
+            outputType!.kind !== 'color' &&
             !(
-                outputType.kind === 'array' &&
+                outputType!.kind === 'array' &&
                 outputType.itemType.kind === 'number' &&
                 typeof outputType.N === 'number'
             )
         ) {
-            return context.error(`Type ${toString(outputType)} is not interpolatable.`);
+            return context.error(`Type ${toString(outputType!)} is not interpolatable.`);
         }
 
         return new Interpolate(outputType, operator as InterpolationOperator, interpolation as InterpolationType, input as Expression, stops);
@@ -158,33 +158,32 @@ class Interpolate implements Expression {
         const outputs = this.outputs;
 
         if (labels.length === 1) {
-            return outputs[0].evaluate(ctx) as Color;
+            return outputs[0]!.evaluate(ctx) as Color;
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const value: number = this.input.evaluate(ctx);
-        if (value <= labels[0]) {
-            return outputs[0].evaluate(ctx) as Color;
+        if (value <= labels[0]!) {
+            return outputs[0]!.evaluate(ctx) as Color;
         }
 
         const stopCount = labels.length;
-        if (value >= labels[stopCount - 1]) {
-            return outputs[stopCount - 1].evaluate(ctx) as Color;
+        if (value >= labels[stopCount - 1]!) {
+            return outputs[stopCount - 1]!.evaluate(ctx) as Color;
         }
 
         const index = findStopLessThanOrEqualTo(labels, value);
-        const lower = labels[index];
-        const upper = labels[index + 1];
+        const lower = labels[index]!;
+        const upper = labels[index + 1]!;
         const t = Interpolate.interpolationFactor(this.interpolation, value, lower, upper);
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const outputLower: Color = outputs[index].evaluate(ctx);
+        const outputLower: Color = outputs[index]!.evaluate(ctx);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const outputUpper: Color = outputs[index + 1].evaluate(ctx);
+        const outputUpper: Color = outputs[index + 1]!.evaluate(ctx);
 
         if (this.operator === 'interpolate') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
-            return interpolate[this.type.kind.toLowerCase()](outputLower, outputUpper, t);
+            return (interpolate[this.type.kind.toLowerCase() as keyof typeof interpolate] as (from: Color, to: Color, t: number) => Color)(outputLower, outputUpper, t);
         } else if (this.operator === 'interpolate-hcl') {
             return hcl.reverse(hcl.interpolate(hcl.forward(outputLower), hcl.forward(outputUpper), t));
         } else {
@@ -221,8 +220,8 @@ class Interpolate implements Expression {
 
         for (let i = 0; i < this.labels.length; i++) {
             serialized.push(
-                this.labels[i],
-                this.outputs[i].serialize()
+                this.labels[i]!,
+                this.outputs[i]!.serialize()
             );
         }
         return serialized;

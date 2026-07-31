@@ -28,11 +28,21 @@ import validateIconset from './validate_iconset';
 import type ValidationError from '../error/validation_error';
 import type {StyleReference} from '../reference/latest';
 import type {StyleSpecification} from '../types';
-import type {FunctionValidatorOptions} from './validate_function';
 import type {StylePropertySpecification} from '../style-spec';
 import type {ExpressionValidatorOptions} from './validate_expression';
 
-const VALIDATORS: Record<string, (...args: unknown[]) => ValidationError[]> = {
+type Validator = {
+    // eslint-disable-next-line @typescript-eslint/method-signature-style
+    validate(options: {
+        key: string;
+        value: unknown;
+        valueSpec?: unknown;
+        style?: Partial<StyleSpecification>;
+        styleSpec?: StyleReference;
+    }): ValidationError[];
+}['validate'];
+
+const VALIDATORS: Record<string, Validator> = {
     '*': () => [],
     'array': validateArray,
     'boolean': validateBoolean,
@@ -99,16 +109,16 @@ export type ValidatorOptions = {
  */
 export default function validate(options: ValidatorOptions, arrayAsExpression: boolean = false): ValidationError[] {
     const value = options.value;
-    const valueSpec = options.valueSpec;
+    const valueSpec = options.valueSpec!;
     const styleSpec = options.styleSpec;
 
     if (valueSpec.expression) {
-        if (isFunction(unbundle(value))) return validateFunction(options as unknown as FunctionValidatorOptions);
+        if (isFunction(unbundle(value))) return validateFunction(options);
         if (isExpression(deepUnbundle(value))) return validateExpression(options as unknown as ExpressionValidatorOptions);
     }
 
     if (valueSpec.type && VALIDATORS[valueSpec.type]) {
-        const errors = VALIDATORS[valueSpec.type](options);
+        const errors = VALIDATORS[valueSpec.type]!(options);
         if (arrayAsExpression === true && errors.length > 0 && Array.isArray(options.value)) {
             // Try to validate as an expression
             return validateExpression(options as unknown as ExpressionValidatorOptions);

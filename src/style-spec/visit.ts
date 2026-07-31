@@ -8,17 +8,18 @@ import type {
     PropertyValueSpecification
 } from './types';
 
-function getPropertyReference(propertyName: string): StylePropertySpecification {
+type ReferenceSection = Record<string, StylePropertySpecification>;
+type ReferenceWithSections = typeof Reference & Record<string, ReferenceSection>;
+
+function getPropertyReference(propertyName: string): StylePropertySpecification | null {
     for (let i = 0; i < Reference.layout.length; i++) {
-        for (const key in Reference[Reference.layout[i]]) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            if (key === propertyName) return Reference[Reference.layout[i]][key] as StylePropertySpecification;
+        for (const key in (Reference as ReferenceWithSections)[Reference.layout[i]!]) {
+            if (key === propertyName) return (Reference as ReferenceWithSections)[Reference.layout[i]!]![key]!;
         }
     }
     for (let i = 0; i < Reference.paint.length; i++) {
-        for (const key in Reference[Reference.paint[i]]) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            if (key === propertyName) return Reference[Reference.paint[i]][key] as StylePropertySpecification;
+        for (const key in (Reference as ReferenceWithSections)[Reference.paint[i]!]) {
+            if (key === propertyName) return (Reference as ReferenceWithSections)[Reference.paint[i]!]![key]!;
         }
     }
 
@@ -27,7 +28,7 @@ function getPropertyReference(propertyName: string): StylePropertySpecification 
 
 export function eachSource(style: StyleSpecification, callback: (_: SourceSpecification) => void) {
     for (const k in style.sources) {
-        callback(style.sources[k]);
+        callback(style.sources[k]!);
     }
 }
 
@@ -59,14 +60,14 @@ export function eachProperty(
 ) {
     function inner(layer: LayerSpecification, propertyType: 'paint' | 'layout') {
         if (layer.type === 'slot' || layer.type === 'clip') return;
-        const properties = layer[propertyType];
+        const properties: Record<string, PropertyValueSpecification<unknown>> | undefined = layer[propertyType];
         if (!properties) return;
         Object.keys(properties).forEach((key) => {
             callback({
                 path: [layer.id, propertyType, key],
                 key,
                 value: properties[key],
-                reference: getPropertyReference(key),
+                reference: getPropertyReference(key)!,
                 set(x) {
                     properties[key] = x;
                 }

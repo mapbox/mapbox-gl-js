@@ -19,7 +19,7 @@ export default function convertFunction<T>(parameters: FunctionSpecification<T>,
         return convertIdentityFunction(parameters, propertySpec);
     }
 
-    const zoomAndFeatureDependent = stops && typeof stops[0][0] === 'object';
+    const zoomAndFeatureDependent = stops && typeof stops[0]![0] === 'object';
     const featureDependent = zoomAndFeatureDependent || parameters.property !== undefined;
     const zoomDependent = zoomAndFeatureDependent || !featureDependent;
 
@@ -51,7 +51,7 @@ function convertIdentityFunction<T>(parameters: FunctionSpecification<T>, proper
         return [
             'match',
             get,
-            Object.keys(propertySpec.values),
+            Object.keys(propertySpec.values!),
             get,
             parameters.default
         ];
@@ -83,7 +83,7 @@ function convertZoomAndPropertyFunction<T>(
     const featureFunctionStops: Record<string, any> = {};
     const zoomStops = [];
     for (let s = 0; s < stops.length; s++) {
-        const stop = stops[s];
+        const stop = stops[s]!;
         const zoom = stop[0].zoom;
         if (featureFunctionParameters[zoom] === undefined) {
             featureFunctionParameters[zoom] = {
@@ -103,12 +103,12 @@ function convertZoomAndPropertyFunction<T>(
     // function is determined directly from the style property specification
     // for which it's being used: linear for interpolatable properties, step
     // otherwise.
-    const functionType = getFunctionType({} as FunctionSpecification<unknown>, propertySpec);
+    const functionType = getFunctionType({}, propertySpec);
     if (functionType === 'exponential') {
         const expression: ExpressionSpecification = [getInterpolateOperator(parameters), ['linear'], ['zoom']];
 
         for (const z of zoomStops) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const output = convertPropertyFunction(featureFunctionParameters[z], propertySpec, featureFunctionStops[z]);
             appendStopPair(expression, z, output, false);
         }
@@ -118,7 +118,7 @@ function convertZoomAndPropertyFunction<T>(
         const expression: ExpressionSpecification = ['step', ['zoom']];
 
         for (const z of zoomStops) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const output = convertPropertyFunction(featureFunctionParameters[z], propertySpec, featureFunctionStops[z]);
             appendStopPair(expression, z, output, true);
         }
@@ -156,7 +156,7 @@ function convertPropertyFunction<T>(
 ): ExpressionSpecification {
     const type = getFunctionType(parameters, propertySpec);
     const get: ExpressionSpecification = ['get', parameters.property];
-    if (type === 'categorical' && typeof stops[0][0] === 'boolean') {
+    if (type === 'categorical' && typeof stops[0]![0] === 'boolean') {
         assert(parameters.stops.length > 0 && parameters.stops.length <= 2);
         const expression: ExpressionSpecification = ['case'];
         for (const stop of stops) {
@@ -251,7 +251,7 @@ function appendStopPair(curve: ExpressionSpecification, input: unknown, output: 
     curve.push(output);
 }
 
-function getFunctionType<T>(parameters: FunctionSpecification<T>, propertySpec: StylePropertySpecification): string {
+function getFunctionType(parameters: Pick<FunctionSpecification<unknown>, 'type'>, propertySpec: StylePropertySpecification): string {
     if (parameters.type) {
         return parameters.type;
     } else {

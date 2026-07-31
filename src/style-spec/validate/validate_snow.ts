@@ -32,7 +32,7 @@ export default function validateSnow(options: SnowValidatorOptions): ValidationE
     for (const key in snow) {
         const transitionMatch = key.match(TRANSITION_KEY_RE);
 
-        if (transitionMatch && snowSpec[transitionMatch[1]] && snowSpec[transitionMatch[1]].transition) {
+        if (transitionMatch && snowSpec[transitionMatch[1]!] && snowSpec[transitionMatch[1]!]!.transition) {
             errors = errors.concat(validate({
                 key,
                 value: snow[key],

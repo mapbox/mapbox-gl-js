@@ -47,35 +47,32 @@ export default class FormatExpression implements Expression {
         const sections: Array<FormattedSectionExpression> = [];
         let nextTokenMayBeObject = false;
         for (let i = 1; i <= args.length - 1; ++i) {
-            const arg = args[i];
+            const arg = args[i] as Record<string, unknown> | unknown[] | string | number | boolean | null | undefined;
 
             if (nextTokenMayBeObject && typeof arg === "object" && !Array.isArray(arg)) {
                 nextTokenMayBeObject = false;
 
                 let scale = null;
-                if (arg['font-scale']) {
-                    scale = context.parseObjectValue(arg['font-scale'], i, 'font-scale', NumberType);
+                if (arg!['font-scale']) {
+                    scale = context.parseObjectValue(arg!['font-scale'], i, 'font-scale', NumberType);
                     if (!scale) return null;
                 }
 
                 let font = null;
-                if (arg['text-font']) {
-                    font = context.parseObjectValue(arg['text-font'], i, 'text-font', array(StringType));
+                if (arg!['text-font']) {
+                    font = context.parseObjectValue(arg!['text-font'], i, 'text-font', array(StringType));
                     if (!font) return null;
                 }
 
                 let textColor = null;
-                if (arg['text-color']) {
-                    textColor = context.parseObjectValue(arg['text-color'], i, 'text-color', ColorType);
+                if (arg!['text-color']) {
+                    textColor = context.parseObjectValue(arg!['text-color'], i, 'text-color', ColorType);
                     if (!textColor) return null;
                 }
 
-                const lastExpression = sections.at(-1);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const lastExpression = sections.at(-1)!;
                 lastExpression.scale = scale;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 lastExpression.font = font;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 lastExpression.textColor = textColor;
             } else {
                 const content = context.parse(args[i], i, ValueType);
@@ -140,10 +137,10 @@ export default class FormatExpression implements Expression {
     }
 
     serialize(): SerializedExpression {
-        const serialized: SerializedExpression[] = ["format"];
+        const serialized: Array<unknown> = ["format"];
         for (const section of this.sections) {
             serialized.push(section.content.serialize());
-            const options = {} as SerializedExpression;
+            const options: Record<string, SerializedExpression> = {};
             if (section.scale) {
                 options['font-scale'] = section.scale.serialize();
             }

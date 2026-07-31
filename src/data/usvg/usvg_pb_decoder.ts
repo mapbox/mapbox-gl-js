@@ -82,20 +82,27 @@ export function readIconSet(pbf: PbfReader, end?: number): IconSet {
     return obj;
 }
 
-export function buildStretchedAreas(metadata: {stretch_x?: number[]; stretch_y?: number[]}, axis: "x" | "y"): void {
+type StretchMetadata = {
+    stretch_x?: number[] | null;
+    stretch_x_areas?: [number, number][] | null;
+    stretch_y?: number[] | null;
+    stretch_y_areas?: [number, number][] | null;
+};
+
+export function buildStretchedAreas(metadata: StretchMetadata, axis: "x" | "y"): void {
     const areas: Array<[number, number]> = [];
-    const stretch = metadata[`stretch_${axis}`];
+    const stretch = metadata[`stretch_${axis}`]!;
     let left: number | null = null;
 
     for (let i = 0; i < stretch.length; i++) {
         if (left === null) {
             if (areas.length === 0) {
-                left = stretch[0];
+                left = stretch[0]!;
             } else {
-                left = areas.at(-1)[1] + stretch[i];
+                left = areas.at(-1)![1] + stretch[i]!;
             }
         } else {
-            const right = left + stretch[i];
+            const right = left + stretch[i]!;
             areas.push([left, right]);
             left = null;
         }
@@ -105,8 +112,8 @@ export function buildStretchedAreas(metadata: {stretch_x?: number[]; stretch_y?:
 }
 
 export function postProcessIcon(icon: Icon): Icon {
-    if (!icon.usvg_tree.height) {
-        icon.usvg_tree.height = icon.usvg_tree.width;
+    if (!icon.usvg_tree!.height) {
+        icon.usvg_tree!.height = icon.usvg_tree!.width;
     }
 
     if (!icon.metadata) {
@@ -122,7 +129,7 @@ export function postProcessIcon(icon: Icon): Icon {
 
         contentArea.top ??= contentArea.left;
 
-        contentArea.width ??= icon.usvg_tree.width;
+        contentArea.width ??= icon.usvg_tree!.width;
 
         contentArea.height ??= contentArea.width;
     }
@@ -154,7 +161,7 @@ export interface Icon {
 }
 
 export function readIcon(pbf: PbfReader, end?: number): Icon {
-    const obj: Icon = {name: undefined};
+    const obj: Icon = {name: undefined!};
     let field: number;
     while ((field = pbf.nextField(end))) {
         if (field === 1) obj.name = pbf.readString();
@@ -219,7 +226,7 @@ export interface Variable {
 }
 
 export function readVariable(pbf: PbfReader, end?: number): Variable {
-    const obj: Variable = {name: undefined};
+    const obj: Variable = {name: undefined!};
     let field: number;
     while ((field = pbf.nextField(end))) {
         if (field === 1) obj.name = pbf.readString();

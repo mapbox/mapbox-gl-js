@@ -17,7 +17,7 @@ import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 import type {Type} from '../types';
 
-const types = {
+const types: Record<string, Type> = {
     string: StringType,
     number: NumberType,
     boolean: BooleanType,
@@ -33,7 +33,7 @@ class Assertion implements Expression {
         this.args = args;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | void {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | void {
         if (args.length < 2)
             return context.error(`Expected at least one argument.`);
 
@@ -47,8 +47,7 @@ class Assertion implements Expression {
                 const type = args[1];
                 if (typeof type !== 'string' || !(type in types) || type === 'object')
                     return context.error('The item type argument of "array" must be one of string, number, boolean', 1);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                itemType = types[type];
+                itemType = types[type]!;
                 i++;
             } else {
                 itemType = ValueType;
@@ -63,25 +62,23 @@ class Assertion implements Expression {
                 ) {
                     return context.error('The length argument to "array" must be a positive integer literal', 2);
                 }
-                N = (args[2] as number);
+                N = args[2];
                 i++;
             }
 
             type = array(itemType, N);
         } else {
             assert(types[name], name);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            type = types[name];
+            type = types[name]!;
         }
 
-        const parsed = [];
+        const parsed: Expression[] = [];
         for (; i < args.length; i++) {
             const input = context.parse(args[i], i, ValueType);
             if (!input) return null;
             parsed.push(input);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new Assertion(type, parsed);
     }
 
@@ -89,14 +86,14 @@ class Assertion implements Expression {
     evaluate(ctx: EvaluationContext): any {
         for (let i = 0; i < this.args.length; i++) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const value = this.args[i].evaluate(ctx);
+            const value = this.args[i]!.evaluate(ctx);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const error = checkSubtype(this.type, typeOf(value));
             if (!error) {
                 return value;
             } else if (i === this.args.length - 1) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                throw new RuntimeError(`The expression ${JSON.stringify(this.args[i].serialize())} evaluated to ${toString(typeOf(value))} but was expected to be of type ${toString(this.type)}.`);
+                throw new RuntimeError(`The expression ${JSON.stringify(this.args[i]!.serialize())} evaluated to ${toString(typeOf(value))} but was expected to be of type ${toString(this.type)}.`);
             }
         }
 
@@ -123,7 +120,7 @@ class Assertion implements Expression {
                 serialized.push(itemType.kind);
                 const N = type.N;
                 if (typeof N === 'number' || this.args.length > 1) {
-                    serialized.push(N);
+                    serialized.push(N!);
                 }
             }
         }

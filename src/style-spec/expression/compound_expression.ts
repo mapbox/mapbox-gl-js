@@ -38,8 +38,8 @@ class CompoundExpression implements Expression {
 
     evaluate(ctx: EvaluationContext): Value {
         if (!this._evaluate) { // restore evaluate function after transfer between threads
-            const definition = CompoundExpression.definitions[this.name];
-            this._evaluate = Array.isArray(definition) ? definition[2] : definition.overloads[this._overloadIndex][1];
+            const definition = CompoundExpression.definitions[this.name]!;
+            this._evaluate = Array.isArray(definition) ? definition[2] : definition.overloads[this._overloadIndex]![1];
         }
         return this._evaluate(ctx, this.args);
     }
@@ -73,7 +73,7 @@ class CompoundExpression implements Expression {
 
         const overloadParams = [];
 
-        let signatureContext: ParsingContext = null;
+        let signatureContext: ParsingContext | null = null;
 
         let overloadIndex = -1;
 
@@ -125,8 +125,8 @@ class CompoundExpression implements Expression {
             }
 
             for (let i = 0; i < parsedArgs.length; i++) {
-                const expected = Array.isArray(params) ? params[i] : params.type;
-                const arg = parsedArgs[i];
+                const expected = Array.isArray(params) ? params[i]! : params.type;
+                const arg = parsedArgs[i]!;
                 signatureContext.checkSubtype(expected, arg.type, i + 1);
             }
 
@@ -138,7 +138,7 @@ class CompoundExpression implements Expression {
         assert(!signatureContext || signatureContext.errors.length > 0);
 
         if (overloadParams.length === 1) {
-            context.errors.push(...signatureContext.errors);
+            context.errors.push(...signatureContext!.errors);
         } else {
             const expected = overloadParams.length ? overloadParams : availableOverloads.map(([params]) => params);
             const signatures = expected.map(stringifySignature).join(' | ');

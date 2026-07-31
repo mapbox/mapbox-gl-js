@@ -166,7 +166,7 @@ export class GlobalPlacement {
         if (!this._runStarted) throw new Error('Attempt to finish a placement run that was not started');
         this._runStarted = false;
 
-        const grid = this._grid;
+        const grid = this._grid!;
         const timestamp = this._timestamp;
 
         this._symbols.sort((a, b) => comparePriority(b.priority, a.priority));

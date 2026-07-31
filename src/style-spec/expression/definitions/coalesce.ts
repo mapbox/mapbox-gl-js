@@ -21,7 +21,7 @@ class Coalesce implements Expression {
             context.error("Expectected at least one argument.");
             return null;
         }
-        let outputType: Type = null;
+        let outputType: Type | null = null;
         const expectedType = context.expectedType;
         if (expectedType && expectedType.kind !== 'value') {
             outputType = expectedType;

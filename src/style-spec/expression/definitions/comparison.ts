@@ -143,7 +143,6 @@ function makeComparison(
                 if (!collator) return null;
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             return new Comparison(lhs, rhs, collator);
         }
 

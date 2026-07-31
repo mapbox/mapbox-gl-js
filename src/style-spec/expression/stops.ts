@@ -18,8 +18,8 @@ export function findStopLessThanOrEqualTo(stops: Array<number>, input: number): 
 
     while (lowerIndex <= upperIndex) {
         currentIndex = Math.floor((lowerIndex + upperIndex) / 2);
-        currentValue = stops[currentIndex];
-        nextValue = stops[currentIndex + 1];
+        currentValue = stops[currentIndex]!;
+        nextValue = stops[currentIndex + 1]!;
 
         if (currentValue <= input) {
             if (currentIndex === lastIndex || input < nextValue) { // Search complete

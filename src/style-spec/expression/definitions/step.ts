@@ -40,7 +40,7 @@ class Step implements Expression {
 
         const stops: Stops = [];
 
-        let outputType: Type = null;
+        let outputType: Type | null = null;
         if (context.expectedType && context.expectedType.kind !== 'value') {
             outputType = context.expectedType;
         }
@@ -56,7 +56,7 @@ class Step implements Expression {
                 return context.error('Input/output pairs for "step" expressions must be defined using literal numeric values (not computed expressions) for the input values.', labelKey);
             }
 
-            if (stops.length && stops.at(-1)[0] >= label) {
+            if (stops.length && stops.at(-1)![0] >= label) {
                 return context.error('Input/output pairs for "step" expressions must be arranged with input values in strictly ascending order.', labelKey);
             }
 
@@ -66,7 +66,7 @@ class Step implements Expression {
             stops.push([label, parsed]);
         }
 
-        return new Step(outputType, input, stops);
+        return new Step(outputType!, input, stops);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,21 +75,21 @@ class Step implements Expression {
         const outputs = this.outputs;
 
         if (labels.length === 1) {
-            return outputs[0].evaluate(ctx);
+            return outputs[0]!.evaluate(ctx);
         }
 
         const value = (this.input.evaluate(ctx) as number);
-        if (value <= labels[0]) {
-            return outputs[0].evaluate(ctx);
+        if (value <= labels[0]!) {
+            return outputs[0]!.evaluate(ctx);
         }
 
         const stopCount = labels.length;
-        if (value >= labels[stopCount - 1]) {
-            return outputs[stopCount - 1].evaluate(ctx);
+        if (value >= labels[stopCount - 1]!) {
+            return outputs[stopCount - 1]!.evaluate(ctx);
         }
 
         const index = findStopLessThanOrEqualTo(labels, value);
-        return outputs[index].evaluate(ctx);
+        return outputs[index]!.evaluate(ctx);
     }
 
     eachChild(fn: (_: Expression) => void) {
@@ -107,9 +107,9 @@ class Step implements Expression {
         const serialized = ["step", this.input.serialize()];
         for (let i = 0; i < this.labels.length; i++) {
             if (i > 0) {
-                serialized.push(this.labels[i]);
+                serialized.push(this.labels[i]!);
             }
-            serialized.push(this.outputs[i].serialize());
+            serialized.push(this.outputs[i]!.serialize());
         }
         return serialized;
     }

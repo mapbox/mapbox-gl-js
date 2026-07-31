@@ -35,7 +35,7 @@ class Case implements Expression {
             outputType = context.expectedType;
         }
 
-        const branches = [];
+        const branches: Branches = [];
         for (let i = 1; i < args.length - 1; i += 2) {
             const test = context.parse(args[i], i, BooleanType);
             if (!test) return null;
@@ -52,7 +52,6 @@ class Case implements Expression {
         if (!otherwise) return null;
 
         assert(outputType);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new Case(outputType, branches, otherwise);
     }
 

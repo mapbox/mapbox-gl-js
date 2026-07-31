@@ -36,7 +36,7 @@ export default function validateTerrain(options: TerrainValidatorOptions): Valid
         const useThemeMatch = key.match(USE_THEME_KEY_RE);
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (useThemeMatch && terrainSpec[useThemeMatch[1]]) {
+        if (useThemeMatch && terrainSpec[useThemeMatch[1]!]) {
             errors = errors.concat(validate({
                 key,
                 value: terrain[key],
@@ -45,7 +45,7 @@ export default function validateTerrain(options: TerrainValidatorOptions): Valid
                 styleSpec
             }));
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        } else if (transitionMatch && terrainSpec[transitionMatch[1]] && terrainSpec[transitionMatch[1]].transition) {
+        } else if (transitionMatch && terrainSpec[transitionMatch[1]!] && terrainSpec[transitionMatch[1]!].transition) {
             errors = errors.concat(validate({
                 key,
                 value: terrain[key],

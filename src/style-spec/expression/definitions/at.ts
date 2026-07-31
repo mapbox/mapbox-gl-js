@@ -47,7 +47,7 @@ class At implements Expression {
             throw new RuntimeError(`Array index must be an integer. Use at-interpolated for fractional indices`);
         }
 
-        return array[index];
+        return array[index]!;
     }
 
     eachChild(fn: (_: Expression) => void) {

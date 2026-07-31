@@ -15,16 +15,18 @@ type ObjectElementValidatorOptions = {
     objectKey?: string;
 };
 
+export type ObjectElementValidator = (options: ObjectElementValidatorOptions, object?: object) => ValidationError[];
+
 type ObjectValidatorOptions = {
     key: string;
     value: unknown;
-    valueSpec?: object;
+    valueSpec?: Record<PropertyKey, unknown>;
     style: Partial<StyleSpecification>;
     styleSpec: StyleReference;
     object?: object;
     objectKey?: string;
     layer?: LayerSpecification;
-    objectElementValidators?: Record<string, (options: ObjectElementValidatorOptions) => ValidationError[]>;
+    objectElementValidators?: Record<string, ObjectElementValidator>;
 };
 
 export default function validateObject(options: ObjectValidatorOptions): ValidationError[] {
@@ -47,25 +49,24 @@ export default function validateObject(options: ObjectValidatorOptions): Validat
         // inherited properties as if they were user-supplied.
         if (!Object.hasOwn(object, objectKey)) continue;
 
-        const elementSpecKey = objectKey.split('.')[0]; // treat 'paint.*' as 'paint'
+        const elementSpecKey = objectKey.split('.')[0]!; // treat 'paint.*' as 'paint'
         // Object.hasOwn: a bare lookup like `elementSpecs[objectKey]` would
         // find inherited keys from Object.prototype (e.g. "__proto__",
         // "constructor", "toString") when the user-supplied key matches one,
         // returning a non-spec value that then fails as a validator.
         const hasSpec = Object.hasOwn(elementSpecs, elementSpecKey);
         const hasWildcardSpec = Object.hasOwn(elementSpecs, '*');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const elementSpec = hasSpec ? elementSpecs[elementSpecKey] : (hasWildcardSpec ? elementSpecs['*'] : undefined);
 
-        let validateElement: ((options: ObjectElementValidatorOptions, object?: unknown) => ValidationError[]) | undefined;
+        let validateElement: ObjectElementValidator | undefined;
         if (Object.hasOwn(elementValidators, elementSpecKey)) {
-            validateElement = elementValidators[elementSpecKey];
+            validateElement = elementValidators[elementSpecKey]!;
         } else if (hasSpec) {
-            validateElement = validateSpec;
+            validateElement = validateSpec as ObjectElementValidator;
         } else if (Object.hasOwn(elementValidators, '*')) {
-            validateElement = elementValidators['*'];
+            validateElement = elementValidators['*']!;
         } else if (hasWildcardSpec) {
-            validateElement = validateSpec;
+            validateElement = validateSpec as ObjectElementValidator;
         }
 
         if (!validateElement) {
@@ -91,7 +92,7 @@ export default function validateObject(options: ObjectValidatorOptions): Validat
             continue;
         }
 
-        const elementSpec = elementSpecs[elementSpecKey] as {required?: boolean; default?: unknown};
+        const elementSpec = elementSpecs[elementSpecKey]! as {required?: boolean; default?: unknown};
         if (elementSpec.required && elementSpec['default'] === undefined && (!Object.hasOwn(object, elementSpecKey) || object[elementSpecKey] === undefined)) {
             errors.push(new ValidationError(key, object, `missing required property "${elementSpecKey}"`));
         }

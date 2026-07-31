@@ -19,7 +19,7 @@ export interface Expression {
     serialize: () => SerializedExpression;
 }
 
-export type ExpressionParser = (args: ReadonlyArray<unknown>, context: ParsingContext) => Expression | void;
+export type ExpressionParser = (args: ReadonlyArray<unknown>, context: ParsingContext) => Expression | null | void;
 
 export type ExpressionRegistration = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

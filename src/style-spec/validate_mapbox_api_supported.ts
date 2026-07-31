@@ -33,13 +33,13 @@ function isValid(value: string | null | undefined, regex: RegExp): boolean {
 
 function getSourceCount(source: SourceSpecification): number {
     if ('url' in source) {
-        return source.url.split(',').length;
+        return source.url!.split(',').length;
     } else {
         return 0;
     }
 }
 
-function getAllowedKeyErrors(obj: object, keys: string[], path?: string | null): Array<ValidationError> {
+function getAllowedKeyErrors(obj: Record<string, unknown>, keys: string[], path?: string | null): Array<ValidationError> {
     const allowed = new Set(keys);
     const errors: ValidationError[] = [];
     Object.keys(obj).forEach(k => {
@@ -91,11 +91,11 @@ function getSourcesErrors(sources: SourcesSpecification): {
     let sourcesCount = 0;
 
     Object.keys(sources).forEach((s: string, i: number) => {
-        const sourceErrors = getSourceErrors(sources[s], i);
+        const sourceErrors = getSourceErrors(sources[s]!, i);
 
         // If source has errors, skip counting
         if (!sourceErrors.length) {
-            sourcesCount = sourcesCount + getSourceCount(sources[s]);
+            sourcesCount = sourcesCount + getSourceCount(sources[s]!);
         }
 
         errors.push(...sourceErrors);

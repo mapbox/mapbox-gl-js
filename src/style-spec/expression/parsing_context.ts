@@ -28,7 +28,7 @@ class ParsingContext {
     errors: Array<ParsingError>;
     _scope: string | null | undefined;
     options: ConfigOptions | null | undefined;
-    iconImageUseTheme: string;
+    iconImageUseTheme: string | null | undefined;
 
     // The expected type of this expression. Provided only to allow Expression
     // implementations to infer argument types: Expression#parse() need not
@@ -44,7 +44,7 @@ class ParsingContext {
         errors: Array<ParsingError> = [],
         _scope?: string | null,
         options?: ConfigOptions | null,
-        iconImageUseTheme?: string
+        iconImageUseTheme?: string | null
     ) {
         this.registry = registry;
         this.path = path;

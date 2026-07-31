@@ -51,6 +51,8 @@ import type EvaluationContext from '../evaluation_context';
 import type {Varargs} from '../compound_expression';
 import type {Expression, ExpressionRegistry} from '../expression';
 
+type LegacyFilterValue = string | number | boolean;
+
 const expressions: ExpressionRegistry = {
     // special forms
     '==': Equals,
@@ -93,11 +95,11 @@ const expressions: ExpressionRegistry = {
 
 function rgba(ctx: EvaluationContext, [r, g, b, a]: Expression[]) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    r = r.evaluate(ctx);
+    r = r!.evaluate(ctx);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    g = g.evaluate(ctx);
+    g = g!.evaluate(ctx);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    b = b.evaluate(ctx);
+    b = b!.evaluate(ctx);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const alpha = a ? a.evaluate(ctx) : 1;
     const error = validateRGBA(r, g, b, alpha);
@@ -108,11 +110,11 @@ function rgba(ctx: EvaluationContext, [r, g, b, a]: Expression[]) {
 
 function hsla(ctx: EvaluationContext, [h, s, l, a]: Expression[]) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    h = h.evaluate(ctx);
+    h = h!.evaluate(ctx);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    s = s.evaluate(ctx);
+    s = s!.evaluate(ctx);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    l = l.evaluate(ctx);
+    l = l!.evaluate(ctx);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const alpha = a ? a.evaluate(ctx) : 1;
     const error = validateHSLA(h, s, l, alpha);
@@ -133,12 +135,12 @@ function get<T extends object>(key: keyof T, obj: T): T[keyof T] | null {
     return typeof v === 'undefined' ? null : v;
 }
 
-function binarySearch(v: unknown, a: Record<number, unknown>, i: number, j: number): boolean {
+function binarySearch(v: LegacyFilterValue, a: Record<number, LegacyFilterValue>, i: number, j: number): boolean {
     while (i <= j) {
         const m = (i + j) >> 1;
         if (a[m] === v)
             return true;
-        if (a[m] > v)
+        if (a[m]! > v)
             j = m - 1;
         else
             i = m + 1;
@@ -179,20 +181,20 @@ CompoundExpression.register(expressions, {
         ErrorType,
         [StringType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [v]) => { throw new RuntimeError(v.evaluate(ctx)); }
+        (ctx, [v]) => { throw new RuntimeError(v!.evaluate(ctx)); }
     ],
     'typeof': [
         StringType,
         [ValueType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [v]) => typeToString(typeOf(v.evaluate(ctx)))
+        (ctx, [v]) => typeToString(typeOf(v!.evaluate(ctx)))
     ],
     'to-rgba': [
         array(NumberType, 4),
         [ColorType],
         (ctx, [v]) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            return v.evaluate(ctx).toNonPremultipliedRenderColor(null).toArray();
+            return v!.evaluate(ctx).toNonPremultipliedRenderColor(null).toArray();
         }
     ],
     'to-hsla': [
@@ -200,7 +202,7 @@ CompoundExpression.register(expressions, {
         [ColorType],
         (ctx, [v]) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            return v.evaluate(ctx).toNonPremultipliedRenderColor(null).toHslaArray();
+            return v!.evaluate(ctx).toNonPremultipliedRenderColor(null).toHslaArray();
         }
     ],
     'rgb': [
@@ -229,11 +231,11 @@ CompoundExpression.register(expressions, {
             [
                 [StringType],
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                (ctx, [key]) => has(key.evaluate(ctx), ctx.properties())
+                (ctx, [key]) => has(key!.evaluate(ctx), ctx.properties())
             ], [
                 [StringType, ObjectType],
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                (ctx, [key, obj]) => has(key.evaluate(ctx), obj.evaluate(ctx))
+                (ctx, [key, obj]) => has(key!.evaluate(ctx), obj!.evaluate(ctx))
             ]
         ]
     },
@@ -243,11 +245,11 @@ CompoundExpression.register(expressions, {
             [
                 [StringType],
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                (ctx, [key]) => get(key.evaluate(ctx), ctx.properties())
+                (ctx, [key]) => get(key!.evaluate(ctx), ctx.properties())
             ], [
                 [StringType, ObjectType],
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument
-                (ctx, [key, obj]) => get(key.evaluate(ctx), obj.evaluate(ctx))
+                (ctx, [key, obj]) => get(key!.evaluate(ctx), obj!.evaluate(ctx))
             ]
         ]
     },
@@ -255,7 +257,7 @@ CompoundExpression.register(expressions, {
         ValueType,
         [StringType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [key]) => get(key.evaluate(ctx), ctx.featureState || {}) as Value
+        (ctx, [key]) => get(key!.evaluate(ctx), ctx.featureState || {}) as Value
     ],
     'properties': [
         ObjectType,
@@ -270,7 +272,7 @@ CompoundExpression.register(expressions, {
     'worldview': [
         StringType,
         [],
-        (ctx) => ctx.globals.worldview || ""
+        (ctx) => ctx.globals!.worldview || ""
     ],
     'is-active-floor': [
         BooleanType,
@@ -279,7 +281,7 @@ CompoundExpression.register(expressions, {
             const hasActiveFloors = ctx.globals && ctx.globals.activeFloors && ctx.globals.activeFloors.size > 0;
             if (!hasActiveFloors) { return false; }
             if (args.length === 0) { return true; }
-            const floorIds: Set<string> = ctx.globals.activeFloors;
+            const floorIds: Set<string> = ctx.globals!.activeFloors!;
             return args.some(arg => {
                 const value = arg.evaluate(ctx) as string;
                 return floorIds.has(value);
@@ -294,12 +296,12 @@ CompoundExpression.register(expressions, {
     'zoom': [
         NumberType,
         [],
-        (ctx) => ctx.globals.zoom
+        (ctx) => ctx.globals!.zoom
     ],
     'pitch': [
         NumberType,
         [],
-        (ctx) => ctx.globals.pitch || 0
+        (ctx) => ctx.globals!.pitch || 0
     ],
     'distance-from-center': [
         NumberType,
@@ -310,37 +312,37 @@ CompoundExpression.register(expressions, {
         NumberType,
         [StringType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [s]) => ctx.measureLight(s.evaluate(ctx))
+        (ctx, [s]) => ctx.measureLight(s!.evaluate(ctx))
     ],
     'heatmap-density': [
         NumberType,
         [],
-        (ctx) => ctx.globals.heatmapDensity || 0
+        (ctx) => ctx.globals!.heatmapDensity || 0
     ],
     'line-progress': [
         NumberType,
         [],
-        (ctx) => ctx.globals.lineProgress || 0
+        (ctx) => ctx.globals!.lineProgress || 0
     ],
     'raster-value': [
         NumberType,
         [],
-        (ctx) => ctx.globals.rasterValue || 0
+        (ctx) => ctx.globals!.rasterValue || 0
     ],
     'raster-particle-speed': [
         NumberType,
         [],
-        (ctx) => ctx.globals.rasterParticleSpeed || 0
+        (ctx) => ctx.globals!.rasterParticleSpeed || 0
     ],
     'sky-radial-progress': [
         NumberType,
         [],
-        (ctx) => ctx.globals.skyRadialProgress || 0
+        (ctx) => ctx.globals!.skyRadialProgress || 0
     ],
     'accumulated': [
         ValueType,
         [],
-        (ctx) => (ctx.globals.accumulated === undefined ? null : ctx.globals.accumulated)
+        (ctx) => (ctx.globals!.accumulated === undefined ? null : ctx.globals!.accumulated)
     ],
     '+': [
         NumberType,
@@ -369,22 +371,22 @@ CompoundExpression.register(expressions, {
         overloads: [
             [
                 [NumberType, NumberType],
-                (ctx, [a, b]) => a.evaluate(ctx) - b.evaluate(ctx)
+                (ctx, [a, b]) => a!.evaluate(ctx) - b!.evaluate(ctx)
             ], [
                 [NumberType],
-                (ctx, [a]) => -a.evaluate(ctx)
+                (ctx, [a]) => -a!.evaluate(ctx)
             ]
         ]
     },
     '/': [
         NumberType,
         [NumberType, NumberType],
-        (ctx, [a, b]) => a.evaluate(ctx) / b.evaluate(ctx)
+        (ctx, [a, b]) => a!.evaluate(ctx) / b!.evaluate(ctx)
     ],
     '%': [
         NumberType,
         [NumberType, NumberType],
-        (ctx, [a, b]) => a.evaluate(ctx) % b.evaluate(ctx)
+        (ctx, [a, b]) => a!.evaluate(ctx) % b!.evaluate(ctx)
     ],
     'ln2': [
         NumberType,
@@ -405,67 +407,67 @@ CompoundExpression.register(expressions, {
         NumberType,
         [NumberType, NumberType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [b, e]) => Math.pow(b.evaluate(ctx), e.evaluate(ctx))
+        (ctx, [b, e]) => Math.pow(b!.evaluate(ctx), e!.evaluate(ctx))
     ],
     'sqrt': [
         NumberType,
         [NumberType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [x]) => Math.sqrt(x.evaluate(ctx))
+        (ctx, [x]) => Math.sqrt(x!.evaluate(ctx))
     ],
     'log10': [
         NumberType,
         [NumberType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [n]) => Math.log(n.evaluate(ctx)) / Math.LN10
+        (ctx, [n]) => Math.log(n!.evaluate(ctx)) / Math.LN10
     ],
     'ln': [
         NumberType,
         [NumberType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [n]) => Math.log(n.evaluate(ctx))
+        (ctx, [n]) => Math.log(n!.evaluate(ctx))
     ],
     'log2': [
         NumberType,
         [NumberType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [n]) => Math.log2(n.evaluate(ctx))
+        (ctx, [n]) => Math.log2(n!.evaluate(ctx))
     ],
     'sin': [
         NumberType,
         [NumberType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [n]) => Math.sin(n.evaluate(ctx))
+        (ctx, [n]) => Math.sin(n!.evaluate(ctx))
     ],
     'cos': [
         NumberType,
         [NumberType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [n]) => Math.cos(n.evaluate(ctx))
+        (ctx, [n]) => Math.cos(n!.evaluate(ctx))
     ],
     'tan': [
         NumberType,
         [NumberType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [n]) => Math.tan(n.evaluate(ctx))
+        (ctx, [n]) => Math.tan(n!.evaluate(ctx))
     ],
     'asin': [
         NumberType,
         [NumberType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [n]) => Math.asin(n.evaluate(ctx))
+        (ctx, [n]) => Math.asin(n!.evaluate(ctx))
     ],
     'acos': [
         NumberType,
         [NumberType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [n]) => Math.acos(n.evaluate(ctx))
+        (ctx, [n]) => Math.acos(n!.evaluate(ctx))
     ],
     'atan': [
         NumberType,
         [NumberType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [n]) => Math.atan(n.evaluate(ctx))
+        (ctx, [n]) => Math.atan(n!.evaluate(ctx))
     ],
     'min': [
         NumberType,
@@ -483,14 +485,14 @@ CompoundExpression.register(expressions, {
         NumberType,
         [NumberType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [n]) => Math.abs(n.evaluate(ctx))
+        (ctx, [n]) => Math.abs(n!.evaluate(ctx))
     ],
     'round': [
         NumberType,
         [NumberType],
         (ctx, [n]) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const v = n.evaluate(ctx);
+            const v = n!.evaluate(ctx);
             // Javascript's Math.round() rounds towards +Infinity for halfway
             // values, even when they're negative. It's more common to round
             // away from 0 (e.g., this is what python and C++ do)
@@ -502,39 +504,39 @@ CompoundExpression.register(expressions, {
         NumberType,
         [NumberType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [n]) => Math.floor(n.evaluate(ctx))
+        (ctx, [n]) => Math.floor(n!.evaluate(ctx))
     ],
     'ceil': [
         NumberType,
         [NumberType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        (ctx, [n]) => Math.ceil(n.evaluate(ctx))
+        (ctx, [n]) => Math.ceil(n!.evaluate(ctx))
     ],
     'filter-==': [
         BooleanType,
         [StringType, ValueType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        (ctx, [k, v]) => ctx.properties()[(k).value] === (v).value
+        (ctx, [k, v]) => ctx.properties()[(k!).value] === (v!).value
     ],
     'filter-id-==': [
         BooleanType,
         [ValueType],
-        (ctx, [v]) => ctx.id() === (v).value
+        (ctx, [v]) => ctx.id() === (v!).value
     ],
     'filter-type-==': [
         BooleanType,
         [StringType],
-        (ctx, [v]) => ctx.geometryType() === (v).value
+        (ctx, [v]) => ctx.geometryType() === (v!).value
     ],
     'filter-<': [
         BooleanType,
         [StringType, ValueType],
         (ctx, [k, v]) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const a = ctx.properties()[(k).value];
+            const a = ctx.properties()[(k!).value];
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const b = (v).value;
-            return typeof a === typeof b && a < b;
+            const b = (v!).value;
+            return typeof a === typeof b && (a as LegacyFilterValue) < b;
         }
     ],
     'filter-id-<': [
@@ -543,8 +545,8 @@ CompoundExpression.register(expressions, {
         (ctx, [v]) => {
             const a = ctx.id();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const b = (v).value;
-            return typeof a === typeof b && a < b;
+            const b = (v!).value;
+            return typeof a === typeof b && a! < b;
         }
     ],
     'filter->': [
@@ -552,10 +554,10 @@ CompoundExpression.register(expressions, {
         [StringType, ValueType],
         (ctx, [k, v]) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const a = ctx.properties()[(k).value];
+            const a = ctx.properties()[(k!).value];
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const b = (v).value;
-            return typeof a === typeof b && a > b;
+            const b = (v!).value;
+            return typeof a === typeof b && (a as LegacyFilterValue) > b;
         }
     ],
     'filter-id->': [
@@ -564,8 +566,8 @@ CompoundExpression.register(expressions, {
         (ctx, [v]) => {
             const a = ctx.id();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const b = (v).value;
-            return typeof a === typeof b && a > b;
+            const b = (v!).value;
+            return typeof a === typeof b && a! > b;
         }
     ],
     'filter-<=': [
@@ -573,10 +575,10 @@ CompoundExpression.register(expressions, {
         [StringType, ValueType],
         (ctx, [k, v]) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const a = ctx.properties()[(k).value];
+            const a = ctx.properties()[(k!).value];
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const b = (v).value;
-            return typeof a === typeof b && a <= b;
+            const b = (v!).value;
+            return typeof a === typeof b && (a as LegacyFilterValue) <= b;
         }
     ],
     'filter-id-<=': [
@@ -585,8 +587,8 @@ CompoundExpression.register(expressions, {
         (ctx, [v]) => {
             const a = ctx.id();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const b = (v).value;
-            return typeof a === typeof b && a <= b;
+            const b = (v!).value;
+            return typeof a === typeof b && a! <= b;
         }
     ],
     'filter->=': [
@@ -594,10 +596,10 @@ CompoundExpression.register(expressions, {
         [StringType, ValueType],
         (ctx, [k, v]) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const a = ctx.properties()[(k).value];
+            const a = ctx.properties()[(k!).value];
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const b = (v).value;
-            return typeof a === typeof b && a >= b;
+            const b = (v!).value;
+            return typeof a === typeof b && (a as LegacyFilterValue) >= b;
         }
     ],
     'filter-id->=': [
@@ -606,14 +608,14 @@ CompoundExpression.register(expressions, {
         (ctx, [v]) => {
             const a = ctx.id();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const b = (v).value;
-            return typeof a === typeof b && a >= b;
+            const b = (v!).value;
+            return typeof a === typeof b && a! >= b;
         }
     ],
     'filter-has': [
         BooleanType,
         [ValueType],
-        (ctx, [k]) => (k).value in ctx.properties()
+        (ctx, [k]) => (k!).value in ctx.properties()
     ],
     'filter-has-id': [
         BooleanType,
@@ -624,27 +626,27 @@ CompoundExpression.register(expressions, {
         BooleanType,
         [array(StringType)],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-        (ctx, [v]) => (v).value.includes(ctx.geometryType())
+        (ctx, [v]) => (v!).value.includes(ctx.geometryType())
     ],
     'filter-id-in': [
         BooleanType,
         [array(ValueType)],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-        (ctx, [v]) => (v).value.includes(ctx.id())
+        (ctx, [v]) => (v!).value.includes(ctx.id())
     ],
     'filter-in-small': [
         BooleanType,
         [StringType, array(ValueType)],
         // assumes v is an array literal
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-        (ctx, [k, v]) => (v).value.includes(ctx.properties()[(k).value])
+        (ctx, [k, v]) => (v!).value.includes(ctx.properties()[(k!).value])
     ],
     'filter-in-large': [
         BooleanType,
         [StringType, array(ValueType)],
         // assumes v is a array literal with values sorted in ascending order and of a single type
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-        (ctx, [k, v]) => binarySearch(ctx.properties()[(k).value], (v).value, 0, (v).value.length - 1)
+        (ctx, [k, v]) => binarySearch(ctx.properties()[(k!).value] as LegacyFilterValue, (v!).value, 0, (v!).value.length - 1)
     ],
     'all': {
         type: BooleanType,
@@ -652,7 +654,7 @@ CompoundExpression.register(expressions, {
             [
                 [BooleanType, BooleanType],
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-                (ctx, [a, b]) => a.evaluate(ctx) && b.evaluate(ctx)
+                (ctx, [a, b]) => a!.evaluate(ctx) && b!.evaluate(ctx)
             ],
             [
                 varargs(BooleanType),
@@ -672,7 +674,7 @@ CompoundExpression.register(expressions, {
             [
                 [BooleanType, BooleanType],
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-                (ctx, [a, b]) => a.evaluate(ctx) || b.evaluate(ctx)
+                (ctx, [a, b]) => a!.evaluate(ctx) || b!.evaluate(ctx)
             ],
             [
                 varargs(BooleanType),
@@ -689,7 +691,7 @@ CompoundExpression.register(expressions, {
     '!': [
         BooleanType,
         [BooleanType],
-        (ctx, [b]) => !b.evaluate(ctx)
+        (ctx, [b]) => !b!.evaluate(ctx)
     ],
     'is-supported-script': [
         BooleanType,
@@ -699,7 +701,7 @@ CompoundExpression.register(expressions, {
             const isSupportedScript = ctx.globals && ctx.globals.isSupportedScript;
             if (isSupportedScript) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                return isSupportedScript(s.evaluate(ctx));
+                return isSupportedScript(s!.evaluate(ctx));
             }
             return true;
         }
@@ -708,13 +710,13 @@ CompoundExpression.register(expressions, {
         StringType,
         [StringType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        (ctx, [s]) => s.evaluate(ctx).toUpperCase()
+        (ctx, [s]) => s!.evaluate(ctx).toUpperCase()
     ],
     'downcase': [
         StringType,
         [StringType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        (ctx, [s]) => s.evaluate(ctx).toLowerCase()
+        (ctx, [s]) => s!.evaluate(ctx).toLowerCase()
     ],
     'concat': [
         StringType,
@@ -726,14 +728,14 @@ CompoundExpression.register(expressions, {
         array(StringType),
         [StringType, StringType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-        (ctx, [str, delimiter]) => str.evaluate(ctx).split(delimiter.evaluate(ctx))
+        (ctx, [str, delimiter]) => str!.evaluate(ctx).split(delimiter!.evaluate(ctx))
     ],
     'in': [
         BooleanType,
         [ValueType, ValueType],
         (ctx, [needleExpr, haystackExpr]) => {
-            const needle = needleExpr.evaluate(ctx) as Value;
-            const haystack = haystackExpr.evaluate(ctx) as Value;
+            const needle = needleExpr!.evaluate(ctx) as Value;
+            const haystack = haystackExpr!.evaluate(ctx) as Value;
             if (haystack == null) return false;
             assertNeedleHaystack(needle, haystack);
             // Type assertions safe due to assertNeedleHaystack checks above
@@ -746,8 +748,8 @@ CompoundExpression.register(expressions, {
             [
                 [ValueType, ValueType],
                 (ctx, [needleExpr, haystackExpr]) => {
-                    const needle = needleExpr.evaluate(ctx) as Value;
-                    const haystack = haystackExpr.evaluate(ctx) as Value;
+                    const needle = needleExpr!.evaluate(ctx) as Value;
+                    const haystack = haystackExpr!.evaluate(ctx) as Value;
                     assertNeedleHaystack(needle, haystack);
                     // Type assertions safe due to assertNeedleHaystack checks above
                     return (haystack as string | unknown[]).indexOf(needle as string);
@@ -755,9 +757,9 @@ CompoundExpression.register(expressions, {
             ], [
                 [ValueType, ValueType, NumberType],
                 (ctx, [needleExpr, haystackExpr, fromIndexExpr]) => {
-                    const needle = needleExpr.evaluate(ctx) as Value;
-                    const haystack = haystackExpr.evaluate(ctx) as Value;
-                    const fromIndex = fromIndexExpr.evaluate(ctx) as number;
+                    const needle = needleExpr!.evaluate(ctx) as Value;
+                    const haystack = haystackExpr!.evaluate(ctx) as Value;
+                    const fromIndex = fromIndexExpr!.evaluate(ctx) as number;
                     assertNeedleHaystack(needle, haystack);
                     // Type assertions safe due to assertNeedleHaystack checks above
                     return (haystack as string | unknown[]).indexOf(needle as string, fromIndex);
@@ -769,7 +771,7 @@ CompoundExpression.register(expressions, {
         StringType,
         [CollatorType],
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        (ctx, [collator]) => collator.evaluate(ctx).resolvedLocale()
+        (ctx, [collator]) => collator!.evaluate(ctx).resolvedLocale()
     ],
     'random': [
         NumberType,

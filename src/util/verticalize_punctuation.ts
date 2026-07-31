@@ -1,6 +1,6 @@
 import {charHasRotatedVerticalOrientation} from './script_detection';
 
-export const verticalizedCharacterMap = {
+export const verticalizedCharacterMap: Readonly<Partial<Record<string, string>>> = {
     '!': '︕',
     '#': '＃',
     '$': '＄',
@@ -84,7 +84,7 @@ export const verticalizedCharacterMap = {
     '｡': '︒',
     '｢': '﹁',
     '｣': '﹂',
-} as const;
+};
 
 export default function verticalizePunctuation(input: string, skipContextChecking: boolean): string {
     let output = '';
@@ -93,16 +93,15 @@ export default function verticalizePunctuation(input: string, skipContextCheckin
         const nextCharCode = input.charCodeAt(i + 1) || null;
         const prevCharCode = input.charCodeAt(i - 1) || null;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const canReplacePunctuation = skipContextChecking || (
-            (!nextCharCode || !charHasRotatedVerticalOrientation(nextCharCode) || verticalizedCharacterMap[input[i + 1]]) &&
-            (!prevCharCode || !charHasRotatedVerticalOrientation(prevCharCode) || verticalizedCharacterMap[input[i - 1]])
+            (!nextCharCode || !charHasRotatedVerticalOrientation(nextCharCode) || verticalizedCharacterMap[input[i + 1]!]) &&
+            (!prevCharCode || !charHasRotatedVerticalOrientation(prevCharCode) || verticalizedCharacterMap[input[i - 1]!])
         );
 
-        if (canReplacePunctuation && verticalizedCharacterMap[input[i]]) {
-            output += verticalizedCharacterMap[input[i]];
+        if (canReplacePunctuation && verticalizedCharacterMap[input[i]!]) {
+            output += verticalizedCharacterMap[input[i]!]!;
         } else {
-            output += input[i];
+            output += input[i]!;
         }
     }
 

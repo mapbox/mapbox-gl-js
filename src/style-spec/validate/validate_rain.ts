@@ -32,7 +32,7 @@ export default function validateRain(options: RainValidatorOptions): ValidationE
     for (const key in rain) {
         const transitionMatch = key.match(TRANSITION_KEY_RE);
 
-        if (transitionMatch && rainSpec[transitionMatch[1]] && rainSpec[transitionMatch[1]].transition) {
+        if (transitionMatch && rainSpec[transitionMatch[1]!] && rainSpec[transitionMatch[1]!]!.transition) {
             errors = errors.concat(validate({
                 key,
                 value: rain[key],

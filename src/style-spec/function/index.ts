@@ -11,6 +11,8 @@ import ResolvedImage from '../expression/types/resolved_image';
 import {supportsInterpolation} from '../util/properties';
 import {findStopLessThanOrEqualTo} from '../expression/stops';
 
+import type {FunctionSpecification} from '../types';
+
 export function isFunction(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -24,7 +26,7 @@ export function createFunction(parameters, propertySpec) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const isColor = propertySpec.type === 'color';
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const zoomAndFeatureDependent = parameters.stops && typeof parameters.stops[0][0] === 'object';
+    const zoomAndFeatureDependent = (parameters.stops as FunctionSpecification<unknown>['stops'] | undefined) && typeof parameters.stops[0][0] === 'object';
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const featureDependent = zoomAndFeatureDependent || parameters.property !== undefined;
     const zoomDependent = zoomAndFeatureDependent || !featureDependent;
@@ -132,7 +134,7 @@ export function createFunction(parameters, propertySpec) {
             interpolationType,
 
             interpolationFactor: Interpolate.interpolationFactor.bind(undefined, interpolationType),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             zoomStops: featureFunctionStops.map(s => s[0]),
             evaluate({zoom}, properties) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call

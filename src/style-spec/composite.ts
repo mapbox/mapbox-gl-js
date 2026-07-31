@@ -5,20 +5,20 @@ const MAPBOX_URL_RE = /^mapbox:\/\/(.*)/;
 export default function (style: StyleSpecification): StyleSpecification {
     const styleIDs: string[] = [];
     const sourceIDs: string[] = [];
-    const compositedSourceLayers: string[] = [];
+    const compositedSourceLayers: Array<string | undefined> = [];
 
     for (const id in style.sources) {
-        const source = style.sources[id];
+        const source = style.sources[id]!;
 
         if (source.type !== "vector")
             continue;
 
-        const match = MAPBOX_URL_RE.exec(source.url);
+        const match = MAPBOX_URL_RE.exec(source.url!);
         if (!match)
             continue;
 
         styleIDs.push(id);
-        sourceIDs.push(match[1]);
+        sourceIDs.push(match[1]!);
     }
 
     if (styleIDs.length < 2)
@@ -36,7 +36,7 @@ export default function (style: StyleSpecification): StyleSpecification {
     };
 
     style.layers.forEach((layer) => {
-        if (styleIDs.includes(layer.source)) {
+        if (styleIDs.includes(layer.source!)) {
             layer.source = compositeID;
 
             if ('source-layer' in layer) {

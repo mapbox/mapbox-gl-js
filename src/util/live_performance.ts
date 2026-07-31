@@ -69,7 +69,7 @@ function getCountersPerResourceType(resourceTimers: ResourceTimers): Record<stri
     if (resourceTimers) {
         for (const category in resourceTimers) {
             if (category !== 'other') {
-                for (const timer of resourceTimers[category]) {
+                for (const timer of resourceTimers[category]!) {
                     const min = `${category}ResolveRangeMin`;
                     const max = `${category}ResolveRangeMax`;
                     const reqCount = `${category}RequestCount`;
@@ -103,7 +103,7 @@ function getCountersPerResourceType(resourceTimers: ResourceTimers): Record<stri
 }
 
 function getResourceCategory(entry: PerformanceResourceTiming): string {
-    const url = entry.name.split('?')[0];
+    const url = entry.name.split('?')[0]!;
 
     if (isMapboxHTTPCDNURL(url) && url.includes('mapbox-gl.js')) return 'javascript';
     if (isMapboxHTTPCDNURL(url) && url.includes('mapbox-gl.css')) return 'css';
@@ -118,11 +118,11 @@ function getResourceCategory(entry: PerformanceResourceTiming): string {
 function getStyle(resourceTimers: Array<PerformanceResourceTiming>): string | null | undefined {
     if (resourceTimers) {
         for (const timer of resourceTimers) {
-            const url = timer.name.split('?')[0];
+            const url = timer.name.split('?')[0]!;
             if (isMapboxHTTPStyleURL(url)) {
                 const split = url.split('/').slice(-2);
                 if (split.length === 2) {
-                    return `mapbox://styles/${split[0]}/${split[1]}`;
+                    return `mapbox://styles/${split[0]!}/${split[1]!}`;
                 }
             }
         }

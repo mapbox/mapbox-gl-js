@@ -27,10 +27,10 @@ function clipPolygon(polygons: PolygonArray, clipAxis1: number, clipAxis2: numbe
 
             const clipped: Array<Point> = [];
             for (let i = 0; i < ring.length - 1; i++) {
-                const ax = ring[i].x;
-                const ay = ring[i].y;
-                const bx = ring[i + 1].x;
-                const by = ring[i + 1].y;
+                const ax = ring[i]!.x;
+                const ay = ring[i]!.y;
+                const bx = ring[i + 1]!.x;
+                const by = ring[i + 1]!.y;
                 const a = axis === 0 ? ax : ay;
                 const b = axis === 0 ? bx : by;
                 if (a < clipAxis1) {
@@ -42,7 +42,7 @@ function clipPolygon(polygons: PolygonArray, clipAxis1: number, clipAxis2: numbe
                         intersect(clipped, ax, ay, bx, by, clipAxis2);
                     }
                 } else {
-                    clipped.push(ring[i]);
+                    clipped.push(ring[i]!);
                 }
                 if (b < clipAxis1 && a >= clipAxis1) {
                     intersect(clipped, ax, ay, bx, by, clipAxis1);
@@ -52,15 +52,15 @@ function clipPolygon(polygons: PolygonArray, clipAxis1: number, clipAxis2: numbe
                 }
             }
 
-            let last = ring.at(-1);
+            let last = ring.at(-1)!;
             const a = axis === 0 ? last.x : last.y;
             if (a >= clipAxis1 && a <= clipAxis2) {
                 clipped.push(last);
             }
             if (clipped.length) {
-                last = clipped.at(-1);
-                if (clipped[0].x !== last.x || clipped[0].y !== last.y) {
-                    clipped.push(clipped[0]);
+                last = clipped.at(-1)!;
+                if (clipped[0]!.x !== last.x || clipped[0]!.y !== last.y) {
+                    clipped.push(clipped[0]!);
                 }
                 polygonClipped.push(clipped);
             }
@@ -110,8 +110,8 @@ export function gridSubdivision(
 
     let split = polygons;
 
-    split = clipPolygon(split, bounds[0].y - padding, bounds[1].y + padding, 1);
-    split = clipPolygon(split, bounds[0].x - padding, bounds[1].x + padding, 0);
+    split = clipPolygon(split, bounds[0].y - padding!, bounds[1].y + padding!, 1);
+    split = clipPolygon(split, bounds[0].x - padding!, bounds[1].x + padding!, 0);
 
     if (!split.length) {
         return outPolygons;
@@ -125,12 +125,12 @@ export function gridSubdivision(
     }
 
     while (stack.length) {
-        const frame = stack.pop();
+        const frame = stack.pop()!;
 
         assert(frame.polygons.length > 0);
 
         const depth = frame.depth;
-        const axis = splits[depth];
+        const axis = splits[depth]!;
 
         const bboxMin = frame.bounds[0];
         const bboxMax = frame.bounds[1];
@@ -140,8 +140,8 @@ export function gridSubdivision(
 
         const splitMid = splitFn ? splitFn(axis, splitMin, splitMax) : 0.5 * (splitMin + splitMax);
 
-        const lclip = clipPolygon(frame.polygons, splitMin - padding, splitMid + padding, axis);
-        const rclip = clipPolygon(frame.polygons, splitMid - padding, splitMax + padding, axis);
+        const lclip = clipPolygon(frame.polygons, splitMin - padding!, splitMid + padding!, axis);
+        const rclip = clipPolygon(frame.polygons, splitMid - padding!, splitMax + padding!, axis);
 
         if (lclip.length) {
             const bbMaxX = axis === 0 ? splitMid : bboxMax.x;

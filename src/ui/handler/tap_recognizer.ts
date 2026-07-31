@@ -59,7 +59,7 @@ export class SingleTapRecognizer {
 
         const newTouches = indexTouches(mapTouches, points);
         for (const id in this.touches) {
-            const prevPos = this.touches[id];
+            const prevPos = this.touches[id]!;
             const pos = newTouches[id];
             if (!pos || pos.dist(prevPos) > MAX_DIST) {
                 this.aborted = true;

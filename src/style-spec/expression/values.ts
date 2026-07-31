@@ -79,7 +79,7 @@ export function isValue(mixed: unknown): boolean {
         return true;
     } else if (typeof mixed === 'object') {
         for (const key in mixed) {
-            if (!isValue(mixed[key])) {
+            if (!isValue((mixed as Record<string, unknown>)[key])) {
                 return false;
             }
         }
@@ -108,7 +108,7 @@ export function typeOf(value: Value): Type {
         return ResolvedImageType;
     } else if (Array.isArray(value)) {
         const length = value.length;
-        let itemType: Type;
+        let itemType: Type | undefined;
 
         for (const item of value) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

@@ -4,29 +4,29 @@ import ValidationError from '../error/validation_error';
 
 import type {StyleReference} from '../reference/latest';
 import type {StyleSpecification} from '../types';
-import type {ArrayPropertySpecification} from '../style-spec';
 
-type ArraySpec = {
+export type ArraySpec = {
     value?: unknown;
     values?: unknown[] | {[_: string]: unknown};
     length?: number;
     minimum?: number;
     maximum?: number;
     function?: unknown;
+    'min-length'?: number;
 };
 
 type ArrayElementSpec<T = unknown> = {
     type: string;
-    values: T[] | {[_: string]: unknown};
-    minimum: number;
-    maximum: number;
+    values?: T[] | {[_: string]: unknown};
+    minimum?: number;
+    maximum?: number;
     function: unknown;
 };
 
 type ArrayValidatorOptions<T = unknown> = {
     key: string;
     value: T;
-    valueSpec: ArrayPropertySpecification | ArraySpec;
+    valueSpec: ArraySpec;
     style: Partial<StyleSpecification>;
     styleSpec: StyleReference;
     arrayElementValidator: (...args: unknown[]) => ValidationError[];
@@ -61,7 +61,7 @@ export default function validateArray(options: ArrayValidatorOptions): Validatio
     };
 
     if (styleSpec.$version < 7) {
-        arrayElementSpec.function = (arraySpec as ArraySpec).function;
+        arrayElementSpec.function = arraySpec.function;
     }
 
     if (isObject(arraySpec.value)) {

@@ -11,7 +11,7 @@ import type {ConfigOptions, ConfigOptionValue} from '../types/config_options';
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
 
 class EvaluationContext {
-    globals: GlobalProperties;
+    globals: GlobalProperties | null;
     feature: Feature | null | undefined;
     featureState: FeatureState | null | undefined;
     formattedSection: FormattedSection | null | undefined;
@@ -23,7 +23,7 @@ class EvaluationContext {
     options: ConfigOptions | null | undefined;
     iconImageUseTheme: string | null | undefined;
 
-    constructor(scope?: string | null, options?: ConfigOptions | null, iconImageUseTheme?: string) {
+    constructor(scope?: string | null, options?: ConfigOptions | null, iconImageUseTheme?: string | null) {
         this.globals = null;
         this.feature = null;
         this.featureState = null;
@@ -42,7 +42,7 @@ class EvaluationContext {
     }
 
     geometryType(): null | string {
-        return this.feature ? typeof this.feature.type === 'number' ? geometryTypes[this.feature.type] : this.feature.type : null;
+        return this.feature ? typeof this.feature.type === 'number' ? geometryTypes[this.feature.type]! : this.feature.type : null;
     }
 
     geometry(): Array<Array<Point>> | null | undefined {
@@ -58,7 +58,7 @@ class EvaluationContext {
     }
 
     measureLight(_: string): number {
-        return this.globals.brightness || 0;
+        return this.globals!.brightness || 0;
     }
 
     distanceFromCenter(): number {

@@ -25,25 +25,25 @@ export default class CollatorExpression implements Expression {
             return null;
         }
 
-        const options = args[1];
+        const options = args[1] as Record<string, unknown> | unknown[] | null;
         if (typeof options !== "object" || Array.isArray(options)) {
             context.error(`Collator options argument must be an object.`);
             return null;
         }
 
-        const caseSensitive = options['case-sensitive'] === undefined ?
+        const caseSensitive = options!['case-sensitive'] === undefined ?
             context.parse(false, 1, BooleanType) :
-            context.parseObjectValue(options['case-sensitive'], 1, 'case-sensitive', BooleanType);
+            context.parseObjectValue(options!['case-sensitive'], 1, 'case-sensitive', BooleanType);
         if (!caseSensitive) return null;
 
-        const diacriticSensitive = options['diacritic-sensitive'] === undefined ?
+        const diacriticSensitive = options!['diacritic-sensitive'] === undefined ?
             context.parse(false, 1, BooleanType) :
-            context.parseObjectValue(options['diacritic-sensitive'], 1, 'diacritic-sensitive', BooleanType);
+            context.parseObjectValue(options!['diacritic-sensitive'], 1, 'diacritic-sensitive', BooleanType);
         if (!diacriticSensitive) return null;
 
-        let locale: Expression = null;
-        if (options['locale']) {
-            locale = context.parseObjectValue(options['locale'], 1, 'locale', StringType) as Expression;
+        let locale: Expression | null = null;
+        if (options!['locale']) {
+            locale = context.parseObjectValue(options!['locale'], 1, 'locale', StringType) as Expression | null;
             if (!locale) return null;
         }
 

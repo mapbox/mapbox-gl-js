@@ -2,9 +2,17 @@ import isEqual from './util/deep_equal';
 
 import type {StyleSpecification, ImportSpecification, SourceSpecification, LayerSpecification, IconsetsSpecification} from './types';
 
+type Source = SourceSpecification & Record<string, unknown>;
+
 type Sources = {
-    [key: string]: SourceSpecification;
+    [key: string]: Source;
 };
+
+type LayerProperties = (LayerSpecification['paint'] | LayerSpecification['layout']) & Record<string, unknown>;
+
+type Indexed<T> = T extends LayerSpecification ? T & Record<string, LayerSpecification['paint']> : T;
+
+type DiffLayer = Indexed<LayerSpecification>;
 
 type Command = {
     command: string;
@@ -194,15 +202,15 @@ function updateSource(sourceId: string, after: Sources, commands: Array<Command>
 
 function canUpdateGeoJSON(before: Sources, after: Sources, sourceId: string) {
     let prop: string;
-    for (prop in before[sourceId]) {
-        if (!Object.hasOwn(before[sourceId], prop)) continue;
-        if (prop !== 'data' && !isEqual(before[sourceId][prop], after[sourceId][prop])) {
+    for (prop in before[sourceId]!) {
+        if (!Object.hasOwn(before[sourceId]!, prop)) continue;
+        if (prop !== 'data' && !isEqual(before[sourceId]![prop], after[sourceId]![prop])) {
             return false;
         }
     }
-    for (prop in after[sourceId]) {
-        if (!Object.hasOwn(after[sourceId], prop)) continue;
-        if (prop !== 'data' && !isEqual(before[sourceId][prop], after[sourceId][prop])) {
+    for (prop in after[sourceId]!) {
+        if (!Object.hasOwn(after[sourceId]!, prop)) continue;
+        if (prop !== 'data' && !isEqual(before[sourceId]![prop], after[sourceId]![prop])) {
             return false;
         }
     }
@@ -226,11 +234,11 @@ function diffSources(before: Sources, after: Sources, commands: Array<Command>, 
     // look for sources to add/update
     for (sourceId in after) {
         if (!Object.hasOwn(after, sourceId)) continue;
-        const source = after[sourceId];
+        const source = after[sourceId]!;
         if (!Object.hasOwn(before, sourceId)) {
             addSource(sourceId, after, commands);
         } else if (!isEqual(before[sourceId], source)) {
-            if (before[sourceId].type === 'geojson' && source.type === 'geojson' && canUpdateGeoJSON(before, after, sourceId)) {
+            if (before[sourceId]!.type === 'geojson' && source.type === 'geojson' && canUpdateGeoJSON(before, after, sourceId)) {
                 commands.push({command: operations.setGeoJSONSourceData, args: [sourceId, source.data]});
             } else {
                 // no update command, must remove then add
@@ -240,11 +248,9 @@ function diffSources(before: Sources, after: Sources, commands: Array<Command>, 
     }
 }
 
-function diffLayerPropertyChanges(before: LayerSpecification['layout'], after: LayerSpecification['layout'], commands: Array<Command>, layerId: string, klass: string | null | undefined, command: string): void;
-function diffLayerPropertyChanges(before: LayerSpecification['paint'], after: LayerSpecification['paint'], commands: Array<Command>, layerId: string, klass: string | null | undefined, command: string): void;
 function diffLayerPropertyChanges(
-    before: LayerSpecification['paint'] | LayerSpecification['layout'],
-    after: LayerSpecification['paint'] | LayerSpecification['layout'],
+    before: LayerProperties | null | undefined,
+    after: LayerProperties | null | undefined,
     commands: Command[],
     layerId: string,
     klass: string | null | undefined,
@@ -273,8 +279,8 @@ function pluckId<T extends {id: string}>(item: T): string {
     return item.id;
 }
 
-function indexById<T extends {id: string}>(group: {[key: string]: T}, item: T): {[id: string]: T} {
-    group[item.id] = item;
+function indexById<T extends {id: string}>(group: {[key: string]: Indexed<T>}, item: T): {[id: string]: Indexed<T>} {
+    group[item.id] = item as Indexed<T>;
     return group;
 }
 
@@ -287,27 +293,27 @@ function diffLayers(before: Array<LayerSpecification>, after: Array<LayerSpecifi
     const afterOrder = after.map(pluckId);
 
     // index of layer by id
-    const beforeIndex = before.reduce(indexById, {});
-    const afterIndex = after.reduce(indexById, {});
+    const beforeIndex = before.reduce<Record<string, DiffLayer>>(indexById, {});
+    const afterIndex = after.reduce<Record<string, DiffLayer>>(indexById, {});
 
     // track order of layers as if they have been mutated
     const tracker = beforeOrder.slice();
 
     // layers that have been added do not need to be diffed
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const clean = Object.create(null);
+    const clean: Record<string, true> = Object.create(null);
 
     let i: number;
     let d: number;
     let layerId: string;
-    let beforeLayer: LayerSpecification;
-    let afterLayer: LayerSpecification;
-    let insertBeforeLayerId: string;
+    let beforeLayer: DiffLayer;
+    let afterLayer: DiffLayer;
+    let insertBeforeLayerId: string | undefined;
     let prop: string;
 
     // remove layers
     for (i = 0, d = 0; i < beforeOrder.length; i++) {
-        layerId = beforeOrder[i];
+        layerId = beforeOrder[i]!;
         if (!Object.hasOwn(afterIndex, layerId)) {
             commands.push({command: operations.removeLayer, args: [layerId]});
             tracker.splice(tracker.indexOf(layerId, d), 1);
@@ -320,7 +326,7 @@ function diffLayers(before: Array<LayerSpecification>, after: Array<LayerSpecifi
     // add/reorder layers
     for (i = 0, d = 0; i < afterOrder.length; i++) {
         // work backwards as insert is before an existing layer
-        layerId = afterOrder[afterOrder.length - 1 - i];
+        layerId = afterOrder[afterOrder.length - 1 - i]!;
 
         if (tracker[tracker.length - 1 - i] === layerId) continue;
 
@@ -337,20 +343,16 @@ function diffLayers(before: Array<LayerSpecification>, after: Array<LayerSpecifi
         insertBeforeLayerId = tracker[tracker.length - i];
         commands.push({command: operations.addLayer, args: [afterIndex[layerId], insertBeforeLayerId]});
         tracker.splice(tracker.length - i, 0, layerId);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         clean[layerId] = true;
     }
 
     // update layers
     for (i = 0; i < afterOrder.length; i++) {
-        layerId = afterOrder[i];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        beforeLayer = beforeIndex[layerId];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        afterLayer = afterIndex[layerId];
+        layerId = afterOrder[i]!;
+        beforeLayer = beforeIndex[layerId]!;
+        afterLayer = afterIndex[layerId]!;
 
         // no need to update if previously added (new or moved)
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (clean[layerId] || isEqual(beforeLayer, afterLayer)) continue;
 
         // If source, source-layer, or type have changes, then remove the layer
@@ -383,7 +385,6 @@ function diffLayers(before: Array<LayerSpecification>, after: Array<LayerSpecifi
             if (prop === 'layout' || prop === 'paint' || prop === 'filter' ||
                 prop === 'metadata' || prop === 'minzoom' || prop === 'maxzoom' || prop === 'slot') continue;
             if (prop.indexOf('paint.') === 0) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 diffLayerPropertyChanges(beforeLayer[prop], afterLayer[prop], commands, layerId, prop.slice(6), operations.setPaintProperty);
             } else if (!isEqual(beforeLayer[prop], afterLayer[prop])) {
                 commands.push({command: operations.setLayerProperty, args: [layerId, prop, afterLayer[prop]]});
@@ -394,7 +395,6 @@ function diffLayers(before: Array<LayerSpecification>, after: Array<LayerSpecifi
             if (prop === 'layout' || prop === 'paint' || prop === 'filter' ||
                 prop === 'metadata' || prop === 'minzoom' || prop === 'maxzoom' || prop === 'slot') continue;
             if (prop.indexOf('paint.') === 0) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 diffLayerPropertyChanges(beforeLayer[prop], afterLayer[prop], commands, layerId, prop.slice(6), operations.setPaintProperty);
             } else if (!isEqual(beforeLayer[prop], afterLayer[prop])) {
                 commands.push({command: operations.setLayerProperty, args: [layerId, prop, afterLayer[prop]]});
@@ -412,8 +412,8 @@ export function diffImports(before: Array<ImportSpecification> | null | undefine
     const afterOrder = after.map(pluckId);
 
     // index imports by id
-    const beforeIndex = before.reduce(indexById, {});
-    const afterIndex = after.reduce(indexById, {});
+    const beforeIndex = before.reduce<Record<string, ImportSpecification>>(indexById, {});
+    const afterIndex = after.reduce<Record<string, ImportSpecification>>(indexById, {});
 
     // track order of imports as if they have been mutated
     const tracker = beforeOrder.slice();
@@ -421,11 +421,11 @@ export function diffImports(before: Array<ImportSpecification> | null | undefine
     let i: number;
     let d: number;
     let importId: string;
-    let insertBefore: string;
+    let insertBefore: string | undefined;
 
     // remove imports
     for (i = 0, d = 0; i < beforeOrder.length; i++) {
-        importId = beforeOrder[i];
+        importId = beforeOrder[i]!;
         if (!Object.hasOwn(afterIndex, importId)) {
             commands.push({command: operations.removeImport, args: [importId]});
             tracker.splice(tracker.indexOf(importId, d), 1);
@@ -438,7 +438,7 @@ export function diffImports(before: Array<ImportSpecification> | null | undefine
     // add/reorder imports
     for (i = 0, d = 0; i < afterOrder.length; i++) {
         // work backwards as insert is before an existing import
-        importId = afterOrder[afterOrder.length - 1 - i];
+        importId = afterOrder[afterOrder.length - 1 - i]!;
 
         if (tracker[tracker.length - 1 - i] === importId) continue;
 
@@ -459,10 +459,8 @@ export function diffImports(before: Array<ImportSpecification> | null | undefine
 
     // update imports
     for (const afterImport of after) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const beforeImport = beforeIndex[afterImport.id];
         if (!beforeImport) continue;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         delete beforeImport.data;
         if (isEqual(beforeImport, afterImport)) continue;
 
@@ -470,7 +468,7 @@ export function diffImports(before: Array<ImportSpecification> | null | undefine
     }
 }
 
-function diffIconsets(before: IconsetsSpecification, after: IconsetsSpecification, commands: Array<Command>) {
+function diffIconsets(before: IconsetsSpecification | undefined, after: IconsetsSpecification | undefined, commands: Array<Command>) {
     before = before || {};
     after = after || {};
 

@@ -11,6 +11,7 @@ import {isObject, isString} from '../util/get_type';
 
 import type {StyleReference} from '../reference/latest';
 import type {PropertyValidatorOptions} from './validate_property';
+import type {ArraySpec} from './validate_array';
 import type {StyleSpecification, LayerSpecification, GeoJSONSourceSpecification} from '../types';
 
 type LayerValidatorOptions = {
@@ -43,7 +44,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
     if (layer.id) {
         const layerId = unbundle(layer.id) as string;
         for (let i = 0; i < options.arrayIndex; i++) {
-            const otherLayer = style.layers[i];
+            const otherLayer = style.layers![i]!;
             if (unbundle(otherLayer.id) === layerId) {
                 errors.push(new ValidationError(key, layer.id, `duplicate layer id "${layerId}", previously used at line ${(otherLayer.id as {__line__?: number}).__line__}`));
             }
@@ -59,7 +60,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
 
         let parent: LayerSpecification | undefined;
 
-        style.layers.forEach((layer) => {
+        style.layers!.forEach((layer) => {
             if (unbundle(layer.id) === ref) parent = layer;
         });
 
@@ -94,10 +95,10 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                 errors.push(new ValidationError(key, layer.source, 'raster-dem source can only be used with layer type \'hillshade\'.'));
             } else if (sourceType === 'raster-array' && !['raster', 'raster-particle'].includes(type)) {
                 errors.push(new ValidationError(key, layer.source, `raster-array source can only be used with layer type \'raster\'.`));
-            } else if (type === 'line' && layer.paint && layer.paint['line-gradient'] &&
+            } else if (type === 'line' && layer.paint && (layer.paint as Record<string, unknown>)['line-gradient'] &&
                     (sourceType === 'geojson' && !(source as GeoJSONSourceSpecification).lineMetrics)) {
                 errors.push(new ValidationError(key, layer, `layer "${layer.id as string}" specifies a line-gradient, which requires the GeoJSON source to have \`lineMetrics\` enabled.`));
-            } else if (type === 'line' && layer.paint && layer.paint['line-trim-offset'] &&
+            } else if (type === 'line' && layer.paint && (layer.paint as Record<string, unknown>)['line-trim-offset'] &&
                     (sourceType === 'geojson' && !(source as GeoJSONSourceSpecification).lineMetrics)) {
                 errors.push(new ValidationError(key, layer, `layer "${layer.id as string}" specifies a line-trim-offset, which requires the GeoJSON source to have \`lineMetrics\` enabled.`));
             } else if (type === 'raster-particle' && sourceType !== 'raster-array') {
@@ -143,8 +144,8 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                     style: options.style,
                     styleSpec: options.styleSpec,
                     objectElementValidators: {
-                        '*'(options: PropertyValidatorOptions) {
-                            return validateLayoutProperty({layerType: type, ...options});
+                        '*'(options) {
+                            return validateLayoutProperty({layerType: type, ...options} as PropertyValidatorOptions);
                         }
                     }
                 });
@@ -158,8 +159,8 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                     style: options.style,
                     styleSpec: options.styleSpec,
                     objectElementValidators: {
-                        '*'(options: PropertyValidatorOptions) {
-                            return validatePaintProperty({layerType: type, layer, ...options});
+                        '*'(options) {
+                            return validatePaintProperty({layerType: type, layer, ...options} as PropertyValidatorOptions);
                         }
                     }
                 });
@@ -169,7 +170,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                     key: options.key,
                     value: options.value,
 
-                    valueSpec: options.valueSpec,
+                    valueSpec: options.valueSpec as ArraySpec,
                     style: options.style,
                     styleSpec: options.styleSpec,
                     arrayElementValidator: (options) => validateAppearance(({layerType: type, layer, ...(options as object)}) as AppearanceValidatorOptions)

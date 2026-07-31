@@ -4,6 +4,7 @@ import validateGlyphsURL from './validate_glyphs_url';
 
 import type ValidationError from '../error/validation_error';
 import type {StyleReference} from '../reference/latest';
+import type {StyleSpecification} from '../types';
 
 type StyleValidatorOptions = {
     key?: string;
@@ -20,7 +21,7 @@ export default function validateStyle(style: unknown, styleSpec: StyleReference 
             '*': {type: '*'},
         },
         styleSpec,
-        style,
+        style: style as Partial<StyleSpecification>,
         objectElementValidators: {
             glyphs: validateGlyphsURL
         }

@@ -112,7 +112,7 @@ ${JSON.stringify(filterExp, null, 2)}
     }
 
     // Compile the static component of the filter
-    let filterFunc = null;
+    let filterFunc: PropertyDescriptor['value'] = null;
     let filterSpec = null;
     if (layerType !== 'background' && layerType !== 'sky' && layerType !== 'slot') {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -131,7 +131,7 @@ ${JSON.stringify(filterExp, null, 2)}
 
     // If the static component is not equal to the entire filter then we have a dynamic component
     // Compile the dynamic component separately
-    let dynamicFilterFunc = null;
+    let dynamicFilterFunc: PropertyDescriptor['value'] = null;
     let needFeature = null;
     if (staticFilter !== filterExp) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -189,7 +189,7 @@ function collapseDynamicBooleanExpressions(expression: any): any {
         return collapsed;
     } else {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        return collapsed.map((subExpression) => collapseDynamicBooleanExpressions(subExpression));
+        return collapsed.map((subExpression: unknown) => collapseDynamicBooleanExpressions(subExpression));
     }
 }
 

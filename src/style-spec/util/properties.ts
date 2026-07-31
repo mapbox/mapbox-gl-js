@@ -3,7 +3,7 @@ import type {PropertyExpressionSpecification, StylePropertySpecification} from '
 export const TRANSITION_KEY_RE = /^(.*)-transition$/;
 export const USE_THEME_KEY_RE = /^(.*)-use-theme$/;
 
-type ExpressionParameter = PropertyExpressionSpecification['parameters'][number];
+type ExpressionParameter = NonNullable<PropertyExpressionSpecification['parameters']>[number];
 
 function expressionHasParameter(
     expression: PropertyExpressionSpecification | null | undefined,

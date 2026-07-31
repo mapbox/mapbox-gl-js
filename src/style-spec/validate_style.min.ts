@@ -23,7 +23,8 @@ export type ValidationError = {
 };
 
 export type ValidationErrors = ReadonlyArray<ValidationError>;
-export type Validator<T extends (...args: unknown[]) => unknown = (...args: unknown[]) => unknown> = (...args: Parameters<T>) => ValidationErrors;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Validator<T extends (...args: any[]) => unknown = (...args: unknown[]) => unknown> = (...args: Parameters<T>) => ValidationErrors;
 
 /**
  * Validate a Mapbox GL style against the style specification. This entrypoint,

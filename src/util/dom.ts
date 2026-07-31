@@ -27,13 +27,17 @@ export function createSVG(
     return el;
 }
 
-const docStyle = typeof document !== 'undefined' ? document.documentElement && document.documentElement.style : null;
-const selectProp = docStyle && docStyle.userSelect !== undefined ? 'userSelect' : 'WebkitUserSelect';
+type UserSelectStyle = {
+    userSelect: string | undefined;
+    WebkitUserSelect?: string;
+};
+
+const docStyle: UserSelectStyle | null = typeof document !== 'undefined' ? document.documentElement && document.documentElement.style : null;
+const selectProp: keyof UserSelectStyle = docStyle && docStyle.userSelect !== undefined ? 'userSelect' : 'WebkitUserSelect';
 let userSelect: string | undefined;
 
 export function disableDrag() {
     if (docStyle && selectProp) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         userSelect = docStyle[selectProp];
         docStyle[selectProp] = 'none';
     }
@@ -69,7 +73,7 @@ export function touchPos(el: HTMLElement, touches: TouchList): Array<Point> {
     const points: Point[] = [];
 
     for (let i = 0; i < touches.length; i++) {
-        points.push(getScaledPoint(el, rect, touches[i]));
+        points.push(getScaledPoint(el, rect, touches[i]!));
     }
     return points;
 }

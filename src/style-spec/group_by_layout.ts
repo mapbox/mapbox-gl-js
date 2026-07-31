@@ -2,6 +2,8 @@ import refProperties from './util/ref_properties';
 
 import type {LayerSpecification} from './types';
 
+type IndexableLayer = LayerSpecification & Record<string, unknown>;
+
 function stringify(obj: unknown) {
     if (typeof obj === 'number' || typeof obj === 'boolean' || typeof obj === 'string' || obj === undefined || obj === null)
         return JSON.stringify(obj);
@@ -15,13 +17,13 @@ function stringify(obj: unknown) {
     }
 
     let str = '{';
-    for (const key of Object.keys(obj as Record<string, unknown>).sort()) {
+    for (const key of Object.keys(obj).sort()) {
         str += `${key}:${stringify((obj as Record<string, unknown>)[key])},`;
     }
     return `${str}}`;
 }
 
-function getKey(layer: LayerSpecification) {
+function getKey(layer: IndexableLayer) {
     let key = '';
     for (const k of refProperties) {
         key += `/${stringify(layer[k])}`;
@@ -72,7 +74,7 @@ export default function groupByLayout(
     const groups = Object.create(null) as Record<string, LayerSpecification[]>;
 
     for (let i = 0; i < layers.length; i++) {
-        const layer = layers[i];
+        const layer = layers[i]!;
         let k = cachedKeys && cachedKeys[layer.id];
 
         if (!k) {
@@ -112,7 +114,7 @@ export default function groupByLayout(
     const result: LayerSpecification[][] = [];
 
     for (const k in groups) {
-        result.push(groups[k]);
+        result.push(groups[k]!);
     }
 
     return result;

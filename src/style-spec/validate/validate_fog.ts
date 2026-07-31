@@ -34,7 +34,7 @@ export default function validateFog(options: FogValidatorOptions): ValidationErr
         const useThemeMatch = key.match(USE_THEME_KEY_RE);
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (useThemeMatch && fogSpec[useThemeMatch[1]]) {
+        if (useThemeMatch && fogSpec[useThemeMatch[1]!]) {
             errors = errors.concat(validate({
                 key,
                 value: fog[key],
@@ -43,7 +43,7 @@ export default function validateFog(options: FogValidatorOptions): ValidationErr
                 styleSpec
             }));
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        } else if (transitionMatch && fogSpec[transitionMatch[1]] && fogSpec[transitionMatch[1]].transition) {
+        } else if (transitionMatch && fogSpec[transitionMatch[1]!] && fogSpec[transitionMatch[1]!].transition) {
             errors = errors.concat(validate({
                 key,
                 value: fog[key],

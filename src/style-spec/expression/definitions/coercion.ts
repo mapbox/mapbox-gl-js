@@ -40,8 +40,8 @@ class Coercion implements Expression {
         if (args.length < 2)
             return context.error(`Expected at least one argument.`);
 
-        const name = args[0] as string;
-        const parsed = [];
+        const name = args[0] as 'to-array' | keyof typeof types;
+        const parsed: Expression[] = [];
         let type: Type | ArrayType = NullType;
         if (name === 'to-array') {
             if (!Array.isArray(args[1])) {
@@ -73,7 +73,7 @@ class Coercion implements Expression {
                     if (memberType !== type.itemType.kind) {
                         return context.error(`Expected ${type.itemType.kind} but found ${memberType}.`);
                     }
-                    parsedMember = context.registry['literal'].parse(['literal', member === undefined ? null : member], context);
+                    parsedMember = context.registry['literal']!.parse(['literal', member === undefined ? null : member], context);
                 }
                 if (!parsedMember) return null;
                 parsed.push(parsedMember);
@@ -84,7 +84,6 @@ class Coercion implements Expression {
             if ((name === 'to-boolean' || name === 'to-string') && args.length !== 2)
                 return context.error(`Expected one argument.`);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             type = types[name];
 
             for (let i = 1; i < args.length; i++) {
@@ -94,18 +93,17 @@ class Coercion implements Expression {
             }
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new Coercion(type, parsed);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         if (this.type.kind === 'boolean') {
-            return Boolean(this.args[0].evaluate(ctx));
+            return Boolean(this.args[0]!.evaluate(ctx));
         } else if (this.type.kind === 'color') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let input: any;
-            let error: string | null;
+            let error!: string | null;
             for (const arg of this.args) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 input = arg.evaluate(ctx);
@@ -143,16 +141,16 @@ class Coercion implements Expression {
             // There is no explicit 'to-formatted' but this coercion can be implicitly
             // created by properties that expect the 'formatted' type.
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            return Formatted.fromString(valueToString(this.args[0].evaluate(ctx)));
+            return Formatted.fromString(valueToString(this.args[0]!.evaluate(ctx)));
         } else if (this.type.kind === 'resolvedImage') {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            return ResolvedImage.build(valueToString(this.args[0].evaluate(ctx)));
+            return ResolvedImage.build(valueToString(this.args[0]!.evaluate(ctx)));
         } else if (this.type.kind === 'array') {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return this.args.map(arg => { return arg.evaluate(ctx); });
         } else {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            return valueToString(this.args[0].evaluate(ctx));
+            return valueToString(this.args[0]!.evaluate(ctx));
         }
     }
 
@@ -166,11 +164,11 @@ class Coercion implements Expression {
 
     serialize(): SerializedExpression {
         if (this.type.kind === 'formatted') {
-            return new FormatExpression([{content: this.args[0], scale: null, font: null, textColor: null}]).serialize();
+            return new FormatExpression([{content: this.args[0]!, scale: null, font: null, textColor: null}]).serialize();
         }
 
         if (this.type.kind === 'resolvedImage') {
-            return new ImageExpression(this.args[0]).serialize();
+            return new ImageExpression(this.args[0]!).serialize();
         }
 
         const serialized: Array<unknown> = this.type.kind === 'array' ? [] : [`to-${this.type.kind}`];

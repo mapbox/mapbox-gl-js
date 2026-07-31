@@ -31,48 +31,47 @@ export default class NumberFormat implements Expression {
         this.maxFractionDigits = maxFractionDigits;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | void {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | void {
         if (args.length !== 3)
             return context.error(`Expected two arguments.`);
 
         const number = context.parse(args[1], 1, NumberType);
         if (!number) return null;
 
-        const options = args[2];
+        const options = args[2] as Record<string, unknown>;
         if (typeof options !== "object" || Array.isArray(options))
             return context.error(`NumberFormat options argument must be an object.`);
 
-        let locale = null;
+        let locale: Expression | null | void = null;
         if (options['locale']) {
             locale = context.parseObjectValue(options['locale'], 2, 'locale', StringType);
             if (!locale) return null;
         }
 
-        let currency = null;
+        let currency: Expression | null | void = null;
         if (options['currency']) {
             currency = context.parseObjectValue(options['currency'], 2, 'currency', StringType);
             if (!currency) return null;
         }
 
-        let unit = null;
+        let unit: Expression | null | void = null;
         if (options['unit']) {
             unit = context.parseObjectValue(options['unit'], 2, 'unit', StringType);
             if (!unit) return null;
         }
 
-        let minFractionDigits = null;
+        let minFractionDigits: Expression | null | void = null;
         if (options['min-fraction-digits'] !== undefined) {
             minFractionDigits = context.parseObjectValue(options['min-fraction-digits'], 2, 'min-fraction-digits', NumberType);
             if (!minFractionDigits) return null;
         }
 
-        let maxFractionDigits = null;
+        let maxFractionDigits: Expression | null | void = null;
         if (options['max-fraction-digits'] !== undefined) {
             maxFractionDigits = context.parseObjectValue(options['max-fraction-digits'], 2, 'max-fraction-digits', NumberType);
             if (!maxFractionDigits) return null;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new NumberFormat(number, locale, currency, unit, minFractionDigits, maxFractionDigits);
     }
 

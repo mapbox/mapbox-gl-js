@@ -20,7 +20,7 @@ class ColorReplacements {
 
         for (const [key, value] of Object.entries(params)) {
             if (variablesMap.has(key)) {
-                replacements.set(variablesMap.get(key).toString(), value);
+                replacements.set(variablesMap.get(key)!.toString(), value);
             } else {
                 console.warn(`Ignoring unknown image variable "${key}"`);
             }
@@ -46,11 +46,11 @@ let contextDepth = 0;
 function acquireContext(width: number, height: number): Context {
     if (contextDepth >= contextPool.length) {
         const ctx = offscreenCanvasSupported() ?
-            new OffscreenCanvas(width, height).getContext('2d', {willReadFrequently: true}) :
-            document.createElement('canvas').getContext('2d', {willReadFrequently: true});
+            new OffscreenCanvas(width, height).getContext('2d', {willReadFrequently: true})! :
+            document.createElement('canvas').getContext('2d', {willReadFrequently: true})!;
         contextPool.push(ctx);
     }
-    const ctx = contextPool[contextDepth++];
+    const ctx = contextPool[contextDepth++]!;
     ctx.canvas.width = width;
     ctx.canvas.height = height;
     return ctx;
@@ -69,13 +69,13 @@ function releaseContext() {
  */
 export function renderIcon(icon: Icon, options: RasterizationOptions): ImageData {
     const colorReplacements = ColorReplacements.calculate(options.params, icon.metadata ? icon.metadata.variables : []);
-    const tree = icon.usvg_tree;
+    const tree = icon.usvg_tree!;
 
     const naturalWidth = tree.width;
     const naturalHeight = tree.height;
 
-    const renderedWidth = Math.max(1, Math.round(naturalWidth * options.sx)); // transform.sx
-    const renderedHeight = Math.max(1, Math.round(naturalHeight * options.sy)); // transform.sy
+    const renderedWidth = Math.max(1, Math.round(naturalWidth * options.sx!)); // transform.sx
+    const renderedHeight = Math.max(1, Math.round(naturalHeight * options.sy!)); // transform.sy
 
     // We need to apply transform to reflect icon size change
     const finalTr = new DOMMatrix([
@@ -140,7 +140,7 @@ function renderGroup(context: Context, transform: DOMMatrix, tree: UsvgTree, gro
         applyMask(groupContext, transform, tree, mask, colorReplacements);
     }
 
-    context.globalAlpha = group.opacity / 255;
+    context.globalAlpha = group.opacity! / 255;
     context.drawImage(groupContext.canvas, 0, 0);
     releaseContext();
 }
@@ -161,7 +161,7 @@ function fillPath(context: Context, tree: UsvgTree, path: Path, colorReplacement
     const fill = path.fill;
     if (!fill) return;
 
-    const alpha = fill.opacity / 255;
+    const alpha = fill.opacity! / 255;
 
     context.save();
 
@@ -170,11 +170,11 @@ function fillPath(context: Context, tree: UsvgTree, path: Path, colorReplacement
 
     switch (fill.paint) {
     case 'rgb_color': {
-        context.fillStyle = getStyleColor(fill.rgb_color, fill.opacity, colorReplacements);
+        context.fillStyle = getStyleColor(fill.rgb_color!, fill.opacity, colorReplacements);
         break;
     }
     case 'linear_gradient_idx': {
-        const linearGradient = tree.linear_gradients[fill.linear_gradient_idx];
+        const linearGradient = tree.linear_gradients[fill.linear_gradient_idx!]!;
         if (linearGradient.transform) {
             context.setTransform(makeTransform(linearGradient.transform).preMultiplySelf(context.getTransform()));
         }
@@ -182,7 +182,7 @@ function fillPath(context: Context, tree: UsvgTree, path: Path, colorReplacement
         break;
     }
     case 'radial_gradient_idx': {
-        const radialGradient = tree.radial_gradients[fill.radial_gradient_idx];
+        const radialGradient = tree.radial_gradients[fill.radial_gradient_idx!]!;
         if (radialGradient.transform) {
             context.setTransform(makeTransform(radialGradient.transform).preMultiplySelf(context.getTransform()));
         }
@@ -194,7 +194,7 @@ function fillPath(context: Context, tree: UsvgTree, path: Path, colorReplacement
     context.restore();
 }
 
-function getFillRule(path: Path): CanvasFillRule {
+function getFillRule(path: Path): CanvasFillRule | undefined {
     return path.rule === PathRule.PATH_RULE_NON_ZERO ? 'nonzero' :
         path.rule === PathRule.PATH_RULE_EVEN_ODD ? 'evenodd' : undefined;
 }
@@ -204,23 +204,23 @@ function strokePath(context: Context, tree: UsvgTree, path: Path, colorReplaceme
     if (!stroke) return;
 
     const path2d = makePath2d(path);
-    context.lineWidth = stroke.width;
-    context.miterLimit = stroke.miterlimit;
+    context.lineWidth = stroke.width!;
+    context.miterLimit = stroke.miterlimit!;
     context.setLineDash(stroke.dasharray);
-    context.lineDashOffset = stroke.dashoffset;
+    context.lineDashOffset = stroke.dashoffset!;
 
-    const alpha = stroke.opacity / 255;
+    const alpha = stroke.opacity! / 255;
 
     switch (stroke.paint) {
     case 'rgb_color': {
-        context.strokeStyle = getStyleColor(stroke.rgb_color, stroke.opacity, colorReplacements);
+        context.strokeStyle = getStyleColor(stroke.rgb_color!, stroke.opacity, colorReplacements);
         break;
     }
     case 'linear_gradient_idx':
-        context.strokeStyle = convertLinearGradient(context, tree.linear_gradients[stroke.linear_gradient_idx], alpha, colorReplacements, true);
+        context.strokeStyle = convertLinearGradient(context, tree.linear_gradients[stroke.linear_gradient_idx!]!, alpha, colorReplacements, true);
         break;
     case 'radial_gradient_idx':
-        context.strokeStyle = convertRadialGradient(context, tree.radial_gradients[stroke.radial_gradient_idx], alpha, colorReplacements, true);
+        context.strokeStyle = convertRadialGradient(context, tree.radial_gradients[stroke.radial_gradient_idx!]!, alpha, colorReplacements, true);
     }
 
     switch (stroke.linejoin) {
@@ -251,8 +251,8 @@ function strokePath(context: Context, tree: UsvgTree, path: Path, colorReplaceme
 
 function convertLinearGradient(context: Context, gradient: LinearGradient, alpha: number, colorReplacements: Map<string, Color>, transformGradient: boolean = false): CanvasGradient | string {
     if (gradient.stops.length === 1) {
-        const stop = gradient.stops[0];
-        return getStyleColor(stop.rgb_color, stop.opacity * alpha, colorReplacements);
+        const stop = gradient.stops[0]!;
+        return getStyleColor(stop.rgb_color!, stop.opacity! * alpha, colorReplacements);
     }
 
     const {x1, y1, x2, y2} = gradient;
@@ -267,7 +267,7 @@ function convertLinearGradient(context: Context, gradient: LinearGradient, alpha
 
     const linearGradient = context.createLinearGradient(start.x, start.y, end.x, end.y);
     for (const stop of gradient.stops) {
-        linearGradient.addColorStop(stop.offset, getStyleColor(stop.rgb_color, stop.opacity * alpha, colorReplacements));
+        linearGradient.addColorStop(stop.offset!, getStyleColor(stop.rgb_color!, stop.opacity! * alpha, colorReplacements));
     }
 
     return linearGradient;
@@ -275,28 +275,28 @@ function convertLinearGradient(context: Context, gradient: LinearGradient, alpha
 
 function convertRadialGradient(context: Context, gradient: RadialGradient, alpha: number, colorReplacements: Map<string, Color>, transformGradient: boolean = false): CanvasGradient | string {
     if (gradient.stops.length === 1) {
-        const stop = gradient.stops[0];
-        return getStyleColor(stop.rgb_color, stop.opacity * alpha, colorReplacements);
+        const stop = gradient.stops[0]!;
+        return getStyleColor(stop.rgb_color!, stop.opacity! * alpha, colorReplacements);
     }
 
     const tr = makeTransform(gradient.transform);
     const {fx, fy, fr, cx, cy, r} = gradient;
     let start = new DOMPoint(fx, fy);
     let end = new DOMPoint(cx, cy);
-    let r1 = fr;
-    let r2 = r;
+    let r1 = fr!;
+    let r2 = r!;
 
     if (transformGradient) {
         start = tr.transformPoint(start);
         end = tr.transformPoint(end);
         const uniformScale = (tr.a + tr.d) / 2;
-        r1 = fr * uniformScale;
-        r2 = gradient.r * uniformScale;
+        r1 = fr! * uniformScale;
+        r2 = gradient.r! * uniformScale;
     }
 
     const radialGradient = context.createRadialGradient(start.x, start.y, r1, end.x, end.y, r2);
     for (const stop of gradient.stops) {
-        radialGradient.addColorStop(stop.offset, getStyleColor(stop.rgb_color, stop.opacity * alpha, colorReplacements));
+        radialGradient.addColorStop(stop.offset!, getStyleColor(stop.rgb_color!, stop.opacity! * alpha, colorReplacements));
     }
 
     return radialGradient;
@@ -361,7 +361,7 @@ function applyMask(context: Context, transform: DOMMatrix, tree: UsvgTree, mask:
     const maskTop = mask.top;
     const clipPath = new Path2D();
     const rect = new Path2D();
-    rect.rect(maskLeft, maskTop, maskWidth, maskHeight);
+    rect.rect(maskLeft!, maskTop!, maskWidth!, maskHeight!);
     clipPath.addPath(rect, transform);
     maskContext.clip(clipPath);
 
@@ -375,10 +375,10 @@ function applyMask(context: Context, transform: DOMMatrix, tree: UsvgTree, mask:
     if (mask.mask_type === MaskType.MASK_TYPE_LUMINANCE) {
         // Set alpha to luminance
         for (let i = 0; i < maskData.length; i += 4) {
-            const r = maskData[i];
-            const g = maskData[i + 1];
-            const b = maskData[i + 2];
-            const a = maskData[i + 3] / 255;
+            const r = maskData[i]!;
+            const g = maskData[i + 1]!;
+            const b = maskData[i + 2]!;
+            const a = maskData[i + 3]! / 255;
             const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
             maskData[i + 3] = luminance * a;
         }
@@ -397,46 +397,46 @@ function applyMask(context: Context, transform: DOMMatrix, tree: UsvgTree, mask:
 //  0  0  1
 function makeTransform(transform?: Transform) {
     return transform ?
-        new DOMMatrix([transform.sx, transform.ky, transform.kx, transform.sy, transform.tx, transform.ty]) :
+        new DOMMatrix([transform.sx!, transform.ky!, transform.kx!, transform.sy!, transform.tx!, transform.ty!]) :
         new DOMMatrix();
 }
 
 function buildPath<T extends CanvasPath = Path2D>(path: Path, path2d: T): T {
-    const step = path.step;
+    const step = path.step!;
 
-    let x = path.diffs[0] * step;
-    let y = path.diffs[1] * step;
+    let x = path.diffs[0]! * step;
+    let y = path.diffs[1]! * step;
     path2d.moveTo(x, y);
 
     for (let i = 0, j = 2; i < path.commands.length; i++) {
         switch (path.commands[i]) {
         case PathCommand.PATH_COMMAND_MOVE: {
-            x += path.diffs[j++] * step;
-            y += path.diffs[j++] * step;
+            x += path.diffs[j++]! * step;
+            y += path.diffs[j++]! * step;
             path2d.moveTo(x, y);
             break;
         }
         case PathCommand.PATH_COMMAND_LINE: {
-            x += path.diffs[j++] * step;
-            y += path.diffs[j++] * step;
+            x += path.diffs[j++]! * step;
+            y += path.diffs[j++]! * step;
             path2d.lineTo(x, y);
             break;
         }
         case PathCommand.PATH_COMMAND_QUAD: {
-            const cpx = x + path.diffs[j++] * step;
-            const cpy = y + path.diffs[j++] * step;
-            x = cpx + path.diffs[j++] * step;
-            y = cpy + path.diffs[j++] * step;
+            const cpx = x + path.diffs[j++]! * step;
+            const cpy = y + path.diffs[j++]! * step;
+            x = cpx + path.diffs[j++]! * step;
+            y = cpy + path.diffs[j++]! * step;
             path2d.quadraticCurveTo(cpx, cpy, x, y);
             break;
         }
         case PathCommand.PATH_COMMAND_CUBIC: {
-            const cp1x = x + path.diffs[j++] * step;
-            const cp1y = y + path.diffs[j++] * step;
-            const cp2x = cp1x + path.diffs[j++] * step;
-            const cp2y = cp1y + path.diffs[j++] * step;
-            x = cp2x + path.diffs[j++] * step;
-            y = cp2y + path.diffs[j++] * step;
+            const cp1x = x + path.diffs[j++]! * step;
+            const cp1y = y + path.diffs[j++]! * step;
+            const cp2x = cp1x + path.diffs[j++]! * step;
+            const cp2y = cp1y + path.diffs[j++]! * step;
+            x = cp2x + path.diffs[j++]! * step;
+            y = cp2y + path.diffs[j++]! * step;
             path2d.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
             break;
         }

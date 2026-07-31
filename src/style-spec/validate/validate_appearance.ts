@@ -29,7 +29,7 @@ export default function validateAppearance(options: AppearanceValidatorOptions):
     const errors = validateObject({
         key,
         value,
-        valueSpec: options.styleSpec.appearance as object,
+        valueSpec: options.styleSpec.appearance as Record<PropertyKey, unknown>,
         style: options.style,
         styleSpec: options.styleSpec,
         objectElementValidators: {
@@ -52,12 +52,12 @@ function validateProperties(options: AppearanceValidatorOptions): Array<Validati
 
     const paintProperties = styleSpec[`paint_${layerType}`] as Record<string, StylePropertySpecification> | undefined;
     const layoutProperties = styleSpec[`layout_${layerType}`] as Record<string, StylePropertySpecification> | undefined;
-    const properties = options.object[options.objectKey] as object;
+    const properties = (options.object as Record<string, unknown>)[options.objectKey!] as Record<string, unknown>;
 
     for (const propertyKey in properties) {
         const propertyType =
-            propertyKey in paintProperties ? 'paint' :
-            propertyKey in layoutProperties ? 'layout' :
+            propertyKey in paintProperties! ? 'paint' :
+            propertyKey in layoutProperties! ? 'layout' :
             undefined;
 
         if (!propertyType) {
@@ -72,8 +72,8 @@ function validateProperties(options: AppearanceValidatorOptions): Array<Validati
             objectKey: propertyKey,
             layer,
             layerType,
-            value: properties[propertyKey] as unknown,
-            valueSpec: (propertyType === 'paint' ? paintProperties[propertyKey] : layoutProperties[propertyKey]),
+            value: properties[propertyKey],
+            valueSpec: (propertyType === 'paint' ? paintProperties![propertyKey] : layoutProperties![propertyKey]),
         };
 
         errors.push(...validateProperty(propertyValidationOptions, propertyType));
@@ -91,7 +91,7 @@ function validateCondition(options: AppearanceValidatorOptions): Array<Validatio
     errors.push(...validateExpression({
         key: options.key,
         value: condition,
-        valueSpec: (latest['appearance'] as Record<string, unknown>)['condition'],
+        valueSpec: (latest['appearance'] as Record<string, Partial<StylePropertySpecification>>)['condition'],
         expressionContext: 'appearance'
     }));
 

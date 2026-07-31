@@ -66,17 +66,17 @@ export interface GlobalProperties {
 
 export class StyleExpression {
     expression: Expression;
-    _scope?: string;
-    _options?: ConfigOptions;
-    _iconImageUseTheme?: string;
+    _scope?: string | null;
+    _options?: ConfigOptions | null;
+    _iconImageUseTheme?: string | null;
     _evaluator?: EvaluationContext;
     _defaultValue: Value;
     _warningHistory: {[key: string]: boolean};
-    _enumValues?: {[_: string]: unknown};
+    _enumValues?: {[_: string]: unknown} | null;
     configDependencies: Set<string>;
     isIndoorDependent: boolean;
 
-    constructor(expression: Expression, propertySpec?: StylePropertySpecification, scope?: string, options?: ConfigOptions, iconImageUseTheme?: string) {
+    constructor(expression: Expression, propertySpec?: StylePropertySpecification | null, scope?: string | null, options?: ConfigOptions | null, iconImageUseTheme?: string | null) {
         this.expression = expression;
         this._warningHistory = {};
         this._scope = scope;
@@ -100,16 +100,17 @@ export class StyleExpression {
         featureDistanceData?: FeatureDistanceData,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
-        this._evaluator.globals = globals;
-        this._evaluator.feature = feature;
-        this._evaluator.featureState = featureState;
-        this._evaluator.canonical = canonical || null;
-        this._evaluator.availableImages = availableImages || null;
-        this._evaluator.formattedSection = formattedSection;
-        this._evaluator.featureTileCoord = featureTileCoord || null;
-        this._evaluator.featureDistanceData = featureDistanceData || null;
+        const evaluator = this._evaluator!;
+        evaluator.globals = globals;
+        evaluator.feature = feature;
+        evaluator.featureState = featureState;
+        evaluator.canonical = canonical || null;
+        evaluator.availableImages = availableImages || null;
+        evaluator.formattedSection = formattedSection;
+        evaluator.featureTileCoord = featureTileCoord || null;
+        evaluator.featureDistanceData = featureDistanceData || null;
 
-        return this.expression.evaluate(this._evaluator);
+        return this.expression.evaluate(evaluator);
     }
 
     evaluate(

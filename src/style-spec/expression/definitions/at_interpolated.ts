@@ -45,7 +45,7 @@ class AtInterpolated implements Expression {
         }
 
         if (index === Math.floor(index)) {
-            return array[index];
+            return array[index]!;
         }
 
         // Interpolation logic for non-integer indices

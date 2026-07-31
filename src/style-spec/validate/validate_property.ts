@@ -31,13 +31,13 @@ export default function validateProperty(options: PropertyValidatorOptions, prop
     const layer = options.layer;
     const styleSpec = options.styleSpec;
     const value = options.value;
-    const propertyKey = options.objectKey;
+    const propertyKey = options.objectKey!;
     const layerSpec = styleSpec[`${propertyType}_${options.layerType}`] as Record<string, StylePropertySpecification> | undefined;
 
     if (!layerSpec) return [];
 
     const useThemeMatch = propertyKey.match(USE_THEME_KEY_RE);
-    if (useThemeMatch && layerSpec[useThemeMatch[1]]) {
+    if (useThemeMatch && layerSpec[useThemeMatch[1]!]) {
         if (isExpression(deepUnbundle(value))) {
             const errors: ValidationError[] = [];
             return errors.concat(validate({
@@ -69,7 +69,7 @@ export default function validateProperty(options: PropertyValidatorOptions, prop
     }
 
     const transitionMatch = propertyKey.match(TRANSITION_KEY_RE);
-    if (propertyType === 'paint' && transitionMatch && layerSpec[transitionMatch[1]] && layerSpec[transitionMatch[1]].transition) {
+    if (propertyType === 'paint' && transitionMatch && layerSpec[transitionMatch[1]!] && layerSpec[transitionMatch[1]!]!.transition) {
         return validate({
             key,
             value,
@@ -85,7 +85,7 @@ export default function validateProperty(options: PropertyValidatorOptions, prop
         return [new ValidationWarning(key, value, `unknown property "${propertyKey}"`)];
     }
 
-    let tokenMatch: RegExpExecArray | undefined;
+    let tokenMatch: RegExpExecArray | null | undefined;
     if (isString(value) && supportsPropertyExpression(valueSpec) && !valueSpec.tokens && (tokenMatch = TOKEN_PATTERN_RE.exec(value))) {
         const example = `\`{ "type": "identity", "property": ${tokenMatch ? JSON.stringify(tokenMatch[1]) : '"_"'} }\``;
         return [new ValidationError(

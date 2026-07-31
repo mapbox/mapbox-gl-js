@@ -813,10 +813,8 @@ class SymbolBucket implements Bucket {
             if (codePoint === undefined) break;
             stack[codePoint] = true;
             if (allowVerticalPlacement && doesAllowVerticalWritingMode && codePoint <= 65535) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const verticalChar = verticalizedCharacterMap[char];
                 if (verticalChar) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
                     stack[verticalChar.charCodeAt(0)] = true;
                 }
             }

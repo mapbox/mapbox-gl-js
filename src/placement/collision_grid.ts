@@ -84,7 +84,7 @@ export class CollisionGrid<T> {
         // GridIndex's own candidate test is a broad-phase check (touching counts as a hit);
         // re-verify the exact geometry here so touching-but-not-overlapping shapes don't count.
         const predicate = (geometryIndex: number): boolean => {
-            if (!geometryElementsIntersect(this._geometries[geometryIndex], extended)) return false;
+            if (!geometryElementsIntersect(this._geometries[geometryIndex]!, extended)) return false;
             const data = this._geometryData[geometryIndex];
             return data === undefined || !ignoreIntersectionWith(data);
         };

@@ -34,7 +34,7 @@ export default function validateLight(options: LightValidatorOptions): Validatio
         const useThemeMatch = key.match(USE_THEME_KEY_RE);
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (useThemeMatch && lightSpec[useThemeMatch[1]]) {
+        if (useThemeMatch && lightSpec[useThemeMatch[1]!]) {
             errors = errors.concat(validate({
                 key,
                 value: light[key],
@@ -43,7 +43,7 @@ export default function validateLight(options: LightValidatorOptions): Validatio
                 styleSpec
             }));
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        } else if (transitionMatch && lightSpec[transitionMatch[1]] && lightSpec[transitionMatch[1]].transition) {
+        } else if (transitionMatch && lightSpec[transitionMatch[1]!] && lightSpec[transitionMatch[1]!]!.transition) {
             errors = errors.concat(validate({
                 key,
                 value: light[key],

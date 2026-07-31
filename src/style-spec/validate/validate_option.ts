@@ -5,6 +5,7 @@ import {isObject} from '../util/get_type';
 
 import type ValidationError from '../error/validation_error';
 import type {ValidatorOptions} from './validate';
+import type {ObjectElementValidator} from './validate_object';
 
 // Validator for a single config option (one entry in `schema`). Wraps the
 // generic object validator to inherit the option's declared `type` when
@@ -31,6 +32,6 @@ export default function validateOption(options: ValidatorOptions): ValidationErr
             default: (elementOptions: ValidatorOptions): ValidationError[] => (Array.isArray(elementOptions.value) ?
                 validateSpec({...elementOptions, valueSpec: {...elementOptions.valueSpec, type: declaredType} as typeof elementOptions.valueSpec}) :
                 validateSpec(elementOptions)),
-        } : undefined,
+        } as Record<string, ObjectElementValidator> : undefined,
     });
 }

@@ -10,7 +10,7 @@ import type {Feature} from './geojson_wrapper';
 export default function writeFeatures(layers: Record<string, Feature[]>) {
     const pbf = new PbfWriter();
     for (const name of Object.keys(layers)) {
-        const features = layers[name];
+        const features = layers[name]!;
         pbf.writeMessage(3, writeLayer, {name, features});
     }
     return pbf.finish();
@@ -20,10 +20,10 @@ function writeLayer({name, features}: {name: string, features: Feature[]}, pbf: 
     pbf.writeStringField(1, name);
     pbf.writeVarintField(5, EXTENT);
 
-    const keys = new Map();
-    const values = new Map();
+    const keys = new Map<string, number>();
+    const values = new Map<unknown, number>();
 
-    const context = {
+    const context: FeatureContext = {
         keys,
         values,
         feature: null
@@ -33,7 +33,6 @@ function writeLayer({name, features}: {name: string, features: Feature[]}, pbf: 
         pbf.writeMessage(2, writeFeature, context);
     }
     for (const key of keys.keys()) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         pbf.writeStringField(3, key);
     }
     for (const value of values.keys()) {
@@ -41,16 +40,16 @@ function writeLayer({name, features}: {name: string, features: Feature[]}, pbf: 
     }
 }
 
-type FeatureContext = {keys: Map<string, number>, values: Map<unknown, number>, feature: Feature};
+type FeatureContext = {keys: Map<string, number>, values: Map<unknown, number>, feature: Feature | null};
 
 function writeFeature(context: FeatureContext, pbf: PbfWriter) {
-    const feature = context.feature;
+    const feature = context.feature!;
 
     // vector tile spec only supports integer values for feature ids -
     // allowing non-integer values here results in a non-compliant PBF
     // that causes an exception when it is parsed with vector-tile-js
-    if (feature.id !== undefined && Number.isSafeInteger(+feature.id)) {
-        pbf.writeVarintField(1, +feature.id);
+    if (feature.id !== undefined && Number.isSafeInteger(+feature.id!)) {
+        pbf.writeVarintField(1, +feature.id!);
     }
 
     if (feature.tags) pbf.writeMessage(2, writeProperties, context);
@@ -59,8 +58,8 @@ function writeFeature(context: FeatureContext, pbf: PbfWriter) {
 }
 
 function writeProperties({keys, values, feature}: FeatureContext, pbf: PbfWriter) {
-    for (const key of Object.keys(feature.tags)) {
-        let value = feature.tags[key];
+    for (const key of Object.keys(feature!.tags)) {
+        let value = feature!.tags[key];
         if (value === null) continue; // don't encode null value properties
 
         let keyIndex = keys.get(key);
@@ -118,8 +117,8 @@ function writeGeometry(feature: Feature, pbf: PbfWriter) {
             const lineCount = ring.length - (type === 3 ? 1 : 0); // do not write polygon closing path as lineto
             for (let i = 0; i < lineCount; i++) {
                 if (i === 1) pbf.writeVarint(command(2, lineCount - 1));
-                const dx = ring[i][0] - x;
-                const dy = ring[i][1] - y;
+                const dx = ring[i]![0] - x;
+                const dy = ring[i]![1] - y;
                 pbf.writeVarint(zigzag(dx));
                 pbf.writeVarint(zigzag(dy));
                 x += dx;

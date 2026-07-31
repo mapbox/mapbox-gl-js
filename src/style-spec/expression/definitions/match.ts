@@ -94,14 +94,13 @@ class Match implements Expression {
             return null;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new Match(inputType, outputType, input, cases, outputs, otherwise);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         const input = (this.input.evaluate(ctx)) as number | string;
-        const output = (typeEquals(typeOf(input), this.inputType) && this.outputs[this.cases[input]]) || this.otherwise;
+        const output = (typeEquals(typeOf(input), this.inputType) && this.outputs[this.cases[input]!]) || this.otherwise;
         return output.evaluate(ctx);
     }
 
@@ -129,14 +128,14 @@ class Match implements Expression {
             [index: number]: number;
         } = {}; // lookup index into groupedByOutput for a given output expression
         for (const label of sortedLabels) {
-            const outputIndex = outputLookup[this.cases[label]];
+            const outputIndex = outputLookup[this.cases[label]!];
             if (outputIndex === undefined) {
                 // First time seeing this output, add it to the end of the grouped list
-                outputLookup[this.cases[label]] = groupedByOutput.length;
-                groupedByOutput.push([this.cases[label], [label]]);
+                outputLookup[this.cases[label]!] = groupedByOutput.length;
+                groupedByOutput.push([this.cases[label]!, [label]]);
             } else {
                 // We've seen this expression before, add the label to that output's group
-                groupedByOutput[outputIndex][1].push(label);
+                groupedByOutput[outputIndex]![1].push(label);
             }
         }
 
@@ -145,12 +144,12 @@ class Match implements Expression {
         for (const [outputIndex, labels] of groupedByOutput) {
             if (labels.length === 1) {
                 // Only a single label matches this output expression
-                serialized.push(coerceLabel(labels[0]));
+                serialized.push(coerceLabel(labels[0]!));
             } else {
                 // Array of literal labels pointing to this output expression
                 serialized.push(labels.map(coerceLabel));
             }
-            serialized.push(this.outputs[outputIndex].serialize());
+            serialized.push(this.outputs[outputIndex]!.serialize());
         }
         serialized.push(this.otherwise.serialize());
         return serialized;

@@ -49,7 +49,7 @@ export default function validateLights(options: LightsValidatorOptions): Validat
     if (lights) {
         for (let i = 0; i < options.arrayIndex; i++) {
             const lightType = unbundle(light.type);
-            const otherLight = lights[i];
+            const otherLight = lights[i]!;
             if (unbundle(otherLight.type) === lightType) {
                 errors.push(new ValidationError(key, light.id, `duplicate light type "${light.type}", previously defined at line ${(otherLight.id as {__line__?: number}).__line__}`));
             }
@@ -77,7 +77,7 @@ export default function validateLights(options: LightsValidatorOptions): Validat
                 const useThemeMatch = propertyKey.match(USE_THEME_KEY_RE);
 
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                if (useThemeMatch && lightPropertySpec[useThemeMatch[1]]) {
+                if (useThemeMatch && lightPropertySpec[useThemeMatch[1]!]) {
                     errors = errors.concat(validate({
                         key,
                         value: properties[propertyKey],
@@ -86,7 +86,7 @@ export default function validateLights(options: LightsValidatorOptions): Validat
                         styleSpec
                     }));
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                } else if (transitionMatch && lightPropertySpec[transitionMatch[1]] && lightPropertySpec[transitionMatch[1]].transition) {
+                } else if (transitionMatch && lightPropertySpec[transitionMatch[1]!] && lightPropertySpec[transitionMatch[1]!].transition) {
                     errors = errors.concat(validate({
                         key,
                         value: light[key],

@@ -32,7 +32,7 @@ export default class ImageExpression implements Expression {
     paramsPrimary?: ImageParams;
     iconsetIdPrimary?: string;
 
-    nameSecondary?: Expression;
+    nameSecondary?: Expression | null;
     paramsSecondary?: ImageParams;
     iconsetIdSecondary?: string;
 
@@ -121,7 +121,7 @@ export default class ImageExpression implements Expression {
                         parsedParams[key] = value;
                     }
 
-                    imageExpression.at(-1).options.params = parsedParams;
+                    imageExpression.at(-1)!.options!.params = parsedParams;
                 }
 
                 // Validate the iconset image options
@@ -136,7 +136,7 @@ export default class ImageExpression implements Expression {
                         return false;
                     }
 
-                    imageExpression.at(-1).options.iconset = iconset;
+                    imageExpression.at(-1)!.options!.iconset = iconset;
                 }
 
                 nextArgId++;
@@ -154,14 +154,14 @@ export default class ImageExpression implements Expression {
         }
 
         return new ImageExpression(
-            imageExpression[0].image,
+            imageExpression[0]!.image,
             imageExpression[1] ? imageExpression[1].image : undefined,
-            imageExpression[0].options,
+            imageExpression[0]!.options,
             imageExpression[1] ? imageExpression[1].options : undefined
         );
     }
 
-    evaluateParams(ctx: EvaluationContext, params: Record<string, Expression> | undefined): {params: Record<string, Color>} {
+    evaluateParams(ctx: EvaluationContext, params: Record<string, Expression> | undefined): {params: Record<string, Color>} | undefined {
         const result: Record<string, Color> = {};
         if (params) {
             for (const key in params) {
@@ -210,7 +210,7 @@ export default class ImageExpression implements Expression {
             value.available = ctx.availableImages.some((id) => ImageId.isEqual(id, primaryId));
             if (value.available) {
                 // If there's a secondary variant, only mark it available if both are present
-                const secondaryId = value.getSecondary() ? value.getSecondary().id : null;
+                const secondaryId = value.getSecondary() ? value.getSecondary()!.id : null;
                 if (secondaryId) value.available = ctx.availableImages.some((id) => ImageId.isEqual(id, secondaryId));
             }
         }
@@ -246,7 +246,7 @@ export default class ImageExpression implements Expression {
         return false;
     }
 
-    serializeOptions(params: ImageParams, iconsetId: string): SerializedImageOptions | undefined {
+    serializeOptions(params?: ImageParams, iconsetId?: string): SerializedImageOptions | undefined {
         const result: SerializedImageOptions = {};
 
         if (iconsetId) {

@@ -67,7 +67,7 @@ class Literal implements Expression {
                 typeof this.value === 'string' ||
                 typeof this.value === 'number' ||
                 typeof this.value === 'boolean');
-            return this.value as SerializedExpression;
+            return this.value;
         }
     }
 }
