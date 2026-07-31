@@ -23,14 +23,14 @@ import type {LUT} from "../../../src/util/lut";
 import type {ProgramName} from '../../../src/render/program';
 
 class FillExtrusionStyleLayer extends StyleLayer {
-    override type: 'fill-extrusion';
+    override type!: 'fill-extrusion';
 
-    override _unevaluatedLayout: Layout<LayoutProps>;
-    override layout: PossiblyEvaluated<LayoutProps>;
+    override _unevaluatedLayout!: Layout<LayoutProps>;
+    override layout!: PossiblyEvaluated<LayoutProps>;
 
-    override _transitionablePaint: Transitionable<PaintProps>;
-    override _transitioningPaint: Transitioning<PaintProps>;
-    override paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint!: Transitionable<PaintProps>;
+    override _transitioningPaint!: Transitioning<PaintProps>;
+    override paint!: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {

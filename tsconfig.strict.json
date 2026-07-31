@@ -5,7 +5,7 @@
     "composite": true,
     "emitDeclarationOnly": true,
     "outDir": "./rollup/build/types-strict",
-    "rootDir": ".",
+    "rootDir": "."
   },
   "include": [
     "./src/style-spec/data/**/*",
@@ -113,6 +113,28 @@
     "./src/style-spec/expression/types/resolved_image.ts",
     "./src/data/mrt/types.d.ts",
     "./src/style-spec/expression/types/formatted.ts",
-    "./src/style-spec/rollup.config.dts.ts"
+    "./src/style-spec/rollup.config.dts.ts",
+    "./src/util/struct_array.ts",
+    "./3d-style/data/building_attributes.ts",
+    "./3d-style/data/model_attributes.ts",
+    "./src/data/bounds_attributes.ts",
+    "./src/data/bucket/circle_attributes.ts",
+    "./src/data/bucket/dash_attributes.ts",
+    "./src/data/bucket/fill_attributes.ts",
+    "./src/data/bucket/fill_extrusion_attributes.ts",
+    "./src/data/bucket/line_attributes_ext.ts",
+    "./src/data/bucket/line_attributes_pattern.ts",
+    "./src/data/bucket/line_attributes.ts",
+    "./src/data/bucket/pattern_attributes.ts",
+    "./src/data/bucket/symbol_attributes.ts",
+    "./src/data/particle_attributes.ts",
+    "./src/data/pos_attributes.ts",
+    "./src/precipitation/rain_attributes.ts",
+    "./src/precipitation/snow_attributes.ts",
+    "./src/precipitation/vignette_attributes.ts",
+    "./src/render/atmosphere_attributes.ts",
+    "./src/render/skybox_attributes.ts",
+    "./src/render/stars_attributes.ts",
+    "./src/terrain/globe_attributes.ts"
   ]
 }

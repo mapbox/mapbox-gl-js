@@ -30,12 +30,12 @@ export type FullscreenControlOptions = {
  */
 
 class FullscreenControl implements IControl {
-    _map: Map;
-    _controlContainer: HTMLElement;
+    _map!: Map;
+    _controlContainer!: HTMLElement;
     _fullscreen: boolean;
-    _fullscreenchange: string;
-    _fullscreenButton: HTMLElement;
-    _container: HTMLElement;
+    _fullscreenchange!: string;
+    _fullscreenButton!: HTMLElement;
+    _container!: HTMLElement;
 
     constructor(options: FullscreenControlOptions | null = {}) {
         this._fullscreen = false;

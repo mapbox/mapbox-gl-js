@@ -41,7 +41,7 @@ class Fog extends Evented {
     _transitionable: Transitionable<Props>;
     _transitioning: Transitioning<Props>;
     properties: PossiblyEvaluated<Props>;
-    _options: FogSpecification;
+    _options!: FogSpecification;
     scope: string;
 
     // Alternate projections do not yet support fog.

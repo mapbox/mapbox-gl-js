@@ -9,14 +9,14 @@ import type {Handler, HandlerResult} from '../handler';
 export default class TouchPanHandler implements Handler {
     _map: Map;
     _el: HTMLElement;
-    _enabled: boolean;
-    _active: boolean;
-    _touches: Partial<Record<string | number, Point>>;
+    _enabled!: boolean;
+    _active!: boolean;
+    _touches!: Partial<Record<string | number, Point>>;
     _minTouches: number;
     _clickTolerance: number;
-    _sum: Point;
-    _alertContainer: HTMLElement;
-    _alertTimer: number;
+    _sum!: Point;
+    _alertContainer!: HTMLElement;
+    _alertTimer!: number;
 
     constructor(map: Map, options: {
         clickTolerance: number;

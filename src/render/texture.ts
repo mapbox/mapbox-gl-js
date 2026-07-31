@@ -47,7 +47,7 @@ export type TextureUpdateOptions = {
 
 class Texture {
     context: Context;
-    size: [number, number];
+    size!: [number, number];
     texture: WebGLTexture;
     format: TextureFormat;
     minFilter: TextureFilter | null | undefined;

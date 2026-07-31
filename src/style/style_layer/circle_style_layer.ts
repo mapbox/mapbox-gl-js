@@ -29,14 +29,14 @@ import type {LUT} from "../../util/lut";
 import type {ProgramName} from '../../render/program';
 
 class CircleStyleLayer extends StyleLayer {
-    override type: 'circle';
+    override type!: 'circle';
 
-    override _unevaluatedLayout: Layout<LayoutProps>;
-    override layout: PossiblyEvaluated<LayoutProps>;
+    override _unevaluatedLayout!: Layout<LayoutProps>;
+    override layout!: PossiblyEvaluated<LayoutProps>;
 
-    override _transitionablePaint: Transitionable<PaintProps>;
-    override _transitioningPaint: Transitioning<PaintProps>;
-    override paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint!: Transitionable<PaintProps>;
+    override _transitioningPaint!: Transitioning<PaintProps>;
+    override paint!: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {

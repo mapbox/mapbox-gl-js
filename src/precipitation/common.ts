@@ -106,7 +106,7 @@ class DrawParams {
 export class PrecipitationBase {
     particlesVx: VertexBuffer | null | undefined;
     particlesIdx: IndexBuffer | null | undefined;
-    particlesCount: number;
+    particlesCount!: number;
 
     _movement: Movement;
 

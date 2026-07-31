@@ -43,8 +43,8 @@ import type {VideoSourceSpecification} from '../style-spec/types';
  */
 class VideoSource extends ImageSource<'video'> {
     override options: VideoSourceSpecification;
-    urls: Array<string>;
-    video: HTMLVideoElement;
+    urls!: Array<string>;
+    video!: HTMLVideoElement;
 
     /**
      * @private

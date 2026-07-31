@@ -68,8 +68,8 @@ export class OverscaledTileID {
     wrap: number;
     canonical: CanonicalTileID;
     key: number;
-    projMatrix: mat4;
-    expandedProjMatrix: mat4;
+    projMatrix!: mat4;
+    expandedProjMatrix!: mat4;
     visibleQuadrants?: number;
 
     constructor(overscaledZ: number, wrap: number, z: number, x: number, y: number) {

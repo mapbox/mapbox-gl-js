@@ -29,21 +29,21 @@ function getCelestialDirection(azimuth: number, altitude: number, leftHanded: bo
 }
 
 class SkyLayer extends StyleLayer {
-    override type: 'sky';
+    override type!: 'sky';
 
-    override _transitionablePaint: Transitionable<PaintProps>;
-    override _transitioningPaint: Transitioning<PaintProps>;
-    override paint: PossiblyEvaluated<PaintProps>;
-    _lightPosition: Position;
+    override _transitionablePaint!: Transitionable<PaintProps>;
+    override _transitioningPaint!: Transitioning<PaintProps>;
+    override paint!: PossiblyEvaluated<PaintProps>;
+    _lightPosition!: Position;
 
     skyboxFbo: Framebuffer | null | undefined;
     skyboxTexture: WebGLTexture | null | undefined;
     _skyboxInvalidated: boolean | null | undefined;
 
-    colorRamp: RGBAImage;
+    colorRamp!: RGBAImage;
     colorRampTexture: Texture | null | undefined;
 
-    skyboxGeometry: SkyboxGeometry;
+    skyboxGeometry!: SkyboxGeometry;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {

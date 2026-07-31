@@ -35,7 +35,7 @@ class Tiled3dWorkerTile {
     source: string;
     overscaling: number;
     projection: Projection;
-    status: 'parsing' | 'done';
+    status!: 'parsing' | 'done';
     reloadCallback: WorkerSourceVectorTileCallback | null | undefined;
     brightness: number | null | undefined;
     worldview: string | undefined;

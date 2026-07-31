@@ -10,11 +10,11 @@ class Framebuffer {
     context: Context;
     width: number;
     height: number;
-    format: TextureFormat;
+    format!: TextureFormat;
     framebuffer: WebGLFramebuffer;
-    colorAttachment0: ColorAttachment;
-    colorAttachment1: ColorAttachment;
-    depthAttachment: DepthRenderbufferAttachment | DepthTextureAttachment;
+    colorAttachment0!: ColorAttachment;
+    colorAttachment1!: ColorAttachment;
+    depthAttachment!: DepthRenderbufferAttachment | DepthTextureAttachment;
     depthAttachmentType: DepthBufferType | null | undefined;
     _stencilRbo: WebGLRenderbuffer | null | undefined;
 

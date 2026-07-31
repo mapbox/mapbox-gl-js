@@ -110,7 +110,7 @@ function loadGeoJSONTile(this: GeoJSONWorkerSource, params: WorkerSourceVectorTi
  * @private
  */
 class GeoJSONWorkerSource extends VectorTileWorkerSource {
-    _geoJSONIndex: GeoJSONIndex;
+    _geoJSONIndex!: GeoJSONIndex;
     _dynamicIndex: GeoJSONRT;
 
     /**

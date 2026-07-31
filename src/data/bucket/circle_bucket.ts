@@ -50,21 +50,21 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
     overscaling: number;
     layerIds: Array<string>;
     layers: Array<Layer>;
-    stateDependentLayers: Array<CircleStyleLayer>;
+    stateDependentLayers!: Array<CircleStyleLayer>;
     stateDependentLayerIds: Array<string>;
 
     layoutVertexArray: CircleLayoutArray;
-    layoutVertexBuffer: VertexBuffer;
+    layoutVertexBuffer!: VertexBuffer;
     globeExtVertexArray: CircleGlobeExtArray | null | undefined;
     globeExtVertexBuffer: VertexBuffer | null | undefined;
 
     indexArray: TriangleIndexArray;
-    indexBuffer: IndexBuffer;
+    indexBuffer!: IndexBuffer;
 
     hasPattern: boolean;
     programConfigurations: ProgramConfigurationSet<Layer>;
     segments: SegmentVector;
-    uploaded: boolean;
+    uploaded!: boolean;
     projection: ProjectionSpecification;
 
     worldview: string | undefined;

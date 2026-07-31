@@ -10,12 +10,12 @@ export type TouchPitchHandlerOptions = {
 };
 
 class TwoTouchHandler implements Handler {
-    _enabled: boolean;
-    _active: boolean;
+    _enabled!: boolean;
+    _active!: boolean;
     _firstTwoTouches?: [number, number];
     _vector?: Point;
     _startVector?: Point;
-    _aroundCenter: boolean;
+    _aroundCenter!: boolean;
 
     constructor() {
         this.reset();
@@ -110,8 +110,8 @@ function getZoomDelta(distance: number, lastDistance: number) {
 
 export class TouchZoomHandler extends TwoTouchHandler {
 
-    _distance: number;
-    _startDistance: number;
+    _distance!: number;
+    _startDistance!: number;
 
     override reset() {
         super.reset();
@@ -144,7 +144,7 @@ function getBearingDelta(a: Point, b: Point) {
 }
 
 export class TouchRotateHandler extends TwoTouchHandler {
-    _minDiameter: number;
+    _minDiameter!: number;
 
     override reset() {
         super.reset();

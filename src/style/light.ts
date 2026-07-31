@@ -46,8 +46,8 @@ const getProperties = (): Properties<Props> => properties || (properties = new P
 class Light extends Evented {
     _transitionable: Transitionable<Props>;
     _transitioning: Transitioning<Props>;
-    properties: PossiblyEvaluated<Props>;
-    id: string;
+    properties!: PossiblyEvaluated<Props>;
+    id!: string;
 
     constructor(lightOptions?: LightSpecification, id: string = "flat") {
         super();

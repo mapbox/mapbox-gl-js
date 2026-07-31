@@ -77,11 +77,11 @@ type UniformGroupKey = 'terrainUniforms' | 'globeUniforms' | 'fogUniforms' | 'cu
 class Program<Us extends UniformBindings> {
     program: WebGLProgram;
     attributes: Record<string, number>;
-    fixedUniforms: Readonly<Us>;
+    fixedUniforms!: Readonly<Us>;
     // Cache fixedUniforms entries to avoid allocations during draw calls
-    fixedUniformsEntries: ReadonlyArray<[string, IUniform<unknown>]>;
-    binderUniforms: Array<BinderUniform>;
-    failedToCreate: boolean;
+    fixedUniformsEntries!: ReadonlyArray<[string, IUniform<unknown>]>;
+    binderUniforms!: Array<BinderUniform>;
+    failedToCreate!: boolean;
     terrainUniforms: TerrainUniformsType | undefined;
     fogUniforms: FogUniformsType | undefined;
     cutoffUniforms: CutoffUniformsType | undefined;
@@ -99,8 +99,8 @@ class Program<Us extends UniformBindings> {
 
     _pending: boolean;
     _context: Context;
-    _fragmentShader: WebGLShader | null;
-    _vertexShader: WebGLShader | null;
+    _fragmentShader!: WebGLShader | null;
+    _vertexShader!: WebGLShader | null;
     _fixedUniformsFn: (arg1: Context) => Us;
     _precompiled: boolean;
 

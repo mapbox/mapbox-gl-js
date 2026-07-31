@@ -122,28 +122,28 @@ export interface Subsegment {
  * @private
  */
 class LineBucket implements Bucket {
-    distance: number;
-    prevDistance: number;
-    totalDistance: number;
-    totalFeatureLength: number;
+    distance!: number;
+    prevDistance!: number;
+    totalDistance!: number;
+    totalFeatureLength!: number;
     maxLineLength: number;
-    scaledDistance: number;
-    lineSoFar: number;
+    scaledDistance!: number;
+    lineSoFar!: number;
     lineClips: LineClips | null | undefined;
-    zOffsetValue: PossiblyEvaluatedValue<number>;
-    variableWidthValue: PossiblyEvaluatedValue<number>;
-    variableEmissiveStrengthValue: PossiblyEvaluatedValue<number>;
-    elevationGroundScaleValue: PossiblyEvaluatedValue<number>;
-    lineFeature: BucketFeature;
+    zOffsetValue!: PossiblyEvaluatedValue<number>;
+    variableWidthValue!: PossiblyEvaluatedValue<number>;
+    variableEmissiveStrengthValue!: PossiblyEvaluatedValue<number>;
+    elevationGroundScaleValue!: PossiblyEvaluatedValue<number>;
+    lineFeature!: BucketFeature;
 
-    e1: number;
-    e2: number;
+    e1!: number;
+    e2!: number;
 
-    patternJoinNone: boolean;
-    currentLineJoinType: string;
-    segmentStart: number;
-    segmentStartf32: number;
-    segmentPoints: Array<number>;
+    patternJoinNone!: boolean;
+    currentLineJoinType!: string;
+    segmentStart!: number;
+    segmentStartf32!: number;
+    segmentPoints!: Array<number>;
 
     index: number;
     zoom: number;
@@ -157,39 +157,39 @@ class LineBucket implements Bucket {
     borderGradients: {
         [key: string]: GradientTexture;
     };
-    stateDependentLayers: Array<LineStyleLayer>;
+    stateDependentLayers!: Array<LineStyleLayer>;
     stateDependentLayerIds: Array<string>;
     patternFeatures: Array<BucketFeature>;
     lineClipsArray: Array<LineClips>;
 
     layoutVertexArray: LineLayoutArray;
-    layoutVertexBuffer: VertexBuffer;
+    layoutVertexBuffer!: VertexBuffer;
     layoutVertexArray2: LineExtLayoutArray;
-    layoutVertexBuffer2: VertexBuffer;
+    layoutVertexBuffer2!: VertexBuffer;
     patternVertexArray: LinePatternLayoutArray;
-    patternVertexBuffer: VertexBuffer;
+    patternVertexBuffer!: VertexBuffer;
 
     zOffsetVertexArray: LineZOffsetExtArray;
-    zOffsetVertexBuffer: VertexBuffer;
+    zOffsetVertexBuffer!: VertexBuffer;
     elevationIdColVertexArray: LineElevationIdColArray;
-    elevationIdColVertexBuffer: VertexBuffer;
+    elevationIdColVertexBuffer!: VertexBuffer;
 
     elevationGroundScaleVertexArray: LineElevationGroundScaleArray;
-    elevationGroundScaleVertexBuffer: VertexBuffer;
+    elevationGroundScaleVertexBuffer!: VertexBuffer;
 
     indexArray: TriangleIndexArray;
-    indexBuffer: IndexBuffer;
+    indexBuffer!: IndexBuffer;
 
     hasPattern: boolean;
-    tileToMeter: number;
+    tileToMeter!: number;
     hasCrossSlope: boolean;
     programConfigurations: ProgramConfigurationSet<LineStyleLayer>;
     segments: SegmentVector;
     sourceLayerName: string;
-    uploaded: boolean;
+    uploaded!: boolean;
     projection: ProjectionSpecification;
     currentVertex: Point4D | null | undefined;
-    currentVertexIsOutside: boolean;
+    currentVertexIsOutside!: boolean;
     tessellationStep: number;
 
     evaluationGlobals = {'zoom': 0, 'lineProgress': undefined};

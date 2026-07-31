@@ -87,7 +87,7 @@ export class Tiled3dModelFeature {
     evaluatedTranslation: [number, number, number];
     evaluatedScale: [number, number, number];
     hiddenByReplacement: boolean;
-    hasTranslucentParts: boolean;
+    hasTranslucentParts!: boolean;
     node: ModelNode;
     aabb: Aabb;
     emissionHeightBasedParams: Array<[number, number, number, number, number]>;
@@ -143,11 +143,11 @@ class Tiled3dModelBucket implements Bucket {
 
     id: OverscaledTileID;
     uploaded: boolean;
-    modelTraits: number;
+    modelTraits!: number;
     hasPattern: boolean;
     layers: Array<ModelStyleLayer>;
     layerIds: Array<string>;
-    stateDependentLayers: Array<ModelStyleLayer>;
+    stateDependentLayers!: Array<ModelStyleLayer>;
     stateDependentLayerIds: Array<string>;
     nodesInfo: Array<Tiled3dModelFeature>;
     zoom: number;

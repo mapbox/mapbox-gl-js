@@ -5,7 +5,7 @@ import type Context from '../gl/context';
 import type {UniformBindings} from './uniform_binding';
 
 class VertexArrayObject {
-    context: Context;
+    context!: Context;
     boundProgram: Program<UniformBindings> | null | undefined;
     boundLayoutVertexBuffer: VertexBuffer | null | undefined;
     boundPaintVertexBuffers: Array<VertexBuffer>;

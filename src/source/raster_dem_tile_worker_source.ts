@@ -16,8 +16,8 @@ import type {
 class RasterDEMTileWorkerSource implements WorkerSource {
     tileProvider?: TileProvider<ArrayBuffer | ImageBitmap>;
     loading: Record<number, Cancelable>;
-    offscreenCanvas: OffscreenCanvas;
-    offscreenCanvasContext: OffscreenCanvasRenderingContext2D;
+    offscreenCanvas!: OffscreenCanvas;
+    offscreenCanvasContext!: OffscreenCanvasRenderingContext2D;
 
     constructor(options: WorkerSourceOptions) {
         this.tileProvider = options.tileProvider;

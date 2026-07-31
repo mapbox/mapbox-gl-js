@@ -14,8 +14,6 @@ import type {IStructArrayLayout} from '../util/struct_array';
  * @private
  */
 class StructArrayLayout2i4 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override int16: Int16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -46,8 +44,6 @@ register(StructArrayLayout2i4, 'StructArrayLayout2i4');
  * @private
  */
 class StructArrayLayout3i6 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override int16: Int16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -80,9 +76,6 @@ register(StructArrayLayout3i6, 'StructArrayLayout3i6');
  * @private
  */
 class StructArrayLayout2i2ui8 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override int16: Int16Array;
-    override uint16: Uint16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -116,8 +109,6 @@ register(StructArrayLayout2i2ui8, 'StructArrayLayout2i2ui8');
  * @private
  */
 class StructArrayLayout1f4 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -148,9 +139,6 @@ register(StructArrayLayout1f4, 'StructArrayLayout1f4');
  * @private
  */
 class StructArrayLayout2i1f8 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override int16: Int16Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -184,8 +172,6 @@ register(StructArrayLayout2i1f8, 'StructArrayLayout2i1f8');
  * @private
  */
 class StructArrayLayout3i8 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override int16: Int16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -217,8 +203,6 @@ register(StructArrayLayout3i8, 'StructArrayLayout3i8');
  * @private
  */
 class StructArrayLayout4i8 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override int16: Int16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -251,8 +235,6 @@ register(StructArrayLayout4i8, 'StructArrayLayout4i8');
  * @private
  */
 class StructArrayLayout5i10 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override int16: Int16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -288,9 +270,6 @@ register(StructArrayLayout5i10, 'StructArrayLayout5i10');
  * @private
  */
 class StructArrayLayout2i4ub1f12 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override int16: Int16Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -329,8 +308,6 @@ register(StructArrayLayout2i4ub1f12, 'StructArrayLayout2i4ub1f12');
  * @private
  */
 class StructArrayLayout3f12 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -363,9 +340,6 @@ register(StructArrayLayout3f12, 'StructArrayLayout3f12');
  * @private
  */
 class StructArrayLayout4ui1f12 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override uint16: Uint16Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -401,8 +375,6 @@ register(StructArrayLayout4ui1f12, 'StructArrayLayout4ui1f12');
  * @private
  */
 class StructArrayLayout4ui8 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override uint16: Uint16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -435,8 +407,6 @@ register(StructArrayLayout4ui8, 'StructArrayLayout4ui8');
  * @private
  */
 class StructArrayLayout6i12 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override int16: Int16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -473,9 +443,6 @@ register(StructArrayLayout6i12, 'StructArrayLayout6i12');
  * @private
  */
 class StructArrayLayout4i4ui4i24 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override int16: Int16Array;
-    override uint16: Uint16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -518,9 +485,6 @@ register(StructArrayLayout4i4ui4i24, 'StructArrayLayout4i4ui4i24');
  * @private
  */
 class StructArrayLayout3i3f20 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override int16: Int16Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -557,8 +521,6 @@ register(StructArrayLayout3i3f20, 'StructArrayLayout3i3f20');
  * @private
  */
 class StructArrayLayout4f16 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -591,8 +553,6 @@ register(StructArrayLayout4f16, 'StructArrayLayout4f16');
  * @private
  */
 class StructArrayLayout1ul4 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override uint32: Uint32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -622,8 +582,6 @@ register(StructArrayLayout1ul4, 'StructArrayLayout1ul4');
  * @private
  */
 class StructArrayLayout2ui4 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override uint16: Uint16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -658,11 +616,6 @@ register(StructArrayLayout2ui4, 'StructArrayLayout2ui4');
  * @private
  */
 class StructArrayLayout5i4f1i1ul2ui40 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override int16: Int16Array;
-    override float32: Float32Array;
-    override uint32: Uint32Array;
-    override uint16: Uint16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -710,8 +663,6 @@ register(StructArrayLayout5i4f1i1ul2ui40, 'StructArrayLayout5i4f1i1ul2ui40');
  * @private
  */
 class StructArrayLayout3i2i2i16 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override int16: Int16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -749,9 +700,6 @@ register(StructArrayLayout3i2i2i16, 'StructArrayLayout3i2i2i16');
  * @private
  */
 class StructArrayLayout2f1f2i16 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override float32: Float32Array;
-    override int16: Int16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -788,8 +736,6 @@ register(StructArrayLayout2f1f2i16, 'StructArrayLayout2f1f2i16');
  * @private
  */
 class StructArrayLayout2ub4f20 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -825,8 +771,6 @@ register(StructArrayLayout2ub4f20, 'StructArrayLayout2ub4f20');
  * @private
  */
 class StructArrayLayout3ui6 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override uint16: Uint16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -867,11 +811,6 @@ register(StructArrayLayout3ui6, 'StructArrayLayout3ui6');
  * @private
  */
 class StructArrayLayout3i2f2ui3ul3ui2f3ub1ul1i1ub60 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override int16: Int16Array;
-    override float32: Float32Array;
-    override uint16: Uint16Array;
-    override uint32: Uint32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -932,11 +871,6 @@ register(StructArrayLayout3i2f2ui3ul3ui2f3ub1ul1i1ub60, 'StructArrayLayout3i2f2u
  * @private
  */
 class StructArrayLayout2f9i15ui1ul4f1ub1ui80 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override float32: Float32Array;
-    override int16: Int16Array;
-    override uint16: Uint16Array;
-    override uint32: Uint32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -1003,8 +937,6 @@ register(StructArrayLayout2f9i15ui1ul4f1ub1ui80, 'StructArrayLayout2f9i15ui1ul4f
  * @private
  */
 class StructArrayLayout6f24 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -1039,8 +971,6 @@ register(StructArrayLayout6f24, 'StructArrayLayout6f24');
  * @private
  */
 class StructArrayLayout5f20 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -1074,8 +1004,6 @@ register(StructArrayLayout5f20, 'StructArrayLayout5f20');
  * @private
  */
 class StructArrayLayout7f28 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -1111,8 +1039,6 @@ register(StructArrayLayout7f28, 'StructArrayLayout7f28');
  * @private
  */
 class StructArrayLayout11f44 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -1152,8 +1078,6 @@ register(StructArrayLayout11f44, 'StructArrayLayout11f44');
  * @private
  */
 class StructArrayLayout9f36 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -1191,8 +1115,6 @@ register(StructArrayLayout9f36, 'StructArrayLayout9f36');
  * @private
  */
 class StructArrayLayout2f8 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -1224,9 +1146,6 @@ register(StructArrayLayout2f8, 'StructArrayLayout2f8');
  * @private
  */
 class StructArrayLayout1ul3ui12 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override uint32: Uint32Array;
-    override uint16: Uint16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -1261,8 +1180,6 @@ register(StructArrayLayout1ul3ui12, 'StructArrayLayout1ul3ui12');
  * @private
  */
 class StructArrayLayout1ui2 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override uint16: Uint16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -1292,8 +1209,6 @@ register(StructArrayLayout1ui2, 'StructArrayLayout1ui2');
  * @private
  */
 class StructArrayLayout16f64 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -1339,9 +1254,6 @@ register(StructArrayLayout16f64, 'StructArrayLayout16f64');
  * @private
  */
 class StructArrayLayout4ui3f20 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override uint16: Uint16Array;
-    override float32: Float32Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -1379,8 +1291,6 @@ register(StructArrayLayout4ui3f20, 'StructArrayLayout4ui3f20');
  * @private
  */
 class StructArrayLayout1i2 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override int16: Int16Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -1410,7 +1320,6 @@ register(StructArrayLayout1i2, 'StructArrayLayout1i2');
  * @private
  */
 class StructArrayLayout1ub1 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
 
     override _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
@@ -1433,7 +1342,7 @@ StructArrayLayout1ub1.prototype.bytesPerElement = 1;
 register(StructArrayLayout1ub1, 'StructArrayLayout1ub1');
 
 class CollisionBoxStruct extends Struct {
-    override _structArray: CollisionBoxArray;
+    declare _structArray: CollisionBoxArray;
     get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 0]; }
     get projectedAnchorY(): number { return this._structArray.int16[this._pos2 + 1]; }
     get projectedAnchorZ(): number { return this._structArray.int16[this._pos2 + 2]; }
@@ -1472,7 +1381,7 @@ export class CollisionBoxArray extends StructArrayLayout5i4f1i1ul2ui40 {
 register(CollisionBoxArray, 'CollisionBoxArray');
 
 class PlacedSymbolStruct extends Struct {
-    override _structArray: PlacedSymbolArray;
+    declare _structArray: PlacedSymbolArray;
     get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 0]; }
     get projectedAnchorY(): number { return this._structArray.int16[this._pos2 + 1]; }
     get projectedAnchorZ(): number { return this._structArray.int16[this._pos2 + 2]; }
@@ -1523,7 +1432,7 @@ export class PlacedSymbolArray extends StructArrayLayout3i2f2ui3ul3ui2f3ub1ul1i1
 register(PlacedSymbolArray, 'PlacedSymbolArray');
 
 class SymbolInstanceStruct extends Struct {
-    override _structArray: SymbolInstanceArray;
+    declare _structArray: SymbolInstanceArray;
     get tileAnchorX(): number { return this._structArray.float32[this._pos4 + 0]; }
     get tileAnchorY(): number { return this._structArray.float32[this._pos4 + 1]; }
     get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 4]; }
@@ -1603,7 +1512,7 @@ export class SymbolLineVertexArray extends StructArrayLayout2i4 {
 register(SymbolLineVertexArray, 'SymbolLineVertexArray');
 
 class FeatureIndexStruct extends Struct {
-    override _structArray: FeatureIndexArray;
+    declare _structArray: FeatureIndexArray;
     get featureIndex(): number { return this._structArray.uint32[this._pos4 + 0]; }
     get sourceLayerIndex(): number { return this._structArray.uint16[this._pos2 + 2]; }
     get bucketIndex(): number { return this._structArray.uint16[this._pos2 + 3]; }
@@ -1643,7 +1552,7 @@ export class FillExtrusionCentroidArray extends StructArrayLayout2ui4 {
 register(FillExtrusionCentroidArray, 'FillExtrusionCentroidArray');
 
 class FillExtrusionWallStruct extends Struct {
-    override _structArray: FillExtrusionWallArray;
+    declare _structArray: FillExtrusionWallArray;
     get a_join_normal_inside0(): number { return this._structArray.int16[this._pos2 + 0]; }
     get a_join_normal_inside1(): number { return this._structArray.int16[this._pos2 + 1]; }
     get a_join_normal_inside2(): number { return this._structArray.int16[this._pos2 + 2]; }

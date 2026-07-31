@@ -50,10 +50,10 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
     type: T;
     provider?: string;
     id: string;
-    scope: string;
+    scope!: string;
     minzoom: number;
     maxzoom: number;
-    url: string;
+    url!: string;
     scheme: string;
     attribution: string | undefined;
     // eslint-disable-next-line camelcase
@@ -71,8 +71,8 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
     roundZoom: boolean | undefined;
     reparseOverscaled: boolean | undefined;
     dispatcher: Dispatcher;
-    map: Map;
-    tiles: Array<string>;
+    map!: Map;
+    tiles!: Array<string>;
 
     _loaded: boolean;
     _options: (RasterSourceSpecification | RasterDEMSourceSpecification | RasterArraySourceSpecification) & {provider?: string | false};

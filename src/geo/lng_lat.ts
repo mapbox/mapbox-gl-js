@@ -233,8 +233,8 @@ export default LngLat;
  * const llb = new mapboxgl.LngLatBounds(sw, ne);
  */
 export class LngLatBounds {
-    _ne: LngLat;
-    _sw: LngLat;
+    _ne!: LngLat;
+    _sw!: LngLat;
 
     constructor(sw?: [number, number, number, number] | [LngLatLike, LngLatLike] | LngLatLike, ne?: LngLatLike) {
         if (!sw) {

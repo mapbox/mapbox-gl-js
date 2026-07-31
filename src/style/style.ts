@@ -304,7 +304,7 @@ const defaultTransition = {duration: 300, delay: 0};
  */
 class Style extends Evented<MapEvents> {
     map: MapboxMap;
-    stylesheet: StyleSpecification;
+    stylesheet!: StyleSpecification;
     dispatcher: Dispatcher;
     imageManager: ImageManager;
     glyphManager: GlyphManager;
@@ -312,19 +312,19 @@ class Style extends Evented<MapEvents> {
     indoorManager: IndoorManager | null;
     ambientLight: Lights<Ambient> | null | undefined;
     directionalLight: Lights<Directional> | null | undefined;
-    light: Light;
+    light!: Light;
     terrain: Terrain | null | undefined;
     disableElevatedTerrain: boolean | null | undefined;
     fog: Fog | null | undefined;
     snow: Snow | null | undefined;
     rain: Rain | null | undefined;
-    camera: CameraSpecification;
+    camera!: CameraSpecification;
     _styleColorTheme: StyleColorTheme;
     _styleColorThemeForScope: {
         [_: string]: StyleColorTheme;
     };
     transition: TransitionSpecification;
-    projection: ProjectionSpecification;
+    projection!: ProjectionSpecification;
 
     // Serializable identifier of style, which we use for telemetry
     globalId: string | null;
@@ -346,7 +346,7 @@ class Style extends Evented<MapEvents> {
     // Whether indoor is actually turned on by config (an indoor-source layer is visible),
     // not merely declared in the stylesheet. Cached so per-tile `isIndoorEnabled()` is cheap.
     _indoorEnabled: boolean;
-    _mergedSlots: Array<string>;
+    _mergedSlots!: Array<string>;
     _mergedSourceCaches: Record<string, SourceCache>;
     _mergedOtherSourceCaches: Record<string, SourceCache>;
     _mergedSymbolSourceCaches: Record<string, SourceCache>;
@@ -359,7 +359,7 @@ class Style extends Evented<MapEvents> {
     _crossSourceElevationActive: boolean;
     _clipLayerPresent: boolean;
 
-    _featuresetSelectors: Record<string, Array<FeaturesetSelector>>;
+    _featuresetSelectors!: Record<string, Array<FeaturesetSelector>>;
 
     _request: Cancelable | null | undefined;
     _spriteRequest: AbortController | null | undefined;
@@ -402,9 +402,9 @@ class Style extends Evented<MapEvents> {
     _importedAsBasemap: boolean;
 
     crossTileSymbolIndex: CrossTileSymbolIndex;
-    pauseablePlacement: PauseablePlacement;
-    placement: Placement;
-    z: number;
+    pauseablePlacement!: PauseablePlacement;
+    placement!: Placement;
+    z!: number;
 
     _has3DLayers: boolean;
     _hasCircleLayers: boolean;

@@ -26,8 +26,8 @@ const defaultOptions = {
  * @see [Example: Display map navigation controls](https://docs.mapbox.com/mapbox-gl-js/example/navigation/)
  */
 class KeyboardHandler implements Handler {
-    _enabled: boolean;
-    _active: boolean;
+    _enabled!: boolean;
+    _active!: boolean;
     _panStep: number;
     _bearingStep: number;
     _pitchStep: number;

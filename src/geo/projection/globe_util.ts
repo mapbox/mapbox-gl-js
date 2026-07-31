@@ -707,16 +707,16 @@ type GridWithLods = {
 };
 
 export class GlobeSharedBuffers {
-    _poleNorthVertexBuffer: VertexBuffer;
-    _poleSouthVertexBuffer: VertexBuffer;
-    _texturedPoleNorthVertexBuffer: VertexBuffer;
-    _texturedPoleSouthVertexBuffer: VertexBuffer;
-    _poleIndexBuffer: IndexBuffer;
-    _poleSegments: Array<SegmentVector>;
+    _poleNorthVertexBuffer!: VertexBuffer;
+    _poleSouthVertexBuffer!: VertexBuffer;
+    _texturedPoleNorthVertexBuffer!: VertexBuffer;
+    _texturedPoleSouthVertexBuffer!: VertexBuffer;
+    _poleIndexBuffer!: IndexBuffer;
+    _poleSegments!: Array<SegmentVector>;
 
-    _gridBuffer: VertexBuffer;
-    _gridIndexBuffer: IndexBuffer;
-    _gridSegments: Array<GridLodSegments>;
+    _gridBuffer!: VertexBuffer;
+    _gridIndexBuffer!: IndexBuffer;
+    _gridSegments!: Array<GridLodSegments>;
 
     constructor(context: Context) {
         this._createGrid(context);

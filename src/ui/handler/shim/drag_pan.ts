@@ -20,7 +20,7 @@ export default class DragPanHandler {
     _el: HTMLElement;
     _mousePan: MousePanHandler;
     _touchPan: TouchPanHandler;
-    _inertiaOptions: DragPanOptions;
+    _inertiaOptions!: DragPanOptions;
 
     /**
      * @private

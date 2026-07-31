@@ -87,11 +87,11 @@ export default class Marker extends Evented<MarkerEvents> {
     _offset: Point;
     _element: HTMLElement;
     _popup: Popup | null | undefined;
-    _lngLat: LngLat;
+    _lngLat!: LngLat;
     _pos: Point | null | undefined;
     _color: string;
     _scale: number;
-    _defaultMarker: boolean;
+    _defaultMarker!: boolean;
     _draggable: boolean;
     _clickTolerance: number;
     _isDragging: boolean;
@@ -103,13 +103,13 @@ export default class Marker extends Evented<MarkerEvents> {
     _rotationAlignment: string;
     _originalTabIndex: string | null | undefined; // original tabindex of _element
     _fadeTimer: number | null | undefined;
-    _updateFrameId: number;
+    _updateFrameId!: number;
     _updateMoving: () => void;
     _occludedOpacity: number;
     _altitude: number;
     _pointerEvents?: string;
-    _svgElement: Element;
-    _shadowElement: Element;
+    _svgElement!: Element;
+    _shadowElement!: Element;
 
     constructor(options?: MarkerOptions, legacyOptions?: MarkerOptions) {
         super();

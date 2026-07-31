@@ -55,7 +55,7 @@ class StyleLayer extends Evented {
     lut: LUT | null;
     metadata: unknown;
     type: LayerSpecification['type'] | 'custom';
-    source: string;
+    source!: string;
     sourceLayer: string | null | undefined;
     slot: string | null | undefined;
     minzoom: number | null | undefined;
@@ -67,16 +67,16 @@ class StyleLayer extends Evented {
     appearancesVersion: number;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _unevaluatedLayout: Layout<any>;
+    _unevaluatedLayout!: Layout<any>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    readonly layout: PossiblyEvaluated<any>;
+    readonly layout!: PossiblyEvaluated<any>;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _transitionablePaint: Transitionable<any>;
+    _transitionablePaint!: Transitionable<any>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _transitioningPaint: Transitioning<any>;
+    _transitioningPaint!: Transitioning<any>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    readonly paint: PossiblyEvaluated<any>;
+    readonly paint!: PossiblyEvaluated<any>;
 
     _featureFilter: FeatureFilter;
     _filterCompiled: boolean;

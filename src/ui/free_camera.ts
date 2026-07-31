@@ -98,7 +98,7 @@ class FreeCameraOptions {
     orientation: quat | null | undefined;
     _position: MercatorCoordinate | null | undefined;
     _elevation: Elevation | null | undefined;
-    _renderWorldCopies: boolean;
+    _renderWorldCopies!: boolean;
 
     constructor(position?: MercatorCoordinate | null, orientation?: quat | null) {
         this.position = position;
@@ -189,7 +189,7 @@ class FreeCameraOptions {
 
 class FreeCamera {
     _transform: mat4;
-    _orientation: quat;
+    _orientation!: quat;
 
     constructor(position?: vec3 | null, orientation?: quat | null) {
         this._transform = mat4.identity([]);

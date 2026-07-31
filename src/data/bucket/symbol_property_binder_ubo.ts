@@ -186,12 +186,12 @@ export class SymbolPropertyBinderUBO {
 
     // True when no data-driven property uses measure-light expressions.
     // When true, updateDynamicExpressions can be skipped on brightness-only changes.
-    isLightConstant: boolean;
+    isLightConstant!: boolean;
 
     // Bitmask: 1 = property is a constant camera (zoom-only) expression, computed in updateHeader.
     // CPU-only — camera properties go through u_spp_* uniforms (re-evaluated at render zoom),
     // not the GPU UBO, so this is not part of the header.
-    cameraMask: number;
+    cameraMask!: number;
 
     // Per-property zoom classification (ZOOM_* enum), one byte per property, computed in
     // updateHeader. CPU-side bookkeeping that decides which zoom range the evaluator computes; the

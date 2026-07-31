@@ -43,7 +43,7 @@ export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
 export default class HandlerInertia {
     _map: Map;
-    _inertiaBuffer: Array<{
+    _inertiaBuffer!: Array<{
         time: number;
         settings: InertiaSettings;
     }>;

@@ -61,7 +61,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
     // their first `decodeRasterArray`.
     _workerReady: Promise<void> | undefined;
 
-    override map: MapboxMap;
+    override map!: MapboxMap;
 
     /**
      * When `true`, the source will only load the tile header

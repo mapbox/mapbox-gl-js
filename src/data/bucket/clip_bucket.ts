@@ -32,7 +32,7 @@ class ClipBucket implements Bucket {
     zoom: number;
     layers: Array<ClipStyleLayer>;
     layerIds: Array<string>;
-    stateDependentLayers: Array<ClipStyleLayer>;
+    stateDependentLayers!: Array<ClipStyleLayer>;
     stateDependentLayerIds: Array<string>;
     hasPattern: boolean;
 

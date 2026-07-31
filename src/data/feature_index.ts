@@ -62,12 +62,12 @@ class FeatureIndex {
     promoteId?: PromoteIdSpecification;
     promoteIdExpression?: StyleExpression;
 
-    rawTileData: ArrayBuffer;
-    bucketLayerIDs: Array<Array<string>>;
+    rawTileData!: ArrayBuffer;
+    bucketLayerIDs!: Array<Array<string>>;
 
-    vtLayers: Record<string, VectorTileLayer>;
-    vtFeatures: Record<string, VectorTileFeature[]>;
-    sourceLayerCoder: DictionaryCoder;
+    vtLayers!: Record<string, VectorTileLayer>;
+    vtFeatures!: Record<string, VectorTileFeature[]>;
+    sourceLayerCoder!: DictionaryCoder;
     is3DTile: boolean; // 3D tile has no vector source layers
     serializedLayersCache: Map<string, LayerSpecification>;
 
@@ -162,7 +162,7 @@ class FeatureIndex {
             previousIndex = index;
 
             const match = this.featureIndexArray.get(index);
-            let featureGeometry = null;
+            let featureGeometry: Point[][] | null = null;
 
             if (this.is3DTile) {
                 this.loadMatchingModelFeature(result, match, query, tilespaceGeometry, transform, worldview);

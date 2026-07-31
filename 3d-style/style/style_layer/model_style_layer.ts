@@ -24,16 +24,16 @@ import type SourceCache from '../../../src/source/source_cache';
 import type {DEMSampler} from '../../../src/terrain/elevation';
 
 class ModelStyleLayer extends StyleLayer {
-    override type: 'model';
+    override type!: 'model';
 
-    override _unevaluatedLayout: Layout<LayoutProps>;
-    override layout: PossiblyEvaluated<LayoutProps>;
+    override _unevaluatedLayout!: Layout<LayoutProps>;
+    override layout!: PossiblyEvaluated<LayoutProps>;
 
-    override _transitionablePaint: Transitionable<PaintProps>;
-    override _transitioningPaint: Transitioning<PaintProps>;
-    override paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint!: Transitionable<PaintProps>;
+    override _transitioningPaint!: Transitioning<PaintProps>;
+    override paint!: PossiblyEvaluated<PaintProps>;
 
-    modelManager: ModelManager;
+    modelManager!: ModelManager;
     layer: ModelLayerSpecification;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {

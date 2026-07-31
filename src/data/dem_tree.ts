@@ -497,22 +497,22 @@ export function buildDemMipmap(dem: DEMData): Array<MipLevel> {
     let mip = new MipLevel(blockCount);
     const blockSize = 1 / blockCount;
     const {floatView, stride} = dem;
-    const blockBounds = [];
+    const blockBounds: number[] = [];
 
     for (let idx = 0; idx < blockCount * blockCount; idx++) {
         const by = Math.floor(idx / blockCount);
         const bx = idx % blockCount;
 
         // MIN: bilinear at the 4 corners (unchanged from original)
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         blockSamples(bx, by, blockSize, false, blockBounds);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         const e0 = sampleElevation(blockBounds[0], blockBounds[1], dem);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         const e1 = sampleElevation(blockBounds[2], blockBounds[1], dem);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         const e2 = sampleElevation(blockBounds[2], blockBounds[3], dem);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         const e3 = sampleElevation(blockBounds[0], blockBounds[3], dem);
         const blockMin = Math.min(e0, e1, e2, e3);
 
@@ -549,25 +549,23 @@ export function buildDemMipmap(dem: DEMData): Array<MipLevel> {
 
             // Sample elevation of all 4 children mip texels. 4 leaf nodes can be concatenated into a single
             // leaf if the total elevation difference is below the threshold value
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             blockSamples(x, y, 2, true, blockBounds);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const e0 = prevMip.getElevation(blockBounds[0], blockBounds[1]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             const e1 = prevMip.getElevation(blockBounds[2], blockBounds[1]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             const e2 = prevMip.getElevation(blockBounds[2], blockBounds[3]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             const e3 = prevMip.getElevation(blockBounds[0], blockBounds[3]);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const l0 = prevMip.isLeaf(blockBounds[0], blockBounds[1]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             const l1 = prevMip.isLeaf(blockBounds[2], blockBounds[1]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             const l2 = prevMip.isLeaf(blockBounds[2], blockBounds[3]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             const l3 = prevMip.isLeaf(blockBounds[0], blockBounds[3]);
 
             const minElevation = Math.min(e0.min, e1.min, e2.min, e3.min);

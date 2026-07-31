@@ -20,7 +20,7 @@ export interface IUniform<T> {
 class Uniform<T> implements IUniform<T> {
     gl: WebGL2RenderingContext;
     location: WebGLUniformLocation | null | undefined;
-    current: T;
+    current!: T;
     initialized: boolean;
 
     constructor(context: Context) {

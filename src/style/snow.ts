@@ -29,7 +29,7 @@ class Snow extends Evented {
     _transitionable: Transitionable<Props>;
     _transitioning: Transitioning<Props>;
     properties: PossiblyEvaluated<Props>;
-    _options: SnowSpecification;
+    _options!: SnowSpecification;
     scope: string;
 
     constructor(snowOptions: SnowSpecification | null | undefined, transform: Transform, scope: string, configOptions?: ConfigOptions | null) {

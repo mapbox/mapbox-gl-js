@@ -16,13 +16,13 @@ export const COLOR_RAMP_RES = 1024;
 export const COLOR_MIX_FACTOR = (Math.pow(COLOR_RAMP_RES, 2) - 1) / (255 * COLOR_RAMP_RES * (COLOR_RAMP_RES + 3));
 
 class RasterStyleLayer extends StyleLayer {
-    override type: 'raster';
+    override type!: 'raster';
 
-    override _transitionablePaint: Transitionable<PaintProps>;
-    override _transitioningPaint: Transitioning<PaintProps>;
-    override paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint!: Transitionable<PaintProps>;
+    override _transitioningPaint!: Transitioning<PaintProps>;
+    override paint!: PossiblyEvaluated<PaintProps>;
 
-    colorRamp: RGBAImage;
+    colorRamp!: RGBAImage;
     colorRampTexture: Texture | null | undefined;
 
     // Cache the currently-computed range so that we can call updateColorRamp

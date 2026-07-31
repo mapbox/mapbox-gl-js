@@ -42,7 +42,7 @@ class FillBucket implements Bucket {
     overscaling: number;
     layers: Array<FillStyleLayer>;
     layerIds: Array<string>;
-    stateDependentLayers: Array<FillStyleLayer>;
+    stateDependentLayers!: Array<FillStyleLayer>;
     stateDependentLayerIds: Array<string>;
     patternFeatures: Array<BucketFeature>;
     lut: LUT | null;

@@ -15,8 +15,8 @@ import type {Map, IControl, ControlPosition} from '../map';
 **/
 
 class LogoControl implements IControl {
-    _map: Map;
-    _container: HTMLElement;
+    _map!: Map;
+    _container!: HTMLElement;
 
     constructor() {
         bindAll(['_updateLogo', '_updateCompact'], this);

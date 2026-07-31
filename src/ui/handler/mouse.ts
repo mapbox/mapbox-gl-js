@@ -29,11 +29,11 @@ function buttonStillPressed(e: MouseEvent, button: number) {
 }
 
 class MouseHandler implements Handler {
-    _enabled: boolean;
-    _active: boolean;
+    _enabled!: boolean;
+    _active!: boolean;
     _lastPoint: Point | null | undefined;
     _eventButton: number | null | undefined;
-    _moved: boolean;
+    _moved!: boolean;
     _clickTolerance: number;
 
     constructor(options: {clickTolerance: number}) {

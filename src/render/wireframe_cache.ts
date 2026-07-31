@@ -4,8 +4,8 @@ import {LineIndexArray} from '../data/index_array_type';
 import type Context from '../gl/context';
 
 class CacheEntry {
-    buf: IndexBuffer;
-    lastUsedFrameIdx: number;
+    buf!: IndexBuffer;
+    lastUsedFrameIdx!: number;
 }
 
 const TimeoutFrames = 30;

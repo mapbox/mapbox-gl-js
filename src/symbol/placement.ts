@@ -278,8 +278,8 @@ export class Placement {
     variableOffsets: Partial<Record<CrossTileID, VariableOffset>>;
     placedOrientations: Partial<Record<CrossTileID, Orientation>>;
     commitTime: number;
-    prevZoomAdjustment: number;
-    lastPlacementChangeTime: number;
+    prevZoomAdjustment!: number;
+    lastPlacementChangeTime!: number;
     stale: boolean;
     fadeDuration: number;
     retainedQueryData: {
@@ -288,7 +288,7 @@ export class Placement {
     collisionGroups: CollisionGroups;
     prevPlacement: Placement | null | undefined;
     lastReplacementSourceUpdateTime: number;
-    zoomAtLastRecencyCheck: number;
+    zoomAtLastRecencyCheck!: number;
     collisionCircleArrays: Partial<Record<number, CollisionCircleArray>>;
     buildingIndex: BuildingIndex | null | undefined;
     frontCutoffStart: number;

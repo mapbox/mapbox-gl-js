@@ -42,10 +42,10 @@ class NavigationControl implements IControl {
     _map?: Map;
     options: NavigationControlOptions;
     _container: HTMLElement;
-    _zoomInButton: HTMLButtonElement;
-    _zoomOutButton: HTMLButtonElement;
-    _compass: HTMLButtonElement;
-    _compassIcon: HTMLElement;
+    _zoomInButton!: HTMLButtonElement;
+    _zoomOutButton!: HTMLButtonElement;
+    _compass!: HTMLButtonElement;
+    _compassIcon!: HTMLElement;
     _handler?: MouseRotateWrapper;
 
     constructor(options: NavigationControlOptions = {}) {
@@ -169,7 +169,7 @@ class MouseRotateWrapper {
     _clickTolerance: number;
     element: HTMLElement;
     mouseRotate: MouseRotateHandler;
-    mousePitch: MousePitchHandler;
+    mousePitch!: MousePitchHandler;
     _startPos: Point | null | undefined;
     _lastPos: Point | null | undefined;
 

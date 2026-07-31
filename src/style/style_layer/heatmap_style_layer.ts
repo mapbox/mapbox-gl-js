@@ -25,15 +25,15 @@ import type {LUT} from "../../util/lut";
 import type {ProgramName} from '../../render/program';
 
 class HeatmapStyleLayer extends StyleLayer {
-    override type: 'heatmap';
+    override type!: 'heatmap';
 
     heatmapFbo: Framebuffer | null | undefined;
-    colorRamp: RGBAImage;
+    colorRamp!: RGBAImage;
     colorRampTexture: Texture | null | undefined;
 
-    override _transitionablePaint: Transitionable<PaintProps>;
-    override _transitioningPaint: Transitioning<PaintProps>;
-    override paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint!: Transitionable<PaintProps>;
+    override _transitioningPaint!: Transitioning<PaintProps>;
+    override paint!: PossiblyEvaluated<PaintProps>;
 
     override createBucket(parameters: BucketParameters<this>): HeatmapBucket {
         return new HeatmapBucket(parameters);

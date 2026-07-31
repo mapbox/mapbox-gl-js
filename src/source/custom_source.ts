@@ -151,7 +151,7 @@ export interface CustomSourceInterface<T> {
 
 class CustomSource<T> extends Evented<SourceEvents> implements ISource {
     id: string;
-    scope: string;
+    scope!: string;
     type: 'custom';
     scheme: string;
     minzoom: number;
@@ -171,7 +171,7 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
     maxTileCacheSize?: number;
     reparseOverscaled: boolean | undefined;
 
-    map: Map;
+    map!: Map;
     _loaded: boolean;
     _dispatcher: Dispatcher;
     _dataType: DataType | null | undefined;

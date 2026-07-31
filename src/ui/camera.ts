@@ -204,18 +204,18 @@ class Camera extends Evented<MapEvents> {
     transform: Transform;
     _moving: boolean;
     _zooming: boolean;
-    _rotating: boolean;
-    _pitching: boolean;
-    _padding: boolean;
+    _rotating!: boolean;
+    _pitching!: boolean;
+    _padding!: boolean;
 
     _bearingSnap: number;
-    _easeStart: number;
-    _easeOptions: EasingOptions;
+    _easeStart!: number;
+    _easeOptions!: EasingOptions;
     _easeId: string | undefined;
     _respectPrefersReducedMotion: boolean;
 
-    _onEaseFrame: (_: number) => Transform | void | null | undefined;
-    _onEaseEnd: (easeId?: string) => void | null | undefined;
+    _onEaseFrame!: (_: number) => Transform | void | null | undefined;
+    _onEaseEnd!: (easeId?: string) => void | null | undefined;
     _easeFrameId: TaskID | null | undefined;
 
     handlers?: HandlerManager;

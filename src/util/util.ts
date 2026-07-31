@@ -260,7 +260,7 @@ export function asyncAll<Item, Result>(
     if (!array.length) { return callback(null, []); }
     let remaining = array.length;
     const results = new Array(array.length);
-    let error = null;
+    let error: Error | null | undefined = null;
     array.forEach((item, i) => {
         fn(item, (err, result) => {
             if (err) error = err;

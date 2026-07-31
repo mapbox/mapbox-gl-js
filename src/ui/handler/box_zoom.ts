@@ -16,11 +16,11 @@ class BoxZoomHandler implements Handler {
     _map: Map;
     _el: HTMLElement;
     _container: HTMLElement;
-    _enabled: boolean;
-    _active: boolean;
+    _enabled!: boolean;
+    _active!: boolean;
     _startPos: Point | null | undefined;
     _lastPos: Point | null | undefined;
-    _box: HTMLElement;
+    _box!: HTMLElement;
     _clickTolerance: number;
 
     /**

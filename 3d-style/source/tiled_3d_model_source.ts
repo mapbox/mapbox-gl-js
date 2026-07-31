@@ -26,10 +26,10 @@ import type {AJAXError} from '../../src/util/ajax';
 class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     type: 'batched-model';
     id: string;
-    scope: string;
+    scope!: string;
     minzoom: number;
     maxzoom: number;
-    tileBounds: TileBounds;
+    tileBounds!: TileBounds;
     roundZoom: boolean | undefined;
     reparseOverscaled: boolean | undefined;
     usedInConflation: boolean;
@@ -50,7 +50,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     _loaded: boolean;
     _options: ModelSourceSpecification;
     _tileJSONRequest: Cancelable | null | undefined;
-    map: Map;
+    map!: Map;
 
     onRemove: undefined;
     unloadTile: undefined;

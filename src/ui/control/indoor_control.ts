@@ -16,9 +16,9 @@ const VISIBLE_FLOORS = 3;
  *     .addControl(new mapboxgl.IndoorControl());
  */
 class IndoorControl implements IControl {
-    _map: Map | null;
-    _container: HTMLElement | null;
-    _model: IndoorControlModel | null;
+    _map!: Map | null;
+    _container!: HTMLElement | null;
+    _model!: IndoorControlModel | null;
     _visibleFloorStart: number;
     _lastSelectedFloorId: string | null;
 

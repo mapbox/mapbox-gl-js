@@ -115,9 +115,9 @@ function triangleAABBIntersect(
 const findHighestPointStack: number[] = [];
 
 export class ModelBVH {
-    _nodes: BvhNode[];
-    _indices: Uint32Array;
-    _vertices: Float32Array; // packed x,y,z per vertex
+    _nodes!: BvhNode[];
+    _indices!: Uint32Array;
+    _vertices!: Float32Array; // packed x,y,z per vertex
 
     serializeFromGltf(binData: Uint8Array, posMinData: Float32Array, posMaxData: Float32Array, idxData: Uint32Array): void {
         if (binData.length < 7) return;

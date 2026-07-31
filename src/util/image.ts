@@ -133,9 +133,9 @@ function copyImage<T extends RGBAImage | AlphaImage>(
 }
 
 export class AlphaImage {
-    width: number;
-    height: number;
-    data: Uint8Array;
+    width!: number;
+    height!: number;
+    data!: Uint8Array;
 
     constructor(size: Size, data?: Uint8Array | Uint8ClampedArray) {
         createImage(this, size, 1, data);
@@ -157,12 +157,12 @@ export class AlphaImage {
 // Not premultiplied, because ImageData is not premultiplied.
 // UNPACK_PREMULTIPLY_ALPHA_WEBGL must be used when uploading to a texture.
 export class RGBAImage {
-    width: number;
-    height: number;
+    width!: number;
+    height!: number;
 
     // data must be a Uint8Array instead of Uint8ClampedArray because texImage2D does not
     // support Uint8ClampedArray in all browsers
-    data: Uint8Array;
+    data!: Uint8Array;
 
     constructor(size: Size, data?: Uint8Array | Uint8ClampedArray) {
         createImage(this, size, 4, data);

@@ -89,8 +89,8 @@ class Context {
     vendor: string | null | undefined;
 
     // eslint-disable-next-line camelcase
-    extTextureFilterAnisotropic: EXT_texture_filter_anisotropic;
-    extTextureFilterAnisotropicMax: GLfloat;
+    extTextureFilterAnisotropic!: EXT_texture_filter_anisotropic;
+    extTextureFilterAnisotropicMax!: GLfloat;
     // eslint-disable-next-line camelcase
     extRenderToTextureHalfFloat: EXT_color_buffer_half_float;
     // eslint-disable-next-line camelcase
@@ -104,7 +104,7 @@ class Context {
         deleteQueryEXT: (query: WebGLQuery) => void;
     };
     // eslint-disable-next-line camelcase
-    extTextureFloatLinear: OES_texture_float_linear;
+    extTextureFloatLinear!: OES_texture_float_linear;
     options: ContextOptions;
     maxPointSize: number;
     extBlendFuncExtended: WebGL2BlendFuncExtended | null;

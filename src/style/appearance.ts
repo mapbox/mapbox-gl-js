@@ -23,7 +23,7 @@ export type ConditionCheckParams = {
 type AppearancePropertiesInput = Partial<Record<keyof AppearanceLayoutProps | keyof AppearancePaintProps, unknown>>;
 
 class SymbolAppearance {
-    condition: StyleExpression;
+    condition!: StyleExpression;
     name?: string;
     layoutProperties?: PossiblyEvaluated<AppearanceLayoutProps>;
     unevaluatedLayout?: Layout<AppearanceLayoutProps>;

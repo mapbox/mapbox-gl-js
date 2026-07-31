@@ -67,20 +67,20 @@ const getProperties = () => {
 };
 
 class SymbolStyleLayer extends StyleLayer {
-    override type: 'symbol';
+    override type!: 'symbol';
 
-    override _unevaluatedLayout: Layout<LayoutProps>;
-    override layout: PossiblyEvaluated<LayoutProps>;
+    override _unevaluatedLayout!: Layout<LayoutProps>;
+    override layout!: PossiblyEvaluated<LayoutProps>;
 
-    override _transitionablePaint: Transitionable<PaintProps>;
-    override _transitioningPaint: Transitioning<PaintProps>;
-    override paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint!: Transitionable<PaintProps>;
+    override _transitioningPaint!: Transitioning<PaintProps>;
+    override paint!: PossiblyEvaluated<PaintProps>;
 
     _colorAdjustmentMatrix: mat4;
-    _saturation: number;
-    _contrast: number;
-    _brightnessMin: number;
-    _brightnessMax: number;
+    _saturation!: number;
+    _contrast!: number;
+    _brightnessMin!: number;
+    _brightnessMax!: number;
 
     hasOcclusionOpacityProperties: boolean;
 

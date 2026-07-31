@@ -39,16 +39,16 @@ function unpackTerrarium(r: number, g: number, b: number): number {
 
 export default class DEMData {
     uid: number;
-    stride: number;
-    dim: number;
-    borderReady: boolean;
-    _tree: DemMinMaxQuadTree;
-    _modifiedForSources: {
+    stride!: number;
+    dim!: number;
+    borderReady!: boolean;
+    _tree!: DemMinMaxQuadTree;
+    _modifiedForSources!: {
         [key: string]: Array<CanonicalTileID>;
     };
-    _timestamp: number;
-    pixels: Uint8Array;
-    floatView: Float32Array;
+    _timestamp!: number;
+    pixels!: Uint8Array;
+    floatView!: Float32Array;
     get tree(): DemMinMaxQuadTree {
         if (!this._tree) this._buildQuadTree();
         return this._tree;

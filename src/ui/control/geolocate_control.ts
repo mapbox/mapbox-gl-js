@@ -135,27 +135,27 @@ type GeolocateControlEvents = {
  * @see [Example: Locate the user](https://www.mapbox.com/mapbox-gl-js/example/locate-user/)
  */
 class GeolocateControl extends Evented<GeolocateControlEvents> implements IControl {
-    _map: Map;
+    _map!: Map;
     options: GeolocateControlOptions;
-    _container: HTMLElement;
-    _dotElement: HTMLElement;
-    _circleElement: HTMLElement;
-    _geolocateButton: HTMLButtonElement;
-    _geolocationWatchID: number;
+    _container!: HTMLElement;
+    _dotElement!: HTMLElement;
+    _circleElement!: HTMLElement;
+    _geolocateButton!: HTMLButtonElement;
+    _geolocationWatchID!: number;
     _timeoutId?: number;
     _requestTimeoutId?: number;
-    _watchState: WatchState;
+    _watchState!: WatchState;
     _lastKnownPosition?: GeolocationPosition;
-    _userLocationDotMarker: Marker;
-    _accuracyCircleMarker: Marker;
-    _accuracy: number;
-    _setup: boolean; // set to true once the control has been setup
+    _userLocationDotMarker!: Marker;
+    _accuracyCircleMarker!: Marker;
+    _accuracy!: number;
+    _setup!: boolean; // set to true once the control has been setup
     _heading?: number;
     _updateMarkerRotationThrottled?: () => number;
 
     _numberOfWatches: number;
-    _noTimeout: boolean;
-    _supportsGeolocation: boolean;
+    _noTimeout!: boolean;
+    _supportsGeolocation!: boolean;
 
     constructor(options: GeolocateControlOptions = {}) {
         super();

@@ -152,7 +152,7 @@ class FootprintSegment {
     vertexCount: number;
     indexOffset: number;
     indexCount: number;
-    ringIndices: Array<number>;
+    ringIndices!: Array<number>;
     constructor() {
         this.vertexOffset = 0;
         this.vertexCount = 0;
@@ -529,14 +529,14 @@ type GroundQuad = {
 
 export class GroundEffect {
     vertexArray: FillExtrusionGroundLayoutArray;
-    vertexBuffer: VertexBuffer;
+    vertexBuffer!: VertexBuffer;
 
     hiddenByLandmarkVertexArray: FillExtrusionHiddenByLandmarkArray;
-    hiddenByLandmarkVertexBuffer: VertexBuffer;
-    _needsHiddenByLandmarkUpdate: boolean;
+    hiddenByLandmarkVertexBuffer!: VertexBuffer;
+    _needsHiddenByLandmarkUpdate!: boolean;
 
     indexArray: TriangleIndexArray;
-    indexBuffer: IndexBuffer;
+    indexBuffer!: IndexBuffer;
 
     groundRadiusArray: FillExtrusionGroundRadiusLayoutArray = null;
     groundRadiusBuffer: VertexBuffer = null;
@@ -813,24 +813,24 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
     overscaling: number;
     layers: Array<FillExtrusionStyleLayer>;
     layerIds: Array<string>;
-    stateDependentLayers: Array<FillExtrusionStyleLayer>;
+    stateDependentLayers!: Array<FillExtrusionStyleLayer>;
     stateDependentLayerIds: Array<string>;
     pixelRatio: number;
 
     layoutVertexArray: FillExtrusionLayoutArray;
-    layoutVertexBuffer: VertexBuffer;
+    layoutVertexBuffer!: VertexBuffer;
 
     centroidVertexArray: FillExtrusionCentroidArray;
-    centroidVertexBuffer: VertexBuffer;
+    centroidVertexBuffer!: VertexBuffer;
 
     wallVertexArray: FillExtrusionWallArray;
-    wallVertexBuffer: VertexBuffer;
+    wallVertexBuffer!: VertexBuffer;
 
     layoutVertexExtArray: FillExtrusionExtArray | null | undefined;
     layoutVertexExtBuffer: VertexBuffer | null | undefined;
 
     indexArray: TriangleIndexArray;
-    indexBuffer: IndexBuffer;
+    indexBuffer!: IndexBuffer;
 
     footprintSegments: FootprintSegmentArray;
     footprintVertices: PosArray;
@@ -838,22 +838,22 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
     hasPattern: boolean;
     edgeRadius: number;
-    wallMode: boolean;
+    wallMode!: boolean;
     programConfigurations: ProgramConfigurationSet<FillExtrusionStyleLayer>;
     segments: SegmentVector;
-    uploaded: boolean;
-    features: Array<{featureId: number, feature: BucketFeature}>;
+    uploaded!: boolean;
+    features!: Array<{featureId: number, feature: BucketFeature}>;
 
-    featuresOnBorder: Array<BorderCentroidData>;
-    borderFeatureIndices: Array<Array<number>>;
+    featuresOnBorder!: Array<BorderCentroidData>;
+    borderFeatureIndices!: Array<Array<number>>;
     centroidData: PartDataArray;
     buildingGroups: Map<number, {accX: number, accY: number, accCount: number, mergedMin: Point, mergedMax: Point, partIndices: Array<number>}>;
     // borders / borderDoneWithNeighborZ: 0 - left, 1, right, 2 - top, 3 - bottom
-    borderDoneWithNeighborZ: Array<number>;
-    selfDEMTileTimestamp: number;
-    borderDEMTileTimestamp: Array<number>;
-    needsCentroidUpdate: boolean;
-    tileToMeter: number; // cache conversion.
+    borderDoneWithNeighborZ!: Array<number>;
+    selfDEMTileTimestamp!: number;
+    borderDEMTileTimestamp!: Array<number>;
+    needsCentroidUpdate!: boolean;
+    tileToMeter!: number; // cache conversion.
     projection: ProjectionSpecification;
     activeReplacements: Array<Region>;
     replacementUpdateTime: number;

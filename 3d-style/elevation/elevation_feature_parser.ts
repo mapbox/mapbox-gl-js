@@ -31,8 +31,8 @@ type Convert = (value: any) => any;
 type Setter = (value: any) => void;
 
 class PropertyParser {
-    feature: VectorTileFeature;
-    private _geometry: Point[][];
+    feature!: VectorTileFeature;
+    private _geometry!: Point[][];
     private _valid = false;
 
     reset(feature: VectorTileFeature): PropertyParser {
@@ -68,7 +68,7 @@ class PropertyParser {
         return this._valid;
     }
 
-    private get(name: string, required, setter: Setter, convert?: Convert): PropertyParser {
+    private get(name: string, required: boolean, setter: Setter, convert?: Convert): PropertyParser {
         const value = Object.hasOwn(this.feature.properties, name) ? +this.feature.properties[name] : undefined;
         if (this._valid && value !== undefined && !Number.isNaN(value)) {
             if (convert) {

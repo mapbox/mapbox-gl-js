@@ -59,10 +59,10 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
     type: 'vector';
     provider?: string | false;
     id: string;
-    scope: string;
+    scope!: string;
     minzoom: number;
     maxzoom: number;
-    url: string;
+    url!: string;
     scheme: string;
     tileSize: number;
     minTileCacheSize?: number;
@@ -76,9 +76,9 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
     _options: VectorSourceSpecification & {provider?: string | false; collectResourceTiming: boolean};
     _collectResourceTiming: boolean;
     dispatcher: Dispatcher;
-    map: Map;
+    map!: Map;
     bounds?: [number, number, number, number] | null;
-    tiles: Array<string>;
+    tiles!: Array<string>;
     tileBounds?: TileBounds;
     reparseOverscaled?: boolean;
     isTileClipped?: boolean;

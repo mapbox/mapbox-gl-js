@@ -41,8 +41,8 @@ const unitAbbr = {
  * scale.setUnit('metric');
  */
 class ScaleControl implements IControl {
-    _map: Map;
-    _container: HTMLElement;
+    _map!: Map;
+    _container!: HTMLElement;
     _language?: string | string[];
     options: ScaleControlOptions;
 

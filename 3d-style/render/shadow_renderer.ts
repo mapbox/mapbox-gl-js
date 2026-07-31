@@ -169,7 +169,7 @@ class ShadowReceivers {
         return lastCascade + 1;
     }
 
-    receivers: Record<number, ShadowReceiver>;
+    receivers!: Record<number, ShadowReceiver>;
 }
 
 export class ShadowRenderer {
@@ -182,7 +182,7 @@ export class ShadowRenderer {
     _receivers: ShadowReceivers;
     _depthMode: DepthMode;
     _uniformValues: UniformValues<ShadowUniformsType>;
-    shadowDirection: vec3;
+    shadowDirection!: vec3;
     useNormalOffset: boolean;
 
     _forceDisable: boolean;

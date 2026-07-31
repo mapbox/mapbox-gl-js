@@ -32,7 +32,7 @@ class Struct {
     readonly _structArray: StructArray;
 
     // The following properties are defined on the prototype of sub classes.
-    size: number;
+    declare size: number;
 
     /**
      * @param {StructArray} structArray The StructArray the struct is stored in
@@ -101,18 +101,17 @@ const EMPTY_BUFFER = new ArrayBuffer(0);
 class StructArray implements IStructArrayLayout {
     capacity: number;
     length: number;
-    arrayBuffer: ArrayBuffer;
-    int8: Int8Array;
-    uint8: Uint8Array;
-    int16: Int16Array;
-    uint16: Uint16Array;
-    int32: Int32Array;
-    uint32: Uint32Array;
-    float32: Float32Array;
+    arrayBuffer!: ArrayBuffer;
+    int8!: Int8Array;
+    uint8!: Uint8Array;
+    int16!: Int16Array;
+    uint16!: Uint16Array;
+    int32!: Int32Array;
+    uint32!: Uint32Array;
+    float32!: Float32Array;
 
-    // The following properties are defined on the prototype.
-    members: Array<StructArrayMember>;
-    bytesPerElement: number;
+    // The following property is defined on the prototype.
+    declare bytesPerElement: number;
 
     _reallocCount: number;
 
@@ -253,8 +252,8 @@ class StructArray implements IStructArrayLayout {
     }
 
     destroy() {
-        this.int8 = this.uint8 = this.int16 = this.uint16 = this.int32 = this.uint32 = this.float32 = null;
-        this.arrayBuffer = null;
+        this.int8 = this.uint8 = this.int16 = this.uint16 = this.int32 = this.uint32 = this.float32 = null!;
+        this.arrayBuffer = null!;
     }
 }
 

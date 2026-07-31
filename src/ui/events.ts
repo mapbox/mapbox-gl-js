@@ -58,7 +58,7 @@ export class MapMouseEvent extends Event<MapEvents, MapMouseEventType> {
     /**
      * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
      */
-    override type: MapMouseEventType;
+    override type!: MapMouseEventType;
 
     /**
      * The `Map` object that fired the event.
@@ -68,17 +68,17 @@ export class MapMouseEvent extends Event<MapEvents, MapMouseEventType> {
     /**
      * The DOM event which caused the map event.
      */
-    originalEvent: MouseEvent;
+    originalEvent!: MouseEvent;
 
     /**
      * The pixel coordinates of the mouse cursor, relative to the map and measured from the top left corner.
      */
-    point: Point;
+    point!: Point;
 
     /**
      * The geographic location on the map of the mouse cursor.
      */
-    lngLat: LngLat;
+    lngLat!: LngLat;
 
     /**
      * If a single `layerId`(as a single string) or multiple `layerIds` (as an array of strings) were specified when adding the event listener with {@link Map#on},
@@ -198,40 +198,40 @@ export class MapTouchEvent extends Event<MapEvents, MapTouchEventType> {
     /**
      * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
      */
-    override type: MapTouchEventType;
+    override type!: MapTouchEventType;
 
     /**
      * The `Map` object that fired the event.
      */
-    override target: MapboxMap;
+    override target!: MapboxMap;
 
     /**
      * The DOM event which caused the map event.
      */
-    originalEvent: TouchEvent;
+    originalEvent!: TouchEvent;
 
     /**
      * The geographic location on the map of the center of the touch event points.
      */
-    lngLat: LngLat;
+    lngLat!: LngLat;
 
     /**
      * The pixel coordinates of the center of the touch event points, relative to the map and measured from the top left
      * corner.
      */
-    point: Point;
+    point!: Point;
 
     /**
      * The array of pixel coordinates corresponding to a
      * [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches) property.
      */
-    points: Array<Point>;
+    points!: Array<Point>;
 
     /**
      * The geographical locations on the map corresponding to a
      * [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches) property.
      */
-    lngLats: Array<LngLat>;
+    lngLats!: Array<LngLat>;
 
     /**
      * If a `layerId` was specified when adding the event listener with {@link Map#on}, `features` will be an array of
@@ -326,17 +326,17 @@ export class MapWheelEvent extends Event<MapEvents, MapWheelEventType> {
     /**
      * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
      */
-    override type: MapWheelEventType;
+    override type!: MapWheelEventType;
 
     /**
      * The `Map` object that fired the event.
      */
-    override target: MapboxMap;
+    override target!: MapboxMap;
 
     /**
      * The DOM event which caused the map event.
      */
-    originalEvent: WheelEvent;
+    originalEvent!: WheelEvent;
 
     /**
      * Prevents subsequent default processing of the event by the map.

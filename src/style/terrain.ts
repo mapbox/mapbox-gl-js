@@ -24,7 +24,7 @@ class Terrain extends Evented {
     scope: string;
     _transitionable: Transitionable<Props>;
     _transitioning: Transitioning<Props>;
-    properties: PossiblyEvaluated<Props>;
+    properties!: PossiblyEvaluated<Props>;
     drapeRenderMode: number;
 
     worldview: string | undefined;

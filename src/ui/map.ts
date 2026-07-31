@@ -461,10 +461,10 @@ export class Map extends Camera {
     style?: Style;
     painter: Painter;
     _container: HTMLElement;
-    _missingCSSCanary: HTMLElement;
-    _canvasContainer: HTMLElement;
-    _controlContainer: HTMLElement;
-    _controlPositions: {
+    _missingCSSCanary!: HTMLElement;
+    _canvasContainer!: HTMLElement;
+    _controlContainer!: HTMLElement;
+    _controlPositions!: {
         [p in ControlPosition]?: HTMLElement;
     };
     _interactive?: boolean;
@@ -479,10 +479,10 @@ export class Map extends Camera {
     _showCollisionBoxes?: boolean;
     _showPadding?: boolean;
     _showTileAABBs?: boolean;
-    _showOverdrawInspector: boolean;
+    _showOverdrawInspector!: boolean;
     _repaint?: boolean;
     _vertices?: boolean;
-    _canvas: HTMLCanvasElement;
+    _canvas!: HTMLCanvasElement;
     _minTileCacheSize?: number;
     _maxTileCacheSize?: number;
     _frame?: Cancelable;
@@ -490,15 +490,15 @@ export class Map extends Camera {
     _styleDirty?: boolean;
     _sourcesDirty?: boolean;
     _placementDirty?: boolean;
-    _loaded: boolean;
-    _fullyLoaded: boolean; // accounts for placement finishing as well
+    _loaded!: boolean;
+    _fullyLoaded!: boolean; // accounts for placement finishing as well
     _trackResize: boolean;
     _preserveDrawingBuffer: boolean;
     _failIfMajorPerformanceCaveat: boolean;
     _antialias: boolean;
     _refreshExpiredTiles: boolean;
-    _hash: Hash;
-    _delegatedListeners: {[type: string]: DelegatedListener[]};
+    _hash!: Hash;
+    _delegatedListeners!: {[type: string]: DelegatedListener[]};
     _fullscreenchangeEvent: 'fullscreenchange' | 'webkitfullscreenchange';
     _isInitialLoad: boolean;
     _shouldCheckAccess: boolean;
@@ -519,8 +519,8 @@ export class Map extends Camera {
     _fontstackCompositing: FontstackCompositing;
     _requestManager: RequestManager;
     _locale: Partial<typeof defaultLocale>;
-    _removed: boolean;
-    _speedIndexTiming: boolean;
+    _removed!: boolean;
+    _speedIndexTiming!: boolean;
     _clickTolerance: number;
     _cooperativeGestures: boolean;
     _silenceAuthErrors: boolean;
@@ -549,50 +549,50 @@ export class Map extends Camera {
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
      * Find more details and examples using `scrollZoom` in the {@link ScrollZoomHandler} section.
      */
-    scrollZoom: ScrollZoomHandler;
+    scrollZoom!: ScrollZoomHandler;
 
     /**
      * The map's {@link BoxZoomHandler}, which implements zooming using a drag gesture with the Shift key pressed.
      * Find more details and examples using `boxZoom` in the {@link BoxZoomHandler} section.
      */
-    boxZoom: BoxZoomHandler;
+    boxZoom!: BoxZoomHandler;
 
     /**
      * The map's {@link DragRotateHandler}, which implements rotating the map while dragging with the right
      * mouse button or with the Control key pressed. Find more details and examples using `dragRotate`
      * in the {@link DragRotateHandler} section.
      */
-    dragRotate: DragRotateHandler;
+    dragRotate!: DragRotateHandler;
 
     /**
      * The map's {@link DragPanHandler}, which implements dragging the map with a mouse or touch gesture.
      * Find more details and examples using `dragPan` in the {@link DragPanHandler} section.
      */
-    dragPan: DragPanHandler;
+    dragPan!: DragPanHandler;
 
     /**
      * The map's {@link KeyboardHandler}, which allows the user to zoom, rotate, and pan the map using keyboard
      * shortcuts. Find more details and examples using `keyboard` in the {@link KeyboardHandler} section.
      */
-    keyboard: KeyboardHandler;
+    keyboard!: KeyboardHandler;
 
     /**
      * The map's {@link DoubleClickZoomHandler}, which allows the user to zoom by double clicking.
      * Find more details and examples using `doubleClickZoom` in the {@link DoubleClickZoomHandler} section.
      */
-    doubleClickZoom: DoubleClickZoomHandler;
+    doubleClickZoom!: DoubleClickZoomHandler;
 
     /**
      * The map's {@link TouchZoomRotateHandler}, which allows the user to zoom or rotate the map with touch gestures.
      * Find more details and examples using `touchZoomRotate` in the {@link TouchZoomRotateHandler} section.
      */
-    touchZoomRotate: TouchZoomRotateHandler;
+    touchZoomRotate!: TouchZoomRotateHandler;
 
     /**
      * The map's {@link TouchPitchHandler}, which allows the user to pitch the map with touch gestures.
      * Find more details and examples using `touchPitch` in the {@link TouchPitchHandler} section.
      */
-    touchPitch: TouchPitchHandler;
+    touchPitch!: TouchPitchHandler;
 
     _contextCreateOptions: ContextOptions;
 

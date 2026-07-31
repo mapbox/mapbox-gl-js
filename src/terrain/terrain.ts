@@ -235,7 +235,7 @@ export class Terrain extends Elevation {
     terrainTileForTile: Partial<Record<number | string, Tile>>;
     prevTerrainTileForTile: Partial<Record<number | string, Tile>>;
     painter: Painter;
-    sourceCache: SourceCache;
+    sourceCache!: SourceCache;
     gridBuffer: VertexBuffer;
     gridIndexBuffer: IndexBuffer;
     gridSegments: SegmentVector;
@@ -244,17 +244,17 @@ export class Terrain extends Elevation {
         [fqid: string]: Array<ProxiedTileID>;
     };
     proxyCoords: Array<OverscaledTileID>;
-    proxyToSource: {
+    proxyToSource!: {
         [key: number]: {
             [key: string]: Array<ProxiedTileID>;
         };
     };
     proxySourceCache: ProxySourceCache;
-    renderingToTexture: boolean;
-    _style: Style;
+    renderingToTexture!: boolean;
+    _style!: Style;
     _mockSourceCache: MockSourceCache;
     orthoMatrix: Float32Array;
-    enabled: boolean;
+    enabled!: boolean;
     renderMode: number;
 
     _visibleDemTiles: Array<Tile>;
@@ -262,19 +262,19 @@ export class Terrain extends Elevation {
         [key: string]: boolean;
     };
     _overlapStencilMode: StencilMode;
-    _overlapStencilType: OverlapStencilType;
-    _stencilRef: number;
+    _overlapStencilType!: OverlapStencilType;
+    _stencilRef!: number;
 
     _exaggeration: number;
     _evaluationZoom: number | null | undefined;
-    _attenuationRange: [number, number] | null;
+    _attenuationRange!: [number, number] | null;
     _previousCameraAltitude: number | null | undefined;
     _previousUpdateTimestamp: number | null | undefined;
     _previousZoom: number;
-    _updateTimestamp: number;
+    _updateTimestamp!: number;
     _useVertexMorphing: boolean;
     pool: Array<FBO>;
-    renderedToTile: boolean;
+    renderedToTile!: boolean;
     _drapedRenderBatches: Array<RenderBatch>;
     _sharedDepthStencil: WebGLRenderbuffer | null | undefined;
 
@@ -289,7 +289,7 @@ export class Terrain extends Elevation {
             [key: number]: boolean;
         };
     };
-    invalidateRenderCache: boolean;
+    invalidateRenderCache!: boolean;
 
     _emptyDEMTexture: Texture | null | undefined;
     _initializing: boolean | null | undefined;

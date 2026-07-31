@@ -109,7 +109,7 @@ export class MapEventHandler implements Handler {
 
 export class BlockableMapEventHandler {
     _map: Map;
-    _delayContextMenu: boolean;
+    _delayContextMenu!: boolean;
     _contextMenuEvent: MouseEvent | null | undefined;
 
     constructor(map: Map) {

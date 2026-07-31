@@ -4,11 +4,11 @@ import assert from '../style-spec/util/assert';
 import type Point from '@mapbox/point-geometry';
 
 class PathInterpolator {
-    points: Array<Point>;
-    length: number;
-    paddedLength: number;
-    padding: number;
-    _distances: Array<number>;
+    points!: Array<Point>;
+    length!: number;
+    paddedLength!: number;
+    padding!: number;
+    _distances!: Array<number>;
 
     constructor(points_?: Array<Point> | null, padding_?: number | null) {
         this.reset(points_, padding_);

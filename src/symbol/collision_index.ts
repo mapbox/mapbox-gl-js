@@ -68,12 +68,12 @@ type CollisionKey = {bucketInstanceId: number; featureIndex: number; collisionGr
  * @private
  */
 class CollisionIndex implements CollisionDetector {
-    grid: Grid<CollisionKey>;
-    ignoredGrid: Grid<CollisionKey>;
-    transform: Transform;
-    pitchfactor: number;
-    screenRightBoundary: number;
-    screenBottomBoundary: number;
+    grid!: Grid<CollisionKey>;
+    ignoredGrid!: Grid<CollisionKey>;
+    transform!: Transform;
+    pitchfactor!: number;
+    screenRightBoundary!: number;
+    screenBottomBoundary!: number;
     gridRightBoundary: number;
     gridBottomBoundary: number;
     fogState: FogState | null | undefined;
@@ -343,7 +343,7 @@ class CollisionIndex implements CollisionDetector {
                 }
             }
 
-            let segments = [];
+            let segments: Point[][] = [];
 
             if (projectedPath.length > 0) {
                 // Quickly check if the path is fully inside or outside of the padded collision region.
@@ -369,7 +369,7 @@ class CollisionIndex implements CollisionDetector {
                     if (minx < screenPlaneMin.x || maxx > screenPlaneMax.x ||
                         miny < screenPlaneMin.y || maxy > screenPlaneMax.y) {
                         // Path partially visible, clip
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                         segments = clipLines(segments, screenPlaneMin.x, screenPlaneMin.y, screenPlaneMax.x, screenPlaneMax.y);
                     }
                 }
@@ -377,9 +377,9 @@ class CollisionIndex implements CollisionDetector {
 
             for (const seg of segments) {
                 // interpolate positions for collision circles. Add a small padding to both ends of the segment
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
                 assert(seg.length > 0);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                 interpolator.reset(seg, radius * 0.25);
 
                 let numCircles = 0;

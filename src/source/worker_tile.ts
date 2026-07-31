@@ -127,13 +127,13 @@ class WorkerTile {
     maxUniformBufferBindings: number | null | undefined;
     maxUniformBlockSizeDwords: number | null | undefined;
 
-    status: 'parsing' | 'done';
-    data: VectorTile;
-    collisionBoxArray: CollisionBoxArray;
+    status!: 'parsing' | 'done';
+    data!: VectorTile;
+    collisionBoxArray!: CollisionBoxArray;
 
-    abort: () => void | null | undefined;
+    abort!: () => void | null | undefined;
     reloadCallback?: WorkerSourceVectorTileCallback | null | undefined;
-    vectorTile: VectorTile;
+    vectorTile!: VectorTile;
     rasterizeTask: AbortController | null | undefined;
 
     constructor(params: WorkerSourceVectorTileRequest) {

@@ -68,13 +68,13 @@ class LayerPlacement {
 }
 
 class PauseablePlacement {
-    placement: Placement;
-    _done: boolean;
-    _currentPlacementIndex: number;
-    _forceFullPlacement: boolean;
-    _showCollisionBoxes: boolean;
+    placement!: Placement;
+    _done!: boolean;
+    _currentPlacementIndex!: number;
+    _forceFullPlacement!: boolean;
+    _showCollisionBoxes!: boolean;
     _inProgressLayer: LayerPlacement | null | undefined;
-    _fadeDuration: number;
+    _fadeDuration!: number;
     _retiredCI: CollisionDetector | null = null;
 
     startNewPlacement(

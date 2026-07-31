@@ -19,7 +19,7 @@ export function setsEqual(a: Set<string> | null, b: Set<string> | null): boolean
 
 export default class IndoorManager extends Evented<IndoorEvents> {
     _style: Style;
-    _selectedFloorId: string | null;
+    _selectedFloorId!: string | null;
     _closestBuildingId: string | null;
     _buildings: Record<string, IndoorBuilding> | null;
     _activeFloors: Set<string> | null;

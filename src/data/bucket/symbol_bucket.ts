@@ -305,25 +305,25 @@ const ICON_TRANSITIONING_STRIDE = 2;
 
 export class SymbolBuffers {
     layoutVertexArray: SymbolLayoutArray;
-    layoutVertexBuffer: VertexBuffer;
+    layoutVertexBuffer!: VertexBuffer;
 
     indexArray: TriangleIndexArray;
-    indexBuffer: IndexBuffer;
+    indexBuffer!: IndexBuffer;
 
     programConfigurations: ProgramConfigurationSet<SymbolStyleLayer>;
     segments: SegmentVector;
 
     dynamicLayoutVertexArray: SymbolDynamicLayoutArray;
-    dynamicLayoutVertexBuffer: VertexBuffer;
+    dynamicLayoutVertexBuffer!: VertexBuffer;
 
     opacityVertexArray: SymbolOpacityArray;
-    opacityVertexBuffer: VertexBuffer;
+    opacityVertexBuffer!: VertexBuffer;
 
     zOffsetVertexArray: ZOffsetVertexArray;
-    zOffsetVertexBuffer: VertexBuffer;
+    zOffsetVertexBuffer!: VertexBuffer;
 
     orientationVertexArray: SymbolOrientationArray;
-    orientationVertexBuffer: VertexBuffer;
+    orientationVertexBuffer!: VertexBuffer;
 
     iconTransitioningVertexArray: SymbolIconTransitioningArray;
     iconTransitioningVertexBuffer: VertexBuffer | null | undefined;
@@ -544,18 +544,18 @@ register(SymbolBuffers, 'SymbolBuffers', {omit: ['cachedBatchIndices', 'cachedBa
 class CollisionBuffers {
     layoutVertexArray: StructArray;
     layoutAttributes: Array<StructArrayMember>;
-    layoutVertexBuffer: VertexBuffer;
+    layoutVertexBuffer!: VertexBuffer;
 
     indexArray: TriangleIndexArray | LineIndexArray;
-    indexBuffer: IndexBuffer;
+    indexBuffer!: IndexBuffer;
 
     segments: SegmentVector;
 
     collisionVertexArray: CollisionVertexArray;
-    collisionVertexBuffer: VertexBuffer;
+    collisionVertexBuffer!: VertexBuffer;
 
     collisionVertexArrayExt: CollisionVertexExtArray;
-    collisionVertexBufferExt: VertexBuffer;
+    collisionVertexBufferExt!: VertexBuffer;
 
     constructor(
         LayoutArray: Class<StructArray>,
@@ -630,61 +630,61 @@ class SymbolBucket implements Bucket {
     overscaling: number;
     layers: Array<SymbolStyleLayer>;
     layerIds: Array<string>;
-    stateDependentLayers: Array<SymbolStyleLayer>;
+    stateDependentLayers!: Array<SymbolStyleLayer>;
     stateDependentLayerIds: Array<string>;
 
     index: number;
-    sdfIcons: boolean;
-    iconsInText: boolean;
-    iconsNeedLinear: boolean;
-    bucketInstanceId: number;
-    justReloaded: boolean;
+    sdfIcons!: boolean;
+    iconsInText!: boolean;
+    iconsNeedLinear!: boolean;
+    bucketInstanceId!: number;
+    justReloaded!: boolean;
     hasPattern: boolean;
     fullyClipped: boolean;
 
     textSizeData: SizeData;
     iconSizeData: SizeData;
 
-    glyphOffsetArray: GlyphOffsetArray;
-    lineVertexArray: SymbolLineVertexArray;
-    features: Array<SymbolFeature>;
+    glyphOffsetArray!: GlyphOffsetArray;
+    lineVertexArray!: SymbolLineVertexArray;
+    features!: Array<SymbolFeature>;
     featureAppearanceData: Map<number, AppearanceFeatureData>;
-    symbolInstances: SymbolInstanceArray;
+    symbolInstances!: SymbolInstanceArray;
     hasAnySecondaryIcon: boolean;
-    collisionArrays: Array<CollisionArrays>;
+    collisionArrays!: Array<CollisionArrays>;
     sortKeyRanges: Array<SortKeyRange>;
     pixelRatio: number;
-    tilePixelRatio: number;
-    compareText: {
+    tilePixelRatio!: number;
+    compareText!: {
         [_: string]: Array<Point>;
     };
     fadeStartTime: number;
     sortFeaturesByKey: boolean;
     sortFeaturesByY: boolean;
     canOverlap: boolean;
-    sortedAngle: number;
-    featureSortOrder: Array<number>;
+    sortedAngle!: number;
+    featureSortOrder!: Array<number>;
 
     collisionCircleArray: Array<number>;
     placementInvProjMatrix: mat4;
     placementViewportMatrix: mat4;
 
-    text: SymbolBuffers;
-    icon: SymbolBuffers;
-    textCollisionBox: CollisionBuffers;
-    iconCollisionBox: CollisionBuffers;
-    uploaded: boolean;
+    text!: SymbolBuffers;
+    icon!: SymbolBuffers;
+    textCollisionBox!: CollisionBuffers;
+    iconCollisionBox!: CollisionBuffers;
+    uploaded!: boolean;
     sourceLayerIndex: number;
     sourceID: string;
-    symbolInstanceIndexes: Array<number>;
+    symbolInstanceIndexes!: Array<number>;
     writingModes: Array<number>;
-    allowVerticalPlacement: boolean;
+    allowVerticalPlacement!: boolean;
     hasRTLText: boolean;
     projection: ProjectionSpecification;
     projectionInstance: Projection | null | undefined;
     hasAnyIconTextFit: boolean;
     hasAnyZOffset: boolean;
-    symbolInstanceIndexesSortedZOffset: Array<number>;
+    symbolInstanceIndexesSortedZOffset!: Array<number>;
     zOffsetSortDirty: boolean;
     zOffsetBuffersNeedUpload: boolean;
 
@@ -698,7 +698,7 @@ class SymbolBucket implements Bucket {
     localizable: boolean;
     maxUniformBufferBindings: number | null | undefined;
     maxUniformBlockSizeDwords: number | null | undefined;
-    iconAtlasPositions: ImagePositionMap;
+    iconAtlasPositions!: ImagePositionMap;
     hasAppearances: boolean | null;
     featureAppearances: FeatureAppearances | null;
 
@@ -1667,7 +1667,7 @@ class SymbolBucket implements Bucket {
                     availableImages,
                     textScaleFactor,
                     imageMap,
-                    layoutTextOffset: layout.get('text-offset').evaluate(evaluationFeature, featureStateForThis, canonical).map(v => v * ONE_EM) as [number, number],
+                    layoutTextOffset: layout.get('text-offset').evaluate(evaluationFeature, featureStateForThis, canonical).map((v): number => v * ONE_EM) as [number, number],
                     layoutTextSize: layoutTextSizeExpression.evaluate(evaluationFeature, featureStateForThis, canonical),
                     layoutTextRotate: layout.get('text-rotate').evaluate(evaluationFeature, featureStateForThis, canonical),
                     layoutMinZoomSize: layoutTextSizeExpression.evaluate(evaluationFeature, {zoom: textSizeDataMinZoom}, canonical),
@@ -2199,8 +2199,8 @@ class SymbolBucket implements Bucket {
         }
         const sin = Math.sin(angle);
         const cos = Math.cos(angle);
-        const rotatedYs = [];
-        const featureIndexes = [];
+        const rotatedYs: number[] = [];
+        const featureIndexes: number[] = [];
         const result: number[] = [];
 
         for (let i = 0; i < this.symbolInstances.length; ++i) {

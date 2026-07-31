@@ -18,17 +18,17 @@ import type {ProgramName} from '../../render/program';
 const COLOR_RAMP_RES = 256;
 
 class RasterParticleStyleLayer extends StyleLayer {
-    override type: 'raster-particle';
+    override type!: 'raster-particle';
 
-    override paint: PossiblyEvaluated<PaintProps>;
+    override paint!: PossiblyEvaluated<PaintProps>;
 
     // Shared rendering resources
 
-    colorRamp: RGBAImage;
+    colorRamp!: RGBAImage;
     colorRampTexture: Texture | null | undefined;
-    tileFramebuffer: Framebuffer;
-    particleFramebuffer: Framebuffer;
-    particlePositionRGBAImage: RGBAImage;
+    tileFramebuffer!: Framebuffer;
+    particleFramebuffer!: Framebuffer;
+    particlePositionRGBAImage!: RGBAImage;
 
     previousDrawTimestamp: number | null | undefined;
     lastInvalidatedAt: number;

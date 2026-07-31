@@ -259,7 +259,7 @@ function shapeText(
         lines = breakLines(logicalInput, lineBreaks);
     }
 
-    const positionedLines = [];
+    const positionedLines: PositionedLine[] = [];
     const shaping = {
         positionedLines,
         text: logicalInput.toString(),
@@ -274,7 +274,7 @@ function shapeText(
     };
 
     shapeLines(shaping, glyphMap, glyphPositions, imagePositions, lines, lineHeight, textAnchor, textJustify, writingMode, spacing, allowVerticalPlacement, layoutTextSizeThisZoom, textSizeFactor);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     if (isEmpty(positionedLines)) return undefined;
 
     return shaping;
@@ -456,7 +456,7 @@ function determineLineBreaks(
     if (!logicalInput)
         return [];
 
-    const potentialLineBreaks = [];
+    const potentialLineBreaks: Break[] = [];
     const targetWidth = determineAverageLineWidth(logicalInput, spacing, maxWidth, glyphMap, imagePositions, layoutTextSize, textSizeFactor);
 
     const hasServerSuggestedBreakpoints = logicalInput.text.includes("\u200b");
@@ -479,7 +479,7 @@ function determineLineBreaks(
                         i + 1,
                         currentX,
                         targetWidth,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                         potentialLineBreaks,
                         calculatePenalty(codePoint, logicalInput.getCodePoint(i + 1), ideographicBreak && hasServerSuggestedBreakpoints),
                         false));
@@ -492,7 +492,7 @@ function determineLineBreaks(
             logicalInput.length(),
             currentX,
             targetWidth,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             potentialLineBreaks,
             0,
             true));

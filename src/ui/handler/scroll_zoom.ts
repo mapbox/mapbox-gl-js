@@ -37,19 +37,19 @@ export type ScrollZoomHandlerOptions = {
 class ScrollZoomHandler implements Handler {
     _map: Map;
     _el: HTMLElement;
-    _enabled: boolean;
-    _active: boolean;
-    _zooming: boolean;
-    _aroundCenter: boolean;
-    _aroundPoint: Point;
-    _aroundCoord: MercatorCoordinate;
-    _type: 'wheel' | 'trackpad' | null;
-    _lastValue: number;
+    _enabled!: boolean;
+    _active!: boolean;
+    _zooming!: boolean;
+    _aroundCenter!: boolean;
+    _aroundPoint!: Point;
+    _aroundCoord!: MercatorCoordinate;
+    _type!: 'wheel' | 'trackpad' | null;
+    _lastValue!: number;
     _timeout?: number; // used for delayed-handling of a single wheel movement
-    _finishTimeout: number; // used to delay final '{move,zoom}end' events
+    _finishTimeout!: number; // used to delay final '{move,zoom}end' events
 
-    _lastWheelEvent: WheelEvent | null;
-    _lastWheelEventTime: number;
+    _lastWheelEvent!: WheelEvent | null;
+    _lastWheelEventTime!: number;
 
     _startZoom?: number;
     _targetZoom?: number;
@@ -64,8 +64,8 @@ class ScrollZoomHandler implements Handler {
     _defaultZoomRate: number;
     _wheelZoomRate: number;
 
-    _alertContainer: HTMLElement; // used to display the scroll zoom blocker alert
-    _alertTimer: number;
+    _alertContainer!: HTMLElement; // used to display the scroll zoom blocker alert
+    _alertTimer!: number;
 
     /**
      * @private

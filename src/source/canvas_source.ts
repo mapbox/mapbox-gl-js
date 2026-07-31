@@ -62,10 +62,10 @@ export type CanvasSourceOptions = {
 class CanvasSource extends ImageSource<'canvas'> {
     override options: CanvasSourceSpecification;
     animate: boolean;
-    canvas: HTMLCanvasElement;
-    play: () => void;
-    pause: () => void;
-    _playing: boolean;
+    canvas!: HTMLCanvasElement;
+    play!: () => void;
+    pause!: () => void;
+    _playing!: boolean;
 
     /**
      * @private

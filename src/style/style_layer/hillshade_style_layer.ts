@@ -9,11 +9,11 @@ import type {LUT} from "../../util/lut";
 import type {ProgramName} from '../../render/program';
 
 class HillshadeStyleLayer extends StyleLayer {
-    override type: 'hillshade';
+    override type!: 'hillshade';
 
-    override _transitionablePaint: Transitionable<PaintProps>;
-    override _transitioningPaint: Transitioning<PaintProps>;
-    override paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint!: Transitionable<PaintProps>;
+    override _transitioningPaint!: Transitioning<PaintProps>;
+    override paint!: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {

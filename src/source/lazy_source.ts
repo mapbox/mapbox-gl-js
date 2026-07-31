@@ -21,7 +21,7 @@ import type {SourceSpecification} from '../style-spec/types';
 class LazySource extends Evented<SourceEvents> implements ISource {
     type: Exclude<ISource['type'], undefined>;
     id: string;
-    scope: string;
+    scope!: string;
     minzoom: number;
     maxzoom: number;
     tileSize: number;

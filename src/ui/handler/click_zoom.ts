@@ -3,8 +3,8 @@ import type {Map} from '../map';
 import type {Handler, HandlerResult} from '../handler';
 
 export default class ClickZoomHandler implements Handler {
-    _enabled: boolean;
-    _active: boolean;
+    _enabled!: boolean;
+    _active!: boolean;
 
     constructor() {
         this.reset();

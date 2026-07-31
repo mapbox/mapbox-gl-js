@@ -216,13 +216,13 @@ function sortTriangles(centerLatitudes: number[], indices: TriangleIndexArray): 
 class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<T> {
     type: T;
     id: string;
-    scope: string;
+    scope!: string;
     minzoom: number;
     maxzoom: number;
     tileSize: number;
     url: string | null | undefined;
-    width: number;
-    height: number;
+    width!: number;
+    height!: number;
     minTileCacheSize?: number;
     maxTileCacheSize?: number;
     roundZoom: boolean | undefined;
@@ -242,13 +242,13 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     options: any;
     dispatcher: Dispatcher;
-    map: Map;
-    texture: Texture | UserManagedTexture | null;
-    image: ImageBitmap | ImageData;
+    map!: Map;
+    texture!: Texture | UserManagedTexture | null;
+    image!: ImageBitmap | ImageData;
     tileID?: CanonicalTileID;
     onNorthPole: boolean;
     onSouthPole: boolean;
-    _unsupportedCoords: boolean;
+    _unsupportedCoords!: boolean;
     _boundsArray: RasterBoundsArray | null | undefined;
     boundsBuffer: VertexBuffer | null | undefined;
     boundsSegments: SegmentVector | null | undefined;
@@ -256,13 +256,13 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
     elevatedGlobeIndexBuffer: IndexBuffer | null | undefined;
     elevatedGlobeSegments: SegmentVector | null | undefined;
     elevatedGlobeTrianglesCenterLongitudes: number[] | null | undefined;
-    maxLongitudeTriangleSize: number;
+    maxLongitudeTriangleSize!: number;
     elevatedGlobeGridMatrix: Float32Array | null | undefined;
     _loaded: boolean;
     _dirty: boolean;
     _imageRequest: AbortController | null | undefined;
-    perspectiveTransform: [number, number];
-    elevatedGlobePerspectiveTransform: [number, number];
+    perspectiveTransform!: [number, number];
+    elevatedGlobePerspectiveTransform!: [number, number];
 
     reload: undefined;
     abortTile: undefined;
@@ -657,7 +657,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
         // Indices
         {
             this.maxLongitudeTriangleSize = 0;
-            let elevatedGlobeTrianglesCenterLongitudes = [];
+            let elevatedGlobeTrianglesCenterLongitudes: number[] | null | undefined = [];
 
             let indices = new TriangleIndexArray();
 
@@ -699,10 +699,8 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
                 }
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             [elevatedGlobeTrianglesCenterLongitudes, indices] = sortTriangles(elevatedGlobeTrianglesCenterLongitudes, indices);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this.elevatedGlobeTrianglesCenterLongitudes = elevatedGlobeTrianglesCenterLongitudes;
             this.elevatedGlobeIndexBuffer = context.createIndexBuffer(indices);
         }

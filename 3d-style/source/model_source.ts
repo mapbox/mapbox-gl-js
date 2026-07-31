@@ -50,10 +50,10 @@ type ModelSourceModelInfo = {
 class ModelSource extends Evented<SourceEvents> implements ISource {
     type: 'model';
     id: string;
-    scope: string;
-    minzoom: number;
-    maxzoom: number;
-    tileSize: number;
+    scope!: string;
+    minzoom!: number;
+    maxzoom!: number;
+    tileSize!: number;
     minTileCacheSize?: number;
     maxTileCacheSize?: number;
     roundZoom: boolean | undefined;
@@ -65,8 +65,8 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
     vectorLayerIds?: never;
     rasterLayers?: never;
     rasterLayerIds?: never;
-    map: MapboxMap;
-    uri: string;
+    map!: MapboxMap;
+    uri!: string;
     models: Array<Model>;
     _options: ModelSourceSpecification;
     _abortController: AbortController | null;

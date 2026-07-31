@@ -246,12 +246,11 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     };
 
     // Extra buffers (colors, normals, texCoords)
-    const dynamicBuffers = [];
+    const dynamicBuffers: (VertexBuffer | null | undefined)[] | undefined = [];
 
     const shadowRenderer = painter.shadowRenderer;
     if (shadowRenderer) { shadowRenderer.useNormalOffset = false; }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     setupMeshDraw((programOptions.defines), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
 
     let fogMatrix: mat4 | null = null;
@@ -306,7 +305,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
 
     program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,
             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             undefined, dynamicBuffers);
 }
 
@@ -1445,7 +1444,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         const programOptions: CreateProgramParams = {
                             defines: []
                         };
-                        const dynamicBuffers = [];
+                        const dynamicBuffers: (VertexBuffer | null | undefined)[] | undefined = [];
 
                         const useNormalOffset = !!mesh.normalBuffer;
                         if (!isShadowPass && shadowRenderer) {
@@ -1453,7 +1452,6 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             shadowRenderer.useNormalOffset = useNormalOffset;
                         }
 
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         setupMeshDraw((programOptions.defines), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
                         if (!hasMapboxFeatures) {
                             programOptions.defines.push('DIFFUSE_SHADED');
@@ -1546,7 +1544,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
 
                             program.draw(painter, context.gl.TRIANGLES, depthModeRW, StencilMode.disabled, ColorMode.disabled, CullFaceMode.backCCW,
                                 uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                                 undefined, dynamicBuffers);
                         }
 
@@ -1555,7 +1553,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         const depthMode = !isLight ? depthModeRW : depthModeRO;
                         program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.backCCW,
                             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                             undefined, dynamicBuffers);
                     }
                 }

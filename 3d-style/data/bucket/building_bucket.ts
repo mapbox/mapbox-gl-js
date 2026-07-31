@@ -191,51 +191,51 @@ export function waitForBuildingGen(): Promise<void> {
 
 class BuildingBloomGeometry {
     layoutVertexArray = new BuildingPositionArray();
-    layoutVertexBuffer: VertexBuffer;
+    layoutVertexBuffer!: VertexBuffer;
 
     layoutAttenuationArray = new BuildingBloomAttenuationArray();
-    layoutAttenuationBuffer: VertexBuffer;
+    layoutAttenuationBuffer!: VertexBuffer;
 
     layoutColorArray = new BuildingColorArray();
-    layoutColorBuffer: VertexBuffer;
+    layoutColorBuffer!: VertexBuffer;
 
     indexArray = new TriangleIndexArray();
     indexArrayForConflation = new TriangleIndexArray();
-    indexBuffer: IndexBuffer;
+    indexBuffer!: IndexBuffer;
 
     segmentsBucket = new SegmentVector();
 }
 
 export class BuildingGeometry {
     layoutVertexArray: BuildingPositionArray;
-    layoutVertexBuffer: VertexBuffer;
+    layoutVertexBuffer!: VertexBuffer;
 
     layoutNormalArray: BuildingNormalArray;
-    layoutNormalBuffer: VertexBuffer;
+    layoutNormalBuffer!: VertexBuffer;
 
     layoutCentroidArray: BuildingCentroidArray;
-    layoutCentroidBuffer: VertexBuffer;
+    layoutCentroidBuffer!: VertexBuffer;
 
     layoutColorArray: BuildingColorArray;
-    layoutColorBuffer: VertexBuffer;
+    layoutColorBuffer!: VertexBuffer;
 
     layoutFacadePaintArray: BuildingFacadePaintArray = null;
-    layoutFacadePaintBuffer: VertexBuffer;
+    layoutFacadePaintBuffer!: VertexBuffer;
 
     layoutFacadeDataArray: BuildingFacadeDataArray = null;
-    layoutFacadeDataBuffer: VertexBuffer;
+    layoutFacadeDataBuffer!: VertexBuffer;
 
     layoutFacadeVerticalRangeArray: BuildingFacadeVerticalRangeArray = null;
-    layoutFacadeVerticalRangeBuffer: VertexBuffer;
+    layoutFacadeVerticalRangeBuffer!: VertexBuffer;
 
     layoutFloodLightDataArray: BuildingFloodLightWallRadiusArray;
-    layoutFloodLightDataBuffer: VertexBuffer;
+    layoutFloodLightDataBuffer!: VertexBuffer;
 
     layoutAOArray: StructArrayLayout1ub1;
 
     indexArray: TriangleIndexArray;
     indexArrayForConflation: TriangleIndexArray;
-    indexBuffer: IndexBuffer;
+    indexBuffer!: IndexBuffer;
 
     segmentsBucket = new SegmentVector();
 
@@ -306,20 +306,20 @@ export class BuildingBucket implements BucketWithGroundEffect {
     canonical: CanonicalTileID;
     layers: Array<BuildingStyleLayer>;
     layerIds: Array<string>;
-    stateDependentLayers: Array<BuildingStyleLayer>;
+    stateDependentLayers!: Array<BuildingStyleLayer>;
     stateDependentLayerIds: Array<string>;
 
     hasPattern: boolean;
     worldview: string;
 
     programConfigurations: ProgramConfigurationSet<BuildingStyleLayer>;
-    uploaded: boolean;
+    uploaded!: boolean;
     colorBufferUploaded = false;
 
     maxHeight: number = 0;
 
     projection: ProjectionSpecification;
-    tileToMeter: number;
+    tileToMeter!: number;
     groundEffect: GroundEffect;
     replacementUpdateTime: number = 0;
     activeReplacements: Region[] = [];

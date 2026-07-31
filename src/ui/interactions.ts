@@ -52,11 +52,11 @@ export type Interaction = {
  * `InteractionEvent` is an event object that is passed to the interaction handler.
  */
 export class InteractionEvent extends Event<MapEvents, MapInteractionEventType> {
-    override type: MapInteractionEventType;
-    override target: MapboxMap;
-    originalEvent: MouseEvent;
-    point: Point;
-    lngLat: LngLat;
+    override type!: MapInteractionEventType;
+    override target!: MapboxMap;
+    originalEvent!: MouseEvent;
+    point!: Point;
+    lngLat!: LngLat;
 
     /**
      * Prevents the event propagation to the next interaction in the stack.

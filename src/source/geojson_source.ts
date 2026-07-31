@@ -74,7 +74,7 @@ export type LoadGeoJSONRequest = GeoJSONWorkerOptions & {
 class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     type: 'geojson';
     id: string;
-    scope: string;
+    scope!: string;
     minzoom: number;
     maxzoom: number;
     tileSize: number;
@@ -95,14 +95,14 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     _data: GeoJSON.GeoJSON | string;
     _options: GeoJSONSourceSpecification;
     workerOptions: GeoJSONWorkerOptions;
-    map: MapboxMap;
+    map!: MapboxMap;
     actor: Actor<WorkerInbox>;
     _loaded: boolean;
     _coalesce: boolean | null | undefined;
     _metadataFired: boolean | null | undefined;
     _collectResourceTiming: boolean;
     _pendingLoad: AbortController | null | undefined;
-    _partialReload: boolean;
+    _partialReload!: boolean;
 
     hasTile: undefined;
     prepare: undefined;

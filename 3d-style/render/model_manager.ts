@@ -67,7 +67,7 @@ class ModelManager extends Evented {
         const modelIds = Object.keys(modelUris);
 
         const modelLoads: Promise<Model | null | undefined>[] = [];
-        const idsToLoad = [];
+        const idsToLoad: (string | number)[] = [];
         for (const modelId of modelIds) {
             const modelURI = modelUris[modelId];
             if (!this.hasURLBeenRequested(modelURI) || options.forceReload) {
@@ -88,13 +88,13 @@ class ModelManager extends Evented {
                     const {status} = results[i];
                     if (status === 'rejected') continue;
                     const {value} = results[i] as PromiseFulfilledResult<Model>;
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
                     if (!this.models[scope][idsToLoad[i]]) {
                         // Before promises getting resolved, models could have been deleted
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
                         this.models[scope][idsToLoad[i]] = {model: null, numReferences: 1};
                     }
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
                     this.models[scope][idsToLoad[i]].model = value;
                 }
                 this.numModelsLoading[scope] -= idsToLoad.length;

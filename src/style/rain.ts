@@ -30,7 +30,7 @@ class Rain extends Evented {
     _transitionable: Transitionable<Props>;
     _transitioning: Transitioning<Props>;
     properties: PossiblyEvaluated<Props>;
-    _options: RainSpecification;
+    _options!: RainSpecification;
     scope: string;
 
     constructor(rainOptions: RainSpecification | null | undefined, transform: Transform, scope: string, configOptions?: ConfigOptions | null) {

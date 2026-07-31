@@ -446,9 +446,9 @@ export class StylePropertyFunction<T> {
     _parameters: PropertyValueSpecification<T>;
     _specification: StylePropertySpecification;
 
-    kind: EvaluationKind;
-    evaluate: <T = unknown>(globals: GlobalProperties, feature?: Feature) => T;
-    interpolationFactor: (input: number, lower: number, upper: number) => number | null | undefined;
+    kind!: EvaluationKind;
+    evaluate!: <T = unknown>(globals: GlobalProperties, feature?: Feature) => T;
+    interpolationFactor!: (input: number, lower: number, upper: number) => number | null | undefined;
     zoomStops: Array<number> | null | undefined;
 
     constructor(parameters: PropertyValueSpecification<T>, specification: StylePropertySpecification) {

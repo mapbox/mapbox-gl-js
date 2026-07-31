@@ -6,10 +6,10 @@ import {easeCubicInOut} from './util';
  * @private
  */
 class EasedVariable {
-    _start: number;
-    _end: number;
-    _startTime: number;
-    _endTime: number;
+    _start!: number;
+    _end!: number;
+    _startTime!: number;
+    _endTime!: number;
 
     constructor(initialValue: number) {
         this.jumpTo(initialValue);

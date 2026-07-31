@@ -116,10 +116,10 @@ export default class Popup extends Evented<PopupEvents> {
     _container: HTMLElement | undefined;
     _closeButton: HTMLElement | null | undefined;
     _tip: HTMLElement | null | undefined;
-    _lngLat: LngLat;
-    _trackPointer: boolean;
+    _lngLat!: LngLat;
+    _trackPointer!: boolean;
     _pos: Point | null | undefined;
-    _anchor: Anchor;
+    _anchor!: Anchor;
     _classList: Set<string>;
     _marker: Marker | null | undefined;
     _altitude: number;

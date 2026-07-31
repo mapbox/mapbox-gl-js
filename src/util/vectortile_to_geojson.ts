@@ -25,8 +25,8 @@ class Feature implements GeoJSONFeature {
     _y: number;
     _z: number;
 
-    layer: LayerSpecification;
-    source: string;
+    layer!: LayerSpecification;
+    source!: string;
     sourceLayer?: string;
     state?: FeatureState;
     variants?: Record<string, FeatureVariant[]>;
@@ -111,7 +111,7 @@ export type FeatureVariant = {
  * Unlike features returned for root style featuresets, `TargetFeature` omits the `layer`, `source`, and `sourceLayer` properties if the feature belongs to import style.
  */
 export class TargetFeature extends Feature {
-    override variants: never;
+    override variants!: never;
 
     /**
      * The target descriptor of the feature.

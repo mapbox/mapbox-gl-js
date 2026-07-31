@@ -46,8 +46,8 @@ type EventCallback = (err?: Error | null) => void;
 export const AUTH_ERR_MSG: string = 'NO_ACCESS_TOKEN';
 
 export class RequestManager {
-    _skuToken: string;
-    _skuTokenExpiresAt: number;
+    _skuToken!: string;
+    _skuTokenExpiresAt!: number;
     _transformRequestFn: RequestTransformFunction | null | undefined;
     _customAccessToken: string | null | undefined;
     _silenceAuthErrors: boolean;
@@ -543,7 +543,7 @@ export class MapLoadEvent extends TelemetryEvent {
         [_: number]: boolean;
     };
     skuToken: string;
-    errorCb: EventCallback;
+    errorCb!: EventCallback;
 
     constructor() {
         super('map.load');
@@ -698,7 +698,7 @@ type MetricsEventPayload = {
     counters?: MetricsEventCounter[]
 };
 class MetricsEvent extends TelemetryEvent {
-    data: MetricsEventPayload;
+    data!: MetricsEventPayload;
     constructor(data?: MetricsEventPayload) {
         super('metrics');
         if (data) this.data = data;
@@ -740,7 +740,7 @@ export class MapSessionAPI extends TelemetryEvent {
         [_: number]: boolean;
     };
     skuToken: string;
-    errorCb: EventCallback;
+    errorCb!: EventCallback;
 
     constructor() {
         super('map.auth');

@@ -17,9 +17,9 @@ export class SingleTapRecognizer {
 
     numTouches: number;
     centroid: Point | null | undefined;
-    startTime: number;
-    aborted: boolean;
-    touches: Partial<Record<number | string, Point>>;
+    startTime!: number;
+    aborted!: boolean;
+    touches!: Partial<Record<number | string, Point>>;
 
     constructor(options: {
         numTouches: number;
@@ -85,9 +85,9 @@ export class TapRecognizer {
 
     singleTap: SingleTapRecognizer;
     numTaps: number;
-    lastTime: number;
+    lastTime!: number;
     lastTap: Point | null | undefined;
-    count: number;
+    count!: number;
 
     constructor(options: {
         numTaps: number;

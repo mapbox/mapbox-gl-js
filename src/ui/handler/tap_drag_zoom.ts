@@ -4,11 +4,11 @@ import type Point from '@mapbox/point-geometry';
 import type {Handler, HandlerResult} from '../handler';
 
 export default class TapDragZoomHandler implements Handler {
-    _enabled: boolean;
-    _active: boolean;
+    _enabled!: boolean;
+    _active!: boolean;
     _swipePoint: Point | null | undefined;
-    _swipeTouch: number;
-    _tapTime: number;
+    _swipeTouch!: number;
+    _tapTime!: number;
     _tap: TapRecognizer;
 
     constructor() {

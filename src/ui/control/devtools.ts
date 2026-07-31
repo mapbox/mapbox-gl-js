@@ -87,15 +87,15 @@ const CSS = `
  * @implements {IControl}
  */
 export class DevTools implements IControl {
-    _map: MapboxMap;
-    _pane: Pane;
+    _map!: MapboxMap;
+    _pane!: Pane;
 
-    _container: HTMLElement;
-    _styleElement: HTMLStyleElement;
+    _container!: HTMLElement;
+    _styleElement!: HTMLStyleElement;
 
     _loaded: boolean;
     _folders: Map<FolderApi, FolderEntry>;
-    _storageKey: string;
+    _storageKey!: string;
     _savedState: SavedState | null;
     _pendingScrollTop: number | null;
 

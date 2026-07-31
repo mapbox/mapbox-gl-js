@@ -10,8 +10,8 @@ export type LayerConfigs = Record<string, LayerSpecification>;
 export type Family<Layer extends TypedStyleLayer> = Array<Layer>;
 
 class StyleLayerIndex {
-    scope: string;
-    familiesBySource: Record<string, Record<string, Array<Family<TypedStyleLayer>>>>;
+    scope!: string;
+    familiesBySource!: Record<string, Record<string, Array<Family<TypedStyleLayer>>>>;
     keyCache: Record<string, string>;
 
     _layerConfigs: LayerConfigs;

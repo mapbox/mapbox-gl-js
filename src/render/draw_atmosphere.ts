@@ -59,7 +59,7 @@ class Atmosphere {
     atmosphereBuffer: AtmosphereBuffer | null | undefined;
     starsVx: VertexBuffer | null | undefined;
     starsIdx: IndexBuffer | null | undefined;
-    starsSegments: SegmentVector;
+    starsSegments!: SegmentVector;
     colorModeAlphaBlendedWriteRGB: ColorMode;
     colorModeWriteAlpha: ColorMode;
     updateNeeded: boolean;

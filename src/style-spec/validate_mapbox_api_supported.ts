@@ -87,7 +87,7 @@ function getSourcesErrors(sources: SourcesSpecification): {
     errors: Array<ValidationError>;
     sourcesCount: number;
 } {
-    const errors = [];
+    const errors: ValidationError[] = [];
     let sourcesCount = 0;
 
     Object.keys(sources).forEach((s: string, i: number) => {
@@ -101,7 +101,6 @@ function getSourcesErrors(sources: SourcesSpecification): {
         errors.push(...sourceErrors);
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return {errors, sourcesCount};
 }
 

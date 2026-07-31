@@ -29,14 +29,14 @@ export type AttributionControlOptions = {
  */
 class AttributionControl implements IControl {
     options: AttributionControlOptions;
-    _map: Map;
-    _container: HTMLElement;
-    _innerContainer: HTMLElement;
-    _compactButton: HTMLButtonElement;
+    _map!: Map;
+    _container!: HTMLElement;
+    _innerContainer!: HTMLElement;
+    _compactButton!: HTMLButtonElement;
     _editLink?: HTMLAnchorElement;
-    _attribHTML: string;
-    styleId: string;
-    styleOwner: string;
+    _attribHTML!: string;
+    styleId!: string;
+    styleOwner!: string;
 
     constructor(options: AttributionControlOptions = {}) {
         this.options = options;

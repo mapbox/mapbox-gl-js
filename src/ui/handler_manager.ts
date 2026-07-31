@@ -50,8 +50,8 @@ type EventsInProgress = {
 const isMoving = (p: EventsInProgress) => p.zoom || p.drag || p.pitch || p.rotate;
 
 class RenderFrameEvent extends Event<{renderFrame: {timeStamp: number}}, 'renderFrame'> {
-    override type: 'renderFrame';
-    timeStamp: number;
+    override type!: 'renderFrame';
+    timeStamp!: number;
 }
 
 class TrackingEllipsoid {
@@ -118,7 +118,7 @@ class HandlerManager {
     _handlersById: {
         [key: string]: Handler;
     };
-    _updatingCamera: boolean;
+    _updatingCamera!: boolean;
     _changes: Array<[HandlerResult, EventsInProgress, Record<string, InputEvent | RenderFrameEvent>]>;
     _previousActiveHandlers: {
         [key: string]: Handler;

@@ -63,7 +63,7 @@ class ModelFeature {
 class PerModelAttributes {
     // If node has meshes, instancedDataArray gets an entry for each feature instance (used for all meshes or the node).
     instancedDataArray: InstanceVertexArray;
-    instancedDataBuffer: VertexBuffer;
+    instancedDataBuffer!: VertexBuffer;
     instancesEvaluatedElevation: Array<number>; // Gets added to DEM elevation of the instance to produce value in instancedDataArray.
     instancesRoadElevation: Array<number> | undefined;
 
@@ -147,16 +147,16 @@ class ModelBucket implements Bucket {
     overscaledZ: number;
     layers: Array<ModelStyleLayer>;
     layerIds: Array<string>;
-    stateDependentLayers: Array<ModelStyleLayer>;
+    stateDependentLayers!: Array<ModelStyleLayer>;
     stateDependentLayerIds: Array<string>;
     hasPattern: boolean;
     worldview: string | undefined;
 
     instancesPerModel: Record<string, PerModelAttributes>;
 
-    uploaded: boolean;
+    uploaded!: boolean;
 
-    tileToMeter: number;
+    tileToMeter!: number;
     projection: ProjectionSpecification;
 
     // elevation is baked into vertex buffer together with evaluated instance translation
@@ -168,7 +168,7 @@ class ModelBucket implements Bucket {
     maxVerticalOffset: number; // for tile AABB calculation
     maxScale: number; // across all dimensions, for tile AABB calculation
     maxHeight: number; // calculated from previous two, during rendering, when models are available.
-    isInsideFirstShadowMapFrustum: boolean; // evaluated during first shadows pass and cached here for the second shadow pass.
+    isInsideFirstShadowMapFrustum!: boolean; // evaluated during first shadows pass and cached here for the second shadow pass.
     lookup: Uint8Array | null | undefined;
     lookupDim: number;
     instanceCount: number;

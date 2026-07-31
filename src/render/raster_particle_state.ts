@@ -13,13 +13,13 @@ import type {RGBAImage} from "../util/image";
 
 class RasterParticleState {
     context: Context;
-    particleTexture0: Texture;
-    particleTexture1: Texture;
-    particleIndexBuffer: VertexBuffer;
-    particleSegment: SegmentVector;
+    particleTexture0!: Texture;
+    particleTexture1!: Texture;
+    particleIndexBuffer!: VertexBuffer;
+    particleSegment!: SegmentVector;
     targetColorTexture: Texture;
     backgroundColorTexture: Texture;
-    particleTextureDimension: number;
+    particleTextureDimension!: number;
     lastInvalidatedAt: number;
 
     constructor(

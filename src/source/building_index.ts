@@ -16,7 +16,7 @@ class BuildingIndex {
         visible: boolean;
         visibilityChanged: boolean;
     }>;
-    currentBuildingBuckets: Array<{
+    currentBuildingBuckets!: Array<{
         bucket: Bucket | null | undefined;
         tileID: OverscaledTileID;
         verticalScale: number;

@@ -36,9 +36,9 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
         joinNormals: [],
         indices: []
     };
-    const innerWall = [];
-    const outerWall = [];
-    const joinNormals = [];
+    const innerWall: Point[] = [];
+    const outerWall: Point[] = [];
+    const joinNormals: Point[] = [];
 
     // If the line has duplicate vertices at the ends, adjust start/length to remove them.
     let len = vertices.length;
@@ -161,9 +161,8 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
 
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     wallGeometry.geometry = [...innerWall, ...outerWall.reverse(), innerWall[0]];
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     wallGeometry.joinNormals = [...joinNormals, ...joinNormals.reverse(), joinNormals.at(-1)];
 
     // Build index buffer

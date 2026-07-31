@@ -39,11 +39,11 @@ import type {LoadVectorTileResult} from './load_vector_tile';
  */
 class SourceCache extends Evented {
     id: string;
-    map: MapboxMap;
+    map!: MapboxMap;
 
-    _source: ISource;
-    _sourceLoaded: boolean;
-    _sourceErrored: boolean;
+    _source!: ISource;
+    _sourceLoaded!: boolean;
+    _sourceErrored!: boolean;
     _tiles: Partial<Record<string | number, Tile>>;
     _prevLng: number | undefined;
     _cache: TileCache;
@@ -51,15 +51,15 @@ class SourceCache extends Evented {
     _cacheTimers: Partial<Record<number, number>>;
     _minTileCacheSize?: number;
     _maxTileCacheSize?: number;
-    _paused: boolean;
+    _paused!: boolean;
     _isRaster: boolean;
     _supportsFading: boolean;
     _isRasterElevatedOverTerrain: boolean;
-    _shouldReloadOnResume: boolean;
+    _shouldReloadOnResume!: boolean;
     _coveredTiles: Partial<Record<number | string, boolean>>;
-    transform: Transform;
-    used: boolean;
-    usedForTerrain: boolean;
+    transform!: Transform;
+    used!: boolean;
+    usedForTerrain!: boolean;
     castsShadows: boolean;
     tileCoverLift: number;
     _state: SourceFeatureState;

@@ -10,11 +10,11 @@ import type Tile from './tile';
  */
 class TileCache {
     max: number;
-    data: Partial<Record<string | number, Array<{
+    data!: Partial<Record<string | number, Array<{
         value: Tile;
         timeout: number | null | undefined;
     }>>>;
-    order: Array<number>;
+    order!: Array<number>;
     onRemove: (element: Tile) => void;
     /**
      * @param {number} max The max number of permitted values.

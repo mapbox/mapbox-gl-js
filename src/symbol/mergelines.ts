@@ -8,7 +8,7 @@ export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
     const rightIndex: {
         [_: string]: number;
     } = {};
-    const mergedFeatures = [];
+    const mergedFeatures: (SymbolFeature | undefined)[] = [];
     let mergedIndex = 0;
 
     function add(k: number) {
@@ -21,9 +21,8 @@ export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
         delete rightIndex[leftKey];
         rightIndex[rightKey] = i;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         mergedFeatures[i].geometry[0].pop();
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+
         mergedFeatures[i].geometry[0] = mergedFeatures[i].geometry[0].concat(geom[0]);
         return i;
     }
@@ -33,9 +32,8 @@ export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
         delete leftIndex[rightKey];
         leftIndex[leftKey] = i;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         mergedFeatures[i].geometry[0].shift();
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+
         mergedFeatures[i].geometry[0] = geom[0].concat(mergedFeatures[i].geometry[0]);
         return i;
     }
@@ -61,15 +59,14 @@ export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
         if ((leftKey in rightIndex) && (rightKey in leftIndex) && (rightIndex[leftKey] !== leftIndex[rightKey])) {
             // found lines with the same text adjacent to both ends of the current line, merge all three
             const j = mergeFromLeft(leftKey, rightKey, geom);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+
             const i = mergeFromRight(leftKey, rightKey, mergedFeatures[j].geometry);
 
             delete leftIndex[leftKey];
             delete rightIndex[rightKey];
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             rightIndex[getKey(text, mergedFeatures[i].geometry, true)] = i;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             mergedFeatures[j].geometry = null;
 
         } else if (leftKey in rightIndex) {
@@ -88,6 +85,5 @@ export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     return mergedFeatures.filter((f) => f.geometry);
 }

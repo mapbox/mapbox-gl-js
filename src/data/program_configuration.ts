@@ -157,7 +157,7 @@ class ConstantBinder implements UniformBinder {
     type: string;
     uniformNames: Array<string>;
     context: ProgramConfigurationContext;
-    lutExpression: PossiblyEvaluatedValue<string>;
+    lutExpression!: PossiblyEvaluatedValue<string>;
 
     constructor(value: unknown, names: Array<string>, type: string, context: ProgramConfigurationContext) {
         this.value = value;
@@ -196,8 +196,8 @@ class PatternConstantBinder implements UniformBinder {
     pattern: Array<number> | null | undefined;
     pixelRatio: number;
     patternTransition: Array<number> | null | undefined;
-    context: ProgramConfigurationContext;
-    lutExpression: PossiblyEvaluatedValue<string>;
+    context!: ProgramConfigurationContext;
+    lutExpression!: PossiblyEvaluatedValue<string>;
 
     constructor(value: unknown, names: Array<string>) {
         this.uniformNames = names.map(name => `u_${name}`);
@@ -246,8 +246,8 @@ class SourceExpressionBinder implements AttributeBinder {
     expression: PossiblyEvaluatedValue<any> | SourceExpression;
     type: string;
     maxValue: number;
-    context: ProgramConfigurationContext;
-    lutExpression: PossiblyEvaluatedValue<string>;
+    context!: ProgramConfigurationContext;
+    lutExpression!: PossiblyEvaluatedValue<string>;
 
     paintVertexArray: StructArray;
     paintVertexAttributes: Array<StructArrayMember>;
@@ -332,7 +332,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     useIntegerZoom: boolean;
     context: ProgramConfigurationContext;
     maxValue: number;
-    lutExpression: PossiblyEvaluatedValue<string>;
+    lutExpression!: PossiblyEvaluatedValue<string>;
 
     paintVertexArray: StructArray;
     paintVertexAttributes: Array<StructArrayMember>;
@@ -430,8 +430,8 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
 class PatternCompositeBinder implements AttributeBinder {
     expression: CompositeExpression;
     layerId: string;
-    context: ProgramConfigurationContext;
-    lutExpression: PossiblyEvaluatedValue<string>;
+    context!: ProgramConfigurationContext;
+    lutExpression!: PossiblyEvaluatedValue<string>;
 
     paintVertexArray: StructArray;
     paintVertexBuffer: VertexBuffer | null | undefined;

@@ -89,22 +89,22 @@ const getLineFloorwidthProperty = () => {
 };
 
 class LineStyleLayer extends StyleLayer {
-    override type: 'line';
+    override type!: 'line';
 
-    override _unevaluatedLayout: Layout<LayoutProps>;
-    override layout: PossiblyEvaluated<LayoutProps>;
+    override _unevaluatedLayout!: Layout<LayoutProps>;
+    override layout!: PossiblyEvaluated<LayoutProps>;
 
     gradientVersion: number;
-    stepInterpolant: boolean;
+    stepInterpolant!: boolean;
     borderGradientVersion: number;
-    borderStepInterpolant: boolean;
+    borderStepInterpolant!: boolean;
 
     hasElevatedBuckets: boolean;
     hasNonElevatedBuckets: boolean;
 
-    override _transitionablePaint: Transitionable<PaintProps>;
-    override _transitioningPaint: Transitioning<PaintProps>;
-    override paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint!: Transitionable<PaintProps>;
+    override _transitioningPaint!: Transitioning<PaintProps>;
+    override paint!: PossiblyEvaluated<PaintProps>;
 
     lineBlendFbos: LineBlendFbos | null;
     // Async GPU readback state for additive-mode density normalisation.

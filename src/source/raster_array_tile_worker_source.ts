@@ -26,13 +26,13 @@ class RasterArrayWorkerTile {
     tileID: OverscaledTileID;
     uid: number;
     source: string;
-    status: 'parsing' | 'done';
+    status!: 'parsing' | 'done';
 
     _mrt: MapboxRasterTile;
     _isHeaderLoaded: boolean;
     _entireBuffer?: ArrayBuffer;
 
-    abort: () => void;
+    abort!: () => void;
 
     constructor(params: WorkerSourceRasterArrayTileRequest) {
         // If the tile request is partial, set the cacheSize to MRT_DECODED_BAND_CACHE_SIZE.
