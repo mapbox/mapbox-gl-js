@@ -63,6 +63,7 @@
     "./src/types/point-like.ts",
     "./src/types/transferable.ts",
     "./src/ui/anchor.ts",
+    "./src/ui/handler/handler_util.ts",
     "./src/ui/default_locale.ts",
     "./src/util/browser.ts",
     "./src/util/config.ts",

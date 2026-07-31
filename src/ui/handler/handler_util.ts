@@ -9,7 +9,7 @@ export function indexTouches(touches: Array<Touch>, points: Array<Point>): Parti
     assert(touches.length === points.length);
     const obj: Record<string, Point> = {};
     for (let i = 0; i < touches.length; i++) {
-        obj[touches[i].identifier] = points[i];
+        obj[touches[i]!.identifier] = points[i]!;
     }
     return obj;
 }
