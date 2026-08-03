@@ -31,8 +31,10 @@ class KeyboardHandler implements Handler {
     _panStep: number;
     _bearingStep: number;
     _pitchStep: number;
-    _rotationDisabled: boolean;
+    _bearingDisabled: boolean;
+    _pitchDisabled: boolean;
     _panDisabled: boolean;
+    _zoomDisabled: boolean;
 
     /**
     * @private
@@ -42,8 +44,10 @@ class KeyboardHandler implements Handler {
         this._panStep = stepOptions.panStep;
         this._bearingStep = stepOptions.bearingStep;
         this._pitchStep = stepOptions.pitchStep;
-        this._rotationDisabled = false;
+        this._bearingDisabled = false;
+        this._pitchDisabled = false;
         this._panDisabled = false;
+        this._zoomDisabled = false;
     }
 
     blur() {
@@ -56,6 +60,7 @@ class KeyboardHandler implements Handler {
 
     keydown(e: KeyboardEvent): HandlerResult | null | undefined {
         if (e.altKey || e.ctrlKey || e.metaKey) return;
+        if (!this.isEnabled()) return;
 
         let zoomDir = 0;
         let bearingDir = 0;
@@ -117,14 +122,21 @@ class KeyboardHandler implements Handler {
             return;
         }
 
-        if (this._rotationDisabled) {
+        if (this._bearingDisabled) {
             bearingDir = 0;
+        }
+
+        if (this._pitchDisabled) {
             pitchDir = 0;
         }
 
         if (this._panDisabled) {
             xDir = 0;
             yDir = 0;
+        }
+
+        if (this._zoomDisabled) {
+            zoomDir = 0;
         }
 
         return {
@@ -176,7 +188,7 @@ class KeyboardHandler implements Handler {
      * const isKeyboardEnabled = map.keyboard.isEnabled();
      */
     isEnabled(): boolean {
-        return this._enabled;
+        return this._enabled && !(this._bearingDisabled && this._pitchDisabled && this._panDisabled && this._zoomDisabled);
     }
 
     /**
@@ -193,25 +205,40 @@ class KeyboardHandler implements Handler {
     }
 
     /**
-     * Disables the "keyboard pan/rotate" interaction, leaving the
+     * Disables the "keyboard pitch/rotate" interaction, leaving the
      * "keyboard zoom" interaction enabled.
      *
      * @example
      * map.keyboard.disableRotation();
      */
     disableRotation() {
-        this._rotationDisabled = true;
+        this._pitchDisabled = true;
+        this._bearingDisabled = true;
     }
 
     /**
-     * Enables the "keyboard pan/rotate" interaction.
+     * Enables the "keyboard pitch/rotate" interaction.
      *
      * @example
      * map.keyboard.enable();
      * map.keyboard.enableRotation();
      */
     enableRotation() {
-        this._rotationDisabled = false;
+        this._pitchDisabled = false;
+        this._bearingDisabled = false;
+    }
+
+    /**
+     * Returns a Boolean indicating whether the "keyboard pitch/rotate"
+     * interaction is enabled.
+     *
+     * @returns {boolean} `true` if the "keyboard pitch/rotate"
+     * interaction is enabled.
+     * @example
+     * const isRotationEnabled = map.keyboard.isRotationEnabled();
+     */
+    isRotationEnabled(): boolean {
+        return !this._pitchDisabled && !this._bearingDisabled;
     }
 
     /**
@@ -234,6 +261,120 @@ class KeyboardHandler implements Handler {
      */
     enablePan() {
         this._panDisabled = false;
+    }
+
+    /**
+     * Returns a Boolean indicating whether the "keyboard pan" interaction is
+     * enabled.
+     *
+     * @returns {boolean} `true` if the "keyboard pan" interaction is enabled.
+     * @example
+     * const isPanEnabled = map.keyboard.isPanEnabled();
+     */
+    isPanEnabled(): boolean {
+        return !this._panDisabled;
+    }
+
+    /**
+     * Disables the "keyboard zoom" interaction (plus/minus keys), leaving the
+     * "keyboard pan" and "keyboard rotate/pitch" interactions enabled.
+     *
+     * @example
+     * map.keyboard.disableZoom();
+     */
+    disableZoom() {
+        this._zoomDisabled = true;
+    }
+
+    /**
+     * Enables the "keyboard zoom" interaction (plus/minus keys).
+     *
+     * @example
+     * map.keyboard.enable();
+     * map.keyboard.enableZoom();
+     */
+    enableZoom() {
+        this._zoomDisabled = false;
+    }
+
+    /**
+     * Returns a Boolean indicating whether the "keyboard zoom" interaction is
+     * enabled.
+     *
+     * @returns {boolean} `true` if the "keyboard zoom" interaction is enabled.
+     * @example
+     * const isZoomEnabled = map.keyboard.isZoomEnabled();
+     */
+    isZoomEnabled(): boolean {
+        return !this._zoomDisabled;
+    }
+
+    /**
+     * Disables the "keyboard pitch" interaction (Shift+Up/Down), leaving the
+     * "keyboard pan" and "keyboard rotate" interactions enabled.
+     *
+     * @example
+     * map.keyboard.disablePitch();
+     */
+    disablePitch() {
+        this._pitchDisabled = true;
+    }
+
+    /**
+     * Enables the "keyboard pitch" interaction (Shift+Up/Down).
+     *
+     * @example
+     * map.keyboard.enable();
+     * map.keyboard.enablePitch();
+     */
+    enablePitch() {
+        this._pitchDisabled = false;
+    }
+
+    /**
+     * Returns a Boolean indicating whether the "keyboard pitch" interaction is
+     * enabled.
+     *
+     * @returns {boolean} `true` if the "keyboard pitch" interaction is enabled.
+     * @example
+     * const isPitchEnabled = map.keyboard.isPitchEnabled();
+     */
+    isPitchEnabled(): boolean {
+        return !this._pitchDisabled;
+    }
+
+    /**
+     * Disables the "keyboard bearing" interaction (Shift+Left/Right), leaving the
+     * "keyboard pan" and "keyboard pitch" interactions enabled.
+     *
+     * @example
+     * map.keyboard.disableBearing();
+     */
+    disableBearing() {
+        this._bearingDisabled = true;
+    }
+
+    /**
+     * Enables the "keyboard bearing" interaction (Shift+Left/Right).
+     *
+     * @example
+     * map.keyboard.enable();
+     * map.keyboard.enableBearing();
+     */
+    enableBearing() {
+        this._bearingDisabled = false;
+    }
+
+    /**
+     * Returns a Boolean indicating whether the "keyboard bearing" interaction is
+     * enabled.
+     *
+     * @returns {boolean} `true` if the "keyboard bearing" interaction is enabled.
+     * @example
+     * const isBearingEnabled = map.keyboard.isBearingEnabled();
+     */
+    isBearingEnabled(): boolean {
+        return !this._bearingDisabled;
     }
 }
 

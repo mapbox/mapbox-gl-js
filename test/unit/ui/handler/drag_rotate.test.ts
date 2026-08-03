@@ -999,6 +999,110 @@ test('DragRotateHandler does not begin rotation on spurious mousemove events', (
     map.remove();
 });
 
+test('DragRotateHandler isPitchEnabled reflects disablePitch/enablePitch', () => {
+    const map = createMap();
+    expect(map.dragRotate.isPitchEnabled()).toEqual(true);
+
+    map.dragRotate.disablePitch();
+    expect(map.dragRotate.isPitchEnabled()).toEqual(false);
+
+    map.dragRotate.enablePitch();
+    expect(map.dragRotate.isPitchEnabled()).toEqual(true);
+
+    map.remove();
+});
+
+test('DragRotateHandler isRotationEnabled reflects disable/enable independent of pitch', () => {
+    const map = createMap();
+    expect(map.dragRotate.isRotationEnabled()).toEqual(true);
+
+    map.dragRotate.disable();
+    expect(map.dragRotate.isRotationEnabled()).toEqual(false);
+
+    map.dragRotate.enable();
+    expect(map.dragRotate.isRotationEnabled()).toEqual(true);
+
+    // disabling pitch alone should not affect rotate
+    map.dragRotate.disablePitch();
+    expect(map.dragRotate.isRotationEnabled()).toEqual(true);
+
+    map.remove();
+});
+
+test('DragRotateHandler disableRotation() disables rotation but leaves pitch enabled', () => {
+    const map = createMap();
+
+    map.dragRotate.disableRotation();
+    expect(map.dragRotate.isRotationEnabled()).toEqual(false);
+    expect(map.dragRotate.isPitchEnabled()).toEqual(true);
+
+    map.remove();
+});
+
+test('DragRotateHandler enableRotation() restores rotation after disableRotation()', () => {
+    const map = createMap();
+
+    map.dragRotate.disableRotation();
+    map.dragRotate.enableRotation();
+    expect(map.dragRotate.isRotationEnabled()).toEqual(true);
+
+    map.remove();
+});
+
+test('DragRotateHandler disableRotation() persists across enable()/disable() cycles', () => {
+    const map = createMap();
+
+    map.dragRotate.disableRotation();
+    map.dragRotate.disable();
+    map.dragRotate.enable();
+    expect(map.dragRotate.isRotationEnabled()).toEqual(false);
+    expect(map.dragRotate.isPitchEnabled()).toEqual(true);
+
+    map.remove();
+});
+
+test('DragRotateHandler isEnabled reflects rotation and pitch independently when pitchWithRotate is true', () => {
+    const map = createMap();
+
+    expect(map.dragRotate.isEnabled()).toEqual(true);
+
+    // rotation disabled but pitch still enabled -> overall still enabled
+    map.dragRotate.disableRotation();
+    expect(map.dragRotate.isEnabled()).toEqual(true);
+
+    // pitch also disabled -> overall disabled
+    map.dragRotate.disablePitch();
+    expect(map.dragRotate.isEnabled()).toEqual(false);
+
+    // restoring rotation alone re-enables the interaction
+    map.dragRotate.enableRotation();
+    expect(map.dragRotate.isEnabled()).toEqual(true);
+
+    map.remove();
+});
+
+test('DragRotateHandler isEnabled ignores pitch state when pitchWithRotate is false', () => {
+    const map = createMap({pitchWithRotate: false});
+
+    expect(map.dragRotate.isEnabled()).toEqual(true);
+
+    map.dragRotate.disableRotation();
+    expect(map.dragRotate.isEnabled()).toEqual(false);
+
+    map.remove();
+});
+
+test('DragRotateHandler isPitchEnabled reflects pitchWithRotate: false even when not explicitly disabled', () => {
+    const map = createMap({pitchWithRotate: false});
+
+    // _pitchDisabled defaults to false, but the underlying mousePitch handler
+    // is never enabled when pitchWithRotate is false, so isPitchEnabled must
+    // reflect the actual handler state, not just the disabled flag.
+    expect(map.dragRotate.isPitchEnabled()).toBeFalsy();
+
+    map.remove();
+});
+
 test('DragRotateHandler does not begin a mouse drag if moved less than click tolerance', () => {
     const map = createMap({clickTolerance: 4});
 

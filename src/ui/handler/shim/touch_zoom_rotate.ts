@@ -75,9 +75,9 @@ export default class TouchZoomRotateHandler {
      * const isTouchZoomRotateEnabled = map.touchZoomRotate.isEnabled();
      */
     isEnabled(): boolean {
-        return this._touchZoom.isEnabled() &&
-            (this._rotationDisabled || this._touchRotate.isEnabled()) &&
-            (this._tapDragZoomDisabled || this._tapDragZoom.isEnabled());
+        return this._touchZoom.isEnabled() ||
+            (!this._rotationDisabled && this._touchRotate.isEnabled()) ||
+            (!this._tapDragZoomDisabled && this._tapDragZoom.isEnabled());
     }
 
     /**
@@ -116,6 +116,17 @@ export default class TouchZoomRotateHandler {
     }
 
     /**
+     * Returns a Boolean indicating whether the "pinch to rotate" interaction is enabled.
+     *
+     * @returns {boolean} `true` if the "pinch to rotate" interaction is enabled.
+     * @example
+     * const isRotationEnabled = map.touchZoomRotate.isRotationEnabled();
+     */
+    isRotationEnabled(): boolean {
+        return !this._rotationDisabled;
+    }
+
+    /**
      * Disables the "tap and drag to zoom" interaction (single-finger zoom by
      * tapping, then on a second tap holding and dragging vertically), leaving
      * pinch-zoom and pinch-rotate enabled. Useful on touchscreen-equipped
@@ -140,5 +151,16 @@ export default class TouchZoomRotateHandler {
     enableTapDragZoom() {
         this._tapDragZoomDisabled = false;
         if (this._touchZoom.isEnabled()) this._tapDragZoom.enable();
+    }
+
+    /**
+     * Returns a Boolean indicating whether the "tap and drag to zoom" interaction is enabled.
+     *
+     * @returns {boolean} `true` if the "tap and drag to zoom" interaction is enabled.
+     * @example
+     * const isTapDragZoomEnabled = map.touchZoomRotate.isTapDragZoomEnabled();
+     */
+    isTapDragZoomEnabled(): boolean {
+        return !this._tapDragZoomDisabled;
     }
 }

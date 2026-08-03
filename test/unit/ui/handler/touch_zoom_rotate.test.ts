@@ -342,6 +342,52 @@ test('TouchZoomRotateHandler does not zoom when touching an element not on the m
     map.remove();
 });
 
+test('TouchZoomRotateHandler isRotationEnabled reflects disableRotation/enableRotation', () => {
+    const map = createMap();
+    expect(map.touchZoomRotate.isRotationEnabled()).toEqual(true);
+
+    map.touchZoomRotate.disableRotation();
+    expect(map.touchZoomRotate.isRotationEnabled()).toEqual(false);
+
+    map.touchZoomRotate.enableRotation();
+    expect(map.touchZoomRotate.isRotationEnabled()).toEqual(true);
+
+    map.remove();
+});
+
+test('TouchZoomRotateHandler isEnabled reflects rotation and tap-drag-zoom independently of the base zoom state', () => {
+    const map = createMap();
+    expect(map.touchZoomRotate.isEnabled()).toEqual(true);
+
+    map.touchZoomRotate.disable();
+    expect(map.touchZoomRotate.isEnabled()).toEqual(false);
+
+    // rotation alone still enabled -> overall still enabled
+    map.touchZoomRotate.enable();
+    map.touchZoomRotate.disableRotation();
+    expect(map.touchZoomRotate.isEnabled()).toEqual(true);
+
+    // tap-drag-zoom alone disabled, rotation still enabled -> overall still enabled
+    map.touchZoomRotate.enableRotation();
+    map.touchZoomRotate.disableTapDragZoom();
+    expect(map.touchZoomRotate.isEnabled()).toEqual(true);
+
+    map.remove();
+});
+
+test('TouchZoomRotateHandler isTapDragZoomEnabled reflects disableTapDragZoom/enableTapDragZoom', () => {
+    const map = createMap();
+    expect(map.touchZoomRotate.isTapDragZoomEnabled()).toEqual(true);
+
+    map.touchZoomRotate.disableTapDragZoom();
+    expect(map.touchZoomRotate.isTapDragZoomEnabled()).toEqual(false);
+
+    map.touchZoomRotate.enableTapDragZoom();
+    expect(map.touchZoomRotate.isTapDragZoomEnabled()).toEqual(true);
+
+    map.remove();
+});
+
 test('Drag up with two fingers fires pitch event', () => {
     const map = createMap();
     const target = map.getCanvas();
