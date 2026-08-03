@@ -6,7 +6,8 @@
       "height": 50,
       "operations": [
         ["wait"],
-        ["setWorldview", "AD"]
+        ["setWorldview", "AD"],
+        ["wait"]
       ],
       "image-threshold": [
         {"platform-tag-contains": "native", "threshold": 0.022}
