@@ -4,7 +4,7 @@
     "test": {
       
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 2e-05}
+        {"platform-tag-contains": "", "threshold": 1e-06}
       ]
     }
   },

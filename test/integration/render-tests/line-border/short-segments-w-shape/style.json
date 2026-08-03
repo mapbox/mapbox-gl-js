@@ -1,0 +1,76 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "description": "Ensures that short segments in a wide line do not cause unclamped fake-round join anchors to extend beyond the geometry.",
+      "width": 512,
+      "height": 512,
+      "image-threshold": [
+        {
+          "platform-tag-contains": "",
+          "threshold": 1e-06
+        }
+      ]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 14,
+  "bearing": 0,
+  "pitch": 0,
+  "sources": {
+    "single-s": {
+      "type": "geojson",
+      "tolerance": 0,
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-0.005579, 0.000144],
+            [-0.000461, 0.000144],
+            [-0.000277, -0.000144],
+            [-0.000092, 0.000144],
+            [0.000092, -0.000144],
+            [0.000277, 0.000144],
+            [0.000461, -0.000144],
+            [0.005579, -0.000144]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "single-s",
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "rgb(60,110,180)",
+        "line-width": 44.0,
+        "line-border-color": "rgb(220,70,40)",
+        "line-border-width": 6.0
+      }
+    },
+    {
+      "id": "vertices",
+      "type": "circle",
+      "source": "single-s",
+      "paint": {
+        "circle-radius": 2.8,
+        "circle-color": "black"
+      }
+    }
+  ]
+}

@@ -877,9 +877,13 @@ class LineBucket implements Bucket {
                     this.addCurrentVertex(currentVertex, endNormal ? endNormal : prevNormal, -capScale, -capScale, segment, lineProgressFeatures);
                 }
 
-                const skipStraightEdges = dist <= 2 * sharpCornerOffset && currentJoin !== 'bevel';
+                // On short segments also pull the fake-round fan anchor from the miter point back to
+                // the unit circle: scaled by the line width, the miter point can land outside the
+                // geometry and its fan paints border color across neighbouring segments.
+                const skipStraightEdges = dist <= 1.0 * sharpCornerOffset && currentJoin !== 'bevel';
+                const joinExtent = skipStraightEdges ? 1.0 : miterLength;
                 const join = joinNormal.mult(lineTurnsLeft ? 1.0 : -1.0);
-                join._mult(miterLength);
+                join._mult(joinExtent);
                 const next = nextNormal.mult(lineTurnsLeft ? -1.0 : 1.0);
                 const prev = prevNormal.mult(lineTurnsLeft ? -1.0 : 1.0);
                 const lpf = this.evaluateLineProgressFeatures(this.distance);
