@@ -36,6 +36,7 @@
 
 ### Bug fixes 🐞
 
+- Improve accessibility of standard map control buttons by increasing their pointer target size
 - Fix raster-array out of bounds assertion error for non-mecator projections
 - Fix error when object-property strings were used in expressions
 - Fix wrong access token used on multi-map environments
