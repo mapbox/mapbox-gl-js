@@ -1969,6 +1969,17 @@ class Style extends Evented<MapEvents> {
         return source;
     }
 
+    _resolveLayerFragment(layerId: string): {layer: TypedStyleLayer, fragment: Style} | undefined {
+        const layer = this.getLayer(layerId);
+        if (!layer) {
+            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style.`)));
+            return;
+        }
+        const fragment = this.getFragmentStyle(layer.scope);
+        if (!fragment) return;
+        return {layer, fragment};
+    }
+
     handleIdle() {
         const painter = this.map.painter;
         if (!painter) return;
@@ -3487,12 +3498,8 @@ class Style extends Evented<MapEvents> {
                     fragment.setFeatureState({id: target.id, source, sourceLayer}, state);
                 }
             } else if ('layerId' in target.target) {
-                const {layerId} = target.target;
-                const layer = this.getLayer(layerId);
-                if (!layer) return;
-                const fragment = this.getFragmentStyle(layer.scope);
-                if (!fragment) return;
-                fragment.setFeatureState({id: target.id, source: layer.source, sourceLayer: layer.sourceLayer}, state);
+                const resolved = this._resolveLayerFragment(target.target.layerId);
+                resolved?.fragment.setFeatureState({id: target.id, source: resolved.layer.source, sourceLayer: resolved.layer.sourceLayer}, state);
             }
 
             return;
@@ -3536,12 +3543,8 @@ class Style extends Evented<MapEvents> {
                     fragment.removeFeatureState({id: target.id, source, sourceLayer}, key);
                 }
             } else if ('layerId' in target.target) {
-                const {layerId} = target.target;
-                const layer = this.getLayer(layerId);
-                if (!layer) return;
-                const fragment = this.getFragmentStyle(layer.scope);
-                if (!fragment) return;
-                fragment.removeFeatureState({id: target.id, source: layer.source, sourceLayer: layer.sourceLayer}, key);
+                const resolved = this._resolveLayerFragment(target.target.layerId);
+                resolved?.fragment.removeFeatureState({id: target.id, source: resolved.layer.source, sourceLayer: resolved.layer.sourceLayer}, key);
             }
 
             return;
@@ -3593,12 +3596,8 @@ class Style extends Evented<MapEvents> {
                     }
                 }
             } else if ('layerId' in target.target) {
-                const {layerId} = target.target;
-                const layer = this.getLayer(layerId);
-                if (!layer) return;
-                const fragment = this.getFragmentStyle(layer.scope);
-                if (!fragment) return;
-                finalState = fragment.getFeatureState({id: target.id, source: layer.source, sourceLayer: layer.sourceLayer});
+                const resolved = this._resolveLayerFragment(target.target.layerId);
+                finalState = resolved?.fragment.getFeatureState({id: target.id, source: resolved.layer.source, sourceLayer: resolved.layer.sourceLayer});
             }
 
             return finalState;
@@ -3635,13 +3634,8 @@ class Style extends Evented<MapEvents> {
                 fragment.removeFeatureState({source, sourceLayer});
             }
         } else {
-            const {layerId} = target;
-            const layer = this.getLayer(layerId);
-            if (!layer) {
-                this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be used to reset feature states.`)));
-                return;
-            }
-            this.removeFeatureState({source: layer.source, sourceLayer: layer.sourceLayer});
+            const resolved = this._resolveLayerFragment(target.layerId);
+            resolved?.fragment.removeFeatureState({source: resolved.layer.source, sourceLayer: resolved.layer.sourceLayer});
         }
     }
 
