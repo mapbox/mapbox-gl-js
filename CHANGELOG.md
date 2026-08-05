@@ -1,4 +1,4 @@
-## 3.28.0-rc.1
+## 3.28.0
 
 ### Breaking changes ⚠️
 - Disable `text-variable-anchor` when appearances are present.
