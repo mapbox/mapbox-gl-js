@@ -22,7 +22,7 @@ import Dispatcher from '../util/dispatcher';
 import Lights from '../../3d-style/style/lights';
 import {getProperties as getAmbientProps} from '../../3d-style/style/ambient_light_properties';
 import {getProperties as getDirectionalProps} from '../../3d-style/style/directional_light_properties';
-import {createExpression} from '../style-spec/expression/index';
+import {createExpression, createConfigExpression} from '../style-spec/expression/index';
 import {HD, prepareHD as prepareHDMain} from '../../modules/hd_main';
 import {prepareStandard as prepareStandardMain} from '../../modules/standard_main';
 import {HD_ROAD_COVERAGE_SOURCE_LAYER} from '../source/frc_coverage_snapshot';
@@ -79,7 +79,6 @@ import {StyleBOMUtils} from './style_bom_utils';
 import type IndoorManager from '../../3d-style/style/indoor_manager';
 import type {FontstackCompositing} from './glyph_loader';
 import type {PropertyValidatorOptions} from '../style-spec/validate/validate_property';
-import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type Tile from '../source/tile';
 import type GeoJSONSource from '../source/geojson_source';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
@@ -103,7 +102,6 @@ import type {
     ProjectionSpecification,
     TransitionSpecification,
     ConfigSpecification,
-    OptionSpecification,
     SchemaSpecification,
     CameraSpecification,
     FeaturesetsSpecification,
@@ -163,19 +161,6 @@ export type QueryRenderedFeaturesetParams = {
 // to continue to allow canvas sources to be added at runtime/updated in
 // smart setStyle (see https://github.com/mapbox/mapbox-gl-js/pull/6424):
 const emitValidationErrors = (evented: Evented, errors?: ValidationErrors | null) => _emitValidationErrors(evented, errors && errors.filter(error => error.identifier !== 'source.canvas'));
-
-// Parse a config option's default or value with the option's declared type
-// fed to the expression parser. This drives implicit string→color coercion
-// inside expressions (e.g. `["interpolate", ..., "hsl(...)"]` on a color
-// option). Skipped for array options (the parser doesn't model the schema's
-// `array: true` flag) and for primitive values (they keep their original
-// literal shape so `getConfig` round-trips unchanged).
-const createConfigExpression = (option: OptionSpecification, value: unknown) => {
-    const propertySpec = (option.type && !option.array && Array.isArray(value)) ?
-        {type: option.type, 'property-type': 'data-constant'} as unknown as StylePropertySpecification :
-        undefined;
-    return createExpression(value, propertySpec);
-};
 
 // Operations the diff algorithm may emit that we handle incrementally without a full restyle.
 // Maintained as a plain Set of string constants — see src/style-spec/diff.ts.
@@ -2890,7 +2875,7 @@ class Style extends Evented<MapEvents> {
         const schema = fragmentStyle.stylesheet.schema;
         if (!schema || !schema[key]) return;
 
-        const expressionParsed = createConfigExpression(schema[key], value);
+        const expressionParsed = createConfigExpression(value, schema[key]);
         if (expressionParsed.result !== 'success') {
             emitValidationErrors(this, expressionParsed.value);
             return;
@@ -2904,7 +2889,7 @@ class Style extends Evented<MapEvents> {
 
         let defaultExpression: StyleExpression['expression'] | undefined;
         const {minValue, maxValue, stepValue, type, values} = schema[key];
-        const defaultExpressionParsed = createConfigExpression(schema[key], schema[key].default);
+        const defaultExpressionParsed = createConfigExpression(schema[key].default, schema[key]);
         if (defaultExpressionParsed.result === 'success') {
             defaultExpression = defaultExpressionParsed.value.expression;
         }
@@ -2980,13 +2965,13 @@ class Style extends Evented<MapEvents> {
             let configExpression: StyleExpression['expression'] | undefined;
 
             const expression = schema[id].default;
-            const expressionParsed = createConfigExpression(schema[id], expression);
+            const expressionParsed = createConfigExpression(expression, schema[id]);
             if (expressionParsed.result === 'success') {
                 defaultExpression = expressionParsed.value.expression;
             }
 
             if (config && config[id] !== undefined) {
-                const expressionParsed = createConfigExpression(schema[id], config[id]);
+                const expressionParsed = createConfigExpression(config[id], schema[id]);
                 if (expressionParsed.result === 'success') {
                     configExpression = expressionParsed.value.expression;
                 }

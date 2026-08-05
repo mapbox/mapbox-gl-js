@@ -20,18 +20,32 @@ export default function validateOption(options: ValidatorOptions): ValidationErr
     const isArrayOption = isObject(optionValue) && unbundle(optionValue.array) === true;
     const declaredType = !isArrayOption && isObject(optionValue) ? unbundle(optionValue.type) : undefined;
 
+    const validateDefault = (elementOptions: ValidatorOptions): ValidationError[] => {
+        const defaultValue = elementOptions.value;
+        if (isObject(defaultValue)) {
+            // A plain object default (e.g. a GeoJSON geometry for an
+            // `object`-typed option) isn't an expression or a legacy
+            // function spec -- validate it as a bare value like a runtime
+            // `config` value, instead of running it through
+            // validateFunction()/validateExpression() (see `validate()`).
+            return validateSpec({...elementOptions, valueSpec: {...elementOptions.valueSpec, type: '*', expression: undefined} as unknown as typeof elementOptions.valueSpec});
+        }
+        // Only propagate the declared type when the default is an
+        // expression (array-form). Primitive defaults keep the previous
+        // permissive validation, mirroring the runtime parser's narrowing
+        // in style.ts/parser.cpp.
+        if (declaredType && Array.isArray(defaultValue)) {
+            return validateSpec({...elementOptions, valueSpec: {...elementOptions.valueSpec, type: declaredType} as typeof elementOptions.valueSpec});
+        }
+        return validateSpec(elementOptions);
+    };
+
     return validateObject({
         ...options,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         valueSpec: styleSpec.option,
-        objectElementValidators: declaredType ? {
-            // Only propagate the declared type when the default is an
-            // expression (array-form). Primitive defaults keep the previous
-            // permissive validation, mirroring the runtime parser's narrowing
-            // in style.ts/parser.cpp.
-            default: (elementOptions: ValidatorOptions): ValidationError[] => (Array.isArray(elementOptions.value) ?
-                validateSpec({...elementOptions, valueSpec: {...elementOptions.valueSpec, type: declaredType} as typeof elementOptions.valueSpec}) :
-                validateSpec(elementOptions)),
-        } as Record<string, ObjectElementValidator> : undefined,
+        objectElementValidators: {
+            default: validateDefault,
+        } as Record<string, ObjectElementValidator>,
     });
 }

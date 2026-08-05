@@ -21,7 +21,7 @@ import {
 } from '../util/properties';
 import {isFunction, createFunction} from '../function/index';
 import {Color} from './values';
-import {ColorType, StringType, NumberType, BooleanType, ValueType, FormattedType, ResolvedImageType, array} from './types';
+import {ColorType, StringType, NumberType, BooleanType, ValueType, FormattedType, ResolvedImageType, ObjectType, array} from './types';
 
 import type {Type, EvaluationKind} from './types';
 import type {Value} from './values';
@@ -29,7 +29,7 @@ import type {Expression} from './expression';
 import type {StylePropertySpecification} from '../style-spec';
 import type {Result} from '../util/result';
 import type {InterpolationType} from './definitions/interpolate';
-import type {PropertyValueSpecification} from '../types';
+import type {PropertyValueSpecification, OptionSpecification} from '../types';
 import type {FormattedSection} from './types/formatted';
 import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../types/tile_id';
@@ -196,6 +196,26 @@ export function createExpression(
     }
 
     return success(new StyleExpression(parsed, propertySpec, scope, options, iconImageUseTheme));
+}
+
+// Parse a config option's default or value with the option's declared type
+// fed to the expression parser. This drives implicit string→color coercion
+// inside expressions (e.g. `["interpolate", ..., "hsl(...)"]` on a color
+// option). Skipped for array options (the parser doesn't model the schema's
+// `array: true` flag) and for primitive values (they keep their original
+// literal shape so `getConfig` round-trips unchanged).
+//
+// A plain (non-array) object -- e.g. a GeoJSON geometry for an `object`-typed
+// option -- isn't valid expression syntax on its own (the parser rejects bare
+// objects to avoid ambiguity with legacy function specs); treat it like
+// `["literal", {...}]` instead, so both a schema `default` and a runtime
+// value can be written as a bare object.
+export function createConfigExpression(value: unknown, option: OptionSpecification = {} as OptionSpecification): Result<StyleExpression, Array<ParsingError>> {
+    const propertySpec = (option.type && !option.array && Array.isArray(value)) ?
+        {type: option.type, 'property-type': 'data-constant'} as unknown as StylePropertySpecification :
+        undefined;
+    const isBareObject = value !== null && typeof value === 'object' && !Array.isArray(value);
+    return createExpression(isBareObject ? ['literal', value] : value, propertySpec);
 }
 
 export class ZoomConstantExpression<Kind extends EvaluationKind> {
@@ -557,7 +577,8 @@ function getExpectedType(spec: StylePropertySpecification): Type {
         enum: StringType,
         boolean: BooleanType,
         formatted: FormattedType,
-        resolvedImage: ResolvedImageType
+        resolvedImage: ResolvedImageType,
+        object: ObjectType
     };
 
     if (spec.type === 'array') {

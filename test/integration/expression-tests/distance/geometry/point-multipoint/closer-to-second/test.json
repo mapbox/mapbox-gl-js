@@ -1,0 +1,44 @@
+{
+  "expression": [
+    "distance",
+    {
+      "type": "Point",
+      "coordinates": [8, 0]
+    }
+  ],
+  "inputs": [
+    [
+      {
+        "canonicalID": {"z": 0, "x": 0, "y": 0}
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPoint",
+          "coordinates": [[0, 0], [10, 0]]
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compiled": {
+      "type": "number",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "result": "success"
+    },
+    "outputs": [
+      224813.19039110324
+    ],
+    "serialized": [
+      "distance",
+      [
+        "literal",
+        {
+          "type": "Point",
+          "coordinates": [8, 0]
+        }
+      ]
+    ]
+  }
+}

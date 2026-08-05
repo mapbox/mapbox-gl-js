@@ -7,7 +7,7 @@ export type ConfigOptionValue = {
     minValue?: number;
     maxValue?: number;
     stepValue?: number;
-    type?: 'string' | 'number' | 'boolean' | 'color';
+    type?: 'string' | 'number' | 'boolean' | 'color' | 'object';
 };
 
 export type ConfigOptions = Map<string, ConfigOptionValue>;

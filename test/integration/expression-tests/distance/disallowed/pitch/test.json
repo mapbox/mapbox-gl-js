@@ -1,0 +1,22 @@
+{
+  "expression": [
+    "distance",
+    [
+      "case",
+      [">", ["pitch"], 30],
+      ["get", "geometry1"],
+      ["get", "geometry2"]
+    ]
+  ],
+  "expected": {
+    "compiled": {
+      "errors": [
+        {
+          "error": "'distance' expression may not depend on pitch.",
+          "key": ""
+        }
+      ],
+      "result": "error"
+    }
+  }
+}

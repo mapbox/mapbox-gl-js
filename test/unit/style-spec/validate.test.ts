@@ -27,6 +27,24 @@ test('errors from validate do not contain line numbers', () => {
     expect(result[0].line).toEqual(undefined);
 });
 
+test('validate accepts a bare-object default for an object-typed schema option', () => {
+    // A bare GeoJSON object -- not wrapped in ["literal", {...}] -- must be
+    // accepted as a schema option's default, matching the runtime parser
+    // (see createConfigExpression() in src/style-spec/expression/index.ts).
+    const style = {
+        version: 8,
+        schema: {
+            myGeom: {
+                type: 'object',
+                default: {type: 'Point', coordinates: [0, 0]}
+            }
+        },
+        sources: {},
+        layers: []
+    };
+    expect(validate(style, reference)).toEqual([]);
+});
+
 test('validate accepts a UTF-8 encoded Uint8Array', () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     const bytes = new TextEncoder().encode(fixtures['bad-color']);

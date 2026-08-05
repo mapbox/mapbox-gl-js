@@ -3055,6 +3055,36 @@ describe('Style#setConfigProperty', () => {
         fragmentStyle.setFilter('circle', null);
         expect(style._layerExpressionDependencies.get(layerFqid).isConfigDependent).toBe(false);
     });
+
+    test('Accepts a bare object (no ["literal", ...] wrapper) for an object-typed option', async () => {
+        const {style} = newStubStyle();
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const initialStyle = createStyleJSON({
+            imports: [{
+                id: 'standard',
+                url: '/standard.json',
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                data: createStyleJSON({
+                    schema: {
+                        geom: {
+                            type: 'object',
+                            default: {type: 'Point', coordinates: [0, 0]}
+                        }
+                    }
+                })
+            }]
+        });
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(initialStyle);
+        await waitFor(style, "style.load");
+
+        expect(style.getConfigProperty('standard', 'geom')).toEqual(['literal', {type: 'Point', coordinates: [0, 0]}]);
+
+        style.setConfigProperty('standard', 'geom', {type: 'Point', coordinates: [1, 1]});
+        expect(style.getConfigProperty('standard', 'geom')).toEqual(['literal', {type: 'Point', coordinates: [1, 1]}]);
+    });
 });
 
 describe('Style initial config load', () => {

@@ -1,0 +1,50 @@
+{
+  "expression": [
+    "distance",
+    {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [[[-10, 0], [0, 5], [0, -5], [-10, 0]]],
+        [[[10, -5], [10, 5], [15, 0], [10, -5]]]
+      ]
+    }
+  ],
+  "inputs": [
+    [
+      {"canonicalID": {"z": 0, "x": 0, "y": 0}},
+      {
+        "type": "Feature",
+        "geometry": {"type": "Point", "coordinates": [1, 0]}
+      }
+    ],
+    [
+      {"canonicalID": {"z": 0, "x": 0, "y": 0}},
+      {
+        "type": "Feature",
+        "geometry": {"type": "Point", "coordinates": [8, 0]}
+      }
+    ]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [112515.30563577944, 222856],
+    "serialized": [
+      "distance",
+      [
+        "literal",
+        {
+          "type": "MultiPolygon",
+          "coordinates": [
+            [[[-10, 0], [0, 5], [0, -5], [-10, 0]]],
+            [[[10, -5], [10, 5], [15, 0], [10, -5]]]
+          ]
+        }
+      ]
+    ]
+  }
+}

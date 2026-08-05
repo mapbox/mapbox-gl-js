@@ -1,0 +1,22 @@
+{
+  "expression": [
+    "distance",
+    [
+      "case",
+      [">", ["measure-light", "brightness"], 0.1],
+      ["get", "geometry1"],
+      ["get", "geometry2"]
+    ]
+  ],
+  "expected": {
+    "compiled": {
+      "errors": [
+        {
+          "error": "'distance' expression may not depend on brightness.",
+          "key": ""
+        }
+      ],
+      "result": "error"
+    }
+  }
+}

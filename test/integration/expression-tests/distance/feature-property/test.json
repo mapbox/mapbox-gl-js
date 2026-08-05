@@ -1,0 +1,41 @@
+{
+  "expression": [
+    "distance",
+    ["get", "test_geometry"]
+  ],
+  "inputs": [
+    [
+      {
+        "canonicalID": {"z": 0, "x": 0, "y": 0}
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        },
+        "properties": {
+          "test_geometry": {
+            "type": "Point",
+            "coordinates": [10, 0]
+          }
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compiled": {
+      "type": "number",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "result": "success"
+    },
+    "outputs": [
+      1113194.9
+    ],
+    "serialized": [
+      "distance",
+      ["get", "test_geometry"]
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "expression": ["distance", ["case", ["==", ["worldview"], "US"], ["literal", {
+          "type": "Point",
+          "coordinates": [103.91959190368652, 1.3218898930028449]
+        }], ["literal", {
+          "type": "Point",
+          "coordinates": [103.91959190368652, 1.3321439094005239]
+        }]]],
+  "inputs": [[{
+        "worldview": "US",
+        "canonicalID": {
+          "z": 13,
+          "x": 6460,
+          "y": 4065
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [103.91959190368652, 1.3321439094005239]
+        },
+        "type": "Feature"
+      }], [{
+        "worldview": "CN",
+        "canonicalID": {
+          "z": 13,
+          "x": 6460,
+          "y": 4065
+        }
+      }, {
+        "geometry": {
+          "type": "Point",
+          "coordinates": [103.91959190368652, 1.3321439094005239]
+        },
+        "type": "Feature"
+      }]],
+  "expected": {
+    "compiled": {
+      "type": "number",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "result": "success"
+    },
+    "outputs": [1133.83, 5.15603e-10],
+    "serialized": ["distance", ["case", ["==", ["worldview"], "US"], ["literal", {
+            "coordinates": [103.91959190368652, 1.3218898930028449],
+            "type": "Point"
+          }], ["literal", {
+            "coordinates": [103.91959190368652, 1.3321439094005239],
+            "type": "Point"
+          }]]]
+  }
+}

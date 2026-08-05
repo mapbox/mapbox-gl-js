@@ -1,0 +1,66 @@
+{
+  "expression": [
+    "distance",
+    {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {},
+          "geometry": {"type": "Point", "coordinates": [0, 0]}
+        },
+        {
+          "type": "Feature",
+          "properties": {},
+          "geometry": {"type": "Point", "coordinates": [10, 0]}
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    [
+      {"canonicalID": {"z": 0, "x": 0, "y": 0}},
+      {
+        "type": "Feature",
+        "geometry": {"type": "Point", "coordinates": [1, 0]}
+      }
+    ],
+    [
+      {"canonicalID": {"z": 0, "x": 0, "y": 0}},
+      {
+        "type": "Feature",
+        "geometry": {"type": "Point", "coordinates": [8, 0]}
+      }
+    ]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [112515.30563577944, 222856],
+    "serialized": [
+      "distance",
+      [
+        "literal",
+        {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {},
+              "geometry": {"type": "Point", "coordinates": [0, 0]}
+            },
+            {
+              "type": "Feature",
+              "properties": {},
+              "geometry": {"type": "Point", "coordinates": [10, 0]}
+            }
+          ]
+        }
+      ]
+    ]
+  }
+}

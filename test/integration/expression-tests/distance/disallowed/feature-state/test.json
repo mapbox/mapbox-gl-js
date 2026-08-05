@@ -1,0 +1,17 @@
+{
+  "expression": [
+    "distance",
+    ["feature-state", "geometry"]
+  ],
+  "expected": {
+    "compiled": {
+      "errors": [
+        {
+          "error": "'distance' expression may not depend on feature-state.",
+          "key": ""
+        }
+      ],
+      "result": "error"
+    }
+  }
+}

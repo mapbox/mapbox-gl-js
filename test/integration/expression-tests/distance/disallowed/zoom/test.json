@@ -1,0 +1,22 @@
+{
+  "expression": [
+    "distance",
+    [
+      "case",
+      [">", ["zoom"], 30],
+      ["get", "geometry1"],
+      ["get", "geometry2"]
+    ]
+  ],
+  "expected": {
+    "compiled": {
+      "errors": [
+        {
+          "error": "\"zoom\" expression may only be used as input to a top-level \"step\" or \"interpolate\" expression, or in the properties of atmosphere.",
+          "key": ""
+        }
+      ],
+      "result": "error"
+    }
+  }
+}

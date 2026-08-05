@@ -1,6 +1,6 @@
 // eslint-disable-next-line import-x/extensions
 import {run} from './integration/lib/expression';
-import {createPropertyExpression} from '../src/style-spec/expression/index';
+import {createConfigExpression, createPropertyExpression} from '../src/style-spec/expression/index';
 import {isFunction} from '../src/style-spec/function/index';
 import convertFunction from '../src/style-spec/function/convert';
 import {toString} from '../src/style-spec/expression/types';
@@ -20,6 +20,8 @@ function getPoint(coord, canonical) {
     const tileTr = tileTransform(canonical, projection);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const p = getTilePoint(tileTr, MercatorCoordinate.fromLngLat({lng: coord[0], lat: coord[1]}, 0));
+    // Quantize to integer tile units the way GL Native's Projection::latLonToTileCoordinates
+    // does, so these fixtures produce identical expectations in both runners.
     p.x = Math.round(p.x);
     p.y = Math.round(p.y);
     return p;
@@ -222,15 +224,41 @@ run('js', {tests}, (fixture) => {
         }
     };
 
+    // Fixtures may exercise a `["config", ...]` argument by putting a `config`
+    // object on an input's globals, e.g. `inputs[i][0].config = {key: value}`
+    // (mirrors gl-native's expression-test `config` input, added alongside
+    // this same fixture format). Build a ConfigOptions map from it -- keyed
+    // by the bare option id since these fixtures use no scope -- so
+    // `["config", "key"]` resolves via EvaluationContext#getConfig.
+    let configOptions: any;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    for (const input of fixture.inputs || []) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        const config = input[0] && input[0].config;
+        if (!config) continue;
+        configOptions = new Map();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        for (const key of Object.keys(config)) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            const value = config[key];
+            const defaultExpression = createConfigExpression(value);
+            if (defaultExpression.result === 'success') {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                configOptions.set(key, {default: defaultExpression.value.expression});
+            }
+        }
+        break;
+    }
+
     const result = {compiled: {}, recompiled: {}} as {compiled: any, recompiled: any, outputs: unknown, serialized: unknown, roundTripOutputs: unknown};
     const expression = (() => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (isFunction(fixture.expression)) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-            return createPropertyExpression(convertFunction(fixture.expression, spec), spec);
+            return createPropertyExpression(convertFunction(fixture.expression, spec), spec, null, configOptions);
         } else {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-            return createPropertyExpression(fixture.expression, spec);
+            return createPropertyExpression(fixture.expression, spec, null, configOptions);
         }
     })();
 
@@ -241,7 +269,7 @@ run('js', {tests}, (fixture) => {
         result.serialized = expression.value._styleExpression.expression.serialize();
         result.roundTripOutputs = evaluateExpression(
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            createPropertyExpression(result.serialized, spec),
+            createPropertyExpression(result.serialized, spec, null, configOptions),
             result.recompiled);
         // Type is allowed to change through serialization
         // (eg "array" -> "array<number, 3>")

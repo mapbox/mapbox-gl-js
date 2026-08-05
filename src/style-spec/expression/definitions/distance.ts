@@ -1,9 +1,11 @@
 import {isValue} from '../values';
-import {NumberType} from '../types';
+import {NumberType, ValueType} from '../types';
 import {classifyRings, updateBBox, boxWithinBox, pointWithinPolygon, segmentIntersectSegment} from '../../util/geometry_util';
 import {lngFromMercatorX, latFromMercatorY} from '../../util/mercator';
 import TinyQueue from "tinyqueue";
 import EXTENT from '../../data/extent';
+import Literal from './literal';
+import {isGlobalPropertyConstant, isStateConstant} from '../is_constant';
 
 // Geodesic scale factors (cheap-ruler math): meters per degree lon/lat at a given latitude.
 // Only the three distance operations used in this file are implemented.
@@ -587,70 +589,130 @@ function isTypeValid(type: string) {
         type === "MultiPolygon"
     );
 }
+
+// Resolves a GeoJSON value (Feature / FeatureCollection / bare geometry) down
+// to the geometries `distance` measures against -- one per feature for a
+// FeatureCollection, one otherwise. Shared by parse-time (literal argument)
+// and evaluate-time (e.g. a `["config", ...]` argument, whose value isn't
+// known until evaluation) resolution. Returns null if the value isn't valid
+// GeoJSON, or if any feature has a geometry type other than
+// Point/LineString/Polygon (and their Multi* variants).
+function extractDistanceGeometry(value: unknown): Array<DistanceGeometry> | null {
+    if (!isValue(value) || typeof value !== 'object' || value === null || Array.isArray(value)) {
+        return null;
+    }
+    const geojson = value as GeoJSON.GeoJSON;
+    if (geojson.type === 'FeatureCollection') {
+        if (geojson.features.length === 0) return null;
+        const geometries: Array<DistanceGeometry> = [];
+        for (const feature of geojson.features) {
+            if (!isTypeValid(feature.geometry.type)) return null;
+            geometries.push(feature.geometry as DistanceGeometry);
+        }
+        return geometries;
+    }
+    if (geojson.type === 'Feature') {
+        return isTypeValid(geojson.geometry.type) ? [geojson.geometry as DistanceGeometry] : null;
+    }
+    if (isTypeValid(geojson.type)) {
+        return [geojson as DistanceGeometry];
+    }
+    return null;
+}
+
 class Distance implements Expression {
     type: Type;
-    geojson: GeoJSON.GeoJSON;
-    geometries: DistanceGeometry;
+    geojson: Expression;
 
-    constructor(geojson: GeoJSON.GeoJSON, geometries: DistanceGeometry) {
+    constructor(geojson: Expression) {
         this.type = NumberType;
         this.geojson = geojson;
-        this.geometries = geometries;
     }
 
     static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Distance | null | void {
         if (args.length !== 2) {
             return context.error(`'distance' expression requires either one argument, but found ' ${args.length - 1} instead.`);
         }
-        if (isValue(args[1])) {
-            const geojson = args[1] as GeoJSON.GeoJSON;
-            if (geojson.type === 'FeatureCollection') {
-                for (let i = 0; i < geojson.features.length; ++i) {
-                    if (isTypeValid(geojson.features[i]!.geometry.type)) {
-                        return new Distance(geojson, geojson.features[i]!.geometry as DistanceGeometry);
-                    }
-                }
-            } else if (geojson.type === 'Feature') {
-                if (isTypeValid(geojson.geometry.type)) {
-                    return new Distance(geojson, geojson.geometry as DistanceGeometry);
-                }
-            } else if (isTypeValid(geojson.type)) {
-                return new Distance(geojson, geojson as DistanceGeometry);
+
+        const arg = args[1];
+        // A bare GeoJSON value (Feature / FeatureCollection / bare geometry)
+        // isn't valid expression syntax on its own, so wrap it as a literal
+        // like ["literal", {...}] would be. Anything else -- e.g.
+        // `["config", "key"]` -- is left as-is and parsed as a regular
+        // sub-expression, resolved to GeoJSON at evaluation time so a config
+        // value can change at runtime without re-parsing the style.
+        const isBareGeoJSON = isValue(arg) && !Array.isArray(arg);
+        const parsed = context.parse(isBareGeoJSON ? ['literal', arg] : arg, 1, ValueType);
+        if (!parsed) return null;
+
+        for (const [globalProperties, name] of [
+            [['measure-light'], 'brightness'],
+            [['pitch'], 'pitch'],
+            [['distance-from-center'], 'distance-from-center'],
+        ] as Array<[Array<string>, string]>) {
+            if (!isGlobalPropertyConstant(parsed, globalProperties)) {
+                return context.error(`'distance' expression may not depend on ${name}.`);
             }
         }
-        return context.error(
-            "'distance' expression needs to be an array with format [\'Distance\', GeoJSONObj]."
-        );
+        if (!isStateConstant(parsed)) {
+            return context.error(`'distance' expression may not depend on feature-state.`);
+        }
+
+        // Literal arguments can be validated eagerly; a config-driven
+        // argument can't be checked until it's evaluated.
+        if (parsed instanceof Literal && !extractDistanceGeometry(parsed.value)) {
+            return context.error(
+                "'distance' expression needs to be an array with format [\'Distance\', GeoJSONObj]."
+            );
+        }
+
+        return new Distance(parsed);
     }
 
     evaluate(ctx: EvaluationContext): number | null {
+        const geometries = extractDistanceGeometry(this.geojson.evaluate(ctx));
+        if (!geometries) {
+            console.warn("Distance Expression: could not resolve a valid Point/LineString/Polygon GeoJSON geometry.");
+            return null;
+        }
+
         const geometry = ctx.geometry();
         const canonical = ctx.canonicalID();
-        if (geometry != null && canonical != null) {
-            if (ctx.geometryType() === 'Point') {
-                return pointsToGeometryDistance(geometry, canonical, this.geometries);
-            }
-            if (ctx.geometryType() === 'LineString') {
-                return linesToGeometryDistance(geometry, canonical, this.geometries);
-            }
-            if (ctx.geometryType() === 'Polygon') {
-                return polygonsToGeometryDistance(geometry, canonical, this.geometries);
-            }
-            console.warn("Distance Expression: currently only evaluates valid Point/LineString/Polygon geometries.");
-        } else {
+        if (geometry == null || canonical == null) {
             console.warn("Distance Expression: requires valid feature and canonical information.");
+            return null;
         }
-        return null;
+
+        const geometryType = ctx.geometryType();
+        const distanceTo = geometryType === 'Point' ? pointsToGeometryDistance :
+            geometryType === 'LineString' ? linesToGeometryDistance :
+            geometryType === 'Polygon' ? polygonsToGeometryDistance : null;
+        if (!distanceTo) {
+            console.warn("Distance Expression: currently only evaluates valid Point/LineString/Polygon geometries.");
+            return null;
+        }
+
+        // A FeatureCollection reference resolves to one geometry per feature;
+        // report the distance to the closest one.
+        let dist = Infinity;
+        for (const g of geometries) {
+            const tempDist = distanceTo(geometry, canonical, g);
+            if (tempDist == null || isNaN(tempDist)) return tempDist;
+            if ((dist = Math.min(dist, tempDist)) === 0) break;
+        }
+        return dist;
     }
 
-    eachChild() {}
+    eachChild(fn: (_: Expression) => void) {
+        fn(this.geojson);
+    }
 
     outputDefined(): boolean {
         return true;
     }
 
     serialize(): Array<unknown> {
-        return ['distance', this.geojson];
+        return ['distance', this.geojson.serialize()];
     }
 }
 

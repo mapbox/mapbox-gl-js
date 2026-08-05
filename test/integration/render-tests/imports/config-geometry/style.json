@@ -1,0 +1,118 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128
+    }
+  },
+  "zoom": 12,
+  "center": [
+    -73.97860765457153,
+    40.75663615846253
+  ],
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "",
+      "data": {
+        "schema": {
+          "filter-geometry": {
+            "type": "object",
+            "default": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -73.97260765457153,
+                  40.75963615846253
+                ],
+                [
+                  -73.97260765457153,
+                  40.75363615846253
+                ]
+              ]
+            }
+          }
+        },
+        "sources": {
+          "filter-geometry-reference": {
+            "type": "geojson",
+            "data": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -73.97260765457153,
+                  40.75963615846253
+                ],
+                [
+                  -73.97260765457153,
+                  40.75363615846253
+                ]
+              ]
+            }
+          },
+          "points": {
+            "type": "geojson",
+            "data": {
+              "type": "FeatureCollection",
+              "features": [
+                {
+                  "type": "Feature",
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                      -73.97560765457153,
+                      40.75663615846253
+                    ]
+                  }
+                },
+                {
+                  "type": "Feature",
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                      -73.98660765457153,
+                      40.75663615846253
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "layers": [
+          {
+            "id": "reference-point",
+            "type": "line",
+            "source": "filter-geometry-reference",
+            "paint": {
+              "line-color": "red",
+              "line-width": 2
+            }
+          },
+          {
+            "id": "points",
+            "type": "circle",
+            "source": "points",
+            "filter": [
+              ">",
+              [
+                "distance",
+                [
+                  "config",
+                  "filter-geometry"
+                ]
+              ],
+              300
+            ],
+            "paint": {
+              "circle-radius": 5
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "sources": {},
+  "layers": []
+}

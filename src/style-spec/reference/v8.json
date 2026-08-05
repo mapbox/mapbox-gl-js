@@ -380,6 +380,16 @@
         },
         "color": {
           "doc": "The result will be coerced to a color."
+        },
+        "object": {
+          "doc": "The result will be coerced to an object.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "3.29.0",
+              "android": "11.29.0",
+              "ios": "11.29.0"
+            }
+          }
         }
       }
     },
@@ -5637,13 +5647,18 @@
         }
       },
       "distance": {
-        "doc": "Returns the shortest distance in meters between the evaluated feature and the input geometry. The input value can be a valid GeoJSON of type `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`, `Feature`, or `FeatureCollection`. Distance values returned may vary in precision due to loss in precision from encoding geometries, particularly below zoom level 13.",
+        "doc": "Returns the shortest distance in meters between the evaluated feature and the input geometry. The input value can be a valid GeoJSON of type `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`, `Feature`, or `FeatureCollection`, or expression that returns a valid GeoJSON. Distance values returned may vary in precision due to loss in precision from encoding geometries, particularly below zoom level 13.",
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
             "js": "3.0.0",
             "android": "9.2.0",
             "ios": "5.9.0"
+          },
+          "expressions support": {
+            "js": "3.29.0",
+            "android": "11.29.0",
+            "ios": "11.29.0"
           }
         }
       },
