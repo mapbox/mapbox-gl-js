@@ -5,7 +5,7 @@
             "mapMode": "static",
             "spriteFormat": "raster",
             "image-threshold": [
-                {"platform-tag-contains": "", "threshold": 0.00025}
+                {"platform-tag-contains": "", "threshold": 0.00027}
             ]
         }
     },

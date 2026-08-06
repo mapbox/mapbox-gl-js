@@ -202,13 +202,28 @@ class LineAtlas {
 
         const y = this.nextRow + n;
 
+        // Fraction of the baked pattern covered by dashes, used as average
+        // coverage under minification. Measure the center row so caps and
+        // collapsed ranges are included (SDF >= 128 means inside a dash).
+        let onTexels = 0;
+        if (length !== 0) {
+            const rowIndex = this.width * y;
+            for (let x = 0; x < this.width; x++) {
+                if (this.image.data[rowIndex + x] >= 128) onTexels++;
+            }
+        }
+        // Quantize the dash coverage to 12 bits so it can share dash.y with the
+        // 4-bit SDF half-height.
+        const coverage12 = Math.round(onTexels / this.width * 4095);
+
         this.nextRow += height;
 
         const lengthInt = Math.floor(length);
         const lengthFract = Math.round((length - lengthInt) * 65535);
 
         const pos = {
-            tl: [y, n],
+            // dash.y: low 4 bits = SDF half-height (0 or 7), high 12 bits = dash coverage.
+            tl: [y, n | (coverage12 << 4)],
             br: [lengthInt, lengthFract]
         } as SpritePosition;
         this.positions[key] = pos;

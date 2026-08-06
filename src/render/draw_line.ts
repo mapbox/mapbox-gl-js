@@ -290,21 +290,23 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
             const lineFloorWidthScale = unitInMeters ? (1.0 / bucket.tileToMeter) / pixelsToTileUnits(tile, 1, Math.floor(painter.transform.zoom)) : 1.0;
 
             // Avoid dash flickering while loading ideal tiles on zoom level traversal.
-            // Override the floorwidth paint property to use width evaluated at bucket zoom
-            // instead of camera zoom. This ensures stable dash texture coordinates when an
-            // overscaled lower-zoom tile is temporarily rendered. Restore after draw.
+            // Re-anchor floorwidth only for retained stand-ins (dashIdealZ !== tile zoom),
+            // scaling by 2^(idealZ - bucketZoom) so the stand-in keeps a stable dash period
+            // until the ideal tile arrives. Ideal cover tiles — including pitched LOD rings —
+            // keep camera floorwidth; applying the same scale there stretches dashes near the
+            // horizon. Restore after draw.
             // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const widthProperty: {value: {kind: string; value: number}} | null = dasharray ? (layer.paint as any)._values['line-floorwidth'] : null;
             let savedFloorwidth: number | undefined;
-            if (widthProperty && widthProperty.value.kind === 'constant') {
+            const dashIdealZ = tile.dashIdealZ;
+            if (widthProperty && widthProperty.value.kind === 'constant' &&
+                dashIdealZ !== tile.tileID.overscaledZ) {
                 const bz = bucket.zoom;
                 if (!(bz in floorwidthByZoom)) {
                     floorwidthByZoom[bz] = Math.max(0.01, layer.widthExpression().evaluate({zoom: bz}));
                 }
                 savedFloorwidth = widthProperty.value.value;
-                const floorZoom = Math.floor(painter.transform.zoom);
-                const zoomDiff = floorZoom - tile.tileID.overscaledZ;
-                widthProperty.value.value = floorwidthByZoom[bz] * Math.pow(2, zoomDiff);
+                widthProperty.value.value = floorwidthByZoom[bz] * Math.pow(2, dashIdealZ - bz);
             }
 
             const uniformValues: UniformValues<LineUniformsType | LinePatternUniformsType> = image ?

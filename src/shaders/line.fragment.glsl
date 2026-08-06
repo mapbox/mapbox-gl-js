@@ -26,7 +26,7 @@ in float stub_side;
 uniform sampler2D u_dash_image;
 uniform highp float u_floor_width_scale;
 
-in vec2 v_tex;
+in highp vec2 v_tex;
 #endif
 
 #ifdef DEBUG_ELEVATION_ID
@@ -140,10 +140,45 @@ void main() {
 #endif
 
 #ifdef RENDER_LINE_DASH
-    float sdfdist = texture(u_dash_image, v_tex).r;
-    float sdfgamma = ANTIALIASING / (float(dash.z) + float(dash.w) / 65535.0);
+    // highp before /65535: that literal is Inf in mediump/FP16 (e.g. Mali-G71).
+    highp float dash_w = float(dash.w);
+    highp float dash_len = float(dash.z) + dash_w / 65535.0;
+    float sdfgamma = ANTIALIASING / float(dash_len);
     float scaled_floorwidth = (floorwidth * u_floor_width_scale);
-    alpha *= linearstep(0.5 - sdfgamma / scaled_floorwidth, 0.5 + sdfgamma / scaled_floorwidth, sdfdist);
+
+    // Number of dash-pattern periods covered by one framebuffer pixel.
+    float periods_per_pixel = fwidth(v_tex.x);
+
+    // Dash coverage is the fraction of one pattern period covered by dashes,
+    // in [0, 1]. It is the average alpha of the fully minified pattern. Packed
+    // in dash.y bits [15:4]; bits [3:0] hold the SDF half-height.
+    float dash_coverage = float(dash.y >> 4u) / 4095.0;
+    // Fade to average dash coverage before the pattern becomes undersampled:
+    // start at 0.25 periods per pixel and finish at the Nyquist limit (0.5).
+    float fade = linearstep(0.25, 0.5, periods_per_pixel);
+
+    // Widen SDF AA as each pixel covers more of the pattern.
+    float gamma = max(sdfgamma / scaled_floorwidth, 0.5 * periods_per_pixel);
+
+    if (fade >= 1.0) {
+        // Too minified for sampling.
+        alpha *= dash_coverage;
+    } else if (periods_per_pixel < 0.1) {
+        // One tap.
+        float sdfdist = texture(u_dash_image, v_tex).r;
+        alpha *= linearstep(0.5 - gamma, 0.5 + gamma, sdfdist);
+    } else {
+        // Two midpoint samples approximate filtering over the pattern range
+        // covered by the pixel. Limit the range to one repeating period.
+        float span = min(periods_per_pixel, 1.0);
+        float tap_offset = span * 0.25;
+        float sdf0 = texture(u_dash_image, vec2(v_tex.x - tap_offset, v_tex.y)).r;
+        float sdf1 = texture(u_dash_image, vec2(v_tex.x + tap_offset, v_tex.y)).r;
+        alpha *= mix(0.5 * (
+            linearstep(0.5 - gamma, 0.5 + gamma, sdf0) +
+            linearstep(0.5 - gamma, 0.5 + gamma, sdf1)
+        ), dash_coverage, fade);
+    }
 #endif
 
     highp vec4 out_color;

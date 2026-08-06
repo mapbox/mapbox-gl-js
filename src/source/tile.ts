@@ -116,6 +116,14 @@ class Tile {
     uses: number;
     tileSize: number;
     tileZoom: number;
+    /**
+     * overscaledZ of the ideal cover tile this tile stands in for.
+     * Equals `tileID.overscaledZ` for ideal tiles; for retained parents/children
+     * while an ideal tile loads, equals that ideal tile's overscaledZ.
+     * Used to re-anchor dashed line floorwidth without affecting pitched LOD rings.
+     * @private
+     */
+    dashIdealZ: number;
     buckets: {
         [_: string]: Bucket;
     };
@@ -208,6 +216,7 @@ class Tile {
         this.uses = 0;
         this.tileSize = size;
         this.tileZoom = tileZoom;
+        this.dashIdealZ = tileID.overscaledZ;
         this.buckets = {};
         this.expirationTime = null;
         this.queryPadding = 0;

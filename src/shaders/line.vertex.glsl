@@ -89,7 +89,7 @@ out float stub_side;
 uniform highp float u_floor_width_scale;
 uniform vec2 u_texsize;
 uniform float u_tile_units_to_pixels;
-out vec2 v_tex;
+out highp vec2 v_tex;
 #endif
 
 #if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_BORDER_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
@@ -482,10 +482,14 @@ void main() {
 
 #ifdef RENDER_LINE_DASH
     vec4 dashf = vec4(dash);
-    float totalLength = dashf.z + dashf.w / 65535.0;
+    // highp before /65535: that literal is Inf in mediump/FP16 (e.g. Mali-G71).
+    highp float dash_w = float(dash.w);
+    highp float totalLength = float(dash.z) + dash_w / 65535.0;
     float scale = totalLength == 0.0 ? 0.0 : u_tile_units_to_pixels / totalLength;
 
-    v_tex = vec2(a_linesofar * scale / (floorwidth * u_floor_width_scale), (-normal.y * dashf.y + dashf.x + 0.5) / u_texsize.y);
+    // Low 4 bits = half-height; high 12 = dash coverage (fragment only).
+    float dash_half_height = float(dash.y & 15u);
+    v_tex = vec2(a_linesofar * scale / (floorwidth * u_floor_width_scale), (-normal.y * dash_half_height + dashf.x + 0.5) / u_texsize.y);
 #endif
 
     v_width2_dilute = vec4(outset, inset, dilute_scale, dilute_border_scale);

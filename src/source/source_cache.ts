@@ -441,6 +441,8 @@ class SourceCache extends Evented {
                 if (idealTiles[tileID.key]) {
                     // found a parent that needed a loaded child; retain that child
                     retain[topmostLoadedID.key] = topmostLoadedID;
+                    const standIn = this._tiles[topmostLoadedID.key];
+                    if (standIn) standIn.dashIdealZ = tileID.overscaledZ;
                     break;
                 }
             }
@@ -687,6 +689,13 @@ class SourceCache extends Evented {
             }
         }
 
+        // Reset dash stand-in anchoring; _updateRetainedTiles marks retained
+        // parents/children with the ideal overscaledZ they substitute for.
+        for (const id in this._tiles) {
+            const tile = this._tiles[id];
+            tile.dashIdealZ = tile.tileID.overscaledZ;
+        }
+
         // Retain is a list of tiles that we shouldn't delete, even if they are not
         // the most ideal tile for the current viewport. This may include tiles like
         // parent or child tiles that are *already* loaded.
@@ -819,6 +828,7 @@ class SourceCache extends Evented {
                 const childTile = this.getTile(childCoord);
                 if (!!childTile && childTile.hasData()) {
                     retain[childCoord.key] = childCoord;
+                    childTile.dashIdealZ = tileID.overscaledZ;
                     continue; // tile is covered by overzoomed child
                 }
             } else {
@@ -851,6 +861,7 @@ class SourceCache extends Evented {
                 }
                 if (tile) {
                     retain[parentId.key] = parentId;
+                    tile.dashIdealZ = tileID.overscaledZ;
                     // Save the current values, since they're the parent of the next iteration
                     // of the parent tile ascent loop.
                     parentWasRequested = tile.wasRequested();
