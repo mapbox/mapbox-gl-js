@@ -63,18 +63,17 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
 
     override map!: MapboxMap;
 
-    /**
-     * When `true`, the source will only load the tile header
-     * and use range requests to load and parse the tile data.
-     * Otherwise, the entire tile will be loaded and parsed in the Worker.
-     */
-    partial: boolean;
+    // When `true`, the source will only load the tile header
+    // and use range requests to load and parse the tile data.
+    // Otherwise, the entire tile will be loaded and parsed in the Worker.
+    get partial(): boolean {
+        return !this.map.style.imageManager.hasImageProviderForSource(this.id, this.scope);
+    }
 
     constructor(id: string, options: RasterArraySourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-array';
         this.maxzoom = 22;
-        this.partial = true;
         this._loadTilePending = {};
         this._loadTileLoaded = {};
         this._options = {type: 'raster-array', ...options};

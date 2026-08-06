@@ -1685,8 +1685,6 @@ class Style extends Evented<MapEvents> {
             return;
         }
 
-        source.partial = false;
-
         const imageProvider = new ImageProvider(iconsetId, this.scope, sourceCache);
         this.imageManager.addImageProvider(imageProvider, this.scope);
     }
