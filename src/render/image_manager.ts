@@ -300,6 +300,15 @@ class ImageManager extends Evented {
         return versions;
     }
 
+    hasImageProviderForSource(sourceId: string, scope: string): boolean {
+        const imageProviders = this.imageProviders.get(scope);
+        if (!imageProviders) return false;
+        for (const imageProvider of imageProviders.values()) {
+            if (imageProvider.sourceCache.getSource().id === sourceId) return true;
+        }
+        return false;
+    }
+
     getImages(ids: ImageId[], scope: string, callback: Callback<{images: StyleImageMap<StringifiedImageId>; versions: Map<string, number>}>) {
         const images: ImageId[] = [];
         const resolvedImages: ImageId[] = [];
