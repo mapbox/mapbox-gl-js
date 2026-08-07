@@ -1514,14 +1514,22 @@ export class Terrain extends Elevation {
         }
 
         const far: [number, number, number, number] = [screenPoint.x, screenPoint.y, 1, 1];
-        vec4.transformMat4(far, far, transform.pixelMatrixInverse);
+        vec4.transformMat4(far, far, transform.isOrthographic ? transform.terrainPixelMatrixInverse : transform.pixelMatrixInverse);
         vec4.scale(far, far, 1.0 / far[3]);
         // x & y in pixel coordinates, z is altitude in meters
         far[0] /= transform.worldSize;
         far[1] /= transform.worldSize;
-        const camera = transform._camera.position;
         const mercatorZScale = mercatorZfromAltitude(1, transform.center.lat);
-        const p: [number, number, number, number] = [camera[0], camera[1], camera[2] / mercatorZScale, 0.0];
+        let p: [number, number, number, number];
+        if (transform.isOrthographic) {
+            const near: [number, number, number, number] = [screenPoint.x, screenPoint.y, 0, 1];
+            vec4.transformMat4(near, near, transform.terrainPixelMatrixInverse);
+            vec4.scale(near, near, 1.0 / near[3]);
+            p = [near[0] / transform.worldSize, near[1] / transform.worldSize, near[2], 0.0];
+        } else {
+            const camera = transform._camera.position;
+            p = [camera[0], camera[1], camera[2] / mercatorZScale, 0.0];
+        }
         const dir = vec3.subtract([], far.slice(0, 3), p);
         vec3.normalize(dir, dir);
 
