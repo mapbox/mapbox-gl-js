@@ -1,3 +1,8 @@
+## 3.28.1
+
+### Bug fixes 🐞
+- Fix `iconsets` icons rendering with ESM bundle.
+
 ## 3.28.0
 
 ### Breaking changes ⚠️
