@@ -4364,6 +4364,10 @@ class Style extends Evented<MapEvents> {
         this._force3DLayerUpdate();
         const parameters = this._getTransitionParameters({duration: 0});
         terrain.updateTransitions(parameters);
+        // Evaluate the terrain properties synchronously so that consumers such as
+        // Terrain#update can access them before the next Style#update runs (#13665).
+        const evaluationParameters = new EvaluationParameters(this.z || 0, {...parameters, worldview: this.map.getWorldview()});
+        terrain.recalculate(evaluationParameters);
     }
 
     _force3DLayerUpdate() {
