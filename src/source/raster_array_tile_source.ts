@@ -19,7 +19,8 @@ import type RasterArrayTile from './raster_array_tile';
 import type Texture from '../render/texture';
 import type Dispatcher from '../util/dispatcher';
 import type {Map as MapboxMap} from '../ui/map';
-import type {Evented} from '../util/evented';
+import type {Evented, EventOf} from '../util/evented';
+import type {SourceEvents} from './source';
 import type {Callback} from '../types/callback';
 import type {AJAXError} from '../util/ajax';
 import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
@@ -70,13 +71,155 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         return !this.map.style.imageManager.hasImageProviderForSource(this.id, this.scope);
     }
 
+    /**
+     * The discovered maxzoom of the data tiles. Primed from the source's
+     * TileJSON-resolved `maxzoom` once the metadata event fires, then narrowed
+     * by 404 responses (each 404 at zoom N lowers it to min(current, N - 1)).
+     * We can't use a binary-search probe because tile coverage at the midpoint
+     * zoom may be non-uniform (e.g., the parent of the requested tile may not
+     * exist even when data exists elsewhere at that zoom). The cascade is
+     * guaranteed to find an existing ancestor by walking up one zoom level at
+     * a time, and the cost is bounded to the first user session after
+     * misconfiguration.
+     * @private
+     */
+    private _dataMaxzoom?: number;
+
+    /**
+     * Callbacks waiting on a specific parent tile (keyed by uid) to finish
+     * loading. Lets multiple overzoomed children share a single in-flight
+     * parent load instead of polling tile state.
+     * @private
+     */
+    private _pendingParentWaiters: Map<number, Array<Callback<undefined>>>;
+
     constructor(id: string, options: RasterArraySourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-array';
-        this.maxzoom = 22;
+        this.maxzoom = options.maxzoom !== undefined ? options.maxzoom : 22;
         this._loadTilePending = {};
         this._loadTileLoaded = {};
+        this._pendingParentWaiters = new Map();
         this._options = {type: 'raster-array', ...options};
+    }
+
+    override onAdd(map: MapboxMap): void {
+        super.onAdd(map);
+
+        // Seed _dataMaxzoom from the TileJSON-resolved maxzoom so a user
+        // entering the map at a deeply overzoomed view (e.g., z18 with data
+        // up to z5) requests the correct ancestor immediately instead of
+        // cascading down one zoom level per 404.
+        const onMetadata = (event: EventOf<SourceEvents, 'data', this>) => {
+            if (event.dataType !== 'source' || event.sourceDataType !== 'metadata') return;
+            this.off('data', onMetadata);
+            if (this._dataMaxzoom === undefined) {
+                this._dataMaxzoom = this.maxzoom;
+            }
+        };
+        this.on('data', onMetadata);
+    }
+
+    /**
+     * @private
+     */
+    getDataMaxzoom(): number | undefined {
+        return this._dataMaxzoom;
+    }
+
+    /**
+     * Returns parent tile IDs that the source cache must retain because
+     * existing or upcoming overzoomed tiles depend on them.
+     * @private
+     */
+    collectOverzoomParentTileIDs(
+        tiles: Partial<Record<string | number, RasterArrayTile>>,
+        idealTileIDs: ReadonlyArray<OverscaledTileID>,
+    ): OverscaledTileID[] {
+        const retained: OverscaledTileID[] = [];
+
+        // Retain parents that existing overzoomed tiles already point to.
+        for (const tileKey in tiles) {
+            const tile = tiles[tileKey];
+            if (!tile) continue;
+            const parent = tile.parentTile;
+            if (parent && tiles[parent.tileID.key]) {
+                retained.push(parent.tileID);
+            }
+        }
+
+        // Retain parents at dataMaxzoom for ideal tiles that will need overzooming.
+        const dataMaxzoom = this._dataMaxzoom;
+        if (dataMaxzoom !== undefined) {
+            for (const tileID of idealTileIDs) {
+                if (tileID.canonical.z <= dataMaxzoom) continue;
+                const parentID = tileID.scaledTo(dataMaxzoom);
+                if (tiles[parentID.key]) retained.push(parentID);
+            }
+        }
+
+        return retained;
+    }
+
+    /**
+     * Narrow the discovered data maxzoom after a 404 at `failedZoom`. Each
+     * cascade step decrements by one — see the `_dataMaxzoom` field doc for
+     * the rationale.
+     * @private
+     */
+    private _narrowDataMaxzoom(failedZoom: number): void {
+        const candidate = Math.max(this.minzoom, failedZoom - 1);
+        if (this._dataMaxzoom === undefined || candidate < this._dataMaxzoom) {
+            this._dataMaxzoom = candidate;
+        }
+    }
+
+    private _isParentReady(parent: RasterArrayTile): boolean {
+        const mrt = parent._mrt;
+        return parent._isHeaderLoaded && !!mrt && !!mrt.layers && Object.keys(mrt.layers).length > 0;
+    }
+
+    /**
+     * Run `callback` once the given parent tile has usable MRT data (or has
+     * errored). Multiple waiters on the same parent uid share one in-flight
+     * load. We listen for the source's 'data' event rather than polling.
+     * @private
+     */
+    private _waitForParent(parent: RasterArrayTile, callback: Callback<undefined>): void {
+        if (this._isParentReady(parent)) {
+            callback(null);
+            return;
+        }
+        if (parent.state === 'errored') {
+            callback(new Error('Parent tile failed to load'));
+            return;
+        }
+
+        const existing = this._pendingParentWaiters.get(parent.uid);
+        if (existing) {
+            existing.push(callback);
+            return;
+        }
+
+        const queue: Array<Callback<undefined>> = [callback];
+        this._pendingParentWaiters.set(parent.uid, queue);
+
+        // Source 'data' events fire for each tile load completion with `tile`
+        // attached (see SourceCache._tileLoaded). Narrow on dataType, then
+        // identity-compare with the parent.
+        const onData = (event: EventOf<SourceEvents, 'data', this>) => {
+            if (event.dataType !== 'source' || event.tile !== parent) return;
+            const ready = this._isParentReady(parent);
+            const errored = parent.state === 'errored';
+            if (!ready && !errored) return;
+
+            this.off('data', onData);
+            const drained = this._pendingParentWaiters.get(parent.uid) || [];
+            this._pendingParentWaiters.delete(parent.uid);
+            const err = ready ? null : new Error('Parent tile failed to load');
+            for (const cb of drained) cb(err);
+        };
+        this.on('data', onData);
     }
 
     triggerRepaint(tile: RasterArrayTile) {
@@ -91,7 +234,63 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         this.map.triggerRepaint();
     }
 
+    private _setupOverzoomTile(tile: RasterArrayTile, callback: Callback<undefined>) {
+        const dataMaxzoom = this._dataMaxzoom !== undefined ? this._dataMaxzoom : this.maxzoom;
+        const sourceCache = this.map.style.getSourceCache(this.id);
+
+        if (!sourceCache) {
+            callback(new Error('Source cache not found'));
+            return;
+        }
+
+        tile._isLoadInProgress = true;
+
+        const parentTileID = tile.tileID.scaledTo(dataMaxzoom);
+        let parentTile = sourceCache.getTile(parentTileID) as RasterArrayTile;
+        while (parentTile && parentTile.parentTile) {
+            parentTile = parentTile.parentTile;
+        }
+        if (!parentTile) {
+            // _addTile creates the tile and kicks off its load via source_cache._loadTile.
+            // We attach our completion through the 'data' event below.
+            parentTile = sourceCache._addTile(parentTileID) as RasterArrayTile;
+        }
+
+        const finish = (err?: Error | null) => {
+            tile._isLoadInProgress = false;
+            callback(err);
+        };
+
+        this._waitForParent(parentTile, (err) => {
+            if (err || !tile.setupOverzoom(parentTile)) {
+                tile.state = 'errored';
+                finish(err || new Error('Parent tile setup failed'));
+                return;
+            }
+            tile.state = 'loaded';
+            finish(null);
+        });
+    }
+
     override async loadTile(tile: RasterArrayTile, callback: Callback<undefined>): Promise<void> {
+        const dataMaxzoom = this._dataMaxzoom !== undefined ? this._dataMaxzoom : this.maxzoom;
+        const isOverzoom = tile.tileID.canonical.z > dataMaxzoom;
+
+        if (tile.state === 'loaded') {
+            callback(null);
+            return;
+        }
+
+        if (tile._isLoadInProgress) {
+            callback(null);
+            return;
+        }
+
+        if (isOverzoom) {
+            this._setupOverzoomTile(tile, callback);
+            return;
+        }
+
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
 
         tile.source = this.id;
@@ -114,6 +313,15 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
             if (tile.aborted) return callback(null);
 
             if (error) {
+                const is404 = error.status === 404 || (typeof error.message === 'string' && error.message.includes('Not Found'));
+                if (is404) {
+                    this._narrowDataMaxzoom(tile.tileID.canonical.z);
+                    if (this._dataMaxzoom !== undefined && tile.tileID.canonical.z > this._dataMaxzoom) {
+                        this._setupOverzoomTile(tile, callback);
+                        return;
+                    }
+                }
+
                 tile.state = 'errored';
                 return callback(error);
             }
@@ -207,13 +415,20 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
      * @private
      */
     prepareTile(tile: RasterArrayTile, sourceLayer: string, layerId: string, band: string | number) {
-        // Skip if tile is not yet loaded or if no update is needed
-        if (!tile._isHeaderLoaded) return;
+        const dataMaxzoom = this._dataMaxzoom !== undefined ? this._dataMaxzoom : this.maxzoom;
+        const needsOverzoom = tile.tileID.canonical.z > dataMaxzoom;
+        const hasOverzoomSetup = !!(tile.parentTile && tile.overzoomCoordsPerLayer);
 
-        // Don't mark tile as reloading if it was empty.
+        if (needsOverzoom && !hasOverzoomSetup) {
+            return;
+        }
+
+        if (!tile._isHeaderLoaded) {
+            return;
+        }
+
         if (tile.state !== 'empty') tile.state = 'reloading';
 
-        // Fetch data for band and then repaint
         tile.fetchBandForRender(sourceLayer, layerId, band, (error, data) => {
             if (error) {
                 tile.state = 'errored';
@@ -269,12 +484,9 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         if (band == null) return;
 
         if (!tile.textureDescriptorPerLayer.get(layer.id)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            this.prepareTile(tile, sourceLayer, layer.id, band);
             return;
         }
 
-        // Fallback to previous texture even if update is needed
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (tile.updateNeeded(layer.id, band) && !fallbackToPrevious) return;
 

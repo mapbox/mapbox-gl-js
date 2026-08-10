@@ -16,6 +16,7 @@ import type {CanonicalTileID} from './tile_id';
 import type Context from '../gl/context';
 import type {vec3} from 'gl-matrix';
 import type {ISource, Source} from './source';
+import type RasterArrayTileSource from './raster_array_tile_source';
 import type {SourceSpecification} from '../style-spec/types';
 import type {Map as MapboxMap} from '../ui/map';
 import type Transform from '../geo/transform';
@@ -25,6 +26,7 @@ import type {FeatureState} from '../style-spec/expression/index';
 import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
 import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {LoadVectorTileResult} from './load_vector_tile';
+import type RasterArrayTile from './raster_array_tile';
 
 /**
  * `SourceCache` is responsible for
@@ -411,6 +413,7 @@ class SourceCache extends Evented {
         maxCoveringZoom: number,
         retain: Partial<Record<number | string, OverscaledTileID>>
     ) {
+        const isRasterArray = this._source.type === 'raster-array';
         for (const id in this._tiles) {
             let tile = this._tiles[id];
 
@@ -420,6 +423,14 @@ class SourceCache extends Evented {
                 tile.tileID.overscaledZ <= zoom ||
                 tile.tileID.overscaledZ > maxCoveringZoom
             ) continue;
+
+            // Client-side overzoomed raster-array tiles are synthetic crops of
+            // a lower-zoom parent — not authoritative data at their zoom. If
+            // we retain them as "loaded children" of a missing lower-zoom
+            // ideal tile, the renderer keeps painting them on top of the new
+            // ideal tile after the user zooms out, doubling raster-particle
+            // density and causing ghosting.
+            if (isRasterArray && (tile as RasterArrayTile).parentTile) continue;
 
             // loop through parents and retain the topmost loaded one if found
             let topmostLoadedID = tile.tileID;
@@ -813,6 +824,15 @@ class SourceCache extends Evented {
 
         // retain any loaded children of ideal tiles up to maxCoveringZoom
         this._retainLoadedChildren(missingTiles, minZoom, maxCoveringZoom, retain);
+
+        // Retain parent tiles that client-side overzoomed raster-array tiles depend on.
+        if (this._source.type === 'raster-array') {
+            const rasterArraySource = this._source as RasterArrayTileSource;
+            const tiles = this._tiles as Partial<Record<string | number, RasterArrayTile>>;
+            for (const id of rasterArraySource.collectOverzoomParentTileIDs(tiles, idealTileIDs)) {
+                retain[id.key] = id;
+            }
+        }
 
         for (const tileID of idealTileIDs) {
             let tile = this._tiles[tileID.key];

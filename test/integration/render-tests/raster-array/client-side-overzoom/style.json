@@ -1,0 +1,71 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "_comment": "Verifies client-side MRT overzooming: only the z=2 fixture tile (2-3-1.mrt) exists, camera renders at z=5, so every visible tile is served by cropping the z=2 parent. Compare the rendered image against raster-array/default — same source, same camera area, deeper zoom should still show the precipitation visualization (lower resolution due to overzoom).",
+      "width": 256,
+      "height": 256,
+      "allowed": 0.001,
+      "operations": [["wait"]],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - to be ported https://mapbox.atlassian.net/browse/MAPSNAT-4067"}
+      ]
+    }
+  },
+  "center": [135.0053045734985, 36.00653610439714],
+  "zoom": 5,
+  "transition": {"duration": 0},
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": ["local://tiles/{z}-{x}-{y}.satellite.png"],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "precipitations": {
+      "type": "raster-array",
+      "tiles": ["local://tiles/{z}-{x}-{y}.mrt"],
+      "raster_layers": [
+        {
+          "fields": {
+            "range": [0, 14],
+            "tilesize": 512,
+            "buffer": 1,
+            "bands": ["1708304400"]
+          },
+          "id": "Total Precip"
+        }
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "satellite",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {"raster-fade-duration": 0}
+    },
+    {
+      "id": "precipitations",
+      "source": "precipitations",
+      "source-layer": "Total Precip",
+      "type": "raster",
+      "slot": "top",
+      "paint": {
+        "raster-opacity": 0.75,
+        "raster-resampling": "linear",
+        "raster-fade-duration": 0,
+        "raster-color-range": [0, 1],
+        "raster-color-range-transition": {"duration": 0},
+        "raster-color": [
+          "interpolate",
+          ["linear"],
+          ["raster-value"],
+          0, "rgba(255,0,0,1)",
+          0.5, "rgba(0,255,0,1)",
+          1, "rgba(0,0,255,1)"
+        ]
+      }
+    }
+  ]
+}

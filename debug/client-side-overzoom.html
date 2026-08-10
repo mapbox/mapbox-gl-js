@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mapbox GL JS — Client-side MRT overzooming</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #pane { position: absolute; top: 1em; left: 1em; }
+        #status {
+            position: absolute;
+            top: 1em;
+            right: 1em;
+            font: 12px/1.4 monospace;
+            background: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 3px;
+            min-width: 240px;
+            pointer-events: none;
+        }
+        #status .row { display: flex; justify-content: space-between; gap: 12px; }
+        #status .label { opacity: 0.75; }
+        #status .val { font-weight: 600; }
+        #legend {
+            position: absolute;
+            bottom: 1em;
+            left: 1em;
+            font: 11px/1.4 monospace;
+            background: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 3px;
+            max-width: 460px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div id="pane"></div>
+    <div id="status">
+        <div class="row"><span class="label">Camera zoom</span><span class="val" id="zoom">—</span></div>
+        <div class="row"><span class="label">Source maxzoom</span><span class="val" id="srcmax">—</span></div>
+        <div class="row"><span class="label">Discovered data maxzoom</span><span class="val" id="datamax">—</span></div>
+        <div class="row"><span class="label">Overzoomed tiles in cache</span><span class="val" id="ozcount">0 / 0</span></div>
+    </div>
+    <div id="legend">
+        <strong>Fixture mode:</strong> only the z=0 (0,0) wind MRT tile exists on disk — every
+        higher-zoom request 404s and is served by client-side overzoom cropping the z=0 parent.
+        Watch the discovered data maxzoom drop to 0 after the first 404. Past
+        <code>log<sub>2</sub>(tileSize) = 9</code> levels of overzoom (zoom 9 for a 512px tile),
+        the crop clamps to a single parent pixel scaled across the destination tile.
+        <br><br>
+        <strong>API mode:</strong> loads from
+        <code>mapbox://rasterarrayexamples.gfs-winds</code>. Safe to point at the real server
+        because TileJSON metadata primes the discovered data maxzoom — the source caps tile
+        requests at the real data ceiling and never sends speculative overzoomed HTTP requests.
+    </div>
+
+    <script type='module'>
+        import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+        import {getAccessToken} from './access_token_generated.js';
+        import {Pane} from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.3/dist/tweakpane.min.js';
+
+        const PARAMS = {
+            sourceMode: 'fixture',
+            sourceMaxzoom: 12,
+            speedFactor: 0.4,
+            fadeOpacityFactor: 0.95,
+            particleCount: 2048,
+            showTileBoundaries: false,
+        };
+
+        const FIXTURE_LAYER = 'winds';
+        const API_LAYER = '10winds';
+
+        const PARTICLE_COLOR = [
+            'interpolate', ['linear'], ['raster-particle-speed'],
+            1.5, 'rgba(134,163,171,255)',
+            6, 'rgba(15,147,167,255)',
+            10, 'rgba(57,163,57,255)',
+            14, 'rgba(194,134,62,255)',
+            18, 'rgba(200,66,13,255)',
+            22, 'rgba(215,0,50,255)',
+            28, 'rgba(175,80,136,255)',
+            32, 'rgba(117,74,147,255)',
+            40, 'rgba(255,255,255,255)',
+        ];
+
+        const map = window.map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/dark-v11',
+            projection: 'mercator',
+            center: [0, 30],
+            zoom: 2,
+            minZoom: 1,
+            maxZoom: 15,
+            hash: true,
+            accessToken: getAccessToken(),
+        });
+        map.showTileBoundaries = PARAMS.showTileBoundaries;
+        map.addControl(new mapboxgl.NavigationControl());
+
+        const pane = new Pane({title: 'Overzoom debug', container: document.querySelector('#pane')});
+
+        const zoomEl = document.getElementById('zoom');
+        const srcmaxEl = document.getElementById('srcmax');
+        const datamaxEl = document.getElementById('datamax');
+        const ozcountEl = document.getElementById('ozcount');
+
+        function updateStatus() {
+            zoomEl.textContent = map.getZoom().toFixed(2);
+            const source = map.getSource('wind');
+            if (!source) return;
+            srcmaxEl.textContent = String(source.maxzoom);
+            const dataMaxzoom = source.getDataMaxzoom ? source.getDataMaxzoom() : undefined;
+            datamaxEl.textContent = dataMaxzoom === undefined ? 'not yet discovered' : String(dataMaxzoom);
+
+            const sourceCache = map.style.getSourceCache('wind');
+            if (sourceCache) {
+                let total = 0;
+                let overzoomed = 0;
+                for (const key in sourceCache._tiles) {
+                    total++;
+                    const tile = sourceCache._tiles[key];
+                    if (tile && tile.parentTile) overzoomed++;
+                }
+                ozcountEl.textContent = `${overzoomed} / ${total}`;
+            }
+        }
+
+        map.on('move', updateStatus);
+        map.on('sourcedata', updateStatus);
+        map.on('idle', updateStatus);
+
+        map.on('style.load', () => {
+            const addWindSource = (mode, maxzoom) => {
+                if (map.getLayer('wind')) map.removeLayer('wind');
+                if (map.getSource('wind')) map.removeSource('wind');
+
+                const sourceSpec = mode === 'api' ? {
+                    type: 'raster-array',
+                    url: 'mapbox://rasterarrayexamples.gfs-winds',
+                    tileSize: 512,
+                } : {
+                    type: 'raster-array',
+                    tiles: [`${location.origin}/test/integration/tiles/{z}-{x}-{y}.wind.mrt`],
+                    minzoom: 0,
+                    maxzoom,
+                    raster_layers: [
+                        {
+                            id: FIXTURE_LAYER,
+                            fields: {
+                                name: FIXTURE_LAYER,
+                                units: 'm/s',
+                                tilesize: 512,
+                                buffer: 1,
+                                offset: -40.60000000000001,
+                                scale: 0.2,
+                                range: [-40.224327087402344, 40.6441650390625],
+                                bands: ['1664366400'],
+                            },
+                        },
+                    ],
+                };
+
+                map.addSource('wind', sourceSpec);
+
+                map.addLayer({
+                    id: 'wind',
+                    source: 'wind',
+                    'source-layer': mode === 'api' ? API_LAYER : FIXTURE_LAYER,
+                    type: 'raster-particle',
+                    paint: {
+                        'raster-particle-speed-factor': PARAMS.speedFactor,
+                        'raster-particle-fade-opacity-factor': PARAMS.fadeOpacityFactor,
+                        'raster-particle-reset-rate-factor': 0.4,
+                        'raster-particle-count': PARAMS.particleCount,
+                        'raster-particle-max-speed': 40,
+                        'raster-particle-color': PARTICLE_COLOR,
+                    },
+                });
+            };
+
+            addWindSource(PARAMS.sourceMode, PARAMS.sourceMaxzoom);
+            updateStatus();
+
+            pane.addBinding(PARAMS, 'sourceMode', {
+                label: 'Source',
+                options: {Fixture: 'fixture', 'API (gfs-winds)': 'api'},
+            }).on('change', (ev) => {
+                addWindSource(ev.value, PARAMS.sourceMaxzoom);
+                updateStatus();
+            });
+
+            pane.addBinding(PARAMS, 'sourceMaxzoom', {
+                label: 'Fixture maxzoom (override)',
+                min: 4,
+                max: 22,
+                step: 1,
+            }).on('change', (ev) => {
+                // Only meaningful in fixture mode — TileJSON overrides it in API mode.
+                addWindSource(PARAMS.sourceMode, ev.value);
+                updateStatus();
+            });
+
+            pane.addBinding(PARAMS, 'particleCount', {label: 'Particles', min: 256, max: 8192, step: 256})
+                .on('change', (e) => map.setPaintProperty('wind', 'raster-particle-count', e.value));
+
+            pane.addBinding(PARAMS, 'speedFactor', {label: 'Speed', min: 0, max: 2, step: 0.05})
+                .on('change', (e) => map.setPaintProperty('wind', 'raster-particle-speed-factor', e.value));
+
+            pane.addBinding(PARAMS, 'showTileBoundaries', {label: 'Tile boundaries'})
+                .on('change', (e) => { map.showTileBoundaries = e.value; });
+        });
+    </script>
+</body>
+
+</html>

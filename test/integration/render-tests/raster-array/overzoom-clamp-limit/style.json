@@ -1,0 +1,62 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "_comment": "Verifies graceful clamping past the max overzoom (deltaZ > log2(tileSize)). The z=2 fixture is the only source data; at z=12 we are deltaZ=10 levels above it, while log2(512)=9 is the limit. computeOverzoomCoords clamps to outTileSize=1 and we expect a single parent pixel scaled across the visible tile. The point of the test is that the renderer still produces output — no holes, no error events — even at extreme overzoom.",
+      "width": 256,
+      "height": 256,
+      "allowed": 0.001,
+      "operations": [["wait"]],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - to be ported https://mapbox.atlassian.net/browse/MAPSNAT-4067"}
+      ]
+    }
+  },
+  "center": [135.0053045734985, 36.00653610439714],
+  "zoom": 12,
+  "transition": {"duration": 0},
+  "sources": {
+    "precipitations": {
+      "type": "raster-array",
+      "tiles": ["local://tiles/{z}-{x}-{y}.mrt"],
+      "raster_layers": [
+        {
+          "fields": {
+            "range": [0, 14],
+            "tilesize": 512,
+            "buffer": 1,
+            "bands": ["1708304400"]
+          },
+          "id": "Total Precip"
+        }
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "rgba(0, 0, 0, 1)"}
+    },
+    {
+      "id": "precipitations",
+      "source": "precipitations",
+      "source-layer": "Total Precip",
+      "type": "raster",
+      "paint": {
+        "raster-resampling": "linear",
+        "raster-fade-duration": 0,
+        "raster-color-range": [0, 1],
+        "raster-color-range-transition": {"duration": 0},
+        "raster-color": [
+          "interpolate",
+          ["linear"],
+          ["raster-value"],
+          0, "rgba(255,0,0,1)",
+          0.5, "rgba(0,255,0,1)",
+          1, "rgba(0,0,255,1)"
+        ]
+      }
+    }
+  ]
+}

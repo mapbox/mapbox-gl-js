@@ -12,6 +12,10 @@ import LngLat from '../../../src/geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import {Event, ErrorEvent, Evented} from '../../../src/util/evented';
 import browser from '../../../src/util/browser';
+import RasterArrayTileSource from '../../../src/source/raster_array_tile_source.js';
+
+import type Dispatcher from '../../../src/util/dispatcher';
+import type {Map as MapboxMap} from '../../../src/ui/map';
 
 // Add a mocked source type for use in these tests
 function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
@@ -86,6 +90,35 @@ export function createSourceCache(options, used) {
     sc.transform = new Transform();
     sc.map = {painter: {transform: sc.transform}};
     return {sourceCache: sc, eventedParent};
+}
+
+function createRasterArrayTileSource() {
+    const source = new RasterArrayTileSource(
+        'test-id',
+        {type: 'raster-array', tileSize: 512},
+        {send() {}, getActor() { return {send() {}}; }} as unknown as Dispatcher,
+        new Evented()
+    );
+
+    source.map = {
+        triggerRepaint: vi.fn(),
+        painter: {_terrain: null},
+        style: {getSourceCache: () => null},
+    } as unknown as MapboxMap;
+
+    return source;
+}
+
+function createRasterArrayTileSourceCache(used) {
+
+    const source = createRasterArrayTileSource();
+    const sc = new SourceCache('test-id', source);
+
+    sc.used = typeof used === 'boolean' ? used : true;
+    sc.transform = new Transform();
+    sc.map = {painter: {transform: sc.transform}};
+    return sc;
+
 }
 
 describe('SourceCache#addTile', () => {
@@ -2239,6 +2272,49 @@ describe('shadow caster tiles', () => {
             });
             sourceCacheMaxZ14.sourceCache.getSource().onAdd();
         });
+    });
+});
+
+describe('SourceCache#_retainLoadedChildren', () => {
+    // Regression: when zooming back out, previously-created client-side overzoom
+    // raster-array tiles (cropped from the same parent) stayed retained as
+    // "loaded children" of the new lower-zoom ideal tile and got painted on top,
+    // causing raster-particle simulations to run multiple times in the same area
+    // (visible as a dense particle blob over the previously-zoomed region).
+    test('does not retain client-side overzoomed raster-array tiles as covering children', () => {
+        const sourceCache = createRasterArrayTileSourceCache();
+
+        const idealTileID = new OverscaledTileID(2, 0, 2, 1, 1);
+        const overzoomedID = new OverscaledTileID(10, 0, 10, 256, 256);
+
+        sourceCache._tiles[overzoomedID.key] = {
+            tileID: overzoomedID,
+            hasData: () => true,
+            parentTile: {tileID: new OverscaledTileID(0, 0, 0, 0, 0)},
+        };
+
+        const retain = {};
+        sourceCache._retainLoadedChildren({[idealTileID.key]: idealTileID}, 2, 10, retain);
+
+        expect(retain[overzoomedID.key]).toBeUndefined();
+    });
+
+    test('still retains authoritative loaded raster-array children (parentTile null)', () => {
+        const sourceCache = createRasterArrayTileSourceCache();
+
+        const idealTileID = new OverscaledTileID(2, 0, 2, 1, 1);
+        const childID = new OverscaledTileID(4, 0, 4, 4, 4);
+
+        sourceCache._tiles[childID.key] = {
+            tileID: childID,
+            hasData: () => true,
+            parentTile: null,
+        };
+
+        const retain = {};
+        sourceCache._retainLoadedChildren({[idealTileID.key]: idealTileID}, 2, 10, retain);
+
+        expect(retain[childID.key]).toEqual(childID);
     });
 });
 

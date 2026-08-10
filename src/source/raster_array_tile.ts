@@ -6,6 +6,7 @@ import {getArrayBuffer} from '../util/ajax';
 import {makeFQID} from '../util/fqid';
 import {registerRasterArrayTile} from './raster_array_plugin';
 import {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
+import {crop, computeOverzoomCoords} from '../data/mrt/overzoom_util';
 
 import type Painter from '../render/painter';
 import type Framebuffer from '../gl/framebuffer';
@@ -33,6 +34,8 @@ export type TextureDescriptor = {
 const FIRST_TRY_HEADER_LENGTH = 16384;
 const MRT_DECODED_BAND_CACHE_SIZE = 30;
 
+type OverzoomCoords = {offset: [number, number]; tileSize: number; deltaZ: number};
+
 class RasterArrayTile extends Tile implements Tile {
     entireBuffer: ArrayBuffer | null | undefined;
     requestParams: RequestParameters | null | undefined;
@@ -55,6 +58,17 @@ class RasterArrayTile extends Tile implements Tile {
     _mrt: MapboxRasterTile | null | undefined;
     _isHeaderLoaded: boolean;
 
+    // Set on tiles whose `loadTile` is in progress through the synthetic overzoom path
+    // (no actor/worker). Used to dedup re-entrant `loadTile` calls.
+    _isLoadInProgress: boolean;
+
+    // For overzoomed tiles, points to the root data tile whose MRT data is reused.
+    // `overzoomCoordsPerLayer` describes which pixel region of the parent maps to
+    // this tile, keyed by layer name. Each layer can have its own `tileSize`, so
+    // the crop region differs per layer (matches @mapbox/mrt-overzoom's flow).
+    parentTile: RasterArrayTile | null;
+    overzoomCoordsPerLayer: Map<string, OverzoomCoords> | null;
+
     constructor(tileID: OverscaledTileID, size: number, tileZoom: number, painter?: Painter | null, isRaster?: boolean) {
         super(tileID, size, tileZoom, painter, isRaster);
 
@@ -62,8 +76,11 @@ class RasterArrayTile extends Tile implements Tile {
         this._fetchQueuePerLayer = new Map();
         this._taskQueue = new Map();
         this._isHeaderLoaded = false;
+        this._isLoadInProgress = false;
         this.textureDescriptorPerLayer = new Map();
         this.texturePerLayer = new Map();
+        this.parentTile = null;
+        this.overzoomCoordsPerLayer = null;
     }
 
     /**
@@ -97,6 +114,8 @@ class RasterArrayTile extends Tile implements Tile {
             texture.update(img, {premultiply: false});
         } else {
             texture = new Texture(context, img, gl.RGBA8, {premultiply: false});
+            // Use linear filtering and clamp to edge to avoid tile boundary artifacts
+            texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
         }
 
         if (!this.texturePerLayer.has(sourceLayer)) {
@@ -195,7 +214,6 @@ class RasterArrayTile extends Tile implements Tile {
             }
 
             this.updateTextureDescriptor(sourceLayer, layerId, band);
-
             const textureDescriptor = this.textureDescriptorPerLayer.get(layerId);
             callback(null, textureDescriptor ? textureDescriptor.img : null);
         });
@@ -207,6 +225,11 @@ class RasterArrayTile extends Tile implements Tile {
         const mrt = this._mrt;
         if (!this._isHeaderLoaded || !mrt) {
             callback(new Error('Tile header is not ready'));
+            return;
+        }
+
+        if (this.parentTile && this.overzoomCoordsPerLayer) {
+            callback(null, null);
             return;
         }
 
@@ -288,13 +311,18 @@ class RasterArrayTile extends Tile implements Tile {
         try {
             mrtLayer = mrt.getLayer(sourceLayer);
         } catch (err) {
+            if (this.parentTile && this.overzoomCoordsPerLayer) {
+                callback(new Error(`Layer '${sourceLayer}' not found in parent tile MRT`));
+                return;
+            }
+
             if (this.state === 'reloading') {
                 // When a tile is reloading, getLayer might throw an error
                 // due to the layer not existing for a time period
                 // We swallow the error here since that's expected
                 return;
             }
-            // Re-throw other errors
+
             throw err;
         }
 
@@ -359,10 +387,25 @@ class RasterArrayTile extends Tile implements Tile {
     updateTextureDescriptor(sourceLayer: string, layerId: string, band: string | number): void {
         if (!this._mrt) return;
 
-        const mrtLayer = this._mrt.getLayer(sourceLayer);
+        let mrtLayer: MapboxRasterLayer;
+        try {
+            mrtLayer = this._mrt.getLayer(sourceLayer);
+        } catch (err) {
+            return;
+        }
+
         if (!mrtLayer || !mrtLayer.hasBand(band) || !mrtLayer.hasDataForBand(band)) return;
 
-        const {bytes, tileSize, buffer, offset, scale} = mrtLayer.getBandView(band);
+        let {bytes, tileSize, buffer, offset, scale} = mrtLayer.getBandView(band);
+
+        if (this.parentTile && this.overzoomCoordsPerLayer) {
+            const layerCoords = this.overzoomCoordsPerLayer.get(sourceLayer);
+            if (layerCoords) {
+                bytes = this.cropBandData(bytes, tileSize, buffer, layerCoords);
+                tileSize = layerCoords.tileSize;
+            }
+        }
+
         const size = tileSize + 2 * buffer;
         const img = new RGBAImage({width: size, height: size}, bytes);
 
@@ -388,9 +431,85 @@ class RasterArrayTile extends Tile implements Tile {
         });
     }
 
+    /**
+     * Crop a layer's RGBA-decoded band data down to the overzoomed region.
+     * @private
+     */
+    cropBandData(
+        bytes: Uint8Array,
+        parentTileSize: number,
+        buffer: number,
+        layerCoords: OverzoomCoords
+    ): Uint8Array {
+        const {offset, tileSize: childTileSize} = layerCoords;
+
+        // getBandView() always returns data in RGBA format (4 bytes per pixel)
+        // regardless of the native MRT format (uint8/uint16/uint32).
+        const RGBA_COMPONENTS = 4;
+        const parentDimWithBuffer = parentTileSize + 2 * buffer;
+        const inShape: [number, number, number, number] = [1, parentDimWithBuffer, parentDimWithBuffer, RGBA_COMPONENTS];
+
+        const childDimWithBuffer = childTileSize + 2 * buffer;
+        const outShape: [number, number, number, number] = [1, childDimWithBuffer, childDimWithBuffer, RGBA_COMPONENTS];
+
+        return crop(bytes, inShape, outShape, offset) as Uint8Array;
+    }
+
+    /**
+     * Set up this tile to render from a parent tile's data.
+     * Walks the parent chain to the root data tile, shares its MRT, and computes
+     * the pixel crop region. Returns true on success.
+     * @private
+     */
+    setupOverzoom(parentTile: RasterArrayTile): boolean {
+        let rootTile = parentTile;
+        while (rootTile.parentTile) {
+            rootTile = rootTile.parentTile;
+        }
+
+        const rootMrt = rootTile._mrt;
+        if (!rootMrt || !rootMrt.layers) return false;
+
+        const layers = Object.values(rootMrt.layers);
+        if (layers.length === 0) return false;
+
+        const source = {
+            x: rootTile.tileID.canonical.x,
+            y: rootTile.tileID.canonical.y,
+            z: rootTile.tileID.canonical.z,
+        };
+        const dest = {
+            x: this.tileID.canonical.x,
+            y: this.tileID.canonical.y,
+            z: this.tileID.canonical.z,
+        };
+
+        // Compute crop coords per layer. Layers in a single MRT tile can
+        // have different `tileSize` values, which means a single overzoom
+        // request resolves to different pixel offsets for each layer.
+        const coordsPerLayer = new Map<string, OverzoomCoords>();
+        for (const layer of layers) {
+            try {
+                coordsPerLayer.set(layer.name, computeOverzoomCoords(layer.tileSize, source, dest));
+            } catch (err) {
+                // Only genuine invariant violations (dest not a child of source, negative
+                // deltaZ) throw here; the "too much overzoom" case is clamped instead.
+                // If something does throw, treat the whole tile as un-overzoomable rather
+                // than producing a partial Map.
+                return false;
+            }
+        }
+
+        this.parentTile = rootTile;
+        this._mrt = rootMrt;
+        this._isHeaderLoaded = true;
+        this.overzoomCoordsPerLayer = coordsPerLayer;
+
+        return true;
+    }
+
     override destroy(preserveTexture: boolean = false): void {
         super.destroy(preserveTexture);
-
         delete this._mrt;
 
         if (!preserveTexture) {

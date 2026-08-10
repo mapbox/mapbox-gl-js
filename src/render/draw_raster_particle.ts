@@ -556,7 +556,9 @@ export function prepare(layer: RasterParticleStyleLayer, sourceCache: SourceCach
 
     const tiles = sourceCache.getIds().map(id => sourceCache.getTileByID(id) as RasterArrayTile);
     for (const tile of tiles) {
-        if (tile.updateNeeded(layer.id, band)) {
+        // Only call prepareTile if the tile header is loaded (or will be loaded via overzoom)
+        // This avoids infinite loop of calling prepareTile every frame while tile is loading
+        if (tile.updateNeeded(layer.id, band) && (tile._isHeaderLoaded || tile.parentTile)) {
             source.prepareTile(tile, sourceLayer, layer.id, band);
         }
     }
