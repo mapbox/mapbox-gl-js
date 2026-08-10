@@ -71,7 +71,7 @@
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-html": "^8.1.4",
     "eslint-plugin-import-x": "^4.16.2",
-    "eslint-plugin-jsdoc": "^63.0.0",
+    "eslint-plugin-jsdoc": "^64.0.1",
     "geojson-vt": "^4.0.3",
     "gl-matrix": "^3.4.4",
     "kdbush": "^4.1.0",
