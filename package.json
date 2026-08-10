@@ -32,7 +32,7 @@
   ],
   "devDependencies": {
     "@actions/core": "^3.0.1",
-    "@e18e/eslint-plugin": "^0.6.0",
+    "@e18e/eslint-plugin": "^0.8.0",
     "@eslint/compat": "^2.1.0",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
