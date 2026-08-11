@@ -5,7 +5,7 @@ import {
 } from '../shaders/shaders';
 import assert from '../style-spec/util/assert';
 import VertexArrayObject from './vertex_array_object';
-import {terrainUniforms, globeUniforms} from '../terrain/terrain';
+import {terrainUniforms, globeUniforms} from '../terrain/terrain_gpu_uniforms';
 import {fogUniforms} from './fog';
 import {cutoffUniforms} from './cutoff';
 import {lightsUniforms} from '../../3d-style/render/lights';
@@ -20,7 +20,7 @@ import browser from '../util/browser';
 
 import type ProgramConfiguration from '../data/program_configuration';
 import type Context from '../gl/context';
-import type {TerrainUniformsType, GlobeUniformsType} from '../terrain/terrain';
+import type {TerrainUniformsType, GlobeUniformsType} from '../terrain/terrain_gpu_uniforms';
 import type {FogUniformsType} from './fog';
 import type {CutoffUniformsType} from './cutoff';
 import type {LightsUniformsType} from '../../3d-style/render/lights';

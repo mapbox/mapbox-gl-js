@@ -39,7 +39,7 @@ import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_st
 import type SourceCache from '../source/source_cache';
 import type Painter from './painter';
 import type Tile from '../source/tile';
-import type {Terrain} from '../terrain/terrain';
+import type {ITerrainRenderer} from './terrain_plugin';
 import type Context from '../gl/context';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type {OverscaledTileID} from '../source/tile_id';
@@ -564,7 +564,7 @@ export function computeFrontCutoffParams(pitchRad: number, frontCutoffArray: [nu
 
 // Flat roofs array is prepared in the bucket, except for buildings that are on tile borders.
 // For them, join pieces, calculate joined size here, and then upload data.
-function updateBorders(context: Context, source: SourceCache, coord: OverscaledTileID, bucket: FillExtrusionBucket, layer: FillExtrusionStyleLayer, terrain: Terrain | null | undefined, reconcileReplacementState: boolean) {
+function updateBorders(context: Context, source: SourceCache, coord: OverscaledTileID, bucket: FillExtrusionBucket, layer: FillExtrusionStyleLayer, terrain: ITerrainRenderer | null | undefined, reconcileReplacementState: boolean) {
     if (bucket.centroidVertexArray.length === 0) {
         bucket.createCentroidsBuffer();
     }

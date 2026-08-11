@@ -37,13 +37,19 @@ import custom from './draw_custom';
 import sky from './draw_sky';
 import Atmosphere from './draw_atmosphere';
 import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe_util';
-import {Terrain, defaultTerrainUniforms} from '../terrain/terrain';
+import {defaultTerrainUniforms} from '../terrain/terrain_gpu_uniforms';
+import {
+    createTerrainRenderer,
+    onTerrainRendererAvailable,
+    type ITerrainRenderer,
+} from './terrain_plugin';
 import {Debug} from '../util/debug';
 import Tile from '../source/tile';
 import {RGBAImage} from '../util/image';
 import {LayerTypeMask} from '../../3d-style/util/conflation';
 import {ReplacementSource, ReplacementOrderLandmark, ReplacementOrderBuilding} from '../../3d-style/source/replacement_source';
 import {Standard, prepareStandard} from '../../modules/standard_main';
+import {Lite} from '../../modules/lite_main';
 import {lightsUniformValues} from '../../3d-style/render/lights';
 import {WireframeDebugCache} from './wireframe_cache';
 import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers';
@@ -256,8 +262,9 @@ class Painter {
     identityMat!: mat4;
     debugOverlayTexture!: Texture;
     debugOverlayCanvas!: HTMLCanvasElement;
-    _terrain: Terrain | null | undefined;
-    _forceTerrainMode!: boolean;
+    _terrain: ITerrainRenderer | null | undefined;
+    _terrainRendererRetryPending: boolean;
+    _forceTerrainMode: boolean;
     globeSharedBuffers: GlobeSharedBuffers | null | undefined;
     tileLoaded!: boolean;
     frameCopies: Array<WebGLTexture>;
@@ -452,12 +459,27 @@ class Painter {
         if (!enabled && (!this._terrain || !this._terrain.enabled)) return;
 
         if (!this._terrain) {
-            this._terrain = new Terrain(this, style);
+            this._terrain = createTerrainRenderer(this, style);
+            if (!this._terrain) {
+                // Lite module not yet loaded. Register a one-time callback so that
+                // once the factory becomes available we trigger a repaint and retry.
+                if (!this._terrainRendererRetryPending) {
+                    this._terrainRendererRetryPending = true;
+                    onTerrainRendererAvailable(() => {
+                        this._terrainRendererRetryPending = false;
+                        // Use _update(false) rather than triggerRepaint() so that
+                        // _sourcesDirty is set to true, which ensures _updateTerrain()
+                        // is invoked in the next render frame.
+                        if (this.style && this.style.map) this.style.map._update(false);
+                    });
+                }
+                return;
+            }
         }
-        const terrain: Terrain = this._terrain;
-        this.transform.elevation = enabled ? terrain : null;
-        terrain.update(style, this.transform, adaptCameraAltitude);
-        if (this.transform.elevation && !terrain.enabled) {
+
+        this.transform.elevation = enabled ? this._terrain : null;
+        this._terrain.update(style, this.transform, adaptCameraAltitude);
+        if (this.transform.elevation && !this._terrain.enabled) {
             // for zoom based exaggeration change, terrain.update can disable terrain.
             this.transform.elevation = null;
         }
@@ -490,7 +512,7 @@ class Painter {
         this.transform.fogCullDistSq = fogCullDist * fogCullDist;
     }
 
-    get terrain(): Terrain | null | undefined {
+    get terrain(): ITerrainRenderer | null | undefined {
         return (this.transform._terrainEnabled() && this._terrain && this._terrain.enabled) || this._forceTerrainMode ?
             this._terrain :
             null;
@@ -502,7 +524,10 @@ class Painter {
 
     set forceTerrainMode(value: boolean) {
         if (value && !this._terrain) {
-            this._terrain = new Terrain(this, this.style);
+            this._terrain = createTerrainRenderer(this, this.style);
+            if (!this._terrain) {
+                console.warn('forceTerrainMode: Lite module not loaded yet, terrain renderer unavailable');
+            }
         }
         this._forceTerrainMode = value;
     }
@@ -753,7 +778,7 @@ class Painter {
 
     colorModeForDrapableLayerRenderPass(emissiveStrengthForDrapedLayers?: number): Readonly<ColorMode> {
         const deferredDrapingEnabled = () => {
-            return this.style && this.style.enable3dLights() && this.terrain && this.terrain.renderingToTexture;
+            return this.style && this.style.enable3dLights() && (this._terrain ? this._terrain.renderingToTexture : false);
         };
 
         const gl = this.context.gl;
@@ -1783,7 +1808,7 @@ class Painter {
      * @private
      */
     currentGlobalDefines(name: string, overrideFog?: boolean | null, overrideRtt?: boolean | null, overrideTerrain?: boolean | null, overrideGlobe?: boolean | null): DynamicDefinesType[] {
-        const rtt = (overrideRtt === undefined) ? this.terrain && this.terrain.renderingToTexture : overrideRtt;
+        const rtt = (overrideRtt === undefined) ? (this._terrain ? this._terrain.renderingToTexture : false) : overrideRtt;
         const terrainElevated = (overrideTerrain === undefined) ? this.terrainRenderModeElevated() : overrideTerrain;
         const globe = (overrideGlobe === undefined) ? this.transform.projection.name === 'globe' : overrideGlobe;
         const defines: DynamicDefinesType[] = [];
@@ -1843,7 +1868,8 @@ class Painter {
     getShaderSource(name: ProgramName) {
         const hdShaders = HD.shaders;
         const standardShaders = Standard.shaders;
-        return shaders[name as keyof typeof shaders] || (hdShaders && hdShaders[name as keyof typeof hdShaders]) || (standardShaders && standardShaders[name as keyof typeof standardShaders]);
+        const liteShaders = Lite.shaders;
+        return shaders[name as keyof typeof shaders] || (hdShaders && hdShaders[name as keyof typeof hdShaders]) || (standardShaders && standardShaders[name as keyof typeof standardShaders]) || (liteShaders && liteShaders[name as keyof typeof liteShaders]);
     }
 
     /*

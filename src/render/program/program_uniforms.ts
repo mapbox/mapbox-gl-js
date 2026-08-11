@@ -12,14 +12,13 @@ import {lineUniforms, linePatternUniforms} from './line_program';
 import {rasterUniforms} from './raster_program';
 import {symbolUniforms} from './symbol_program';
 import {backgroundUniforms, backgroundPatternUniforms} from './background_program';
-import {terrainRasterUniforms} from '../../terrain/terrain_raster_program';
 import {skyboxUniforms, skyboxGradientUniforms} from './skybox_program';
 import {skyboxCaptureUniforms} from './skybox_capture_program';
-import {globeRasterUniforms, atmosphereUniforms} from '../../terrain/globe_raster_program';
+import {atmosphereUniforms} from '../../terrain/atmosphere_program';
 import {starsUniforms} from '../../terrain/stars_program';
 import {occlusionUniforms} from './occlusion_program';
 
-import type {GlobeDefinesType} from '../../terrain/globe_raster_program';
+import type {GlobeDefinesType, GlobeRasterUniformsType} from '../../terrain/globe_raster_program';
 import type {HeatmapDefinesType} from './heatmap_program';
 import type {HillshadeDefinesType} from './hillshade_program';
 import type {LineDefinesType} from './line_program';
@@ -33,6 +32,7 @@ import type {FillExtrusionDefinesType} from './fill_extrusion_program';
 import type {BuildingDefinesType} from '../../../3d-style/render/program/building_program';
 import type {ProgramUniformsHDType} from '../../../3d-style/render/program/program_uniforms_hd';
 import type {ProgramUniformsStandardType} from '../../../3d-style/render/program/program_uniforms_standard';
+import type {TerrainRasterUniformsType} from '../../terrain/terrain_raster_program';
 
 export type FogDefinesType = 'FOG';
 export type TerrainDepthAccessDefinesType = 'DEPTH_D24' | 'DEPTH_OCCLUSION';
@@ -95,11 +95,9 @@ export const programUniforms = {
     symbol: symbolUniforms,
     background: backgroundUniforms,
     backgroundPattern: backgroundPatternUniforms,
-    terrainRaster: terrainRasterUniforms,
     skybox: skyboxUniforms,
     skyboxGradient: skyboxGradientUniforms,
     skyboxCapture: skyboxCaptureUniforms,
-    globeRaster: globeRasterUniforms,
     globeAtmosphere: atmosphereUniforms,
     stars: starsUniforms,
     occlusion: occlusionUniforms
@@ -107,4 +105,7 @@ export const programUniforms = {
 
 export type ProgramUniformsType = {
     [K in keyof typeof programUniforms]: ReturnType<typeof programUniforms[K]>;
-} & ProgramUniformsHDType & ProgramUniformsStandardType;
+} & ProgramUniformsHDType & ProgramUniformsStandardType & {
+    globeRaster: GlobeRasterUniformsType;
+    terrainRaster: TerrainRasterUniformsType;
+};

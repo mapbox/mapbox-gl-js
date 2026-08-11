@@ -107,6 +107,8 @@ describe('Elevation', () => {
             await waitFor(map, 'style.load');
             setMockElevationTerrain(map, zeroDem, TILE_SIZE);
             await waitFor(map, 'render');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            await vi.waitUntil(() => !!map.painter.terrain, {timeout: 3000});
         });
 
         const elevationError = -1;
@@ -135,6 +137,8 @@ describe('Elevation', () => {
             await waitFor(map, 'style.load');
             setMockElevationTerrain(map, zeroDem, 512, 11);
             await waitFor(map, 'render');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            await vi.waitUntil(() => !!map.painter.terrain, {timeout: 3000});
         });
 
         test('Sample', () => {
@@ -153,6 +157,8 @@ describe('Elevation', () => {
             await waitFor(map, 'style.load');
             setMockElevationTerrain(map, zeroDem, TILE_SIZE);
             await waitFor(map, 'render');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            await vi.waitUntil(() => !!map.painter.terrain, {timeout: 3000});
         });
 
         test('remove source', () => {
@@ -168,15 +174,16 @@ describe('Elevation', () => {
         await waitFor(map, "style.load");
         setMockElevationTerrain(map, zeroDem, TILE_SIZE);
         await waitFor(map, "render");
+        await vi.waitUntil(() => !!map.painter.terrain, {timeout: 3000});
         map._updateTerrain();
         const elevationError = -1;
         const terrain = map.painter.terrain;
-        const elevation1 = map.painter.terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
+        const elevation1 = map.painter.terrain?.getAtPoint({x: 0.5, y: 0.5}, elevationError);
         expect(elevation1).toEqual(0);
 
         map.setStyle(createStyle(), {diff: false});
 
-        const elevation2 = terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
+        const elevation2 = terrain?.getAtPoint({x: 0.5, y: 0.5}, elevationError);
         expect(elevation2).toEqual(elevationError);
     });
 
@@ -223,6 +230,8 @@ describe('Elevation', () => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setTerrain({"source": "mapbox-dem"});
             await waitFor(map, 'load');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            await vi.waitUntil(() => !!map.painter.terrain, {timeout: 3000});
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             cache = map.style.getOwnSourceCache('mapbox-dem');
 
@@ -698,7 +707,8 @@ describe('Elevation', () => {
         map.addLayer(customLayer);
         map.setTerrain({"source": "mapbox-dem"});
         await waitFor(map, "render");
-        expect(map.painter.terrain._shouldDisableRenderCache()).toBeFalsy();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        expect((map.painter.terrain as any)._shouldDisableRenderCache()).toBeFalsy();
         await waitFor(map, "idle");
     });
 

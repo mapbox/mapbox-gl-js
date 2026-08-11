@@ -26,6 +26,8 @@ export class StubMap extends Evented {
 
     _update() {}
 
+    triggerRepaint() {}
+
     _getMapId() {
         return 1;
     }

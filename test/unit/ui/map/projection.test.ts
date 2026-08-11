@@ -121,6 +121,11 @@ describe('Map#projection', () => {
 
             await waitFor(map, "load");
 
+            // Ensure the deferred globe terrain renderer has been created and its setup
+            // render (_calcMatrices) has already fired before we install the spy, so
+            // the subsequent setZoom(7) produces exactly the expected count of 3.
+            await vi.waitUntil(() => !!map.painter._terrain, {timeout: 3000});
+
             vi.spyOn(map.transform, 'setMercatorFromTransition');
             vi.spyOn(map.transform, '_calcMatrices');
 

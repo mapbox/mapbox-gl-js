@@ -1,4 +1,5 @@
 import browser from '../util/browser';
+import {programUniforms} from './program/program_uniforms';
 
 import type Painter from './painter';
 import type {CreateProgramParams} from './painter';
@@ -213,6 +214,9 @@ export class ProgramPrecompiler {
         while (this._queue.length > 0) {
             const task = this._queue.shift();
             if (!task) break;
+            // Skip programs whose uniforms aren't yet registered (e.g. terrain/globe before Lite loads).
+            // Lite registers them via Object.assign(programUniforms, {...}) at load time.
+            if (!(task.programId in programUniforms)) continue;
             painter.style = style;
             // `currentGlobalDefines` only adds FOG when both `overrideFog` is true *and*
             // painter's `_fogVisible` is set; mirror the runtime convention here.

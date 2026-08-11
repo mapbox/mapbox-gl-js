@@ -79,6 +79,10 @@ export default mergeConfig(baseConfig, defineConfig({
                 find: /.*\/modules\/standard_main$/,
                 replacement: fileURLToPath(new URL('./modules/standard_main_esm.ts', import.meta.url)),
             },
+            {
+                find: /.*\/modules\/lite_main$/,
+                replacement: fileURLToPath(new URL('./modules/lite_main_esm.ts', import.meta.url)),
+            },
         ],
     },
     // Forbid Vite's on-demand dep discovery so it can't reload the page mid-run.

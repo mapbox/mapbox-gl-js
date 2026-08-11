@@ -54,10 +54,6 @@ import symbolVert from './symbol.vertex.glsl';
 import skyboxFrag from './skybox.fragment.glsl';
 import skyboxGradientFrag from './skybox_gradient.fragment.glsl';
 import skyboxVert from './skybox.vertex.glsl';
-import terrainRasterFrag from './terrain_raster.fragment.glsl';
-import terrainRasterVert from './terrain_raster.vertex.glsl';
-import terrainDepthFrag from './terrain_depth.fragment.glsl';
-import terrainDepthVert from './terrain_depth.vertex.glsl';
 import preludeTerrainVert from './_prelude_terrain.vertex.glsl';
 import preludeFogVert from './_prelude_fog.vertex.glsl';
 import preludeFogFrag from './_prelude_fog.fragment.glsl';
@@ -66,8 +62,6 @@ import preludeRasterArrayFrag from './_prelude_raster_array.glsl';
 import preludeIndicatorCutoutFrag from './_prelude_indicator_cutout.fragment.glsl';
 import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
-import globeFrag from './globe_raster.fragment.glsl';
-import globeVert from './globe_raster.vertex.glsl';
 import atmosphereFrag from './atmosphere.fragment.glsl';
 import atmosphereVert from './atmosphere.vertex.glsl';
 import starsFrag from './stars.fragment.glsl';
@@ -172,12 +166,9 @@ export default {
     linePattern: compile(linePatternFrag, linePatternVert),
     raster: compile(rasterFrag, rasterVert),
     symbol: compile(symbolFrag, symbolVert),
-    terrainRaster: compile(terrainRasterFrag, terrainRasterVert),
-    terrainDepth: compile(terrainDepthFrag, terrainDepthVert),
     skybox: compile(skyboxFrag, skyboxVert),
     skyboxGradient: compile(skyboxGradientFrag, skyboxVert),
     skyboxCapture: compile(skyboxCaptureFrag, skyboxCaptureVert),
-    globeRaster: compile(globeFrag, globeVert),
     globeAtmosphere: compile(atmosphereFrag, atmosphereVert),
     stars: compile(starsFrag, starsVert),
     occlusion: compile(occlusionFrag, occlusionVert)

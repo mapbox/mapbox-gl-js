@@ -192,10 +192,12 @@ describe('Map#setStyle', () => {
         expect(map.getStyle().terrain).toEqual(undefined);
         map.setZoom(3); // Below threshold for Mercator transition
         await waitFor(map, "render");
+        // Wait for the terrain renderer to be created asynchronously (Standard loads lazily)
+        await vi.waitUntil(() => !!map.painter._terrain, {timeout: 3000});
         expect(initStyleObj.setTerrain).toHaveBeenCalledTimes(1);
         expect(map.style.terrain).toBeTruthy();
         expect(map.getTerrain()).toEqual(null);
-        expect(map.painter._terrain.isUsingMockSource()).toBeTruthy();
+        expect(map.painter._terrain?.isUsingMockSource()).toBeTruthy();
         expect(map.getStyle().terrain).toEqual(undefined);
     });
 
@@ -399,13 +401,13 @@ describe('Map#setStyle', () => {
             'maxzoom': 14
         });
         await waitFor(map, "render");
-        expect(map.painter._terrain.isUsingMockSource()).toBeTruthy();
+        expect(map.painter._terrain?.isUsingMockSource()).toBeTruthy();
         map.setTerrain({'source': 'mapbox-dem'});
         await waitFor(map, "render");
-        expect(map.painter._terrain.isUsingMockSource()).toBeFalsy();
+        expect(map.painter._terrain?.isUsingMockSource()).toBeFalsy();
         map.setTerrain(null);
         await waitFor(map, "render");
-        expect(map.painter._terrain.isUsingMockSource()).toBeTruthy();
+        expect(map.painter._terrain?.isUsingMockSource()).toBeTruthy();
     });
 
     test('Setting terrain and then globe correctly sets terrain mock source', async () => {
@@ -422,12 +424,12 @@ describe('Map#setStyle', () => {
         });
         map.setTerrain({'source': 'mapbox-dem'});
         await waitFor(map, "render");
-        expect(map.painter._terrain.isUsingMockSource()).toBeFalsy();
+        expect(map.painter._terrain?.isUsingMockSource()).toBeFalsy();
         map.setProjection('globe');
-        expect(map.painter._terrain.isUsingMockSource()).toBeFalsy();
+        expect(map.painter._terrain?.isUsingMockSource()).toBeFalsy();
         map.setTerrain(null);
         await waitFor(map, "render");
-        expect(map.painter._terrain.isUsingMockSource()).toBeTruthy();
+        expect(map.painter._terrain?.isUsingMockSource()).toBeTruthy();
     });
 
     test('should apply different styles when toggling setStyle (https://github.com/mapbox/mapbox-gl-js/issues/11939)', async () => {

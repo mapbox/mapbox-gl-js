@@ -24,7 +24,7 @@ import type Context from '../../../src/gl/context';
 import type {FilterSpecification, ProjectionSpecification} from '../../../src/style-spec/types';
 import type Painter from '../../../src/render/painter';
 import type {vec4} from 'gl-matrix';
-import type {Terrain} from '../../../src/terrain/terrain';
+import type {ITerrainRenderer} from '../../../src/render/terrain_plugin';
 import type FeatureIndex from '../../../src/data/feature_index';
 import type GridIndex from '../../../src/symbol/grid_index';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
@@ -383,7 +383,7 @@ class Tiled3dModelBucket implements Bucket {
         this.dirty = false;
     }
 
-    elevationUpdate(terrain: Terrain, exaggeration: number, coord: OverscaledTileID, source: string) {
+    elevationUpdate(terrain: ITerrainRenderer, exaggeration: number, coord: OverscaledTileID, source: string) {
         assert(terrain);
         const demTile = terrain.findDEMTileFor(coord);
         if (!demTile) return;
@@ -413,7 +413,7 @@ class Tiled3dModelBucket implements Bucket {
         this.terrainExaggeration = exaggeration;
     }
 
-    updateDEM(terrain: Terrain, dem: DEMSampler, coord: OverscaledTileID, source: string) {
+    updateDEM(terrain: ITerrainRenderer, dem: DEMSampler, coord: OverscaledTileID, source: string) {
         let tiles = dem._dem._modifiedForSources[source];
         if (tiles === undefined) {
             dem._dem._modifiedForSources[source] = [];

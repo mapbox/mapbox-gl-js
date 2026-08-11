@@ -7,7 +7,7 @@ import {
     globeToMercatorTransition,
     globeUseCustomAntiAliasing
 } from './../geo/projection/globe_util';
-import {atmosphereUniformValues} from '../terrain/globe_raster_program';
+import {atmosphereUniformValues} from '../terrain/atmosphere_program';
 import {AtmosphereBuffer} from '../render/atmosphere_buffer';
 import {degToRad, mapValue, clamp} from '../util/util';
 import {mat3, vec3, mat4, quat} from 'gl-matrix';

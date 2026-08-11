@@ -1367,6 +1367,8 @@ describe('Map', () => {
             });
 
             await waitFor(map, "load");
+            // Wait for the deferred terrain renderer to be created (required for correct globe matrix calculation)
+            await vi.waitUntil(() => !!map.painter._terrain, {timeout: 3000});
             // On the Globe
             expect(map.isPointOnSurface([45, 45])).toEqual(true);
             expect(map.isPointOnSurface([135, 45])).toEqual(true);

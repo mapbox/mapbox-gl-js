@@ -30,6 +30,7 @@ function esmConfig(dir: string, workerSuffix: string, emitVisualizer = false): R
                     if (chunk.facadeModuleId.endsWith('hd_worker_imports.ts')) return 'hd.worker.js';
                     if (chunk.facadeModuleId.endsWith('standard_main_imports.ts')) return 'standard.main.js';
                     if (chunk.facadeModuleId.endsWith('standard_worker_imports.ts')) return 'standard.worker.js';
+                    if (chunk.facadeModuleId.endsWith('lite_main_imports.ts')) return 'lite.main.js';
                     if (chunk.facadeModuleId.endsWith('debug_imports.ts')) return 'debug.js';
                 }
                 // Identify each code-split chunk by a foundational module/file rather than by
@@ -106,7 +107,7 @@ export default (): RollupOptions[] => {
     ];
 };
 
-const filesToSub = new Set(['hd_main', 'hd_worker', 'standard_main', 'standard_registry', 'standard_worker', 'raster_array_main', 'raster_array_worker', 'debug']);
+const filesToSub = new Set(['hd_main', 'hd_worker', 'standard_main', 'standard_registry', 'standard_worker', 'lite_main', 'raster_array_main', 'raster_array_worker', 'debug']);
 
 /**
  * Guards the worker/main lazy-chunk boundary.

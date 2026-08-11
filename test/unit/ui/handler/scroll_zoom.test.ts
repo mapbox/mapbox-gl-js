@@ -145,7 +145,8 @@ describe('ScrollZoomHandler', () => {
             map.transform.zoom = 10;
             setMockElevationTerrain(map, zeroElevationDem, tileSize);
             await waitFor(map, "render");
-            expect(map.painter.terrain.getAtPoint(new MercatorCoordinate(0.5, 0.5))).toEqual(0);
+            await vi.waitUntil(() => !!map.painter.terrain, {timeout: 3000});
+            expect(map.painter.terrain?.getAtPoint(new MercatorCoordinate(0.5, 0.5))).toEqual(0);
             expect(simulateWheel(map).map(v => fixedNum(v, 5))).toEqual(expected);
             map.remove();
         });
@@ -158,7 +159,8 @@ describe('ScrollZoomHandler', () => {
             map.transform.zoom = 10;
             setMockElevationTerrain(map, highElevationDem, tileSize);
             await waitFor(map, "render");
-            expect(map.painter.terrain.getAtPoint(new MercatorCoordinate(0.5, 0.5))).toEqual(1500);
+            await vi.waitUntil(() => !!map.painter.terrain, {timeout: 3000});
+            expect(map.painter.terrain?.getAtPoint(new MercatorCoordinate(0.5, 0.5))).toEqual(1500);
             expect(simulateWheel(map).map(v => fixedNum(v, 5))).toEqual(expected);
             map.remove();
         });
@@ -232,7 +234,8 @@ describe('ScrollZoomHandler', () => {
             setMockElevationTerrain(map, highElevationDem, tileSize);
 
             await waitFor(map, "render");
-            expect(map.painter.terrain.getAtPoint(new MercatorCoordinate(0.5, 0.5))).toEqual(1500);
+            await vi.waitUntil(() => !!map.painter.terrain, {timeout: 3000});
+            expect(map.painter.terrain?.getAtPoint(new MercatorCoordinate(0.5, 0.5))).toEqual(1500);
 
             // Start the scroll gesture with high elevation data by performing few scroll events
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment

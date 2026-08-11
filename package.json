@@ -190,14 +190,26 @@
     {
       "gzip": true,
       "limit": "600 kb",
+      "name": "ESM Core + Lite (gzip)",
+      "path": [
+        "dist/esm/mapbox-gl.js",
+        "dist/esm/core*.js",
+        "dist/esm/worker*.js",
+        "dist/esm/shared*.js",
+        "dist/esm/lite.*.js"
+      ]
+    },
+    {
+      "gzip": true,
+      "limit": "600 kb",
       "name": "ESM Core + Standard (gzip)",
       "path": [
         "dist/esm/mapbox-gl.js",
         "dist/esm/core*.js",
         "dist/esm/worker*.js",
         "dist/esm/shared*.js",
-        "dist/esm/standard.*.js",
-        "dist/esm/hd_standard.*.js"
+        "dist/esm/lite.*.js",
+        "dist/esm/standard.*.js"
       ]
     },
     {
@@ -219,6 +231,18 @@
       ]
     },
     {
+      "gzip": true,
+      "limit": "600 kb",
+      "name": "ESM Core + Lite (brotli)",
+      "path": [
+        "dist/esm/mapbox-gl.js",
+        "dist/esm/core*.js",
+        "dist/esm/worker*.js",
+        "dist/esm/shared*.js",
+        "dist/esm/lite.*.js"
+      ]
+    },
+    {
       "limit": "600 kb",
       "name": "ESM Core + Standard (brotli)",
       "path": [
@@ -226,8 +250,8 @@
         "dist/esm/core*.js",
         "dist/esm/worker*.js",
         "dist/esm/shared*.js",
-        "dist/esm/standard.*.js",
-        "dist/esm/hd_standard.*.js"
+        "dist/esm/lite.*.js",
+        "dist/esm/standard.*.js"
       ]
     },
     {

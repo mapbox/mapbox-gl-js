@@ -25,6 +25,7 @@ import {getProperties as getDirectionalProps} from '../../3d-style/style/directi
 import {createExpression, createConfigExpression} from '../style-spec/expression/index';
 import {HD, prepareHD as prepareHDMain} from '../../modules/hd_main';
 import {prepareStandard as prepareStandardMain} from '../../modules/standard_main';
+import {prepareLite as prepareLiteMain} from '../../modules/lite_main';
 import {HD_ROAD_COVERAGE_SOURCE_LAYER} from '../source/frc_coverage_snapshot';
 import {DebugModule, prepareDebug} from '../../modules/debug';
 import {
@@ -366,6 +367,7 @@ class Style extends Evented<MapEvents> {
         [_: string]: SourceCache;
     };
     _loaded: boolean;
+    _drapingLoaded?: boolean;
     _initialBroadcastDone: boolean;
     _programPrecompiler: ProgramPrecompiler | null;
     _rtlTextPluginCallback: (state: {pluginStatus: string; pluginURL: string | null | undefined}) => void;
@@ -518,6 +520,7 @@ class Style extends Evented<MapEvents> {
         this._hdElevation = null;
         this._crossSourceElevationActive = false;
         this._loaded = false;
+        this._drapingLoaded = undefined;
         this._initialBroadcastDone = false;
         this._programPrecompiler = this.map._precompilePrograms && this.isRootStyle() ?
             new ProgramPrecompiler() :
@@ -1055,6 +1058,7 @@ class Style extends Evented<MapEvents> {
             if (terrain) {
                 this.checkCanvasFingerprintNoise();
                 if (!this.disableElevatedTerrain && !this.terrainSetForDrapingOnly()) {
+                    this._startLiteLoad();
                     this._createTerrain(terrain, DrapeRenderMode.elevated);
                 }
             }
@@ -1619,11 +1623,19 @@ class Style extends Evented<MapEvents> {
     }
 
     applyProjectionUpdate() {
+        // Kick off Lite load as early as possible whenever globe is active — even before
+        // the style finishes loading — so the terrain renderer factory is registered by
+        // the time the first globe frame renders.
+        if (this.map.transform.projection.requiresDraping) {
+            this._startLiteLoad();
+        }
+
         if (!this._loaded) return;
         this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
 
         if (this.map.transform.projection.requiresDraping) {
-            if (!this.hasTerrain()) {
+            const hasTerrain = (this.getTerrain() || this.stylesheet.terrain) && !this.disableElevatedTerrain;
+            if (!hasTerrain) {
                 this.setTerrainForDraping();
             }
         } else if (this.terrainSetForDrapingOnly()) {
@@ -1775,6 +1787,9 @@ class Style extends Evented<MapEvents> {
             return false;
 
         if (this._styleColorTheme.lutLoading)
+            return false;
+
+        if (this._drapingLoaded === false)
             return false;
 
         for (const {style} of this.fragments) {
@@ -4038,7 +4053,23 @@ class Style extends Evented<MapEvents> {
         return this.hasTerrain() ? this.terrain.get() : null;
     }
 
+    /**
+     * Triggers the Lite module load and tracks pending state so that `loaded()` returns
+     * false until the terrain renderer factory is registered. Idempotent — safe to call
+     * multiple times; the module is cached by the JS runtime after the first import.
+     */
+    _startLiteLoad() {
+        if (this._drapingLoaded !== undefined) return;
+        this._drapingLoaded = false;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        prepareLiteMain().then(() => {
+            this._drapingLoaded = true;
+            this.map.triggerRepaint();
+        });
+    }
+
     setTerrainForDraping() {
+        this._startLiteLoad();
         const mockTerrainOptions = {source: '', exaggeration: 0};
         this.setTerrain(mockTerrainOptions, DrapeRenderMode.deferred);
     }
@@ -4089,6 +4120,7 @@ class Style extends Evented<MapEvents> {
         let options: TerrainSpecification | TerrainSpecificationUpdate = terrainOptions;
         const isUpdating = !("source" in terrainOptions) || terrainOptions.source == null;
         if (drapeRenderMode === DrapeRenderMode.elevated) {
+            this._startLiteLoad();
             if (this.disableElevatedTerrain) return;
 
             // Input validation and source object unrolling
