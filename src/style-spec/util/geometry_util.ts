@@ -25,11 +25,32 @@ function compareAreas(a: Ring, b: Ring): number {
     return (b.area!) - (a.area!);
 }
 
+// Whether every point of the ring lies on a single line, i.e. the ring has no real area
+// regardless of winding
+function isCollinear(ring: Ring): boolean {
+    const len = ring.length;
+    if (len < 3) return true;
+
+    const p0 = ring[0]!;
+    let dx = 0, dy = 0, i = 1;
+    for (; i < len; i++) {
+        dx = ring[i]!.x - p0.x;
+        dy = ring[i]!.y - p0.y;
+        if (dx !== 0 || dy !== 0) break;
+    }
+    if (i === len) return true; // every point coincides with p0
+
+    for (; i < len; i++) {
+        const px = ring[i]!.x - p0.x;
+        const py = ring[i]!.y - p0.y;
+        if (dx * py - dy * px !== 0) return false;
+    }
+    return true;
+}
+
 // classifies an array of rings into polygons with outer rings and holes
 export function classifyRings(rings: Array<Ring>, maxRings: number): Array<Array<Ring>> {
     const len = rings.length;
-
-    if (len <= 1) return [rings];
 
     const polygons: Array<Array<Ring>> = [];
     let polygon: Array<Ring> | undefined,
@@ -37,7 +58,7 @@ export function classifyRings(rings: Array<Ring>, maxRings: number): Array<Array
 
     for (let i = 0; i < len; i++) {
         const area = calculateSignedArea(rings[i]!);
-        if (area === 0) continue;
+        if (area === 0 && isCollinear(rings[i]!)) continue;
 
         (rings[i]!).area = Math.abs(area);
 

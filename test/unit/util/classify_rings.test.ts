@@ -89,6 +89,41 @@ test('classifyRings', () => {
     expect(classified[1].length).toEqual(10); // polygon 2 has 1 exterior, 9 interior
 });
 
+test('classifyRings discards a lone zero-area ring', () => {
+    // A single ring that simplification collapsed into a back-and-forth line:
+    // its signed area is exactly zero, same as the zero-area rings dropped
+    // when there's more than one ring.
+    const geometry: any = [
+        [
+            {x: 1109, y: 7024},
+            {x: 1117, y: 7036},
+            {x: 1109, y: 7024}
+        ]
+    ];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const classified: any = classifyRings(geometry);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(classified.length).toEqual(0);
+});
+
+test('classifyRings keeps a lone self-intersecting ring with a canceling signed area', () => {
+    // A single "bowtie" ring: its two lobes wind in opposite directions, so the
+    // shoelace sum cancels to exactly zero even though the ring encloses real area
+    // (unlike a collapsed back-and-forth ring, its points aren't collinear).
+    const geometry: any = [
+        [
+            {x: -10, y: 10},
+            {x: 10, y: 10},
+            {x: -10, y: -10},
+            {x: 10, y: -10}
+        ]
+    ];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const classified: any = classifyRings(geometry);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(classified.length).toEqual(1);
+});
+
 describe('classifyRings + maxRings', () => {
     function createGeometry(options) {
         const geometry = [
