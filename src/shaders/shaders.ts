@@ -222,7 +222,14 @@ export function compile(fragmentSource: string, vertexSource: string): ShaderSou
     parseUsedPreprocessorDefines(vertexSource, usedDefines);
 
     for (const includePath of [...vertexIncludes, ...fragmentIncludes]) {
-        assert(includeMap[includePath], `Unknown include: ${includePath}`);
+        // Check for *registration*, not truthiness: a prelude can legitimately be empty. The
+        // build's dead-branch elimination (build/glsl_dead_code.js) reduces preludes whose entire
+        // body is guarded by a gl-native-only define to the empty string — e.g.
+        // `_prelude_material_table.vertex.glsl`, which is wholly inside
+        // `#ifdef HAS_SHADER_STORAGE_BLOCK_material_buffer` (WebGL 2 has no SSBOs, and
+        // `_prelude.vertex.glsl` supplies the `#ifndef` fallback macros). A truthiness check
+        // reports those as "Unknown include" in dev builds, where asserts are not stripped.
+        assert(includeMap[includePath] !== undefined, `Unknown include: ${includePath}`);
 
         if (!defineMap[includePath]) {
             defineMap[includePath] = new Set();

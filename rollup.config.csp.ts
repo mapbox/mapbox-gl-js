@@ -1,5 +1,5 @@
-import {plugins} from './build/rollup_plugins.js';
-import banner from './build/banner.js';
+import {plugins} from './build/rollup_plugins.ts';
+import banner from './build/banner.ts';
 
 import type {InputOption, ModuleFormat, RollupOptions} from 'rollup';
 

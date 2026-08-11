@@ -1,5 +1,5 @@
 import {visualizer} from 'rollup-plugin-visualizer';
-import {plugins} from './build/rollup_plugins.js';
+import {plugins} from './build/rollup_plugins.ts';
 
 import type {Plugin, RollupOptions} from 'rollup';
 

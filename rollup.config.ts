@@ -4,8 +4,8 @@ import {fileURLToPath} from 'url';
 import {readFile} from 'node:fs/promises';
 import {transformSync} from 'esbuild';
 import browserslistToEsbuild from 'browserslist-to-esbuild';
-import {plugins} from './build/rollup_plugins.js';
-import banner from './build/banner.js';
+import {plugins} from './build/rollup_plugins.ts';
+import banner from './build/banner.ts';
 
 import type {Plugin, RollupLog, RollupOptions, SourceMapInput} from 'rollup';
 

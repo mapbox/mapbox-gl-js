@@ -9,20 +9,36 @@ import replace from '@rollup/plugin-replace';
 import {createFilter} from '@rollup/pluginutils';
 import browserslistToEsbuild from 'browserslist-to-esbuild';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
+import {eliminateDeadBranches} from './glsl_dead_code.ts';
+
+import type {InputPluginOption, Plugin} from 'rollup';
+
+export type BundleFormat = 'umd' | 'csp' | 'esm';
+
+export type BuildPluginOptions = {
+    /** Bundle format, reported as `bundleFormat` in telemetry. */
+    format: BundleFormat;
+    /** Whether to minify the output. */
+    minified: boolean;
+    /** Whether this is a production build. */
+    production: boolean;
+    /** Whether this is a test build. */
+    test: boolean;
+    /** Whether to keep class names during minification. */
+    keepClassNames: boolean;
+};
 
 /**
  * Common set of plugins/transformations shared across different rollup
  * builds (umd and esm mapboxgl bundles, style-spec package bundle)
- *
- * @param {Object} options
- * @param {'umd' | 'csp' | 'esm'} [options.format] - bundle format, reported as `bundleFormat` in telemetry
- * @param {boolean} [options.minified] - whether to minify the output
- * @param {boolean} [options.production] - whether this is a production build
- * @param {boolean} [options.test] - whether this is a test build
- * @param {boolean} [options.keepClassNames] - whether to keep class names during minification
- * @returns {import('rollup').InputPluginOption[]}
  */
-export const plugins = ({format, minified, production, test, keepClassNames}) => [
+export const plugins = ({
+    format,
+    minified,
+    production,
+    test,
+    keepClassNames
+}: BuildPluginOptions): InputPluginOption[] => [
     minifyStyleSpec(),
     esbuild({
         target: browserslistToEsbuild(),
@@ -74,11 +90,17 @@ export const plugins = ({format, minified, production, test, keepClassNames}) =>
 
 /**
  * GLSL Shader Transform Plugin
- * Performs lightweight minification: strips comments, collapses whitespace, and removes unnecessary line breaks.
- * @param {string[]} include - Array of glob patterns to include
- * @returns {import('rollup').Plugin} - Rollup plugin object
+ *
+ * Removes preprocessor branches GL JS can never reach (see `./glsl_dead_code.js`), then performs
+ * lightweight minification: strips comments, collapses whitespace, and removes unnecessary line
+ * breaks.
+ *
+ * Dead-branch elimination runs *before* the whitespace passes, while each directive is still
+ * alone on its own line.
+ *
+ * @param include - Array of glob patterns to include
  */
-function glsl(include) {
+function glsl(include: string[]): Plugin {
     const filter = createFilter(include);
 
     const COMMENT_REGEX = /\s*\/\/.*$/gm;
@@ -87,14 +109,24 @@ function glsl(include) {
     const OPERATOR_REGEX = /\s?([+\-/*=,])\s?/g;
     const LINEBREAK_REGEX = /([;,{}])\n(?=[^#])/g;
 
+    let deadBytesRemoved = 0;
+    let filesAffected = 0;
+
     return {
         name: 'glsl',
         transform(code, id) {
             if (!filter(id)) return;
 
-            // GLSL minification
             code = code.trim() // strip whitespace at the start/end
-                .replace(COMMENT_REGEX, '') // strip double-slash comments
+                .replace(COMMENT_REGEX, ''); // strip double-slash comments
+
+            const live = eliminateDeadBranches(code, undefined, id);
+            if (live.length !== code.length) {
+                deadBytesRemoved += code.length - live.length;
+                filesAffected++;
+            }
+
+            code = live
                 .replace(MULTILINE_REGEX, '\n') // collapse multi line breaks
                 .replace(INDENT_REGEX, '\n') // strip indentation
                 .replace(OPERATOR_REGEX, '$1') // strip whitespace around operators
@@ -104,6 +136,11 @@ function glsl(include) {
                 code: `export default ${JSON.stringify(code)};`,
                 map: null
             };
+        },
+        buildEnd() {
+            if (deadBytesRemoved > 0) {
+                this.info(`glsl: removed ${deadBytesRemoved} bytes of gl-native-only branches from ${filesAffected} shaders`);
+            }
         }
     };
 }
