@@ -13,18 +13,22 @@
         {
           "platform-tag-contains": "web-linux",
           "threshold": 0.019
+        },
+        {
+          "platform-tag-contains": "native",
+          "threshold": 0.02
+        }
+      ],
+      "skip-test": [
+        {
+          "platform-tag-contains": "native-android",
+          "reason": "Fails due to https://mapbox.atlassian.net/browse/GLJS-844"
         }
       ],
       "operations": [
         [
           "wait"
         ]
-      ],
-      "skip-test": [
-        {
-          "platform-tag-contains": "native",
-          "reason": "raster-color-scale is only supported in gl-js for now"
-        }
       ]
     }
   },
@@ -39,6 +43,7 @@
   "sources": {
     "precipitations": {
       "type": "raster-array",
+      "maxzoom": 2,
       "tiles": [
         "local://tiles/{z}-{x}-{y}.mrt"
       ],
