@@ -70,7 +70,7 @@ Install node module dependencies
 npm install
 ```
 
-## Serving the Debug Page
+## Serving the Debug Pages
 
 Start the debug server
 
@@ -78,7 +78,15 @@ Start the debug server
 MAPBOX_ACCESS_TOKEN={YOUR_MAPBOX_ACCESS_TOKEN} npm start
 ```
 
-Open the debug page at [http://localhost:9966/debug/](http://localhost:9966/debug/)
+Open the catalog of debug pages at [http://localhost:9966/debug/](http://localhost:9966/debug/)
+
+The catalog is generated on request from the `description` and `mapbox:*` meta tags each page
+declares, so a page you add or annotate shows up on reload. It is not a committed file. To write
+it out for serving `debug/` some other way:
+
+```bash
+npm run generate-debug-index
+```
 
 ## Creating a Standalone Build
 

@@ -2,6 +2,8 @@
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="description" content="Hooks WebGL calls (`bufferData`, `texImage2D`, `drawElements`, `useProgram`) and reports per-tile and per-frame counts and byte totals after a move. Use when judging the GPU cost of a change.">
+<meta name="mapbox:role" content="tool">
 <script>
 // stub performance.now for deterministic rendering per-frame;
 // we'll later increment the value by 16 on every frame (16ms per frame for 60fps)
