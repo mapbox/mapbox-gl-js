@@ -80,11 +80,9 @@ try {
     }
 
     fs.writeFileSync('dist/versions.json', `${JSON.stringify(list, null, 4)}\n`);
-    fs.writeFileSync('dist/versions.jsonp', `const mapboxglVersions = ${JSON.stringify(list, null, 4)};\n`);
 
     console.log('Done:');
     console.log('  - dist/versions.json');
-    console.log('  - dist/versions.jsonp');
 } catch (error) {
     console.error('Unexpected error:', (error as Error).message);
     process.exit(1);

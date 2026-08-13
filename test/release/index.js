@@ -144,12 +144,14 @@ const versions = {
     'latest': {}
 };
 
-for (const [version, metadata] of Object.entries(mapboxglVersions)) {
-    versions[version] = metadata;
-}
-
 // Wait for DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    const mapboxglVersions = await fetch('https://api.mapbox.com/mapbox-gl-js/versions.json').then(res => res.json());
+
+    for (const [version, metadata] of Object.entries(mapboxglVersions)) {
+        versions[version] = metadata;
+    }
+
     const titleItem = document.querySelector('#title');
     const titleElement = document.querySelector('#title-text');
     const titleDropdown = document.querySelector('#title .dropdown');
