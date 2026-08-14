@@ -2117,6 +2117,18 @@ class Style extends Evented<MapEvents> {
                     prepareStandardMain();
                 }
 
+                if (layer.mayUse('Lite')) {
+                    // Lite is main-thread only (terrain rendering), so there's no worker-side
+                    // counterpart to `layer.prepare()` here. This covers elevated lines (e.g.
+                    // `line-elevation-reference: sea`/`ground`, or a non-zero `line-z-offset`
+                    // with no reference set) that call `painter.forceTerrainMode` at render
+                    // time even when the style has no `terrain` property. Without this, Lite
+                    // never loads, `_drapingLoaded` stays `undefined` (so `style.loaded()`
+                    // doesn't wait for it), and the first render silently skips elevation.
+                    this.checkCanvasFingerprintNoise();
+                    if (!this.disableElevatedTerrain) this._startLiteLoad();
+                }
+
                 const sourceCache = this.getLayerSourceCache(layer);
                 if (sourceCache) {
                     sourceCache.used = true;

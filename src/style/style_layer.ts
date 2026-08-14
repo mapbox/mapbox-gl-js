@@ -38,7 +38,7 @@ import type {QueryResult} from '../source/query_features';
 
 const TRANSITION_SUFFIX = '-transition';
 
-export type RuntimeModuleType = 'HD' | 'Standard';
+export type RuntimeModuleType = 'HD' | 'Standard' | 'Lite';
 
 type LayerRenderingStats = {
     numRenderedVerticesInTransparentPass: number;

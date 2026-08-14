@@ -247,7 +247,9 @@ class LineStyleLayer extends StyleLayer {
     }
 
     override mayUse(type: RuntimeModuleType): boolean {
-        return type === 'HD' && rawLayoutMayUseHD(this, 'line-elevation-reference', v => v === 'hd-road-markup');
+        if (type === 'HD') return rawLayoutMayUseHD(this, 'line-elevation-reference', v => v === 'hd-road-markup');
+        if (type === 'Lite') return lineMayUseLite(this);
+        return false;
     }
 
     override prepare(): Promise<void> {
@@ -289,6 +291,23 @@ class LineStyleLayer extends StyleLayer {
 }
 
 export default LineStyleLayer;
+
+function lineMayUseLite(layer: LineStyleLayer): boolean {
+    if (!layer._unevaluatedLayout) return false;
+    const ref = layer._unevaluatedLayout.getValue('line-elevation-reference');
+    // Any explicit reference other than 'none' — including hd-road-markup and
+    // data-driven expressions (conservatively) — is treated as needing Lite. hd-road-markup
+    // technically never calls forceTerrainMode on its own, but styles that use it commonly
+    // combine it with other elevated features anyway, and an occasional unnecessary preload
+    // is a cheap, safe default.
+    if (ref !== undefined && (typeof ref !== 'string' || ref !== 'none')) return true;
+    // Reference is 'none' or unset: a non-zero line-z-offset still forces terrain
+    // mode, silently falling back to a ground reference (see LineBucket#populate).
+    const zOffset = layer._unevaluatedLayout.getValue('line-z-offset');
+    if (zOffset === undefined) return false;
+    if (typeof zOffset !== 'number') return true;
+    return zOffset !== 0;
+}
 
 function getLineWidth(lineWidth: number, lineGapWidth: number) {
     if (lineGapWidth > 0) {
