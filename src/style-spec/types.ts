@@ -771,7 +771,12 @@ export type LineLayerSpecification = {
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
-        "line-blend-additive-clamp"?: PropertyValueSpecification<number>
+        "line-blend-additive-clamp"?: PropertyValueSpecification<number>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "line-cutout-depth"?: PropertyValueSpecification<number>,
+        "line-cutout-depth-transition"?: TransitionSpecification
     },
     "appearances"?: Array<AppearanceSpecification>
 };
