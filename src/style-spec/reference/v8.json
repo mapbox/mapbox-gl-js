@@ -9074,6 +9074,29 @@
         ]
       },
       "property-type": "data-constant"
+    },
+    "line-cutout-depth": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "units": "meters",
+      "doc": "Depth offset along the camera, in meters. When set to a non-zero value, applied cutout opacity is 0.",
+      "experimental": true,
+      "private": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.29.0",
+          "ios": "11.29.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_circle": {
