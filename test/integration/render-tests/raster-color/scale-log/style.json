@@ -21,10 +21,6 @@
       ],
       "skip-test": [
         {
-          "platform-tag-contains": "native",
-          "reason": "raster-color-scale is only supported in gl-js for now"
-        },
-        {
           "platform-tag-contains": "native-android",
           "reason": "Fails due to https://mapbox.atlassian.net/browse/GLJS-844"
         }

@@ -10450,7 +10450,9 @@
       "experimental": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "3.29.0"
+          "js": "3.29.0",
+          "android": "11.30.0",
+          "ios": "11.30.0"
         }
       }
     },
