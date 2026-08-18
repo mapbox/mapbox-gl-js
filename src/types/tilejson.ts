@@ -22,7 +22,7 @@ export type TileJSON = {
     vector_layers?: Array<SourceVectorLayer>;
     raster_layers?: Array<SourceRasterLayer>;
     variants?: Array<{
-        capabilities?: Array<'meshopt'>
+        capabilities?: Array<'meshopt' | 'meshopt-v2+lod'>
     }>;
     language?: {
         [source_name: string]: string;
