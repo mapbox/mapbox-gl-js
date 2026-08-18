@@ -32,6 +32,7 @@ import {Map, AVERAGE_ELEVATION_SAMPLING_INTERVAL, AVERAGE_ELEVATION_EASE_TIME} f
 import {createConstElevationDEM, setMockElevationTerrain} from '../../util/dem_mock';
 import RasterDEMTileSource from '../../../src/source/raster_dem_tile_source';
 import vectorStub from '../../util/fixtures/10/301/384.pbf?arraybuffer';
+import {mat4, vec4} from 'gl-matrix';
 
 function createStyle() {
     return {
@@ -1063,6 +1064,43 @@ describe('Drag pan ortho', () => {
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map.remove();
+    });
+
+    test('orthographic terrain projection and raycast stay aligned', async () => {
+        mockDem(createConstElevationDEM(1000, TILE_SIZE), cache);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const terrainMap: Map = map;
+        terrainMap.setTerrain({"source": "mapbox-dem"});
+        terrainMap.setZoom(12);
+        terrainMap.setPitch(10);
+        terrainMap.setCamera({"camera-projection": "orthographic"});
+        await waitFor(terrainMap, "render");
+        terrainMap._updateTerrain();
+
+        const lngLat = new LngLat(0.01, 0.01);
+        terrainMap.addSource('point', {
+            type: 'geojson',
+            data: {type: 'Point', coordinates: lngLat.toArray()}
+        });
+        terrainMap.addLayer({
+            id: 'circle',
+            type: 'circle',
+            source: 'point',
+            paint: {'circle-radius': 3}
+        });
+        await waitFor(terrainMap, 'idle');
+
+        const transform = terrainMap.transform;
+        const coordinate = transform.locationCoordinate(lngLat);
+        const worldPoint = [coordinate.x * transform.worldSize, coordinate.y * transform.worldSize, 1000, 1];
+        const renderedPixelMatrix = mat4.multiply([], transform.labelPlaneMatrix, transform.projMatrix);
+        vec4.transformMat4(worldPoint, worldPoint, renderedPixelMatrix);
+        const renderedPoint = new Point(worldPoint[0] / worldPoint[3], worldPoint[1] / worldPoint[3]);
+        const unprojected = terrainMap.unproject(renderedPoint);
+
+        expect(nearlyEquals(unprojected, lngLat, 0.00001)).toBeTruthy();
+        expect(terrainMap.queryRenderedFeatures(terrainMap.project(lngLat), {layers: ['circle']})).toHaveLength(1);
+        terrainMap.remove();
     });
 });
 
