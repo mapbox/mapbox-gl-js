@@ -1,4 +1,4 @@
-## 3.29.0-rc.1
+## 3.29.0
 
 ### Breaking changes ⚠️
 
