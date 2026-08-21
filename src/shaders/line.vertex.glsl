@@ -83,6 +83,7 @@ out highp float v_road_z_offset;
 #endif
 #ifdef VARIABLE_LINE_WIDTH
 out float stub_side;
+uniform float u_width_addition;
 #endif
 
 #ifdef RENDER_LINE_DASH
@@ -275,7 +276,10 @@ void main() {
 #ifdef VARIABLE_LINE_WIDTH
     float left_width = a_z_offset_width.y;
     float right_width = a_z_offset_width.z;
-    halfwidth = u_width_scale * (left ? left_width : right_width);
+    bool zero_right_width = border_width == 0.0 && right_width == 0.0;
+    halfwidth = left ? left_width : right_width;
+    halfwidth += u_width_addition * (zero_right_width ? (left ? 1.0 : 0.0) : 0.5); 
+    halfwidth *= u_width_scale;
 
     if (side_z_offset != 0.0) {
         // Lift the side of the line asymmetrically, based on the sign of side_z_offset
@@ -290,11 +294,10 @@ void main() {
 
     // Variable width is used as an offset for non-zero border_widths case.
     // Then the width of the visible part is defined by border_width.
-    offset = border_width > 0.0 ? (left_width + right_width) * u_width_scale : offset;
+    offset = border_width > 0.0 ? (left_width + right_width + u_width_addition) * u_width_scale : offset;
     halfwidth = border_width > 0.0 ? border_width * u_width_scale * 0.5 : halfwidth;
 
-    bool zero_right_width = border_width == 0.0 && right_width == 0.0;
-    symmetric_outset = zero_right_width ? u_width_scale * left_width : halfwidth;
+    symmetric_outset = zero_right_width ? u_width_scale * (left_width + u_width_addition) : halfwidth;
 
     // If the right width is 0, we are rendering an asymmetric line with a stub side
     // We should disable antialiasing and blur on this side to be able to stich two lines together
