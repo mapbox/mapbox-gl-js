@@ -1,5 +1,5 @@
 [
   {
-    "message": "sources: Styles must contain 15 or fewer sources"
+    "message": "sources: Styles must contain 64 or fewer tilesets"
   }
 ]

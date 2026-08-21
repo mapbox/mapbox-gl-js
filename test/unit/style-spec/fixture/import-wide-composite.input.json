@@ -1,0 +1,21 @@
+{
+  "version": 8,
+  "imports": [
+    {
+      "id": "standard",
+      "url": "mapbox://styles/mapbox/standard",
+      "data": {
+        "version": 8,
+        "sources": {
+          "composite": {
+            "type": "vector",
+            "url": "mapbox://t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20"
+          }
+        },
+        "layers": []
+      }
+    }
+  ],
+  "sources": {},
+  "layers": []
+}

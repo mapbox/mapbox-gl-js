@@ -24,7 +24,8 @@ type MapboxStyleSpecification = StyleSpecification & {
 };
 
 const SUPPORTED_SPEC_VERSION = 8;
-const MAX_SOURCES_IN_STYLE = 15;
+const MAX_SOURCES_IN_STYLE = 64;
+const MAX_TILESETS_IN_SOURCE = 15;
 
 function isValid(value: string | null | undefined, regex: RegExp): boolean {
     if (!value || !isString(value)) return true;
@@ -78,8 +79,19 @@ function getSourceErrors(source: SourceSpecification, i: number): Array<Validati
 function getMaxSourcesErrors(sourcesCount: number): Array<ValidationError> {
     const errors: ValidationError[] = [];
     if (sourcesCount > MAX_SOURCES_IN_STYLE) {
-        errors.push(new ValidationError('sources', null, `Styles must contain ${MAX_SOURCES_IN_STYLE} or fewer sources`));
+        errors.push(new ValidationError('sources', null, `Styles must contain ${MAX_SOURCES_IN_STYLE} or fewer tilesets`));
     }
+    return errors;
+}
+
+function getMaxTilesetsErrors(sources: SourcesSpecification): Array<ValidationError> {
+    const errors: ValidationError[] = [];
+    Object.keys(sources).forEach((s: string, i: number) => {
+        const source = sources[s]!;
+        if (getSourceCount(source) > MAX_TILESETS_IN_SOURCE) {
+            errors.push(new ValidationError(`sources[${i}].url`, (source as {url?: string}).url, `Sources must contain ${MAX_TILESETS_IN_SOURCE} or fewer tilesets`));
+        }
+    });
     return errors;
 }
 
@@ -225,6 +237,7 @@ export default function validateMapboxApiSupported(style: MapboxStyleSpecificati
         const sourcesErrors = getSourcesErrors(s.sources);
         sourcesCount += sourcesErrors.sourcesCount;
         errors = errors.concat(sourcesErrors.errors);
+        errors = errors.concat(getMaxTilesetsErrors(s.sources));
     }
 
     if (s.imports) {
