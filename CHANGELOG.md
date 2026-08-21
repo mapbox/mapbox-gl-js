@@ -1,3 +1,33 @@
+## 3.29.0
+
+### Breaking changes ⚠️
+
+- Remove legacy undocumented `Map` `addSourceType` API which was superceded by `CustomSourceInterface`.
+
+### Features and improvements ✨
+
+- Add new `raster-color-scale` property, which can be set to `"log"` to improve color ramp precision when visualizing long-tailed raster datasets.
+- Add new `raster-allow-draping` property that can be set to `false` to disable raster layer draping over globe/terrain.
+- Move `symbol-z-offset` property out of experimental.
+- Extend `distance` expression to accept an expression as a second argument.
+- Extend `config` expression to support object literals as values.
+- Improve dashed line rendering in pitched views.
+- Added APIs for more granular control of interaction handlers:
+	- `map.keyboard`: `disablePitch`, `enablePitch`, `isPitchEnabled`, `disableBearing`, `enableBearing`, `isBearingEnabled`, `isEnabled`
+	- `map.dragRotate`: `disableRotation`, `enableRotation`, `isRotationEnabled`
+	- `map.touchZoomRotate`: `isRotationEnabled`, `isTapDragZoomEnabled`
+	- For all three, `isEnabled` is changed from AND to OR semantics
+
+### Bug fixes 🐞
+
+- Fix rare line artifacts on sharp corners with short segments and non-bevel joins.
+- Fix ambient occlusion to not render for elevated (non-zero-base) extrusions.
+- Fix `Map` `resetFeatureStates` not working properly in some scoped styles.
+
+### Dev workflow improvements
+
+- Increase strict TypeScript coverage and added tooling to keep improving it.
+
 ## 3.28.1
 
 ### Bug fixes 🐞
