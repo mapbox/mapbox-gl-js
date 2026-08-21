@@ -70,7 +70,7 @@ const config: Config = {
     DRACO_URL: '/mapbox-gl-js/draco_decoder_gltf_v1.5.6.wasm',
     MESHOPT_URL: '/mapbox-gl-js/meshopt_base_v1.2.wasm',
     MESHOPT_SIMD_URL: '/mapbox-gl-js/meshopt_simd_v1.2.wasm',
-    BUILDING_GEN_URL: '/mapbox-gl-js/building-gen/building_gen_v1.2.4.wasm',
+    BUILDING_GEN_URL: '/mapbox-gl-js/building-gen/building_gen_v1.2.6.wasm',
     GLYPHS_URL: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
     TILES3D_URL_PREFIX: '3dtiles/v1',
     TILE_PROVIDER_URLS: Object.assign(Object.create(null) as Record<string, string>, {
