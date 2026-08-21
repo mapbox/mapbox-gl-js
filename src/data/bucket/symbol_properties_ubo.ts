@@ -166,18 +166,20 @@ export class SymbolPropertiesUBO {
             throw new Error(`UBO size ${this.totalBytes} exceeds device limit ${context.maxUniformBlockSize}`);
         }
 
+        // If the context is lost, the gl.createBuffer() calls below will return null and throw an error
+        // Instead, we check for context loss here and return early to avoid throwing.
+        // The Map will handle context restoration and recreate the buffers as needed.
+        if (gl.isContextLost()) return;
+
         this.headerBuffer = gl.createBuffer();
-        if (!this.headerBuffer) throw new Error('Failed to create header UBO buffer');
         gl.bindBuffer(gl.UNIFORM_BUFFER, this.headerBuffer);
         gl.bufferData(gl.UNIFORM_BUFFER, SymbolPropertiesUBO.HEADER_BYTES, gl.DYNAMIC_DRAW);
 
         this.propertiesBuffer = gl.createBuffer();
-        if (!this.propertiesBuffer) throw new Error('Failed to create properties UBO buffer');
         gl.bindBuffer(gl.UNIFORM_BUFFER, this.propertiesBuffer);
         gl.bufferData(gl.UNIFORM_BUFFER, this.totalBytes, gl.DYNAMIC_DRAW);
 
         this.blockIndicesBuffer = gl.createBuffer();
-        if (!this.blockIndicesBuffer) throw new Error('Failed to create block-indices UBO buffer');
         gl.bindBuffer(gl.UNIFORM_BUFFER, this.blockIndicesBuffer);
         gl.bufferData(gl.UNIFORM_BUFFER, this.totalBytes, gl.DYNAMIC_DRAW);
 

@@ -1,4 +1,4 @@
-import {test, expect, describe} from '../../util/vitest';
+import {test, expect, describe, vi} from '../../util/vitest';
 import {SymbolPropertiesUBO, HEADER_DATA_DRIVEN_MASK, HEADER_DZR_MASK, HEADER_BLOCK_SIZE_VEC4, HEADER_OFFSETS} from '../../../src/data/bucket/symbol_properties_ubo';
 import {SymbolPropertyBinderUBO} from '../../../src/data/bucket/symbol_property_binder_ubo';
 import {SymbolBuffers} from '../../../src/data/bucket/symbol_bucket';
@@ -7,6 +7,7 @@ import SegmentVector from '../../../src/data/segment';
 import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
 import {CanonicalTileID} from '../../../src/source/tile_id';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
+import Context from '../../../src/gl/context';
 
 import type {Feature} from '../../../src/style-spec/expression';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
@@ -32,6 +33,16 @@ describe('SymbolPropertiesUBO', () => {
         expect(ubo.headerData[HEADER_BLOCK_SIZE_VEC4]).toEqual(0);
         expect(ubo.headerData[HEADER_OFFSETS + 0]).toEqual(0); // offsets[0] = fill_color
         expect(ubo.headerData[HEADER_OFFSETS + 8]).toEqual(0); // offsets[8] = translate
+    });
+
+    test('constructor does not throw when the WebGL context is lost', () => {
+        const element = window.document.createElement('canvas');
+        const gl = element.getContext('webgl2');
+        const context = new Context(gl);
+        vi.spyOn(context.gl, 'isContextLost').mockReturnValue(true);
+        vi.spyOn(context.gl, 'createBuffer').mockReturnValue(null);
+
+        expect(() => new SymbolPropertiesUBO(context, 0, 4096, makeHeader(0, 0))).not.toThrow();
     });
 
     test('writeDataDrivenBlock stores feature data at correct offset', () => {
