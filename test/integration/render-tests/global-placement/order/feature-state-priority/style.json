@@ -1,0 +1,102 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "description": "Paint property placement-priority works with feature-state as expected.",
+      "skip-test": [
+        {
+          "platform-tag-contains": "web",
+          "reason": "Global placement (placement-priority/placement-group) is not implemented in gl-js yet."
+        }
+      ],
+      "width": 128,
+      "height": 128,
+      "globalPlacement": true,
+      "operations": [
+        [
+          "setFeatureState",
+          {
+            "source": "points",
+            "id": 2
+          },
+          {
+            "p": 10
+          }
+        ]
+      ]
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "id": 1,
+            "properties": {
+              "text": "LOSE"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 2,
+            "properties": {
+              "text": "WIN"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "labels",
+      "type": "symbol",
+      "source": "points",
+      "layout": {
+        "text-field": [
+          "get",
+          "text"
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 24
+      },
+      "paint": {
+        "text-color": "red",
+        "placement-priority": [
+          "coalesce",
+          [
+            "feature-state",
+            "p"
+          ],
+          0
+        ]
+      }
+    }
+  ]
+}

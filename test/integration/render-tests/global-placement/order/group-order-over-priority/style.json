@@ -1,0 +1,100 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "description": "Placement group order beats placement-priority: priority competes only within a group, across groups the group order decides.",
+      "skip-test": [
+        {
+          "platform-tag-contains": "web",
+          "reason": "Global placement (placement-priority/placement-group) is not implemented in gl-js yet."
+        }
+      ],
+      "width": 128,
+      "height": 128,
+      "globalPlacement": true
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "text": "P100,LOW",
+              "placement-priority": 100,
+              "placement-group": "low-group"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "text": "P10,HIGH",
+              "placement-priority": 10,
+              "placement-group": "high-group"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "low-group",
+      "type": "placement-group"
+    },
+    {
+      "id": "labels",
+      "type": "symbol",
+      "source": "points",
+      "layout": {
+        "text-field": [
+          "get",
+          "text"
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 24
+      },
+      "paint": {
+        "text-color": "red",
+        "placement-priority": [
+          "get",
+          "placement-priority"
+        ],
+        "placement-group": [
+          "get",
+          "placement-group"
+        ]
+      }
+    },
+    {
+      "id": "high-group",
+      "type": "placement-group"
+    }
+  ]
+}

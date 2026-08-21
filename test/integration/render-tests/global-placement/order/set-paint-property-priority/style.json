@@ -1,0 +1,130 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "description": "Setting constant placement-priority at runtime works as expected.",
+      "skip-test": [
+        {
+          "platform-tag-contains": "web",
+          "reason": "Global placement (placement-priority/placement-group) is not implemented in gl-js yet."
+        }
+      ],
+      "width": 128,
+      "height": 128,
+      "globalPlacement": true,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setPaintProperty",
+          "high-priority-layer",
+          "placement-priority",
+          10
+        ],
+        [
+          "setPaintProperty",
+          "low-priority-layer",
+          "placement-priority",
+          1
+        ]
+      ]
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "win-point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "text": "WIN"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "lose-point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "text": "LOSE"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "poi-group",
+      "type": "placement-group"
+    },
+    {
+      "id": "high-priority-layer",
+      "type": "symbol",
+      "source": "win-point",
+      "layout": {
+        "text-field": [
+          "get",
+          "text"
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 24
+      },
+      "paint": {
+        "text-color": "red",
+        "placement-group": "poi-group"
+      }
+    },
+    {
+      "id": "low-priority-layer",
+      "type": "symbol",
+      "source": "lose-point",
+      "layout": {
+        "text-field": [
+          "get",
+          "text"
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 24
+      },
+      "paint": {
+        "text-color": "red",
+        "placement-group": "poi-group"
+      }
+    }
+  ]
+}

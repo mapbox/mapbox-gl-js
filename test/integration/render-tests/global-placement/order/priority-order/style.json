@@ -1,0 +1,86 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "description": "Symbols with higher placement-priority win collisions within their symbol layer.",
+      "skip-test": [
+        {
+          "platform-tag-contains": "web",
+          "reason": "Global placement (placement-priority/placement-group) is not implemented in gl-js yet."
+        }
+      ],
+      "width": 128,
+      "height": 128,
+      "globalPlacement": true
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "label": "LOW",
+              "p": 1
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "label": "HIGH",
+              "p": 10
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "labels",
+      "type": "symbol",
+      "source": "points",
+      "layout": {
+        "text-field": [
+          "get",
+          "label"
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 24
+      },
+      "paint": {
+        "placement-priority": [
+          "get",
+          "p"
+        ],
+        "text-color": "red"
+      }
+    }
+  ]
+}

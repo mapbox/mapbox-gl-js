@@ -1,0 +1,94 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "description": "The position of a placement-group layer in the layer list decides which group's symbols are placed first.",
+      "skip-test": [
+        {
+          "platform-tag-contains": "web",
+          "reason": "Global placement (placement-priority/placement-group) is not implemented in gl-js yet."
+        }
+      ],
+      "width": 128,
+      "height": 128,
+      "globalPlacement": true
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "text": "BACK",
+              "placement-group": "back-group"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "text": "FRONT",
+              "placement-group": "front-group"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "back-group",
+      "type": "placement-group"
+    },
+    {
+      "id": "labels",
+      "type": "symbol",
+      "source": "points",
+      "layout": {
+        "text-field": [
+          "get",
+          "text"
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 24
+      },
+      "paint": {
+        "text-color": "red",
+        "placement-group": [
+          "get",
+          "placement-group"
+        ]
+      }
+    },
+    {
+      "id": "front-group",
+      "type": "placement-group"
+    }
+  ]
+}
