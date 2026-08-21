@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return doc
             .replace(REGEX_PATTERNS.LOCAL_JS_SCRIPT, `<script src="${jsUrl}"></script>`)
             .replace(REGEX_PATTERNS.LOCAL_CSS_LINK, `<link rel="stylesheet" href="${cssUrl}" />`)
-            .replace(REGEX_PATTERNS.LOCAL_ESM_SCRIPT, `from './dist/esm-dev/mapbox-gl.js'`);
+            .replace(REGEX_PATTERNS.LOCAL_ESM_SCRIPT, `from './dist/esm/mapbox-gl.js'`);
     }
 
     /**
