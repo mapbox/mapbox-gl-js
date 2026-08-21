@@ -6,10 +6,7 @@
       "width": 256,
       "height": 256,
       "allowed": 0.001,
-      "operations": [["wait"]],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - to be ported https://mapbox.atlassian.net/browse/MAPSNAT-4067"}
-      ]
+      "operations": [["wait"]]
     }
   },
   "center": [135.0053045734985, 36.00653610439714],
