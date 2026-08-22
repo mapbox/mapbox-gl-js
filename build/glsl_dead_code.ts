@@ -33,6 +33,7 @@ export const GL_NATIVE_ONLY_DEFINES: ReadonlyArray<string> = Object.freeze([
     // comment stub for the two _prelude_feature_cutout includes.
     'FEATURE_CUTOUT',
     'FEATURE_CUTOUT_VERTEX',
+    'ROUTE_CORRIDOR',
     // Native-only depth/occlusion and render-target capabilities.
     'CLIP_ZERO_TO_ONE',
     'FLOAT_RENDER_TARGET',

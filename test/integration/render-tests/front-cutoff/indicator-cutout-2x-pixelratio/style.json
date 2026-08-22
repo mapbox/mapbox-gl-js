@@ -160,7 +160,7 @@
       "paint": {
         "line-width": 50.0,
         "line-cutout-opacity": 0,
-        "line-cutout-fade-width": 0.5,
+        "line-cutout-fade-width": 0.2,
         "line-cutout-shadow-opacity": 0
       }
     },

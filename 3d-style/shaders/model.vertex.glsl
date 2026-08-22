@@ -52,8 +52,13 @@ out lowp vec4 v_color_mix;
 out highp float v_depth;
 #endif
 
-#ifdef FEATURE_CUTOUT_VERTEX
+#if defined(FEATURE_CUTOUT_VERTEX) || defined(ROUTE_CORRIDOR)
 out highp float v_cutout_factor;
+#endif
+
+#ifdef ROUTE_CORRIDOR
+// Local model AABB max.z (meters); multiplied by instance |scale.z| for column roof height.
+uniform float u_height;
 #endif
 
 #ifdef HAS_ATTRIBUTE_a_pbr
@@ -85,7 +90,7 @@ void main() {
     normal_matrix = u_normal_matrix;
 #endif
 
-#ifdef FEATURE_CUTOUT_VERTEX
+#if defined(FEATURE_CUTOUT_VERTEX) || defined(ROUTE_CORRIDOR)
     v_cutout_factor = 1.0;
 #endif
 
@@ -120,8 +125,15 @@ void main() {
     pos.z *= meter_to_tile;
     v_position_height.xyz = pos.xyz - u_camera_pos;
 
+#ifdef ROUTE_CORRIDOR
+    // Uniform centroid column: same fade for the whole instance (centroid XY + height, no span).
+    float roofZ = u_height * sqrt(max(dot(rs[2], rs[2]), 0.0));
+    float routeFade = computeRouteCorridorCentroidFade(pos_a.xy, roofZ, 0.0, 0.0);
+    v_cutout_factor = 1.0 - routeFade;
+#endif
+
 #ifdef FEATURE_CUTOUT_VERTEX
-    // Sample cutout from the tile position of the feature
+    // Legacy above-cutout: sample cutout from the tile position of the feature
     highp vec4 ground_pos = vec4(pos_a.xy, 0.0, 1.0);
     highp vec4 cutout_clip_pos = mix(u_matrix * ground_pos, AWAY, hidden);
     highp vec3 cutout_ndc = cutout_clip_pos.xyz / cutout_clip_pos.w;

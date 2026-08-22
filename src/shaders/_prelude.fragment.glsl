@@ -52,9 +52,14 @@ const float DITHER_THRESHOLDS[16] = float[16](
     16.0 / 17.0,  8.0 / 17.0, 14.0 / 17.0,  6.0 / 17.0
 );
 
-// Bayer dither index in gl_FragCoord framebuffer space (front-cutoff, indicator cutout).
+// Bayer dither index in gl_FragCoord framebuffer space (front-cutoff, GPU route cutout).
+// Top-origin backends reflect the Bayer row (height-free); OpenGL is bottom-left.
 int viewport_dither_index(vec2 fragCoordXY) {
+#if defined(VIEWPORT_ORIGIN_TOP_LEFT) || defined(FLIP_Y)
+    return (int(fragCoordXY.x) % 4) * 4 + (3 - int(fragCoordXY.y) % 4);
+#else
     return (int(fragCoordXY.x) % 4) * 4 + (int(fragCoordXY.y) % 4);
+#endif
 }
 
 #ifdef DEBUG_WIREFRAME

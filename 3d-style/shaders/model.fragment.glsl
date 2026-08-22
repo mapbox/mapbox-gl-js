@@ -76,7 +76,7 @@ uniform sampler2D u_emissionTexture;
 uniform highp sampler3D u_lutTexture;
 #endif
 
-#ifdef FEATURE_CUTOUT_VERTEX
+#if defined(FEATURE_CUTOUT_VERTEX) || defined(ROUTE_CORRIDOR)
 in highp float v_cutout_factor;
 #endif
 
@@ -591,12 +591,19 @@ vec4 finalColor;
     finalColor = applyCutout(finalColor, v_position_height.w);
 #endif
 
+#ifdef ROUTE_CORRIDOR
+    int index = viewport_dither_index(gl_FragCoord.xy);
+    if (v_cutout_factor < DITHER_THRESHOLDS[index]) {
+        discard;
+    }
+#else
 #ifdef FEATURE_CUTOUT_VERTEX
-    // Apply pre-calculated cutout factor
+    // Legacy above-cutout / texture path: apply pre-calculated cutout factor
     apply_feature_cutout_dither(gl_FragCoord, v_cutout_factor);
 #else
 #ifdef FEATURE_CUTOUT
     finalColor = apply_feature_cutout(finalColor, gl_FragCoord, get_cutout_factors(gl_FragCoord).x, 0.0);
+#endif
 #endif
 #endif
 

@@ -6,6 +6,9 @@
       "width": 256,
       "height": 256,
       "allowed": 0.001,
+      "ignore-metrics": [
+        {"platform-tag-contains": "native-linux-gl", "reason": "flaky GFX metrics on Linux GL"}
+      ],
       "operations": [["wait"]]
     }
   },

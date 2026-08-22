@@ -6,6 +6,9 @@
 
 in vec4 v_color;
 in vec4 v_flat;
+#if defined(RENDER_FRONT_CUTOFF) || defined(ROUTE_CORRIDOR)
+in float v_dither_opacity;
+#endif
 
 #ifdef RENDER_SHADOWS
 in highp vec4 v_pos_light_view_0;
@@ -13,16 +16,6 @@ in highp vec4 v_pos_light_view_1;
 #endif
 
 uniform lowp float u_opacity;
-
-#ifdef RENDER_FRONT_CUTOFF
-in float v_front_cutoff_opacity;
-#endif
-
-#ifdef INDICATOR_CUTOUT
-#ifdef FEATURE_CUTOUT
-in vec4 v_ground_roof;
-#endif
-#endif
 
 #ifdef FAUX_AO
 uniform lowp vec2 u_ao;
@@ -143,25 +136,13 @@ float flood_radiance = 0.0;
 #endif
 
 #ifdef INDICATOR_CUTOUT
-#ifdef FEATURE_CUTOUT
-    {
-        float ditherOpacity = cutoutGroundRoofOpacity(v_ground_roof);
-        if (ditherOpacity < 1.0) {
-            int index = viewport_dither_index(gl_FragCoord.xy);
-            if (ditherOpacity < DITHER_THRESHOLDS[index]) {
-                discard;
-            }
-        }
-    }
-#else
     color = applyCutout(color, h);
 #endif
-#endif
 
-#ifdef RENDER_FRONT_CUTOFF
-    if (v_front_cutoff_opacity < 1.0) {
+#if defined(RENDER_FRONT_CUTOFF) || defined(ROUTE_CORRIDOR)
+    if (v_dither_opacity < 1.0) {
         int index = viewport_dither_index(gl_FragCoord.xy);
-        if (v_front_cutoff_opacity < DITHER_THRESHOLDS[index]) {
+        if (v_dither_opacity < DITHER_THRESHOLDS[index]) {
             discard;
         }
     }

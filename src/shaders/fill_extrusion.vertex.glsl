@@ -3,6 +3,7 @@
 #include "_prelude_shadow.vertex.glsl"
 #include "_prelude_lighting.glsl"
 #include "_prelude_material_table.vertex.glsl"
+#include "_prelude_feature_cutout.vertex.glsl"
 
 uniform mat4 u_matrix;
 #ifndef LIGHTING_3D_MODE
@@ -14,7 +15,6 @@ uniform float u_vertical_gradient;
 uniform lowp float u_opacity;
 uniform float u_edge_radius;
 uniform float u_width_scale;
-
 in ivec4 a_pos_normal_ed;
 
 #if defined(HAS_CENTROID) || defined(TERRAIN)
@@ -44,9 +44,17 @@ uniform int u_base_type;
 
 uniform highp float u_vertical_scale;
 
+#if defined(RENDER_FRONT_CUTOFF) || defined(ROUTE_CORRIDOR)
 #ifdef RENDER_FRONT_CUTOFF
 uniform vec3 u_front_cutoff_params; // [start, range, opacity]
-out float v_front_cutoff_opacity;
+#endif
+out float v_dither_opacity;
+#endif
+#ifdef ROUTE_CORRIDOR
+#ifdef HAS_ATTRIBUTE_a_route_span
+// Packed AABB half-extents in meters: high byte = X, low byte = Y (0…255 each).
+in highp uint a_route_span;
+#endif
 #endif
 
 out vec4 v_color;
@@ -80,12 +88,6 @@ out float v_has_floodlight;
 #endif
 
 out float v_height;
-
-#ifdef INDICATOR_CUTOUT
-#ifdef FEATURE_CUTOUT
-out vec4 v_ground_roof;
-#endif
-#endif
 
 // linear to sRGB approximation
 vec3 linearTosRGB(vec3 color) {
@@ -175,7 +177,7 @@ void main() {
     float cutoff = 1.0;
     vec3 scaled_pos = pos;
 
-#if defined(RENDER_CUTOFF) || defined(RENDER_FRONT_CUTOFF)
+#if defined(RENDER_CUTOFF) || defined(RENDER_FRONT_CUTOFF) || defined(ROUTE_CORRIDOR)
     vec2 centroid_decoded = pos.xy;
     bool isBorderCentroid = false;
     if (centroid_pos.x > 0.0 && centroid_pos.y > 0.0) {
@@ -195,6 +197,25 @@ void main() {
         }
     }
 #endif
+
+#if defined(RENDER_FRONT_CUTOFF) || defined(ROUTE_CORRIDOR)
+    float frontCutoffOpacity = 1.0;
+    float routeFade = 0.0;
+#endif
+
+#ifdef ROUTE_CORRIDOR
+    // uint16 pack: (halfXm << 8) | halfYm, each 0…255 meters → tile units.
+    float tileUnitsPerMeter = floor(u_route_corridor[3].w);
+    float sxHalf = 0.0;
+    float syHalf = 0.0;
+#ifdef HAS_ATTRIBUTE_a_route_span
+    int packedSpan = int(a_route_span);
+    sxHalf = float((packedSpan >> 8) & 255) * tileUnitsPerMeter;
+    syHalf = float(packedSpan & 255) * tileUnitsPerMeter;
+#endif
+    // Centroid-only column + AABB span (uniform per part). attr_height = uniform zt.
+    routeFade = computeRouteCorridorCentroidFade(centroid_decoded, attr_height, sxHalf, syHalf);
+#endif // ROUTE_CORRIDOR
 
 #if defined(RENDER_CUTOFF) || defined(RENDER_FRONT_CUTOFF)
     vec4 ground = u_matrix * vec4(centroid_decoded, ele, 1.0);
@@ -224,7 +245,6 @@ void main() {
     float hidden = float((centroid_pos.x == 0.0 && centroid_pos.y == 1.0) || (cutoff == 0.0 && centroid_pos.x != 0.0) || (color.a == 0.0));
 
 #ifdef RENDER_FRONT_CUTOFF
-    v_front_cutoff_opacity = 1.0;
     if (centroid_pos.x > 0.0 && centroid_pos.y > 0.0) {
         hidden = max(hidden, float(ground.w <= 0.0));
         float ndc_y = ground.y / max(ground.w, 0.001);
@@ -234,8 +254,18 @@ void main() {
             hidden = max(hidden, float(ndc_y < threshold - range_ndc));
         }
         float t = clamp((ndc_y - (threshold - range_ndc)) / max(range_ndc, 0.001), 0.0, 1.0);
-        v_front_cutoff_opacity = mix(u_front_cutoff_params.z, 1.0, t);
+        frontCutoffOpacity = mix(u_front_cutoff_params.z, 1.0, t);
     }
+#endif
+
+#if defined(RENDER_FRONT_CUTOFF) || defined(ROUTE_CORRIDOR)
+    v_dither_opacity = 1.0;
+#ifdef ROUTE_CORRIDOR
+    v_dither_opacity = min(v_dither_opacity, 1.0 - routeFade);
+#endif
+#ifdef RENDER_FRONT_CUTOFF
+    v_dither_opacity = min(v_dither_opacity, frontCutoffOpacity);
+#endif
 #endif
 
 #ifdef RENDER_WALL_MODE
@@ -342,14 +372,6 @@ void main() {
 
 #ifdef FOG
     v_fog_pos = fog_position(pos);
-#endif
-
-#ifdef INDICATOR_CUTOUT
-#ifdef FEATURE_CUTOUT
-    vec4 pos_ground = u_matrix * vec4(pos.xy, ele, 1.0);
-    vec4 pos_roof = u_matrix * vec4(pos.xy, ele + height, 1.0);
-    v_ground_roof = vec4(pos_ground.xy / pos_ground.w, pos_roof.xy / pos_roof.w);
-#endif
 #endif
 
 }
