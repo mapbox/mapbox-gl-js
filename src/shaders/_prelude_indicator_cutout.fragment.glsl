@@ -1,5 +1,4 @@
-// NOTE: Include explicitly in fragment shaders that use indicator cutout
-// (applyCutout, cutoutGroundRoofOpacity).
+// NOTE: Include explicitly in fragment shaders that use indicator cutout (applyCutout).
 
 #ifdef INDICATOR_CUTOUT
 uniform vec3 u_indicator_cutout_centers;
@@ -17,32 +16,5 @@ vec4 applyCutout(vec4 color, float height) {
     return color * min(smoothstep(fadeStart, holeRadius, distA) + holeMinOpacity, 1.0);
 #else
     return color;
-#endif
-}
-
-// Cutout with uniform vertical transparency across the building face.
-// All coordinates are in NDC [-1,1]. Centers, radius, fadeStart pre-converted to NDC on CPU.
-// groundRoof = (groundNdcX, groundNdcY, roofNdcX, roofNdcY).
-// Returns indicator cutout opacity for dithering. Color is not modified.
-float cutoutGroundRoofOpacity(vec4 groundRoof) {
-#ifdef INDICATOR_CUTOUT
-    float fadeStartX = u_indicator_cutout_params.w;
-    float holeRadius = u_indicator_cutout_params.y;
-
-    float holeMinOpacity = mix(u_indicator_cutout_params.x, 1.0,
-        smoothstep(u_indicator_cutout_params.z, u_indicator_cutout_centers.z, groundRoof.y));
-
-    float distX = abs(u_indicator_cutout_centers.x - groundRoof.x);
-
-    float roofOpacity = mix(holeMinOpacity, 1.0,
-        smoothstep(fadeStartX, holeRadius,
-                   u_indicator_cutout_centers.y - groundRoof.w));
-
-    float groundOpacity = min(smoothstep(fadeStartX, holeRadius, distX)
-                              + holeMinOpacity, 1.0);
-
-    return max(roofOpacity, groundOpacity);
-#else
-    return 1.0;
 #endif
 }

@@ -605,6 +605,36 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
         return new Point(x, y);
     };
 
+    // A piece that also runs off a perpendicular edge meets its neighbours at a tile corner, and
+    // that corner lies on the border they share. Pinning the shared coordinate to it makes every
+    // piece of the building resolve to the same world point, so pieces joined across different
+    // borders agree without any join having to see the diagonal piece. Returns undefined when the
+    // second edge is parallel (a building wider than a tile), where there is no common corner.
+    const cornerCoordAlongBorder = (borderIndex: number, borders: Array<[number, number]>) => {
+        const notOnBorder = Number.MAX_VALUE;
+        const onLeft = borders[0][0] !== notOnBorder;
+        const onRight = borders[1][0] !== notOnBorder;
+        const onTop = borders[2][0] !== notOnBorder;
+        const onBottom = borders[3][0] !== notOnBorder;
+        if ((onLeft ? 1 : 0) + (onRight ? 1 : 0) + (onTop ? 1 : 0) + (onBottom ? 1 : 0) > 2) {
+            return undefined;
+        }
+        if (borderIndex < 2) {
+            return onTop === onBottom ? undefined : (onTop ? 0 : EXTENT - 1);
+        }
+        return onLeft === onRight ? undefined : (onLeft ? 0 : EXTENT - 1);
+    };
+
+    const cornerAlongSharedBorder = (
+        borderA: number,
+        bordersA: Array<[number, number]> | null | undefined,
+        borderB: number,
+        bordersB: Array<[number, number]> | null | undefined,
+    ): number | undefined => {
+        return (bordersA ? cornerCoordAlongBorder(borderA, bordersA) : undefined) ??
+            (bordersB ? cornerCoordAlongBorder(borderB, bordersB) : undefined);
+    };
+
     const getLoadedBucket = (nid: OverscaledTileID) => {
         const minzoom = source.getSource().minzoom;
         const getBucket = (key: number) => {
@@ -714,11 +744,11 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
         // all without flat roofs.
         if (bucket.canonical.z !== nBucket.canonical.z) {
             for (const index of a) {
-                bucket.showCentroid(bucket.featuresOnBorder[index]);
+                bucket.showCentroid(bucket.featuresOnBorder[index], 'discard');
             }
             if (updateNeighbor) {
                 for (const index of b) {
-                    nBucket.showCentroid(nBucket.featuresOnBorder[index]);
+                    nBucket.showCentroid(nBucket.featuresOnBorder[index], 'discard');
                 }
             }
             bucket.borderDoneWithNeighborZ[i] = nBucket.canonical.z;
@@ -763,9 +793,12 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                 centroidA.groupCentroidPos : partA.centroid();
             const posB = (centroidB.groupCentroidPos.x !== 0 || centroidB.groupCentroidPos.y !== 0) ?
                 centroidB.groupCentroidPos : partB.centroid();
-            const coordAlongBorder = (i < 2) ?
+            // Front-cutoff only; fill-extrusion disables it when terrain is on, and moving the
+            // anchor off the sampled midpoint would shift where the roof attaches to the DEM.
+            const corner = terrain ? undefined : cornerAlongSharedBorder(i, partA.borders, j, partB.borders);
+            const coordAlongBorder = corner !== undefined ? corner : ((i < 2) ?
                 Math.round((posA.y + posB.y) / 2) :
-                Math.round((posA.x + posB.x) / 2);
+                Math.round((posA.x + posB.x) / 2));
             const moreThanOneBorderIntersected = partA.intersectsCount() > 1 || partB.intersectsCount() > 1;
 
             {
@@ -823,7 +856,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                     partBBorderRange[0] > partABorderRange[0] - error) {
                     break;
                 }
-                nBucket.showCentroid(partB);
+                nBucket.showCentroid(partB, 'keep');
                 ib++;
             }
 
@@ -846,7 +879,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                 }
                 // Find first non-matched saveIb
                 while (saveIb < b.length && matchedByBuildingIdB.has(saveIb)) saveIb++;
-                if (saveIb >= b.length) { bucket.showCentroid(partA); continue; }
+                if (saveIb >= b.length) { bucket.showCentroid(partA, 'keep'); continue; }
                 partB = nBucket.featuresOnBorder[b[saveIb]];
                 let doReconcile = false;
                 if (count >= 1) {
@@ -864,7 +897,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                     }
                 } else if (count === 0) {
                     // No B for A, show it, no flat roofs.
-                    bucket.showCentroid(partA);
+                    bucket.showCentroid(partA, 'keep');
                     continue;
                 }
 
@@ -887,7 +920,16 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                     const height = flatBase(span[0], Math.min(EXTENT - 1, span[1]), edge, neighborDEMTile, nid, i < 2, span[2]);
                     centroidA.centroidXY = centroidB.centroidXY = encodeHeightAsCentroid(height);
                 } else if (moreThanOneBorderIntersected) {
-                    centroidA.centroidXY = centroidB.centroidXY = new Point(0, 0);
+                    // Off terrain there is no sampled height to give up, so a corner piece can carry
+                    // the corner it shares with its neighbours and stay consistent with the rest of
+                    // the building instead of every piece falling back to its own vertex positions.
+                    const corner = terrain ? undefined : cornerAlongSharedBorder(i, partA.borders, j, partB.borders);
+                    if (corner !== undefined) {
+                        centroidA.centroidXY = encodeBorderElevationWithPosition(0, i, corner);
+                        centroidB.centroidXY = encodeBorderElevationWithPosition(0, j, corner);
+                    } else {
+                        centroidA.centroidXY = centroidB.centroidXY = new Point(0, 0);
+                    }
                 } else {
                     centroidA.centroidXY = bucket.encodeBorderCentroid(partA);
                     centroidB.centroidXY = nBucket.encodeBorderCentroid(partB);
@@ -896,7 +938,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                 bucket.writeCentroidToBuffer(centroidA);
                 nBucket.writeCentroidToBuffer(centroidB);
             } else {
-                bucket.showCentroid(partA);
+                bucket.showCentroid(partA, 'keep');
             }
             /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any */
         }

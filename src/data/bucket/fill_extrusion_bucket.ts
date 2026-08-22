@@ -1799,9 +1799,19 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         }
     }
 
-    showCentroid(borderCentroidData: BorderCentroidData) {
+    showCentroid(borderCentroidData: BorderCentroidData, borderJoin: 'keep' | 'discard') {
         const c = this.centroidData.get(borderCentroidData.centroidDataIndex);
         c.flags &= HIDDEN_BY_REPLACEMENT;
+        // A piece on a tile corner is joined on one border and can be unmatched on the other, when
+        // the diagonal tile has no piece of this building. The unmatched pass must not throw away
+        // the reference point the join established, or that quarter of the building loses the
+        // shared position the other quarters cut off against. y&7==7 is the border encoding,
+        // which only a join writes. A neighbour at another zoom cannot be joined at all, so
+        // there the encoding is stale and must go.
+        if (borderJoin === 'keep' && (c.centroidXY.y & 7) === 7) {
+            this.writeCentroidToBuffer(c);
+            return;
+        }
         if (c.groupCentroidPos.x !== 0 || c.groupCentroidPos.y !== 0) {
             const span = c.span();
             const spanX = Math.min(7, Math.round(span.x * this.tileToMeter / 10));
