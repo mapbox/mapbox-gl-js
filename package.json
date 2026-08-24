@@ -232,7 +232,6 @@
       ]
     },
     {
-      "gzip": true,
       "limit": "600 kb",
       "name": "ESM Core + Lite (brotli)",
       "path": [
