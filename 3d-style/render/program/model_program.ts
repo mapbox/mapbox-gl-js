@@ -43,6 +43,7 @@ export type ModelUniformsType = {
     ['u_emissive_strength']: Uniform1f;
     ['u_occlusionTextureTransform']: Uniform4f;
     ['u_dithered_discard_threshold']: Uniform1f;
+    ['u_model_mesh_params']: Uniform4f;
 };
 
 export type ModelDefinesType = 'DIFFUSE_SHADED' | 'SHADOWS_SINGLE_CASCADE' | 'OCCLUSION_TEXTURE_TRANSFORM' | 'DITHERED_DISCARD';
@@ -74,7 +75,8 @@ const modelUniforms = (context: Context): ModelUniformsType => ({
     'u_aoIntensity': new Uniform1f(context),
     'u_emissive_strength': new Uniform1f(context),
     'u_occlusionTextureTransform': new Uniform4f(context),
-    'u_dithered_discard_threshold': new Uniform1f(context)
+    'u_dithered_discard_threshold': new Uniform1f(context),
+    'u_model_mesh_params': new Uniform4f(context)
 });
 
 const emptyMat4 = new Float32Array(mat4.identity([]));
@@ -172,7 +174,9 @@ const modelUniformValues = (
         'u_aoIntensity': aoIntensity,
         'u_emissive_strength': emissiveStrength,
         'u_occlusionTextureTransform': occlusionTextureTransform ? occlusionTextureTransform : [0, 0, 0, 0] as [number, number, number, number],
-        'u_dithered_discard_threshold': ditheredDiscardThreshold
+        'u_dithered_discard_threshold': ditheredDiscardThreshold,
+        // Only the landmark path reads this; it overwrites the value after this call.
+        'u_model_mesh_params': [0, 1, 0, 0] as [number, number, number, number]
     };
 
     return uniformValues;

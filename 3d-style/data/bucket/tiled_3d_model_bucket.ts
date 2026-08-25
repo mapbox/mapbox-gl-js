@@ -2,9 +2,8 @@ import assert from '../../../src/style-spec/util/assert';
 import Point from '@mapbox/point-geometry';
 import browser from '../../../src/util/browser';
 import {register} from '../../../src/util/web_worker_transfer';
-import {uploadNode, destroyNodeArrays, destroyBuffers, ModelTraits, HEIGHTMAP_DIM} from '../model';
-import {FeatureVertexArray} from '../../../src/data/array_types';
-import {lerp} from '../../../src/style-spec/util/lerp';
+import {uploadNode, destroyNodeArrays, destroyBuffers, ModelTraits, HEIGHTMAP_DIM, PartNames} from '../model';
+import {ModelPartStyleUBO, MODEL_PART_COUNT, MODEL_PART_STYLE_FLOATS} from './model_part_style_ubo';
 import {clamp} from '../../../src/util/util';
 import {DEMSampler} from '../../../src/terrain/elevation';
 import {ZoomConstantExpression} from '../../../src/style-spec/expression/index';
@@ -18,7 +17,7 @@ import type {OverscaledTileID, CanonicalTileID, UnwrappedTileID} from '../../../
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
 import type {ReplacementSource} from '../../source/replacement_source';
 import type {Bucket} from '../../../src/data/bucket';
-import type {Mesh, ModelNode} from '../model';
+import type {ModelNode} from '../model';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
 import type Context from '../../../src/gl/context';
 import type {FilterSpecification, ProjectionSpecification} from '../../../src/style-spec/types';
@@ -69,16 +68,7 @@ function addAABBsToGridIndex(node: ModelNode, key: number, grid: GridIndex) {
     }
 }
 
-export const PartIndices = {
-    wall: 1,
-    door: 2,
-    roof: 3,
-    window: 4,
-    lamp: 5,
-    logo: 6
-} as const;
-
-export const PartNames = ['', 'wall', 'door', 'roof', 'window', 'lamp', 'logo'] as const;
+assert(PartNames.length === MODEL_PART_COUNT, 'the part style block must have one entry per part the tiler can tag');
 
 export class Tiled3dModelFeature {
     feature: EvaluationFeature;
@@ -91,6 +81,10 @@ export class Tiled3dModelFeature {
     node: ModelNode;
     aabb: Aabb;
     emissionHeightBasedParams: Array<[number, number, number, number, number]>;
+    // The evaluated fields above, laid out as the shader's ModelPartStyleUniform block.
+    partStyle: Float32Array;
+    partStyleUBO: ModelPartStyleUBO | null;
+    needsPartStyleUBO: boolean;
     cameraCollisionOpacity: number;
     targetLod: number;
     state: FeatureState | null;
@@ -108,6 +102,9 @@ export class Tiled3dModelFeature {
         this.evaluatedScale = [1, 1, 1];
         this.evaluatedColor = [];
         this.emissionHeightBasedParams = [];
+        this.partStyle = new Float32Array(MODEL_PART_STYLE_FLOATS);
+        this.partStyleUBO = null;
+        this.needsPartStyleUBO = false;
         this.cameraCollisionOpacity = 1;
         this.targetLod = -1;
         // Needs to calculate geometry
@@ -158,7 +155,7 @@ class Tiled3dModelBucket implements Bucket {
     elevationReadFromZ: number;
     dirty: boolean;
     brightness: number | null | undefined;
-    needsUpload: boolean;
+    needsPartStyleUBOs: boolean;
     states: FeatureStates;
     filter: FeatureFilter | null;
     worldview: string | undefined;
@@ -194,7 +191,7 @@ class Tiled3dModelBucket implements Bucket {
         this.brightness = brightness;
         this.worldview = worldview;
         this.dirty = true;
-        this.needsUpload = false;
+        this.needsPartStyleUBOs = false;
         this.filter = null;
 
         this.nodesInfo = [];
@@ -244,46 +241,35 @@ class Tiled3dModelBucket implements Bucket {
     }
 
     uploadPending(): boolean {
-        return !this.uploaded || this.needsUpload;
+        return !this.uploaded || this.needsPartStyleUBOs;
     }
 
     upload(context: Context) {
-        if (!this.needsUpload) return;
-        const nodesInfo = this.getNodesInfo();
-        for (const nodeInfo of nodesInfo) {
-            const node = nodeInfo.node;
-            if (this.uploaded) {
-                this.updatePbrBuffer(node);
-                continue;
+        if (this.needsPartStyleUBOs) {
+            this.createPartStyleUBOs(context);
+            this.needsPartStyleUBOs = false;
+        }
+
+        if (!this.uploaded) {
+            const nodesInfo = this.getNodesInfo();
+            for (const nodeInfo of nodesInfo) {
+                uploadNode(nodeInfo.node, context, true);
             }
-            uploadNode(node, context, true);
+            // Now destroy all buffers
+            for (const nodeInfo of nodesInfo) {
+                destroyNodeArrays(nodeInfo.node);
+            }
+            this.uploaded = true;
         }
-        // Now destroy all buffers
-        for (const nodeInfo of nodesInfo) {
-            destroyNodeArrays(nodeInfo.node);
-        }
-        this.uploaded = true;
-        this.needsUpload = false;
     }
 
-    updatePbrBuffer(node: ModelNode): boolean {
-        let result = false;
-        if (!node.meshes) return result;
-        for (const mesh of node.meshes) {
-            if (mesh.pbrBuffer) {
-                mesh.pbrBuffer.updateData(mesh.featureArray);
-                result = true;
-            }
+    createPartStyleUBOs(context: Context) {
+        for (const nodeInfo of this.getNodesInfo()) {
+            if (!nodeInfo.needsPartStyleUBO) continue;
+            assert(!nodeInfo.partStyleUBO);
+            nodeInfo.partStyleUBO = new ModelPartStyleUBO(context, nodeInfo.partStyle);
+            nodeInfo.needsPartStyleUBO = false;
         }
-        if (node.lodMeshes) {
-            for (const mesh of node.lodMeshes) {
-                if (mesh.pbrBuffer) {
-                    mesh.pbrBuffer.updateData(mesh.featureArray);
-                    result = true;
-                }
-            }
-        }
-        return result;
     }
 
     needsReEvaluation(painter: Painter, zoom: number, layer: ModelStyleLayer): boolean {
@@ -335,9 +321,7 @@ class Tiled3dModelBucket implements Bucket {
             const state = states && states[evaluationFeature.id];
             if (deepEqual(state, nodeInfo.state)) continue;
             nodeInfo.state = structuredClone(state);
-            const hasFeatures = nodeInfo.node.meshes && nodeInfo.node.meshes[0].featureData;
-            const previousDoorColor = nodeInfo.evaluatedColor[PartIndices.door];
-            const previousDoorRMEA = nodeInfo.evaluatedRMEA[PartIndices.door];
+            const hasFeatures = nodeInfo.node.meshes && nodeInfo.node.meshes[0].hasFeatureData;
             const canonical = this.id.canonical;
             nodeInfo.hasTranslucentParts = false;
 
@@ -366,9 +350,6 @@ class Tiled3dModelBucket implements Bucket {
                     }
                 }
                 delete evaluationFeature.properties['part'];
-                const doorLightChanged = previousDoorColor !== nodeInfo.evaluatedColor[PartIndices.door] ||
-                                         previousDoorRMEA !== nodeInfo.evaluatedRMEA[PartIndices.door];
-                updateNodeFeatureVertices(nodeInfo, doorLightChanged, this.modelTraits);
             } else {
 
                 nodeInfo.evaluatedRMEA[0][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, state, canonical);
@@ -376,8 +357,16 @@ class Tiled3dModelBucket implements Bucket {
 
             nodeInfo.evaluatedTranslation = layer.paint.get('model-translation').evaluate(evaluationFeature, state, canonical);
             nodeInfo.evaluatedScale = layer.paint.get('model-scale').evaluate(evaluationFeature, state, canonical);
-            if (!this.updatePbrBuffer(nodeInfo.node)) {
-                this.needsUpload = true;
+
+            // Last, so the block reflects everything this iteration evaluated.
+            if (hasFeatures) {
+                buildPartStyle(nodeInfo);
+                if (nodeInfo.partStyleUBO) {
+                    nodeInfo.partStyleUBO.update(nodeInfo.partStyle);
+                } else {
+                    nodeInfo.needsPartStyleUBO = true;
+                    this.needsPartStyleUBOs = true;
+                }
             }
         }
         this.dirty = false;
@@ -592,6 +581,10 @@ class Tiled3dModelBucket implements Bucket {
         for (const nodeInfo of nodesInfo) {
             destroyNodeArrays(nodeInfo.node);
             destroyBuffers(nodeInfo.node);
+            if (nodeInfo.partStyleUBO) {
+                nodeInfo.partStyleUBO.destroy();
+                nodeInfo.partStyleUBO = null;
+            }
         }
     }
 
@@ -687,139 +680,74 @@ function expressionRequiresReevaluation<T>(e: PossiblyEvaluatedValue<T>, brightn
     return false;
 }
 
-function encodeEmissionToByte(emission: number) {
-    const clampedEmission = clamp(emission, 0, 2);
-    return Math.min(Math.round(0.5 * clampedEmission * 255), 255);
+// Rounds a part's style back to the precision it had when packed into per-vertex bytes: roughness
+// and metallic to a nibble each, emissive strength and alpha to a byte, and the two gradient values
+// to a byte with the 255/256 scale the old decode used.
+//
+// TEMPORARY. The uniform block holds plain floats and needs none of this. It is here so this change
+// renders identically to the per-vertex encoding it replaces, which lets a render test run verify
+// the restructuring by itself. Deleting the function and its call is what picks up the better
+// precision, and requires updating the landmark baselines.
+function quantizeLikeLegacyEncoding(style: Float32Array, o: number) {
+    // Roughness and metallic were a nibble each, emissive a byte spanning [0, 2], alpha a byte.
+    style[o + 4] = Math.floor(style[o + 4] * 15) * 16 / 255;
+    style[o + 5] = Math.floor(style[o + 5] * 15) * 16 / 255;
+    style[o + 6] = Math.min(Math.floor(style[o + 6] * 127.5 + 0.5), 255) / 255 * 2;
+    style[o + 7] = Math.floor(style[o + 7] * 255) / 255;
+
+    // The two gradient values were a byte each, but were decoded with a 255/256 scale instead of
+    // 255/255, so a styled value of 1 read back as 0.99609. That also reproduces the neutral
+    // gradient, whose values were both 0xFF.
+    const valueBegin = Math.floor(style[o + 10] * 255) / 256;
+    const valueFinish = Math.floor((style[o + 10] + style[o + 11]) * 255) / 256;
+    style[o + 10] = valueBegin;
+    style[o + 11] = valueFinish - valueBegin;
 }
 
-// Per-part PBR values precomputed once per mesh and indexed by partId, stored as
-// a flat Float64Array shared across all meshes (refilled per mesh) to keep the
-// per-vertex path allocation-free. Layout per part (10 fields):
-//   mixR, mixG, mixB, mixA — color-mix RGBA factors
-//   alphaByte, a2, a3, b0, b1, b2 — written verbatim into the vertex array
-const partPbrTable = new Float64Array(PartNames.length * 10);
+// Generates the per-part style values, four vec4 each, that the model vertex shader reads as
+// ModelPartStyle.
+function buildPartStyle(nodeInfo: Tiled3dModelFeature) {
+    const style = nodeInfo.partStyle;
+    for (let part = 0; part < PartNames.length; part++) {
+        const colorMix = nodeInfo.evaluatedColor[part];
+        const rmea = nodeInfo.evaluatedRMEA[part];
+        const gradient = nodeInfo.emissionHeightBasedParams[part];
 
-function computePartPbrTable(nodeInfo: Tiled3dModelFeature, zMin: number, zMax: number) {
-    const zRange = zMax - zMin;
-    for (let i = 0; i < PartNames.length; i++) {
-        const rmea = nodeInfo.evaluatedRMEA[i];
-        const colorMix = nodeInfo.evaluatedColor[i];
-        const emissionParams = nodeInfo.emissionHeightBasedParams[i];
+        const begin = clamp(gradient[0], 0, 1);
+        const finish = clamp(gradient[1], 0, 1);
 
-        const emissionMultiplierStart = clamp(emissionParams[0], 0, 1);
-        const emissionMultiplierFinish = clamp(emissionParams[1], 0, 1);
+        const o = part * 16;
+        style[o] = colorMix[0];
+        style[o + 1] = colorMix[1];
+        style[o + 2] = colorMix[2];
+        style[o + 3] = clamp(colorMix[3], 0, 1);
 
-        let a3 = 0xffff;
-        let b0 = 0;
-        let b1 = 1;
-        let b2 = 1;
-        if (emissionMultiplierStart !== emissionMultiplierFinish && zRange !== 0) {
-            const emissionMultiplierValueStart = clamp(emissionParams[2], 0, 1);
-            const emissionMultiplierValueFinish = clamp(emissionParams[3], 0, 1);
-            const denom = zRange * (emissionMultiplierFinish - emissionMultiplierStart);
-            b0 = 1.0 / denom;
-            b1 = -(zMin + zRange * emissionMultiplierStart) / denom;
-            b2 = Math.pow(10, clamp(emissionParams[4], -1, 1));
-            a3 = (emissionMultiplierValueStart * 255 << 8) | (emissionMultiplierValueFinish * 255);
+        style[o + 4] = rmea[0];
+        style[o + 5] = rmea[1];
+        style[o + 6] = clamp(rmea[2], 0, 2);
+        style[o + 7] = rmea[3];
+
+        if (begin !== finish) {
+            style[o + 8] = begin;
+            style[o + 9] = finish;
+            style[o + 10] = clamp(gradient[2], 0, 1);
+            style[o + 11] = clamp(gradient[3], 0, 1) - style[o + 10];
+            style[o + 12] = Math.pow(10, clamp(gradient[4], -1, 1));
+        } else {
+            // Flat multiplier of 1 spanning the full mesh height. A zero span would divide by zero
+            // in the shader.
+            style[o + 8] = 0;
+            style[o + 9] = 1;
+            style[o + 10] = 1;
+            style[o + 11] = 0;
+            style[o + 12] = 1;
         }
 
-        const t = partPbrTable, o = i * 10;
-        t[o] = 255 * colorMix[0];
-        t[o + 1] = 255 * colorMix[1];
-        t[o + 2] = 255 * colorMix[2];
-        t[o + 3] = colorMix[3];
-        t[o + 4] = Math.floor(rmea[3] * 255);
-        t[o + 5] = (encodeEmissionToByte(rmea[2]) << 8) | ((rmea[0] * 15) << 4) | (rmea[1] * 15);
-        t[o + 6] = a3;
-        t[o + 7] = b0;
-        t[o + 8] = b1;
-        t[o + 9] = b2;
-    }
-}
-
-// V1 and V2 tiles pack featureColor and partId in opposite halves of the 32-bit
-// feature value. In V2, meshopt compression forces values below 2^24, so colors
-// go in the lower 16 bits and part ids in the next nibble up.
-function buildMeshFeatureArray(mesh: Mesh, nodeInfo: Tiled3dModelFeature, colorShift: number, idShift: number, doorLightChanged: boolean, isLodMesh: boolean) {
-    if (!mesh.featureData) return;
-    const featureArray = mesh.featureArray = new FeatureVertexArray();
-    featureArray.reserveExact(mesh.featureData.length);
-    computePartPbrTable(nodeInfo, mesh.aabb.min[2], mesh.aabb.max[2]);
-
-    const t = partPbrTable;
-    const node = nodeInfo.node;
-    let pendingDoorLightUpdate = doorLightChanged && !!node.lights;
-
-    for (const feature of mesh.featureData) {
-        const color = (feature >> colorShift) & 0xffff;
-        const partRaw = (feature >> idShift) & 0xf;
-        const partId = partRaw < 8 ? partRaw : 0;
-        const o = partId * 10;
-
-        let r = ((color & 0xF000) | ((color & 0xF000) >> 4)) >> 8;
-        let g = ((color & 0x0F00) | ((color & 0x0F00) >> 4)) >> 4;
-        let b = (color & 0x00F0) | ((color & 0x00F0) >> 4);
-        const a = ((color & 0x000F) | ((color & 0x000F) << 4)) / 255;
-
-        const mixA = t[o + 3];
-        if (mixA > 0) {
-            r = lerp(r, t[o], mixA);
-            g = lerp(g, t[o + 1], mixA);
-            b = lerp(b, t[o + 2], mixA);
-        }
-        // Only LOD meshes (authored by the newer tiler) encode baked ambient occlusion in the
-        // vertex color alpha channel. The non-LOD mesh may have any alpha value, even 0, so
-        // applying the AO factor there would incorrectly darken the color, potentially to black.
-        if (isLodMesh) {
-            r *= a;
-            g *= a;
-            b *= a;
-        }
-
-        const a0 = (r << 8) | g;
-        const a1 = (b << 8) | t[o + 4];
-        const a2 = t[o + 5];
-        const a3 = t[o + 6];
-        const b0 = t[o + 7];
-        const b1 = t[o + 8];
-        const b2 = t[o + 9];
-
-        featureArray.emplaceBack(a0, a1, a2, a3, b0, b1, b2);
-
-        if (pendingDoorLightUpdate && partId === PartIndices.door) {
-            pendingDoorLightUpdate = false;
-            const size = node.lights.length * 10;
-            const lightsFeatureArray = new FeatureVertexArray();
-            lightsFeatureArray.reserveExact(size);
-            for (let j = 0; j < size; j++) {
-                lightsFeatureArray.emplaceBack(a0, a1, a2, a3, b0, b1, b2);
-            }
-            node.meshes[node.lightMeshIndex].featureArray = lightsFeatureArray;
-        }
-    }
-}
-
-function updateNodeFeatureVertices(nodeInfo: Tiled3dModelFeature, doorLightChanged: boolean, modelTraits: number) {
-    const node = nodeInfo.node;
-    const isV2Tile = modelTraits & ModelTraits.HasMeshoptCompression;
-    const colorShift = isV2Tile ? 0 : 16;
-    const idShift = isV2Tile ? 16 : 0;
-
-    for (let i = 0; i < node.meshes.length; i++) {
-        if (!(node.lights && node.lightMeshIndex === i)) {
-            buildMeshFeatureArray(node.meshes[i], nodeInfo, colorShift, idShift, doorLightChanged, false);
-        }
-    }
-
-    // LOD meshes share the same feature vertex data but have no lights.
-    if (node.lodMeshes) {
-        for (const mesh of node.lodMeshes) {
-            buildMeshFeatureArray(mesh, nodeInfo, colorShift, idShift, false, true);
-        }
+        quantizeLikeLegacyEncoding(style, o);
     }
 }
 
 register(Tiled3dModelBucket, 'Tiled3dModelBucket', {omit: ['layers']});
-register(Tiled3dModelFeature, 'Tiled3dModelFeature');
+register(Tiled3dModelFeature, 'Tiled3dModelFeature', {omit: ['partStyleUBO']});
 
 export default Tiled3dModelBucket;
