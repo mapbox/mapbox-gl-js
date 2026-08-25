@@ -49,6 +49,7 @@ import {InteractionSet} from './interactions';
 import {ImageId} from '../style-spec/expression/types/image_id';
 
 import type Marker from '../ui/marker';
+import type {AnimationFrameProvider} from './animation_frame_provider';
 import type Popup from '../ui/popup';
 import type SourceCache from '../source/source_cache';
 import type {MapEventType, MapEventOf} from './events';
@@ -219,6 +220,7 @@ export type MapOptions = {
     tessellationStep?: number;
     scaleFactor?: number;
     pitchRotateKey?: PitchRotateKey;
+    animationFrameProvider?: AnimationFrameProvider;
 };
 
 const CSS_MATRIX_RE = /matrix.*\((.+)\)/;
@@ -425,6 +427,7 @@ const defaultOptions = {
  * * [Natural Earth](https://en.wikipedia.org/wiki/Natural_Earth_projection) pseudocylindrical map projection as `naturalEarth`
  * * [Winkel Tripel](https://en.wikipedia.org/wiki/Winkel_tripel_projection) azimuthal map projection as `winkelTripel`
  * Conic projections such as Albers and Lambert have configurable `center` and `parallels` properties that allow developers to define the region in which the projection has minimal distortion; see the example for how to configure these properties.
+ * @param {AnimationFrameProvider} [options.animationFrameProvider=null] If set, the map schedules repaints through this provider instead of `window.requestAnimationFrame`.
  * @example
  * const map = new mapboxgl.Map({
  *     container: 'map', // container ID
@@ -485,6 +488,7 @@ export class Map extends Camera {
     _canvas!: HTMLCanvasElement;
     _minTileCacheSize?: number;
     _maxTileCacheSize?: number;
+    _animationFrameProvider?: AnimationFrameProvider;
     _frame?: Cancelable;
     _renderNextFrame?: boolean;
     _styleDirty?: boolean;
@@ -626,6 +630,8 @@ export class Map extends Camera {
 
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies, null, null);
         super(transform, options);
+
+        this._animationFrameProvider = options.animationFrameProvider;
 
         this._repaint = !!options.repaint;
         this._interactive = options.interactive;
@@ -5061,7 +5067,10 @@ export class Map extends Camera {
 
     _triggerFrame(render: boolean) {
         this._renderNextFrame = this._renderNextFrame || render;
-        if (this.style && !this._frame) {
+        if (!this.style || this._frame) return;
+
+        const provider = this._animationFrameProvider;
+        if (!provider) {
             this._frame = browser.frame((paintStartTimeStamp: number) => {
                 const isRenderFrame = !!this._renderNextFrame;
                 PerformanceUtils.frame(paintStartTimeStamp, isRenderFrame);
@@ -5071,6 +5080,36 @@ export class Map extends Camera {
                     this._render(paintStartTimeStamp);
                 }
             });
+            return;
+        }
+
+        // `_frame` stays non-null while `_render` runs so a synchronous provider's
+        // re-entrant repaint can't recurse. A microtask schedules the follow-up
+        // frame after the stack unwinds. Don't fold the branch above into this
+        // one: holding `_frame` through `_render` measurably slows the default
+        // rAF loop.
+        const drainFrame = (paintStartTimeStamp: number) => {
+            const isRenderFrame = !!this._renderNextFrame;
+            PerformanceUtils.frame(paintStartTimeStamp, isRenderFrame);
+            this._renderNextFrame = null;
+            try {
+                if (isRenderFrame) this._render(paintStartTimeStamp);
+            } finally {
+                this._frame = null;
+            }
+            if (isRenderFrame && !this._removed) {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                Promise.resolve().then(() => this._triggerFrame(false));
+            }
+        };
+
+        let handle: number | null = null;
+        this._frame = {cancel: () => { if (handle !== null) provider.cancelAnimationFrame(handle); }};
+        try {
+            handle = provider.requestAnimationFrame(drainFrame);
+        } catch (e) {
+            this._frame = null;
+            throw e;
         }
     }
 

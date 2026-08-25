@@ -70,6 +70,7 @@ export type {AttributionControlOptions} from './ui/control/attribution_control';
 export type {MapOptions, IControl, ControlPosition} from './ui/map';
 export type {FontstackCompositing} from './style/glyph_loader';
 export type {AnimationOptions, CameraOptions, EasingOptions} from './ui/camera';
+export type {AnimationFrameProvider} from './ui/animation_frame_provider';
 
 export type {
     Map,

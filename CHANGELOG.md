@@ -1,3 +1,8 @@
+## Unreleased
+
+### Features and improvements ✨
+- Add `AnimationFrameProvider` (`MapOptions.animationFrameProvider`) to support driving the render loop from an external library.
+ 
 ## 3.29.0
 
 ### Breaking changes ⚠️
