@@ -30,9 +30,8 @@ export const instanceAttributes: StructArrayLayout = createLayout([
 ]);
 
 export const featureAttributes: StructArrayLayout = createLayout([
-    // pbr encoding: | color.rgba (4 bytes) | emissivity (a byte) | roughness (a nibble) | metallic (a nibble)
-    {name: 'a_pbr', components: 4, type: 'Uint16'},
-    {name: 'a_heightBasedEmissiveStrength', components: 3, type: 'Float32'}
+    // .x vertex color, RGBA4444. .y feature id, whose low 4 bits select a part style.
+    {name: 'a_feature', components: 2, type: 'Uint16'}
 ]);
 
 export const {members, size, alignment} = modelAttributes;

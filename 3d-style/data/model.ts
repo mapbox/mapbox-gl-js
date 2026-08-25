@@ -90,6 +90,19 @@ export type NodeOverride = {
 
 export const HEIGHTMAP_DIM = 64;
 
+// A vertex's feature id carries one of these in its low 4 bits, which selects the per-part style the
+// renderer evaluates for it.
+export const PartIndices = {
+    wall: 1,
+    door: 2,
+    roof: 3,
+    window: 4,
+    lamp: 5,
+    logo: 6
+} as const;
+
+export const PartNames = ['', 'wall', 'door', 'roof', 'window', 'lamp', 'logo'] as const;
+
 export type Mesh = {
     // eslint-disable-next-line no-warning-comments
     indexArray: TriangleIndexArray // TODO: Add TriangleStrip, etc;
@@ -102,9 +115,13 @@ export type Mesh = {
     texcoordBuffer: VertexBuffer;
     colorArray: StructArray;
     colorBuffer: VertexBuffer;
-    featureData: Uint32Array | Float32Array;
     featureArray: FeatureVertexArray;
-    pbrBuffer: VertexBuffer;
+    featureBuffer: VertexBuffer;
+    // featureArray is destroyed once uploaded, so gating reads this instead.
+    hasFeatureData: boolean;
+    // Vertex color of the first door-tagged vertex, cached while the feature data was loaded.
+    // Undefined for meshes with no door geometry. The door lights borrow it to style themselves.
+    doorVertexColor?: number;
     material: Material;
     aabb: Aabb;
     transformedAabb: Aabb;
@@ -135,6 +152,10 @@ export type ModelNode = {
     footprint: Footprint | null | undefined;
     lights: Array<AreaLight>;
     lightMeshIndex: number;
+    // Bounds of the mesh whose door geometry the lights mesh borrows its style from. The emissive
+    // height gradient of the lights resolves against these rather than their own bounds, which
+    // cover just the light quads.
+    lightsStyleAabb?: Aabb;
     elevation: number | null | undefined;
     anchor: vec2;
     hidden: boolean;
@@ -420,7 +441,7 @@ export function uploadMesh(mesh: Mesh, context: Context, useSingleChannelOcclusi
         mesh.colorBuffer = context.createVertexBuffer(mesh.colorArray, colorAttributes.members, false, true);
     }
     if (mesh.featureArray) {
-        mesh.pbrBuffer = context.createVertexBuffer(mesh.featureArray, featureAttributes.members, true);
+        mesh.featureBuffer = context.createVertexBuffer(mesh.featureArray, featureAttributes.members, false, true);
     }
     mesh.segments = SegmentVector.simpleSegment(0, 0, mesh.vertexArray.length, mesh.indexArray.length);
 
@@ -521,8 +542,8 @@ function destroyMeshBuffers(mesh: Mesh) {
     if (mesh.colorBuffer) {
         mesh.colorBuffer.destroy();
     }
-    if (mesh.pbrBuffer) {
-        mesh.pbrBuffer.destroy();
+    if (mesh.featureBuffer) {
+        mesh.featureBuffer.destroy();
     }
     mesh.segments.destroy();
     if (mesh.material) {

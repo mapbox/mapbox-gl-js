@@ -9,12 +9,13 @@ import {TriangleIndexArray,
     NormalLayoutArray,
     TexcoordLayoutArray,
     Color3fLayoutArray,
-    Color4fLayoutArray
+    Color4fLayoutArray,
+    FeatureVertexArray
 } from '../../src/data/array_types';
 import {loadGLTF, GLTF_TO_ARRAY_TYPE, GLTF_COMPONENTS} from '../util/loaders';
 import {base64DecToArr} from '../../src/util/util';
 import TriangleGridIndex from '../../src/util/triangle_grid_index';
-import Model, {HEIGHTMAP_DIM} from '../data/model';
+import Model, {HEIGHTMAP_DIM, PartIndices} from '../data/model';
 import {ModelBVH} from './model_bvh';
 
 import type {vec2} from 'gl-matrix';
@@ -125,6 +126,31 @@ function getBufferData(gltf: GLTF, accessor: GLTFAccessor): Uint32Array | Float3
     return bufferData;
 }
 
+// The tiler packs a vertex color and a feature id into the two halves of one 32-bit word, but V1 and
+// V2 tiles use opposite halves. Store them the way the model shader reads a_feature: color in .x,
+// feature id in .y. The first door color is kept while the words are read, so that the door lights
+// can be styled without walking the array again.
+function setFeatureData(gltf: GLTF, accessor: GLTFAccessor, swapHalves: boolean, mesh: Mesh) {
+    const data = getBufferData(gltf, accessor);
+    // V2 encodes the word as a float, so it indexes per vertex. V1 stores it as raw bytes, which the
+    // accessor describes as two uint16 components, so it has to be read back as one word per vertex.
+    const words = data instanceof Float32Array ? data : new Uint32Array(data.buffer, data.byteOffset, accessor.count);
+    const featureArray = new FeatureVertexArray();
+    featureArray.reserveExact(accessor.count);
+    let doorVertexColor = -1;
+    for (let i = 0; i < accessor.count; i++) {
+        const word = swapHalves ? (words[i] >>> 16) | (words[i] << 16) : words[i];
+        const color = word & 0xffff;
+        const id = word >>> 16;
+        doorVertexColor = doorVertexColor < 0 && (id & 0xf) === PartIndices.door ? color : doorVertexColor;
+        featureArray.emplaceBack(color, id);
+    }
+    mesh.featureArray = featureArray;
+    if (doorVertexColor >= 0) {
+        mesh.doorVertexColor = doorVertexColor;
+    }
+}
+
 function setArrayData(gltf: GLTF, accessor: GLTFAccessor, array: StructArray, buffer: ArrayBufferView) {
     const ArrayType = GLTF_TO_ARRAY_TYPE[accessor.componentType];
     const norm = getNormalizedScale(ArrayType);
@@ -207,20 +233,24 @@ function convertPrimitive(primitive: GLTFPrimitive, gltf: GLTF, textures: Array<
         setArrayData(gltf, texcoordAccessor, mesh.texcoordArray, texcoordArrayBuffer);
     }
 
+    const isMeshoptCompressed = !!(gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('EXT_meshopt_compression'));
+
     // V2 tiles
     if (attributeMap._FEATURE_ID_RGBA4444 !== undefined) {
         const featureAccesor = gltf.json.accessors[attributeMap._FEATURE_ID_RGBA4444];
 
-        if (gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('EXT_meshopt_compression')) {
-            mesh.featureData = getBufferData(gltf, featureAccesor);
+        if (isMeshoptCompressed) {
+            setFeatureData(gltf, featureAccesor, false, mesh);
         }
     }
 
     // V1 tiles
     if (attributeMap._FEATURE_RGBA4444 !== undefined) {
         const featureAccesor = gltf.json.accessors[attributeMap._FEATURE_RGBA4444];
-        mesh.featureData = new Uint32Array(getBufferData(gltf, featureAccesor).buffer);
+        setFeatureData(gltf, featureAccesor, !isMeshoptCompressed, mesh);
     }
+
+    mesh.hasFeatureData = !!mesh.featureArray;
 
     // Material
     const materialIdx = primitive.material;
@@ -687,8 +717,18 @@ export function process3DTile(gltf: GLTF, zScale: number): Array<ModelNode> {
             }
         }
         if (node.lights) {
+            // The door lights borrow the door part's style: the vertex color they blend the styled
+            // color over, and the bounds their emissive height gradient resolves against. The last
+            // mesh carrying door geometry wins, as it did when this was recomputed per evaluation.
+            let doorVertexColor = 0xffff;
+            for (const mesh of node.meshes) {
+                if (mesh.doorVertexColor !== undefined) {
+                    doorVertexColor = mesh.doorVertexColor;
+                    node.lightsStyleAabb = mesh.aabb;
+                }
+            }
             node.lightMeshIndex = node.meshes.length;
-            node.meshes.push(createLightsMesh(node.lights, zScale));
+            node.meshes.push(createLightsMesh(node.lights, zScale, doorVertexColor));
         }
     }
     return nodes;
@@ -811,7 +851,7 @@ export function calculateLightsMesh(lights: Array<AreaLight>, zScale: number, in
     }
 }
 
-function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
+function createLightsMesh(lights: Array<AreaLight>, zScale: number, doorVertexColor: number): Mesh {
     const mesh = {} as Mesh;
     mesh.indexArray = new TriangleIndexArray();
     mesh.vertexArray = new ModelLayoutArray();
@@ -824,6 +864,16 @@ function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
     mesh.colorArray.reserveExact(lights.length * 10);
 
     calculateLightsMesh(lights, zScale, mesh.indexArray, mesh.vertexArray, mesh.colorArray);
+
+    // The door lights are drawn with the evaluated style of the door part, which they select by
+    // carrying its part id on every vertex, blended over the door geometry's own vertex color so
+    // that model-color-mix-intensity resolves the same way it does on the door itself.
+    mesh.featureArray = new FeatureVertexArray();
+    mesh.featureArray.reserveExact(mesh.vertexArray.length);
+    for (let i = 0; i < mesh.vertexArray.length; i++) {
+        mesh.featureArray.emplaceBack(doorVertexColor, PartIndices.door);
+    }
+    mesh.hasFeatureData = true;
 
     const material = {} as Material;
     material.defined = true;

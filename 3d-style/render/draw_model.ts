@@ -47,6 +47,7 @@ import type {CutoffParams} from '../../src/render/cutoff';
 import type {LUT} from "../../src/util/lut";
 import type {ModelUniformsType, ModelDepthUniformsType} from '../render/program/model_program';
 import type {LightOverrides} from './lights';
+import type {ModelPartStyleUBO} from '../data/bucket/model_part_style_ubo';
 
 export default drawModels;
 
@@ -141,8 +142,39 @@ function applyTileTransform(out: mat4, base: mat4, translation: vec3, scale: vec
     return out;
 }
 
+// Local z bounds the emissive strength height gradient resolves against, packed as
+// u_model_mesh_params: min and range in xy, then whether the mesh is a LOD mesh, whose vertex color
+// alpha carries baked ambient occlusion.
+//
+// The lights borrow the door geometry's bounds, since they are styled as its part and their own
+// bounds cover just the light quads.
+//
+// Returns a fresh array per call: Uniform4f keeps a reference to the value it was handed as its
+// change-detection cache, so a reused scratch array would compare equal to itself and the uniform
+// would only ever be uploaded for the first mesh drawn.
+function modelMeshParams(mesh: Mesh, node: ModelNode, isLight: boolean, isLodMesh: boolean): [number, number, number, number] {
+    const aabb = isLight ? node.lightsStyleAabb : mesh.aabb;
+    const zMin = aabb ? aabb.min[2] : Infinity;
+    const zMax = aabb ? aabb.max[2] : -Infinity;
+
+    const zExtent = zMax - zMin;
+    // A zero range would divide by zero in the shader, and an empty aabb leaves it non-finite.
+    return [
+        isFinite(zMin) ? zMin : 0,
+        zExtent > 0 && isFinite(zExtent) ? zExtent : 1,
+        isLodMesh ? 1 : 0,
+        0
+    ];
+}
+
+// The node's part style block, but only for a mesh carrying the part id attribute that indexes it.
+// The two are compiled and bound as a pair, so this is the single gate for both.
+function partStyleUBOForMesh(nodeInfo: Tiled3dModelFeature, mesh: Mesh): ModelPartStyleUBO | null {
+    return mesh.featureBuffer ? nodeInfo.partStyleUBO : null;
+}
+
 // Collect defines and dynamic buffers (colors, normals, uv) and bind textures. Used for single mesh and instanced draw.
-function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<VertexBuffer | null | undefined>, mesh: Mesh, painter: Painter, lut: LUT | null) {
+function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<VertexBuffer | null | undefined>, mesh: Mesh, painter: Painter, lut: LUT | null, partStyleUBO: ModelPartStyleUBO | null = null) {
     const material = mesh.material;
     const context = painter.context;
 
@@ -192,10 +224,15 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
         dynamicBuffers.push(mesh.normalBuffer);
     }
 
-    if (mesh.pbrBuffer) {
-        definesValues.push('HAS_ATTRIBUTE_a_pbr');
-        definesValues.push('HAS_ATTRIBUTE_a_heightBasedEmissiveStrength');
-        dynamicBuffers.push(mesh.pbrBuffer);
+    // The define is what compiles the block into the shader, so callers must pass the UBO only for a
+    // mesh that also has the attribute (see partStyleUBOForMesh). Without the block a vertex reads
+    // alpha 0 and the mesh disappears; without the attribute every vertex reads part 0 and a black
+    // vertex color. Only the batched path has a node to take the UBO from, so a mesh reaching the
+    // other callers with feature data would silently lose its part styling.
+    assert(partStyleUBO || !mesh.featureBuffer);
+    if (partStyleUBO) {
+        definesValues.push('HAS_ATTRIBUTE_a_feature');
+        dynamicBuffers.push(mesh.featureBuffer);
     }
 
     if (material.alphaMode === 'OPAQUE' || material.alphaMode === 'MASK') {
@@ -1452,7 +1489,8 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             shadowRenderer.useNormalOffset = useNormalOffset;
                         }
 
-                        setupMeshDraw((programOptions.defines), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
+                        const partStyleUBO = partStyleUBOForMesh(nodeInfo, mesh);
+                        setupMeshDraw((programOptions.defines), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut, partStyleUBO);
                         if (!hasMapboxFeatures) {
                             programOptions.defines.push('DIFFUSE_SHADED');
                         }
@@ -1539,6 +1577,11 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                                 threshold,
                                 program.fixedDefines.includes('LIGHTING_3D_MODE')
                         );
+
+                        uniformValues['u_model_mesh_params'] = modelMeshParams(mesh, node, isLight, isLodMeshes);
+                        if (partStyleUBO) {
+                            partStyleUBO.bind(context, program.program);
+                        }
 
                         if (!isLight && (nodeInfo.hasTranslucentParts || sortedNode.opacity < 1.0)) {
 

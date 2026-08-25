@@ -87,8 +87,6 @@ class Tiled3dWorkerTile {
                 const nodes = process3DTile(gltf, 1.0 / tileToMeter(params.tileID.canonical));
 
                 const bucket = new Tiled3dModelBucket(family as Array<ModelStyleLayer>, nodes, tileID, hasMapboxMeshFeatures, hasMeshoptCompression, this.brightness, featureIndex, this.worldview);
-                // Upload to GPU without waiting for evaluation if we are in diffuse path
-                if (!hasMapboxMeshFeatures) bucket.needsUpload = true;
                 buckets.push(bucket);
                 // do the first evaluation in the worker to avoid stuttering
                 bucket.evaluate(layer);

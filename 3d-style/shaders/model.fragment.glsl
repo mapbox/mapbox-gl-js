@@ -47,7 +47,7 @@ uniform vec4 u_occlusionTextureTransform;
 #pragma mapbox: initialize-attribute highp vec4 color_4f
 #pragma mapbox: initialize-attribute highp vec2 uv_2f
 
-#ifdef HAS_ATTRIBUTE_a_pbr
+#ifdef HAS_ATTRIBUTE_a_feature
 in lowp vec4 v_roughness_metallic_emissive_alpha;
 in mediump vec4 v_height_based_emission_params;
 #endif
@@ -168,7 +168,7 @@ vec4 getBaseColor() {
     albedo *= vec4(color_3f, 1.0);
 #endif
 
-#ifdef HAS_ATTRIBUTE_a_pbr
+#ifdef HAS_ATTRIBUTE_a_feature
 #else
 #ifdef HAS_ATTRIBUTE_a_color_4f
     albedo *= color_4f;
@@ -286,7 +286,7 @@ Material getPBRMaterial() {
     mat.baseColor = getBaseColor();
     mat.perceptualRoughness = u_roughnessFactor;
     mat.metallic = u_metallicFactor;
-#ifdef HAS_ATTRIBUTE_a_pbr
+#ifdef HAS_ATTRIBUTE_a_feature
     mat.perceptualRoughness = v_roughness_metallic_emissive_alpha.x;
     mat.metallic = v_roughness_metallic_emissive_alpha.y;
     mat.baseColor.w *= v_roughness_metallic_emissive_alpha.w;
@@ -531,7 +531,7 @@ vec4 finalColor;
 
     // Apply transparency
     float opacity = mat.baseColor.w * u_opacity;
-#ifdef HAS_ATTRIBUTE_a_pbr
+#ifdef HAS_ATTRIBUTE_a_feature
     float resEmission = v_roughness_metallic_emissive_alpha.z;
 
     resEmission *= v_height_based_emission_params.z + v_height_based_emission_params.w * pow(clamp(v_height_based_emission_params.x, 0.0, 1.0), v_height_based_emission_params.y);
@@ -542,7 +542,7 @@ vec4 finalColor;
 #endif
     color = mix(color, color_mix, min(1.0, resEmission));
 #ifdef HAS_ATTRIBUTE_a_color_4f
-    // pbr includes color. If pbr is used, color_4f is used to pass information about light geometry.
+    // a_feature includes color. If a_feature is used, color_4f is used to pass information about light geometry.
     // calculate distance to line segment, multiplier 1.3 additionally deattenuates towards extruded corners.
     float distance = length(vec2(1.3 * max(0.0, abs(color_4f.x) - color_4f.z), color_4f.y));
     distance +=  mix(0.5, 0.0, clamp(resEmission - 1.0, 0.0, 1.0));

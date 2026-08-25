@@ -8,19 +8,39 @@ in vec3 a_pos_3f;
 #pragma mapbox: define-attribute highp vec2 uv_2f
 #pragma mapbox: define-attribute highp vec3 color_3f
 #pragma mapbox: define-attribute highp vec4 color_4f
-#pragma mapbox: define-attribute-vertex-shader-only highp uvec4 pbr
-#pragma mapbox: define-attribute-vertex-shader-only highp vec3 heightBasedEmissiveStrength
+#pragma mapbox: define-attribute-vertex-shader-only highp uvec2 feature
 
-// pbr
-// .xy - color.rgba (4 bytes)
-// .z - emissive strength (1 byte) | roughness (4 bits) | metallic (4 bits)
-// .w - heightBasedEmissionMultiplier value at interpolation Begin and Finish points (2 bytes)
+// a_feature, the tiler's two per-vertex fields, swapped at load time into one component order.
+// .x - vertex color, RGBA4444. Its alpha nibble is baked ambient occlusion, but only on LOD meshes
+// .y - feature id. The low 4 bits select a part style, the rest is unused by rendering.
 
-// heightBasedEmissiveStrength
-// .xy - interpolation parameters
-// .z - interpolation curve power
-// i.e.
-// interpolatedHeight = pow(pos_z * .x + .y, .z)
+// Number of building parts a vertex can be tagged with. Must stay in step with PartNames in
+// tiled_3d_model_bucket.hpp
+#define MODEL_PART_COUNT 7u
+
+// Size of the per-part style block, 4 vec4 per part
+#define MODEL_PART_STYLE_SIZE_VEC4 28u
+
+#ifdef HAS_ATTRIBUTE_a_feature
+// Evaluated style of a single building part
+struct ModelPartStyle {
+    vec4 color_mix;     // model-color rgb, with model-color-mix-intensity in a.
+    vec4 rmea;          // Roughness, metallic, emissive strength, model-color alpha.
+    // Emissive strength height gradient: begin and end height as a fraction of the mesh z range,
+    // then the multiplier value at the begin height and its span from begin to end.
+    vec4 gradient;
+    float gradient_power;   // Curve power of the emissive strength height gradient, already raised as pow(10, styled value).
+};
+
+// Style of every part, indexed by part id
+layout(std140) uniform ModelPartStyleUniform {
+    vec4 part_style[MODEL_PART_STYLE_SIZE_VEC4];
+} u_model_part_style;
+
+// .xy - z bounds of the mesh being drawn, as min and range in meters.
+// .z - 1 for LOD meshes, whose vertex color alpha carries baked ambient occlusion
+uniform vec4 u_model_mesh_params;
+#endif
 
 uniform mat4 u_matrix;
 uniform mat4 u_node_matrix;
@@ -61,7 +81,7 @@ out highp float v_cutout_factor;
 uniform float u_height;
 #endif
 
-#ifdef HAS_ATTRIBUTE_a_pbr
+#ifdef HAS_ATTRIBUTE_a_feature
 out lowp vec4 v_roughness_metallic_emissive_alpha;
 out mediump vec4 v_height_based_emission_params;
 // .x - height-based interpolation factor
@@ -75,13 +95,53 @@ vec3 sRGBToLinear(vec3 srgbIn) {
     return pow(srgbIn, vec3(2.2));
 }
 
+#ifdef HAS_ATTRIBUTE_a_feature
+// Part id a vertex is tagged with. Ids this version has no style for fall back to the default
+// part rather than wrapping, matching the CPU side.
+uint decodeModelPartId(uvec2 feature) {
+    uint partId = feature.y & 0xFu;
+    return partId < MODEL_PART_COUNT ? partId : 0u;
+}
+
+// Vertex color, unpacked from RGBA4444 by widening each nibble to a full byte.
+vec4 decodeModelVertexColor(uvec2 feature) {
+    uvec4 nibbles = uvec4(feature.x >> 12u, feature.x >> 8u, feature.x >> 4u, feature.x) & 0xFu;
+    return vec4(nibbles * 17u) / 255.0;
+}
+
+ModelPartStyle readModelPartStyle(uint partId) {
+    uint base = partId * 4u;
+    ModelPartStyle style;
+    style.color_mix = u_model_part_style.part_style[base];
+    style.rmea = u_model_part_style.part_style[base + 1u];
+    style.gradient = u_model_part_style.part_style[base + 2u];
+    style.gradient_power = u_model_part_style.part_style[base + 3u].x;
+    return style;
+}
+
+// Blends the styled model-color over the vertex color by the styled mix intensity, then applies
+// the baked ambient occlusion that only LOD meshes carry in their vertex color alpha.
+vec3 modelAlbedo(ModelPartStyle style, vec4 vertexColor) {
+    float ambientOcclusion = mix(1.0, vertexColor.a, u_model_mesh_params.z);
+    return ambientOcclusion * mix(vertexColor.rgb, style.color_mix.rgb, style.color_mix.a);
+}
+
+// Emissive strength height gradient resolved against the z range of the mesh being drawn, packed
+// the way the fragment shader reads it: .x height along the gradient, .y curve power,
+// .z multiplier at the gradient begin, .w multiplier span across the gradient.
+vec4 resolveModelEmissiveGradient(ModelPartStyle style, float height) {
+    float begin = u_model_mesh_params.x + u_model_mesh_params.y * style.gradient.x;
+    float span = u_model_mesh_params.y * (style.gradient.y - style.gradient.x);
+    return vec4((height - begin) / span, style.gradient_power, style.gradient.z, style.gradient.w);
+}
+#endif
+
 void main() {
     #pragma mapbox: initialize-attribute highp vec3 normal_3f
     #pragma mapbox: initialize-attribute highp vec2 uv_2f
     #pragma mapbox: initialize-attribute highp vec3 color_3f
     #pragma mapbox: initialize-attribute highp vec4 color_4f
-    #pragma mapbox: initialize-attribute-custom highp uvec4 pbr
-    #pragma mapbox: initialize-attribute-custom highp vec3 heightBasedEmissiveStrength
+    #pragma mapbox: initialize-attribute-custom highp uvec2 feature
 
     highp mat4 normal_matrix;
 #ifdef INSTANCED_ARRAYS
@@ -157,27 +217,13 @@ void main() {
     v_color_mix = vec4(sRGBToLinear(u_color_mix.rgb), u_color_mix.a);
 #endif
     v_position_height.w = a_pos_3f.z;
-#ifdef HAS_ATTRIBUTE_a_pbr
-    vec4 albedo_c = decode_color(vec2(pbr.xy));
+#ifdef HAS_ATTRIBUTE_a_feature
+    ModelPartStyle part_style = readModelPartStyle(decodeModelPartId(feature));
 
-    vec2 e_r_m = unpack_float(float(pbr.z));
-    vec2 r_m =  unpack_float(e_r_m.y * 16.0);
-    r_m.r = r_m.r * 16.0;
-
-    // Note: the decoded color is in linear color space
-    v_color_mix = vec4(albedo_c.rgb, 1.0); // vertex color is computed on CPU
-    v_roughness_metallic_emissive_alpha = vec4(vec3(r_m, e_r_m.x) / 255.0, albedo_c.a);
-    v_roughness_metallic_emissive_alpha.z *= 2.0; // range [0..2] was shrank to fit [0..1]
-
-    float heightBasedRelativeIntepolation = a_pos_3f.z * heightBasedEmissiveStrength.x + heightBasedEmissiveStrength.y;
-
-    v_height_based_emission_params.x = heightBasedRelativeIntepolation;
-    v_height_based_emission_params.y = heightBasedEmissiveStrength.z;
-
-    vec2 emissionMultiplierValues = unpack_float(float(pbr.w)) / 256.0;
-
-    v_height_based_emission_params.z = emissionMultiplierValues.x;
-    v_height_based_emission_params.w = emissionMultiplierValues.y - emissionMultiplierValues.x;
+    // Note: the resulting color is in linear color space
+    v_color_mix = vec4(modelAlbedo(part_style, decodeModelVertexColor(feature)), 1.0);
+    v_roughness_metallic_emissive_alpha = part_style.rmea;
+    v_height_based_emission_params = resolveModelEmissiveGradient(part_style, a_pos_3f.z);
 #endif
 #ifdef FOG
     v_fog_pos = fog_position(local_pos);
@@ -212,7 +258,7 @@ void main() {
 #endif
 #endif
 
-#ifdef HAS_ATTRIBUTE_a_pbr
+#ifdef HAS_ATTRIBUTE_a_feature
 #ifdef HAS_ATTRIBUTE_a_color_4f
     v_roughness_metallic_emissive_alpha.w = clamp(color_4f.a * v_roughness_metallic_emissive_alpha.w * (v_roughness_metallic_emissive_alpha.z - 1.0), 0.0, 1.0);
 #endif
