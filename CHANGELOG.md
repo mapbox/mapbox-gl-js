@@ -16,6 +16,7 @@
 ### Bug fixes 🐞
 - Fix dark line artifacts on non-standard procedural building geometry.
 - Fix ESM terrain module loading for elevated-lines requiring terrain.
+- Fix validation of style light transition properties.
 - Fix symbol layer related errors after GL context loss.
 - Skip rings with zero area on fill-extrusions.
 
