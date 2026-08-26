@@ -98,15 +98,14 @@ export default class DragRotateHandler {
     /**
      * Enables the "drag to pitch" interaction.
      *
-     * Has no effect if the handler was constructed with `pitchWithRotate: false`,
-     * or if the parent "drag to rotate" interaction is currently disabled.
+     * Has no effect if the handler was constructed with `pitchWithRotate: false`.
      *
      * @example
      * map.dragRotate.enablePitch();
      */
     enablePitch() {
         this._pitchDisabled = false;
-        if (this._pitchWithRotate && this._mouseRotate.isEnabled()) this._mousePitch.enable();
+        if (this._pitchWithRotate) this._mousePitch.enable();
     }
 
     /**

@@ -1103,6 +1103,151 @@ test('DragRotateHandler isPitchEnabled reflects pitchWithRotate: false even when
     map.remove();
 });
 
+test('DragRotateHandler enablePitch() restores pitch while rotation is disabled (GLJS-1934)', () => {
+    const map = createMap();
+
+    // Prevent inertial rotation.
+    vi.spyOn(browser, 'now').mockImplementation(() => 0);
+
+    // Disable pitch first so re-enabling it is meaningful, then disable
+    // rotation on top of that -- this is the exact sequence from GLJS-1934.
+    map.dragRotate.disablePitch();
+    map.dragRotate.disableRotation();
+    map.dragRotate.enablePitch();
+
+    expect(map.dragRotate.isPitchEnabled()).toEqual(true);
+    expect(map.dragRotate.isRotationEnabled()).toEqual(false);
+
+    const pitchstart = vi.fn();
+    const pitch      = vi.fn();
+    const pitchend   = vi.fn();
+    const rotatestart = vi.fn();
+    const rotate      = vi.fn();
+    const rotateend   = vi.fn();
+
+    map.on('pitchstart',  pitchstart);
+    map.on('pitch',       pitch);
+    map.on('pitchend',    pitchend);
+    map.on('rotatestart', rotatestart);
+    map.on('rotate',      rotate);
+    map.on('rotateend',   rotateend);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mousedown(map.getCanvas(), {buttons: 1, button: 0, ctrlKey: true});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mousemove(map.getCanvas(), {buttons: 1, ctrlKey: true, clientX: 10, clientY: -10});
+    map._renderTaskQueue.run();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 0, ctrlKey: true});
+    map._renderTaskQueue.run();
+
+    expect(pitchstart).toHaveBeenCalledTimes(1);
+    expect(pitch).toHaveBeenCalledTimes(1);
+    expect(pitchend).toHaveBeenCalledTimes(1);
+    expect(rotatestart).not.toHaveBeenCalled();
+    expect(rotate).not.toHaveBeenCalled();
+    expect(rotateend).not.toHaveBeenCalled();
+
+    map.remove();
+});
+
+test('DragRotateHandler enableRotation() restores rotation while pitch is disabled', () => {
+    const map = createMap();
+
+    // Prevent inertial rotation.
+    vi.spyOn(browser, 'now').mockImplementation(() => 0);
+
+    map.dragRotate.disablePitch();
+    map.dragRotate.enableRotation();
+
+    expect(map.dragRotate.isRotationEnabled()).toEqual(true);
+    expect(map.dragRotate.isPitchEnabled()).toEqual(false);
+
+    const pitchstart = vi.fn();
+    const pitch      = vi.fn();
+    const pitchend   = vi.fn();
+    const rotatestart = vi.fn();
+    const rotate      = vi.fn();
+    const rotateend   = vi.fn();
+
+    map.on('pitchstart',  pitchstart);
+    map.on('pitch',       pitch);
+    map.on('pitchend',    pitchend);
+    map.on('rotatestart', rotatestart);
+    map.on('rotate',      rotate);
+    map.on('rotateend',   rotateend);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mousedown(map.getCanvas(), {buttons: 1, button: 0, ctrlKey: true});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mousemove(map.getCanvas(), {buttons: 1, ctrlKey: true, clientX: 10, clientY: -10});
+    map._renderTaskQueue.run();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 0, ctrlKey: true});
+    map._renderTaskQueue.run();
+
+    expect(rotatestart).toHaveBeenCalledTimes(1);
+    expect(rotate).toHaveBeenCalledTimes(1);
+    expect(rotateend).toHaveBeenCalledTimes(1);
+    expect(pitchstart).not.toHaveBeenCalled();
+    expect(pitch).not.toHaveBeenCalled();
+    expect(pitchend).not.toHaveBeenCalled();
+
+    map.remove();
+});
+
+test('DragRotateHandler enablePitch() does not also re-enable rotation', () => {
+    const map = createMap();
+
+    map.dragRotate.disableRotation();
+    map.dragRotate.enablePitch();
+
+    expect(map.dragRotate.isRotationEnabled()).toEqual(false);
+
+    map.remove();
+});
+
+test('DragRotateHandler enablePitch() is still a no-op with pitchWithRotate: false', () => {
+    const map = createMap({pitchWithRotate: false});
+
+    // Prevent inertial rotation.
+    vi.spyOn(browser, 'now').mockImplementation(() => 0);
+
+    map.dragRotate.disableRotation();
+    map.dragRotate.enablePitch();
+
+    expect(map.dragRotate.isPitchEnabled()).toBeFalsy();
+
+    const spy = vi.fn();
+    map.on('pitchstart', spy);
+    map.on('pitch',      spy);
+    map.on('pitchend',   spy);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mousedown(map.getCanvas(), {buttons: 1, button: 0, ctrlKey: true});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mousemove(map.getCanvas(), {buttons: 1, ctrlKey: true, clientX: 10, clientY: -10});
+    map._renderTaskQueue.run();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 0, ctrlKey: true});
+    map._renderTaskQueue.run();
+
+    expect(spy).not.toHaveBeenCalled();
+
+    map.remove();
+});
+
+test('DragRotateHandler enablePitch() re-enables pitch after a full disable(), matching enableRotation()', () => {
+    const map = createMap();
+
+    map.dragRotate.disable();
+    map.dragRotate.enablePitch();
+
+    expect(map.dragRotate.isPitchEnabled()).toEqual(true);
+
+    map.remove();
+});
+
 test('DragRotateHandler does not begin a mouse drag if moved less than click tolerance', () => {
     const map = createMap({clickTolerance: 4});
 
