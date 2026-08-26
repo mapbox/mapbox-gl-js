@@ -53,7 +53,7 @@ describe('Map#remove', () => {
         map.setProjection("globe");
 
         await waitFor(map, "style.load");
-        await waitFor(map, "render");
+        await vi.waitUntil(() => !!map.painter.globeSharedBuffers, {timeout: 3000});
         map.remove();
         const buffers = map.painter.globeSharedBuffers;
         expect(buffers).toBeTruthy();
@@ -87,9 +87,7 @@ describe('Map#remove', () => {
         };
 
         const map = createMap({style: styleWithAtmosphere});
-
-        await waitFor(map, "style.load");
-        await waitFor(map, "render");
+        await vi.waitUntil(() => !!map.painter._atmosphere, {timeout: 3000});
         const atmosphereBuffer = map.painter._atmosphere.atmosphereBuffer;
         const starsVx = map.painter._atmosphere.starsVx;
         const starsIdx = map.painter._atmosphere.starsIdx;

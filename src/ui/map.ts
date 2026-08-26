@@ -21,6 +21,7 @@ import {
 import Style from '../style/style';
 import EvaluationParameters from '../style/evaluation_parameters';
 import Painter from '../render/painter';
+import {Lite} from '../../modules/lite_main';
 import Transform from '../geo/transform';
 import Hash from './hash';
 import HandlerManager from './handler_manager';
@@ -4633,8 +4634,8 @@ export class Map extends Camera {
             this._placementDirty = this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions, this.painter.replacementSource, this._placementAlgorithm);
         }
 
-        // Actually draw
-        if (this.style) {
+        // Actually draw - unless we're waiting on draping to load
+        if (this.style && !(this.transform.projection.requiresDraping && !Lite.loaded)) {
             this.painter.render(this.style, {
                 showTileBoundaries: this.showTileBoundaries,
                 showParseStatus: this.showParseStatus,

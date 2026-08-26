@@ -25,7 +25,7 @@ import {getProperties as getDirectionalProps} from '../../3d-style/style/directi
 import {createExpression, createConfigExpression} from '../style-spec/expression/index';
 import {HD, prepareHD as prepareHDMain} from '../../modules/hd_main';
 import {prepareStandard as prepareStandardMain} from '../../modules/standard_main';
-import {prepareLite as prepareLiteMain} from '../../modules/lite_main';
+import {Lite, prepareLite as prepareLiteMain} from '../../modules/lite_main';
 import {HD_ROAD_COVERAGE_SOURCE_LAYER} from '../source/frc_coverage_snapshot';
 import {DebugModule, prepareDebug} from '../../modules/debug';
 import {
@@ -4073,10 +4073,18 @@ class Style extends Evented<MapEvents> {
     _startLiteLoad() {
         if (this._drapingLoaded !== undefined) return;
         this._drapingLoaded = false;
+        const rendererWasReady = !!Lite.loaded;
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         prepareLiteMain().then(() => {
             this._drapingLoaded = true;
-            this.map.triggerRepaint();
+            if (this.map._removed || this.dispatcher.actors.length === 0) return;
+
+            if (rendererWasReady) {
+                this.map.triggerRepaint();
+            } else {
+                this.applyProjectionUpdate();
+                this.map._update(false);
+            }
         });
     }
 
