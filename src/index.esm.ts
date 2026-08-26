@@ -59,6 +59,7 @@ export type {
     MapEventType,
     MapEventOf,
     MapEvent,
+    MapEvents,
 } from './ui/events';
 
 // Style specification types — used with addLayer(), addSource(), setStyle(), etc.
@@ -149,6 +150,9 @@ export type {
     ClipLayerSpecification,
     ClipLayout,
     LayerSpecification,
+    Layer,
+    LayoutSpecification,
+    PaintSpecification,
 } from './style-spec/types';
 
 // Named value exports — classes, functions, constants
