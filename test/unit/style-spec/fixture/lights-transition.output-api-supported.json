@@ -1,0 +1,14 @@
+[
+  {
+    "message": "color-transition.duration: number expected, string found",
+    "line": 11
+  },
+  {
+    "message": "lights[0]: unknown property \"cast-shadows-transition\"",
+    "line": 17
+  },
+  {
+    "message": "lights[0]: unknown property \"shadow-quality-transition\"",
+    "line": 19
+  }
+]
