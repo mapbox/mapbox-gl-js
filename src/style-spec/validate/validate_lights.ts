@@ -79,7 +79,7 @@ export default function validateLights(options: LightsValidatorOptions): Validat
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (useThemeMatch && lightPropertySpec[useThemeMatch[1]!]) {
                     errors = errors.concat(validate({
-                        key,
+                        key: propertyKey,
                         value: properties[propertyKey],
                         valueSpec: {type: 'string'},
                         style,
@@ -88,8 +88,8 @@ export default function validateLights(options: LightsValidatorOptions): Validat
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 } else if (transitionMatch && lightPropertySpec[transitionMatch[1]!] && lightPropertySpec[transitionMatch[1]!].transition) {
                     errors = errors.concat(validate({
-                        key,
-                        value: light[key],
+                        key: propertyKey,
+                        value: properties[propertyKey],
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         valueSpec: styleSpec.transition,
                         style,

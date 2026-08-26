@@ -1,0 +1,35 @@
+{
+    "version": 8,
+    "sources": {},
+    "layers": [],
+    "lights": [
+        {
+            "id": "directional",
+            "type": "directional",
+            "properties": {
+                "color": "#fff",
+                "color-transition": {"duration": "0"},
+                "intensity": 0.5,
+                "intensity-transition": {"duration": 0},
+                "direction": [200.0, 40.0],
+                "direction-transition": {"duration": 0},
+                "cast-shadows": true,
+                "cast-shadows-transition": {"duration": 0},
+                "shadow-quality": 0.5,
+                "shadow-quality-transition": {"duration": 0},
+                "shadow-intensity": 0.5,
+                "shadow-intensity-transition": {"duration": 0}
+            }
+        },
+        {
+            "id": "ambient",
+            "type": "ambient",
+            "properties": {
+                "color": "#fff",
+                "color-transition": {"duration": 0},
+                "intensity": 0.5,
+                "intensity-transition": {"duration": 0}
+            }
+        }
+    ]
+}
