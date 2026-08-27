@@ -8,11 +8,38 @@ beforeAll(() => {
     mockGeolocation.use();
 });
 
+// Chrome 151+ exposes `DeviceOrientationEvent.requestPermission()` (previously
+// iOS-Safari-only), which makes the control attach the orientation listener
+// asynchronously behind a permission grant that headless browsers can't complete.
+// These tests target the listener-management logic, so remove `requestPermission`
+// for the duration of each test to force the direct (synchronous) attach path on
+// any browser channel — matching CI's bundled Chromium and future-proofing it once
+// Playwright's Chromium ships the API. Restore it afterwards so it doesn't leak.
+type DOEWithPermission = {requestPermission?: () => Promise<string>};
+let _requestPermission: {had: boolean; original?: () => Promise<string>} | undefined;
+
 beforeEach(() => {
     mockGeolocation.reset();
     vi.spyOn(window.navigator.permissions, 'query').mockImplementation(() => {
         return Promise.resolve({state: 'granted'} as PermissionStatus);
     });
+
+    const DOE = window.DeviceOrientationEvent as unknown as DOEWithPermission | undefined;
+    if (DOE) {
+        _requestPermission = {had: Object.hasOwn(DOE, 'requestPermission'), original: DOE.requestPermission};
+        delete DOE.requestPermission;
+    }
+});
+
+// Restore `requestPermission` to its pre-test state, undoing both the removal above
+// and any per-test override (e.g. the permission-gated attach test).
+afterEach(() => {
+    const DOE = window.DeviceOrientationEvent as unknown as DOEWithPermission | undefined;
+    if (DOE && _requestPermission) {
+        if (_requestPermission.had) DOE.requestPermission = _requestPermission.original;
+        else delete DOE.requestPermission;
+    }
+    _requestPermission = undefined;
 });
 
 // convert the coordinates of a LngLat object to a fixed number of digits
@@ -687,7 +714,9 @@ test('GeolocateControl watching device orientation event', async () => {
                 geolocate._userLocationDotMarker._element.classList.contains('mapboxgl-user-location-dot-stale')
             ).toBeFalsy();
             geolocate.once('trackuserlocationend', () => {
-                expect(eventListenerSpy.mock.calls[0][0]).toEqual('deviceorientationabsolute');
+                // The listener is attached via requestPermission()'s grant, whose microtask
+                // has resolved by the time this event fires after the camera animation.
+                expect(eventListenerSpy.mock.calls.some(c => c[0] === 'deviceorientationabsolute')).toBe(true);
 
                 const event = deviceOrientationEventLike(-359);
                 window.dispatchEvent(event);
@@ -1096,32 +1125,82 @@ test('GeolocateControl setShowUserHeading attaches and detaches the orientation 
     });
     map.addControl(geolocate);
 
+    const addSpy = vi.spyOn(window, 'addEventListener');
+    const removeSpy = vi.spyOn(window, 'removeEventListener');
+
+    // Start a location watch and wait for the first geolocate.
     await afterUIChanges((resolve) => {
-        const addSpy = vi.spyOn(window, 'addEventListener');
-        const removeSpy = vi.spyOn(window, 'removeEventListener');
-
-        geolocate.once('geolocate', () => {
-            // Watch is active. Enabling heading should attach the listener.
-            geolocate.setShowUserHeading(true);
-            expect(geolocate.options.showUserHeading).toEqual(true);
-            const added = addSpy.mock.calls.some(c => c[0] === 'deviceorientation' || c[0] === 'deviceorientationabsolute');
-            expect(added).toBe(true);
-
-            // Pretend a heading was received (the actual event-driven path is
-            // covered by 'watching device orientation event').
-            geolocate._heading = 90;
-
-            // Disabling heading should remove the listeners and clear state.
-            geolocate.setShowUserHeading(false);
-            expect(geolocate.options.showUserHeading).toEqual(false);
-            expect(geolocate._heading).toBeUndefined();
-            const removed = removeSpy.mock.calls.some(c => c[0] === 'deviceorientation' || c[0] === 'deviceorientationabsolute');
-            expect(removed).toBe(true);
-            resolve();
-        });
+        geolocate.once('geolocate', () => resolve());
         geolocate.trigger();
         mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
     });
+
+    // Watch is active. Enabling heading should attach the listener (asynchronously,
+    // via requestPermission()'s grant on browsers that expose it).
+    geolocate.setShowUserHeading(true);
+    expect(geolocate.options.showUserHeading).toEqual(true);
+    await vi.waitUntil(() => addSpy.mock.calls.some(c => c[0] === 'deviceorientation' || c[0] === 'deviceorientationabsolute'));
+
+    // Pretend a heading was received (the actual event-driven path is
+    // covered by 'watching device orientation event').
+    geolocate._heading = 90;
+
+    // Disabling heading should remove the listeners and clear state.
+    geolocate.setShowUserHeading(false);
+    expect(geolocate.options.showUserHeading).toEqual(false);
+    expect(geolocate._heading).toBeUndefined();
+    const removed = removeSpy.mock.calls.some(c => c[0] === 'deviceorientation' || c[0] === 'deviceorientationabsolute');
+    expect(removed).toBe(true);
+});
+
+test('GeolocateControl requests permission before attaching the orientation listener (Chrome 151+/iOS)', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({trackUserLocation: true, showUserLocation: true, showUserHeading: true});
+    map.addControl(geolocate);
+
+    // Simulate a browser that gates device orientation behind requestPermission()
+    // (the file-level beforeEach otherwise removes it). afterEach restores the state.
+    const DOE = window.DeviceOrientationEvent as unknown as DOEWithPermission;
+    const requestPermission = vi.fn(() => Promise.resolve('granted'));
+    DOE.requestPermission = requestPermission;
+
+    const addSpy = vi.spyOn(window, 'addEventListener');
+
+    await afterUIChanges((resolve) => {
+        geolocate.once('geolocate', () => resolve());
+        geolocate.trigger();
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+
+    // Enabling heading must go through the permission prompt, and only attach the
+    // listener once it resolves 'granted'.
+    expect(requestPermission).toHaveBeenCalled();
+    await vi.waitUntil(() => addSpy.mock.calls.some(c => c[0] === 'deviceorientation' || c[0] === 'deviceorientationabsolute'));
+});
+
+test('GeolocateControl does not attach the orientation listener when permission is denied', async () => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({trackUserLocation: true, showUserLocation: true, showUserHeading: true});
+    map.addControl(geolocate);
+
+    // Deny the device-orientation permission (rejection models a missing user gesture).
+    const DOE = window.DeviceOrientationEvent as unknown as DOEWithPermission;
+    const requestPermission = vi.fn(() => Promise.resolve('denied'));
+    DOE.requestPermission = requestPermission;
+
+    const addSpy = vi.spyOn(window, 'addEventListener');
+
+    await afterUIChanges((resolve) => {
+        geolocate.once('geolocate', () => resolve());
+        geolocate.trigger();
+        mockGeolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+    });
+
+    expect(requestPermission).toHaveBeenCalled();
+    // Give the (resolved) permission promise a chance to run its callback.
+    await new Promise(r => { setTimeout(r, 0); });
+    const attached = addSpy.mock.calls.some(c => c[0] === 'deviceorientation' || c[0] === 'deviceorientationabsolute');
+    expect(attached).toBe(false);
 });
 
 test('GeolocateControl setShowUserHeading does not attach the listener when no watch is active', async () => {

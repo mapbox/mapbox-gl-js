@@ -853,12 +853,27 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             window.addEventListener(eventName, this._onDeviceOrientation);
         };
 
-        if (typeof (DeviceOrientationEvent as DeviceOrientationEventStatic).requestPermission === 'function') {
-            (DeviceOrientationEvent as DeviceOrientationEventStatic).requestPermission()
+        // iOS Safari, and Chrome 151+ on desktop/Android, gate device orientation
+        // behind `requestPermission()`. It must be called from the transient
+        // activation of a user gesture — which holds here because this runs
+        // synchronously inside the geolocate button's click handler (or a
+        // `setShowUserHeading(true)` call the app makes in response to one).
+        const DOE = DeviceOrientationEvent as DeviceOrientationEventStatic | undefined;
+        if (typeof DOE?.requestPermission === 'function') {
+            DOE.requestPermission()
                 .then(response => {
-                    if (response === 'granted') addListener();
+                    if (response === 'granted') {
+                        addListener();
+                    } else {
+                        // Surface the denial instead of silently showing no heading.
+                        warnOnce('GeolocateControl: permission to use device orientation was denied, so the user heading arrow will not be shown.');
+                    }
                 })
-                .catch(console.error);
+                .catch(() => {
+                    // Most commonly a missing transient activation: `requestPermission()`
+                    // must be invoked from a user gesture (e.g. a click or tap).
+                    warnOnce('GeolocateControl: could not request device orientation permission. Enable the user heading from a user gesture (click/tap) so the browser can prompt for access.');
+                });
         } else {
             addListener();
         }
