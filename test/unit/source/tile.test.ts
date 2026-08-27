@@ -284,6 +284,44 @@ describe('rtl text detection', () => {
     );
 });
 
+describe('Tile#updateBuckets', () => {
+    test('does not throw when feature state and a paint update land on a symbol layer with no state-dependent paint', () => {
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1), 512, 22);
+        const symbolBucket = createSymbolBucket('test', 'Test', 'test', new CollisionBoxArray());
+        // Force UBO binder creation: the crash only happens on the UBO-based update path in
+        // SymbolBucket#update, which is skipped entirely when text/icon.uboBinder is null.
+        symbolBucket.createArrays();
+
+        const layer = symbolBucket.layers[0];
+        const painter = createPainter({
+            hasLayer: () => true,
+            listImages: () => [],
+            getBrightness: () => 0,
+            getLayerSourceCache: () => undefined,
+            getLayer: () => layer,
+            getOwnLayer: () => layer
+        });
+
+        tile.loadVectorData(
+            createVectorData({rawTileData: rawTileData as ArrayBuffer, buckets: [symbolBucket]}),
+            painter
+        );
+
+        // createSymbolBucket() gives the layer only layout properties (text-font, text-field);
+        // its paint is left at defaults, so it never reads feature-state and stateDependentLayers
+        // stays empty even though the source below carries feature state.
+        expect(tile.buckets[layer.fqid].stateDependentLayers).toEqual([]);
+
+        expect(() => tile.updateBuckets(
+            painter,
+            false,                                      // isBrightnessChanged
+            {_geojsonTileLayer: {'1': {hover: true}}},   // states -> withStateUpdates = true
+            false,                                       // needsSymbolUBOUpdate
+            new Set([layer.fqid])                        // updatedPaintProps -> hasPaintUpdate = true
+        )).not.toThrow();
+    });
+});
+
 function createVectorData(options?: {buckets?: Bucket[]; rawTileData?: ArrayBuffer}): WorkerSourceVectorTileResult {
     const collisionBoxArray = new CollisionBoxArray();
     return ({collisionBoxArray: deserialize(serialize(collisionBoxArray)),
