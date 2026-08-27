@@ -797,11 +797,6 @@ class Tile {
             const imagePositions: SpritePositions = this.imageAtlas ? Object.fromEntries(this.imageAtlas.patternPositions) : {};
             const withStateUpdates = Object.keys(sourceLayerStates).length > 0 && !isBrightnessChanged;
             bucket.hasAppearances = bucket.layers.some(layer => layer.appearances && layer.appearances.length > 0);
-            // withStateUpdates only means the source carries feature state; it says nothing about
-            // whether this bucket's layers actually read it (isStateDependent). A bucket can have
-            // withStateUpdates true and an empty stateDependentLayers, so the two must be checked
-            // together wherever stateDependentLayers is used, or bucket.update() below can be
-            // called with an empty layers array and crash on layers[0].
             const hasStateDependentLayers = withStateUpdates && bucket.stateDependentLayers.length !== 0;
             const layers = hasStateDependentLayers ? bucket.stateDependentLayers : bucket.layers;
             if (hasStateDependentLayers || isBrightnessChanged || hasPaintUpdate || needsSymbolUBOUpdate) {
