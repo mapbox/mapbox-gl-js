@@ -172,6 +172,127 @@ class TriangleDraped {
     }
 }
 
+class TriangleDrapedEmissive {
+    constructor() {
+        this.id = 'triangle-draped-emissive';
+        this.type = 'custom';
+        this.renderingMode = '3d';
+    }
+
+    onAdd(map, gl) {
+        this.hasDualSourceBlending = !!gl.getExtension('WEBGL_blend_func_extended');
+
+        this.programs = {
+            base: this._createProgram(gl, []),
+            'mrt': this._createProgram(gl, ['EMISSIVE_MODE_MRT']),
+            'mrt-rgba': this._createProgram(gl, ['EMISSIVE_MODE_MRT_RGBA']),
+        };
+
+        if (this.hasDualSourceBlending) {
+            this.programs['dual-source-blending'] = this._createProgram(gl, ['EMISSIVE_MODE_DUAL_SOURCE_BLENDING']);
+        }
+
+        const verts = new Float32Array([0, 0.5, 0.5, -0.5, -0.5, -0.5]);
+        this.vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+    }
+
+    _createProgram(gl, defines) {
+        const defineBlock = defines.map((d) => `#define ${d}`).join('\n');
+
+        const vertexSource = `#version 300 es
+        ${defineBlock}
+        in vec2 aPos;
+        void main() {
+            gl_Position = vec4(aPos, 1.0, 1.0);
+        }`;
+
+        const fragmentSource = `#version 300 es
+        ${defineBlock}
+        #if defined(GL_EXT_blend_func_extended) && defined(EMISSIVE_MODE_DUAL_SOURCE_BLENDING)
+        #extension GL_EXT_blend_func_extended : require
+        #endif
+        precision highp float;
+        layout(location = 0) out vec4 glFragColor;
+
+        #if defined(EMISSIVE_MODE_MRT) || defined(EMISSIVE_MODE_MRT_RGBA)
+            layout(location = 1) out vec4 out_Target1;
+        #elif defined(EMISSIVE_MODE_DUAL_SOURCE_BLENDING)
+            layout(location = 0, index = 1) out vec4 glFragColorSrc1;
+        #endif
+
+        void storeEmissiveColor(vec4 color, float emissiveStrength) {
+            #ifdef EMISSIVE_MODE_DUAL_SOURCE_BLENDING
+                glFragColorSrc1 = vec4(vec3(0.0), emissiveStrength);
+            #endif
+
+            #ifdef EMISSIVE_MODE_MRT_RGBA
+                out_Target1 = vec4(color.rgb * emissiveStrength, color.a);
+            #endif
+
+            #ifdef EMISSIVE_MODE_MRT
+                out_Target1 = vec4(glFragColor.a* emissiveStrength, 0.0, 0.0, glFragColor.a);
+            #endif
+        }
+
+        void main() {
+            vec4 col_rgba = vec4(0.0, 0.5, 0.0, 0.5);
+            float emissive_strength = 1.0;
+            glFragColor = vec4(col_rgba.rgb * col_rgba.a, col_rgba.a); // premult alpha
+
+            storeEmissiveColor(glFragColor,emissive_strength);
+        }`;
+
+        const label = defines.join(',') || 'none';
+
+        const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertexShader, vertexSource);
+        gl.compileShader(vertexShader);
+        if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+            console.error(`triangle-draped-emissive[${label}]: vertex shader compile error:`, gl.getShaderInfoLog(vertexShader));
+        }
+        const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragmentShader, fragmentSource);
+        gl.compileShader(fragmentShader);
+        if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+            console.error(`triangle-draped-emissive[${label}]: fragment shader compile error:`, gl.getShaderInfoLog(fragmentShader));
+        }
+
+        const program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+        gl.linkProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            console.error(`triangle-draped-emissive[${label}]: program link error:`, gl.getProgramInfoLog(program));
+        }
+
+        program.aPos = gl.getAttribLocation(program, 'aPos');
+        return program;
+    }
+
+    shouldRerenderTiles() {
+        return true;
+    }
+
+    renderToTile(gl, tileId, emissiveMode) {
+        const program = this.programs[emissiveMode] || this.programs.base;
+        gl.useProgram(program);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.enableVertexAttribArray(program.aPos);
+        gl.vertexAttribPointer(program.aPos, 2, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
+    }
+
+    supportsEmissiveMode(emissiveMode) {
+        if (emissiveMode === 'dual-source-blending') return this.hasDualSourceBlending;
+        return true;
+    }
+
+    render() {
+    }
+}
+
 class WrappedTileDraped {
     constructor() {
         this.id = 'wrapped-tile-draped';
@@ -252,6 +373,7 @@ export default {
     "wrapped-tile-draped": WrappedTileDraped,
     "unwrapped-tile-draped": UnwrappedTileDraped,
     "triangle-draped": TriangleDraped,
+    "triangle-draped-emissive": TriangleDrapedEmissive,
     "tent-3d": Tent3D,
     "null-island": NullIsland
 };

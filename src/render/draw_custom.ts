@@ -7,9 +7,19 @@ import {globeToMercatorTransition} from './../geo/projection/globe_util';
 import assert from '../style-spec/util/assert';
 
 import type Painter from './painter';
+import type {EmissiveMode} from './painter';
 import type {OverscaledTileID} from '../source/tile_id';
 import type SourceCache from '../source/source_cache';
 import type CustomStyleLayer from '../style/style_layer/custom_style_layer';
+import type {CustomLayerRenderEmissiveMode} from '../style/style_layer/custom_style_layer';
+
+// Map internal EmissiveMode to values exposed via public custom layer API.
+// 'constant' is intentionnally missing -> mapped to undefined.
+const emissiveModeToCustomLayerMode: Partial<Record<EmissiveMode, CustomLayerRenderEmissiveMode>> = {
+    'dual-source-blending': 'dual-source-blending',
+    'mrt-fallback': 'mrt',
+    'mrt-full-rgba': 'mrt-rgba'
+};
 
 function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomStyleLayer, coords: Array<OverscaledTileID>) {
 
@@ -65,8 +75,12 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
                 context.setColorMode(painter.colorModeForRenderPass());
                 painter.setCustomLayerDefaults();
 
+                const emissiveMode = emissiveModeToCustomLayerMode[painter.emissiveMode];
+
                 const gl = context.gl;
-                if (painter.isEmissiveMrtActive()) {
+                const supportsEmissiveMode = implementation.supportsEmissiveMode;
+                const outputsEmissiveColor = emissiveMode && supportsEmissiveMode && supportsEmissiveMode.call(implementation, emissiveMode);
+                if (painter.isEmissiveMrtActive() && !outputsEmissiveColor) {
                     // In the emissive MRT-fallback path the proxy tile FBO is bound with two draw
                     // buffers ([COLOR_ATTACHMENT0, COLOR_ATTACHMENT1]). A custom layer's fragment
                     // shader only declares a single color output, so with both buffers enabled its
@@ -74,9 +88,9 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
                     gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
                 }
 
-                renderToTile.call(implementation, context.gl, renderCoords);
+                renderToTile.call(implementation, context.gl, renderCoords, emissiveMode);
 
-                if (painter.isEmissiveMrtActive()) {
+                if (painter.isEmissiveMrtActive() && !outputsEmissiveColor) {
                     // Restore the draw buffer state expected by the rest of the render pipeline.
                     gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
                 }
