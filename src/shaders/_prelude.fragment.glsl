@@ -115,3 +115,19 @@ vec3 applyLUT(highp sampler3D lut, vec3 col) {
 vec4 applyLUT(highp sampler3D lut, vec4 premultipliedColor) {
     return premultiplyColor(applyLUT(lut, unpremultiplyColor(premultipliedColor)), premultipliedColor.a);
 }
+
+void storeEmissiveColor(vec4 color, float emissiveStrength) {
+#ifdef DUAL_SOURCE_BLENDING
+    glFragColorSrc1 = vec4(vec3(0.0), emissiveStrength);
+#else
+
+#ifdef USE_MRT1 
+#ifdef USE_MRT1_RGBA
+    out_Target1 = vec4(color.rgb * emissiveStrength, color.a);
+#else
+    out_Target1 = vec4(emissiveStrength * color.a, 0.0, 0.0, glFragColor.a);
+#endif
+#endif
+
+#endif
+}

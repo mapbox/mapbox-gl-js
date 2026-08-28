@@ -91,8 +91,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     const gl = context.gl;
     const source = sourceCache.getSource();
 
-    const mrt = painter.terrain && painter.terrain.renderingToTexture && painter.emissiveMode === 'mrt-fallback';
-    const rasterConfig = configureRaster(source, layer, context, gl, mrt);
+    const rasterConfig = configureRaster(painter, source, layer, context, gl);
 
     if (source instanceof ImageSource && !tileIDs.length) {
         if (!isGlobeProjection) {
@@ -515,11 +514,11 @@ function getTextureDescriptor(
 }
 
 function configureRaster(
+    painter: Painter,
     source: Source,
     layer: RasterStyleLayer,
     context: Context,
-    gl: WebGL2RenderingContext,
-    mrt: boolean
+    gl: WebGL2RenderingContext
 ): RasterConfig {
     const isRasterColor = layer.paint.get('raster-color');
     const isRasterArray = source.type === 'raster-array';
@@ -580,8 +579,10 @@ function configureRaster(
         tex.bind(resampling, gl.CLAMP_TO_EDGE);
     }
 
+    const mrt = painter.terrain && painter.terrain.renderingToTexture && painter.isEmissiveMrtActive();
     if (mrt) {
         defines.push('USE_MRT1');
+        if (painter.emissiveMode === 'mrt-full-rgba') defines.push('USE_MRT1_RGBA');
     }
 
     return {

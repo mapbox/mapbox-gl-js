@@ -71,8 +71,9 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     const isDraping = painter.terrain && painter.terrain.renderingToTexture;
     const defines: DynamicDefinesType[] = [];
-    if (isDraping && painter.emissiveMode === 'mrt-fallback') {
+    if (isDraping && painter.isEmissiveMrtActive()) {
         defines.push('USE_MRT1');
+        if (painter.emissiveMode === 'mrt-full-rgba') defines.push('USE_MRT1_RGBA');
     }
 
     if (isViewportPitch) {

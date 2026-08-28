@@ -61,8 +61,9 @@ function renderHillshade(painter: Painter, coord: OverscaledTileID, tile: Tile, 
     const affectedByFog = painter.isTileAffectedByFog(coord);
     const definesValues: DynamicDefinesType[] = [];
     const isDraping = painter.terrain && painter.terrain.renderingToTexture;
-    if (isDraping && painter.emissiveMode === 'mrt-fallback') {
+    if (isDraping && painter.isEmissiveMrtActive()) {
         definesValues.push('USE_MRT1');
+        if (painter.emissiveMode === 'mrt-full-rgba') definesValues.push('USE_MRT1_RGBA');
     }
     const program = painter.getOrCreateProgram('hillshade', {overrideFog: affectedByFog, defines: definesValues});
 
@@ -134,8 +135,9 @@ function prepareHillshade(painter: Painter, tile: Tile, layer: HillshadeStyleLay
     if (painter.linearFloatFilteringSupported()) definesValues.push('TERRAIN_DEM_FLOAT_FORMAT');
 
     const isDraping = painter.terrain && painter.terrain.renderingToTexture;
-    if (isDraping && painter.emissiveMode === 'mrt-fallback') {
+    if (isDraping && painter.isEmissiveMrtActive()) {
         definesValues.push('USE_MRT1');
+        if (painter.emissiveMode === 'mrt-full-rgba') definesValues.push('USE_MRT1_RGBA');
     }
 
     painter.getOrCreateProgram('hillshadePrepare', {defines: definesValues}).draw(painter, gl.TRIANGLES,

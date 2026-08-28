@@ -64,7 +64,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         return;
     }
 
-    const mrt = painter.emissiveMode === 'mrt-fallback';
+    const mrt = painter.isEmissiveMrtActive();
 
     // Update replacement used with model layer conflation
     const conflateLayer = painter.conflationActive && painter.style.isLayerClipped(layer, source.getSource());

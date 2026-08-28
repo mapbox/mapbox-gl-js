@@ -143,9 +143,7 @@ void main() {
     glFragColor = vec4(1.0);
 #endif
 
-#ifdef USE_MRT1
-    out_Target1 = vec4(u_emissive_strength * glFragColor.a, 0.0, 0.0, glFragColor.a);
-#endif
+    storeEmissiveColor(glFragColor,u_emissive_strength);
 
     HANDLE_WIREFRAME_DEBUG;
 }

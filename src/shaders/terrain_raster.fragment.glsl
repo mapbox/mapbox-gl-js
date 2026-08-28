@@ -37,9 +37,19 @@ void main() {
     // For this reason we decouple the emissive and flood lights areas
     // from the areas that should be lit with lights.
     // In the end we add the results instead of mixing them.
+    vec3 unlit_base;
+    vec3 emissive_base;
+#ifdef USE_MRT1_RGBA
+    // u_image1 stores the emissive-only premultiplied color contribution (exact, not a
+    // scalar estimate), so the unlit portion is recovered by direct subtraction.
+    vec4 emissive_premult = u_emissive_texture_available > 0.5 ? texture(u_image1, v_pos0) : vec4(0.0);
+    unlit_base = image_color.rgb - emissive_premult.rgb;
+    emissive_base = emissive_premult.rgb;
+#else
     float emissive_strength = u_emissive_texture_available > 0.5 ? texture(u_image1, v_pos0).r : image_color.a;
-    vec3 unlit_base = image_color.rgb * (1.0 - emissive_strength);
-    vec3 emissive_base = image_color.rgb * emissive_strength;
+    unlit_base = image_color.rgb * (1.0 - emissive_strength);
+    emissive_base = image_color.rgb * emissive_strength;
+#endif // !USE_MRT1_RGBA
     float ndotl = u_shadow_direction.z;
     float occlusion = ndotl < 0.0 ? 1.0 : shadow_occlusion(v_pos_light_view_0, v_pos_light_view_1, 1.0 / gl_FragCoord.w, 0.0);
     ndotl = max(0.0, ndotl);
@@ -54,11 +64,21 @@ void main() {
 #endif // !LIGHTING_3D_ALPHA_EMISSIVENESS
 #else // RENDER_SHADOWS
     float lighting_factor = u_lighting_directional_dir.z;
-    color = apply_lighting(image_color, normal, lighting_factor);
 #ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
+#ifdef USE_MRT1_RGBA
+    // See comment above on why u_image1 holds an exact premultiplied contribution.
+    vec4 emissive_premult = u_emissive_texture_available > 0.5 ? texture(u_image1, v_pos0) : vec4(0.0);
+    vec3 unlit_base = image_color.rgb - emissive_premult.rgb;
+    color.rgb = apply_lighting(unlit_base, normal, lighting_factor) + emissive_premult.rgb;
+    color.a = 1.0;
+#else
+    color = apply_lighting(image_color, normal, lighting_factor);
     float emissive_strength = u_emissive_texture_available > 0.5 ? texture(u_image1, v_pos0).r : image_color.a;
     color.rgb = mix(color.rgb, image_color.rgb, emissive_strength);
     color.a = 1.0;
+#endif // USE_MRT1_RGBA
+#else // !LIGHTING_3D_ALPHA_EMISSIVENESS
+    color = apply_lighting(image_color, normal, lighting_factor);
 #endif // LIGHTING_3D_ALPHA_EMISSIVENESS
 #endif // !RENDER_SHADOWS
 

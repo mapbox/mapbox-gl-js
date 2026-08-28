@@ -70,7 +70,7 @@ export class ProgramPrecompiler {
         // `mrt-fallback` mode (style has data-driven emissive AND no WEBGL_blend_func_extended — Firefox + Standard)
         // makes every draping draw call append `USE_MRT1` to defines. Mirror that at precompile time so RTT cache
         // keys actually match what the runtime asks for.
-        const mrtFallback = !!painter && painter.emissiveMode === 'mrt-fallback';
+        const mrtFallback = !!painter && (painter.emissiveMode === 'mrt-fallback' || painter.emissiveMode === 'mrt-full-rgba');
 
         // Each axis defaults to false (matching `currentGlobalDefines` when overrides are absent at runtime). `params` carries
         // layer-derived params (config, lut, layer-default `overrideFog`); special-purpose programs omit it.
@@ -102,9 +102,13 @@ export class ProgramPrecompiler {
                 // (`layer.hasElevation()`); draped layers go through RTT instead of the TERRAIN code path so we skip TERRAIN there.
                 const source = painter ? painter.getShaderSource(programId) : null;
                 const axisRtt = hasTerrainOrGlobe && (!source || source.usedDefines.has('RENDER_TO_TEXTURE'));
-                const rttDefines = mrtFallback && axisRtt ?
-                    (params.defines || []).concat('USE_MRT1' as DynamicDefinesType) :
-                    params.defines;
+                let rttDefines = params.defines;
+                if (mrtFallback && axisRtt) {
+                    rttDefines =  (rttDefines || []).concat('USE_MRT1' as DynamicDefinesType);
+                    if (painter.emissiveMode === 'mrt-full-rgba') {
+                        rttDefines =  (rttDefines || []).concat('USE_MRT1_RGBA' as DynamicDefinesType);
+                    }
+                }
 
                 if (noKHR) {
                     emit(programId, params.defines, {params});

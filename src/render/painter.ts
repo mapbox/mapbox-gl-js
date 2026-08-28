@@ -90,7 +90,8 @@ import type {ShadowCullCache} from './draw_fill_extrusion';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
 export type DepthPrePass = 'initialize' | 'reset' | 'geometry';
-export type EmissiveMode = 'constant' | 'dual-source-blending' | 'mrt-fallback';
+export type EmissiveMode = 'constant' | 'dual-source-blending' | 'mrt-fallback' | 'mrt-full-rgba';
+export type EmissiveColorPrecision = 'approximate' | 'exact';
 
 export type CanvasCopyInstances = {
     canvasCopies: WebGLTexture[];
@@ -346,8 +347,11 @@ class Painter {
     _forceEmissiveMode: boolean;
     emissiveMode: EmissiveMode;
 
-    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, scaleFactor: number, worldview: string | undefined) {
+    _forceFullRgbaEmissive: boolean = false;
+
+    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, scaleFactor: number, worldview: string | undefined, emissiveColorPrecision?: EmissiveColorPrecision) {
         this.context = new Context(gl, contextCreateOptions);
+        this._forceFullRgbaEmissive = emissiveColorPrecision === 'exact';
 
         this.transform = transform;
         this._tileTextures = {};
@@ -776,6 +780,13 @@ class Painter {
         }
     }
 
+    // True when a real second render target carries draped layers' emissive contribution
+    // (as opposed to 'constant'/'dual-source-blending', which smuggle it through the main
+    // color target's own alpha channel and can't support the exact 'mrt-full-rgba' encoding).
+    isEmissiveMrtActive(): boolean {
+        return this.emissiveMode === 'mrt-fallback' || this.emissiveMode === 'mrt-full-rgba';
+    }
+
     colorModeForDrapableLayerRenderPass(emissiveStrengthForDrapedLayers?: number): Readonly<ColorMode> {
         const deferredDrapingEnabled = () => {
             return this.style && this.style.enable3dLights() && (this._terrain ? this._terrain.renderingToTexture : false);
@@ -783,7 +794,7 @@ class Painter {
 
         const gl = this.context.gl;
         if (deferredDrapingEnabled() && this.renderPass === 'translucent') {
-            if ((emissiveStrengthForDrapedLayers != null && this.emissiveMode !== 'mrt-fallback') || this.emissiveMode === 'constant') {
+            if ((emissiveStrengthForDrapedLayers != null && !this.isEmissiveMrtActive()) || this.emissiveMode === 'constant') {
                 // Color mode for constant emissive strength.
                 return new ColorMode([gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.CONSTANT_ALPHA, gl.ONE_MINUS_SRC_ALPHA], new Color(0, 0, 0, emissiveStrengthForDrapedLayers ?? 0.0), [true, true, true, true]);
             } else if (this.emissiveMode === 'dual-source-blending') {
@@ -1819,6 +1830,7 @@ class Painter {
             if (name === 'globeRaster' || name === 'terrainRaster') {
                 defines.push('LIGHTING_3D_MODE');
                 defines.push('LIGHTING_3D_ALPHA_EMISSIVENESS');
+                if (this.emissiveMode === 'mrt-full-rgba') defines.push('USE_MRT1_RGBA');
             } else {
                 if (!rtt) {
                     defines.push('LIGHTING_3D_MODE');
@@ -2140,7 +2152,9 @@ class Painter {
 
         const hasDataDriven = this.style.hasDataDrivenEmissiveStrength();
 
-        if (!hasDataDriven) {
+        if (this._forceFullRgbaEmissive) {
+            this.emissiveMode = 'mrt-full-rgba';
+        }  else if (!hasDataDriven) {
             this.emissiveMode = 'constant';
         } else if (this.context.extBlendFuncExtended) {
             this.emissiveMode = 'dual-source-blending';

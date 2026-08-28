@@ -185,8 +185,9 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
     if (isDraping) {
         if (painter.emissiveMode === 'dual-source-blending' && !constantEmissiveStrength) {
             definesValues.push('DUAL_SOURCE_BLENDING');
-        } else if (painter.emissiveMode === 'mrt-fallback') {
+        } else if (painter.isEmissiveMrtActive()) {
             definesValues.push('USE_MRT1');
+            if (painter.emissiveMode === 'mrt-full-rgba') definesValues.push('USE_MRT1_RGBA');
         }
     }
 
@@ -859,7 +860,7 @@ function drawLineBlendDraped(painter: Painter, sourceCache: SourceCache, layer: 
 
     const drapeFbo = context.bindFramebuffer.current;
 
-    const isMrt = painter.emissiveMode === 'mrt-fallback';
+    const isMrt = painter.isEmissiveMrtActive();
 
     const drapeWidth = terrain.drapeBufferSize[0];
     const drapeHeight = terrain.drapeBufferSize[1];

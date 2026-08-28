@@ -5,7 +5,7 @@ import Tile from '../source/tile';
 import posAttributes from '../data/pos_attributes';
 import {TriangleIndexArray, PosArray} from '../data/array_types';
 import SegmentVector from '../data/segment';
-import Texture from '../render/texture';
+import Texture, {type TextureFormat} from '../render/texture';
 import {
     terrainUniforms,
     defaultTerrainUniforms,
@@ -248,12 +248,22 @@ class ProxiedTileID extends OverscaledTileID {
 }
 
 type OverlapStencilType = false | 'Clip' | 'Mask';
+// 'r8' carries a scalar emissive_strength premultiplied by alpha (mrt-fallback);
+// 'rgba8' carries the exact emissive-only premultiplied color contribution (mrt-full-rgba).
+type EmissiveTextureFormat = 'none' | 'r8' | 'rgba8';
 type FBO = {
     fb: Framebuffer;
     tex: Texture;
     emissiveTex?: Texture;
     dirty: boolean;
 };
+
+function textureFormatFromEmissiveFormat(gl: WebGL2RenderingContext, emissiveFmt: EmissiveTextureFormat) : TextureFormat {
+    switch (emissiveFmt) {
+    case 'rgba8': return gl.RGBA8;
+    }
+    return gl.R8;
+}
 
 export class Terrain extends Elevation {
     terrainTileForTile: Partial<Record<number | string, Tile>>;
@@ -322,7 +332,7 @@ export class Terrain extends Elevation {
     _pendingGroundEffectLayers: Array<number>;
     framebufferCopyTexture: Texture | null | undefined;
 
-    _emissiveTexture: boolean;
+    _emissiveTexture: EmissiveTextureFormat;
 
     _devtoolsFolder: DevToolsFolder | null;
 
@@ -364,7 +374,7 @@ export class Terrain extends Elevation {
         this._exaggeration = 1;
         this._mockSourceCache = new MockSourceCache(style.map);
         this._pendingGroundEffectLayers = [];
-        this._emissiveTexture = false;
+        this._emissiveTexture = 'none';
         this._devtoolsFolder = null;
     }
 
@@ -925,8 +935,12 @@ export class Terrain extends Elevation {
 
         const accumulatedDrapes = [];
 
-        const needsEmissiveTexture = painter.emissiveMode === 'mrt-fallback';
-        this._updateFBOs(needsEmissiveTexture);
+        const fullRGBAEmissiveFmt: EmissiveTextureFormat = 'rgba8';
+
+        const emissiveTextureFormat: EmissiveTextureFormat =
+            painter.emissiveMode === 'mrt-full-rgba' ? fullRGBAEmissiveFmt :
+            painter.emissiveMode === 'mrt-fallback' ? 'r8' : 'none';
+        this._updateFBOs(emissiveTextureFormat);
 
         let poolIndex = 0;
         for (const proxy of proxies) {
@@ -948,7 +962,7 @@ export class Terrain extends Elevation {
             context.bindFramebuffer.set(fbo.fb.framebuffer);
 
             const gl = context.gl;
-            if (painter.emissiveMode === 'mrt-fallback') {
+            if (painter.isEmissiveMrtActive()) {
                 assert(fbo.emissiveTex);
                 gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
             } else {
@@ -1125,8 +1139,8 @@ export class Terrain extends Elevation {
         fb.colorAttachment0.set(tex.texture);
 
         let emissiveTex: Texture | undefined;
-        if (this._emissiveTexture) {
-            emissiveTex = new Texture(context, {width: bufferSize[0], height: bufferSize[1], data: null}, gl.R8);
+        if (this._emissiveTexture !== 'none') {
+            emissiveTex = new Texture(context, {width: bufferSize[0], height: bufferSize[1], data: null}, textureFormatFromEmissiveFormat(gl, this._emissiveTexture));
             emissiveTex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             fb.createColorAttachment(context, 1);
             fb.colorAttachment1.set(emissiveTex.texture);
@@ -1152,28 +1166,28 @@ export class Terrain extends Elevation {
         return {fb, tex, emissiveTex, dirty: false};
     }
 
-    _updateFBOs(needsEmissiveTexture: boolean) {
-        if (this._emissiveTexture === needsEmissiveTexture) return;
+    _updateFBOs(format: EmissiveTextureFormat) {
+        if (this._emissiveTexture === format) return;
 
         for (const fbo of this.pool) {
-            this._updateFBO(fbo, needsEmissiveTexture);
+            this._updateFBO(fbo, format);
         }
         for (const fbo of this.proxySourceCache.renderCache) {
-            this._updateFBO(fbo, needsEmissiveTexture);
+            this._updateFBO(fbo, format);
         }
 
-        this._emissiveTexture = needsEmissiveTexture;
+        this._emissiveTexture = format;
     }
 
-    _updateFBO(fbo: FBO, needsEmissiveTexture: boolean) {
-        assert(!!fbo.emissiveTex !== needsEmissiveTexture);
+    _updateFBO(fbo: FBO, format: EmissiveTextureFormat) {
+        assert((fbo.emissiveTex !== undefined) !== (format !== 'none'));
 
         const fb = fbo.fb;
         const context = this.painter.context;
         const gl = context.gl;
         const bufferSize = this.drapeBufferSize;
-        if (needsEmissiveTexture) {
-            const emissiveTex = new Texture(context, {width: bufferSize[0], height: bufferSize[1], data: null}, gl.R8);
+        if (format !== 'none') {
+            const emissiveTex = new Texture(context, {width: bufferSize[0], height: bufferSize[1], data: null}, textureFormatFromEmissiveFormat(gl, format));
             emissiveTex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             fbo.emissiveTex = emissiveTex;
             fb.createColorAttachment(context, 1);

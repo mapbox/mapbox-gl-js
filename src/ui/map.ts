@@ -48,6 +48,7 @@ import {DevTools} from './control/devtools';
 import {InteractionSet} from './interactions';
 import {ImageId} from '../style-spec/expression/types/image_id';
 
+import type {EmissiveColorPrecision} from '../render/painter';
 import type Marker from '../ui/marker';
 import type {AnimationFrameProvider} from './animation_frame_provider';
 import type Popup from '../ui/popup';
@@ -221,6 +222,7 @@ export type MapOptions = {
     scaleFactor?: number;
     pitchRotateKey?: PitchRotateKey;
     animationFrameProvider?: AnimationFrameProvider;
+    emissiveColorPrecision?: EmissiveColorPrecision;
 };
 
 const CSS_MATRIX_RE = /matrix.*\((.+)\)/;
@@ -283,6 +285,7 @@ const defaultOptions = {
     testMode: false,
     precompilePrograms: true,
     scaleFactor: 1.0,
+    emissiveColorPrecision: 'approximate'
 } satisfies Omit<MapOptions, 'container'>;
 
 /**
@@ -415,6 +418,10 @@ const defaultOptions = {
  * A value greater than `1` increases label sizes, useful for improving accessibility or adjusting
  * for high-density displays. The scale factor is clamped per-layer by `text-size-scale-range`
  * and `icon-size-scale-range` style properties.
+ * This option is experimental and may change in future releases.
+ * @param {'approximate' | 'exact'} [options.emissiveColorPrecision='approximate'] Controls how precisely emissive color is preserved when compositing draped layers (e.g. Raster, hillshade, background) over terrain or globe.
+ * When `'approximate'` (the default), emissive color is approximated during compositing.
+ * When `'exact'`, emissive color is fully preserved. This has a performance impact due to higher texture memory usage (4 channels instead of 1).
  * This option is experimental and may change in future releases.
  * @param {ProjectionSpecification} [options.projection='mercator'] The [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) the map should be rendered in.
  * Supported projections are:
@@ -605,6 +612,8 @@ export class Map extends Camera {
 
     _spriteFormat: SpriteFormat;
 
+    _emissiveColorPrecision: EmissiveColorPrecision;
+
     constructor(options: MapOptions) {
         LivePerformanceUtils.mark(LivePerformanceMarkers.create);
 
@@ -676,6 +685,7 @@ export class Map extends Camera {
         this._useExplicitProjection = false; // Fallback to stylesheet by default
 
         this._frameId = 0;
+        this._emissiveColorPrecision = options.emissiveColorPrecision;
 
         this._scaleFactor = options.scaleFactor;
 
@@ -4363,7 +4373,7 @@ export class Map extends Camera {
 
         storeAuthState(gl, true);
 
-        this.painter = new Painter(gl, this._contextCreateOptions, this.transform, this._scaleFactor, this._worldview);
+        this.painter = new Painter(gl, this._contextCreateOptions, this.transform, this._scaleFactor, this._worldview, this._emissiveColorPrecision);
         this.on('data', (event) => {
             if (event.dataType === 'source') {
                 const elevationSource = this.transform.elevation ? this.transform.elevation._source() : null;

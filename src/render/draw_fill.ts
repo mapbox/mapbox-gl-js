@@ -90,7 +90,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
         return;
     }
 
-    const mrt = painter.emissiveMode === 'mrt-fallback';
+    const mrt = painter.isEmissiveMrtActive();
 
     // Draw offset elevation
     if (elevationType === 'offset') {
@@ -208,6 +208,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, multip
             }
             if (isDraping && multipleRenderTargets) {
                 dynamicDefines.push('USE_MRT1');
+                if (painter.emissiveMode === 'mrt-full-rgba') dynamicDefines.push('USE_MRT1_RGBA');
             }
 
             if (image) {

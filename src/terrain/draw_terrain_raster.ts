@@ -210,7 +210,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const latitudinalLod = getLatitudinalLod(tileBounds.getCenter().lat);
             const gridMatrix = getGridMatrix(coord.canonical, tileBounds, latitudinalLod, tr.worldSize / tr._pixelsPerMercatorPixel);
             const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
-            const emissiveTexture = painter.emissiveMode === 'mrt-fallback' ? 1.0 : 0.0;
+            const emissiveTexture = painter.isEmissiveMrtActive() ? 1.0 : 0.0;
             const uniformValues = globeRasterUniformValues(
                 tr.expandedFarZProjMatrix, globeMatrix, globeMercatorMatrix, normalizeMatrix, globeToMercatorTransition(tr.zoom),
                 mercatorCenter, tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR,
@@ -261,7 +261,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
                 let poleMatrix = globePoleMatrixForTile(z, x, tr);
                 const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
-                const emissiveTexture = painter.emissiveMode === 'mrt-fallback' ? 1.0 : 0.0;
+                const emissiveTexture = painter.isEmissiveMrtActive() ? 1.0 : 0.0;
 
                 const drawPole = (program: Program<GlobeRasterUniformsType>, vertexBuffer: VertexBuffer) => program.draw(
                     painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
@@ -364,7 +364,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                     elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
                 }
 
-                const emissiveTexture = painter.emissiveMode === 'mrt-fallback' ? 1.0 : 0.0;
+                const emissiveTexture = painter.isEmissiveMrtActive() ? 1.0 : 0.0;
                 const uniformValues = terrainRasterUniformValues(coord.projMatrix, isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt, groundShadowFactor, emissiveTexture);
                 setShaderMode(shaderMode);
                 if (!program) {

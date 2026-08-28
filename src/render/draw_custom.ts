@@ -66,7 +66,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
                 painter.setCustomLayerDefaults();
 
                 const gl = context.gl;
-                if (painter.emissiveMode === 'mrt-fallback') {
+                if (painter.isEmissiveMrtActive()) {
                     // In the emissive MRT-fallback path the proxy tile FBO is bound with two draw
                     // buffers ([COLOR_ATTACHMENT0, COLOR_ATTACHMENT1]). A custom layer's fragment
                     // shader only declares a single color output, so with both buffers enabled its
@@ -76,7 +76,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
 
                 renderToTile.call(implementation, context.gl, renderCoords);
 
-                if (painter.emissiveMode === 'mrt-fallback') {
+                if (painter.isEmissiveMrtActive()) {
                     // Restore the draw buffer state expected by the rest of the render pipeline.
                     gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
                 }

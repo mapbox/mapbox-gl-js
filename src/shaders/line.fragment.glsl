@@ -320,13 +320,8 @@ void main() {
     glFragColor = out_color;
 #endif
 #endif
-#ifdef DUAL_SOURCE_BLENDING
-    glFragColorSrc1 = vec4(vec3(0.0), emissive_strength);
-#else
-#ifdef USE_MRT1
-    out_Target1 = vec4(emissive_strength * glFragColor.a, 0.0, 0.0, glFragColor.a);
-#endif
-#endif
+
+    storeEmissiveColor(glFragColor, emissive_strength);
 
 #ifdef OVERDRAW_INSPECTOR
     glFragColor = vec4(1.0);

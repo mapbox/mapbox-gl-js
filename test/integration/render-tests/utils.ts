@@ -150,7 +150,8 @@ export async function renderMap(style, options, currentTestName) {
         maxZoom: options.maxZoom,
         placementAlgorithm: options.placementAlgorithm || 'default',
         transformRequest,
-        testMode: true
+        testMode: true,
+        emissiveColorPrecision: options.emissiveColorPrecision
     });
 
     if (options.spriteFormat && mapRef.current) {

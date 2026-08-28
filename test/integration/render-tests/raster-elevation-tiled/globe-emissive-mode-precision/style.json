@@ -4,6 +4,7 @@
     "test": {
       "width": 512,
       "height": 512,
+      "emissiveColorPrecision": "exact",
       "ignore-metrics": [
         {
           "platform-tag-contains": "native",
@@ -99,7 +100,6 @@
       "paint": {
         "raster-fade-duration": 0,
         "raster-opacity": 0.5,
-        "raster-allow-draping": false,
         "raster-emissive-strength": 1.0
       }
     },
@@ -110,7 +110,6 @@
       "paint": {
         "raster-fade-duration": 0,
         "raster-opacity": 0.5,
-        "raster-allow-draping": false,
         "raster-emissive-strength": 1.0
       }
     }

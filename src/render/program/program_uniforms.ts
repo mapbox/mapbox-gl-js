@@ -50,7 +50,8 @@ type GlobalDefinesType =
     | 'RENDER_TO_TEXTURE'
     | 'TERRAIN_DEM_FLOAT_FORMAT'
     | 'TERRAIN'
-    | 'TERRAIN_VERTEX_MORPHING';
+    | 'TERRAIN_VERTEX_MORPHING'
+    | 'USE_MRT1_RGBA';
 
 export type DynamicDefinesType =
     | GlobalDefinesType
