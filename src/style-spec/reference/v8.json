@@ -1894,7 +1894,9 @@
       "doc": "If true, the models will be reduced in density based on the zoom level. This is useful for large datasets that may be slow to render.",
       "sdk-support": {
         "basic functionality": {
-          "js": "3.18.0"
+          "js": "3.18.0",
+          "android": "11.20.0",
+          "ios": "11.18.0"
         }
       },
       "property-type": "data-constant"
