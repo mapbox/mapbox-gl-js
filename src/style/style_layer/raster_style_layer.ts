@@ -66,7 +66,7 @@ class RasterStyleLayer extends StyleLayer {
                 return false;
             }
         }
-        return this.paint.get('raster-elevation') === 0.0 && this.paint.get('raster-allow-draping');
+        return this.paint.get('raster-elevation') === 0.0;
     }
 
     override _handleSpecialPaintPropertyUpdate(name: string) {
@@ -110,7 +110,7 @@ class RasterStyleLayer extends StyleLayer {
     }
 
     override is3D(terrainEnabled?: boolean): boolean {
-        return this.paint.get('raster-elevation') > 0 || !this.paint.get('raster-allow-draping');
+        return this.paint.get('raster-elevation') > 0;
     }
 }
 

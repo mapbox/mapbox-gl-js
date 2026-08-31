@@ -66,16 +66,9 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
     const rasterOpacity = layer.paint.get('raster-opacity');
     if (rasterOpacity === 0) return;
-    const isDrapingAllowed = layer.paint.get('raster-allow-draping');
     const isGlobeProjection = painter.transform.projection.name === 'globe';
-    let rasterElevation = layer.paint.get('raster-elevation');
-    let rasterElevationReferenceIsGround = layer.paint.get('raster-elevation-reference') === 'ground';
-
-    // Apply elevation and ground reference if layer is not allowed for draping
-    if (!isDrapingAllowed && rasterElevation === 0) {
-        rasterElevation = 0.001;
-        rasterElevationReferenceIsGround = true;
-    }
+    const rasterElevation = layer.paint.get('raster-elevation');
+    const rasterElevationReferenceIsGround = layer.paint.get('raster-elevation-reference') === 'ground';
 
     const renderingWithElevation = rasterElevation > 0.0;
     const isElevationReferenceTerrainGroundLevel = painter.terrain && painter.terrain.exaggeration() > 0 && renderingWithElevation && rasterElevationReferenceIsGround;

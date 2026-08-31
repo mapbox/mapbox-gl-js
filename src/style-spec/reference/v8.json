@@ -10767,21 +10767,6 @@
         "interpolated": false
       },
       "property-type": "data-constant"
-    },
-    "raster-allow-draping": {
-      "type": "boolean",
-      "default": true,
-      "experimental": true,
-      "doc": "Whether the raster layer is allowed to drape over terrain and globe. When disabled, the layer is rendered after all draped layers, which can change its position in the layer order. Disabling draping has a performance cost, since the terrain/globe geometry must be rendered again for each such layer.",
-      "transition": false,
-      "property-type": "data-constant",
-      "sdk-support": {
-        "basic functionality": {
-          "js": "3.28.0",
-          "android": "11.28.0",
-          "ios": "11.28.0"
-        }
-      }
     }
   },
   "paint_raster-particle": {
