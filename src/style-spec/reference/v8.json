@@ -7217,7 +7217,7 @@
         ]
       },
       "requires": [
-        "line-pattern"
+        "fill-pattern"
       ],
       "sdk-support": {
         "basic functionality": {
@@ -7491,7 +7491,7 @@
         ]
       },
       "requires": [
-        "line-pattern"
+        "fill-extrusion-pattern"
       ],
       "sdk-support": {
         "basic functionality": {
