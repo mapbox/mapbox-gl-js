@@ -62,7 +62,7 @@
     "@vitest/browser-playwright": "^4.1.7",
     "@vitest/ui": "^4.1.7",
     "browserslist-to-esbuild": "^2.1.1",
-    "cssnano": "^8.0.1",
+    "cssnano": "^9.0.1",
     "diff": "^9.0.0",
     "earcut": "^3.0.2",
     "esbuild": "^0.28.0",

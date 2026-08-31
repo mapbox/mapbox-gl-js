@@ -1,10 +1,10 @@
-// eslint-disable-next-line import-x/no-commonjs
-module.exports = {
+import cssnano from 'cssnano';
+import inlineSvg from 'postcss-inline-svg';
+
+export default {
     plugins: [
-        // eslint-disable-next-line import-x/no-commonjs, @typescript-eslint/no-require-imports
-        require('postcss-inline-svg'),
-        // eslint-disable-next-line import-x/no-commonjs, @typescript-eslint/no-require-imports
-        require('cssnano')({
+        inlineSvg,
+        cssnano({
             preset: ['default', {
                 svgo: {
                     plugins: [{
