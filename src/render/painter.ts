@@ -1164,7 +1164,7 @@ class Painter {
 
         const shadowRenderer = this._shadowRenderer;
         if (shadowRenderer) {
-            shadowRenderer.updateShadowParameters(this.transform, this.style.directionalLight);
+            shadowRenderer.updateShadowParameters(this.transform, this.style.directionalLight, coordsShadowCasters);
 
             for (const id in sourceCaches) {
                 for (const coord of coordsAscending[id]) {

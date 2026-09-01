@@ -67,7 +67,7 @@ class ModelStyleLayer extends StyleLayer {
     }
 
     override hasShadowPass(): boolean {
-        return true;
+        return this.paint.get('model-cast-shadows');
     }
 
     override canCastShadows(): boolean {
