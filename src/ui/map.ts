@@ -224,6 +224,7 @@ export type MapOptions = {
     pitchRotateKey?: PitchRotateKey;
     animationFrameProvider?: AnimationFrameProvider;
     emissiveColorPrecision?: EmissiveColorPrecision;
+    enableGlobalPlacement?: boolean;
 };
 
 const CSS_MATRIX_RE = /matrix.*\((.+)\)/;
@@ -424,6 +425,8 @@ const defaultOptions = {
  * When `'approximate'` (the default), emissive color is approximated during compositing.
  * When `'exact'`, emissive color is fully preserved. This has a performance impact due to higher texture memory usage (4 channels instead of 1).
  * This option is experimental and may change in future releases.
+ * @param {boolean} [options.enableGlobalPlacement=false] If `true`, symbols are placed by the new global placement pipeline instead of the legacy one.
+ * This option is experimental, incomplete, and may change in future releases.
  * @param {ProjectionSpecification} [options.projection='mercator'] The [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) the map should be rendered in.
  * Supported projections are:
  * * [Albers](https://en.wikipedia.org/wiki/Albers_projection) equal-area conic projection as `albers`
@@ -516,6 +519,7 @@ export class Map extends Camera {
     _shouldCheckAccess: boolean;
     _fadeDuration: number;
     _placementAlgorithm: PlacementAlgorithmName;
+    _enableGlobalPlacement: boolean;
     _crossSourceCollisions: boolean;
     _collectResourceTiming: boolean;
     _renderTaskQueue: TaskQueue;
@@ -655,6 +659,7 @@ export class Map extends Camera {
         this._refreshExpiredTiles = options.refreshExpiredTiles;
         this._fadeDuration = options.fadeDuration;
         this._placementAlgorithm = options.placementAlgorithm || 'default';
+        this._enableGlobalPlacement = options.enableGlobalPlacement === true;
         this._isInitialLoad = true;
         this._crossSourceCollisions = options.crossSourceCollisions;
         this._collectResourceTiming = options.collectResourceTiming;
@@ -4631,7 +4636,7 @@ export class Map extends Camera {
         }
 
         if (this.style) {
-            this._placementDirty = this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions, this.painter.replacementSource, this._placementAlgorithm);
+            this._placementDirty = this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions, this.painter.replacementSource, this._placementAlgorithm, this._enableGlobalPlacement);
         }
 
         // Actually draw - unless we're waiting on draping to load

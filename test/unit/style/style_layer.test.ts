@@ -14,6 +14,15 @@ describe('StyleLayer', () => {
 
         expect(layer instanceof FillStyleLayer).toBeTruthy();
     });
+
+    test('assigns each layer instance a distinct runtimeLayerUID, even when ids are reused', () => {
+        const layer = createStyleLayer({id: 'a', type: 'fill'});
+        const otherLayer = createStyleLayer({id: 'b', type: 'fill'});
+        const reAddedLayer = createStyleLayer({id: 'a', type: 'fill'});
+
+        expect(layer.runtimeLayerUID).not.toEqual(otherLayer.runtimeLayerUID);
+        expect(layer.runtimeLayerUID).not.toEqual(reAddedLayer.runtimeLayerUID);
+    });
 });
 
 describe('StyleLayer#setPaintProperty', () => {

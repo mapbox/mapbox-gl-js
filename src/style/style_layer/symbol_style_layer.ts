@@ -22,6 +22,8 @@ import FormatSectionOverride from '../format_section_override';
 import FormatExpression from '../../style-spec/expression/definitions/format';
 import Literal from '../../style-spec/expression/definitions/literal';
 import ProgramConfiguration from '../../data/program_configuration';
+import EXTENT from '../../style-spec/data/extent';
+import {getSymbolPlacementTileProjectionMatrix} from '../../geo/projection/projection_util';
 
 import type {
     PropertyValue,
@@ -41,6 +43,12 @@ import type {LayerSpecification} from '../../style-spec/types';
 import type {Feature, SourceExpression, CompositeExpression} from '../../style-spec/expression/index';
 import type {Expression} from '../../style-spec/expression/expression';
 import type {CanonicalTileID} from '../../source/tile_id';
+import type Tile from '../../source/tile';
+import type BuildingIndex from '../../source/building_index';
+import type {FogState} from '../fog_helpers';
+import type {GlobalPlacement} from '../../placement/global_placement';
+import type {SymbolIdRangeAllocator} from '../../placement/symbol_id_range_allocator';
+import type Transform from '../../geo/transform';
 import type {LUT} from "../../util/lut";
 import type {ImageId} from '../../style-spec/expression/types/image_id';
 import type {ProgramName} from '../../render/program';
@@ -219,6 +227,30 @@ class SymbolStyleLayer extends StyleLayer {
 
     override createBucket(parameters: BucketParameters<this>): SymbolBucket {
         return new SymbolBucket(parameters);
+    }
+
+    override placeSymbols(globalPlacement: GlobalPlacement, tiles: Array<Tile>, idRangeAllocator: SymbolIdRangeAllocator, transform: Transform, buildingIndex: BuildingIndex, fogState: FogState | null): void {
+        const layerUid = this.runtimeLayerUID;
+
+        for (const tile of tiles) {
+            const bucket = tile.getBucket(this) as SymbolBucket | undefined;
+            if (!bucket || this.fqid !== bucket.layerIds[0]) continue;
+
+            // Bakes road/building elevation into bucket.symbolInstances' zOffset ahead of the
+            // placement run
+            if (bucket.elevationType === 'offset' && buildingIndex) {
+                buildingIndex.updateZOffset(bucket, tile.tileID);
+            } else if (bucket.elevationType === 'road' && bucket.hdExt) {
+                bucket.hdExt.updateRoadElevation(bucket, tile.tileID.canonical);
+            }
+            bucket.updateZOffset();
+
+            globalPlacement.startSymbolSourceProcessing(bucket);
+            const posMatrix = getSymbolPlacementTileProjectionMatrix(tile.tileID, bucket.getProjection(), transform, transform.projection.name);
+            const textPixelRatio = tile.tileSize / EXTENT;
+            bucket.addToPlacement(globalPlacement, idRangeAllocator, layerUid, posMatrix, transform, textPixelRatio, tile, fogState);
+            globalPlacement.finishSourceProcessing();
+        }
     }
 
     override queryRadius(): number {

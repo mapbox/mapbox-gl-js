@@ -51,10 +51,16 @@ import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../sourc
 import {resamplePred} from '../../geo/projection/resample';
 import {tileCoordToECEF} from '../../geo/projection/globe_util';
 import {getProjection} from '../../geo/projection/index';
-import {mat4, vec3} from 'gl-matrix';
+import {mat4, vec3, vec4} from 'gl-matrix';
 import assert from '../../style-spec/util/assert';
 import {regionsEquals} from '../../../3d-style/source/replacement_source';
-import {clamp} from '../../util/util';
+import {clamp, warnOnce} from '../../util/util';
+import {xyTransformMat4} from '../../util/mat4';
+import {Elevation} from '../../terrain/elevation';
+import {getFogOpacityAtTileCoord, FOG_SYMBOL_CLIPPING_THRESHOLD} from '../../style/fog_helpers';
+import {MIN_COLLISION_PERSPECTIVE_RATIO} from '../../geo/projection/projection_util';
+import {SymbolIdOrigin, SymbolPlacementType, SymbolVariantVisibility} from '../../placement/types';
+import {defaultPlacementRules} from '../../placement/placement_rules';
 import {type CollisionBoxArray, type CollisionBox, type SymbolInstance, SymbolOrientationArray} from '../array_types';
 import {type SymbolQuad, getIconQuads, getGlyphQuads} from '../../symbol/quads';
 import {FeatureAppearances} from './feature_appearances';
@@ -96,6 +102,14 @@ import type {AppearanceProps} from '../../style/appearance_properties';
 import type {FeatureState, GlobalProperties} from '../../style-spec/expression';
 import type ImageManager from '../../render/image_manager';
 import type {AppearanceUpdateResult} from './feature_appearances';
+import type {SymbolSource} from '../../placement/symbol_source';
+import type {SymbolVariantId} from '../../placement/types';
+import type {GlobalPlacement} from '../../placement/global_placement';
+import type {GlobalPlacementPriority} from '../../placement/global_placement_priority';
+import type {SymbolIdRangeAllocator} from '../../placement/symbol_id_range_allocator';
+import type Transform from '../../geo/transform';
+import type Tile from '../../source/tile';
+import type {FogState} from '../../style/fog_helpers';
 
 export type AppearanceFeatureData = {
     // Identity — set during populate() on the worker thread, never mutated afterwards.
@@ -296,12 +310,52 @@ function containsRTLText(formattedText: Formatted): boolean {
     return false;
 }
 
+type ProjectedAnchor = {
+    x: number;
+    y: number;
+    // Perspective foreshortening under pitch: distant anchors get a smaller ratio, matching the
+    // per-frame scaling the symbol shader applies. Screen density is deliberately not part of it.
+    perspectiveRatio: number;
+    occluded: boolean;
+};
+
+// Projects a tile-space anchor through the tile's posMatrix into logical (density-independent)
+// viewport pixels, mirroring CollisionIndex#projectAndGetPerspectiveRatio minus the legacy grid's
+// viewport-padding offset (the new placement grid, see src/placement/collision_grid.ts, expects
+// unpadded coordinates).
+function projectAnchor(posMatrix: mat4, x: number, y: number, z: number, transform: Transform, bucketProjection: Projection, checkOcclusion: boolean, fogState: FogState | null | undefined, unwrappedTileID: UnwrappedTileID): ProjectedAnchor {
+    const p: [number, number, number, number] = [x, y, z, 1];
+    let behindFog = false;
+    if (z || transform.pitch > 0) {
+        vec4.transformMat4(p, p, posMatrix);
+        if (fogState && bucketProjection.name !== 'globe') {
+            const fogOpacity = getFogOpacityAtTileCoord(fogState, x, y, z, unwrappedTileID, transform);
+            behindFog = fogOpacity > FOG_SYMBOL_CLIPPING_THRESHOLD;
+        }
+    } else {
+        xyTransformMat4(p, p, posMatrix);
+    }
+    const w = p[3];
+    return {
+        x: ((p[0] / w + 1) / 2) * transform.width,
+        y: ((-p[1] / w + 1) / 2) * transform.height,
+        perspectiveRatio: Math.min(0.5 + 0.5 * (transform.getCameraToCenterDistance(bucketProjection) / w), 1.5),
+        occluded: (checkOcclusion && p[2] > w) || behindFog,
+    };
+}
+
 // Number of uint16 values per vertex in SymbolLayoutArray.
 // Layout: [tileAnchorX, tileAnchorY, ox, oy, tx, ty, aSizeX, aSizeY, pixelOffsetX, pixelOffsetY, minFontScaleX, minFontScaleY]
 const SYMBOL_VERTEX_STRIDE = 12;
 
 // Number of uint16 values per vertex in SymbolIconTransitioningArray (a_texb: [tx, ty]).
 const ICON_TRANSITIONING_STRIDE = 2;
+
+// Packed opacity vertex values (see packOpacity in src/symbol/placement.ts): a glyph quad is either
+// fully hidden (opacity 0, not placed) or fully visible (opacity 1, placed) under new placement --
+// there is no smooth fade yet, so no intermediate packed value is ever needed.
+const HIDDEN_PACKED_OPACITY = 0;
+const VISIBLE_PACKED_OPACITY = 4294967295;
 
 export class SymbolBuffers {
     layoutVertexArray: SymbolLayoutArray;
@@ -621,7 +675,7 @@ register(CollisionBuffers, 'CollisionBuffers');
  *
  * @private
  */
-class SymbolBucket implements Bucket {
+class SymbolBucket implements Bucket, SymbolSource {
     static addDynamicAttributes: typeof addDynamicAttributes;
 
     collisionBoxArray: CollisionBoxArray;
@@ -653,6 +707,15 @@ class SymbolBucket implements Bucket {
     hasAnySecondaryIcon: boolean;
     collisionArrays!: Array<CollisionArrays>;
     sortKeyRanges: Array<SortKeyRange>;
+    // New placement pipeline (see addToPlacement). Start of this bucket's generated symbolId range;
+    // assigned on the first placement run and then stable. The variant for symbolInstances[i] uses
+    // symbolId (placementIdRangeStart + i).
+    placementIdRangeStart: number | null;
+    // Current per-instance visibility, fed back into placement next run as
+    // GlobalPlacementPriority.symbolVariantVisibility so it can detect visible<->hidden transitions
+    // and apply the right collision hysteresis. Parallel to symbolInstances; allocated (all hidden)
+    // alongside placementIdRangeStart.
+    placementVariantVisible: Array<boolean>;
     pixelRatio: number;
     tilePixelRatio!: number;
     compareText!: {
@@ -716,6 +779,8 @@ class SymbolBucket implements Bucket {
         this.fullyClipped = false;
         this.hasAnyIconTextFit = false;
         this.sortKeyRanges = [];
+        this.placementIdRangeStart = null;
+        this.placementVariantVisible = [];
 
         this.collisionCircleArray = [];
         this.placementInvProjMatrix = mat4.identity([]);
@@ -859,6 +924,256 @@ class SymbolBucket implements Bucket {
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
+    }
+
+    // placement::SymbolSource visibility callbacks. New placement invokes these on a run's finalize,
+    // only when a variant's visibility changes. Visibility is applied instantly; a smooth fade would
+    // need a per-frame reapply and is deferred, so the run timestamp is unused for now.
+    hideSymbolVariant(variantId: SymbolVariantId, _placementRunTimestamp: number): void {
+        this._setSymbolVariantVisibility(variantId, false);
+    }
+
+    showSymbolVariant(variantId: SymbolVariantId, _placementRunTimestamp: number): void {
+        this._setSymbolVariantVisibility(variantId, true);
+    }
+
+    // Fills the (until-now-empty) opacity buffers with one hidden entry per glyph quad, matching the
+    // layout vertex buffers' length. Unlike the legacy pipeline, new placement never runs
+    // Placement#updateBucketOpacities to build these from scratch each run, so this bucket has to
+    // seed them itself, once, before the first upload.
+    _initPlacementOpacities(): void {
+        const fillHidden = (buffer: SymbolBuffers) => {
+            const quadCount = buffer.layoutVertexArray.length / 4;
+            for (let i = 0; i < quadCount; i++) buffer.opacityVertexArray.emplaceBack(HIDDEN_PACKED_OPACITY);
+        };
+        if (this.hasTextData()) fillHidden(this.text);
+        if (this.hasIconData()) fillHidden(this.icon);
+    }
+
+    // Instantly sets the variant's instance to visible (placed + full opacity) or hidden, recovering
+    // the instance index arithmetically from the generated id, and records it in
+    // placementVariantVisible. Mirrors the geometry fed in addToPlacement: the default text placement
+    // and the icon.
+    _setSymbolVariantVisibility(variantId: SymbolVariantId, visible: boolean): void {
+        assert(this.placementIdRangeStart !== null);
+        const index = variantId.symbolId.symbolId - this.placementIdRangeStart;
+        const instance = this.symbolInstances.get(index);
+
+        this.placementVariantVisible[index] = visible;
+
+        const packedOpacity = visible ? VISIBLE_PACKED_OPACITY : HIDDEN_PACKED_OPACITY;
+
+        // A placed symbol owns a contiguous run of glyph quads from its vertexStartIndex/4 (opacity
+        // has one entry per quad, the layout/dynamic buffers have 4 vertices per quad).
+        const setPlacedOpacity = (buffer: SymbolBuffers, placedIndex: number) => {
+            if (placedIndex < 0) return;
+            const placed = buffer.placedSymbolArray.get(placedIndex);
+            const quadStart = placed.vertexStartIndex / 4;
+            for (let i = 0; i < placed.numGlyphs; i++) buffer.opacityVertexArray.emplace(quadStart + i, packedOpacity);
+            if (buffer.opacityVertexBuffer) buffer.opacityVertexBuffer.updateData(buffer.opacityVertexArray);
+        };
+
+        if (this.hasTextData()) setPlacedOpacity(this.text, this.defaultPlacedTextSymbolIndex(instance, index));
+        if (this.hasIconData()) setPlacedOpacity(this.icon, instance.placedIconSymbolIndex);
+    }
+
+    // Drops what new placement decided about this bucket's symbols, hiding all of them. Called when
+    // the tile has been out of the render set (e.g. returning from the tile cache), so placement has
+    // not seen it and its decisions have gone stale -- keeping them would let a returning tile
+    // outrank the symbols that are actually on screen, since a visible symbol is placed first.
+    resetPlacementVisibility(): void {
+        if (this.placementIdRangeStart === null) {
+            // Never fed to new placement (legacy placement, or not placed yet), so there is no state to drop.
+            return;
+        }
+
+        this.placementVariantVisible.fill(false);
+
+        const hideAll = (buffer: SymbolBuffers) => {
+            for (let i = 0; i < buffer.opacityVertexArray.length; i++) buffer.opacityVertexArray.emplace(i, HIDDEN_PACKED_OPACITY);
+            if (buffer.opacityVertexBuffer) buffer.opacityVertexBuffer.updateData(buffer.opacityVertexArray);
+        };
+        if (this.hasTextData()) hideAll(this.text);
+        if (this.hasIconData()) hideAll(this.icon);
+    }
+
+    // New placement pipeline: walks symbolInstances and registers one placement variant per symbol,
+    // streaming its icon and/or text collision box(es) into the run. Only the minimal point-symbol
+    // case is handled -- icon-text-fit, appearances, along-line placement, text-variable-anchor and
+    // vertical writing mode are skipped (with a one-time warning), since each gives a symbol more
+    // than one placement candidate, and symbols with neither an icon nor a text collision box are
+    // skipped silently. `textPixelRatio` (tile.tileSize / EXTENT) converts tile-space offsets to CSS
+    // pixels, matching the legacy collision index formula (see CollisionIndex#placeCollisionBox).
+    addToPlacement(globalPlacement: GlobalPlacement, idRangeAllocator: SymbolIdRangeAllocator, layerUid: number, posMatrix: mat4, transform: Transform, textPixelRatio: number, tile: Tile, fogState: FogState | null | undefined): void {
+        if (this.symbolInstances.length === 0) return;
+
+        if (!this.collisionArrays) {
+            if (!tile.collisionBoxArray) return;
+            this.deserializeCollisionBoxes(tile.collisionBoxArray);
+        }
+
+        if (this.placementIdRangeStart === null) {
+            this.placementIdRangeStart = idRangeAllocator.allocateRange(layerUid, this.symbolInstances.length);
+            this.placementVariantVisible = new Array<boolean>(this.symbolInstances.length).fill(false);
+            this._initPlacementOpacities();
+        }
+        const rangeStart = this.placementIdRangeStart;
+
+        const layer = this.layers[0];
+        if (layer.appearances && layer.appearances.length > 0) {
+            warnOnce('new placement: symbol appearances are not supported yet; hiding symbols');
+            return;
+        }
+        if (layer.layout.get('symbol-placement') !== 'point') {
+            warnOnce('new placement: along-line symbol placement is not supported yet; hiding symbols');
+            return;
+        }
+        const hasVariableTextAnchor = !!layer.layout.get('text-variable-anchor');
+
+        // Globe is not supported yet: this projects collision boxes in mercator space, while the globe
+        // pipeline deforms symbols in the vertex shader, so collisions would land in the wrong place.
+        // Feed no geometry on globe -- every begun variant is then dropped and a symbol that was visible
+        // gets hidden (see GlobalPlacement#finishVariantProcessing). This converges to no symbols on
+        // globe and recovers on its own once the projection switches back to mercator (rather than
+        // freezing whatever was last placed in mercator, which would linger through the transition).
+        const bucketProjection = this.getProjection();
+        const feedGeometry = bucketProjection.name !== 'globe';
+        if (!feedGeometry) warnOnce('new placement: globe projection is not supported yet; hiding symbols');
+
+        const unwrappedTileID = tile.tileID.toUnwrapped();
+        const pitched = transform.pitch > 0;
+        // Minimal first version: default collision rules (collide against, and insert into, the
+        // collision grid). Priority is built per instance below so its current visibility feeds back
+        // into placement.
+        const placementRules = defaultPlacementRules();
+
+        // Size is evaluated once per run for the current zoom (mirroring the shader's per-frame size
+        // interpolation); the per-feature value is read below via getSymbolInstance{Icon,Text}Size.
+        const zoom = transform.zoom;
+        const iconZoomSize = evaluateSizeForZoom(this.iconSizeData, zoom);
+        const textZoomSize = evaluateSizeForZoom(this.textSizeData, zoom);
+
+        // `symbol-elevation-reference` only decides what a box's z offset is measured from: `sea` from
+        // sea level, `ground`/`hd-road-markup` from the terrain under the anchor.
+        // The offset itself is `symbol-z-offset` plus `instance.zOffset`, the road/building height baked
+        // in ahead of this run
+        const symbolZOffsetProperty = layer.paint.get('symbol-z-offset');
+        const elevationFromSea = layer.layout.get('symbol-elevation-reference') === 'sea';
+        const needsFeatureForZOffset = !symbolZOffsetProperty.isConstant();
+        const constantSymbolZOffset: number = needsFeatureForZOffset ? 0 : symbolZOffsetProperty.evaluate(null, {});
+        const terrainElevation = transform.elevation;
+
+        // Raises a box's anchor to the height the symbol is drawn at, mirroring
+        // CollisionIndex#placeCollisionBox / DefaultPlacementAlgorithm#updateBoxData.
+        const elevateAnchor = (box: SingleCollisionBox, instance: SymbolInstance, symbolZOffsetValue: number): {x: number; y: number; z: number; elevated: boolean} => {
+            let boxElevation: number;
+            if (this.elevationType === 'road') {
+                boxElevation = elevationFromSea ? symbolZOffsetValue :
+                    symbolZOffsetValue + Elevation.getAtTileOffset(tile.tileID, new Point(box.tileAnchorX, box.tileAnchorY), terrainElevation, null);
+            } else {
+                const elevationFeature = this.hdExt ? this.hdExt.elevationFeatures[instance.elevationFeatureIndex] : undefined;
+                boxElevation = elevationFromSea ? symbolZOffsetValue :
+                    symbolZOffsetValue + Elevation.getAtTileOffset(tile.tileID, new Point(box.tileAnchorX, box.tileAnchorY), terrainElevation, elevationFeature);
+            }
+            boxElevation += instance.zOffset;
+
+            if (!boxElevation) {
+                return {x: box.projectedAnchorX, y: box.projectedAnchorY, z: box.projectedAnchorZ, elevated: false};
+            }
+            const [ux, uy, uz] = bucketProjection.upVector(tile.tileID.canonical, box.tileAnchorX, box.tileAnchorY);
+            const upScale = bucketProjection.upVectorScale(tile.tileID.canonical, transform.center.lat, transform.worldSize).metersToTile;
+            return {
+                x: box.projectedAnchorX + ux * boxElevation * upScale,
+                y: box.projectedAnchorY + uy * boxElevation * upScale,
+                z: box.projectedAnchorZ + uz * boxElevation * upScale,
+                elevated: true,
+            };
+        };
+
+        // Streams a collision box into the run as a screen-aligned viewport rectangle. The box is
+        // stored anchor-relative: `box.x1/y1/x2/y2` are unscaled offsets from
+        // `box.projectedAnchor{X,Y,Z}` in the feature's own layout units (shaping already baked the
+        // icon/text extent and *-offset/*-rotate into them). `scale` takes the offsets to the
+        // symbol's on-screen size at the current zoom. Absent, occluded and degenerate boxes
+        // contribute nothing.
+        // `getScale` is called only once `box` is known to exist: a symbol with no icon (or no text)
+        // has no valid placedIconSymbolIndex/placedSymbolArray entry to evaluate a size from.
+        const addCollisionBox = (box: SingleCollisionBox | undefined, instance: SymbolInstance, symbolZOffsetValue: number, getScale: () => number) => {
+            if (!box) return;
+            const {x, y, z, elevated} = elevateAnchor(box, instance, symbolZOffsetValue);
+            const anchor = projectAnchor(posMatrix, x, y, z, transform, bucketProjection, pitched || elevated, fogState, unwrappedTileID);
+            // Occluded, too far away to be worth a place or behind the camera
+            if (anchor.occluded || anchor.perspectiveRatio <= MIN_COLLISION_PERSPECTIVE_RATIO) return;
+            const scale = getScale();
+            const tileToViewport = textPixelRatio * anchor.perspectiveRatio;
+            const left = (box.x1 * scale - box.padding) * tileToViewport + anchor.x;
+            const top = (box.y1 * scale - box.padding) * tileToViewport + anchor.y;
+            const right = (box.x2 * scale + box.padding) * tileToViewport + anchor.x;
+            const bottom = (box.y2 * scale + box.padding) * tileToViewport + anchor.y;
+            if (!(left < right) || !(top < bottom)) return;
+            globalPlacement.addGeometry({kind: 'box', left, top, right, bottom});
+        };
+
+        for (let index = 0; index < this.symbolInstances.length; index++) {
+            const instance = this.symbolInstances.get(index);
+
+            if (instance.hasIconTextFit) {
+                warnOnce('new placement: icon-text-fit is not supported yet; skipping symbols');
+                continue;
+            }
+            const hasText = instance.numHorizontalGlyphVertices > 0 || instance.numVerticalGlyphVertices > 0;
+            if (hasVariableTextAnchor && hasText) {
+                warnOnce('new placement: text-variable-anchor is not supported yet; skipping symbols');
+                continue;
+            }
+            if (instance.numVerticalGlyphVertices > 0) {
+                warnOnce('new placement: vertical text-writing-mode is not supported yet; skipping symbols');
+                continue;
+            }
+
+            const collisionArrays = this.collisionArrays[index];
+            if (!collisionArrays.iconBox && !collisionArrays.textBox) {
+                // Neither icon nor text: the symbol contributes no collision geometry, so never begin a variant.
+                continue;
+            }
+
+            const variantId: SymbolVariantId = {
+                symbolId: {styleLayerId: layerUid, symbolIdOrigin: SymbolIdOrigin.GENERATED, symbolId: rangeStart + index},
+                variantIdx: 0,
+            };
+
+            // Feed the instance's current visibility so placement can detect show/hide transitions
+            // and pick the matching collision hysteresis. Placement is Fixed: along-line symbols are
+            // skipped above, so every fed symbol has a fixed position. The remaining priority fields
+            // keep their defaults in this version.
+            const priority: GlobalPlacementPriority = {
+                placementSubgroupOrder: 0,
+                symbolPlacementPriority: 0,
+                symbolVariantVisibility: this.placementVariantVisible[index] ? SymbolVariantVisibility.VARIANT_VISIBLE : SymbolVariantVisibility.SYMBOL_INVISIBLE,
+                symbolPlacementType: SymbolPlacementType.FIXED,
+                styleLayerOrder: 0,
+                symbolDisplayOrder: 0,
+            };
+
+            // A symbol contributes its icon and/or text collision boxes as one variant. On globe no
+            // geometry is fed, so the variant is dropped and a previously-visible symbol is hidden.
+            globalPlacement.startSymbolVariantProcessing(variantId, priority, placementRules);
+            if (feedGeometry) {
+                let symbolZOffsetValue = constantSymbolZOffset;
+                if (needsFeatureForZOffset && tile.latestFeatureIndex) {
+                    const feature = tile.latestFeatureIndex.loadFeature({
+                        featureIndex: instance.featureIndex,
+                        sourceLayerIndex: this.sourceLayerIndex,
+                        bucketIndex: this.index,
+                        layoutVertexArrayOffset: 0,
+                    });
+                    symbolZOffsetValue = symbolZOffsetProperty.evaluate(feature, {});
+                }
+                addCollisionBox(collisionArrays.iconBox, instance, symbolZOffsetValue, () => this.getSymbolInstanceIconSize(iconZoomSize, zoom, instance.placedIconSymbolIndex));
+                addCollisionBox(collisionArrays.textBox, instance, symbolZOffsetValue, () => this.getSymbolInstanceTextSize(textZoomSize, instance, zoom, index));
+            }
+            globalPlacement.finishVariantProcessing();
+        }
     }
 
     updateReplacement(coord: OverscaledTileID, source: ReplacementSource): boolean {
@@ -2028,12 +2343,18 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    getSymbolInstanceTextSize(textSize: InterpolatedSize, instance: SymbolInstance, zoom: number, boxIndex: number): number {
-        const symbolIndex = instance.rightJustifiedTextSymbolIndex >= 0 ?
+    // The default (non-vertical, non-variable-anchor) placed text entry for an instance: whichever
+    // horizontal justification was actually placed, falling back to vertical, then to `boxIndex`.
+    defaultPlacedTextSymbolIndex(instance: SymbolInstance, boxIndex: number): number {
+        return instance.rightJustifiedTextSymbolIndex >= 0 ?
             instance.rightJustifiedTextSymbolIndex : instance.centerJustifiedTextSymbolIndex >= 0 ?
                 instance.centerJustifiedTextSymbolIndex : instance.leftJustifiedTextSymbolIndex >= 0 ?
                     instance.leftJustifiedTextSymbolIndex : instance.verticalPlacedTextSymbolIndex >= 0 ?
                         instance.verticalPlacedTextSymbolIndex : boxIndex;
+    }
+
+    getSymbolInstanceTextSize(textSize: InterpolatedSize, instance: SymbolInstance, zoom: number, boxIndex: number): number {
+        const symbolIndex = this.defaultPlacedTextSymbolIndex(instance, boxIndex);
 
         const symbol = this.text.placedSymbolArray.get(symbolIndex);
         const featureSize = evaluateSizeForFeature(this.textSizeData, textSize, symbol) / ONE_EM;

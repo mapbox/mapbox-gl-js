@@ -5,6 +5,10 @@ import type {SymbolVariantId} from './types';
 export type CollisionRules = {
     // May contain the id of either a mandatory part or an optional text part
     symbolVariantToIgnoreCollisionWith?: SymbolVariantId;
+    // If set, this variant is only eligible for placement if the referenced SymbolVariantId
+    // was placed in the same placement run.
+    // A reference to a variant from a different run does not make this variant eligible.
+    onlyIfPlaced?: SymbolVariantId;
 };
 
 export type PlacementRules = {

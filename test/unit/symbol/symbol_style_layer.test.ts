@@ -1,9 +1,12 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import {describe, test, expect} from '../../util/vitest';
+import {describe, test, expect, vi} from '../../util/vitest';
 import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
 import FormatSectionOverride from '../../../src/style/format_section_override';
 import {getPaintProperties} from '../../../src/style/style_layer/symbol_style_layer_properties';
+import Transform from '../../../src/geo/transform';
+import {OverscaledTileID} from '../../../src/source/tile_id';
+import {SymbolIdRangeAllocator} from '../../../src/placement/symbol_id_range_allocator';
 
 function createSymbolLayer(layerProperties) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -91,5 +94,59 @@ describe('hasPaintOverrides', () => {
         const props = {layout: {'text-field': matchExpr}};
         const layer = createSymbolLayer(props);
         expect(SymbolStyleLayer.hasPaintOverride(layer.layout, 'text-color')).toEqual(false);
+    });
+});
+
+describe('placeSymbols', () => {
+    function createGlobalPlacement() {
+        return {startSymbolSourceProcessing: vi.fn(), finishSourceProcessing: vi.fn()};
+    }
+
+    function createTransform() {
+        const transform = new Transform();
+        transform.resize(512, 512);
+        return transform;
+    }
+
+    test('opens and closes symbol source processing for the bucket it leads', () => {
+        const layer = createSymbolLayer({id: 'symbol'});
+        const bucket = {
+            layerIds: [layer.fqid],
+            getProjection: () => ({name: 'mercator'}),
+            addToPlacement: vi.fn(),
+            updateZOffset: vi.fn(),
+            elevationType: 'none',
+        };
+        const tile = {getBucket: () => bucket, tileID: new OverscaledTileID(0, 0, 0, 0, 0), tileSize: 512};
+        const globalPlacement = createGlobalPlacement();
+
+        layer.placeSymbols(globalPlacement, [tile], new SymbolIdRangeAllocator(), createTransform());
+
+        expect(globalPlacement.startSymbolSourceProcessing).toHaveBeenCalledExactlyOnceWith(bucket);
+        expect(bucket.addToPlacement).toHaveBeenCalledOnce();
+        expect(globalPlacement.finishSourceProcessing).toHaveBeenCalledOnce();
+    });
+
+    test('skips a tile with no bucket', () => {
+        const layer = createSymbolLayer({id: 'symbol'});
+        const tile = {getBucket: () => undefined};
+        const globalPlacement = createGlobalPlacement();
+
+        layer.placeSymbols(globalPlacement, [tile], new SymbolIdRangeAllocator(), createTransform());
+
+        expect(globalPlacement.startSymbolSourceProcessing).not.toHaveBeenCalled();
+        expect(globalPlacement.finishSourceProcessing).not.toHaveBeenCalled();
+    });
+
+    test('skips a bucket this layer does not lead', () => {
+        const layer = createSymbolLayer({id: 'symbol'});
+        const bucket = {layerIds: ['other-layer']};
+        const tile = {getBucket: () => bucket};
+        const globalPlacement = createGlobalPlacement();
+
+        layer.placeSymbols(globalPlacement, [tile], new SymbolIdRangeAllocator(), createTransform());
+
+        expect(globalPlacement.startSymbolSourceProcessing).not.toHaveBeenCalled();
+        expect(globalPlacement.finishSourceProcessing).not.toHaveBeenCalled();
     });
 });

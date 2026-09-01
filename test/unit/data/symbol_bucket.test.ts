@@ -20,6 +20,10 @@ import SegmentVector from '../../../src/data/segment';
 import SymbolBucket from '../../../src/data/bucket/symbol_bucket';
 import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
 import featureFilter from '../../../src/style-spec/feature_filter/index';
+import {GlobalPlacement} from '../../../src/placement/global_placement';
+import {SymbolIdRangeAllocator} from '../../../src/placement/symbol_id_range_allocator';
+import {getSymbolPlacementTileProjectionMatrix} from '../../../src/geo/projection/projection_util';
+import EXTENT from '../../../src/style-spec/data/extent';
 
 import type CollisionIndex from '../../../src/symbol/collision_index';
 import type {BucketPart} from '../../../src/symbol/placement';
@@ -98,6 +102,86 @@ test('SymbolBucket', () => {
     place(bucketB.layers[0], tileB);
     const b2 = ci.grid.keysLength();
     expect(b2).toEqual(a2);
+});
+
+test('SymbolBucket#addToPlacement places a real symbol via the new placement pipeline', () => {
+    const bucket = bucketSetup();
+    const projection = getProjection({name: 'mercator'});
+    const options = {iconDependencies: {}, glyphDependencies: {}};
+
+    bucket.populate([{feature}], options);
+    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
+
+    const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+    const placementTransform = new Transform();
+    placementTransform.resize(100, 100);
+
+    const posMatrix = getSymbolPlacementTileProjectionMatrix(tileID, projection, placementTransform, 'mercator');
+    const textPixelRatio = 512 / EXTENT;
+    const tile = {tileID, collisionBoxArray, latestFeatureIndex: null};
+
+    const globalPlacement = new GlobalPlacement();
+    const idRangeAllocator = new SymbolIdRangeAllocator();
+    const showSymbolVariantSpy = vi.spyOn(bucket, 'showSymbolVariant');
+
+    globalPlacement.startPlacement(0, 100, 100);
+    globalPlacement.startSymbolSourceProcessing(bucket);
+    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, placementTransform, textPixelRatio, tile);
+
+    // addToPlacement seeds the (until now empty) opacity buffer with one hidden entry per glyph
+    // quad, since new placement never runs Placement#updateBucketOpacities to build it from scratch.
+    expect(bucket.text.opacityVertexArray.length).toBeGreaterThan(0);
+    for (let i = 0; i < bucket.text.opacityVertexArray.length; i++) {
+        expect(bucket.text.opacityVertexArray.uint32[i]).toEqual(0);
+    }
+
+    globalPlacement.finishSourceProcessing();
+    globalPlacement.finishPlacementRun();
+
+    // The fixture's single point feature has no colliding neighbor, so it should place successfully
+    // (was invisible -> now visible), proving id allocation, size evaluation, anchor projection and
+    // the collision grid all agree end to end.
+    expect(showSymbolVariantSpy).toHaveBeenCalledOnce();
+    // showSymbolVariant wrote full opacity (packed 0xFFFFFFFF) into the placed text's glyph quads.
+    for (let i = 0; i < bucket.text.opacityVertexArray.length; i++) {
+        expect(bucket.text.opacityVertexArray.uint32[i]).toEqual(4294967295);
+    }
+    // Recorded so the next run feeds this instance's priority back as VARIANT_VISIBLE.
+    expect(bucket.placementVariantVisible).toEqual([true]);
+
+    // A second run with the same (still non-colliding) symbol should keep it visible without a
+    // redundant showSymbolVariant call, since there is no visibility transition.
+    showSymbolVariantSpy.mockClear();
+    globalPlacement.startPlacement(1, 100, 100);
+    globalPlacement.startSymbolSourceProcessing(bucket);
+    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, placementTransform, textPixelRatio, tile);
+    globalPlacement.finishSourceProcessing();
+    globalPlacement.finishPlacementRun();
+
+    expect(showSymbolVariantSpy).not.toHaveBeenCalled();
+
+    // A tile returning from the cache drops new placement's decisions: everything hides and the
+    // per-instance visibility record clears, so a stale "visible" doesn't outrank on-screen symbols.
+    bucket.resetPlacementVisibility();
+
+    expect(bucket.placementVariantVisible).toEqual([false]);
+    for (let i = 0; i < bucket.text.opacityVertexArray.length; i++) {
+        expect(bucket.text.opacityVertexArray.uint32[i]).toEqual(0);
+    }
+});
+
+test('SymbolBucket#resetPlacementVisibility is a no-op before the bucket has ever been fed to new placement', () => {
+    const bucket = bucketSetup();
+    const options = {iconDependencies: {}, glyphDependencies: {}};
+    const projection = getProjection({name: 'mercator'});
+
+    bucket.populate([{feature}], options);
+    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
+
+    expect(() => bucket.resetPlacementVisibility()).not.toThrow();
+    expect(bucket.text.opacityVertexArray.length).toEqual(0);
 });
 
 test('SymbolBucket integer overflow', () => {

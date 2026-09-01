@@ -3,7 +3,7 @@ import {CollisionGrid} from './collision_grid';
 import {comparePriority} from './global_placement_priority';
 import {SymbolVariantVisibility} from './types';
 
-import type {Geometry} from './geometry';
+import type {GeometryElement} from './geometry';
 import type {GlobalPlacementPriority} from './global_placement_priority';
 import type {PlacementRules} from './placement_rules';
 import type {SymbolSource} from './symbol_source';
@@ -40,19 +40,53 @@ function symbolVariantIdEquals(a: SymbolVariantId, b: SymbolVariantId): boolean 
         a.symbolId.symbolId === b.symbolId.symbolId;
 }
 
+function symbolIdEquals(a: SymbolId, b: SymbolId): boolean {
+    return a.styleLayerId === b.styleLayerId &&
+        a.symbolIdOrigin === b.symbolIdOrigin &&
+        a.symbolId === b.symbolId;
+}
+
+// layerOriginKey(symbolId) -> symbolId.symbolId -> Set<variantIdx>
+type VariantIdSet = Map<number, Map<number, Set<number>>>;
+
+function hasVariantId(set: VariantIdSet, id: SymbolVariantId): boolean {
+    const bySymbolId = set.get(layerOriginKey(id.symbolId));
+    if (!bySymbolId) return false;
+    const byVariantIdx = bySymbolId.get(id.symbolId.symbolId);
+    return byVariantIdx !== undefined && byVariantIdx.has(id.variantIdx);
+}
+
+function addVariantId(set: VariantIdSet, id: SymbolVariantId) {
+    const key = layerOriginKey(id.symbolId);
+    let bySymbolId = set.get(key);
+    if (!bySymbolId) {
+        bySymbolId = new Map();
+        set.set(key, bySymbolId);
+    }
+    let byVariantIdx = bySymbolId.get(id.symbolId.symbolId);
+    if (!byVariantIdx) {
+        byVariantIdx = new Set();
+        bySymbolId.set(id.symbolId.symbolId, byVariantIdx);
+    }
+    byVariantIdx.add(id.variantIdx);
+}
+
 type SymbolInfo = {
     priority: GlobalPlacementPriority;
     source: SymbolSource;
     variantId: SymbolVariantId;
-    geometry: Geometry;
+    // Streamed in via addGeometry() between startSymbolVariantProcessing() and
+    // finishVariantProcessing().
+    geometry: Array<GeometryElement>;
     placementRules: PlacementRules;
 };
 
 /**
  * Decides symbol visibility purely from a `GlobalPlacementPriority` instead of ayer z-order.
  *
- * Must call `finishPlacementRun()` explicitly before the next `startPlacement` call, and
- * `finishSourceProcessing()` before the next `startSymbolSourceProcessing` call.
+ * Must call `finishPlacementRun()` explicitly before the next `startPlacement` call,
+ * `finishSourceProcessing()` before the next `startSymbolSourceProcessing` call, and
+ * `finishVariantProcessing()` before the next `startSymbolVariantProcessing` call.
  *
  * Example:
  * ```
@@ -64,7 +98,11 @@ type SymbolInfo = {
  * Later, within a bucket:
  * ```
  * placement.startSymbolSourceProcessing(source);
- * for (const symbolVariant of symbolVariants) placement.addSymbolVariant(...);
+ * for (const symbolVariant of symbolVariants) {
+ *     placement.startSymbolVariantProcessing(...);
+ *     for (const geometryElement of symbolVariant.geometry) placement.addGeometry(geometryElement);
+ *     placement.finishVariantProcessing();
+ * }
  * placement.finishSourceProcessing();
  * ```
  */
@@ -73,11 +111,16 @@ export class GlobalPlacement {
     _grid: CollisionGrid<SymbolVariantId> | null;
     _timestamp: number;
     _symbols: Array<SymbolInfo>;
-    // layerOriginKey(symbolId) -> symbolId.symbolId -> Set<variantIdx>
-    _ignoredSymbolVariantIds: Map<number, Map<number, Set<number>>>;
+    _ignoredSymbolVariantIds: VariantIdSet;
+    // If set, this variant's onlyIfPlaced must be one of these to be eligible for placement.
+    // Only ids actually referenced by an onlyIfPlaced rule are tracked here.
+    _onlyIfPlacedReferencedIds: VariantIdSet;
+    _placedVariantIds: VariantIdSet;
     // layerOriginKey(symbolId) -> Set<symbolId.symbolId>
     _placedSymbolIds: Map<number, Set<number>>;
     _processingSource: SymbolSource | null;
+    // The variant currently streaming geometry in is always the last entry of _symbols.
+    _variantProcessingStarted: boolean;
 
     constructor() {
         this._runStarted = false;
@@ -85,8 +128,11 @@ export class GlobalPlacement {
         this._timestamp = 0;
         this._symbols = [];
         this._ignoredSymbolVariantIds = new Map();
+        this._onlyIfPlacedReferencedIds = new Map();
+        this._placedVariantIds = new Map();
         this._placedSymbolIds = new Map();
         this._processingSource = null;
+        this._variantProcessingStarted = false;
     }
 
     startPlacement(timestamp: number, screenWidth: number, screenHeight: number) {
@@ -101,6 +147,8 @@ export class GlobalPlacement {
         this._timestamp = timestamp;
         this._symbols = [];
         this._ignoredSymbolVariantIds.clear();
+        this._onlyIfPlacedReferencedIds.clear();
+        this._placedVariantIds.clear();
         this._placedSymbolIds.clear();
     }
 
@@ -119,28 +167,6 @@ export class GlobalPlacement {
         bySymbolId.add(id.symbolId);
     }
 
-    _hasIgnoredVariant(id: SymbolVariantId): boolean {
-        const bySymbolId = this._ignoredSymbolVariantIds.get(layerOriginKey(id.symbolId));
-        if (!bySymbolId) return false;
-        const byVariantIdx = bySymbolId.get(id.symbolId.symbolId);
-        return byVariantIdx !== undefined && byVariantIdx.has(id.variantIdx);
-    }
-
-    _addIgnoredVariant(id: SymbolVariantId) {
-        const key = layerOriginKey(id.symbolId);
-        let bySymbolId = this._ignoredSymbolVariantIds.get(key);
-        if (!bySymbolId) {
-            bySymbolId = new Map();
-            this._ignoredSymbolVariantIds.set(key, bySymbolId);
-        }
-        let byVariantIdx = bySymbolId.get(id.symbolId.symbolId);
-        if (!byVariantIdx) {
-            byVariantIdx = new Set();
-            bySymbolId.set(id.symbolId.symbolId, byVariantIdx);
-        }
-        byVariantIdx.add(id.variantIdx);
-    }
-
     startSymbolSourceProcessing(source: SymbolSource) {
         if (!this._runStarted) throw new Error('Attempt to start symbol source processing outside of a placement run');
         if (this._processingSource) throw new Error('Attempt to start a placement symbol source processing before finishing the previous one');
@@ -148,14 +174,48 @@ export class GlobalPlacement {
         this._processingSource = source;
     }
 
-    addSymbolVariant(variantId: SymbolVariantId, priority: GlobalPlacementPriority, geometry: Geometry, placementRules: PlacementRules) {
+    startSymbolVariantProcessing(variantId: SymbolVariantId, priority: GlobalPlacementPriority, placementRules: PlacementRules) {
         const source = this._processingSource;
-        if (!source) throw new Error('Attempt to add a symbol variant outside of symbol source processing');
+        if (!source) throw new Error('Attempt to start a symbol variant processing outside of symbol source processing');
+        if (this._variantProcessingStarted) throw new Error('Attempt to begin a symbol variant processing before finishing the previous one');
 
-        this._symbols.push({priority, source, variantId, geometry, placementRules});
+        this._symbols.push({priority, source, variantId, geometry: [], placementRules});
 
-        const ignoreId = placementRules.collisionRules && placementRules.collisionRules.symbolVariantToIgnoreCollisionWith;
-        if (ignoreId) this._addIgnoredVariant(ignoreId);
+        const rules = placementRules.collisionRules;
+        if (rules) {
+            if (rules.symbolVariantToIgnoreCollisionWith) addVariantId(this._ignoredSymbolVariantIds, rules.symbolVariantToIgnoreCollisionWith);
+            if (rules.onlyIfPlaced) {
+                assert(!symbolIdEquals(rules.onlyIfPlaced.symbolId, variantId.symbolId));
+                addVariantId(this._onlyIfPlacedReferencedIds, rules.onlyIfPlaced);
+            }
+        }
+
+        this._variantProcessingStarted = true;
+    }
+
+    // Adds one geometry element to the variant started by startSymbolVariantProcessing(). Geometry
+    // is expressed in logical (device-independent) screen pixels, the same space as startPlacement's
+    // screenWidth/screenHeight.
+    addGeometry(geometryElement: GeometryElement) {
+        if (!this._variantProcessingStarted) throw new Error('Attempt to add geometry outside of symbol variant processing');
+        this._symbols.at(-1)!.geometry.push(geometryElement);
+    }
+
+    finishVariantProcessing() {
+        if (!this._variantProcessingStarted) throw new Error('Attempt to finish a symbol variant processing that was not started');
+        this._variantProcessingStarted = false;
+
+        const symbol = this._symbols.at(-1)!;
+        if (symbol.geometry.length === 0) {
+            // A begun variant can receive no geometry (every element culled, or dynamically generated
+            // geometry that turns out empty). It cannot be placed, so a currently-visible variant has to
+            // be hidden here: finishPlacementRun never sees a dropped symbol and would otherwise leave it
+            // visible forever without any collision box in the grid.
+            if (symbol.priority.symbolVariantVisibility === SymbolVariantVisibility.VARIANT_VISIBLE) {
+                symbol.source.hideSymbolVariant(symbol.variantId, this._timestamp);
+            }
+            this._symbols.pop();
+        }
     }
 
     finishSourceProcessing() {
@@ -178,21 +238,29 @@ export class GlobalPlacement {
             if (this._hasPlacedSymbol(symbol.variantId.symbolId)) {
                 visible = false;
             } else if (symbol.placementRules.collisionRules) {
-                const ignoreVariantId = symbol.placementRules.collisionRules.symbolVariantToIgnoreCollisionWith;
-                const intersectionResult = grid.intersects(
-                    symbol.geometry,
-                    wasVisible ? VISIBLE_VARIANTS_COLLISION_PADDING : INVISIBLE_VARIANTS_COLLISION_PADDING,
-                    (data) => ignoreVariantId !== undefined && symbolVariantIdEquals(data, ignoreVariantId)
-                );
-                if (intersectionResult !== 'does-not-intersect') visible = false;
+                const onlyIfPlaced = symbol.placementRules.collisionRules.onlyIfPlaced;
+                if (onlyIfPlaced && !hasVariantId(this._placedVariantIds, onlyIfPlaced)) {
+                    visible = false;
+                } else {
+                    const ignoreVariantId = symbol.placementRules.collisionRules.symbolVariantToIgnoreCollisionWith;
+                    const intersectionResult = grid.intersects(
+                        symbol.geometry,
+                        wasVisible ? VISIBLE_VARIANTS_COLLISION_PADDING : INVISIBLE_VARIANTS_COLLISION_PADDING,
+                        (data) => ignoreVariantId !== undefined && symbolVariantIdEquals(data, ignoreVariantId)
+                    );
+                    if (intersectionResult !== 'does-not-intersect') visible = false;
+                }
             }
 
             if (visible && symbol.placementRules.insertIntoCollisionGrid) {
-                const data = this._hasIgnoredVariant(symbol.variantId) ? symbol.variantId : undefined;
+                const data = hasVariantId(this._ignoredSymbolVariantIds, symbol.variantId) ? symbol.variantId : undefined;
                 if (!grid.insert(symbol.geometry, data)) visible = false;
             }
 
-            if (visible) this._addPlacedSymbol(symbol.variantId.symbolId);
+            if (visible) {
+                this._addPlacedSymbol(symbol.variantId.symbolId);
+                if (hasVariantId(this._onlyIfPlacedReferencedIds, symbol.variantId)) addVariantId(this._placedVariantIds, symbol.variantId);
+            }
 
             if (wasVisible !== visible) {
                 if (visible) symbol.source.showSymbolVariant(symbol.variantId, timestamp);

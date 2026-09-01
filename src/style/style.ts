@@ -62,6 +62,8 @@ import {
 } from '../source/rtl_text_plugin';
 import PauseablePlacement from './pauseable_placement';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
+import {GlobalPlacement} from '../placement/global_placement';
+import {SymbolIdRangeAllocator} from '../placement/symbol_id_range_allocator';
 import {validateCustomStyleLayer} from './style_layer/custom_style_layer';
 import {isFQID, makeFQID, getNameFromFQID, getInnerScopeFromFQID, getOuterScopeFromFQID} from '../util/fqid';
 import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_utils';
@@ -391,6 +393,9 @@ class Style extends Evented<MapEvents> {
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement!: PauseablePlacement;
     placement!: Placement;
+    globalPlacement: GlobalPlacement | null;
+    // Generated symbol id ranges for the new placement pipeline, keyed by layer.
+    symbolIdRangeAllocator: SymbolIdRangeAllocator;
     z!: number;
 
     _has3DLayers: boolean;
@@ -424,6 +429,8 @@ class Style extends Evented<MapEvents> {
 
         this._buildingIndex = new BuildingIndex(this);
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
+        this.globalPlacement = null;
+        this.symbolIdRangeAllocator = new SymbolIdRangeAllocator();
 
         this._mergedOrder = [];
         this._drapedFirstOrder = [];
@@ -3243,6 +3250,7 @@ class Style extends Evented<MapEvents> {
 
         this._layerExpressionDependencies.delete(layer.fqid);
         this._changes.removeLayer(layer);
+        this.symbolIdRangeAllocator.releaseLayer(layer.runtimeLayerUID);
 
         const sourceCache = this.getOwnLayerSourceCache(layer);
 
@@ -4652,6 +4660,7 @@ class Style extends Evented<MapEvents> {
         crossSourceCollisions: boolean,
         replacementSource: ReplacementSource,
         placementAlgorithmName?: PlacementAlgorithmName,
+        enableGlobalPlacement?: boolean,
     ): boolean {
         if (!this.pauseablePlacement) {
             this.pauseablePlacement = new PauseablePlacement();
@@ -4663,7 +4672,13 @@ class Style extends Evented<MapEvents> {
         const layerTiles: Record<string, Tile[]> = {};
         const layerTilesInYOrder: Record<string, Tile[]> = {};
 
-        for (const layerId of this._mergedOrder) {
+        const layerOrder = enableGlobalPlacement ? [] : this._mergedOrder;
+
+        if (enableGlobalPlacement) {
+            this._driveGlobalPlacement(transform);
+        }
+
+        for (const layerId of layerOrder) {
             const styleLayer = this._mergedLayers[layerId];
             if (styleLayer.type !== 'symbol') continue;
 
@@ -4683,7 +4698,7 @@ class Style extends Evented<MapEvents> {
             const layerBucketsChanged = this.crossTileSymbolIndex.addLayer(styleLayer, sourceTiles, transform.center.lng, transform.projection);
             symbolBucketsChanged = symbolBucketsChanged || layerBucketsChanged;
         }
-        this.crossTileSymbolIndex.pruneUnusedLayers(this._mergedOrder);
+        this.crossTileSymbolIndex.pruneUnusedLayers(layerOrder);
 
         const transformChanged = Boolean(this.placement && !transform.equals(this.placement.transform));
         const replacementSourceChanged = Boolean(this.placement && ((this.placement.lastReplacementSourceUpdateTime !== 0 && !replacementSource) || this.placement.lastReplacementSourceUpdateTime !== replacementSource.updateTime));
@@ -4698,7 +4713,7 @@ class Style extends Evented<MapEvents> {
 
         if (this.pauseablePlacement.isFullPlacementRequested() || !this.pauseablePlacement.placement || newImmediatePlacementRequired || newNormalPlacementRequired) {
             const fogState = this.fog && transform.projection.supportsFog ? this.fog.state : null;
-            this.pauseablePlacement = this.pauseablePlacement.startNewPlacement(transform, this._mergedOrder, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState, this._buildingIndex, placementAlgorithmName);
+            this.pauseablePlacement = this.pauseablePlacement.startNewPlacement(transform, layerOrder, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState, this._buildingIndex, placementAlgorithmName);
             if (this.map.painter) {
                 const raw = this.map.painter.maxFrontCutoffRawStart;
                 if (raw > 0) {
@@ -4713,7 +4728,7 @@ class Style extends Evented<MapEvents> {
         }
 
         if (!this.pauseablePlacement.isDone()) {
-            this.pauseablePlacement.continuePlacement(this._mergedOrder, this._mergedLayers, layerTiles, layerTilesInYOrder, this.map.painter.scaleFactor);
+            this.pauseablePlacement.continuePlacement(layerOrder, this._mergedLayers, layerTiles, layerTilesInYOrder, this.map.painter.scaleFactor);
 
             if (this.pauseablePlacement.isDone()) {
                 this.placement = this.pauseablePlacement.commit(browser.now());
@@ -4732,8 +4747,8 @@ class Style extends Evented<MapEvents> {
 
         if (placementCommitted || symbolBucketsChanged) {
             this._buildingIndex.onNewFrame(transform.zoom);
-            for (let i = 0; i < this._mergedOrder.length; i++) {
-                const layerId = this._mergedOrder[i];
+            for (let i = 0; i < layerOrder.length; i++) {
+                const layerId = layerOrder[i];
                 const styleLayer = this._mergedLayers[layerId];
                 if (styleLayer.type !== 'symbol') continue;
                 if (styleLayer.visibility === 'none') continue;
@@ -4744,6 +4759,35 @@ class Style extends Evented<MapEvents> {
 
         // needsRender is false when we have just finished a placement that didn't change the visibility of any symbols
         return !this.pauseablePlacement.isDone() || this.placement.isStale() || this.placement.hasTransitions(browser.now());
+    }
+
+    // Runs one global placement pass per frame, driving each symbol layer's placeSymbols() hook.
+    _driveGlobalPlacement(transform: Transform) {
+        if (transform.width === 0 || transform.height === 0) return;
+
+        if (!this.globalPlacement) {
+            this.globalPlacement = new GlobalPlacement();
+        }
+        const globalPlacement = this.globalPlacement;
+
+        globalPlacement.startPlacement(browser.now(), transform.width, transform.height);
+
+        this._buildingIndex.onNewFrame(transform.zoom);
+
+        const fogState = this.fog && transform.projection.supportsFog ? this.fog.state : null;
+
+        for (const layerId of this._mergedOrder) {
+            const styleLayer = this._mergedLayers[layerId];
+            if (styleLayer.type !== 'symbol') continue;
+
+            const sourceCache = this.getLayerSourceCache(styleLayer);
+            if (!sourceCache) continue;
+            const tiles = sourceCache.getRenderableIds(true).map((id) => sourceCache.getTileByID(id));
+
+            styleLayer.placeSymbols(globalPlacement, tiles, this.symbolIdRangeAllocator, transform, this._buildingIndex, fogState);
+        }
+
+        globalPlacement.finishPlacementRun();
     }
 
     _releaseSymbolFadeTiles() {

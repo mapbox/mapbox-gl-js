@@ -6,6 +6,13 @@ import type SymbolBucket from '../../data/bucket/symbol_bucket';
 import type Transform from '../../geo/transform';
 import type Projection from './projection';
 
+// Lower bound on the perspective ratio of a symbol still worth placing: clips at 10 times the
+// distance of the map center, where the label would draw at 10% the size of the features around
+// it. 0.55 === getPerspectiveRatio(cameraToCenter, cameraToCenter * 10). Refer:
+// https://github.com/mapbox/mapbox-gl-native/wiki/Text-Rendering#perspective-scaling
+// A point behind the camera also lands below it, so the same test rejects those.
+export const MIN_COLLISION_PERSPECTIVE_RATIO = 0.55;
+
 function reconstructTileMatrix(transform: Transform, projection: Projection, coord: OverscaledTileID): mat4 {
     // Bucket being rendered is built for different map projection
     // than is currently being used. Reconstruct correct matrices.

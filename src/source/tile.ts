@@ -364,6 +364,15 @@ class Tile {
         this._lastUpdatedBrightness = data.brightness;
     }
 
+    // Drops what new placement decided about this tile's symbols (see Bucket#resetPlacementVisibility).
+    // Called when the tile enters the render set again after placement has stopped seeing it, e.g. when
+    // it comes back from the tile cache.
+    resetPlacementVisibility() {
+        for (const id in this.buckets) {
+            this.buckets[id].resetPlacementVisibility?.();
+        }
+    }
+
     /**
      * Release any data or WebGL resources referenced by this tile.
      * @returns {undefined}

@@ -955,6 +955,9 @@ class SourceCache extends Evented {
                 delete this._cacheTimers[tileID.key];
                 this._setTileReloadTimer(tileID.key, tile);
             }
+            // The tile was out of the render set while cached, so new placement has not seen it and
+            // its symbols' visibility has gone stale (see Tile#resetPlacementVisibility).
+            tile.resetPlacementVisibility();
         }
 
         const cached = Boolean(tile);

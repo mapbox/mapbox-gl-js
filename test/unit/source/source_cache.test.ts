@@ -273,6 +273,30 @@ describe('SourceCache#addTile', () => {
         expect(sourceCache._cache.has(tileID)).toBeFalsy();
     });
 
+    test('resets placement visibility on a tile returning from the cache', () => {
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+        const {sourceCache} = createSourceCache();
+        sourceCache._loadTile = (tile, callback) => {
+            tile.state = 'loaded';
+            callback();
+        };
+
+        const tr = new Transform();
+        tr.width = 512;
+        tr.height = 512;
+        sourceCache.updateCacheSize(tr);
+
+        const tile = sourceCache._addTile(tileID);
+        const resetPlacementVisibilitySpy = vi.spyOn(tile, 'resetPlacementVisibility');
+
+        sourceCache._removeTile(tileID.key);
+        expect(sourceCache._cache.has(tileID)).toBeTruthy();
+
+        sourceCache._addTile(tileID);
+
+        expect(resetPlacementVisibilitySpy).toHaveBeenCalledOnce();
+    });
+
     test('does not reuse wrapped tile', () => {
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
         let load = 0,

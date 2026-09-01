@@ -4,6 +4,7 @@ import {Layout, Transitionable, PossiblyEvaluated, PossiblyEvaluatedPropertyValu
 import {supportsPropertyExpression} from '../style-spec/util/properties';
 import featureFilter from '../style-spec/feature_filter/index';
 import {makeFQID} from '../util/fqid';
+import {createRuntimeLayerUID} from '../placement/layer_uid';
 import {type FeatureState} from '../style-spec/expression/index';
 import {isStateConstant} from '../style-spec/expression/is_constant';
 import assert from '../style-spec/util/assert';
@@ -30,6 +31,11 @@ import type {DEMSampler} from '../terrain/elevation';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../render/painter';
 import type SourceCache from '../source/source_cache';
+import type Tile from '../source/tile';
+import type BuildingIndex from '../source/building_index';
+import type {FogState} from './fog_helpers';
+import type {GlobalPlacement} from '../placement/global_placement';
+import type {SymbolIdRangeAllocator} from '../placement/symbol_id_range_allocator';
 import type Painter from '../render/painter';
 import type {LUT} from '../util/lut';
 import type {ImageId} from '../style-spec/expression/types/image_id';
@@ -51,6 +57,7 @@ const drapedLayers = new Set(['fill', 'line', 'background', 'hillshade', 'raster
 class StyleLayer extends Evented {
     id: string;
     fqid: string;
+    readonly runtimeLayerUID: number;
     scope: string;
     lut: LUT | null;
     metadata: unknown;
@@ -97,6 +104,7 @@ class StyleLayer extends Evented {
 
         this.id = layer.id;
         this.fqid = makeFQID(this.id, scope);
+        this.runtimeLayerUID = createRuntimeLayerUID();
         this.type = layer.type;
         this.scope = scope;
         this.lut = lut;
@@ -151,6 +159,10 @@ class StyleLayer extends Evented {
 
     // No-op in the StyleLayer class, must be implemented by each concrete StyleLayer
     onRemove(_map: MapboxMap): void {}
+
+    // Feeds this layer's placeable symbols into the given global placement run. No-op for
+    // non-symbol layers; overridden by SymbolStyleLayer.
+    placeSymbols(_globalPlacement: GlobalPlacement, _tiles: Array<Tile>, _idRangeAllocator: SymbolIdRangeAllocator, _transform: Transform, _buildingIndex: BuildingIndex, _fogState: FogState | null): void {}
 
     isDraped(_sourceCache?: SourceCache): boolean {
         return !this.is3D(true) && drapedLayers.has(this.type);

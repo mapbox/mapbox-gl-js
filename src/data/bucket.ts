@@ -166,6 +166,10 @@ export interface Bucket {
     // fill elevatedStructures, fill-extrusion groundEffect) stay covered.
     // Buckets without binders (ClipBucket, model buckets) don't need it.
     updateExpressions?: (layers: ReadonlyArray<TypedStyleLayer>) => void;
+    // Drops what new placement decided about this bucket's symbols, hiding all of them. Called when
+    // the tile has been out of the render set, so placement has not seen it and its decisions have
+    // gone stale (see SourceCache#_addTile's cache-return branch). Only SymbolBucket implements it.
+    resetPlacementVisibility?: () => void;
 }
 
 export function deserialize(input: Array<Bucket>, style: Style): Record<string, Bucket> {

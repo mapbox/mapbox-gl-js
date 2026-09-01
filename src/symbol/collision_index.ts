@@ -8,10 +8,12 @@ import {FOG_SYMBOL_CLIPPING_THRESHOLD, getFogOpacityAtTileCoord} from '../style/
 import assert from '../style-spec/util/assert';
 import * as symbolProjection from '../symbol/projection';
 import {degToRad, wrap} from '../util/util';
+import {xyTransformMat4} from '../util/mat4';
 import {clipLines} from '../util/line_clipping';
 import EXTENT from '../style-spec/data/extent';
 import {number as mix} from '../style-spec/util/interpolate';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
+import {MIN_COLLISION_PERSPECTIVE_RATIO} from '../geo/projection/projection_util';
 import {Elevation} from '../terrain/elevation';
 
 import type {OverscaledTileID} from '../source/tile_id';
@@ -188,12 +190,7 @@ class CollisionIndex implements CollisionDetector {
         const tlY = (collisionBox.y1 * scale + shift.y - collisionBox.padding) * tileToViewport + projectedPoint.point.y;
         const brX = (collisionBox.x2 * scale + shift.x + collisionBox.padding) * tileToViewport + projectedPoint.point.x;
         const brY = (collisionBox.y2 * scale + shift.y + collisionBox.padding) * tileToViewport + projectedPoint.point.y;
-        // Clip at 10 times the distance of the map center or, said otherwise, when the label
-        // would be drawn at 10% the size of the features around it without scaling. Refer:
-        // https://github.com/mapbox/mapbox-gl-native/wiki/Text-Rendering#perspective-scaling
-        // 0.55 === projection.getPerspectiveRatio(camera_to_center, camera_to_center * 10)
-        const minPerspectiveRatio = 0.55;
-        const isClipped = projectedPoint.perspectiveRatio <= minPerspectiveRatio || projectedPoint.occluded;
+        const isClipped = projectedPoint.perspectiveRatio <= MIN_COLLISION_PERSPECTIVE_RATIO || projectedPoint.occluded;
 
         if (!this.isInsideGrid(tlX, tlY, brX, brY) ||
             (!allowOverlap && this.grid.hitTest(tlX, tlY, brX, brY, collisionGroupPredicate)) ||
@@ -547,7 +544,7 @@ class CollisionIndex implements CollisionDetector {
                 behindFog = fogOpacity > FOG_SYMBOL_CLIPPING_THRESHOLD;
             }
         } else {
-            symbolProjection.xyTransformMat4(p, p, posMatrix);
+            xyTransformMat4(p, p, posMatrix);
         }
         const w = p[3];
         const a = new Point(
