@@ -163,6 +163,7 @@
     "bundle-size-diff": "bash internal/scripts/bundle-size-diff.sh",
     "codegen": "tsx ./build/generate-style-code.ts && tsx ./build/generate-struct-arrays.ts && tsx ./build/generate-typed-style-spec.ts",
     "generate-debug-index": "tsx ./build/generate-debug-index.ts",
+    "check-debug-pages": "tsx ./build/check-debug-pages.ts",
     "tsc": "tsc --build tsconfig.json",
     "publish-release": "./build/publish.ts",
     "publish-cdn": "./build/publish-cdn.ts",

@@ -88,6 +88,44 @@ it out for serving `debug/` some other way:
 npm run generate-debug-index
 ```
 
+## Adding a Debug Page
+
+Every page under `debug/` declares what it is for, so the catalog can list it. The catalog is what keeps the folder discoverable and reviewable.
+
+Add the following to the page's `<head>`. CI fails if either required tag is missing or malformed:
+- `description`: One sentence about what the page shows and when you would reach for it. Describe purpose, not mechanism.
+- `mapbox:role`: What kind of page it is. Each role becomes a section in the catalog.
+- `mapbox:in-release-testing` (optional): Records that the page is loaded by `test/release/index.js`. That file is the authoritative list, so add the page there first.
+- `mapbox:issue` (optional): Link to the GitHub issue, if there is one.
+
+| role | the page is |
+|---|---|
+| `tool` | an instrument you open to debug or to get a job done: a stats or log readout, a test harness, a local-vs-released comparison, a deliberately blank starting point |
+| `feature` | a demonstration of a documented API, style property or behavior |
+| `env` | a page about build artifacts or host-environment integration |
+| `perf` | a throughput or stress page, read by eye |
+| `repro` | a page tied to one issue |
+
+```html
+<meta name="description" content="`map.getBounds()` drawn back onto the map as a polygon and refreshed on `rotateend` — where bounds go wrong under pitch and terrain.">
+<meta name="mapbox:role" content="feature">
+<meta name="mapbox:in-release-testing" content="true">
+```
+
+And for a repro page:
+
+```html
+<meta name="mapbox:issue" content="https://github.com/mapbox/mapbox-gl-js/issues/7517">
+```
+
+### Notes
+- Filenames are kebab-case: `camera-for-bounds.html`, not `cameraForBounds.html` or
+`camera_for_bounds.html`.
+- Name repro pages after the issue number and put them under `debug/repro/`. Add tests too, so the
+page can be retired once the fix is verified.
+- Consider whether the page really belongs in `debug/`. Do the tests already cover it? Will it still
+be interesting once your change lands? If you are unsure, leave it out.
+
 ## Creating a Standalone Build
 
 A standalone build allows you to turn the contents of this repository into `mapbox-gl.js` and `mapbox-gl.css` files that can be included on an html page.

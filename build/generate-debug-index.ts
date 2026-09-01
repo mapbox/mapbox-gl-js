@@ -1,17 +1,15 @@
 // Builds the catalog of debug pages from the `description` and `mapbox:*` meta tags each page declares.
-// A page with no `description`/`mapbox:role` is listed as unreviewed rather than skipped,
-// so the catalog always accounts for every file under debug/.
 
 import fs from 'fs';
 import path from 'path';
 import {pathToFileURL} from 'url';
 
-const DEBUG_DIR = 'debug';
+export const DEBUG_DIR = 'debug';
 const OUT = path.join(DEBUG_DIR, 'index.html');
 
-type Role = 'tool' | 'feature' | 'env' | 'perf' | 'repro';
+export type Role = 'tool' | 'feature' | 'env' | 'perf' | 'repro';
 
-type Page = {
+export type Page = {
     href: string;
     name: string;
     description?: string;
@@ -21,15 +19,15 @@ type Page = {
 };
 
 // Order matters: it is the order sections appear in the catalog.
-const ROLES: Record<Role, [string, string]> = {
-    tool: ['Tools', 'General-purpose debugging surfaces, not tied to one feature.'],
-    feature: ['Features', 'Live coverage of a single feature or style property.'],
-    env: ['Environment & build', 'Build artifacts and host-environment integration: CSP, UMD, iframes, tokens, caching, gestures.'],
+export const ROLES: Record<Role, [string, string]> = {
+    tool: ['Tools', 'Instruments you open to debug or to get a job done.'],
+    feature: ['Features', 'Demonstrations of a documented API, style property or behavior.'],
+    env: ['Environment & build', 'Pages about build artifacts or host-environment integration.'],
     perf: ['Performance', 'Throughput and stress pages, read by eye.'],
-    repro: ['Issue repros', 'Tied to a GitHub issue.'],
+    repro: ['Issue repros', 'Pages tied to one issue.'],
 };
 
-const listPages = (dir: string, prefix = ''): string[] => {
+export const listPages = (dir: string, prefix = ''): string[] => {
     return fs.readdirSync(path.join(DEBUG_DIR, dir), {withFileTypes: true}).flatMap((entry) => {
         if (entry.isDirectory()) return listPages(path.join(dir, entry.name), path.join(prefix, entry.name));
         if (!entry.name.endsWith('.html') || path.join(prefix, entry.name) === 'index.html') return [];
@@ -37,7 +35,7 @@ const listPages = (dir: string, prefix = ''): string[] => {
     });
 };
 
-const readMeta = (href: string): Page => {
+export const readMeta = (href: string): Page => {
     const html = fs.readFileSync(path.join(DEBUG_DIR, href), 'utf8');
     const meta: Record<string, string> = {};
     for (const [, name, content] of html.matchAll(/<meta\s+name="([^"]+)"\s+content="([^"]*)"/g)) {
@@ -85,20 +83,10 @@ ${pages.map(renderPage).join('\n')}
 export const renderCatalog = (): string => {
     const pages = listPages('.').map(readMeta).sort((a, b) => a.name.localeCompare(b.name));
     const described = pages.filter((p) => p.description && p.role);
-    const unreviewed = pages.filter((p) => !p.description || !p.role);
 
+    // Every role keeps its section even at zero pages, so the catalog always shows the full vocabulary.
     const sections = (Object.keys(ROLES) as Role[])
-        .map((role) => [role, described.filter((p) => p.role === role)] as const)
-        .filter(([, group]) => group.length > 0)
-        .map(([role, group]) => renderSection(role, group));
-
-    const unreviewedSection = `  <section class="unreviewed">
-    <h2>Unreviewed <span class="count">${unreviewed.length}</span></h2>
-    <p class="blurb">No <code>description</code>/<code>mapbox:role</code> yet.</p>
-    <ul class="bare">
-${unreviewed.map((p) => `      <li><a href="${esc(p.href)}">${esc(p.name)}</a></li>`).join('\n')}
-    </ul>
-  </section>`;
+        .map((role) => renderSection(role, described.filter((p) => p.role === role)));
 
     return `<!DOCTYPE html>
 <!-- Generated on request by the debug server; not committed. Add meta tags to the debug page itself. -->
@@ -127,9 +115,6 @@ ${unreviewed.map((p) => `      <li><a href="${esc(p.href)}">${esc(p.name)}</a></
   .pages a { color: var(--accent); text-decoration: none; font-weight: 600; }
   .pages a:hover { text-decoration: underline; }
   .pages p { color: var(--dim); font-size: 13px; }
-  .bare { columns: 3; column-gap: 24px; font-size: 13px; padding-top: 6px; }
-  .bare a { color: var(--dim); text-decoration: none; }
-  .bare a:hover { color: var(--accent); }
   .badge { display: inline-block; padding: 0 6px; border-radius: 3px; font-size: 11px; font-weight: 600;
            vertical-align: 1px; text-decoration: none; background: var(--line); color: var(--dim); }
   .badge.rt { background: #d6f0e0; color: #14663a; }
@@ -140,7 +125,6 @@ ${unreviewed.map((p) => `      <li><a href="${esc(p.href)}">${esc(p.name)}</a></
 <h1>Debug pages <span class="count">${pages.length}</span></h1>
 <p class="lede">Generated from the <code>description</code> and <code>mapbox:*</code> meta tags in each page — edit a page and reload this one.</p>
 ${sections.join('\n')}
-${unreviewedSection}
 </body>
 </html>
 `;
