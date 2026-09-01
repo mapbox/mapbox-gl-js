@@ -1,0 +1,107 @@
+{
+  "version": 8,
+  "_comment": "Checks that an SDF image in text-field is not measured. 'W' is followed by three dot.sdf sections, none of which any renderer draws; its collision box therefore covers the 'W' only and leaves room for 'NEXT' beside it. Before the fix the box was widened by the three dropped images and hid 'NEXT'. Expected: 'W' and 'NEXT' rendered, no dot drawn.",
+  "metadata": {
+    "test": {
+      "spriteFormat": "raster",
+      "width": 256,
+      "height": 96
+    }
+  },
+  "center": [
+    5.0,
+    -3.0
+  ],
+  "zoom": 4,
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "label": "W",
+              "sdf": true
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                4.0,
+                -3.0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "label": "NEXT"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                6.0,
+                -3.0
+              ]
+            }
+          }
+        ]
+      },
+      "buffer": 0
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": [
+          "case",
+          [
+            "has",
+            "sdf"
+          ],
+          [
+            "format",
+            [
+              "get",
+              "label"
+            ],
+            [
+              "image",
+              "dot.sdf"
+            ],
+            [
+              "image",
+              "dot.sdf"
+            ],
+            [
+              "image",
+              "dot.sdf"
+            ]
+          ],
+          [
+            "get",
+            "label"
+          ]
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 16
+      }
+    }
+  ]
+}

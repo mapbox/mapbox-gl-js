@@ -188,6 +188,39 @@ class TaggedString {
     }
 }
 
+function isUnsupportedImageSection(section: SectionOptions, imagePositions: ImagePositionMap): boolean {
+    if (!section.image) return false;
+    const imagePosition = imagePositions.get(section.image.toString());
+    return !!imagePosition && imagePosition.sdf;
+}
+
+// Returns early when there is nothing to drop, so a text without an SDF image is left untouched.
+//
+// The section options stay in place. That keeps the section indices of the surviving characters valid, and
+// those indices are how the rest of layout reaches the original format sections -- per-section text colours
+// are looked up through them, so renumbering would mis-colour text rather than merely shift indices.
+function dropUnsupportedImages(input: TaggedString, imagePositions: ImagePositionMap) {
+    // Droppability is a property of a section, so it is resolved per section rather than per character: a text
+    // without image sections then costs one pass over a handful of options and touches no character at all.
+    const firstDropped = input.sections.findIndex((section) => isUnsupportedImageSection(section, imagePositions));
+    if (firstDropped === -1) return;
+
+    warnOnce(`SDF image ${input.sections[firstDropped].image.id.name} is not supported in text-field`);
+
+    const droppedSections = input.sections.map((section) => isUnsupportedImageSection(section, imagePositions));
+
+    let text = "";
+    const sectionIndex: Array<number> = [];
+    for (let index = 0; index < input.length(); index++) {
+        const section = input.sectionIndex[index];
+        if (droppedSections[section]) continue;
+        text += input.text[index];
+        sectionIndex.push(section);
+    }
+    input.text = text;
+    input.sectionIndex = sectionIndex;
+}
+
 function breakLines(input: TaggedString, lineBreakPoints: Array<number>): Array<TaggedString> {
     const lines: TaggedString[] = [];
     const text = input.text;
@@ -228,6 +261,21 @@ function shapeText(
         logicalInput.verticalizePunctuation(allowVerticalPlacement);
     }
 
+    // Identity stays on the authored text: `shaping.text` feeds the murmur3 symbol key and the
+    // text-repeat-distance dedupe, and gl-native keys those off the unfiltered string. What follows changes
+    // what gets measured, not which labels count as the same label.
+    const shapingText = logicalInput.toString();
+
+    // An SDF image in `text-field` is never drawn, so it must not be measured either. Dropping it ahead of the
+    // line breaking and of TaggedString#trim is what makes break decisions and edge trimming see the string
+    // that will actually be drawn -- a trailing space in front of a dropped image would otherwise survive.
+    dropUnsupportedImages(logicalInput, imagePositions);
+
+    // A `text-field` of nothing but an SDF image is left with no characters, which the BiDi processing cannot
+    // take: ICU's ubidi_setLine rejects an empty range. Undefined is what the callers already expect for text
+    // nothing is drawn for.
+    if (logicalInput.length() === 0) return undefined;
+
     let lines: Array<TaggedString> = [];
 
     const lineBreaks = determineLineBreaks(logicalInput, spacing, maxWidth, glyphMap, imagePositions, layoutTextSize, textSizeFactor);
@@ -262,7 +310,7 @@ function shapeText(
     const positionedLines: PositionedLine[] = [];
     const shaping = {
         positionedLines,
-        text: logicalInput.toString(),
+        text: shapingText,
         top: translate[1],
         bottom: translate[1],
         left: translate[0],
