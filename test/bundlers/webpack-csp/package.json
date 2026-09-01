@@ -9,7 +9,7 @@
     "@babel/core": "^8.0.1",
     "@babel/preset-env": "^8.0.2",
     "babel-loader": "^10.0.0",
-    "webpack": "^5.109.2",
+    "webpack": "^5.110.1",
     "webpack-cli": "^7.2.2",
     "worker-loader": "^3.0.6"
   },
