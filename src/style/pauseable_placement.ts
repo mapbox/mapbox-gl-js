@@ -1,6 +1,5 @@
 import browser from '../util/browser';
 import {Placement} from '../symbol/placement';
-import {algorithms} from '../symbol/placement_algorithms';
 import {makeFQID} from '../util/fqid';
 
 import type Transform from '../geo/transform';
@@ -8,10 +7,12 @@ import type {TypedStyleLayer} from './style_layer/typed_style_layer';
 import type SymbolStyleLayer from './style_layer/symbol_style_layer';
 import type Tile from '../source/tile';
 import type {BucketPart} from '../symbol/placement';
-import type {PlacementAlgorithmName} from '../symbol/placement_algorithms';
 import type {FogState} from './fog_helpers';
 import type BuildingIndex from '../source/building_index';
 import type {CollisionDetector} from '../symbol/placement_algorithm';
+
+// Frame time budget (ms) for incremental placement before pausing to the next frame.
+const COLLISION_TIME_BUDGET_MS = 2;
 
 class LayerPlacement {
     _sortAcrossTiles: boolean;
@@ -86,10 +87,8 @@ class PauseablePlacement {
         prevPlacement?: Placement,
         fogState?: FogState | null,
         buildingIndex?: BuildingIndex | null,
-        placementAlgorithmName?: PlacementAlgorithmName,
     ): PauseablePlacement {
-        const algorithm = algorithms[placementAlgorithmName || 'default'];
-        this.placement = new Placement(transform, fadeDuration, crossSourceCollisions, algorithm, prevPlacement, fogState, buildingIndex, this._retiredCI);
+        this.placement = new Placement(transform, fadeDuration, crossSourceCollisions, prevPlacement, fogState, buildingIndex, this._retiredCI);
         this._retiredCI = null;
         this._currentPlacementIndex = order.length - 1;
         this._forceFullPlacement = false;
@@ -128,7 +127,7 @@ class PauseablePlacement {
 
         const shouldPausePlacement = () => {
             if (this.isFullPlacementRequested() || this._fadeDuration === 0) return false;
-            return this.placement.algorithm.shouldPause(browser.now() - startTime);
+            return (browser.now() - startTime) > COLLISION_TIME_BUDGET_MS;
         };
 
         while (this._currentPlacementIndex >= 0) {

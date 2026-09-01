@@ -3301,7 +3301,7 @@ describe('Style#_updatePlacement', () => {
         expect(continuePlacementSpy).not.toHaveBeenCalled();
     });
 
-    test('skips the legacy pipeline entirely when enableGlobalPlacement is true', async () => {
+    test('skips the legacy pipeline entirely when placementAlgorithm is \'global\'', async () => {
         const map = new StubMap();
         // @ts-expect-error - painter is not part of StubMap but required for _updatePlacement
         map.painter = {scaleFactor: 1};
@@ -3333,7 +3333,7 @@ describe('Style#_updatePlacement', () => {
         const addLayerSpy = vi.spyOn(style.crossTileSymbolIndex, 'addLayer');
         const placeSymbolsSpy = vi.spyOn(style.getLayer('symbol'), 'placeSymbols');
 
-        const result = style._updatePlacement(tr, false, 0, false, replacementSource, undefined, true);
+        const result = style._updatePlacement(tr, false, 0, false, replacementSource, 'global');
 
         // The legacy CrossTileSymbolIndex/Placement pipeline never runs...
         expect(addLayerSpy).not.toHaveBeenCalled();

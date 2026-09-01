@@ -61,7 +61,7 @@ import type {AJAXError, RequestTransformFunction} from '../util/ajax';
 import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image';
-import type {StyleOptions, StyleSetterOptions, AnyLayer, FeatureSelector, SourceSelector, QueryRenderedFeaturesParams, QueryRenderedFeaturesetParams, LayerProperty} from '../style/style';
+import type {StyleOptions, StyleSetterOptions, AnyLayer, FeatureSelector, SourceSelector, QueryRenderedFeaturesParams, QueryRenderedFeaturesetParams, LayerProperty, PlacementAlgorithmName} from '../style/style';
 import type {FontstackCompositing} from '../style/glyph_loader';
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type {ScrollZoomHandlerOptions} from './handler/scroll_zoom';
@@ -110,7 +110,6 @@ import type {CustomSourceInterface} from '../source/custom_source';
 import type {CanvasSourceSpecification} from '../source/canvas_source';
 import type {RasterQueryParameters, RasterQueryResult} from '../source/raster_array_tile_source';
 import type {IndoorTileOptions} from '../style/indoor_data';
-import type {PlacementAlgorithmName} from '../symbol/placement_algorithms';
 
 export type ControlPosition = 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left';
 
@@ -224,7 +223,6 @@ export type MapOptions = {
     pitchRotateKey?: PitchRotateKey;
     animationFrameProvider?: AnimationFrameProvider;
     emissiveColorPrecision?: EmissiveColorPrecision;
-    enableGlobalPlacement?: boolean;
 };
 
 const CSS_MATRIX_RE = /matrix.*\((.+)\)/;
@@ -425,8 +423,8 @@ const defaultOptions = {
  * When `'approximate'` (the default), emissive color is approximated during compositing.
  * When `'exact'`, emissive color is fully preserved. This has a performance impact due to higher texture memory usage (4 channels instead of 1).
  * This option is experimental and may change in future releases.
- * @param {boolean} [options.enableGlobalPlacement=false] If `true`, symbols are placed by the new global placement pipeline instead of the legacy one.
- * This option is experimental, incomplete, and may change in future releases.
+ * @param {PlacementAlgorithmName} [options.placementAlgorithm='default'] Selects the symbol placement pipeline. `'global'` uses the new whole-frame placement pipeline instead of the legacy per-tile one.
+ * The `'global'` value is experimental, incomplete, and may change in future releases.
  * @param {ProjectionSpecification} [options.projection='mercator'] The [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) the map should be rendered in.
  * Supported projections are:
  * * [Albers](https://en.wikipedia.org/wiki/Albers_projection) equal-area conic projection as `albers`
@@ -519,7 +517,6 @@ export class Map extends Camera {
     _shouldCheckAccess: boolean;
     _fadeDuration: number;
     _placementAlgorithm: PlacementAlgorithmName;
-    _enableGlobalPlacement: boolean;
     _crossSourceCollisions: boolean;
     _collectResourceTiming: boolean;
     _renderTaskQueue: TaskQueue;
@@ -659,7 +656,6 @@ export class Map extends Camera {
         this._refreshExpiredTiles = options.refreshExpiredTiles;
         this._fadeDuration = options.fadeDuration;
         this._placementAlgorithm = options.placementAlgorithm || 'default';
-        this._enableGlobalPlacement = options.enableGlobalPlacement === true;
         this._isInitialLoad = true;
         this._crossSourceCollisions = options.crossSourceCollisions;
         this._collectResourceTiming = options.collectResourceTiming;
@@ -4636,7 +4632,7 @@ export class Map extends Camera {
         }
 
         if (this.style) {
-            this._placementDirty = this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions, this.painter.replacementSource, this._placementAlgorithm, this._enableGlobalPlacement);
+            this._placementDirty = this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions, this.painter.replacementSource, this._placementAlgorithm);
         }
 
         // Actually draw - unless we're waiting on draping to load

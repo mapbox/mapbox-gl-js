@@ -122,7 +122,6 @@ import type {vec3} from 'gl-matrix';
 import type {LightProps as Directional} from '../../3d-style/style/directional_light_properties';
 import type {LightProps as Ambient} from '../../3d-style/style/ambient_light_properties';
 import type {Placement} from '../symbol/placement';
-import type {PlacementAlgorithmName} from '../symbol/placement_algorithms';
 import type {Cancelable} from '../types/cancelable';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type {Validator, ValidationErrors} from './validate_style';
@@ -283,6 +282,8 @@ type FeaturesetSelector = {
 };
 
 export type LayerProperty = LayerBaseSpecification & PaintSpecification & LayoutSpecification;
+
+export type PlacementAlgorithmName = 'default' | 'global';
 
 const MAX_IMPORT_DEPTH = 5;
 const defaultTransition = {duration: 300, delay: 0};
@@ -4660,7 +4661,6 @@ class Style extends Evented<MapEvents> {
         crossSourceCollisions: boolean,
         replacementSource: ReplacementSource,
         placementAlgorithmName?: PlacementAlgorithmName,
-        enableGlobalPlacement?: boolean,
     ): boolean {
         if (!this.pauseablePlacement) {
             this.pauseablePlacement = new PauseablePlacement();
@@ -4672,9 +4672,10 @@ class Style extends Evented<MapEvents> {
         const layerTiles: Record<string, Tile[]> = {};
         const layerTilesInYOrder: Record<string, Tile[]> = {};
 
-        const layerOrder = enableGlobalPlacement ? [] : this._mergedOrder;
+        const useGlobalPlacement = placementAlgorithmName === 'global';
+        const layerOrder = useGlobalPlacement ? [] : this._mergedOrder;
 
-        if (enableGlobalPlacement) {
+        if (useGlobalPlacement) {
             this._driveGlobalPlacement(transform);
         }
 
@@ -4713,7 +4714,7 @@ class Style extends Evented<MapEvents> {
 
         if (this.pauseablePlacement.isFullPlacementRequested() || !this.pauseablePlacement.placement || newImmediatePlacementRequired || newNormalPlacementRequired) {
             const fogState = this.fog && transform.projection.supportsFog ? this.fog.state : null;
-            this.pauseablePlacement = this.pauseablePlacement.startNewPlacement(transform, layerOrder, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState, this._buildingIndex, placementAlgorithmName);
+            this.pauseablePlacement = this.pauseablePlacement.startNewPlacement(transform, layerOrder, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState, this._buildingIndex);
             if (this.map.painter) {
                 const raw = this.map.painter.maxFrontCutoffRawStart;
                 if (raw > 0) {

@@ -1064,7 +1064,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         const terrainElevation = transform.elevation;
 
         // Raises a box's anchor to the height the symbol is drawn at, mirroring
-        // CollisionIndex#placeCollisionBox / DefaultPlacementAlgorithm#updateBoxData.
+        // CollisionIndex#placeCollisionBox / Placement#placeLayerBucketPart's updateBoxData.
         const elevateAnchor = (box: SingleCollisionBox, instance: SymbolInstance, symbolZOffsetValue: number): {x: number; y: number; z: number; elevated: boolean} => {
             let boxElevation: number;
             if (this.elevationType === 'road') {

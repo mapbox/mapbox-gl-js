@@ -6,7 +6,6 @@ import {VectorTile} from '@mapbox/vector-tile';
 import {CollisionBoxArray} from '../../../src/data/array_types';
 import {performSymbolLayout, postRasterizationSymbolLayout, SymbolBucketConstants} from '../../../src/symbol/symbol_layout';
 import {Placement} from '../../../src/symbol/placement';
-import {DefaultPlacementAlgorithm} from '../../../src/symbol/placement_algorithms/default';
 import Transform from '../../../src/geo/transform';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import Tile from '../../../src/source/tile';
@@ -57,7 +56,7 @@ test('SymbolBucket', () => {
     const bucketB = bucketSetup();
     const projection = getProjection({name: 'mercator'});
     const options = {iconDependencies: {}, glyphDependencies: {}};
-    const placement = new Placement(transform, 0, true, new DefaultPlacementAlgorithm());
+    const placement = new Placement(transform, 0, true);
     const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
     const crossTileSymbolIndex = new CrossTileSymbolIndex();
     const painter = {transform: {projection}};
