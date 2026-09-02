@@ -89,13 +89,15 @@ class VertexBuffer {
             const attribIndex = program.getAttributeLocation(gl, member.name);
             if (attribIndex !== -1) {
                 const byteOffset = member.offset + (this.itemSize * (vertexOffset || 0));
-                // Use vertexAttribIPointer for integer types and vertexAttribPointer for float
-                if (member.type === 'Float32') {
+                // Floats and normalized integers are both read as floats in the shader, so they go
+                // through vertexAttribPointer. Plain integer types use vertexAttribIPointer.
+                if (member.type === 'Float32' || member.normalized) {
                     gl.vertexAttribPointer(
                         attribIndex,
                         member.components,
-                        gl.FLOAT,
-                        false,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                        gl[AttributeType[member.type]],
+                        !!member.normalized,
                         this.itemSize,
                         byteOffset
                     );

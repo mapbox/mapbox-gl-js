@@ -220,7 +220,7 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
         dynamicBuffers.push(mesh.colorBuffer);
     }
     if (mesh.normalBuffer) {
-        definesValues.push('HAS_ATTRIBUTE_a_normal_3f');
+        definesValues.push('HAS_ATTRIBUTE_a_normal_4n');
         dynamicBuffers.push(mesh.normalBuffer);
     }
 

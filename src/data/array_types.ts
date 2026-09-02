@@ -1204,6 +1204,38 @@ register(StructArrayLayout1ui2, 'StructArrayLayout1ui2');
 
 /**
  * Implementation of the StructArray layout:
+ * [0]: Int8[4]
+ *
+ * @private
+ */
+class StructArrayLayout4b4 extends StructArray implements IStructArrayLayout {
+
+    override _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.int8 = new Int8Array(this.arrayBuffer);
+    }
+
+    override emplaceBack(v0: number, v1: number, v2: number, v3: number): number {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1, v2, v3);
+    }
+
+    override emplace(i: number, v0: number, v1: number, v2: number, v3: number): number {
+        const o1 = i * 4;
+        this.int8[o1 + 0] = v0;
+        this.int8[o1 + 1] = v1;
+        this.int8[o1 + 2] = v2;
+        this.int8[o1 + 3] = v3;
+        return i;
+    }
+}
+
+StructArrayLayout4b4.prototype.bytesPerElement = 4;
+register(StructArrayLayout4b4, 'StructArrayLayout4b4');
+
+/**
+ * Implementation of the StructArray layout:
  * [0]: Float32[16]
  *
  * @private
@@ -1576,6 +1608,7 @@ export {
     StructArrayLayout2f8,
     StructArrayLayout1ul3ui12,
     StructArrayLayout1ui2,
+    StructArrayLayout4b4,
     StructArrayLayout16f64,
     StructArrayLayout1i2,
     StructArrayLayout1ub1,
@@ -1629,7 +1662,8 @@ export {
     StructArrayLayout3f12 as Color3fLayoutArray,
     StructArrayLayout4f16 as Color4fLayoutArray,
     StructArrayLayout2f8 as TexcoordLayoutArray,
-    StructArrayLayout3f12 as NormalLayoutArray,
+    StructArrayLayout2ui4 as TexcoordNormalizedLayoutArray,
+    StructArrayLayout4b4 as NormalLayoutArray,
     StructArrayLayout16f64 as InstanceVertexArray,
     StructArrayLayout2ui4 as FeatureVertexArray,
     StructArrayLayout1i2 as ParticleIndexLayoutArray,

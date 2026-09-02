@@ -2,7 +2,7 @@ import LngLat from '../../src/geo/lng_lat';
 import Texture from '../../src/render/texture';
 import {Aabb} from '../../src/util/primitives';
 import {mat4, vec4} from 'gl-matrix';
-import {modelAttributes, normalAttributes, texcoordAttributes, color3fAttributes, color4fAttributes, featureAttributes} from './model_attributes';
+import {modelAttributes, normalAttributes, texcoordAttributes, texcoordNormalizedAttributes, color3fAttributes, color4fAttributes, featureAttributes} from './model_attributes';
 import SegmentVector from '../../src/data/segment';
 import {globeToMercatorTransition} from '../../src/geo/projection/globe_util';
 import {number as interpolate} from '../../src/style-spec/util/interpolate';
@@ -11,7 +11,7 @@ import {rotationScaleYZFlipMatrix, getBoxBottomFace, rotationFor3Points, convert
 import {degToRad} from '../../src/util/util';
 
 import type {StructArray} from '../../src/util/struct_array';
-import type {ModelLayoutArray, TriangleIndexArray, NormalLayoutArray, TexcoordLayoutArray, FeatureVertexArray} from '../../src/data/array_types';
+import type {ModelLayoutArray, TriangleIndexArray, NormalLayoutArray, TexcoordLayoutArray, TexcoordNormalizedLayoutArray, FeatureVertexArray} from '../../src/data/array_types';
 import type Color from '../../src/style-spec/util/color';
 import type {vec2, vec3, quat} from 'gl-matrix';
 import type Context from '../../src/gl/context';
@@ -111,7 +111,7 @@ export type Mesh = {
     vertexBuffer: VertexBuffer;
     normalArray: NormalLayoutArray;
     normalBuffer: VertexBuffer;
-    texcoordArray: TexcoordLayoutArray;
+    texcoordArray: TexcoordLayoutArray | TexcoordNormalizedLayoutArray;
     texcoordBuffer: VertexBuffer;
     colorArray: StructArray;
     colorBuffer: VertexBuffer;
@@ -434,7 +434,8 @@ export function uploadMesh(mesh: Mesh, context: Context, useSingleChannelOcclusi
         mesh.normalBuffer = context.createVertexBuffer(mesh.normalArray, normalAttributes.members, false, true);
     }
     if (mesh.texcoordArray) {
-        mesh.texcoordBuffer = context.createVertexBuffer(mesh.texcoordArray, texcoordAttributes.members, false, true);
+        const uvAttributes = mesh.texcoordArray.bytesPerElement === 8 ? texcoordAttributes : texcoordNormalizedAttributes;
+        mesh.texcoordBuffer = context.createVertexBuffer(mesh.texcoordArray, uvAttributes.members, false, true);
     }
     if (mesh.colorArray) {
         const colorAttributes = mesh.colorArray.bytesPerElement === 12 ? color3fAttributes : color4fAttributes;

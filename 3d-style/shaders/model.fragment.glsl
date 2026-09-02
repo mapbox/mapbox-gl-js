@@ -37,12 +37,12 @@ in float v_depth_shadows;
 uniform vec4 u_occlusionTextureTransform;
 #endif
 
-#pragma mapbox: define-attribute highp vec3 normal_3f
+#pragma mapbox: define-attribute highp vec4 normal_4n
 #pragma mapbox: define-attribute highp vec3 color_3f
 #pragma mapbox: define-attribute highp vec4 color_4f
 #pragma mapbox: define-attribute highp vec2 uv_2f
 
-#pragma mapbox: initialize-attribute highp vec3 normal_3f
+#pragma mapbox: initialize-attribute highp vec4 normal_4n
 #pragma mapbox: initialize-attribute highp vec3 color_3f
 #pragma mapbox: initialize-attribute highp vec4 color_4f
 #pragma mapbox: initialize-attribute highp vec2 uv_2f
@@ -243,8 +243,8 @@ highp mat3 cotangentFrame(highp vec3 N, highp vec3 p, highp vec2 uv ) {
 
 highp vec3 getNormal(){
     highp vec3 n;
-#ifdef HAS_ATTRIBUTE_a_normal_3f
-    n = normalize(normal_3f);
+#ifdef HAS_ATTRIBUTE_a_normal_4n
+    n = normalize(normal_4n.xyz);
 #else
     // Workaround for Adreno GPUs not able to do dFdx( v_position_height )
     // three.js/.../normal_fragment_begin.glsl.js

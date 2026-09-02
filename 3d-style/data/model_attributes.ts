@@ -18,8 +18,14 @@ export const texcoordAttributes: StructArrayLayout = createLayout([
     {name: 'a_uv_2f',  components: 2, type: 'Float32'}
 ]);
 
+// Used instead of texcoordAttributes when the glTF accessor is already normalized. Coordinates
+// that are not normalized may fall outside [0, 1] and have to stay float.
+export const texcoordNormalizedAttributes: StructArrayLayout = createLayout([
+    {name: 'a_uv_2f',  components: 2, type: 'Uint16', normalized: true}
+]);
+
 export const normalAttributes: StructArrayLayout = createLayout([
-    {name: 'a_normal_3f',  components: 3, type: 'Float32'}
+    {name: 'a_normal_4n',  components: 4, type: 'Int8', normalized: true}
 ]);
 
 export const instanceAttributes: StructArrayLayout = createLayout([

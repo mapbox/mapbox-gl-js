@@ -8,6 +8,7 @@ import {TriangleIndexArray,
     ModelLayoutArray,
     NormalLayoutArray,
     TexcoordLayoutArray,
+    TexcoordNormalizedLayoutArray,
     Color3fLayoutArray,
     Color4fLayoutArray,
     FeatureVertexArray
@@ -21,7 +22,6 @@ import {ModelBVH} from './model_bvh';
 import type {vec2} from 'gl-matrix';
 import type {Class} from '../../src/types/class';
 import type {Footprint} from '../util/conflation';
-import type {StructArray} from '../../src/util/struct_array';
 import type {TextureImage} from '../../src/render/texture';
 import type {GLTF, GLTFNode, GLTFAccessor, GLTFPrimitive} from '../util/loaders';
 import type {Mesh, ModelNode, Material, MaterialDescription, ModelTexture, Sampler, AreaLight, PbrMetallicRoughness} from '../data/model';
@@ -151,22 +151,46 @@ function setFeatureData(gltf: GLTF, accessor: GLTFAccessor, swapHalves: boolean,
     }
 }
 
-function setArrayData(gltf: GLTF, accessor: GLTFAccessor, array: StructArray, buffer: ArrayBufferView) {
+// Copies one accessor into a destination view. Normalized destinations hold floats in [0, 1] /
+// [-1, 1]; raw destinations keep the source's integers and let the vertex fetch normalize them.
+function setArrayData(gltf: GLTF, accessor: GLTFAccessor, dest: Float32Array | Uint16Array, buffer: ArrayLike<number>, normalize: boolean = true) {
+    const ArrayType = GLTF_TO_ARRAY_TYPE[accessor.componentType];
+    const components = GLTF_COMPONENTS[accessor.type];
+    assert(dest.length === accessor.count * components);
+
+    const norm = normalize ? getNormalizedScale(ArrayType) : 1;
+
+    const bufferView = gltf.json.bufferViews[accessor.bufferView];
+
+    const numElements = bufferView.byteStride ? bufferView.byteStride / ArrayType.BYTES_PER_ELEMENT : components;
+    const total = accessor.count * numElements;
+
+    for (let i = 0, count = 0;  i < total; i += numElements, count += components) {
+        for (let j = 0; j < components; j++) {
+            dest[count + j] = buffer[i + j] * norm;
+        }
+    }
+}
+
+// Quantizes normalized values onto signed bytes in [-127, 127]. Rounding and clamping are explicit
+// because Int8Array assignment truncates and wraps. The destination is wider than the source, and
+// the padding component the vertex fetch requires is left at zero.
+function setQuantizedArrayData(gltf: GLTF, accessor: GLTFAccessor, dest: Int8Array, buffer: ArrayLike<number>) {
     const ArrayType = GLTF_TO_ARRAY_TYPE[accessor.componentType];
     const norm = getNormalizedScale(ArrayType);
 
     const bufferView = gltf.json.bufferViews[accessor.bufferView];
 
-    const numElements = bufferView.byteStride ? bufferView.byteStride / ArrayType.BYTES_PER_ELEMENT : GLTF_COMPONENTS[accessor.type];
+    const srcComponents = GLTF_COMPONENTS[accessor.type];
+    const components = dest.length / accessor.count;
 
-    const float32Array = (array).float32;
-
-    const components = float32Array.length / array.capacity;
+    const numElements = bufferView.byteStride ? bufferView.byteStride / ArrayType.BYTES_PER_ELEMENT : srcComponents;
     const total = accessor.count * numElements;
 
     for (let i = 0, count = 0;  i < total; i += numElements, count += components) {
-        for (let j = 0; j < components; j++) {
-            float32Array[count + j] = buffer[i + j] * norm;
+        for (let j = 0; j < srcComponents; j++) {
+            const value = buffer[i + j] * norm;
+            dest[count + j] = Math.round(Math.min(1, Math.max(-1, value)) * 127);
         }
     }
 }
@@ -208,7 +232,7 @@ function convertPrimitive(primitive: GLTFPrimitive, gltf: GLTF, textures: Array<
         mesh.colorArray = numElements === 3 ? new Color3fLayoutArray() : new Color4fLayoutArray();
 
         mesh.colorArray.resizeExact(colorAccessor.count);
-        setArrayData(gltf, colorAccessor, mesh.colorArray, colorArrayBuffer);
+        setArrayData(gltf, colorAccessor, mesh.colorArray.float32, colorArrayBuffer);
     }
 
     // normals
@@ -219,18 +243,23 @@ function convertPrimitive(primitive: GLTFPrimitive, gltf: GLTF, textures: Array<
 
         mesh.normalArray.resizeExact(normalAccessor.count);
         const normalArrayBuffer = getBufferData(gltf, normalAccessor);
-        setArrayData(gltf, normalAccessor, mesh.normalArray, normalArrayBuffer);
+        setQuantizedArrayData(gltf, normalAccessor, mesh.normalArray.int8, normalArrayBuffer);
     }
 
     // texcoord
     if (attributeMap.TEXCOORD_0 !== undefined && textures.length > 0) {
-        mesh.texcoordArray = new TexcoordLayoutArray();
-
         const texcoordAccessor = gltf.json.accessors[attributeMap.TEXCOORD_0];
-
-        mesh.texcoordArray.resizeExact(texcoordAccessor.count);
         const texcoordArrayBuffer = getBufferData(gltf, texcoordAccessor);
-        setArrayData(gltf, texcoordAccessor, mesh.texcoordArray, texcoordArrayBuffer);
+
+        if (texcoordAccessor.normalized && GLTF_TO_ARRAY_TYPE[texcoordAccessor.componentType] === Uint16Array) {
+            mesh.texcoordArray = new TexcoordNormalizedLayoutArray();
+            mesh.texcoordArray.resizeExact(texcoordAccessor.count);
+            setArrayData(gltf, texcoordAccessor, mesh.texcoordArray.uint16, texcoordArrayBuffer, false);
+        } else {
+            mesh.texcoordArray = new TexcoordLayoutArray();
+            mesh.texcoordArray.resizeExact(texcoordAccessor.count);
+            setArrayData(gltf, texcoordAccessor, mesh.texcoordArray.float32, texcoordArrayBuffer);
+        }
     }
 
     const isMeshoptCompressed = !!(gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('EXT_meshopt_compression'));

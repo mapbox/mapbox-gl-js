@@ -4,7 +4,7 @@
 
 in vec3 a_pos_3f;
 
-#pragma mapbox: define-attribute highp vec3 normal_3f
+#pragma mapbox: define-attribute highp vec4 normal_4n
 #pragma mapbox: define-attribute highp vec2 uv_2f
 #pragma mapbox: define-attribute highp vec3 color_3f
 #pragma mapbox: define-attribute highp vec4 color_4f
@@ -137,7 +137,7 @@ vec4 resolveModelEmissiveGradient(ModelPartStyle style, float height) {
 #endif
 
 void main() {
-    #pragma mapbox: initialize-attribute highp vec3 normal_3f
+    #pragma mapbox: initialize-attribute highp vec4 normal_4n
     #pragma mapbox: initialize-attribute highp vec2 uv_2f
     #pragma mapbox: initialize-attribute highp vec3 color_3f
     #pragma mapbox: initialize-attribute highp vec4 color_4f
@@ -244,17 +244,17 @@ void main() {
 
 
 
-#ifdef HAS_ATTRIBUTE_a_normal_3f
+#ifdef HAS_ATTRIBUTE_a_normal_4n
 #ifdef MODEL_POSITION_ON_GPU
     float x_squared_scale = dot(rs[0], rs[0]);
     float y_squared_scale = dot(rs[1], rs[1]);
     float z_squared_scale = dot(rs[2], rs[2]);
     // https://lxjk.github.io/2017/10/01/Stop-Using-Normal-Matrix.html
     vec3 squared_scale = vec3(x_squared_scale, y_squared_scale, z_squared_scale);
-    normal_3f = rs * ((u_lighting_matrix * vec4(normal_3f, 0.0)).xyz / squared_scale);
-    normal_3f = normalize(normal_3f);
+    normal_4n = vec4(rs * ((u_lighting_matrix * vec4(normal_4n.xyz, 0.0)).xyz / squared_scale), 0.0);
+    normal_4n = normalize(normal_4n);
 #else
-    normal_3f = vec3(normal_matrix * vec4(normal_3f, 0));
+    normal_4n = vec4((normal_matrix * vec4(normal_4n.xyz, 0)).xyz, 0.0);
 #endif
 #endif
 
@@ -267,17 +267,17 @@ void main() {
 #ifdef RENDER_SHADOWS
     vec4 shadow_pos = u_node_matrix * vec4(local_pos, 1.0);
 #ifdef NORMAL_OFFSET
-#ifdef HAS_ATTRIBUTE_a_normal_3f
+#ifdef HAS_ATTRIBUTE_a_normal_4n
 #ifdef MODEL_POSITION_ON_GPU
     // flip the xy to bring it to the same, wrong, fill extrusion normal orientation toward inside.
     // See the explanation in shadow_normal_offset.
-    vec3 offset = shadow_normal_offset(vec3(-normal_3f.xy, normal_3f.z));
+    vec3 offset = shadow_normal_offset(vec3(-normal_4n.xy, normal_4n.z));
     shadow_pos.xyz += offset * shadow_normal_offset_multiplier0();
 #else
-    vec3 offset = shadow_normal_offset_model(normal_3f);
+    vec3 offset = shadow_normal_offset_model(normal_4n.xyz);
     shadow_pos.xyz += offset * shadow_normal_offset_multiplier0();
 #endif
-#endif // HAS_ATTRIBUTE_a_normal_3f
+#endif // HAS_ATTRIBUTE_a_normal_4n
 #endif // NORMAL_OFFSET
     v_pos_light_view_0 = u_light_matrix_0 * shadow_pos;
     v_pos_light_view_1 = u_light_matrix_1 * shadow_pos;

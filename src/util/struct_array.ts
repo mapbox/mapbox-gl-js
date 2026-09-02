@@ -56,6 +56,7 @@ export type StructArrayMember = {
     type: ViewType;
     components: number;
     offset: number;
+    normalized?: boolean;
 };
 
 export type StructArrayLayout = {
@@ -270,6 +271,7 @@ function createLayout(
         name: string;
         type: ViewType;
         readonly components?: number;
+        readonly normalized?: boolean;
     }>,
     alignment: number = 1,
 ): StructArrayLayout {
@@ -290,6 +292,7 @@ function createLayout(
             type: member.type,
             components,
             offset: memberOffset,
+            normalized: member.normalized,
         };
     });
 
