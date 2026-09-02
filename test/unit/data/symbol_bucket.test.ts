@@ -7,8 +7,12 @@ import {CollisionBoxArray} from '../../../src/data/array_types';
 import {performSymbolLayout, postRasterizationSymbolLayout, SymbolBucketConstants} from '../../../src/symbol/symbol_layout';
 import {Placement} from '../../../src/symbol/placement';
 import Transform from '../../../src/geo/transform';
-import {OverscaledTileID} from '../../../src/source/tile_id';
+import {OverscaledTileID, CanonicalTileID, UnwrappedTileID} from '../../../src/source/tile_id';
 import Tile from '../../../src/source/tile';
+import Point from '@mapbox/point-geometry';
+import TriangleGridIndex from '../../../src/util/triangle_grid_index';
+import {ReplacementSource} from '../../../3d-style/source/replacement_source';
+import {LayerTypeMask} from '../../../3d-style/util/conflation';
 import CrossTileSymbolIndex from '../../../src/symbol/cross_tile_symbol_index';
 import FeatureIndex from '../../../src/data/feature_index';
 import {createSymbolBucket} from '../../util/create_symbol_layer';
@@ -128,7 +132,7 @@ test('SymbolBucket#addToPlacement places a real symbol via the new placement pip
 
     globalPlacement.startPlacement(0, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, placementTransform, textPixelRatio, tile, null, new Map(), 0);
+    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, placementTransform, textPixelRatio, tile, null, new Map(), 0, null);
 
     // addToPlacement seeds the (until now empty) opacity buffer with one hidden entry per glyph
     // quad, since new placement never runs Placement#updateBucketOpacities to build it from scratch.
@@ -156,7 +160,7 @@ test('SymbolBucket#addToPlacement places a real symbol via the new placement pip
     showSymbolVariantSpy.mockClear();
     globalPlacement.startPlacement(1, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, placementTransform, textPixelRatio, tile, null, new Map(), 0);
+    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, placementTransform, textPixelRatio, tile, null, new Map(), 0, null);
     globalPlacement.finishSourceProcessing();
     globalPlacement.finishPlacementRun();
 
@@ -175,8 +179,73 @@ test('SymbolBucket#addToPlacement places a real symbol via the new placement pip
 const PLACE_LABEL_SOURCE_LAYER_INDEX = 3;
 const PLACE_LABEL_FEATURE_INDEX = 10;
 
-function bucketSetupWithPlacementProps(placementPriority?: unknown, placementGroup?: unknown): SymbolBucket {
-    const paint: Record<string, unknown> = {};
+// Builds a mock FootprintSource whose single footprint is a rectangle covering the whole tile,
+// mirroring the createFootprint/createMockSource helpers in replacement_source.test.ts. `order`
+// must be less than ReplacementOrderLandmark (and >= the checked styleLayerOrder) for
+// skipClipping to not skip it.
+function createFullTileFootprintSource(tileId: UnwrappedTileID, order: number) {
+    const min = new Point(0, 0);
+    const max = new Point(EXTENT, EXTENT);
+    const vertices = [
+        new Point(min.x, min.y),
+        new Point(max.x, min.y),
+        new Point(max.x, max.y),
+        new Point(min.x, max.y)
+    ];
+    const indices = [0, 1, 2, 2, 3, 0];
+    const grid = new TriangleGridIndex(vertices, indices, 6);
+    const footprint = {vertices, indices, grid, min, max};
+
+    return {
+        getSourceId: () => 'test-clip-source',
+        getFootprints: () => [{footprint, id: tileId}],
+        getOrder: () => order,
+        getClipMask: () => LayerTypeMask.Symbol,
+        getClipScope: () => []
+    };
+}
+
+test('SymbolBucket#addToPlacement hides a symbol clipped by a 3D-object/clip-layer footprint', () => {
+    const bucket = bucketSetup();
+    const projection = getProjection({name: 'mercator'});
+    const options = {iconDependencies: {}, glyphDependencies: {}};
+
+    bucket.populate([{feature}], options);
+    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
+
+    const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+    const placementTransform = new Transform();
+    placementTransform.resize(100, 100);
+
+    const posMatrix = getSymbolPlacementTileProjectionMatrix(tileID, projection, placementTransform, 'mercator');
+    const textPixelRatio = 512 / EXTENT;
+    const tile = {tileID, collisionBoxArray, latestFeatureIndex: null};
+
+    const replacementSource = new ReplacementSource();
+    replacementSource._setSources([createFullTileFootprintSource(new UnwrappedTileID(0, new CanonicalTileID(0, 0, 0)), 5)]);
+
+    const globalPlacement = new GlobalPlacement();
+    const idRangeAllocator = new SymbolIdRangeAllocator();
+    const showSymbolVariantSpy = vi.spyOn(bucket, 'showSymbolVariant');
+
+    globalPlacement.startPlacement(0, 100, 100);
+    globalPlacement.startSymbolSourceProcessing(bucket);
+    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, placementTransform, textPixelRatio, tile, null, new Map(), 0, {}, replacementSource);
+    globalPlacement.finishSourceProcessing();
+    globalPlacement.finishPlacementRun();
+
+    // The symbol's anchor falls inside the clip footprint, so no geometry was fed for it: it never
+    // gets a chance to place, unlike the equivalent unclipped run in the previous test.
+    expect(showSymbolVariantSpy).not.toHaveBeenCalled();
+    expect(bucket.placementVariantVisible).toEqual([false]);
+    for (let i = 0; i < bucket.text.opacityVertexArray.length; i++) {
+        expect(bucket.text.opacityVertexArray.uint32[i]).toEqual(0);
+    }
+});
+
+function bucketSetupWithPlacementProps(placementPriority?: number, placementGroup?: string): SymbolBucket {
+    const paint: Record<string, number> = {};
     if (placementPriority !== undefined) paint['placement-priority'] = placementPriority;
     if (placementGroup !== undefined) paint['placement-group'] = placementGroup;
     const layer = new SymbolStyleLayer({
@@ -224,7 +293,7 @@ function placeAndCapturePriority(bucket: SymbolBucket, groupOrders: Map<string, 
 
     globalPlacement.startPlacement(0, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, placementTransform, textPixelRatio, tile, null, groupOrders, styleLayerOrder, featureStates);
+    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, placementTransform, textPixelRatio, tile, null, groupOrders, styleLayerOrder, featureStates, null);
     globalPlacement.finishSourceProcessing();
     globalPlacement.finishPlacementRun();
 

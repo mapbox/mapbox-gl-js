@@ -4687,7 +4687,7 @@ class Style extends Evented<MapEvents> {
         const layerOrder = useGlobalPlacement ? [] : this._mergedOrder;
 
         if (useGlobalPlacement) {
-            this._driveGlobalPlacement(transform);
+            this._driveGlobalPlacement(transform, replacementSource);
         }
 
         for (const layerId of layerOrder) {
@@ -4764,8 +4764,8 @@ class Style extends Evented<MapEvents> {
                 const styleLayer = this._mergedLayers[layerId];
                 if (styleLayer.type !== 'symbol') continue;
                 if (styleLayer.visibility === 'none') continue;
-                const checkAgainstClipLayer = this.isLayerClipped(styleLayer);
-                this.placement.updateLayerOpacities(styleLayer, layerTiles[makeFQID(styleLayer.source, styleLayer.scope)], i, checkAgainstClipLayer ? replacementSource : null, showCollisionBoxes, this.map.painter.scaleFactor);
+                const isLayerClipped = this.isLayerClipped(styleLayer);
+                this.placement.updateLayerOpacities(styleLayer, layerTiles[makeFQID(styleLayer.source, styleLayer.scope)], i, isLayerClipped ? replacementSource : null, showCollisionBoxes, this.map.painter.scaleFactor);
             }
         }
 
@@ -4774,7 +4774,7 @@ class Style extends Evented<MapEvents> {
     }
 
     // Runs one global placement pass per frame, driving each symbol layer's placeSymbols() hook.
-    _driveGlobalPlacement(transform: Transform) {
+    _driveGlobalPlacement(transform: Transform, replacementSource: ReplacementSource) {
         if (transform.width === 0 || transform.height === 0) return;
 
         if (!this.globalPlacement) {
@@ -4807,7 +4807,8 @@ class Style extends Evented<MapEvents> {
             transform,
             buildingIndex: this._buildingIndex,
             fogState,
-            groupOrders
+            groupOrders,
+            replacementSource
         };
 
         for (let position = 0; position < this._mergedOrder.length; position++) {
@@ -4818,7 +4819,12 @@ class Style extends Evented<MapEvents> {
             if (!sourceCache) continue;
             const tiles = sourceCache.getRenderableIds(true).map((id) => sourceCache.getTileByID(id));
 
-            styleLayer.placeSymbols(placementParameters, tiles, position, sourceCache);
+            // region.order (baked into replacementSource ahead of this pass) is only comparable
+            // to this position when both share the same layer ordering -- true unless terrain
+            // draping reorders layers relative to _mergedOrder, a pre-existing quirk legacy
+            // placement is equally exposed to.
+            const checkAgainstClipLayer = this.isLayerClipped(styleLayer);
+            styleLayer.placeSymbols(placementParameters, tiles, position, sourceCache, checkAgainstClipLayer);
         }
 
         globalPlacement.finishPlacementRun();

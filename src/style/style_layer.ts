@@ -159,7 +159,7 @@ class StyleLayer extends Evented {
 
     // Feeds this layer's placeable symbols into the given global placement run. No-op for
     // non-symbol layers; overridden by SymbolStyleLayer.
-    placeSymbols(_parameters: SymbolPlacementParameters, _tiles: Array<Tile>, _styleLayerOrder: number, _sourceCache: SourceCache): void {}
+    placeSymbols(_parameters: SymbolPlacementParameters, _tiles: Array<Tile>, _styleLayerOrder: number, _sourceCache: SourceCache, _checkAgainstClipLayer: boolean): void {}
 
     isDraped(_sourceCache?: SourceCache): boolean {
         return !this.is3D(true) && drapedLayers.has(this.type);

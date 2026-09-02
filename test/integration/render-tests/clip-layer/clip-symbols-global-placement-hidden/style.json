@@ -1,0 +1,75 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "_comment": "Regression control for clip-symbols-global-placement: the clip layer is set to visibility: none, so under global placement neither symbol should be clipped -- both remain visible exactly as without a clip layer at all.",
+      "height": 128,
+      "width": 128,
+      "globalPlacement": true,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPS3D-1623"}
+      ]
+    }
+  },
+  "zoom": 1.5,
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "GeometryCollection",
+        "geometries": [
+          {
+            "type": "Point",
+            "coordinates": [0, 0]
+          },
+          {
+            "type": "Point",
+            "coordinates": [10, 10]
+          }
+        ]
+      }
+    },
+    "polygon": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [[[-5, -5], [-5, 5], [5, 5], [5, -5], [-5, -5]]]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "polygon",
+      "type": "fill",
+      "source": "polygon",
+      "paint": {
+        "fill-color": "rgba(0, 0, 255, 0.1)"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "points",
+      "layout": {
+        "icon-image": "rocket-12"
+      }
+    },
+    {
+      "id": "clip",
+      "type": "clip",
+      "source": "polygon",
+      "layout": {
+        "clip-layer-types": ["symbol"],
+        "visibility": "none"
+      }
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "_comment": "Minimal, non-colliding occlusion scene: a tall synthetic building occludes a point symbol behind it (dimmed to icon-occlusion-opacity) while a point in front stays fully visible. Deliberately avoids dense real POI data so there is no collision tie-breaking ambiguity between placement algorithms -- see the -global-placement sibling.",
+      "height": 256,
+      "width": 256,
+      "operations": [
+        ["waitFrameReady", 30]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "swiftshader", "reason": "skip - check swiftshader occlusion query support"}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "flaky due to occlusion/waitFrameReady"}
+      ]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 17.5,
+  "pitch": 60,
+  "bearing": 0,
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "building": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [[
+            [-0.0002, 0.0004],
+            [0.0002, 0.0004],
+            [0.0002, 0.0009],
+            [-0.0002, 0.0009],
+            [-0.0002, 0.0004]
+          ]]
+        }
+      }
+    },
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {"type": "Feature", "properties": {}, "geometry": {"type": "Point", "coordinates": [0, 0]}},
+          {"type": "Feature", "properties": {}, "geometry": {"type": "Point", "coordinates": [0, 0.0015]}}
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "lightgray"}
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "building",
+      "paint": {
+        "fill-extrusion-color": "white",
+        "fill-extrusion-height": 150
+      }
+    },
+    {
+      "id": "symbols",
+      "type": "symbol",
+      "source": "points",
+      "layout": {
+        "icon-image": "rocket-12",
+        "symbol-placement": "point"
+      },
+      "paint": {
+        "icon-occlusion-opacity": 0.15
+      }
+    }
+  ]
+}

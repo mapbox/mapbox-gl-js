@@ -53,7 +53,8 @@ import {tileCoordToECEF} from '../../geo/projection/globe_util';
 import {getProjection} from '../../geo/projection/index';
 import {mat4, vec3, vec4} from 'gl-matrix';
 import assert from '../../style-spec/util/assert';
-import {regionsEquals} from '../../../3d-style/source/replacement_source';
+import {regionsEquals, skipClipping, pointInFootprint, transformPointToTile} from '../../../3d-style/source/replacement_source';
+import {LayerTypeMask} from '../../../3d-style/util/conflation';
 import {clamp, warnOnce} from '../../util/util';
 import {makeFQID} from '../../util/fqid';
 import {xyTransformMat4} from '../../util/mat4';
@@ -1008,8 +1009,12 @@ class SymbolBucket implements Bucket, SymbolSource {
     // one-time warning), and symbols with neither an icon nor a text collision box are skipped
     // silently. `textPixelRatio` (tile.tileSize / EXTENT) converts tile-space offsets to CSS pixels,
     // matching the legacy collision index formula (see CollisionIndex#placeCollisionBox).
-    addToPlacement(globalPlacement: GlobalPlacement, idRangeAllocator: SymbolIdRangeAllocator, layerUid: number, posMatrix: mat4, transform: Transform, textPixelRatio: number, tile: Tile, fogState: FogState | null | undefined, groupOrders: PlacementGroupOrders, styleLayerOrder: number, featureStates: FeatureStates): void {
+    addToPlacement(globalPlacement: GlobalPlacement, idRangeAllocator: SymbolIdRangeAllocator, layerUid: number, posMatrix: mat4, transform: Transform, textPixelRatio: number, tile: Tile, fogState: FogState | null | undefined, groupOrders: PlacementGroupOrders, styleLayerOrder: number, featureStates: FeatureStates, replacementSource: ReplacementSource | null): void {
         if (this.symbolInstances.length === 0) return;
+
+        if (replacementSource) {
+            this.updateReplacement(tile.tileID, replacementSource);
+        }
 
         if (!this.collisionArrays) {
             if (!tile.collisionBoxArray) return;
@@ -1164,6 +1169,20 @@ class SymbolBucket implements Bucket, SymbolSource {
                 continue;
             }
 
+            // Hides a symbol whose anchor falls under a 3D building/landmark/clip-layer footprint,
+            // mirroring legacy Placement#updateBucketOpacities
+            // Unlike the old algorithm, a clipped instance feeds no geometry at all, so its
+            // collision-grid slot is freed for other symbols
+            let clipped = false;
+            for (const region of this.activeReplacements) {
+                if (skipClipping(region, styleLayerOrder, LayerTypeMask.Symbol, layer.scope)) continue;
+                if (region.min.x > instance.tileAnchorX || instance.tileAnchorX > region.max.x ||
+                    region.min.y > instance.tileAnchorY || instance.tileAnchorY > region.max.y) continue;
+                const p = transformPointToTile(instance.tileAnchorX, instance.tileAnchorY, tile.tileID.canonical, region.footprintTileId.canonical);
+                clipped = pointInFootprint(p, region.footprint);
+                if (clipped) break;
+            }
+
             const variantId: SymbolVariantId = {
                 symbolId: {styleLayerId: layerUid, symbolIdOrigin: SymbolIdOrigin.GENERATED, symbolId: rangeStart + index},
                 variantIdx: 0,
@@ -1196,7 +1215,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             // A symbol contributes its icon and/or text collision boxes as one variant. On globe no
             // geometry is fed, so the variant is dropped and a previously-visible symbol is hidden.
             globalPlacement.startSymbolVariantProcessing(variantId, priority, placementRules);
-            if (feedGeometry) {
+            if (feedGeometry && !clipped) {
                 const symbolZOffsetValue = needsFeatureForZOffset && feature ? symbolZOffsetProperty.evaluate(feature, {}) : constantSymbolZOffset;
                 addCollisionBox(collisionArrays.iconBox, instance, symbolZOffsetValue, () => this.getSymbolInstanceIconSize(iconZoomSize, zoom, instance.placedIconSymbolIndex));
                 addCollisionBox(collisionArrays.textBox, instance, symbolZOffsetValue, () => this.getSymbolInstanceTextSize(textZoomSize, instance, zoom, index));

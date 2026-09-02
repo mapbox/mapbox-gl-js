@@ -1,0 +1,78 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "_comment": "Same scene as occlusion/symbol-occlusion-building, but with global placement enabled. Checks that the depth-texture occlusion fade (icon-occlusion-opacity against a fill-extrusion building) still dims the occluded point the same way when GlobalPlacement -- not legacy Placement -- positions the symbols.",
+      "height": 256,
+      "width": 256,
+      "globalPlacement": true,
+      "operations": [
+        ["waitFrameReady", 30]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "Not yet implemented"}
+      ]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 17.5,
+  "pitch": 60,
+  "bearing": 0,
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "building": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [[
+            [-0.0002, 0.0004],
+            [0.0002, 0.0004],
+            [0.0002, 0.0009],
+            [-0.0002, 0.0009],
+            [-0.0002, 0.0004]
+          ]]
+        }
+      }
+    },
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {"type": "Feature", "properties": {}, "geometry": {"type": "Point", "coordinates": [0, 0]}},
+          {"type": "Feature", "properties": {}, "geometry": {"type": "Point", "coordinates": [0, 0.0015]}}
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "lightgray"}
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "building",
+      "paint": {
+        "fill-extrusion-color": "white",
+        "fill-extrusion-height": 150
+      }
+    },
+    {
+      "id": "symbols",
+      "type": "symbol",
+      "source": "points",
+      "layout": {
+        "icon-image": "rocket-12",
+        "symbol-placement": "point"
+      },
+      "paint": {
+        "icon-occlusion-opacity": 0.15
+      }
+    }
+  ]
+}

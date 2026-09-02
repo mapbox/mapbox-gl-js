@@ -3,6 +3,7 @@ import type BuildingIndex from '../source/building_index';
 import type {FogState} from '../style/fog_helpers';
 import type {GlobalPlacement} from './global_placement';
 import type {SymbolIdRangeAllocator} from './symbol_id_range_allocator';
+import type {ReplacementSource} from '../../3d-style/source/replacement_source';
 
 /**
  * Orders of the explicit placement groups, keyed by the `placement-group` layer's fqid
@@ -25,4 +26,5 @@ export type SymbolPlacementParameters = {
     buildingIndex: BuildingIndex;
     fogState: FogState | null;
     groupOrders: PlacementGroupOrders;
+    replacementSource: ReplacementSource;
 };
