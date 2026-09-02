@@ -45,7 +45,7 @@ export class LayerExpressionDependencies {
 
     _computeFilterDependencies(): ExpressionDependencies | null {
         const layer = this._layer;
-        if (!layer.type || layer.type === 'custom' || layer.type === 'background' || layer.type === 'sky' || layer.type === 'slot') return null;
+        if (!layer.type || layer.type === 'custom' || layer.type === 'background' || layer.type === 'sky' || layer.type === 'slot' || layer.type === 'placement-group') return null;
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const filterSpec = latest[`filter_${layer.type}`];

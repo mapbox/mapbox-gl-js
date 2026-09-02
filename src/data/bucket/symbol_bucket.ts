@@ -55,12 +55,14 @@ import {mat4, vec3, vec4} from 'gl-matrix';
 import assert from '../../style-spec/util/assert';
 import {regionsEquals} from '../../../3d-style/source/replacement_source';
 import {clamp, warnOnce} from '../../util/util';
+import {makeFQID} from '../../util/fqid';
 import {xyTransformMat4} from '../../util/mat4';
 import {Elevation} from '../../terrain/elevation';
 import {getFogOpacityAtTileCoord, FOG_SYMBOL_CLIPPING_THRESHOLD} from '../../style/fog_helpers';
 import {MIN_COLLISION_PERSPECTIVE_RATIO} from '../../geo/projection/projection_util';
 import {SymbolIdOrigin, SymbolPlacementType, SymbolVariantVisibility} from '../../placement/types';
 import {defaultPlacementRules} from '../../placement/placement_rules';
+import {subgroupOrderForLayerPosition} from '../../placement/symbol_placement_parameters';
 import {type CollisionBoxArray, type CollisionBox, type SymbolInstance, SymbolOrientationArray} from '../array_types';
 import {type SymbolQuad, getIconQuads, getGlyphQuads} from '../../symbol/quads';
 import {FeatureAppearances} from './feature_appearances';
@@ -107,6 +109,7 @@ import type {SymbolVariantId} from '../../placement/types';
 import type {GlobalPlacement} from '../../placement/global_placement';
 import type {GlobalPlacementPriority} from '../../placement/global_placement_priority';
 import type {SymbolIdRangeAllocator} from '../../placement/symbol_id_range_allocator';
+import type {PlacementGroupOrders} from '../../placement/symbol_placement_parameters';
 import type Transform from '../../geo/transform';
 import type Tile from '../../source/tile';
 import type {FogState} from '../../style/fog_helpers';
@@ -356,6 +359,8 @@ const ICON_TRANSITIONING_STRIDE = 2;
 // there is no smooth fade yet, so no intermediate packed value is ever needed.
 const HIDDEN_PACKED_OPACITY = 0;
 const VISIBLE_PACKED_OPACITY = 4294967295;
+
+const EMPTY_FEATURE_STATE: FeatureState = {};
 
 export class SymbolBuffers {
     layoutVertexArray: SymbolLayoutArray;
@@ -999,12 +1004,11 @@ class SymbolBucket implements Bucket, SymbolSource {
 
     // New placement pipeline: walks symbolInstances and registers one placement variant per symbol,
     // streaming its icon and/or text collision box(es) into the run. Only the minimal point-symbol
-    // case is handled -- icon-text-fit, appearances, along-line placement, text-variable-anchor and
-    // vertical writing mode are skipped (with a one-time warning), since each gives a symbol more
-    // than one placement candidate, and symbols with neither an icon nor a text collision box are
-    // skipped silently. `textPixelRatio` (tile.tileSize / EXTENT) converts tile-space offsets to CSS
-    // pixels, matching the legacy collision index formula (see CollisionIndex#placeCollisionBox).
-    addToPlacement(globalPlacement: GlobalPlacement, idRangeAllocator: SymbolIdRangeAllocator, layerUid: number, posMatrix: mat4, transform: Transform, textPixelRatio: number, tile: Tile, fogState: FogState | null | undefined): void {
+    // case is handled -- icon-text-fit, appearances and along-line placement are skipped (with a
+    // one-time warning), and symbols with neither an icon nor a text collision box are skipped
+    // silently. `textPixelRatio` (tile.tileSize / EXTENT) converts tile-space offsets to CSS pixels,
+    // matching the legacy collision index formula (see CollisionIndex#placeCollisionBox).
+    addToPlacement(globalPlacement: GlobalPlacement, idRangeAllocator: SymbolIdRangeAllocator, layerUid: number, posMatrix: mat4, transform: Transform, textPixelRatio: number, tile: Tile, fogState: FogState | null | undefined, groupOrders: PlacementGroupOrders, styleLayerOrder: number, featureStates: FeatureStates): void {
         if (this.symbolInstances.length === 0) return;
 
         if (!this.collisionArrays) {
@@ -1062,6 +1066,29 @@ class SymbolBucket implements Bucket, SymbolSource {
         const needsFeatureForZOffset = !symbolZOffsetProperty.isConstant();
         const constantSymbolZOffset: number = needsFeatureForZOffset ? 0 : symbolZOffsetProperty.evaluate(null, {});
         const terrainElevation = transform.elevation;
+
+        // This layer's implicit group for symbols naming no group or an invalid one
+        const implicitGroupOrder = subgroupOrderForLayerPosition(styleLayerOrder);
+        const resolveGroupOrder = (groupName: string | null | undefined): number => {
+            if (!groupName) return implicitGroupOrder;
+            const order = groupOrders.get(makeFQID(groupName, layer.scope));
+            if (order !== undefined) return order;
+            warnOnce(`global placement: placement-group "${groupName}" does not match any placement-group layer; using the layer's implicit group`);
+            return implicitGroupOrder;
+        };
+
+        const placementPriorityProperty = layer.paint.get('placement-priority');
+        const placementGroupProperty = layer.paint.get('placement-group');
+        const needsFeatureForPlacementPriority = !placementPriorityProperty.isConstant();
+        const needsFeatureForPlacementGroup = !placementGroupProperty.isConstant();
+        const placementPriorityFallback: number = needsFeatureForPlacementPriority ? 0 : placementPriorityProperty.evaluate(null, {});
+        const placementSubgroupOrderFallback: number = needsFeatureForPlacementGroup ? implicitGroupOrder : resolveGroupOrder(placementGroupProperty.evaluate(null, {}));
+        const needsFeatureForPlacementState = needsFeatureForPlacementPriority || needsFeatureForPlacementGroup;
+        const needsFeature = needsFeatureForZOffset || needsFeatureForPlacementState;
+
+        const latestFeatureIndex = needsFeature ? tile.latestFeatureIndex : null;
+        if (latestFeatureIndex) latestFeatureIndex.loadVTLayers();
+        const sourceLayerName = latestFeatureIndex ? latestFeatureIndex.sourceLayerCoder.decode(this.sourceLayerIndex) : '';
 
         // Raises a box's anchor to the height the symbol is drawn at, mirroring
         // CollisionIndex#placeCollisionBox / Placement#placeLayerBucketPart's updateBoxData.
@@ -1142,16 +1169,27 @@ class SymbolBucket implements Bucket, SymbolSource {
                 variantIdx: 0,
             };
 
+            const feature = latestFeatureIndex ? latestFeatureIndex.loadFeature({
+                featureIndex: instance.featureIndex,
+                sourceLayerIndex: this.sourceLayerIndex,
+                bucketIndex: this.index,
+                layoutVertexArrayOffset: 0,
+            }) : null;
+
+            const featureId = needsFeatureForPlacementState && feature && latestFeatureIndex ? latestFeatureIndex.getId(feature, sourceLayerName) : undefined;
+            const featureState = (featureId !== undefined && featureStates[String(featureId)]) || EMPTY_FEATURE_STATE;
+            const symbolPlacementPriority = needsFeatureForPlacementPriority && feature ? placementPriorityProperty.evaluate(feature, featureState) : placementPriorityFallback;
+            const placementSubgroupOrder = needsFeatureForPlacementGroup && feature ? resolveGroupOrder(placementGroupProperty.evaluate(feature, featureState)) : placementSubgroupOrderFallback;
+
             // Feed the instance's current visibility so placement can detect show/hide transitions
             // and pick the matching collision hysteresis. Placement is Fixed: along-line symbols are
-            // skipped above, so every fed symbol has a fixed position. The remaining priority fields
-            // keep their defaults in this version.
+            // skipped above, so every fed symbol has a fixed position.
             const priority: GlobalPlacementPriority = {
-                placementSubgroupOrder: 0,
-                symbolPlacementPriority: 0,
+                placementSubgroupOrder,
+                symbolPlacementPriority,
                 symbolVariantVisibility: this.placementVariantVisible[index] ? SymbolVariantVisibility.VARIANT_VISIBLE : SymbolVariantVisibility.SYMBOL_INVISIBLE,
                 symbolPlacementType: SymbolPlacementType.FIXED,
-                styleLayerOrder: 0,
+                styleLayerOrder,
                 symbolDisplayOrder: 0,
             };
 
@@ -1159,16 +1197,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             // geometry is fed, so the variant is dropped and a previously-visible symbol is hidden.
             globalPlacement.startSymbolVariantProcessing(variantId, priority, placementRules);
             if (feedGeometry) {
-                let symbolZOffsetValue = constantSymbolZOffset;
-                if (needsFeatureForZOffset && tile.latestFeatureIndex) {
-                    const feature = tile.latestFeatureIndex.loadFeature({
-                        featureIndex: instance.featureIndex,
-                        sourceLayerIndex: this.sourceLayerIndex,
-                        bucketIndex: this.index,
-                        layoutVertexArrayOffset: 0,
-                    });
-                    symbolZOffsetValue = symbolZOffsetProperty.evaluate(feature, {});
-                }
+                const symbolZOffsetValue = needsFeatureForZOffset && feature ? symbolZOffsetProperty.evaluate(feature, {}) : constantSymbolZOffset;
                 addCollisionBox(collisionArrays.iconBox, instance, symbolZOffsetValue, () => this.getSymbolInstanceIconSize(iconZoomSize, zoom, instance.placedIconSymbolIndex));
                 addCollisionBox(collisionArrays.textBox, instance, symbolZOffsetValue, () => this.getSymbolInstanceTextSize(textZoomSize, instance, zoom, index));
             }

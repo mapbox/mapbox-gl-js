@@ -44,22 +44,26 @@ import type {Feature, SourceExpression, CompositeExpression} from '../../style-s
 import type {Expression} from '../../style-spec/expression/expression';
 import type {CanonicalTileID} from '../../source/tile_id';
 import type Tile from '../../source/tile';
-import type BuildingIndex from '../../source/building_index';
-import type {FogState} from '../fog_helpers';
-import type {GlobalPlacement} from '../../placement/global_placement';
-import type {SymbolIdRangeAllocator} from '../../placement/symbol_id_range_allocator';
-import type Transform from '../../geo/transform';
+import type {SymbolPlacementParameters} from '../../placement/symbol_placement_parameters';
 import type {LUT} from "../../util/lut";
 import type {ImageId} from '../../style-spec/expression/types/image_id';
 import type {ProgramName} from '../../render/program';
 import type SymbolAppearance from '../appearance';
 import type {AppearanceProps} from '../appearance_properties';
 import type {RuntimeModuleType} from '../style_layer';
+import type SourceCache from '../../source/source_cache';
+import type {FeatureStates} from '../../source/source_state';
 
 let properties: {
     layout: Properties<LayoutProps>;
     paint: Properties<PaintProps>;
 };
+
+const EMPTY_FEATURE_STATES: FeatureStates = {};
+
+function isStateDependent(value: PossiblyEvaluatedPropertyValue<unknown>): boolean {
+    return value.value.kind !== 'constant' && value.value.isStateDependent;
+}
 
 const getProperties = () => {
     if (properties) {
@@ -229,8 +233,14 @@ class SymbolStyleLayer extends StyleLayer {
         return new SymbolBucket(parameters);
     }
 
-    override placeSymbols(globalPlacement: GlobalPlacement, tiles: Array<Tile>, idRangeAllocator: SymbolIdRangeAllocator, transform: Transform, buildingIndex: BuildingIndex, fogState: FogState | null): void {
+    override placeSymbols(parameters: SymbolPlacementParameters, tiles: Array<Tile>, styleLayerOrder: number, sourceCache: SourceCache): void {
+        const {globalPlacement, idRangeAllocator, transform, buildingIndex, fogState, groupOrders} = parameters;
         const layerUid = this.runtimeLayerUID;
+
+        const statefulPlacement = isStateDependent(this.paint.get('placement-group')) ||
+            isStateDependent(this.paint.get('placement-priority'));
+        const featureStates: FeatureStates = statefulPlacement ?
+            sourceCache._state.getState(this.sourceLayer || '_geojsonTileLayer') : EMPTY_FEATURE_STATES;
 
         for (const tile of tiles) {
             const bucket = tile.getBucket(this) as SymbolBucket | undefined;
@@ -248,7 +258,7 @@ class SymbolStyleLayer extends StyleLayer {
             globalPlacement.startSymbolSourceProcessing(bucket);
             const posMatrix = getSymbolPlacementTileProjectionMatrix(tile.tileID, bucket.getProjection(), transform, transform.projection.name);
             const textPixelRatio = tile.tileSize / EXTENT;
-            bucket.addToPlacement(globalPlacement, idRangeAllocator, layerUid, posMatrix, transform, textPixelRatio, tile, fogState);
+            bucket.addToPlacement(globalPlacement, idRangeAllocator, layerUid, posMatrix, transform, textPixelRatio, tile, fogState, groupOrders, styleLayerOrder, featureStates);
             globalPlacement.finishSourceProcessing();
         }
     }

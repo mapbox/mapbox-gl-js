@@ -3,12 +3,7 @@
   "metadata": {
     "test": {
       "description": "Placement group order beats placement-priority: priority competes only within a group, across groups the group order decides.",
-      "skip-test": [
-        {
-          "platform-tag-contains": "web",
-          "reason": "Global placement (placement-priority/placement-group) is not implemented in gl-js yet."
-        }
-      ],
+      "skip-test": [],
       "width": 128,
       "height": 128,
       "globalPlacement": true

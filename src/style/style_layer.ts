@@ -32,10 +32,7 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../render/painter';
 import type SourceCache from '../source/source_cache';
 import type Tile from '../source/tile';
-import type BuildingIndex from '../source/building_index';
-import type {FogState} from './fog_helpers';
-import type {GlobalPlacement} from '../placement/global_placement';
-import type {SymbolIdRangeAllocator} from '../placement/symbol_id_range_allocator';
+import type {SymbolPlacementParameters} from '../placement/symbol_placement_parameters';
 import type Painter from '../render/painter';
 import type {LUT} from '../util/lut';
 import type {ImageId} from '../style-spec/expression/types/image_id';
@@ -122,7 +119,7 @@ class StyleLayer extends Evented {
         this.minzoom = layer.minzoom;
         this.maxzoom = layer.maxzoom;
 
-        if (layer.type && layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'slot') {
+        if (layer.type && layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'slot' && layer.type !== 'placement-group') {
             this.source = layer.source;
             this.sourceLayer = layer['source-layer'];
             this.filter = layer.filter;
@@ -162,7 +159,7 @@ class StyleLayer extends Evented {
 
     // Feeds this layer's placeable symbols into the given global placement run. No-op for
     // non-symbol layers; overridden by SymbolStyleLayer.
-    placeSymbols(_globalPlacement: GlobalPlacement, _tiles: Array<Tile>, _idRangeAllocator: SymbolIdRangeAllocator, _transform: Transform, _buildingIndex: BuildingIndex, _fogState: FogState | null): void {}
+    placeSymbols(_parameters: SymbolPlacementParameters, _tiles: Array<Tile>, _styleLayerOrder: number, _sourceCache: SourceCache): void {}
 
     isDraped(_sourceCache?: SourceCache): boolean {
         return !this.is3D(true) && drapedLayers.has(this.type);

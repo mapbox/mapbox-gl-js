@@ -148,7 +148,7 @@ export async function renderMap(style, options, currentTestName) {
         },
         worldview: options.worldview,
         maxZoom: options.maxZoom,
-        placementAlgorithm: options.placementAlgorithm || 'default',
+        placementAlgorithm: options.globalPlacement ? 'global' : options.placementAlgorithm || 'default',
         transformRequest,
         testMode: true,
         emissiveColorPrecision: options.emissiveColorPrecision

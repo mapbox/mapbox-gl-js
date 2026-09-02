@@ -3,12 +3,7 @@
   "metadata": {
     "test": {
       "description": "Paint property placement-group works with feature-state as expected.",
-      "skip-test": [
-        {
-          "platform-tag-contains": "web",
-          "reason": "Global placement (placement-priority/placement-group) is not implemented in gl-js yet."
-        }
-      ],
+      "skip-test": [],
       "width": 128,
       "height": 128,
       "globalPlacement": true,

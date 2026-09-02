@@ -108,6 +108,17 @@ describe('placeSymbols', () => {
         return transform;
     }
 
+    function createParameters(globalPlacement: ReturnType<typeof createGlobalPlacement>) {
+        return {
+            globalPlacement,
+            idRangeAllocator: new SymbolIdRangeAllocator(),
+            transform: createTransform(),
+            buildingIndex: undefined,
+            fogState: null,
+            groupOrders: new Map()
+        };
+    }
+
     test('opens and closes symbol source processing for the bucket it leads', () => {
         const layer = createSymbolLayer({id: 'symbol'});
         const bucket = {
@@ -120,7 +131,7 @@ describe('placeSymbols', () => {
         const tile = {getBucket: () => bucket, tileID: new OverscaledTileID(0, 0, 0, 0, 0), tileSize: 512};
         const globalPlacement = createGlobalPlacement();
 
-        layer.placeSymbols(globalPlacement, [tile], new SymbolIdRangeAllocator(), createTransform());
+        layer.placeSymbols(createParameters(globalPlacement), [tile], 0);
 
         expect(globalPlacement.startSymbolSourceProcessing).toHaveBeenCalledExactlyOnceWith(bucket);
         expect(bucket.addToPlacement).toHaveBeenCalledOnce();
@@ -132,7 +143,7 @@ describe('placeSymbols', () => {
         const tile = {getBucket: () => undefined};
         const globalPlacement = createGlobalPlacement();
 
-        layer.placeSymbols(globalPlacement, [tile], new SymbolIdRangeAllocator(), createTransform());
+        layer.placeSymbols(createParameters(globalPlacement), [tile], 0);
 
         expect(globalPlacement.startSymbolSourceProcessing).not.toHaveBeenCalled();
         expect(globalPlacement.finishSourceProcessing).not.toHaveBeenCalled();
@@ -144,7 +155,7 @@ describe('placeSymbols', () => {
         const tile = {getBucket: () => bucket};
         const globalPlacement = createGlobalPlacement();
 
-        layer.placeSymbols(globalPlacement, [tile], new SymbolIdRangeAllocator(), createTransform());
+        layer.placeSymbols(createParameters(globalPlacement), [tile], 0);
 
         expect(globalPlacement.startSymbolSourceProcessing).not.toHaveBeenCalled();
         expect(globalPlacement.finishSourceProcessing).not.toHaveBeenCalled();

@@ -64,6 +64,7 @@ import PauseablePlacement from './pauseable_placement';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
 import {GlobalPlacement} from '../placement/global_placement';
 import {SymbolIdRangeAllocator} from '../placement/symbol_id_range_allocator';
+import {subgroupOrderForLayerPosition} from '../placement/symbol_placement_parameters';
 import {validateCustomStyleLayer} from './style_layer/custom_style_layer';
 import {isFQID, makeFQID, getNameFromFQID, getInnerScopeFromFQID, getOuterScopeFromFQID} from '../util/fqid';
 import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_utils';
@@ -142,6 +143,7 @@ import type {TypedStyleLayer} from './style_layer/typed_style_layer';
 import type {LngLatLike} from '../geo/lng_lat';
 import type {RasterQueryParameters, RasterQueryResult} from '../source/raster_array_tile_source';
 import type {StyleBOM} from './style_bom_utils';
+import type {PlacementGroupOrders, SymbolPlacementParameters} from '../placement/symbol_placement_parameters';
 
 export type {StyleBOMEntry, StyleBOM} from './style_bom_utils';
 
@@ -206,7 +208,7 @@ const ignoredDiffOperations: ReadonlySet<string> = new Set([
 /**
  * Layer types that has no features and are not queryable with QRF API.
  */
-const featurelessLayerTypes = new Set(['background', 'sky', 'slot', 'custom']);
+const featurelessLayerTypes = new Set(['background', 'sky', 'slot', 'custom', 'placement-group']);
 
 const empty = emptyStyle();
 
@@ -330,6 +332,7 @@ class Style extends Evented<MapEvents> {
 
     // Merged layers and sources
     _mergedOrder: Array<string>;
+    _mergedOrderVersion: number;
     _mergedLayers: Record<string, TypedStyleLayer>;
     _mergedIndoor: Record<string, Set<string>>;
     // Whether indoor is actually turned on by config (an indoor-source layer is visible),
@@ -397,6 +400,10 @@ class Style extends Evented<MapEvents> {
     globalPlacement: GlobalPlacement | null;
     // Generated symbol id ranges for the new placement pipeline, keyed by layer.
     symbolIdRangeAllocator: SymbolIdRangeAllocator;
+    // Cache of _driveGlobalPlacement's groupOrders, valid as long as _mergedOrderVersion
+    // matches _groupOrdersVersion (i.e. _mergedOrder hasn't been rebuilt since).
+    _groupOrders: PlacementGroupOrders | null;
+    _groupOrdersVersion: number;
     z!: number;
 
     _has3DLayers: boolean;
@@ -432,8 +439,11 @@ class Style extends Evented<MapEvents> {
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
         this.globalPlacement = null;
         this.symbolIdRangeAllocator = new SymbolIdRangeAllocator();
+        this._groupOrders = null;
+        this._groupOrdersVersion = -1;
 
         this._mergedOrder = [];
+        this._mergedOrderVersion = 0;
         this._drapedFirstOrder = [];
         this._mergedLayers = Object.create(null) as Style['_mergedLayers'];
         this._mergedIndoor = {};
@@ -1524,6 +1534,7 @@ class Style extends Evented<MapEvents> {
         }
 
         this._mergedLayers = mergedLayers;
+        this._mergedOrderVersion++;
         this.updateDrapeFirstLayers();
         this._buildingIndex.processLayersChanged();
         this._updateDataDrivenEmissiveStrength();
@@ -4777,15 +4788,37 @@ class Style extends Evented<MapEvents> {
 
         const fogState = this.fog && transform.projection.supportsFog ? this.fog.state : null;
 
-        for (const layerId of this._mergedOrder) {
-            const styleLayer = this._mergedLayers[layerId];
+        if (this._groupOrdersVersion !== this._mergedOrderVersion || !this._groupOrders) {
+            const groupOrders: PlacementGroupOrders = new Map();
+            for (let position = 0; position < this._mergedOrder.length; position++) {
+                const styleLayer = this._mergedLayers[this._mergedOrder[position]];
+                if (styleLayer.type === 'placement-group') {
+                    groupOrders.set(styleLayer.fqid, subgroupOrderForLayerPosition(position));
+                }
+            }
+            this._groupOrders = groupOrders;
+            this._groupOrdersVersion = this._mergedOrderVersion;
+        }
+        const groupOrders = this._groupOrders;
+
+        const placementParameters: SymbolPlacementParameters = {
+            globalPlacement,
+            idRangeAllocator: this.symbolIdRangeAllocator,
+            transform,
+            buildingIndex: this._buildingIndex,
+            fogState,
+            groupOrders
+        };
+
+        for (let position = 0; position < this._mergedOrder.length; position++) {
+            const styleLayer = this._mergedLayers[this._mergedOrder[position]];
             if (styleLayer.type !== 'symbol') continue;
 
             const sourceCache = this.getLayerSourceCache(styleLayer);
             if (!sourceCache) continue;
             const tiles = sourceCache.getRenderableIds(true).map((id) => sourceCache.getTileByID(id));
 
-            styleLayer.placeSymbols(globalPlacement, tiles, this.symbolIdRangeAllocator, transform, this._buildingIndex, fogState);
+            styleLayer.placeSymbols(placementParameters, tiles, position, sourceCache);
         }
 
         globalPlacement.finishPlacementRun();
