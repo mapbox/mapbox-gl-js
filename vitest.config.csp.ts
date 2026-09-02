@@ -1,6 +1,6 @@
 import {defineConfig, mergeConfig} from 'vitest/config';
-import baseConfig, {chromiumBrowser} from './vitest.config.base';
-import {serveDistPlugin} from './vitest.config.common';
+import baseConfig, {chromiumBrowser} from './vitest.config.base.ts';
+import {serveDistPlugin} from './vitest.config.common.ts';
 
 export default mergeConfig(baseConfig, defineConfig({
     test: {

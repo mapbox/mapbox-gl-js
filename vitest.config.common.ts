@@ -4,9 +4,9 @@ import {writeFile} from 'node:fs/promises';
 import serveStatic from 'serve-static';
 import {staticFolders} from './test/integration/lib/middlewares.js';
 import {getAllStyleFixturePaths, generateFixtureJson} from './test/integration/lib/generate-fixture-json.js';
-import {getHTML, getDiagnosticsHTML} from './test/util/html_generator';
+import {getHTML, getDiagnosticsHTML} from './test/util/html_generator.ts';
 
-import type {DiagnosticInfo} from './test/util/html_generator';
+import type {DiagnosticInfo} from './test/util/html_generator.ts';
 import type {Plugin} from 'vite';
 
 export function suiteDirs(name: 'render-tests' | 'query-tests'): string[] {
@@ -103,8 +103,8 @@ export function setupIntegrationTestsMiddlewares({reportPath}: {reportPath: stri
             let browserDiagnostics: Partial<DiagnosticInfo> = {};
             staticFolders.forEach((folder) => {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
-                server.middlewares.use(`/${folder}`, serveStatic(resolve(__dirname, `test/integration/${folder}`), staticCacheOptions));
-                const internalPath = resolve(__dirname, `internal/test/integration/${folder}`);
+                server.middlewares.use(`/${folder}`, serveStatic(resolve(import.meta.dirname, `test/integration/${folder}`), staticCacheOptions));
+                const internalPath = resolve(import.meta.dirname, `internal/test/integration/${folder}`);
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
                 if (existsSync(internalPath)) server.middlewares.use(`/${folder}`, serveStatic(internalPath, staticCacheOptions));
             });
@@ -165,9 +165,9 @@ export function setupIntegrationTestsMiddlewares({reportPath}: {reportPath: stri
             });
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
-            server.middlewares.use('/mapbox-gl-styles', serveStatic(resolve(__dirname, 'node_modules/@mapbox/mapbox-gl-styles'), staticCacheOptions));
+            server.middlewares.use('/mapbox-gl-styles', serveStatic(resolve(import.meta.dirname, 'node_modules/@mapbox/mapbox-gl-styles'), staticCacheOptions));
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
-            server.middlewares.use('/mvt-fixtures', serveStatic(resolve(__dirname, 'node_modules/@mapbox/mvt-fixtures'), staticCacheOptions));
+            server.middlewares.use('/mvt-fixtures', serveStatic(resolve(import.meta.dirname, 'node_modules/@mapbox/mvt-fixtures'), staticCacheOptions));
         }
     };
 }
@@ -178,7 +178,7 @@ export function serveDistPlugin(): Plugin {
         name: 'serve-dist',
         configureServer(server) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
-            server.middlewares.use('/dist', serveStatic(resolve(__dirname, 'dist')));
+            server.middlewares.use('/dist', serveStatic(resolve(import.meta.dirname, 'dist')));
         },
     };
 }

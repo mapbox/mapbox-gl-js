@@ -1,5 +1,5 @@
 import {defineConfig} from 'vitest/config';
-import {isCI} from './vitest.config.base';
+import {isCI} from './vitest.config.base.ts';
 
 export default defineConfig({
     test: {

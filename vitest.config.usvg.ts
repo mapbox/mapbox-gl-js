@@ -3,7 +3,7 @@ import {readFileSync} from 'fs';
 import {gunzipSync} from 'zlib';
 import virtual from '@rollup/plugin-virtual';
 import {mergeConfig, defineConfig} from 'vitest/config';
-import baseConfig, {chromiumBrowser} from './vitest.config.base';
+import baseConfig, {chromiumBrowser} from './vitest.config.base.ts';
 
 // Minimal tar reader (ustar): yields regular file entries from an already-gunzipped buffer.
 function *readTar(buffer: Buffer): Generator<{name: string, content: Buffer}> {

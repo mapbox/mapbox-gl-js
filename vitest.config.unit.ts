@@ -2,7 +2,7 @@ import {basename as pathBasename} from 'node:path';
 import {readFileSync, globSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {mergeConfig, defineConfig} from 'vitest/config';
-import baseConfig, {isCI, chromiumBrowser} from './vitest.config.base';
+import baseConfig, {isCI, chromiumBrowser} from './vitest.config.base.ts';
 
 import type {Reporter} from 'vitest/reporters';
 import type {TestProject} from 'vitest/node';

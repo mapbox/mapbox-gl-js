@@ -1,8 +1,8 @@
 import os from 'node:os';
 import {mergeConfig, defineConfig} from 'vitest/config';
 import {playwright} from '@vitest/browser-playwright';
-import baseConfig, {isCI, chromiumBrowser} from './vitest.config.base';
-import {integrationTests, setupIntegrationTestsMiddlewares, serveDistPlugin, suiteDirs} from './vitest.config.common';
+import baseConfig, {isCI, chromiumBrowser} from './vitest.config.base.ts';
+import {integrationTests, setupIntegrationTestsMiddlewares, serveDistPlugin, suiteDirs} from './vitest.config.common.ts';
 
 import type {BrowserConfigOptions} from 'vitest/node';
 
