@@ -4,7 +4,7 @@
     <title>Mapbox GL JS debug page</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="description" content="A PMTiles vector source registered through `addTileProvider`, drawn as circles — the provider plugin end to end.">
+    <meta name="description" content="A PMTiles vector source registered through `addTileProvider`, drawn as circles — the provider plugin end to end, on the ES module build or, with `?umd`, the UMD build.">
     <meta name="mapbox:role" content="feature">
     <link rel="stylesheet" href="../dist/mapbox-gl.css" />
     <style>
@@ -15,10 +15,29 @@
 <body>
     <div id="map"></div>
     <script type="module">
-        import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
         import {getAccessToken} from './access_token_generated.js';
 
-        mapboxgl.addTileProvider('pmtiles', new URL('../plugins/mapbox-gl-pmtiles-provider/dist/mapbox-gl-pmtiles-provider.js', import.meta.url).href);
+        // `?umd` registers the provider against the global `mapboxgl` of the UMD build instead of the
+        // ES module, which resolves the provider URL from the document rather than from this module.
+        const useUmd = new URLSearchParams(window.location.search).has('umd');
+
+        let mapboxgl, providerBase;
+        if (useUmd) {
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = '../dist/mapbox-gl-dev.js';
+                script.onload = resolve;
+                script.onerror = () => reject(new Error('../dist/mapbox-gl-dev.js is missing — run `npm run build-dev`'));
+                document.head.appendChild(script);
+            });
+            mapboxgl = window.mapboxgl;
+            providerBase = window.location.href;
+        } else {
+            mapboxgl = await import('../dist/esm-dev/mapbox-gl.js');
+            providerBase = import.meta.url;
+        }
+
+        mapboxgl.addTileProvider('pmtiles', new URL('../plugins/mapbox-gl-pmtiles-provider/dist/mapbox-gl-pmtiles-provider.js', providerBase).href);
 
         const map = window.map = new mapboxgl.Map({
             accessToken: getAccessToken(),

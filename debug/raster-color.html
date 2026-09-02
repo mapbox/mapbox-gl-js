@@ -4,7 +4,7 @@
     <title>Mapbox GL JS debug page</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="description" content="`raster-color` colour-ramp rendering over a raster source, with ramp, mix and range driven by expressions.">
+    <meta name="description" content="`raster-color` colour-ramp rendering over a raster source, with ramp, mix and range driven by expressions, and a switch to drop back to plain raster tiles.">
     <meta name="mapbox:role" content="feature">
     <link rel="stylesheet" href="../dist/mapbox-gl.css" />
     <style>
@@ -72,6 +72,7 @@ function GUIParams () {
     this.preset = "Satellite";
     this.opacity = 1;
     this.elevation = 0;
+    this.rasterColorEnabled = true;
     Object.assign(this, presets[this.preset]);
 }
 
@@ -237,11 +238,13 @@ map.once("load", function () {
     const range = gui.add(guiParams, "rasterColorRange", Object.keys(ranges));
     const opacity = gui.add(guiParams, "opacity", 0, 1);
     const elevation = gui.add(guiParams, "elevation", 0, 10000000);
+    const colorEnabled = gui.add(guiParams, "rasterColorEnabled").name("raster-color");
 
     function setColorScale(scale) {
         const range = ranges[guiParams.rasterColorRange];
         const cs = colorScales[scale];
-        map.setPaintProperty("raster", "raster-color", [
+        // Unsetting raster-color leaves the source drawn as plain raster tiles.
+        map.setPaintProperty("raster", "raster-color", guiParams.rasterColorEnabled ? [
             "interpolate",
             ["linear"],
             ["raster-value"],
@@ -249,9 +252,9 @@ map.once("load", function () {
                 range[0] + (range[1] - range[0]) * pos,
                 col
             ]).flat(),
-        ]);
+        ] : null);
         document.getElementById("gradient").style.background = `linear-gradient(90deg, ${cs.map(([pos, col]) => `${col} ${(pos * 100).toFixed(1)}%`).join(",")})`;
-        document.getElementById("gradient").style.opacity = guiParams.opacity;
+        document.getElementById("gradient").style.opacity = guiParams.rasterColorEnabled ? guiParams.opacity : 0;
     }
 
     function setColorMix(mix) {
@@ -278,6 +281,7 @@ map.once("load", function () {
 
     mix.onChange(setColorMix).listen();
     scale.onChange(setColorScale).listen();
+    colorEnabled.onChange(() => setColorScale(guiParams.rasterColor));
     range.onChange(setColorRange).listen();
     tileset.onChange(setTileset).listen();
     preset.onChange(setPreset);
