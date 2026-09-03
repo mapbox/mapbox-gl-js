@@ -1,4 +1,4 @@
-## 3.30.0-rc.1
+## 3.30.0
 
 ### Breaking changes ⚠️
 
