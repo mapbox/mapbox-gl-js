@@ -1,8 +1,27 @@
 ## Unreleased
 
+## 3.30.0
+
+### Breaking changes ⚠️
+
+- Make pitch and rotation states independent. Previously, disabling rotation also disabled pitch. Now, pitch can be enabled independently of rotation.
+
 ### Features and improvements ✨
+- Extract the terrain from the core ESM module.
+- Reduce shader size by removing unused code paths.
+- Upgrade Supercluster to v9 (optimize clustering memory footprint).
+- Add support for client-side overzooming for raster-array sources.
 - Add `AnimationFrameProvider` (`MapOptions.animationFrameProvider`) to support driving the render loop from an external library.
- 
+- Enable landmark model LOD mesh download when the server provides such data.
+- Raise the maximum number of sources in a style to 64.
+
+### Bug fixes 🐞
+- Fix dark line artifacts on non-standard procedural building geometry.
+- Fix ESM terrain module loading for elevated-lines requiring terrain.
+- Fix validation of style light transition properties.
+- Fix symbol layer related errors after GL context loss.
+- Skip rings with zero area on fill-extrusions.
+
 ## 3.29.0
 
 ### Breaking changes ⚠️
