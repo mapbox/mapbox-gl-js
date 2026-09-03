@@ -20,8 +20,9 @@ export default drawPlacementDebug;
 // Logical pixels.
 const OUTLINE_WIDTH = 1;
 
-const INTERIOR_OPACITY = 0.15;
-const OUTLINE_OPACITY = 0.5;
+const INTERIOR_OPACITY = 0.07;
+const OUTLINE_OPACITY = 0.65;
+const COLLISION_PADDING_OPACITY = 0.4;
 
 const VERTICES_PER_QUAD = 4;
 const TRIANGLES_PER_QUAD = 2;
@@ -48,7 +49,7 @@ function drawPlacementDebug(painter: Painter) {
         for (const symbol of debugSymbols) {
             if (symbol.status !== status) continue;
             for (const element of symbol.geometry) {
-                addQuad(vertexArray, indexArray, segments, element);
+                addQuad(vertexArray, indexArray, segments, element, symbol.collisionPadding);
             }
         }
         return segments;
@@ -68,7 +69,7 @@ function drawPlacementDebug(painter: Painter) {
         program.draw(painter, gl.TRIANGLES,
             DepthMode.disabled, StencilMode.disabled,
             ColorMode.alphaBlended, CullFaceMode.disabled,
-            placementDebugUniformValues(viewportSize, DRAW_ORDER[i].color, OUTLINE_WIDTH, INTERIOR_OPACITY, OUTLINE_OPACITY),
+            placementDebugUniformValues(viewportSize, DRAW_ORDER[i].color, OUTLINE_WIDTH, INTERIOR_OPACITY, OUTLINE_OPACITY, COLLISION_PADDING_OPACITY),
             '$placement-debug', vertexBuffer, indexBuffer, segments, null, tr.zoom);
     }
 
@@ -76,7 +77,7 @@ function drawPlacementDebug(painter: Painter) {
     indexBuffer.destroy();
 }
 
-function addQuad(vertexArray: PlacementDebugLayoutArray, indexArray: QuadTriangleArray, segments: SegmentVector, element: GeometryElement) {
+function addQuad(vertexArray: PlacementDebugLayoutArray, indexArray: QuadTriangleArray, segments: SegmentVector, element: GeometryElement, collisionPadding: number) {
     let centerX: number, centerY: number, halfWidth: number, halfHeight: number, isCircle: number;
     if (element.kind === 'box') {
         centerX = 0.5 * (element.left + element.right);
@@ -96,7 +97,7 @@ function addQuad(vertexArray: PlacementDebugLayoutArray, indexArray: QuadTriangl
     const firstVertex = segment.vertexLength;
 
     for (let corner = 0; corner < VERTICES_PER_QUAD; corner++) {
-        vertexArray.emplaceBack(centerX, centerY, halfWidth, halfHeight, isCircle, corner);
+        vertexArray.emplaceBack(centerX, centerY, halfWidth, halfHeight, collisionPadding, isCircle, corner);
     }
     indexArray.emplaceBack(firstVertex, firstVertex + 1, firstVertex + 2);
     indexArray.emplaceBack(firstVertex, firstVertex + 2, firstVertex + 3);

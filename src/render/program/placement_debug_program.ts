@@ -10,6 +10,7 @@ export type PlacementDebugUniformsType = {
     ['u_outline_width']: Uniform1f;
     ['u_opacity']: Uniform1f;
     ['u_stroke_opacity']: Uniform1f;
+    ['u_collision_padding_opacity']: Uniform1f;
 };
 
 const placementDebugUniforms = (context: Context): PlacementDebugUniformsType => ({
@@ -17,7 +18,8 @@ const placementDebugUniforms = (context: Context): PlacementDebugUniformsType =>
     'u_color': new UniformColor(context),
     'u_outline_width': new Uniform1f(context),
     'u_opacity': new Uniform1f(context),
-    'u_stroke_opacity': new Uniform1f(context)
+    'u_stroke_opacity': new Uniform1f(context),
+    'u_collision_padding_opacity': new Uniform1f(context)
 });
 
 const placementDebugUniformValues = (
@@ -26,12 +28,14 @@ const placementDebugUniformValues = (
     outlineWidth: number,
     opacity: number,
     strokeOpacity: number,
+    collisionPaddingOpacity: number,
 ): UniformValues<PlacementDebugUniformsType> => ({
     'u_viewport_size': viewportSize,
     'u_color': color,
     'u_outline_width': outlineWidth,
     'u_opacity': opacity,
-    'u_stroke_opacity': strokeOpacity
+    'u_stroke_opacity': strokeOpacity,
+    'u_collision_padding_opacity': collisionPaddingOpacity
 });
 
 export {placementDebugUniforms, placementDebugUniformValues};

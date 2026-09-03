@@ -56,6 +56,8 @@ function addSymbolVariant(placement: GlobalPlacement, variantId: SymbolVariantId
 
 const screenWidth = 100;
 const screenHeight = 100;
+const INVISIBLE_VARIANTS_COLLISION_PADDING = 1;
+const VISIBLE_VARIANTS_COLLISION_PADDING = 0;
 
 describe('InteractiveGlobalPlacement', () => {
     test('should work without sources', () => {
@@ -552,12 +554,9 @@ describe('InteractiveGlobalPlacement', () => {
         placement.finishPlacementRun();
 
         expect(placement.debugSymbols()).toEqual([
-            // PLACED and not previously visible, but padding only matters for the collision check
-            // itself -- the recorded geometry for a PLACED variant is always its raw geometry.
-            {geometry: multiElementGeometry, variantId: createVariantId(0), tileID: testTileID, featureId, placementRules, status: VariantPlacementResult.PLACED, blockedBy: undefined},
-            // Not placed, so the recorded geometry is padded by the invisible-variant hysteresis,
-            // and blockedBy names variant 0's collision box that it actually hit.
-            {geometry: box(4, 4, 16, 16), variantId: createVariantId(1), tileID: testTileID, featureId: undefined, placementRules, status: VariantPlacementResult.COLLIDED, blockedBy: createVariantId(0)},
+            {geometry: multiElementGeometry, collisionPadding: VISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(0), tileID: testTileID, featureId, placementRules, status: VariantPlacementResult.PLACED, blockedBy: undefined},
+            // Not placed, blockedBy names variant 0's collision box that it actually hit.
+            {geometry: box(5, 5, 15, 15), collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(1), tileID: testTileID, featureId: undefined, placementRules, status: VariantPlacementResult.COLLIDED, blockedBy: createVariantId(0)},
         ]);
     });
 
@@ -598,20 +597,15 @@ describe('InteractiveGlobalPlacement', () => {
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
-        // Non-PLACED variants are recorded padded by the invisible-variant hysteresis (see the
-        // previous test); only COLLIDED and OTHER_VARIANT_PLACED name a blockedBy.
-        const padded = (b: Geometry) => b.map((el) => {
-            return el.kind === 'box' ? {kind: 'box' as const, left: el.left - 1, top: el.top - 1, right: el.right + 1, bottom: el.bottom + 1} : el;
-        });
-
+        // Only COLLIDED and OTHER_VARIANT_PLACED name a blockedBy.
         expect(placement.debugSymbols()).toEqual([
-            {geometry: placedBox, variantId: createVariantId(0, 0), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), status: VariantPlacementResult.PLACED, blockedBy: undefined},
-            {geometry: padded(freeBox), variantId: createVariantId(0, 1), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), status: VariantPlacementResult.OTHER_VARIANT_PLACED, blockedBy: createVariantId(0, 0)},
-            {geometry: padded(collidingBox), variantId: createVariantId(0, 2), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), status: VariantPlacementResult.OTHER_VARIANT_PLACED, blockedBy: createVariantId(0, 0)},
-            {geometry: padded(freeBox), variantId: createVariantId(1, 0), tileID: testTileID, featureId: undefined, placementRules: dependentRules(), status: VariantPlacementResult.DEPENDENCY_NOT_PLACED, blockedBy: undefined},
-            {geometry: padded(collidingBox), variantId: createVariantId(1, 1), tileID: testTileID, featureId: undefined, placementRules: dependentRules(), status: VariantPlacementResult.DEPENDENCY_NOT_PLACED, blockedBy: undefined},
-            {geometry: padded(collidingBox), variantId: createVariantId(3), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), status: VariantPlacementResult.COLLIDED, blockedBy: createVariantId(0, 0)},
-            {geometry: padded(outOfBoundsBox), variantId: createVariantId(4), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), status: VariantPlacementResult.OUT_OF_BOUNDS, blockedBy: undefined},
+            {geometry: placedBox, collisionPadding: VISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(0, 0), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), status: VariantPlacementResult.PLACED, blockedBy: undefined},
+            {geometry: freeBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(0, 1), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), status: VariantPlacementResult.OTHER_VARIANT_PLACED, blockedBy: createVariantId(0, 0)},
+            {geometry: collidingBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(0, 2), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), status: VariantPlacementResult.OTHER_VARIANT_PLACED, blockedBy: createVariantId(0, 0)},
+            {geometry: freeBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(1, 0), tileID: testTileID, featureId: undefined, placementRules: dependentRules(), status: VariantPlacementResult.DEPENDENCY_NOT_PLACED, blockedBy: undefined},
+            {geometry: collidingBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(1, 1), tileID: testTileID, featureId: undefined, placementRules: dependentRules(), status: VariantPlacementResult.DEPENDENCY_NOT_PLACED, blockedBy: undefined},
+            {geometry: collidingBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(3), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), status: VariantPlacementResult.COLLIDED, blockedBy: createVariantId(0, 0)},
+            {geometry: outOfBoundsBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(4), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), status: VariantPlacementResult.OUT_OF_BOUNDS, blockedBy: undefined},
         ]);
     });
 

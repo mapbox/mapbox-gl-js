@@ -1,6 +1,5 @@
 import assert from '../style-spec/util/assert';
 import {CollisionGrid} from './collision_grid';
-import {extendGeometryElement} from './geometry';
 import {comparePriority} from './global_placement_priority';
 import {VariantPlacementResult} from './placement_debug';
 import {SymbolVariantVisibility} from './types';
@@ -252,9 +251,8 @@ export class GlobalPlacement {
         this._processingSource = null;
     }
 
-    _placeSymbolVariant(symbol: SymbolInfo): VariantPlacementResultValue {
+    _placeSymbolVariant(symbol: SymbolInfo, collisionPadding: number): VariantPlacementResultValue {
         const grid = this._grid!;
-        const wasVisible = symbol.priority.symbolVariantVisibility === SymbolVariantVisibility.VARIANT_VISIBLE;
 
         this._lastBlockedBy = undefined;
 
@@ -277,7 +275,7 @@ export class GlobalPlacement {
             const onBlocked = this._collectDebugData ? (data: SymbolVariantId) => { this._lastBlockedBy = data; } : noOpOnBlocked;
             const intersectionResult = grid.intersects(
                 symbol.geometry,
-                wasVisible ? VISIBLE_VARIANTS_COLLISION_PADDING : INVISIBLE_VARIANTS_COLLISION_PADDING,
+                collisionPadding,
                 (data) => ignoreVariantId !== undefined && symbolVariantIdEquals(data, ignoreVariantId),
                 onBlocked
             );
@@ -304,8 +302,9 @@ export class GlobalPlacement {
 
         for (const symbol of this._symbols) {
             const wasVisible = symbol.priority.symbolVariantVisibility === SymbolVariantVisibility.VARIANT_VISIBLE;
+            const collisionPadding = wasVisible ? VISIBLE_VARIANTS_COLLISION_PADDING : INVISIBLE_VARIANTS_COLLISION_PADDING;
 
-            const status = this._placeSymbolVariant(symbol);
+            const status = this._placeSymbolVariant(symbol, collisionPadding);
             const visible = status === VariantPlacementResult.PLACED;
 
             if (visible) {
@@ -319,9 +318,10 @@ export class GlobalPlacement {
             }
 
             if (this._collectDebugData) {
-                const geometry = visible ? symbol.geometry : symbol.geometry.map((el) => extendGeometryElement(el, INVISIBLE_VARIANTS_COLLISION_PADDING));
+                const displayedPadding = visible ? VISIBLE_VARIANTS_COLLISION_PADDING : collisionPadding;
                 this._debugSymbols.push({
-                    geometry,
+                    geometry: symbol.geometry,
+                    collisionPadding: displayedPadding,
                     variantId: symbol.variantId,
                     tileID: symbol.tileID,
                     featureId: symbol.featureId,

@@ -32,9 +32,8 @@ export type TileIdentity = {
 };
 
 export type PlacementDebugSymbol = {
-    // For a visible (PLACED) variant, this is its unpadded collision geometry. For any other
-    // variant, it's padded by the same collision geometry used for the actual hit test
     geometry: Geometry;
+    collisionPadding: number;
     variantId: SymbolVariantId;
     tileID: TileIdentity;
     // The real source feature id, if one could be resolved; absent for generated/synthetic ids.
