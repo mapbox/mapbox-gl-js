@@ -226,9 +226,12 @@ export function drawDepthPrepass(painter: Painter, sourceCache: SourceCache | un
     const depthModeReset = new DepthMode(painter.context.gl.GREATER, DepthMode.ReadWrite, painter.depthRangeFor3D);
     const depthBias = computeDepthBias(painter.transform);
     const cameraMercPos = painter.transform.getFreeCameraOptions().position;
+
+    // Create the depth program lazily (below) and reuse it across tiles: the prepass fires seconds
+    // before its HD road tiles arrive, so linking here would block the load window for a pass that
+    // draws nothing. `pass` is fixed per call, so one memo holds the single variant this call uses.
     const programName = 'elevatedStructuresDepthReconstruct';
-    const depthReconstructProgram = painter.getOrCreateProgram(programName, {defines: ['DEPTH_RECONSTRUCTION']});
-    const depthGeometryProgram = painter.getOrCreateProgram(programName);
+    let program: Program<ElevatedStructuresDepthReconstructUniformsType>;
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -251,7 +254,6 @@ export function drawDepthPrepass(painter: Painter, sourceCache: SourceCache | un
         let uniformValues: UniformValues<ElevatedStructuresDepthReconstructUniformsType>;
         let depthMode: DepthMode;
         let segments: SegmentVector;
-        let program: Program<ElevatedStructuresDepthReconstructUniformsType>;
 
         if (pass === 'initialize') {
             // Depth reconstruction is required only for underground models. Use a slight margin
@@ -261,20 +263,20 @@ export function drawDepthPrepass(painter: Painter, sourceCache: SourceCache | un
             uniformValues = elevatedStructuresDepthReconstructUniformValues(tileMatrix, cameraTilePos, depthBias, 1.0, 0.0);
             depthMode = depthModeFor3D;
             segments = elevatedStructures.depthSegments;
-            program = depthReconstructProgram;
+            program = program || painter.getOrCreateProgram(programName, {defines: ['DEPTH_RECONSTRUCTION']});
         } else if (pass === 'reset') {
             // Carve holes for underground polygons only
             if (!heightRange || heightRange.min >= 0.0 || elevatedStructures.maskSegments.segments[0].primitiveLength === 0) continue;
             uniformValues = elevatedStructuresDepthReconstructUniformValues(tileMatrix, cameraTilePos, 0.0, 0.0, 1.0);
             depthMode = depthModeReset;
             segments = elevatedStructures.maskSegments;
-            program = depthReconstructProgram;
+            program = program || painter.getOrCreateProgram(programName, {defines: ['DEPTH_RECONSTRUCTION']});
         } else if (pass === 'geometry') {
             if (elevatedStructures.depthSegments.segments[0].primitiveLength === 0) continue;
             uniformValues = elevatedStructuresDepthReconstructUniformValues(tileMatrix, cameraTilePos, depthBias, 1.0, 0.0);
             depthMode = depthModeFor3D;
             segments = elevatedStructures.depthSegments;
-            program = depthGeometryProgram;
+            program = program || painter.getOrCreateProgram(programName);
         }
 
         assert(uniformValues && depthMode && segments && program);
@@ -303,7 +305,8 @@ export function drawGroundShadowMask(painter: Painter, sourceCache: SourceCache 
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
     const stencilMode = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
     const cameraMercPos = painter.transform.getFreeCameraOptions().position;
-    const program = painter.getOrCreateProgram('elevatedStructuresDepthReconstruct');
+    // Link lazily (below) and reuse across tiles; stays unlinked while the mask has no geometry to draw.
+    let program: Program<ElevatedStructuresDepthReconstructUniformsType>;
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -320,6 +323,7 @@ export function drawGroundShadowMask(painter: Painter, sourceCache: SourceCache 
         const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
             layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
 
+        program = program || painter.getOrCreateProgram('elevatedStructuresDepthReconstruct');
         const uniformValues = elevatedStructuresDepthReconstructUniformValues(tileMatrix, cameraTilePos, 0.0, 1.0, 0.0);
         program.draw(painter, gl.TRIANGLES, depthMode,
             stencilMode, ColorMode.disabled, CullFaceMode.disabled, uniformValues,
