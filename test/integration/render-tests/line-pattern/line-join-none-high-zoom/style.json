@@ -5,9 +5,6 @@
       "pixelRatio": 2,
       "width": 360,
       "height": 120,
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "Skip - port https://github.com/mapbox/mapbox-sdk/pull/2747 to gl-js"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00955},
         {"platform-tag-contains": "native-android", "threshold": 0.029}

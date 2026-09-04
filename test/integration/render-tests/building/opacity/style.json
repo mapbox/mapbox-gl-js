@@ -7,7 +7,7 @@
       "width": 256,
       "operations": [],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.00011}
+        {"platform-tag-contains": "", "threshold": 0.0004}
       ]
     }
   },

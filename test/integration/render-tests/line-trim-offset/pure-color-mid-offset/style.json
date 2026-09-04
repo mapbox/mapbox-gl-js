@@ -4,8 +4,9 @@
     "test": {
       "width": 100,
       "height": 100,
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "Skip - port https://github.com/mapbox/mapbox-sdk/pull/2747 to gl-js"}
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0004},
+        {"platform-tag-contains": "native", "threshold": 0.0006}
       ]
     }
   },

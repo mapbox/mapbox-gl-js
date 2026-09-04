@@ -8,19 +8,22 @@ import type {Feature} from '../../../src/source/geojson_wrapper';
 test('loadData does not error on non-numeric feature IDs', () => {
     const features: Feature[] = [{
         id: "41e1195014088091",
-        type: 1,
+        type: 4,
         tags: {},
-        geometry: [[0, 0]]
+        x: 0,
+        y: 0
     }, {
         id: "-Infinity",
-        type: 1,
+        type: 4,
         tags: {},
-        geometry: [[0, 0]]
+        x: 0,
+        y: 0
     }, {
         id: "NaN",
-        type: 1,
+        type: 4,
         tags: {},
-        geometry: [[0, 0]]
+        x: 0,
+        y: 0
     }];
 
     expect(() => {
@@ -33,7 +36,7 @@ test('does not encode empty rings', () => {
         id: 1,
         type: 2,
         tags: {},
-        geometry: [[[0, 0]], []]
+        geometry: [new Int32Array([0, 0]), new Int32Array(0)]
     }];
 
     expect(() => {

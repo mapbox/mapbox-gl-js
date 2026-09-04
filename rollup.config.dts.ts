@@ -12,6 +12,7 @@ const inlinedLibraries = [
     '@mapbox/tiny-sdf',
     '@mapbox/vector-tile',
     'geojson',
+    'geojson-vt',
     'gl-matrix',
     'kdbush',
     'pbf',

@@ -8,23 +8,23 @@ import type {VectorTile, VectorTileLayer} from '@mapbox/vector-tile';
 type VectorTileFeatureLike = Pick<VectorTileFeature, 'properties' | 'extent' | 'type' | 'id' | 'loadGeometry' | 'toGeoJSON'>;
 type VectorTileLayerLike = Pick<VectorTileLayer, 'name' | 'extent' | 'length' | 'feature'>;
 
-// The feature type used by geojson-vt and supercluster. Should be extracted to
-// global type and used in module definitions for those two modules.
+// The raw tile envelope produced by geojson-vt's and supercluster's `getTileRaw`, and by
+// `geojson_rt.ts` in dynamic mode: coordinates are flat `[x, y, x, y, …]` typed arrays, one per
+// ring, and a lone point keeps its coordinates inline as `type: 4` instead of allocating an array.
 export type Feature = {
+    id?: number | string;
+    tags: Record<string, unknown> | null | undefined;
+} & ({
+    type: 4;
+    x: number;
+    y: number;
+} | {
     type: 1;
-    id: unknown;
-    tags: {
-        [_: string]: string | number | boolean;
-    };
-    geometry: Array<[number, number]>;
+    geometry: Int16Array | Int32Array;
 } | {
     type: 2 | 3;
-    id: unknown;
-    tags: {
-        [_: string]: string | number | boolean;
-    };
-    geometry: Array<Array<[number, number]>>;
-};
+    geometry: (Int16Array | Int32Array)[];
+});
 
 class FeatureWrapper implements VectorTileFeatureLike {
     _feature: Feature;
@@ -40,8 +40,9 @@ class FeatureWrapper implements VectorTileFeatureLike {
         this._feature = feature;
 
         this.extent = EXTENT;
-        this.type = feature.type;
-        this.properties = feature.tags;
+        // a lone point (type 4) is still a vector tile point; only its storage differs
+        this.type = feature.type === 4 ? 1 : feature.type;
+        this.properties = (feature.tags || {}) as {[_: string]: string | number | boolean};
 
         // If the feature has a top-level `id` property, copy it over, but only
         // if it can be coerced to an integer, because this wrapper is used for
@@ -55,23 +56,28 @@ class FeatureWrapper implements VectorTileFeatureLike {
     }
 
     loadGeometry(): Array<Array<Point>> {
-        if (this._feature.type === 1) {
-            const geometry: Array<Array<Point>> = [];
-            for (const point of this._feature.geometry) {
-                geometry.push([new Point(point[0], point[1])]);
+        const feature = this._feature;
+        const geometry: Array<Array<Point>> = [];
+
+        if (feature.type === 4) {
+            geometry.push([new Point(feature.x, feature.y)]);
+
+        } else if (feature.type === 1) {
+            // multipoints are one point per part, matching the vector tile spec's point encoding
+            for (let i = 0; i < feature.geometry.length; i += 2) {
+                geometry.push([new Point(feature.geometry[i]!, feature.geometry[i + 1]!)]);
             }
-            return geometry;
+
         } else {
-            const geometry: Array<Array<Point>> = [];
-            for (const ring of this._feature.geometry) {
+            for (const ring of feature.geometry) {
                 const newRing: Array<Point> = [];
-                for (const point of ring) {
-                    newRing.push(new Point(point[0], point[1]));
+                for (let i = 0; i < ring.length; i += 2) {
+                    newRing.push(new Point(ring[i]!, ring[i + 1]!));
                 }
                 geometry.push(newRing);
             }
-            return geometry;
         }
+        return geometry;
     }
 
     toGeoJSON(x: number, y: number, z: number): GeoJSON.Feature {
@@ -83,9 +89,9 @@ class LayerWrapper implements VectorTileLayerLike {
     name: string;
     extent: number;
     length: number;
-    _jsonFeatures: Array<Feature>;
+    _jsonFeatures: readonly Feature[];
 
-    constructor(name: string, features: Array<Feature>) {
+    constructor(name: string, features: readonly Feature[]) {
         this.name = name;
         this.extent = EXTENT;
         this.length = features.length;
@@ -101,7 +107,7 @@ class GeoJSONWrapper implements VectorTile {
     layers: Record<string, VectorTileLayer>;
     extent: number;
 
-    constructor(layers: {[_: string]: Array<Feature>}) {
+    constructor(layers: {[_: string]: readonly Feature[]}) {
         this.layers = {};
         this.extent = EXTENT;
 

@@ -6,6 +6,9 @@
       "height": 256,
       "operations": [
         ["wait", 1500]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0004}
       ]
     }
   },

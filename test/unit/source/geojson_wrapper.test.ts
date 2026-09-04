@@ -7,7 +7,7 @@ describe('geojsonwrapper', () => {
     test('linestring', () => {
         const features = [{
             type: 2,
-            geometry: [[[0, 0], [10, 10]]],
+            geometry: [new Int32Array([0, 0, 10, 10])],
             tags: {hello: 'world'}
         }];
 
@@ -22,8 +22,9 @@ describe('geojsonwrapper', () => {
 
     test('point', () => {
         const features = [{
-            type: 1,
-            geometry: [[0, 1]],
+            type: 4,
+            x: 0,
+            y: 1,
             tags: {}
         }];
 

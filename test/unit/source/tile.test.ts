@@ -20,8 +20,9 @@ import type {WorkerSourceVectorTileResult} from '../../../src/source/worker_sour
 describe('querySourceFeatures', () => {
     const features: Feature[] = [{
         id: '1',
-        type: 1,
-        geometry: [[0, 0]],
+        type: 4,
+        x: 0,
+        y: 0,
         tags: {oneway: true}
     }];
 

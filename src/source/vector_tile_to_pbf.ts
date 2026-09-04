@@ -7,7 +7,7 @@ import type {Feature} from './geojson_wrapper';
  * Encodes a set of GeoJSON-like features as vector tiles.
  * @private
  */
-export default function writeFeatures(layers: Record<string, Feature[]>) {
+export default function writeFeatures(layers: Record<string, readonly Feature[]>) {
     const pbf = new PbfWriter();
     for (const name of Object.keys(layers)) {
         const features = layers[name]!;
@@ -16,7 +16,7 @@ export default function writeFeatures(layers: Record<string, Feature[]>) {
     return pbf.finish();
 }
 
-function writeLayer({name, features}: {name: string, features: Feature[]}, pbf: PbfWriter) {
+function writeLayer({name, features}: {name: string, features: readonly Feature[]}, pbf: PbfWriter) {
     pbf.writeStringField(1, name);
     pbf.writeVarintField(5, EXTENT);
 
@@ -48,18 +48,19 @@ function writeFeature(context: FeatureContext, pbf: PbfWriter) {
     // vector tile spec only supports integer values for feature ids -
     // allowing non-integer values here results in a non-compliant PBF
     // that causes an exception when it is parsed with vector-tile-js
-    if (feature.id !== undefined && Number.isSafeInteger(+feature.id!)) {
-        pbf.writeVarintField(1, +feature.id!);
+    if (feature.id !== undefined && Number.isSafeInteger(+feature.id)) {
+        pbf.writeVarintField(1, +feature.id);
     }
 
     if (feature.tags) pbf.writeMessage(2, writeProperties, context);
-    pbf.writeVarintField(3, feature.type);
+    pbf.writeVarintField(3, feature.type === 4 ? 1 : feature.type);
     pbf.writeMessage(4, writeGeometry, feature);
 }
 
 function writeProperties({keys, values, feature}: FeatureContext, pbf: PbfWriter) {
-    for (const key of Object.keys(feature!.tags)) {
-        let value = feature!.tags[key];
+    const tags = feature!.tags!;
+    for (const key of Object.keys(tags)) {
+        let value = tags[key];
         if (value === null) continue; // don't encode null value properties
 
         let keyIndex = keys.get(key);
@@ -94,16 +95,23 @@ function zigzag(num: number): number {
 }
 
 function writeGeometry(feature: Feature, pbf: PbfWriter) {
-    const {geometry, type} = feature;
+    if (feature.type === 4) {
+        pbf.writeVarint(command(1, 1)); // moveto
+        pbf.writeVarint(zigzag(feature.x));
+        pbf.writeVarint(zigzag(feature.y));
+        return;
+    }
+
     let x = 0;
     let y = 0;
 
-    if (type === 1) {
-        pbf.writeVarint(command(1, geometry.length)); // moveto
+    if (feature.type === 1) {
+        const {geometry} = feature;
+        pbf.writeVarint(command(1, geometry.length >> 1)); // moveto
 
-        for (const p of geometry) {
-            const dx = p[0] - x;
-            const dy = p[1] - y;
+        for (let i = 0; i < geometry.length; i += 2) {
+            const dx = geometry[i]! - x;
+            const dy = geometry[i + 1]! - y;
             pbf.writeVarint(zigzag(dx));
             pbf.writeVarint(zigzag(dy));
             x += dx;
@@ -111,20 +119,21 @@ function writeGeometry(feature: Feature, pbf: PbfWriter) {
         }
 
     } else {
-        for (const ring of geometry) {
+        const isPolygon = feature.type === 3;
+        for (const ring of feature.geometry) {
             if (ring.length === 0) continue;
             pbf.writeVarint(command(1, 1));
-            const lineCount = ring.length - (type === 3 ? 1 : 0); // do not write polygon closing path as lineto
+            const lineCount = (ring.length >> 1) - (isPolygon ? 1 : 0); // do not write polygon closing path as lineto
             for (let i = 0; i < lineCount; i++) {
                 if (i === 1) pbf.writeVarint(command(2, lineCount - 1));
-                const dx = ring[i]![0] - x;
-                const dy = ring[i]![1] - y;
+                const dx = ring[2 * i]! - x;
+                const dy = ring[2 * i + 1]! - y;
                 pbf.writeVarint(zigzag(dx));
                 pbf.writeVarint(zigzag(dy));
                 x += dx;
                 y += dy;
             }
-            if (type === 3) {
+            if (isPolygon) {
                 pbf.writeVarint(command(7, 1)); // closepath
             }
         }

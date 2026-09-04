@@ -1,4 +1,3 @@
-
 import EXTENT from '../style-spec/data/extent';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
 
@@ -17,11 +16,12 @@ type InternalFeature = BBox & {
     tags: {[_: string]: string | number | boolean},
     type: 1 | 2 | 3,
     geometry: number[] | number[][]
-    properties?: object
 };
 
-const PAD = 64 / 4096; // geojson-vt default tile buffer
-const PAD_PX = 128; // the same buffer relative to EXTENT
+// tile clip padding, as a fraction of tile size and in EXTENT units respectively; intentionally much
+// tighter than the EXTENT / 4 buffer gl-js configures for geojson-vt in the static case
+const PAD = 64 / 4096;
+const PAD_PX = 128;
 
 /*
  * A GeoJSON index tailored to "small data, updated frequently" use cases
@@ -43,21 +43,17 @@ export default class GeoJSONRT {
             const id = feature.id;
             if (id == null) continue;
 
-            let updated = this.features.get(id);
-
-            // update tile cache for the old position
-            if (updated) this.updateCache(updated, cache);
+            // a feature can move, so tiles covering both where it was and where it lands are stale
+            const existing = this.features.get(id);
+            if (existing) this.updateCache(existing, cache);
 
             if (!feature.geometry) {
                 this.features.delete(id);
             } else {
-                updated = convertFeature(feature);
-                // update tile cache for the new position
+                const updated = convertFeature(feature);
                 this.updateCache(updated, cache);
                 this.features.set(id, updated);
             }
-
-            this.updateCache(updated, cache);
         }
     }
 
@@ -75,9 +71,9 @@ export default class GeoJSONRT {
 
     // return all features that fit in the tile (plus a small padding) by bbox; since dynamic mode is
     // for "small data, frequently updated" case, linear loop through all features should be fast enough
-    getTile(z: number, tx: number, ty: number) {
+    getTileRaw(z: number, tx: number, ty: number) {
         const z2 = Math.pow(2, z);
-        const features = [];
+        const features: Feature[] = [];
         for (const feature of this.features.values()) {
             if (intersectsTile(feature, z2, tx, ty)) {
                 features.push(outputFeature(feature, z2, tx, ty));
@@ -101,7 +97,6 @@ function intersectsTile({minX, minY, maxX, maxY}: BBox, z2: number, tx: number, 
 
 function convertFeature(originalFeature: GeoJSON.Feature): InternalFeature {
     const {id, geometry, properties} = originalFeature;
-    if (!geometry) return;
     if (geometry.type === 'GeometryCollection') {
         throw new Error('GeometryCollection not supported in dynamic mode.');
     }
@@ -179,48 +174,56 @@ function convertLines(lines: GeoJSON.Position[][], out: number[][], bbox: BBox, 
     }
 }
 
+// EXTENT-scaled tile-local coordinate from a normalized [0, 1] world coordinate
+function tileCoord(v: number, z2: number, t: number): number {
+    return Math.round(EXTENT * (v * z2 - t));
+}
+
 function outputFeature(feature: InternalFeature, z2: number, tx: number, ty: number): Feature {
     const {id, type, geometry, tags} = feature;
-    const tileGeom = [];
 
     if (type === 1) {
-        transformPoints(geometry as number[], z2, tx, ty, tileGeom as [number, number][]);
-    } else if (type === 2) {
-        for (const ring of geometry) {
-            transformAndClipLine(ring as number[], z2, tx, ty, tileGeom as [number, number][][]);
+        const points = geometry as number[];
+        if (points.length === 2) {
+            return {
+                id,
+                type: 4,
+                x: tileCoord(points[0], z2, tx),
+                y: tileCoord(points[1], z2, ty),
+                tags
+            };
         }
-    } else if (type === 3) {
-        for (const ring of geometry) {
-            transformAndClipPolygon(ring as number[], z2, tx, ty, tileGeom as [number, number][][]);
+        const out = new Int32Array(points.length);
+        for (let i = 0; i < points.length; i += 2) {
+            out[i] = tileCoord(points[i], z2, tx);
+            out[i + 1] = tileCoord(points[i + 1], z2, ty);
         }
+        return {id, type: 1, geometry: out, tags};
     }
 
-    return {
-        id,
-        type,
-        geometry: tileGeom,
-        tags
-    };
-}
+    const parts: Int32Array[] = [];
 
-function transformPoints(line: number[], z2: number, tx: number, ty: number, out: [number, number][]) {
-    for (let i = 0; i < line.length; i += 2) {
-        const ox = Math.round(EXTENT * (line[i + 0] * z2 - tx));
-        const oy = Math.round(EXTENT * (line[i + 1] * z2 - ty));
-        out.push([ox, oy]);
+    if (type === 2) {
+        // line clipping grows parts vertex by vertex, so their length is only known at the end
+        const lines: number[][] = [];
+        for (const ring of geometry as number[][]) transformAndClipLine(ring, z2, tx, ty, lines);
+        for (const line of lines) parts.push(new Int32Array(line));
+    } else {
+        for (const ring of geometry as number[][]) transformAndClipPolygon(ring, z2, tx, ty, parts);
     }
+    return {id, type, geometry: parts, tags};
 }
 
-function transformAndClipLine(line: number[], z2: number, tx: number, ty: number, out: [number, number][][]) {
+function transformAndClipLine(line: number[], z2: number, tx: number, ty: number, out: number[][]) {
     const min = -PAD_PX;
     const max = EXTENT + PAD_PX;
-    let part: [[number, number]];
+    let part: number[];
 
     for (let i = 0; i < line.length - 2; i += 2) {
-        let x0 = Math.round(EXTENT * (line[i + 0] * z2 - tx));
-        let y0 = Math.round(EXTENT * (line[i + 1] * z2 - ty));
-        let x1 = Math.round(EXTENT * (line[i + 2] * z2 - tx));
-        let y1 = Math.round(EXTENT * (line[i + 3] * z2 - ty));
+        let x0 = tileCoord(line[i + 0], z2, tx);
+        let y0 = tileCoord(line[i + 1], z2, ty);
+        let x1 = tileCoord(line[i + 2], z2, tx);
+        let y1 = tileCoord(line[i + 3], z2, ty);
         const dx = x1 - x0;
         const dy = y1 - y0;
 
@@ -264,22 +267,22 @@ function transformAndClipLine(line: number[], z2: number, tx: number, ty: number
             y1 = max;
         }
 
-        if (!part || x0 !== part.at(-1)[0] || y0 !== part.at(-1)[1]) {
-            part = [[x0, y0]];
+        if (!part || x0 !== part.at(-2) || y0 !== part.at(-1)) {
+            part = [x0, y0];
             out.push(part);
         }
 
-        part.push([x1, y1]);
+        part.push(x1, y1);
     }
 }
 
-function transformAndClipPolygon(input: number[], z2: number, tx: number, ty: number, out: [number, number][][]) {
+function transformAndClipPolygon(input: number[], z2: number, tx: number, ty: number, out: Int32Array[]) {
     const minX = (tx - PAD) / z2;
     const minY = (ty - PAD) / z2;
     const maxX = (tx + 1 + PAD) / z2;
     const maxY = (ty + 1 + PAD) / z2;
 
-    function bitCode(x, y) {
+    function bitCode(x: number, y: number) {
         let code = 0;
 
         if (x < minX) code |= 1; // left
@@ -295,7 +298,7 @@ function transformAndClipPolygon(input: number[], z2: number, tx: number, ty: nu
 
     // clip against each side of the clip rectangle
     for (let edge = 1; edge <= 8; edge *= 2) {
-        let x0 = input[input.length - 2];
+        let x0 = input.at(-2);
         let y0 = input.at(-1);
         let prevInside = !(bitCode(x0, y0) & edge);
 
@@ -325,12 +328,14 @@ function transformAndClipPolygon(input: number[], z2: number, tx: number, ty: nu
         clipped = [];
     }
 
-    const ring: [number, number][] = [];
-    for (let i = 0; i < clipped.length; i += 2) ring.push([
-        Math.round(EXTENT * (clipped[i] * z2 - tx)),
-        Math.round(EXTENT * (clipped[i + 1] * z2 - ty))
-    ]);
-    if (ring.length) out.push(ring);
+    if (!clipped.length) return;
+
+    const ring = new Int32Array(clipped.length);
+    for (let i = 0; i < clipped.length; i += 2) {
+        ring[i] = tileCoord(clipped[i], z2, tx);
+        ring[i + 1] = tileCoord(clipped[i + 1], z2, ty);
+    }
+    out.push(ring);
 }
 
 // rewind a polygon ring to a given winding order (clockwise or anti-clockwise)

@@ -4,7 +4,7 @@ import GeoJSONWrapper from './geojson_wrapper';
 import GeoJSONRT from './geojson_rt';
 import writePbf from './vector_tile_to_pbf';
 import Supercluster from 'supercluster';
-import geojsonvt from 'geojson-vt';
+import GeoJSONVT from 'geojson-vt';
 import assert from '../style-spec/util/assert';
 import VectorTileWorkerSource from './vector_tile_worker_source';
 import {createExpression} from '../style-spec/expression/index';
@@ -18,6 +18,7 @@ import type {Feature} from './geojson_wrapper';
 import type {Feature as ExpressionFeature} from '../style-spec/expression/index';
 import type {LoadVectorDataCallback} from './load_vector_tile';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
+import type {Options as GeoJSONVTOptions} from 'geojson-vt';
 
 export type GeoJSONWorkerOptions = {
     source: string;
@@ -25,8 +26,7 @@ export type GeoJSONWorkerOptions = {
     cluster: boolean;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     superclusterOptions?: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    geojsonVtOptions?: any;
+    geojsonVtOptions?: GeoJSONVTOptions;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     clusterProperties?: any;
     filter?: Array<unknown>;
@@ -46,8 +46,7 @@ type ResourceTiming = Record<string, PerformanceResourceTiming[]>;
 export type LoadGeoJSONResult = FeatureCollectionOrFeature & {resourceTiming?: ResourceTiming};
 
 export interface GeoJSONIndex {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    getTile: (z: number, x: number, y: number) => any;
+    getTileRaw: (z: number, x: number, y: number) => {features: readonly Feature[]} | null;
     // supercluster methods
     getClusterExpansionZoom?: (clusterId: number) => number;
     getChildren?: (clusterId: number) => Array<GeoJSON.Feature>;
@@ -62,32 +61,23 @@ function loadGeoJSONTile(this: GeoJSONWorkerSource, params: WorkerSourceVectorTi
         return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const geoJSONTile = this._geoJSONIndex.getTile(canonical.z, canonical.x, canonical.y);
+    const geoJSONTile = this._geoJSONIndex.getTileRaw(canonical.z, canonical.x, canonical.y);
     if (!geoJSONTile) {
         callback(null, null); // nothing in the given tile
         return;
     }
 
     // HACK: separate elevation features into separate layer
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const isElevationfeature = (f) => f.tags && '3d_elevation_id' in f.tags && 'source' in f.tags && f.tags.source === 'elevation';
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    const elevationFeatures = geoJSONTile.features.filter(f => isElevationfeature(f));
+    const isElevationfeature = (f: Feature) => f.tags && '3d_elevation_id' in f.tags && 'source' in f.tags && f.tags.source === 'elevation';
+    const elevationFeatures = geoJSONTile.features.filter(isElevationfeature);
 
-    let layers: Record<string, Feature[]> = {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    let layers: Record<string, readonly Feature[]> = {
         _geojsonTileLayer: geoJSONTile.features
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (elevationFeatures.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        const nonElevationFeatures = geoJSONTile.features.filter(f => !isElevationfeature(f));
         layers = {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            _geojsonTileLayer: nonElevationFeatures,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            _geojsonTileLayer: geoJSONTile.features.filter(f => !isElevationfeature(f)),
             'hd_road_elevation': elevationFeatures
         };
     }
@@ -183,8 +173,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             params.cluster ? new Supercluster(getSuperclusterOptions(params)).load((data as GeoJSON.FeatureCollection).features as Array<GeoJSON.Feature<GeoJSON.Point, object>>) :
             params.dynamic ? this._dynamicIndex :
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            geojsonvt(data, params.geojsonVtOptions);
+            new GeoJSONVT(data, params.geojsonVtOptions);
 
         const result: {resourceTiming?: ResourceTiming} = {};
         if (perf) {

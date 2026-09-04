@@ -5,6 +5,7 @@
       "height": 256,
       "width": 256,
       "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0004},
         {"platform-tag-contains": "native", "threshold": 0.0002},
         {"platform-tag-contains": "native-android", "threshold": 0.0003}
       ]

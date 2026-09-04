@@ -616,10 +616,10 @@ class LineBucket implements Bucket {
             // result in some precision issues especially with longer lines.
             if (!Number.isNaN(featureLen) && !Number.isNaN(segmentLen)) {
                 this.totalFeatureLength = featureLen;
-                this.distance = segmentLen * clipRangeScale;
+                this.totalDistance = segmentLen * clipRangeScale;
                 this.lineClips.start = range.min;
                 this.lineClips.end = range.max;
-                this.maxLineLength = Math.max(this.maxLineLength, this.distance);
+                this.maxLineLength = Math.max(this.maxLineLength, this.totalDistance);
             } else {
                 // Calculate the total distance, in tile units, of this tiled line feature
                 for (let i = 0; i < vertices.length - 1; i++) {
