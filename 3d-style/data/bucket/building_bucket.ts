@@ -35,6 +35,7 @@ import {tileToMeter} from '../../../src/geo/mercator_coordinate';
 import toEvaluationFeature from '../../../src/data/evaluation_feature';
 import {TriangleIndexArray} from '../../../src/data/index_array_type';
 import {GroundEffect} from '../../../src/data/bucket/fill_extrusion_bucket';
+import {resolveBuildingId} from '../../../src/data/building_id';
 import Point from '@mapbox/point-geometry';
 import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
@@ -508,12 +509,9 @@ export class BuildingBucket implements BucketWithGroundEffect {
             if (needGeometry && !this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), feature, canonical))
                 continue;
 
-            let buildingId: number | null = null;
-            if (feature.properties && Object.hasOwn(feature.properties, 'building_id')) {
-                buildingId = Number(feature.properties['building_id']);
-                if (disabledBuildings.has(buildingId)) {
-                    continue;
-                }
+            const buildingId = resolveBuildingId(feature.properties) ?? null;
+            if (buildingId !== null && disabledBuildings.has(buildingId)) {
+                continue;
             }
 
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);

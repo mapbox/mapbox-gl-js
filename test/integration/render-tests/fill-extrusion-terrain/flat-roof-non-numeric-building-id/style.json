@@ -1,0 +1,98 @@
+{
+  "version": 8,
+  "_comment": "Two extrusions on a steep slope (about 38m of terrain between them), each carrying a distinct non-numeric (UUID) building_id. Parts of one building share a centroid, and with the default flat fill-extrusion-height-alignment that centroid decides the roof elevation. Non-numeric ids all convert to NaN, and because Map keys compare NaN as equal, both features used to land in the same building group and both roofs snapped to the elevation halfway between them: the uphill box lost most of its height, the downhill one gained. Each roof must instead sit 30m above its own ground. See https://github.com/mapbox/mapbox-gl-js/issues/13712.",
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 208,
+      "operations": [
+        ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.0003}
+      ]
+    }
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}-terrain-512.png"
+      ],
+      "maxzoom": 14,
+      "tileSize": 512
+    },
+    "buildings": {
+      "type": "geojson",
+      "maxzoom": 14,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "building_id": "2f6b3ee3-a3e4-4d1a-9e14-8a3f5e2d1c00"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [-122.456460, 37.738600],
+                  [-122.456260, 37.738600],
+                  [-122.456260, 37.738760],
+                  [-122.456460, 37.738760],
+                  [-122.456460, 37.738600]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "building_id": "9c1d7a08-5b62-4f77-b0a1-6e2c4d9f3b11"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [-122.455860, 37.738600],
+                  [-122.455660, 37.738600],
+                  [-122.455660, 37.738760],
+                  [-122.455860, 37.738760],
+                  [-122.455860, 37.738600]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "pitch": 60,
+  "zoom": 16.5,
+  "center": [
+    -122.456060,
+    37.738684
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "buildings",
+      "paint": {
+        "fill-extrusion-color": "red",
+        "fill-extrusion-height": 30
+      }
+    }
+  ]
+}

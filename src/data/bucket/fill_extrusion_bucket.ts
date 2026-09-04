@@ -23,6 +23,7 @@ import {register} from '../../util/web_worker_transfer';
 import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
+import {resolveBuildingId} from '../building_id';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Point from '@mapbox/point-geometry';
 import {number as interpolate} from '../../style-spec/util/interpolate';
@@ -1075,10 +1076,8 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         const borderCentroidData = new BorderCentroidData();
         borderCentroidData.centroidDataIndex = this.centroidData.length;
         const centroid = new PartData();
-        centroid.buildingId = featureId;
-        if (feature.properties && Object.hasOwn(feature.properties, 'building_id')) {
-            centroid.buildingId = Number(feature.properties['building_id']);
-        }
+        const buildingId = resolveBuildingId(feature.properties);
+        centroid.buildingId = buildingId ?? featureId;
         borderCentroidData.buildingId = centroid.buildingId;
 
         const base = this.layers[0].paint.get('fill-extrusion-base').evaluate(feature, {}, canonical);
@@ -1480,9 +1479,8 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         centroid.centroidXY = borderCentroidData.borders ? HIDDEN_CENTROID : this.encodeCentroid(borderCentroidData, centroid);
 
         // Pass 1 of two-pass centroid grouping: accumulate building group data.
-        if (feature.properties && Object.hasOwn(feature.properties, 'building_id')) {
-            const bid = centroid.buildingId;
-            let group = this.buildingGroups.get(bid);
+        if (buildingId !== undefined) {
+            let group = this.buildingGroups.get(buildingId);
             if (!group) {
                 group = {
                     accX: 0, accY: 0, accCount: 0,
@@ -1490,7 +1488,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                     mergedMax: new Point(-Number.MAX_VALUE, -Number.MAX_VALUE),
                     partIndices: []
                 };
-                this.buildingGroups.set(bid, group);
+                this.buildingGroups.set(buildingId, group);
             }
             group.accX += borderCentroidData.acc.x;
             group.accY += borderCentroidData.acc.y;
