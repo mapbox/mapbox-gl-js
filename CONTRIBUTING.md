@@ -200,7 +200,9 @@ flowchart TB
 
 ## Changelog Conventions
 
-`CHANGELOG.md` is a valuable document many people read. It contains a formatted, lightly editorialized history of changes in the project. Pull requests are the unit of change and are normally categorized and summarized when reviewed. The changelog is manually curated from the list of commits that go into a release.
+`CHANGELOG.md` is a valuable document many people read. It contains a formatted, lightly editorialized history of changes in the project. Pull requests are the unit of change and are normally categorized and summarized when reviewed. The `Unreleased` section is updated in each pull request and curated during release preparation.
+
+Every pull request must either add a top-level bullet to the `Unreleased` section of `CHANGELOG.md` or have the `skip_gl_js_changelog` label. The repo-wide `skip changelog` label also bypasses the check. CI enforces this requirement.
 
 What warrants a changelog entry?
 
@@ -210,7 +212,7 @@ What warrants a changelog entry?
 - Any documentation related changes *should not* have a changelog entry
 - Any regression change introduced and fixed within the same release *should not* have a changelog entry
 - Any internal refactoring, technical debt reduction, render test, unit test or benchmark related change *should not* have a changelog entry
-- Any PR labeled `skip changelog` *should not* have a changelog entry
+- Any PR labeled `skip_gl_js_changelog` or `skip changelog` *should not* have a changelog entry
 
 A changelog entry should:
 
