@@ -79,6 +79,7 @@
 - Reduce redundant repaints and checks during initial load.
 
 ### Bug fixes 🐞
+- Fix inaccurate coordinate projection and feature queries when terrain is used with an orthographic camera projection.
 - Fix double rotation of the FF5C character in vertical text rendering.
 - Preserve live gesture when camera setter is called from inside a drag/move handler.
 - Stop overwriting the `pointerEvents` of markers set by the user.
