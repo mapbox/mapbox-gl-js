@@ -806,8 +806,9 @@ class Tile {
             const imagePositions: SpritePositions = this.imageAtlas ? Object.fromEntries(this.imageAtlas.patternPositions) : {};
             const withStateUpdates = Object.keys(sourceLayerStates).length > 0 && !isBrightnessChanged;
             bucket.hasAppearances = bucket.layers.some(layer => layer.appearances && layer.appearances.length > 0);
-            const layers = withStateUpdates ? bucket.stateDependentLayers : bucket.layers;
-            if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged || hasPaintUpdate || needsSymbolUBOUpdate) {
+            const hasStateDependentLayers = withStateUpdates && bucket.stateDependentLayers.length !== 0;
+            const layers = hasStateDependentLayers ? bucket.stateDependentLayers : bucket.layers;
+            if (hasStateDependentLayers || isBrightnessChanged || hasPaintUpdate || needsSymbolUBOUpdate) {
                 const vtLayers = this.latestFeatureIndex.loadVTLayers();
                 const sourceLayer = vtLayers[sourceLayerId];
                 bucket.update(sourceLayerStates, sourceLayer, images, imagePositions, layers, isBrightnessChanged, brightness, this.tileID.canonical);
@@ -858,15 +859,14 @@ class Tile {
                     }
                 }
             }
-            if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged || bucket.hasAppearances) {
+            if (hasStateDependentLayers || isBrightnessChanged || bucket.hasAppearances) {
                 const globalProperties = {
                     zoom: painter.transform.zoom,
                     pitch: painter.transform.pitch,
                     brightness: painter.style.getBrightness() || 0,
                     worldview: painter.worldview
                 };
-                const featureStateChanged = withStateUpdates && bucket.stateDependentLayers.length !== 0;
-                const result = bucket.updateAppearances(this.tileID.canonical, sourceLayerStates, images, globalProperties, painter.imageManager, featureStateChanged);
+                const result = bucket.updateAppearances(this.tileID.canonical, sourceLayerStates, images, globalProperties, painter.imageManager, hasStateDependentLayers);
                 if (result && result.hasUboChanges) {
                     const context = painter.context;
                     if (bucket instanceof SymbolBucket && bucket.text && bucket.text.uboBinder) {
