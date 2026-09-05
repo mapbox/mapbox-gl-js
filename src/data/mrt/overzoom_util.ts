@@ -29,12 +29,8 @@ function dtypeFromArray(array: Uint8Array | Uint16Array | Uint32Array): DType {
  * Compute relative offset of proposed overzoom
  *
  * @param tileSize - source tile size
- * @param sx - source x coordinate
- * @param sy - source y coordinate
- * @param sz - source z coordinate
- * @param dx - destination x coordinate
- * @param dy - destination y coordinate
- * @param dz - destination z coordinate
+ * @param source - source tile coordinates
+ * @param dest - destination tile coordinates
  * @returns offset - relative offset of overzoomed tile
  */
 export function computeOverzoomCoords(
