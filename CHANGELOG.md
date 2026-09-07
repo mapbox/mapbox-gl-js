@@ -1,5 +1,16 @@
 ## Unreleased
 
+### Features and improvements ✨
+
+- Significantly improve GeoJSON memory footprint.
+- Reduce landmark model memory usage.
+- Remove the experimental flag from `raster-allow-draping`.
+- Add support for emissive MRT in custom layers.
+
+### Bug fixes 🐞
+
+- Fix `removeSource` throwing under globe projection. (h/t @mhayk)
+
 ## 3.30.0
 
 ### Breaking changes ⚠️
