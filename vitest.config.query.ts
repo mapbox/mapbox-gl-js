@@ -1,8 +1,8 @@
-import {mergeConfig, defineConfig} from 'vitest/config';
+import {mergeConfig} from 'vitest/config';
 import baseConfig, {isCI, chromiumBrowser} from './vitest.config.base.ts';
 import {integrationTests, setupIntegrationTestsMiddlewares, serveDistPlugin, suiteDirs} from './vitest.config.common.ts';
 
-export default mergeConfig(baseConfig, defineConfig({
+export default mergeConfig(baseConfig, {
     define: {
         'import.meta.env.VITE_CI': JSON.stringify(String(isCI)),
         'import.meta.env.VITE_UPDATE': JSON.stringify(String(process.env.UPDATE === 'true')),
@@ -29,4 +29,4 @@ export default mergeConfig(baseConfig, defineConfig({
         integrationTests({suiteDirs: suiteDirs('query-tests')}),
         serveDistPlugin(),
     ],
-}));
+});

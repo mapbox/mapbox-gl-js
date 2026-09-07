@@ -2,7 +2,7 @@ import {basename, extname} from 'path';
 import {readFileSync} from 'fs';
 import {gunzipSync} from 'zlib';
 import virtual from '@rollup/plugin-virtual';
-import {mergeConfig, defineConfig} from 'vitest/config';
+import {mergeConfig} from 'vitest/config';
 import baseConfig, {chromiumBrowser} from './vitest.config.base.ts';
 
 // Minimal tar reader (ustar): yields regular file entries from an already-gunzipped buffer.
@@ -50,7 +50,7 @@ for (const tarPath of ['./test/usvg/test-suite.tar.gz', './test/usvg/mapbox_usvg
     }
 }
 
-export default mergeConfig(baseConfig, defineConfig({
+export default mergeConfig(baseConfig, {
     test: {
         browser: chromiumBrowser(),
         retry: 0,
@@ -62,4 +62,4 @@ export default mergeConfig(baseConfig, defineConfig({
             'virtual:usvg-fixtures': `export const fixtures = ${JSON.stringify(fixtures)};\nexport const iconsets = ${JSON.stringify(iconsets)};`
         })
     ]
-}));
+});

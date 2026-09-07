@@ -30,8 +30,8 @@ class MockEdgeIterator extends EdgeIterator {
 }
 
 declare module 'vitest' {
-    interface Assertion<T = any> {
-        toMatchRing: (expected: Point[]) => T;
+    interface Assertion<R extends void | Promise<void> = void, T = unknown> {
+        toMatchRing: (expected: Point[]) => Assertion<R, T>;
     }
 }
 

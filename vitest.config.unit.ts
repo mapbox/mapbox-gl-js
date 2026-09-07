@@ -1,11 +1,10 @@
 import {basename as pathBasename} from 'node:path';
 import {readFileSync, globSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
-import {mergeConfig, defineConfig} from 'vitest/config';
+import {mergeConfig} from 'vitest/config';
 import baseConfig, {isCI, chromiumBrowser} from './vitest.config.base.ts';
 
-import type {Reporter} from 'vitest/reporters';
-import type {TestProject} from 'vitest/node';
+import type {Reporter, TestProject} from 'vitest/node';
 
 // Long browser-mode runs accumulate detached iframe state in the orchestrator
 // renderer, eventually crashing it as a flaky `Browser connection was closed`.
@@ -66,7 +65,7 @@ function styleSpecFixtures() {
     };
 }
 
-export default mergeConfig(baseConfig, defineConfig({
+export default mergeConfig(baseConfig, {
     resolve: {
         alias: [
             // Mirror the Rollup ESM substitution so unit tests exercise the real
@@ -109,4 +108,4 @@ export default mergeConfig(baseConfig, defineConfig({
     plugins: [
         styleSpecFixtures()
     ]
-}));
+});

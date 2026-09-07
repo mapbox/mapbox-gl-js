@@ -29,8 +29,8 @@ class MockEdgeIterator extends EdgeIterator {
 }
 
 declare module 'vitest' {
-    interface Assertion<T = any> {
-        toEqualLineInfo: (expected: LineInfo, tolerance: number) => T;
+    interface Assertion<R extends void | Promise<void> = void, T = unknown> {
+        toEqualLineInfo: (expected: LineInfo, tolerance: number) => Assertion<R, T>;
     }
 }
 

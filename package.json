@@ -57,8 +57,8 @@
     "@types/node": "^26.0.0",
     "@types/offscreencanvas": "^2019.7.3",
     "@typescript/native": "npm:typescript@^7.0.2",
-    "@vitest/browser-playwright": "^4.1.7",
-    "@vitest/ui": "^4.1.7",
+    "@vitest/browser-playwright": "^5.0.0",
+    "@vitest/ui": "^5.0.0",
     "browserslist-to-esbuild": "^2.1.1",
     "cssnano": "^9.0.1",
     "diff": "^9.0.0",
@@ -97,7 +97,7 @@
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-eslint": "^8.63.0",
     "vite-plugin-arraybuffer": "^0.1.4",
-    "vitest": "^4.1.7",
+    "vitest": "^5.0.0",
     "yeahjs": "^0.4.1"
   },
   "scripts": {

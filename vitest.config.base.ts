@@ -1,9 +1,9 @@
-import {defineConfig} from 'vitest/config';
 import {createFilter} from '@rollup/pluginutils';
 import arraybuffer from 'vite-plugin-arraybuffer';
 import {playwright} from '@vitest/browser-playwright';
 
 import type {BrowserConfigOptions, InlineConfig} from 'vitest/node';
+import type {UserConfig} from 'vite';
 
 export const isCI = process.env.CI === 'true';
 
@@ -32,15 +32,15 @@ function glsl(include: string[]) {
     };
 }
 
-export default defineConfig({
+const baseConfig: UserConfig = {
     test: {
         retry: isCI ? 2 : 0,
         testTimeout: 5_000,
         reporters: defaultReporters,
+        fileParallelism: false,
         browser: {
             enabled: true,
             headless: true,
-            fileParallelism: false,
             screenshotFailures: false,
         },
         restoreMocks: true,
@@ -50,4 +50,6 @@ export default defineConfig({
         glsl(['./src/shaders/*.glsl', './3d-style/shaders/*.glsl']),
         arraybuffer(),
     ],
-});
+};
+
+export default baseConfig;

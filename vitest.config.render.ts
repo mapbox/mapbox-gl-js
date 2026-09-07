@@ -1,5 +1,5 @@
 import os from 'node:os';
-import {mergeConfig, defineConfig} from 'vitest/config';
+import {mergeConfig} from 'vitest/config';
 import {playwright} from '@vitest/browser-playwright';
 import baseConfig, {isCI, chromiumBrowser} from './vitest.config.base.ts';
 import {integrationTests, setupIntegrationTestsMiddlewares, serveDistPlugin, suiteDirs} from './vitest.config.common.ts';
@@ -27,20 +27,30 @@ const chromiumArgs = [
 if (isCI) chromiumArgs.push('--ignore-gpu-blocklist');
 
 const browsers: Record<string, BrowserConfigOptions> = {
-    chromium: chromiumBrowser({args: chromiumArgs}),
-    firefox: {provider: playwright(), headless: false, instances: [{browser: 'firefox'}]},
-    webkit: {provider: playwright(), instances: [{browser: 'webkit'}]},
+    chromium: chromiumBrowser({
+        args: chromiumArgs,
+        contextOptions: {viewport: {width: 1280, height: 720}, deviceScaleFactor: 1},
+    }),
+    firefox: {
+        provider: playwright({contextOptions: {viewport: {width: 1280, height: 720}, deviceScaleFactor: 1}}),
+        headless: false,
+        instances: [{browser: 'firefox'}],
+    },
+    webkit: {
+        provider: playwright({contextOptions: {viewport: {width: 1280, height: 720}, deviceScaleFactor: 1}}),
+        instances: [{browser: 'webkit'}],
+    },
 };
 const browser = browsers[renderBrowser === 'safari' ? 'webkit' : renderBrowser];
 
-export default mergeConfig(baseConfig, defineConfig({
+export default mergeConfig(baseConfig, {
     define: {
         'import.meta.env.VITE_CI': JSON.stringify(String(isCI)),
         'import.meta.env.VITE_UPDATE': JSON.stringify(String(process.env.UPDATE === 'true')),
         // Opt-in embedding of passed-test images in the report (local dev only;
         // forced off on CI to keep the report small).
         'import.meta.env.VITE_EMBED_PASSED_IMAGES': JSON.stringify(String(!isCI && process.env.EMBED_PASSED_IMAGES === 'true')),
-        'import.meta.env.VITE_SPRITE_FORMAT': process.env.SPRITE_FORMAT != null ? JSON.stringify(process.env.SPRITE_FORMAT) : null,
+        'import.meta.env.VITE_SPRITE_FORMAT': JSON.stringify(process.env.SPRITE_FORMAT ?? 'null'),
         'import.meta.env.VITE_DIST_BUNDLE': JSON.stringify(bundle),
     },
     test: {
@@ -50,6 +60,12 @@ export default mergeConfig(baseConfig, defineConfig({
             ui: false,
             viewport: {width: 1280, height: 720}, ...browser},
     },
+    optimizeDeps: {
+        noDiscovery: true,
+        include: [
+            'vitest > expect-type',
+        ],
+    },
     plugins: [
         setupIntegrationTestsMiddlewares({
             reportPath: 'test/integration/render-tests/render-tests.html',
@@ -57,4 +73,4 @@ export default mergeConfig(baseConfig, defineConfig({
         integrationTests({suiteDirs: suiteDirs('render-tests'), includeImages: true}),
         serveDistPlugin(),
     ],
-}));
+});

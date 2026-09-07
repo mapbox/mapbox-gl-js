@@ -1,8 +1,8 @@
-import {defineConfig, mergeConfig} from 'vitest/config';
+import {mergeConfig} from 'vitest/config';
 import baseConfig, {chromiumBrowser} from './vitest.config.base.ts';
 import {serveDistPlugin} from './vitest.config.common.ts';
 
-export default mergeConfig(baseConfig, defineConfig({
+export default mergeConfig(baseConfig, {
     test: {
         browser: chromiumBrowser(),
         include: ['test/integration/csp-tests/**/*.test.ts'],
@@ -15,4 +15,4 @@ export default mergeConfig(baseConfig, defineConfig({
             'Allow-CSP-From': '*',
         },
     },
-}));
+});
