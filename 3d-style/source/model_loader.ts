@@ -735,12 +735,12 @@ export async function loadModel(requestUrl: string, id: string, url: string): Pr
 }
 
 export function process3DTile(gltf: GLTF, zScale: number): Array<ModelNode> {
-    // If the tile uses the mbx_bvh extension, all nodes will have a BVH picking mesh
-    // so we can skip the expensive heightmap generation.
-    const hasBVH = gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('mbx_bvh');
     const nodes = convertModel(gltf);
     for (const node of nodes) {
-        if (!hasBVH) {
+        // A node without its own BVH picking mesh (own extension, or inherited from a child or LOD
+        // counterpart can't skip the expensive heightmap bake, otherwise there would be no height
+        // info for this model
+        if (!node.meshBVH) {
             for (const mesh of node.meshes) {
                 parseHeightmap(mesh);
             }

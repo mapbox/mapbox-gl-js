@@ -648,7 +648,7 @@ class Tiled3dModelBucket implements Bucket {
                 continue;
             }
 
-            assert(mesh.heightmap);
+            if (!mesh.heightmap) continue;
 
             const xCell = ((tmpVertex[0] - mesh.aabb.min[0]) / (mesh.aabb.max[0] - mesh.aabb.min[0]) * HEIGHTMAP_DIM) | 0;
             const yCell = ((tmpVertex[1] - mesh.aabb.min[1]) / (mesh.aabb.max[1] - mesh.aabb.min[1]) * HEIGHTMAP_DIM) | 0;
