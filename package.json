@@ -167,7 +167,8 @@
     "publish-release": "./build/publish.ts",
     "publish-cdn": "./build/publish-cdn.ts",
     "publish-alpha": "./build/publish-alpha.ts",
-    "bump-version": "./build/bump-version.ts"
+    "bump-version": "./build/bump-version.ts",
+    "release": "./internal/scripts/release.ts"
   },
   "files": [
     "dist/mapbox-gl*",

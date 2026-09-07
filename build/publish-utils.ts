@@ -98,9 +98,7 @@ export function readPackageVersion(packageJsonPath: string): string {
 }
 
 export function execCommand(cmd: string, dryRun: boolean, options?: {silent?: boolean}): string {
-    if (!options?.silent) {
-        console.log(`$ ${cmd}`);
-    }
+    console.log(`$ ${cmd}`);
     if (dryRun) {
         return '';
     }
@@ -112,18 +110,76 @@ export function execSilent(cmd: string): string {
     return execSync(cmd, {encoding: 'utf-8'}).trim();
 }
 
-export function prompt(question: string): Promise<boolean> {
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-    });
+export function execRead(cmd: string): string {
+    console.log(`$ ${cmd}`);
+    return execSilent(cmd);
+}
 
+let sharedReadline: readline.Interface | null = null;
+
+function getSharedReadline(): readline.Interface {
+    if (!sharedReadline) {
+        sharedReadline = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+        });
+    }
+    return sharedReadline;
+}
+
+export function closePrompts(): void {
+    sharedReadline?.close();
+    sharedReadline = null;
+}
+
+export function prompt(question: string, defaultYes = true): Promise<boolean> {
     return new Promise((resolve) => {
-        rl.question(question, (answer) => {
-            rl.close();
-            resolve(answer.toLowerCase() === 'y');
+        getSharedReadline().question(question, (answer) => {
+            const trimmed = answer.trim().toLowerCase();
+            resolve(trimmed === '' ? defaultYes : trimmed === 'y');
         });
     });
+}
+
+export function promptText(question: string, defaultValue?: string): Promise<string> {
+    const suffix = defaultValue ? ` [${defaultValue}] ` : ' ';
+
+    return new Promise((resolve) => {
+        getSharedReadline().question(`${question}${suffix}`, (answer) => {
+            resolve(answer.trim() || defaultValue || '');
+        });
+    });
+}
+
+export function getGhUsername(): string {
+    return execSilent('gh api user --jq .login');
+}
+
+export function copyToClipboard(text: string): void {
+    console.log('$ pbcopy');
+    execSync('pbcopy', {input: text});
+}
+
+export async function pollUntil<T>(
+    check: () => Promise<T | null> | T | null,
+    options: {intervalMs: number; timeoutMs: number; label: string},
+): Promise<T> {
+    const deadline = Date.now() + options.timeoutMs;
+
+    while (Date.now() < deadline) {
+        // eslint-disable-next-line no-await-in-loop
+        const result = await check();
+        if (result !== null) {
+            process.stdout.write('\n');
+            return result;
+        }
+        process.stdout.write('.');
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((resolve) => { setTimeout(resolve, options.intervalMs); });
+    }
+
+    process.stdout.write('\n');
+    throw new Error(`Timed out waiting for: ${options.label}`);
 }
 
 export function getTagsAtHead(): string[] {
@@ -146,6 +202,14 @@ export function getShortSha(): string {
 
 export function getLastCommitMessage(): string {
     return execSilent('git log -1 --pretty=%B');
+}
+
+export function getRemoteUrl(name: string): string | null {
+    try {
+        return execRead(`git remote get-url ${name}`);
+    } catch {
+        return null;
+    }
 }
 
 export function isAlreadyPublished(packageName: string, version: string): boolean {

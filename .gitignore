@@ -38,6 +38,7 @@ tests-to-run.txt
 **/test/integration/dist/**/*.json
 test/*.tgz
 .eslintcache
+.release-state.json
 src/style-spec/dist/index.cjs
 src/style-spec/dist/index.d.ts
 _batfish_site

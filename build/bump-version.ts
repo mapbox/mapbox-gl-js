@@ -114,7 +114,7 @@ async function main(): Promise<void> {
     console.log(`New versions:     gl-js ${nextVersion}, style-spec ${styleSpecNextVersion}`);
     console.log();
 
-    const confirmed = await prompt('Proceed and commit the changes? (y/n) ');
+    const confirmed = await prompt('Proceed and commit the changes? (y/N) ', false);
     if (!confirmed) {
         console.log('Operation cancelled.');
         process.exit(0);
