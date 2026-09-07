@@ -101,7 +101,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
 
     private async loadGLTFFromURI(uri: string, signal?: AbortSignal): Promise<GLTF> {
         const request = await this.map._requestManager.transformRequest(uri, ResourceType.Model, signal);
-        return loadGLTF(request.url, signal);
+        return loadGLTF(request, signal);
     }
 
     private async loadModel(modelId: string, modelSpec: ModelSourceModelSpecification, signal: AbortSignal): Promise<void> {

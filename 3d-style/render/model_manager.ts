@@ -51,7 +51,7 @@ class ModelManager extends Evented {
 
             await prepareStandard();
             if (!Standard.loadModel) return null;
-            return await Standard.loadModel(request.url, id, url);
+            return await Standard.loadModel(request, id, url);
         } catch (e) {
             if ((e as {status?: number}).status === 404) return null;
             this.fire(new ErrorEvent(new Error(`Could not load model ${id} from ${url}`, {cause: e})));

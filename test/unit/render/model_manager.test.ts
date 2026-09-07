@@ -4,6 +4,7 @@ import {describe, test, expect, vi} from '../../util/vitest';
 import ModelManager from '../../../3d-style/render/model_manager';
 import {Evented} from '../../../src/util/evented';
 import {RequestManager} from '../../../src/util/mapbox';
+import {mockFetch} from '../../util/network';
 
 function createModelManager() {
     const eventedParent = new Evented();
@@ -293,6 +294,27 @@ describe('ModelManager', () => {
             delete (Object.prototype as Record<string, unknown>).pollutedFromURLs;
             delete (Object.prototype as Record<string, unknown>)['https://attacker.example/from-bucket'];
         }
+    });
+
+    test('#loadModel sends the headers added by transformRequest with the model request', async () => {
+        const url = 'https://www.example.com/model.glb';
+        const modelManager = new ModelManager(new RequestManager(
+            (requestUrl) => ({url: requestUrl, headers: {authorization: 'Bearer token'}})
+        ));
+        modelManager.setEventedParent(new Evented());
+
+        let sentAuthorization: string | null = null;
+        mockFetch({
+            'model\\.glb': (request: Request) => {
+                sentAuthorization = request.headers.get('authorization');
+                return Promise.resolve(new Response(new ArrayBuffer(0)));
+            }
+        });
+
+        modelManager.addModel('model', url, 'basemap');
+        await modelManager.loadModel('model', url);
+
+        expect(sentAuthorization).toEqual('Bearer token');
     });
 
     test('#destroy', () => {

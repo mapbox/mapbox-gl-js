@@ -11,6 +11,7 @@ import {getArrayBuffer} from '../../src/util/ajax';
 import type {vec3, mat4, quat} from 'gl-matrix';
 import type {TextureImage} from '../../src/render/texture';
 import type {MaterialDescription, Sampler} from '../data/model';
+import type {RequestParameters} from '../../src/util/ajax';
 
 interface DracoDecoder {
     DecodeArrayToMesh: (data: Uint8Array, length: number, mesh: DracoMesh) => boolean;
@@ -396,9 +397,11 @@ export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 
     return gltf;
 }
 
-export async function loadGLTF(url: string, signal?: AbortSignal): Promise<GLTF> {
-    const {data: buffer} = await getArrayBuffer({url}, signal);
-    return decodeGLTF(buffer, 0, url, signal);
+// Takes the full `RequestParameters` (not just a URL) so that headers and credentials
+// added by a `transformRequest` callback reach the network request.
+export async function loadGLTF(requestParameters: RequestParameters, signal?: AbortSignal): Promise<GLTF> {
+    const {data: buffer} = await getArrayBuffer(requestParameters, signal);
+    return decodeGLTF(buffer, 0, requestParameters.url, signal);
 }
 
 export function load3DTile(data: ArrayBuffer): Promise<GLTF> {

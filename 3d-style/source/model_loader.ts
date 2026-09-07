@@ -24,6 +24,7 @@ import type {Class} from '../../src/types/class';
 import type {Footprint} from '../util/conflation';
 import type {TextureImage} from '../../src/render/texture';
 import type {GLTF, GLTFNode, GLTFAccessor, GLTFPrimitive} from '../util/loaders';
+import type {RequestParameters} from '../../src/util/ajax';
 import type {Mesh, ModelNode, Material, MaterialDescription, ModelTexture, Sampler, AreaLight, PbrMetallicRoughness} from '../data/model';
 
 function convertTextures(gltf: GLTF, images: Array<TextureImage>): Array<ModelTexture> {
@@ -727,8 +728,8 @@ export default function convertModel(gltf: GLTF): Array<ModelNode> {
 
 // Fetches a glTF, converts it, and builds a Model. Reached from core `ModelManager` through the
 // `Standard` facade so that the glTF/draco/meshopt loaders stay out of core.
-export async function loadModel(requestUrl: string, id: string, url: string): Promise<Model> {
-    const gltf = await loadGLTF(requestUrl);
+export async function loadModel(requestParameters: RequestParameters, id: string, url: string): Promise<Model> {
+    const gltf = await loadGLTF(requestParameters);
     const model = new Model(id, url, undefined, undefined, convertModel(gltf));
     model.computeBoundsAndApplyParent();
     return model;

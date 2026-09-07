@@ -9,6 +9,7 @@
 
 ### Bug fixes 🐞
 
+- Fix `transformRequest` headers/credentials being dropped when loading GL model (GLTF) resources.
 - Fix `removeSource` throwing under globe projection. (h/t @mhayk)
 
 ## 3.30.0
