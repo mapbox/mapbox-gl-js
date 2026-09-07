@@ -8,8 +8,7 @@
     "rootDir": "."
   },
   "include": [
-    "./src/style-spec/data/**/*",
-    "./src/style-spec/reference/**/*.ts",
+    "./src/style-spec/**/*.ts",
     "./src/style-spec/reference/**/*.json"
   ],
   "files": [

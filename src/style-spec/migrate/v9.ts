@@ -1,33 +1,33 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 import deref from '../deref';
 
-function eachLayer(style, callback) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+import type {LayerSpecification} from '../types';
+
+type LegacyLayer = Record<string, unknown> & {id: string};
+type LegacyStyle = {version: number; layers: LegacyLayer[]};
+
+type Migrated<T> = Omit<T, 'version'> & {version: 9};
+
+function eachLayer(style: LegacyStyle, callback: (layer: LegacyLayer) => void): void {
+    // eslint-disable-next-line @typescript-eslint/no-for-in-array
     for (const k in style.layers) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        callback(style.layers[k]);
+        callback(style.layers[k as unknown as number]!);
     }
 }
 
-export default function (style) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+export default function <T extends LegacyStyle>(style: T): Migrated<T> {
     style.version = 9;
 
     // remove user-specified refs
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-    style.layers = deref(style.layers);
+    style.layers = deref(style.layers as unknown as Array<LayerSpecification>);
 
     // remove class-specific paint properties
     eachLayer(style, (layer) => {
         for (const k in layer) {
             if (k.includes('paint.')) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 delete layer[k];
             }
         }
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return style;
+    return style as Migrated<T>;
 }

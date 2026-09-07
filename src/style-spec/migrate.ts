@@ -20,8 +20,7 @@ export default function (style: {version: 7} | StyleSpecification): StyleSpecifi
     let migrated = false;
 
     if (style.version === 7) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        style = migrateToV8(style);
+        style = migrateToV8(style) as StyleSpecification;
         migrated = true;
     }
 
@@ -34,5 +33,5 @@ export default function (style: {version: 7} | StyleSpecification): StyleSpecifi
         throw new Error(`Cannot migrate from ${style.version}`);
     }
 
-    return style as StyleSpecification;
+    return style;
 }

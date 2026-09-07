@@ -1,26 +1,21 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
-
 import reference from './reference/latest';
 import stringifyPretty from 'json-stringify-pretty-compact';
 
-function sortKeysBy(obj, reference) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: Record<string, any> = {};
+type ObjectLike = Record<string, unknown>;
+
+function sortKeysBy<T extends ObjectLike>(obj: T, reference: ObjectLike): T {
+    const result: ObjectLike = {};
     for (const key in reference) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (obj[key] !== undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             result[key] = obj[key];
         }
     }
     for (const key in obj) {
         if (result[key] === undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             result[key] = obj[key];
         }
     }
-    return result;
+    return result as T;
 }
 
 /**
@@ -44,16 +39,14 @@ function sortKeysBy(obj, reference) {
  * fs.writeFileSync('./dest.json', format(style));
  * fs.writeFileSync('./dest.min.json', format(style, 0));
  */
-function format(style, space = 2) {
-    style = sortKeysBy(style, reference.$root);
+function format(style: unknown, space = 2): string {
+    const sorted = sortKeysBy(style as ObjectLike, reference.$root as ObjectLike) as {layers?: ObjectLike[]};
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (style.layers) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        style.layers = style.layers.map((layer) => sortKeysBy(layer, reference.layer));
+    if (sorted.layers) {
+        sorted.layers = sorted.layers.map((layer) => sortKeysBy(layer, reference.layer as ObjectLike));
     }
 
-    return stringifyPretty(style, {indent: space});
+    return stringifyPretty(sorted, {indent: space});
 }
 
 export default format;

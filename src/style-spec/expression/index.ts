@@ -393,48 +393,40 @@ export interface CompositeExpression {
 export type StylePropertyExpression = ConstantExpression | SourceExpression | CameraExpression | CompositeExpression;
 
 export function createPropertyExpression(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expression: any,
+    expression: unknown,
     propertySpec: StylePropertySpecification,
     scope?: string | null,
     options?: ConfigOptions | null,
     iconImageUseTheme?: string | null
 ): Result<StylePropertyExpression, Array<ParsingError>> {
-    expression = createExpression(expression, propertySpec, scope, options, iconImageUseTheme);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (expression.result === 'error') {
-        return expression as Result<StylePropertyExpression, Array<ParsingError>>;
+    const styleExpression = createExpression(expression, propertySpec, scope, options, iconImageUseTheme);
+    if (styleExpression.result === 'error') {
+        return styleExpression;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const parsed = expression.value.expression;
+    const parsed = styleExpression.value.expression;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const isFeatureConstant = isConstant.isFeatureConstant(parsed);
     if (!isFeatureConstant && !supportsPropertyExpression(propertySpec)) {
         return error([new ParsingError('', 'data expressions not supported')]);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom', 'pitch', 'distance-from-center']);
     if (!isZoomConstant && !supportsZoomExpression(propertySpec)) {
         return error([new ParsingError('', 'zoom expressions not supported')]);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const isLightConstant = isConstant.isGlobalPropertyConstant(parsed, ['measure-light']);
     if (!isLightConstant && !supportsLightExpression(propertySpec)) {
         return error([new ParsingError('', 'measure-light expression not supported')]);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const isLineProgressConstant = isConstant.isGlobalPropertyConstant(parsed, ['line-progress']);
     if (!isLineProgressConstant && !supportsLineProgressExpression(propertySpec)) {
         return error([new ParsingError('', 'line-progress expression not supported')]);
     }
 
     const canRelaxZoomRestriction = propertySpec.expression && propertySpec.expression.relaxZoomRestriction;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const zoomCurve = findZoomCurve(parsed);
     if (!zoomCurve && !isZoomConstant && !canRelaxZoomRestriction) {
         return error([new ParsingError('', '"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression, or in the properties of atmosphere.')]);
@@ -446,19 +438,15 @@ export function createPropertyExpression(
 
     if (!zoomCurve) {
         return success((isFeatureConstant && isLineProgressConstant) ?
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-            (new ZoomConstantExpression('constant', expression.value, isLightConstant, isLineProgressConstant) as ConstantExpression) :
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-            (new ZoomConstantExpression('source', expression.value, isLightConstant, isLineProgressConstant) as SourceExpression));
+            (new ZoomConstantExpression('constant', styleExpression.value, isLightConstant, isLineProgressConstant) as ConstantExpression) :
+            (new ZoomConstantExpression('source', styleExpression.value, isLightConstant, isLineProgressConstant) as SourceExpression));
     }
 
     const interpolationType = zoomCurve instanceof Interpolate ? zoomCurve.interpolation : undefined;
 
     return success((isFeatureConstant && isLineProgressConstant) ?
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-        (new ZoomDependentExpression('camera', expression.value, zoomCurve.labels, interpolationType, isLightConstant, isLineProgressConstant) as CameraExpression) :
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-        (new ZoomDependentExpression('composite', expression.value, zoomCurve.labels, interpolationType, isLightConstant, isLineProgressConstant) as CompositeExpression));
+        (new ZoomDependentExpression('camera', styleExpression.value, zoomCurve.labels, interpolationType, isLightConstant, isLineProgressConstant) as CameraExpression) :
+        (new ZoomDependentExpression('composite', styleExpression.value, zoomCurve.labels, interpolationType, isLightConstant, isLineProgressConstant) as CompositeExpression));
 }
 
 // serialization wrapper for old-style stop functions normalized to the
