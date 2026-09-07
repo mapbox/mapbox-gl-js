@@ -203,6 +203,7 @@ function collapseDynamicBooleanExpressions(expression: any): any {
  * @param {Array<any>} filter the filter expression mutated in-place.
  */
 function unionDynamicBranches(filter: unknown[]) {
+    if (!Array.isArray(filter)) return;
     let isBranchingDynamically = false;
     const branches: unknown[] = [];
     if (filter[0] === 'case') {

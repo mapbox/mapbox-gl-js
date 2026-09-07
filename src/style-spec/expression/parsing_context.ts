@@ -1,5 +1,5 @@
 import Scope from './scope';
-import {checkSubtype} from './types';
+import {checkSubtype, NullType, StringType, BooleanType, NumberType} from './types';
 import ParsingError from './parsing_error';
 import Literal from './definitions/literal';
 import Assertion from './definitions/assertion';
@@ -15,6 +15,7 @@ import Var from './definitions/var';
 
 import type {Expression, ExpressionRegistry} from './expression';
 import type {Type} from './types';
+import type {Value} from './values';
 import type {ConfigOptions} from '../types/config_options';
 
 /**
@@ -77,9 +78,9 @@ class ParsingContext {
         index?: number,
         expectedType?: Type | null,
         bindings?: Array<[string, Expression]>,
-        options: {
+        options?: {
             typeAnnotation?: 'assert' | 'coerce' | 'omit';
-        } = {},
+        },
     ): Expression | null | void {
         if (index || expectedType) {
             const prevExpectedType = this.expectedType;
@@ -111,9 +112,9 @@ class ParsingContext {
         key: string,
         expectedType?: Type | null,
         bindings?: Array<[string, Expression]>,
-        options: {
+        options?: {
             typeAnnotation?: 'assert' | 'coerce' | 'omit';
-        } = {},
+        },
     ): Expression | null | void {
         const prevExpectedType = this.expectedType;
         const prevScope = this.scope;
@@ -129,67 +130,60 @@ class ParsingContext {
         return result;
     }
 
+    // Applies `expectedType` to a freshly parsed expression, wrapping it in an inferred assertion
+    // or coercion where that is what the expected type calls for. Returns null if the type is wrong.
+    _annotateToExpectedType(parsed: Expression, options?: {typeAnnotation?: 'assert' | 'coerce' | 'omit'}): Expression | null {
+        const expected = this.expectedType;
+        if (!expected) return parsed;
+        const actual = parsed.type;
+
+        // When we expect a number, string, boolean, or array but have a value, wrap it in an assertion.
+        // When we expect a color or formatted string, but have a string or value, wrap it in a coercion.
+        // Otherwise, we do static type-checking.
+        //
+        // These behaviors are overridable for:
+        //   * The "coalesce" operator, which needs to omit type annotations.
+        //   * String-valued properties (e.g. `text-field`), where coercion is more convenient than assertion.
+        //
+        if ((expected.kind === 'string' || expected.kind === 'number' || expected.kind === 'boolean' || expected.kind === 'object' || expected.kind === 'array') && actual.kind === 'value') {
+            return annotate(parsed, expected, options?.typeAnnotation || 'assert');
+        } else if ((expected.kind === 'color' || expected.kind === 'formatted' || expected.kind === 'resolvedImage') && (actual.kind === 'value' || actual.kind === 'string')) {
+            return annotate(parsed, expected, options?.typeAnnotation || 'coerce');
+        } else if (this.checkSubtype(expected, actual)) {
+            return null;
+        }
+
+        return parsed;
+    }
+
     _parse(
         expr: unknown,
-        options: {
+        options?: {
             typeAnnotation?: 'assert' | 'coerce' | 'omit';
         },
     ): Expression | null | void {
-        if (expr === null || typeof expr === 'string' || typeof expr === 'boolean' || typeof expr === 'number') {
-            expr = ['literal', expr];
-        }
+        // Scalars are nearly half of all parsed expressions and are always literal, so build the
+        // `Literal` here rather than round-tripping a `['literal', v]` array through the registry.
+        const scalarType = expr === null ? NullType :
+            typeof expr === 'string' ? StringType :
+            typeof expr === 'boolean' ? BooleanType :
+            typeof expr === 'number' ? NumberType : null;
 
-        if (Array.isArray(expr)) {
+        let result: Expression | null | void;
+
+        if (scalarType) {
+            result = new Literal(scalarType, expr as Value);
+        } else if (Array.isArray(expr)) {
             if (expr.length === 0) {
                 return this.error(`Expected an array with at least one element. If you wanted a literal array, use ["literal", []].`);
             }
 
-            const Expr = typeof expr[0] === 'string' && Object.hasOwn(this.registry, expr[0]) ? this.registry[expr[0]] : undefined;
-            if (Expr) {
-                let parsed = Expr.parse(expr, this);
-                if (!parsed) return null;
-
-                if (this.expectedType) {
-                    const expected = this.expectedType;
-                    const actual = parsed.type;
-
-                    // When we expect a number, string, boolean, or array but have a value, wrap it in an assertion.
-                    // When we expect a color or formatted string, but have a string or value, wrap it in a coercion.
-                    // Otherwise, we do static type-checking.
-                    //
-                    // These behaviors are overridable for:
-                    //   * The "coalesce" operator, which needs to omit type annotations.
-                    //   * String-valued properties (e.g. `text-field`), where coercion is more convenient than assertion.
-                    //
-                    if ((expected.kind === 'string' || expected.kind === 'number' || expected.kind === 'boolean' || expected.kind === 'object' || expected.kind === 'array') && actual.kind === 'value') {
-                        parsed = annotate(parsed, expected, options.typeAnnotation || 'assert');
-                    } else if ((expected.kind === 'color' || expected.kind === 'formatted' || expected.kind === 'resolvedImage') && (actual.kind === 'value' || actual.kind === 'string')) {
-                        parsed = annotate(parsed, expected, options.typeAnnotation || 'coerce');
-                    } else if (this.checkSubtype(expected, actual)) {
-                        return null;
-                    }
-                }
-
-                // If an expression's arguments are all literals, we can evaluate
-                // it immediately and replace it with a literal value in the
-                // parsed/compiled result. Expressions that expect an image should
-                // not be resolved here so we can later get the available images.
-                if (!(parsed instanceof Literal) && (parsed.type.kind !== 'resolvedImage') && isConstant(parsed)) {
-                    const ec = new EvaluationContext(this._scope, this.options, this.iconImageUseTheme);
-                    try {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                        parsed = new Literal(parsed.type, parsed.evaluate(ec));
-                    } catch (e) {
-                        this.error((e as Error).message);
-                        return null;
-                    }
-                }
-
-                return parsed;
-            }
-
+            const Expr = this.registry[expr[0] as string];
             // Try to parse as array
-            return Coercion.parse(['to-array', expr], this);
+            if (!Expr) return Coercion.parse(['to-array', expr], this);
+
+            result = Expr.parse(expr, this);
+            if (!result) return null;
         } else if (typeof expr === 'undefined') {
             return this.error(`'undefined' value invalid. Use null instead.`);
         } else if (typeof expr === 'object') {
@@ -197,6 +191,26 @@ class ParsingContext {
         } else {
             return this.error(`Expected an array, but found ${typeof expr} instead.`);
         }
+
+        let parsed = this._annotateToExpectedType(result, options);
+        if (!parsed) return null;
+
+        // If an expression's arguments are all literals, we can evaluate
+        // it immediately and replace it with a literal value in the
+        // parsed/compiled result. Expressions that expect an image should
+        // not be resolved here so we can later get the available images.
+        if (!(parsed instanceof Literal) && (parsed.type.kind !== 'resolvedImage') && isConstant(parsed)) {
+            const ec = new EvaluationContext(this._scope, this.options, this.iconImageUseTheme);
+            try {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                parsed = new Literal(parsed.type, parsed.evaluate(ec));
+            } catch (e) {
+                this.error((e as Error).message);
+                return null;
+            }
+        }
+
+        return parsed;
     }
 
     /**
@@ -235,10 +249,12 @@ class ParsingContext {
      * overload signatures without polluting the parent errors list.
      * @private
      */
+    // `path` is shared rather than copied: argument parsing pushes and pops it in balance, and
+    // `error` snapshots `key` into the message eagerly, so the fork never observes a stale path.
     _forkForSignature(): ParsingContext {
         return new ParsingContext(
             this.registry,
-            this.path.slice(),
+            this.path,
             null,
             this.scope,
             [],

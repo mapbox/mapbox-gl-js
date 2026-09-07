@@ -69,4 +69,23 @@ function isGlobalPropertyConstant(e: Expression, properties: Array<string>): boo
     return isGlobalPropertyConstantSet(e, new Set(properties));
 }
 
-export {isFeatureConstant, isGlobalPropertyConstant, isGlobalPropertyConstantSet, isStateConstant};
+// Bitmask so that one walk answers all three: `createPropertyExpression` used to call
+// `isGlobalPropertyConstant` once per group, traversing every expression of every property in
+// full each time, since those calls only exit early on the rare dependent branch.
+export const GlobalDependency = {Zoom: 1, Light: 2, LineProgress: 4};
+
+const globalDependencyFlags: Record<string, number> = {
+    'zoom': GlobalDependency.Zoom,
+    'pitch': GlobalDependency.Zoom,
+    'distance-from-center': GlobalDependency.Zoom,
+    'measure-light': GlobalDependency.Light,
+    'line-progress': GlobalDependency.LineProgress
+};
+
+function getGlobalDependencies(e: Expression): number {
+    let flags = e instanceof CompoundExpression ? globalDependencyFlags[e.name] || 0 : 0;
+    e.eachChild(arg => { flags |= getGlobalDependencies(arg); });
+    return flags;
+}
+
+export {isFeatureConstant, isGlobalPropertyConstant, isGlobalPropertyConstantSet, isStateConstant, getGlobalDependencies};

@@ -85,8 +85,9 @@ export class StyleExpression {
         this._evaluator = new EvaluationContext(scope, options, iconImageUseTheme);
         this._defaultValue = propertySpec ? getDefaultValue(propertySpec) : null;
         this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
-        this.configDependencies = expressionDependencies.getConfigDependencies(expression);
-        this.isIndoorDependent = expressionDependencies.isIndoorDependent(expression);
+        const dependencies = expressionDependencies.getExpressionDependencies(expression);
+        this.configDependencies = dependencies.configDependencies;
+        this.isIndoorDependent = dependencies.isIndoorDependent;
     }
 
     evaluateWithoutErrorHandling(
@@ -233,8 +234,9 @@ export class ZoomConstantExpression<Kind extends EvaluationKind> {
         this.isLightConstant = isLightConstant;
         this.isLineProgressConstant = isLineProgressConstant;
         this.isStateDependent = kind !== ('constant' as EvaluationKind) && !isConstant.isStateConstant(expression.expression);
-        this.configDependencies = expressionDependencies.getConfigDependencies(expression.expression);
-        this.isIndoorDependent = expressionDependencies.isIndoorDependent(expression.expression);
+        // Already walked by the wrapped `StyleExpression` over the same parsed expression
+        this.configDependencies = expression.configDependencies;
+        this.isIndoorDependent = expression.isIndoorDependent;
     }
 
     evaluateWithoutErrorHandling(
@@ -280,10 +282,11 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
         this.zoomStops = zoomStops;
         this._styleExpression = expression;
         this.isStateDependent = kind !== ('camera' as EvaluationKind) && !isConstant.isStateConstant(expression.expression);
-        this.isIndoorDependent = expressionDependencies.isIndoorDependent(expression.expression);
+        // Already walked by the wrapped `StyleExpression` over the same parsed expression
+        this.isIndoorDependent = expression.isIndoorDependent;
         this.isLightConstant = isLightConstant;
         this.isLineProgressConstant = isLineProgressConstant;
-        this.configDependencies = expressionDependencies.getConfigDependencies(expression.expression);
+        this.configDependencies = expression.configDependencies;
         this.interpolationType = interpolationType;
     }
 
@@ -411,17 +414,19 @@ export function createPropertyExpression(
         return error([new ParsingError('', 'data expressions not supported')]);
     }
 
-    const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom', 'pitch', 'distance-from-center']);
+    const globalDependencies = isConstant.getGlobalDependencies(parsed);
+
+    const isZoomConstant = (globalDependencies & isConstant.GlobalDependency.Zoom) === 0;
     if (!isZoomConstant && !supportsZoomExpression(propertySpec)) {
         return error([new ParsingError('', 'zoom expressions not supported')]);
     }
 
-    const isLightConstant = isConstant.isGlobalPropertyConstant(parsed, ['measure-light']);
+    const isLightConstant = (globalDependencies & isConstant.GlobalDependency.Light) === 0;
     if (!isLightConstant && !supportsLightExpression(propertySpec)) {
         return error([new ParsingError('', 'measure-light expression not supported')]);
     }
 
-    const isLineProgressConstant = isConstant.isGlobalPropertyConstant(parsed, ['line-progress']);
+    const isLineProgressConstant = (globalDependencies & isConstant.GlobalDependency.LineProgress) === 0;
     if (!isLineProgressConstant && !supportsLineProgressExpression(propertySpec)) {
         return error([new ParsingError('', 'line-progress expression not supported')]);
     }

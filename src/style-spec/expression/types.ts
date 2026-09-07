@@ -87,44 +87,26 @@ export function toString(type: Type): string {
     }
 }
 
-const valueMemberTypes = [
-    NullType,
-    NumberType,
-    StringType,
-    BooleanType,
-    ColorType,
-    FormattedType,
-    ObjectType,
-    array(ValueType),
-    ResolvedImageType
-];
-
 /**
  * Returns null if `t` is a subtype of `expected`; otherwise returns an
  * error message.
  * @private
  */
-export function checkSubtype(expected: Type, t: Type): string | null | undefined {
-    if (t.kind === 'error') {
-        // Error is a subtype of every type
-        return null;
-    } else if (expected.kind === 'array') {
-        if (t.kind === 'array' &&
-            ((t.N === 0 && t.itemType.kind === 'value') || !checkSubtype(expected.itemType, t.itemType)) &&
-            (typeof expected.N !== 'number' || expected.N === t.N)) {
-            return null;
-        }
-    } else if (expected.kind === t.kind) {
-        return null;
-    } else if (expected.kind === 'value') {
-        for (const memberType of valueMemberTypes) {
-            if (!checkSubtype(memberType, t)) {
-                return null;
-            }
-        }
-    }
+export function checkSubtype(expected: Type, t: Type): string | null {
+    return isSubtype(expected, t) ? null : `Expected ${toString(expected)} but found ${toString(t)} instead.`;
+}
 
-    return `Expected ${toString(expected)} but found ${toString(t)} instead.`;
+// Boolean, so that checks made speculatively rather than to report an error - overload resolution
+// in `CompoundExpression.parse`, the recursion below - build no message that nobody will read.
+function isSubtype(expected: Type, t: Type): boolean {
+    if (t.kind === 'error') return true; // error is a subtype of every type
+    if (expected.kind === 'array') {
+        return t.kind === 'array' &&
+            ((t.N === 0 && t.itemType.kind === 'value') || isSubtype(expected.itemType, t.itemType)) &&
+            (typeof expected.N !== 'number' || expected.N === t.N);
+    }
+    // `value` is a supertype of every type except `collator`
+    return expected.kind === t.kind || (expected.kind === 'value' && t.kind !== 'collator');
 }
 
 export function isValidType(provided: Type, allowedTypes: Array<Type>): boolean {

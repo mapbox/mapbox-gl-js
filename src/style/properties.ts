@@ -218,10 +218,11 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
         }
         // Note that we do not _remove_ an own property in the case where a value is being reset
         // to the default: the transition might still be non-default.
-        this._values[name].value = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._scope, this._options, this._iconImageUseTheme);
-        if (this._values[name].value.expression.configDependencies) {
-            this.configDependencies = new Set([...this.configDependencies, ...this._values[name].value.expression.configDependencies]);
-            this._isIndoorDependent = this._isIndoorDependent || this._values[name].value.isIndoorDependent();
+        const propertyValue = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._scope, this._options, this._iconImageUseTheme);
+        this._values[name].value = propertyValue;
+        if (propertyValue.expression.configDependencies) {
+            for (const key of propertyValue.expression.configDependencies) this.configDependencies.add(key);
+            this._isIndoorDependent = this._isIndoorDependent || propertyValue.isIndoorDependent();
         }
     }
 
@@ -478,10 +479,11 @@ export class Layout<Props extends {
     }
 
     setValue<S extends keyof Props>(name: S, value: unknown) {
-        this._values[name] = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._scope, this._options, this._iconImageUseTheme) as PropertyValues<Props>[S];
-        if (this._values[name].expression.configDependencies) {
-            this.configDependencies = new Set([...this.configDependencies, ...this._values[name].expression.configDependencies]);
-            this._isIndoorDependent = this._isIndoorDependent || this._values[name].isIndoorDependent();
+        const propertyValue = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._scope, this._options, this._iconImageUseTheme) as PropertyValues<Props>[S];
+        this._values[name] = propertyValue;
+        if (propertyValue.expression.configDependencies) {
+            for (const key of propertyValue.expression.configDependencies) this.configDependencies.add(key);
+            this._isIndoorDependent = this._isIndoorDependent || propertyValue.isIndoorDependent();
         }
     }
 

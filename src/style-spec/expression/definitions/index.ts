@@ -53,7 +53,8 @@ import type {Expression, ExpressionRegistry} from '../expression';
 
 type LegacyFilterValue = string | number | boolean;
 
-const expressions: ExpressionRegistry = {
+// Prototype-less so that a lookup of an arbitrary operator name needs no own-property guard.
+const expressions: ExpressionRegistry = Object.assign(Object.create(null) as ExpressionRegistry, {
     // special forms
     '==': Equals,
     '!=': NotEquals,
@@ -91,7 +92,7 @@ const expressions: ExpressionRegistry = {
     'within': Within,
     'distance': Distance,
     'config': Config
-};
+});
 
 function rgba(ctx: EvaluationContext, [r, g, b, a]: Expression[]) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
