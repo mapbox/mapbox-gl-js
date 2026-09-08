@@ -52,7 +52,7 @@ function getAllowedKeyErrors(obj: Record<string, unknown>, keys: string[], path?
     return errors;
 }
 
-const acceptedSourceTypes = new Set<SourceSpecification['type']>(['vector', 'raster', 'raster-dem', 'raster-array', 'model', 'batched-model']);
+const acceptedSourceTypes: ReadonlySet<SourceSpecification['type']> = new Set<SourceSpecification['type']>(['vector', 'raster', 'raster-dem', 'raster-array', 'model', 'batched-model']);
 function getSourceErrors(source: SourceSpecification, i: number): Array<ValidationError> {
     const errors: ValidationError[] = [];
 

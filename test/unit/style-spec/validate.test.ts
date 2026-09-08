@@ -86,3 +86,28 @@ describe('Validate style prototype-pollution hardening', () => {
         expect(() => validate(style, reference)).not.toThrow();
     });
 });
+
+test('appearance condition parameters are read from the given style spec on every call', () => {
+    const specWithoutZoom = structuredClone(reference);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    specWithoutZoom.appearance.condition.expression.parameters =
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        reference.appearance.condition.expression.parameters.filter(param => param !== 'zoom');
+
+    const style = {
+        version: 8,
+        sources: {},
+        layers: [{
+            id: 'symbol',
+            type: 'symbol',
+            source: 'vector',
+            'source-layer': 'source-layer',
+            appearances: [{condition: ['>=', ['zoom'], 16], properties: {'icon-opacity': 1}}]
+        }]
+    };
+
+    expect(validate(style, reference).map(error => error.message))
+        .not.toContain('layers[0].appearances[0].condition: ["zoom"] is not an allowed parameter');
+    expect(validate(style, specWithoutZoom).map(error => error.message))
+        .toContain('layers[0].appearances[0].condition: ["zoom"] is not an allowed parameter');
+});

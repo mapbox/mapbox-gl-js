@@ -289,7 +289,7 @@ class ParsingContext {
 
 export default ParsingContext;
 
-const CONSTANT_FOLD_EXCLUDED_GLOBALS = new Set([
+const CONSTANT_FOLD_EXCLUDED_GLOBALS: ReadonlySet<string> = new Set([
     'zoom', 'heatmap-density', 'worldview', 'line-progress', 'raster-value',
     'sky-radial-progress', 'accumulated', 'is-supported-script', 'pitch',
     'distance-from-center', 'measure-light', 'raster-particle-speed', 'is-active-floor',

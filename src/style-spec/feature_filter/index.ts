@@ -263,7 +263,7 @@ function isRootExpressionDynamic(expression: string): boolean {
         expression === 'distance-from-center';
 }
 
-const dynamicConditionExpressions = new Set([
+const dynamicConditionExpressions: ReadonlySet<string> = new Set([
     'in',
     '==',
     '!=',

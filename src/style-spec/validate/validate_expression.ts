@@ -103,34 +103,35 @@ export function disallowedFilterParameters(e: Expression, options: any): Validat
     return errors;
 }
 
-const FEATURE_OPERATORS = new Set(['get', 'has', 'properties', 'geometry-type', 'id']);
-const APPEARANCES_DISALLOWED_PARAMETERS = new Set([
-    'zoom', 'pitch', 'distance-from-center',
-    'feature', 'feature-state',
-    'measure-light',
-    'heatmap-density', 'line-progress',
-    'raster-value', 'raster-particle-speed', 'sky-radial-progress',
-]);
+const FEATURE_OPERATORS: ReadonlySet<string> = new Set(['get', 'has', 'properties', 'geometry-type', 'id']);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function checkDisallowedAppearancesParameters(e: Expression, options: any): ValidationError[] {
+    const disallowedParameters = new Set([
+        'zoom', 'pitch', 'distance-from-center',
+        'feature', 'feature-state',
+        'measure-light',
+        'heatmap-density', 'line-progress',
+        'raster-value', 'raster-particle-speed', 'sky-radial-progress',
+    ]);
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (options.valueSpec && options.valueSpec.expression) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         for (const param of options.valueSpec.expression.parameters) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            APPEARANCES_DISALLOWED_PARAMETERS.delete(param);
+            disallowedParameters.delete(param);
         }
     }
 
-    if (APPEARANCES_DISALLOWED_PARAMETERS.size === 0) {
+    if (disallowedParameters.size === 0) {
         return [];
     }
     const errors: ValidationError[] = [];
 
     if (e instanceof CompoundExpression) {
         const param = FEATURE_OPERATORS.has(e.name) ? 'feature' : e.name;
-        if (APPEARANCES_DISALLOWED_PARAMETERS.has(param)) {
+        if (disallowedParameters.has(param)) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             return [new ValidationError(options.key, options.value, `["${e.name}"] is not an allowed parameter`)];
         }
