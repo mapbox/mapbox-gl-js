@@ -132,6 +132,14 @@ export function closePrompts(): void {
     sharedReadline = null;
 }
 
+export function stepHeader(text: string): string {
+    return `\x1b[1m\x1b[36m${text}\x1b[0m`; // bold cyan
+}
+
+export function highlightPrompt(text: string): string {
+    return `\x1b[1m\x1b[33m${text}\x1b[0m`; // bold yellow
+}
+
 export function prompt(question: string, defaultYes = true): Promise<boolean> {
     return new Promise((resolve) => {
         getSharedReadline().question(question, (answer) => {
