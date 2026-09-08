@@ -1053,25 +1053,6 @@ class Style extends Evented<MapEvents> {
                 });
             }
 
-            // Pre-warm glyph range 0 (codepoints 0-255, ASCII/Latin) for all constant font stacks.
-            // This fires the HTTP requests before any tiles arrive, eliminating the first step
-            // of the waterfall staircase (tiles → workers discover text → getGlyphs IPC → HTTP).
-            if (this.glyphManager.url) {
-                const fontStacks = new Set<string>();
-                for (const id in this._layers) {
-                    const layer = this._layers[id];
-                    if (layer.type === 'symbol' && layer.layout) {
-                        const fonts = layer.layout.get('text-font');
-                        if (fonts && fonts.value && fonts.value.kind === 'constant') {
-                            fontStacks.add(fonts.value.value.join(','));
-                        }
-                    }
-                }
-                for (const stack of fontStacks) {
-                    this.glyphManager.prefetchRange(stack, 0);
-                }
-            }
-
             if (this.stylesheet.featuresets) {
                 this.setFeaturesetSelectors(this.stylesheet.featuresets);
             }
