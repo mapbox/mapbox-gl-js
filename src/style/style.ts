@@ -699,6 +699,14 @@ class Style extends Evented<MapEvents> {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         if (validate) prepareDebug();
 
+        // A Standard URL already guarantees the Standard chunk, so start it a style round trip
+        // before `_updateSources` would. HD isn't speculated on: everything pulling it in
+        // Standard (procedural buildings, indoor, elevated roads) is off unless config says so.
+        if (url.startsWith('mapbox://styles/mapbox/standard')) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            prepareStandardMain();
+        }
+
         this.globalId = this._getGlobalId(url);
         url = this.map._requestManager.normalizeStyleURL(url, options.accessToken);
         this.resolvedImports.add(url);
@@ -2116,10 +2124,10 @@ class Style extends Evented<MapEvents> {
                     // main can render without an extra await. Fire-and-forget: the tile-level
                     // gate in WorkerTile.parse / vector_tile_source `done()` awaits the same
                     // load promise for any tile that actually carries HD content.
-                    // `layer.prepare()` fires the worker-side HD load; `prepareHDMain()` is
-                    // called here (rather than inside prepare()) because importing hd_main
-                    // from style_layer.ts would drag the main-only chunk into the worker
-                    // bundle.
+                    // Both load into the main thread's graph: `layer.prepare()` the worker-shared
+                    // chunk (bucket classes needed to deserialize transfers), `prepareHDMain()`
+                    // the main-only one — kept out of `prepare()` since importing hd_main from
+                    // style_layer.ts would drag that chunk into the worker bundle.
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     layer.prepare();
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -2127,9 +2135,8 @@ class Style extends Evented<MapEvents> {
                 }
 
                 if (layer.mayUse('Standard')) {
-                    // Same pattern as HD: preload Standard on both threads before the first
-                    // tile carrying ModelBucket/Tiled3dModelBucket arrives. `layer.prepare()`
-                    // triggers worker-side load; `prepareStandardMain()` triggers main-side.
+                    // Same pattern as HD: preload both Standard chunks on the main thread
+                    // before the first tile carrying ModelBucket/Tiled3dModelBucket arrives.
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     layer.prepare();
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises

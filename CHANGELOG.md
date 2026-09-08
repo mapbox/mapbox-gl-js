@@ -1,5 +1,10 @@
 ## Unreleased
 
+### Features and improvements ✨
+
+- Slightly improve map load time via more aggressive chunk preloading.
+- Improve style parsing performance.
+
 ## 3.31.0-rc.1
 
 ### Features and improvements ✨
@@ -8,7 +13,6 @@
 - Reduce landmark model memory usage.
 - Remove the experimental flag from `raster-allow-draping`.
 - Add support for emissive MRT in custom layers.
-- Improve style parsing performance.
 
 ### Bug fixes 🐞
 
