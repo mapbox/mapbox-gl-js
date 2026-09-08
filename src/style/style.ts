@@ -2208,9 +2208,11 @@ class Style extends Evented<MapEvents> {
 
         for (const sourceId in sourcesUsedBefore) {
             const sourceCache = this._mergedSourceCaches[sourceId];
+            const source = sourceCache.getSource() as ISource;
+            // First frame this source is reachable, so start the deferred load of a lazy type.
+            if (sourceCache.used && source instanceof LazySource) source.startLoad();
             if (sourcesUsedBefore[sourceId] !== sourceCache.used) {
-                const source = sourceCache.getSource() as ISource;
-                source.fire(new Event('data', {sourceDataType: 'visibility', dataType: 'source', sourceId: sourceCache.getSource().id}));
+                source.fire(new Event('data', {sourceDataType: 'visibility', dataType: 'source', sourceId: source.id}));
             }
         }
 
@@ -2501,9 +2503,10 @@ class Style extends Evented<MapEvents> {
         // A source type whose class lives in a lazily-loaded module (e.g. `model`,
         // `batched-model` in the Standard module). To keep `addSource` synchronous, add a
         // placeholder source now and upgrade it in place once the module resolves.
-        const lazy = isLazySourceType(source.type) && !getSourceType(source.type);
-        const sourceInstance: Source = lazy ?
-            new LazySource(id, source as SourceSpecification, this.dispatcher, this) as unknown as Source :
+        const placeholder = isLazySourceType(source.type) && !getSourceType(source.type) ?
+            new LazySource(id, source as SourceSpecification, this.dispatcher, this) : undefined;
+        const sourceInstance: Source = placeholder ?
+            placeholder as unknown as Source :
             createSource(id, source, this.dispatcher, this);
         sourceInstance.scope = this.scope;
 
@@ -2544,27 +2547,32 @@ class Style extends Evented<MapEvents> {
         if (sourceInstance.onAdd)
             sourceInstance.onAdd(this.map);
 
-        if (lazy) {
+        if (placeholder) {
             // Lazy types have no `symbol:`/`fill-extrusion:` caches, so a single `other:`
-            // SourceCache backs the placeholder. Load the module and swap the real source in.
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            ensureSourceType(source.type).then(() => {
-                const SourceType = getSourceType(source.type);
-                const sourceCache = this._otherSourceCaches[id];
-                // The source may have been removed during the async gap; the cache may also
-                // have been upgraded already (idempotent) — bail unless it still holds the placeholder.
-                if (!sourceCache || sourceCache.getSource() !== sourceInstance) return;
-                if (!SourceType) {
-                    this.fire(new ErrorEvent(new Error(`Could not load module for source type "${source.type}".`)));
-                    return;
-                }
-                const realSource = createSource(id, source, this.dispatcher, this);
-                realSource.scope = this.scope;
-                setSourceEventedParent(realSource);
-                sourceCache.setSource(realSource);
-                if (realSource.onAdd) realSource.onAdd(this.map);
-                this._changes.setDirty();
-            });
+            // SourceCache backs the placeholder. The load is deferred until the source is actually
+            // used, because a style may declare a lazy-typed source nothing references (Standard's
+            // `mapbox-landmarks` raster-array is only reachable through an iconset behind a
+            // default-off config) and its chunk would add a serial round trip to every load.
+            placeholder._loader = () => {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                ensureSourceType(source.type).then(() => {
+                    const SourceType = getSourceType(source.type);
+                    const sourceCache = this._otherSourceCaches[id];
+                    // The source may have been removed or replaced during the async gap — bail
+                    // unless the cache still holds this placeholder.
+                    if (!sourceCache || sourceCache.getSource() !== sourceInstance) return;
+                    if (!SourceType) {
+                        this.fire(new ErrorEvent(new Error(`Could not load module for source type "${source.type}".`)));
+                        return;
+                    }
+                    const realSource = createSource(id, source, this.dispatcher, this);
+                    realSource.scope = this.scope;
+                    setSourceEventedParent(realSource);
+                    sourceCache.setSource(realSource);
+                    if (realSource.onAdd) realSource.onAdd(this.map);
+                    this._changes.setDirty();
+                });
+            };
         }
 
         // Avoid triggering redundant style update after adding initial sources.

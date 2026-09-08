@@ -11,6 +11,7 @@ import {OverscaledTileID} from './tile_id';
 import SourceFeatureState from './source_state';
 import MercatorCoordinate, {mercatorXfromLng} from '../geo/mercator_coordinate';
 import {isHttpNotFound} from '../util/ajax';
+import LazySource from './lazy_source';
 
 import type {CanonicalTileID} from './tile_id';
 import type Context from '../gl/context';
@@ -161,6 +162,9 @@ class SourceCache extends Evented {
      */
     loaded(): boolean {
         if (this._sourceErrored) { return true; }
+        // A placeholder whose module load is still deferred never fires `metadata`, but it has
+        // nothing pending either, so let it report as loaded and not block `Style#loaded`.
+        if (this._source instanceof LazySource) { return this._source.loaded(); }
         if (!this._sourceLoaded) { return false; }
         if (!this._source.loaded()) { return false; }
         for (const t in this._tiles) {

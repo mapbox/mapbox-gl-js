@@ -5,6 +5,10 @@
 - Slightly improve map load time via more aggressive chunk preloading.
 - Improve style parsing performance.
 
+### Bug fixes 🐞
+
+- Fix `raster-array` chunk loading when unused.
+
 ## 3.31.0-rc.1
 
 ### Features and improvements ✨

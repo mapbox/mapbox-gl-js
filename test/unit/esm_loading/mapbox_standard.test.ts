@@ -1,15 +1,18 @@
 // Hits the real Mapbox Standard style to verify it loads Standard (which includes
-// model layers) but does not trigger HD. Guards against HD being accidentally
-// pulled in by Standard. Uses the localhost-scoped CI token; the test will fail
-// if the token is invalid or the API is unreachable.
+// model layers) but does not trigger HD or raster-array. Guards against those being
+// accidentally pulled in by Standard — the `mapbox-landmarks` raster-array source is
+// only reachable through an iconset behind a default-off config, so its module must
+// stay unloaded. Uses the localhost-scoped CI token; the test will fail if the token
+// is invalid or the API is unreachable.
 import {test, expect, vi, waitFor} from '../../util/vitest';
 import {Map, setAccessToken} from '../../../src/index.esm';
 import {LOCALHOST_CI_TOKEN} from '../../util/access_token.js';
 import {HD} from '../../../modules/hd_main_esm';
 import {Standard} from '../../../modules/standard_main_esm';
+import {RasterArray} from '../../../modules/raster_array_main_esm';
 import {makeContainer, settle, waitForLoaded} from './helpers';
 
-test('mapbox standard style loads Standard but not HD', {timeout: 30000}, async () => {
+test('mapbox standard style loads Standard but not HD or raster-array', {timeout: 30000}, async () => {
     setAccessToken(LOCALHOST_CI_TOKEN);
     vi.spyOn(Map.prototype, '_detectMissingCSS').mockImplementation(() => {});
     const map = new Map({
@@ -29,6 +32,7 @@ test('mapbox standard style loads Standard but not HD', {timeout: 30000}, async 
         await settle();
         expect(Standard.loaded).toBe(true);
         expect(HD.loaded).toBeUndefined();
+        expect(RasterArray.RasterArrayTileSource).toBeUndefined();
     } finally {
         map.remove();
     }
