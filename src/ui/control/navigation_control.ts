@@ -70,7 +70,7 @@ class NavigationControl implements IControl {
             ], this);
             this._compass = this._createButton('mapboxgl-ctrl-compass', (e) => {
                 const map = this._map;
-                if (!map) return;
+                if (!map || !map._interactive) return;
                 if (this.options.visualizePitch) {
                     map.resetNorthPitch({}, {originalEvent: e});
                 } else {
@@ -120,12 +120,14 @@ class NavigationControl implements IControl {
         }
         if (this.options.showCompass) {
             this._setButtonTitle(this._compass, 'ResetBearing');
+            this._compass.disabled = !map._interactive;
+            if (!map._interactive) this._compassIcon.removeAttribute('title');
             if (this.options.visualizePitch) {
                 map.on('pitch', this._rotateCompassArrow);
             }
             map.on('rotate', this._rotateCompassArrow);
             this._rotateCompassArrow();
-            this._handler = new MouseRotateWrapper(map, this._compass, this.options.visualizePitch);
+            if (map._interactive) this._handler = new MouseRotateWrapper(map, this._compass, this.options.visualizePitch);
         }
         return this._container;
     }

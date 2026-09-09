@@ -5,7 +5,7 @@ import NavigationControl from '../../../../src/ui/control/navigation_control';
 import simulate from '../../../util/simulate_interaction';
 
 describe('NavigationControl', () => {
-    describe('compass drag', () => {
+    describe('compass interaction', () => {
         test('mouse drag on compass updates bearing', () => {
             const map = createMap({interactive: true});
             const nav = new NavigationControl({showCompass: true});
@@ -70,6 +70,31 @@ describe('NavigationControl', () => {
             simulate.mouseup(window.document, {button: 0, buttons: 0});
 
             expect(setPitchSpy).not.toHaveBeenCalled();
+
+            map.remove();
+        });
+
+        test('compass does not respond when the map is non-interactive', () => {
+            const map = createMap({interactive: false, bearing: 30});
+            const nav = new NavigationControl({showCompass: true});
+            map.addControl(nav);
+
+            const compass = map.getContainer().querySelector('.mapboxgl-ctrl-compass');
+            expect(compass).toBeTruthy();
+            expect(compass.disabled).toBe(true);
+            expect(compass.firstElementChild.hasAttribute('title')).toBe(false);
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            simulate.click(compass);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            simulate.mousedown(compass, {button: 0, buttons: 1, clientX: 0, clientY: 0});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            simulate.mousemove(window.document, {buttons: 1, clientX: 10, clientY: 0});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            simulate.mouseup(window.document, {button: 0, buttons: 0});
+
+            expect(map.getBearing()).toBe(30);
+            expect(map.isEasing()).toBe(false);
 
             map.remove();
         });
