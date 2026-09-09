@@ -4,7 +4,7 @@ import {process3DTile} from './model_loader';
 import {tileToMeter} from '../../src/geo/mercator_coordinate';
 import Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket';
 import {OverscaledTileID} from '../../src/source/tile_id';
-import {load3DTile} from '../util/loaders';
+import {load3DTile, waitForMeshopt} from '../util/loaders';
 import EvaluationParameters from '../../src/style/evaluation_parameters';
 import {makeFQID} from "../../src/util/fqid";
 
@@ -135,6 +135,9 @@ class Tiled3dModelWorkerSource implements WorkerSource {
      */
     async loadTile(params: WorkerSourceTiled3dModelRequest): Promise<WorkerSourceVectorTileResult | null | undefined> {
         const uid = params.uid;
+        // Tiled 3D model tiles are meshopt-compressed, but `decodeGLTF` only discovers that after the
+        // tile has downloaded; start the decoder fetch now so it overlaps the tile fetch instead.
+        waitForMeshopt()?.catch(() => {});
         const controller = new AbortController();
         const workerTile = this.loading[uid] = new Tiled3dWorkerTile(params, this.brightness, this.worldview);
         workerTile.abort = () => controller.abort();

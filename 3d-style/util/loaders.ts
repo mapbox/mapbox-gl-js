@@ -57,7 +57,7 @@ function waitForDraco() {
     return dracoLoading;
 }
 
-function waitForMeshopt() {
+export function waitForMeshopt() {
     if (meshopt) return;
     if (meshoptLoading != null) return meshoptLoading;
     const startTime = PerformanceUtils.now();
