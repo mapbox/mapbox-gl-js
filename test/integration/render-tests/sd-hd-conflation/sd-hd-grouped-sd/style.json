@@ -1,5 +1,5 @@
 {
-  "_comment": "Grouped basemap+HD imports with sdCoverageFadeRange active at zoom 17.4. SD road lines inside HD coverage area must be hidden while HD overlay renders on top.",
+  "description": "Grouped basemap+HD imports with sdCoverageFadeRange active at zoom 17.4. SD road lines inside HD coverage area must be hidden while HD overlay renders on top.",
   "version": 8,
   "metadata": {
     "test": {

@@ -1,8 +1,8 @@
 {
+  "description": "Verifies graceful clamping past the max overzoom (deltaZ > log2(tileSize)). The z=2 fixture is the only source data; at z=12 we are deltaZ=10 levels above it, while log2(512)=9 is the limit. computeOverzoomCoords clamps to outTileSize=1 and we expect a single parent pixel scaled across the visible tile. The point of the test is that the renderer still produces output — no holes, no error events — even at extreme overzoom.",
   "version": 8,
   "metadata": {
     "test": {
-      "_comment": "Verifies graceful clamping past the max overzoom (deltaZ > log2(tileSize)). The z=2 fixture is the only source data; at z=12 we are deltaZ=10 levels above it, while log2(512)=9 is the limit. computeOverzoomCoords clamps to outTileSize=1 and we expect a single parent pixel scaled across the visible tile. The point of the test is that the renderer still produces output — no holes, no error events — even at extreme overzoom.",
       "width": 256,
       "height": 256,
       "allowed": 0.001,

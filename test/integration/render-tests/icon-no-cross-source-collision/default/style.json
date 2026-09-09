@@ -1,12 +1,12 @@
 {
+    "description": "Three collision groups of two layers each. Each group should show one label (overlapping with labels from other groups)",
     "version": 8,
     "metadata": {
         "test": {
             "pixelRatio": 2,
             "crossSourceCollisions": false,
             "height": 128,
-            "width": 128,
-            "description": "Three collision groups of two layers each. Each group should show one label (overlapping with labels from other groups)"
+            "width": 128
         }
     },
     "center": [

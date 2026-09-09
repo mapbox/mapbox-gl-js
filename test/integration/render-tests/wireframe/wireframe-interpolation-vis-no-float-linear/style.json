@@ -1,10 +1,10 @@
 {
+  "description": "Visualize terrain wireframe for the purpose of catching interpolation errors. NB: texture float linear is disabled here.",
   "version": 8,
   "metadata": {
     "test": {
       "height": 256,
       "width": 256,
-      "description": "Visualize terrain wireframe for the purpose of catching interpolation errors. NB: texture float linear is disabled here.",
       "showTerrainWireframe": true,
       "showLayers3DWireframe": false,
       "textureFloatLinear": false,

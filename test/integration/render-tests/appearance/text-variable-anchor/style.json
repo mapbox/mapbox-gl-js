@@ -1,8 +1,8 @@
 {
+  "description": "Combination of `text-variable-anchor` and `appearances` in same layer",
   "version": 8,
   "metadata": {
     "test": {
-      "description": "Combination of `text-variable-anchor` and `appearances` in same layer",
       "height": 256,
       "width": 256,
       "collisionDebug": true,

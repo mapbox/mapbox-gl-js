@@ -1,7 +1,7 @@
 {
+  "description": "Checks fill-extrusion-height-alignment works as expected",
   "version": 8,
   "metadata": {
-    "description": "Checks fill-extrusion-height-alignment works as expected",
     "test": {
       "height": 256,
       "operations": [

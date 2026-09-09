@@ -1,5 +1,5 @@
 {
-  "_comment": "Door lights derive their base color from the door part's per-vertex tile color, so with model-color-mix-intensity 0 on the door they render that color rather than white. Every other landmark part-styling test pins the door to intensity 1, which discards the vertex color and hides this.",
+  "description": "Door lights derive their base color from the door part's per-vertex tile color, so with model-color-mix-intensity 0 on the door they render that color rather than white. Every other landmark part-styling test pins the door to intensity 1, which discards the vertex color and hides this.",
   "version": 8,
   "metadata": {
     "test": {

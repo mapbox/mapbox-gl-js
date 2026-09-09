@@ -1,5 +1,5 @@
 {
-    "_comment": "Cross-source traffic line elevated over a tunnel/ramp, with congestion coloring along the elevated segment.",
+    "description": "Cross-source traffic line elevated over a tunnel/ramp, with congestion coloring along the elevated segment.",
     "version": 8,
     "metadata": {
         "test": {

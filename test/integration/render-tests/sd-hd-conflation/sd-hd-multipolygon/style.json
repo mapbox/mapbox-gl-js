@@ -1,5 +1,5 @@
 {
-  "_comment": "Coverage tile with multiple per-FRC polygons in a single tile, each carrying its own frc_mask. Verifies multi-polygon OR-masking and per-polygon containment in getFullCoverageMask().",
+  "description": "Coverage tile with multiple per-FRC polygons in a single tile, each carrying its own frc_mask. Verifies multi-polygon OR-masking and per-polygon containment in getFullCoverageMask().",
   "version": 8,
   "metadata": {
     "test": {

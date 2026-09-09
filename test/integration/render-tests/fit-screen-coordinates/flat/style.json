@@ -1,8 +1,8 @@
 {
+  "description": "Validates the bounds of initial rect is within frustum, unset operation to visualize initial frame",
   "version": 8,
   "metadata": {
     "test": {
-      "description": "Validates the bounds of initial rect is within frustum, unset operation to visualize initial frame",
       "height": 512,
       "width": 512,
       "operations": [

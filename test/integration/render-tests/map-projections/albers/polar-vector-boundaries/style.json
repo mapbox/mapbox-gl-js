@@ -1,10 +1,10 @@
 {
+  "description": "Isolates vector-tile country boundaries under a polar Albers configuration.",
   "version": 8,
   "metadata": {
     "test": {
       "width": 512,
       "height": 512,
-      "description": "Isolates vector-tile country boundaries under a polar Albers configuration.",
       "operations": [
         ["setProjection", {
           "name": "albers",

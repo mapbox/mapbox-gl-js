@@ -1,7 +1,7 @@
 {
+  "description": "Flat roof centroid buffers were mismatching regular vertex buffer.",
   "version": 8,
   "metadata": {
-    "description": "Flat roof centroid buffers were mismatching regular vertex buffer.",
     "test": {
       "height": 256,
       "operations": [

@@ -1,10 +1,10 @@
 {
+  "description": "Single world copy verifies also that there are no tile skirts visible",
   "version": 8,
   "metadata": {
     "test": {
       "width": 512,
       "height": 512,
-      "description": "Single world copy verifies also that there are no tile skirts visible",
       "operations": [
         ["wait"],
         ["setRenderWorldCopies", false],

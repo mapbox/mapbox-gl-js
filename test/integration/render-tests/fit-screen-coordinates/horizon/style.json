@@ -1,8 +1,8 @@
 {
+  "description": "Points over horizon should be no-op",
   "version": 8,
   "metadata": {
     "test": {
-      "description": "Points over horizon should be no-op",
       "height": 256,
       "width": 512,
       "operations": [

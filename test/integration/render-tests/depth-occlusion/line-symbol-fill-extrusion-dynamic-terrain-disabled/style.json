@@ -1,8 +1,8 @@
 {
+  "description": "Circle and symbol layer are not reordered as their minzoom is in terrain disabled zoom range",
   "version": 8,
   "metadata": {
     "test": {
-      "description": "Circle and symbol layer are not reordered as their minzoom is in terrain disabled zoom range",
       "height": 256,
       "width": 256,
       "operations": [

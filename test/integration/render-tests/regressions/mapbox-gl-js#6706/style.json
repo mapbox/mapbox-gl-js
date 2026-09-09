@@ -1,10 +1,10 @@
 {
+  "description": "Tests that runtime styling can set -transition properties.",
   "version": 8,
   "metadata": {
     "test": {
       "height": 64,
       "width": 64,
-      "description": "Tests that runtime styling can set -transition properties.",
       "operations": [
         [
           "setPaintProperty",

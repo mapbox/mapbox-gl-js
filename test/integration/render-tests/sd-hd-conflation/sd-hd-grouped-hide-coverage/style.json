@@ -1,5 +1,5 @@
 {
-  "_comment": "Inline style with hd-coverage-helper layer present and sdCoverageFadeRange set. Verifies coverage polygons drive SD road hiding without import/config plumbing.",
+  "description": "Inline style with hd-coverage-helper layer present and sdCoverageFadeRange set. Verifies coverage polygons drive SD road hiding without import/config plumbing.",
   "version": 8,
   "metadata": {
     "test": {

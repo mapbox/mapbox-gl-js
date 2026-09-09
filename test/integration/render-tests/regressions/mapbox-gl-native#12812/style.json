@@ -1,10 +1,10 @@
 {
+    "description": "Before the fix, gl-native would incorrectly interpolate to the second stop (size 24) when the zoom was less than the first stop.",
     "version": 8,
     "metadata": {
         "test": {
             "width": 64,
-            "height": 64,
-            "description": "Before the fix, gl-native would incorrectly interpolate to the second stop (size 24) when the zoom was less than the first stop."
+            "height": 64
         }
     },
     "zoom": 2,

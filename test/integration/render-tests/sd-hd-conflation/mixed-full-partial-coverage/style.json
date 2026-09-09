@@ -1,5 +1,5 @@
 {
-  "_comment": "Mixed HD coverage: some road classes are fully covered and others only partly. Fully covered SD (magenta primary line + P symbols) must disappear; partly covered SD (cyan pedestrian line + E symbols) may remain only where HD does not cover it.",
+  "description": "Mixed HD coverage: some road classes are fully covered and others only partly. Fully covered SD (magenta primary line + P symbols) must disappear; partly covered SD (cyan pedestrian line + E symbols) may remain only where HD does not cover it.",
   "version": 8,
   "metadata": {
     "test": {

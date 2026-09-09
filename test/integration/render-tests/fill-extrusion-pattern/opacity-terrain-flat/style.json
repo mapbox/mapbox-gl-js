@@ -1,7 +1,7 @@
 {
+  "description": "Flat roof centroid attribute array is uploaded after terrain gets enabled.",
   "version": 8,
   "metadata": {
-    "description": "Flat roof centroid attribute array is uploaded after terrain gets enabled.",
     "test": {
       "height": 256,
       "operations": [

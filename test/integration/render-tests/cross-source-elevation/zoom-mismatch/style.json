@@ -1,5 +1,5 @@
 {
-    "_comment": "Consumer maxzoom 16, provider maxzoom 18 — elevation must gather from all overlapping finer provider tiles.",
+    "description": "Consumer maxzoom 16, provider maxzoom 18 — elevation must gather from all overlapping finer provider tiles.",
     "version": 8,
     "metadata": {
         "test": {

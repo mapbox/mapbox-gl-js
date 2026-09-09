@@ -1,11 +1,11 @@
 {
+  "description": "Collision debug and occlusion test for text and icons.",
   "version": 8,
   "metadata": {
     "test": {
       "collisionDebug": true,
       "height": 160,
       "width": 160,
-      "description": "Collision debug and occlusion test for text and icons.",
       "operations": [
         ["waitFrameReady", 30]
       ],

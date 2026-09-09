@@ -1,10 +1,10 @@
 {
+  "description": "Tests that zero text-size values are properly handled.",
   "version": 8,
   "metadata": {
     "test": {
       "width": 64,
       "height": 64,
-      "description": "Tests that zero text-size values are properly handled.",
       "operations": [
         ["wait"],
         ["setZoom", 18]

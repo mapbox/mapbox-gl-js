@@ -1,5 +1,5 @@
 {
-  "comment": "Style with inner slot is being imported before outer one, but we still need to position data correctly",
+  "description": "Style with inner slot is being imported before outer one, but we still need to position data correctly",
   "version": 8,
   "metadata": {
     "test": {

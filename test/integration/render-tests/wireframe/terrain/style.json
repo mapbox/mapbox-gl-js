@@ -1,10 +1,10 @@
 {
+  "description": "Check terrain wireframe overlay",
   "version": 8,
   "metadata": {
     "test": {
       "height": 256,
       "width": 256,
-      "description": "Check terrain wireframe overlay",
       "showTerrainWireframe": true,
       "operations": [
         ["wait"],

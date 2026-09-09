@@ -1,10 +1,10 @@
 {
+  "description": "Tests that light transitions correctly by checking the rendering halfway through the (default 300ms long) transition",
   "version": 8,
   "metadata": {
     "test": {
       "width": 64,
       "height": 64,
-      "description": "Tests that light transitions correctly by checking the rendering halfway through the (default 300ms long) transition",
       "operations": [
         [
           "setLight",

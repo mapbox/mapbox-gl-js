@@ -1,8 +1,8 @@
 {
+  "description": "The position of a placement-group layer in the layer list decides which group's symbols are placed first.",
   "version": 8,
   "metadata": {
     "test": {
-      "description": "The position of a placement-group layer in the layer list decides which group's symbols are placed first.",
       "skip-test": [],
       "width": 128,
       "height": 128,

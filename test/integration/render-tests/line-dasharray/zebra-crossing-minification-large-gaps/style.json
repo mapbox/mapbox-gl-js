@@ -1,11 +1,11 @@
 {
+  "description": "Checks that low-frequency dashes remain sharp instead of fading prematurely.",
   "version": 8,
   "metadata": {
     "test": {
       "width": 256,
       "height": 256
-    },
-    "_comment": "Checks that low-frequency dashes remain sharp instead of fading prematurely."
+    }
   },
   "center": [
     7.3e-05,

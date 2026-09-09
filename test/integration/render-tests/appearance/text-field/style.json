@@ -1,5 +1,5 @@
 {
-  "_comment": "text-field can't be used in appearances, but we can redefine a base color and it shouldn't change color of parts with explicitly redefined color",
+  "description": "text-field can't be used in appearances, but we can redefine a base color and it shouldn't change color of parts with explicitly redefined color",
   "version": 8,
   "metadata": {
     "test": {

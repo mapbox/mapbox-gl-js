@@ -1,8 +1,8 @@
 {
+  "description": "Same scene as occlusion/symbol-occlusion-building, but with global placement enabled. Checks that the depth-texture occlusion fade (icon-occlusion-opacity against a fill-extrusion building) still dims the occluded point the same way when GlobalPlacement -- not legacy Placement -- positions the symbols.",
   "version": 8,
   "metadata": {
     "test": {
-      "_comment": "Same scene as occlusion/symbol-occlusion-building, but with global placement enabled. Checks that the depth-texture occlusion fade (icon-occlusion-opacity against a fill-extrusion building) still dims the occluded point the same way when GlobalPlacement -- not legacy Placement -- positions the symbols.",
       "height": 256,
       "width": 256,
       "globalPlacement": true,

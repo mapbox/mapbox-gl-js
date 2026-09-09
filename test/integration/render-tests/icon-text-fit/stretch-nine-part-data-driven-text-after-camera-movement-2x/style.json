@@ -1,5 +1,5 @@
 {
-  "_comment": "Testing fix for MAPSNAT-3783",
+  "description": "Testing fix for MAPSNAT-3783",
   "version": 8,
   "metadata": {
     "test": {

@@ -1,6 +1,6 @@
 {
+  "description": "Checks that an SDF image in text-field is not measured under the global placement either: 'W' is followed by three dot.sdf sections, none of which any renderer draws, so its collision box covers the 'W' only and leaves room for 'NEXT' beside it. Same style as placement/invisible-sdf-image/basic, which pins the legacy pipeline. Expected: 'W' and 'NEXT' rendered, no dot drawn.",
   "version": 8,
-  "_comment": "Checks that an SDF image in text-field is not measured under the global placement either: 'W' is followed by three dot.sdf sections, none of which any renderer draws, so its collision box covers the 'W' only and leaves room for 'NEXT' beside it. Same style as placement/invisible-sdf-image/basic, which pins the legacy pipeline. Expected: 'W' and 'NEXT' rendered, no dot drawn.",
   "metadata": {
     "test": {
       "spriteFormat": "raster",

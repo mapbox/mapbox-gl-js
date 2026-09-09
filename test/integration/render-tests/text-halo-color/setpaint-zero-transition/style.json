@@ -1,8 +1,8 @@
 {
+  "description": "Regression test for public-13702: setPaintProperty on symbol text-halo-color must render even when the style has a root-level zero-duration transition. Without the fix the halo stays white (cached constant symbol paint is never invalidated when no transition is live); with the fix it renders red.",
   "version": 8,
   "metadata": {
     "test": {
-      "description": "Regression test for public-13702: setPaintProperty on symbol text-halo-color must render even when the style has a root-level zero-duration transition. Without the fix the halo stays white (cached constant symbol paint is never invalidated when no transition is live); with the fix it renders red.",
       "width": 64,
       "height": 64,
       "operations": [

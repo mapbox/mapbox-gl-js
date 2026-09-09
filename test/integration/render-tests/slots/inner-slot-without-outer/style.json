@@ -1,5 +1,5 @@
 {
-  "comment": "Slot is missing: we should print a warning, but still be able to process data",
+  "description": "Slot is missing: we should print a warning, but still be able to process data",
   "version": 8,
   "metadata": {
     "test": {

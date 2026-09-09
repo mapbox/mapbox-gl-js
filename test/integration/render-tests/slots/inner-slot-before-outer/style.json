@@ -1,5 +1,5 @@
 {
-  "comment": "Even though inner slot is positioned before the outer one, we should process it correctly",
+  "description": "Even though inner slot is positioned before the outer one, we should process it correctly",
   "version": 8,
   "metadata": {
     "test": {

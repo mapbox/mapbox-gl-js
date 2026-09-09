@@ -1,8 +1,8 @@
 {
+  "description": "Per-appearance zoom-stepped paint properties must evaluate at the render zoom, not freeze at the floor zoom. Appearance 'a' also steps icon-translate at the same boundary as icon-opacity, so the left icon must be both visible and shifted [20,-20] at zoom 2.5.",
   "version": 8,
   "metadata": {
     "test": {
-      "_comment": "Per-appearance zoom-stepped paint properties must evaluate at the render zoom, not freeze at the floor zoom. Appearance 'a' also steps icon-translate at the same boundary as icon-opacity, so the left icon must be both visible and shifted [20,-20] at zoom 2.5.",
       "height": 64, "width": 256,
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.001}

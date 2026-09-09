@@ -1,7 +1,7 @@
 {
+  "description": "Verifies fix for bug https://github.com/mapbox/mapbox-gl-js/issues/11516",
   "version": 8,
   "metadata": {
-    "description": "Verifies fix for bug https://github.com/mapbox/mapbox-gl-js/issues/11516",
     "test": {
       "height": 512,
       "width": 512,

@@ -1,11 +1,11 @@
 {
+  "description": "Start with space for both labels to show with left anchor. Zoom out so that second has to switch to top anchor. Zoom out further so that second is forced to collide out. Zoom all the way back in so that the second label _could_ show in original position, but instead uses the last successfully placed one.",
   "version": 8,
   "metadata": {
     "test": {
       "height": 256,
       "width": 256,
       "fadeDuration": 100,
-      "description": "Start with space for both labels to show with left anchor. Zoom out so that second has to switch to top anchor. Zoom out further so that second is forced to collide out. Zoom all the way back in so that the second label _could_ show in original position, but instead uses the last successfully placed one.",
       "operations": [
         ["wait", 100],
         ["wait", 100],

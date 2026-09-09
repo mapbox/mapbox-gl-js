@@ -1,8 +1,8 @@
 {
+  "description": "Verifies client-side MRT overzooming: only the z=2 fixture tile (2-3-1-synthetic.mrt) exists, camera renders at z=5, so every visible tile is served by cropping the z=2 parent. This uses a synthetic MRT fixture (a smooth diagonal gradient, PIXEL_FORMAT_UINT32, offset=0/scale=1e-5) rather than the real-world raster-array/default fixture: the real fixture's offset=-100000 makes the raster-array color-ramp shader's colorOffset/colorMix uniforms exceed safe float precision range on some GPUs (observed: Adreno GLES + Vulkan), independent of and unrelated to the overzoom logic itself. The synthetic data keeps those uniforms small so this test can isolate and verify overzoom-crop spatial correctness without tripping that separate, pre-existing precision issue.",
   "version": 8,
   "metadata": {
     "test": {
-      "_comment": "Verifies client-side MRT overzooming: only the z=2 fixture tile (2-3-1-synthetic.mrt) exists, camera renders at z=5, so every visible tile is served by cropping the z=2 parent. This uses a synthetic MRT fixture (a smooth diagonal gradient, PIXEL_FORMAT_UINT32, offset=0/scale=1e-5) rather than the real-world raster-array/default fixture: the real fixture's offset=-100000 makes the raster-array color-ramp shader's colorOffset/colorMix uniforms exceed safe float precision range on some GPUs (observed: Adreno GLES + Vulkan), independent of and unrelated to the overzoom logic itself. The synthetic data keeps those uniforms small so this test can isolate and verify overzoom-crop spatial correctness without tripping that separate, pre-existing precision issue.",
       "width": 256,
       "height": 256,
       "allowed": 0.001,

@@ -1,5 +1,5 @@
 {
-    "_comment": "Once providers are settled, a line with 3d_elevation_id but no matching hd_road_elevation row is hidden, not draped flat.",
+    "description": "Once providers are settled, a line with 3d_elevation_id but no matching hd_road_elevation row is hidden, not draped flat.",
     "version": 8,
     "metadata": {
         "test": {

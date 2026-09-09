@@ -1,8 +1,8 @@
 {
+  "description": "Shift JIS 2-byte special characters and directional arrows placed on purely vertical lines. All of these characters are in needsRotationInVerticalMode so they should appear rotated 90° (lying sideways) rather than upright. The surrounding ア katakana are upright for contrast. See debug/shift-jis-vertical-text.html for the expected Chrome CSS rendering.",
   "version": 8,
   "metadata": {
     "test": {
-      "description": "Shift JIS 2-byte special characters and directional arrows placed on purely vertical lines. All of these characters are in needsRotationInVerticalMode so they should appear rotated 90° (lying sideways) rather than upright. The surrounding ア katakana are upright for contrast. See debug/shift-jis-vertical-text.html for the expected Chrome CSS rendering.",
       "height": 512,
       "width": 512
     }

@@ -1,5 +1,5 @@
 {
-  "_comment": "HD traffic lines and elevated incident symbols with cross-source elevation at zoom 17. Mix of tunnel and elevated-road incidents in view. Incident icons use viewport-aligned billboards (default icon-pitch/rotation-alignment; do not set map). SD traffic hidden in HD coverage area; SD roads hidden via hd_covered.",
+  "description": "HD traffic lines and elevated incident symbols with cross-source elevation at zoom 17. Mix of tunnel and elevated-road incidents in view. Incident icons use viewport-aligned billboards (default icon-pitch/rotation-alignment; do not set map). SD traffic hidden in HD coverage area; SD roads hidden via hd_covered.",
   "version": 8,
   "metadata": {
     "test": {

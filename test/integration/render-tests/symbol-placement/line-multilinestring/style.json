@@ -1,6 +1,6 @@
 {
+  "description": "Labels should appear along each ring of a MultiLineString independently, and along adjacent LineString features separately (no merging)",
   "version": 8,
-  "_comment": "Labels should appear along each ring of a MultiLineString independently, and along adjacent LineString features separately (no merging)",
   "metadata": {
     "test": {
       "width": 256,

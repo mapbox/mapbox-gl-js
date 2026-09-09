@@ -1,10 +1,10 @@
 {
+  "description": "Test that appearance-based icons work when icon-image is not present in layout properties",
   "version": 8,
   "metadata": {
     "test": {
       "width": 64,
-      "height": 64,
-      "description": "Test that appearance-based icons work when icon-image is not present in layout properties"
+      "height": 64
     }
   },
   "sources": {

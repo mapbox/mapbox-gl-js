@@ -1,9 +1,9 @@
 {
+  "description": "Single line labels render differently because they use the same glyphs for all justifications.",
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256,
-      "description": "Single line labels render differently because they use the same glyphs for all justifications."
+      "height": 256
     }
   },
   "center": [

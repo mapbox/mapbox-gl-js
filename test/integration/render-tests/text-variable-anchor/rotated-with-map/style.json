@@ -1,9 +1,9 @@
 {
+  "description": "Note that there are collisions in this example. This is because of the limitation that collision boxes don't rotate; however, their position should still be correct.",
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256,
-      "description": "Note that there are collisions in this example. This is because of the limitation that collision boxes don't rotate; however, their position should still be correct."
+      "height": 256
     }
   },
   "center": [

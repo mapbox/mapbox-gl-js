@@ -1,5 +1,5 @@
 {
-    "_comment": "Below the provider minzoom, traffic with 3d_elevation_id must drape flat on the ground, not hide or defer.",
+    "description": "Below the provider minzoom, traffic with 3d_elevation_id must drape flat on the ground, not hide or defer.",
     "version": 8,
     "metadata": {
         "test": {

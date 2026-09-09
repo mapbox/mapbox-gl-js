@@ -1,8 +1,8 @@
 {
+  "description": "Verifies that the color theme (LUT) is applied to line-gradient. Without the fix the gradient texture is rendered with raw colors (blue / red) instead of the LUT-transformed colors.",
   "version": 8,
   "metadata": {
     "test": {
-      "_comment": "Verifies that the color theme (LUT) is applied to line-gradient. Without the fix the gradient texture is rendered with raw colors (blue / red) instead of the LUT-transformed colors.",
       "width": 100,
       "height": 100
     }

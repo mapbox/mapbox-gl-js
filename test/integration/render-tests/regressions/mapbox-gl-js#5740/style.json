@@ -1,4 +1,5 @@
 {
+  "description": "Tests that fill-pattern cross-fading completes, by checking the rendering after the fade duration has elapsed.",
   "version": 8,
   "metadata": {
     "test": {
@@ -7,7 +8,6 @@
       "fadeDuration": 1000,
       "width": 64,
       "height": 64,
-      "description": "Tests that fill-pattern cross-fading completes, by checking the rendering after the fade duration has elapsed.",
       "operations": [
         [
           "wait"

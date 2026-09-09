@@ -1,5 +1,5 @@
 {
-    "_comment": "Cross-source traffic lines elevated onto multi-level bridge decks. hd-roads is dual-role (provider and consumer); hd-traffic consumes its elevation.",
+    "description": "Cross-source traffic lines elevated onto multi-level bridge decks. hd-roads is dual-role (provider and consumer); hd-traffic consumes its elevation.",
     "version": 8,
     "metadata": {
         "test": {

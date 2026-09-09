@@ -1,9 +1,9 @@
 {
+  "description": "This test looks pretty boring -- what it does is make sure that a label without collision boxes won't get drawn.",
   "version": 8,
   "metadata": {
     "test": {
       "collisionDebug": true,
-      "description": "This test looks pretty boring -- what it does is make sure that a label without collision boxes won't get drawn.",
       "height": 256,
       "width": 1024
     }

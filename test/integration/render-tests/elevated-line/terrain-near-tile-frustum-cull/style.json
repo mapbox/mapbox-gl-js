@@ -1,4 +1,5 @@
 {
+  "description": "Ground-elevated line over terrain at pitch 55° must remain visible.",
   "version": 8,
   "metadata": {
     "test": {
@@ -7,8 +8,7 @@
         [
           "wait"
         ]
-      ],
-      "_comment": "Ground-elevated line over terrain at pitch 55° must remain visible."
+      ]
     }
   },
   "center": [

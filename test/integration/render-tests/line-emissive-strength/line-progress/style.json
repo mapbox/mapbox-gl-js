@@ -1,8 +1,8 @@
 {
+  "description": "Verifies line-emissive-strength supports line-progress: emissive intensity ramps from 0 at line start to 1 at line end. Lights are dark so the line is only visible where emissive_strength is high, exercising the per-vertex line-progress evaluation path.",
   "version": 8,
   "metadata": {
     "test": {
-      "_comment": "Verifies line-emissive-strength supports line-progress: emissive intensity ramps from 0 at line start to 1 at line end. Lights are dark so the line is only visible where emissive_strength is high, exercising the per-vertex line-progress evaluation path.",
       "height": 64,
       "width": 256
     }

@@ -1,8 +1,8 @@
 {
+  "description": "Checks that runtime setConfigProperty on an object-typed config option updates a 'distance' filter's reference geometry: the point closer to the line after update will be filtered out, and the point farther from the line will remain visible.",
   "version": 8,
   "metadata": {
     "test": {
-      "_comment": "Checks that runtime setConfigProperty on an object-typed config option updates a 'distance' filter's reference geometry: the point closer to the line after update will be filtered out, and the point farther from the line will remain visible.",
       "width": 128,
       "height": 128,
       "operations": [

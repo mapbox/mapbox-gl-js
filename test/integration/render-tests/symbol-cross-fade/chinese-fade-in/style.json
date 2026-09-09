@@ -1,11 +1,11 @@
 {
+  "description": "Line symbols are placed differently at different zoom levels: this test crosses a zoom level and renders 80% through the cross-fade. The 'wait' logic is tricky here: 1st 'wait 100' is to trigger placement at z2 after tiles have loaded, 2nd 'wait 100' is to allow z2 labels to fade in, 'wait' after 'setZoom' runs until the z3 tiles load (but doesn't elapse any time on the fake test clock), next 'wait 100' triggers a placement using the z3 and z2 tiles together, final 'wait 80' actually exercises the cross fade.",
   "version": 8,
   "metadata": {
     "test": {
         "fadeDuration": 100,
         "width": 512,
         "height": 512,
-        "description": "Line symbols are placed differently at different zoom levels: this test crosses a zoom level and renders 80% through the cross-fade. The 'wait' logic is tricky here: 1st 'wait 100' is to trigger placement at z2 after tiles have loaded, 2nd 'wait 100' is to allow z2 labels to fade in, 'wait' after 'setZoom' runs until the z3 tiles load (but doesn't elapse any time on the fake test clock), next 'wait 100' triggers a placement using the z3 and z2 tiles together, final 'wait 80' actually exercises the cross fade.",
         "operations": [
           ["wait", 100],
           ["wait", 100],

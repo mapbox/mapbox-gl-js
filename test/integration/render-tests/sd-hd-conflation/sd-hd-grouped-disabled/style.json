@@ -1,5 +1,5 @@
 {
-  "_comment": "Conflation disabled: sdCoverageFadeRange defaults to [0,0]. SD road lines must remain visible under HD coverage area — verifies that zero-range means \"no filtering\".",
+  "description": "Conflation disabled: sdCoverageFadeRange defaults to [0,0]. SD road lines must remain visible under HD coverage area — verifies that zero-range means \"no filtering\".",
   "version": 8,
   "metadata": {
     "test": {

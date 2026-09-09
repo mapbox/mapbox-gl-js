@@ -1,8 +1,8 @@
 {
+  "description": "Ensures that short segments in a wide line do not cause unclamped fake-round join anchors to extend beyond the geometry.",
   "version": 8,
   "metadata": {
     "test": {
-      "description": "Ensures that short segments in a wide line do not cause unclamped fake-round join anchors to extend beyond the geometry.",
       "width": 512,
       "height": 512,
       "image-threshold": [

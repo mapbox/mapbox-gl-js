@@ -1,11 +1,11 @@
 {
+  "description": "Ensures that building layer no longer participates in conflation once terrain is enabled. This means that the fill-extrusion layer won't be conflated by the building layer.",
   "version": 8,
    "metadata": {
     "test": {
       
       "width": 512,
       "height": 512,
-      "description": "Ensures that building layer no longer participates in conflation once terrain is enabled. This means that the fill-extrusion layer won't be conflated by the building layer.",
       "operations": [
         ["wait"],
         ["setZoom", 17.25],

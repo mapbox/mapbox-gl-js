@@ -1,5 +1,5 @@
 {
-  "_comment": "HD tiles loaded but the hd_road_coverage layer is empty. SD roads must remain visible — verifies that absence of coverage data means no SD filtering, not the unloaded-tiles case.",
+  "description": "HD tiles loaded but the hd_road_coverage layer is empty. SD roads must remain visible — verifies that absence of coverage data means no SD filtering, not the unloaded-tiles case.",
   "version": 8,
   "metadata": {
     "test": {

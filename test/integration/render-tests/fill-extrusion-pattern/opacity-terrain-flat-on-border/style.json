@@ -1,7 +1,7 @@
 {
+  "description": "Tests various cases of flatRoofsUpdate().",
   "version": 8,
   "metadata": {
-    "description": "Tests various cases of flatRoofsUpdate().",
     "test": {
       "height": 256,
       "operations": [

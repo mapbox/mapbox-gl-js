@@ -1,10 +1,10 @@
 {
+  "description": "https://github.com/mapbox/mapbox-gl-js/issues/13691 - a building footprint with vertices extremely close to each other, tessellated at a low (city-wide) zoom where tile-coordinate rounding collapses some of them to the same point. fill-extrusion-edge-radius must not produce a degenerate NaN vertex from this, which otherwise renders as a long stray triangle spanning far outside the building.",
   "version": 8,
   "metadata": {
     "test": {
       "width": 64,
       "height": 64,
-      "description": "https://github.com/mapbox/mapbox-gl-js/issues/13691 - a building footprint with vertices extremely close to each other, tessellated at a low (city-wide) zoom where tile-coordinate rounding collapses some of them to the same point. fill-extrusion-edge-radius must not produce a degenerate NaN vertex from this, which otherwise renders as a long stray triangle spanning far outside the building.",
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0001}
       ],

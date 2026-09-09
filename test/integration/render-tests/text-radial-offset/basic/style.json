@@ -1,8 +1,8 @@
 {
+  "description": "For radial offsets, we try to make the distance from the anchor to the first pixels of the text even in all positions. But we don't actually know where the pixels in the glyph are, so we approximate based on where we think the baseline of the glyph is. The circle in this test is a way to check that our approximation works visually.",
   "version": 8,
   "metadata": {
     "test": {
-      "description": "For radial offsets, we try to make the distance from the anchor to the first pixels of the text even in all positions. But we don't actually know where the pixels in the glyph are, so we approximate based on where we think the baseline of the glyph is. The circle in this test is a way to check that our approximation works visually.",
       "height": 256,
       "width": 256
     }

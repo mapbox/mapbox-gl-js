@@ -1,11 +1,11 @@
 {
+    "description": "Covers placement and collision for elevated text. There is also text completely behind terrain that shouldn't be visible.",
     "version": 8,
     "metadata": {
         "test": {
             "width": 200,
             "height": 200,
             "collisionDebug": true,
-            "description": "Covers placement and collision for elevated text. There is also text completely behind terrain that shouldn't be visible.",
             "operations": [
                 ["waitFrameReady", 30]
             ],

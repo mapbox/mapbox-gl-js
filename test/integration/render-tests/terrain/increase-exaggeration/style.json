@@ -1,11 +1,11 @@
 {
+  "description": "In addition to terrain raster, verifies also toggling terrain off / on",
   "version": 8,
   "metadata": {
     "test": {
       "fadeDuration": 100,
       "height": 256,
       "width": 256,
-      "description": "In addition to terrain raster, verifies also toggling terrain off / on",
       "operations": [
         ["wait"],
         ["setTerrain", {

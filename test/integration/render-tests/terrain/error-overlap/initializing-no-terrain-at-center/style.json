@@ -1,10 +1,10 @@
 {
+  "description": "On terrain init, before center gets terrain data, keep map in 2D.",
   "version": 8,
   "metadata": {
     "test": {
       "height": 1024,
       "width": 256,
-      "description": "On terrain init, before center gets terrain data, keep map in 2D.",
       "operations": [
         [
           "wait"

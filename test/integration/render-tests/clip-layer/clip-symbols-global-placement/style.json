@@ -1,8 +1,8 @@
 {
+  "description": "Same scene as clip-layer/clip-symbols, but with global placement enabled: the clip layer must still hide the symbol at [0, 0] (under the polygon footprint) while leaving the one at [10, 10] visible. Global placement never ran the ReplacementSource clip check before this fix.",
   "version": 8,
   "metadata": {
     "test": {
-      "_comment": "Same scene as clip-layer/clip-symbols, but with global placement enabled: the clip layer must still hide the symbol at [0, 0] (under the polygon footprint) while leaving the one at [10, 10] visible. Global placement never ran the ReplacementSource clip check before this fix.",
       "height": 128,
       "width": 128,
       "globalPlacement": true,

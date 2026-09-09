@@ -1,5 +1,5 @@
 {
-    "_comment": "Consumer loads before the provider is in the style; adding hd-roads must reparse id-bearing lines onto the deck. Lines without ids stay flat.",
+    "description": "Consumer loads before the provider is in the style; adding hd-roads must reparse id-bearing lines onto the deck. Lines without ids stay flat.",
     "version": 8,
     "metadata": {
         "test": {

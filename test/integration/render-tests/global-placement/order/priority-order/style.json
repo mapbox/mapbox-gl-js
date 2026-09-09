@@ -1,8 +1,8 @@
 {
+  "description": "Symbols with higher placement-priority win collisions within their symbol layer.",
   "version": 8,
   "metadata": {
     "test": {
-      "description": "Symbols with higher placement-priority win collisions within their symbol layer.",
       "skip-test": [],
       "width": 128,
       "height": 128,

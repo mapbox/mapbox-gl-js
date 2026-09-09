@@ -1,10 +1,10 @@
 {
+  "description": "Separate sources for hillshade and terrain make full resolution hillshade.",
   "version": 8,
   "metadata": {
     "test": {
       "height": 256,
-      "width": 256,
-      "description": "Separate sources for hillshade and terrain make full resolution hillshade."
+      "width": 256
     }
   },
   "center": [-113.2935, 35.9529],

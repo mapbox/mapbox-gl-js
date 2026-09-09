@@ -1,11 +1,11 @@
 {
+  "description": "Checks that round-cap dashes (2D SDF atlas path, coverage measured on the center row) remain stable under heavy minification. Gaps must exceed the line width since round caps extend each dash by half the width; [0.5, 2] leaves distinct round dots.",
   "version": 8,
   "metadata": {
     "test": {
       "width": 256,
       "height": 256
-    },
-    "_comment": "Checks that round-cap dashes (2D SDF atlas path, coverage measured on the center row) remain stable under heavy minification. Gaps must exceed the line width since round caps extend each dash by half the width; [0.5, 2] leaves distinct round dots."
+    }
   },
   "center": [
     7.3e-05,

@@ -1,7 +1,7 @@
 {
+  "description": "Exposes corner cases in AO concave computation.",
   "version": 8,
   "metadata": {
-    "description": "Exposes corner cases in AO concave computation.",
     "test": {
       "height": 256,
       "operations": [

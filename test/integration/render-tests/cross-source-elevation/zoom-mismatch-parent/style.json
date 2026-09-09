@@ -1,5 +1,5 @@
 {
-    "_comment": "Consumer maxzoom 18, provider maxzoom 17 — elevation resolves via parent-tile fallback and cross-zoom transform.",
+    "description": "Consumer maxzoom 18, provider maxzoom 17 — elevation resolves via parent-tile fallback and cross-zoom transform.",
     "version": 8,
     "metadata": {
         "test": {

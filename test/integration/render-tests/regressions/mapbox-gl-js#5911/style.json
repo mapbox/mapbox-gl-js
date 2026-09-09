@@ -1,11 +1,11 @@
 {
+  "description": "Issue #5911 caused items in the distance on a pitched map to have collision boxes that were too small, although the debug box drew correctly. Before the fix, this test would show both labels, with the boxes visibly overlapping.",
   "version": 8,
   "metadata": {
     "test": {
       "collisionDebug": true,
       "width": 256,
-      "height": 2048,
-      "description": "Issue #5911 caused items in the distance on a pitched map to have collision boxes that were too small, although the debug box drew correctly. Before the fix, this test would show both labels, with the boxes visibly overlapping."
+      "height": 2048
     }
   },
   "center": [

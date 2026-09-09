@@ -1,5 +1,5 @@
 {
-    "comment": [
+    "description": [
         "Currently we have different behaviour for zoom-based paint properties:",
         "* For feature dependent we calculate two values for overscaled tile zoom and overscaled tile zoom + 1,",
         "  and interpolate between them. That means we ignore intermediate values and do not calculate interpolate",

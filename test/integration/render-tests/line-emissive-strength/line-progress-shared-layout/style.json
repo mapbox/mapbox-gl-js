@@ -1,8 +1,8 @@
 {
+  "description": "Two line layers share the same layout (default everything) and the same source. The first has constant line-emissive-strength; the second uses line-progress. Without the group_by_layout split, both layers would share a bucket whose paint inspection only sees layers[0] (no line-progress) — the second layer's expression would then evaluate with lineProgress=0 and render as a constant-dark line instead of a gradient. With the split, the second layer gets its own bucket and renders the expected dark→bright gradient.",
   "version": 8,
   "metadata": {
     "test": {
-      "_comment": "Two line layers share the same layout (default everything) and the same source. The first has constant line-emissive-strength; the second uses line-progress. Without the group_by_layout split, both layers would share a bucket whose paint inspection only sees layers[0] (no line-progress) — the second layer's expression would then evaluate with lineProgress=0 and render as a constant-dark line instead of a gradient. With the split, the second layer gets its own bucket and renders the expected dark→bright gradient.",
       "height": 64,
       "width": 256
     }

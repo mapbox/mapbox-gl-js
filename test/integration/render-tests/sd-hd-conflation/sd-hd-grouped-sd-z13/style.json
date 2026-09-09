@@ -1,5 +1,5 @@
 {
-  "_comment": "Same grouped style as sd-hd-grouped-sd but at zoom 13 — below the FRC fade range. SD road lines must be fully visible (no fade, no skip) since coverage zoom is not reached.",
+  "description": "Same grouped style as sd-hd-grouped-sd but at zoom 13 — below the FRC fade range. SD road lines must be fully visible (no fade, no skip) since coverage zoom is not reached.",
   "version": 8,
   "metadata": {
     "test": {

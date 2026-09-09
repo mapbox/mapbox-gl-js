@@ -1,11 +1,11 @@
 {
+  "description": "Checks that short features in a mixed-frequency dash pattern remain stable under minification.",
   "version": 8,
   "metadata": {
     "test": {
       "width": 256,
       "height": 256
-    },
-    "_comment": "Checks that short features in a mixed-frequency dash pattern remain stable under minification."
+    }
   },
   "center": [
     7.3e-05,

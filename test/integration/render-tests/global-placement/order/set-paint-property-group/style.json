@@ -1,8 +1,8 @@
 {
+  "description": "Setting constant placement-group at runtime works as expected.",
   "version": 8,
   "metadata": {
     "test": {
-      "description": "Setting constant placement-group at runtime works as expected.",
       "skip-test": [],
       "width": 128,
       "height": 128,

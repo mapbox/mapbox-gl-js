@@ -1,8 +1,8 @@
 {
+  "description": "Regression control for clip-symbols-global-placement: the clip layer is set to visibility: none, so under global placement neither symbol should be clipped -- both remain visible exactly as without a clip layer at all.",
   "version": 8,
   "metadata": {
     "test": {
-      "_comment": "Regression control for clip-symbols-global-placement: the clip layer is set to visibility: none, so under global placement neither symbol should be clipped -- both remain visible exactly as without a clip layer at all.",
       "height": 128,
       "width": 128,
       "globalPlacement": true,

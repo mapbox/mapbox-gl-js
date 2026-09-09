@@ -1,6 +1,6 @@
 {
+  "description": "raster-color-scale: log packs more of the color ramp texels into the low end of raster-color-range. The source quantizes values to 0.1, and over [0, 350] a linear ramp spans 0.342 per texel, so 0.1/0.2/0.3 all land in texel 0 and render transparent; log spans 0.088 per texel at the bottom and gives each its own color. Identical to raster-color/scale-linear apart from that one property; the two renders differ by ~19% (~3172 of 16384 px). Thresholds exceed the 0.00015 default because the ramp lookup is a hard quantization, so cross-GPU rounding can flip pixels along the color contours.",
   "version": 8,
-  "_comment": "raster-color-scale: log packs more of the color ramp texels into the low end of raster-color-range. The source quantizes values to 0.1, and over [0, 350] a linear ramp spans 0.342 per texel, so 0.1/0.2/0.3 all land in texel 0 and render transparent; log spans 0.088 per texel at the bottom and gives each its own color. Identical to raster-color/scale-linear apart from that one property; the two renders differ by ~19% (~3172 of 16384 px). Thresholds exceed the 0.00015 default because the ramp lookup is a hard quantization, so cross-GPU rounding can flip pixels along the color contours.",
   "metadata": {
     "test": {
       "width": 128,

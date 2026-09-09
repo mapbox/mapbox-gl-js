@@ -1,11 +1,11 @@
 {
+  "description": "Checks that a pattern with a very short gap in a long period ([6, 0.1], ~98% dash coverage) stays near-solid under minification without regressing: the subpixel gap should dissolve smoothly instead of aliasing.",
   "version": 8,
   "metadata": {
     "test": {
       "width": 256,
       "height": 256
-    },
-    "_comment": "Checks that a pattern with a very short gap in a long period ([6, 0.1], ~98% dash coverage) stays near-solid under minification without regressing: the subpixel gap should dissolve smoothly instead of aliasing."
+    }
   },
   "center": [
     7.3e-05,

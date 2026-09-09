@@ -1,11 +1,11 @@
 {
+  "description": "Checks that heavily minified zebra-crossing dashes remain stable at intersections without aliasing or moire.",
   "version": 8,
   "metadata": {
     "test": {
       "width": 256,
       "height": 256
-    },
-    "_comment": "Checks that heavily minified zebra-crossing dashes remain stable at intersections without aliasing or moire."
+    }
   },
   "center": [
     0.000073,

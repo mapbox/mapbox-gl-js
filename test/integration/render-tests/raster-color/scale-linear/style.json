@@ -1,6 +1,6 @@
 {
+  "description": "Control for raster-color/scale-log.",
   "version": 8,
-  "_comment": "Control for raster-color/scale-log.",
   "metadata": {
     "test": {
       "width": 128,

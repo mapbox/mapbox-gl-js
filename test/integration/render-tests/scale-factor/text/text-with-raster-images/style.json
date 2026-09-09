@@ -1,5 +1,5 @@
 {
-  "_comment": "Applying text scale factor (clipped to 1.5) to images within text-field, not image-related one",
+  "description": "Applying text scale factor (clipped to 1.5) to images within text-field, not image-related one",
   "version": 8,
   "metadata": {
     "test": {

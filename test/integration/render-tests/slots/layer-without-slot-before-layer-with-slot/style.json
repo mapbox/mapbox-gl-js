@@ -1,5 +1,5 @@
 {
-  "comment": "Even though the green layer is before the red one, it has no slots, so it should be displayed last",
+  "description": "Even though the green layer is before the red one, it has no slots, so it should be displayed last",
   "version": 8,
   "metadata": {
     "test": {

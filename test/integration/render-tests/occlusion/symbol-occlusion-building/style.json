@@ -1,8 +1,8 @@
 {
+  "description": "Minimal, non-colliding occlusion scene: a tall synthetic building occludes a point symbol behind it (dimmed to icon-occlusion-opacity) while a point in front stays fully visible. Deliberately avoids dense real POI data so there is no collision tie-breaking ambiguity between placement algorithms -- see the -global-placement sibling.",
   "version": 8,
   "metadata": {
     "test": {
-      "_comment": "Minimal, non-colliding occlusion scene: a tall synthetic building occludes a point symbol behind it (dimmed to icon-occlusion-opacity) while a point in front stays fully visible. Deliberately avoids dense real POI data so there is no collision tie-breaking ambiguity between placement algorithms -- see the -global-placement sibling.",
       "height": 256,
       "width": 256,
       "operations": [

@@ -1,8 +1,8 @@
 {
+  "description": "Shift JIS 2-byte special characters and directional arrows placed on purely horizontal lines. In horizontal mode these characters should appear in their natural upright orientation — the inverse of shift-jis-vertical-line. See reference.html for the expected Chrome CSS rendering.",
   "version": 8,
   "metadata": {
     "test": {
-      "description": "Shift JIS 2-byte special characters and directional arrows placed on purely horizontal lines. In horizontal mode these characters should appear in their natural upright orientation — the inverse of shift-jis-vertical-line. See reference.html for the expected Chrome CSS rendering.",
       "height": 512,
       "width": 300
     }

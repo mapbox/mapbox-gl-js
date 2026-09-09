@@ -1,8 +1,8 @@
 {
+  "description": "Placement group order beats placement-priority: priority competes only within a group, across groups the group order decides.",
   "version": 8,
   "metadata": {
     "test": {
-      "description": "Placement group order beats placement-priority: priority competes only within a group, across groups the group order decides.",
       "skip-test": [],
       "width": 128,
       "height": 128,

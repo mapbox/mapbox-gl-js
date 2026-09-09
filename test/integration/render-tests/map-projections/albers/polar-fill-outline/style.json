@@ -1,10 +1,10 @@
 {
+  "description": "Separates polar Albers background, fill, outline, and point rendering.",
   "version": 8,
   "metadata": {
     "test": {
       "width": 512,
       "height": 512,
-      "description": "Separates polar Albers background, fill, outline, and point rendering.",
       "operations": [
         ["setProjection", {
           "name": "albers",

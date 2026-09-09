@@ -1,5 +1,5 @@
 {
-  "comment": "We should generate warning but display layers as if slot was not set",
+  "description": "We should generate warning but display layers as if slot was not set",
   "version": 8,
   "metadata": {
     "test": {

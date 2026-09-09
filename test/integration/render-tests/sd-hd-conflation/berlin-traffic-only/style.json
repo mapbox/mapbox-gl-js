@@ -1,5 +1,5 @@
 {
-  "_comment": "Checks traffic-layer conflation: SD traffic lines hidden in HD coverage area (sdCoverageFadeRange=[14.4,14.9]), HD traffic lines visible. SD road lines hidden via hd_covered property. Berlin area at zoom ~14.68. Structure matches production debug style: empty root + basemap import (background + SD layers) + hd-roads-config import (HD overlay).",
+  "description": "Checks traffic-layer conflation: SD traffic lines hidden in HD coverage area (sdCoverageFadeRange=[14.4,14.9]), HD traffic lines visible. SD road lines hidden via hd_covered property. Berlin area at zoom ~14.68. Structure matches production debug style: empty root + basemap import (background + SD layers) + hd-roads-config import (HD overlay).",
   "version": 8,
   "metadata": {
     "test": {
