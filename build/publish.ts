@@ -27,6 +27,22 @@ import {
 import {publishCdn} from './publish-cdn.ts';
 
 /*
+ * In CI, the workflow splits gl-js/v* and gl-js/style-spec@* into separate jobs,
+ * each triggered by (and scoped to) its own tag via GITHUB_REF_NAME. Publishing
+ * only that tag's package - rather than every tag sitting on HEAD - is what keeps
+ * a paired-tag release from making both jobs race to publish the same package.
+ * Outside CI (local/dry-run use), fall back to every tag at HEAD.
+ */
+function getTargetTags(): string[] {
+    const refTag = process.env.GITHUB_REF_NAME;
+    if (process.env.GITHUB_ACTIONS === 'true' && refTag) {
+        return [refTag];
+    }
+
+    return getTagsAtHead();
+}
+
+/*
  * Publishes the style-spec package.
  */
 function publishStyleSpec(version: string, currentLatest: string | null, dryRun: boolean): Promise<void> {
@@ -126,13 +142,13 @@ async function main(): Promise<void> {
         console.log('Could not determine current latest version');
     }
 
-    const tags = getTagsAtHead();
+    const tags = getTargetTags();
     if (tags.length === 0) {
-        console.log('No tags found at HEAD, nothing to publish.');
+        console.log('No tags to publish.');
         return;
     }
 
-    console.log(`Found tags at HEAD: ${tags.join(', ')}`);
+    console.log(`Publishing for tags: ${tags.join(', ')}`);
 
     for (const fullTag of tags) {
         const tag = fullTag.replace(/^gl-js\//, '');
