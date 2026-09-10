@@ -1,0 +1,40 @@
+{
+  "tilejson": "3.0.0",
+  "tiles": [
+    "mapbox://tiles/mapbox.mapbox-streets-v8-lite/{z}/{x}/{y}.vector.pbf"
+  ],
+  "minzoom": 7,
+  "maxzoom": 7,
+  "vector_layers": [
+    {
+      "id": "admin",
+      "source": "mapbox.mapbox-streets-v8-lite",
+      "minzoom": 1,
+      "fields": {
+        "admin_level": "Number, 0-2. The administrative level of the boundary",
+        "disputed": "Disputed boundaries are 'true', all others are 'false'.",
+        "iso_3166_1": "The ISO 3166-1 alpha-2 code(s) of the state(s) a boundary is part of. Format: 'AA' or 'AA-BB'",
+        "maritime": "Maritime boundaries are 'true', all others are 'false'.",
+        "worldview": "One of 'all', 'IN'."
+      }
+    }
+  ],
+  "worldview": {
+    "mapbox.mapbox-streets-v8-lite": "IN"
+  },
+  "worldview_default": "US",
+  "worldview_options": {
+    "ALL": "Every available worldview",
+    "AR": "Argentina",
+    "CL": "Chile",
+    "CN": "China",
+    "IN": "India",
+    "JP": "Japan",
+    "MA": "Morocco",
+    "RS": "Serbia",
+    "RU": "Russia",
+    "TR": "Turkey",
+    "US": "United States",
+    "VN": "Vietnam"
+  }
+}

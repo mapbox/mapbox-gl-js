@@ -1,0 +1,41 @@
+{
+ "description": "Ensures that server-localized tiles pass Standard's admin layer filter.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "worldview": "IN",
+      "width": 256,
+      "height": 256
+    }
+  },
+  "center": [78.3341241, 31.7449256],
+  "zoom": 7.0221,
+  "sources": {
+    "streets": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v8-lite"
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "#000000"}
+    },
+    {
+      "id": "admin",
+      "type": "line",
+      "source": "streets",
+      "source-layer": "admin",
+      "filter": [
+        "case",
+        ["has", "$localized"], true,
+        ["match", ["get", "worldview"], ["all", "US"], true, false]
+      ],
+      "paint": {
+        "line-color": "#ffffff",
+        "line-width": 2
+      }
+    }
+  ]
+}
