@@ -164,10 +164,10 @@
     "check-debug-pages": "tsx ./build/check-debug-pages.ts",
     "check-changelog": "node ./build/check-changelog.ts",
     "tsc": "tsc --build tsconfig.json",
-    "publish-release": "./build/publish.ts",
-    "publish-cdn": "./build/publish-cdn.ts",
-    "publish-alpha": "./build/publish-alpha.ts",
-    "bump-version": "./build/bump-version.ts",
+    "publish-release": "./internal/scripts/publish.ts",
+    "publish-cdn": "./internal/scripts/publish-cdn.ts",
+    "publish-alpha": "./internal/scripts/publish-alpha.ts",
+    "bump-version": "./internal/scripts/bump-version.ts",
     "release": "./internal/scripts/release.ts"
   },
   "files": [
