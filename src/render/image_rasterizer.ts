@@ -1,4 +1,5 @@
 import {renderIcon} from '../data/usvg/usvg_pb_renderer';
+import {decodePendingUsvgTree} from '../data/usvg/usvg_pb_decoder';
 import {RGBAImage} from '../util/image';
 import {LRUCache} from '../util/lru';
 import {makeFQID} from '../util/fqid';
@@ -78,6 +79,8 @@ export class ImageRasterizer {
         if (cachedImage) {
             return cachedImage.clone();
         }
+
+        decodePendingUsvgTree(image.icon);
 
         const imageData = renderIcon(image.icon, imageVariant);
         const imageResult = ImageRasterizer._getImage(imageData);

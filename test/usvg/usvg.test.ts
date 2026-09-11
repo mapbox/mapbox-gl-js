@@ -2,7 +2,7 @@ import {PbfReader} from 'pbf';
 import {server, page} from 'vitest/browser';
 import pixelmatch from 'pixelmatch';
 import {describe, test, expect, afterEach, afterAll, onTestFailed, onTestFinished} from 'vitest';
-import {readIconSet} from '../../src/data/usvg/usvg_pb_decoder';
+import {readIconSetLazy, decodePendingUsvgTree} from '../../src/data/usvg/usvg_pb_decoder';
 import {renderIcon} from '../../src/data/usvg/usvg_pb_renderer';
 import {allowed, ignores, scales, formatName} from './utils';
 // @ts-expect-error - virtual modules are not typed
@@ -20,7 +20,9 @@ function base64ToUint8Array(base64: string) {
 function getIconSet(suite: string) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     const pbf = new PbfReader(base64ToUint8Array(iconsets[suite]));
-    return readIconSet(pbf);
+    const iconSet = readIconSetLazy(pbf);
+    for (const icon of iconSet.icons) decodePendingUsvgTree(icon);
+    return iconSet;
 }
 
 describe('uSVG', () => {

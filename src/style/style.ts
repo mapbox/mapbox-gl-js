@@ -964,6 +964,11 @@ class Style extends Evented<MapEvents> {
             }
         }
 
+        // Issue the iconset request before any style processing as it needs only the URL and the request manager
+        if (json.sprite) {
+            this._loadIconset(json.sprite);
+        }
+
         this._loaded = true;
 
         // Issue TileJSON requests immediately, before the expensive deep clone of the full style JSON.
@@ -982,9 +987,7 @@ class Style extends Evented<MapEvents> {
                 }
             }
 
-            if (json.sprite) {
-                this._loadIconset(json.sprite);
-            } else {
+            if (!json.sprite) {
                 this.imageManager.setLoaded(true, this.scope);
                 this.dispatcher.broadcast('spriteLoaded', {scope: this.scope});
             }

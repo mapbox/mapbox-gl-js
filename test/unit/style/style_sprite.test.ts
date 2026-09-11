@@ -3,7 +3,7 @@
 import {vi, describe, test, expect, createStyleJSON, waitFor, doneAsync} from '../../../test/util/vitest';
 import Style from '../../../src/style/style';
 import {getPNGResponse, mockFetch} from '../../util/network';
-import {StubMap} from './utils';
+import {StubMap, newStubStyle} from './utils';
 
 import type MapboxMap from '../../../src/ui/map';
 
@@ -34,6 +34,30 @@ describe('Style', () => {
                 expect(transformSpy.mock.calls[1][1]).toEqual('SpriteImage');
 
                 await waitFor(style, "data");
+            });
+
+            test('requests the sprite before the sources, ahead of style processing', async () => {
+                mockFetch({
+                    'http://example.com/source.json': () => new Response(JSON.stringify({tiles: ['http://example.com/{z}/{x}/{y}.pbf']})),
+                    'http://example.com/sprite.json': () => new Response(JSON.stringify({})),
+                    'http://example.com/sprite.png': async () => new Response(await getPNGResponse())
+                });
+
+                const {style} = newStubStyle();
+                const transformSpy = vi.spyOn(style.map._requestManager, 'transformRequest');
+
+                style.loadJSON({
+                    "version": 8,
+                    "sprite": "http://example.com/sprite",
+                    "sources": {"vector": {"type": "vector", "url": "http://example.com/source.json"}},
+                    "layers": []
+                });
+
+                await waitFor(style, 'style.load');
+
+                const types = transformSpy.mock.calls.map(call => call[1]);
+                expect(types.indexOf('SpriteJSON')).toEqual(0);
+                expect(types.indexOf('Source')).toBeGreaterThan(0);
             });
 
             test('fires "data" when the sprite finishes loading', async () => {

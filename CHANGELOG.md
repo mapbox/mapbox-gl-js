@@ -5,6 +5,7 @@
 - Slightly improve map load time via more aggressive chunk preloading.
 - Improve style parsing performance.
 - Preload Meshopt decoder earlier to improve 3D styles load time.
+- Improve map load time by requesting the icon set earlier and lazy parsing icons on-demand.
 
 ### Bug fixes 🐞
 
