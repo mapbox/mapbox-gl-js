@@ -327,8 +327,13 @@ export function performSymbolLayout(bucket: SymbolBucket,
         ];
     }
 
-    sizes.layoutTextSize = unevaluatedTextSize.possiblyEvaluate(new EvaluationParameters(tileZoom + 1, {worldview}), canonical);
-    sizes.layoutIconSize = unevaluatedIconSize.possiblyEvaluate(new EvaluationParameters(tileZoom + 1, {worldview}), canonical, availableImages);
+    // The layer stops being drawn at its own maxzoom, so a size above that is not one the bucket is ever
+    // drawn at and must not enter its size range.
+    const {maxzoom} = bucket.layers[0];
+    const nextZoom = maxzoom != null ? Math.min(tileZoom + 1, maxzoom) : tileZoom + 1;
+
+    sizes.layoutTextSize = unevaluatedTextSize.possiblyEvaluate(new EvaluationParameters(nextZoom, {worldview}), canonical);
+    sizes.layoutIconSize = unevaluatedIconSize.possiblyEvaluate(new EvaluationParameters(nextZoom, {worldview}), canonical, availableImages);
     sizes.textMaxSize = unevaluatedTextSize.possiblyEvaluate(new EvaluationParameters(18, {worldview}), canonical);
 
     const symbolPlacement = layout.get('symbol-placement');
