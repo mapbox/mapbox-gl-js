@@ -251,7 +251,6 @@ function shapeText(
     writingMode: Orientation,
     allowVerticalPlacement: boolean,
     layoutTextSize: number,
-    layoutTextSizeThisZoom: number,
     pixelRatio: number = 1,
     textSizeFactor: number = 1
 ): Shaping {
@@ -278,6 +277,11 @@ function shapeText(
 
     let lines: Array<TaggedString> = [];
 
+    // An image in a label keeps a fixed pixel size, so its extent in em is measured against a single
+    // reference text size, and both the line breaking and the layout below have to use the same one.
+    // The largest size the bucket can be drawn at is the only safe reference: the size at the bucket zoom
+    // may be zero, or close to it, when `text-size` grows from zero across the zoom range of the tile, and
+    // dividing by it makes the image explode over the whole range the tile is shown at.
     const lineBreaks = determineLineBreaks(logicalInput, spacing, maxWidth, glyphMap, imagePositions, layoutTextSize, textSizeFactor);
 
     const {processBidirectionalText, processStyledBidirectionalText} = rtlTextPlugin;
@@ -321,7 +325,7 @@ function shapeText(
         hasBaseline: false
     };
 
-    shapeLines(shaping, glyphMap, glyphPositions, imagePositions, lines, lineHeight, textAnchor, textJustify, writingMode, spacing, allowVerticalPlacement, layoutTextSizeThisZoom, textSizeFactor);
+    shapeLines(shaping, glyphMap, glyphPositions, imagePositions, lines, lineHeight, textAnchor, textJustify, writingMode, spacing, allowVerticalPlacement, layoutTextSize, textSizeFactor);
 
     if (isEmpty(positionedLines)) return undefined;
 
@@ -557,7 +561,7 @@ function shapeLines(shaping: Shaping,
                     writingMode: Orientation,
                     spacing: number,
                     allowVerticalPlacement: boolean,
-                    layoutTextSizeThisZoom: number,
+                    layoutTextSize: number,
                     textSizeFactor: number) {
 
     let x = 0;
@@ -687,7 +691,7 @@ function shapeLines(shaping: Shaping,
                 // If needed, allow to set scale factor for an image using
                 // alias "image-scale" that could be alias for "font-scale"
                 // when FormattedSection is an image section.
-                sectionScale = sectionScale * ONE_EM / layoutTextSizeThisZoom;
+                sectionScale = sectionScale * ONE_EM / layoutTextSize;
 
                 metrics = {width: scaledWidth,
                     height: scaledHeight,

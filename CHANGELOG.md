@@ -19,6 +19,9 @@
 - Fix map-aligned `icon-rotate` and `text-rotate` not being measured from true north in projections other than Mercator or globe, which misrotated symbols such as crosswalks.
 - Fix collision boxes not matching rotated symbols that use appearances with a layout `icon-rotate` or `text-rotate`.
 
+### Breaking changes ⚠️
+- The base size of icons in the `text-field` property is now calculated at the tile zoom level with the largest text size. As a result, the icons can be smaller when the text size depends on the zoom level.
+
 ## 3.32.0-rc.1
 
 ### Features and improvements ✨

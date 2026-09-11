@@ -67,14 +67,17 @@ function getPositionedIconSize(icon: PositionedIcon) {
 }
 
 // The symbol layout process needs `text-size` evaluated at up to five different zoom levels, and
-// `icon-size` at up to three:
+// `icon-size` at up to four:
 //
 //   1. `text-size` at the zoom level of the bucket. Used to calculate a per-feature size for source `text-size`
-//       expressions, and to calculate the box dimensions for icon-text-fit.
+//       expressions.
 //   2. `icon-size` at the zoom level of the bucket. Used to calculate a per-feature size for source `icon-size`
 //       expressions.
-//   3. `text-size` and `icon-size` at the zoom level of the bucket, plus one. Used to calculate collision boxes.
-//   4. `text-size` at zoom level 18. Used for something line-symbol-placement-related.
+//   3. `text-size` and `icon-size` at the zoom level of the bucket, plus one; for `text-size`, the larger of that
+//       and (1), which is the largest size the bucket can be drawn at. Used to calculate collision boxes, the
+//       icon-text-fit box, and the size an image in a label is measured in em against.
+//   4. `text-size` at zoom level 18. Used as a size that is the same at every zoom level when spacing labels
+//       along a line, so that the anchors do not move as the map zooms.
 //   5.  For composite `*-size` expressions: two zoom levels of curve stops that "cover" the zoom level of the
 //       bucket. These go into a vertex buffer and are used by the shader to interpolate the size at render time.
 //
@@ -359,8 +362,9 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
         const fontstack = layout.get('text-font').evaluate(feature, {}, canonical).join(',');
 
-        const layoutTextSizeThisZoom = textSize.evaluate(feature, {}, canonical) * sizes.textScaleFactor;
-        const layoutTextSize = sizes.layoutTextSize.evaluate(feature, {}, canonical) * sizes.textScaleFactor;
+        const layoutTextSize = Math.max(
+            sizes.layoutTextSize.evaluate(feature, {}, canonical),
+            textSize.evaluate(feature, {}, canonical)) * sizes.textScaleFactor;
         const layoutIconSize = sizes.layoutIconSize.evaluate(feature, {}, canonical, availableImages) * sizes.iconScaleFactor;
 
         const shapedTextOrientations: ShapedTextOrientations = {
@@ -409,7 +413,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                     // writing mode, thus, default left justification is used. If Latin
                     // scripts would need to be supported, this should take into account other justifications.
                     shapedTextOrientations.vertical = shapeText(text, glyphMap, glyphPositions, imagePositions, fontstack, maxWidth, lineHeight, textAnchor,
-                                                                textJustify, spacingIfAllowed, textOffset, WritingMode.vertical, true, layoutTextSize, layoutTextSizeThisZoom, pixelRatio, sizes.textScaleFactor);
+                                                                textJustify, spacingIfAllowed, textOffset, WritingMode.vertical, true, layoutTextSize, pixelRatio, sizes.textScaleFactor);
                 }
             };
 
@@ -433,7 +437,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                         // If using text-variable-anchor for the layer, we use a center anchor for all shapings and apply
                         // the offsets for the anchor in the placement step.
                         const shaping = shapeText(text, glyphMap, glyphPositions, imagePositions, fontstack, maxWidth, lineHeight, 'center',
-                                                  justification, spacingIfAllowed, textOffset, WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom, pixelRatio, sizes.textScaleFactor);
+                                                  justification, spacingIfAllowed, textOffset, WritingMode.horizontal, false, layoutTextSize, pixelRatio, sizes.textScaleFactor);
                         if (shaping) {
                             shapedTextOrientations.horizontal[justification] = shaping;
                             singleLine = shaping.positionedLines.length === 1;
@@ -450,7 +454,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
                 if (isPointPlacement || ((layout.get("text-writing-mode").includes('horizontal')) || !allowsVerticalWritingMode(unformattedText))) {
                     const shaping = shapeText(text, glyphMap, glyphPositions, imagePositions, fontstack, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed,
-                                            textOffset, WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom, pixelRatio, sizes.textScaleFactor);
+                                            textOffset, WritingMode.horizontal, false, layoutTextSize, pixelRatio, sizes.textScaleFactor);
                     if (shaping) shapedTextOrientations.horizontal[textJustify] = shaping;
                 }
 
