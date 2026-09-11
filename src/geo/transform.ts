@@ -131,9 +131,15 @@ class Transform {
     // Same as projMatrix, pixel-aligned to avoid fractional pixels for raster tiles
     alignedProjMatrix: mat4;
 
-    // From world coordinates to screen pixel coordinates (projMatrix premultiplied by labelPlaneMatrix)
+    // From world coordinates to screen pixel coordinates using the perspective projection.
+    // Flat-map interactions intentionally keep this projection when the camera is orthographic.
     pixelMatrix: mat4;
     pixelMatrixInverse: mat4;
+
+    // From world coordinates to screen pixel coordinates using the render projection.
+    // Terrain projection and raycasting use this matrix so elevated geometry stays aligned.
+    terrainPixelMatrix: mat4;
+    terrainPixelMatrixInverse: mat4;
 
     worldToFogMatrix!: mat4;
     skyboxMatrix: mat4;
@@ -286,6 +292,8 @@ class Transform {
         this.glCoordMatrix = new Float32Array(16);
         this.pixelMatrix = new Float64Array(16);
         this.pixelMatrixInverse = new Float64Array(16);
+        this.terrainPixelMatrix = new Float64Array(16);
+        this.terrainPixelMatrixInverse = new Float64Array(16);
     }
 
     clone(): Transform {
@@ -2009,7 +2017,7 @@ class Transform {
     _coordinatePoint(coord: MercatorCoordinate, sampleTerrainIn3D: boolean): Point {
         const elevation = sampleTerrainIn3D && this.elevation ? this.elevation.getAtPointOrZero(coord, this._centerAltitude) : this._centerAltitude;
         const p: [number, number, number, number] = [coord.x * this.worldSize, coord.y * this.worldSize, elevation + coord.toAltitude(), 1];
-        vec4.transformMat4(p, p, this.pixelMatrix);
+        vec4.transformMat4(p, p, sampleTerrainIn3D && this.elevation ? this.terrainPixelMatrix : this.pixelMatrix);
         return p[3] > 0 ?
             new Point(p[0] / p[3], p[1] / p[3]) :
             new Point(Number.MAX_VALUE, Number.MAX_VALUE);
@@ -2647,12 +2655,14 @@ class Transform {
 
         // matrix for conversion from location to screen coordinates
         mat4.multiply(this.pixelMatrix, this.labelPlaneMatrix, worldToClipPerspective);
+        mat4.multiply(this.terrainPixelMatrix, this.labelPlaneMatrix, m);
 
         this._calcFogMatrices();
         this._distanceTileDataCache = {};
 
         // inverse matrix for conversion from screen coordinates to location
         if (!mat4.invert(this.pixelMatrixInverse, this.pixelMatrix)) throw new Error("failed to invert matrix");
+        if (!mat4.invert(this.terrainPixelMatrixInverse, this.terrainPixelMatrix)) throw new Error("failed to invert terrain matrix");
 
         if (this.projection.name === 'globe' || this.mercatorFromTransition) {
             this.globeMatrix = calculateGlobeMatrix(this);
