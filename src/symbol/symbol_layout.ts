@@ -3,7 +3,7 @@ import {getAnchors, getCenterAnchor} from './get_anchors';
 import {shapeText} from './shaping';
 import {shapeIcon, WritingMode, fitIconToText} from './shaping_shared';
 import {getNorthOffset} from '../geo/projection/tile_transform';
-import {rotatesInTileSpace, evaluateVariableOffset, getAppearanceIconValues, getAppearanceTextValues, getScaledImageVariant, getAnchorJustification, computeFontScale, packSizeForVertex} from './symbol_layout_shared';
+import {rotatesInTileSpace, evaluateVariableOffset, getAppearanceIconValues, getAppearanceTextValues, getScaledImageVariant, getAnchorJustification, packSizeForVertex} from './symbol_layout_shared';
 import {getGlyphQuads, getIconQuads, getIconQuadsNumber, type SymbolQuad} from './quads';
 import {warnOnce, degToRad, clamp} from '../util/util';
 import {
@@ -519,7 +519,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
             bucket.iconsInText = shapedText ? shapedText.iconsInText : false;
         }
 
-        const fontScale = computeFontScale(layoutTextSize, sizes.textScaleFactor);
+        const fontScale = layoutTextSize / ONE_EM;
         const {defaultShapedIcon, verticallyShapedIcon} = fitIconsToText(bucket, shapedIcon, layout, feature, canonical, shapedTextOrientations, fontScale, iconOffset, iconTextFit);
 
         if (iconTextFit !== 'none' && shapedIcon && (isFullyStretchableX(shapedIcon) || isFullyStretchableY(shapedIcon))) {
@@ -928,16 +928,11 @@ function addFeature(bucket: SymbolBucket,
     // to use a text-size value that is the same for all zoom levels.
     // bucket calculates text-size at a high zoom level so that all tiles can
     // use the same value when calculating anchor positions.
-    let textMaxSize = sizes.textMaxSize.evaluate(feature, {}, canonical);
-    if (textMaxSize === undefined) {
-        textMaxSize = layoutTextSize * sizes.textScaleFactor;
-    } else {
-        textMaxSize *= sizes.textScaleFactor;
-    }
+    const textMaxSize = sizes.textMaxSize.evaluate(feature, {}, canonical) * sizes.textScaleFactor;
     const layout = bucket.layers[0].layout;
 
     const glyphSize = ONE_EM;
-    const fontScale = computeFontScale(layoutTextSize, sizes.textScaleFactor);
+    const fontScale = layoutTextSize / glyphSize;
 
     const defaultShaping = getDefaultHorizontalShaping(shapedTextOrientations.horizontal) || shapedTextOrientations.vertical;
 
