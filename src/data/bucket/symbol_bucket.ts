@@ -49,13 +49,15 @@ import ResolvedImage from '../../style-spec/expression/types/resolved_image';
 import {ImageVariant as ImageVariantClass} from '../../style-spec/expression/types/image_variant';
 import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../source/rtl_text_plugin';
 import {resamplePred} from '../../geo/projection/resample';
-import {tileCoordToECEF} from '../../geo/projection/globe_util';
+import {tileCoordToECEF, globeToMercatorTransition} from '../../geo/projection/globe_util';
 import {getProjection} from '../../geo/projection/index';
 import {mat4, vec3, vec4} from 'gl-matrix';
 import assert from '../../style-spec/util/assert';
 import {regionsEquals, skipClipping, pointInFootprint, transformPointToTile} from '../../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../../3d-style/util/conflation';
-import {clamp, warnOnce} from '../../util/util';
+import {clamp, warnOnce, wrap} from '../../util/util';
+import {number as mix} from '../../style-spec/util/interpolate';
+import EXTENT from '../../style-spec/data/extent';
 import {makeFQID} from '../../util/fqid';
 import {xyTransformMat4} from '../../util/mat4';
 import {Elevation} from '../../terrain/elevation';
@@ -1009,7 +1011,7 @@ class SymbolBucket implements Bucket, SymbolSource {
     // one-time warning), and symbols with neither an icon nor a text collision box are skipped
     // silently. `textPixelRatio` (tile.tileSize / EXTENT) converts tile-space offsets to CSS pixels,
     // matching the legacy collision index formula (see CollisionIndex#placeCollisionBox).
-    addToPlacement(globalPlacement: GlobalPlacement, idRangeAllocator: SymbolIdRangeAllocator, layerUid: number, posMatrix: mat4, transform: Transform, textPixelRatio: number, tile: Tile, fogState: FogState | null | undefined, groupOrders: PlacementGroupOrders, styleLayerOrder: number, featureStates: FeatureStates, replacementSource: ReplacementSource | null): void {
+    addToPlacement(globalPlacement: GlobalPlacement, idRangeAllocator: SymbolIdRangeAllocator, layerUid: number, posMatrix: mat4, invMatrix: mat4, mercatorCenter: [number, number], transform: Transform, textPixelRatio: number, tile: Tile, fogState: FogState | null | undefined, groupOrders: PlacementGroupOrders, styleLayerOrder: number, featureStates: FeatureStates, replacementSource: ReplacementSource | null): void {
         if (this.symbolInstances.length === 0) return;
 
         if (replacementSource) {
@@ -1039,15 +1041,9 @@ class SymbolBucket implements Bucket, SymbolSource {
         }
         const hasVariableTextAnchor = !!layer.layout.get('text-variable-anchor');
 
-        // Globe is not supported yet: this projects collision boxes in mercator space, while the globe
-        // pipeline deforms symbols in the vertex shader, so collisions would land in the wrong place.
-        // Feed no geometry on globe -- every begun variant is then dropped and a symbol that was visible
-        // gets hidden (see GlobalPlacement#finishVariantProcessing). This converges to no symbols on
-        // globe and recovers on its own once the projection switches back to mercator (rather than
-        // freezing whatever was last placed in mercator, which would linger through the transition).
         const bucketProjection = this.getProjection();
-        const feedGeometry = bucketProjection.name !== 'globe';
-        if (!feedGeometry) warnOnce('new placement: globe projection is not supported yet; hiding symbols');
+        const globeToMercator = bucketProjection.name === 'globe' ? globeToMercatorTransition(transform.zoom) : 1;
+        const isGlobeToMercatorTransition = globeToMercator < 1;
 
         const unwrappedTileID = tile.tileID.toUnwrapped();
         const pitched = transform.pitch > 0;
@@ -1095,9 +1091,12 @@ class SymbolBucket implements Bucket, SymbolSource {
         if (latestFeatureIndex) latestFeatureIndex.loadVTLayers();
         const sourceLayerName = latestFeatureIndex ? latestFeatureIndex.sourceLayerCoder.decode(this.sourceLayerIndex) : '';
 
-        // Raises a box's anchor to the height the symbol is drawn at, mirroring
-        // CollisionIndex#placeCollisionBox / Placement#placeLayerBucketPart's updateBoxData.
-        const elevateAnchor = (box: SingleCollisionBox, instance: SymbolInstance, symbolZOffsetValue: number): {x: number; y: number; z: number; elevated: boolean} => {
+        // Raises a box's anchor to the height the symbol is drawn at, blends it
+        // toward its mercator-tile position during the globe-to-mercator transition, then projects it
+        // into logical viewport pixels. Inlined into one function -- rather than three chained ones --
+        // since this runs per collision box in the per-instance hot loop below and each intermediate
+        // step previously allocated its own throwaway {x, y, z} object.
+        const projectCollisionBoxAnchor = (box: SingleCollisionBox, instance: SymbolInstance, symbolZOffsetValue: number): ProjectedAnchor => {
             let boxElevation: number;
             if (this.elevationType === 'road') {
                 boxElevation = elevationFromSea ? symbolZOffsetValue :
@@ -1109,17 +1108,33 @@ class SymbolBucket implements Bucket, SymbolSource {
             }
             boxElevation += instance.zOffset;
 
-            if (!boxElevation) {
-                return {x: box.projectedAnchorX, y: box.projectedAnchorY, z: box.projectedAnchorZ, elevated: false};
+            let x = box.projectedAnchorX;
+            let y = box.projectedAnchorY;
+            let z = box.projectedAnchorZ;
+            const elevated = !!boxElevation;
+            if (elevated) {
+                const [ux, uy, uz] = bucketProjection.upVector(tile.tileID.canonical, box.tileAnchorX, box.tileAnchorY);
+                const upScale = bucketProjection.upVectorScale(tile.tileID.canonical, transform.center.lat, transform.worldSize).metersToTile * boxElevation;
+                x += ux * upScale;
+                y += uy * upScale;
+                z += uz * upScale;
             }
-            const [ux, uy, uz] = bucketProjection.upVector(tile.tileID.canonical, box.tileAnchorX, box.tileAnchorY);
-            const upScale = bucketProjection.upVectorScale(tile.tileID.canonical, transform.center.lat, transform.worldSize).metersToTile;
-            return {
-                x: box.projectedAnchorX + ux * boxElevation * upScale,
-                y: box.projectedAnchorY + uy * boxElevation * upScale,
-                z: box.projectedAnchorZ + uz * boxElevation * upScale,
-                elevated: true,
-            };
+
+            if (bucketProjection.name === 'globe' && isGlobeToMercatorTransition) {
+                const canonical = tile.tileID.canonical;
+                const tilesCount = 1 << canonical.z;
+                let mercatorX = (box.tileAnchorX / EXTENT + canonical.x) / tilesCount - mercatorCenter[0];
+                const mercatorY = ((box.tileAnchorY / EXTENT + canonical.y) / tilesCount - mercatorCenter[1]) * EXTENT;
+                mercatorX = wrap(mercatorX, -0.5, 0.5) * EXTENT;
+                const mercatorPosition = vec4.fromValues(mercatorX, mercatorY, EXTENT / (2.0 * Math.PI), 1.0);
+                vec4.transformMat4(mercatorPosition, mercatorPosition, invMatrix);
+                x = mix(x, mercatorPosition[0], globeToMercator);
+                y = mix(y, mercatorPosition[1], globeToMercator);
+                z = mix(z, mercatorPosition[2], globeToMercator);
+            }
+
+            const checkOcclusion = pitched || elevated || bucketProjection.name === 'globe';
+            return projectAnchor(posMatrix, x, y, z, transform, bucketProjection, checkOcclusion, fogState, unwrappedTileID);
         };
 
         // Streams a collision box into the run as a screen-aligned viewport rectangle. The box is
@@ -1132,8 +1147,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         // has no valid placedIconSymbolIndex/placedSymbolArray entry to evaluate a size from.
         const addCollisionBox = (box: SingleCollisionBox | undefined, instance: SymbolInstance, symbolZOffsetValue: number, getScale: () => number) => {
             if (!box) return;
-            const {x, y, z, elevated} = elevateAnchor(box, instance, symbolZOffsetValue);
-            const anchor = projectAnchor(posMatrix, x, y, z, transform, bucketProjection, pitched || elevated, fogState, unwrappedTileID);
+            const anchor = projectCollisionBoxAnchor(box, instance, symbolZOffsetValue);
             // Occluded, too far away to be worth a place or behind the camera
             if (anchor.occluded || anchor.perspectiveRatio <= MIN_COLLISION_PERSPECTIVE_RATIO) return;
             const scale = getScale();
@@ -1212,10 +1226,9 @@ class SymbolBucket implements Bucket, SymbolSource {
                 symbolDisplayOrder: 0,
             };
 
-            // A symbol contributes its icon and/or text collision boxes as one variant. On globe no
-            // geometry is fed, so the variant is dropped and a previously-visible symbol is hidden.
+            // A symbol contributes its icon and/or text collision boxes as one variant.
             globalPlacement.startSymbolVariantProcessing(variantId, priority, placementRules);
-            if (feedGeometry && !clipped) {
+            if (!clipped) {
                 const symbolZOffsetValue = needsFeatureForZOffset && feature ? symbolZOffsetProperty.evaluate(feature, {}) : constantSymbolZOffset;
                 addCollisionBox(collisionArrays.iconBox, instance, symbolZOffsetValue, () => this.getSymbolInstanceIconSize(iconZoomSize, zoom, instance.placedIconSymbolIndex));
                 addCollisionBox(collisionArrays.textBox, instance, symbolZOffsetValue, () => this.getSymbolInstanceTextSize(textZoomSize, instance, zoom, index));

@@ -27,4 +27,5 @@ export type SymbolPlacementParameters = {
     fogState: FogState | null;
     groupOrders: PlacementGroupOrders;
     replacementSource: ReplacementSource;
+    mercatorCenter: [number, number];
 };

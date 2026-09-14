@@ -123,6 +123,8 @@ test('SymbolBucket#addToPlacement places a real symbol via the new placement pip
     placementTransform.resize(100, 100);
 
     const posMatrix = getSymbolPlacementTileProjectionMatrix(tileID, projection, placementTransform, 'mercator');
+    const invMatrix = projection.createInversionMatrix(placementTransform, tileID.canonical);
+    const mercatorCenter: [number, number] = [0, 0];
     const textPixelRatio = 512 / EXTENT;
     const tile = {tileID, collisionBoxArray, latestFeatureIndex: null};
 
@@ -132,7 +134,7 @@ test('SymbolBucket#addToPlacement places a real symbol via the new placement pip
 
     globalPlacement.startPlacement(0, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, placementTransform, textPixelRatio, tile, null, new Map(), 0, null);
+    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null);
 
     // addToPlacement seeds the (until now empty) opacity buffer with one hidden entry per glyph
     // quad, since new placement never runs Placement#updateBucketOpacities to build it from scratch.
@@ -160,7 +162,7 @@ test('SymbolBucket#addToPlacement places a real symbol via the new placement pip
     showSymbolVariantSpy.mockClear();
     globalPlacement.startPlacement(1, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, placementTransform, textPixelRatio, tile, null, new Map(), 0, null);
+    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null);
     globalPlacement.finishSourceProcessing();
     globalPlacement.finishPlacementRun();
 
@@ -219,6 +221,8 @@ test('SymbolBucket#addToPlacement hides a symbol clipped by a 3D-object/clip-lay
     placementTransform.resize(100, 100);
 
     const posMatrix = getSymbolPlacementTileProjectionMatrix(tileID, projection, placementTransform, 'mercator');
+    const invMatrix = projection.createInversionMatrix(placementTransform, tileID.canonical);
+    const mercatorCenter: [number, number] = [0, 0];
     const textPixelRatio = 512 / EXTENT;
     const tile = {tileID, collisionBoxArray, latestFeatureIndex: null};
 
@@ -231,7 +235,7 @@ test('SymbolBucket#addToPlacement hides a symbol clipped by a 3D-object/clip-lay
 
     globalPlacement.startPlacement(0, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, placementTransform, textPixelRatio, tile, null, new Map(), 0, {}, replacementSource);
+    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, {}, replacementSource);
     globalPlacement.finishSourceProcessing();
     globalPlacement.finishPlacementRun();
 
@@ -284,6 +288,8 @@ function placeAndCapturePriority(bucket: SymbolBucket, groupOrders: Map<string, 
     const placementTransform = new Transform();
     placementTransform.resize(100, 100);
     const posMatrix = getSymbolPlacementTileProjectionMatrix(tileID, projection, placementTransform, 'mercator');
+    const invMatrix = projection.createInversionMatrix(placementTransform, tileID.canonical);
+    const mercatorCenter: [number, number] = [0, 0];
     const textPixelRatio = 512 / EXTENT;
     const tile = {tileID, collisionBoxArray, latestFeatureIndex: withFeatureIndex ? fixtureFeatureIndex(tileID, promoteId) : null};
 
@@ -293,7 +299,7 @@ function placeAndCapturePriority(bucket: SymbolBucket, groupOrders: Map<string, 
 
     globalPlacement.startPlacement(0, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, placementTransform, textPixelRatio, tile, null, groupOrders, styleLayerOrder, featureStates, null);
+    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, groupOrders, styleLayerOrder, featureStates, null);
     globalPlacement.finishSourceProcessing();
     globalPlacement.finishPlacementRun();
 

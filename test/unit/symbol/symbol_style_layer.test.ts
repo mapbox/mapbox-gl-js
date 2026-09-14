@@ -115,7 +115,8 @@ describe('placeSymbols', () => {
             transform: createTransform(),
             buildingIndex: undefined,
             fogState: null,
-            groupOrders: new Map()
+            groupOrders: new Map(),
+            mercatorCenter: [0, 0]
         };
     }
 
@@ -123,7 +124,7 @@ describe('placeSymbols', () => {
         const layer = createSymbolLayer({id: 'symbol'});
         const bucket = {
             layerIds: [layer.fqid],
-            getProjection: () => ({name: 'mercator'}),
+            getProjection: () => ({name: 'mercator', createInversionMatrix: () => new Float32Array(16)}),
             addToPlacement: vi.fn(),
             updateZOffset: vi.fn(),
             elevationType: 'none',

@@ -13,6 +13,7 @@ import Fog from './fog';
 import Snow from './snow';
 import Rain from './rain';
 import {clone, deepEqual, filterObject, cartesianPositionToSpherical, warnOnce} from '../util/util';
+import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
 import {getJSON, getReferrer, ResourceType} from '../util/ajax';
 import {isMapboxURL} from '../util/mapbox_url';
 import {stripQueryParameters} from '../util/url';
@@ -4800,6 +4801,11 @@ class Style extends Evented<MapEvents> {
         }
         const groupOrders = this._groupOrders;
 
+        const mercatorCenter: [number, number] = [
+            mercatorXfromLng(transform.center.lng),
+            mercatorYfromLat(transform.center.lat)
+        ];
+
         const placementParameters: SymbolPlacementParameters = {
             globalPlacement,
             idRangeAllocator: this.symbolIdRangeAllocator,
@@ -4807,7 +4813,8 @@ class Style extends Evented<MapEvents> {
             buildingIndex: this._buildingIndex,
             fogState,
             groupOrders,
-            replacementSource
+            replacementSource,
+            mercatorCenter
         };
 
         for (let position = 0; position < this._mergedOrder.length; position++) {

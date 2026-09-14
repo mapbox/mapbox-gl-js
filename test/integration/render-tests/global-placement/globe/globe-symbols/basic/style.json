@@ -1,0 +1,40 @@
+{
+  "description": "Checks a simple point symbol on the visible hemisphere now places and renders.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "globalPlacement": true,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-4140"}
+      ]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 2,
+  "projection": {"name": "globe"},
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {"type": "Point", "coordinates": [0, 0]}
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "points",
+      "layout": {"icon-image": "rocket-12"}
+    }
+  ]
+}
