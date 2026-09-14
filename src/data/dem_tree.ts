@@ -17,17 +17,6 @@ class MipLevel {
         this.leaves = [];
     }
 
-    getElevation(x: number, y: number): {
-        min: number;
-        max: number;
-    } {
-        const idx = this.toIdx(x, y);
-        return {
-            min: this.minimums[idx],
-            max: this.maximums[idx]
-        };
-    }
-
     isLeaf(x: number, y: number): number {
         return this.leaves[this.toIdx(x, y)];
     }
@@ -144,34 +133,29 @@ const aabbSkirtPadding = 100;
 // Each tree node stores the minimum and maximum elevation of its children nodes and a flag whether the node is a leaf.
 // Node data is stored in non-interleaved arrays where the root is at index 0.
 export default class DemMinMaxQuadTree {
-    maximums: Array<number>;
-    minimums: Array<number>;
-    leaves: Array<number>;
-    childOffsets: Array<number>;
+    maximums: Float32Array;
+    minimums: Float32Array;
+    leaves: Uint8Array;
+    childOffsets: Uint32Array;
     nodeCount: number;
     dem: DEMData;
-    _siblingOffset: Array<Array<number>>;
 
     constructor(dem_: DEMData) {
-        this.maximums = [];
-        this.minimums = [];
-        this.leaves = [];
-        this.childOffsets = [];
         this.nodeCount = 0;
         this.dem = dem_;
 
-        // Precompute the order of 4 sibling nodes in the memory. Top-left, top-right, bottom-left, bottom-right
-        this._siblingOffset = [
-            [0, 0],
-            [1, 0],
-            [0, 1],
-            [1, 1]
-        ];
+        const mips = this.dem ? buildDemMipmap(this.dem) : [];
+        // Typed storage transfers between threads without copying; the tree can't have more nodes
+        // than the mip pyramid has cells, so allocate for that and trim to the sparse count after.
+        const capacity = mips.reduce((count, mip) => count + mip.size * mip.size, 0);
+        this.maximums = new Float32Array(capacity);
+        this.minimums = new Float32Array(capacity);
+        this.leaves = new Uint8Array(capacity);
+        this.childOffsets = new Uint32Array(capacity);
 
         if (!this.dem)
             return;
 
-        const mips = buildDemMipmap(this.dem);
         const maxLvl = mips.length - 1;
 
         // Create the root node
@@ -183,6 +167,11 @@ export default class DemMinMaxQuadTree {
 
         // Construct the rest of the tree recursively
         this._construct(mips, 0, 0, maxLvl, 0);
+
+        this.maximums = this.maximums.subarray(0, this.nodeCount);
+        this.minimums = this.minimums.subarray(0, this.nodeCount);
+        this.leaves = this.leaves.subarray(0, this.nodeCount);
+        this.childOffsets = this.childOffsets.subarray(0, this.nodeCount);
     }
 
     // Performs raycast against the tree root only. Min and max coordinates defines the size of the root node
@@ -343,10 +332,10 @@ export default class DemMinMaxQuadTree {
             // Perform intersection tests agains each of the 4 child nodes and store results from closest to furthest.
             let hitCount = 0;
 
-            for (let i = 0; i < this._siblingOffset.length; i++) {
-
-                const childNodeX = (nodex << 1) + this._siblingOffset[i][0];
-                const childNodeY = (nodey << 1) + this._siblingOffset[i][1];
+            // Siblings are stored top-left, top-right, bottom-left, bottom-right
+            for (let i = 0; i < 4; i++) {
+                const childNodeX = (nodex << 1) + (i & 1);
+                const childNodeY = (nodey << 1) + (i >> 1);
 
                 // Decode node aabb from the morton code
                 decodeBounds(childNodeX, childNodeY, depth + 1, rootMinx, rootMiny, rootMaxx, rootMaxy, boundsMin, boundsMax);
@@ -380,8 +369,8 @@ export default class DemMinMaxQuadTree {
                 stack.push({
                     idx: this.childOffsets[idx] + hitIdx,
                     t: tHits[hitIdx],
-                    nodex: (nodex << 1) + this._siblingOffset[hitIdx][0],
-                    nodey: (nodey << 1) + this._siblingOffset[hitIdx][1],
+                    nodex: (nodex << 1) + (hitIdx & 1),
+                    nodey: (nodey << 1) + (hitIdx >> 1),
                     depth: depth + 1
                 });
             }
@@ -391,11 +380,11 @@ export default class DemMinMaxQuadTree {
     }
 
     _addNode(min: number, max: number, leaf: number): number {
-        this.minimums.push(min);
-        this.maximums.push(max);
-        this.leaves.push(leaf);
-        this.childOffsets.push(0);
-        return this.nodeCount++;
+        const idx = this.nodeCount++;
+        this.minimums[idx] = min;
+        this.maximums[idx] = max;
+        this.leaves[idx] = leaf;
+        return idx;
     }
 
     _construct(mips: Array<MipLevel>, x: number, y: number, lvl: number, parentIdx: number) {
@@ -414,13 +403,10 @@ export default class DemMinMaxQuadTree {
         let leafMask = 0;
         let firstNodeIdx = 0;
 
-        for (let i = 0; i < this._siblingOffset.length; i++) {
-            const childX = x * 2 + this._siblingOffset[i][0];
-            const childY = y * 2 + this._siblingOffset[i][1];
-
-            const elevation = childMip.getElevation(childX, childY);
-            const leaf = childMip.isLeaf(childX, childY);
-            const nodeIdx = this._addNode(elevation.min, elevation.max, leaf);
+        for (let i = 0; i < 4; i++) {
+            const childIdx = childMip.toIdx(x * 2 + (i & 1), y * 2 + (i >> 1));
+            const leaf = childMip.leaves[childIdx];
+            const nodeIdx = this._addNode(childMip.minimums[childIdx], childMip.maximums[childIdx], leaf);
 
             if (leaf)
                 leafMask |= 1 << i;
@@ -429,9 +415,9 @@ export default class DemMinMaxQuadTree {
         }
 
         // Continue construction of the tree recursively to non-leaf nodes.
-        for (let i = 0; i < this._siblingOffset.length; i++) {
+        for (let i = 0; i < 4; i++) {
             if (!(leafMask & (1 << i))) {
-                this._construct(mips, x * 2 + this._siblingOffset[i][0], y * 2 + this._siblingOffset[i][1], childLvl, firstNodeIdx + i);
+                this._construct(mips, x * 2 + (i & 1), y * 2 + (i >> 1), childLvl, firstNodeIdx + i);
             }
         }
     }
@@ -552,25 +538,15 @@ export function buildDemMipmap(dem: DEMData): Array<MipLevel> {
 
             blockSamples(x, y, 2, true, blockBounds);
 
-            const e0 = prevMip.getElevation(blockBounds[0], blockBounds[1]);
+            const i0 = prevMip.toIdx(blockBounds[0], blockBounds[1]);
+            const i1 = prevMip.toIdx(blockBounds[2], blockBounds[1]);
+            const i2 = prevMip.toIdx(blockBounds[2], blockBounds[3]);
+            const i3 = prevMip.toIdx(blockBounds[0], blockBounds[3]);
+            const {minimums, maximums, leaves} = prevMip;
 
-            const e1 = prevMip.getElevation(blockBounds[2], blockBounds[1]);
-
-            const e2 = prevMip.getElevation(blockBounds[2], blockBounds[3]);
-
-            const e3 = prevMip.getElevation(blockBounds[0], blockBounds[3]);
-
-            const l0 = prevMip.isLeaf(blockBounds[0], blockBounds[1]);
-
-            const l1 = prevMip.isLeaf(blockBounds[2], blockBounds[1]);
-
-            const l2 = prevMip.isLeaf(blockBounds[2], blockBounds[3]);
-
-            const l3 = prevMip.isLeaf(blockBounds[0], blockBounds[3]);
-
-            const minElevation = Math.min(e0.min, e1.min, e2.min, e3.min);
-            const maxElevation = Math.max(e0.max, e1.max, e2.max, e3.max);
-            const canConcatenate = l0 && l1 && l2 && l3;
+            const minElevation = Math.min(minimums[i0], minimums[i1], minimums[i2], minimums[i3]);
+            const maxElevation = Math.max(maximums[i0], maximums[i1], maximums[i2], maximums[i3]);
+            const canConcatenate = leaves[i0] && leaves[i1] && leaves[i2] && leaves[i3];
 
             mip.maximums.push(maxElevation);
             mip.minimums.push(minElevation);

@@ -78,11 +78,12 @@ import type {ContextOptions} from '../gl/context';
 import type {CutoffParams} from '../render/cutoff';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
 import type {LightOverrides, LightsUniformsType} from '../../3d-style/render/lights';
+import type {FogUniformsType} from '../render/fog';
 import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id';
 import type {ProgramName} from './program';
 import type {ProgramUniformsType, DynamicDefinesType} from './program/program_uniforms';
 import type {Source, ISource} from '../source/source';
-import type {UniformBindings} from './uniform_binding';
+import type {UniformBindings, UniformValues} from './uniform_binding';
 import type {CrossTileID, VariableOffset} from '../symbol/placement';
 import type {TypedStyleLayer, CoreStyleLayer, HDStyleLayer, StandardStyleLayer} from '../style/style_layer/typed_style_layer';
 import type {IDevTools} from '../ui/control/devtools';
@@ -287,6 +288,8 @@ class Painter {
     _fogVisible: boolean;
     _cachedTileFogOpacities: Record<number, [number, number]>;
     _shadowRenderer?: ShadowRenderer;
+    _lightsUniforms: UniformValues<LightsUniformsType> | null = null;
+    _fogUniforms: UniformValues<FogUniformsType> | null = null;
     _destroyed?: boolean;
     _devtools?: IDevTools;
     _wireframeDebugCache: WireframeDebugCache;
@@ -893,6 +896,16 @@ class Painter {
 
         this.style = style;
         this.options = options;
+
+        // Light and fog uniforms are constant across the frame apart from the per-tile fog matrix;
+        // build them once here instead of once per tile draw in uploadCommonUniforms.
+        const {directionalLight, ambientLight} = style;
+        this._lightsUniforms = style.enable3dLights() && directionalLight && ambientLight ?
+            lightsUniformValues(directionalLight, ambientLight, style) : null;
+        const tr = this.transform;
+        this._fogUniforms = style.fog ? fogUniformValues(this, style.fog, style.fog.getOpacity(tr.pitch),
+            tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
+            tr.globeCenterInViewSpace, tr.globeRadius, [this.width, this.height]) : null;
 
         // Update FRC coverage polygon GPU buffers from current snapshot
         if (this.frcCoverageSnapshot && !this.frcCoverageSnapshot.empty()) {
@@ -1962,15 +1975,10 @@ class Painter {
     }
 
     uploadCommonLightUniforms(context: Context, program: Program<LightsUniformsType>, lightOverrides?: LightOverrides) {
-        if (this.style.enable3dLights()) {
-            const directionalLight = this.style.directionalLight;
-            const ambientLight = this.style.ambientLight;
-
-            if (directionalLight && ambientLight) {
-                const lightsUniforms = lightsUniformValues(directionalLight, ambientLight, this.style, lightOverrides);
-                program.setLightsUniformValues(context, lightsUniforms);
-            }
-        }
+        const values = lightOverrides && this._lightsUniforms ?
+            lightsUniformValues(this.style.directionalLight, this.style.ambientLight, this.style, lightOverrides) :
+            this._lightsUniforms;
+        if (values) program.setLightsUniformValues(context, values);
     }
 
     uploadCommonUniforms(context: Context, program: Program<ProgramUniformsType[ProgramName]>, tileID?: UnwrappedTileID | null, fogMatrix?: mat4 | null, cutoffParams?: CutoffParams | null, lightOverrides?: LightOverrides) {
@@ -1982,24 +1990,9 @@ class Painter {
             return;
         }
 
-        const fog = this.style.fog;
-
-        if (fog) {
-            const fogOpacity = fog.getOpacity(this.transform.pitch);
-            const fogUniforms = fogUniformValues(
-                this, fog, tileID, fogOpacity,
-                this.transform.frustumCorners.TL,
-                this.transform.frustumCorners.TR,
-                this.transform.frustumCorners.BR,
-                this.transform.frustumCorners.BL,
-                this.transform.globeCenterInViewSpace,
-                this.transform.globeRadius,
-                [
-                    this.transform.width * browser.devicePixelRatio,
-                    this.transform.height * browser.devicePixelRatio
-                ],
-                fogMatrix);
-
+        const fogUniforms = this._fogUniforms;
+        if (fogUniforms) {
+            fogUniforms['u_fog_matrix'] = tileID ? this.transform.calculateFogTileMatrix(tileID) : fogMatrix ? fogMatrix : this.identityMat;
             program.setFogUniformValues(context, fogUniforms);
         }
 

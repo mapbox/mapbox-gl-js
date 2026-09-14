@@ -58,6 +58,9 @@ class RasterDEMTileWorkerSource implements WorkerSource {
         imgBitmap.close();
 
         const dem = new DEMData(uid, imagePixels, encoding, borderReady);
+        // The min/max tree is transferred with the DEM; building it here keeps the ~100 ms per tile
+        // off the main thread, where terrain's tile cover would otherwise build it lazily.
+        dem._buildQuadTree();
         return {dem, borderReady};
     }
 

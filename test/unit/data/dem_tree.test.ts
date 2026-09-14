@@ -287,9 +287,9 @@ describe('DemMinMaxQuadTree', () => {
                 1, 1, 1, 1
             ];
 
-            expect(tree.maximums).toEqual(expectedMaximums);
-            expect(tree.minimums).toEqual(expectedMinimums);
-            expect(tree.leaves).toEqual(expectedLeaves);
+            expect(Array.from(tree.maximums)).toEqual(expectedMaximums);
+            expect(Array.from(tree.minimums)).toEqual(expectedMinimums);
+            expect(Array.from(tree.leaves)).toEqual(expectedLeaves);
         });
     });
 
