@@ -61,20 +61,6 @@ function getInlinedTileJSON(data?: TileJSON, language?: string, worldview?: stri
         return data;
     }
 
-    // If we don't support this language and worldview in TileJSON
-    // or in the same time some of them is not defined
-    // we can safely use inlined default
-    if (!(language in (data.language_options || {})) && !(worldview in (data.worldview_options || {}))) {
-        // There is exception for empty language or worldview options:
-        // If we don't have any language or worldview options
-        // we should always request TileJSON
-        if (!data.language_options || !data.worldview_options) {
-            return null;
-        }
-
-        return data;
-    }
-
     return null;
 }
 

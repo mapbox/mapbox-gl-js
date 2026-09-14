@@ -207,7 +207,7 @@ describe('Inlined TileJSON', () => {
         await wait;
     });
 
-    test('should not request tileJSON because of unsupported language/worldview', async () => {
+    test('should request tileJSON because of unsupported language/worldview', async () => {
         const {withAsync, wait} = doneAsync();
         const requestFn = vi.fn();
         mockFetch({
@@ -235,7 +235,7 @@ describe('Inlined TileJSON', () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         }, map._requestManager, 'et', 'ET', withAsync((err, result, doneRef) => {
             assert.ifError(err);
-            expect(requestFn).not.toHaveBeenCalled();
+            expect(requestFn).toHaveBeenCalledOnce();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
