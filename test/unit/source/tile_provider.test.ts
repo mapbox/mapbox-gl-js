@@ -1,15 +1,19 @@
 import {test, describe, expect, vi} from '../../util/vitest';
 import {getPNGResponse} from '../../util/network';
 import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source';
+import RasterTileSource from '../../../src/source/raster_tile_source';
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 import {isHttpNotFound} from '../../../src/util/ajax';
 import {getProjection} from '../../../src/geo/projection/index';
 import {processTileJSON} from '../../../src/source/tile_provider';
+import {RequestManager} from '../../../src/util/mapbox';
 
 import type {TileProvider, TileDataResponse} from '../../../src/source/tile_provider';
-import type {RequestParameters} from '../../../src/util/ajax';
-import type {RequestManager} from '../../../src/util/mapbox';
+import type {RequestParameters, RequestTransformFunction} from '../../../src/util/ajax';
 import type {WorkerSourceOptions, WorkerSourceVectorTileRequest} from '../../../src/source/worker_source';
+import type {Map as MapboxMap} from '../../../src/ui/map';
+import type RasterTile from '../../../src/source/tile';
+import type Dispatcher from '../../../src/util/dispatcher';
 
 type Tile = {z: number; x: number; y: number};
 type TileOptions = {request: RequestParameters; signal: AbortSignal};
@@ -157,6 +161,27 @@ test('loadTileData with provider - cancellation aborts and ignores settlement', 
     expect(callback).not.toHaveBeenCalled();
 });
 
+test('raster source forwards transformRequest headers to provider.loadTile', async () => {
+    const transformRequest: RequestTransformFunction = (url) => ({url, headers: {Authorization: 'SECRET'}});
+    const source = new RasterTileSource('id', {type: 'raster'}, {send() {}} as unknown as Dispatcher, undefined);
+    source.map = {_requestManager: new RequestManager(transformRequest)} as unknown as MapboxMap;
+
+    let capturedRequest: RequestParameters;
+    const provider: TileProvider<ArrayBuffer> = {
+        loadTile: vi.fn().mockImplementation((_tile: Tile, options: TileOptions) => {
+            capturedRequest = options.request;
+            return Promise.resolve(null);
+        }),
+    };
+    const tile = {tileID: {canonical: {z: 0, x: 0, y: 0}}} as unknown as RasterTile;
+
+    await new Promise(resolve => {
+        source.loadTileWithProvider(tile, provider, 'http://example.com/tile.png', new AbortController(), () => resolve(undefined));
+    });
+
+    expect(capturedRequest.headers.Authorization).toBe('SECRET');
+});
+
 describe('processTileJSON', () => {
     function mockRequestManager(): RequestManager {
         return {
@@ -194,4 +219,3 @@ describe('processTileJSON', () => {
     });
 
 });
-

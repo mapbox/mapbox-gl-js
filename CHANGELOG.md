@@ -11,6 +11,7 @@
 ### Bug fixes 🐞
 
 - Fix `raster-array` chunk loading when unused.
+- Fix `transformRequest` headers and credentials being dropped from PMTiles requests.
 
 ## 3.31.0-rc.1
 
