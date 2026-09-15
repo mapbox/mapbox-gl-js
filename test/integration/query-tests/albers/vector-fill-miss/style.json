@@ -1,0 +1,55 @@
+{
+  "version": 8,
+  "_comment": "queryRenderedFeatures must NOT hit at the position the polygon would occupy under Mercator. A non-reprojecting query would wrongly return a feature here.",
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "queryGeometry": [
+        426,
+        405
+      ],
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"
+        }
+      ]
+    }
+  },
+  "center": [
+    -96,
+    37.5
+  ],
+  "zoom": 3,
+  "projection": {
+    "name": "albers"
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 0,
+      "tiles": [
+        "local://tiles/mapbox.mapbox-streets-v8/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "country-boundaries",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "country_boundaries",
+      "paint": {
+        "fill-color": "#3060c0"
+      }
+    }
+  ]
+}

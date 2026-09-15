@@ -1,0 +1,71 @@
+{
+  "version": 8,
+  "_comment": "Mercator control for fit-bounds: same bounds, same padding, no projection. Isolates whether a fit-bounds difference comes from the projection or from the camera-fitting code itself.",
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        [
+          "fitBounds",
+          [
+            [
+              -125,
+              24
+            ],
+            [
+              -66,
+              50
+            ]
+          ],
+          {
+            "padding": 20,
+            "animate": false
+          }
+        ],
+        [
+          "wait"
+        ]
+      ],
+      "image-threshold": [
+        {
+          "platform-tag-contains": "native",
+          "threshold": 0.002
+        }
+      ]
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 0,
+      "tiles": [
+        "local://tiles/mapbox.mapbox-streets-v8/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "country-boundaries",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "country_boundaries",
+      "paint": {
+        "fill-color": "#3060c0",
+        "fill-outline-color": "#102040"
+      }
+    }
+  ]
+}

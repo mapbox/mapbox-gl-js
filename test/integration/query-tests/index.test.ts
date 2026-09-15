@@ -162,7 +162,7 @@ const getTest = (queryTestName: string, preflightError?: unknown) => async () =>
         }
 
         if (import.meta.env.VITE_CI === 'false' && import.meta.env.VITE_UPDATE === 'true') {
-            await server.commands.writeFile(`${testPath}/expected.json`, jsonDiff.replace('+ ', '').trim());
+            await server.commands.writeFile(`${testPath}/expected.json`, JSON.stringify(actual, undefined, 2));
         } else if (import.meta.env.VITE_CI === 'false') {
             await server.commands.writeFile(`${testPath}/actual.png`, getCanvasDataUrl().split(',')[1], {encoding: 'base64'});
             await server.commands.writeFile(`${testPath}/actual.json`, JSON.stringify(actual, undefined, 2));

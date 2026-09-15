@@ -1,0 +1,83 @@
+{
+  "version": 8,
+  "_comment": "Same reprojected hit test for a GeoJSON polygon source.",
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "queryGeometry": [
+        90,
+        339
+      ],
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"
+        }
+      ]
+    }
+  },
+  "center": [
+    -96,
+    37.5
+  ],
+  "zoom": 3,
+  "projection": {
+    "name": "albers"
+  },
+  "sources": {
+    "box": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "name": "box"
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -110,
+                30
+              ],
+              [
+                -82,
+                30
+              ],
+              [
+                -82,
+                45
+              ],
+              [
+                -110,
+                45
+              ],
+              [
+                -110,
+                30
+              ]
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "box",
+      "type": "fill",
+      "source": "box",
+      "paint": {
+        "fill-color": "#3060c0"
+      }
+    }
+  ]
+}

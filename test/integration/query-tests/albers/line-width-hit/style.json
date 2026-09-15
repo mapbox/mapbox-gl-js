@@ -1,0 +1,70 @@
+{
+  "version": 8,
+  "_comment": "Line hit testing under Albers. The line is drawn with line-width 24, so its stroke reaches y=197 at this column, but queryRenderedFeatures still hits at y=200. That overshoot is inherited from gl-js: the half-width is converted with pixelToTileUnitsFactor (style/query_geometry.ts:268), which is the Mercator pixels-per-tile-unit ratio, while the geometry it is compared against is in Albers-reprojected tile space. The query region is therefore ~1.6x the drawn stroke here. This test pins that behaviour so native and gl-js stay in step; see the Mercator control, where the query boundary does coincide with the stroke.",
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "queryGeometry": [
+        160,
+        200
+      ],
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"
+        }
+      ]
+    }
+  },
+  "center": [
+    -96,
+    37.5
+  ],
+  "zoom": 3,
+  "projection": {
+    "name": "albers"
+  },
+  "sources": {
+    "line": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "name": "line"
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -115,
+              42
+            ],
+            [
+              -77,
+              42
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "line",
+      "paint": {
+        "line-color": "#3060c0",
+        "line-width": 24
+      }
+    }
+  ]
+}

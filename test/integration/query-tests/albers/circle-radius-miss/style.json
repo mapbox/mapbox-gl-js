@@ -1,0 +1,65 @@
+{
+  "version": 8,
+  "_comment": "Miss counterpart to circle-radius-hit: x=78 is outside the drawn circle. It would be a hit if the radius were scaled by an uncompensated Mercator pixelToTileUnitsFactor, so this pins the compensation described there.",
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "queryGeometry": [
+        78,
+        170
+      ],
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"
+        }
+      ]
+    }
+  },
+  "center": [
+    -96,
+    37.5
+  ],
+  "zoom": 3,
+  "projection": {
+    "name": "albers"
+  },
+  "sources": {
+    "pt": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "name": "pt"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -115,
+            42
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "pt",
+      "type": "circle",
+      "source": "pt",
+      "paint": {
+        "circle-color": "#3060c0",
+        "circle-radius": 18,
+        "circle-pitch-alignment": "map"
+      }
+    }
+  ]
+}

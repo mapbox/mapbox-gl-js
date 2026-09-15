@@ -1,0 +1,69 @@
+{
+  "version": 8,
+  "_comment": "querySourceFeatures on a vector source, restricted with sourceLayers plus a property filter - the exact shape of the FIPS lookup in requirement 6. Its Mercator twin (query-source-vector-mercator) carries an identical expected.json, so the pair asserts that source features, which are read straight from tile geometry and never reprojected, are unaffected by the active projection.",
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "querySource": "mapbox",
+      "queryOptions": {
+        "sourceLayers": [
+          "country_boundaries"
+        ],
+        "filter": [
+          "==",
+          [
+            "get",
+            "iso_3166_1"
+          ],
+          "IS"
+        ]
+      },
+      "skip-test": [
+        {
+          "platform-tag-contains": "web",
+          "reason": "querySourceFeatures is driven by metadata.test.querySource, which only the native render-test runner implements; the gl-js query harness reads queryGeometry only."
+        },
+        {
+          "platform-tag-contains": "native",
+          "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"
+        }
+      ]
+    }
+  },
+  "center": [
+    -19,
+    65
+  ],
+  "zoom": 3,
+  "projection": {
+    "name": "albers"
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 0,
+      "tiles": [
+        "local://tiles/mapbox.mapbox-streets-v8/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "country-boundaries",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "country_boundaries",
+      "paint": {
+        "fill-color": "#3060c0"
+      }
+    }
+  ]
+}

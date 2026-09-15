@@ -1,0 +1,74 @@
+{
+  "version": 8,
+  "_comment": "fitBounds must frame a geographic bounding box correctly under Albers, where the projected shape of the box is not a screen-aligned rectangle. Uniform padding.",
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        [
+          "fitBounds",
+          [
+            [
+              -125,
+              24
+            ],
+            [
+              -66,
+              50
+            ]
+          ],
+          {
+            "padding": 20,
+            "animate": false
+          }
+        ],
+        [
+          "wait"
+        ]
+      ],
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"
+        }
+      ]
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "projection": {
+    "name": "albers"
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 0,
+      "tiles": [
+        "local://tiles/mapbox.mapbox-streets-v8/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "country-boundaries",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "country_boundaries",
+      "paint": {
+        "fill-color": "#3060c0",
+        "fill-outline-color": "#102040"
+      }
+    }
+  ]
+}

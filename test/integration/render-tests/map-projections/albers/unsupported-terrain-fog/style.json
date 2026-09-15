@@ -1,0 +1,53 @@
+{
+  "version": 8,
+  "_comment": "Terrain must be dropped under Albers. map-projections/unsupported-fog already covers fog; both are declared here and neither may render.",
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "operations": [
+        ["setProjection", "albers"],
+        ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"}
+      ]
+    }
+  },
+  "zoom": 3,
+  "center": [-122.414, 37.776],
+  "sources": {
+    "graticule": {
+      "type": "geojson",
+      "data": "local://data/graticule.geojson"
+    },
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 12,
+      "tileSize": 256
+    }
+  },
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": 1.0
+  },
+  "fog": {
+    "range": [0.5, 10.0],
+    "color": "red",
+    "horizon-blend": 0.5
+  },
+  "layers": [
+    {
+      "id": "graticule",
+      "source": "graticule",
+      "type": "line",
+      "paint": {
+          "line-width": 1,
+          "line-color": "#aaa"
+      }
+    }
+  ]
+}

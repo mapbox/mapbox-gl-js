@@ -1,0 +1,65 @@
+{
+  "version": 8,
+  "_comment": "Circle hit testing under Albers, with circle-pitch-alignment: map so the hit test runs in tile space and scales the radius by pixelToTileUnitsFactor (circle_style_layer.ts:134). Unlike the line case (see line-width-hit) the query boundary here does coincide with the drawn circle edge, because the map-aligned branch divides the size back out by the projection's pixelsPerMeter ratio. x=70 is just inside that edge.",
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "queryGeometry": [
+        70,
+        170
+      ],
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"
+        }
+      ]
+    }
+  },
+  "center": [
+    -96,
+    37.5
+  ],
+  "zoom": 3,
+  "projection": {
+    "name": "albers"
+  },
+  "sources": {
+    "pt": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "name": "pt"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -115,
+            42
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "pt",
+      "type": "circle",
+      "source": "pt",
+      "paint": {
+        "circle-color": "#3060c0",
+        "circle-radius": 18,
+        "circle-pitch-alignment": "map"
+      }
+    }
+  ]
+}

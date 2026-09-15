@@ -1,0 +1,55 @@
+{
+  "version": 8,
+  "_comment": "queryRenderedFeatures must hit a vector-tile polygon where Albers actually draws it. This screen point is inside the polygon only after reprojection; under Mercator it is water.",
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "queryGeometry": [
+        130,
+        455
+      ],
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"
+        }
+      ]
+    }
+  },
+  "center": [
+    -96,
+    37.5
+  ],
+  "zoom": 3,
+  "projection": {
+    "name": "albers"
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 0,
+      "tiles": [
+        "local://tiles/mapbox.mapbox-streets-v8/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "country-boundaries",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "country_boundaries",
+      "paint": {
+        "fill-color": "#3060c0"
+      }
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "querySource": "states",
+      "queryOptions": {
+        "filter": [
+          "==",
+          [
+            "get",
+            "fips"
+          ],
+          "20"
+        ]
+      },
+      "skip-test": [
+        {
+          "platform-tag-contains": "web",
+          "reason": "querySourceFeatures is driven by metadata.test.querySource, which only the native render-test runner implements; the gl-js query harness reads queryGeometry only."
+        }
+      ]
+    }
+  },
+  "center": [
+    -96,
+    37.5
+  ],
+  "zoom": 3,
+  "sources": {
+    "states": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "fips": "06",
+              "kind": "state"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -120,
+                    32
+                  ],
+                  [
+                    -114,
+                    32
+                  ],
+                  [
+                    -114,
+                    44
+                  ],
+                  [
+                    -120,
+                    44
+                  ],
+                  [
+                    -120,
+                    32
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "fips": "08",
+              "kind": "state"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -108,
+                    32
+                  ],
+                  [
+                    -102,
+                    32
+                  ],
+                  [
+                    -102,
+                    44
+                  ],
+                  [
+                    -108,
+                    44
+                  ],
+                  [
+                    -108,
+                    32
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "fips": "20",
+              "kind": "state"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -100,
+                    32
+                  ],
+                  [
+                    -94,
+                    32
+                  ],
+                  [
+                    -94,
+                    44
+                  ],
+                  [
+                    -100,
+                    44
+                  ],
+                  [
+                    -100,
+                    32
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "fips": "36",
+              "kind": "state"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -79,
+                    32
+                  ],
+                  [
+                    -73,
+                    32
+                  ],
+                  [
+                    -73,
+                    44
+                  ],
+                  [
+                    -79,
+                    44
+                  ],
+                  [
+                    -79,
+                    32
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "states",
+      "type": "fill",
+      "source": "states",
+      "paint": {
+        "fill-color": "#3060c0"
+      }
+    }
+  ],
+  "_comment": "Mercator twin of query-source-albers. Same source, same filter, and deliberately the same expected.json: it establishes the baseline that switching projection must not perturb."
+}

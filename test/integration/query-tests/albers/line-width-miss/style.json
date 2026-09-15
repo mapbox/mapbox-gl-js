@@ -1,0 +1,70 @@
+{
+  "version": 8,
+  "_comment": "Miss counterpart to line-width-hit: y=212 is outside even the over-large query region described there, so no feature may be returned.",
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "queryGeometry": [
+        160,
+        212
+      ],
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"
+        }
+      ]
+    }
+  },
+  "center": [
+    -96,
+    37.5
+  ],
+  "zoom": 3,
+  "projection": {
+    "name": "albers"
+  },
+  "sources": {
+    "line": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "name": "line"
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -115,
+              42
+            ],
+            [
+              -77,
+              42
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "line",
+      "paint": {
+        "line-color": "#3060c0",
+        "line-width": 24
+      }
+    }
+  ]
+}
