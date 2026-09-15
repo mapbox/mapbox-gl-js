@@ -258,6 +258,8 @@ class Painter {
     _showOverdrawInspector!: boolean;
     cache!: Record<string, Program<UniformBindings>>;
     symbolFadeChange!: number;
+    // This frame's timestamp, reused by the symbol program's GLOBAL_PLACEMENT_FADE uniforms
+    now!: number;
     gpuTimers: GPUTimers;
     deferredRenderGpuTimeQueries: WebGLQuery[];
     emptyTexture!: Texture;
@@ -973,7 +975,8 @@ class Painter {
         this.imageManager = style.imageManager;
         this.modelManager = style.modelManager;
 
-        this.symbolFadeChange = style.placement.symbolFadeChange(browser.now());
+        this.now = browser.now();
+        this.symbolFadeChange = style.placement.symbolFadeChange(this.now);
 
         this.imageManager.beginFrame();
 

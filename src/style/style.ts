@@ -4687,7 +4687,7 @@ class Style extends Evented<MapEvents> {
         const layerOrder = useGlobalPlacement ? [] : this._mergedOrder;
 
         if (useGlobalPlacement) {
-            this._driveGlobalPlacement(transform, replacementSource);
+            this._driveGlobalPlacement(transform, replacementSource, fadeDuration);
         }
 
         for (const layerId of layerOrder) {
@@ -4774,7 +4774,7 @@ class Style extends Evented<MapEvents> {
     }
 
     // Runs one global placement pass per frame, driving each symbol layer's placeSymbols() hook.
-    _driveGlobalPlacement(transform: Transform, replacementSource: ReplacementSource) {
+    _driveGlobalPlacement(transform: Transform, replacementSource: ReplacementSource, fadeDuration: number) {
         if (transform.width === 0 || transform.height === 0) return;
 
         if (!this.globalPlacement) {
@@ -4814,7 +4814,8 @@ class Style extends Evented<MapEvents> {
             fogState,
             groupOrders,
             replacementSource,
-            mercatorCenter
+            mercatorCenter,
+            fadeDuration
         };
 
         for (let position = 0; position < this._mergedOrder.length; position++) {

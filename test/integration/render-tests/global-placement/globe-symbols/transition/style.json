@@ -1,0 +1,40 @@
+{
+  "description": "Pinned at zoom 5.5, inside the animated globe<->mercator projection morph (GLOBE_ZOOM_THRESHOLD_MIN=5..MAX=6). Checks that SymbolBucket#addToPlacement blends the globe-ECEF anchor toward its mercator-projected position (mirroring CollisionIndex#placeCollisionBox) instead of using the raw globe position, which would visibly offset the symbol mid-transition.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "globalPlacement": true,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-4140"}
+      ]
+    }
+  },
+  "center": [10, 10],
+  "zoom": 5.5,
+  "projection": {"name": "globe"},
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {"type": "Point", "coordinates": [10, 10]}
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "points",
+      "layout": {"icon-image": "rocket-12"}
+    }
+  ]
+}

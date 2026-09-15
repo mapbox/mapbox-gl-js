@@ -7,7 +7,17 @@ in ivec4 a_pos_offset;
 in uvec4 a_tex_size;
 in ivec4 a_pixeloffset;
 in vec4 a_projected_pos;
+// a_fade_ref_time.x: fade reference time
+// a_fade_ref_time.y: fade state -- bit 0 is the target (0 hidden, 1 visible), bit 1 marks
+// the fade as settled, in which case x is ignored entirely
+#define FADE_TIME_HALF_PERIOD 2147483648u
+#define FADE_TIME_PERIOD 4294967296.0
+#ifdef GLOBAL_PLACEMENT_FADE
+in highp ivec2 a_fade_ref_time;
+#endif
+#ifdef LEGACY_PLACEMENT_FADE
 in uint a_fade_opacity;
+#endif
 
 #ifdef Z_OFFSET
 in float a_auto_z_offset;
@@ -63,7 +73,18 @@ uniform bool u_pitch_with_map;
 uniform bool u_rotate_symbol;
 uniform highp float u_aspect_ratio;
 uniform highp float u_camera_to_center_distance;
+// u_now is in milliseconds, the same wrapping uint32 counter as a_fade_ref_time.x. Integers rather
+// than floats because a float32 carries only 24 bits of mantissa: exact to 1ms for the first
+// 2^24 ms (4.66 h) of the clock, coarser after that, and hopeless for a wall-clock epoch (~36 h
+// per ulp). int32 holds 1ms exactly across its whole +/-24.9 day range, so a caller can feed raw
+// epoch milliseconds instead of inventing a session-relative clock.
+#ifdef GLOBAL_PLACEMENT_FADE
+uniform highp int u_now;
+uniform float u_fade_duration;
+#endif
+#ifdef LEGACY_PLACEMENT_FADE
 uniform float u_fade_change;
+#endif
 uniform vec2 u_texsize;
 #ifdef PROJECTION_GLOBE_VIEW
 uniform vec3 u_up_vector;
@@ -434,9 +455,23 @@ void main() {
     // Symbols might end up being behind the camera. Move them AWAY.
     float occlusion_fade = globe_occlusion_fade;
 
+    float out_fade_opacity = occlusion_fade;
+#ifdef GLOBAL_PLACEMENT_FADE
+    highp int fade_state = a_fade_ref_time.y;
+    float fade_target = float(fade_state & 1);
+    highp uint fade_elapsed_bits = uint(u_now) - uint(a_fade_ref_time.x);
+    float fade_elapsed = float(fade_elapsed_bits);
+    if (fade_elapsed_bits >= FADE_TIME_HALF_PERIOD) fade_elapsed -= FADE_TIME_PERIOD;
+    bool fade_settled = (fade_state & 2) != 0;
+    float fade_t = (fade_settled || u_fade_duration == 0.0) ? 1.0 : fade_elapsed / u_fade_duration;
+    float raw_fade_opacity = fade_target > 0.5 ? fade_t : 1.0 - fade_t;
+    out_fade_opacity = clamp(raw_fade_opacity, 0.0, occlusion_fade);
+#endif
+#ifdef LEGACY_PLACEMENT_FADE
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
-    float out_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
+    out_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
+#endif
 
 #ifdef DEPTH_OCCLUSION
     float depth_occlusion = occlusionFadeMultiSample(projected_point);

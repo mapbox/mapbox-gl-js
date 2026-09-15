@@ -234,7 +234,7 @@ class SymbolStyleLayer extends StyleLayer {
     }
 
     override placeSymbols(parameters: SymbolPlacementParameters, tiles: Array<Tile>, styleLayerOrder: number, sourceCache: SourceCache, checkAgainstClipLayer: boolean): void {
-        const {globalPlacement, idRangeAllocator, transform, buildingIndex, fogState, groupOrders, replacementSource, mercatorCenter} = parameters;
+        const {globalPlacement, idRangeAllocator, transform, buildingIndex, fogState, groupOrders, replacementSource, mercatorCenter, fadeDuration} = parameters;
         const layerUid = this.runtimeLayerUID;
 
         const statefulPlacement = isStateDependent(this.paint.get('placement-group')) ||
@@ -266,7 +266,7 @@ class SymbolStyleLayer extends StyleLayer {
             const posMatrix = getSymbolPlacementTileProjectionMatrix(tile.tileID, bucketProjection, tileTransform, tileTransform.projection.name);
             const invMatrix = bucketProjection.createInversionMatrix(tileTransform, tile.tileID.canonical);
             const textPixelRatio = tile.tileSize / EXTENT;
-            bucket.addToPlacement(globalPlacement, idRangeAllocator, layerUid, posMatrix, invMatrix, mercatorCenter, tileTransform, textPixelRatio, tile, fogState, groupOrders, styleLayerOrder, featureStates, checkAgainstClipLayer ? replacementSource : null);
+            bucket.addToPlacement(globalPlacement, idRangeAllocator, layerUid, posMatrix, invMatrix, mercatorCenter, tileTransform, textPixelRatio, tile, fogState, groupOrders, styleLayerOrder, featureStates, checkAgainstClipLayer ? replacementSource : null, fadeDuration);
             globalPlacement.finishSourceProcessing();
         }
     }

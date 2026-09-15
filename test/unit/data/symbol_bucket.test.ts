@@ -40,6 +40,7 @@ const feature = vt.layers.place_label.feature(10);
 
 /*eslint new-cap: 0*/
 const collisionBoxArray = new CollisionBoxArray();
+const INSTANT_FADE_DURATION = 0;
 const transform = new Transform();
 transform.width = 100;
 transform.height = 100;
@@ -131,16 +132,20 @@ test('SymbolBucket#addToPlacement places a real symbol via the new placement pip
     const globalPlacement = new GlobalPlacement();
     const idRangeAllocator = new SymbolIdRangeAllocator();
     const showSymbolVariantSpy = vi.spyOn(bucket, 'showSymbolVariant');
+    const FADE_SETTLED_HIDDEN = 2;
+    const FADE_ANIMATING_VISIBLE = 1;
+    const FADE_SETTLED_VISIBLE = 3;
 
     globalPlacement.startPlacement(0, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null);
+    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null, null, INSTANT_FADE_DURATION);
 
-    // addToPlacement seeds the (until now empty) opacity buffer with one hidden entry per glyph
-    // quad, since new placement never runs Placement#updateBucketOpacities to build it from scratch.
-    expect(bucket.text.opacityVertexArray.length).toBeGreaterThan(0);
-    for (let i = 0; i < bucket.text.opacityVertexArray.length; i++) {
-        expect(bucket.text.opacityVertexArray.uint32[i]).toEqual(0);
+    // addToPlacement seeds the (until now empty) fade buffer with one settled-hidden entry per glyph
+    // vertex, since new placement never runs Placement#updateBucketOpacities to build it from scratch.
+    expect(bucket.text.fadeVertexArray.length).toEqual(bucket.text.layoutVertexArray.length);
+    for (let i = 0; i < bucket.text.fadeVertexArray.length; i++) {
+        expect(bucket.text.fadeVertexArray.int32[i * 2]).toEqual(0);
+        expect(bucket.text.fadeVertexArray.int32[i * 2 + 1]).toEqual(FADE_SETTLED_HIDDEN);
     }
 
     globalPlacement.finishSourceProcessing();
@@ -150,9 +155,11 @@ test('SymbolBucket#addToPlacement places a real symbol via the new placement pip
     // (was invisible -> now visible), proving id allocation, size evaluation, anchor projection and
     // the collision grid all agree end to end.
     expect(showSymbolVariantSpy).toHaveBeenCalledOnce();
-    // showSymbolVariant wrote full opacity (packed 0xFFFFFFFF) into the placed text's glyph quads.
-    for (let i = 0; i < bucket.text.opacityVertexArray.length; i++) {
-        expect(bucket.text.opacityVertexArray.uint32[i]).toEqual(4294967295);
+    // showSymbolVariant retargeted the placed text's glyph vertices to visible, referenced to the
+    // timestamp the run was started with and not yet marked settled.
+    for (let i = 0; i < bucket.text.fadeVertexArray.length; i++) {
+        expect(bucket.text.fadeVertexArray.int32[i * 2]).toEqual(0); // refTime === run timestamp
+        expect(bucket.text.fadeVertexArray.int32[i * 2 + 1]).toEqual(FADE_ANIMATING_VISIBLE);
     }
     // Recorded so the next run feeds this instance's priority back as VARIANT_VISIBLE.
     expect(bucket.placementVariantVisible).toEqual([true]);
@@ -162,11 +169,14 @@ test('SymbolBucket#addToPlacement places a real symbol via the new placement pip
     showSymbolVariantSpy.mockClear();
     globalPlacement.startPlacement(1, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null);
+    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null, null, INSTANT_FADE_DURATION);
     globalPlacement.finishSourceProcessing();
     globalPlacement.finishPlacementRun();
 
     expect(showSymbolVariantSpy).not.toHaveBeenCalled();
+    for (let i = 0; i < bucket.text.fadeVertexArray.length; i++) {
+        expect(bucket.text.fadeVertexArray.int32[i * 2 + 1]).toEqual(FADE_SETTLED_VISIBLE);
+    }
 
     // A tile returning from the cache drops new placement's decisions: everything hides and the
     // per-instance visibility record clears, so a stale "visible" doesn't outrank on-screen symbols.
@@ -207,6 +217,45 @@ function createFullTileFootprintSource(tileId: UnwrappedTileID, order: number) {
     };
 }
 
+test('SymbolBucket#addToPlacement wraps a fade reference time past the 32-bit range', () => {
+    const bucket = bucketSetup();
+    const projection = getProjection({name: 'mercator'});
+    const options = {iconDependencies: {}, glyphDependencies: {}};
+
+    bucket.populate([{feature}], options);
+    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
+
+    const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+    const placementTransform = new Transform();
+    placementTransform.resize(100, 100);
+
+    const posMatrix = getSymbolPlacementTileProjectionMatrix(tileID, projection, placementTransform, 'mercator');
+    const invMatrix = projection.createInversionMatrix(placementTransform, tileID.canonical);
+    const mercatorCenter: [number, number] = [0, 0];
+    const textPixelRatio = 512 / EXTENT;
+    const tile = {tileID, collisionBoxArray, latestFeatureIndex: null};
+
+    const globalPlacement = new GlobalPlacement();
+    const idRangeAllocator = new SymbolIdRangeAllocator();
+
+    const epochNow = 1757500000123;
+    const wrapped = epochNow | 0;
+    expect(wrapped).not.toEqual(epochNow); // the value really does need wrapping
+
+    globalPlacement.startPlacement(epochNow, 100, 100);
+    globalPlacement.startSymbolSourceProcessing(bucket);
+    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null, null, INSTANT_FADE_DURATION);
+    globalPlacement.finishSourceProcessing();
+    globalPlacement.finishPlacementRun();
+
+    for (let i = 0; i < bucket.text.fadeVertexArray.length; i++) {
+        expect(bucket.text.fadeVertexArray.int32[i * 2]).toEqual(wrapped);
+    }
+    // The CPU keeps the unwrapped value, so its own fade math never has to undo the wrap.
+    expect(bucket.placementFadeRefTime[0]).toEqual(epochNow);
+});
+
 test('SymbolBucket#addToPlacement hides a symbol clipped by a 3D-object/clip-layer footprint', () => {
     const bucket = bucketSetup();
     const projection = getProjection({name: 'mercator'});
@@ -235,7 +284,7 @@ test('SymbolBucket#addToPlacement hides a symbol clipped by a 3D-object/clip-lay
 
     globalPlacement.startPlacement(0, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, {}, replacementSource);
+    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, {}, replacementSource, INSTANT_FADE_DURATION);
     globalPlacement.finishSourceProcessing();
     globalPlacement.finishPlacementRun();
 
@@ -299,7 +348,7 @@ function placeAndCapturePriority(bucket: SymbolBucket, groupOrders: Map<string, 
 
     globalPlacement.startPlacement(0, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, groupOrders, styleLayerOrder, featureStates, null);
+    bucket.addToPlacement(globalPlacement, idRangeAllocator, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, groupOrders, styleLayerOrder, featureStates, null, INSTANT_FADE_DURATION);
     globalPlacement.finishSourceProcessing();
     globalPlacement.finishPlacementRun();
 

@@ -7,6 +7,7 @@
 - Preload Meshopt decoder earlier to improve 3D styles load time.
 - Improve map load time by requesting the icon set earlier and lazy parsing icons on-demand.
 - Add support for the globe to mercator transition when using the global placement.
+- Add support for symbol fading when using the global placement.
 
 ### Bug fixes 🐞
 

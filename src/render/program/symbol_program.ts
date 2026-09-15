@@ -20,6 +20,8 @@ export type SymbolUniformsType = {
     ['u_rotate_symbol']: Uniform1i;
     ['u_aspect_ratio']: Uniform1f;
     ['u_fade_change']: Uniform1f;
+    ['u_now']: Uniform1i;
+    ['u_fade_duration']: Uniform1f;
     ['u_matrix']: UniformMatrix4f;
     ['u_label_plane_matrix']: UniformMatrix4f;
     ['u_coord_matrix']: UniformMatrix4f;
@@ -75,7 +77,9 @@ export type SymbolDefinesType =
     | 'PROJECTED_POS_ON_VIEWPORT'
     | 'RENDER_TEXT_AND_SYMBOL'
     | 'Z_OFFSET'
-    | 'APPLY_LUT_ON_GPU';
+    | 'APPLY_LUT_ON_GPU'
+    | 'GLOBAL_PLACEMENT_FADE'
+    | 'LEGACY_PLACEMENT_FADE';
 
 const symbolUniforms = (context: Context): SymbolUniformsType => ({
     'u_is_size_zoom_constant': new Uniform1i(context),
@@ -86,6 +90,8 @@ const symbolUniforms = (context: Context): SymbolUniformsType => ({
     'u_rotate_symbol': new Uniform1i(context),
     'u_aspect_ratio': new Uniform1f(context),
     'u_fade_change': new Uniform1f(context),
+    'u_now': new Uniform1i(context),
+    'u_fade_duration': new Uniform1f(context),
     'u_matrix': new UniformMatrix4f(context),
     'u_label_plane_matrix': new UniformMatrix4f(context),
     'u_coord_matrix': new UniformMatrix4f(context),
@@ -168,6 +174,8 @@ const symbolUniformValues = (
         'u_rotate_symbol': +rotateInShader,
         'u_aspect_ratio': transform.width / transform.height,
         'u_fade_change': painter.options.fadeDuration ? painter.symbolFadeChange : 1,
+        'u_now': Math.round(painter.now) | 0,
+        'u_fade_duration': painter.options.fadeDuration,
         'u_matrix': matrix,
         'u_label_plane_matrix': labelPlaneMatrix,
         'u_coord_matrix': glCoordMatrix,

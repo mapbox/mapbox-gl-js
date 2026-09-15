@@ -1,0 +1,57 @@
+{
+  "description": "A single label with nothing to collide against is captured exactly half of fadeDuration after its first placement run, so it must render at ~50% opacity -- the old instant-flip behavior would show it fully opaque.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "fadeDuration": 100,
+      "globalPlacement": true,
+      "operations": [
+        ["wait"],
+        ["wait", 50]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - Not yet implemented"}
+      ]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 4,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {"name": "Label"},
+            "geometry": {"type": "Point", "coordinates": [0, 0]}
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": ["get", "name"],
+        "text-size": 24,
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      },
+      "paint": {
+        "text-color": "black"
+      }
+    }
+  ]
+}

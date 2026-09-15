@@ -577,6 +577,36 @@ register(StructArrayLayout1ul4, 'StructArrayLayout1ul4');
 
 /**
  * Implementation of the StructArray layout:
+ * [0]: Int32[2]
+ *
+ * @private
+ */
+class StructArrayLayout2l8 extends StructArray implements IStructArrayLayout {
+
+    override _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.int32 = new Int32Array(this.arrayBuffer);
+    }
+
+    override emplaceBack(v0: number, v1: number): number {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1);
+    }
+
+    override emplace(i: number, v0: number, v1: number): number {
+        const o4 = i * 2;
+        this.int32[o4 + 0] = v0;
+        this.int32[o4 + 1] = v1;
+        return i;
+    }
+}
+
+StructArrayLayout2l8.prototype.bytesPerElement = 8;
+register(StructArrayLayout2l8, 'StructArrayLayout2l8');
+
+/**
+ * Implementation of the StructArray layout:
  * [0]: Uint16[2]
  *
  * @private
@@ -1592,6 +1622,7 @@ export {
     StructArrayLayout3i3f20,
     StructArrayLayout4f16,
     StructArrayLayout1ul4,
+    StructArrayLayout2l8,
     StructArrayLayout2ui4,
     StructArrayLayout5i4f1i1ul2ui40,
     StructArrayLayout3i2i2i16,
@@ -1635,6 +1666,7 @@ export {
     StructArrayLayout3i3f20 as SymbolGlobeExtArray,
     StructArrayLayout4f16 as SymbolDynamicLayoutArray,
     StructArrayLayout1ul4 as SymbolOpacityArray,
+    StructArrayLayout2l8 as SymbolFadeArray,
     StructArrayLayout2ui4 as SymbolIconTransitioningArray,
     StructArrayLayout3i2i2i16 as CollisionBoxLayoutArray,
     StructArrayLayout2f1f2i16 as CollisionCircleLayoutArray,

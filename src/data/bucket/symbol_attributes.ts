@@ -21,6 +21,12 @@ export const placementOpacityAttributes: StructArrayLayout = createLayout([
     {name: 'a_fade_opacity', components: 1, type: 'Uint32'}
 ], 4);
 
+// x: fade reference time in milliseconds
+// y: fade state - bit 0 target, bit 1 settled.
+export const placementFadeAttributes: StructArrayLayout = createLayout([
+    {name: 'a_fade_ref_time', components: 2, type: 'Int32'}
+], 4);
+
 export const zOffsetAttributes: StructArrayLayout = createLayout([
     {name: 'a_auto_z_offset', components: 1, type: 'Float32'}
 ], 4);

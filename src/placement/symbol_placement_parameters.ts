@@ -28,4 +28,5 @@ export type SymbolPlacementParameters = {
     groupOrders: PlacementGroupOrders;
     replacementSource: ReplacementSource;
     mercatorCenter: [number, number];
+    fadeDuration: number;
 };

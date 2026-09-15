@@ -476,6 +476,12 @@ function drawLayerSymbols(
                 baseDefines.push('Z_OFFSET');
             }
 
+            if (bucket.icon.fadeVertexBuffer) {
+                baseDefines.push('GLOBAL_PLACEMENT_FADE');
+            } else {
+                baseDefines.push('LEGACY_PLACEMENT_FADE');
+            }
+
             if (iconSaturation !== 0 || iconContrast !== 0 || iconBrightnessMin !== 0 || iconBrightnessMax !== 1) {
                 baseDefines.push('COLOR_ADJUSTMENT');
             }
@@ -590,6 +596,12 @@ function drawLayerSymbols(
             }
             if (bucket.text.zOffsetVertexBuffer && (!renderElevatedRoads || !painter.terrain)) {
                 baseDefines.push('Z_OFFSET');
+            }
+
+            if (bucket.text.fadeVertexBuffer) {
+                baseDefines.push('GLOBAL_PLACEMENT_FADE');
+            } else {
+                baseDefines.push('LEGACY_PLACEMENT_FADE');
             }
 
             if (bucket.iconsInText) {
@@ -806,6 +818,9 @@ function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, lay
 
     if (buffers.featureIdBuffer) {
         dynamicBuffers.push(buffers.featureIdBuffer);
+    }
+    if (buffers.fadeVertexBuffer) {
+        dynamicBuffers.push(buffers.fadeVertexBuffer);
     }
 
     const programConfiguration = buffers.uboBinder ? null : buffers.programConfigurations.get(layer.id);

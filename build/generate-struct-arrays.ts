@@ -197,6 +197,7 @@ import {
     symbolGlobeExtAttributes,
     dynamicLayoutAttributes,
     placementOpacityAttributes,
+    placementFadeAttributes,
     iconTransitioningAttributes,
     collisionBox,
     collisionBoxLayout,
@@ -217,6 +218,7 @@ createStructArrayType(`symbol_layout`, symbolLayoutAttributes);
 createStructArrayType(`symbol_globe_ext`, symbolGlobeExtAttributes);
 createStructArrayType(`symbol_dynamic_layout`, dynamicLayoutAttributes);
 createStructArrayType(`symbol_opacity`, placementOpacityAttributes);
+createStructArrayType(`symbol_fade`, placementFadeAttributes);
 createStructArrayType(`symbol_icon_transitioning`, iconTransitioningAttributes);
 createStructArrayType('collision_box', collisionBox, true);
 createStructArrayType(`collision_box_layout`, collisionBoxLayout);

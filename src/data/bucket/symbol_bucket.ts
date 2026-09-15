@@ -5,6 +5,7 @@ import {
     collisionVertexAttributesExt,
     collisionBoxLayout,
     dynamicLayoutAttributes,
+    placementFadeAttributes,
     iconTransitioningAttributes,
     zOffsetAttributes,
     orientationAttributes,
@@ -14,6 +15,7 @@ import {SymbolLayoutArray,
     SymbolGlobeExtArray,
     SymbolDynamicLayoutArray,
     SymbolOpacityArray,
+    SymbolFadeArray,
     CollisionBoxLayoutArray,
     CollisionVertexExtArray,
     CollisionVertexArray,
@@ -357,11 +359,19 @@ const SYMBOL_VERTEX_STRIDE = 12;
 // Number of uint16 values per vertex in SymbolIconTransitioningArray (a_texb: [tx, ty]).
 const ICON_TRANSITIONING_STRIDE = 2;
 
-// Packed opacity vertex values (see packOpacity in src/symbol/placement.ts): a glyph quad is either
-// fully hidden (opacity 0, not placed) or fully visible (opacity 1, placed) under new placement --
-// there is no smooth fade yet, so no intermediate packed value is ever needed.
-const HIDDEN_PACKED_OPACITY = 0;
-const VISIBLE_PACKED_OPACITY = 4294967295;
+const FADE_TARGET_VISIBLE = 1;
+const FADE_SETTLED = 2;
+const FADE_SETTLED_HIDDEN = FADE_SETTLED;
+
+function fadeState(target: boolean, settled: boolean): number {
+    return (target ? FADE_TARGET_VISIBLE : 0) | (settled ? FADE_SETTLED : 0);
+}
+
+function evaluateFadeOpacity(refTime: number, target: boolean, settled: boolean, now: number, fadeDuration: number): number {
+    if (settled || fadeDuration === 0) return target ? 1 : 0;
+    const t = (now - refTime) / fadeDuration;
+    return target ? clamp(t, 0, 1) : clamp(1 - t, 0, 1);
+}
 
 const EMPTY_FEATURE_STATE: FeatureState = {};
 
@@ -380,6 +390,10 @@ export class SymbolBuffers {
 
     opacityVertexArray: SymbolOpacityArray;
     opacityVertexBuffer!: VertexBuffer;
+
+    // Global placement's fade state
+    fadeVertexArray: SymbolFadeArray;
+    fadeVertexBuffer: VertexBuffer | null | undefined;
 
     zOffsetVertexArray: ZOffsetVertexArray;
     zOffsetVertexBuffer!: VertexBuffer;
@@ -411,6 +425,7 @@ export class SymbolBuffers {
         this.segments = new SegmentVector();
         this.dynamicLayoutVertexArray = new SymbolDynamicLayoutArray();
         this.opacityVertexArray = new SymbolOpacityArray();
+        this.fadeVertexArray = new SymbolFadeArray();
         this.placedSymbolArray = new PlacedSymbolArray();
         this.iconTransitioningVertexArray = new SymbolIconTransitioningArray();
         this.globeExtVertexArray = new SymbolGlobeExtArray();
@@ -543,6 +558,9 @@ export class SymbolBuffers {
             if (this.iconTransitioningVertexArray.length > 0) {
                 this.iconTransitioningVertexBuffer = context.createVertexBuffer(this.iconTransitioningVertexArray, iconTransitioningAttributes.members, true);
             }
+            if (this.fadeVertexArray.length > 0) {
+                this.fadeVertexBuffer = context.createVertexBuffer(this.fadeVertexArray, placementFadeAttributes.members, true);
+            }
             if (this.globeExtVertexArray.length > 0) {
                 this.globeExtVertexBuffer = context.createVertexBuffer(this.globeExtVertexArray, symbolGlobeExtAttributes.members, true);
             }
@@ -581,6 +599,9 @@ export class SymbolBuffers {
         this.opacityVertexBuffer.destroy();
         if (this.iconTransitioningVertexBuffer) {
             this.iconTransitioningVertexBuffer.destroy();
+        }
+        if (this.fadeVertexBuffer) {
+            this.fadeVertexBuffer.destroy();
         }
         if (this.globeExtVertexBuffer) {
             this.globeExtVertexBuffer.destroy();
@@ -724,6 +745,9 @@ class SymbolBucket implements Bucket, SymbolSource {
     // and apply the right collision hysteresis. Parallel to symbolInstances; allocated (all hidden)
     // alongside placementIdRangeStart.
     placementVariantVisible: Array<boolean>;
+    placementFadeRefTime: Float64Array;
+    placementFadeRunning: Uint8Array;
+    _fadeDuration: number;
     pixelRatio: number;
     tilePixelRatio!: number;
     compareText!: {
@@ -789,6 +813,9 @@ class SymbolBucket implements Bucket, SymbolSource {
         this.sortKeyRanges = [];
         this.placementIdRangeStart = null;
         this.placementVariantVisible = [];
+        this.placementFadeRefTime = new Float64Array(0);
+        this.placementFadeRunning = new Uint8Array(0);
+        this._fadeDuration = 0;
 
         this.collisionCircleArray = [];
         this.placementInvProjMatrix = mat4.identity([]);
@@ -934,55 +961,69 @@ class SymbolBucket implements Bucket, SymbolSource {
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
     }
 
-    // placement::SymbolSource visibility callbacks. New placement invokes these on a run's finalize,
-    // only when a variant's visibility changes. Visibility is applied instantly; a smooth fade would
-    // need a per-frame reapply and is deferred, so the run timestamp is unused for now.
-    hideSymbolVariant(variantId: SymbolVariantId, _placementRunTimestamp: number): void {
-        this._setSymbolVariantVisibility(variantId, false);
+    // placement::SymbolSource visibility callbacks, invoked by GlobalPlacement.finishPlacementRun()
+    // only when a variant's visibility changes. placementRunTimestamp anchors the new fade ramp --
+    // see _setSymbolVariantVisibility.
+    hideSymbolVariant(variantId: SymbolVariantId, placementRunTimestamp: number): void {
+        this._setSymbolVariantVisibility(variantId, false, placementRunTimestamp);
     }
 
-    showSymbolVariant(variantId: SymbolVariantId, _placementRunTimestamp: number): void {
-        this._setSymbolVariantVisibility(variantId, true);
+    showSymbolVariant(variantId: SymbolVariantId, placementRunTimestamp: number): void {
+        this._setSymbolVariantVisibility(variantId, true, placementRunTimestamp);
     }
 
-    // Fills the (until-now-empty) opacity buffers with one hidden entry per glyph quad, matching the
-    // layout vertex buffers' length. Unlike the legacy pipeline, new placement never runs
+    // Fills the (until-now-empty) fade buffers with one settled-hidden entry per vertex, matching
+    // the layout vertex buffers' length. Unlike the legacy pipeline, new placement never runs
     // Placement#updateBucketOpacities to build these from scratch each run, so this bucket has to
     // seed them itself, once, before the first upload.
     _initPlacementOpacities(): void {
         const fillHidden = (buffer: SymbolBuffers) => {
-            const quadCount = buffer.layoutVertexArray.length / 4;
-            for (let i = 0; i < quadCount; i++) buffer.opacityVertexArray.emplaceBack(HIDDEN_PACKED_OPACITY);
+            const vertexCount = buffer.layoutVertexArray.length;
+            for (let i = 0; i < vertexCount; i++) buffer.fadeVertexArray.emplaceBack(0, FADE_SETTLED_HIDDEN);
         };
         if (this.hasTextData()) fillHidden(this.text);
         if (this.hasIconData()) fillHidden(this.icon);
     }
 
-    // Instantly sets the variant's instance to visible (placed + full opacity) or hidden, recovering
-    // the instance index arithmetically from the generated id, and records it in
-    // placementVariantVisible. Mirrors the geometry fed in addToPlacement: the default text placement
-    // and the icon.
-    _setSymbolVariantVisibility(variantId: SymbolVariantId, visible: boolean): void {
+    // Sets the variant's instance to fade toward visible or hidden, recovering the instance index
+    // arithmetically from the generated id. Mirrors the geometry fed in addToPlacement:
+    // the default text placement and the icon.
+    _setSymbolVariantVisibility(variantId: SymbolVariantId, visible: boolean, now: number): void {
         assert(this.placementIdRangeStart !== null);
         const index = variantId.symbolId.symbolId - this.placementIdRangeStart;
         const instance = this.symbolInstances.get(index);
 
+        const settled = this.placementFadeRunning[index] === 0;
+        const currentOpacity = evaluateFadeOpacity(this.placementFadeRefTime[index], this.placementVariantVisible[index], settled, now, this._fadeDuration);
+        const refTime = visible ? now - currentOpacity * this._fadeDuration : now - (1 - currentOpacity) * this._fadeDuration;
+
         this.placementVariantVisible[index] = visible;
+        this.placementFadeRefTime[index] = refTime;
+        this.placementFadeRunning[index] = 1;
 
-        const packedOpacity = visible ? VISIBLE_PACKED_OPACITY : HIDDEN_PACKED_OPACITY;
+        this._writeFadeState(index, instance, refTime, fadeState(visible, false));
+    }
 
-        // A placed symbol owns a contiguous run of glyph quads from its vertexStartIndex/4 (opacity
-        // has one entry per quad, the layout/dynamic buffers have 4 vertices per quad).
-        const setPlacedOpacity = (buffer: SymbolBuffers, placedIndex: number) => {
+    // A placed symbol owns a contiguous run of vertices from its vertexStartIndex (4 per glyph
+    // quad, one fade entry per vertex); write the same (refTime, state) into all of them.
+    _writeFadeState(index: number, instance: SymbolInstance, refTime: number, state: number): void {
+        const write = (buffer: SymbolBuffers, placedIndex: number) => {
             if (placedIndex < 0) return;
             const placed = buffer.placedSymbolArray.get(placedIndex);
-            const quadStart = placed.vertexStartIndex / 4;
-            for (let i = 0; i < placed.numGlyphs; i++) buffer.opacityVertexArray.emplace(quadStart + i, packedOpacity);
-            if (buffer.opacityVertexBuffer) buffer.opacityVertexBuffer.updateData(buffer.opacityVertexArray);
+            const vertexStart = placed.vertexStartIndex;
+            for (let i = 0; i < placed.numGlyphs * 4; i++) buffer.fadeVertexArray.emplace(vertexStart + i, refTime, state);
+            if (buffer.fadeVertexBuffer) buffer.fadeVertexBuffer.updateData(buffer.fadeVertexArray);
         };
 
-        if (this.hasTextData()) setPlacedOpacity(this.text, this.defaultPlacedTextSymbolIndex(instance, index));
-        if (this.hasIconData()) setPlacedOpacity(this.icon, instance.placedIconSymbolIndex);
+        if (this.hasTextData()) write(this.text, this.defaultPlacedTextSymbolIndex(instance, index));
+        if (this.hasIconData()) write(this.icon, instance.placedIconSymbolIndex);
+    }
+
+    _settleFinishedFade(index: number, instance: SymbolInstance, now: number): void {
+        if (this.placementFadeRunning[index] === 0) return;
+        if (now - this.placementFadeRefTime[index] < this._fadeDuration) return;
+        this.placementFadeRunning[index] = 0;
+        this._writeFadeState(index, instance, 0, fadeState(this.placementVariantVisible[index], true));
     }
 
     // Drops what new placement decided about this bucket's symbols, hiding all of them. Called when
@@ -996,10 +1037,12 @@ class SymbolBucket implements Bucket, SymbolSource {
         }
 
         this.placementVariantVisible.fill(false);
+        this.placementFadeRefTime.fill(0);
+        this.placementFadeRunning.fill(0);
 
         const hideAll = (buffer: SymbolBuffers) => {
-            for (let i = 0; i < buffer.opacityVertexArray.length; i++) buffer.opacityVertexArray.emplace(i, HIDDEN_PACKED_OPACITY);
-            if (buffer.opacityVertexBuffer) buffer.opacityVertexBuffer.updateData(buffer.opacityVertexArray);
+            for (let i = 0; i < buffer.fadeVertexArray.length; i++) buffer.fadeVertexArray.emplace(i, 0, FADE_SETTLED_HIDDEN);
+            if (buffer.fadeVertexBuffer) buffer.fadeVertexBuffer.updateData(buffer.fadeVertexArray);
         };
         if (this.hasTextData()) hideAll(this.text);
         if (this.hasIconData()) hideAll(this.icon);
@@ -1011,8 +1054,10 @@ class SymbolBucket implements Bucket, SymbolSource {
     // one-time warning), and symbols with neither an icon nor a text collision box are skipped
     // silently. `textPixelRatio` (tile.tileSize / EXTENT) converts tile-space offsets to CSS pixels,
     // matching the legacy collision index formula (see CollisionIndex#placeCollisionBox).
-    addToPlacement(globalPlacement: GlobalPlacement, idRangeAllocator: SymbolIdRangeAllocator, layerUid: number, posMatrix: mat4, invMatrix: mat4, mercatorCenter: [number, number], transform: Transform, textPixelRatio: number, tile: Tile, fogState: FogState | null | undefined, groupOrders: PlacementGroupOrders, styleLayerOrder: number, featureStates: FeatureStates, replacementSource: ReplacementSource | null): void {
+    addToPlacement(globalPlacement: GlobalPlacement, idRangeAllocator: SymbolIdRangeAllocator, layerUid: number, posMatrix: mat4, invMatrix: mat4, mercatorCenter: [number, number], transform: Transform, textPixelRatio: number, tile: Tile, fogState: FogState | null | undefined, groupOrders: PlacementGroupOrders, styleLayerOrder: number, featureStates: FeatureStates, replacementSource: ReplacementSource | null, fadeDuration: number): void {
         if (this.symbolInstances.length === 0) return;
+
+        this._fadeDuration = fadeDuration;
 
         if (replacementSource) {
             this.updateReplacement(tile.tileID, replacementSource);
@@ -1026,9 +1071,12 @@ class SymbolBucket implements Bucket, SymbolSource {
         if (this.placementIdRangeStart === null) {
             this.placementIdRangeStart = idRangeAllocator.allocateRange(layerUid, this.symbolInstances.length);
             this.placementVariantVisible = new Array<boolean>(this.symbolInstances.length).fill(false);
+            this.placementFadeRefTime = new Float64Array(this.symbolInstances.length);
+            this.placementFadeRunning = new Uint8Array(this.symbolInstances.length);
             this._initPlacementOpacities();
         }
         const rangeStart = this.placementIdRangeStart;
+        const placementNow = globalPlacement.timestamp();
 
         const layer = this.layers[0];
         if (layer.appearances && layer.appearances.length > 0) {
@@ -1213,6 +1261,8 @@ class SymbolBucket implements Bucket, SymbolSource {
             const featureState = (featureId !== undefined && featureStates[String(featureId)]) || EMPTY_FEATURE_STATE;
             const symbolPlacementPriority = needsFeatureForPlacementPriority && feature ? placementPriorityProperty.evaluate(feature, featureState) : placementPriorityFallback;
             const placementSubgroupOrder = needsFeatureForPlacementGroup && feature ? resolveGroupOrder(placementGroupProperty.evaluate(feature, featureState)) : placementSubgroupOrderFallback;
+
+            this._settleFinishedFade(index, instance, placementNow);
 
             // Feed the instance's current visibility so placement can detect show/hide transitions
             // and pick the matching collision hysteresis. Placement is Fixed: along-line symbols are

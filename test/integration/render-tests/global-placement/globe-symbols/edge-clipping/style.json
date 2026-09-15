@@ -1,0 +1,43 @@
+{
+  "description": "The new global-priority placement pipeline's collision-box occlusion check (SymbolBucket#addCollisionBox) didn't treat globe as needing a back-face/horizon check, so a symbol on the far side of the globe rendered through the sphere. The near-side point at [0, 0] must show; the near-antipodal point at [175, 0] must be culled.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128,
+      "globalPlacement": true,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-4140"}
+      ]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 1.5,
+  "projection": {"name": "globe"},
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {"type": "Feature", "geometry": {"type": "Point", "coordinates": [0, 0]}},
+          {"type": "Feature", "geometry": {"type": "Point", "coordinates": [175, 0]}}
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "points",
+      "layout": {"icon-image": "rocket-12"}
+    }
+  ]
+}

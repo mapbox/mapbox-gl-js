@@ -152,6 +152,10 @@ export class GlobalPlacement {
         this._placedSymbolIds.clear();
     }
 
+    timestamp(): number {
+        return this._timestamp;
+    }
+
     _hasPlacedSymbol(id: SymbolId): boolean {
         const bySymbolId = this._placedSymbolIds.get(layerOriginKey(id));
         return bySymbolId !== undefined && bySymbolId.has(id.symbolId);
