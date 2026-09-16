@@ -6,7 +6,7 @@ import mapboxgl from '../../src/index';
 describe('mapboxgl', () => {
     test('version', () => {
         expect(mapboxgl.version).toBeTruthy();
-        expect(mapboxgl.version).toMatch(/^3\.[0-9]+\.[0-9]+(-(dev|alpha|beta|rc)\.[1-9])?$/);
+        expect(mapboxgl.version).toMatch(/^3\.[0-9]+\.[0-9]+(-(dev|alpha|beta|rc)\.[1-9])?(-SNAPSHOT-.+)?$/);
     });
 
     test('workerCount', () => {

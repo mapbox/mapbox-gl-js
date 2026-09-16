@@ -1293,7 +1293,7 @@ describe('Map', () => {
 
         test('returns version string', () => {
             expect(version).toBeTruthy();
-            expect(version).toMatch(/^3\.[0-9]+\.[0-9]+(-(dev|alpha|beta|rc)\.[1-9])?$/);
+            expect(version).toMatch(/^3\.[0-9]+\.[0-9]+(-(dev|alpha|beta|rc)\.[1-9])?(-SNAPSHOT-.+)?$/);
         });
         test('cannot be set', () => {
             expect(() => {
