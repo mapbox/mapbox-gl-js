@@ -17,7 +17,7 @@ import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
 import {register} from '../../util/web_worker_transfer';
 import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
-import loadGeometry from '../load_geometry';
+import {loadRenderGeometry} from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import assert from '../../style-spec/util/assert';
@@ -306,7 +306,7 @@ class LineBucket implements Bucket {
                 type: feature.type,
                 sourceLayerIndex,
                 index,
-                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),
+                geometry: loadRenderGeometry(feature, evaluationFeature, needGeometry, canonical, tileTransform),
                 patterns: {},
                 sortKey
             };

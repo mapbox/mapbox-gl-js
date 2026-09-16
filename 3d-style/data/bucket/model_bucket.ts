@@ -1,6 +1,6 @@
 import EXTENT from '../../../src/style-spec/data/extent';
 import {register} from '../../../src/util/web_worker_transfer';
-import loadGeometry from '../../../src/data/load_geometry';
+import {loadRenderGeometry} from '../../../src/data/load_geometry';
 import toEvaluationFeature from '../../../src/data/evaluation_feature';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
 import {vec3} from 'gl-matrix';
@@ -254,7 +254,7 @@ class ModelBucket implements Bucket {
                 id: featureId as number,
                 sourceLayerIndex,
                 index,
-                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),
+                geometry: loadRenderGeometry(feature, evaluationFeature, needGeometry, canonical, tileTransform),
                 properties: feature.properties,
                 type: feature.type,
                 patterns: {}

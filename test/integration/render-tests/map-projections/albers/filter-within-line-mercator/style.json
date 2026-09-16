@@ -1,0 +1,130 @@
+{
+  "version": 8,
+  "_comment": "Mercator twin of filter-within-line: pins that the `within` filter selects the line and does not displace it under Mercator.",
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "zoom": 3,
+  "center": [
+    -97.5,
+    37.5
+  ],
+  "sources": {
+    "shape": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -107,
+              32
+            ],
+            [
+              -97.5,
+              43
+            ],
+            [
+              -88,
+              32
+            ]
+          ]
+        }
+      }
+    },
+    "polygon": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -110,
+                30
+              ],
+              [
+                -110,
+                45
+              ],
+              [
+                -85,
+                45
+              ],
+              [
+                -85,
+                30
+              ],
+              [
+                -110,
+                30
+              ]
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "border",
+      "type": "fill",
+      "source": "polygon",
+      "paint": {
+        "fill-color": "black",
+        "fill-opacity": 0.4
+      }
+    },
+    {
+      "id": "shape",
+      "type": "line",
+      "source": "shape",
+      "filter": [
+        "within",
+        {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -110,
+                30
+              ],
+              [
+                -110,
+                45
+              ],
+              [
+                -85,
+                45
+              ],
+              [
+                -85,
+                30
+              ],
+              [
+                -110,
+                30
+              ]
+            ]
+          ]
+        }
+      ],
+      "paint": {
+        "line-color": "red",
+        "line-width": 6
+      }
+    }
+  ]
+}

@@ -27,7 +27,7 @@ import {
     buildingBloomAttenuationAttributes,
     buildingFloodLightWallRadiusAttributes
 } from '../building_attributes';
-import loadGeometry from '../../../src/data/load_geometry';
+import {loadRenderGeometry} from '../../../src/data/load_geometry';
 import {ProgramConfigurationSet} from '../../../src/data/program_configuration';
 import {register} from '../../../src/util/web_worker_transfer';
 import SegmentVector from '../../../src/data/segment';
@@ -440,7 +440,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
             if (!needGeometry && !this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical))
                 continue;
 
-            const geometry = needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform);
+            const geometry = loadRenderGeometry(feature, evaluationFeature, needGeometry, canonical, tileTransform);
 
             const coordinates: number[] = [];
             for (const polygon of geometry) {
@@ -520,7 +520,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
             if (!needGeometry && !this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical))
                 continue;
 
-            const geometry = needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform);
+            const geometry = loadRenderGeometry(feature, evaluationFeature, needGeometry, canonical, tileTransform);
 
             const EARCUT_MAX_RINGS = 500;
             const classifiedRings = classifyRings(geometry, EARCUT_MAX_RINGS);

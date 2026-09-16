@@ -2,7 +2,7 @@ import earcut from 'earcut';
 import classifyRings from '../../util/classify_rings';
 import assert from '../../style-spec/util/assert';
 import {register} from '../../util/web_worker_transfer';
-import loadGeometry from '../load_geometry';
+import {loadRenderGeometry} from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import TriangleGridIndex from '../../util/triangle_grid_index';
@@ -87,7 +87,7 @@ class ClipBucket implements Bucket {
                 type: feature.type,
                 sourceLayerIndex,
                 index,
-                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),
+                geometry: loadRenderGeometry(feature, evaluationFeature, needGeometry, canonical, tileTransform),
                 patterns: {}
             };
 

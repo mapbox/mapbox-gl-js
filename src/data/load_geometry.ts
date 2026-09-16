@@ -6,6 +6,7 @@ import resample from '../geo/projection/resample';
 import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../source/tile_id';
 import type {TileTransform} from '../geo/projection/tile_transform';
+import type {EvaluationFeature} from './evaluation_feature';
 
 // These bounds define the minimum and maximum supported coordinate values.
 // While visible coordinates are within [0, EXTENT], tiles may theoretically
@@ -89,4 +90,25 @@ export default function loadGeometry(
     }
 
     return geometry;
+}
+
+/**
+ * Loads the geometry a bucket renders, reusing the one already loaded for filter evaluation when
+ * the two are the same.
+ *
+ * `toEvaluationFeature` loads geometry unreprojected, because `within` — the only filter that needs
+ * geometry — evaluates in Mercator tile space. Those are not the coordinates to render with under a
+ * projection that reprojects in tile space, so reuse it only where the two spaces coincide.
+ * @private
+ */
+export function loadRenderGeometry(
+    feature: FeatureWithGeometry,
+    evaluationFeature: EvaluationFeature,
+    needGeometry: boolean,
+    canonical: CanonicalTileID,
+    tileTransform: TileTransform,
+): Array<Array<Point>> {
+    return needGeometry && !tileTransform.projection.isReprojectedInTileSpace ?
+        evaluationFeature.geometry :
+        loadGeometry(feature, canonical, tileTransform);
 }

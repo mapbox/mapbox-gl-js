@@ -37,7 +37,7 @@ import transformText from '../../symbol/transform_text';
 import mergeLines from '../../symbol/mergelines';
 import {allowsVerticalWritingMode, stringContainsRTLText} from '../../util/script_detection';
 import {WritingMode, fitIconToText, shapeIcon, type Shaping} from '../../symbol/shaping_shared';
-import loadGeometry from '../load_geometry';
+import {loadRenderGeometry} from '../load_geometry';
 import toEvaluationFeature, {type EvaluationFeature} from '../evaluation_feature';
 import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
@@ -1373,7 +1373,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 continue;
             }
 
-            if (!needGeometry) evaluationFeature.geometry = loadGeometry(feature, canonical, tileTransform);
+            evaluationFeature.geometry = loadRenderGeometry(feature, evaluationFeature, needGeometry, canonical, tileTransform);
 
             if (isGlobe && feature.type !== 1 && canonical.z <= 5) {
                 // Resample long lines and polygons in globe view so that their length wont exceed ~0.19 radians (360/32 degrees).

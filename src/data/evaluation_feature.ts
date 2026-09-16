@@ -21,6 +21,9 @@ export type EvaluationFeature = {
 /**
  * Construct a new feature based on a VectorTileFeature for expression evaluation, the geometry of which
  * will be loaded based on necessity.
+ *
+ * The geometry is left unreprojected: `within`, the only filter that needs it, evaluates in
+ * Mercator tile space. Use `loadRenderGeometry` to obtain the geometry to render with.
  * @param {VectorTileFeature} feature
  * @param {boolean} needGeometry
  * @private

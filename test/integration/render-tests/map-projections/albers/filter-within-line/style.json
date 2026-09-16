@@ -1,0 +1,140 @@
+{
+  "version": 8,
+  "_comment": "Line layer with a `within` filter under Albers. Line geometry is resampled when reprojected, so a filtered layer reusing unreprojected geometry renders a visibly different path.",
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        [
+          "setProjection",
+          "albers"
+        ],
+        [
+          "wait"
+        ]
+      ],
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"
+        }
+      ]
+    }
+  },
+  "zoom": 3,
+  "center": [
+    -97.5,
+    37.5
+  ],
+  "sources": {
+    "shape": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -107,
+              32
+            ],
+            [
+              -97.5,
+              43
+            ],
+            [
+              -88,
+              32
+            ]
+          ]
+        }
+      }
+    },
+    "polygon": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -110,
+                30
+              ],
+              [
+                -110,
+                45
+              ],
+              [
+                -85,
+                45
+              ],
+              [
+                -85,
+                30
+              ],
+              [
+                -110,
+                30
+              ]
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "border",
+      "type": "fill",
+      "source": "polygon",
+      "paint": {
+        "fill-color": "black",
+        "fill-opacity": 0.4
+      }
+    },
+    {
+      "id": "shape",
+      "type": "line",
+      "source": "shape",
+      "filter": [
+        "within",
+        {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -110,
+                30
+              ],
+              [
+                -110,
+                45
+              ],
+              [
+                -85,
+                45
+              ],
+              [
+                -85,
+                30
+              ],
+              [
+                -110,
+                30
+              ]
+            ]
+          ]
+        }
+      ],
+      "paint": {
+        "line-color": "red",
+        "line-width": 6
+      }
+    }
+  ]
+}

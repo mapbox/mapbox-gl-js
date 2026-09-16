@@ -3,7 +3,7 @@ import {circleAttributes, circleGlobeAttributesExt} from './circle_attributes';
 import SegmentVector from '../segment';
 import {ProgramConfigurationSet} from '../program_configuration';
 import {TriangleIndexArray} from '../index_array_type';
-import loadGeometry from '../load_geometry';
+import {loadRenderGeometry} from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
 import EXTENT from '../../style-spec/data/extent';
 import {register} from '../../util/web_worker_transfer';
@@ -135,7 +135,7 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
                 type: feature.type,
                 sourceLayerIndex,
                 index,
-                geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),
+                geometry: loadRenderGeometry(feature, evaluationFeature, needGeometry, canonical, tileTransform),
                 patterns: {},
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 sortKey

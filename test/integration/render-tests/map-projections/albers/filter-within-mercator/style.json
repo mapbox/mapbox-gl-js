@@ -1,0 +1,174 @@
+{
+  "version": 8,
+  "_comment": "Mercator twin of filter-within: same source, same `within` filter. Pins that the filter selects the same three features and does not displace them under Mercator, so any difference in filter-within is attributable to projection handling.",
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "zoom": 3,
+  "center": [
+    -97.5,
+    37.5
+  ],
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -105,
+                34
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -97.5,
+                40
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -89,
+                34
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -120,
+                30
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -75,
+                45
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "polygon": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -110,
+                    30
+                  ],
+                  [
+                    -110,
+                    45
+                  ],
+                  [
+                    -85,
+                    45
+                  ],
+                  [
+                    -85,
+                    30
+                  ],
+                  [
+                    -110,
+                    30
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "border",
+      "type": "fill",
+      "source": "polygon",
+      "paint": {
+        "fill-color": "black",
+        "fill-opacity": 0.4
+      }
+    },
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "points",
+      "filter": [
+        "within",
+        {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -110,
+                30
+              ],
+              [
+                -110,
+                45
+              ],
+              [
+                -85,
+                45
+              ],
+              [
+                -85,
+                30
+              ],
+              [
+                -110,
+                30
+              ]
+            ]
+          ]
+        }
+      ],
+      "paint": {
+        "circle-radius": 8,
+        "circle-color": "red"
+      }
+    }
+  ]
+}
