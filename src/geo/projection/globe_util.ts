@@ -619,7 +619,7 @@ export function globeCenterToScreenPoint(tr: Transform): Point {
     return new Point(pos[0], pos[1]);
 }
 
-function cameraPositionInECEF(tr: Transform): vec3 {
+export function cameraPositionInECEF(tr: Transform): vec3 {
     // Here "center" is the center of the globe. We refer to transform._center
     // (the surface of the map on the center of the screen) as "pivot" to avoid confusion.
     const centerToPivot = latLngToECEF(tr._center.lat, tr._center.lng);

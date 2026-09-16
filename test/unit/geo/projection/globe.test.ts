@@ -57,6 +57,33 @@ describe('Globe', () => {
         expect(point.y.toFixed(4)).toBe("0.5000");
     });
 
+    test('globeCenterToScreenPoint returns the globe center in screen space', () => {
+        const tr = new Transform();
+        tr.resize(512, 512);
+        tr.zoom = 2;
+        tr.setProjection({name: 'globe'});
+
+        // At pitch 0 the globe center projects to the screen center.
+        let center = tr.projection.globeCenterToScreenPoint(tr);
+        expect(center.x).toBeCloseTo(256, 0);
+        expect(center.y).toBeCloseTo(256, 0);
+
+        // Under pitch the camera anchors to the surface pivot, so the globe
+        // center moves off the screen center — this is the value deck.gl's
+        // silhouette measurement must use instead of the view center.
+        tr.pitch = 60;
+        center = tr.projection.globeCenterToScreenPoint(tr);
+        expect(center.x).toBeCloseTo(256, 0);
+        expect(center.y).not.toBeCloseTo(256, 0);
+    });
+
+    test('globeCenterToScreenPoint returns null for mercator', () => {
+        const tr = new Transform();
+        tr.resize(512, 512);
+        tr.setProjection({name: 'mercator'});
+        expect(tr.projection.globeCenterToScreenPoint(tr)).toBeNull();
+    });
+
     describe('coveringTiles', () => {
         const createConstantElevation = (elevation) => {
             return {

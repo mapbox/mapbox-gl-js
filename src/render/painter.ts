@@ -66,6 +66,7 @@ import type {PrecipitationRevealParams} from '../precipitation/precipitation_rev
 import type {VignetteParams} from '../precipitation/vignette';
 import type {StarsParams} from './draw_atmosphere';
 import type ImageManager from './image_manager';
+import type {CustomLayerRenderParameters} from '../style/style_layer/custom_style_layer';
 import type IndexBuffer from '../gl/index_buffer';
 import type ModelManager from '../../3d-style/render/model_manager';
 import type {ShadowRenderer} from '../../3d-style/render/shadow_renderer';
@@ -250,6 +251,9 @@ class Painter {
     lastPaintStartTimeStamp: number;
     renderPass!: RenderPass;
     currentLayer!: number;
+    // Per-frame cache shared across all custom layers. See draw_custom.ts.
+    _customRenderArgs?: CustomLayerRenderParameters;
+    _customRenderArgsFrameCounter?: number;
     currentStencilSource: string | null | undefined;
     currentShadowCascade!: number;
     _shadowCullCache: ShadowCullCache | null;

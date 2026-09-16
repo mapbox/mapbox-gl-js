@@ -17,7 +17,8 @@ import {
     globeToMercatorTransition,
     globePointCoordinate,
     tileCoordToECEF,
-    globeMetersToEcef
+    globeMetersToEcef,
+    globeCenterToScreenPoint
 } from './globe_util';
 import {GLOBE_SCALE_MATCH_LATITUDE} from './globe_constants';
 
@@ -69,6 +70,10 @@ export default class Globe extends Mercator {
         vec3.transformMat4(pos, pos, matrix);
 
         return new Point(pos[0], pos[1]);
+    }
+
+    override globeCenterToScreenPoint(tr: Transform): Point {
+        return globeCenterToScreenPoint(tr);
     }
 
     override pixelsPerMeter(lat: number, worldSize: number): number {

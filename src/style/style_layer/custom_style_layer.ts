@@ -6,6 +6,42 @@ import type {ValidationError, ValidationErrors} from '../validate_style';
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type SourceCache from '../../source/source_cache';
 
+/**
+ * Per-frame render arguments passed to {@link CustomLayerInterface#render} and
+ * {@link CustomLayerInterface#prerender} as the 8th positional argument.
+ *
+ * Exposes the map camera as a separable view/projection pair — values that cannot
+ * be reconstructed from the combined `matrix` argument — plus the globe horizon plane.
+ * Matrices are column-major `Float32Array`, ready for WebGL uniform upload. Shared
+ * across all custom layers in the same frame.
+ *
+ * @typedef {Object} CustomLayerRenderParameters
+ * @property {Float32Array} projectionMatrix Camera→clip projection (no view transform).
+ *   `projectionMatrix · viewMatrix` gives the full world→clip matrix.
+ * @property {Float32Array} viewMatrix World→camera. In mercator the world space is mercator
+ *   pixels; in globe it is ECEF (globe centered at origin, radius `GLOBE_RADIUS`).
+ */
+export interface CustomLayerRenderParameters {
+    projectionMatrix: Float32Array;
+    viewMatrix: Float32Array;
+
+    /**
+     * Globe horizon clipping plane in ECEF space as `[nx, ny, nz, d]` (unit normal).
+     * A point `p` is camera-facing when `n·p + d >= 0`.
+     * `null` when the active projection is not globe.
+     */
+    globeClippingPlane: readonly [number, number, number, number] | null;
+
+    /**
+     * Screen-space position of the globe's center, as `[x, y]` pixels. Under pitch the
+     * camera anchors to the surface pivot, so the globe center drifts from the view
+     * center — external renderers measuring the silhouette radius should use this point
+     * instead of the view center.
+     * `null` when the active projection is not globe.
+     */
+    globeCenterInScreenPixels: readonly [number, number] | null;
+}
+
 type CustomLayerRenderMethod = (
     gl: WebGL2RenderingContext,
     matrix: Array<number>,
@@ -14,6 +50,7 @@ type CustomLayerRenderMethod = (
     projectionToMercatorTransition?: number,
     centerInMercator?: Array<number>,
     pixelsPerMeterRatio?: number,
+    args?: CustomLayerRenderParameters,
 ) => void;
 
 export type CustomLayerRenderEmissiveMode = undefined | 'dual-source-blending' | 'mrt' | 'mrt-rgba';
@@ -220,6 +257,12 @@ export type CustomLayerRenderEmissiveMode = undefined | 'dual-source-blending' |
  * the `renderingMode` is `"3d"`, the z coordinate is conformal. A box with identical x, y, and z
  * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate#fromLngLat}
  * can be used to project a `LngLat` to a mercator coordinate.
+ * @param {ProjectionSpecification} [projection] The active projection. Only passed when the active projection is `globe`.
+ * @param {Array<number>} [projectionToMercatorMatrix] Matrix that converts from the globe's coordinate space to mercator. Only passed when the active projection is `globe`.
+ * @param {number} [projectionToMercatorTransition] Globe-to-mercator transition factor in `[0, 1]`. Only passed when the active projection is `globe`.
+ * @param {Array<number>} [centerInMercator] The map center, in mercator coordinates. Only passed when the active projection is `globe`.
+ * @param {number} [pixelsPerMeterRatio] Ratio of pixels-per-meter in the active projection relative to mercator. Only passed when the active projection is `globe`.
+ * @param {CustomLayerRenderParameters} [args] Camera as separable `projectionMatrix`/`viewMatrix` pair, plus `globeClippingPlane` and `globeCenterInScreenPixels`. Always provided.
  */
 
 /**
@@ -249,6 +292,12 @@ export type CustomLayerRenderEmissiveMode = undefined | 'dual-source-blending' |
  * the `renderingMode` is `"3d"`, the z coordinate is conformal. A box with identical x, y, and z
  * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate#fromLngLat}
  * can be used to project a `LngLat` to a mercator coordinate.
+ * @param {ProjectionSpecification} [projection] The active projection. Only passed when the active projection is `globe`.
+ * @param {Array<number>} [projectionToMercatorMatrix] Matrix that converts from the globe's coordinate space to mercator. Only passed when the active projection is `globe`.
+ * @param {number} [projectionToMercatorTransition] Globe-to-mercator transition factor in `[0, 1]`. Only passed when the active projection is `globe`.
+ * @param {Array<number>} [centerInMercator] The map center, in mercator coordinates. Only passed when the active projection is `globe`.
+ * @param {number} [pixelsPerMeterRatio] Ratio of pixels-per-meter in the active projection relative to mercator. Only passed when the active projection is `globe`.
+ * @param {CustomLayerRenderParameters} [args] Camera as separable `projectionMatrix`/`viewMatrix` pair, plus `globeClippingPlane` and `globeCenterInScreenPixels`. Always provided.
  */
 
 /**
@@ -340,7 +389,7 @@ export function validateCustomStyleLayer(layerObject: CustomLayerInterface): Val
     return errors;
 }
 
-class CustomStyleLayer extends StyleLayer {
+export class CustomStyleLayer extends StyleLayer {
     override type!: 'custom';
 
     implementation: CustomLayerInterface;

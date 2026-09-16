@@ -125,6 +125,10 @@ class Transform {
     projMatrix!: mat4;
     invProjMatrix: mat4;
 
+    // Perspective/orthographic projection only (no view transform).
+    // projMatrix === _cameraToClip · worldToCamera.
+    _cameraToClip!: mat4;
+
     // Projection matrix with expanded farZ on globe projection
     expandedFarZProjMatrix: mat4;
 
@@ -2563,6 +2567,10 @@ class Transform {
             cameraToClip = cameraToClipPerspective;
         }
 
+        // Saved for getCameraToClipMatrix(); reprojection adjustments below
+        // apply to the combined `m`, not to this projection component.
+        this._cameraToClip = cameraToClip;
+
         const worldToClipPerspective = mat4.mul([], cameraToClipPerspective, worldToCamera);
         const m = mat4.mul([], cameraToClip, worldToCamera);
 
@@ -2971,6 +2979,11 @@ class Transform {
         }
 
         return worldToCamera;
+    }
+
+    // Camera→clip projection (no view transform). See CustomLayerRenderParameters#projectionMatrix.
+    getCameraToClipMatrix(): mat4 {
+        return this._cameraToClip;
     }
 
     getFrustum(zoom: number): Frustum {

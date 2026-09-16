@@ -75,6 +75,16 @@ export default class Projection {
         return tr._coordinatePoint(tr.locationCoordinate(lngLat, altitude), terrain);
     }
 
+    /**
+     * Screen-space position of the globe's center. Under pitch the camera anchors
+     * to the surface pivot, so the globe center drifts from the view center —
+     * external renderers measuring the silhouette radius should use this point.
+     * Returns `null` for non-globe projections.
+     */
+    globeCenterToScreenPoint(tr: Transform): Point | null {
+        return null;
+    }
+
     pixelsPerMeter(lat: number, worldSize: number): number {
         return mercatorZfromAltitude(1, lat) * worldSize;
     }
