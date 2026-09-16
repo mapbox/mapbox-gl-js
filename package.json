@@ -164,12 +164,7 @@
     "generate-debug-index": "tsx ./build/generate-debug-index.ts",
     "check-debug-pages": "tsx ./build/check-debug-pages.ts",
     "check-changelog": "node ./build/check-changelog.ts",
-    "tsc": "tsc --build tsconfig.json",
-    "publish-release": "./internal/scripts/publish.ts",
-    "publish-cdn": "./internal/scripts/publish-cdn.ts",
-    "publish-alpha": "./internal/scripts/publish-alpha.ts",
-    "bump-version": "./internal/scripts/bump-version.ts",
-    "release": "./internal/scripts/release.ts"
+    "tsc": "tsc --build tsconfig.json"
   },
   "files": [
     "dist/mapbox-gl*",
