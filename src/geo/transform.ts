@@ -125,9 +125,11 @@ class Transform {
     projMatrix!: mat4;
     invProjMatrix: mat4;
 
-    // Perspective/orthographic projection only (no view transform).
-    // projMatrix === _cameraToClip · worldToCamera.
-    _cameraToClip!: mat4;
+    // Camera-to-clip only. projMatrix = _cameraToClip * worldToCamera.
+    _cameraToClip: mat4;
+
+    // World-to-camera, including globeMatrix on globe. Same value getWorldToCameraMatrix() returns.
+    _worldToCamera: mat4;
 
     // Projection matrix with expanded farZ on globe projection
     expandedFarZProjMatrix: mat4;
@@ -280,6 +282,8 @@ class Transform {
         this.mercatorMatrix = new Float64Array(16);
         this.mercatorFogMatrix = new Float32Array(16);
         this.invProjMatrix = new Float64Array(16);
+        this._cameraToClip = new Float64Array(16);
+        this._worldToCamera = new Float64Array(16);
         this._expandedFarZProjMatrixBuf = new Float64Array(16);
         this.expandedFarZProjMatrix = this._expandedFarZProjMatrixBuf;
         this.starsProjMatrix = new Float32Array(16);
@@ -2567,8 +2571,7 @@ class Transform {
             cameraToClip = cameraToClipPerspective;
         }
 
-        // Saved for getCameraToClipMatrix(); reprojection adjustments below
-        // apply to the combined `m`, not to this projection component.
+        // Captured before the reprojection adjustments, which apply to the combined matrix only.
         this._cameraToClip = cameraToClip;
 
         const worldToClipPerspective = mat4.mul([], cameraToClipPerspective, worldToCamera);
@@ -2671,6 +2674,10 @@ class Transform {
         } else {
             this.globeMatrix = this.pixelMatrixInverse;
         }
+
+        this._worldToCamera = this.projection.name === 'globe' ?
+            mat4.multiply(new Float64Array(16), worldToCamera, this.globeMatrix) :
+            worldToCamera;
 
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};
@@ -2971,17 +2978,9 @@ class Transform {
     }
 
     getWorldToCameraMatrix(): mat4 {
-        const zUnit = this.projection.zAxisUnit === "meters" ? this.pixelsPerMeter : 1.0;
-        const worldToCamera = this._camera.getWorldToCamera(this.worldSize, zUnit);
-
-        if (this.projection.name === 'globe') {
-            mat4.multiply(worldToCamera, worldToCamera, this.globeMatrix);
-        }
-
-        return worldToCamera;
+        return this._worldToCamera;
     }
 
-    // Camera→clip projection (no view transform). See CustomLayerRenderParameters#projectionMatrix.
     getCameraToClipMatrix(): mat4 {
         return this._cameraToClip;
     }

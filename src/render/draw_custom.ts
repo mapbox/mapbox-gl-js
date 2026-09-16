@@ -22,8 +22,7 @@ const emissiveModeToCustomLayerMode: Partial<Record<EmissiveMode, CustomLayerRen
     'mrt-full-rgba': 'mrt-rgba'
 };
 
-// Built once per frame (keyed on painter.frameCounter) and shared across all
-// custom layers drawn in that frame.
+// One object per frame, shared by every custom layer drawn in it.
 function getCustomLayerRenderParameters(painter: Painter): CustomLayerRenderParameters {
     if (painter._customRenderArgs && painter._customRenderArgsFrameCounter === painter.frameCounter) {
         return painter._customRenderArgs;
@@ -31,14 +30,14 @@ function getCustomLayerRenderParameters(painter: Painter): CustomLayerRenderPara
     const tr = painter.transform;
     const isGlobe = tr.projection.name === 'globe';
 
-    // Horizon plane: tangent locus Ĉ·p = R²/|C|, so n = Ĉ and d = -R²/|C|.
+    // Horizon points satisfy (C/|C|) * p = R^2/|C|, so n = C/|C| and d = -R^2/|C|.
     let globeClippingPlane: [number, number, number, number] | null = null;
     let globeCenterInScreenPixels: [number, number] | null = null;
     if (isGlobe) {
         const cam = cameraPositionInECEF(tr);
         const camLen = vec3.length(cam);
         if (camLen > 0) {
-            const n = vec3.scale(vec3.create(), cam, 1 / camLen);
+            const n = vec3.scale([], cam, 1 / camLen);
             const d = -(GLOBE_RADIUS * GLOBE_RADIUS) / camLen;
             globeClippingPlane = [n[0], n[1], n[2], d];
         }
@@ -49,8 +48,8 @@ function getCustomLayerRenderParameters(painter: Painter): CustomLayerRenderPara
     }
 
     const input: CustomLayerRenderParameters = {
-        projectionMatrix: new Float32Array(tr.getCameraToClipMatrix()),
-        viewMatrix: new Float32Array(tr.getWorldToCameraMatrix()),
+        projectionMatrix: new Float64Array(tr.getCameraToClipMatrix()),
+        viewMatrix: new Float64Array(tr.getWorldToCameraMatrix()),
         globeClippingPlane,
         globeCenterInScreenPixels,
     };
@@ -70,7 +69,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
         return;
     }
 
-    const args = getCustomLayerRenderParameters(painter);
+    const renderParameters = getCustomLayerRenderParameters(painter);
 
     if (painter.renderPass === 'offscreen') {
 
@@ -81,10 +80,9 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
 
             if (painter.transform.projection.name === "globe") {
                 const center = painter.transform.pointMerc;
-                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix() as number[], painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(),  globeToMercatorTransition(painter.transform.zoom), [center.x, center.y], painter.transform.pixelsPerMeterRatio, args);
+                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix() as number[], painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(),  globeToMercatorTransition(painter.transform.zoom), [center.x, center.y], painter.transform.pixelsPerMeterRatio, renderParameters);
             } else {
-                // Pass undefined for the 6 globe-only positional args so args lands at position 8.
-                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix() as number[], undefined, undefined, undefined, undefined, undefined, args);
+                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix() as number[], undefined, undefined, undefined, undefined, undefined, renderParameters);
             }
 
             context.setDirty();
@@ -155,10 +153,9 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
 
         if (painter.transform.projection.name === "globe") {
             const center = painter.transform.pointMerc;
-            implementation.render(context.gl, painter.transform.customLayerMatrix() as number[], painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(), globeToMercatorTransition(painter.transform.zoom), [center.x, center.y], painter.transform.pixelsPerMeterRatio, args);
+            implementation.render(context.gl, painter.transform.customLayerMatrix() as number[], painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(), globeToMercatorTransition(painter.transform.zoom), [center.x, center.y], painter.transform.pixelsPerMeterRatio, renderParameters);
         } else {
-            // Pass undefined for the 6 globe-only positional args so args lands at position 8.
-            implementation.render(context.gl, painter.transform.customLayerMatrix() as number[], undefined, undefined, undefined, undefined, undefined, args);
+            implementation.render(context.gl, painter.transform.customLayerMatrix() as number[], undefined, undefined, undefined, undefined, undefined, renderParameters);
         }
 
         context.setDirty();

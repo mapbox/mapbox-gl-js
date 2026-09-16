@@ -76,9 +76,8 @@ export default class Projection {
     }
 
     /**
-     * Screen-space position of the globe's center. Under pitch the camera anchors
-     * to the surface pivot, so the globe center drifts from the view center —
-     * external renderers measuring the silhouette radius should use this point.
+     * Screen position of the globe center. Under pitch the camera orbits the surface
+     * point under the view center, so the globe center moves away from it.
      * Returns `null` for non-globe projections.
      */
     globeCenterToScreenPoint(tr: Transform): Point | null {

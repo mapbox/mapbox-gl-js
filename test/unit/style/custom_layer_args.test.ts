@@ -5,9 +5,6 @@ import {mat4} from 'gl-matrix';
 import type {CustomLayerRenderParameters, CustomLayerInterface} from '../../../src/style/style_layer/custom_style_layer';
 import type {Map} from '../../../src/ui/map';
 
-// Element-wise matrix closeness with a combined absolute + relative tolerance,
-// robust to the Float32 rounding of the exposed matrices vs. the Float64
-// transform matrices. Returns the first offending entry, or null if all match.
 function firstMatrixMismatch(a: ArrayLike<number>, b: ArrayLike<number>, rel = 1e-4, abs = 1e-4) {
     for (let i = 0; i < 16; i++) {
         const diff = Math.abs(a[i] - b[i]);
@@ -17,21 +14,13 @@ function firstMatrixMismatch(a: ArrayLike<number>, b: ArrayLike<number>, rel = 1
     return null;
 }
 
-/**
- * Build a custom layer that records the args every time `render` is called.
- * Returns the layer plus a `.calls` array of captured render arguments.
- */
 function makeRecordingLayer(id: string) {
-
     const calls: Array<{args: any[]; input: CustomLayerRenderParameters | undefined}> = [];
     const layer = {
         id,
         type: 'custom' as const,
         renderingMode: '3d' as const,
         onAdd: () => {},
-        // Use the arguments object so we can inspect ALL positional args at any
-        // position — the layer's declared arity is 0 but at runtime we still
-        // receive every argument.
         render() {
             // eslint-disable-next-line prefer-rest-params
             const args = Array.from(arguments);
@@ -56,7 +45,7 @@ async function loadMapWith(layer: CustomLayerInterface): Promise<Map> {
     return map;
 }
 
-describe('CustomLayerInterface render args (extended)', () => {
+describe('CustomLayerInterface renderParameters', () => {
     test('passes a CustomLayerRenderParameters as the 8th positional argument', async () => {
         const {layer, calls} = makeRecordingLayer('recording');
         const map = await loadMapWith(layer);
@@ -64,9 +53,8 @@ describe('CustomLayerInterface render args (extended)', () => {
         expect(calls.length).toBeGreaterThan(0);
         const {input} = calls[0];
         expect(input).toBeDefined();
-        // The trimmed surface: two matrices + the globe clipping plane. Nothing else.
-        expect(input.projectionMatrix).toBeInstanceOf(Float32Array);
-        expect(input.viewMatrix).toBeInstanceOf(Float32Array);
+        expect(input.projectionMatrix).toBeInstanceOf(Float64Array);
+        expect(input.viewMatrix).toBeInstanceOf(Float64Array);
         expect(input.viewMatrix.length).toBe(16);
         expect(input.projectionMatrix.length).toBe(16);
         expect('globeClippingPlane' in input).toBe(true);
@@ -83,15 +71,36 @@ describe('CustomLayerInterface render args (extended)', () => {
         const tr = map.transform;
         expect(tr.projection.name).toBe('mercator');
 
-        // projectionMatrix (camera→clip) · viewMatrix (world→camera) must equal
-        // the transform's world→clip matrix. Regression guard against the
-        // earlier version that exposed the already-combined projMatrix here,
-        // which made projectionMatrix · viewMatrix double-apply the view.
         const composed = mat4.multiply([], Array.from(input.projectionMatrix), Array.from(input.viewMatrix));
         expect(firstMatrixMismatch(composed, tr.projMatrix as unknown as number[])).toBeNull();
 
-        // And projectionMatrix on its own must NOT equal the combined matrix.
+        // Guards against exposing the combined projMatrix as projectionMatrix.
         expect(firstMatrixMismatch(input.projectionMatrix, tr.projMatrix as unknown as number[])).not.toBeNull();
+
+        map.remove();
+    });
+
+    test('matrices keep double precision at high zoom (mercator)', async () => {
+        const {layer, calls} = makeRecordingLayer('recording-high-zoom');
+        const map = createMap({
+            center: [13.4, 52.5],
+            zoom: 20,
+            style: {version: 8, sources: {}, layers: []}
+        });
+        await waitFor(map, 'style.load');
+        map.addLayer(layer);
+        map.triggerRepaint();
+        await waitFor(map, 'render');
+
+        const {input} = calls.at(-1);
+        const tr = map.transform;
+
+        // At zoom 20 the view translation exceeds the 24-bit Float32 mantissa.
+        expect(Array.from(input.viewMatrix)).toEqual(Array.from(tr.getWorldToCameraMatrix()));
+        expect(Array.from(input.projectionMatrix)).toEqual(Array.from(tr.getCameraToClipMatrix()));
+
+        const composed = mat4.multiply([], Array.from(input.projectionMatrix), Array.from(input.viewMatrix));
+        expect(firstMatrixMismatch(composed, tr.projMatrix as unknown as number[], 1e-9, 1e-9)).toBeNull();
 
         map.remove();
     });
@@ -113,9 +122,7 @@ describe('CustomLayerInterface render args (extended)', () => {
         const tr = map.transform;
         expect(tr.projection.name).toBe('globe');
 
-        // In globe, viewMatrix is ECEF→camera (globeMatrix baked in) and
-        // projectionMatrix is camera→clip, so the product is the ECEF→clip MVP,
-        // equivalently projMatrix · globeMatrix.
+        // In globe, viewMatrix includes globeMatrix, so the product equals projMatrix * globeMatrix.
         const composed = mat4.multiply([], Array.from(input.projectionMatrix), Array.from(input.viewMatrix));
         const expected = mat4.multiply([], tr.projMatrix, tr.globeMatrix);
         expect(firstMatrixMismatch(composed, expected, 2e-3, 1e-4)).toBeNull();
@@ -123,7 +130,7 @@ describe('CustomLayerInterface render args (extended)', () => {
         map.remove();
     });
 
-    test('all custom layers in one frame share the same args instance', async () => {
+    test('all custom layers in one frame share the same renderParameters instance', async () => {
         const rec1 = makeRecordingLayer('rec-1');
         const rec2 = makeRecordingLayer('rec-2');
 
@@ -142,8 +149,6 @@ describe('CustomLayerInterface render args (extended)', () => {
 
         expect(rec1.calls.length).toBeGreaterThan(0);
         expect(rec2.calls.length).toBeGreaterThan(0);
-        // Both layers rendered in the same frame received the same args instance.
-        // (Same instance, not just equal — construction is per-frame and shared.)
         const args1 = rec1.calls.at(-1).input;
         const args2 = rec2.calls.at(-1).input;
         expect(args1).toBe(args2);
@@ -151,23 +156,19 @@ describe('CustomLayerInterface render args (extended)', () => {
         map.remove();
     });
 
-    test('existing (gl, matrix) signature is unchanged — layer without args parameter still works', async () => {
-
+    test('layer declaring only (gl, matrix) still works', async () => {
         const seen: Array<{argCount: number; matrix: any}> = [];
         const layer: CustomLayerInterface = {
             id: 'legacy',
             type: 'custom',
             onAdd: () => {},
             render(gl, matrix) {
-
                 seen.push({argCount: arguments.length, matrix});
             }
         };
         const map = await loadMapWith(layer);
 
         expect(seen.length).toBeGreaterThan(0);
-        // Even though the declared arity is 2, the runtime call passes 8 args.
-        // The layer just ignores the extras, so nothing breaks.
         expect(seen[0].argCount).toBeGreaterThanOrEqual(2);
         expect(Array.isArray(seen[0].matrix) || seen[0].matrix instanceof Float32Array || seen[0].matrix instanceof Float64Array).toBe(true);
 
@@ -235,8 +236,7 @@ describe('CustomLayerInterface render args (extended)', () => {
         const plane = input.globeClippingPlane;
         expect(plane).not.toBeNull();
 
-        // latLngToECEF convention (globe_util.ts): x=cosLat·sinLng, y=-sinLat,
-        // z=cosLat·cosLng, radius GLOBE_RADIUS.
+        // Same axis convention as latLngToECEF.
         const {GLOBE_RADIUS} = await import('../../../src/geo/projection/globe_constants');
         const toEcef = (lngDeg: number, latDeg: number) => {
             const lng = lngDeg * Math.PI / 180;
@@ -252,22 +252,15 @@ describe('CustomLayerInterface render args (extended)', () => {
             return plane[0] * p[0] + plane[1] * p[1] + plane[2] * p[2] + plane[3];
         };
 
-        // View center (camera-facing) must be on the positive side.
         expect(side(10, 25)).toBeGreaterThan(0);
-        // The antipode must be occluded (negative side).
         expect(side(10 + 180, -25)).toBeLessThan(0);
-        // The plane normal must be a unit vector.
         const nLen = Math.hypot(plane[0], plane[1], plane[2]);
         expect(nLen).toBeCloseTo(1, 5);
-        // The horizon boundary lies between the two: walking the great circle
-        // from the view center toward the antipode must cross zero exactly once,
-        // near the 90° mark. Binary-search the great-circle arc for the sign flip.
+
+        // Rotates the view center toward the antipode along the great circle by `deg`.
         const greatCirclePoint = (deg: number) => {
-            // Rotate the center ECEF vector around the axis perpendicular to the
-            // center→antipode plane by `deg`.
             const c = toEcef(10, 25);
             const a = toEcef(190, -25);
-            // axis = normalize(cross(c, a))
             const ax = [
                 c[1] * a[2] - c[2] * a[1],
                 c[2] * a[0] - c[0] * a[2],
@@ -278,7 +271,7 @@ describe('CustomLayerInterface render args (extended)', () => {
             const th = (deg * Math.PI) / 180;
             const cos = Math.cos(th);
             const sin = Math.sin(th);
-            // Rodrigues' rotation of c around unit axis k
+            // Rodrigues rotation of c around unit axis k.
             const dot = c[0] * k[0] + c[1] * k[1] + c[2] * k[2];
             return [
                 c[0] * cos + (k[1] * c[2] - k[2] * c[1]) * sin + k[0] * dot * (1 - cos),
@@ -297,10 +290,7 @@ describe('CustomLayerInterface render args (extended)', () => {
             if (sideAtDeg(mid) > 0) lo = mid;
             else hi = mid;
         }
-        // The horizon (sign flip) should be at acos(R / |C|) degrees of
-        // great-circle arc from the sub-camera point, where |C| is the camera's
-        // distance from the globe center. At low zoom the camera is close, so
-        // this is much less than 90°. |C| = -R²/d from the plane equation.
+        // The sign flip must sit acos(R / |C|) degrees from the view center, with |C| = -R^2/d.
         const camDist = -(GLOBE_RADIUS * GLOBE_RADIUS) / plane[3];
         const expectedDeg = (Math.acos(GLOBE_RADIUS / camDist) * 180) / Math.PI;
         expect((lo + hi) / 2).toBeGreaterThan(expectedDeg - 2);
@@ -309,7 +299,7 @@ describe('CustomLayerInterface render args (extended)', () => {
         map.remove();
     });
 
-    test('prerender also receives args at position 8', async () => {
+    test('prerender also receives renderParameters at position 8', async () => {
         const prerenderCalls: any[] = [];
         const layer: CustomLayerInterface = {
             id: 'with-prerender',
@@ -328,8 +318,8 @@ describe('CustomLayerInterface render args (extended)', () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const input = prerenderCalls[0][7] as CustomLayerRenderParameters;
         expect(input).toBeDefined();
-        expect(input.projectionMatrix).toBeInstanceOf(Float32Array);
-        expect(input.viewMatrix).toBeInstanceOf(Float32Array);
+        expect(input.projectionMatrix).toBeInstanceOf(Float64Array);
+        expect(input.viewMatrix).toBeInstanceOf(Float64Array);
 
         map.remove();
     });

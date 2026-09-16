@@ -251,7 +251,6 @@ class Painter {
     lastPaintStartTimeStamp: number;
     renderPass!: RenderPass;
     currentLayer!: number;
-    // Per-frame cache shared across all custom layers. See draw_custom.ts.
     _customRenderArgs?: CustomLayerRenderParameters;
     _customRenderArgsFrameCounter?: number;
     currentStencilSource: string | null | undefined;

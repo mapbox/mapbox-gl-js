@@ -2,7 +2,7 @@ import type BackgroundStyleLayer from './background_style_layer';
 import type BuildingStyleLayer from '../../../3d-style/style/style_layer/building_style_layer';
 import type CircleStyleLayer from './circle_style_layer';
 import type ClipStyleLayer from './clip_style_layer';
-import type CustomStyleLayer from './custom_style_layer';
+import type {CustomStyleLayer} from './custom_style_layer';
 import type FillExtrusionStyleLayer from './fill_extrusion_style_layer';
 import type FillStyleLayer from './fill_style_layer';
 import type HeatmapStyleLayer from './heatmap_style_layer';
