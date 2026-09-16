@@ -5,10 +5,7 @@
     "test": {
       "width": 64,
       "height": 64,
-      "globalPlacement": true,
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-4140"}
-      ]
+      "globalPlacement": true
     }
   },
   "center": [10, 10],
