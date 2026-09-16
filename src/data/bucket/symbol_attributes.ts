@@ -93,6 +93,12 @@ export const collisionCircleLayout: StructArrayLayout = createLayout([ // used t
     {name: 'a_flags',      components: 2, type: 'Int16'}
 ], 4);
 
+export const placementDebugLayout: StructArrayLayout = createLayout([
+    {name: 'a_pos_2f',     components: 2, type: 'Float32'},
+    {name: 'a_size',       components: 2, type: 'Float32'},
+    {name: 'a_flags',      components: 2, type: 'Int16'}
+], 4);
+
 export const quadTriangle: StructArrayLayout = createLayout([
     {name: 'triangle', components: 3, type: 'Uint16'},
 ]);

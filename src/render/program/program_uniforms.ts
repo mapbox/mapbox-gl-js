@@ -4,6 +4,7 @@ import {lineBlendCompositeUniforms} from './line_blend_composite_program';
 import {lineBlendReduceUniforms} from './line_blend_reduce_program';
 import {circleUniforms} from './circle_program';
 import {collisionUniforms, collisionCircleUniforms, type CollisionDebugDefinesType} from './collision_program';
+import {placementDebugUniforms} from './placement_debug_program';
 import {debugUniforms} from './debug_program';
 import {clippingMaskUniforms} from './clipping_mask_program';
 import {heatmapUniforms, heatmapTextureUniforms} from './heatmap_program';
@@ -84,6 +85,7 @@ export const programUniforms = {
     circle: circleUniforms,
     collisionBox: collisionUniforms,
     collisionCircle: collisionCircleUniforms,
+    placementDebug: placementDebugUniforms,
     debug: debugUniforms,
     clippingMask: clippingMaskUniforms,
     heatmap: heatmapUniforms,

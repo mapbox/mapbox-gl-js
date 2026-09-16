@@ -202,6 +202,7 @@ import {
     collisionBox,
     collisionBoxLayout,
     collisionCircleLayout,
+    placementDebugLayout,
     collisionVertexAttributes,
     collisionVertexAttributesExt,
     quadTriangle,
@@ -223,6 +224,7 @@ createStructArrayType(`symbol_icon_transitioning`, iconTransitioningAttributes);
 createStructArrayType('collision_box', collisionBox, true);
 createStructArrayType(`collision_box_layout`, collisionBoxLayout);
 createStructArrayType(`collision_circle_layout`, collisionCircleLayout);
+createStructArrayType(`placement_debug_layout`, placementDebugLayout);
 createStructArrayType(`collision_vertex`, collisionVertexAttributes);
 createStructArrayType(`collision_vertex_ext`, collisionVertexAttributesExt);
 createStructArrayType(`quad_triangle`, quadTriangle);

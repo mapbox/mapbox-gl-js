@@ -111,7 +111,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
         }
     }
 
-    if (sourceCache.map.showCollisionBoxes && DebugModule.drawCollisionDebug) {
+    if (sourceCache.map.showCollisionBoxes && sourceCache.map._placementAlgorithm !== 'global' && DebugModule.drawCollisionDebug) {
 
         DebugModule.drawCollisionDebug(painter, sourceCache, layer, coords, layer.paint.get('text-translate'),
             layer.paint.get('text-translate-anchor'), true);

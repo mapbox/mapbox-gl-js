@@ -760,6 +760,44 @@ register(StructArrayLayout2f1f2i16, 'StructArrayLayout2f1f2i16');
 
 /**
  * Implementation of the StructArray layout:
+ * [0]: Float32[2]
+ * [8]: Float32[2]
+ * [16]: Int16[2]
+ *
+ * @private
+ */
+class StructArrayLayout2f2f2i20 extends StructArray implements IStructArrayLayout {
+
+    override _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.float32 = new Float32Array(this.arrayBuffer);
+        this.int16 = new Int16Array(this.arrayBuffer);
+    }
+
+    override emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number): number {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1, v2, v3, v4, v5);
+    }
+
+    override emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number): number {
+        const o4 = i * 5;
+        const o2 = i * 10;
+        this.float32[o4 + 0] = v0;
+        this.float32[o4 + 1] = v1;
+        this.float32[o4 + 2] = v2;
+        this.float32[o4 + 3] = v3;
+        this.int16[o2 + 8] = v4;
+        this.int16[o2 + 9] = v5;
+        return i;
+    }
+}
+
+StructArrayLayout2f2f2i20.prototype.bytesPerElement = 20;
+register(StructArrayLayout2f2f2i20, 'StructArrayLayout2f2f2i20');
+
+/**
+ * Implementation of the StructArray layout:
  * [0]: Uint8[2]
  * [4]: Float32[4]
  *
@@ -1627,6 +1665,7 @@ export {
     StructArrayLayout5i4f1i1ul2ui40,
     StructArrayLayout3i2i2i16,
     StructArrayLayout2f1f2i16,
+    StructArrayLayout2f2f2i20,
     StructArrayLayout2ub4f20,
     StructArrayLayout3ui6,
     StructArrayLayout3i2f2ui3ul3ui2f3ub1ul1i1ub60,
@@ -1670,6 +1709,7 @@ export {
     StructArrayLayout2ui4 as SymbolIconTransitioningArray,
     StructArrayLayout3i2i2i16 as CollisionBoxLayoutArray,
     StructArrayLayout2f1f2i16 as CollisionCircleLayoutArray,
+    StructArrayLayout2f2f2i20 as PlacementDebugLayoutArray,
     StructArrayLayout2ub4f20 as CollisionVertexArray,
     StructArrayLayout4f16 as CollisionVertexExtArray,
     StructArrayLayout3ui6 as QuadTriangleArray,

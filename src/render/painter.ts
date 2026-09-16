@@ -1616,6 +1616,10 @@ class Painter {
             DebugModule.drawDebugPadding(this);
         }
 
+        if (DebugModule.drawPlacementDebug) {
+            DebugModule.drawPlacementDebug(this);
+        }
+
         // Set defaults for most GL values so that anyone using the state after the render
         // encounters more expected values.
         this.context.setDefault();

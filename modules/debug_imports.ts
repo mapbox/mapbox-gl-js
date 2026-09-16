@@ -24,6 +24,7 @@ import {
 import diffStyles from '../src/style-spec/diff';
 import drawDebug, {drawDebugPadding, drawDebugQueryGeometry} from '../src/render/draw_debug';
 import drawCollisionDebug from '../src/render/draw_collision_debug';
+import drawPlacementDebug from '../src/render/draw_placement_debug';
 
 // Named `DebugModule` (not `Debug`) so call sites aren't stripped out by the
 // Rollup config for prod builds.
@@ -47,4 +48,5 @@ export const DebugModule = {
     drawDebugPadding,
     drawDebugQueryGeometry,
     drawCollisionDebug,
+    drawPlacementDebug,
 };

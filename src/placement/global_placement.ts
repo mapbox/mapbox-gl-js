@@ -1,10 +1,12 @@
 import assert from '../style-spec/util/assert';
 import {CollisionGrid} from './collision_grid';
 import {comparePriority} from './global_placement_priority';
+import {VariantPlacementResult} from './placement_debug';
 import {SymbolVariantVisibility} from './types';
 
 import type {GeometryElement} from './geometry';
 import type {GlobalPlacementPriority} from './global_placement_priority';
+import type {PlacementDebugSymbol, VariantPlacementResultValue} from './placement_debug';
 import type {PlacementRules} from './placement_rules';
 import type {SymbolSource} from './symbol_source';
 import type {SymbolId, SymbolVariantId} from './types';
@@ -121,6 +123,8 @@ export class GlobalPlacement {
     _processingSource: SymbolSource | null;
     // The variant currently streaming geometry in is always the last entry of _symbols.
     _variantProcessingStarted: boolean;
+    _collectDebugData: boolean;
+    _debugSymbols: Array<PlacementDebugSymbol>;
 
     constructor() {
         this._runStarted = false;
@@ -133,9 +137,11 @@ export class GlobalPlacement {
         this._placedSymbolIds = new Map();
         this._processingSource = null;
         this._variantProcessingStarted = false;
+        this._collectDebugData = false;
+        this._debugSymbols = [];
     }
 
-    startPlacement(timestamp: number, screenWidth: number, screenHeight: number) {
+    startPlacement(timestamp: number, screenWidth: number, screenHeight: number, collectDebugData: boolean = false) {
         if (this._runStarted) throw new Error('Attempt to start a placement run before finishing the previous one');
         this._runStarted = true;
 
@@ -150,6 +156,12 @@ export class GlobalPlacement {
         this._onlyIfPlacedReferencedIds.clear();
         this._placedVariantIds.clear();
         this._placedSymbolIds.clear();
+        this._collectDebugData = collectDebugData;
+        this._debugSymbols = [];
+    }
+
+    debugSymbols(): ReadonlyArray<PlacementDebugSymbol> {
+        return this._debugSymbols;
     }
 
     timestamp(): number {
@@ -226,11 +238,45 @@ export class GlobalPlacement {
         this._processingSource = null;
     }
 
+    _placeSymbolVariant(symbol: SymbolInfo): VariantPlacementResultValue {
+        const grid = this._grid!;
+        const wasVisible = symbol.priority.symbolVariantVisibility === SymbolVariantVisibility.VARIANT_VISIBLE;
+
+        if (this._hasPlacedSymbol(symbol.variantId.symbolId)) {
+            return VariantPlacementResult.OTHER_VARIANT_PLACED;
+        }
+
+        const collisionRules = symbol.placementRules.collisionRules;
+        if (collisionRules) {
+            const onlyIfPlaced = collisionRules.onlyIfPlaced;
+            if (onlyIfPlaced && !hasVariantId(this._placedVariantIds, onlyIfPlaced)) {
+                return VariantPlacementResult.DEPENDENCY_NOT_PLACED;
+            }
+
+            const ignoreVariantId = collisionRules.symbolVariantToIgnoreCollisionWith;
+            const intersectionResult = grid.intersects(
+                symbol.geometry,
+                wasVisible ? VISIBLE_VARIANTS_COLLISION_PADDING : INVISIBLE_VARIANTS_COLLISION_PADDING,
+                (data) => ignoreVariantId !== undefined && symbolVariantIdEquals(data, ignoreVariantId)
+            );
+            if (intersectionResult === 'outside-of-grid') return VariantPlacementResult.OUT_OF_BOUNDS;
+            if (intersectionResult === 'intersects') return VariantPlacementResult.COLLIDED;
+        }
+
+        if (symbol.placementRules.insertIntoCollisionGrid) {
+            const data = hasVariantId(this._ignoredSymbolVariantIds, symbol.variantId) ? symbol.variantId : undefined;
+            // insert() only fails when every element lies outside the grid
+            // gl-native has a geometry cap and can also return TooManyGeometries but we don't have that in GL JS
+            if (!grid.insert(symbol.geometry, data)) return VariantPlacementResult.OUT_OF_BOUNDS;
+        }
+
+        return VariantPlacementResult.PLACED;
+    }
+
     finishPlacementRun() {
         if (!this._runStarted) throw new Error('Attempt to finish a placement run that was not started');
         this._runStarted = false;
 
-        const grid = this._grid!;
         const timestamp = this._timestamp;
 
         this._symbols.sort((a, b) => comparePriority(b.priority, a.priority));
@@ -238,28 +284,8 @@ export class GlobalPlacement {
         for (const symbol of this._symbols) {
             const wasVisible = symbol.priority.symbolVariantVisibility === SymbolVariantVisibility.VARIANT_VISIBLE;
 
-            let visible = true;
-            if (this._hasPlacedSymbol(symbol.variantId.symbolId)) {
-                visible = false;
-            } else if (symbol.placementRules.collisionRules) {
-                const onlyIfPlaced = symbol.placementRules.collisionRules.onlyIfPlaced;
-                if (onlyIfPlaced && !hasVariantId(this._placedVariantIds, onlyIfPlaced)) {
-                    visible = false;
-                } else {
-                    const ignoreVariantId = symbol.placementRules.collisionRules.symbolVariantToIgnoreCollisionWith;
-                    const intersectionResult = grid.intersects(
-                        symbol.geometry,
-                        wasVisible ? VISIBLE_VARIANTS_COLLISION_PADDING : INVISIBLE_VARIANTS_COLLISION_PADDING,
-                        (data) => ignoreVariantId !== undefined && symbolVariantIdEquals(data, ignoreVariantId)
-                    );
-                    if (intersectionResult !== 'does-not-intersect') visible = false;
-                }
-            }
-
-            if (visible && symbol.placementRules.insertIntoCollisionGrid) {
-                const data = hasVariantId(this._ignoredSymbolVariantIds, symbol.variantId) ? symbol.variantId : undefined;
-                if (!grid.insert(symbol.geometry, data)) visible = false;
-            }
+            const status = this._placeSymbolVariant(symbol);
+            const visible = status === VariantPlacementResult.PLACED;
 
             if (visible) {
                 this._addPlacedSymbol(symbol.variantId.symbolId);
@@ -269,6 +295,10 @@ export class GlobalPlacement {
             if (wasVisible !== visible) {
                 if (visible) symbol.source.showSymbolVariant(symbol.variantId, timestamp);
                 else symbol.source.hideSymbolVariant(symbol.variantId, timestamp);
+            }
+
+            if (this._collectDebugData) {
+                this._debugSymbols.push({geometry: symbol.geometry, variantId: symbol.variantId, status});
             }
         }
     }

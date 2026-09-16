@@ -21,6 +21,8 @@ import collisionBoxFrag from './collision_box.fragment.glsl';
 import collisionBoxVert from './collision_box.vertex.glsl';
 import collisionCircleFrag from './collision_circle.fragment.glsl';
 import collisionCircleVert from './collision_circle.vertex.glsl';
+import placementDebugFrag from './placement_debug.fragment.glsl';
+import placementDebugVert from './placement_debug.vertex.glsl';
 import debugFrag from './debug.fragment.glsl';
 import debugVert from './debug.vertex.glsl';
 import fillFrag from './fill.fragment.glsl';
@@ -151,6 +153,7 @@ export default {
     heatmapTexture: compile(heatmapTextureFrag, heatmapTextureVert),
     collisionBox: compile(collisionBoxFrag, collisionBoxVert),
     collisionCircle: compile(collisionCircleFrag, collisionCircleVert),
+    placementDebug: compile(placementDebugFrag, placementDebugVert),
     debug: compile(debugFrag, debugVert),
     fill: compile(fillFrag, fillVert),
     fillOutline: compile(fillOutlineFrag, fillOutlineVert),

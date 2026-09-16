@@ -7,13 +7,13 @@ in vec2 v_offset;    // Offset in pixels from the shape center to this fragment.
 in vec2 v_half_size; // Half width and half height of the shape; both are the radius for a circle.
 in float v_is_circle;
 
-// Signed distance from the box centered on the origin to `offset`, negative inside.
+// Signed distance from the box centered on the origin to offset, negative inside.
 float boxDistance(vec2 offset, vec2 halfSize) {
     vec2 toCorner = abs(offset) - halfSize;
     return min(max(toCorner.x, toCorner.y), 0.0) + length(max(toCorner, vec2(0.0)));
 }
 
-// Signed distance from the circle centered on the origin to `offset`, negative inside.
+// Signed distance from the circle centered on the origin to offset, negative inside.
 float circleDistance(vec2 offset, float radius) {
     return length(offset) - radius;
 }

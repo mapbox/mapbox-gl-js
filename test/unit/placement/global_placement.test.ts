@@ -1,6 +1,7 @@
 import {describe, test, expect, vi} from '../../util/vitest';
 import {GlobalPlacement} from '../../../src/placement/global_placement';
 import {defaultPlacementRules} from '../../../src/placement/placement_rules';
+import {VariantPlacementResult} from '../../../src/placement/placement_debug';
 import {SymbolIdOrigin, SymbolPlacementType, SymbolVariantVisibility} from '../../../src/placement/types';
 
 import type {Geometry} from '../../../src/placement/geometry';
@@ -513,5 +514,126 @@ describe('InteractiveGlobalPlacement', () => {
         // 0 and 1 were already invisible, so no notification for them.
         expect(source.hideSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(2), 0);
         expect(source.showSymbolVariant).not.toHaveBeenCalled();
+    });
+    test('should not collect debug data by default', () => {
+        const placement = new GlobalPlacement();
+        const source = createFakeSource();
+
+        placement.startPlacement(0, screenWidth, screenHeight);
+        placement.startSymbolSourceProcessing(source);
+        addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
+        placement.finishSourceProcessing();
+        placement.finishPlacementRun();
+
+        expect(placement.debugSymbols()).toEqual([]);
+    });
+
+    test('should collect debug data for every symbol variant', () => {
+        const placement = new GlobalPlacement();
+        const source = createFakeSource();
+
+        // Two elements, so that a variant's whole geometry is covered and not just a single element.
+        const multiElementGeometry: Geometry = [
+            {kind: 'box', left: 0, top: 0, right: 10, bottom: 10},
+            {kind: 'box', left: 20, top: 20, right: 30, bottom: 30}
+        ];
+
+        placement.startPlacement(0, screenWidth, screenHeight, true);
+        placement.startSymbolSourceProcessing(source);
+        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), multiElementGeometry, defaultPlacementRules());
+        // Overlaps the first element above and therefore loses the collision.
+        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(5, 5, 15, 15), defaultPlacementRules());
+        placement.finishSourceProcessing();
+        placement.finishPlacementRun();
+
+        expect(placement.debugSymbols()).toEqual([
+            {geometry: multiElementGeometry, variantId: createVariantId(0), status: VariantPlacementResult.PLACED},
+            {geometry: box(5, 5, 15, 15), variantId: createVariantId(1), status: VariantPlacementResult.COLLIDED},
+        ]);
+    });
+
+    test('should report why a symbol variant was not placed', () => {
+        const placement = new GlobalPlacement();
+        const source = createFakeSource();
+
+        const placedBox = box(0, 0, 10, 10);
+        // Overlaps placedBox, so a variant carrying it is rejected by the collision check as well as
+        // by whatever check comes before it. Used to pin down which reason gets reported.
+        const collidingBox = box(5, 5, 15, 15);
+        // Touches nothing, so only the reason under test can hide a variant carrying it.
+        const freeBox = box(40, 40, 50, 50);
+        // Far outside of the padded working area.
+        const outOfBoundsBox = box(300, 300, 400, 400);
+
+        // Descending subgroup order, so the variants are evaluated in the order they are added here.
+        const addVariant = (variantId: SymbolVariantId, subgroupOrder: number, geometry: Geometry, placementRules: PlacementRules) => {
+            addSymbolVariant(placement, variantId, createPriority(subgroupOrder, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), geometry, placementRules);
+        };
+
+        placement.startPlacement(0, screenWidth, screenHeight, true);
+        placement.startSymbolSourceProcessing(source);
+        addVariant(createVariantId(0, 0), 6, placedBox, defaultPlacementRules());
+        // Two more variants of the symbol placed above, the second one also colliding: losing to
+        // another variant of the same symbol is decided before any collision check runs.
+        addVariant(createVariantId(0, 1), 5, freeBox, defaultPlacementRules());
+        addVariant(createVariantId(0, 2), 4, collidingBox, defaultPlacementRules());
+        // Depend on a variant that is never added, so they can never become eligible. Symbol 1 is
+        // itself never placed, so the second one isolates the dependency from OTHER_VARIANT_PLACED
+        // while still colliding.
+        const dependentRules = (): PlacementRules => ({collisionRules: {onlyIfPlaced: createVariantId(2)}, insertIntoCollisionGrid: true});
+        addVariant(createVariantId(1, 0), 3, freeBox, dependentRules());
+        addVariant(createVariantId(1, 1), 2, collidingBox, dependentRules());
+
+        addVariant(createVariantId(3), 1, collidingBox, defaultPlacementRules());
+        addVariant(createVariantId(4), 0, outOfBoundsBox, defaultPlacementRules());
+        placement.finishSourceProcessing();
+        placement.finishPlacementRun();
+
+        expect(placement.debugSymbols()).toEqual([
+            {geometry: placedBox, variantId: createVariantId(0, 0), status: VariantPlacementResult.PLACED},
+            {geometry: freeBox, variantId: createVariantId(0, 1), status: VariantPlacementResult.OTHER_VARIANT_PLACED},
+            {geometry: collidingBox, variantId: createVariantId(0, 2), status: VariantPlacementResult.OTHER_VARIANT_PLACED},
+            {geometry: freeBox, variantId: createVariantId(1, 0), status: VariantPlacementResult.DEPENDENCY_NOT_PLACED},
+            {geometry: collidingBox, variantId: createVariantId(1, 1), status: VariantPlacementResult.DEPENDENCY_NOT_PLACED},
+            {geometry: collidingBox, variantId: createVariantId(3), status: VariantPlacementResult.COLLIDED},
+            {geometry: outOfBoundsBox, variantId: createVariantId(4), status: VariantPlacementResult.OUT_OF_BOUNDS},
+        ]);
+    });
+
+    test('should drop debug data of the previous run', () => {
+        const placement = new GlobalPlacement();
+        const source = createFakeSource();
+
+        placement.startPlacement(0, screenWidth, screenHeight, true);
+        placement.startSymbolSourceProcessing(source);
+        addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
+        placement.finishSourceProcessing();
+        placement.finishPlacementRun();
+        expect(placement.debugSymbols()).toHaveLength(1);
+
+        placement.startPlacement(1, screenWidth, screenHeight, true);
+        placement.finishPlacementRun();
+
+        expect(placement.debugSymbols()).toEqual([]);
+    });
+
+    test('should stop collecting debug data when disabled', () => {
+        const placement = new GlobalPlacement();
+        const source = createFakeSource();
+
+        const runOnce = (timestamp: number, collectDebugData: boolean) => {
+            placement.startPlacement(timestamp, screenWidth, screenHeight, collectDebugData);
+            placement.startSymbolSourceProcessing(source);
+            addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
+            placement.finishSourceProcessing();
+            placement.finishPlacementRun();
+        };
+
+        runOnce(0, true);
+        expect(placement.debugSymbols()).toHaveLength(1);
+
+        runOnce(1, false);
+
+        expect(placement.debugSymbols()).toEqual([]);
     });
 });
