@@ -28,6 +28,14 @@ out vec3 v_elevation_id_col;
 in float a_elevation_ground_scale;
 #endif
 
+#ifdef LINE_ROUND_JOIN_CLIP_BORDER_OVERLAP
+// Tile coordinates of the neighbouring segments whose border may overlap this vertex's own segment
+// across each end of it: prevA, prevB, nextA, nextB coordinates, one per component, packed as y in the
+// high 16 bits, x doubled in the low 16 with the bit left to flag whether test is needed at all.
+// Zero flag bit means there is no conflicting neighbour at that end.
+in highp ivec4 a_round_join_conflict_segments;
+#endif
+
 // Includes in order: a_uv_x, a_split_index, a_line_progress to reduce attribute count on older devices.
 // Only line-gradient, line-border-gradient and line-trim-offset will requires a_packed info.
 #if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_BORDER_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET) || defined(RENDER_LINE_CURVE)
