@@ -17,7 +17,7 @@
 - Fix `transformRequest` headers and credentials being dropped from PMTiles requests.
 - Fix features rendering at the wrong position when a layer uses a `within` filter and the map uses a projection other than Mercator or globe.
 
-## 3.31.0-rc.1
+## 3.31.0
 
 ### Features and improvements ✨
 
