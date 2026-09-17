@@ -1,6 +1,6 @@
 ## Unreleased
 
-## 3.31.0-rc.1
+## 3.31.0
 
 ### Features and improvements ✨
 
