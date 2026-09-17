@@ -8,7 +8,7 @@ import {Snow} from '../src/precipitation/draw_snow';
 import {programUniforms} from '../3d-style/render/program/program_uniforms_hd';
 import {drawElevatedStructures, drawElevatedFillShadows, drawDepthPrepass, drawGroundShadowMask} from '../3d-style/render/draw_elevated_fill';
 import {HdCoverageState, updateFrcCoverage, updateHdCoverageSourceCache, updateFrcCoverageFadeRange} from '../3d-style/style/frc_coverage_style';
-import {HdElevationState, setupAndUpdateElevationCoverage, updateElevationCoverage, updateHdElevationSourceCache, markElevationIngestSourceCachesUsed, updateCrossSourceElevationGate} from '../3d-style/style/elevation_coverage_style';
+import {HdElevationState, setupAndUpdateElevationCoverage, updateElevationCoverage, updateCrossSourceElevationGate} from '../3d-style/style/elevation_coverage_style';
 import {buildElevationRequestParams} from '../3d-style/source/elevation_coverage_snapshot';
 import {FrcCoverageRenderer} from '../3d-style/render/frc_coverage_renderer';
 import {
@@ -54,8 +54,6 @@ export const HD = {
     HdElevationState,
     setupAndUpdateElevationCoverage,
     updateElevationCoverage,
-    updateHdElevationSourceCache,
-    markElevationIngestSourceCachesUsed,
     updateCrossSourceElevationGate,
     buildElevationRequestParams,
     FrcCoverageRenderer,

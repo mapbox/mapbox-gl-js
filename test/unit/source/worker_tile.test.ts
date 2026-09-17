@@ -330,3 +330,55 @@ describe('WorkerTile frcCoverage / modularization gate', () => {
         });
     });
 });
+
+test('WorkerTile#updateParameters copies crossSourceElevationEnabled for reloads', () => {
+    const tile = createWorkerTile({crossSourceElevationEnabled: true});
+    expect(tile.crossSourceElevationEnabled).toBe(true);
+
+    tile.updateParameters({
+        scaleFactor: 1,
+        showCollisionBoxes: false,
+        showElevationIdDebug: false,
+        projection: getProjection({name: 'mercator'}),
+        brightness: 0,
+        tileID: {canonical: {x: 1, y: 1, z: 1}},
+        extraShadowCaster: false,
+        lut: null,
+        worldview: undefined,
+        indoor: undefined,
+        frcCoverage: null,
+        elevation: null,
+        terrainEnabled: false,
+        crossSourceElevationEnabled: false
+    });
+
+    expect(tile.crossSourceElevationEnabled).toBe(false);
+    expect(tile.elevation).toBe(null);
+});
+
+describe('WorkerTile#parse cross-source elevation sidecar', () => {
+    const layerIndex = new StyleLayerIndex([{
+        id: 'test',
+        source: 'source',
+        type: 'circle'
+    }]);
+
+    function parse(tile: WorkerTile) {
+        return new Promise((resolve, reject) => {
+            tile.parse(createWrapper(), layerIndex, [], [], createActor(), (err, result) => {
+                if (err) reject(err instanceof Error ? err : new Error(String(err)));
+                else resolve(result);
+            });
+        });
+    }
+
+    test('reports an empty sidecar for a tile without hd_road_elevation when cross-source elevation is on', async () => {
+        const result = await parse(createWorkerTile({crossSourceElevationEnabled: true}));
+        expect(result.parsedElevationFeatures).toEqual([]);
+    });
+
+    test('leaves the sidecar undefined when cross-source elevation is off', async () => {
+        const result = await parse(createWorkerTile({crossSourceElevationEnabled: false}));
+        expect(result.parsedElevationFeatures).toBeUndefined();
+    });
+});

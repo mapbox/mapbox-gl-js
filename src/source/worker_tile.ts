@@ -177,7 +177,6 @@ class WorkerTile {
         if (this.renderSourceType === RenderSourceType.Symbol && layer.type !== 'symbol') return false;
         if (this.renderSourceType === RenderSourceType.FillExtrusion && layer.type !== 'fill-extrusion') return false;
         if (this.renderSourceType === RenderSourceType.Other && (layer.type === 'symbol' || layer.type === 'fill-extrusion')) return false;
-        if (this.renderSourceType === RenderSourceType.HdRoadElevation) return false;
         if (layer.minzoom && this.zoom < Math.floor(layer.minzoom)) return false;
         if (layer.maxzoom && this.zoom >= layer.maxzoom) return false;
         if (layer.visibility === 'none') return false;
@@ -263,30 +262,6 @@ class WorkerTile {
 
         const asyncBucketLoads: Promise<unknown>[] = [];
         const layerFamilies = layerIndex.familiesBySource[this.source];
-
-        // Dedicated elevation provider tiles only extract hd_road_elevation features
-        // for the main-thread snapshot; they must not run the feature-source bucket path.
-        if (this.renderSourceType === RenderSourceType.HdRoadElevation) {
-            const parsedElevationFeatures = HD.parseElevationFeatures ?
-                (HD.parseElevationFeatures(data, this.canonical) || []) :
-                [];
-            const glyphAtlas = new GlyphAtlas({});
-            this.status = 'done';
-            callback(null, {
-                buckets: [],
-                containsHdExt: false,
-                containsStandardExt: false,
-                featureIndex,
-                collisionBoxArray: this.collisionBoxArray,
-                glyphAtlasImage: glyphAtlas.image,
-                lineAtlas,
-                imageAtlas: null,
-                brightness: this.brightness,
-                parsedElevationFeatures,
-            });
-            PerformanceUtils.endMeasure(m, [["tileID", this.tileID.toString()], ["source", this.source]]);
-            return;
-        }
 
         // Defer configured coverage source layers when HD coverage hasn't resolved yet.
         // When coverage arrives, tiles are reparsed with coverageFrcMask set,
@@ -476,6 +451,13 @@ class WorkerTile {
             lineAtlas.trim();
             const hasTunnelGeometry = !!(options.elevationFeatures && options.elevationFeatures.some((feature) => feature.heightRange.min < 0.0));
 
+            // While cross-source elevation is on, always report a parsed sidecar (`[]` if none);
+            // ingest treats `undefined` as not-yet-parsed.
+            let elevationSidecar = options.elevationFeatures;
+            if (this.crossSourceElevationEnabled && HD.parseElevationFeatures) {
+                elevationSidecar = elevationSidecar || HD.parseElevationFeatures(data, this.canonical) || [];
+            }
+
             let error: Error | null | undefined;
             let glyphMap: GlyphMap;
             let iconMap: StyleImageMap<StringifiedImageVariant>;
@@ -493,7 +475,6 @@ class WorkerTile {
                     const m = PerformanceUtils.beginMeasure('parseTile2');
                     this.status = 'done';
                     const transferredBuckets = Object.values(buckets).filter(b => !b.isEmpty());
-                    const elevationSidecar = options.elevationFeatures;
                     callback(null, {
                         buckets: transferredBuckets,
                         containsHdExt: anyBucketRequiresHD(transferredBuckets),
@@ -575,7 +556,6 @@ class WorkerTile {
                 const hasSymbolLayout = Object.keys(symbolLayoutData).length > 0;
 
                 // If no images and no symbol layout, we can complete synchronously
-                const elevationSidecar = options.elevationFeatures;
                 if (!hasImages && !hasSymbolLayout) {
                     this.status = 'done';
                     const transferredBuckets = Object.values(buckets).filter(b => !b.isEmpty());
@@ -758,6 +738,7 @@ class WorkerTile {
         this.indoor = params.indoor;
         this.frcCoverage = params.frcCoverage || null;
         this.elevation = params.elevation || null;
+        this.crossSourceElevationEnabled = !!params.crossSourceElevationEnabled;
         this.terrainEnabled = !!params.terrainEnabled;
     }
 
