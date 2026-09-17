@@ -504,24 +504,6 @@ describe('VectorTileSource', () => {
             expect(elevation).toBeNull();
         });
 
-        test('HdRoadElevation render source → elevation=null', async () => {
-            const tileId = new CanonicalTileID(14, 8800, 5373);
-            const snapshot = new ElevationCoverageSnapshot([{
-                sourceFQID: 'roads',
-                tileId,
-                features: [new ElevationFeature(1, {min: 0, max: EXTENT}, 5.0)],
-            }]);
-            const elevation = await captureElevationParams({
-                painter: {
-                    _debugParams: {showElevationIdDebug: false},
-                    elevationCoverageSnapshot: snapshot,
-                },
-                tileID: new OverscaledTileID(14, 0, 14, 8800, 5373),
-                renderSourceType: RenderSourceType.HdRoadElevation,
-            });
-            expect(elevation).toBeNull();
-        });
-
         test('style.terrain set → terrainEnabled=true and elevation=null', async () => {
             // Under terrain, HD road-markup lines drape flat: the worker is
             // told terrain is on and no snapshot is shipped, even when one exists on the painter.

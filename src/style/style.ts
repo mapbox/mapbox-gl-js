@@ -345,7 +345,6 @@ class Style extends Evented<MapEvents> {
     _mergedSymbolSourceCaches: Record<string, SourceCache>;
     _mergedFillExtrusionSourceCaches: Record<string, SourceCache>;
     _mergedHdRoadCoverageSourceCaches: Record<string, SourceCache>;
-    _mergedHdRoadElevationSourceCaches: Record<string, SourceCache>;
     _hdCoverage: InstanceType<NonNullable<typeof HD.HdCoverageState>> | null;
     _hdElevation: InstanceType<NonNullable<typeof HD.HdElevationState>> | null;
     // Cached cross-source-elevation gate; refreshed on source change and each frame.
@@ -459,7 +458,6 @@ class Style extends Evented<MapEvents> {
         this._mergedSymbolSourceCaches = Object.create(null) as Style['_mergedSymbolSourceCaches'];
         this._mergedFillExtrusionSourceCaches = Object.create(null) as Style['_mergedFillExtrusionSourceCaches'];
         this._mergedHdRoadCoverageSourceCaches = Object.create(null) as Style['_mergedHdRoadCoverageSourceCaches'];
-        this._mergedHdRoadElevationSourceCaches = Object.create(null) as Style['_mergedHdRoadElevationSourceCaches'];
         this._hdCoverage = null;
         this._hdElevation = null;
         this._crossSourceElevationActive = false;
@@ -1324,7 +1322,6 @@ class Style extends Evented<MapEvents> {
         const mergedSymbolSourceCaches: Record<string, SourceCache> = Object.create(null) as Record<string, SourceCache>;
         const mergedFillExtrusionSourceCaches: Record<string, SourceCache> = Object.create(null) as Record<string, SourceCache>;
         const mergedHdRoadCoverageSourceCaches: Record<string, SourceCache> = Object.create(null) as Record<string, SourceCache>;
-        const mergedHdRoadElevationSourceCaches: Record<string, SourceCache> = Object.create(null) as Record<string, SourceCache>;
 
         this.forEachFragmentStyle((style: Style) => {
             for (const id in style._sourceCaches) {
@@ -1353,13 +1350,6 @@ class Style extends Evented<MapEvents> {
                     mergedHdRoadCoverageSourceCaches[makeFQID(id, style.scope)] = coverageCaches[id];
                 }
             }
-
-            if (style._hdElevation) {
-                const elevationCaches = style._hdElevation.elevationSourceCaches;
-                for (const fqid in elevationCaches) {
-                    mergedHdRoadElevationSourceCaches[fqid] = elevationCaches[fqid];
-                }
-            }
         });
 
         this._mergedSourceCaches = mergedSourceCaches;
@@ -1367,7 +1357,6 @@ class Style extends Evented<MapEvents> {
         this._mergedSymbolSourceCaches = mergedSymbolSourceCaches;
         this._mergedFillExtrusionSourceCaches = mergedFillExtrusionSourceCaches;
         this._mergedHdRoadCoverageSourceCaches = mergedHdRoadCoverageSourceCaches;
-        this._mergedHdRoadElevationSourceCaches = mergedHdRoadElevationSourceCaches;
 
         if (Object.keys(mergedHdRoadCoverageSourceCaches).length > 0 && !this._hdCoverage && HD.HdCoverageState) {
             this._hdCoverage = new HD.HdCoverageState();
@@ -2609,7 +2598,6 @@ class Style extends Evented<MapEvents> {
         delete this._symbolSourceCaches[id];
         delete this._fillExtrusionSourceCaches[id];
         if (this._hdCoverage) delete this._hdCoverage.coverageSourceCaches[id];
-        if (this._hdElevation) delete this._hdElevation.elevationSourceCaches[makeFQID(id, this.scope)];
         this.mergeSources();
 
         source.setEventedParent(null);
@@ -4614,10 +4602,7 @@ class Style extends Evented<MapEvents> {
         }
 
         this.updateFrcCoverage();
-        // Run elevation setup before mark so _needsCrossSourceElevation / _ingestFQIDs
-        // match the current style on the same frame (mark keys off that gate).
         this.updateElevationCoverage();
-        if (HD.markElevationIngestSourceCachesUsed) HD.markElevationIngestSourceCachesUsed(this);
     }
 
     _reloadSources() {
@@ -5101,7 +5086,6 @@ class Style extends Evented<MapEvents> {
             this._mergedSymbolSourceCaches[fqid],
             this._mergedFillExtrusionSourceCaches[fqid],
             this._mergedHdRoadCoverageSourceCaches[fqid],
-            this._mergedHdRoadElevationSourceCaches[fqid],
         ].filter(Boolean);
     }
 
@@ -5151,7 +5135,6 @@ class Style extends Evented<MapEvents> {
             this._symbolSourceCaches[source],
             this._fillExtrusionSourceCaches[source],
             this._hdCoverage && this._hdCoverage.coverageSourceCaches[source],
-            this._hdElevation && this._hdElevation.elevationSourceCaches[makeFQID(source, this.scope)],
         ].filter(Boolean);
     }
 

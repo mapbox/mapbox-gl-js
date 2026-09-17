@@ -1,4 +1,3 @@
-import {RenderSourceType} from '../../src/source/render_source_type';
 import {terrainEnabled} from '../../src/style/terrain';
 
 import type {
@@ -95,7 +94,6 @@ export function buildElevationRequestParams(
     tile: Tile,
     crossSourceElevationEnabled: boolean,
 ): ElevationParams | null {
-    if (tile.renderSourceType === RenderSourceType.HdRoadElevation) return null;
     // Active terrain: lines drape flat instead of using the snapshot.
     if (terrainEnabled(map.style, map.transform)) return null;
     if (!crossSourceElevationEnabled) return null;
