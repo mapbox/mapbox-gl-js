@@ -1,13 +1,11 @@
 import {ElevationCoverageManager} from '../source/elevation_coverage_manager';
-import SourceCache from '../../src/source/source_cache';
-import {RenderSourceType} from '../../src/source/render_source_type';
-import {getNameFromFQID, getOuterScopeFromFQID, makeFQID} from '../../src/util/fqid';
+import {makeFQID} from '../../src/util/fqid';
 import {terrainEnabled} from '../../src/style/terrain';
 
+import type SourceCache from '../../src/source/source_cache';
 import type Tile from '../../src/source/tile';
 import type {TypedStyleLayer} from '../../src/style/style_layer/typed_style_layer';
 import type Style from '../../src/style/style';
-import type VectorTileSource from '../../src/source/vector_tile_source';
 import type {CanonicalTileID} from '../../src/source/tile_id';
 import type {ElevationCoverageSnapshot} from '../../src/source/elevation_coverage_snapshot';
 
@@ -28,20 +26,19 @@ function coveringChanged(prev: ElevationCoverageSnapshot, next: ElevationCoverag
     return coverageSignature(prev, featureTile) !== coverageSignature(next, featureTile);
 }
 
-function fqidBelongsToFragment(fqid: string, fragmentScope: string): boolean {
-    const scope = getOuterScopeFromFQID(fqid);
-    return scope === fragmentScope || (!scope && !fragmentScope);
-}
-
 function resolveIngestSourceCache(style: Style, fqid: string): SourceCache | undefined {
     return style._mergedOtherSourceCaches[fqid] ||
-        style._mergedSymbolSourceCaches[fqid] ||
-        style._mergedHdRoadElevationSourceCaches[fqid];
+        style._mergedSymbolSourceCaches[fqid];
 }
 
-function layerUsesHdRoadSourceLayer(layer: TypedStyleLayer): boolean {
-    const sourceLayer = layer.sourceLayer;
-    return !!sourceLayer && sourceLayer.startsWith('hd_road_');
+/// True for a visible `hd-road-base` fill on a vector source. Markup layers only
+/// consume elevation. GeoJSON fills carry their own elevation and never produce
+/// the `hd_road_elevation` sidecar, so they are excluded via the source-layer check.
+/// Checks layout visibility, not zoom: below minzoom the cache keeps its tiles.
+function layerContributesHdRoadElevation(layer: TypedStyleLayer): boolean {
+    if (layer.visibility === 'none' || !layer.sourceLayer) return false;
+    return layer.type === 'fill' && !!layer.layout &&
+        layer.layout.get('fill-elevation-reference') === 'hd-road-base';
 }
 
 /// True when every provider-only source has finished loading.
@@ -95,13 +92,13 @@ export function collectElevationConsumerSourceFQIDs(style: Style): Set<string> {
     return consumers;
 }
 
-/// Provider-only sources: hd_road_* layers that are not also consumers.
+/// Sources that contribute elevation and are not also consumers.
 export function collectElevationProviderSourceFQIDs(style: Style): Set<string> {
     const consumerFQIDs = collectElevationConsumerSourceFQIDs(style);
     const providers = new Set<string>();
     for (const layerId in style._mergedLayers) {
         const layer = style._mergedLayers[layerId];
-        if (!layer.source || !layerUsesHdRoadSourceLayer(layer)) continue;
+        if (!layer.source || !layerContributesHdRoadElevation(layer)) continue;
         const fqid = makeFQID(layer.source, layer.scope);
         if (consumerFQIDs.has(fqid)) continue;
         providers.add(fqid);
@@ -125,11 +122,6 @@ export function needsCrossSourceElevation(style: Style): boolean {
 /// Recompute the cached cross-source gate after a source change.
 export function updateCrossSourceElevationGate(style: Style): void {
     style._crossSourceElevationActive = needsCrossSourceElevation(style);
-    // HdElevationState only needed once dedicated elevation caches exist.
-    const hdCaches = style._mergedHdRoadElevationSourceCaches;
-    if (!hdCaches || Object.keys(hdCaches).length === 0) return;
-    if (!style._hdElevation) style._hdElevation = new HdElevationState();
-    style._hdElevation._needsCrossSourceElevation = style._crossSourceElevationActive;
 }
 
 /// Cached cross-source gate; refreshed on source change and each frame.
@@ -142,30 +134,27 @@ export function collectElevationIngestSourceFQIDs(style: Style): Set<string> {
     const ingest = new Set<string>();
     for (const layerId in style._mergedLayers) {
         const layer = style._mergedLayers[layerId];
-        if (!layer.source || !layerUsesHdRoadSourceLayer(layer)) continue;
+        if (!layer.source || !layerContributesHdRoadElevation(layer)) continue;
         ingest.add(makeFQID(layer.source, layer.scope));
     }
     return ingest;
 }
 
-/// Mark ingest caches used so provider sources load tiles even without visible consumer layers.
-export function markElevationIngestSourceCachesUsed(style: Style): void {
-    if (!style._hdElevation || !style._hdElevation._needsCrossSourceElevation) return;
-    const ingestFQIDs = style._hdElevation._ingestFQIDs;
-    if (!ingestFQIDs) return;
-    for (const fqid of ingestFQIDs) {
-        const cache = resolveIngestSourceCache(style, fqid);
-        if (cache) cache.used = true;
-    }
-}
-
 /// Reload hd-road-markup consumer tiles.
+/// Only sources with a visible consumer layer are reloaded; showing a hidden
+/// layer reloads the source itself.
 export function reparseElevationConsumerTiles(
     style: Style,
     shouldReload?: (tile: Tile) => boolean,
     includeSameSourceConsumers?: boolean,
 ): void {
-    const consumerFQIDs = collectElevationConsumerSourceFQIDs(style);
+    const consumerFQIDs = new Set<string>();
+    for (const layerId in style._mergedLayers) {
+        const layer = style._mergedLayers[layerId];
+        if (layer.visibility !== 'none' && layerHasMvtRoadElevation(layer)) {
+            consumerFQIDs.add(makeFQID(layer.source, layer.scope));
+        }
+    }
     if (consumerFQIDs.size === 0) return;
     if (!includeSameSourceConsumers) {
         // Same-source: elevation is parsed from the consumer tile itself.
@@ -192,14 +181,12 @@ export function reparseElevationConsumerTiles(
 
 /// Per-Style state for cross-source HD road elevation.
 export class HdElevationState {
-    elevationSourceCaches: Record<string, SourceCache>;
     manager: ElevationCoverageManager;
     _needsCrossSourceElevation: boolean;
     _ingestFQIDs: Set<string>;
     _terrainActiveLast: boolean | undefined;
 
     constructor() {
-        this.elevationSourceCaches = {};
         this.manager = new ElevationCoverageManager();
         this._needsCrossSourceElevation = false;
         this._ingestFQIDs = new Set();
@@ -226,19 +213,21 @@ function crossSourceElevationAlreadyInactive(style: Style): boolean {
         !painterHasSnapshot;
 }
 
-/// Clear cross-source state after style edit so stale ingest FQIDs stop forcing loads.
+/// Clear the snapshot first, then reparse consumers so they do not keep the old elevation.
 function deactivateCrossSourceElevation(style: Style): void {
     style._crossSourceElevationActive = false;
     if (crossSourceElevationAlreadyInactive(style)) return;
+    const wasActive = !!style._hdElevation && style._hdElevation._needsCrossSourceElevation;
     clearElevationCoverageState(style);
     if (!style._hdElevation) return;
     style._hdElevation._needsCrossSourceElevation = false;
     style._hdElevation._ingestFQIDs.clear();
     style._hdElevation.manager.clear();
     style._hdElevation._terrainActiveLast = undefined;
+    if (wasActive) reparseElevationConsumerTiles(style, undefined, true);
 }
 
-/// Setup provider caches, merge fragments, ingest tiles, and reparse consumers.
+/// Ingest provider tiles and reparse consumers when cross-source elevation is active.
 export function setupAndUpdateElevationCoverage(style: Style): void {
     if (!hasElevationConsumers(style)) {
         deactivateCrossSourceElevation(style);
@@ -276,44 +265,7 @@ export function setupAndUpdateElevationCoverage(style: Style): void {
     style._crossSourceElevationActive = true;
     state._ingestFQIDs = collectElevationIngestSourceFQIDs(style);
 
-    const pureProviders = collectElevationProviderSourceFQIDs(style);
-    style.forEachFragmentStyle((fragmentStyle: Style) => {
-        for (const fqid of pureProviders) {
-            if (!fqidBelongsToFragment(fqid, fragmentStyle.scope)) continue;
-            const sourceId = getNameFromFQID(fqid);
-            if (fragmentStyle._otherSourceCaches[sourceId] || fragmentStyle._symbolSourceCaches[sourceId]) {
-                continue;
-            }
-            const source = fragmentStyle.getOwnSource(sourceId);
-            if (source && source.type === 'vector') {
-                if (!fragmentStyle._hdElevation) {
-                    fragmentStyle._hdElevation = new HdElevationState();
-                }
-                updateHdElevationSourceCache(fragmentStyle, fragmentStyle._hdElevation, source);
-            }
-        }
-    });
-    style.mergeSources();
-
     updateElevationCoverage(style, state);
-}
-
-/// Dedicated cache for hd_road_elevation on provider-only sources.
-export function updateHdElevationSourceCache(style: Style, state: HdElevationState, source: VectorTileSource) {
-    const sourceFQID = makeFQID(source.id, style.scope);
-    if (state.elevationSourceCaches[sourceFQID]) return;
-
-    const sourceCacheId = `hd-road-elevation:${source.id}`;
-    const sourceCacheFQID = makeFQID(sourceCacheId, style.scope);
-    const sourceCache = style._sourceCaches[sourceCacheId] = new SourceCache(sourceCacheFQID, source, RenderSourceType.HdRoadElevation);
-    state.elevationSourceCaches[sourceFQID] = sourceCache;
-    sourceCache.onAdd(style.map);
-
-    // Mirror regular cache loaded flag if tiles already loaded.
-    const regularCache = style._otherSourceCaches[source.id] as unknown as SourceCacheTiles;
-    if (regularCache && regularCache._sourceLoaded) {
-        (sourceCache as unknown as SourceCacheTiles)._sourceLoaded = true;
-    }
 }
 
 /// Ingest provider tiles and reparse consumers whose covering changed.
@@ -328,11 +280,6 @@ export function updateElevationCoverage(style: Style, state: HdElevationState) {
     if (!state._needsCrossSourceElevation) {
         clearElevationCoverageState(style);
         return;
-    }
-
-    for (const fqid of state._ingestFQIDs) {
-        const cache = resolveIngestSourceCache(style, fqid);
-        if (cache) cache.used = true;
     }
 
     state.manager.clear();
