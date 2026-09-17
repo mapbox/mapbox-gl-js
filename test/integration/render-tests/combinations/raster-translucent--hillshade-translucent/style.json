@@ -3,7 +3,13 @@
   "metadata": {
     "test": {
       "width": 64,
-      "height": 64
+      "height": 64,
+      "image-threshold": [
+        {
+          "platform-tag-contains": "web-linux-chrome",
+          "threshold": 0.982
+        }
+      ]
     }
   },
   "center": [
