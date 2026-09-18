@@ -1085,7 +1085,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
         this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
         this.groundEffect.update(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
 
-        this.evaluate(this.layers[0], states);
+        this.evaluate(this.layers[0], states, isBrightnessChanged);
         this.colorBufferUploaded = false;
 
         PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_COMMON, 'BuildingBucket.update', 'BuildingBucket', perfStartTime);
@@ -1288,13 +1288,17 @@ export class BuildingBucket implements BucketWithGroundEffect {
         this.colorBufferUploaded = true;
     }
 
-    evaluate(layer: BuildingStyleLayer, featureState: FeatureStates) {
+    evaluate(layer: BuildingStyleLayer, featureState: FeatureStates, isBrightnessChanged: boolean) {
         const perfStartTime = PerformanceUtils.now();
 
+        const changedIds = Object.keys(featureState);
+        const isFeatureStateDelta = changedIds.length !== 0 && !isBrightnessChanged;
+
         const aoIntensity = layer.paint.get('building-ambient-occlusion-intensity');
-        for (const buildingFeature of this.footprints) {
+
+        const evaluateFootprint = (buildingFeature: BuildingFootprint) => {
             if (buildingFeature.hiddenFlags & BUILDING_HIDDEN_WITH_INCOMPLETE_PARTS) {
-                continue;
+                return;
             }
             const state = featureState[buildingFeature.promoteId];
             const feature = buildingFeature.feature;
@@ -1376,6 +1380,18 @@ export class BuildingBucket implements BucketWithGroundEffect {
 
                     building.entranceBloom.layoutColorArray.emplace(vertexOffset, c1, c2);
                 }
+            }
+        };
+
+        if (isFeatureStateDelta) {
+            for (const id of changedIds) {
+                const footprintIndex = this.featureFootprintLookup.get(Number(id));
+                if (footprintIndex === undefined) continue;
+                evaluateFootprint(this.footprints[footprintIndex]);
+            }
+        } else {
+            for (const buildingFeature of this.footprints) {
+                evaluateFootprint(buildingFeature);
             }
         }
 
