@@ -49,11 +49,9 @@
         }],
         ["wait"]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - not yet implemented"}
-      ],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.0003}
+        {"platform-tag-contains": "", "threshold": 0.0003},
+        {"platform-tag-contains": "swiftshader", "threshold": 0.0004}
       ]
     }
   },

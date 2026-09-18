@@ -27,10 +27,14 @@
           "wait"
         ]
       ],
-      "skip-test": [
+      "image-threshold": [
         {
-          "platform-tag-contains": "native",
-          "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"
+          "platform-tag-contains": "swiftshader",
+          "threshold": 0.0008
+        },
+        {
+          "platform-tag-contains": "native-android",
+          "threshold": 0.0014
         }
       ]
     }

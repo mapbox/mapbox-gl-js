@@ -23,10 +23,6 @@
         {
           "platform-tag-contains": "web",
           "reason": "querySourceFeatures is driven by metadata.test.querySource, which only the native render-test runner implements; the gl-js query harness reads queryGeometry only."
-        },
-        {
-          "platform-tag-contains": "native",
-          "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"
         }
       ]
     }

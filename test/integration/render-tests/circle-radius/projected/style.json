@@ -8,8 +8,8 @@
         ["setProjection", "albers"],
         ["wait"]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"}
+      "image-threshold": [
+        {"platform-tag-contains": "native", "threshold": 0.0002}
       ]
     }
   },
