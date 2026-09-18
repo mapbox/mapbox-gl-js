@@ -15,6 +15,12 @@ in vec2 v_normal;
 in float v_gamma_scale;
 in vec2 v_tile_pos;
 
+#ifdef LINE_ROUND_JOIN_CLIP_BORDER_OVERLAP
+in highp vec4 v_round_join_conflict_offset;
+in highp vec4 v_round_join_conflict_dir;
+in mediump vec2 v_round_join_conflict_test;
+#endif
+
 #ifdef ELEVATED_ROADS
 in highp float v_road_z_offset;
 #endif
@@ -84,6 +90,49 @@ in lowp float v_emissive_strength;
 in highp vec2 v_dash;
 #endif
 
+#ifdef LINE_ROUND_JOIN_CLIP_BORDER_OVERLAP
+// Large distance sentinel that makes the conflict test find nothing for a zero-flagged conflict segment.
+const highp float ROUND_JOIN_NO_CONFLICT = 32768.0;
+
+// Distance from this fragment to a conflicting segment's centre line. 
+// conflictOffset runs from the segment's first coordinate to this fragment.
+// conflictDir runs from its first coordinate to its second, both already in pixel space.
+highp float roundJoinConflictDistance(highp vec2 conflictOffset, highp vec2 conflictDir, mediump float test) {
+    if (test <= 0.0) {
+        return ROUND_JOIN_NO_CONFLICT;
+    }
+    highp float dirLenSq = max(dot(conflictDir, conflictDir), 1e-6);
+    highp float t = clamp(dot(conflictOffset, conflictDir) / dirLenSq, 0.0, 1.0);
+    return length(conflictOffset - t * conflictDir);
+}
+
+// How far inside (testBounds.x, testBounds.y) this fragment is: 1 well inside, 0 well outside. 
+// pxStep is passed in rather than taken from fwidth() to ensure that no derivative 
+// ends up in non-uniform control flow.
+float insideRoundJoinTestArea(highp float dist, vec2 testBounds, float pxStep) {
+    float inside = 1.0 - smoothstep(testBounds.y - pxStep, testBounds.y + pxStep, dist);
+    float pastGap = testBounds.x > 0.0 ? smoothstep(testBounds.x - pxStep, testBounds.x + pxStep, dist) : 1.0;
+    return inside * pastGap;
+}
+
+// How far inside the conflicting segment's whole 'body' this fragment is: 1 well inside, 0 well outside.
+// 'Body' stops a pixel short of its outer edge, where its own antialiasing begins and it no longer covers a pixel completely.
+float insideRoundJoinConflictBody(highp float dist, vec3 testBounds, float pxStep) {
+    vec2 body = vec2(testBounds.x, testBounds.y - pxStep);
+    return insideRoundJoinTestArea(dist, body, pxStep);
+}
+
+// How far inside the conflicting segment's 'fill' this fragment is: 1 well inside, 0 well outside. 
+// 'Fill' is its body inset by its border width on whichever sides it has one.
+float insideRoundJoinConflictFill(highp float dist, vec3 testBounds, float pxStep) {
+    float gap = testBounds.x;
+    float outer = testBounds.y;
+    float border = testBounds.z;
+    vec2 fill = vec2(gap + (gap > 0.0 ? border : 0.0), max(outer - border, 0.0));
+    return insideRoundJoinTestArea(dist, fill, pxStep);
+}
+#endif
+
 float linearstep(float edge0, float edge1, float x) {
     return  clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
 }
@@ -128,6 +177,9 @@ void main() {
 
     float pxStep;
     float delta;
+    // Coverage of this line's border band: 0 in the border, 1 in the fill.
+    // Declared and resolved early to use in the round-join clip tests below
+    float alpha2 = 1.0;
 #ifdef RENDER_LINE_BORDER
 #ifndef VARIABLE_LINE_WIDTH
     // Calculate the rate of change of the distance across the line.
@@ -142,6 +194,52 @@ void main() {
     // Compute distance based anti-aliasing alpha factor to smooth line edges.
     float edge = ANTIALIASING;
     alpha = delta > 0.0 ? smoothstep(edge - pxStep, u_width_scale * blur + edge + pxStep, delta) : 0.0;
+
+    // Compute distance based anti-aliasing alpha factor to smooth line borders.
+    float borderPx = border_width * u_width_scale;
+    float edge2 = borderPx + ANTIALIASING;
+    alpha2 = smoothstep(edge2 - pxStep, edge2 + pxStep, delta);
+
+#ifdef LINE_ROUND_JOIN_CLIP_BORDER_OVERLAP
+    // Perform conflict tests if any for this segment's border fragments gated by (alpha > 0.0 && alpha2 < 1.0)
+    if (alpha > 0.0 && alpha2 < 1.0 &&
+        (v_round_join_conflict_test.x > 0.0 || v_round_join_conflict_test.y > 0.0)) {
+        highp float prevDist = roundJoinConflictDistance(v_round_join_conflict_offset.xy,
+                                                        v_round_join_conflict_dir.xy,
+                                                        v_round_join_conflict_test.x);
+        highp float nextDist = roundJoinConflictDistance(v_round_join_conflict_offset.zw,
+                                                        v_round_join_conflict_dir.zw,
+                                                        v_round_join_conflict_test.y);
+
+        // The conflicting segment's test bounds {x: gap width, y: outer, z: border}. 
+        // With an assumption that line-width, line-gap-width and line-border-width are constant along a feature.
+        vec3 testBounds = vec3(max(v_width2_dilute.y - ANTIALIASING, 0.0),
+                                   v_width2_dilute.x - ANTIALIASING,
+                                   borderPx);
+
+        float insideConflictFill = max(insideRoundJoinConflictFill(prevDist, testBounds, pxStep),
+                                       insideRoundJoinConflictFill(nextDist, testBounds, pxStep));
+
+        // inside the conflict's fill       -- drop our border, that is the fold;
+        // inside the it's border band only -- keep ours, the two share that outline;
+        // outside it                       -- keep ours.
+        alpha2 = max(alpha2, insideConflictFill);
+
+        // Two-pass stencil path makes antialiasing fragments partly filled but claim stencil buffer
+        // based on u_alpha_discard_threshold, when 'line-opacity' < 1.0. It leaves border-background 
+        // hairline in the border-clipped area, where this and conflict segment disagree regarding the color. 
+        // Raise own alpha to fix body-coverage conflict. 
+        // Skipped under line-blur and the dilute scale, which hold coverage below on purpose.
+        // dilute_scale is a mediump varying: on FP16 hardware an exact 1.0 can interpolate to just under it
+        // and silently disable this fix. 0.004 is ~4 FP16 ULP at 1.0; the slack it allows is under 0.4% coverage.
+        const float diluteEpsilon = 0.004;
+        if (u_alpha_discard_threshold != 0.0 && blur == 0.0 && v_width2_dilute.z >= 1.0 - diluteEpsilon) {
+            float insideConflictBody = max(insideRoundJoinConflictBody(prevDist, testBounds, pxStep),
+                                           insideRoundJoinConflictBody(nextDist, testBounds, pxStep));
+            alpha = max(alpha, delta >= edge ? insideConflictBody : 0.0);
+        }
+    }
+#endif
 #endif
 #endif
 
@@ -229,9 +327,6 @@ void main() {
 
 #ifdef RENDER_LINE_BORDER
 #ifndef VARIABLE_LINE_WIDTH
-    // Compute distance based anti-aliasing alpha factor to smooth line borders.
-    float edge2 = border_width * u_width_scale + ANTIALIASING;
-    float alpha2 = smoothstep(edge2 - pxStep, edge2 + pxStep, delta);
     if (alpha2 < 1.) {
 #ifdef RENDER_LINE_BORDER_GRADIENT
         // line-border-gradient takes precedence over border_color and the auto-derived border color.

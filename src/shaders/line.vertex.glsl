@@ -29,10 +29,9 @@ in float a_elevation_ground_scale;
 #endif
 
 #ifdef LINE_ROUND_JOIN_CLIP_BORDER_OVERLAP
-// Tile coordinates of the neighbouring segments whose border may overlap this vertex's own segment
+// Tile coordinates of possibly conflicting segments whose border may overlap this vertex's own segment
 // across each end of it: prevA, prevB, nextA, nextB coordinates, one per component, packed as y in the
-// high 16 bits, x doubled in the low 16 with the bit left to flag whether test is needed at all.
-// Zero flag bit means there is no conflicting neighbour at that end.
+// high 16 bits, x doubled in the low 16, with the bit left to flag whether test is needed at all.
 in highp ivec4 a_round_join_conflict_segments;
 #endif
 
@@ -86,6 +85,17 @@ out vec2 v_normal;
 out vec4 v_width2_dilute; // xy fow width, z for dilute of whole line w for dilute of border
 out float v_gamma_scale;
 out vec2 v_tile_pos;
+
+#ifdef LINE_ROUND_JOIN_CLIP_BORDER_OVERLAP
+// Offset in pixel space from this vertex to the first coordinate of the conflicting segment beyond
+// each end of its own segment. xy for the one before and zw for the one after.
+out highp vec4 v_round_join_conflict_offset;
+// Directions of the conflicting segments, first coordinate to second. Constant across every triangle
+// that tests.
+out highp vec4 v_round_join_conflict_dir;
+// Flags whether to test against each of the conflicting segments.
+out mediump vec2 v_round_join_conflict_test;
+#endif
 
 #ifdef ELEVATED_ROADS
 out highp float v_road_z_offset;
@@ -326,6 +336,14 @@ CurveResult calculateCurve(float line_progress) {
 
 #endif
 
+#ifdef LINE_ROUND_JOIN_CLIP_BORDER_OVERLAP
+// xy is the tile coordinate, z the test flag carried in the low bit of the doubled x.
+highp vec3 unpackRoundJoinTestCoordinate(highp int packedCoord) {
+    highp int x = (((packedCoord & 0xfffe) ^ 0x8000) - 0x8000) >> 1;
+    return vec3(float(x), float(packedCoord >> 16), float(packedCoord & 1));
+}
+#endif
+
 void main() {
     LinePaintProperties paint_properties = readLinePaintProperties();
     v_line_color = paint_properties.color;
@@ -464,6 +482,7 @@ void main() {
     vec2 extrude = dist * u_pixels_to_tile_units;
     vec4 projected_extrude = u_matrix * vec4(extrude, 0.0, 0.0);
     vec2 projected_extrude_xy = projected_extrude.xy;
+
 #ifdef ELEVATED_ROADS
     v_road_z_offset = a_z_offset;
     v_tile_pos = pos + offset2 * u_pixels_to_tile_units;
@@ -641,6 +660,22 @@ void main() {
     v_width2_dilute = vec4(outset, inset, dilute_scale, dilute_border_scale);
 #ifdef VARIABLE_LINE_WIDTH
     v_width2_dilute.x = symmetric_outset;
+#endif
+
+#ifdef LINE_ROUND_JOIN_CLIP_BORDER_OVERLAP
+    // Placed after the dilute section: sub-pixel lines draw at extrude / dilute_scale, so the test
+    // position has to follow the vertex that is actually emitted.
+    // tileToPixels calculation assumes that gl-native stores uniform scale in u_pixels_to_tile_units.
+    // A sheared matrix (gl-js, non-Mercator) would need the full martix inverse and never enables this define.
+    highp float tileToPixels = 1.0 / u_pixels_to_tile_units[0][0];
+    highp vec2 testPos = pos + extrude / dilute_scale;
+    highp vec3 prevA = unpackRoundJoinTestCoordinate(a_round_join_conflict_segments.x);
+    highp vec3 prevB = unpackRoundJoinTestCoordinate(a_round_join_conflict_segments.y);
+    highp vec3 nextA = unpackRoundJoinTestCoordinate(a_round_join_conflict_segments.z);
+    highp vec3 nextB = unpackRoundJoinTestCoordinate(a_round_join_conflict_segments.w);
+    v_round_join_conflict_offset = vec4(testPos - prevA.xy, testPos - nextA.xy) * tileToPixels;
+    v_round_join_conflict_dir = vec4(prevB.xy - prevA.xy, nextB.xy - nextA.xy) * tileToPixels;
+    v_round_join_conflict_test = vec2(prevA.z, nextA.z);
 #endif
 
 #ifdef FOG
