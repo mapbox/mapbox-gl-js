@@ -2455,13 +2455,13 @@ class SymbolBucket implements Bucket, SymbolSource {
     }
 
     // The default (non-vertical, non-variable-anchor) placed text entry for an instance: whichever
-    // horizontal justification was actually placed, falling back to vertical, then to `boxIndex`.
+    // horizontal justification was actually placed, falling back to vertical, then to -1 when the instance has no text
     defaultPlacedTextSymbolIndex(instance: SymbolInstance, boxIndex: number): number {
         return instance.rightJustifiedTextSymbolIndex >= 0 ?
             instance.rightJustifiedTextSymbolIndex : instance.centerJustifiedTextSymbolIndex >= 0 ?
                 instance.centerJustifiedTextSymbolIndex : instance.leftJustifiedTextSymbolIndex >= 0 ?
                     instance.leftJustifiedTextSymbolIndex : instance.verticalPlacedTextSymbolIndex >= 0 ?
-                        instance.verticalPlacedTextSymbolIndex : boxIndex;
+                        instance.verticalPlacedTextSymbolIndex : -1;
     }
 
     getSymbolInstanceTextSize(textSize: InterpolatedSize, instance: SymbolInstance, zoom: number, boxIndex: number): number {

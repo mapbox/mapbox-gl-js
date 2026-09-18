@@ -188,6 +188,26 @@ test('SymbolBucket#addToPlacement places a real symbol via the new placement pip
     }
 });
 
+test('SymbolBucket#defaultPlacedTextSymbolIndex returns -1 for an icon-only instance', () => {
+    const bucket = bucketSetup();
+
+    // hasTextData() is bucket-wide: this bucket has real text elsewhere, but this particular
+    // instance placed none of the four text variants (e.g. its text-field evaluated to empty) --
+    // the only signal available to _writeFadeState before it indexes into text.placedSymbolArray.
+    const iconOnlyInstance = {
+        rightJustifiedTextSymbolIndex: -1,
+        centerJustifiedTextSymbolIndex: -1,
+        leftJustifiedTextSymbolIndex: -1,
+        verticalPlacedTextSymbolIndex: -1
+    };
+
+    // boxIndex is the instance's raw position in symbolInstances, which has no meaning in
+    // bucket.text.placedSymbolArray's index space (one entry per instance that placed text, not
+    // per instance overall) and can be >= placedSymbolArray.length for a bucket with any icon-only
+    // instances -- exactly the case that crashed _writeFadeState's `.get()` call.
+    expect(bucket.defaultPlacedTextSymbolIndex(iconOnlyInstance, 5)).toEqual(-1);
+});
+
 const PLACE_LABEL_SOURCE_LAYER_INDEX = 3;
 const PLACE_LABEL_FEATURE_INDEX = 10;
 
