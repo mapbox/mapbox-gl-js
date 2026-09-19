@@ -14,6 +14,11 @@ The expected output for a given test case is in `expected.png`, e.g. [`circle-ra
 Supporting files -- glyphs, sprites, and tiles -- live in their own respective subdirectories at the top level. The test
 harness sets up the environment such that requests for these resources are directed to the correct location.
 
+Most glyph fixtures were generated from Open Sans 1.10, which predates `U+1E9E LATIN CAPITAL LETTER SHARP S` (ẞ). The
+`Open Sans Semibold/7680-7935.pbf` range was generated from Open Sans 3.003 so that this character is covered. The two
+releases are metric-compatible across the characters they share, so mixing them within one stack does not shift
+existing layouts.
+
 The contents of vector tile fixtures can be read using the [`vt2geojson`](https://github.com/mapbox/vt2geojson) tool (see below).
 
 ## Running tests
