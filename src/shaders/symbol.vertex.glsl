@@ -1,5 +1,6 @@
 #include "_prelude_terrain.vertex.glsl"
 #include "_prelude_shadow.vertex.glsl"
+#include "_prelude_ubo_properties.glsl"
 
 #define USING_APPEARANCE 1.0
 
@@ -125,14 +126,6 @@ out highp vec4 v_pos_light_view_1;
 out highp float v_depth;
 #endif
 
-/// Maximum size of UBO (uniform buffer object).
-///
-/// Specs guarantees a minimum of 16KB, but some devices support larger UBOs,
-/// and this value can be set at runtime based on device capabilities.
-#ifndef MAX_UBO_SIZE_VEC4
-#define MAX_UBO_SIZE_VEC4 1024u
-#endif
-
 /// Symbol paint properties header size (in vec4 units).
 ///
 /// Header size is determined by the number of properties and the information we need to
@@ -169,7 +162,7 @@ uniform highp float u_spp_z_offset;
 uniform lowp vec2 u_spp_translate_rotation;
 
 /// Fractional part of the current render zoom used to derive every data-driven property's
-/// zoom-interpolation factor from its packed [zm, zM] range (see zoomFactor()).
+/// zoom-interpolation factor from its packed [zm, zM] range (see zoomFactor() in _prelude_ubo_properties.glsl).
 uniform highp float u_spp_zoom_fraction;
 
 /// Per-feature index used to look up the feature's data-driven paint property block in
@@ -218,13 +211,14 @@ out lowp float v_halo_blur;
 out lowp float v_emissive_strength;
 #endif
 
-/// Zoom-interpolation factor from a property's stored [zm, zM] range. Clamped to [0, 1]: unlike
-/// the old per-frame floor(renderZoom) fraction, u_spp_zoom_fraction is now the offset from the
-/// bucket's own (fixed) floor zoom, so it isn't bounded to [0, 1) by construction — a tile can
-/// keep rendering many zoom levels away from where its bucket was built (overscaling).
-float zoomFactor(float zm, float zM) {
-    if (zm == zM) return u_spp_zoom_fraction - zm >= 0.0 ? 1.0 : 0.0;
-    return clamp((u_spp_zoom_fraction - zm) / (zM - zm), 0.0, 1.0);
+/// Returns the component of a uvec4 at the given index.
+///
+/// Implemented with explicit swizzles to avoid old Adreno driver bugs with
+/// dynamic vector component indexing.
+uint uvec4At(uvec4 v, uint index) {
+    return (index == 0u) ? v.x :
+           (index == 1u) ? v.y :
+           (index == 2u) ? v.z : v.w;
 }
 
 /// Read a data-driven color property: slot 0 always packs [minRG, minBA, maxRG, maxBA]. When
@@ -238,17 +232,7 @@ vec4 readColor(uint base, bool isDataDriven, uint offsetVec4, uint dzr, vec2 hea
     vec4 value = u_spp_properties.properties[base + offsetVec4];
     vec2 blockZoom = u_spp_properties.properties[base + offsetVec4 + dzr].xy;
     vec2 zr = mix(headerZoom, blockZoom, float(dzr));
-    return unpack_mix_color(value, zoomFactor(zr.x, zr.y));
-}
-
-/// Returns the component of a uvec4 at the given index.
-///
-/// Implemented with explicit swizzles to avoid old Adreno driver bugs with
-/// dynamic vector component indexing.
-uint uvec4At(uvec4 v, uint index) {
-    return (index == 0u) ? v.x :
-           (index == 1u) ? v.y :
-           (index == 2u) ? v.z : v.w;
+    return unpack_mix_color(value, zoomFactor(zr.x, zr.y, u_spp_zoom_fraction));
 }
 
 /// Read a data-driven scalar property: one vec4 slot packing [min, max, zm, zM].
@@ -256,7 +240,7 @@ uint uvec4At(uvec4 v, uint index) {
 float readScalar(uint base, bool isDataDriven, uint offsetVec4, float fallbackValue) {
     if (!isDataDriven) return fallbackValue;
     vec4 slot = u_spp_properties.properties[base + offsetVec4];
-    return unpack_mix_vec2(slot.xy, zoomFactor(slot.z, slot.w));
+    return unpack_mix_vec2(slot.xy, zoomFactor(slot.z, slot.w, u_spp_zoom_fraction));
 }
 
 /// Read the data-driven translate property: slot 0 packs [tx_min, ty_min, tx_max, ty_max]. When
@@ -269,7 +253,7 @@ vec2 readTranslate(uint base, bool isDataDriven, uint offsetVec4, uint dzr) {
     if (!isDataDriven) return vec2(0.0);
     vec4 value = u_spp_properties.properties[base + offsetVec4];
     vec2 blockZoom = u_spp_properties.properties[base + offsetVec4 + dzr].xy;
-    float t = zoomFactor(blockZoom.x, blockZoom.y) * float(dzr);
+    float t = zoomFactor(blockZoom.x, blockZoom.y, u_spp_zoom_fraction) * float(dzr);
     return mix(value.xy, value.zw, t);
 }
 

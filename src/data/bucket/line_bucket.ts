@@ -12,6 +12,8 @@ import {members as layoutAttributesPattern} from './line_attributes_pattern';
 import SegmentVector from '../segment';
 import {ProgramConfigurationSet} from '../program_configuration';
 import {TriangleIndexArray} from '../index_array_type';
+import {LinePropertyBinderUBO, DASH_BIT} from './line_property_binder_ubo';
+import {HEADER_DATA_DRIVEN_MASK} from './paint_property_ubo';
 import EXTENT from '../../style-spec/data/extent';
 import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
@@ -183,6 +185,9 @@ class LineBucket implements Bucket {
     hasPattern: boolean;
     tileToMeter!: number;
     hasCrossSlope: boolean;
+    // Serves the `linePattern` program only — the base `line` program's data-driven paint
+    // properties (including `line-dasharray`) are all UBO-backed now (see uboBinders below), so
+    // it no longer needs a program configuration of its own.
     programConfigurations: ProgramConfigurationSet<LineStyleLayer>;
     segments: SegmentVector;
     sourceLayerName: string;
@@ -207,6 +212,24 @@ class LineBucket implements Bucket {
 
     worldview: string;
     hasAppearances: boolean | null;
+
+    maxUniformBufferBindings: number | null | undefined;
+    maxUniformBlockSizeDwords: number | null | undefined;
+
+    // One UBO paint-property binder per style layer sharing this bucket (see class doc on
+    // LinePropertyBinderUBO). Populated in the constructor, one entry per this.layers[i].id.
+    uboBinders: {[_: string]: LinePropertyBinderUBO};
+    // Shared across every layer's binder so a single per-vertex a_feature_index consistently
+    // indexes each layer's own UBO batching — the minimum maxFeaturesPerBatch across all layers.
+    maxFeaturesPerBatch: number;
+    // Set once per addFeature() call from whichever layer's binder has a data-driven property
+    // (they all agree, since every binder shares maxFeaturesPerBatch), then consumed by every
+    // addHalfVertex()/prepareSegment() call the feature's geometry generates.
+    currentFeatureUboIndex: number;
+    currentFeatureBatchIndex: number;
+
+    cachedBatchIndices: number[] | null;
+    cachedBatchSegments: Map<number, SegmentVector> | null;
 
     constructor(options: BucketParameters<LineStyleLayer>) {
         this.zoom = options.zoom;
@@ -247,9 +270,75 @@ class LineBucket implements Bucket {
 
         this.worldview = options.worldview;
         this.hasAppearances = null;
+
+        this.maxUniformBufferBindings = options.maxUniformBufferBindings;
+        this.maxUniformBlockSizeDwords = options.maxUniformBlockSizeDwords;
+
+        this.uboBinders = {};
+        this.maxFeaturesPerBatch = Number.MAX_SAFE_INTEGER;
+        for (const layer of this.layers) {
+            const binder = new LinePropertyBinderUBO(layer, options.zoom, options.lut, this.worldview, this.maxUniformBufferBindings, this.maxUniformBlockSizeDwords);
+            this.uboBinders[layer.id] = binder;
+            if (binder.maxFeaturesPerBatch < this.maxFeaturesPerBatch) this.maxFeaturesPerBatch = binder.maxFeaturesPerBatch;
+        }
+        // Pin every layer's binder to the shared (minimum) batch size so a single per-vertex
+        // a_feature_index maps consistently across every layer's own UBO batching.
+        for (const layer of this.layers) {
+            this.uboBinders[layer.id].maxFeaturesPerBatch = this.maxFeaturesPerBatch;
+        }
+
+        this.cachedBatchIndices = null;
+        this.cachedBatchSegments = null;
+        this.currentFeatureUboIndex = 0;
+        this.currentFeatureBatchIndex = 0;
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
+    }
+
+    /**
+     * Get cached batch grouping for UBO rendering. Computes and caches the grouping on first
+     * call, then reuses the cached result. Mirrors SymbolBucket.getBatchGrouping.
+     *
+     * Note: takes a SegmentVector parameter to detect if we're rendering all segments or just a
+     * subset (e.g., in sort-key path where segments are rendered individually).
+     * Cache is only used when rendering all segments.
+     */
+    getBatchGrouping(segments: SegmentVector): {batchIndices: number[]; batchSegments: Map<number, SegmentVector>} {
+        // Identity, not length: FRC per-level SegmentVectors (and sort-key wrappers) can have
+        // the same segment count as this.segments, which would otherwise poison the
+        // all-segments cache with one level's grouping and hand it back for every other level.
+        const isRenderingAllSegments = segments === this.segments;
+
+        if (isRenderingAllSegments && this.cachedBatchIndices && this.cachedBatchSegments) {
+            return {
+                batchIndices: this.cachedBatchIndices,
+                batchSegments: this.cachedBatchSegments
+            };
+        }
+
+        const segmentsByBatch = new Map<number, Array<typeof segments.segments[0]>>();
+        for (const segment of segments.get()) {
+            const batchIndex = segment.batchIndex !== undefined ? segment.batchIndex : 0;
+            if (!segmentsByBatch.has(batchIndex)) {
+                segmentsByBatch.set(batchIndex, []);
+            }
+            segmentsByBatch.get(batchIndex).push(segment);
+        }
+
+        const batchIndices = Array.from(segmentsByBatch.keys()).sort((a, b) => a - b);
+        const batchSegments = new Map<number, SegmentVector>();
+        for (const batchIndex of batchIndices) {
+            const segs = segmentsByBatch.get(batchIndex);
+            batchSegments.set(batchIndex, new SegmentVector(segs));
+        }
+
+        if (isRenderingAllSegments) {
+            this.cachedBatchIndices = batchIndices;
+            this.cachedBatchSegments = batchSegments;
+        }
+
+        return {batchIndices, batchSegments};
     }
 
     updateAppearances(_canonical?: CanonicalTileID, _featureState?: FeatureStates, _availableImages?: Array<ImageId>, _globalProperties?: GlobalProperties) {
@@ -352,6 +441,14 @@ class LineBucket implements Bucket {
             this.hdExt.buildFrcSegments(this);
         }
         if (this.hdExt) this.hdExt.endPopulate();
+
+        // Pattern buckets defer feature addition (and thus UBO population) to addFeatures(),
+        // once atlas positions are resolved — finalize() there instead.
+        if (!this.hasPattern) {
+            for (const layer of this.layers) {
+                this.uboBinders[layer.id].finalize();
+            }
+        }
     }
 
     addConstantDashes(lineAtlas: LineAtlas): boolean {
@@ -417,6 +514,35 @@ class LineBucket implements Bucket {
 
     update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null, canonical?: CanonicalTileID, worldview?: string) {
         this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, worldview);
+
+        // UBO-based updates. `layers` here is either `stateDependentLayers` or the bucket's full
+        // `layers` (see tile.ts's updateBuckets), so each layer's own binder is updated by name —
+        // mirrors SymbolBucket.update()'s brightness/feature-state handling.
+        if (canonical) {
+            if (isBrightnessChanged) {
+                for (const layer of layers as ReadonlyArray<LineStyleLayer>) {
+                    const binder = this.uboBinders[layer.id];
+                    if (binder && !binder.isLightConstant) {
+                        binder.updateDynamicExpressions(layer, vtLayer, canonical, availableImages, states, brightness);
+                    }
+                }
+            } else if (Object.keys(states).length > 0) {
+                const featureIds = new Set<string | number>(Object.keys(states).map(id => {
+                    // Convert to number only if it's a safe integer to avoid precision loss
+                    const numId = Number(id);
+                    if (!isNaN(numId) && Number.isSafeInteger(numId) && String(numId) === id) {
+                        return numId;
+                    }
+                    return id;
+                }));
+                for (const layer of layers as ReadonlyArray<LineStyleLayer>) {
+                    const binder = this.uboBinders[layer.id];
+                    if (binder && binder.hasStateDependentPaint(layer)) {
+                        binder.updateFeatures(featureIds, layer, vtLayer, canonical, availableImages, states, brightness);
+                    }
+                }
+            }
+        }
     }
 
     updateExpressions(layers: ReadonlyArray<TypedStyleLayer>) {
@@ -425,11 +551,20 @@ class LineBucket implements Bucket {
 
     addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[], _: TileTransform, brightness?: number | null) {
         for (const feature of this.patternFeatures) {
-            this.addFeature(feature, feature.geometry, feature.index, canonical, imagePositions, availableImages, brightness, options.elevationFeatures, options.elevationParams, options.crossSourceElevationEnabled);
+            // `imagePositions` here is only the pattern/sprite atlas (see worker_tile.ts), so a
+            // data-driven dash on a layer that shares this bucket with a line-pattern layer must
+            // still be resolved from the tile's own LineAtlas — pass it explicitly rather than
+            // relying on addFeature()'s default (which assumes the two atlases coincide).
+            this.addFeature(feature, feature.geometry, feature.index, canonical, imagePositions, availableImages, brightness, options.elevationFeatures, options.elevationParams, options.crossSourceElevationEnabled, options.lineAtlas.positions);
         }
         if (this.hdExt) {
             this.hdExt.buildFrcSegments(this);
             this.hdExt.endPopulate();
+        }
+        // Counterpart to the guarded finalize() call in populate() — pattern buckets only reach
+        // their final feature set here, once atlas positions are resolved.
+        for (const layer of this.layers) {
+            this.uboBinders[layer.id].finalize();
         }
     }
 
@@ -465,6 +600,9 @@ class LineBucket implements Bucket {
             this.indexBuffer = context.createIndexBuffer(this.indexArray);
         }
         this.programConfigurations.upload(context);
+        for (const layer of this.layers) {
+            this.uboBinders[layer.id].upload(context);
+        }
         this.uploaded = true;
     }
 
@@ -482,6 +620,9 @@ class LineBucket implements Bucket {
         this.layoutVertexBuffer.destroy();
         this.indexBuffer.destroy();
         this.programConfigurations.destroy();
+        for (const layer of this.layers) {
+            this.uboBinders[layer.id].destroy();
+        }
         this.segments.destroy();
     }
 
@@ -505,7 +646,9 @@ class LineBucket implements Bucket {
         }
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[], brightness?: number | null, elevationFeatures?: ElevationFeature[], elevationParams?: ElevationParams | null, crossSourceElevationEnabled?: boolean) {
+    // If the bucket doesn't have a pattern we pass the imagePositions as dashPositions,
+    // otherwise we separately dashPositions from lineAtlas and imagePositions from the sprite atlas.
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[], brightness?: number | null, elevationFeatures?: ElevationFeature[], elevationParams?: ElevationParams | null, crossSourceElevationEnabled?: boolean, dashPositions: SpritePositions = imagePositions) {
         const layout = this.layers[0].layout;
 
         const frc = this.hdExt ? this.hdExt.trackFeatureFrc(feature.properties) : null;
@@ -538,6 +681,50 @@ class LineBucket implements Bucket {
             const elevationGroundScaleExpr = layout.get('line-elevation-ground-scale').value;
             if (elevationGroundScaleExpr.kind !== 'constant' || elevationGroundScaleExpr.value !== 0) {
                 this.elevationGroundScaleValue = elevationGroundScaleExpr;
+            }
+        }
+
+        // UBO batch/index bookkeeping is shared across every layer via whichever binder has a
+        // data-driven property (they all agree, since every binder shares maxFeaturesPerBatch —
+        // see the constructor); each layer's own binder is then populated with its own paint
+        // evaluation for this feature.
+        this.currentFeatureBatchIndex = 0;
+        this.currentFeatureUboIndex = 0;
+        let haveDataDrivenBatch = false;
+        for (const layer of this.layers) {
+            // `feature.patterns[layer.id]` is set by addFeatureDashes() only when this layer's
+            // dasharray or line-cap is data-driven (constant dash+cap resolves through
+            // addConstantDashes() instead, and is handled at draw time via u_lpp_dash — see
+            // draw_line.ts). Guarded with `&&`, not just for style but because
+            // test/unit/data/line_bucket.test.ts calls addFeature() directly with a bare feature
+            // and no imagePositions/patterns, mirroring the existing `feature.patterns &&` guard
+            // in PatternCompositeBinder._setPaintValues (program_configuration.ts).
+            //
+            // Dash keys are looked up in `dashPositions`, not `imagePositions`: on the pattern
+            // path (addFeatures(), below) `imagePositions` is the *image* atlas, but dash keys
+            // (`dasharray.join(',') + lineCap`, see line_atlas.ts) only ever exist in the tile's
+            // LineAtlas. The two coincide on the non-pattern populate() path, hence the default.
+            //
+            // `feature.patterns[layer.id]` is also where addPatternDependencies() stashes an
+            // *image* pattern key for a layer with its own line-pattern (bucket-wide hasPattern
+            // only requires one layer to have a pattern, not this one) — so it must not be read
+            // as a dash key unless this layer's own binder actually has dash in its data-driven
+            // block; otherwise the image key looks up nothing in dashPositions and misfires below.
+            const binder = this.uboBinders[layer.id];
+            const layerHasDataDrivenDash = (binder.header[HEADER_DATA_DRIVEN_MASK] & DASH_BIT) !== 0;
+            const dashKey = layerHasDataDrivenDash && feature.patterns && feature.patterns[layer.id] && feature.patterns[layer.id][0];
+            const dashPosition = dashPositions && dashKey ? dashPositions[dashKey] : undefined;
+            assert(!dashKey || dashPosition, `Dash key "${dashKey}" has no LineAtlas position — addFeatureDashes() should have created one via lineAtlas.addDash().`);
+            // Read the batch index before populateUBO(), which advances featureCount.
+            const batchIndex = binder.getCurrentBatchIndex();
+            const localIndex = binder.populateUBO(feature, index, canonical, availableImages, brightness, undefined, dashPosition);
+            if (binder.isAllConstant) continue;
+            if (!haveDataDrivenBatch) {
+                this.currentFeatureBatchIndex = batchIndex;
+                this.currentFeatureUboIndex = localIndex;
+                haveDataDrivenBatch = true;
+            } else {
+                assert(batchIndex === this.currentFeatureBatchIndex && localIndex === this.currentFeatureUboIndex);
             }
         }
 
@@ -654,7 +841,7 @@ class LineBucket implements Bucket {
         if (join === 'bevel') miterLimit = 1.05;
 
         // we could be more precise, but it would only save a negligible amount of space
-        const segment = this.segments.prepareSegment(len * 10, this.layoutVertexArray, this.indexArray);
+        const segment = this.segments.prepareSegment(len * 10, this.layoutVertexArray, this.indexArray, undefined, this.currentFeatureBatchIndex);
 
         let currentVertex: Point | undefined;
         let prevVertex: Point | undefined;
@@ -1191,7 +1378,10 @@ class LineBucket implements Bucket {
             ((dir === 0 ? 0 : (dir < 0 ? -1 : 1)) + 1),
             0, // unused
             // a_linesofar
-            this.lineSoFar - this.segmentStartf32);
+            this.lineSoFar - this.segmentStartf32,
+            // a_feature_index — local index into this feature's UBO batch (see
+            // currentFeatureUboIndex doc above)
+            this.currentFeatureUboIndex);
 
         // Constructs a second vertex buffer with higher precision line progress
         if (this.lineClips) {
@@ -1252,6 +1442,6 @@ function pointOutsideBounds(p: Point, min: number, max: number) {
     return (p.x < min || p.x > max || p.y < min || p.y > max);
 }
 
-register(LineBucket, 'LineBucket', {omit: ['layers', 'patternFeatures', 'currentVertex', 'currentVertexIsOutside']});
+register(LineBucket, 'LineBucket', {omit: ['layers', 'patternFeatures', 'currentVertex', 'currentVertexIsOutside', 'cachedBatchIndices', 'cachedBatchSegments']});
 
 export default LineBucket;

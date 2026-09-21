@@ -70,30 +70,36 @@ float luminance(vec3 c) {
     return (c.r + c.r + c.b + c.g + c.g + c.g) * 0.1667;
 }
 
-#pragma mapbox: define highp vec4 color
-#pragma mapbox: define lowp float floorwidth
-#pragma mapbox: define mediump uvec4 dash
-#pragma mapbox: define lowp float blur
-#pragma mapbox: define lowp float opacity
-#pragma mapbox: define mediump float side_z_offset
-#pragma mapbox: define lowp float border_width
-#pragma mapbox: define lowp vec4 border_color
-#pragma mapbox: define lowp float emissive_strength
+in highp vec4 v_line_color;
+in lowp vec4 v_border_color;
+in lowp float v_opacity;
+in lowp float v_blur;
+in lowp float v_floorwidth;
+in lowp float v_border_width;
+in lowp float v_emissive_strength;
+#ifdef RENDER_LINE_DASH
+// x = dash pattern length in tile units, y = dash coverage fraction in [0, 1] — computed in the
+// vertex shader from the UBO/uniform-sourced dash properties, which the fragment shader has no
+// access to. See line.vertex.glsl for details.
+in highp vec2 v_dash;
+#endif
 
 float linearstep(float edge0, float edge1, float x) {
     return  clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
 }
 
 void main() {
-    #pragma mapbox: initialize highp vec4 color
-    #pragma mapbox: initialize lowp float floorwidth
-    #pragma mapbox: initialize mediump uvec4 dash
-    #pragma mapbox: initialize lowp float blur
-    #pragma mapbox: initialize lowp float opacity
-    #pragma mapbox: initialize mediump float side_z_offset
-    #pragma mapbox: initialize lowp float border_width
-    #pragma mapbox: initialize lowp vec4 border_color
-    #pragma mapbox: initialize lowp float emissive_strength
+    // Paint properties were read from the UBO (non-premultiplied for the colors) in the
+    // vertex shader and passed here as varyings. blur is reassigned below under
+    // VARIABLE_LINE_WIDTH, so it (like the rest) needs a mutable local copy — GLSL ES 3.00
+    // in varyings aren't l-values in the fragment shader.
+    highp vec4 color = vec4(v_line_color.rgb * v_line_color.a, v_line_color.a);
+    float floorwidth = v_floorwidth;
+    float blur = v_blur;
+    float opacity = v_opacity;
+    float border_width = v_border_width;
+    vec4 border_color = vec4(v_border_color.rgb * v_border_color.a, v_border_color.a);
+    float emissive_strength = v_emissive_strength;
 
     // Calculate the distance of the pixel from the line in pixels.
     float dist = length(v_normal) * v_width2_dilute.x;
@@ -116,7 +122,7 @@ void main() {
 
     float diluted_opacity = opacity * v_width2_dilute.z;
 
-    // Compute blur alpha factor.   
+    // Compute blur alpha factor.
     float blur2 = (u_width_scale * blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
     float alpha = clamp(min(dist - (v_width2_dilute.y - blur2), v_width2_dilute.x - dist) / blur2, 0.0, 1.0);
 
@@ -140,19 +146,18 @@ void main() {
 #endif
 
 #ifdef RENDER_LINE_DASH
-    // highp before /65535: that literal is Inf in mediump/FP16 (e.g. Mali-G71).
-    highp float dash_w = float(dash.w);
-    highp float dash_len = float(dash.z) + dash_w / 65535.0;
+    // v_dash.x/y were computed in the vertex shader from paint_properties.dash (raw atlas
+    // descriptor decode moved there — see line.vertex.glsl — since only it has UBO access).
+    highp float dash_len = v_dash.x;
     float sdfgamma = ANTIALIASING / float(dash_len);
     float scaled_floorwidth = (floorwidth * u_floor_width_scale);
 
     // Number of dash-pattern periods covered by one framebuffer pixel.
     float periods_per_pixel = fwidth(v_tex.x);
 
-    // Dash coverage is the fraction of one pattern period covered by dashes,
-    // in [0, 1]. It is the average alpha of the fully minified pattern. Packed
-    // in dash.y bits [15:4]; bits [3:0] hold the SDF half-height.
-    float dash_coverage = float(dash.y >> 4u) / 4095.0;
+    // Dash coverage is the fraction of one pattern period covered by dashes, in [0, 1]. It is
+    // the average alpha of the fully minified pattern.
+    float dash_coverage = v_dash.y;
     // Fade to average dash coverage before the pattern becomes undersampled:
     // start at 0.25 periods per pixel and finish at the Nyquist limit (0.5).
     float fade = linearstep(0.25, 0.5, periods_per_pixel);

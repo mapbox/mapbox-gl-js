@@ -36,6 +36,19 @@ export type LineUniformsType = {
     ['u_tile_to_meter']: Uniform1f;
     ['u_ground_shadow_factor']: Uniform3f;
     ['u_opacity_multiplier']: Uniform1f;
+    ['u_lpp_color']: Uniform4f;
+    ['u_lpp_border_color']: Uniform4f;
+    ['u_lpp_opacity']: Uniform1f;
+    ['u_lpp_blur']: Uniform1f;
+    ['u_lpp_width']: Uniform1f;
+    ['u_lpp_gap_width']: Uniform1f;
+    ['u_lpp_offset']: Uniform1f;
+    ['u_lpp_floorwidth']: Uniform1f;
+    ['u_lpp_border_width']: Uniform1f;
+    ['u_lpp_emissive_strength']: Uniform1f;
+    ['u_lpp_dash']: Uniform4f;
+    ['u_lpp_side_z_offset']: Uniform1f;
+    ['u_lpp_zoom_fraction']: Uniform1f;
 };
 
 export type LinePatternUniformsType = {
@@ -86,6 +99,19 @@ const lineUniforms = (context: Context): LineUniformsType => ({
     'u_tile_to_meter': new Uniform1f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
     'u_opacity_multiplier': new Uniform1f(context),
+    'u_lpp_color': new Uniform4f(context),
+    'u_lpp_border_color': new Uniform4f(context),
+    'u_lpp_opacity': new Uniform1f(context),
+    'u_lpp_blur': new Uniform1f(context),
+    'u_lpp_width': new Uniform1f(context),
+    'u_lpp_gap_width': new Uniform1f(context),
+    'u_lpp_offset': new Uniform1f(context),
+    'u_lpp_floorwidth': new Uniform1f(context),
+    'u_lpp_border_width': new Uniform1f(context),
+    'u_lpp_emissive_strength': new Uniform1f(context),
+    'u_lpp_dash': new Uniform4f(context),
+    'u_lpp_side_z_offset': new Uniform1f(context),
+    'u_lpp_zoom_fraction': new Uniform1f(context),
 });
 
 const linePatternUniforms = (context: Context): LinePatternUniformsType => ({
@@ -156,6 +182,21 @@ const lineUniformValues = (
         'u_tile_to_meter': tileToMeter(tile.tileID.canonical, 0.0),
         'u_ground_shadow_factor': groundShadowFactor,
         'u_opacity_multiplier': 1,
+        // u_lpp_* defaults below are overwritten per-draw in draw_line.ts; they only need to be
+        // valid/inert until then.
+        'u_lpp_color': [0, 0, 0, 1],
+        'u_lpp_border_color': [0, 0, 0, 0],
+        'u_lpp_opacity': 1.0,
+        'u_lpp_blur': 0.0,
+        'u_lpp_width': 1.0,
+        'u_lpp_gap_width': 0.0,
+        'u_lpp_offset': 0.0,
+        'u_lpp_floorwidth': 1.0,
+        'u_lpp_border_width': 0.0,
+        'u_lpp_emissive_strength': 0.0,
+        'u_lpp_dash': [0, 0, 0, 0],
+        'u_lpp_side_z_offset': 0.0,
+        'u_lpp_zoom_fraction': 0.0,
     };
 };
 

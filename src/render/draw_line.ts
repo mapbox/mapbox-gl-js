@@ -21,6 +21,8 @@ import assert from '../style-spec/util/assert';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import Framebuffer from '../gl/framebuffer';
 import {HD} from '../../modules/hd_main';
+import {HEADER_DATA_DRIVEN_MASK} from '../data/bucket/paint_property_ubo';
+import {FLOORWIDTH_BIT} from '../data/bucket/line_property_binder_ubo';
 
 import type Context from '../gl/context';
 import type Painter from './painter';
@@ -29,13 +31,12 @@ import type LineStyleLayer from '../style/style_layer/line_style_layer';
 import type LineBucket from '../data/bucket/line_bucket';
 import type {GradientTexture} from '../data/bucket/line_bucket';
 import type {StylePropertyExpression} from '../style-spec/expression/index';
-import type Program from './program';
-import type ProgramConfiguration from '../data/program_configuration';
 import type SegmentVector from '../data/segment';
 import type {UniformValues} from './uniform_binding';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {DynamicDefinesType} from './program/program_uniforms';
 import type {LineUniformsType, LinePatternUniformsType} from './program/line_program';
+import type {SpritePosition} from '../util/image';
 
 export function prepare(layer: LineStyleLayer, sourceCache: SourceCache, painter: Painter) {
     layer.hasElevatedBuckets = false;
@@ -152,6 +153,14 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
     const programId = image ? 'linePattern' : 'line';
 
     const definesValues = (lineDefinesValues(layer) as DynamicDefinesType[]);
+    if (!image) {
+        // MAX_UBO_SIZE_VEC4: number of vec4 slots available for u_lpp_properties (mirrors
+        // draw_symbol.ts's setUBODefines). Not needed for the linePattern program, which doesn't
+        // read line paint properties from a UBO.
+        const uboSizeDwords = Math.floor(painter.context.maxUniformBlockSize / 4);
+        const maxUBOSizeVec4 = Math.floor(uboSizeDwords / 4);
+        definesValues.push(`MAX_UBO_SIZE_VEC4 ${maxUBOSizeVec4}u`);
+    }
     if (isDraping && painter.terrain && painter.terrain.clipOrMaskOverlapStencilType()) {
         useStencilMaskRenderPass = false;
     }
@@ -196,12 +205,13 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
 
     // Collect tiles with partial polygon coverage for second pass stencil rendering.
     // Per-level segments are looked up at draw time via bucket.frcData.frcPerLevel.get(frc) — zero alloc.
+    // `drawWithSegments` is each tile's own closure (batch loop, opacity uniforms, occlusion
+    // opacity) so the second pass draws through the same path as the first pass instead of
+    // calling program.draw directly (which would bypass UBO batching — see HD's
+    // LineCoverageTileInfo doc).
     const polygonCoverageTiles: Array<{
         coord: OverscaledTileID; bucket: LineBucket;
-        uniformValues: UniformValues<LineUniformsType | LinePatternUniformsType>;
-        programConfiguration: ProgramConfiguration;
-        program: Program<LineUniformsType | LinePatternUniformsType>;
-        depthMode: DepthMode; colorMode: Readonly<ColorMode>;
+        drawWithSegments: (stencilMode: StencilMode, segs: SegmentVector | undefined, opacityMultiplier?: number) => void;
         frcMask: number;
     }> = [];
 
@@ -230,10 +240,15 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                 defines.push('RENDER_SHADOWS', 'NORMAL_OFFSET');
             }
 
-            const programConfiguration = bucket.programConfigurations.get(layer.id);
+            // The base `line` program's data-driven paint properties (including `line-dasharray`)
+            // are all UBO-backed now, so it needs no program configuration at all — mirrors
+            // draw_symbol.ts's `config: null` for its UBO-only path. `linePattern` is unaffected
+            // and still reads every paint property through the (full) attribute-binder path.
+            const programConfiguration = image ? bucket.programConfigurations.get(layer.id) : null;
+            const uboBinder = !image ? bucket.uboBinders[layer.id] : null;
 
             let transitionableConstantPattern = false;
-            if (constantPattern && tile.imageAtlas) {
+            if (programConfiguration && constantPattern && tile.imageAtlas) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const pattern = ResolvedImage.from(constantPattern);
                 const primaryPatternImage = pattern.getPrimary().scaleSelf(pixelRatio).toString();
@@ -246,7 +261,7 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                 if (primaryPosTo) programConfiguration.setConstantPatternPositions(primaryPosTo, secondaryPosTo);
             }
 
-            if (patternTransition > 0 && (transitionableConstantPattern || !!programConfiguration.getPatternTransitionVertexBuffer('line-pattern'))) {
+            if (programConfiguration && patternTransition > 0 && (transitionableConstantPattern || !!programConfiguration.getPatternTransitionVertexBuffer('line-pattern'))) {
                 defines.push('LINE_PATTERN_TRANSITION');
             }
 
@@ -257,10 +272,15 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
             const affectedByFog = painter.isTileAffectedByFog(coord);
             const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines, overrideFog: affectedByFog});
 
+            // Constant dasharray's atlas position is per-tile (LineAtlas is per-tile), so unlike
+            // every other u_lpp_* constant it can't be resolved on the worker into
+            // getConstantUniformValues — resolve it here and feed it as a uniform below (applied
+            // once uniformValues exists, alongside the other u_lpp_* overrides). When dash is
+            // data-driven instead, the UBO block handles it and this uniform goes unread.
+            let constantDashPosTo: SpritePosition | null = null;
             if (!image && constantDash && constantCap && tile.lineAtlas) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                const posTo = tile.lineAtlas.getDash(constantDash, constantCap);
-                if (posTo) programConfiguration.setConstantPatternPositions(posTo);
+                constantDashPosTo = tile.lineAtlas.getDash(constantDash, constantCap);
             }
 
             if (renderWithShadows) {
@@ -297,7 +317,7 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
             // keep camera floorwidth; applying the same scale there stretches dashes near the
             // horizon. Restore after draw.
             // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-            const widthProperty: {value: {kind: string; value: number}} | null = dasharray ? (layer.paint as any)._values['line-floorwidth'] : null;
+            const widthProperty: {value: {kind: string; value: number}} | null = (image && dasharray) ? (layer.paint as any)._values['line-floorwidth'] : null;
             let savedFloorwidth: number | undefined;
             const dashIdealZ = tile.dashIdealZ;
             if (widthProperty && widthProperty.value.kind === 'constant' &&
@@ -356,6 +376,55 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                 gradientTexture.bind(stepInterpolant ? gl.NEAREST : gl.LINEAR, gl.CLAMP_TO_EDGE);
             };
 
+            if (uboBinder) {
+                // 'layer' is omitted from worker→main serialization (see register() in
+                // line_property_binder_ubo.ts). Reassign the current style layer before any
+                // evaluation so paint values are up-to-date.
+                uboBinder.reassignLayer(layer);
+                const renderZoom = painter.transform.zoom;
+                const brightness = painter.style.getBrightness ? painter.style.getBrightness() : null;
+                const cv = uboBinder.getConstantUniformValues(renderZoom, brightness);
+                const lineUniformValuesRef = uniformValues as UniformValues<LineUniformsType>;
+                lineUniformValuesRef['u_lpp_color'] = cv.color_np_color;
+                lineUniformValuesRef['u_lpp_border_color'] = cv.border_np_color;
+                lineUniformValuesRef['u_lpp_opacity'] = cv.opacity;
+                lineUniformValuesRef['u_lpp_blur'] = cv.blur;
+                lineUniformValuesRef['u_lpp_width'] = cv.width;
+                lineUniformValuesRef['u_lpp_gap_width'] = cv.gap_width;
+                lineUniformValuesRef['u_lpp_offset'] = cv.offset;
+                lineUniformValuesRef['u_lpp_floorwidth'] = cv.floorwidth;
+                lineUniformValuesRef['u_lpp_border_width'] = cv.border_width;
+                lineUniformValuesRef['u_lpp_emissive_strength'] = cv.emissive_strength;
+                lineUniformValuesRef['u_lpp_side_z_offset'] = cv.side_z_offset;
+                if (constantDashPosTo) {
+                    lineUniformValuesRef['u_lpp_dash'] = [constantDashPosTo.tl[0], constantDashPosTo.tl[1], constantDashPosTo.br[0], constantDashPosTo.br[1]];
+                }
+                // Render zoom's offset from the bucket's own floor zoom — see the analogous
+                // u_spp_zoom_fraction comment in draw_symbol.ts for the full rationale.
+                lineUniformValuesRef['u_lpp_zoom_fraction'] = renderZoom - uboBinder._floorZoom;
+
+                // Same constant-zoom-stabilization as the widthProperty mutation above (avoids
+                // dash flickering while loading ideal tiles), applied as a uniform override
+                // instead of a paint-property mutation since floorwidth is now UBO-migrated for
+                // this program. Only valid when floorwidth isn't itself data-driven — a
+                // data-driven floorwidth is read per-feature from the UBO and can't be
+                // represented by a single overridden uniform.
+                //
+                // Mirrors the stand-in-only re-anchoring above: re-anchor floorwidth only for
+                // retained stand-ins (dashIdealZ !== tile zoom), scaling by 2^(idealZ - bucketZoom)
+                // so the stand-in keeps a stable dash period until the ideal tile arrives. Ideal
+                // cover tiles — including pitched LOD rings — must keep camera floorwidth;
+                // applying the same scale there stretches dashes near the horizon.
+                if (dasharray && dashIdealZ !== tile.tileID.overscaledZ &&
+                    (uboBinder.header[HEADER_DATA_DRIVEN_MASK] & FLOORWIDTH_BIT) === 0) {
+                    const bz = bucket.zoom;
+                    if (!(bz in floorwidthByZoom)) {
+                        floorwidthByZoom[bz] = Math.max(0.01, layer.widthExpression().evaluate({zoom: bz}));
+                    }
+                    lineUniformValuesRef['u_lpp_floorwidth'] = floorwidthByZoom[bz] * Math.pow(2, dashIdealZ - bz);
+                }
+            }
+
             if (gradient) {
                 updateAndBindGradientTexture(
                     bucket.gradients[layer.id], layer.gradientVersion, layer.stepInterpolant,
@@ -371,13 +440,16 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                     gl.TEXTURE2);
             }
             if (dasharray) {
+                // Texture binding only — dash's paint data is UBO-backed for the base `line`
+                // program now (see uboBinder block above), so there's no paint buffer to update
+                // here (this branch never runs for `image`; the two are mutually exclusive — see
+                // line-dasharray's `requires` in v8.json).
                 context.activeTexture.set(gl.TEXTURE0);
                 if (tile.lineAtlasTexture) {
                     tile.lineAtlasTexture.bind(gl.LINEAR, gl.REPEAT);
                 }
-                programConfiguration.updatePaintBuffers();
             }
-            if (image) {
+            if (image && programConfiguration) {
                 context.activeTexture.set(gl.TEXTURE0);
                 if (tile.imageAtlasTexture) {
                     tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
@@ -391,33 +463,55 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
             }
             painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 
-            // FRC coverage routing (snapshot lookup, polygon-geometry probe, second-pass
-            // collector push) lives in HD. When HD is not loaded, snapshot is null →
-            // detect returns null → renderLine/fade pass below skip the FRC paths.
-            const frcCtx = HD.drawLineFrcCoverageDetect ?
-                HD.drawLineFrcCoverageDetect(painter, bucket, coord, elevated,
-                    uniformValues, programConfiguration, program, depthMode, colorMode,
-                    polygonCoverageTiles) :
-                null;
+            // Defined ahead of the FRC detect call below so it can be handed to HD — the second
+            // pass draws partial-coverage tiles through this same closure (batch loop,
+            // u_opacity_multiplier, occlusion opacity) rather than calling program.draw directly.
             const drawWithSegments = (stencilMode: StencilMode, segs: SegmentVector | undefined, opacityMultiplier?: number) => {
                 if (!segs || segs.get().length === 0) return;
                 if (lineOpacityForOcclusion != null) {
                     lineOpacityForOcclusion.value = lineOpacity * occlusionOpacity;
+                    // The above mutation is still load-bearing for the `linePattern` (image)
+                    // path's attribute binder. For the base `line` program, opacity is UBO-
+                    // migrated and already baked into uniformValues['u_lpp_opacity'] before this
+                    // closure runs, so the mutation alone would arrive too late — patch the
+                    // uniform directly as well.
+                    if (uboBinder) uniformValues['u_lpp_opacity'] = lineOpacity * occlusionOpacity;
                 }
                 if (opacityMultiplier !== undefined) {
                     uniformValues['u_opacity_multiplier'] = opacityMultiplier;
                 }
-                program.draw(painter, gl.TRIANGLES, depthMode,
-                    stencilMode, colorMode, CullFaceMode.disabled, uniformValues,
-                    layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, segs,
-                    layer.paint, painter.transform.zoom, programConfiguration, [bucket.layoutVertexBuffer2, bucket.patternVertexBuffer, bucket.zOffsetVertexBuffer, bucket.elevationIdColVertexBuffer, bucket.elevationGroundScaleVertexBuffer]);
+                if (uboBinder) {
+                    const {batchIndices, batchSegments} = bucket.getBatchGrouping(segs);
+                    for (const batchIndex of batchIndices) {
+                        uboBinder.bind(context, program.program, batchIndex);
+                        program.draw(painter, gl.TRIANGLES, depthMode,
+                            stencilMode, colorMode, CullFaceMode.disabled, uniformValues,
+                            layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, batchSegments.get(batchIndex),
+                            layer.paint, painter.transform.zoom, programConfiguration, [bucket.layoutVertexBuffer2, bucket.patternVertexBuffer, bucket.zOffsetVertexBuffer, bucket.elevationIdColVertexBuffer, bucket.elevationGroundScaleVertexBuffer],
+                            undefined, uboBinder.getUBO(batchIndex));
+                    }
+                } else {
+                    program.draw(painter, gl.TRIANGLES, depthMode,
+                        stencilMode, colorMode, CullFaceMode.disabled, uniformValues,
+                        layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, segs,
+                        layer.paint, painter.transform.zoom, programConfiguration, [bucket.layoutVertexBuffer2, bucket.patternVertexBuffer, bucket.zOffsetVertexBuffer, bucket.elevationIdColVertexBuffer, bucket.elevationGroundScaleVertexBuffer]);
+                }
                 if (opacityMultiplier !== undefined) {
                     uniformValues['u_opacity_multiplier'] = 1.0;
                 }
                 if (lineOpacityForOcclusion != null) {
                     lineOpacityForOcclusion.value = lineOpacity; //restore
+                    if (uboBinder) uniformValues['u_lpp_opacity'] = lineOpacity;
                 }
             };
+
+            // FRC coverage routing (snapshot lookup, polygon-geometry probe, second-pass
+            // collector push) lives in HD. When HD is not loaded, snapshot is null →
+            // detect returns null → renderLine/fade pass below skip the FRC paths.
+            const frcCtx = HD.drawLineFrcCoverageDetect ?
+                HD.drawLineFrcCoverageDetect(painter, bucket, coord, elevated,
+                    drawWithSegments, polygonCoverageTiles) :
+                null;
 
             // First-pass renderLine: draws "above" content. Per-level FRC dispatch (zero
             // alloc — N extra draw calls per uncovered level) is delegated to HD when

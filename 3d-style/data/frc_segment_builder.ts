@@ -69,6 +69,7 @@ export function buildFrcLevelSegments(
         primitiveLength: 0,
         vaos: {},
         sortKey: undefined,
+        batchIndex: segArray[currentSegmentIdx].batchIndex,
     };
 
     const closeCurrentSegment = () => {
@@ -92,6 +93,7 @@ export function buildFrcLevelSegments(
                 primitiveLength: 0,
                 vaos: {},
                 sortKey: undefined,
+                batchIndex: segArray[currentSegmentIdx].batchIndex,
             };
         }
 

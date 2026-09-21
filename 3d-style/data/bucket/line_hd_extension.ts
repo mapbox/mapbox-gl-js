@@ -158,8 +158,12 @@ export class LineHDExtension {
 
                     const sampler = new ElevationFeatureSampler(canonical, elevationTileId);
                     const col = bucket.showElevationIdDebug ? elevationIdDebugColor(elevation.id) : null;
+                    // int16 words per vertex (a_pos_normal is the first 2 int16 words of the layout);
+                    // derived from bytesPerElement rather than hardcoded so it can't drift out of sync
+                    // with LineLayoutArray's layout (e.g. the a_feature_index field added for line UBOs).
+                    const int16Stride = bucket.layoutVertexArray.bytesPerElement / 2;
                     for (let i = vertexOffset; i < bucket.layoutVertexArray.length; i++) {
-                        const point = new Point(bucket.layoutVertexArray.int16[i * 6] >> 1, bucket.layoutVertexArray.int16[i * 6 + 1] >> 1);
+                        const point = new Point(bucket.layoutVertexArray.int16[i * int16Stride] >> 1, bucket.layoutVertexArray.int16[i * int16Stride + 1] >> 1);
 
                         const height = sampler.pointElevation(point, elevation, MARKUP_ELEVATION_BIAS);
                         this.updateHeightRange(height);

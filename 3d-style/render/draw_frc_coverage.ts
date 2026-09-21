@@ -80,15 +80,21 @@ export function drawFillFrcCoverageSecondPass(
         (info, _frc, stencilMode) => drawAt(info, stencilMode, fadeFactor));
 }
 
+/// Draws a line tile's segments through core's per-tile draw closure, which owns the UBO
+/// batch loop (`bucket.getBatchGrouping` + `uboBinder.bind`/`getUBO`), the
+/// `u_opacity_multiplier` set/restore, and the occlusion-opacity handling. HD must never
+/// call `program.draw` directly for line geometry — see class doc on `LineCoverageTileInfo`.
+export type LineDrawWithSegments = (stencilMode: Readonly<StencilMode>, segs: SegmentVector | undefined, opacityMultiplier?: number) => void;
+
+/// Per-tile state carried by core's `polygonCoverageTiles` collector for the line second
+/// pass. `drawWithSegments` is core's own per-tile closure (see `LineDrawWithSegments`) —
+/// HD never touches `uniformValues`/`program`/`programConfiguration` directly, so a single
+/// draw path (core's) stays the source of truth for UBO batching.
 interface LineCoverageTileInfo {
     coord: OverscaledTileID;
     bucket: LineBucket;
-    uniformValues: UniformValues<UniformBindings>;
-    programConfiguration: ProgramConfiguration;
-    program: Program<UniformBindings>;
-    depthMode: Readonly<DepthMode>;
-    colorMode: Readonly<ColorMode>;
     frcMask: number;
+    drawWithSegments: LineDrawWithSegments;
 }
 
 /// Outside-full + inside-faded second pass for partial-coverage line tiles. Per-FRC-level
@@ -96,29 +102,20 @@ interface LineCoverageTileInfo {
 /// `render_line_layer` second pass.
 export function drawLineFrcCoverageSecondPass(
     painter: Painter,
-    layer: LineStyleLayer,
+    _layer: LineStyleLayer,
     tiles: LineCoverageTileInfo[],
 ): void {
     if (tiles.length === 0) return;
-    const gl = painter.context.gl;
     const fadeFactor = frcCoverageFadeFactor(painter);
-    const zoom = painter.transform.zoom;
 
-    const drawAt = (info: LineCoverageTileInfo, frc: number, stencilMode: Readonly<StencilMode>, opacityMul: number) => {
+    const drawAt = (info: LineCoverageTileInfo, frc: number, stencilMode: Readonly<StencilMode>, opacityMul?: number) => {
         const frcData = info.bucket.hdExt && info.bucket.hdExt.frcData;
         const segs = frcData && frcData.frcPerLevel.get(frc);
-        if (!segs || segs.segments.length === 0) return;
-        if (opacityMul !== 1.0) info.uniformValues['u_opacity_multiplier'] = opacityMul;
-        info.program.draw(painter, gl.TRIANGLES, info.depthMode,
-            stencilMode, info.colorMode, CullFaceMode.disabled, info.uniformValues,
-            layer.id, info.bucket.layoutVertexBuffer, info.bucket.indexBuffer, segs,
-            layer.paint, zoom, info.programConfiguration,
-            [info.bucket.layoutVertexBuffer2, info.bucket.patternVertexBuffer, info.bucket.zOffsetVertexBuffer, info.bucket.elevationIdColVertexBuffer, info.bucket.elevationGroundScaleVertexBuffer]);
-        if (opacityMul !== 1.0) info.uniformValues['u_opacity_multiplier'] = 1.0;
+        info.drawWithSegments(stencilMode, segs, opacityMul);
     };
 
     renderFrcCoverageSecondPass(painter, tiles, fadeFactor,
-        (info, frc, stencilMode) => drawAt(info, frc, stencilMode, 1.0),
+        (info, frc, stencilMode) => drawAt(info, frc, stencilMode),
         (info, frc, stencilMode) => drawAt(info, frc, stencilMode, fadeFactor));
 }
 
@@ -222,11 +219,7 @@ export function drawLineFrcCoverageDetect(
     bucket: LineBucket,
     coord: OverscaledTileID,
     elevated: boolean,
-    uniformValues: UniformValues<UniformBindings>,
-    programConfiguration: ProgramConfiguration,
-    program: Program<UniformBindings>,
-    depthMode: Readonly<DepthMode>,
-    colorMode: Readonly<ColorMode>,
+    drawWithSegments: LineDrawWithSegments,
     polygonCoverageTiles: LineCoverageTileInfo[],
 ): LineFrcCoverageContext | null {
     const frcData = bucket.hdExt && bucket.hdExt.frcData;
@@ -248,8 +241,7 @@ export function drawLineFrcCoverageDetect(
         }
         if (hasAnyCovered) {
             polygonCoverageTiles.push({
-                coord, bucket,
-                uniformValues, programConfiguration, program, depthMode, colorMode,
+                coord, bucket, drawWithSegments,
                 frcMask: coverageTile.frcMask,
             });
         }
@@ -264,7 +256,7 @@ export function drawLineFrcRenderLine(
     bucket: LineBucket,
     ctx: LineFrcCoverageContext,
     stencilMode: Readonly<StencilMode>,
-    drawWithSegments: (stencilMode: Readonly<StencilMode>, segs: SegmentVector | undefined, opacityMultiplier?: number) => void,
+    drawWithSegments: LineDrawWithSegments,
 ): void {
     const frcData = bucket.hdExt && bucket.hdExt.frcData;
     if (!frcData) return;
@@ -287,7 +279,7 @@ export function drawLineFrcFadePass(
     ctx: LineFrcCoverageContext,
     elevated: boolean,
     stencilMode3D: Readonly<StencilMode>,
-    drawWithSegments: (stencilMode: Readonly<StencilMode>, segs: SegmentVector | undefined, opacityMultiplier?: number) => void,
+    drawWithSegments: LineDrawWithSegments,
 ): void {
     if (ctx.hasPolygonGeometry) return; // handled by second pass
     const frcData = bucket.hdExt && bucket.hdExt.frcData;

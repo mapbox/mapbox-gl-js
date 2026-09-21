@@ -877,6 +877,6 @@ function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, lay
             uniformValues, layer.id, buffers.layoutVertexBuffer,
             buffers.indexBuffer, batchSegmentVector, layer.paint,
             painter.transform.zoom, programConfiguration, dynamicBuffers,
-            instanceCount);
+            instanceCount, buffers.uboBinder ? buffers.uboBinder.getUBO(batchIndex) : undefined);
     }
 }

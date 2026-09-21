@@ -1,0 +1,57 @@
+{
+  "version": 8,
+  "description": "Regression for a data-driven line-dasharray sharing a bucket with an unrelated line-pattern layer. The dash layer must still render its own per-feature dash pattern, not a solid line or another feature's dash.",
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native-internal/issues/1730"}
+      ]
+    }
+  },
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {"dash": [1, 1]},
+            "geometry": {"type": "LineString", "coordinates": [[-40, -12], [40, -12]]}
+          },
+          {
+            "type": "Feature",
+            "properties": {"dash": [6, 3]},
+            "geometry": {"type": "LineString", "coordinates": [[-40, 12], [40, 12]]}
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/standard",
+  "layers": [
+    {
+      "id": "pattern-sibling",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-pattern": "information",
+        "line-opacity": 0,
+        "line-width": 8
+      }
+    },
+    {
+      "id": "dash-layer",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-color": "#000000",
+        "line-width": 8,
+        "line-dasharray": ["get", "dash"]
+      }
+    }
+  ]
+}

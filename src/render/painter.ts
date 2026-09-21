@@ -101,7 +101,7 @@ export type CanvasCopyInstances = {
 };
 
 export type CreateProgramParams = {
-    config?: ProgramConfiguration;
+    config?: ProgramConfiguration | null;
     defines?: DynamicDefinesType[];
     overrideFog?: boolean;
     overrideRtt?: boolean;

@@ -59,6 +59,7 @@ import skyboxVert from './skybox.vertex.glsl';
 import preludeTerrainVert from './_prelude_terrain.vertex.glsl';
 import preludeFogVert from './_prelude_fog.vertex.glsl';
 import preludeFogFrag from './_prelude_fog.fragment.glsl';
+import preludeUBOProperties from './_prelude_ubo_properties.glsl';
 import preludeLighting from './_prelude_lighting.glsl';
 import preludeRasterArrayFrag from './_prelude_raster_array.glsl';
 import preludeIndicatorCutoutFrag from './_prelude_indicator_cutout.fragment.glsl';
@@ -102,6 +103,7 @@ export const includeMap: Record<string, string> = {
     '_prelude_fog.fragment.glsl': preludeFogFrag,
     '_prelude_shadow.fragment.glsl': preludeShadowFrag,
     '_prelude_lighting.glsl': preludeLighting,
+    '_prelude_ubo_properties.glsl': preludeUBOProperties,
     '_prelude_raster_array.glsl': preludeRasterArrayFrag,
     '_prelude_indicator_cutout.fragment.glsl': preludeIndicatorCutoutFrag,
     '_prelude_feature_cutout.fragment.glsl': preludeFeatureCutoutFrag,
@@ -122,6 +124,7 @@ const preludeFragExtensions = `
 
 export const preludeShaders = {
     preludeTerrain: compile('', preludeTerrainVert),
+    preludeUBOProperties: compile('', preludeUBOProperties),
     preludeFog: compile(preludeFogFrag, preludeFogVert),
     preludeShadow: compile(preludeShadowFrag, preludeShadowVert),
     preludeRasterArray: compile(preludeRasterArrayFrag, ''),

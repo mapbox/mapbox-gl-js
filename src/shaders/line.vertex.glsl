@@ -1,6 +1,7 @@
 #include "_prelude_fog.vertex.glsl"
 #include "_prelude_shadow.vertex.glsl"
 #include "_prelude_terrain.vertex.glsl"
+#include "_prelude_ubo_properties.glsl"
 
 // floor(127 / 2) == 63.0
 // the maximum allowed miter limit is 2.0 at the moment. the extrude normal is
@@ -114,18 +115,139 @@ out highp vec4 v_pos_light_view_1;
 out highp float v_depth;
 #endif
 
-#pragma mapbox: define highp vec4 color
-#pragma mapbox: define lowp float floorwidth
-#pragma mapbox: define mediump uvec4 dash
-#pragma mapbox: define lowp float blur
-#pragma mapbox: define lowp float opacity
-#pragma mapbox: define mediump float gapwidth
-#pragma mapbox: define lowp float offset
-#pragma mapbox: define mediump float width
-#pragma mapbox: define mediump float side_z_offset
-#pragma mapbox: define lowp float border_width
-#pragma mapbox: define lowp vec4 border_color
-#pragma mapbox: define lowp float emissive_strength
+/// Line paint properties header size (in vec4 units).
+#define LPP_HEADER_SIZE_VEC4 5u
+
+/// Paint properties for a line layer.
+struct LinePaintProperties {
+    /// Non-premultiplied render line color.
+    vec4 color;
+    /// Non-premultiplied render border color.
+    vec4 border_color;
+    float opacity;
+    float blur;
+    float width;
+    float gap_width;
+    float offset;
+    float floorwidth;
+    float border_width;
+    float emissive_strength;
+    /// Raw dash-atlas descriptor [y, halfHeight|coverage<<4, lengthInt, lengthFract] (see
+    /// LineAtlas.addDash) — never zoom-mixed, unlike every other member above (see readRaw).
+    vec4 dash;
+    float side_z_offset;
+};
+
+/// Constant paint properties values shared for all features.
+uniform highp vec4 u_lpp_color;
+uniform lowp vec4 u_lpp_border_color;
+uniform lowp float u_lpp_opacity;
+uniform lowp float u_lpp_blur;
+uniform mediump float u_lpp_width;
+uniform mediump float u_lpp_gap_width;
+uniform lowp float u_lpp_offset;
+uniform lowp float u_lpp_floorwidth;
+uniform lowp float u_lpp_border_width;
+uniform lowp float u_lpp_emissive_strength;
+// highp: see LinePaintProperties.dash — mediump/FP16 overflows this range on e.g. Mali.
+uniform highp vec4 u_lpp_dash;
+uniform mediump float u_lpp_side_z_offset;
+
+/// Fractional part of the current render zoom used to derive every data-driven property's
+/// zoom-interpolation factor from its packed [zm, zM] range (see zoomFactor() in _prelude_ubo_properties.glsl).
+uniform highp float u_lpp_zoom_fraction;
+
+/// Per-feature index of the feature's data-driven paint property block in the
+/// u_lpp_properties uniform buffer, used directly (multiplied by the block size) — unlike
+/// symbol, line has no appearance concept, so there's nothing to deduplicate and no
+/// indirection block between this index and the properties buffer.
+in float a_feature_index;
+
+layout(std140) uniform LinePaintPropertiesHeaderUniform {
+    /// Header contains information about the following:
+    /// - Mask for which properties are data-driven (32-bit bitmask, 1 bit per property)
+    /// - Size of a data-driven single block (in vec4 units)
+    /// - Slot offset of each property within a data-driven block (in vec4 units)
+    /// - Shared [zm, zM] zoom range for color/border_color, used since a color's own
+    ///   block slot carries no per-feature zoom range (see line_properties_ubo.ts)
+    uvec4 header[LPP_HEADER_SIZE_VEC4];
+} u_lpp_header;
+
+layout(std140) uniform LinePaintPropertiesUniform {
+    /// Buffer contains vec4 aligned data-driven blocks (a single block per feature,
+    /// multiple blocks for multiple features).
+    vec4 properties[MAX_UBO_SIZE_VEC4];
+} u_lpp_properties;
+
+/// Line paint properties need to be interpolated and passed to the fragment shader.
+out highp vec4 v_line_color;
+out lowp vec4 v_border_color;
+out lowp float v_opacity;
+out lowp float v_blur;
+out lowp float v_floorwidth;
+out lowp float v_border_width;
+out lowp float v_emissive_strength;
+#ifdef RENDER_LINE_DASH
+/// x = dash pattern length in tile units, y = dash coverage fraction in [0, 1] — both derived
+/// from paint_properties.dash (see LinePaintProperties.dash) and read by the fragment shader.
+out highp vec2 v_dash;
+#endif
+
+/// Read a data-driven color property: slot packs [minRG, minBA, maxRG, maxBA]. Falls back to
+/// the constant uniform when the property isn't data-driven. Line colors never carry a
+/// per-feature zoom range — always read the shared headerZoom range from the header.
+vec4 readColor(uint base, bool isDataDriven, uint offsetVec4, vec2 headerZoom, vec4 fallbackValue) {
+    if (!isDataDriven) return fallbackValue;
+    vec4 value = u_lpp_properties.properties[base + offsetVec4];
+    return unpack_mix_color(value, zoomFactor(headerZoom.x, headerZoom.y, u_lpp_zoom_fraction));
+}
+
+/// Read a data-driven scalar property: one vec4 slot packing [min, max, zm, zM].
+/// Falls back to the constant uniform when the property isn't data-driven.
+float readFloat(uint base, bool isDataDriven, uint offsetVec4, float fallbackValue) {
+    if (!isDataDriven) return fallbackValue;
+    vec4 slot = u_lpp_properties.properties[base + offsetVec4];
+    return unpack_mix_vec2(slot.xy, zoomFactor(slot.z, slot.w, u_lpp_zoom_fraction));
+}
+
+/// Read a raw, never-zoom-mixed data-driven property slot verbatim — used only for
+/// line-dasharray, whose 4 values are an opaque atlas descriptor (see LinePaintProperties.dash),
+/// not a [min,max,zm,zM] pair. Falls back to the constant uniform when not data-driven.
+highp vec4 readRaw(uint base, bool isDataDriven, uint offsetVec4, highp vec4 fallbackValue) {
+    if (!isDataDriven) return fallbackValue;
+    return u_lpp_properties.properties[base + offsetVec4];
+}
+
+LinePaintProperties readLinePaintProperties() {
+    // Header dword layout: [0][0] = data-driven bitmask, [0][1] = reserved (unused for line),
+    // [0][2] = block size in vec4 units, [0][3] and onward = per-property slot offsets within
+    // the block (in vec4 units, dwords 3-13). [4] = shared zoom range for color/border_color
+    // (dwords 16-19).
+    uint dataDrivenMask = u_lpp_header.header[0][0];
+    uint blockSizeVec4  = u_lpp_header.header[0][2];
+
+    vec2 colorHeaderZoom  = uintBitsToFloat(u_lpp_header.header[4].xy);
+    vec2 borderHeaderZoom = uintBitsToFloat(u_lpp_header.header[4].zw);
+
+    // No indirection block for line (see a_feature_index doc above) — address the properties
+    // block directly.
+    uint base = uint(a_feature_index) * blockSizeVec4;
+
+    LinePaintProperties props;
+    props.color             = readColor(base, (dataDrivenMask & (1u << 0u)) != 0u, u_lpp_header.header[0][3], colorHeaderZoom, u_lpp_color);
+    props.border_color      = readColor(base, (dataDrivenMask & (1u << 1u)) != 0u, u_lpp_header.header[1][0], borderHeaderZoom, u_lpp_border_color);
+    props.opacity           = readFloat(base, (dataDrivenMask & (1u << 2u)) != 0u, u_lpp_header.header[1][1], u_lpp_opacity);
+    props.blur              = readFloat(base, (dataDrivenMask & (1u << 3u)) != 0u, u_lpp_header.header[1][2], u_lpp_blur);
+    props.width             = readFloat(base, (dataDrivenMask & (1u << 4u)) != 0u, u_lpp_header.header[1][3], u_lpp_width);
+    props.gap_width         = readFloat(base, (dataDrivenMask & (1u << 5u)) != 0u, u_lpp_header.header[2][0], u_lpp_gap_width);
+    props.offset            = readFloat(base, (dataDrivenMask & (1u << 6u)) != 0u, u_lpp_header.header[2][1], u_lpp_offset);
+    props.floorwidth        = readFloat(base, (dataDrivenMask & (1u << 7u)) != 0u, u_lpp_header.header[2][2], u_lpp_floorwidth);
+    props.border_width      = readFloat(base, (dataDrivenMask & (1u << 8u)) != 0u, u_lpp_header.header[2][3], u_lpp_border_width);
+    props.emissive_strength = readFloat(base, (dataDrivenMask & (1u << 9u)) != 0u, u_lpp_header.header[3][0], u_lpp_emissive_strength);
+    props.dash              = readRaw(base, (dataDrivenMask & (1u << 10u)) != 0u, u_lpp_header.header[3][1], u_lpp_dash);
+    props.side_z_offset     = readFloat(base, (dataDrivenMask & (1u << 11u)) != 0u, u_lpp_header.header[3][2], u_lpp_side_z_offset);
+    return props;
+}
 
 #ifdef RENDER_LINE_CURVE
 
@@ -197,22 +319,29 @@ CurveResult calculateCurve(float line_progress) {
 #endif
 
 void main() {
-    #pragma mapbox: initialize highp vec4 color
-    #pragma mapbox: initialize lowp float floorwidth
-    #pragma mapbox: initialize mediump uvec4 dash
-    #pragma mapbox: initialize lowp float blur
-    #pragma mapbox: initialize lowp float opacity
-    #pragma mapbox: initialize mediump float gapwidth
-    #pragma mapbox: initialize lowp float offset
-    #pragma mapbox: initialize mediump float width
-    #pragma mapbox: initialize mediump float side_z_offset
-    #pragma mapbox: initialize lowp float border_width
-    #pragma mapbox: initialize lowp vec4 border_color
-    #pragma mapbox: initialize lowp float emissive_strength
+    LinePaintProperties paint_properties = readLinePaintProperties();
+    v_line_color = paint_properties.color;
+    float floorwidth = paint_properties.floorwidth;
+    float blur = paint_properties.blur;
+    float opacity = paint_properties.opacity;
+    float gapwidth = paint_properties.gap_width;
+    float offset = paint_properties.offset;
+    float width = paint_properties.width;
+    float border_width = paint_properties.border_width;
+    vec4 border_color = paint_properties.border_color;
+    float emissive_strength = paint_properties.emissive_strength;
+    float side_z_offset = paint_properties.side_z_offset;
 
 #ifdef VARIABLE_LINE_EMISSIVE_STRENGTH
     emissive_strength = a_z_offset_width.w;
 #endif
+
+    v_border_color = border_color;
+    v_opacity = opacity;
+    v_blur = blur;
+    v_floorwidth = floorwidth;
+    v_border_width = border_width;
+    v_emissive_strength = emissive_strength;
 
     float a_z_offset = u_z_offset;
 #if defined(ELEVATED) || defined(ELEVATED_ROADS)
@@ -485,15 +614,20 @@ void main() {
 #endif
 
 #ifdef RENDER_LINE_DASH
-    vec4 dashf = vec4(dash);
+    highp vec4 dashf = paint_properties.dash;
     // highp before /65535: that literal is Inf in mediump/FP16 (e.g. Mali-G71).
-    highp float dash_w = float(dash.w);
-    highp float totalLength = float(dash.z) + dash_w / 65535.0;
+    highp float dash_w = dashf.w;
+    highp float totalLength = dashf.z + dash_w / 65535.0;
     float scale = totalLength == 0.0 ? 0.0 : u_tile_units_to_pixels / totalLength;
 
-    // Low 4 bits = half-height; high 12 = dash coverage (fragment only).
-    float dash_half_height = float(dash.y & 15u);
+    // Low 4 bits = half-height; high 12 = dash coverage (fragment only). dashf.y is exact here
+    // (highp), so bit ops round-trip precisely instead of drifting through mod/floor on a value
+    // that can reach 65527.
+    highp uint dash_bits = uint(dashf.y + 0.5);
+    float dash_half_height = float(dash_bits & 15u);
+    float dash_coverage = float(dash_bits >> 4u) / 4095.0;
     v_tex = vec2(a_linesofar * scale / (floorwidth * u_floor_width_scale), (-normal.y * dash_half_height + dashf.x + 0.5) / u_texsize.y);
+    v_dash = vec2(totalLength, dash_coverage);
 #endif
 
     v_width2_dilute = vec4(outset, inset, dilute_scale, dilute_border_scale);

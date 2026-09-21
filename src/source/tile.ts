@@ -796,7 +796,7 @@ class Tile {
             const hasPaintUpdate = bucket.layers.some(layer => paintProps.has(layer.fqid));
 
             // Get fresh layer reference for UBO updates when paint properties or images changed.
-            const freshLayerFromStyle = ((needsSymbolUBOUpdate || hasPaintUpdate) && bucket instanceof SymbolBucket) ? painter.style.getOwnLayer(id) : undefined;
+            const freshLayerFromStyle = ((needsSymbolUBOUpdate || hasPaintUpdate) && (bucket instanceof SymbolBucket || bucket instanceof LineBucket)) ? painter.style.getOwnLayer(id) : undefined;
 
             let sourceLayerStates: FeatureStates = (states && states[sourceLayerId]) || {};
             if (sourceCache && !states) { // only fetch the full state if it's not an incremental state update
@@ -855,6 +855,34 @@ class Tile {
                     }
                     if (symbolBucket.icon && symbolBucket.icon.uboBinder) {
                         symbolBucket.icon.uboBinder.upload(context);
+                    }
+                }
+
+                // Handle UBO updates for paint/image property changes in line buckets. Mirrors the
+                // symbol block above: bucket.update() already handled brightness/feature-state
+                // changes internally (see LineBucket.update()); this covers paint-property/image
+                // changes specifically, using the fresh (post-update) layer instance, skipped when
+                // brightness already triggered the equivalent re-evaluation above.
+                if (bucket instanceof LineBucket && freshLayerFromStyle && freshLayerFromStyle.type === 'line') {
+                    const lineUboBinder = bucket.uboBinders[freshLayerFromStyle.id];
+                    const lineBrightnessUpdateSkipped = isBrightnessChanged && !!lineUboBinder && lineUboBinder.isLightConstant;
+                    if ((needsSymbolUBOUpdate || hasPaintUpdate) && (!isBrightnessChanged || lineBrightnessUpdateSkipped) && lineUboBinder) {
+                        lineUboBinder.updateDynamicExpressions(
+                            freshLayerFromStyle,
+                            sourceLayer,
+                            this.tileID.canonical,
+                            images,
+                            sourceLayerStates,
+                            brightness
+                        );
+                    }
+                }
+
+                // Upload updated UBO data for line buckets (every layer sharing the bucket).
+                if (bucket instanceof LineBucket) {
+                    const context = painter.context;
+                    for (const bucketLayer of bucket.layers) {
+                        bucket.uboBinders[bucketLayer.id].upload(context);
                     }
                 }
             }

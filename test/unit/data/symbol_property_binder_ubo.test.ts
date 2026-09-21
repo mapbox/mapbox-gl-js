@@ -1,5 +1,6 @@
 import {test, expect, describe, vi} from '../../util/vitest';
-import {SymbolPropertiesUBO, HEADER_DATA_DRIVEN_MASK, HEADER_DZR_MASK, HEADER_BLOCK_SIZE_VEC4, HEADER_OFFSETS} from '../../../src/data/bucket/symbol_properties_ubo';
+import {SymbolPropertiesUBO} from '../../../src/data/bucket/symbol_properties_ubo';
+import {HEADER_DATA_DRIVEN_MASK, HEADER_DZR_MASK, HEADER_BLOCK_SIZE_VEC4, HEADER_OFFSETS} from '../../../src/data/bucket/paint_property_ubo';
 import {SymbolPropertyBinderUBO} from '../../../src/data/bucket/symbol_property_binder_ubo';
 import {SymbolBuffers} from '../../../src/data/bucket/symbol_bucket';
 import {ProgramConfigurationSet} from '../../../src/data/program_configuration';
@@ -416,15 +417,17 @@ describe('SymbolPropertyBinderUBO', () => {
             }).not.toThrow();
             expect(returnedIndex).toEqual(0);
 
-            // Feature still tracked; on update its block re-derives to the clamped batch 0 / slot 0
-            // rather than the (nonexistent) batch 2. Distinct opacity for the overflow feature, written
-            // last, must end up in slot 0 — proving the clamp routed it there instead of dropping it.
+            // Feature still tracked (no throw, no new batch allocated for the nonexistent batch 2),
+            // but its update is skipped rather than clobbering slot 0: the overflow feature renders
+            // with the first feature's (batch 0 / slot 0) properties instead. Distinct opacity for
+            // the overflow feature proves slot 0 keeps the first feature's value, not the overflow one.
             const vtLayer = {
                 feature: (idx: number) => createTestFeature({opacity: idx === 2 * maxPerBatch ? 0.9 : 0.1})
             } as unknown as VectorTileLayer;
             expect(() => binder.updateDynamicExpressions(layer, vtLayer, canonical, [], {})).not.toThrow();
             expect(binder.ubos.length).toEqual(2);
-            expect(binder.ubos[0].propertiesData[0]).toBeCloseTo(0.9, 5);
+            expect(binder.allFeatureVtIndices.length).toEqual(2 * maxPerBatch + 1);
+            expect(binder.ubos[0].propertiesData[0]).toBeCloseTo(0.1, 5);
         });
     });
 

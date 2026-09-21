@@ -127,12 +127,14 @@ test('LineBucket segmentation', () => {
         vertexOffset: 0,
         vertexLength: 20,
         primitiveOffset: 0,
-        primitiveLength: 18
+        primitiveLength: 18,
+        batchIndex: 0
     }, {
         vertexOffset: 20,
         vertexLength: 256,
         primitiveOffset: 18,
-        primitiveLength: 254
+        primitiveLength: 254,
+        batchIndex: 0
     }]);
 
     expect(console.warn).toHaveBeenCalledTimes(1);

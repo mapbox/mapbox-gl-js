@@ -33,6 +33,7 @@ import type {UniformBindings, UniformValues, IUniform} from './uniform_binding';
 import type {BinderUniform} from '../data/program_configuration';
 import type Painter from './painter';
 import type {Segment} from "../data/segment";
+import type {PaintPropertiesUBO} from '../data/bucket/paint_property_ubo';
 import type {ProgramUniformsType, DynamicDefinesType} from '../render/program/program_uniforms';
 import type {PossiblyEvaluated} from '../style/properties';
 
@@ -367,7 +368,8 @@ class Program<Us extends UniformBindings> {
         currentProperties: PossiblyEvaluated<any>,
         zoom?: number,
         configuration?: ProgramConfiguration,
-        instanceCount?: number
+        instanceCount?: number,
+        ubo?: PaintPropertiesUBO
     ) {
 
         const wireframe = painter.options.wireframe;
@@ -419,6 +421,12 @@ class Program<Us extends UniformBindings> {
         debugProgram._ensureReady();
 
         context.program.set(debugProgram.program);
+
+        // The debug program is a distinct WebGLProgram from the one that was just drawn with, so
+        // its uniform blocks default to binding point 0 until re-bound here. Without this, a
+        // property UBO's shader-side block/binding mapping never gets applied to the debug
+        // program and readLinePaintProperties() (etc.) reads the wrong block.
+        if (ubo) ubo.bind(context, debugProgram.program);
 
         const copyUniformValues = (group: string, pSrc: Program<Us>, pDst: Program<UniformBindings>) => {
             if (pSrc[group] && pDst[group]) {
@@ -522,7 +530,8 @@ class Program<Us extends UniformBindings> {
         zoom?: number,
         configuration?: ProgramConfiguration,
         dynamicLayoutBuffers?: Array<VertexBuffer | null | undefined>,
-        instanceCount?: number
+        instanceCount?: number,
+        ubo?: PaintPropertiesUBO
     ) {
         const context = painter.context;
         const gl = context.gl;
@@ -609,7 +618,7 @@ class Program<Us extends UniformBindings> {
             }
             if (shouldDrawWireframe) {
                 this._drawDebugWireframe(painter, depthMode, stencilMode, colorMode, indexBuffer, segment,
-                    currentProperties, zoom, configuration, instanceCount);
+                    currentProperties, zoom, configuration, instanceCount, ubo);
             }
         }
     }
