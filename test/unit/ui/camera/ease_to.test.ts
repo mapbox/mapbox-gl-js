@@ -867,5 +867,14 @@ describe('camera', () => {
                 expect(camera.getCenter()).toEqual({lng: 100, lat: 0});
             });
         });
+
+        test('preloadOnly does not change padding', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const camera = createCamera();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            camera.easeTo({center: [10, 10], padding: {top: 200}, preloadOnly: true});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            expect(camera.getPadding()).toEqual({top: 0, bottom: 0, left: 0, right: 0});
+        });
     });
 });

@@ -17,6 +17,7 @@
 - Fix `transformRequest` headers and credentials being dropped from PMTiles requests.
 - Fix features rendering at the wrong position when a layer uses a `within` filter and the map uses a projection other than Mercator or globe.
 - Fix global placement throwing an error when placing symbols with no text.
+- Fix setting `padding` as a sideeffect in a `preloadOnly` animation.
 
 ## 3.31.0
 

@@ -1387,7 +1387,7 @@ class Camera extends Evented<MapEvents> {
 
         if (options.animate === false || this._prefersReducedMotion(options)) options.duration = 0;
 
-        const tr = this.transform,
+        const tr = options.preloadOnly ? this.transform.clone() : this.transform,
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch(),
@@ -1663,7 +1663,7 @@ class Camera extends Evented<MapEvents> {
             curve: 1.42,
             easing: defaultEasing, ...options};
 
-        const tr = this.transform,
+        const tr = options.preloadOnly ? this.transform.clone() : this.transform,
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch(),
