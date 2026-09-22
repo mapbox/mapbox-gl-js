@@ -63,19 +63,23 @@ export class CollisionGrid<T> {
      * Geometry inserted with `data` (i.e. parts of the same symbol) are treated as optional.
      * `ignoreIntersectionWith` is called with the stored data, and the collision only counts if it returns false.
      *
+     * `onBlocked` is called with the stored data of whichever candidate actually caused an
+     * `'intersects'` result. Pass a shared no-op when the caller doesn't need that identity, so
+     * this stays free for the common (non-debug) case.
+     *
      * See `IntersectionResult` for what each outcome means.
      */
-    intersects(geometry: Geometry, collisionPadding: number, ignoreIntersectionWith: (data: T) => boolean): IntersectionResult {
+    intersects(geometry: Geometry, collisionPadding: number, ignoreIntersectionWith: (data: T) => boolean, onBlocked: (data: T) => void): IntersectionResult {
         let result: IntersectionResult = 'outside-of-grid';
         for (const element of geometry) {
-            const elementResult = this._elementIntersects(element, collisionPadding, ignoreIntersectionWith);
+            const elementResult = this._elementIntersects(element, collisionPadding, ignoreIntersectionWith, onBlocked);
             if (elementResult === 'intersects') return 'intersects';
             if (elementResult === 'does-not-intersect') result = 'does-not-intersect';
         }
         return result;
     }
 
-    _elementIntersects(element: GeometryElement, collisionPadding: number, ignoreIntersectionWith: (data: T) => boolean): IntersectionResult {
+    _elementIntersects(element: GeometryElement, collisionPadding: number, ignoreIntersectionWith: (data: T) => boolean, onBlocked: (data: T) => void): IntersectionResult {
         if (!geometryElementsIntersect(element, this._workingArea)) return 'outside-of-grid';
 
         const padding = this._padding;
@@ -83,20 +87,25 @@ export class CollisionGrid<T> {
 
         // GridIndex's own candidate test is a broad-phase check (touching counts as a hit);
         // re-verify the exact geometry here so touching-but-not-overlapping shapes don't count.
+        let blockingData: T | undefined;
         const predicate = (geometryIndex: number): boolean => {
             if (!geometryElementsIntersect(this._geometries[geometryIndex]!, extended)) return false;
             const data = this._geometryData[geometryIndex];
-            return data === undefined || !ignoreIntersectionWith(data);
+            if (data !== undefined && ignoreIntersectionWith(data)) return false;
+            blockingData = data;
+            return true;
         };
 
         const hit = extended.kind === 'box' ?
             this._grid.hitTest(extended.left + padding, extended.top + padding, extended.right + padding, extended.bottom + padding, predicate) :
             this._grid.hitTestCircle(extended.x + padding, extended.y + padding, extended.radius, predicate);
 
+        if (hit && blockingData !== undefined) onBlocked(blockingData);
+
         return hit ? 'intersects' : 'does-not-intersect';
     }
 
-    insert(geometry: Geometry, data?: T): boolean {
+    insert(geometry: Geometry, data: T): boolean {
         const padding = this._padding;
 
         let inserted = false;

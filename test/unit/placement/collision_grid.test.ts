@@ -27,12 +27,12 @@ describe('CollisionGrid', () => {
     }
 
     function intersectsOne(grid: CollisionGrid<number>, element: GeometryElement, paddingOrIgnore: number | ((data: number) => boolean) = 0): IntersectionResult {
-        if (typeof paddingOrIgnore === 'function') return grid.intersects([element], 0, paddingOrIgnore);
-        return grid.intersects([element], paddingOrIgnore, () => false);
+        if (typeof paddingOrIgnore === 'function') return grid.intersects([element], 0, paddingOrIgnore, () => {});
+        return grid.intersects([element], paddingOrIgnore, () => false, () => {});
     }
 
     function intersectsMany(grid: CollisionGrid<number>, geometry: Geometry, padding_ = 0): IntersectionResult {
-        return grid.intersects(geometry, padding_, () => false);
+        return grid.intersects(geometry, padding_, () => false, () => {});
     }
 
     const fullGridArea = box(-1e6, -1e6, 1e6, 1e6);
@@ -176,7 +176,7 @@ describe('CollisionGrid', () => {
     test('insert should insert all geometry parts', () => {
         const grid = createGrid();
         const geometry = [box(5, 5, 10, 10), box(25, 25, 30, 30), circle(5, 25, 5)];
-        expect(grid.insert(geometry)).toBe(true);
+        expect(grid.insert(geometry, undefined)).toBe(true);
 
         expect(intersectsOne(grid, box(6, 6, 9, 9))).toBe('intersects');
         expect(intersectsOne(grid, box(26, 26, 29, 29))).toBe('intersects');
@@ -403,6 +403,33 @@ describe('CollisionGrid', () => {
             expect(data).toBeLessThanOrEqual(2);
             return data < 2;
         })).toBe('intersects');
+    });
+
+    test('intersects should call onBlocked with the stored data of the blocking geometry', () => {
+        const grid = createGrid();
+        insertOne(grid, box(10, 30, 20, 40), 42);
+
+        let blockedWith: number | undefined;
+        expect(grid.intersects([box(5, 25, 15, 35)], 0, () => false, (data) => { blockedWith = data; })).toBe('intersects');
+        expect(blockedWith).toBe(42);
+    });
+
+    test('intersects should not call onBlocked when the collision was ignored', () => {
+        const grid = createGrid();
+        insertOne(grid, box(10, 30, 20, 40), 42);
+
+        let called = false;
+        expect(grid.intersects([box(5, 25, 15, 35)], 0, () => true, () => { called = true; })).toBe('does-not-intersect');
+        expect(called).toBe(false);
+    });
+
+    test('intersects should not call onBlocked when nothing intersects', () => {
+        const grid = createGrid();
+        insertOne(grid, box(10, 30, 20, 40), 42);
+
+        let called = false;
+        expect(grid.intersects([box(60, 60, 70, 70)], 0, () => false, () => { called = true; })).toBe('does-not-intersect');
+        expect(called).toBe(false);
     });
 
     test('intersects should return outside-of-grid even if extended geometry intersects with a grid', () => {

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Global placement collision debug</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Inspect GlobalPlacement's per-variant collision debug records (tile, ids, settings, status, blockedBy) alongside the colored collision-box overlay.">
+    <meta name="mapbox:role" content="tool">
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body { height: 100%; }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        #map {
+            position: relative;
+            flex: 1 1 auto;
+        }
+
+        #highlight-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #inspector {
+            flex: 0 0 300px;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            font-family: monospace;
+            font-size: 11px;
+            border-top: 1px solid #ccc;
+        }
+
+        #table-scroll {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: auto;
+        }
+
+        #inspector table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #inspector th, #inspector td {
+            border-bottom: 1px solid #eee;
+            padding: 2px 6px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        #inspector thead {
+            position: sticky;
+            top: 0;
+            background: white;
+        }
+
+        #inspector tbody tr:hover {
+            background: #f0f0f0;
+            cursor: pointer;
+        }
+
+        .toolbar {
+            flex: 0 0 auto;
+            padding: 6px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .status-PLACED { color: #0000ff; }
+        .status-COLLIDED { color: #ff0000; }
+        .status-OTHER_VARIANT_PLACED { color: #999900; }
+        .status-DEPENDENCY_NOT_PLACED { color: #ff00ff; }
+        .status-OUT_OF_BOUNDS { color: #888; }
+    </style>
+</head>
+
+<body>
+<div id="container">
+    <div id="map">
+        <canvas id="highlight-overlay"></canvas>
+    </div>
+    <div id="inspector">
+        <div class="toolbar">
+            <div id="count"></div>
+        </div>
+        <div id="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>tile</th>
+                        <th>symbol</th>
+                        <th>featureId</th>
+                        <th>status</th>
+                        <th>blockedBy</th>
+                        <th>settings</th>
+                    </tr>
+                </thead>
+                <tbody id="rows"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import {getAccessToken} from './access_token_generated.js';
+
+const accessToken = getAccessToken();
+
+const map = window.map = new mapboxgl.Map({
+    accessToken,
+    devtools: true,
+    zoom: 12.5,
+    center: [-122.4194, 37.7749],
+    container: 'map',
+    placementAlgorithm: 'global',
+    hash: true,
+});
+// This page only exists to inspect collision debug data, so keep collection on unconditionally
+// rather than gating it behind a toggle.
+map.showCollisionBoxes = true;
+
+const STATUS_NAMES = ['PLACED', 'COLLIDED', 'OTHER_VARIANT_PLACED', 'DEPENDENCY_NOT_PLACED', 'OUT_OF_BOUNDS'];
+// Matches SymbolIdOrigin in src/placement/types.ts: whether symbolId is the vector-tile feature's
+// own id (stable, reusable across placement runs) or a synthetic per-bucket counter. Only GENERATED
+// is wired up today -- addToPlacement() never takes the REUSED_FROM_SOURCE_FEATURE path yet.
+const SYMBOL_ID_ORIGIN_NAMES = ['reused-feature-id', 'generated'];
+
+// styleLayerId is a runtime-only counter (see src/placement/layer_uid.ts), not the style's layer
+// id -- reach into Style's internal layer registry to resolve it back to something readable.
+// _layers only holds one scope's own layers; layers actually placed can live inside an imported
+// fragment (e.g. the Standard style's basemap import), so use the merged, cross-fragment registry
+// (_mergedLayers, keyed by fqid) instead -- that's the same set placement itself iterates. Return
+// the layer object itself (not just its fqid) so callers can read .id/.scope separately -- the
+// fqid string joins them with an invisible control character, unreadable if printed directly.
+function layerForUid(uid) {
+    const layers = map.style && map.style._mergedLayers;
+    if (!layers) return null;
+    for (const fqid in layers) {
+        if (layers[fqid].runtimeLayerUID === uid) return layers[fqid];
+    }
+    return null;
+}
+
+// "featureId" here is symbolId.symbolId, GlobalPlacement's own internal per-variant identity --
+// NOT necessarily the same number as a debug record's own (real vector-tile) featureId column;
+// they only coincide when symbolIdOrigin is reused-feature-id, which nothing produces yet.
+function formatVariantId(id) {
+    if (!id) return '';
+    const layer = layerForUid(id.symbolId.styleLayerId);
+    const origin = SYMBOL_ID_ORIGIN_NAMES[id.symbolId.symbolIdOrigin] || `origin:${id.symbolId.symbolIdOrigin}`;
+    const parts = [`layer: ${layer ? layer.id : `layer-uid:${id.symbolId.styleLayerId}`}`];
+    if (layer && layer.scope) parts.push(`import: ${layer.scope}`);
+    parts.push(`featureId: ${id.symbolId.symbolId} (${origin})`);
+    parts.push(`variantIdx: ${id.variantIdx}`);
+    return parts.join(', ');
+}
+
+function formatTileId(tileID) {
+    if (!tileID) return '';
+    const c = tileID.canonical;
+    return `${c.z}/${c.x}/${c.y}`;
+}
+
+function formatSettings(rules) {
+    if (!rules) return '';
+    const parts = [];
+    if (!rules.insertIntoCollisionGrid) parts.push('ignore-placement');
+    const cr = rules.collisionRules;
+    if (!cr) parts.push('allow-overlap');
+    else {
+        if (cr.symbolVariantToIgnoreCollisionWith) parts.push(`ignoreCollisionWith=${formatVariantId(cr.symbolVariantToIgnoreCollisionWith)}`);
+        if (cr.onlyIfPlaced) parts.push(`onlyIfPlaced=${formatVariantId(cr.onlyIfPlaced)}`);
+    }
+    return parts.join(', ');
+}
+
+function variantIdKey(id) {
+    return `${id.symbolId.styleLayerId}.${id.symbolId.symbolIdOrigin}.${id.symbolId.symbolId}.${id.variantIdx}`;
+}
+
+// While hovering a COLLIDED row, draw just that symbol's geometry and the one that blocked it on a
+// 2D canvas overlaid on the map. debugSymbols() geometry is already in logical (device-independent)
+// screen pixels -- see global_placement.ts -- the same space as CSS pixels, so no projection math
+// is needed here, just DPI-correct canvas sizing.
+const overlayCanvas = document.getElementById('highlight-overlay');
+const overlayCtx = overlayCanvas.getContext('2d');
+
+function resizeOverlay() {
+    const rect = document.getElementById('map').getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    overlayCanvas.width = rect.width * dpr;
+    overlayCanvas.height = rect.height * dpr;
+    overlayCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+map.on('resize', resizeOverlay);
+resizeOverlay();
+
+function drawGeometryElements(elements, color) {
+    overlayCtx.fillStyle = color;
+    overlayCtx.strokeStyle = color;
+    overlayCtx.lineWidth = 2;
+    for (const el of elements) {
+        overlayCtx.beginPath();
+        if (el.kind === 'box') overlayCtx.rect(el.left, el.top, el.right - el.left, el.bottom - el.top);
+        else overlayCtx.arc(el.x, el.y, el.radius, 0, Math.PI * 2);
+        overlayCtx.globalAlpha = 0.25;
+        overlayCtx.fill();
+        overlayCtx.globalAlpha = 1;
+        overlayCtx.stroke();
+    }
+}
+
+function drawHighlight(record, blockerRecord) {
+    overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    drawGeometryElements(blockerRecord.geometry, '#0000ff');
+    drawGeometryElements(record.geometry, '#ff0000');
+}
+
+function clearHighlight() {
+    overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+}
+
+// Whether a row is currently hovered -- see the comment on the guard in refreshInspector() below.
+let isHighlighting = false;
+
+// Keep the last render's records around so a row click can log the full object (including
+// the raw geometry), not just what fits in the table.
+let lastRecords = [];
+
+function refreshInspector() {
+    // Rebuilding the table while a row is hovered would destroy that <tr>, firing a native
+    // mouseleave and clearing the highlight out from under the user. Skip the rebuild for as long
+    // as a row is hovered -- the real mouseleave (which can only fire once we stop suppressing
+    // rebuilds) resumes it.
+    if (isHighlighting) return;
+
+    const globalPlacement = map.style && map.style.globalPlacement;
+    const records = globalPlacement ? globalPlacement.debugSymbols() : [];
+    lastRecords = records;
+
+    document.getElementById('count').textContent = `${records.length} variant(s) recorded`;
+
+    const rowsEl = document.getElementById('rows');
+    rowsEl.innerHTML = '';
+    records.forEach((record, index) => {
+        const statusName = STATUS_NAMES[record.status] || String(record.status);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${formatTileId(record.tileID)}</td>
+            <td>${formatVariantId(record.variantId)}</td>
+            <td>${record.featureId !== undefined ? record.featureId : ''}</td>
+            <td class="status-${statusName}">${statusName}</td>
+            <td>${formatVariantId(record.blockedBy)}</td>
+            <td>${formatSettings(record.placementRules)}</td>
+        `;
+        tr.addEventListener('click', () => console.log('placement debug record', lastRecords[index]));
+        if (statusName === 'COLLIDED' && record.blockedBy) {
+            const blockerKey = variantIdKey(record.blockedBy);
+            const blockerRecord = records.find((r) => variantIdKey(r.variantId) === blockerKey);
+            if (blockerRecord) {
+                tr.addEventListener('mouseenter', () => {
+                    isHighlighting = true;
+                    drawHighlight(record, blockerRecord);
+                });
+                tr.addEventListener('mouseleave', () => {
+                    isHighlighting = false;
+                    clearHighlight();
+                });
+            }
+        }
+        rowsEl.appendChild(tr);
+    });
+}
+
+map.on('render', refreshInspector);
+</script>
+</body>
+</html>

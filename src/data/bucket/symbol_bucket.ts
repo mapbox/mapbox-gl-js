@@ -112,6 +112,7 @@ import type {AppearanceUpdateResult} from './feature_appearances';
 import type {SymbolSource} from '../../placement/symbol_source';
 import type {SymbolVariantId, SymbolId, TileCoverageRect} from '../../placement/types';
 import type {GlobalPlacement} from '../../placement/global_placement';
+import type {TileIdentity} from '../../placement/placement_debug';
 import type {GlobalPlacementPriority} from '../../placement/global_placement_priority';
 import type {SymbolIdRangeAllocator} from '../../placement/symbol_id_range_allocator';
 import type {PlacementGroupOrders} from '../../placement/symbol_placement_parameters';
@@ -1094,6 +1095,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         const isGlobeToMercatorTransition = globeToMercator < 1;
 
         const unwrappedTileID = tile.tileID.toUnwrapped();
+        const tileIdentity: TileIdentity = {overscaledZ: tile.tileID.overscaledZ, wrap: tile.tileID.wrap, canonical: tile.tileID.canonical};
         const pitched = transform.pitch > 0;
         // Minimal first version: default collision rules (collide against, and insert into, the
         // collision grid). Priority is built per instance below so its current visibility feeds back
@@ -1133,7 +1135,8 @@ class SymbolBucket implements Bucket, SymbolSource {
         const placementPriorityFallback: number = needsFeatureForPlacementPriority ? 0 : placementPriorityProperty.evaluate(null, {});
         const placementSubgroupOrderFallback: number = needsFeatureForPlacementGroup ? implicitGroupOrder : resolveGroupOrder(placementGroupProperty.evaluate(null, {}));
         const needsFeatureForPlacementState = needsFeatureForPlacementPriority || needsFeatureForPlacementGroup;
-        const needsFeature = needsFeatureForZOffset || needsFeatureForPlacementState;
+        const collectDebugData = globalPlacement.isCollectingDebugData();
+        const needsFeature = needsFeatureForZOffset || needsFeatureForPlacementState || collectDebugData;
 
         const latestFeatureIndex = needsFeature ? tile.latestFeatureIndex : null;
         if (latestFeatureIndex) latestFeatureIndex.loadVTLayers();
@@ -1263,7 +1266,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 layoutVertexArrayOffset: 0,
             }) : null;
 
-            const featureId = needsFeatureForPlacementState && feature && latestFeatureIndex ? latestFeatureIndex.getId(feature, sourceLayerName) : undefined;
+            const featureId = (needsFeatureForPlacementState || collectDebugData) && feature && latestFeatureIndex ? latestFeatureIndex.getId(feature, sourceLayerName) : undefined;
             const featureState = (featureId !== undefined && featureStates[String(featureId)]) || EMPTY_FEATURE_STATE;
             const symbolPlacementPriority = needsFeatureForPlacementPriority && feature ? placementPriorityProperty.evaluate(feature, featureState) : placementPriorityFallback;
             const placementSubgroupOrder = needsFeatureForPlacementGroup && feature ? resolveGroupOrder(placementGroupProperty.evaluate(feature, featureState)) : placementSubgroupOrderFallback;
@@ -1283,7 +1286,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             };
 
             // A symbol contributes its icon and/or text collision boxes as one variant.
-            globalPlacement.startSymbolVariantProcessing(variantId, priority, placementRules);
+            globalPlacement.startSymbolVariantProcessing(variantId, priority, placementRules, tileIdentity, featureId);
             if (!clipped && !shadowedByChildTile) {
                 const symbolZOffsetValue = needsFeatureForZOffset && feature ? symbolZOffsetProperty.evaluate(feature, {}) : constantSymbolZOffset;
                 addCollisionBox(collisionArrays.iconBox, instance, symbolZOffsetValue, () => this.getSymbolInstanceIconSize(iconZoomSize, zoom, instance.placedIconSymbolIndex));
