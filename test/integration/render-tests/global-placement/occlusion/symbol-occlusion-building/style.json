@@ -6,6 +6,7 @@
       "height": 256,
       "width": 256,
       "globalPlacement": true,
+      "collisionDebug": true,
       "operations": [
         ["waitFrameReady", 30]
       ],

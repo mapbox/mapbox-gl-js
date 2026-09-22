@@ -7,6 +7,7 @@
       "height": 64,
       "fadeDuration": 100,
       "globalPlacement": true,
+      "collisionDebug": true,
       "operations": [
         ["wait"],
         ["wait", 50]

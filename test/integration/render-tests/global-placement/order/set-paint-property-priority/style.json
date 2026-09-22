@@ -7,6 +7,7 @@
       "width": 128,
       "height": 128,
       "globalPlacement": true,
+      "collisionDebug": true,
       "operations": [
         [
           "wait"
@@ -77,6 +78,13 @@
   },
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
     {
       "id": "poi-group",
       "type": "placement-group"
