@@ -65,7 +65,7 @@ import {xyTransformMat4} from '../../util/mat4';
 import {Elevation} from '../../terrain/elevation';
 import {getFogOpacityAtTileCoord, FOG_SYMBOL_CLIPPING_THRESHOLD} from '../../style/fog_helpers';
 import {MIN_COLLISION_PERSPECTIVE_RATIO} from '../../geo/projection/projection_util';
-import {SymbolIdOrigin, SymbolPlacementType, SymbolVariantVisibility} from '../../placement/types';
+import {SymbolIdOrigin, SymbolPlacementType, SymbolVariantVisibility, hasStableId} from '../../placement/types';
 import {defaultPlacementRules} from '../../placement/placement_rules';
 import {subgroupOrderForLayerPosition} from '../../placement/symbol_placement_parameters';
 import {type CollisionBoxArray, type CollisionBox, type SymbolInstance, SymbolOrientationArray} from '../array_types';
@@ -110,7 +110,7 @@ import type {FeatureState, GlobalProperties} from '../../style-spec/expression';
 import type ImageManager from '../../render/image_manager';
 import type {AppearanceUpdateResult} from './feature_appearances';
 import type {SymbolSource} from '../../placement/symbol_source';
-import type {SymbolVariantId} from '../../placement/types';
+import type {SymbolVariantId, SymbolId, TileCoverageRect} from '../../placement/types';
 import type {GlobalPlacement} from '../../placement/global_placement';
 import type {GlobalPlacementPriority} from '../../placement/global_placement_priority';
 import type {SymbolIdRangeAllocator} from '../../placement/symbol_id_range_allocator';
@@ -1054,7 +1054,7 @@ class SymbolBucket implements Bucket, SymbolSource {
     // one-time warning), and symbols with neither an icon nor a text collision box are skipped
     // silently. `textPixelRatio` (tile.tileSize / EXTENT) converts tile-space offsets to CSS pixels,
     // matching the legacy collision index formula (see CollisionIndex#placeCollisionBox).
-    addToPlacement(globalPlacement: GlobalPlacement, idRangeAllocator: SymbolIdRangeAllocator, layerUid: number, posMatrix: mat4, invMatrix: mat4, mercatorCenter: [number, number], transform: Transform, textPixelRatio: number, tile: Tile, fogState: FogState | null | undefined, groupOrders: PlacementGroupOrders, styleLayerOrder: number, featureStates: FeatureStates, replacementSource: ReplacementSource | null, fadeDuration: number): void {
+    addToPlacement(globalPlacement: GlobalPlacement, idRangeAllocator: SymbolIdRangeAllocator, layerUid: number, posMatrix: mat4, invMatrix: mat4, mercatorCenter: [number, number], transform: Transform, textPixelRatio: number, tile: Tile, fogState: FogState | null | undefined, groupOrders: PlacementGroupOrders, styleLayerOrder: number, featureStates: FeatureStates, replacementSource: ReplacementSource | null, fadeDuration: number, childCoverageRects: ReadonlyArray<TileCoverageRect>): void {
         if (this.symbolInstances.length === 0) return;
 
         this._fadeDuration = fadeDuration;
@@ -1245,10 +1245,16 @@ class SymbolBucket implements Bucket, SymbolSource {
                 if (clipped) break;
             }
 
-            const variantId: SymbolVariantId = {
-                symbolId: {styleLayerId: layerUid, symbolIdOrigin: SymbolIdOrigin.GENERATED, symbolId: rangeStart + index},
-                variantIdx: 0,
-            };
+            const symbolId: SymbolId = {styleLayerId: layerUid, symbolIdOrigin: SymbolIdOrigin.GENERATED, symbolId: rangeStart + index};
+            const variantId: SymbolVariantId = {symbolId, variantIdx: 0};
+
+            // This tile may be a coarser tile retained alongside an already-loaded finer child tile
+            // (e.g. while zooming out). Without a stable id, we can't dedupe the same feature placed
+            // from both tiles, so we conservatively hide all symbols from a parent tile wherever a child
+            // tile covers it
+            const shadowedByChildTile = childCoverageRects.length > 0 && !hasStableId(symbolId) &&
+                childCoverageRects.some((r) => instance.tileAnchorX >= r.min.x && instance.tileAnchorX < r.max.x &&
+                    instance.tileAnchorY >= r.min.y && instance.tileAnchorY < r.max.y);
 
             const feature = latestFeatureIndex ? latestFeatureIndex.loadFeature({
                 featureIndex: instance.featureIndex,
@@ -1278,7 +1284,7 @@ class SymbolBucket implements Bucket, SymbolSource {
 
             // A symbol contributes its icon and/or text collision boxes as one variant.
             globalPlacement.startSymbolVariantProcessing(variantId, priority, placementRules);
-            if (!clipped) {
+            if (!clipped && !shadowedByChildTile) {
                 const symbolZOffsetValue = needsFeatureForZOffset && feature ? symbolZOffsetProperty.evaluate(feature, {}) : constantSymbolZOffset;
                 addCollisionBox(collisionArrays.iconBox, instance, symbolZOffsetValue, () => this.getSymbolInstanceIconSize(iconZoomSize, zoom, instance.placedIconSymbolIndex));
                 addCollisionBox(collisionArrays.textBox, instance, symbolZOffsetValue, () => this.getSymbolInstanceTextSize(textZoomSize, instance, zoom, index));

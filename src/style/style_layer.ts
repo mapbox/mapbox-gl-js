@@ -33,6 +33,7 @@ import type {CreateProgramParams} from '../render/painter';
 import type SourceCache from '../source/source_cache';
 import type Tile from '../source/tile';
 import type {SymbolPlacementParameters} from '../placement/symbol_placement_parameters';
+import type {TileCoverageRect} from '../placement/types';
 import type Painter from '../render/painter';
 import type {LUT} from '../util/lut';
 import type {ImageId} from '../style-spec/expression/types/image_id';
@@ -159,7 +160,7 @@ class StyleLayer extends Evented {
 
     // Feeds this layer's placeable symbols into the given global placement run. No-op for
     // non-symbol layers; overridden by SymbolStyleLayer.
-    placeSymbols(_parameters: SymbolPlacementParameters, _tiles: Array<Tile>, _styleLayerOrder: number, _sourceCache: SourceCache, _checkAgainstClipLayer: boolean): void {}
+    placeSymbols(_parameters: SymbolPlacementParameters, _tiles: Array<Tile>, _styleLayerOrder: number, _sourceCache: SourceCache, _checkAgainstClipLayer: boolean, _childCoverageRectsByTileKey: ReadonlyMap<number, Array<TileCoverageRect>>): void {}
 
     isDraped(_sourceCache?: SourceCache): boolean {
         return !this.is3D(true) && drapedLayers.has(this.type);

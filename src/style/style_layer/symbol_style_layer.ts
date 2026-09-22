@@ -45,6 +45,7 @@ import type {Expression} from '../../style-spec/expression/expression';
 import type {CanonicalTileID} from '../../source/tile_id';
 import type Tile from '../../source/tile';
 import type {SymbolPlacementParameters} from '../../placement/symbol_placement_parameters';
+import type {TileCoverageRect} from '../../placement/types';
 import type {LUT} from "../../util/lut";
 import type {ImageId} from '../../style-spec/expression/types/image_id';
 import type {ProgramName} from '../../render/program';
@@ -233,7 +234,7 @@ class SymbolStyleLayer extends StyleLayer {
         return new SymbolBucket(parameters);
     }
 
-    override placeSymbols(parameters: SymbolPlacementParameters, tiles: Array<Tile>, styleLayerOrder: number, sourceCache: SourceCache, checkAgainstClipLayer: boolean): void {
+    override placeSymbols(parameters: SymbolPlacementParameters, tiles: Array<Tile>, styleLayerOrder: number, sourceCache: SourceCache, checkAgainstClipLayer: boolean, childCoverageRectsByTileKey: ReadonlyMap<number, Array<TileCoverageRect>>): void {
         const {globalPlacement, idRangeAllocator, transform, buildingIndex, fogState, groupOrders, replacementSource, mercatorCenter, fadeDuration} = parameters;
         const layerUid = this.runtimeLayerUID;
 
@@ -266,7 +267,8 @@ class SymbolStyleLayer extends StyleLayer {
             const posMatrix = getSymbolPlacementTileProjectionMatrix(tile.tileID, bucketProjection, tileTransform, tileTransform.projection.name);
             const invMatrix = bucketProjection.createInversionMatrix(tileTransform, tile.tileID.canonical);
             const textPixelRatio = tile.tileSize / EXTENT;
-            bucket.addToPlacement(globalPlacement, idRangeAllocator, layerUid, posMatrix, invMatrix, mercatorCenter, tileTransform, textPixelRatio, tile, fogState, groupOrders, styleLayerOrder, featureStates, checkAgainstClipLayer ? replacementSource : null, fadeDuration);
+            const childCoverageRects = childCoverageRectsByTileKey.get(tile.tileID.key) || [];
+            bucket.addToPlacement(globalPlacement, idRangeAllocator, layerUid, posMatrix, invMatrix, mercatorCenter, tileTransform, textPixelRatio, tile, fogState, groupOrders, styleLayerOrder, featureStates, checkAgainstClipLayer ? replacementSource : null, fadeDuration, childCoverageRects);
             globalPlacement.finishSourceProcessing();
         }
     }

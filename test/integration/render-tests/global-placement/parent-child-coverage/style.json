@@ -1,0 +1,62 @@
+{
+  "description": "Zooming out keeps the old finer tile briefly alongside the new coarser one, so the same feature is placed from both. Zoom-dependent text gives each tile a different, non-overlapping label so collision can't hide the duplicate. Only the finer tile's label ('In') should show.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128,
+      "fadeDuration": 500,
+      "globalPlacement": true,
+      "operations": [
+        ["wait"],
+        ["setZoom", 2],
+        ["on", "sourcedataloading", []],
+        ["wait"],
+        ["wait", 200],
+        ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - Not yet implemented"}
+      ]
+    }
+  },
+  "center": [30, 30],
+  "zoom": 6,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {"type": "Point", "coordinates": [30, 30]}
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": ["step", ["zoom"], "Out", 4, "In"],
+        "text-size": 24,
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-offset": ["step", ["zoom"], ["literal", [0, -1.2]], 4, ["literal", [0, 1.2]]]
+      },
+      "paint": {
+        "text-color": "black"
+      }
+    }
+  ]
+}

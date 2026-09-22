@@ -66,6 +66,8 @@ import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
 import {GlobalPlacement} from '../placement/global_placement';
 import {SymbolIdRangeAllocator} from '../placement/symbol_id_range_allocator';
 import {subgroupOrderForLayerPosition} from '../placement/symbol_placement_parameters';
+import EXTENT from '../style-spec/data/extent';
+import {transformPointToTile} from '../../3d-style/source/replacement_source';
 import {validateCustomStyleLayer} from './style_layer/custom_style_layer';
 import {isFQID, makeFQID, getNameFromFQID, getInnerScopeFromFQID, getOuterScopeFromFQID} from '../util/fqid';
 import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_utils';
@@ -145,6 +147,7 @@ import type {LngLatLike} from '../geo/lng_lat';
 import type {RasterQueryParameters, RasterQueryResult} from '../source/raster_array_tile_source';
 import type {StyleBOM} from './style_bom_utils';
 import type {PlacementGroupOrders, SymbolPlacementParameters} from '../placement/symbol_placement_parameters';
+import type {TileCoverageRect} from '../placement/types';
 
 export type {StyleBOMEntry, StyleBOM} from './style_bom_utils';
 
@@ -290,6 +293,75 @@ export type PlacementAlgorithmName = 'default' | 'global';
 
 const MAX_IMPORT_DEPTH = 5;
 const defaultTransition = {duration: 300, delay: 0};
+
+function canonicalCoordKey(z: number, x: number, y: number): string {
+    return `${z}_${x}_${y}`;
+}
+
+function addChildCoverageRect(rectsByTileKey: Map<number, Array<TileCoverageRect>>, ancestor: Tile, descendant: Tile) {
+    const rect = {
+        min: transformPointToTile(0, 0, descendant.tileID.canonical, ancestor.tileID.canonical),
+        max: transformPointToTile(EXTENT, EXTENT, descendant.tileID.canonical, ancestor.tileID.canonical)
+    };
+    const rects = rectsByTileKey.get(ancestor.tileID.key);
+    if (rects) rects.push(rect);
+    else rectsByTileKey.set(ancestor.tileID.key, [rect]);
+}
+
+function computeChildCoverageRectsForWrapGroup(tiles: ReadonlyArray<Tile>, rectsByTileKey: Map<number, Array<TileCoverageRect>>) {
+    const byCoord = new Map<string, Array<Tile>>();
+    let minZ = Infinity;
+    for (const tile of tiles) {
+        const {z, x, y} = tile.tileID.canonical;
+        if (z < minZ) minZ = z;
+        const key = canonicalCoordKey(z, x, y);
+        const bucket = byCoord.get(key);
+        if (bucket) bucket.push(tile);
+        else byCoord.set(key, [tile]);
+    }
+
+    for (const tile of tiles) {
+        const {z, x, y} = tile.tileID.canonical;
+
+        // A source's maxzoom can clamp two differently-overscaled tiles to the same canonical
+        // (z, x, y). They occupy the exact same footprint, so the more-overscaled (more zoomed
+        // in) one fully shadows the other, even though they're not strictly ancestor/descendant
+        // by canonical z. This case is otherwise invisible to the ancestor walk below.
+        const sameCoord = byCoord.get(canonicalCoordKey(z, x, y));
+        if (sameCoord && sameCoord.length > 1) {
+            for (const other of sameCoord) {
+                if (other !== tile && other.tileID.overscaledZ < tile.tileID.overscaledZ) {
+                    addChildCoverageRect(rectsByTileKey, other, tile);
+                }
+            }
+        }
+
+        // Walk up to every coarser tile actually present; each is shadowed by this tile.
+        for (let ancestorZ = z - 1; ancestorZ >= minZ; ancestorZ--) {
+            const depth = z - ancestorZ;
+            const ancestors = byCoord.get(canonicalCoordKey(ancestorZ, x >> depth, y >> depth));
+            if (!ancestors) continue;
+            for (const ancestor of ancestors) addChildCoverageRect(rectsByTileKey, ancestor, tile);
+        }
+    }
+}
+
+export function computeChildCoverageRects(tiles: ReadonlyArray<Tile>): Map<number, Array<TileCoverageRect>> {
+    const rectsByTileKey = new Map<number, Array<TileCoverageRect>>();
+    if (tiles.length < 2) return rectsByTileKey;
+
+    const byWrap = new Map<number, Array<Tile>>();
+    for (const tile of tiles) {
+        const group = byWrap.get(tile.tileID.wrap);
+        if (group) group.push(tile);
+        else byWrap.set(tile.tileID.wrap, [tile]);
+    }
+
+    for (const group of byWrap.values()) {
+        if (group.length > 1) computeChildCoverageRectsForWrapGroup(group, rectsByTileKey);
+    }
+    return rectsByTileKey;
+}
 
 /**
  * @private
@@ -4803,20 +4875,29 @@ class Style extends Evented<MapEvents> {
             fadeDuration
         };
 
+        const sourceTiles: Record<string, Array<Tile>> = {};
+        const childCoverageRectsBySource: Record<string, Map<number, Array<TileCoverageRect>>> = {};
+
         for (let position = 0; position < this._mergedOrder.length; position++) {
             const styleLayer = this._mergedLayers[this._mergedOrder[position]];
             if (styleLayer.type !== 'symbol') continue;
 
             const sourceCache = this.getLayerSourceCache(styleLayer);
             if (!sourceCache) continue;
-            const tiles = sourceCache.getRenderableIds(true).map((id) => sourceCache.getTileByID(id));
+            const sourceId = makeFQID(styleLayer.source, styleLayer.scope);
+            let tiles = sourceTiles[sourceId];
+            let childCoverageRectsByTileKey = childCoverageRectsBySource[sourceId];
+            if (!tiles) {
+                tiles = sourceTiles[sourceId] = sourceCache.getRenderableIds(true).map((id) => sourceCache.getTileByID(id));
+                childCoverageRectsByTileKey = childCoverageRectsBySource[sourceId] = computeChildCoverageRects(tiles);
+            }
 
             // region.order (baked into replacementSource ahead of this pass) is only comparable
             // to this position when both share the same layer ordering -- true unless terrain
             // draping reorders layers relative to _mergedOrder, a pre-existing quirk legacy
             // placement is equally exposed to.
             const checkAgainstClipLayer = this.isLayerClipped(styleLayer);
-            styleLayer.placeSymbols(placementParameters, tiles, position, sourceCache, checkAgainstClipLayer);
+            styleLayer.placeSymbols(placementParameters, tiles, position, sourceCache, checkAgainstClipLayer, childCoverageRectsByTileKey);
         }
 
         globalPlacement.finishPlacementRun();

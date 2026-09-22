@@ -10,6 +10,7 @@
 - Add support for symbol fading when using the global placement.
 - Add debug visualization support when using the global placement.
 - `CustomLayerInterface#render`/`#prerender` now receive a `CustomLayerRenderParameters` object as an 8th argument, exposing `projectionMatrix` (camera→clip), `viewMatrix` (world→camera) pair, plus the globe horizon `globeClippingPlane` and the globe center's screen position `globeCenterInScreenPixels`.
+- Avoid placing parent-tile symbols when using the global placement.
 
 ### Bug fixes 🐞
 

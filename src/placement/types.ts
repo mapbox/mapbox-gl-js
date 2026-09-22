@@ -1,3 +1,5 @@
+import type Point from '@mapbox/point-geometry';
+
 // Origin of a symbol's identity: whether it was reused from a source feature ID or
 // generated because the feature had no stable ID of its own.
 export const SymbolIdOrigin = {
@@ -46,6 +48,21 @@ export type SymbolId = {
     styleLayerId: number;
     symbolIdOrigin: SymbolIdOriginValue;
     symbolId: number;
+};
+
+// Stub: no symbol has a stable id yet. Should return `id.symbolIdOrigin === SymbolIdOrigin.REUSED_FROM_SOURCE_FEATURE`
+// once addToPlacement can actually produce that origin (see the doc comment above).
+export function hasStableId(id: SymbolId): boolean {
+    return false;
+}
+
+/**
+ * A rectangle in a tile's own [0, EXTENT) local space, e.g. the area of a parent tile covered by a
+ * loaded child tile.
+ */
+export type TileCoverageRect = {
+    min: Point;
+    max: Point;
 };
 
 /**
