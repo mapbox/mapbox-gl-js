@@ -30,8 +30,7 @@ void main() {
     float azimuth = u_light.y + PI;
 
     // We scale the slope exponentially based on intensity, using a calculation similar to
-    // the exponential interpolation function in the style spec:
-    // src/style-spec/expression/definitions/interpolate.js#L217-L228
+    // the exponential interpolation function in the style spec,
     // so that higher intensity values create more opaque hillshading.
     float base = 1.875 - intensity * 1.75;
     float maxValue = 0.5 * PI;
