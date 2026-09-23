@@ -32,7 +32,6 @@ export type LineUniformsType = {
     ['u_trim_color']: Uniform4f;
     ['u_zbias_factor']: Uniform1f;
     ['u_road_view_depth_bias']: Uniform1f;
-    ['u_road_clip_to_view']: Uniform4f;
     ['u_tile_to_meter']: Uniform1f;
     ['u_ground_shadow_factor']: Uniform3f;
     ['u_opacity_multiplier']: Uniform1f;
@@ -95,7 +94,6 @@ const lineUniforms = (context: Context): LineUniformsType => ({
     'u_trim_color': new Uniform4f(context),
     'u_zbias_factor': new Uniform1f(context),
     'u_road_view_depth_bias': new Uniform1f(context),
-    'u_road_clip_to_view': new Uniform4f(context),
     'u_tile_to_meter': new Uniform1f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
     'u_opacity_multiplier': new Uniform1f(context),
@@ -178,7 +176,6 @@ const lineUniformValues = (
         'u_trim_color': layer.paint.get('line-trim-color').toPremultipliedRenderColor(ignoreLut ? null : layer.lut).toArray01(),
         'u_zbias_factor': zbiasFactor,
         'u_road_view_depth_bias': 0,
-        'u_road_clip_to_view': [0, 0, 0, 0],
         'u_tile_to_meter': tileToMeter(tile.tileID.canonical, 0.0),
         'u_ground_shadow_factor': groundShadowFactor,
         'u_opacity_multiplier': 1,
