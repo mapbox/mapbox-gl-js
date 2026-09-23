@@ -1,0 +1,47 @@
+{
+  "description": "Two symbols do not touch, but are within less than one logical pixel from each other. Both were previously invisible, so are expanded by one logical pixel collision radius. The second symbol collides with the first one and cannot be placed.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 22,
+      "height": 12,
+      "pixelRatio": 4,
+      "globalPlacement": true,
+      "collisionDebug": true,
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Collision padding not yet supported"}
+      ]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 0,
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-3.5, 0]}},
+          {"type": "Feature", "geometry": {"type": "Point", "coordinates": [3.5, 0]}}
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "points",
+      "layout": {
+        "icon-image": "rocket-12",
+        "icon-size": 0.25
+      }
+    }
+  ]
+}
