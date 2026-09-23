@@ -15,6 +15,7 @@
 
 ### Bug fixes 🐞
 
+- Fix `getPaintProperty` throwing a `TypeError` when passed an unknown paint property name; it now fires a helpful `error` event and returns `undefined` instead. (h/t @akashchamp)
 - Fix `raster-array` chunk loading when unused.
 - Fix `transformRequest` headers and credentials being dropped from PMTiles requests.
 - Fix features rendering at the wrong position when a layer uses a `within` filter and the map uses a projection other than Mercator or globe.
