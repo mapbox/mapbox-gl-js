@@ -29,9 +29,33 @@ import {RGBAImage} from '../../../src/util/image';
 import {ImageVariant} from '../../../src/style-spec/expression/types/image_variant';
 import {AtlasContentDescriptor} from '../../../src/render/atlas_content_descriptor';
 import ImageAtlas from '../../../src/render/image_atlas';
+import browser from '../../../src/util/browser';
+import {PbfReader} from 'pbf';
+import {VectorTile} from '@mapbox/vector-tile';
+import {CollisionBoxArray} from '../../../src/data/array_types';
+import {performSymbolLayout, postRasterizationSymbolLayout} from '../../../src/symbol/symbol_layout';
+import FeatureIndex from '../../../src/data/feature_index';
+import {createSymbolBucket} from '../../util/create_symbol_layer';
+import {getProjection} from '../../../src/geo/projection/index';
+import vectorStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
+import glyphData from '../../fixtures/fontstack-glyphs.json';
 
 import type {StyleImageMap} from '../../../src/style/style_image';
 import type {StringifiedImageVariant} from '../../../src/style-spec/expression/types/image_variant';
+
+// Real point feature + glyph fixtures reused from symbol_bucket.test.ts, so
+// Style#_updatePlacement's global-placement path can be driven with a real
+// SymbolBucket instead of an empty one.
+/*eslint new-cap: 0*/
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+const symbolPlacementVectorTile = new VectorTile(new PbfReader(vectorStub));
+const symbolPlacementFeature = symbolPlacementVectorTile.layers.place_label.feature(10);
+const symbolPlacementStacks = {'Test': glyphData};
+const symbolPlacementGlyphPositions = {'Test': {}};
+for (const id in glyphData.glyphs) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    symbolPlacementGlyphPositions['Test'][id] = glyphData.glyphs[id].rect;
+}
 
 function createStyleJSON(properties) {
     return {"version": 8,
@@ -3345,6 +3369,85 @@ describe('Style#_updatePlacement', () => {
 
         expect(style.globalPlacement).toBeTruthy();
         expect(placeSymbolsSpy).toHaveBeenCalledTimes(1);
+    });
+
+    test('reports needing another frame while a global-placement fade is still animating', async () => {
+        const map = new StubMap();
+        // @ts-expect-error - painter is not part of StubMap but required for _updatePlacement
+        map.painter = {scaleFactor: 1};
+        const replacementSource = {updateTime: 0};
+
+        const style = new Style(map);
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {"type": "FeatureCollection", "features": []}
+                }
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson"
+            }]
+        });
+
+        await waitFor(style, 'style.load');
+
+        const tr = map.transform;
+        tr.resize(512, 512);
+
+        const FADE_DURATION = 300;
+        style.update({zoom: tr.zoom, fadeDuration: FADE_DURATION});
+
+        try {
+            // Warm up the legacy pauseablePlacement/placement pair (with no real symbol tiles yet)
+            // well before FADE_DURATION, so its own commit-time bookkeeping (lastPlacementChangeTime)
+            // settles at t=0 instead of overlapping the fade window we're about to test -- otherwise
+            // Placement#hasTransitions would report a transition for unrelated reasons and mask the bug.
+            browser.setNow(0);
+            style._updatePlacement(tr, false, FADE_DURATION, false, replacementSource, 'global');
+
+            // Build a real, non-colliding symbol and wire it onto a real Tile registered under the
+            // "symbol" layer's fqid, exactly as SymbolStyleLayer#placeSymbols looks it up.
+            const projection = getProjection({name: 'mercator'});
+            const collisionBoxArray = new CollisionBoxArray();
+            const bucket = createSymbolBucket('symbol', 'Test', 'abcde', collisionBoxArray);
+            bucket.populate([{feature: symbolPlacementFeature}], {iconDependencies: {}, glyphDependencies: {}});
+            const bucketData = performSymbolLayout(bucket, symbolPlacementStacks, symbolPlacementGlyphPositions, null, null, null, null, null, null, projection);
+            postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
+
+            const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+            const tile = new Tile(tileID, 512, 0, {transform: {projection}});
+            tile.latestFeatureIndex = new FeatureIndex(tileID);
+            tile.collisionBoxArray = collisionBoxArray;
+            tile.buckets = {[style.getLayer('symbol').fqid]: bucket};
+
+            vi.spyOn(style, 'getLayerSourceCache').mockReturnValue({
+                getRenderableIds: () => [0],
+                getTileByID: () => tile,
+                _state: {getState: () => ({})}
+            });
+
+            // t=1000: the symbol has no colliding neighbor, so it places and starts a
+            // FADE_DURATION-long fade-in, referenced to this timestamp.
+            browser.setNow(1000);
+            style._updatePlacement(tr, false, FADE_DURATION, false, replacementSource, 'global');
+            expect(bucket.placementFadeRunning[0]).toEqual(1);
+
+            // t=1150: the camera has stopped (nothing else changed -- same transform, same
+            // replacementSource, no new symbol buckets), but the fade is only half done.
+            browser.setNow(1150);
+            const stillAnimating = style._updatePlacement(tr, false, FADE_DURATION, false, replacementSource, 'global');
+
+            expect(bucket.placementFadeRunning[0]).toEqual(1); // fade is genuinely still in flight
+            // Map._update() treats this as "nothing to do" and stops scheduling frames, freezing
+            // u_now (and therefore the shader's fade math) mid-animation.
+            expect(stillAnimating).toBe(true);
+        } finally {
+            browser.restoreNow();
+        }
     });
 
     test('returns true when symbol layer is added after load due to symbolBucketsChanged', async () => {

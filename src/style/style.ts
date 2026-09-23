@@ -87,6 +87,7 @@ import type IndoorManager from '../../3d-style/style/indoor_manager';
 import type {FontstackCompositing} from './glyph_loader';
 import type {PropertyValidatorOptions} from '../style-spec/validate/validate_property';
 import type Tile from '../source/tile';
+import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type GeoJSONSource from '../source/geojson_source';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
@@ -4743,8 +4744,9 @@ class Style extends Evented<MapEvents> {
         const useGlobalPlacement = placementAlgorithmName === 'global';
         const layerOrder = useGlobalPlacement ? [] : this._mergedOrder;
 
+        let globalPlacementHasActiveFade = false;
         if (useGlobalPlacement) {
-            this._driveGlobalPlacement(transform, replacementSource, fadeDuration, showCollisionBoxes);
+            globalPlacementHasActiveFade = this._driveGlobalPlacement(transform, replacementSource, fadeDuration, showCollisionBoxes);
         }
 
         for (const layerId of layerOrder) {
@@ -4827,12 +4829,13 @@ class Style extends Evented<MapEvents> {
         }
 
         // needsRender is false when we have just finished a placement that didn't change the visibility of any symbols
-        return !this.pauseablePlacement.isDone() || this.placement.isStale() || this.placement.hasTransitions(browser.now());
+        return !this.pauseablePlacement.isDone() || this.placement.isStale() || this.placement.hasTransitions(browser.now()) || globalPlacementHasActiveFade;
     }
 
     // Runs one global placement pass per frame, driving each symbol layer's placeSymbols() hook.
-    _driveGlobalPlacement(transform: Transform, replacementSource: ReplacementSource, fadeDuration: number, collectDebugData: boolean) {
-        if (transform.width === 0 || transform.height === 0) return;
+    // Returns whether any symbol touched this run is still mid-fade
+    _driveGlobalPlacement(transform: Transform, replacementSource: ReplacementSource, fadeDuration: number, collectDebugData: boolean): boolean {
+        if (transform.width === 0 || transform.height === 0) return false;
 
         if (!this.globalPlacement) {
             this.globalPlacement = new GlobalPlacement();
@@ -4877,6 +4880,7 @@ class Style extends Evented<MapEvents> {
 
         const sourceTiles: Record<string, Array<Tile>> = {};
         const childCoverageRectsBySource: Record<string, Map<number, Array<TileCoverageRect>>> = {};
+        let hasActiveFade = false;
 
         for (let position = 0; position < this._mergedOrder.length; position++) {
             const styleLayer = this._mergedLayers[this._mergedOrder[position]];
@@ -4898,9 +4902,16 @@ class Style extends Evented<MapEvents> {
             // placement is equally exposed to.
             const checkAgainstClipLayer = this.isLayerClipped(styleLayer);
             styleLayer.placeSymbols(placementParameters, tiles, position, sourceCache, checkAgainstClipLayer, childCoverageRectsByTileKey);
+
+            for (const tile of tiles) {
+                const bucket = tile.getBucket(styleLayer) as SymbolBucket | undefined;
+                if (bucket && styleLayer.fqid === bucket.layerIds[0] && bucket.hasActiveFade()) hasActiveFade = true;
+            }
         }
 
         globalPlacement.finishPlacementRun();
+
+        return hasActiveFade;
     }
 
     _releaseSymbolFadeTiles() {

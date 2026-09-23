@@ -748,6 +748,7 @@ class SymbolBucket implements Bucket, SymbolSource {
     placementVariantVisible: Array<boolean>;
     placementFadeRefTime: Float64Array;
     placementFadeRunning: Uint8Array;
+    _activeFadeCount: number;
     _fadeDuration: number;
     pixelRatio: number;
     tilePixelRatio!: number;
@@ -816,6 +817,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         this.placementVariantVisible = [];
         this.placementFadeRefTime = new Float64Array(0);
         this.placementFadeRunning = new Uint8Array(0);
+        this._activeFadeCount = 0;
         this._fadeDuration = 0;
 
         this.collisionCircleArray = [];
@@ -998,11 +1000,17 @@ class SymbolBucket implements Bucket, SymbolSource {
         const currentOpacity = evaluateFadeOpacity(this.placementFadeRefTime[index], this.placementVariantVisible[index], settled, now, this._fadeDuration);
         const refTime = visible ? now - currentOpacity * this._fadeDuration : now - (1 - currentOpacity) * this._fadeDuration;
 
+        if (this.placementFadeRunning[index] === 0) this._activeFadeCount++;
+
         this.placementVariantVisible[index] = visible;
         this.placementFadeRefTime[index] = refTime;
         this.placementFadeRunning[index] = 1;
 
         this._writeFadeState(index, instance, refTime, fadeState(visible, false));
+    }
+
+    hasActiveFade(): boolean {
+        return this._activeFadeCount > 0;
     }
 
     // A placed symbol owns a contiguous run of vertices from its vertexStartIndex (4 per glyph
@@ -1024,6 +1032,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         if (this.placementFadeRunning[index] === 0) return;
         if (now - this.placementFadeRefTime[index] < this._fadeDuration) return;
         this.placementFadeRunning[index] = 0;
+        this._activeFadeCount--;
         this._writeFadeState(index, instance, 0, fadeState(this.placementVariantVisible[index], true));
     }
 
@@ -1040,6 +1049,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         this.placementVariantVisible.fill(false);
         this.placementFadeRefTime.fill(0);
         this.placementFadeRunning.fill(0);
+        this._activeFadeCount = 0;
 
         const hideAll = (buffer: SymbolBuffers) => {
             for (let i = 0; i < buffer.fadeVertexArray.length; i++) buffer.fadeVertexArray.emplace(i, 0, FADE_SETTLED_HIDDEN);
