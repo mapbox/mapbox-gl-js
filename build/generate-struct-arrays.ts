@@ -162,7 +162,7 @@ import {
     buildingFloodLightWallRadiusAttributes
 } from '../3d-style/data/building_attributes';
 // eslint-disable-next-line import-x/order
-import {modelAttributes, color3fAttributes, color4fAttributes, normalAttributes, texcoordAttributes, instanceAttributes, featureAttributes} from '../3d-style/data/model_attributes';
+import {modelAttributes, color3fAttributes, color4fAttributes, normalAttributes, texcoordAttributes, texcoordNormalizedAttributes, instanceAttributes, featureAttributes} from '../3d-style/data/model_attributes';
 
 // layout vertex arrays
 const layoutAttributes = {
@@ -300,6 +300,7 @@ createStructArrayType(`model_layout`, modelAttributes);
 createStructArrayType(`color3f_layout`, color3fAttributes);
 createStructArrayType(`color4f_layout`, color4fAttributes);
 createStructArrayType(`texcoord_layout`, texcoordAttributes);
+createStructArrayType(`texcoord_normalized_layout`, texcoordNormalizedAttributes);
 createStructArrayType(`normal_layout`, normalAttributes);
 createStructArrayType(`instance_vertex`, instanceAttributes);
 createStructArrayType(`feature_vertex`, featureAttributes);

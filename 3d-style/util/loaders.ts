@@ -109,6 +109,7 @@ export type GLTFAccessor = {
     count: number;
     type: 'SCALAR' | 'VEC2' | 'VEC3' | 'VEC4' | 'MAT2' | 'MAT3' | 'MAT4';
     componentType: number;
+    normalized?: boolean;
     bufferView?: number;
     byteOffset?: number;
     min?: vec3;
