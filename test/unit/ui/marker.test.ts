@@ -107,6 +107,28 @@ test('Marker#addTo adds the marker element to the canvas container', () => {
     map.remove();
 });
 
+test('Marker warns when a custom element overrides position to non-absolute', () => {
+    const map = createMap();
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const relativeEl = window.document.createElement('div');
+    relativeEl.style.position = 'relative';
+    new Marker({element: relativeEl}).setLngLat([0, 0]).addTo(map);
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0][0]).toContain('relative');
+    expect(warnSpy.mock.calls[0][0]).toContain('absolute');
+
+    warnSpy.mockClear();
+
+    const absoluteEl = window.document.createElement('div');
+    absoluteEl.style.position = 'absolute';
+    new Marker({element: absoluteEl}).setLngLat([0, 0]).addTo(map);
+    expect(warnSpy).not.toHaveBeenCalled();
+
+    warnSpy.mockRestore();
+    map.remove();
+});
+
 test('Marker adds classes from className option, methods for class manipulation work properly', () => {
     const map = createMap();
     const marker = new Marker({className: 'some classes'})
