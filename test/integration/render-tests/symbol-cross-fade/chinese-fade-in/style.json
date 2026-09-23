@@ -1,30 +1,25 @@
 {
-  "description": "Line symbols are placed differently at different zoom levels: this test crosses a zoom level and renders 80% through the cross-fade. The 'wait' logic is tricky here: 1st 'wait 100' is to trigger placement at z2 after tiles have loaded, 2nd 'wait 100' is to allow z2 labels to fade in, 'wait' after 'setZoom' runs until the z3 tiles load (but doesn't elapse any time on the fake test clock), next 'wait 100' triggers a placement using the z3 and z2 tiles together, final 'wait 80' actually exercises the cross fade.",
+  "description": "Line symbols are placed differently at different zoom levels: this test crosses a zoom level and renders 80% through the cross-fade. The timing logic is tricky here: 'setTimer 300' + 'wait' is to trigger placement at z2 after tiles have loaded, 'setTimer 600' + 'wait' is to allow z2 labels to fade in, 'wait' after 'setZoom' runs until the z3 tiles load (without moving the fake test clock), 'setTimer 900' + 'wait' triggers a placement using the z3 and z2 tiles together, final 'setTimer 1140' + 'wait' actually exercises the cross fade.",
   "version": 8,
   "metadata": {
     "test": {
-        "fadeDuration": 100,
+        "mapMode": "continuous-snapshot",
+        "fadeDuration": 300,
         "width": 512,
         "height": 512,
         "operations": [
-          ["wait", 100],
-          ["wait", 100],
-          [
-            "setZoom",
-            3
-          ],
+          ["setTimer", 0],
           ["wait"],
-          [
-            "wait",
-            100
-          ],
-          [
-            "wait",
-            80
-          ]
-        ],
-        "skip-test": [
-            {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/10619"}
+          ["setTimer", 300],
+          ["wait"],
+          ["setTimer", 600],
+          ["wait"],
+          ["setZoom", 3],
+          ["wait"],
+          ["setTimer", 900],
+          ["wait"],
+          ["setTimer", 1140],
+          ["wait"]
         ]
     }
   },

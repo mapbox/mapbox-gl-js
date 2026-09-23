@@ -1,0 +1,121 @@
+{
+  "description": "A single label fades out over 300ms. The 'blocker' layer is placed before 'label' and its collision box (large 'text-padding') overlaps the label, while its text is offset off-canvas; it starts hidden. 'setTimer 0' + 'wait' lets the tile load; 'setTimer 300' + 'wait' triggers the placement that starts the fade-in; 'setTimer 600' + 'wait' completes it. Making 'blocker' visible reloads the tile, the next 'wait' waits for it, and 'setTimer 900' + 'wait' triggers the placement that hides 'label' and starts its fade-out. 'setTimer 1050' + 'wait' stops halfway through it, so the label renders at half opacity.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "mapMode": "continuous-snapshot",
+      "fadeDuration": 300,
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "setTimer",
+          0
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setTimer",
+          300
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setTimer",
+          600
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setLayoutProperty",
+          "blocker",
+          "visibility",
+          "visible"
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setTimer",
+          900
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setTimer",
+          1050
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "zoom": 0,
+  "center": [
+    0,
+    0
+  ],
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            0,
+            0
+          ]
+        }
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "label",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": "Fade",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 24
+      }
+    },
+    {
+      "id": "blocker",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "visibility": "none",
+        "text-field": "Fade",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 24,
+        "text-offset": [
+          0,
+          2.5
+        ],
+        "text-padding": 40
+      }
+    }
+  ]
+}

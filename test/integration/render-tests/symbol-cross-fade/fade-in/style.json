@@ -1,0 +1,79 @@
+{
+  "description": "A single label fades in over 300ms. 'setTimer 0' + 'wait' lets the tile load; 'setTimer 300' + 'wait' triggers the placement that starts the fade at zero opacity; and 'setTimer 450' + 'wait' stops halfway through it, so the text renders at half opacity.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "mapMode": "continuous-snapshot",
+      "fadeDuration": 300,
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "setTimer",
+          0
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setTimer",
+          300
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setTimer",
+          450
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "zoom": 0,
+  "center": [
+    0,
+    0
+  ],
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            0,
+            0
+          ]
+        }
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "label",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": "Fade",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 24
+      }
+    }
+  ]
+}
