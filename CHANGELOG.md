@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 3.32.0-rc.1
+
 ### Features and improvements ✨
 
 - Slightly improve map load time via more aggressive chunk preloading.
@@ -15,6 +17,7 @@
 
 - Fix `raster-array` chunk loading when unused.
 - Fix `transformRequest` headers and credentials being dropped from PMTiles requests.
+- Fix `transformRequest` headers/credentials being dropped when loading GL model (GLTF) resources.
 - Fix features rendering at the wrong position when a layer uses a `within` filter and the map uses a projection other than Mercator or globe.
 - Fix global placement throwing an error when placing symbols with no text.
 - Fix setting `padding` as a sideeffect in a `preloadOnly` animation.
@@ -30,7 +33,6 @@
 
 ### Bug fixes 🐞
 
-- Fix `transformRequest` headers/credentials being dropped when loading GL model (GLTF) resources.
 - Fix `removeSource` throwing under globe projection. (h/t @mhayk)
 
 ## 3.30.0
