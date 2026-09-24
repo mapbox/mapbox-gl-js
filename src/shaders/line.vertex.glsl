@@ -46,10 +46,9 @@ uniform float u_width_scale;
 // in that case the value is passed as a vertex attribute instead of a uniform.
 uniform float u_z_offset;
 
-// Elevated-road VLW carpet: 0.5 m view-depth pull toward camera (0 when disabled).
+// Elevated-road VLW carpet: clip-space z pulled toward camera, 0.5 m at the map center (0 when disabled).
 // Always declared so GL locations resolve on all line program variants.
 uniform highp float u_road_view_depth_bias;
-uniform highp vec4 u_road_clip_to_view; // a,b,c,d for view = (a*z+b)/(c*z+d)
 
 #ifdef RENDER_LINE_CURVE
 // Encodes curve control points in 3x3 matrices for x, y, z
@@ -422,22 +421,11 @@ void main() {
     gl_Position = gl_Position + projected_extrude;
 #ifdef VARIABLE_LINE_WIDTH
 #ifndef ELEVATED
-    // Depth-only pull toward camera (xy/w unchanged — no world-Z float).
-    // Cap: 0.5 m in view/camera Z. Ramped to 0 below -0.5 m so the tunnel seethrough
-    // comparison is unshifted (same range as the cutout route lift).
-    highp float road_view_depth_bias = u_road_view_depth_bias * smoothstep(-0.5, 0.0, a_z_offset);
-    if (road_view_depth_bias > 0.0) {
-        highp float z_in = gl_Position.z / gl_Position.w * 0.5 + 0.5;
-        highp float a = u_road_clip_to_view.x;
-        highp float b = u_road_clip_to_view.y;
-        highp float c = u_road_clip_to_view.z;
-        highp float d = u_road_clip_to_view.w;
-        highp float view = (a * z_in + b) / (c * z_in + d);
-        highp float view_new = view + road_view_depth_bias;
-        highp float z_new = (view_new * d - b) / (a - view_new * c);
-        z_new = clamp(z_new, 0.0, 1.0);
-        gl_Position.z = (z_new * 2.0 - 1.0) * gl_Position.w;
-    }
+    // Depth-only pull toward camera (xy/w unchanged — no world-Z float). Must be the same clip z on
+    // every vertex: a per-vertex view-space pull is huge near the camera, and interpolation spreads it
+    // along long triangles. Ramped to 0 below -0.5 m so the tunnel seethrough comparison is unshifted
+    // (same range as the cutout route lift).
+    gl_Position.z -= u_road_view_depth_bias * smoothstep(-0.5, 0.0, a_z_offset);
 #endif // ELEVATED
 #endif // VARIABLE_LINE_WIDTH
 #else
