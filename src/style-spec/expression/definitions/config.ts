@@ -13,7 +13,10 @@ import type EvaluationContext from '../evaluation_context';
 const FQIDSeparator = '\u001F';
 
 export function makeConfigFQID(id: string, ownScope?: string | null, contextScope?: string | null): string {
-    return [id, ownScope, contextScope].filter(Boolean).join(FQIDSeparator);
+    let fqid = id || '';
+    if (ownScope) fqid = fqid ? fqid + FQIDSeparator + ownScope : ownScope;
+    if (contextScope) fqid = fqid ? fqid + FQIDSeparator + contextScope : contextScope;
+    return fqid;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -115,7 +118,9 @@ class Config implements Expression {
         if (value) {
             // temporarily override scope to parent to evaluate config expressions passed from the parent
             const originalScope = ctx.scope;
-            ctx.scope = (originalScope || '').split(FQIDSeparator).slice(1).join(FQIDSeparator);
+            const scope = originalScope || '';
+            const sep = scope.indexOf(FQIDSeparator);
+            ctx.scope = sep >= 0 ? scope.slice(sep + 1) : '';
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             result = value.evaluate(ctx);
             ctx.scope = originalScope;

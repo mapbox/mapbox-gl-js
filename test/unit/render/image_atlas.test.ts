@@ -445,6 +445,22 @@ describe('ImageAtlasCache', () => {
         expect(cachedAtlas).toBeUndefined();
     });
 
+    test('removeScope evicts only the atlases of that scope', () => {
+        const icons: StyleImageMap<StringifiedImageVariant> = new Map([[createImageVariantId('icon'), createMockImage('icon')]]);
+        const patterns: StyleImageMap<StringifiedImageVariant> = new Map();
+        const versions: Map<string, number> = new Map([['icon', 1]]);
+        const rootAtlas = cache.getOrCache(new ImageAtlas(icons, patterns, null, versions, ''));
+        const importAtlas = cache.getOrCache(new ImageAtlas(icons, patterns, null, versions, 'basemap'));
+        const rootTexture = cache.getTextureForAtlas(rootAtlas, context, context.gl.RGBA8);
+        cache.getTextureForAtlas(importAtlas, context, context.gl.RGBA8);
+
+        cache.removeScope('basemap');
+
+        expect(cache.getTextureForAtlas(rootAtlas, context, context.gl.RGBA8)).toBe(rootTexture);
+        expect(cache.getTextureForAtlas(importAtlas, context, context.gl.RGBA8)).toBe(null);
+        expect(cache.findCachedAtlas(new AtlasContentDescriptor(icons, patterns, versions, null, 'basemap'))).toBeUndefined();
+    });
+
     test('findCachedAtlas does not match atlas with same image names but different LUT-applied color params', () => {
         // Simulate the setImportColorTheme bug (GLJS-1673): old atlas was built with red-LUT colors (pink),
         // new tile re-parses with BW-LUT colors (grey). Same base image name "attraction",
@@ -470,33 +486,10 @@ describe('ImageAtlasCache', () => {
 
         expect(result).toBeUndefined();
     });
-
-    test('destroyTextures preserves cache but destroys textures', () => {
-        const icons: StyleImageMap<StringifiedImageVariant> = new Map([[createImageVariantId('icon'), createMockImage('icon')]]);
-        const patterns: StyleImageMap<StringifiedImageVariant> = new Map();
-        const versions: Map<string, number> = new Map([['icon', 1]]);
-        const atlas = new ImageAtlas(icons, patterns, null, versions);
-
-        cache.getOrCache(atlas);
-        const texture = cache.getTextureForAtlas(atlas, context, context.gl.RGBA8);
-
-        cache.destroyTextures();
-
-        // Atlas should still be in cache
-        const descriptor = new AtlasContentDescriptor(icons, patterns, versions, null, '');
-        const cachedAtlas = cache.findCachedAtlas(descriptor);
-        expect(cachedAtlas).toBe(atlas);
-
-        // But texture needs to be recreated
-        const newTexture = cache.getTextureForAtlas(atlas, context, context.gl.RGBA8);
-        expect(newTexture).not.toBe(texture);
-    });
 });
 
 describe('ImageAtlasCache - LRU eviction', () => {
-    test('resets atlas.uploaded to false when its texture is evicted', () => {
-        // After GPU texture eviction, atlas.uploaded must be reset so
-        // tiles re-upload on the next frame if needed
+    test('evicted atlas leaves the cache since its pixels are dropped after upload', () => {
         const cache = new ImageAtlasCache({maxTextureMemoryMB: 0.001});
 
         const icons1: StyleImageMap<StringifiedImageVariant> = new Map([[createImageVariantId('icon1'), createMockImage('icon1', 100, 100)]]);
@@ -506,18 +499,17 @@ describe('ImageAtlasCache - LRU eviction', () => {
 
         const atlas1 = new ImageAtlas(icons1, patterns, null, versions);
         const atlas2 = new ImageAtlas(icons2, patterns, null, versions);
+        cache.getOrCache(atlas1);
 
-        // Simulate tile.upload() having already uploaded atlas1 last frame
         cache.beginFrame();
         cache.getTextureForAtlas(atlas1, context, context.gl.RGBA8);
-        atlas1.uploaded = true;
-
-        // Next frame: uploading atlas2 exceeds the memory budget, forcing eviction of atlas1
+        cache.beginFrame();
         cache.beginFrame();
         cache.getTextureForAtlas(atlas2, context, context.gl.RGBA8);
 
-        // The eviction must reset atlas1.uploaded so tiles re-upload on the next frame
-        expect(atlas1.uploaded).toBe(false);
+        cache.beginFrame();
+        expect(cache.getTextureForAtlas(atlas1, context, context.gl.RGBA8)).toBe(null);
+        expect(cache.findCachedAtlas(new AtlasContentDescriptor(icons1, patterns, versions, null, ''))).toBeUndefined();
     });
 
     test('evicts LRU texture when memory budget exceeded', () => {
@@ -537,7 +529,8 @@ describe('ImageAtlasCache - LRU eviction', () => {
         const texture1 = cache.getTextureForAtlas(atlas1, context, context.gl.RGBA8);
         expect(texture1).toBeDefined();
 
-        // Next frame: create second texture - should evict first due to memory budget
+        // Two frames later: create second texture - should evict first due to memory budget
+        cache.beginFrame();
         cache.beginFrame();
         const texture2 = cache.getTextureForAtlas(atlas2, context, context.gl.RGBA8);
         expect(texture2).toBeDefined();
@@ -572,9 +565,9 @@ describe('ImageAtlasCache - LRU eviction', () => {
         // even though atlas2's allocation would otherwise overflow the budget.
         expect(texture1.texture).not.toBe(null);
         expect(texture2.texture).not.toBe(null);
-        expect(atlas1.uploaded).not.toBe(false);
 
-        // Next frame: pin is released, normal LRU eviction can run again.
+        // Two frames later: pins are released, normal LRU eviction can run again.
+        cache.beginFrame();
         cache.beginFrame();
         const icons3: StyleImageMap<StringifiedImageVariant> = new Map([[createImageVariantId('icon3'), createMockImage('icon3', 100, 100)]]);
         const atlas3 = new ImageAtlas(icons3, patterns, null, new Map([['icon3', 1]]));
@@ -584,6 +577,25 @@ describe('ImageAtlasCache - LRU eviction', () => {
         const reuploadedTexture1 = cache.getTextureForAtlas(atlas1, context, context.gl.RGBA8);
         const reuploadedTexture2 = cache.getTextureForAtlas(atlas2, context, context.gl.RGBA8);
         expect(reuploadedTexture1 !== texture1 || reuploadedTexture2 !== texture2).toBe(true);
+    });
+
+    test('does not evict a texture used in the previous frame', () => {
+        const cache = new ImageAtlasCache({maxTextureMemoryMB: 0.05});
+
+        const icons1: StyleImageMap<StringifiedImageVariant> = new Map([[createImageVariantId('icon1'), createMockImage('icon1', 100, 100)]]);
+        const icons2: StyleImageMap<StringifiedImageVariant> = new Map([[createImageVariantId('icon2'), createMockImage('icon2', 100, 100)]]);
+        const patterns: StyleImageMap<StringifiedImageVariant> = new Map();
+        const versions: Map<string, number> = new Map([['icon1', 1], ['icon2', 1]]);
+
+        const atlas1 = new ImageAtlas(icons1, patterns, null, versions);
+        const atlas2 = new ImageAtlas(icons2, patterns, null, versions);
+
+        cache.beginFrame();
+        const texture1 = cache.getTextureForAtlas(atlas1, context, context.gl.RGBA8);
+        cache.beginFrame();
+        cache.getTextureForAtlas(atlas2, context, context.gl.RGBA8);
+
+        expect(texture1.texture).not.toBe(null);
     });
 
     test('LRU eviction with access tracking', () => {

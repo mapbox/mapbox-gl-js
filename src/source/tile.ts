@@ -524,7 +524,6 @@ class Tile {
             // Don't destroy old texture - it may be shared with other tiles via atlas caching.
             // The ImageAtlasCache owns destruction.
             this.imageAtlasTexture = painter.style.imageManager.imageAtlasCache.getTextureForAtlas(atlas, context, gl.RGBA8);
-            atlas.uploaded = true;
         }
 
         if (this.glyphAtlasImage) {

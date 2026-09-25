@@ -3,8 +3,8 @@ import {register} from '../util/web_worker_transfer';
 import assert from '../style-spec/util/assert';
 
 type SerializedFeaturePositionMap = {
-    ids: Float64Array;
-    positions: Uint32Array;
+    ids?: Float64Array;
+    positions?: Uint32Array;
 };
 
 // A transferable data structure that maps feature ids to their indices and buffer offsets
@@ -26,7 +26,7 @@ export default class FeaturePositionMap {
         this.positions.push(index, start, end);
     }
 
-    eachPosition(id: string | number, fn: (index: number, start: number, end: number) => void) {
+    eachPosition(id: string | number, fn: (index: number, start: number, end: number) => void): boolean {
         assert(this.indexed);
 
         const intId = getNumericId(id);
@@ -43,6 +43,7 @@ export default class FeaturePositionMap {
                 i = m + 1;
             }
         }
+        const found = this.ids[i] === intId;
         while (this.ids[i] === intId) {
             const index = this.positions[3 * i];
             const start = this.positions[3 * i + 1];
@@ -50,9 +51,12 @@ export default class FeaturePositionMap {
             fn(index, start, end);
             i++;
         }
+        return found;
     }
 
     static serialize(map: FeaturePositionMap, transferables: Set<ArrayBuffer>): SerializedFeaturePositionMap {
+        // most maps (e.g. features without ids) are empty, so skip their buffers
+        if (map.ids.length === 0) return {};
         const ids = new Float64Array(map.ids);
         const positions = new Uint32Array(map.positions);
 
@@ -70,8 +74,8 @@ export default class FeaturePositionMap {
         const map = new FeaturePositionMap();
         // after transferring, we only use these arrays statically (no pushes),
         // so TypedArray vs Array distinction that TS points out doesn't matter
-        map.ids = obj.ids as unknown as number[];
-        map.positions = obj.positions as unknown as number[];
+        map.ids = obj.ids as unknown as number[] || [];
+        map.positions = obj.positions as unknown as number[] || [];
         let prev: number | undefined;
         for (const id of map.ids) {
             if (id !== prev) map.uniqueIds.push(id);

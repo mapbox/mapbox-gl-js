@@ -380,7 +380,8 @@ function loadNodeBVH(gltf: GLTF, extData: Record<string, number>, meshIdx: numbe
                     if (fits(posAccOffset, needed, posBV.byteLength)) {
                         const byteOffset = (posBV.byteOffset || 0) + posAccOffset;
                         if (stride === 3) {
-                            bvh.setVertices(new Float32Array(gltf.buffers[posBV.buffer], byteOffset, posAcc.count * 3));
+                            // copy so the BVH doesn't retain the whole glTF buffer (textures and all other attributes)
+                            bvh.setVertices(new Float32Array(gltf.buffers[posBV.buffer], byteOffset, posAcc.count * 3).slice());
                         } else {
                             const src = new Float32Array(gltf.buffers[posBV.buffer], byteOffset, posAcc.count * stride);
                             const vertices = new Float32Array(posAcc.count * 3);
@@ -475,12 +476,18 @@ function convertFootprint(mesh: FootprintMesh): Footprint | null | undefined {
     // Use a fixed size triangle grid (8x8 cells) for acceleration intersection queries
     // with an exception that the cell size should never be larger than 256 tile units
     // (equals to 32x32 subdivision).
-    const grid = new TriangleGridIndex(mesh.vertices, mesh.indices, 8, 256);
+    const vertices = new Float64Array(mesh.vertices.length * 2);
+    for (let i = 0; i < mesh.vertices.length; i++) {
+        vertices[i * 2] = mesh.vertices[i].x;
+        vertices[i * 2 + 1] = mesh.vertices[i].y;
+    }
+    const indices = new Uint32Array(mesh.indices);
+    const grid = new TriangleGridIndex(mesh.vertices, indices, 8, 256);
     const [min, max] = [grid.min.clone(), grid.max.clone()];
 
     return {
-        vertices: mesh.vertices,
-        indices: mesh.indices,
+        vertices,
+        indices,
         grid,
         min,
         max

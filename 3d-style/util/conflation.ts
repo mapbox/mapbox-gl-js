@@ -3,7 +3,7 @@ import type TriangleGridIndex from '../../src/util/triangle_grid_index';
 import type {UnwrappedTileID} from '../../src/source/tile_id';
 
 export type Footprint = {
-    vertices: Array<Point>;
+    vertices: Float64Array; // x,y pairs
     indices: Uint32Array | Array<number>;
     grid: TriangleGridIndex;
     min: Point;

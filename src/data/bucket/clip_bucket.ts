@@ -152,12 +152,12 @@ class ClipBucket implements Bucket {
 
             // earcut library lacks proper type definitions
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            const indices = earcut(flattened, holeIndices) as number[];
+            const indices = new Uint32Array(earcut(flattened, holeIndices) as number[]);
             assert(indices.length % 3 === 0);
 
             const grid = new TriangleGridIndex(points, indices, 8, 256);
             this.footprints.push({
-                vertices: points,
+                vertices: new Float64Array(flattened),
                 indices,
                 grid,
                 min,

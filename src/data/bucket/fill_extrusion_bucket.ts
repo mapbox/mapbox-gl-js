@@ -256,10 +256,6 @@ export class PartData {
         this.buildingId = 0;
         this.groupCentroidPos = new Point(0, 0);
     }
-
-    span(): Point {
-        return new Point(this.max.x - this.min.x, this.max.y - this.min.y);
-    }
 }
 
 // Fixed stride for PartData packed into PartDataArray's backing buffer.
@@ -847,6 +843,8 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
     featuresOnBorder!: Array<BorderCentroidData>;
     borderFeatureIndices!: Array<Array<number>>;
     centroidData: PartDataArray;
+    // centroidData indices sorted by buildingId, built on first use on the main thread for border stitching
+    partsByBuildingId: Uint32Array | undefined;
     buildingGroups: Map<number, {accX: number, accY: number, accCount: number, mergedMin: Point, mergedMax: Point, partIndices: Array<number>}>;
     // borders / borderDoneWithNeighborZ: 0 - left, 1, right, 2 - top, 3 - bottom
     borderDoneWithNeighborZ!: Array<number>;
@@ -859,9 +857,8 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
     replacementUpdateTime: number;
 
     groundEffect: GroundEffect;
-    partLookup: {
-        [_: number]: PartData | null | undefined;
-    };
+    // filled on the main thread by getHeightAtTileCoord, so it's created there and never transferred
+    partLookup: Map<number, PartData | null> | undefined;
 
     maxHeight: number;
 
@@ -901,7 +898,6 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.groundEffect = new GroundEffect(options);
         this.maxHeight = 0;
-        this.partLookup = {};
         this.triangleSubSegments = [];
         this.polygonSegments = [];
         this.buildingGroups = new Map();
@@ -1477,7 +1473,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         }
 
         // hiddenCentroid {0, 1}: it is initially hidden as borders are processed later.
-        centroid.centroidXY = borderCentroidData.borders ? HIDDEN_CENTROID : this.encodeCentroid(borderCentroidData, centroid);
+        centroid.centroidXY = borderCentroidData.borders ? HIDDEN_CENTROID : this.encodeCentroid(borderCentroidData.centroid(), centroid.min, centroid.max);
 
         // Pass 1 of two-pass centroid grouping: accumulate building group data.
         if (feature.properties && Object.hasOwn(feature.properties, 'building_id')) {
@@ -1535,13 +1531,8 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             sharedBorderData.acc = new Point(group.accX, group.accY);
             sharedBorderData.accCount = group.accCount;
 
-            // Build a PartData with the merged bounding box for span computation
-            const sharedPartData = new PartData();
-            sharedPartData.min = group.mergedMin;
-            sharedPartData.max = group.mergedMax;
-
-            const sharedCentroidXY = this.encodeCentroid(sharedBorderData, sharedPartData);
             const groupCentroid = sharedBorderData.centroid();
+            const sharedCentroidXY = this.encodeCentroid(groupCentroid, group.mergedMin, group.mergedMax);
 
             // Write the shared centroid to all non-border parts of this building
             for (const idx of group.partIndices) {
@@ -1769,12 +1760,10 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
     //    >0     0         Elevation encoded to uint16 word
     //    >0    >0 y&7!=7  Encoded centroid position and x & y span
     //    >0    >0 y&7==7  Border elevation + position (for front-cutoff across tiles)
-    encodeCentroid(borderCentroidData: BorderCentroidData, data: PartData): Point {
-        const c = borderCentroidData.centroid();
-        const span = data.span();
-        const spanX = Math.min(7, Math.round(span.x * this.tileToMeter / 10));
+    encodeCentroid(c: Point, min: Point, max: Point): Point {
+        const spanX = Math.min(7, Math.round((max.x - min.x) * this.tileToMeter / 10));
         // Cap spanY at 6: value 7 is reserved as marker for border elevation+position encoding
-        const spanY = Math.min(6, Math.round(span.y * this.tileToMeter / 10));
+        const spanY = Math.min(6, Math.round((max.y - min.y) * this.tileToMeter / 10));
         return new Point((clamp(c.x, 1, EXTENT - 1) << 3) | spanX, (clamp(c.y, 1, EXTENT - 1) << 3) | spanY);
     }
 
@@ -1799,6 +1788,29 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         }
     }
 
+    // sets the centroid of every part of a building, e.g. hidden border children that weren't matched directly
+    setBuildingCentroid(buildingId: number, centroidXY: Point) {
+        const data = this.centroidData.data;
+        if (!this.partsByBuildingId) {
+            // NaN ids (no numeric id before transfer) are left out: they'd break the sort and never match
+            const all = new Uint32Array(data.length);
+            let n = 0;
+            for (let i = 0; i < data.length; i++) if (!isNaN(data[i].buildingId)) all[n++] = i;
+            this.partsByBuildingId = all.subarray(0, n).sort((a, b) => data[a].buildingId - data[b].buildingId);
+        }
+        const order = this.partsByBuildingId;
+        let lo = 0, hi = order.length;
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (data[order[mid]].buildingId < buildingId) lo = mid + 1;
+            else hi = mid;
+        }
+        for (let k = lo; k < order.length && data[order[k]].buildingId === buildingId; k++) {
+            data[order[k]].centroidXY = centroidXY;
+            this.writeCentroidToBuffer(data[order[k]]);
+        }
+    }
+
     showCentroid(borderCentroidData: BorderCentroidData, borderJoin: 'keep' | 'discard') {
         const c = this.centroidData.get(borderCentroidData.centroidDataIndex);
         c.flags &= HIDDEN_BY_REPLACEMENT;
@@ -1812,17 +1824,8 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             this.writeCentroidToBuffer(c);
             return;
         }
-        if (c.groupCentroidPos.x !== 0 || c.groupCentroidPos.y !== 0) {
-            const span = c.span();
-            const spanX = Math.min(7, Math.round(span.x * this.tileToMeter / 10));
-            const spanY = Math.min(6, Math.round(span.y * this.tileToMeter / 10));
-            c.centroidXY = new Point(
-                (clamp(c.groupCentroidPos.x, 1, EXTENT - 1) << 3) | spanX,
-                (clamp(c.groupCentroidPos.y, 1, EXTENT - 1) << 3) | spanY
-            );
-        } else {
-            c.centroidXY = new Point(0, 0);
-        }
+        const pos = c.groupCentroidPos;
+        c.centroidXY = pos.x !== 0 || pos.y !== 0 ? this.encodeCentroid(pos, c.min, c.max) : new Point(0, 0);
         this.writeCentroidToBuffer(c);
     }
 
@@ -2003,9 +2006,10 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         let hidden = true;
         assert(x > -EXTENT && y > -EXTENT && x < 2 * EXTENT && y < 2 * EXTENT);
         const lookupKey = (x + EXTENT) * 4 * EXTENT + (y + EXTENT);
-        if (Object.hasOwn(this.partLookup, lookupKey)) {
-            const centroid = this.partLookup[lookupKey];
-            return centroid ? {height: centroid.height, hidden: !!(centroid.flags & HIDDEN_BY_REPLACEMENT)} : undefined;
+        this.partLookup ??= new Map();
+        const cached = this.partLookup.get(lookupKey);
+        if (cached !== undefined) {
+            return cached ? {height: cached.height, hidden: !!(cached.flags & HIDDEN_BY_REPLACEMENT)} : undefined;
         }
         // Hot path: scan the packed Float64Array for the aabb + height filter
         // (those fields are immutable post-populate, so the buffer is
@@ -2024,13 +2028,13 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             const centroid = this.centroidData.get(i);
             if (this.footprintContainsPoint(x, y, centroid)) {
                 height = h;
-                this.partLookup[lookupKey] = centroid;
+                this.partLookup.set(lookupKey, centroid);
                 hidden = !!(centroid.flags & HIDDEN_BY_REPLACEMENT);
             }
         }
         if (height === Number.NEGATIVE_INFINITY) {
             // nothing found, cache that info too.
-            this.partLookup[lookupKey] = undefined;
+            this.partLookup.set(lookupKey, null);
             return;
         }
         return {height, hidden};

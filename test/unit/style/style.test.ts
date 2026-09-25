@@ -3115,8 +3115,8 @@ test('Style#checkAtlasCache does not leak atlas content across style scopes', as
     const publicIcons: StyleImageMap<StringifiedImageVariant> = new Map([[variantId, publicStyle.imageManager.getImage(imageId, 'public')]]);
     const noPatterns: StyleImageMap<StringifiedImageVariant> = new Map();
 
-    const privateVersions = privateStyle.imageManager.getImageVersions('private');
-    const publicVersions = publicStyle.imageManager.getImageVersions('public');
+    const privateVersions = privateStyle.imageManager.imageVersions.get('private');
+    const publicVersions = publicStyle.imageManager.imageVersions.get('public');
 
     const privateDescriptor = new AtlasContentDescriptor(privateIcons, noPatterns, privateVersions, null, 'private');
     const publicDescriptor = new AtlasContentDescriptor(publicIcons, noPatterns, publicVersions, null, 'public');

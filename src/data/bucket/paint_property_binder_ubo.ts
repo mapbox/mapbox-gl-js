@@ -169,7 +169,6 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
     // copies the shared pair into every feature's zoom-ready block slot; symbol's
     // appearance-zoom-stops properties compute their [zm, zM] per feature instead.
     sharedZoomRanges: Float32Array;
-    _zoomRangeScratch: Float32Array;
     _floorZoom: number;
 
     protected abstract _propNames(): readonly string[];
@@ -233,12 +232,15 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
      * in every subclass constructor.
      */
     protected _finishInitialization(): void {
+        // header, sharedZoomRanges and zoomDependency share one buffer so they transfer as one
         const propCount = this._propNames().length;
-        this.zoomDependency = new Uint8Array(propCount);
-        this.sharedZoomRanges = new Float32Array(propCount * 2);
-        this._zoomRangeScratch = new Float32Array(2);
+        const headerDwords = this._headerDwords();
+        const headerBytes = headerDwords * 4;
+        const buffer = new ArrayBuffer(headerBytes + propCount * 9);
+        this.header = new Uint32Array(buffer, 0, headerDwords);
+        this.sharedZoomRanges = new Float32Array(buffer, headerBytes, propCount * 2);
+        this.zoomDependency = new Uint8Array(buffer, headerBytes + propCount * 8, propCount);
         this._floorZoom = Math.floor(this.zoom);
-        this.header = new Uint32Array(this._headerDwords());
         this.updateHeader();
         this.isAllConstant = this.header[HEADER_DATA_DRIVEN_MASK] === 0;
 

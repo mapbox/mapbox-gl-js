@@ -3,7 +3,6 @@ import type {Transferable} from '../types/transferable';
 type GridItem<K> = {key: K; x1: number; y1: number; x2: number; y2: number};
 
 type IntArray = Array<number> | Int32Array;
-type CellArray = Array<IntArray | null>;
 type KeyArray<K> = Array<K> | Int32Array;
 type KeyPredicate<K> = (key: K) => boolean;
 
@@ -28,8 +27,11 @@ class GridIndex<K = number> {
 
     boxKeys: KeyArray<K>;
     circleKeys: KeyArray<K>;
-    boxCells: CellArray;
-    circleCells: CellArray;
+    // Builder cells; empty once deserialized, where box cells are ranges of `cellData` given by the offset
+    // table after the header (only `queryKeys` reads a deserialized grid).
+    boxCells: Array<number[]>;
+    circleCells: Array<number[]>;
+    cellData: Int32Array | null;
     bboxes: IntArray;
     circles: IntArray;
     boxUid: number;
@@ -56,22 +58,10 @@ class GridIndex<K = number> {
             this.circleUid = a[5]!;
 
             const nCells = this.xCellCount * this.yCellCount;
-            const boxCells: CellArray = [];
-            for (let i = 0; i < nCells; i++) {
-                const start = a[HEADER_LEN + i]!;
-                const end = a[HEADER_LEN + i + 1]!;
-                boxCells.push(start === end ? null : a.subarray(start, end));
-            }
-            const circleTable = a[HEADER_LEN + nCells]!;
-            const circleCells: CellArray = [];
-            for (let i = 0; i < nCells; i++) {
-                const start = a[circleTable + i]!;
-                const end = a[circleTable + i + 1]!;
-                circleCells.push(start === end ? null : a.subarray(start, end));
-            }
-            let offset = a[circleTable + nCells]!;
-            this.boxCells = boxCells;
-            this.circleCells = circleCells;
+            let offset = a[a[HEADER_LEN + nCells]! + nCells]!;
+            this.boxCells = [];
+            this.circleCells = [];
+            this.cellData = a;
             this.boxKeys = a.subarray(offset, offset + this.boxUid);
             offset += this.boxUid;
             this.circleKeys = a.subarray(offset, offset + this.circleUid);
@@ -86,14 +76,15 @@ class GridIndex<K = number> {
             this.yCellCount = Math.ceil(height! / cellSize!);
 
             const nCells = this.xCellCount * this.yCellCount;
-            const boxCells: CellArray = [];
-            const circleCells: CellArray = [];
+            const boxCells: Array<number[]> = [];
+            const circleCells: Array<number[]> = [];
             for (let i = 0; i < nCells; i++) {
                 boxCells.push([]);
                 circleCells.push([]);
             }
             this.boxCells = boxCells;
             this.circleCells = circleCells;
+            this.cellData = null;
             this.boxKeys = [];
             this.circleKeys = [];
             this.bboxes = [];
@@ -110,8 +101,8 @@ class GridIndex<K = number> {
     }
 
     clear() {
-        for (const cell of this.boxCells) if (cell) (cell as Array<number>).length = 0;
-        for (const cell of this.circleCells) if (cell) (cell as Array<number>).length = 0;
+        for (const cell of this.boxCells) cell.length = 0;
+        for (const cell of this.circleCells) cell.length = 0;
         (this.circleKeys as Array<K>).length = 0;
         (this.boxKeys as Array<K>).length = 0;
         (this.bboxes as Array<number>).length = 0;
@@ -126,7 +117,7 @@ class GridIndex<K = number> {
         const cx2 = this._xCell(x2), cy2 = this._yCell(y2);
         for (let cx = cx1; cx <= cx2; cx++) {
             for (let cy = cy1; cy <= cy2; cy++) {
-                (this.boxCells[this.xCellCount * cy + cx] as Array<number>).push(uid);
+                this.boxCells[this.xCellCount * cy + cx]!.push(uid);
             }
         }
         (this.boxKeys as Array<K>).push(key);
@@ -141,7 +132,7 @@ class GridIndex<K = number> {
         const cx2 = this._xCell(x + radius), cy2 = this._yCell(y + radius);
         for (let cx = cx1; cx <= cx2; cx++) {
             for (let cy = cy1; cy <= cy2; cy++) {
-                (this.circleCells[this.xCellCount * cy + cx] as Array<number>).push(uid);
+                this.circleCells[this.xCellCount * cy + cx]!.push(uid);
             }
         }
         (this.circleKeys as Array<K>).push(key);
@@ -159,32 +150,28 @@ class GridIndex<K = number> {
         for (let cx = cx1; cx <= cx2; cx++) {
             for (let cy = cy1; cy <= cy2; cy++) {
                 const ci = xCellCount * cy + cx;
-                const bc = boxCells[ci];
-                if (bc) {
-                    for (let i = 0; i < bc.length; i++) {
-                        const uid = bc[i]!;
-                        if (boxSeen[uid] === gen) continue;
-                        boxSeen[uid] = gen;
-                        const o = uid * 4;
-                        const bx1 = bboxes[o]!, by1 = bboxes[o + 1]!, bx2 = bboxes[o + 2]!, by2 = bboxes[o + 3]!;
-                        if (x1 <= bx2 && y1 <= by2 && x2 >= bx1 && y2 >= by1 &&
-                            (!predicate || predicate(boxKeys[uid] as K))) {
-                            result.push({key: boxKeys[uid] as K, x1: bx1, y1: by1, x2: bx2, y2: by2});
-                        }
+                const bc = boxCells[ci]!;
+                for (let i = 0; i < bc.length; i++) {
+                    const uid = bc[i]!;
+                    if (boxSeen[uid] === gen) continue;
+                    boxSeen[uid] = gen;
+                    const o = uid * 4;
+                    const bx1 = bboxes[o]!, by1 = bboxes[o + 1]!, bx2 = bboxes[o + 2]!, by2 = bboxes[o + 3]!;
+                    if (x1 <= bx2 && y1 <= by2 && x2 >= bx1 && y2 >= by1 &&
+                        (!predicate || predicate(boxKeys[uid] as K))) {
+                        result.push({key: boxKeys[uid] as K, x1: bx1, y1: by1, x2: bx2, y2: by2});
                     }
                 }
-                const cc = circleCells[ci];
-                if (cc) {
-                    for (let i = 0; i < cc.length; i++) {
-                        const uid = cc[i]!;
-                        if (circleSeen[uid] === gen) continue;
-                        circleSeen[uid] = gen;
-                        const o = uid * 3;
-                        const x = circles[o]!, y = circles[o + 1]!, r = circles[o + 2]!;
-                        if (this._circleAndRectCollide(x, y, r, x1, y1, x2, y2) &&
-                            (!predicate || predicate(circleKeys[uid] as K))) {
-                            result.push({key: circleKeys[uid] as K, x1: x - r, y1: y - r, x2: x + r, y2: y + r});
-                        }
+                const cc = circleCells[ci]!;
+                for (let i = 0; i < cc.length; i++) {
+                    const uid = cc[i]!;
+                    if (circleSeen[uid] === gen) continue;
+                    circleSeen[uid] = gen;
+                    const o = uid * 3;
+                    const x = circles[o]!, y = circles[o + 1]!, r = circles[o + 2]!;
+                    if (this._circleAndRectCollide(x, y, r, x1, y1, x2, y2) &&
+                        (!predicate || predicate(circleKeys[uid] as K))) {
+                        result.push({key: circleKeys[uid] as K, x1: x - r, y1: y - r, x2: x + r, y2: y + r});
                     }
                 }
             }
@@ -200,16 +187,17 @@ class GridIndex<K = number> {
         const result: Array<number> = [];
         if (x2 < 0 || x1 > this.width || y2 < 0 || y1 > this.height) return result;
         const gen = this._nextGen();
-        const {boxCells, boxKeys, bboxes, boxSeen, xCellCount, xScale, yScale} = this;
+        const {boxCells, cellData, boxKeys, bboxes, boxSeen, xCellCount, xScale, yScale} = this;
 
         const cx1 = this._xCell(x1), cy1 = this._yCell(y1);
         const cx2 = this._xCell(x2), cy2 = this._yCell(y2);
         for (let cx = cx1; cx <= cx2; cx++) {
             for (let cy = cy1; cy <= cy2; cy++) {
                 if (predicate && !predicate(cx / xScale, cy / yScale, (cx + 1) / xScale, (cy + 1) / yScale)) continue;
-                const bc = boxCells[xCellCount * cy + cx];
-                if (!bc) continue;
-                for (let i = 0; i < bc.length; i++) {
+                const ci = xCellCount * cy + cx;
+                const bc = cellData || boxCells[ci]!;
+                const end = cellData ? cellData[HEADER_LEN + ci + 1]! : bc.length;
+                for (let i = cellData ? cellData[HEADER_LEN + ci]! : 0; i < end; i++) {
                     const uid = bc[i]!;
                     if (boxSeen[uid] === gen) continue;
                     boxSeen[uid] = gen;
@@ -235,27 +223,23 @@ class GridIndex<K = number> {
         for (let cx = cx1; cx <= cx2; cx++) {
             for (let cy = cy1; cy <= cy2; cy++) {
                 const ci = xCellCount * cy + cx;
-                const bc = boxCells[ci];
-                if (bc) {
-                    for (let i = 0; i < bc.length; i++) {
-                        const uid = bc[i]!;
-                        if (boxSeen[uid] === gen) continue;
-                        boxSeen[uid] = gen;
-                        const o = uid * 4;
-                        if (x1 <= bboxes[o + 2]! && y1 <= bboxes[o + 3]! && x2 >= bboxes[o]! && y2 >= bboxes[o + 1]! &&
-                            (!predicate || predicate(boxKeys[uid] as K))) return true;
-                    }
+                const bc = boxCells[ci]!;
+                for (let i = 0; i < bc.length; i++) {
+                    const uid = bc[i]!;
+                    if (boxSeen[uid] === gen) continue;
+                    boxSeen[uid] = gen;
+                    const o = uid * 4;
+                    if (x1 <= bboxes[o + 2]! && y1 <= bboxes[o + 3]! && x2 >= bboxes[o]! && y2 >= bboxes[o + 1]! &&
+                        (!predicate || predicate(boxKeys[uid] as K))) return true;
                 }
-                const cc = circleCells[ci];
-                if (cc) {
-                    for (let i = 0; i < cc.length; i++) {
-                        const uid = cc[i]!;
-                        if (circleSeen[uid] === gen) continue;
-                        circleSeen[uid] = gen;
-                        const o = uid * 3;
-                        if (this._circleAndRectCollide(circles[o]!, circles[o + 1]!, circles[o + 2]!, x1, y1, x2, y2) &&
-                            (!predicate || predicate(circleKeys[uid] as K))) return true;
-                    }
+                const cc = circleCells[ci]!;
+                for (let i = 0; i < cc.length; i++) {
+                    const uid = cc[i]!;
+                    if (circleSeen[uid] === gen) continue;
+                    circleSeen[uid] = gen;
+                    const o = uid * 3;
+                    if (this._circleAndRectCollide(circles[o]!, circles[o + 1]!, circles[o + 2]!, x1, y1, x2, y2) &&
+                        (!predicate || predicate(circleKeys[uid] as K))) return true;
                 }
             }
         }
@@ -274,27 +258,23 @@ class GridIndex<K = number> {
         for (let cx = cx1; cx <= cx2; cx++) {
             for (let cy = cy1; cy <= cy2; cy++) {
                 const ci = xCellCount * cy + cx;
-                const bc = boxCells[ci];
-                if (bc) {
-                    for (let i = 0; i < bc.length; i++) {
-                        const uid = bc[i]!;
-                        if (boxSeen[uid] === gen) continue;
-                        boxSeen[uid] = gen;
-                        const o = uid * 4;
-                        if (this._circleAndRectCollide(x, y, radius, bboxes[o]!, bboxes[o + 1]!, bboxes[o + 2]!, bboxes[o + 3]!) &&
-                            (!predicate || predicate(boxKeys[uid] as K))) return true;
-                    }
+                const bc = boxCells[ci]!;
+                for (let i = 0; i < bc.length; i++) {
+                    const uid = bc[i]!;
+                    if (boxSeen[uid] === gen) continue;
+                    boxSeen[uid] = gen;
+                    const o = uid * 4;
+                    if (this._circleAndRectCollide(x, y, radius, bboxes[o]!, bboxes[o + 1]!, bboxes[o + 2]!, bboxes[o + 3]!) &&
+                        (!predicate || predicate(boxKeys[uid] as K))) return true;
                 }
-                const cc = circleCells[ci];
-                if (cc) {
-                    for (let i = 0; i < cc.length; i++) {
-                        const uid = cc[i]!;
-                        if (circleSeen[uid] === gen) continue;
-                        circleSeen[uid] = gen;
-                        const o = uid * 3;
-                        if (this._circlesCollide(circles[o]!, circles[o + 1]!, circles[o + 2]!, x, y, radius) &&
-                            (!predicate || predicate(circleKeys[uid] as K))) return true;
-                    }
+                const cc = circleCells[ci]!;
+                for (let i = 0; i < cc.length; i++) {
+                    const uid = cc[i]!;
+                    if (circleSeen[uid] === gen) continue;
+                    circleSeen[uid] = gen;
+                    const o = uid * 3;
+                    if (this._circlesCollide(circles[o]!, circles[o + 1]!, circles[o + 2]!, x, y, radius) &&
+                        (!predicate || predicate(circleKeys[uid] as K))) return true;
                 }
             }
         }
@@ -336,7 +316,7 @@ class GridIndex<K = number> {
         let offset = HEADER_LEN + (nCells + 1);
         for (let i = 0; i < nCells; i++) {
             a[HEADER_LEN + i] = offset;
-            const cell = this.boxCells[i] as Array<number>;
+            const cell = this.boxCells[i]!;
             a.set(cell, offset);
             offset += cell.length;
         }
@@ -346,7 +326,7 @@ class GridIndex<K = number> {
         offset += nCells + 1;
         for (let i = 0; i < nCells; i++) {
             a[circleTable + i] = offset;
-            const cell = this.circleCells[i] as Array<number>;
+            const cell = this.circleCells[i]!;
             a.set(cell, offset);
             offset += cell.length;
         }

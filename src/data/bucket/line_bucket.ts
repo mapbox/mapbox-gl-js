@@ -1442,6 +1442,6 @@ function pointOutsideBounds(p: Point, min: number, max: number) {
     return (p.x < min || p.x > max || p.y < min || p.y > max);
 }
 
-register(LineBucket, 'LineBucket', {omit: ['layers', 'patternFeatures', 'currentVertex', 'currentVertexIsOutside', 'cachedBatchIndices', 'cachedBatchSegments']});
+register(LineBucket, 'LineBucket', {omit: ['layers', 'patternFeatures', 'currentVertex', 'currentVertexIsOutside', 'lineFeature', 'cachedBatchIndices', 'cachedBatchSegments']});
 
 export default LineBucket;

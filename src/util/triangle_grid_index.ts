@@ -2,11 +2,6 @@ import {triangleIntersectsTriangle} from './intersection_tests';
 import Point from "@mapbox/point-geometry";
 import {register} from './web_worker_transfer';
 
-type Cell = {
-    start: number;
-    len: number;
-};
-
 /**
  * TriangleGridIndex is a specialized GridIndex data structure optimized
  * for querying potentially intersecting triangles in a 2d plane. Once built,
@@ -22,11 +17,12 @@ class TriangleGridIndex {
     yScale: number;
     cellsX: number;
     cellsY: number;
-    cells: Array<Cell | null | undefined>;
-    payload: Array<number>;
+    // triangles of cell i are payload[cellOffsets[i]..cellOffsets[i + 1]), sorted by index
+    cellOffsets: Uint32Array;
+    payload: Uint32Array;
     lookup: Uint8Array | null | undefined;
 
-    constructor(vertices: Array<Point>, indices: Array<number>, cellCount: number, maxCellSize?: number | null) {
+    constructor(vertices: Array<Point>, indices: ArrayLike<number>, cellCount: number, maxCellSize?: number | null) {
         this.triangleCount = indices.length / 3;
         this.min = new Point(0, 0);
         this.max = new Point(0, 0);
@@ -34,8 +30,8 @@ class TriangleGridIndex {
         this.yScale = 0;
         this.cellsX = 0;
         this.cellsY = 0;
-        this.cells = [];
-        this.payload = [];
+        this.cellOffsets = new Uint32Array(1);
+        this.payload = new Uint32Array(0);
 
         if (this.triangleCount === 0 || vertices.length === 0) {
             return;
@@ -76,7 +72,10 @@ class TriangleGridIndex {
         this.xScale = 1.0 / cellSize;
         this.yScale = 1.0 / cellSize;
 
-        const associatedTriangles: Array<{cellIdx: number; triIdx: number}> = [];
+        const cellCountTotal = this.cellsX * this.cellsY;
+        const cellOffsets = new Uint32Array(cellCountTotal + 1);
+        // flat (cellIdx, triIdx) pairs
+        const associatedTriangles: number[] = [];
 
         // For each triangle find all intersecting cells
         for (let t = 0; t < this.triangleCount; t++) {
@@ -108,30 +107,24 @@ class TriangleGridIndex {
                         continue;
                     }
 
-                    associatedTriangles.push({cellIdx: y * this.cellsX + x, triIdx: t});
+                    const cellIdx = y * this.cellsX + x;
+                    associatedTriangles.push(cellIdx, t);
+                    cellOffsets[cellIdx + 1]++;
                 }
             }
         }
 
+        this.cellOffsets = cellOffsets;
         if (associatedTriangles.length === 0) {
             return;
         }
 
-        // Store cell payload (a list of contained triangles) in adjacent memory cell by cell
-        associatedTriangles.sort((a, b) => a.cellIdx - b.cellIdx || a.triIdx - b.triIdx);
-
-        let idx = 0;
-        while (idx < associatedTriangles.length) {
-            const cellIdx = associatedTriangles[idx].cellIdx;
-            const cell = {start: this.payload.length, len: 0};
-
-            // Find all triangles belonging to the current cell
-            while (idx < associatedTriangles.length && associatedTriangles[idx].cellIdx === cellIdx) {
-                ++cell.len;
-                this.payload.push(associatedTriangles[idx++].triIdx);
-            }
-
-            this.cells[cellIdx] = cell;
+        // Counting sort by cell: triangles were visited in ascending order, so each cell's list stays sorted
+        for (let i = 0; i < cellCountTotal; i++) cellOffsets[i + 1] += cellOffsets[i];
+        const payload = this.payload = new Uint32Array(associatedTriangles.length / 2);
+        const cursor = cellOffsets.slice(0, cellCountTotal);
+        for (let i = 0; i < associatedTriangles.length; i += 2) {
+            payload[cursor[associatedTriangles[i]]++] = associatedTriangles[i + 1];
         }
     }
 
@@ -143,7 +136,7 @@ class TriangleGridIndex {
     }
 
     queryPoint(p: Point, out: Array<number>): void {
-        if (this.triangleCount === 0 || this.cells.length === 0) {
+        if (this.payload.length === 0) {
             return;
         }
 
@@ -154,17 +147,19 @@ class TriangleGridIndex {
         const x = toCellIdx(p.x - this.min.x, this.xScale, this.cellsX);
         const y = toCellIdx(p.y - this.min.y, this.yScale, this.cellsY);
 
-        const cell = this.cells[y * this.cellsX + x];
+        const cellIdx = y * this.cellsX + x;
+        const start = this.cellOffsets[cellIdx];
+        const end = this.cellOffsets[cellIdx + 1];
 
-        if (!cell) {
+        if (start === end) {
             return;
         }
 
         // Use a bitset for lookups
         this._lazyInitLookup();
 
-        for (let i = 0; i < cell.len; i++) {
-            const triIdx = this.payload[cell.start + i];
+        for (let i = start; i < end; i++) {
+            const triIdx = this.payload[i];
 
             // Check the lookup bitset if the triangle has been visited already
             const byte = Math.floor(triIdx / 8);
@@ -185,7 +180,7 @@ class TriangleGridIndex {
     }
 
     query(bbMin: Point, bbMax: Point, out: Array<number>): void {
-        if (this.triangleCount === 0 || this.cells.length === 0) {
+        if (this.payload.length === 0) {
             return;
         }
 
@@ -205,14 +200,11 @@ class TriangleGridIndex {
 
         for (let y = mny; y <= mxy; y++) {
             for (let x = mnx; x <= mxx; x++) {
-                const cell = this.cells[y * this.cellsX + x];
+                const cellIdx = y * this.cellsX + x;
+                const end = this.cellOffsets[cellIdx + 1];
 
-                if (!cell) {
-                    continue;
-                }
-
-                for (let i = 0; i < cell.len; i++) {
-                    const triIdx = this.payload[cell.start + i];
+                for (let i = this.cellOffsets[cellIdx]; i < end; i++) {
+                    const triIdx = this.payload[i];
 
                     // Check the lookup bitset if the triangle has been visited already
                     const byte = Math.floor(triIdx / 8);

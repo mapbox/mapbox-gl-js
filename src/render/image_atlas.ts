@@ -184,11 +184,10 @@ export class ImageAtlasReference {
 }
 
 export default class ImageAtlas {
-    image: RGBAImage;
+    image: RGBAImage | null;
     iconPositions: ImagePositionMap;
     patternPositions: ImagePositionMap;
     haveRenderCallbacks: ImageId[];
-    uploaded: boolean | null | undefined;
     lut: LUT | null;
     contentDescriptor: AtlasContentDescriptor | null | undefined;
 
@@ -331,6 +330,9 @@ export class ImageAtlasCache {
     // doing so leaves Texture.texture === null and triggers "no texture bound to target"
     // when the tile later tries to bind during draw.
     private currentFrameAtlases: Set<ImageAtlas>;
+    // Atlases used in the previous frame are likely still visible; evicting one would make its tiles reload (the
+    // pixels are dropped after upload), which with a visible set over budget would keep reloading every frame.
+    private previousFrameAtlases: Set<ImageAtlas>;
 
     constructor(options?: {maxTextureMemoryMB?: number}) {
         this.cache = new Map();
@@ -339,26 +341,27 @@ export class ImageAtlasCache {
         this.textureMemoryUsed = 0;
         this.maxTextureMemory = (options && options.maxTextureMemoryMB ? options.maxTextureMemoryMB : 256) * 1024 * 1024;
         this.currentFrameAtlases = new Set();
+        this.previousFrameAtlases = new Set();
         // Use FinalizationRegistry to clean up cache entries when atlases are garbage collected
         this.finalizationRegistry = new FinalizationRegistry((hash) => {
-            this.cache.delete(hash);
+            // the hash may already point to a newer atlas if this one was evicted
+            if (!this.cache.get(hash)?.deref()) this.cache.delete(hash);
             this.clearExpiredTextures();
         });
     }
 
     beginFrame() {
-        this.currentFrameAtlases.clear();
+        const previous = this.previousFrameAtlases;
+        this.previousFrameAtlases = this.currentFrameAtlases;
+        this.currentFrameAtlases = previous;
+        previous.clear();
     }
 
     /**
      * Calculates GPU memory usage for an atlas texture.
      * Includes base texture memory and mipmap overhead.
      */
-    private calculateTextureMemory(atlas: ImageAtlas): number {
-        if (!atlas.image) return 0;
-
-        const width = atlas.image.width;
-        const height = atlas.image.height;
+    private calculateTextureMemory(atlas: ImageAtlas, [width, height]: [number, number]): number {
         const bytesPerPixel = 4; // RGBA8
         const baseMemory = width * height * bytesPerPixel;
 
@@ -371,17 +374,17 @@ export class ImageAtlasCache {
 
     /**
      * Evicts a specific texture from the cache to free GPU memory.
-     * The atlas remains in the CPU cache and can have its texture recreated later.
+     * The atlas pixels are gone at this point, so it also leaves the cache and tiles using it get reloaded.
      */
     private evictTexture(atlas: ImageAtlas) {
         const texture = this.textures.get(atlas);
         if (texture) {
-            const memory = this.calculateTextureMemory(atlas);
+            if (this.isAtlasCached(atlas)) this.cache.delete(atlas.contentDescriptor.hash);
+            const memory = this.calculateTextureMemory(atlas, texture.size);
             texture.destroy();
             this.textures.delete(atlas);
             this.textureAccessTimes.delete(atlas);
             this.textureMemoryUsed -= memory;
-            atlas.uploaded = false;
         }
     }
 
@@ -391,12 +394,12 @@ export class ImageAtlasCache {
      */
     private evictTexturesIfNeeded(requiredMemory: number) {
         while (this.textureMemoryUsed + requiredMemory > this.maxTextureMemory && this.textures.size > 0) {
-            // Find least recently used texture, skipping any already handed out this frame.
+            // Find least recently used texture, skipping any handed out this frame or the previous one.
             let lruAtlas: ImageAtlas | null = null;
             let oldestTime = Infinity;
 
             for (const [atlas,] of this.textures.entries()) {
-                if (this.currentFrameAtlases.has(atlas)) continue;
+                if (this.currentFrameAtlases.has(atlas) || this.previousFrameAtlases.has(atlas)) continue;
                 const accessTime = this.textureAccessTimes.get(atlas) || 0;
                 if (accessTime < oldestTime) {
                     oldestTime = accessTime;
@@ -407,7 +410,7 @@ export class ImageAtlasCache {
             if (lruAtlas) {
                 this.evictTexture(lruAtlas);
             } else {
-                // Every cached texture is in use this frame — accept the temporary
+                // Every cached texture is in use this or last frame — accept the temporary
                 // overshoot rather than tear down a texture a tile still references.
                 break;
             }
@@ -466,7 +469,7 @@ export class ImageAtlasCache {
 
         // Create or recreate texture for this atlas
         if (atlas.image) {
-            const textureMemory = this.calculateTextureMemory(atlas);
+            const textureMemory = this.calculateTextureMemory(atlas, [atlas.image.width, atlas.image.height]);
 
             // Evict LRU textures if needed to stay within budget
             this.evictTexturesIfNeeded(textureMemory);
@@ -476,10 +479,9 @@ export class ImageAtlasCache {
             this.textures.set(atlas, texture);
             this.textureMemoryUsed += textureMemory;
 
-            // Note: We keep atlas.image around (unlike GL Native) because:
-            // 1. WebGL context restoration requires image data to recreate textures
-            // 2. Layout property changes may trigger new tile uploads
-            // 3. LRU eviction allows texture recreation when needed
+            // Image updates are patched into the texture directly, so the pixels are never needed again; if
+            // the texture gets evicted, SourceCache reloads the tiles that use the atlas instead.
+            atlas.image = null;
             return texture;
         }
 
@@ -490,18 +492,8 @@ export class ImageAtlasCache {
      * Clears textures for atlases that no longer exist.
      */
     private clearExpiredTextures() {
-        for (const [atlas,] of this.textures.entries()) {
-            // If the atlas is no longer referenced, remove its texture
-            if (!this.isAtlasCached(atlas)) {
-                const texture = this.textures.get(atlas);
-                if (texture) {
-                    const memory = this.calculateTextureMemory(atlas);
-                    texture.destroy();
-                    this.textureMemoryUsed -= memory;
-                }
-                this.textures.delete(atlas);
-                this.textureAccessTimes.delete(atlas);
-            }
+        for (const atlas of this.textures.keys()) {
+            if (!this.isAtlasCached(atlas)) this.evictTexture(atlas);
         }
     }
 
@@ -579,36 +571,31 @@ export class ImageAtlasCache {
     }
 
     /**
-     * Destroys all cached textures (e.g., during WebGL context restoration).
-     * Atlas cache entries are preserved so textures can be recreated.
-     */
-    destroyTextures() {
-        for (const texture of this.textures.values()) {
-            if (texture) {
-                texture.destroy();
-            }
-        }
-        this.textures.clear();
-        this.textureAccessTimes.clear();
-        this.textureMemoryUsed = 0;
-    }
-
-    /**
      * Clears the entire cache, including textures and tracking data.
      */
     clear() {
         // Destroy all textures first
-        for (const texture of this.textures.values()) {
-            if (texture) {
-                texture.destroy();
-            }
-        }
+        for (const texture of this.textures.values()) texture.destroy();
 
         // Clear all caches and tracking
         this.cache.clear();
         this.textures.clear();
         this.textureAccessTimes.clear();
         this.textureMemoryUsed = 0;
+        this.currentFrameAtlases.clear();
+        this.previousFrameAtlases.clear();
+    }
+
+    /**
+     * Drops the textures and cache entries of one style scope, leaving the other scopes' atlases intact: their
+     * pixels are gone after upload, so clearing them would make all their tiles reload.
+     */
+    removeScope(scope: string) {
+        for (const [hash, ref] of this.cache) {
+            const atlas = ref.deref();
+            if (!atlas || atlas.contentDescriptor.scope === scope) this.cache.delete(hash);
+        }
+        this.clearExpiredTextures();
     }
 }
 

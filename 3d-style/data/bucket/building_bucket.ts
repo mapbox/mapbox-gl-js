@@ -380,7 +380,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
         const emptyGrid: TriangleGridIndex = new TriangleGridIndex([], [], 1);
         const footprintForBucket: Footprint = {
-            vertices: [],
+            vertices: new Float64Array(0),
             indices: new Uint32Array(0),
             grid: emptyGrid,
             min: this.footprintsMin,

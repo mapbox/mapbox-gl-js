@@ -66,7 +66,7 @@ class VertexBuffer {
         assert(array.length === this.length);
         const gl = this.context.gl;
         this.bind();
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, array.arrayBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, array.uint8, 0, array.length * array.bytesPerElement);
     }
 
     enableAttributes(gl: WebGL2RenderingContext, program: Program<UniformBindings>) {

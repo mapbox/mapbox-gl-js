@@ -19,7 +19,7 @@ import toEvaluationFeature from '../data/evaluation_feature';
 import type {ReplacementSource} from '../../3d-style/source/replacement_source';
 import type {CollisionBoxArray, CollisionVertexArray, SymbolInstance} from '../data/array_types';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
-import type {SymbolBuffers, SingleCollisionBox, CollisionArrays} from '../data/bucket/symbol_bucket';
+import type {SymbolBuffers, SingleCollisionBox} from '../data/bucket/symbol_bucket';
 import type FeatureIndex from '../data/feature_index';
 import type Transform from '../geo/transform';
 import type BuildingIndex from '../source/building_index';
@@ -498,12 +498,9 @@ export class Placement {
 
         const needsFeatureForElevation = !symbolZOffset.isConstant();
 
-        if (!bucket.collisionArrays && collisionBoxArray) {
-            bucket.deserializeCollisionBoxes(collisionBoxArray);
-        }
-
-        const placeSymbol = (symbolInstance: SymbolInstance, boxIndex: number, collisionArrays: CollisionArrays) => {
+        const placeSymbol = (symbolInstance: SymbolInstance, boxIndex: number) => {
             const {crossTileID, numVerticalGlyphVertices} = symbolInstance;
+            const collisionArrays = bucket.getCollisionArrays(collisionBoxArray, symbolInstance);
 
             let feature: Feature = null;
 
@@ -897,7 +894,7 @@ export class Placement {
             const symbolIndexes = bucket.getSortedSymbolIndexes(this.transform.angle);
             for (let i = symbolIndexes.length - 1; i >= 0; --i) {
                 const symbolIndex = symbolIndexes[i];
-                placeSymbol(bucket.symbolInstances.get(symbolIndex), symbolIndex, bucket.collisionArrays[symbolIndex]);
+                placeSymbol(bucket.symbolInstances.get(symbolIndex), symbolIndex);
             }
             if (bucket.hasAnyZOffset) warnOnce(`${bucket.layerIds[0]} layer symbol-z-elevate: symbols are not sorted by elevation if symbol-z-order is evaluated to viewport-y`);
 
@@ -905,11 +902,11 @@ export class Placement {
             const indexes = bucket.getSortedIndexesByZOffset();
             for (let i = 0; i < indexes.length; ++i) {
                 const symbolIndex = indexes[i];
-                placeSymbol(bucket.symbolInstances.get(symbolIndex), symbolIndex, bucket.collisionArrays[symbolIndex]);
+                placeSymbol(bucket.symbolInstances.get(symbolIndex), symbolIndex);
             }
         } else {
             for (let i = bucketPart.symbolInstanceStart; i < bucketPart.symbolInstanceEnd; i++) {
-                placeSymbol(bucket.symbolInstances.get(i), i, bucket.collisionArrays[i]);
+                placeSymbol(bucket.symbolInstances.get(i), i);
             }
         }
 
@@ -1116,10 +1113,6 @@ export class Placement {
                 iconAllowOverlap && (textAllowOverlap || !bucket.hasTextData() || layout.get('text-optional')),
                 true);
 
-        if (!bucket.collisionArrays && collisionBoxArray && ((bucket.hasIconCollisionBoxData() || bucket.hasTextCollisionBoxData()))) {
-            bucket.deserializeCollisionBoxes(collisionBoxArray);
-        }
-
         const addOpacities = (iconOrText: SymbolBuffers, numVertices: number, opacity: number) => {
             for (let i = 0; i < numVertices / 4; i++) {
                 iconOrText.opacityVertexArray.emplaceBack(opacity);
@@ -1258,11 +1251,14 @@ export class Placement {
             }
 
             if (bucket.hasIconCollisionBoxData() || bucket.hasTextCollisionBoxData()) {
-                const collisionArrays = bucket.collisionArrays[s];
-                if (collisionArrays) {
+                if (collisionBoxArray) {
+                    const hasTextBox = symbolInstance.textBoxStartIndex < symbolInstance.textBoxEndIndex;
+                    const hasVerticalTextBox = symbolInstance.verticalTextBoxStartIndex < symbolInstance.verticalTextBoxEndIndex;
+                    const hasIconBox = symbolInstance.iconBoxStartIndex < symbolInstance.iconBoxEndIndex;
+                    const hasVerticalIconBox = symbolInstance.verticalIconBoxStartIndex < symbolInstance.verticalIconBoxEndIndex;
                     let shift = new Point(0, 0);
                     let used = true;
-                    if (collisionArrays.textBox || collisionArrays.verticalTextBox) {
+                    if (hasTextBox || hasVerticalTextBox) {
                         if (variablePlacement) {
                             const variableOffset = this.variableOffsets[crossTileID];
                             if (variableOffset) {
@@ -1290,23 +1286,23 @@ export class Placement {
                             used = !opacityState.clipped;
                         }
 
-                        if (collisionArrays.textBox) {
+                        if (hasTextBox) {
                             updateCollisionVertices(bucket.textCollisionBox.collisionVertexArray, opacityState.text.placed, !used || horizontalHidden, symbolZOffsetValue, elevationFromSea, shift.x, shift.y);
                         }
-                        if (collisionArrays.verticalTextBox) {
+                        if (hasVerticalTextBox) {
                             updateCollisionVertices(bucket.textCollisionBox.collisionVertexArray, opacityState.text.placed, !used || verticalHidden, symbolZOffsetValue, elevationFromSea, shift.x, shift.y);
                         }
                     }
 
-                    const verticalIconUsed = used && Boolean(!verticalHidden && collisionArrays.verticalIconBox);
+                    const verticalIconUsed = used && !verticalHidden && hasVerticalIconBox;
 
-                    if (collisionArrays.iconBox) {
+                    if (hasIconBox) {
                         updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, verticalIconUsed, symbolZOffsetValue, elevationFromSea,
                             symbolInstance.hasIconTextFit ? shift.x : 0,
                             symbolInstance.hasIconTextFit ? shift.y : 0);
                     }
 
-                    if (collisionArrays.verticalIconBox) {
+                    if (hasVerticalIconBox) {
                         updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, !verticalIconUsed, symbolZOffsetValue, elevationFromSea,
                             symbolInstance.hasIconTextFit ? shift.x : 0,
                             symbolInstance.hasIconTextFit ? shift.y : 0);

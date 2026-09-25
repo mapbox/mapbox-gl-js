@@ -816,22 +816,8 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
             bucket.writeCentroidToBuffer(centroidA);
             nBucket.writeCentroidToBuffer(centroidB);
 
-            // Propagate the same encoded centroid to all parts of this building,
-            // including hidden border children that weren't directly matched.
-            if (partA.buildingId !== undefined) {
-                for (const part of bucket.centroidData) {
-                    if (part.buildingId === partA.buildingId && part !== centroidA) {
-                        part.centroidXY = centroidA.centroidXY;
-                        bucket.writeCentroidToBuffer(part);
-                    }
-                }
-                for (const part of nBucket.centroidData) {
-                    if (part.buildingId === partA.buildingId && part !== centroidB) {
-                        part.centroidXY = centroidB.centroidXY;
-                        nBucket.writeCentroidToBuffer(part);
-                    }
-                }
-            }
+            bucket.setBuildingCentroid(partA.buildingId, centroidA.centroidXY);
+            nBucket.setBuildingCentroid(partA.buildingId, centroidB.centroidXY);
         }
 
         // Fallback: geometric overlap matching for parts NOT matched by building_id

@@ -794,6 +794,9 @@ export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: 
         bucket.generateCollisionDebugBuffers(tileZoom, bucket.collisionBoxArray, sizes.textScaleFactor);
     }
 
+    // Only appearance updates read the positions after layout, so don't ship the tile's whole icon map with every bucket
+    if (bucket.layers[0].getAppearances().length === 0) bucket.iconAtlasPositions = undefined;
+
     // All features are populated now — trim the UBO staging arrays before the bucket is transferred.
     if (bucket.text.uboBinder) bucket.text.uboBinder.finalize();
     if (bucket.icon.uboBinder) bucket.icon.uboBinder.finalize();

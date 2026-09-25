@@ -4571,7 +4571,8 @@ class Style extends Evented<MapEvents> {
         }
 
         this.imageManager.removeScope(this.scope);
-        this.imageManager.imageAtlasCache.clear();
+        if (this.isRootStyle()) this.imageManager.imageAtlasCache.clear();
+        else this.imageManager.imageAtlasCache.removeScope(this.scope);
 
         this.setEventedParent(null);
 

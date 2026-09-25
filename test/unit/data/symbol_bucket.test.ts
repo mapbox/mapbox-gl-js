@@ -226,7 +226,7 @@ function createFullTileFootprintSource(tileId: UnwrappedTileID, order: number) {
     ];
     const indices = [0, 1, 2, 2, 3, 0];
     const grid = new TriangleGridIndex(vertices, indices, 6);
-    const footprint = {vertices, indices, grid, min, max};
+    const footprint = {vertices: new Float64Array(vertices.flatMap(p => [p.x, p.y])), indices, grid, min, max};
 
     return {
         getSourceId: () => 'test-clip-source',

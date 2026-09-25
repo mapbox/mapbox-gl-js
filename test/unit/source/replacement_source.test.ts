@@ -45,7 +45,7 @@ describe('ReplacementSource', () => {
 
         return {
             footprint: {
-                vertices,
+                vertices: new Float64Array(vertices.flatMap(p => [p.x, p.y])),
                 indices,
                 grid,
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -116,8 +116,7 @@ describe('ReplacementSource', () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const grid = new TriangleGridIndex(vertices, indices, 6);
         const footprint = {footprint: {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            vertices,
+            vertices: new Float64Array((vertices as Point[]).flatMap(p => [p.x, p.y])),
             indices,
             grid,
             min,

@@ -66,7 +66,7 @@ export type ImageVersionsMap = Map<string, number>;
 export class AtlasContentDescriptor {
     hash: number;
     requiresMipMaps: boolean;
-    private scope: string;
+    scope: string;
 
     private iconDescriptors: ImageDescriptor[];
     private patternDescriptors: ImageDescriptor[];

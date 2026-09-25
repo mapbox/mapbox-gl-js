@@ -214,6 +214,31 @@ export type CollisionArrays = {
     verticalIconFeatureIndex?: number;
 };
 
+const createCollisionBox = (): SingleCollisionBox => ({
+    x1: 0, y1: 0, x2: 0, y2: 0, padding: 0, projectedAnchorX: 0, projectedAnchorY: 0, projectedAnchorZ: 0,
+    tileAnchorX: 0, tileAnchorY: 0, elevation: undefined, tileID: undefined
+});
+const scratchTextBox = createCollisionBox();
+const scratchVerticalTextBox = createCollisionBox();
+const scratchIconBox = createCollisionBox();
+const scratchVerticalIconBox = createCollisionBox();
+const scratchCollisionArrays: CollisionArrays = {};
+
+function readCollisionBox(collisionBoxArray: CollisionBoxArray, index: number, box: SingleCollisionBox): number {
+    const b = collisionBoxArray.get(index);
+    box.x1 = b.x1;
+    box.y1 = b.y1;
+    box.x2 = b.x2;
+    box.y2 = b.y2;
+    box.padding = b.padding;
+    box.projectedAnchorX = b.projectedAnchorX;
+    box.projectedAnchorY = b.projectedAnchorY;
+    box.projectedAnchorZ = b.projectedAnchorZ;
+    box.tileAnchorX = b.tileAnchorX;
+    box.tileAnchorY = b.tileAnchorY;
+    return b.featureIndex;
+}
+
 export type SymbolFeature = {
     sortKey: number | undefined;
     text: Formatted | undefined;
@@ -375,6 +400,14 @@ function evaluateFadeOpacity(refTime: number, target: boolean, settled: boolean,
 }
 
 const EMPTY_FEATURE_STATE: FeatureState = {};
+const textZOffsetScratch = new ZOffsetVertexArray();
+const iconZOffsetScratch = new ZOffsetVertexArray();
+
+function appendZOffset(array: ZOffsetVertexArray, numVertices: number, value: number) {
+    const start = array.length;
+    array.resize(start + numVertices);
+    array.float32.fill(value, start, start + numVertices);
+}
 
 export class SymbolBuffers {
     layoutVertexArray: SymbolLayoutArray;
@@ -567,6 +600,9 @@ export class SymbolBuffers {
             }
             if (!this.zOffsetVertexBuffer && (this.zOffsetVertexArray.length > 0 || !!createZOffsetBuffer)) {
                 this.zOffsetVertexBuffer = context.createVertexBuffer(this.zOffsetVertexArray, zOffsetAttributes.members, true);
+                // later updateZOffset rebuilds go through a shared scratch, so free the bucket's copy
+                this.zOffsetVertexArray.clear();
+                this.zOffsetVertexArray._trim();
             }
             if (!this.orientationVertexBuffer && this.orientationVertexArray && this.orientationVertexArray.length > 0) {
                 this.orientationVertexBuffer = context.createVertexBuffer(this.orientationVertexArray, orientationAttributes.members, true);
@@ -735,7 +771,6 @@ class SymbolBucket implements Bucket, SymbolSource {
     featureAppearanceData: Map<number, AppearanceFeatureData>;
     symbolInstances!: SymbolInstanceArray;
     hasAnySecondaryIcon: boolean;
-    collisionArrays!: Array<CollisionArrays>;
     sortKeyRanges: Array<SortKeyRange>;
     // New placement pipeline (see addToPlacement). Start of this bucket's generated symbolId range;
     // assigned on the first placement run and then stable. The variant for symbolInstances[i] uses
@@ -795,7 +830,7 @@ class SymbolBucket implements Bucket, SymbolSource {
     localizable: boolean;
     maxUniformBufferBindings: number | null | undefined;
     maxUniformBlockSizeDwords: number | null | undefined;
-    iconAtlasPositions!: ImagePositionMap;
+    iconAtlasPositions: ImagePositionMap | undefined;
     hasAppearances: boolean | null;
     featureAppearances: FeatureAppearances | null;
 
@@ -1074,10 +1109,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             this.updateReplacement(tile.tileID, replacementSource);
         }
 
-        if (!this.collisionArrays) {
-            if (!tile.collisionBoxArray) return;
-            this.deserializeCollisionBoxes(tile.collisionBoxArray);
-        }
+        if (!tile.collisionBoxArray) return;
 
         if (this.placementIdRangeStart === null) {
             this.placementIdRangeStart = idRangeAllocator.allocateRange(layerUid, this.symbolInstances.length);
@@ -1238,7 +1270,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 continue;
             }
 
-            const collisionArrays = this.collisionArrays[index];
+            const collisionArrays = this.getCollisionArrays(tile.collisionBoxArray, instance);
             if (!collisionArrays.iconBox && !collisionArrays.textBox) {
                 // Neither icon nor text: the symbol contributes no collision geometry, so never begin a variant.
                 continue;
@@ -1360,6 +1392,7 @@ class SymbolBucket implements Bucket, SymbolSource {
 
         const hasIcon = iconImage.value.kind !== 'constant' || !!iconImage.value.value || Object.keys(iconImage.parameters).length > 0;
         const hasAppearanceIcons = this.hasAnyAppearanceLayoutProperty('icon-image');
+        const hasAppearances = this.layers[0].getAppearances().length > 0;
 
         const symbolSortKey = layout.get('symbol-sort-key');
 
@@ -1479,9 +1512,9 @@ class SymbolBucket implements Bucket, SymbolSource {
             };
             this.features.push(symbolFeature);
 
-            // Store minimal data needed for appearance evaluation
-            // Use the promoted ID from IndexedFeature (resolved in worker thread) instead of raw feature.id
-            this.featureAppearanceData.set(index, {
+            // Store minimal data needed for appearance evaluation (setting appearances re-lays out the tile, so
+            // layers without them never need it). Use the promoted ID from IndexedFeature instead of raw feature.id
+            if (hasAppearances) this.featureAppearanceData.set(index, {
                 id, // This is already the promoted ID from IndexedFeature
                 properties: feature.properties,
                 usesAppearanceIconAsPlaceholder: usesAppearanceIconAsFallback,
@@ -1920,67 +1953,37 @@ class SymbolBucket implements Bucket, SymbolSource {
     }
 
     updateZOffset() {
-        // z offset is expected to change less frequently than the placement opacity and, if values are the same,
-        // avoid uploading arrays to buffers.
-        const addZOffsetTextVertex = (array: ZOffsetVertexArray, numVertices: number, value: number) => {
-            currentTextZOffsetVertex += numVertices;
-            if (currentTextZOffsetVertex > array.length) {
-                array.resize(currentTextZOffsetVertex);
-            }
-            for (let i = -numVertices; i < 0; i++) {
-                array.emplace(i + currentTextZOffsetVertex, value);
-            }
-        };
-        const addZOffsetIconVertex = (array: ZOffsetVertexArray, numVertices: number, value: number) => {
-            currentIconZOffsetVertex += numVertices;
-            if (currentIconZOffsetVertex > array.length) {
-                array.resize(currentIconZOffsetVertex);
-            }
-            for (let i = -numVertices; i < 0; i++) {
-                array.emplace(i + currentIconZOffsetVertex, value);
-            }
-        };
-
-        const updateZOffset = this.zOffsetBuffersNeedUpload;
-        if (!updateZOffset) return;
+        // z offset changes less often than placement opacity, so only rebuild and upload when flagged
+        if (!this.zOffsetBuffersNeedUpload) return;
         this.zOffsetBuffersNeedUpload = false;
-        let currentTextZOffsetVertex = 0;
-        let currentIconZOffsetVertex = 0;
+        // once uploaded, rebuild into scratch arrays shared by all buckets instead of keeping a copy per bucket
+        const textArray = this.text.zOffsetVertexBuffer ? textZOffsetScratch : this.text.zOffsetVertexArray;
+        const iconArray = this.icon.zOffsetVertexBuffer ? iconZOffsetScratch : this.icon.zOffsetVertexArray;
+        textArray.clear();
+        iconArray.clear();
         for (let s = 0; s < this.symbolInstances.length; s++) {
             const symbolInstance = this.symbolInstances.get(s);
-            const {
-                numHorizontalGlyphVertices,
-                numVerticalGlyphVertices,
-                numIconVertices
-            } = symbolInstance;
             const zOffset = symbolInstance.zOffset;
-            const hasText = numHorizontalGlyphVertices > 0 || numVerticalGlyphVertices > 0;
-            const hasIcon = numIconVertices > 0;
-            if (hasText) {
-                addZOffsetTextVertex(this.text.zOffsetVertexArray, numHorizontalGlyphVertices, zOffset);
-                addZOffsetTextVertex(this.text.zOffsetVertexArray, numVerticalGlyphVertices, zOffset);
-            }
-            if (hasIcon) {
-                const {placedIconSymbolIndex, verticalPlacedIconSymbolIndex} = symbolInstance;
-                if (placedIconSymbolIndex >= 0) {
-                    addZOffsetIconVertex(this.icon.zOffsetVertexArray, numIconVertices, zOffset);
+            appendZOffset(textArray, symbolInstance.numHorizontalGlyphVertices, zOffset);
+            appendZOffset(textArray, symbolInstance.numVerticalGlyphVertices, zOffset);
+            if (symbolInstance.numIconVertices > 0) {
+                if (symbolInstance.placedIconSymbolIndex >= 0) {
+                    appendZOffset(iconArray, symbolInstance.numIconVertices, zOffset);
                 }
-
-                if (verticalPlacedIconSymbolIndex >= 0) {
-                    addZOffsetIconVertex(this.icon.zOffsetVertexArray, symbolInstance.numVerticalIconVertices, zOffset);
+                if (symbolInstance.verticalPlacedIconSymbolIndex >= 0) {
+                    appendZOffset(iconArray, symbolInstance.numVerticalIconVertices, zOffset);
                 }
             }
         }
 
         if (this.text.zOffsetVertexBuffer) {
-            this.text.zOffsetVertexBuffer.updateData(this.text.zOffsetVertexArray);
+            this.text.zOffsetVertexBuffer.updateData(textArray);
             assert(this.text.zOffsetVertexBuffer.length === this.text.layoutVertexArray.length);
         }
         if (this.icon.zOffsetVertexBuffer) {
-            this.icon.zOffsetVertexBuffer.updateData(this.icon.zOffsetVertexArray);
+            this.icon.zOffsetVertexBuffer.updateData(iconArray);
             assert(this.icon.zOffsetVertexBuffer.length === this.icon.layoutVertexArray.length);
         }
-
     }
 
     isEmpty(): boolean {
@@ -2551,61 +2554,23 @@ class SymbolBucket implements Bucket, SymbolSource {
         }
     }
 
-    // These flat arrays are meant to be quicker to iterate over than the source
-    // CollisionBoxArray
-    _deserializeCollisionBoxesForSymbol(
-        collisionBoxArray: CollisionBoxArray,
-        textStartIndex: number,
-        textEndIndex: number,
-        verticalTextStartIndex: number,
-        verticalTextEndIndex: number,
-        iconStartIndex: number,
-        iconEndIndex: number,
-        verticalIconStartIndex: number,
-        verticalIconEndIndex: number,
-    ): CollisionArrays {
-
-        // Only one box allowed per instance
-        const collisionArrays: CollisionArrays = {};
-        if (textStartIndex < textEndIndex) {
-            const {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY, featureIndex} = collisionBoxArray.get(textStartIndex);
-            collisionArrays.textBox = {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY};
-            collisionArrays.textFeatureIndex = featureIndex;
-        }
-        if (verticalTextStartIndex < verticalTextEndIndex) {
-            const {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY, featureIndex} = collisionBoxArray.get(verticalTextStartIndex);
-            collisionArrays.verticalTextBox = {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY};
-            collisionArrays.verticalTextFeatureIndex = featureIndex;
-        }
-        if (iconStartIndex < iconEndIndex) {
-            const {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY, featureIndex} = collisionBoxArray.get(iconStartIndex);
-            collisionArrays.iconBox = {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY};
-            collisionArrays.iconFeatureIndex = featureIndex;
-        }
-        if (verticalIconStartIndex < verticalIconEndIndex) {
-            const {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY, featureIndex} = collisionBoxArray.get(verticalIconStartIndex);
-            collisionArrays.verticalIconBox = {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY};
-            collisionArrays.verticalIconFeatureIndex = featureIndex;
-        }
-        return collisionArrays;
-    }
-
-    deserializeCollisionBoxes(collisionBoxArray: CollisionBoxArray) {
-        this.collisionArrays = [];
-        for (let i = 0; i < this.symbolInstances.length; i++) {
-            const symbolInstance = this.symbolInstances.get(i);
-            this.collisionArrays.push(this._deserializeCollisionBoxesForSymbol(
-                collisionBoxArray,
-                symbolInstance.textBoxStartIndex,
-                symbolInstance.textBoxEndIndex,
-                symbolInstance.verticalTextBoxStartIndex,
-                symbolInstance.verticalTextBoxEndIndex,
-                symbolInstance.iconBoxStartIndex,
-                symbolInstance.iconBoxEndIndex,
-                symbolInstance.verticalIconBoxStartIndex,
-                symbolInstance.verticalIconBoxEndIndex
-            ));
-        }
+    // Fills shared scratch boxes instead of keeping per-symbol copies of the whole CollisionBoxArray;
+    // the result is only valid until the next call.
+    getCollisionArrays(collisionBoxArray: CollisionBoxArray, instance: SymbolInstance): CollisionArrays {
+        const c = scratchCollisionArrays;
+        const hasText = instance.textBoxStartIndex < instance.textBoxEndIndex;
+        const hasVerticalText = instance.verticalTextBoxStartIndex < instance.verticalTextBoxEndIndex;
+        const hasIcon = instance.iconBoxStartIndex < instance.iconBoxEndIndex;
+        const hasVerticalIcon = instance.verticalIconBoxStartIndex < instance.verticalIconBoxEndIndex;
+        c.textBox = hasText ? scratchTextBox : undefined;
+        c.verticalTextBox = hasVerticalText ? scratchVerticalTextBox : undefined;
+        c.iconBox = hasIcon ? scratchIconBox : undefined;
+        c.verticalIconBox = hasVerticalIcon ? scratchVerticalIconBox : undefined;
+        c.textFeatureIndex = hasText ? readCollisionBox(collisionBoxArray, instance.textBoxStartIndex, scratchTextBox) : undefined;
+        c.verticalTextFeatureIndex = hasVerticalText ? readCollisionBox(collisionBoxArray, instance.verticalTextBoxStartIndex, scratchVerticalTextBox) : undefined;
+        c.iconFeatureIndex = hasIcon ? readCollisionBox(collisionBoxArray, instance.iconBoxStartIndex, scratchIconBox) : undefined;
+        c.verticalIconFeatureIndex = hasVerticalIcon ? readCollisionBox(collisionBoxArray, instance.verticalIconBoxStartIndex, scratchVerticalIconBox) : undefined;
+        return c;
     }
 
     hasTextData(): boolean {

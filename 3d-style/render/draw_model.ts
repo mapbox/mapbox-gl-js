@@ -447,9 +447,9 @@ function getOrCreateFootprintMesh(painter: Painter, node: ModelNode) {
     const indices = node.footprint.indices;
 
     const vertexArray = new PosArray();
-    vertexArray.reserve(vertices.length);
-    for (const v of vertices) {
-        vertexArray.emplaceBack(v.x, v.y);
+    vertexArray.reserve(vertices.length / 2);
+    for (let i = 0; i < vertices.length; i += 2) {
+        vertexArray.emplaceBack(vertices[i], vertices[i + 1]);
     }
 
     const indexArray = new TriangleIndexArray();
@@ -1437,7 +1437,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 // lighting matrix should take node.matrix into account
                 mat4.multiply(lightingMatrixScratch, lightingMatrixScratch, node.globalMatrix);
 
-                const emissiveStrength = hasMapboxFeatures ? 0.0 : nodeInfo.evaluatedRMEA[0][2];
+                const emissiveStrength = hasMapboxFeatures ? 0.0 : nodeInfo.emissiveStrength;
 
                 const targetLod = nodeInfo.targetLod;
                 const hasLod = node.lodMeshes && node.lodMeshes.length > 0;

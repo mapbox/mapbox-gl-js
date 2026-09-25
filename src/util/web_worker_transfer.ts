@@ -40,7 +40,7 @@ export type Serialized =
  */
 type Klass<T extends Class<unknown> = Class<unknown>> = T & {
     _classRegistryKey?: string;
-    serialize?: (input: unknown, transferables?: Set<Transferable>) => SerializedObject;
+    serialize?: (input: unknown, transferables?: Set<Transferable>) => SerializedObject | null;
     deserialize?: (input: Serialized) => unknown;
 };
 
@@ -149,95 +149,97 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         return serialized;
     }
 
-    if (ArrayBuffer.isView(input)) {
-        if (transferables) {
-            transferables.add(input.buffer as ArrayBuffer);
-        }
-        return input;
-    }
-
-    if (isArrayBuffer(input) || input instanceof ImageBitmap) {
-        if (transferables) {
-            transferables.add(input);
-        }
-        return input;
-    }
-
-    if (input instanceof ImageData) {
-        if (transferables) {
-            transferables.add(input.data.buffer);
-        }
-        return input;
-    }
-
-    if (input instanceof Map) {
-        const properties = {'$name': 'Map', entries: []} satisfies SerializedObject;
-        for (const [key, value] of input.entries()) {
-            properties.entries.push(serialize(key), serialize(value, transferables));
-        }
-        return properties;
-    }
-
-    if (input instanceof Headers) {
-        return {'$name': 'Headers', entries: [...input]} satisfies SerializedObject;
-    }
-
-    if (input instanceof Set) {
-        const properties: SerializedObject = {'$name': 'Set'};
-        let idx = 0;
-        for (const value of input.values()) {
-            properties[++idx] = serialize(value);
-        }
-        return properties;
-    }
-
-    if (input instanceof Date || input instanceof RegExp ||
-        input instanceof Boolean || input instanceof Number || input instanceof String) {
-        return input as Serialized;
-    }
-
-    if (input instanceof Error) {
-        const err = input as Error & {cause?: unknown};
-        const ctorName = (err.constructor && err.constructor.name) || 'Error';
-
-        const cls =
-            err instanceof AJAXError ? 'AJAXError' :
-            err instanceof DOMException ? 'DOMException' :
-            err instanceof AggregateError ? 'AggregateError' :
-            (ERROR_CTORS[ctorName] ? ctorName : 'Error');
-
-        const out: SerializedObject = {
-            $name: '$Error',
-            class: cls,
-            name: err.name,
-            message: err.message
-        };
-
-        if (err.stack) out.stack = err.stack;
-        if ('cause' in err && err.cause !== err) out.cause = serialize(err.cause, transferables);
-
-        if (err instanceof AggregateError) {
-            out.errors = (err.errors as unknown[])
-                .filter((e) => e !== err)
-                .map((e) => serialize(e, transferables));
-        }
-
-        const obj = err as unknown as Record<string, unknown>;
-        for (const key in obj) {
-            if (!Object.hasOwn(obj, key)) continue;
-            if (ERROR_PROPERTIES.has(key)) continue;
-            out[key] = serialize(obj[key], transferables);
-        }
-
-        return out;
-    }
-
     // Null-prototype objects (e.g. Object.create(null)) have no inherited
     // `constructor`, so fall back to the plain-Object codepath. They serialize
     // as plain dicts and round-trip as regular {} on the worker side.
     const klass = (input.constructor || Object) as Klass;
     const name = klass._classRegistryKey;
+
+    // builtins are never registered, so plain objects and registered classes skip these checks
     if (!name) {
+        if (ArrayBuffer.isView(input)) {
+            if (transferables) {
+                transferables.add(input.buffer as ArrayBuffer);
+            }
+            return input;
+        }
+
+        if (isArrayBuffer(input) || input instanceof ImageBitmap) {
+            if (transferables) {
+                transferables.add(input);
+            }
+            return input;
+        }
+
+        if (input instanceof ImageData) {
+            if (transferables) {
+                transferables.add(input.data.buffer);
+            }
+            return input;
+        }
+
+        if (input instanceof Map) {
+            const properties = {'$name': 'Map', entries: []} satisfies SerializedObject;
+            for (const [key, value] of input.entries()) {
+                properties.entries.push(serialize(key), serialize(value, transferables));
+            }
+            return properties;
+        }
+
+        if (input instanceof Headers) {
+            return {'$name': 'Headers', entries: [...input]} satisfies SerializedObject;
+        }
+
+        if (input instanceof Set) {
+            const properties: SerializedObject = {'$name': 'Set'};
+            let idx = 0;
+            for (const value of input.values()) {
+                properties[++idx] = serialize(value);
+            }
+            return properties;
+        }
+
+        if (input instanceof Date || input instanceof RegExp ||
+            input instanceof Boolean || input instanceof Number || input instanceof String) {
+            return input as Serialized;
+        }
+
+        if (input instanceof Error) {
+            const err = input as Error & {cause?: unknown};
+            const ctorName = (err.constructor && err.constructor.name) || 'Error';
+
+            const cls =
+                err instanceof AJAXError ? 'AJAXError' :
+                err instanceof DOMException ? 'DOMException' :
+                err instanceof AggregateError ? 'AggregateError' :
+                (ERROR_CTORS[ctorName] ? ctorName : 'Error');
+
+            const out: SerializedObject = {
+                $name: '$Error',
+                class: cls,
+                name: err.name,
+                message: err.message
+            };
+
+            if (err.stack) out.stack = err.stack;
+            if ('cause' in err && err.cause !== err) out.cause = serialize(err.cause, transferables);
+
+            if (err instanceof AggregateError) {
+                out.errors = (err.errors as unknown[])
+                    .filter((e) => e !== err)
+                    .map((e) => serialize(e, transferables));
+            }
+
+            const obj = err as unknown as Record<string, unknown>;
+            for (const key in obj) {
+                if (!Object.hasOwn(obj, key)) continue;
+                if (ERROR_PROPERTIES.has(key)) continue;
+                out[key] = serialize(obj[key], transferables);
+            }
+
+            return out;
+        }
+
         throw new Error(`Can't serialize object of unregistered class "${klass.name}".`);
     }
     assert(registry[name]);
@@ -251,6 +253,9 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         // StructArray types. Once we refactor StructArray to be static,
         // we can remove this complexity.
         klass.serialize(input, transferables) : {};
+
+    // a class can opt out of transfer entirely, leaving the main thread to rebuild it
+    if (properties === null) return null;
 
     if (!klass.serialize) {
         const omit = registry[name].omit;
@@ -352,7 +357,15 @@ export function deserialize(input: Serialized): unknown {
         return err;
     }
 
-    const {klass} = registry[name];
+    // structured clone already produced a fresh plain object, so reuse it instead of copying
+    if (name === 'Object') {
+        for (const key in input) {
+            input[key] = deserialize(input[key]) as Serialized;
+        }
+        return input;
+    }
+
+    const klass = registry[name]?.klass;
     if (!klass) {
         throw new Error(`Can't deserialize unregistered class "${name}".`);
     }

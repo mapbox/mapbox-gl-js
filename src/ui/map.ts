@@ -4429,7 +4429,7 @@ export class Map extends Camera {
         if (this.style) {
             this.style.clearLayers();
             this.style.imageManager.destroyAtlasTextures();
-            this.style.imageManager.imageAtlasCache.destroyTextures();
+            this.style.imageManager.imageAtlasCache.clear();
             this.style.reloadModels();
             this.style.clearSources();
         }

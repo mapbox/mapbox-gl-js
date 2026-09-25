@@ -392,6 +392,20 @@ function transformAabbToTile(min: Point, max: Point, id: UnwrappedTileID): {
     };
 }
 
+// Footprint triangle corners for the intersection tests, which take points; calls are synchronous
+const fpA = new Point(0, 0);
+const fpB = new Point(0, 0);
+const fpC = new Point(0, 0);
+const fpTriangle = [fpA, fpB, fpC];
+
+function setFootprintTriangle(footprint: Footprint, triIdx: number) {
+    const {vertices, indices} = footprint;
+    const a = indices[triIdx * 3] * 2, b = indices[triIdx * 3 + 1] * 2, c = indices[triIdx * 3 + 2] * 2;
+    fpA.x = vertices[a]; fpA.y = vertices[a + 1];
+    fpB.x = vertices[b]; fpB.y = vertices[b + 1];
+    fpC.x = vertices[c]; fpC.y = vertices[c + 1];
+}
+
 function footprintTrianglesIntersect(
     footprint: Footprint,
     vertices: Array<Point>,
@@ -401,9 +415,7 @@ function footprintTrianglesIntersect(
     baseVertex: number,
     padding: number,
 ): boolean {
-    const fpIndices = footprint.indices;
-    const fpVertices = footprint.vertices;
-    const candidateTriangles = [];
+    const candidateTriangles: number[] = [];
 
     for (let i = indexOffset; i < indexOffset + indexCount; i += 3) {
         const a = vertices[indices[i + 0] + baseVertex];
@@ -416,17 +428,12 @@ function footprintTrianglesIntersect(
         const mxy = Math.max(a.y, b.y, c.y);
 
         candidateTriangles.length = 0;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         footprint.grid.query(new Point(mnx, mny), new Point(mxx, mxy), candidateTriangles);
 
         for (let j = 0; j < candidateTriangles.length; j++) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const triIdx = candidateTriangles[j];
-            const v0 = fpVertices[fpIndices[triIdx * 3 + 0]];
-            const v1 = fpVertices[fpIndices[triIdx * 3 + 1]];
-            const v2 = fpVertices[fpIndices[triIdx * 3 + 2]];
+            setFootprintTriangle(footprint, candidateTriangles[j]);
 
-            if (triangleIntersectsTriangle(v0, v1, v2, a, b, c, padding)) {
+            if (triangleIntersectsTriangle(fpA, fpB, fpC, a, b, c, padding)) {
                 return true;
             }
         }
@@ -440,23 +447,22 @@ function footprintsIntersect(a: Footprint, aTile: UnwrappedTileID, b: Footprint,
         return false;
     }
 
-    let queryVertices = a.vertices;
-
     // Convert vertices of the smaller footprint to the coordinate space of the larger one
-    if (!aTile.canonical.equals(bTile.canonical) || aTile.wrap !== bTile.wrap) {
-        if (b.vertices.length < a.vertices.length) {
-            return footprintsIntersect(b, bTile, a, aTile);
-        }
+    const sameTile = aTile.canonical.equals(bTile.canonical) && aTile.wrap === bTile.wrap;
+    if (!sameTile && b.vertices.length < a.vertices.length) {
+        return footprintsIntersect(b, bTile, a, aTile);
+    }
 
-        const srcId = aTile.canonical;
-        const dstId = bTile.canonical;
-        const zDiff = Math.pow(2.0, dstId.z - srcId.z);
+    const srcId = aTile.canonical;
+    const dstId = bTile.canonical;
+    const zDiff = Math.pow(2.0, dstId.z - srcId.z);
 
-        queryVertices = a.vertices.map(v => {
-            const x = (v.x + srcId.x * EXTENT) * zDiff - dstId.x * EXTENT;
-            const y = (v.y + srcId.y * EXTENT) * zDiff - dstId.y * EXTENT;
-            return new Point(x, y);
-        });
+    const queryVertices: Array<Point> = [];
+    for (let i = 0; i < a.vertices.length; i += 2) {
+        const x = a.vertices[i], y = a.vertices[i + 1];
+        queryVertices.push(sameTile ? new Point(x, y) : new Point(
+            (x + srcId.x * EXTENT) * zDiff - dstId.x * EXTENT,
+            (y + srcId.y * EXTENT) * zDiff - dstId.y * EXTENT));
     }
 
     return footprintTrianglesIntersect(b, queryVertices, a.indices, 0, a.indices.length, 0, 0);
@@ -472,23 +478,14 @@ function transformPointToTile(x: number, y: number, src: CanonicalTileID, dst: C
 
 function pointInFootprint(p: Point, footprint: Footprint): boolean {
     // get a list of all triangles that potentially cover this point.
-    const candidateTriangles = [];
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const candidateTriangles: number[] = [];
     footprint.grid.queryPoint(p, candidateTriangles);
 
     // finally check if the point is in any of the triangles.
-    const fpIndices = footprint.indices;
-    const fpVertices: Array<Point> = footprint.vertices;
     for (let j = 0; j < candidateTriangles.length; j++) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const triIdx = candidateTriangles[j];
-        const triangle = [
-            fpVertices[fpIndices[triIdx * 3 + 0]],
-            fpVertices[fpIndices[triIdx * 3 + 1]],
-            fpVertices[fpIndices[triIdx * 3 + 2]]
-        ];
+        setFootprintTriangle(footprint, candidateTriangles[j]);
 
-        if (polygonContainsPoint(triangle, p)) {
+        if (polygonContainsPoint(fpTriangle, p)) {
             return true;
         }
     }

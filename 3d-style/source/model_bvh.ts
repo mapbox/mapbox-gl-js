@@ -1,20 +1,16 @@
 import {register} from '../../src/util/web_worker_transfer';
 
-type BvhNode = {
-    aabbMin: [number, number, number];
-    aabbMax: [number, number, number];
-    backChild: number;  // 0xFFFF for leaf nodes
-    indexCount: number; // 0 for interior nodes
-    indexOffset: number;
-};
+const LEAF = 0xFFFF;
 
-function aabbOverlap(
-    minA: [number, number, number], maxA: [number, number, number],
-    minB: [number, number, number], maxB: [number, number, number]
+// Overlap test of node i's box (stored at i * 3 in the min/max arrays) against a query box
+function nodeOverlap(
+    nodeMin: Float32Array, nodeMax: Float32Array, i: number,
+    min: [number, number, number], max: [number, number, number]
 ): boolean {
-    return minA[0] <= maxB[0] && maxA[0] >= minB[0] &&
-           minA[1] <= maxB[1] && maxA[1] >= minB[1] &&
-           minA[2] <= maxB[2] && maxA[2] >= minB[2];
+    const o = i * 3;
+    return nodeMin[o] <= max[0] && nodeMax[o] >= min[0] &&
+           nodeMin[o + 1] <= max[1] && nodeMax[o + 1] >= min[1] &&
+           nodeMin[o + 2] <= max[2] && nodeMax[o + 2] >= min[2];
 }
 
 // Triangle-AABB intersection test using SAT (Separating Axis Theorem)
@@ -115,8 +111,11 @@ function triangleAABBIntersect(
 const findHighestPointStack: number[] = [];
 
 export class ModelBVH {
-    _nodes!: BvhNode[];
-    _indices!: Uint32Array;
+    // per node: box min/max as x,y,z, and [backChild (LEAF for leaves), indexCount, indexOffset]
+    _nodeMin!: Float32Array;
+    _nodeMax!: Float32Array;
+    _nodeData!: Uint32Array;
+    _indices!: Uint16Array | Uint32Array;
     _vertices!: Float32Array; // packed x,y,z per vertex
 
     serializeFromGltf(binData: Uint8Array, posMinData: Float32Array, posMaxData: Float32Array, idxData: Uint32Array): void {
@@ -141,31 +140,28 @@ export class ModelBVH {
         binOffset += 2;
         if (nodeCount === 0) return;
 
-        this._nodes = [];
-        let posOffset = 0;
+        // copies, so the BVH doesn't retain the whole glTF buffer
+        this._nodeMin = posMinData.slice(0, nodeCount * 3);
+        this._nodeMax = posMaxData.slice(0, nodeCount * 3);
+        const nodeData = this._nodeData = new Uint32Array(nodeCount * 3);
 
         for (let i = 0; i < nodeCount; i++) {
-            const aabbMin: [number, number, number] = [posMinData[posOffset * 3], posMinData[posOffset * 3 + 1], posMinData[posOffset * 3 + 2]];
-            const aabbMax: [number, number, number] = [posMaxData[posOffset * 3], posMaxData[posOffset * 3 + 1], posMaxData[posOffset * 3 + 2]];
-            posOffset++;
-
             const backChild = dataView.getUint16(binOffset, true);
             binOffset += 2;
+            nodeData[i * 3] = backChild;
 
-            let indexCount = 0;
-            let indexOffset = 0;
-            if (backChild === 0xFFFF) {
-                indexCount = dataView.getUint16(binOffset, true);
+            if (backChild === LEAF) {
+                nodeData[i * 3 + 1] = dataView.getUint16(binOffset, true);
                 binOffset += 2;
-                indexOffset = dataView.getUint32(binOffset, true);
+                nodeData[i * 3 + 2] = dataView.getUint32(binOffset, true);
                 binOffset += 4;
             }
-
-            this._nodes.push({aabbMin, aabbMax, backChild, indexCount, indexOffset});
         }
 
         const numIndices = dataView.getUint32(binOffset, true);
-        this._indices = idxData.slice(0, numIndices);
+        let maxIndex = 0;
+        for (let i = 0; i < numIndices; i++) if (idxData[i] > maxIndex) maxIndex = idxData[i];
+        this._indices = maxIndex < 65536 ? new Uint16Array(idxData.subarray(0, numIndices)) : idxData.slice(0, numIndices);
     }
 
     setVertices(data: Float32Array): void {
@@ -173,9 +169,14 @@ export class ModelBVH {
     }
 
     findHighestPoint(aabbMin: [number, number, number], aabbMax: [number, number, number]): number | null {
-        if (!this._nodes || this._nodes.length === 0) return null;
-        if (!aabbOverlap(this._nodes[0].aabbMin, this._nodes[0].aabbMax, aabbMin, aabbMax)) return null;
+        const nodeData = this._nodeData;
+        if (!nodeData) return null;
+        const nodeMin = this._nodeMin;
+        const nodeMax = this._nodeMax;
+        if (!nodeOverlap(nodeMin, nodeMax, 0, aabbMin, aabbMax)) return null;
 
+        const indices = this._indices;
+        const vertices = this._vertices;
         const stack = findHighestPointStack;
         stack.length = 0;
         stack.push(0);
@@ -183,37 +184,37 @@ export class ModelBVH {
 
         while (stack.length > 0) {
             const nodeIdx = stack.pop();
-            const node = this._nodes[nodeIdx];
 
-            if (node.aabbMax[2] <= highest) continue;
+            if (nodeMax[nodeIdx * 3 + 2] <= highest) continue;
 
-            if (node.backChild === 0xFFFF) {
+            const backIdx = nodeData[nodeIdx * 3];
+
+            if (backIdx === LEAF) {
                 // Leaf: test all triangles
-                for (let tri = 0; tri < node.indexCount; tri += 3) {
-                    const i0 = this._indices[node.indexOffset + tri] * 3;
-                    const i1 = this._indices[node.indexOffset + tri + 1] * 3;
-                    const i2 = this._indices[node.indexOffset + tri + 2] * 3;
+                const indexCount = nodeData[nodeIdx * 3 + 1];
+                const indexOffset = nodeData[nodeIdx * 3 + 2];
+                for (let tri = 0; tri < indexCount; tri += 3) {
+                    const i0 = indices[indexOffset + tri] * 3;
+                    const i1 = indices[indexOffset + tri + 1] * 3;
+                    const i2 = indices[indexOffset + tri + 2] * 3;
                     if (triangleAABBIntersect(
-                        this._vertices[i0], this._vertices[i0 + 1], this._vertices[i0 + 2],
-                        this._vertices[i1], this._vertices[i1 + 1], this._vertices[i1 + 2],
-                        this._vertices[i2], this._vertices[i2 + 1], this._vertices[i2 + 2],
+                        vertices[i0], vertices[i0 + 1], vertices[i0 + 2],
+                        vertices[i1], vertices[i1 + 1], vertices[i1 + 2],
+                        vertices[i2], vertices[i2 + 1], vertices[i2 + 2],
                         aabbMin, aabbMax)) {
-                        highest = Math.max(highest, this._vertices[i0 + 2], this._vertices[i1 + 2], this._vertices[i2 + 2]);
+                        highest = Math.max(highest, vertices[i0 + 2], vertices[i1 + 2], vertices[i2 + 2]);
                     }
                 }
                 continue;
             }
 
             const frontIdx = nodeIdx + 1;
-            const backIdx = node.backChild;
-            const frontNode = this._nodes[frontIdx];
-            const backNode = this._nodes[backIdx];
-            const frontOverlap = aabbOverlap(frontNode.aabbMin, frontNode.aabbMax, aabbMin, aabbMax);
-            const backOverlap = aabbOverlap(backNode.aabbMin, backNode.aabbMax, aabbMin, aabbMax);
+            const frontOverlap = nodeOverlap(nodeMin, nodeMax, frontIdx, aabbMin, aabbMax);
+            const backOverlap = nodeOverlap(nodeMin, nodeMax, backIdx, aabbMin, aabbMax);
 
             if (frontOverlap && backOverlap) {
                 // Push lower max Z first so higher max Z is popped (processed) first
-                if (frontNode.aabbMax[2] < backNode.aabbMax[2]) {
+                if (nodeMax[frontIdx * 3 + 2] < nodeMax[backIdx * 3 + 2]) {
                     stack.push(frontIdx);
                     stack.push(backIdx);
                 } else {

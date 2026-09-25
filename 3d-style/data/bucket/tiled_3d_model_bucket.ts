@@ -22,7 +22,6 @@ import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
 import type Context from '../../../src/gl/context';
 import type {FilterSpecification, ProjectionSpecification} from '../../../src/style-spec/types';
 import type Painter from '../../../src/render/painter';
-import type {vec4} from 'gl-matrix';
 import type {ITerrainRenderer} from '../../../src/render/terrain_plugin';
 import type FeatureIndex from '../../../src/data/feature_index';
 import type GridIndex from '../../../src/symbol/grid_index';
@@ -32,8 +31,9 @@ import type {FeatureState, GlobalProperties} from '../../../src/style-spec/expre
 import type {PossiblyEvaluatedValue} from '../../../src/style/properties';
 import type {ImageId} from '../../../src/style-spec/expression/types/image_id';
 
-const lookup = new Float32Array(512 * 512);
-const passLookup = new Uint8Array(512 * 512);
+// DEM flattening scratch, allocated on first use since only the main thread with terrain needs it
+let lookup: Float32Array | undefined;
+let passLookup: Uint8Array | undefined;
 
 const heightQueryAabbMinScratch: [number, number, number] = [0, 0, 0];
 const heightQueryAabbMaxScratch: [number, number, number] = [0, 0, 0];
@@ -72,17 +72,16 @@ assert(PartNames.length === MODEL_PART_COUNT, 'the part style block must have on
 
 export class Tiled3dModelFeature {
     feature: EvaluationFeature;
-    evaluatedColor: Array<vec4>;
-    evaluatedRMEA: Array<vec4>;
     evaluatedTranslation: [number, number, number];
     evaluatedScale: [number, number, number];
     hiddenByReplacement: boolean;
     hasTranslucentParts!: boolean;
     node: ModelNode;
     aabb: Aabb;
-    emissionHeightBasedParams: Array<[number, number, number, number, number]>;
-    // The evaluated fields above, laid out as the shader's ModelPartStyleUniform block.
+    // Evaluated per-part paint, laid out as the shader's ModelPartStyleUniform block.
     partStyle: Float32Array;
+    // Emissive strength of a model without feature data, which has no part style.
+    emissiveStrength: number;
     partStyleUBO: ModelPartStyleUBO | null;
     needsPartStyleUBO: boolean;
     cameraCollisionOpacity: number;
@@ -90,18 +89,10 @@ export class Tiled3dModelFeature {
     state: FeatureState | null;
     constructor(node: ModelNode) {
         this.node = node;
-        this.evaluatedRMEA = [[1, 0, 0, 1],
-            [1, 0, 0, 1],   // wall
-            [1, 0, 0, 1],   // door
-            [1, 0, 0, 1],   // roof
-            [0.4, 1, 0, 1], // window
-            [1, 0, 0, 1],   // lamp
-            [1, 0, 0, 1]];  // logo
         this.hiddenByReplacement = false;
         this.evaluatedTranslation = [0, 0, 0];
         this.evaluatedScale = [1, 1, 1];
-        this.evaluatedColor = [];
-        this.emissionHeightBasedParams = [];
+        this.emissiveStrength = 0;
         this.partStyle = new Float32Array(MODEL_PART_STYLE_FLOATS);
         this.partStyleUBO = null;
         this.needsPartStyleUBO = false;
@@ -314,6 +305,7 @@ class Tiled3dModelBucket implements Bucket {
 
     evaluate(layer: ModelStyleLayer, states?: FeatureStates) {
         const nodesInfo = this.getNodesInfo();
+        const canonical = this.id.canonical;
         for (const nodeInfo of nodesInfo) {
             if (!nodeInfo.node.meshes) continue;
             const evaluationFeature = nodeInfo.feature;
@@ -321,8 +313,7 @@ class Tiled3dModelBucket implements Bucket {
             const state = states && states[evaluationFeature.id];
             if (deepEqual(state, nodeInfo.state)) continue;
             nodeInfo.state = structuredClone(state);
-            const hasFeatures = nodeInfo.node.meshes && nodeInfo.node.meshes[0].hasFeatureData;
-            const canonical = this.id.canonical;
+            const hasFeatures = nodeInfo.node.meshes[0].hasFeatureData;
             nodeInfo.hasTranslucentParts = false;
 
             if (hasFeatures) {
@@ -334,33 +325,25 @@ class Tiled3dModelBucket implements Bucket {
 
                     const color = layer.paint.get('model-color').evaluate(evaluationFeature, state, canonical).toPremultipliedRenderColor(null);
 
-                    const colorMixIntensity = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, state, canonical);
-                    nodeInfo.evaluatedColor[i] = [color.r, color.g, color.b, colorMixIntensity];
+                    writePartStyle(nodeInfo.partStyle, i * 16, color,
+                        layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, state, canonical),
+                        layer.paint.get('model-roughness').evaluate(evaluationFeature, state, canonical),
+                        // metallic is not styled; only windows are metallic
+                        part === 'window' ? 1 : 0,
+                        layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, state, canonical),
+                        layer.paint.get('model-height-based-emissive-strength-multiplier').evaluate(evaluationFeature, state, canonical));
 
-                    nodeInfo.evaluatedRMEA[i][0] = layer.paint.get('model-roughness').evaluate(evaluationFeature, state, canonical);
-                    // For the first version metallic is not styled
-
-                    nodeInfo.evaluatedRMEA[i][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, state, canonical);
-                    nodeInfo.evaluatedRMEA[i][3] = color.a;
-
-                    nodeInfo.emissionHeightBasedParams[i] = layer.paint.get('model-height-based-emissive-strength-multiplier').evaluate(evaluationFeature, state, canonical);
-
-                    if (!nodeInfo.hasTranslucentParts && color.a < 1.0) {
-                        nodeInfo.hasTranslucentParts = true;
-                    }
+                    if (color.a < 1) nodeInfo.hasTranslucentParts = true;
                 }
                 delete evaluationFeature.properties['part'];
             } else {
-
-                nodeInfo.evaluatedRMEA[0][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, state, canonical);
+                nodeInfo.emissiveStrength = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, state, canonical);
             }
 
             nodeInfo.evaluatedTranslation = layer.paint.get('model-translation').evaluate(evaluationFeature, state, canonical);
             nodeInfo.evaluatedScale = layer.paint.get('model-scale').evaluate(evaluationFeature, state, canonical);
 
-            // Last, so the block reflects everything this iteration evaluated.
             if (hasFeatures) {
-                buildPartStyle(nodeInfo);
                 if (nodeInfo.partStyleUBO) {
                     nodeInfo.partStyleUBO.update(nodeInfo.partStyle);
                 } else {
@@ -391,9 +374,9 @@ class Tiled3dModelBucket implements Bucket {
                     continue;
                 }
                 const vertices = node.footprint.vertices;
-                let elevation = dem.getElevationAt(vertices[0].x, vertices[0].y, true, true);
-                for (let i = 1; i < vertices.length; i++) {
-                    elevation = Math.min(elevation, dem.getElevationAt(vertices[i].x, vertices[i].y, true, true));
+                let elevation = dem.getElevationAt(vertices[0], vertices[1], true, true);
+                for (let i = 2; i < vertices.length; i += 2) {
+                    elevation = Math.min(elevation, dem.getElevationAt(vertices[i], vertices[i + 1], true, true));
                 }
                 node.elevation = elevation;
             }
@@ -416,7 +399,10 @@ class Tiled3dModelBucket implements Bucket {
         const demRes = dem._dem.dim;
 
         tiles.push(coord.canonical);
-        assert(lookup.length <= demRes * demRes);
+        if (!lookup || lookup.length < demRes * demRes) {
+            lookup = new Float32Array(demRes * demRes);
+            passLookup = new Uint8Array(demRes * demRes);
+        }
 
         let changed = false;
         for (const nodeInfo of this.getNodesInfo()) {
@@ -462,8 +448,8 @@ class Tiled3dModelBucket implements Bucket {
             let count = 0;
             for (let celly = 0; celly < grid.cellsY; ++celly) {
                 for (let cellx = 0; cellx < grid.cellsX; ++cellx) {
-                    const cell = grid.cells[celly * grid.cellsX + cellx];
-                    if (!cell) {
+                    const cellIdx = celly * grid.cellsX + cellx;
+                    if (grid.cellOffsets[cellIdx] === grid.cellOffsets[cellIdx + 1]) {
                         continue;
                     }
                     const demP = dem.tileCoordToPixel(grid.min.x + cellx / grid.xScale, grid.min.y + celly / grid.yScale);
@@ -704,47 +690,40 @@ function quantizeLikeLegacyEncoding(style: Float32Array, o: number) {
     style[o + 11] = valueFinish - valueBegin;
 }
 
-// Generates the per-part style values, four vec4 each, that the model vertex shader reads as
+// Writes one part's style values, four vec4 at offset o, that the model vertex shader reads as
 // ModelPartStyle.
-function buildPartStyle(nodeInfo: Tiled3dModelFeature) {
-    const style = nodeInfo.partStyle;
-    for (let part = 0; part < PartNames.length; part++) {
-        const colorMix = nodeInfo.evaluatedColor[part];
-        const rmea = nodeInfo.evaluatedRMEA[part];
-        const gradient = nodeInfo.emissionHeightBasedParams[part];
+function writePartStyle(style: Float32Array, o: number, color: {r: number, g: number, b: number, a: number},
+    colorMixIntensity: number, roughness: number, metallic: number, emissive: number, gradient: number[]) {
+    const begin = clamp(gradient[0], 0, 1);
+    const finish = clamp(gradient[1], 0, 1);
 
-        const begin = clamp(gradient[0], 0, 1);
-        const finish = clamp(gradient[1], 0, 1);
+    style[o] = color.r;
+    style[o + 1] = color.g;
+    style[o + 2] = color.b;
+    style[o + 3] = clamp(colorMixIntensity, 0, 1);
 
-        const o = part * 16;
-        style[o] = colorMix[0];
-        style[o + 1] = colorMix[1];
-        style[o + 2] = colorMix[2];
-        style[o + 3] = clamp(colorMix[3], 0, 1);
+    style[o + 4] = roughness;
+    style[o + 5] = metallic;
+    style[o + 6] = clamp(emissive, 0, 2);
+    style[o + 7] = color.a;
 
-        style[o + 4] = rmea[0];
-        style[o + 5] = rmea[1];
-        style[o + 6] = clamp(rmea[2], 0, 2);
-        style[o + 7] = rmea[3];
-
-        if (begin !== finish) {
-            style[o + 8] = begin;
-            style[o + 9] = finish;
-            style[o + 10] = clamp(gradient[2], 0, 1);
-            style[o + 11] = clamp(gradient[3], 0, 1) - style[o + 10];
-            style[o + 12] = Math.pow(10, clamp(gradient[4], -1, 1));
-        } else {
-            // Flat multiplier of 1 spanning the full mesh height. A zero span would divide by zero
-            // in the shader.
-            style[o + 8] = 0;
-            style[o + 9] = 1;
-            style[o + 10] = 1;
-            style[o + 11] = 0;
-            style[o + 12] = 1;
-        }
-
-        quantizeLikeLegacyEncoding(style, o);
+    if (begin !== finish) {
+        style[o + 8] = begin;
+        style[o + 9] = finish;
+        style[o + 10] = clamp(gradient[2], 0, 1);
+        style[o + 11] = clamp(gradient[3], 0, 1) - style[o + 10];
+        style[o + 12] = Math.pow(10, clamp(gradient[4], -1, 1));
+    } else {
+        // Flat multiplier of 1 spanning the full mesh height. A zero span would divide by zero
+        // in the shader.
+        style[o + 8] = 0;
+        style[o + 9] = 1;
+        style[o + 10] = 1;
+        style[o + 11] = 0;
+        style[o + 12] = 1;
     }
+
+    quantizeLikeLegacyEncoding(style, o);
 }
 
 register(Tiled3dModelBucket, 'Tiled3dModelBucket', {omit: ['layers']});

@@ -225,6 +225,8 @@ class SourceCache extends Evented {
         for (const i in this._tiles) {
             const tile = this._tiles[i];
             tile.upload(context, this.map ? this.map.painter : undefined);
+            // the atlas texture was evicted after its pixels had been dropped, so only a reload can bring it back
+            if (tile.imageAtlas && !tile.imageAtlasTexture && tile.state === 'loaded') this._reloadTile(+i, 'reloading');
             tile.prepare(this.map.style.imageManager, this.map ? this.map.painter : null, this._source.scope);
         }
     }

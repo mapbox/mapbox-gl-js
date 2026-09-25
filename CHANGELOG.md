@@ -3,6 +3,7 @@
 - Avoid placing parent-tile symbols when using the global placement.
 - Extend global placement debug info.
 - Fix symbol fading not finishing when using global placement.
+- Improve memory use & map load time, especially for 3D layers.
 
 ## 3.32.0-rc.1
 

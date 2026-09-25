@@ -156,14 +156,21 @@ class ConstantBinder implements UniformBinder {
     value: unknown;
     type: string;
     uniformNames: Array<string>;
-    context: ProgramConfigurationContext;
+    context!: ProgramConfigurationContext;
     lutExpression!: PossiblyEvaluatedValue<string>;
 
-    constructor(value: unknown, names: Array<string>, type: string, context: ProgramConfigurationContext) {
-        this.value = value;
-        this.uniformNames = names.map(name => `u_${name}`);
-        this.type = type;
-        this.context = context;
+    constructor(layer: StyleLayer, property: string) {
+        const value = layer.paint.get(property) as PossiblyEvaluatedPropertyValue<unknown>;
+        const useTheme = layer.paint.get(`${property}-use-theme`) as PossiblyEvaluatedPropertyValue<string>;
+        this.value = value.constantOr(undefined);
+        this.uniformNames = paintAttributeNames(property, layer.type).map(name => `u_${name}`);
+        this.type = value.property.specification.type;
+        if (useTheme) this.lutExpression = useTheme.value;
+    }
+
+    // Everything here can be rebuilt from the layer on the main thread (see updateExpressions).
+    static serialize(): null {
+        return null;
     }
 
     setUniform(
@@ -199,7 +206,7 @@ class PatternConstantBinder implements UniformBinder {
     context!: ProgramConfigurationContext;
     lutExpression!: PossiblyEvaluatedValue<string>;
 
-    constructor(value: unknown, names: Array<string>) {
+    constructor(names: Array<string>) {
         this.uniformNames = names.map(name => `u_${name}`);
         this.pattern = null;
         this.patternTransition = null;
@@ -330,7 +337,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     uniformNames: Array<string>;
     type: string;
     useIntegerZoom: boolean;
-    context: ProgramConfigurationContext;
+    context!: ProgramConfigurationContext;
     maxValue: number;
     lutExpression!: PossiblyEvaluatedValue<string>;
 
@@ -338,12 +345,11 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     paintVertexAttributes: Array<StructArrayMember>;
     paintVertexBuffer: VertexBuffer | null | undefined;
 
-    constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, context: ProgramConfigurationContext, PaintVertexArray: Class<StructArray>) {
+    constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, PaintVertexArray: Class<StructArray>) {
         this.expression = expression;
         this.uniformNames = names.map(name => `u_${name}_t`);
         this.type = type;
         this.useIntegerZoom = useIntegerZoom;
-        this.context = context;
         this.maxValue = 0;
         this.paintVertexAttributes = names.map((name) => ({
             name: `a_${name}`,
@@ -505,6 +511,10 @@ class PatternCompositeBinder implements AttributeBinder {
     }
 }
 
+function isAttributeBinder(binder: AttributeBinder | UniformBinder): binder is SourceExpressionBinder | CompositeExpressionBinder | PatternCompositeBinder {
+    return binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof PatternCompositeBinder;
+}
+
 /**
  * ProgramConfiguration contains the logic for binding style layer properties and tile
  * layer feature data into GL program uniforms and vertex attributes.
@@ -560,9 +570,7 @@ export default class ProgramConfiguration {
             const sourceException = isVariableLineCap || (valueUseTheme && valueUseTheme.value.kind !== 'constant');
 
             if (expression.kind === 'constant' && !sourceException) {
-                this.binders[property] = isPattern ?
-                    new PatternConstantBinder(expression.value, names) :
-                    new ConstantBinder(expression.value, names, type, context);
+                this.binders[property] = isPattern ? new PatternConstantBinder(names) : new ConstantBinder(baseLayer, property);
                 keys.push(`/u_${property}`);
 
             } else if (expression.kind === 'source' || sourceException || isPattern) {
@@ -575,10 +583,11 @@ export default class ProgramConfiguration {
 
             } else {
                 const StructArrayLayout = layoutType(property, type, 'composite');
-                this.binders[property] = new CompositeExpressionBinder(expression as CompositeExpression, names, type, useIntegerZoom, context, StructArrayLayout);
+                this.binders[property] = new CompositeExpressionBinder(expression as CompositeExpression, names, type, useIntegerZoom, StructArrayLayout);
                 keys.push(`/z_${property}`);
             }
 
+            this.binders[property].context = context;
             if (valueUseTheme) {
                 this.binders[property].lutExpression = valueUseTheme.value;
             }
@@ -590,13 +599,11 @@ export default class ProgramConfiguration {
     updateExpressions(layer: TypedStyleLayer) {
         const baseLayer = layer as StyleLayer;
         for (const property in this.binders) {
-            const binder = this.binders[property];
-            if (binder instanceof SourceExpressionBinder ||
-                binder instanceof CompositeExpressionBinder ||
-                binder instanceof PatternCompositeBinder) {
-                const value = baseLayer.paint.get(property) as PossiblyEvaluatedPropertyValue<unknown>;
+            const binder = this.binders[property] || (this.binders[property] = new ConstantBinder(baseLayer, property));
+            binder.context = this.context;
+            if (isAttributeBinder(binder)) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (binder as {expression: any}).expression = value.value;
+                (binder as {expression: any}).expression = (baseLayer.paint.get(property) as PossiblyEvaluatedPropertyValue<unknown>).value;
             }
         }
     }
@@ -609,9 +616,8 @@ export default class ProgramConfiguration {
     populatePaintArrays(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: ImageId[], canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection, worldview?: string) {
         for (const property in this.binders) {
             const binder = this.binders[property];
-            binder.context = this.context;
-            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof PatternCompositeBinder)
-                (binder as AttributeBinder).populatePaintArray(newLength, feature, imagePositions, availableImages, canonical, brightness, formattedSection, worldview);
+            if (isAttributeBinder(binder))
+                binder.populatePaintArray(newLength, feature, imagePositions, availableImages, canonical, brightness, formattedSection, worldview);
         }
     }
 
@@ -652,36 +658,26 @@ export default class ProgramConfiguration {
         this.context.lut = layer.lut;
         for (const property in this.binders) {
             const binder = this.binders[property];
-            binder.context = this.context;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-            const isExpressionNotConst = (binder as any).expression && (binder as any).expression.kind && (binder as any).expression.kind !== 'constant';
-            if ((binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ||
-                 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-                 binder instanceof PatternCompositeBinder) && isExpressionNotConst && ((binder as any).expression.isStateDependent === true || (binder as any).expression.isLightConstant === false)) {
-                //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
-                const baseLayer = layer as StyleLayer;
-                const value = baseLayer.paint.get(property) as PossiblyEvaluatedPropertyValue<unknown>;
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-                (binder as any).expression = value.value;
-                for (const id of ids) {
-                    const state = featureStates[id.toString()];
-                    featureMap.eachPosition(id, (index, start, end) => {
-                        const feature = vtLayer.feature(index);
-                        (binder as AttributeBinder).updatePaintArray(start, end, feature, state, availableImages, imagePositions, brightness, worldview);
-                    });
-                }
-                if (!featureStateUpdate) {
-                    for (const id of featureMapWithoutIds.uniqueIds) {
-                        const state = featureStates[id.toString()];
-                        featureMapWithoutIds.eachPosition(id, (index, start, end) => {
-                            const feature = vtLayer.feature(index);
-                            (binder as AttributeBinder).updatePaintArray(start, end, feature, state, availableImages, imagePositions, brightness, worldview);
-                        });
-                    }
-                }
-                dirty = true;
+            if (!isAttributeBinder(binder)) continue;
+            const expression = binder.expression;
+            if (expression.kind === 'constant' ||
+                !((expression.isStateDependent && !isBrightnessChanged) || expression.isLightConstant === false)) continue;
+            //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
+            const value = (layer as StyleLayer).paint.get(property) as PossiblyEvaluatedPropertyValue<unknown>;
+            binder.expression = value.value;
+            const update = (map: FeaturePositionMap, id: string | number) => {
+                const state = featureStates[id.toString()];
+                return map.eachPosition(id, (index, start, end) => {
+                    binder.updatePaintArray(start, end, vtLayer.feature(index), state, availableImages, imagePositions, brightness, worldview);
+                });
+            };
+            // feature state changes are sent to every tile of the source, so only re-upload if this tile has a changed feature
+            let updated = !featureStateUpdate;
+            for (const id of ids) updated = update(featureMap, id) || updated;
+            if (!featureStateUpdate) {
+                for (const id of featureMapWithoutIds.uniqueIds) update(featureMapWithoutIds, id);
             }
+            dirty = dirty || updated;
         }
         return dirty;
     }
@@ -736,10 +732,7 @@ export default class ProgramConfiguration {
 
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if ((
-                binder instanceof SourceExpressionBinder ||
-                binder instanceof CompositeExpressionBinder ||
-                binder instanceof PatternCompositeBinder) && binder.paintVertexBuffer) {
+            if (isAttributeBinder(binder) && binder.paintVertexBuffer) {
                 this._buffers.push(binder.paintVertexBuffer);
             }
 
@@ -752,7 +745,7 @@ export default class ProgramConfiguration {
     upload(context: Context) {
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof PatternCompositeBinder)
+            if (isAttributeBinder(binder))
                 binder.upload(context);
         }
         this.updatePaintBuffers();
@@ -761,7 +754,7 @@ export default class ProgramConfiguration {
     destroy() {
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof PatternCompositeBinder)
+            if (isAttributeBinder(binder))
                 binder.destroy();
         }
     }
@@ -914,10 +907,10 @@ function layoutType(property: string, type: LayoutType, binderType: 'source' | '
 }
 
 register(ConstantBinder, 'ConstantBinder');
-register(PatternConstantBinder, 'PatternConstantBinder');
-// `expression` is omitted from transfer; reattached post-deserialize via updateBucketExpressions
-register(SourceExpressionBinder, 'SourceExpressionBinder', {omit: ['expression']});
-register(PatternCompositeBinder, 'PatternCompositeBinder', {omit: ['expression']});
-register(CompositeExpressionBinder, 'CompositeExpressionBinder', {omit: ['expression']});
+// `expression` and `context` are omitted from transfer and reattached after deserialization in updateExpressions
+register(PatternConstantBinder, 'PatternConstantBinder', {omit: ['context']});
+register(SourceExpressionBinder, 'SourceExpressionBinder', {omit: ['expression', 'context']});
+register(PatternCompositeBinder, 'PatternCompositeBinder', {omit: ['expression', 'context']});
+register(CompositeExpressionBinder, 'CompositeExpressionBinder', {omit: ['expression', 'context']});
 register(ProgramConfiguration, 'ProgramConfiguration', {omit: ['_buffers']});
 register(ProgramConfigurationSet, 'ProgramConfigurationSet');

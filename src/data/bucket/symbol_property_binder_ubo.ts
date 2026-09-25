@@ -33,6 +33,7 @@ const PROP_COUNT = 9; // paint properties, indexed by bit position. Must be less
 
 // Flat scratch buffer for evaluateAllProperties — reused per call, eliminates per-feature inner array allocations.
 const evalFlatScratch = new Float32Array(SymbolPropertiesUBO.EVAL_FLAT_TOTAL);
+const zoomRangeScratch = new Float32Array(2);
 
 // Shared read-only translate default; passed to constantOr to avoid a per-feature [0, 0] allocation.
 const ZERO_VEC2: [number, number] = [0, 0];
@@ -253,9 +254,9 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
 
         const consider = (expr: ZoomExpression | null) => {
             if (!expr) return;
-            this._computeZoomRange(expr, floorZoom, this._zoomRangeScratch, 0);
-            const zm = this._zoomRangeScratch[0];
-            const zM = this._zoomRangeScratch[1];
+            this._computeZoomRange(expr, floorZoom, zoomRangeScratch, 0);
+            const zm = zoomRangeScratch[0];
+            const zM = zoomRangeScratch[1];
             if (!hasZoom) {
                 hasZoom = true;
                 firstZm = zm;

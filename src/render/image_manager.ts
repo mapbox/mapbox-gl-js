@@ -292,14 +292,6 @@ class ImageManager extends Evented {
         return Array.from(this.images.get(scope).keys()).map((id) => ImageId.from(id));
     }
 
-    getImageVersions(scope: string): Map<string, number> {
-        const versions = this.imageVersions.get(scope);
-        if (!versions) {
-            return new Map();
-        }
-        return versions;
-    }
-
     hasImageProviderForSource(sourceId: string, scope: string): boolean {
         const imageProviders = this.imageProviders.get(scope);
         if (!imageProviders) return false;
@@ -391,6 +383,9 @@ class ImageManager extends Evented {
     _notify(ids: ImageId[], scope: string, callback: Callback<{images: StyleImageMap<StringifiedImageId>; versions: Map<string, number>}>) {
         const imagesInScope = this.images.get(scope);
         const images: StyleImageMap<StringifiedImageId> = new Map();
+        const scopeVersions = this.imageVersions.get(scope);
+        // versions for atlas caching; the worker only looks up the images it requested
+        const versions = new Map<string, number>();
 
         for (const id of ids) {
             if (!imagesInScope.get(id.toString())) {
@@ -428,11 +423,12 @@ class ImageManager extends Evented {
                 });
             }
 
-            images.set(ImageId.toString(id), styleImage);
+            const key = ImageId.toString(id);
+            images.set(key, styleImage);
+            const version = scopeVersions && scopeVersions.get(key);
+            if (version) versions.set(key, version);
         }
 
-        // Include image versions for atlas caching
-        const versions = this.getImageVersions(scope);
         callback(null, {images, versions});
     }
 
