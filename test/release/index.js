@@ -104,11 +104,6 @@ const pages = [
         "url": "./debug/video.html"
     },
     {
-        "key": "globe-with-video",
-        "title": "Globe with Video",
-        "url": "./debug/globe-with-video.html"
-    },
-    {
         "key": "interactions",
         "title": "Interactions",
         "url": "./debug/featuresets.html"
