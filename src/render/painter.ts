@@ -979,7 +979,9 @@ class Painter {
         this.modelManager = style.modelManager;
 
         this.now = browser.now();
-        this.symbolFadeChange = style.placement.symbolFadeChange(this.now);
+        // style.placement can be undefined while static placement mode is deferring
+        // placement until every source has finished loading (see Map#_staticMode).
+        this.symbolFadeChange = style.placement ? style.placement.symbolFadeChange(this.now) : 1;
 
         this.imageManager.beginFrame();
 
@@ -1666,7 +1668,7 @@ class Painter {
         this.gpuTimingStart(layer);
         if ((!painter.transform.projection.unsupportedLayers || !painter.transform.projection.unsupportedLayers.includes(layer.type) ||
             (painter.terrain && layer.type === 'custom')) && layer.type !== 'clip' && layer.type !== 'slot' && layer.type !== 'placement-group' && draw[layer.type]) {
-            draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets, this.options.isInitialLoad);
+            draw[layer.type](painter, sourceCache, layer, coords, this.style.placement ? this.style.placement.variableOffsets : {}, this.options.isInitialLoad);
         }
         if (!draw[layer.type]) {
             // Trigger lazy module loads so drawing will be possible once they load.

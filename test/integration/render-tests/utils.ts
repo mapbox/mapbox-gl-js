@@ -102,7 +102,7 @@ function addSpriteIconSetExtension(style) {
             addSpriteIconSetExtension(imp.data);
         });
     }
-    
+
 }
 
 async function setupLayout(options) {
@@ -156,6 +156,14 @@ export async function renderMap(style, options, currentTestName) {
 
     if (options.spriteFormat && mapRef.current) {
         mapRef.current._spriteFormat = options.spriteFormat;
+    }
+
+    if (mapRef.current) {
+        // Static mode for the global placement algorithm only:
+        // defer placement until every source has finished loading, so the captured frame
+        // cannot be biased by the order tile responses happened to arrive in.
+        const usesGlobalPlacement = options.globalPlacement || options.placementAlgorithm === 'global';
+        mapRef.current._staticMode = Boolean(usesGlobalPlacement && options.staticMode !== false);
     }
 
     if (options.forceEmissiveFallback && mapRef.current) {

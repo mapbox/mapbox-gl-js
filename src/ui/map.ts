@@ -517,6 +517,10 @@ export class Map extends Camera {
     _shouldCheckAccess: boolean;
     _fadeDuration: number;
     _placementAlgorithm: PlacementAlgorithmName;
+    // Test-only. While any source still has incomplete tiles, no placement runs at all,
+    // so the first (and only) placement pass sees the full tile set and cannot be biased by tile arrival order.
+    // Set by the render-test harness (test/integration/render-tests/utils.ts).
+    _staticMode: boolean;
     _crossSourceCollisions: boolean;
     _collectResourceTiming: boolean;
     _renderTaskQueue: TaskQueue;
@@ -656,6 +660,7 @@ export class Map extends Camera {
         this._refreshExpiredTiles = options.refreshExpiredTiles;
         this._fadeDuration = options.fadeDuration;
         this._placementAlgorithm = options.placementAlgorithm || 'default';
+        this._staticMode = false;
         this._isInitialLoad = true;
         this._crossSourceCollisions = options.crossSourceCollisions;
         this._collectResourceTiming = options.collectResourceTiming;
@@ -4632,7 +4637,11 @@ export class Map extends Camera {
         }
 
         if (this.style) {
-            this._placementDirty = this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions, this.painter.replacementSource, this._placementAlgorithm);
+            const placementDirtyUnconditionally = this._staticMode && !this.style.loaded();
+            // Run no placement at all while any
+            // source has incomplete tiles, so the first pass sees the full tile set
+            // and cannot be biased by tile arrival order.
+            this._placementDirty = placementDirtyUnconditionally || this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions, this.painter.replacementSource, this._placementAlgorithm);
         }
 
         // Actually draw - unless we're waiting on draping to load
