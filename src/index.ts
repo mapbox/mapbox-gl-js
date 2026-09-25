@@ -67,7 +67,7 @@ export type {GeolocateControlOptions} from './ui/control/geolocate_control';
 export type {NavigationControlOptions} from './ui/control/navigation_control';
 export type {FullscreenControlOptions} from './ui/control/fullscreen_control';
 export type {AttributionControlOptions} from './ui/control/attribution_control';
-export type {MapOptions, IControl, ControlPosition} from './ui/map';
+export type {MapOptions, IControl, ControlPosition, ControlOffset, AddControlOptions} from './ui/map';
 export type {FontstackCompositing} from './style/glyph_loader';
 export type {AnimationOptions, CameraOptions, EasingOptions} from './ui/camera';
 export type {AnimationFrameProvider} from './ui/animation_frame_provider';

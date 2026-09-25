@@ -113,11 +113,31 @@ import type {IndoorTileOptions} from '../style/indoor_data';
 
 export type ControlPosition = 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left';
 
+export type ControlOffset = {
+    x?: number;
+    y?: number;
+};
+
+export type AddControlOptions = {
+    position?: ControlPosition;
+    offset?: ControlOffset;
+};
+
 export interface IControl {
     readonly onAdd: (map: Map) => HTMLElement;
     readonly onRemove: (map: Map) => void;
     readonly getDefaultPosition?: () => ControlPosition;
     readonly _setLanguage?: (language?: string | string[]) => void;
+}
+
+function applyControlOffset(element: HTMLElement, position: ControlPosition, offset?: ControlOffset) {
+    const x = offset && offset.x !== undefined ? `${Math.max(0, offset.x)}px` : '';
+    const y = offset && offset.y !== undefined ? `${Math.max(0, offset.y)}px` : '';
+
+    element.style.marginLeft = position.includes('left') ? x : '';
+    element.style.marginRight = position.includes('right') ? x : '';
+    element.style.marginTop = position.includes('top') ? y : '';
+    element.style.marginBottom = position.includes('bottom') ? y : '';
 }
 
 // Public API type for the Map#setStyle options
@@ -855,16 +875,39 @@ export class Map extends Camera {
      * Adds an {@link IControl} to the map, calling `control.onAdd(this)`.
      *
      * @param {IControl} control The {@link IControl} to add.
-     * @param {string} [position] Position on the map to which the control will be added.
-     * Valid values are `'top-left'`, `'top'`, `'top-right'`, `'right'`, `'bottom-right'`,
+     * @param {string | AddControlOptions} [positionOrOptions] Position on the map to which the
+     * control will be added, or an options object.
+     * Valid position values are `'top-left'`, `'top'`, `'top-right'`, `'right'`, `'bottom-right'`,
      * `'bottom'`, `'bottom-left'`, and `'left'`. Defaults to `'top-right'`.
+     * @param {string} [positionOrOptions.position] Position on the map to which the control will be added.
+     * @param {Object} [positionOrOptions.offset] An offset, in pixels, to apply to the control's outer
+     * element in addition to the default spacing from the edges of the map.
+     * @param {number} [positionOrOptions.offset.x] Offset away from whichever horizontal edge the control
+     * is anchored to. Has no effect on positions centered horizontally (`'top'`, `'bottom'`). Negative
+     * values are clamped to `0`.
+     * @param {number} [positionOrOptions.offset.y] Offset away from whichever vertical edge the control
+     * is anchored to. Has no effect on positions centered vertically (`'left'`, `'right'`). Negative
+     * values are clamped to `0`.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Add zoom and rotation controls to the map.
      * map.addControl(new mapboxgl.NavigationControl());
+     * @example
+     * // Add a control offset from its corner.
+     * map.addControl(new mapboxgl.NavigationControl(), {position: 'top-right', offset: {x: 8, y: 8}});
      * @see [Example: Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
      */
-    addControl(control: IControl, position?: ControlPosition): this {
+    addControl(control: IControl, positionOrOptions?: ControlPosition | AddControlOptions): this {
+        let position: ControlPosition | undefined;
+        let offset: ControlOffset | undefined;
+
+        if (typeof positionOrOptions === 'string') {
+            position = positionOrOptions;
+        } else if (positionOrOptions) {
+            position = positionOrOptions.position;
+            offset = positionOrOptions.offset;
+        }
+
         if (position === undefined) {
             if (control.getDefaultPosition) {
                 position = control.getDefaultPosition();
@@ -878,6 +921,8 @@ export class Map extends Camera {
         }
         const controlElement = control.onAdd(this);
         this._controls.push(control);
+
+        applyControlOffset(controlElement, position, offset);
 
         const positionContainer = this._controlPositions[position];
         if (position.includes('bottom')) {
