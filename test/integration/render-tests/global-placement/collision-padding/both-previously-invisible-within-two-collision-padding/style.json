@@ -7,10 +7,7 @@
       "height": 12,
       "pixelRatio": 4,
       "globalPlacement": true,
-      "collisionDebug": true,
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "Collision padding not yet supported"}
-      ]
+      "collisionDebug": true
     }
   },
   "center": [0, 0],

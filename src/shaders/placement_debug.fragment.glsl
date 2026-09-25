@@ -20,19 +20,28 @@ float circleDistance(vec2 offset, float radius) {
     return length(offset) - radius;
 }
 
+// Like smoothstep, but interpolation is linear.
+float linearStep(float start, float end, float x) {
+    return (clamp(x, start, end) - start) / (end - start);
+}
+
+float onePxLongLinearStepAt(float center, float x) {
+    const float halfPx = 0.5;
+    return linearStep(center - halfPx, center + halfPx, x);
+}
+
 void main() {
     float distanceToEdge = mix(boxDistance(v_offset, v_half_size),
-                                     circleDistance(v_offset, v_half_size.x),
-                                     v_is_circle);
+                               circleDistance(v_offset, v_half_size.x),
+                               v_is_circle);
 
-    // A shape covers its collision bounds exactly: every fragment up to and including the edge, and
-    // none beyond it. The outer edge is therefore hard.
-    float shapeMask = step(distanceToEdge, 0.0);
+    float linearStepAtMinusOutlineWidth = onePxLongLinearStepAt(-u_outline_width, distanceToEdge);
+    float linearStepAtZero = onePxLongLinearStepAt(0.0, distanceToEdge);
+    float linearStepAtCollisionPadding = onePxLongLinearStepAt(v_collision_padding, distanceToEdge);
 
-    float interiorCoverage = step(distanceToEdge, -u_outline_width);
-    // The outline shows on its inner side only.
-    float outlineCoverage = shapeMask * step(-u_outline_width, distanceToEdge);
-    float collisionPaddingCoverage = (1.0 - shapeMask) * step(distanceToEdge, v_collision_padding);
+    float interiorCoverage = 1.0 - linearStepAtMinusOutlineWidth;
+    float outlineCoverage = linearStepAtMinusOutlineWidth - linearStepAtZero;
+    float collisionPaddingCoverage = linearStepAtZero - linearStepAtCollisionPadding;
 
     // u_color is premultiplied, so scaling the whole vector by coverage stays premultiplied and
     // pairs with ColorMode::alphaBlended().

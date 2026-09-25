@@ -17,8 +17,10 @@ out float v_collision_padding;
 // Indexed by a_flags.y.
 const vec2 QUAD_CORNERS[4] = vec2[4](vec2(-1.0, -1.0), vec2(1.0, -1.0), vec2(1.0, 1.0), vec2(-1.0, 1.0));
 
+const float AA_width = 1.0;
+
 void main() {
-    vec2 offset = QUAD_CORNERS[a_flags.y] * (a_size + a_collision_padding);
+    vec2 offset = QUAD_CORNERS[a_flags.y] * (a_size + a_collision_padding + AA_width);
 
     v_offset = offset;
     v_half_size = a_size;

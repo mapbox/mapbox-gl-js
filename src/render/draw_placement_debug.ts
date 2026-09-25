@@ -1,3 +1,4 @@
+import browser from '../util/browser';
 import ColorMode from '../gl/color_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import DepthMode from '../gl/depth_mode';
@@ -41,6 +42,7 @@ function drawPlacementDebug(painter: Painter) {
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
+    const pixelRatio = browser.devicePixelRatio;
 
     const vertexArray = new PlacementDebugLayoutArray();
     const indexArray = new QuadTriangleArray();
@@ -49,7 +51,7 @@ function drawPlacementDebug(painter: Painter) {
         for (const symbol of debugSymbols) {
             if (symbol.status !== status) continue;
             for (const element of symbol.geometry) {
-                addQuad(vertexArray, indexArray, segments, element, symbol.collisionPadding);
+                addQuad(vertexArray, indexArray, segments, element, symbol.collisionPadding, pixelRatio);
             }
         }
         return segments;
@@ -60,7 +62,7 @@ function drawPlacementDebug(painter: Painter) {
     const vertexBuffer = context.createVertexBuffer(vertexArray, placementDebugLayout.members, true);
     const indexBuffer = context.createIndexBuffer(indexArray, true);
     const program = painter.getOrCreateProgram('placementDebug');
-    const viewportSize: [number, number] = [tr.width, tr.height];
+    const viewportSize: [number, number] = [tr.width * pixelRatio, tr.height * pixelRatio];
 
     for (let i = 0; i < DRAW_ORDER.length; i++) {
         const segments = segmentsByStatus[i];
@@ -69,7 +71,7 @@ function drawPlacementDebug(painter: Painter) {
         program.draw(painter, gl.TRIANGLES,
             DepthMode.disabled, StencilMode.disabled,
             ColorMode.alphaBlended, CullFaceMode.disabled,
-            placementDebugUniformValues(viewportSize, DRAW_ORDER[i].color, OUTLINE_WIDTH, INTERIOR_OPACITY, OUTLINE_OPACITY, COLLISION_PADDING_OPACITY),
+            placementDebugUniformValues(viewportSize, DRAW_ORDER[i].color, OUTLINE_WIDTH * pixelRatio, INTERIOR_OPACITY, OUTLINE_OPACITY, COLLISION_PADDING_OPACITY),
             '$placement-debug', vertexBuffer, indexBuffer, segments, null, tr.zoom);
     }
 
@@ -77,7 +79,7 @@ function drawPlacementDebug(painter: Painter) {
     indexBuffer.destroy();
 }
 
-function addQuad(vertexArray: PlacementDebugLayoutArray, indexArray: QuadTriangleArray, segments: SegmentVector, element: GeometryElement, collisionPadding: number) {
+function addQuad(vertexArray: PlacementDebugLayoutArray, indexArray: QuadTriangleArray, segments: SegmentVector, element: GeometryElement, collisionPadding: number, pixelRatio: number) {
     let centerX: number, centerY: number, halfWidth: number, halfHeight: number, isCircle: number;
     if (element.kind === 'box') {
         centerX = 0.5 * (element.left + element.right);
@@ -97,7 +99,14 @@ function addQuad(vertexArray: PlacementDebugLayoutArray, indexArray: QuadTriangl
     const firstVertex = segment.vertexLength;
 
     for (let corner = 0; corner < VERTICES_PER_QUAD; corner++) {
-        vertexArray.emplaceBack(centerX, centerY, halfWidth, halfHeight, collisionPadding, isCircle, corner);
+        vertexArray.emplaceBack(
+            centerX * pixelRatio,
+            centerY * pixelRatio,
+            halfWidth * pixelRatio,
+            halfHeight * pixelRatio,
+            collisionPadding * pixelRatio,
+            isCircle,
+            corner);
     }
     indexArray.emplaceBack(firstVertex, firstVertex + 1, firstVertex + 2);
     indexArray.emplaceBack(firstVertex, firstVertex + 2, firstVertex + 3);
