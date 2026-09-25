@@ -94,11 +94,6 @@ const pages = [
         "url": "./debug/extrusion-query.html"
     },
     {
-        "key": "featurestate",
-        "title": "Feature state",
-        "url": "./debug/featurestate.html"
-    },
-    {
         "key": "markers",
         "title": "Markers",
         "url": "./debug/markers.html"
