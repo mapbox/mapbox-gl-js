@@ -865,3 +865,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 .mapboxgl-ctrl button.mapboxgl-ctrl-level-button-selected:hover {
     background-color: #ccc;
 }
+
+.mapboxgl-ctrl button.mapboxgl-ctrl-compass:disabled .mapboxgl-ctrl-icon {
+    opacity: 1;
+}
