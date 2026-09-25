@@ -1,5 +1,9 @@
 ## Unreleased
 
+- Avoid placing parent-tile symbols when using the global placement.
+- Extend global placement debug info.
+- Fix symbol fading not finishing when using global placement.
+
 ## 3.32.0-rc.1
 
 ### Features and improvements ✨
@@ -12,8 +16,6 @@
 - Add support for symbol fading when using the global placement.
 - Add debug visualization support when using the global placement.
 - `CustomLayerInterface#render`/`#prerender` now receive a `CustomLayerRenderParameters` object as an 8th argument, exposing `projectionMatrix` (camera→clip), `viewMatrix` (world→camera) pair, plus the globe horizon `globeClippingPlane` and the globe center's screen position `globeCenterInScreenPixels`.
-- Avoid placing parent-tile symbols when using the global placement.
-- Extend global placement debug info.
 
 ### Bug fixes 🐞
 
@@ -23,7 +25,6 @@
 - Fix features rendering at the wrong position when a layer uses a `within` filter and the map uses a projection other than Mercator or globe.
 - Fix global placement throwing an error when placing symbols with no text.
 - Fix setting `padding` as a sideeffect in a `preloadOnly` animation.
-- Fix symbol fading not finishing when using global placement.
 
 ## 3.31.0
 
