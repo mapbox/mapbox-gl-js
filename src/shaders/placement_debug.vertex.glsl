@@ -3,6 +3,7 @@
 
 in vec2 a_pos_2f; // Shape center, in physical pixels, y down from the viewport's top-left corner.
 in vec2 a_size;   // Half width and half height of the shape; both are the radius for a circle.
+in float a_collision_padding;
 in ivec2 a_flags; // x: 1 for a circle, 0 for a box. y: which corner of the quad this vertex is, 0..3.
 
 uniform vec2 u_viewport_size;
@@ -11,16 +12,18 @@ uniform vec2 u_viewport_size;
 out vec2 v_offset;
 out vec2 v_half_size;
 out float v_is_circle;
+out float v_collision_padding;
 
 // Indexed by a_flags.y.
 const vec2 QUAD_CORNERS[4] = vec2[4](vec2(-1.0, -1.0), vec2(1.0, -1.0), vec2(1.0, 1.0), vec2(-1.0, 1.0));
 
 void main() {
-    vec2 offset = QUAD_CORNERS[a_flags.y] * a_size;
+    vec2 offset = QUAD_CORNERS[a_flags.y] * (a_size + a_collision_padding);
 
     v_offset = offset;
     v_half_size = a_size;
     v_is_circle = float(a_flags.x);
+    v_collision_padding = a_collision_padding;
 
     // Placement works in a y-down, top-left-origin screen space; NDC is y-up and centered.
     vec2 viewportPos = (a_pos_2f + offset) / u_viewport_size;

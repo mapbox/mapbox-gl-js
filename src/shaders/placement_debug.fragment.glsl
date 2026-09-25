@@ -2,10 +2,12 @@ uniform vec4 u_color;
 uniform float u_outline_width;
 uniform float u_opacity;
 uniform float u_stroke_opacity;
+uniform float u_collision_padding_opacity;
 
 in vec2 v_offset;    // Offset in pixels from the shape center to this fragment.
 in vec2 v_half_size; // Half width and half height of the shape; both are the radius for a circle.
 in float v_is_circle;
+in float v_collision_padding;
 
 // Signed distance from the box centered on the origin to offset, negative inside.
 float boxDistance(vec2 offset, vec2 halfSize) {
@@ -27,11 +29,14 @@ void main() {
     // none beyond it. The outer edge is therefore hard.
     float shapeMask = step(distanceToEdge, 0.0);
 
+    float interiorCoverage = step(distanceToEdge, -u_outline_width);
     // The outline shows on its inner side only.
     float outlineCoverage = shapeMask * step(-u_outline_width, distanceToEdge);
-    float interiorCoverage = step(distanceToEdge, -u_outline_width);
+    float collisionPaddingCoverage = (1.0 - shapeMask) * step(distanceToEdge, v_collision_padding);
 
     // u_color is premultiplied, so scaling the whole vector by coverage stays premultiplied and
     // pairs with ColorMode::alphaBlended().
-    glFragColor = u_color * (u_stroke_opacity * outlineCoverage + u_opacity * interiorCoverage);
+    glFragColor = u_color * (u_opacity * interiorCoverage
+                           + u_stroke_opacity * outlineCoverage
+                           + u_collision_padding_opacity * collisionPaddingCoverage);
 }
