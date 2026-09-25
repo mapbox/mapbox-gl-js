@@ -2,8 +2,8 @@
 #include "_prelude_shadow.vertex.glsl"
 #include "_prelude_feature_cutout.vertex.glsl"
 
-in vec3 a_pos_3f;
-in ivec4 a_normal_3;
+in ivec2 a_pos_packed;
+in vec4 a_normal_4n;
 in ivec4 a_centroid_3;
 
 #ifdef FLOOD_LIGHT
@@ -59,6 +59,7 @@ out float v_has_flood_light;
 const float MAX_UINT_16 = 65535.0;
 const float MAX_INT_16 = 32767.0;
 const float MAX_UINT_8 = 255.0;
+const float MAX_INT_8 = 127.0;
 const float TWO_POW_8 = 256.0;
 const float FLOOD_LIGHT_MAX_RADIUS_METER = 2048.0;
 
@@ -76,6 +77,7 @@ mat3 get_tbn(in vec3 normal) {
 #pragma mapbox: define-attribute-vertex-shader-only highp uvec2 part_color_emissive
 #pragma mapbox: define-attribute-vertex-shader-only highp uvec2 faux_facade_color_emissive
 
+invariant gl_Position;
 void main() {
     #pragma mapbox: initialize-attribute-custom highp uvec2 part_color_emissive
     #pragma mapbox: initialize-attribute-custom highp uvec2 faux_facade_color_emissive
@@ -88,8 +90,7 @@ void main() {
     vec4 color_emissive = decode_color(vec2(part_color_emissive));
     v_color = vec4(sRGBToLinear(color_emissive.rgb), color_emissive.a);
 
-    vec3 a_normal_3f = vec3(a_normal_3) / MAX_INT_16;
-    v_normal = vec3(u_normal_matrix * vec4(a_normal_3f, 0.0));
+    v_normal = vec3(u_normal_matrix * vec4(a_normal_4n.xyz, 0.0));
 
     float hidden = 0.0;
     float depth_offset = 0.0;
@@ -130,7 +131,7 @@ void main() {
         depth_offset = min(1000.0, float(a_centroid_3.z)) * 0.0000002;
     }
 #endif
-    v_pos = a_pos_3f;
+    v_pos = vec3(float(a_pos_packed.x >> 16), float((a_pos_packed.x << 16) >> 16), intBitsToFloat(a_pos_packed.y));
 
 #if defined(RENDER_CUTOFF) || defined(RENDER_FRONT_CUTOFF)
     float halfSpanX = spanBits.x * 10.0 / u_tile_to_meter;

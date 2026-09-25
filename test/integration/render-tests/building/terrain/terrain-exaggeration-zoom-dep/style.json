@@ -9,7 +9,8 @@
         ["wait"]
       ],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.00154}
+        {"platform-tag-contains": "", "threshold": 0.00154},
+        {"platform-tag-contains": "swiftshader", "threshold": 0.0021}
       ]
     }
   },

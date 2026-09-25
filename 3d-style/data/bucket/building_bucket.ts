@@ -1,5 +1,6 @@
 import {
     BuildingPositionArray,
+    BuildingBloomPositionArray,
     BuildingNormalArray,
     BuildingCentroidArray,
     BuildingColorArray,
@@ -18,6 +19,7 @@ import {clamp, warnOnce, isWorker} from '../../../src/util/util';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
 import {
     buildingPositionAttributes,
+    buildingBloomPositionAttributes,
     buildingNormalAttributes,
     buildingCentroidAttributes,
     buildingColorAttributes,
@@ -94,6 +96,12 @@ import type {AreaLight} from '../model';
 import type {NonPremultipliedRenderColor} from '../../../src/style-spec/util/color';
 
 const MAX_INT_16 = 32767.0;
+const MIN_INT_16 = -32768.0;
+const MAX_INT_8 = 127.0;
+
+// Scratch used to reinterpret a float's bit pattern as an int32.
+const floatBitsScratch = new Float32Array(1);
+const floatBitsScratchInt = new Int32Array(floatBitsScratch.buffer);
 
 // Refer to https://github.com/mapbox/geodata-exports/blob/e863d358e04ade6301db95c6f96d1340560f7b93/pipelines/export_map_data/dags/mts_recipes/procedural_buildings_v1/procedural_buildings.json#L62
 const BUILDING_TILE_PADDING = 163; // ~= 2.0% * 8192 according to the buffer_size used to generate the tile set.
@@ -190,7 +198,7 @@ export function waitForBuildingGen(): Promise<void> {
 }
 
 class BuildingBloomGeometry {
-    layoutVertexArray = new BuildingPositionArray();
+    layoutVertexArray = new BuildingBloomPositionArray();
     layoutVertexBuffer!: VertexBuffer;
 
     layoutAttenuationArray = new BuildingBloomAttenuationArray();
@@ -834,19 +842,27 @@ export class BuildingBucket implements BucketWithGroundEffect {
                     };
                 }
 
-                building.layoutVertexArray.float32.set(mesh.positions, partVertexOffset * 3);
                 const partVertexCount = mesh.positions.length / 3;
                 for (let v = 0; v < partVertexCount; ++v) {
                     const vertIdx = v * 3;
-                    footprintHeight = Math.max(footprintHeight, mesh.positions[vertIdx + 2]);
+                    const z = mesh.positions[vertIdx + 2];
+                    footprintHeight = Math.max(footprintHeight, z);
 
-                    const nx = mesh.normals[vertIdx] * MAX_INT_16;
-                    const ny = mesh.normals[vertIdx + 1] * MAX_INT_16;
-                    const nz = mesh.normals[vertIdx + 2] * MAX_INT_16;
-                    const nrmIdx = (partVertexOffset + v) * 3;
-                    building.layoutNormalArray.int16[nrmIdx] = nx;
-                    building.layoutNormalArray.int16[nrmIdx + 1] = ny;
-                    building.layoutNormalArray.int16[nrmIdx + 2] = nz;
+                    const idx = (partVertexOffset + v) * 2;
+                    // Pack each vertex as { int16 x, int16 y, float z } instead of 3xfloat, saving 4 bytes.
+                    // x,y are tile-space coordinates that fit int16 (plus tile border padding); z stays float
+                    // for full precision (read back using intBitsToFloat in the shader).
+                    const x = clamp(Math.round(mesh.positions[vertIdx]), MIN_INT_16, MAX_INT_16);
+                    const y = clamp(Math.round(mesh.positions[vertIdx + 1]), MIN_INT_16, MAX_INT_16);
+                    floatBitsScratch[0] = z;
+                    building.layoutVertexArray.int32[idx + 0] =  (x << 16) | (y & 0xffff);
+                    building.layoutVertexArray.int32[idx + 1] = floatBitsScratchInt[0];
+
+                    const nrmIdx = (partVertexOffset + v) * 4;
+                    building.layoutNormalArray.int8[nrmIdx + 0] = clamp(mesh.normals[vertIdx + 0] * MAX_INT_8, -MAX_INT_8, MAX_INT_8);
+                    building.layoutNormalArray.int8[nrmIdx + 1] = clamp(mesh.normals[vertIdx + 1] * MAX_INT_8, -MAX_INT_8, MAX_INT_8);
+                    building.layoutNormalArray.int8[nrmIdx + 2] = clamp(mesh.normals[vertIdx + 2] * MAX_INT_8, -MAX_INT_8, MAX_INT_8);
+                    building.layoutNormalArray.int8[nrmIdx + 3] = 0; // unused.
 
                     const ao = mesh.ao[v];
                     building.layoutAOArray.uint8[partVertexOffset + v] = ao * 255;
@@ -1120,7 +1136,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
             }
 
             if (building.entranceBloom.layoutVertexArray.length) {
-                building.entranceBloom.layoutVertexBuffer = context.createVertexBuffer(building.entranceBloom.layoutVertexArray, buildingPositionAttributes.members);
+                building.entranceBloom.layoutVertexBuffer = context.createVertexBuffer(building.entranceBloom.layoutVertexArray, buildingBloomPositionAttributes.members);
                 building.entranceBloom.layoutAttenuationBuffer = context.createVertexBuffer(building.entranceBloom.layoutAttenuationArray, buildingBloomAttenuationAttributes.members);
             }
             this.uploadUpdatedColorBuffer(context);

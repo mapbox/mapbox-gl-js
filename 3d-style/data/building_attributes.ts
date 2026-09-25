@@ -3,11 +3,15 @@ import {createLayout} from '../../src/util/struct_array';
 import type {StructArrayLayout} from '../../src/util/struct_array';
 
 export const buildingPositionAttributes: StructArrayLayout = createLayout([
+    {name: 'a_pos_packed', components: 2, type: 'Int32'}
+]);
+
+export const buildingBloomPositionAttributes: StructArrayLayout = createLayout([
     {name: 'a_pos_3f', components: 3, type: 'Float32'}
 ]);
 
 export const buildingNormalAttributes: StructArrayLayout = createLayout([
-    {name: 'a_normal_3', components: 3, type: 'Int16'}
+    {name: 'a_normal_4n', components: 4, type: 'Int8', normalized: true}
 ]);
 
 export const buildingCentroidAttributes: StructArrayLayout = createLayout([

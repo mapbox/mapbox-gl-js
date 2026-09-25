@@ -1335,6 +1335,36 @@ class StructArrayLayout1ub1 extends StructArray implements IStructArrayLayout {
 StructArrayLayout1ub1.prototype.bytesPerElement = 1;
 register(StructArrayLayout1ub1, 'StructArrayLayout1ub1');
 
+/**
+ * Implementation of the StructArray layout:
+ * [0]: Int32[2]
+ *
+ * @private
+ */
+class StructArrayLayout2l8 extends StructArray implements IStructArrayLayout {
+
+    override _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.int32 = new Int32Array(this.arrayBuffer);
+    }
+
+    override emplaceBack(v0: number, v1: number): number {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1);
+    }
+
+    override emplace(i: number, v0: number, v1: number): number {
+        const o4 = i * 2;
+        this.int32[o4 + 0] = v0;
+        this.int32[o4 + 1] = v1;
+        return i;
+    }
+}
+
+StructArrayLayout2l8.prototype.bytesPerElement = 8;
+register(StructArrayLayout2l8, 'StructArrayLayout2l8');
+
 class CollisionBoxStruct extends Struct {
     declare _structArray: CollisionBoxArray;
     get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 0]; }
@@ -1612,6 +1642,7 @@ export {
     StructArrayLayout16f64,
     StructArrayLayout1i2,
     StructArrayLayout1ub1,
+    StructArrayLayout2l8,
     StructArrayLayout2i4 as PosArray,
     StructArrayLayout3i6 as PosGlobeExtArray,
     StructArrayLayout2i2ui8 as RasterBoundsArray,
@@ -1668,8 +1699,9 @@ export {
     StructArrayLayout2ui4 as FeatureVertexArray,
     StructArrayLayout1i2 as ParticleIndexLayoutArray,
     StructArrayLayout1ub1 as FillExtrusionHiddenByLandmarkArray,
-    StructArrayLayout3f12 as BuildingPositionArray,
-    StructArrayLayout3i6 as BuildingNormalArray,
+    StructArrayLayout2l8 as BuildingPositionArray,
+    StructArrayLayout3f12 as BuildingBloomPositionArray,
+    StructArrayLayout4b4 as BuildingNormalArray,
     StructArrayLayout3i6 as BuildingCentroidArray,
     StructArrayLayout2ui4 as BuildingColorArray,
     StructArrayLayout2ui4 as BuildingFacadePaintArray,

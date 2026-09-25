@@ -152,6 +152,7 @@ import skyboxAttributes from '../src/render/skybox_attributes';
 import {fillExtrusionGroundAttributes, fillExtrusionGroundRadiusAttributes, fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes, hiddenByLandmarkAttributes, wallAttributes} from '../src/data/bucket/fill_extrusion_attributes';
 import {
     buildingPositionAttributes,
+    buildingBloomPositionAttributes,
     buildingNormalAttributes,
     buildingCentroidAttributes,
     buildingColorAttributes,
@@ -341,6 +342,7 @@ createStructArrayType('fill_extrusion_hidden_by_landmark', hiddenByLandmarkAttri
 
 // Procedural buildings
 createStructArrayType('building_position', buildingPositionAttributes);
+createStructArrayType('building_bloom_position', buildingBloomPositionAttributes);
 createStructArrayType('building_normal', buildingNormalAttributes);
 createStructArrayType('building_centroid', buildingCentroidAttributes);
 createStructArrayType('building_color', buildingColorAttributes);
