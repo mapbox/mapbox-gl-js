@@ -28,10 +28,7 @@ void main() {
     shadow = mix(shadow, vec3(1.0), 1.0 - applyCutout(vec4(1.0), 0.0).r);
 #endif
 #ifdef FEATURE_CUTOUT
-    vec2 uv = gl_FragCoord.xy * u_inv_viewport_size.xy;
-#ifdef FLIP_Y
-    uv.y = 1.0 - uv.y;
-#endif
+    vec2 uv = fragcoord_to_framebuffer_uv(gl_FragCoord.xy, u_inv_viewport_size.xy);
 
     highp float cutoutFactor = get_cutout_factors(gl_FragCoord).y;
     highp float cutoutDepthNDC = sample_cutout_depth_bilinear(u_cutout_depth_image, uv);

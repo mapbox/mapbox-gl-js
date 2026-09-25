@@ -26,6 +26,6 @@ void main() {
     gl_Position = u_matrix * vec4(a_pos_3f, 1.0);
 
 #ifdef RENDER_CUTOFF
-    v_cutoff_opacity = cutoff_opacity(u_cutoff_params, gl_Position.z);
+    v_cutoff_opacity = cutoff_opacity(u_cutoff_params, native_clip_z_to_cutoff_depth(gl_Position.z, gl_Position.w));
 #endif
 }

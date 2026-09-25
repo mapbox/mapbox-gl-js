@@ -23,19 +23,11 @@ highp vec2 shadow_map_ndc_to_uv(highp vec2 ndc_xy) {
 }
 
 highp vec3 shadow_map_ndc_to_sample_space(highp vec3 ndc) {
-#ifdef CLIP_ZERO_TO_ONE
-    return vec3(shadow_map_ndc_to_uv(ndc.xy), ndc.z);
-#else
-    return vec3(shadow_map_ndc_to_uv(ndc.xy), ndc.z * 0.5 + 0.5);
-#endif
+    return vec3(shadow_map_ndc_to_uv(ndc.xy), native_ndc_z_to_storage_depth(ndc.z));
 }
 
 float shadow_sample(sampler2DShadow shadowmap, highp vec3 pos, highp float bias) {
-#ifdef CLIP_ZERO_TO_ONE
-    highp vec3 coord = vec3(shadow_map_ndc_to_uv(pos.xy), pos.z - bias);
-#else
-    highp vec3 coord = vec3(shadow_map_ndc_to_uv(pos.xy), pos.z * 0.5 + 0.5 - bias);
-#endif
+    highp vec3 coord = vec3(shadow_map_ndc_to_uv(pos.xy), native_ndc_z_to_storage_depth(pos.z) - bias);
     return texture(shadowmap, coord);
 }
 

@@ -9,10 +9,7 @@ out vec2 v_pos;
 
 void main() {
     gl_Position = u_matrix * vec4(a_pos, 0, 1);
-    v_pos = vec2(a_texture_pos) / 8192.0;
-#ifdef VIEWPORT_ORIGIN_TOP_LEFT
-    v_pos.y = 1.0 - v_pos.y;
-#endif
+    v_pos = bottom_left_to_native_uv(vec2(a_texture_pos) / 8192.0);
 
 #ifdef FOG
     v_fog_pos = fog_position(vec2(a_pos));

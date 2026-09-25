@@ -23,8 +23,7 @@ uniform vec2 u_viewport;
 void main() {
     vec4 color;
 #ifdef CUSTOM_ANTIALIASING
-    highp vec2 uv = gl_FragCoord.xy / u_viewport;
-    FLIP_VIEWPORT_UV_Y(uv);
+    highp vec2 uv = fragcoord_to_bottom_left_uv(gl_FragCoord.xy, u_viewport);
     highp vec3 ray_dir = mix(
         mix(u_frustum_tl, u_frustum_tr, uv.x),
         mix(u_frustum_bl, u_frustum_br, uv.x),

@@ -88,7 +88,7 @@ uniform highp vec2 u_depth_range_unpack;
 
 #ifdef DEPTH_D24
     highp float unpack_depth(highp float depth) {
-        return  depth * u_depth_range_unpack.x + u_depth_range_unpack.y;
+        return depth_range_to_native_ndc_z(depth, u_depth_range_unpack);
     }
 #else
     // Unpack depth from RGBA. A piece of code copied in various libraries and WebGL
@@ -97,17 +97,12 @@ uniform highp vec2 u_depth_range_unpack;
     highp float unpack_depth_rgba(highp vec4 rgba_depth)
     {
         const highp vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
-        return dot(rgba_depth, bit_shift) * 2.0 - 1.0;
+        return storage_depth_to_native_ndc_z(dot(rgba_depth, bit_shift));
     }
 #endif
 
 bool isOccluded() {
-    highp vec2 coord = gl_FragCoord.xy * u_inv_depth_size;
-
-    #ifdef FLIP_Y
-        coord.y = 1.0 - coord.y;
-    #endif
-
+    highp vec2 coord = fragcoord_to_framebuffer_uv(gl_FragCoord.xy, u_inv_depth_size);
 
     #ifdef DEPTH_D24
         highp float depth = unpack_depth(texture(u_depthTexture, coord).r);
@@ -115,8 +110,7 @@ bool isOccluded() {
         highp float depth = unpack_depth_rgba(texture(u_depthTexture, coord));
     #endif
 
-    // Add some marging to avoid depth precision issues
-    return v_depth > depth + 0.0005;
+    return v_depth > depth + native_depth_epsilon(0.0005);
 }
 #endif
 
@@ -221,12 +215,8 @@ highp mat3 cotangentFrame(highp vec3 N, highp vec3 p, highp vec2 uv ) {
     // solve the linear system
     highp vec3 dp2perp = cross( dp2, N );
     highp vec3 dp1perp = cross( N, dp1 );
-    highp vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
-    highp vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
-#ifdef FLIP_Y
-    T = -T;
-    B = -B;
-#endif
+    highp vec3 T = native_window_space_tangent(dp2perp * duv1.x + dp1perp * duv2.x);
+    highp vec3 B = native_window_space_tangent(dp2perp * duv1.y + dp1perp * duv2.y);
 
     // construct a scale-invariant frame
     // Some Adrenos GPU needs to set explicitely highp
@@ -250,19 +240,14 @@ highp vec3 getNormal(){
     // three.js/.../normal_fragment_begin.glsl.js
     highp vec3 fdx = vec3(dFdx(v_position_height.x), dFdx(v_position_height.y), dFdx(v_position_height.z));
     highp vec3 fdy = vec3(dFdy(v_position_height.x), dFdy(v_position_height.y), dFdy(v_position_height.z));
-    // Z flipped so it is towards the camera.
-#ifdef FLIP_Y
-    n = normalize(cross(fdx,fdy));
-#else
-    n = normalize(cross(fdx,fdy)) * -1.0;
-#endif
+    n = native_window_space_normal(fdx, fdy);
 #endif
 
 #if defined(HAS_TEXTURE_u_normalTexture) && defined(HAS_ATTRIBUTE_a_uv_2f)
     // Perturb normal
     vec3 nMap = texture( u_normalTexture, uv_2f).xyz;
     nMap = normalize(2.0* nMap - vec3(1.0));
-    highp vec3 v = normalize(-v_position_height.xyz);
+    highp vec3 v = native_tbn_view_dir(v_position_height.xyz);
     highp mat3 TBN = cotangentFrame(n, v, uv_2f);
     n = normalize(TBN * nMap);
 #endif

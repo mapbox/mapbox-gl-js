@@ -140,6 +140,6 @@ vec4 world_pos;
 #endif
 
 #ifdef RENDER_CUTOFF
-    v_depth = gl_Position.z;
+    v_depth = native_clip_z_to_cutoff_depth(gl_Position.z, gl_Position.w);
 #endif
 }

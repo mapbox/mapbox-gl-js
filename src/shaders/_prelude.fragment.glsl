@@ -1,11 +1,30 @@
 // NOTE: This prelude is injected in the fragment shader only
+//
+// File-scope macros, not functions with inner #ifdefs: Adreno's GLSL compiler
+// miscompiles the latter in large programs (feature-cutout + instanced models).
 
-// Normalized viewport UV from gl_FragCoord uses bottom-left origin by default.
-// Metal (VIEWPORT_ORIGIN_TOP_LEFT) and Vulkan (FLIP_Y) use top-left; flip Y when either is defined.
 #if defined(VIEWPORT_ORIGIN_TOP_LEFT) || defined(FLIP_Y)
-#define FLIP_VIEWPORT_UV_Y(uv) (uv).y = 1.0 - (uv).y
+#define fragcoord_to_bottom_left_uv(frag, size) vec2((frag).x / (size).x, 1.0 - (frag).y / (size).y)
+#define fragcoord_to_ndc_y(fragY, invY) (1.0 - (fragY) * (invY) * 2.0)
+#define native_window_space_normal(fdx, fdy) (normalize(cross((fdx), (fdy))))
 #else
-#define FLIP_VIEWPORT_UV_Y(uv)
+#define fragcoord_to_bottom_left_uv(frag, size) ((frag) / (size))
+#define fragcoord_to_ndc_y(fragY, invY) ((fragY) * (invY) * 2.0 - 1.0)
+#define native_window_space_normal(fdx, fdy) (normalize(cross((fdx), (fdy))) * -1.0)
+#endif
+
+#ifdef FLIP_Y
+#define fragcoord_to_framebuffer_uv(frag, inv) vec2((frag).x * (inv).x, 1.0 - (frag).y * (inv).y)
+#define native_window_space_tangent(axis) (-(axis))
+#else
+#define fragcoord_to_framebuffer_uv(frag, inv) ((frag) * (inv))
+#define native_window_space_tangent(axis) (axis)
+#endif
+
+#ifdef VIEWPORT_ORIGIN_TOP_LEFT
+#define native_tbn_view_dir(position) (normalize(position))
+#else
+#define native_tbn_view_dir(position) (normalize(-(position)))
 #endif
 
 // DUAL_SOURCE_BLENDING and USE_MRT1 are mutually exclusive. Please define only one.
@@ -25,19 +44,14 @@ layout(location = 1) out vec4 out_Target1;
 highp float unpack_depth(highp vec4 rgba_depth)
 {
     const highp vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
-    return dot(rgba_depth, bit_shift) * 2.0 - 1.0;
+    return storage_depth_to_native_ndc_z(dot(rgba_depth, bit_shift));
 }
 
 // Pack depth to RGBA. A piece of code copied in various libraries and WebGL
 // shadow mapping examples.
 // https://aras-p.info/blog/2009/07/30/encoding-floats-to-rgba-the-final/
 highp vec4 pack_depth(highp float ndc_z) {
-#ifdef CLIP_ZERO_TO_ONE
-    // ndc_z is already in [0, 1] (Metal's native clip-space z range), so skip the GL-style remap.
-    highp float depth = ndc_z;
-#else
-    highp float depth = ndc_z * 0.5 + 0.5;
-#endif
+    highp float depth = native_ndc_z_to_storage_depth(ndc_z);
     const highp vec4 bit_shift = vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0);
     const highp vec4 bit_mask  = vec4(0.0, 1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0);
     highp vec4 res = fract(depth * bit_shift);

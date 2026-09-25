@@ -49,10 +49,7 @@ void main() {
     vec2 uv = vec2(uvX, uvY);
 #endif
 
-    v_pos0 = uv;
-#ifdef VIEWPORT_ORIGIN_TOP_LEFT
-    v_pos0.y = 1.0 - v_pos0.y;
-#endif
+    v_pos0 = bottom_left_to_native_uv(uv);
     vec2 tile_pos = uv * EXTENT;
 
     // Used for poles and skirts

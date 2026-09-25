@@ -80,6 +80,10 @@ out highp vec3 v_normal;
 #ifdef FAUX_AO
 uniform lowp vec2 u_ao;
 out vec2 v_ao;
+
+// Make gl_Position invariant across the color and depth passes so depth
+// comparisons match exactly (no FMA contraction/reassociation on FAUX_AO Z-fight resolution).
+invariant gl_Position;
 #endif
 
 #if defined(LIGHTING_3D_MODE) && defined(FLOOD_LIGHT)
@@ -222,11 +226,7 @@ void main() {
 #endif
 
 #ifdef RENDER_CUTOFF
-#ifdef CLIP_ZERO_TO_ONE
-    cutoff = cutoff_opacity(u_cutoff_params, ground.z * 2.0 - ground.w);
-#else
-    cutoff = cutoff_opacity(u_cutoff_params, ground.z);
-#endif
+    cutoff = cutoff_opacity(u_cutoff_params, native_clip_z_to_cutoff_depth(ground.z, ground.w));
     if (centroid_pos.y != 0.0 && centroid_pos.x != 0.0) {
         vec3 centroid_random = vec3(centroid_pos.xy, centroid_pos.x + centroid_pos.y + 1.0);
         vec3 ground_pos = centroid_random / 8.0;
@@ -337,7 +337,8 @@ void main() {
 #ifdef PROJECTION_GLOBE_VIEW
     top_height += u_height_lift;
 #endif // PROJECTION_GLOBE_VIEW
-    gl_Position.z -= (0.0000006 * (min(top_height, 500.) + 2.0 * min(base, 500.0) + 60.0 * concave + 3.0 * start)) * gl_Position.w;
+    float z_bias = native_depth_epsilon(0.0000006);
+    gl_Position.z -= (z_bias * (min(top_height, 500.) + 2.0 * min(base, 500.0) + 60.0 * concave + 3.0 * start)) * gl_Position.w;
 #endif // FAUX_AO
 
 #ifdef LIGHTING_3D_MODE

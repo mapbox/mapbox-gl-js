@@ -11,12 +11,7 @@ float map(float value, float start, float end, float new_start, float new_end) {
 void main() {
     vec4 pos = vec4(u_matrix_3f * a_pos_3f, 1.0);
 
-    v_position = pos.xyz;
-#ifndef VIEWPORT_ORIGIN_TOP_LEFT
-    // OpenGL cubemap faces use a bottom-left origin; Metal uses top-left (see flipV in
-    // render_sky_layer.cpp) so skip this flip when VIEWPORT_ORIGIN_TOP_LEFT is defined.
-    v_position.y *= -1.0;
-#endif
+    v_position = native_cubemap_direction(pos.xyz);
 
     // To make better utilization of the visible range (e.g. over the horizon, UVs
     // from 0.0 to 1.0 on the Y-axis in cubemap space), the UV range is remapped from

@@ -51,6 +51,10 @@ out vec4 v_lighting;
 #ifdef FAUX_AO
 uniform lowp vec2 u_ao;
 out vec3 v_ao;
+
+// Make gl_Position invariant across the color and depth passes so depth
+// comparisons match exactly (no FMA contraction/reassociation on FAUX_AO Z-fight resolution).
+invariant gl_Position;
 #endif
 
 #ifdef LIGHTING_3D_MODE
@@ -190,7 +194,8 @@ void main() {
 #ifdef PROJECTION_GLOBE_VIEW
     top_height += u_height_lift;
 #endif
-    gl_Position.z -= (0.0000006 * (min(top_height, 500.) + 2.0 * min(base, 500.0) + 60.0 * concave + 3.0 * start)) * gl_Position.w;
+    float z_bias = native_depth_epsilon(0.0000006);
+    gl_Position.z -= (z_bias * (min(top_height, 500.) + 2.0 * min(base, 500.0) + 60.0 * concave + 3.0 * start)) * gl_Position.w;
 #endif
 
 #ifdef LIGHTING_3D_MODE

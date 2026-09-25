@@ -26,7 +26,9 @@ vec3 elevationVector(vec2 pos) {
 #ifdef TERRAIN
 
     uniform highp sampler2D u_dem;
+#ifdef TERRAIN_VERTEX_MORPHING
     uniform highp sampler2D u_dem_prev;
+#endif // TERRAIN_VERTEX_MORPHING
 
     uniform vec2 u_dem_tl;
     uniform vec2 u_dem_tl_prev;
@@ -63,6 +65,7 @@ vec3 elevationVector(vec2 pos) {
         #endif // TERRAIN_DEM_FLOAT_FORMAT
     }
 
+#ifdef TERRAIN_VERTEX_MORPHING
     float prevElevation(vec2 apos) {
         #ifdef TERRAIN_DEM_FLOAT_FORMAT
             vec2 pos = (u_dem_size * (apos / 8192.0 * u_dem_scale_prev + u_dem_tl_prev) + 1.5) / (u_dem_size + 2.0);
@@ -81,6 +84,7 @@ vec3 elevationVector(vec2 pos) {
             return u_exaggeration * mix(mix(tl, tr, f.x), mix(bl, br, f.x), f.y);
         #endif // TERRAIN_DEM_FLOAT_FORMAT
     }
+#endif // TERRAIN_VERTEX_MORPHING
 
     // BEGIN: code for fill-extrusion height offseting
     // When making changes here please also update associated JS ports in src/style/style_layer/fill-extrusion-style-layer.js
@@ -158,11 +162,11 @@ float elevation(vec2 apos) {
 
     #ifdef DEPTH_D24
         float unpack_depth(float depth) {
-            return depth * u_depth_range_unpack.x + u_depth_range_unpack.y;
+            return depth_range_to_native_ndc_z(depth, u_depth_range_unpack);
         }
 
         vec4 unpack_depth4(vec4 depth) {
-            return depth * u_depth_range_unpack.x + vec4(u_depth_range_unpack.y);
+            return depth_range_to_native_ndc_z(depth, u_depth_range_unpack);
         }
     #else // DEPTH_D24
         // Unpack depth from RGBA. A piece of code copied in various libraries and WebGL
@@ -171,30 +175,37 @@ float elevation(vec2 apos) {
         highp float unpack_depth_rgba(vec4 rgba_depth)
         {
             const highp vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
-            return dot(rgba_depth, bit_shift) * 2.0 - 1.0;
+            return storage_depth_to_native_ndc_z(dot(rgba_depth, bit_shift));
         }
     #endif // DEPTH_D24
 
+    highp vec2 occlusionDepthUv(highp vec2 ndc_xy) {
+        return ndc_xy_to_depth_texture_uv(ndc_xy);
+    }
+
+    // u_occlusion_depth_offset and the fade slope are authored in GL NDC, while coord.z and the
+    // unpacked depth stay in native NDC, so scale them.
+    // Adreno's preprocessor mis-parses zero-parameter macro definitions and fails with a syntax error
+    // so we don't use a zero-parameter macro here.
+#define occlusion_depth_bias native_depth_epsilon(u_occlusion_depth_offset)
+#define occlusion_fade_slope(native_delta) (300.0 * (native_delta) / native_depth_epsilon(1.0))
 
     bool isOccluded(vec4 frag) {
         vec3 coord = frag.xyz / frag.w;
-
-        #ifdef CLIP_ZERO_TO_ONE
-            coord.z = -1.0 + 2.0 * coord.z; 
-        #endif
+        highp vec2 uv = occlusionDepthUv(coord.xy);
 
         #ifdef DEPTH_D24
-            float depth = unpack_depth(texture(u_depth, (coord.xy + 1.0) * 0.5).r);
+            float depth = unpack_depth(texture(u_depth, uv).r);
         #else // DEPTH_D24
-            float depth = unpack_depth_rgba(texture(u_depth, (coord.xy + 1.0) * 0.5));
+            float depth = unpack_depth_rgba(texture(u_depth, uv));
         #endif // DEPTH_D24
 
-        return coord.z + u_occlusion_depth_offset > depth;
+        return coord.z + occlusion_depth_bias > depth;
     }
 
     highp vec4 getCornerDepths(vec2 coord) {
         highp vec3 df = vec3(u_occluder_half_size * u_depth_size_inv, 0.0);
-        highp vec2 uv = 0.5 * coord.xy + 0.5;
+        highp vec2 uv = occlusionDepthUv(coord);
 
         #ifdef DEPTH_D24
             highp vec4 depth = vec4(
@@ -219,11 +230,7 @@ float elevation(vec2 apos) {
     // Used by symbols layer
     highp float occlusionFadeMultiSample(vec4 frag) {
         highp vec3 coord = frag.xyz / frag.w;
-        highp vec2 uv = 0.5 * coord.xy + 0.5;
-
-        #ifdef CLIP_ZERO_TO_ONE
-            coord.z = -1.0 + 2.0 * coord.z; 
-        #endif
+        highp vec2 uv = occlusionDepthUv(coord.xy);
 
         int NX = 3;
         int NY = 4;
@@ -242,7 +249,7 @@ float elevation(vec2 apos) {
                     highp float depth = unpack_depth_rgba(texture(u_depth, uv - df + vec2(float(x) * oneStep.x, float(y) * oneStep.y)));
                 #endif // DEPTH_24
 
-                res += 1.0 - clamp(300.0 * (coord.z + u_occlusion_depth_offset - depth), 0.0, 1.0);
+                res += 1.0 - clamp(occlusion_fade_slope(coord.z + occlusion_depth_bias - depth), 0.0, 1.0);
             }
         }
 
@@ -255,13 +262,9 @@ float elevation(vec2 apos) {
     highp float occlusionFade(vec4 frag) {
         highp vec3 coord = frag.xyz / frag.w;
 
-        #ifdef CLIP_ZERO_TO_ONE
-            coord.z = -1.0 + 2.0 * coord.z; 
-        #endif
-
         highp vec4 depth = getCornerDepths(coord.xy);
 
-        return dot(vec4(0.25), vec4(1.0) - clamp(300.0 * (vec4(coord.z + u_occlusion_depth_offset) - depth), 0.0, 1.0));
+        return dot(vec4(0.25), vec4(1.0) - clamp(occlusion_fade_slope(vec4(coord.z + occlusion_depth_bias) - depth), 0.0, 1.0));
     }
 
 #else // DEPTH_OCCLUSION

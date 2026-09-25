@@ -147,7 +147,7 @@ void main() {
 #endif
 
 #ifdef RENDER_CUTOFF
-    v_cutoff_opacity = cutoff_opacity(u_cutoff_params, ground.z);
+    v_cutoff_opacity = cutoff_opacity(u_cutoff_params, native_clip_z_to_cutoff_depth(ground.z, ground.w));
     hidden = float(v_cutoff_opacity == 0.0);
     v_pos.z *= v_cutoff_opacity;
 #endif

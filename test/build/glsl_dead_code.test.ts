@@ -270,6 +270,22 @@ test('output is directive-balanced for every shader in the corpus', () => {
     }
 });
 
+test('_prelude.glsl dead-code keeps GL conversion macros', () => {
+    const file = path.join(root, 'src/shaders/_prelude.glsl');
+    const out = eliminateDeadBranches(strip(read(file)), GL_NATIVE_ONLY_DEFINES, file);
+    assert.match(out, /#define native_depth_epsilon\(eps\) \(eps\)/);
+    assert.match(out, /#define ndc_xy_to_framebuffer_uv\(ndc_xy\) \(\(ndc_xy\) \* 0\.5 \+ 0\.5\)/);
+    assert.equal(out.includes('highp float native_depth_epsilon'), false);
+});
+
+test('_prelude.fragment.glsl dead-code keeps GL conversion macros', () => {
+    const file = path.join(root, 'src/shaders/_prelude.fragment.glsl');
+    const out = eliminateDeadBranches(strip(read(file)), GL_NATIVE_ONLY_DEFINES, file);
+    assert.match(out, /#define fragcoord_to_framebuffer_uv\(frag, inv\) \(\(frag\) \* \(inv\)\)/);
+    assert.match(out, /#define fragcoord_to_ndc_y\(fragY, invY\) \(\(fragY\) \* \(invY\) \* 2\.0 - 1\.0\)/);
+    assert.equal(out.includes('vec2 fragcoord_to_framebuffer_uv'), false);
+});
+
 test('_prelude_material_table.vertex.glsl is eliminated entirely', () => {
     // The whole file sits inside `#ifdef HAS_SHADER_STORAGE_BLOCK_material_buffer`, and WebGL 2
     // has no shader-storage-buffer support at all, so none of it can ever run in GL JS.

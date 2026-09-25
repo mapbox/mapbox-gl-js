@@ -197,11 +197,8 @@ void main() {
     highp vec4 ground_pos = vec4(pos_a.xy, 0.0, 1.0);
     highp vec4 cutout_clip_pos = mix(u_matrix * ground_pos, AWAY, hidden);
     highp vec3 cutout_ndc = cutout_clip_pos.xyz / cutout_clip_pos.w;
-    vec2 uv = cutout_ndc.xy * 0.5 + 0.5;
-    highp float fragDepthNDC = cutout_ndc.z * 0.5 + 0.5;
-#ifdef FLIP_Y
-    fragDepthNDC = cutout_ndc.z;
-#endif
+    vec2 uv = ndc_xy_to_depth_texture_uv(cutout_ndc.xy);
+    highp float fragDepthNDC = native_ndc_z_to_storage_depth(cutout_ndc.z);
     highp float cutoutFactor = get_cutout_factors_vert(uv).x;
     highp float cutoutDepthNDC = sample_cutout_depth(u_cutout_depth_image, uv);
     // Prevent cutting above ground
@@ -230,16 +227,11 @@ void main() {
 #endif
 
 #ifdef RENDER_CUTOFF
-    v_cutoff_opacity = cutoff_opacity(u_cutoff_params, gl_Position.z);
+    v_cutoff_opacity = cutoff_opacity(u_cutoff_params, native_clip_z_to_cutoff_depth(gl_Position.z, gl_Position.w));
 #endif
 
 #ifdef TERRAIN_FRAGMENT_OCCLUSION
     v_depth = gl_Position.z / gl_Position.w;
-
-    #ifdef CLIP_ZERO_TO_ONE
-        v_depth = -1.0 + 2.0 * v_depth; 
-    #endif
-
 #endif
 
 

@@ -19,8 +19,9 @@
  * Every entry is verified by `test/build/glsl_dead_code.test.js`
  */
 export const GL_NATIVE_ONLY_DEFINES: ReadonlyArray<string> = Object.freeze([
-    // Metal renders with a top-left viewport origin; Vulkan flips Y. WebGL is bottom-left, so
-    // neither is ever set here. See the comment at src/shaders/_prelude.fragment.glsl.
+    // Metal renders with a top-left viewport origin; Vulkan Immediate sets FLIP_Y.
+    // WebGL is bottom-left. Shared GLSL consults those symbols only inside the
+    // coordinate helpers in src/shaders/_prelude.glsl and _prelude.fragment.glsl.
     'VIEWPORT_ORIGIN_TOP_LEFT',
     'FLIP_Y',
     // Metal-only shadow-map Y flip. Explicitly documented as such in
