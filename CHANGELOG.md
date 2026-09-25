@@ -21,6 +21,7 @@
 
 ### Bug fixes 🐞
 
+- Fix `getPaintProperty` throwing a `TypeError` when passed an unknown paint property name; it now fires a helpful `error` event and returns `undefined` instead. (h/t @akashchamp)
 - Fix `raster-array` chunk loading when unused.
 - Fix `transformRequest` headers and credentials being dropped from PMTiles requests.
 - Fix `transformRequest` headers/credentials being dropped when loading GL model (GLTF) resources.

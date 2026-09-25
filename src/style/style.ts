@@ -3573,6 +3573,17 @@ class Style extends Evented<MapEvents> {
     getPaintProperty<T extends keyof PaintSpecification>(layerId: string, name: T): PaintSpecification[T] | undefined {
         const layer = this._checkLayer(layerId);
         if (!layer) return;
+
+        const nameStr = name as string;
+        const propertyName = (nameStr.endsWith('-transition') ?
+            nameStr.slice(0, -'-transition'.length) :
+            nameStr) as keyof PaintSpecification;
+
+        if (!layer.isPaintProperty(propertyName)) {
+            this.fire(new ErrorEvent(new Error(`'${name}' is not a paint property of ${layer.type} layers.`)));
+            return;
+        }
+
         return layer.getPaintProperty(name);
     }
 
