@@ -7,7 +7,19 @@
         "fadeDuration": 300,
         "width": 512,
         "height": 512,
+        "image-threshold": [
+          {
+            "platform-tag-contains": "",
+            "threshold": 0.00005
+          }
+        ],
         "operations": [
+          [
+            "setSourceProperty",
+            "mapbox",
+            "enable-symbols-fade-out",
+            true
+          ],
           ["setTimer", 0],
           ["wait"],
           ["setTimer", 300],

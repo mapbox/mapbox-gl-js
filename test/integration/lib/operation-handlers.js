@@ -216,6 +216,10 @@ export const operationHandlers = {
         // No-op in gl-js
         doneCb();
     },
+    setSourceProperty(map, params, doneCb) {
+        // No-op in gl-js
+        doneCb();
+    },
     setCustomTexture(map, params, doneCb) {
         params[1] = params[1].replace('./', '/test/integration/');
         map.loadImage(params[1], (error, image) => {
