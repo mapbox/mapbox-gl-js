@@ -5,6 +5,7 @@
 - Fix symbol fading not finishing when using global placement.
 - Improve memory use & map load time, especially for 3D layers.
 - Improve 3D Lanes map load performance.
+- Fix an issue with GeoJSON geometries past longitude -+360 rendering incorrectly.
 
 ## 3.32.0-rc.1
 
