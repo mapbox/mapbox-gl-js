@@ -76,18 +76,20 @@ describe('ElevatedStructures', () => {
     test('#computeEdgeHash', () => {
         const hashes = [
             ElevatedStructures.computeEdgeHash(new Point(0, 0), new Point(0, 0)),
-            ElevatedStructures.computeEdgeHash(new Point(20000, 20000), new Point(0, 0)),
-            ElevatedStructures.computeEdgeHash(new Point(0, 0), new Point(12345, -1000)),
-            ElevatedStructures.computeEdgeHash(new Point(8000, 7654), new Point(-500, 1024)),
-            ElevatedStructures.computeEdgeHash(new Point(1456, -435), new Point(2048, 1024)),
+            ElevatedStructures.computeEdgeHash(new Point(8193, 8193), new Point(-1, -1)),
+            ElevatedStructures.computeEdgeHash(new Point(0, 0), new Point(4096, 8193)),
+            ElevatedStructures.computeEdgeHash(new Point(4096, 8193), new Point(0, 0)),
+            ElevatedStructures.computeEdgeHash(new Point(8000, 7654), new Point(-1, 1024)),
+            ElevatedStructures.computeEdgeHash(new Point(1456.7, -0.5), new Point(2048, 1024)),
         ];
 
         const expected = [
-            0n,
-            1310740000n,
-            3475085767502462976n,
-            18306010983925030374n,
-            410107172890870784n,
+            550427181096,
+            67158024,
+            550460756009,
+            550460756009,
+            68902551475,
+            801874558465455,
         ];
 
         expect(hashes).toMatchObject(expected);

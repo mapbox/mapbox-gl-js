@@ -4,6 +4,7 @@ import {ElevationPortalGraph, type ElevationPortalEdge, type ElevationPortalType
 import {vec2, vec3} from "gl-matrix";
 import {tileToMeter} from '../../src/geo/mercator_coordinate';
 import EXTENT from '../../src/style-spec/data/extent';
+import {ELEVATION_CLIP_MARGIN} from './elevation_constants';
 import {edgeIntersectsBox} from '../../src/util/intersection_tests';
 import {FillIntersectionsLayoutArray, FillIntersectionsNormalLayoutArray, TriangleIndexArray} from '../../src/data/array_types';
 import {intersectionNormalAttributes, intersectionsAttributes} from '../../src/data/bucket/fill_attributes';
@@ -44,12 +45,15 @@ export interface FeatureInfo {
     guardRailEnabled: boolean;
     featureIndex: number;
 }
+// Number of distinct integer coordinates per axis of polygons clipped to the tile with ELEVATION_CLIP_MARGIN
+const POS_HASH_RANGE = EXTENT + 2 * ELEVATION_CLIP_MARGIN + 1;
+
 interface Edge {
     polygonIdx: number;
     a: number;
     b: number;
-    hash: bigint;
-    portalHash: bigint;
+    hash: number;
+    portalHash: number;
     isTunnel: boolean;
     type: ElevationPortalType;
     // Track the information of the geometryfeature that the edge is originated from,
@@ -58,8 +62,8 @@ interface Edge {
 }
 
 interface VertexEdgeHashes {
-    prev: bigint;
-    next: bigint;
+    prev: number;
+    next: number;
 }
 
 export interface FeatureSection {
@@ -175,15 +179,14 @@ export class ElevatedStructures {
     bridgeProgramConfigurations: ProgramConfigurationSet<FillStyleLayer>;
     tunnelProgramConfigurations: ProgramConfigurationSet<FillStyleLayer>;
 
-    private vertexHashLookup: Map<number, VertexEdgeHashes> = new Map();
-
-    private unevalVertices: Point[] = [];
-    private unevalHeights: number[] = [];
-    private unevalTriangles: number[] = [];
-    private unevalTunnelTriangles: number[] = [];
-    private unevalEdges: Edge[] = [];
-
-    private tileToMeters: number;
+    // Worker-side build state, not transferred to the main thread
+    vertexHashLookup: Map<number, VertexEdgeHashes> = new Map();
+    unevalVertices: Point[] = [];
+    unevalHeights: number[] = [];
+    unevalTriangles: number[] = [];
+    unevalTunnelTriangles: number[] = [];
+    unevalEdges: Edge[] = [];
+    tileToMeters: number;
 
     private vertexPositions = new FillIntersectionsLayoutArray();
     private vertexNormals = new FillIntersectionsNormalLayoutArray();
@@ -259,7 +262,7 @@ export class ElevatedStructures {
             // "portalHash" which represents the original edge this one originated from. The latter is required
             // as the feature geometry might be split into smaller segments before being used for rendering.
             const edgeHash = ElevatedStructures.computeEdgeHash(this.unevalVertices[ai], this.unevalVertices[bi]);
-            let portalHash: bigint;
+            let portalHash: number;
 
             let lookup = this.vertexHashLookup.get(ElevatedStructures.computePosHash(va));
             if (lookup != null) {
@@ -903,20 +906,17 @@ export class ElevatedStructures {
         array.splice(start, sub.length, ...sub);
     }
 
-    static computeEdgeHash(pa: Point, pb: Point): bigint {
-        if ((pa.y === pb.y && pa.x > pb.x) || pa.y > pb.y) {
-            [pa, pb] = [pb, pa];
-        }
-
-        const aHash = BigInt(ElevatedStructures.computePosHash(pa));
-        const bHash = BigInt(ElevatedStructures.computePosHash(pb));
-
-        return (aHash << 32n) | bHash;
+    static computeEdgeHash(pa: Point, pb: Point): number {
+        const a = ElevatedStructures.computePosHash(pa);
+        const b = ElevatedStructures.computePosHash(pb);
+        // Exact up to POS_HASH_RANGE^4 < 2^53
+        return Math.min(a, b) * POS_HASH_RANGE * POS_HASH_RANGE + Math.max(a, b);
     }
 
     private static computePosHash(p: Point): number {
-        const x = p.x & 0xFFFF;
-        const y = p.y & 0xFFFF;
-        return ((x << 16) | y) >>> 0;
+        const x = Math.floor(p.x) + ELEVATION_CLIP_MARGIN;
+        const y = Math.floor(p.y) + ELEVATION_CLIP_MARGIN;
+        assert(x >= 0 && x < POS_HASH_RANGE && y >= 0 && y < POS_HASH_RANGE);
+        return x * POS_HASH_RANGE + y;
     }
 }

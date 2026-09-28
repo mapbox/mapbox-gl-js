@@ -16,7 +16,7 @@ export function toUnevaluatedEdge(connection: ElevationPortalConnection, a: Poin
 export function polygonToUnevaluatedEdges(id: number, isTunnel: boolean, polygon: Point[][], entrances: Edge[]) {
     const result: ElevationPortalEdge[] = [];
 
-    const entranceHashes = new Set<bigint>();
+    const entranceHashes = new Set<number>();
     for (const entrance of entrances) {
         entranceHashes.add(ElevatedStructures.computeEdgeHash(entrance[0], entrance[1]));
     }

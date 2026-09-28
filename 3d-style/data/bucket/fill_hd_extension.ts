@@ -346,4 +346,7 @@ export function maybeAttachFillHDExt(bucket: FillBucket, coverageSourceLayers: s
 register(FillHDExtension, 'FillHDExtension');
 // ElevatedStructures is registered by the HD module because the class only lives in
 // the HD bundle — the register side effect belongs with the module that uses it.
-register(ElevatedStructures, 'ElevatedStructures');
+register(ElevatedStructures, 'ElevatedStructures', {omit: [
+    'unevaluatedPortals', 'bridgeFeatureSections', 'tunnelFeatureSections', 'vertexHashLookup',
+    'unevalVertices', 'unevalHeights', 'unevalTriangles', 'unevalTunnelTriangles', 'unevalEdges', 'tileToMeters'
+]});

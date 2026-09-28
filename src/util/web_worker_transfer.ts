@@ -134,10 +134,7 @@ const ERROR_PROPERTIES = new Set(['message', 'stack', 'cause', 'errors', 'name',
 export function serialize(input: unknown, transferables?: Set<Transferable> | null): Serialized {
     if (input === null) return null;
     const type = typeof input;
-    if (type !== 'object') {
-        if (type === 'bigint') return {$name: 'BigInt', value: (input as bigint).toString()};
-        return input as Serialized;
-    }
+    if (type !== 'object') return input as Serialized;
 
     if (Array.isArray(input)) {
         const length = input.length;
@@ -319,10 +316,6 @@ export function deserialize(input: Serialized): unknown {
             set.add(deserialize(input[key]));
         }
         return set;
-    }
-
-    if (name === 'BigInt') {
-        return BigInt(input.value as string);
     }
 
     if (name === '$Error') {

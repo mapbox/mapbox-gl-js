@@ -19,7 +19,7 @@ export interface ElevationPortalEdge {
     vab: vec2;                              // b - a
     length: number;
     // the same as edge hash (order independent two endpoints coordinates hash)
-    hash: bigint;
+    hash: number;
     isTunnel: boolean;
     type: ElevationPortalType;
 }

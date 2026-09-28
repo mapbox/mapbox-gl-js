@@ -4,6 +4,7 @@
 - Extend global placement debug info.
 - Fix symbol fading not finishing when using global placement.
 - Improve memory use & map load time, especially for 3D layers.
+- Improve 3D Lanes map load performance.
 
 ## 3.32.0-rc.1
 
