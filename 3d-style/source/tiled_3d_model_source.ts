@@ -29,7 +29,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     scope!: string;
     minzoom: number;
     maxzoom: number;
-    tileBounds!: TileBounds;
+    tileBounds?: TileBounds;
     roundZoom: boolean | undefined;
     reparseOverscaled: boolean | undefined;
     usedInConflation: boolean;
@@ -111,7 +111,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
                 Object.assign(this, tileJSON);
-                if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
+                this.tileBounds = new TileBounds(tileJSON);
                 postTurnstileEvent(tileJSON.tiles, this.map._requestManager._customAccessToken);
 
                 // `content` is included here to prevent a race condition where `Style#_updateSources` is called

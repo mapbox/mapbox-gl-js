@@ -232,7 +232,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             }
         }
 
-        this.tileBounds = TileBounds.fromTileJSON(tileJSON);
+        this.tileBounds = new TileBounds(tileJSON);
     }
 
     loaded(): boolean {

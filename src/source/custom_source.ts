@@ -207,10 +207,6 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
             this.fire(new ErrorEvent(new Error(`Missing loadTile implementation for ${this.id} custom source`)));
         }
 
-        if (this._implementation.bounds) {
-            this.tileBounds = new TileBounds(this._implementation.bounds, this.minzoom, this.maxzoom);
-        }
-
         const impl = implementation as CustomSourceInterface<T> & {
             update: () => void;
             clearTiles: () => void;
@@ -221,6 +217,10 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
         impl.coveringTiles = this._coveringTiles.bind(this);
 
         Object.assign(this, pick(implementation, ['dataType', 'scheme', 'minzoom', 'maxzoom', 'tileSize', 'attribution', 'minTileCacheSize', 'maxTileCacheSize']));
+
+        if (this._implementation.bounds) {
+            this.tileBounds = new TileBounds({bounds: this._implementation.bounds, minzoom: this.minzoom, maxzoom: this.maxzoom});
+        }
     }
 
     serialize() {
