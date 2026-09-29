@@ -22,7 +22,7 @@ import {Pane} from 'https://esm.sh/tweakpane@4';
 import {getAccessToken} from './access_token_generated.js';
 
 const PARAMS = {
-    projection: 'globe',
+    projection: new URLSearchParams(location.search).get('projection') || 'globe',
     centerLng: -96,
     centerLat: 37.5,
     parallelLat1: 29.5,

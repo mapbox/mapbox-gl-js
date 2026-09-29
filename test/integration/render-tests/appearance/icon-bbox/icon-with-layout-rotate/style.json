@@ -1,0 +1,41 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "_comment": "A layer with appearances and a layout `icon-rotate`. The merged appearance bounds already include the 45° rotation, so the collision box must match the box of the same icon without appearances and must not be rotated a second time.",
+      "width": 64,
+      "height": 64,
+      "collisionDebug": true,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+      ]
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {"type": "Point", "coordinates": [0, 0]}
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "rgba(255, 255, 255, 1)"}
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "rocket-12",
+        "icon-rotate": 45
+      },
+      "appearances": [{
+        "condition": ["config", "showAppearance"],
+        "properties": {"icon-offset": [0, 0]}
+      }]
+    }
+  ]
+}

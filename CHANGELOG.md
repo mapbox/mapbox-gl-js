@@ -8,6 +8,13 @@
 - Fix an issue with GeoJSON geometries past longitude -+360 rendering incorrectly.
 - Respect `extra_bounds` on all TileJSON source types.
 
+### Features and improvements ✨
+
+### Bug fixes 🐞
+
+- Fix map-aligned `icon-rotate` and `text-rotate` not being measured from true north in projections other than Mercator or globe, which misrotated symbols such as crosswalks.
+- Fix collision boxes not matching rotated symbols that use appearances with a layout `icon-rotate` or `text-rotate`.
+
 ## 3.32.0-rc.1
 
 ### Features and improvements ✨

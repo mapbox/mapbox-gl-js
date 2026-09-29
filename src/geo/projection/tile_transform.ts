@@ -1,5 +1,6 @@
 import Point from '@mapbox/point-geometry';
-import {altitudeFromMercatorZ, lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate';
+import {altitudeFromMercatorZ, lngFromMercatorX, latFromMercatorY, MAX_MERCATOR_LATITUDE} from '../mercator_coordinate';
+import {clamp, radToDeg} from '../../util/util';
 import EXTENT from '../../style-spec/data/extent';
 import {vec3} from 'gl-matrix';
 import {Aabb} from '../../util/primitives';
@@ -91,6 +92,29 @@ export default function tileTransform(id: {z: number; x: number; y: number}, pro
         y2: maxY * scale,
         projection
     };
+}
+
+// Clockwise angle in degrees from the tile's up direction to true north at a tile point.
+// Non-zero only for projections that reproject geometry in tile space.
+export function getNorthOffset(tileTransform: TileTransform, x: number, y: number): number {
+    const {projection, scale} = tileTransform;
+    if (!projection.isReprojectedInTileSpace) return 0;
+
+    const {lng, lat} = projection.unproject(
+        (x / EXTENT + tileTransform.x) / scale,
+        (y / EXTENT + tileTransform.y) / scale);
+
+    // North is the direction between two points just south and north on the same meridian.
+    const delta = 1e-4;
+    const latSouth = clamp(lat - delta, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
+    const latNorth = clamp(lat + delta, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
+    if (latNorth === latSouth) return 0;
+
+    const south = projection.project(lng, latSouth);
+    const north = projection.project(lng, latNorth);
+
+    // Tile space is y-down, so up is -y.
+    return radToDeg(Math.atan2(north.x - south.x, south.y - north.y));
 }
 
 export function tileAABB(

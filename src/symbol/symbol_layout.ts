@@ -2,7 +2,8 @@ import Anchor from './anchor';
 import {getAnchors, getCenterAnchor} from './get_anchors';
 import {shapeText} from './shaping';
 import {shapeIcon, WritingMode, fitIconToText} from './shaping_shared';
-import {evaluateVariableOffset, getAppearanceIconValues, getAppearanceTextValues, getScaledImageVariant, getAnchorJustification, computeFontScale, packSizeForVertex} from './symbol_layout_shared';
+import {getNorthOffset} from '../geo/projection/tile_transform';
+import {rotatesInTileSpace, evaluateVariableOffset, getAppearanceIconValues, getAppearanceTextValues, getScaledImageVariant, getAnchorJustification, computeFontScale, packSizeForVertex} from './symbol_layout_shared';
 import {getGlyphQuads, getIconQuads, getIconQuadsNumber, type SymbolQuad} from './quads';
 import {warnOnce, degToRad, clamp} from '../util/util';
 import {
@@ -1076,9 +1077,10 @@ function addTextVertices(bucket: SymbolBucket,
                          availableImages: ImageId[],
                          canonical: CanonicalTileID,
                          symbolInstanceIndex: number,
+                         textRotate: number,
                          brightness?: number | null) {
     const glyphQuads = getGlyphQuads(tileAnchor, shapedText, textOffset,
-                            layer, textAlongLine, feature, imageMap, bucket.allowVerticalPlacement, undefined, sizes.textScaleFactor);
+                            layer, textAlongLine, feature, imageMap, bucket.allowVerticalPlacement, textRotate, sizes.textScaleFactor);
 
     const evaluatedTextSize = layer.layout.get('text-size').evaluate(feature, {}, canonical);
     const minZoomSize = sizes.compositeTextSizes ? sizes.compositeTextSizes[0].evaluate(feature, {}, canonical) : 0;
@@ -1264,6 +1266,18 @@ function addSymbol(bucket: SymbolBucket,
 
     const hasIconTextFit = iconTextFit !== 'none';
 
+    const iconRotatesInTileSpace = rotatesInTileSpace(layer, 'icon');
+    const textRotatesInTileSpace = rotatesInTileSpace(layer, 'text');
+    const northOffset = iconRotatesInTileSpace || textRotatesInTileSpace ?
+        getNorthOffset(bucket.getTileTransform(canonical), anchor.x, anchor.y) : 0;
+    const iconNorthOffset = iconRotatesInTileSpace ? northOffset : 0;
+    const textNorthOffset = textRotatesInTileSpace ? northOffset : 0;
+    const iconRotate = layer.layout.get('icon-rotate').evaluate(feature, {}, canonical) + iconNorthOffset;
+    const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}, canonical) + textNorthOffset;
+    // Merged appearance bounds already include the `*-rotate` of every variant, so only the north offset is left to apply.
+    const iconCollisionRotate = iconCollisionBounds ? iconNorthOffset : iconRotate;
+    const textCollisionRotate = textCollisionBounds ? textNorthOffset : textRotate;
+
     let textOffset0 = 0;
     let textOffset1 = 0;
     if (layer._unevaluatedLayout.getValue('text-radial-offset') === undefined) {
@@ -1283,11 +1297,12 @@ function addSymbol(bucket: SymbolBucket,
                 verticalIconCircle = evaluateCircleCollisionFeature(verticallyShapedIcon);
             }
         } else {
-            const textRotation = layer.layout.get('text-rotate').evaluate(feature, {}, canonical);
-            const verticalTextRotation = textRotation + 90.0;
-            verticalTextBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textPadding, verticalTextRotation, textOffset, textCollisionBounds);
+            const verticalTextRotation = textRotate + 90.0;
+            const verticalTextCollisionRotate = textVerticalCollisionBounds ? textNorthOffset : verticalTextRotation;
+            const verticalIconCollisionRotate = iconVerticalCollisionBounds ? iconNorthOffset : verticalTextRotation;
+            verticalTextBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textPadding, verticalTextCollisionRotate, textOffset, textVerticalCollisionBounds);
             if (verticallyShapedIcon) {
-                verticalIconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticallyShapedIcon, iconPadding, verticalTextRotation, null, iconVerticalCollisionBounds);
+                verticalIconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticallyShapedIcon, iconPadding, verticalIconCollisionRotate, null, iconVerticalCollisionBounds);
             }
         }
     }
@@ -1298,10 +1313,9 @@ function addSymbol(bucket: SymbolBucket,
     // For more info check `updateVariableAnchors` in `draw_symbol.js` .
 
     if (shapedIcon) {
-        const iconRotate = layer.layout.get('icon-rotate').evaluate(feature, {}, canonical);
         const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit, sizes.iconScaleFactor);
         const verticalIconQuads = verticallyShapedIcon ? getIconQuads(verticallyShapedIcon, iconRotate, isSDFIcon, hasIconTextFit, sizes.iconScaleFactor) : undefined;
-        iconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconPadding, iconRotate, null, iconCollisionBounds);
+        iconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconPadding, iconCollisionRotate, null, iconCollisionBounds);
         // Calculate maximum quads needed across layout icon and all appearance variants
         // to prevent vertex buffer overflow during appearance updates
         const maxQuadCount = calculateMaxIconQuadCount(bucket, iconQuads, verticalIconQuads,
@@ -1378,9 +1392,7 @@ function addSymbol(bucket: SymbolBucket,
             if (textAlongLine) {
                 textCircle = evaluateCircleCollisionFeature(shaping);
             } else {
-
-                const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}, canonical);
-                textBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaping, textPadding, textRotate, textOffset, textCollisionBounds);
+                textBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaping, textPadding, textCollisionRotate, textOffset, textCollisionBounds);
             }
         }
 
@@ -1389,7 +1401,7 @@ function addSymbol(bucket: SymbolBucket,
             bucket, globe, anchor, shaping, imageMap, layer, textAlongLine, feature, textOffset, lineArray,
             shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly,
             singleLine ? keys(shapedTextOrientations.horizontal) : [justification],
-            placedTextSymbolIndices, placedIconSymbolIndex, sizes, availableImages, canonical, bucket.symbolInstances.length, brightness);
+            placedTextSymbolIndices, placedIconSymbolIndex, sizes, availableImages, canonical, bucket.symbolInstances.length, textRotate, brightness);
 
         if (singleLine) {
             break;
@@ -1400,7 +1412,7 @@ function addSymbol(bucket: SymbolBucket,
         numVerticalGlyphVertices += addTextVertices(
             bucket, globe, anchor, shapedTextOrientations.vertical, imageMap, layer, textAlongLine, feature,
             textOffset, lineArray, WritingMode.vertical, ['vertical'], placedTextSymbolIndices,
-            verticalPlacedIconSymbolIndex, sizes, availableImages, canonical, bucket.symbolInstances.length, brightness);
+            verticalPlacedIconSymbolIndex, sizes, availableImages, canonical, bucket.symbolInstances.length, textRotate, brightness);
     }
 
     // Check if runtime collision circles should be used for any of the collision features.

@@ -1,0 +1,70 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "_comment": "A crosswalk on a north-south road in Albers. `icon-rotate` with map alignment is measured from true north, but Albers turns the meridians at 20°E ~70° away from the tile's up direction. The crosswalk, rotated 90°, must lie straight across the road.",
+      "width": 64,
+      "height": 64,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+      ],
+      "operations": [
+        ["addImage", "crosswalk", "./image/crosswalk.png"],
+        [
+          "addLayer",
+          {
+            "id": "crosswalk",
+            "type": "symbol",
+            "source": "crosswalk",
+            "layout": {
+              "icon-image": "crosswalk",
+              "icon-rotate": 90,
+              "icon-size": 2,
+              "icon-rotation-alignment": "map",
+              "icon-pitch-alignment": "map",
+              "icon-allow-overlap": true
+            }
+          }
+        ],
+        ["wait"]
+      ]
+    }
+  },
+  "projection": {"name": "albers"},
+  "center": [20, 45],
+  "zoom": 7,
+  "sources": {
+    "road": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [[20, 44.8], [20, 45.2]]
+        }
+      }
+    },
+    "crosswalk": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {"type": "Point", "coordinates": [20, 45]}
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "#8fbf8f"}
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "road",
+      "paint": {"line-color": "#555555", "line-width": 32}
+    }
+  ]
+}

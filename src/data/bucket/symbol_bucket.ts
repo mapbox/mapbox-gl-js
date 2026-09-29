@@ -43,7 +43,7 @@ import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
 import {evaluateSizeForFeature, evaluateSizeForZoom, getSizeData, SIZE_PACK_FACTOR} from '../../symbol/symbol_size';
-import {computeFontScale, getAppearanceIconValues, getAppearanceTextValues, getScaledImageVariant, packSizeForVertex, MAX_PACKED_SIZE} from '../../symbol/symbol_layout_shared';
+import {computeFontScale, getAppearanceIconValues, getAppearanceTextValues, getScaledImageVariant, packSizeForVertex, rotatesInTileSpace, MAX_PACKED_SIZE} from '../../symbol/symbol_layout_shared';
 import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Formatted from '../../style-spec/expression/types/formatted';
@@ -51,6 +51,7 @@ import ResolvedImage from '../../style-spec/expression/types/resolved_image';
 import {ImageVariant as ImageVariantClass} from '../../style-spec/expression/types/image_variant';
 import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../source/rtl_text_plugin';
 import {resamplePred} from '../../geo/projection/resample';
+import tileTransform, {getNorthOffset} from '../../geo/projection/tile_transform';
 import {tileCoordToECEF, globeToMercatorTransition} from '../../geo/projection/globe_util';
 import {getProjection} from '../../geo/projection/index';
 import {mat4, vec3, vec4} from 'gl-matrix';
@@ -167,6 +168,7 @@ type AppearanceIconUpdateContext = {
     layoutIconOffset: [number, number];
     layoutIconSize: number;
     layoutIconRotate: number;
+    iconRotatesInTileSpace: boolean;
 };
 
 // Per-frame context passed to updateSymbolInstanceTextVertices.
@@ -182,6 +184,7 @@ type AppearanceTextUpdateContext = {
     layoutTextOffset: [number, number];
     layoutTextSize: number;
     layoutTextRotate: number;
+    textRotatesInTileSpace: boolean;
     layoutMinZoomSize: number;
     layoutMaxZoomSize: number;
     layoutTextSizeMinZoom: number;
@@ -814,6 +817,7 @@ class SymbolBucket implements Bucket, SymbolSource {
     hasRTLText: boolean;
     projection: ProjectionSpecification;
     projectionInstance: Projection | null | undefined;
+    tileTransformInstance: TileTransform | null | undefined;
     hasAnyIconTextFit: boolean;
     hasAnyZOffset: boolean;
     symbolInstanceIndexesSortedZOffset!: Array<number>;
@@ -1643,7 +1647,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         vertexOffset: number,
         ctx: AppearanceIconUpdateContext,
     ): {vertexOffsetDelta: number; hasChanges: boolean} {
-        const {canonical, availableImages, globalProperties, layer, iconScaleFactor, featureState, layoutIconOffset, layoutIconSize, layoutIconRotate} = ctx;
+        const {canonical, availableImages, globalProperties, layer, iconScaleFactor, featureState, layoutIconOffset, layoutIconSize, layoutIconRotate, iconRotatesInTileSpace} = ctx;
         if (symbolInstance.placedIconSymbolIndex < 0) {
             return {vertexOffsetDelta: 0, hasChanges: false};
         }
@@ -1674,7 +1678,10 @@ class SymbolBucket implements Bucket, SymbolSource {
 
             if (position) {
                 // Get values from appearance and fallback to layout ones
-                const {appearanceIconOffset: iconOffset, appearanceIconRotate: iconRotate} = getAppearanceIconValues(activeAppearance, layer, evaluationFeature as SymbolFeature, canonical, layoutIconOffset, layoutIconRotate, layoutIconSize, iconScaleFactor);
+                const {appearanceIconOffset: iconOffset, appearanceIconRotate} = getAppearanceIconValues(activeAppearance, layer, evaluationFeature as SymbolFeature, canonical, layoutIconOffset, layoutIconRotate, layoutIconSize, iconScaleFactor);
+                // Same north offset as the layout rotation in `addSymbol`.
+                const iconRotate = appearanceIconRotate + (iconRotatesInTileSpace ?
+                    getNorthOffset(this.getTileTransform(canonical), symbolInstance.tileAnchorX, symbolInstance.tileAnchorY) : 0);
                 const iconAnchor = layer.layout.get('icon-anchor').evaluate(evaluationFeature, featureState, canonical);
 
                 // Resolve secondary position for cross-fade support
@@ -1799,7 +1806,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         vertexOffset: number,
         ctx: AppearanceTextUpdateContext,
     ): {vertexOffsetDelta: number; hasChanges: boolean} {
-        const {canonical, layer, textScaleFactor, imageMap, featureState, layoutTextOffset, layoutTextSize, layoutTextRotate, layoutMinZoomSize, layoutMaxZoomSize, layoutTextSizeMinZoom, layoutTextSizeMaxZoom, availableImages} = ctx;
+        const {canonical, layer, textScaleFactor, imageMap, featureState, layoutTextOffset, layoutTextSize, layoutTextRotate, textRotatesInTileSpace, layoutMinZoomSize, layoutMaxZoomSize, layoutTextSizeMinZoom, layoutTextSizeMaxZoom, availableImages} = ctx;
         const hasHorizontalText = symbolInstance.numHorizontalGlyphVertices > 0;
         const hasVerticalText = symbolInstance.numVerticalGlyphVertices > 0;
         const hasText = hasHorizontalText || hasVerticalText;
@@ -1815,7 +1822,10 @@ class SymbolBucket implements Bucket, SymbolSource {
         const activeAppearance = activeAppearanceIndex >= 0 ? layer.appearances[activeAppearanceIndex] : null;
         if (activeAppearance && featureData.textShaping) {
             // Get appearance-based text properties and fallback to layout ones
-            const {appearanceTextOffset: textOffset, appearanceTextRotate: textRotate, appearanceTextSize: textSizeValue} = getAppearanceTextValues(activeAppearance, layer, evaluationFeature as SymbolFeature, canonical, layoutTextOffset, layoutTextRotate, layoutTextSize);
+            const {appearanceTextOffset: textOffset, appearanceTextRotate, appearanceTextSize: textSizeValue} = getAppearanceTextValues(activeAppearance, layer, evaluationFeature as SymbolFeature, canonical, layoutTextOffset, layoutTextRotate, layoutTextSize);
+            // Same north offset as the layout rotation in `addSymbol`.
+            const textRotate = appearanceTextRotate + (textRotatesInTileSpace ?
+                getNorthOffset(this.getTileTransform(canonical), symbolInstance.tileAnchorX, symbolInstance.tileAnchorY) : 0);
 
             // Recompute fontScale with appearance data so it will be correctly used during icon update later
             featureData.fontScale = computeFontScale(textSizeValue, featureData.textScaleFactor);
@@ -2051,6 +2061,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
             iconScaleFactor = clamp(1, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
         }
+        const iconRotatesInTileSpace = hasIconData && rotatesInTileSpace(layer, 'icon');
 
         // Prepare text parameters
         let textScaleFactor = 1;
@@ -2060,6 +2071,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             const [textSizeScaleRangeMin, textSizeScaleRangeMax] = layout.get('text-size-scale-range');
             textScaleFactor = clamp(1, textSizeScaleRangeMin, textSizeScaleRangeMax);
         }
+        const textRotatesInTileSpace = hasTextData && rotatesInTileSpace(layer, 'text');
 
         // Construct imageMap from imageManager for inline images in formatted text
         const imageMap = new Map<StringifiedImageVariant, StyleImage>();
@@ -2116,6 +2128,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                     layoutTextOffset: layout.get('text-offset').evaluate(evaluationFeature, featureStateForThis, canonical).map((v): number => v * ONE_EM) as [number, number],
                     layoutTextSize: layoutTextSizeExpression.evaluate(evaluationFeature, featureStateForThis, canonical),
                     layoutTextRotate: layout.get('text-rotate').evaluate(evaluationFeature, featureStateForThis, canonical),
+                    textRotatesInTileSpace,
                     layoutMinZoomSize: layoutTextSizeExpression.evaluate(evaluationFeature, {zoom: textSizeDataMinZoom}, canonical),
                     layoutMaxZoomSize: layoutTextSizeExpression.evaluate(evaluationFeature, {zoom: textSizeDataMaxZoom}, canonical),
                     layoutTextSizeMinZoom: textSizeDataMinZoom,
@@ -2139,6 +2152,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                     layoutIconOffset: layout.get('icon-offset').evaluate(evaluationFeature, featureStateForThis, canonical),
                     layoutIconSize: layout.get('icon-size').evaluate(evaluationFeature, featureStateForThis, canonical, availableImages),
                     layoutIconRotate: layout.get('icon-rotate').evaluate(evaluationFeature, featureStateForThis, canonical),
+                    iconRotatesInTileSpace,
                 };
                 const iconResult = this.updateSymbolInstanceIconVertices(
                     symbolInstance, featureData, activeAppearanceIndex, evaluationFeature, iconVertexOffset, iconCtx
@@ -2196,6 +2210,13 @@ class SymbolBucket implements Bucket, SymbolSource {
             this.projectionInstance = getProjection(this.projection);
         }
         return this.projectionInstance;
+    }
+
+    getTileTransform(canonical: CanonicalTileID): TileTransform {
+        if (!this.tileTransformInstance) {
+            this.tileTransformInstance = tileTransform(canonical, this.getProjection());
+        }
+        return this.tileTransformInstance;
     }
 
     destroy() {
@@ -2708,7 +2729,7 @@ class SymbolBucket implements Bucket, SymbolSource {
 }
 
 register(SymbolBucket, 'SymbolBucket', {
-    omit: ['layers', 'collisionBoxArray', 'compareText', 'features']
+    omit: ['layers', 'collisionBoxArray', 'compareText', 'features', 'projectionInstance', 'tileTransformInstance']
 });
 
 SymbolBucket.addDynamicAttributes = addDynamicAttributes;

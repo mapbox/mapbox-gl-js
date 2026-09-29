@@ -191,3 +191,15 @@ export function packSizeForVertex(layerId: string, sizeData: SizeData, evaluated
 
     return effectiveSizeData;
 }
+
+// Whether `icon-rotate` / `text-rotate` is measured against the tile axes, where it must be offset by
+// `getNorthOffset` to stay relative to true north. True for map-aligned point symbols: map-pitched
+// quads are laid out in tile space, and viewport-pitched ones are rotated in the shader by the
+// on-screen angle of the tile x-axis. Line placement follows the already reprojected line geometry.
+export function rotatesInTileSpace(layer: SymbolStyleLayer, kind: 'icon' | 'text'): boolean {
+    const layout = layer.layout;
+    if (layout.get('symbol-placement') !== 'point') return false;
+    return kind === 'icon' ?
+        layout.get('icon-rotation-alignment') === 'map' :
+        layout.get('text-rotation-alignment') === 'map';
+}
