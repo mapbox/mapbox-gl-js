@@ -1,10 +1,6 @@
 ## Unreleased
 
-- Respect `extra_bounds` on all TileJSON source types.
-- Fix a regression with `map.remove()` where it could retain the map instance in memory.
-- Fix light/fog/snow/rain transitions.
-
-## 3.32.0-rc.1
+## 3.32.0
 
 ### Features and improvements ✨
 
@@ -25,6 +21,9 @@
 - Fix features rendering at the wrong position when a layer uses a `within` filter and the map uses a projection other than Mercator or globe.
 - Fix global placement throwing an error when placing symbols with no text.
 - Fix setting `padding` as a sideeffect in a `preloadOnly` animation.
+- Respect `extra_bounds` on all TileJSON source types.
+- Fix a regression with `map.remove()` where it could retain the map instance in memory.
+- Fix light/fog/snow/rain transitions.
 
 ## 3.31.0
 
