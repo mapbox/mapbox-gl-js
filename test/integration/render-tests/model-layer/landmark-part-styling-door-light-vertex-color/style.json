@@ -9,10 +9,6 @@
       "operations": [
         ["wait"]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "native-android", "reason": "MAPSNAT-3819: skip to stay within Firebase timeout, as for the landmark-part-styling tests this is derived from"},
-        {"platform-tag-contains": "native-ios", "reason": "MAPSNAT-3819: skip to stay within Firebase timeout, as for the landmark-part-styling tests this is derived from"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00025}
       ]
