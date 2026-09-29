@@ -7,6 +7,7 @@
 - Improve 3D Lanes map load performance.
 - Fix an issue with GeoJSON geometries past longitude -+360 rendering incorrectly.
 - Respect `extra_bounds` on all TileJSON source types.
+- Fix a regression with `map.remove()` where it could retain the map instance in memory.
 
 ### Features and improvements ✨
 
