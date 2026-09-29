@@ -8,9 +8,6 @@
         ["setProjection", "globe"],
         ["wait"]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "web-macos-safari", "reason": "Inconsistent star placement"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0006}
       ]

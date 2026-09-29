@@ -6,12 +6,6 @@
       "spriteFormat": "raster",
       "width": 256,
       "height": 96,
-      "skip-test": [
-        {
-          "platform-tag-contains": "web",
-          "reason": "Global placement is not implemented in gl-js yet."
-        }
-      ],
       "globalPlacement": true
     }
   },

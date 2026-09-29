@@ -9,8 +9,7 @@
         ["wait"]
       ],
       "skip-test": [
-        {"platform-tag-contains": "web-linux-chrome", "reason": "Timing out https://mapbox.atlassian.net/browse/GLJS-398"},
-        {"platform-tag-contains": "web-windows-chrome", "reason": "Slight but acceptable variation in some of the smoothed edges"}
+        {"platform-tag-contains": "web-linux-chrome", "reason": "Timing out https://mapbox.atlassian.net/browse/GLJS-398"}
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"},

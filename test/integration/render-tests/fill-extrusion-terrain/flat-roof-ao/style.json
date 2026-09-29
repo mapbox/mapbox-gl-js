@@ -7,9 +7,6 @@
         ["setLight", {"intensity": 0.2}],
         ["wait"]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "native-linux", "reason": "Antialiasing"}
-      ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky network metrics"}
       ],

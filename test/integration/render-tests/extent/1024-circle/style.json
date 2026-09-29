@@ -2,9 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "needs investigation"}
-      ]}
+      }
   },
   "center": [
     0,

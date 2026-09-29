@@ -3,10 +3,7 @@
   "metadata": {
     "test": {
       "height": 128,
-      "width": 128,
-      "skip-test": [
-        {"platform-tag-contains": "native-ios", "reason": "iOS anti-aliasing issue"}
-      ]
+      "width": 128
     }
   },
   "zoom": 2,

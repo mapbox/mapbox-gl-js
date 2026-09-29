@@ -5,11 +5,7 @@
         "test": {
             "collisionDebug": true,
             "width": 512,
-            "height": 2048,
-            "skip-test": [
-                {"platform-tag-contains": "native-android", "reason": "Needs to be investigated and fixed."},
-                {"platform-tag-contains": "native-ios", "reason": "Needs to be investigated and fixed."}
-            ]
+            "height": 2048
         }
     },
     "center": [

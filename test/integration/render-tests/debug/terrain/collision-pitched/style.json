@@ -9,10 +9,6 @@
       "operations": [
         ["sleep", 500]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "native-macos", "reason": "Needs to be investigated and fixed"},
-        {"platform-tag-contains": "native-ios-metal", "reason": "Metal rendering differences"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.005}
       ]

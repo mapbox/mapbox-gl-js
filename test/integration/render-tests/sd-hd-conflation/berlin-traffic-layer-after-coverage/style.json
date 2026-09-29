@@ -33,12 +33,6 @@
           "platform-tag-contains": "",
           "threshold": 0.001
         }
-      ],
-      "skip-test": [
-        {
-          "platform-tag-contains": "web",
-          "reason": "HD-SD conflation relayout is native only"
-        }
       ]
     }
   },

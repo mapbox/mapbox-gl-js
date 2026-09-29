@@ -11,10 +11,6 @@
         }],
         ["wait"]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "swiftshader", "reason": "skip - swiftshader debugging needed"},
-        {"platform-tag-contains": "native-ios-metal", "reason": "Box collision not ported yet"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.002},
         {"platform-tag-contains": "native", "threshold": 0.0025}

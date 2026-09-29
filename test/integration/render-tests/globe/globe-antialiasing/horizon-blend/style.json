@@ -8,8 +8,7 @@
           ["wait"]
         ],
         "skip-test": [
-          {"platform-tag-contains": "web-macos-chrome", "reason": "Globe sometimes missing"},
-          {"platform-tag-contains": "native-linux", "reason": "skip - Requires support for standard derivatives"}
+          {"platform-tag-contains": "native-linux-gl", "reason": "skip - Requires support for standard derivatives"}
         ],
         "image-threshold": [
           {"platform-tag-contains": "native", "threshold": 0.00035}

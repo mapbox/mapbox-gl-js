@@ -4,10 +4,7 @@
   "metadata": {
     "test": {
       "height": 256,
-      "width": 256,
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "Some test platforms don't resolve 'en' locale"}
-      ]
+      "width": 256
     }
   },
   "sources": {

@@ -6,7 +6,7 @@
       "height": 64,
       "width": 64,
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "pending https://github.com/mapbox/mapbox-gl-js/pull/6812"}
+        {"platform-tag-contains": "native-android", "reason": "pending https://github.com/mapbox/mapbox-gl-js/pull/6812"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0008}

@@ -4,10 +4,7 @@
       "test": {
         "collisionDebug": true,
         "height": 264,
-        "width": 400,
-        "skip-test": [
-          {"platform-tag-contains": "web-windows-chrome", "reason": "Test is occasionally blank"}
-        ]
+        "width": 400
       }
     },
     "center": [-120.30344797631889, 38.11726797649675],

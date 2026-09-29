@@ -26,7 +26,10 @@
         ]
       ],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/10619"}
+        {"platform-tag-contains": "native-macos", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/10619"},
+        {"platform-tag-contains": "native-ios", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/10619"},
+        {"platform-tag-contains": "native-android-gl-adreno", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/10619"},
+        {"platform-tag-contains": "native-android-gl-mali", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/10619"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00056}

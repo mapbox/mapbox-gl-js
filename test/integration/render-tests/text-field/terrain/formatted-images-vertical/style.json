@@ -6,7 +6,7 @@
       "width": 128,
       "pixelRatio": 2,
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+        {"platform-tag-contains": "native-android-gl", "reason": "not implemented in gl-native yet"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0002}

@@ -85,9 +85,6 @@
           }],
           ["wait"]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "native-macos", "reason": "Difference depending on the GPU"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0008}
       ]

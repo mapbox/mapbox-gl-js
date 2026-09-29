@@ -5,8 +5,7 @@
       "height": 128,
       "width": 64,
       "skip-test": [
-        {"platform-tag-contains": "native-android", "reason": "Needs to be investigated and fixed."},
-        {"platform-tag-contains": "native-ios", "reason": "Needs to be investigated and fixed."}
+        {"platform-tag-contains": "native-android-gl-powervr", "reason": "Needs to be investigated and fixed."}
       ]
     }
   },

@@ -8,7 +8,7 @@
         ["wait", 100]
       ],
       "skip-test": [
-        {"platform-tag-contains": "native-android", "reason": "Needs to be investigated and fixed"}
+        {"platform-tag-contains": "native-android-vulkan", "reason": "Needs to be investigated and fixed"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0003}

@@ -9,9 +9,6 @@
         ["setProjection", "globe"],
         ["wait"]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "native-linux", "reason": "Antialiasing"}
-      ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky"},
         {"platform-tag-contains": "native-android", "reason": "Flaky"}

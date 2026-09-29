@@ -5,7 +5,8 @@
       "height": 512,
       "width": 512,
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - needs issue"}
+        {"platform-tag-contains": "native-macos", "reason": "skip - needs issue"},
+        {"platform-tag-contains": "native-ios", "reason": "skip - needs issue"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.001}

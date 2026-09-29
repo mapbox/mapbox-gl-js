@@ -11,7 +11,7 @@
         ["wait"]
       ],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "Flaky in CI, covered by unit tests"},
+        {"platform-tag-contains": "web-macos-safari", "reason": "Flaky in CI, covered by unit tests"},
         {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
       ]
     }

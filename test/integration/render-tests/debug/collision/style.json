@@ -5,7 +5,7 @@
       "collisionDebug": true,
       "height": 256,
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/3841"}
+        {"platform-tag-contains": "native-linux-egl", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/3841"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.017}

@@ -9,9 +9,6 @@
         ["setZoom", 3.0],
         ["wait"]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "native-android", "reason": "Fill extrusion ambient occlusion difference"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0007},
         {"platform-tag-contains": "swiftshader", "threshold": 0.0007}

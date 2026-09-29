@@ -12,9 +12,6 @@
         ["wait", 500],
         ["wait", 500]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "native-ios", "reason": "Flaky"}
-      ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ],

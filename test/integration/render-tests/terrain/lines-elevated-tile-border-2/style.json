@@ -4,9 +4,6 @@
     "test": {
       "height": 300,
       "width": 512,
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - needs fix https://mapbox.atlassian.net/browse/MAPSNAT-2492"}
-      ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky metrics"},
         {"platform-tag-contains": "native-android", "reason": "Flaky"}

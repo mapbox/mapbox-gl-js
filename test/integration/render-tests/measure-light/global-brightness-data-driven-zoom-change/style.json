@@ -49,7 +49,6 @@
         ]
       ],
       "skip-test": [
-        {"platform-tag-contains": "web-windows-chrome", "reason": "Flaky on windows platform only:"},
         {"platform-tag-contains": "native-android-vulkan", "reason": "TODO - misc artefact, enable for Vulkan"}
       ],
       "image-threshold": [

@@ -108,9 +108,6 @@
         ],
         ["wait"]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - needs native expectation/line rendering differences"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00154}
       ]

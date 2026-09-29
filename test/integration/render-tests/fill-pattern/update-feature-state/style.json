@@ -18,9 +18,6 @@
         [
           "wait"
         ]
-      ],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/15895"}
       ]
     }
   },

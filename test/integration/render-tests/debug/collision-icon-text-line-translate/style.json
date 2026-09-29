@@ -5,9 +5,6 @@
       "collisionDebug": true,
       "height": 1000,
       "width" : 1000,
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/3841"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "metal", "threshold": 0.0003}
       ]

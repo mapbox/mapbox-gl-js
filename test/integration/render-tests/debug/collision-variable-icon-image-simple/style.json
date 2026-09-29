@@ -6,8 +6,8 @@
       "width": 128,
       "collisionDebug": true,
       "skip-test": [
-        {"platform-tag-contains": "web-macos-safari", "reason": "Debug visualizations"},
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/3841"}
+        {"platform-tag-contains": "native-linux-egl", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/3841"},
+        {"platform-tag-contains": "native-android-vulkan", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/3841"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00019}

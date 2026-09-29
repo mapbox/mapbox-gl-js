@@ -8,9 +8,6 @@
         ["resetNorth"],
         ["wait", 1000]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "web-macos-chrome", "reason": "Globe sometimes missing"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0015}
       ]
