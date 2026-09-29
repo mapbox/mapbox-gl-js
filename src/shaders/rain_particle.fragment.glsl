@@ -7,7 +7,7 @@ uniform float u_distortionStrength;
 
 uniform vec4 u_color;
 
-// Thinning 
+// Thinning
 uniform vec2 u_thinningCenterPos;
 uniform vec3 u_thinningShape;
 // .x - start

@@ -119,10 +119,10 @@ void main() {
     #pragma mapbox: initialize highp float flood_light_wall_radius
     #pragma mapbox: initialize highp float line_width
     #pragma mapbox: initialize highp float emissive_strength
-    
+
     base *= u_vertical_scale;
     height *= u_vertical_scale;
-    
+
     vec4 top_up_ny_start = vec4(a_pos_normal_ed & 1);
     vec4 pos_nx = vec4(a_pos_normal_ed >> 1);
     // The least significant bits of a_pos_normal_ed hold:

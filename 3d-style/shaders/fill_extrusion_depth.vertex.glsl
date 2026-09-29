@@ -29,7 +29,7 @@ in ivec4 a_join_normal_inside;
 void main() {
 
     DECLARE_MATERIAL_TABLE_INFO
-    
+
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
     #pragma mapbox: initialize highp float line_width

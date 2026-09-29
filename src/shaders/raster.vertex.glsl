@@ -63,8 +63,8 @@ vec4 world_pos;
     vec3 decomposed_pos_and_skirt = decomposeToPosAndSkirt(a_pos);
     vec3 latLng = u_grid_matrix * vec3(decomposed_pos_and_skirt.xy, 1.0);
     float mercatorY = mercatorYfromLat(latLng[0]);
-    float mercatorX = mercatorXfromLng(latLng[1]);  
-    
+    float mercatorX = mercatorXfromLng(latLng[1]);
+
     float tiles = u_grid_matrix[0][2];
     if (tiles > 0.0) {
         float idx = u_grid_matrix[1][2];
@@ -79,7 +79,7 @@ vec4 world_pos;
     ele += elevation(uv * EXTENT) - decomposed_pos_and_skirt.z;
 #endif
 
-    vec4 merc_world_pos = vec4(0.0);   
+    vec4 merc_world_pos = vec4(0.0);
     v_split_fade = 0.0;
     if (u_zoom_transition > 0.0) {
         vec2 merc_pos = vec2(mercatorX, mercatorY);
@@ -95,7 +95,7 @@ vec4 world_pos;
         v_split_fade = clamp(1.0 - v_split_fade, 0.0, 1.0);
         v_split_fade = max(smoothstep(1.0 - range, 1.0, dist_from_poles), max(smoothstep(1.0 - range, 1.0, v_split_fade), smoothstep(1.0 - range, 1.0, 1.0 - v_split_fade)));
     }
-    
+
     vec3 globe_pos = latLngToECEF(latLng.xy);
     globe_pos += normalize(globe_pos) * ele * GLOBE_UPSCALE;
     vec4 globe_world_pos = u_globe_matrix * vec4(globe_pos, 1.0);

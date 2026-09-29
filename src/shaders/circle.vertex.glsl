@@ -122,7 +122,7 @@ void main() {
     vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, circle_center, u_tile_id, u_merc_center) + surface_extrusion + mercator_elevation;
     vec3 pos = mix_globe_mercator(globe_pos, merc_pos, u_zoom_transition);
     world_center = vec4(pos, 1);
-#else 
+#else
     surface_vectors = mat3(1.0);
     world_center = vec4(circle_center, height, 1);
 #endif

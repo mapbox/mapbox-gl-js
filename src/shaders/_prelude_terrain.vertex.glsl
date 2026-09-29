@@ -274,4 +274,3 @@ float elevation(vec2 apos) {
     highp float occlusionFadeMultiSample(vec4 frag) { return 1.0; }
 
 #endif // DEPTH_OCCLUSION
-

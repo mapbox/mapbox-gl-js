@@ -432,7 +432,7 @@ void main() {
     float right_width = a_z_offset_width.z;
     bool zero_right_width = border_width == 0.0 && right_width == 0.0;
     halfwidth = left ? left_width : right_width;
-    halfwidth += u_width_addition * (zero_right_width ? (left ? 1.0 : 0.0) : 0.5); 
+    halfwidth += u_width_addition * (zero_right_width ? (left ? 1.0 : 0.0) : 0.5);
     halfwidth *= u_width_scale;
 
     if (side_z_offset != 0.0) {

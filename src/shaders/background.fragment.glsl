@@ -14,7 +14,7 @@ void main() {
 
 #ifdef FEATURE_CUTOUT
     // Here we only apply cutout when the background layer is rendered with viewport pitch alignment.
-    // So we don't need to consider the depth difference between the fragment and the cutout depth, 
+    // So we don't need to consider the depth difference between the fragment and the cutout depth,
     // and can directly use the cutout factor from texture to modulate the color.
     vec2 uv = fragcoord_to_framebuffer_uv(gl_FragCoord.xy, u_inv_viewport_size.xy);
     float factorTex = min(texture(u_cutout_factor_image, uv).r, 1.0);

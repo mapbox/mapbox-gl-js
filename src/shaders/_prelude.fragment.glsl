@@ -135,7 +135,7 @@ void storeEmissiveColor(vec4 color, float emissiveStrength) {
     glFragColorSrc1 = vec4(vec3(0.0), emissiveStrength);
 #else
 
-#ifdef USE_MRT1 
+#ifdef USE_MRT1
 #ifdef USE_MRT1_RGBA
     out_Target1 = vec4(color.rgb * emissiveStrength, color.a);
 #else

@@ -19,7 +19,7 @@ float calculate_ambient_directional_factor(vec3 normal) {
     const float factor_reduction_max = 0.3;
     float dir_luminance = dot(u_lighting_directional_color, vec3(0.2126, 0.7152, 0.0722));
     float directional_factor_min = 1.0 - factor_reduction_max * min(dir_luminance, 1.0);
-    
+
     // If u_lighting_directional_color is (1, 1, 1), then the return value range is
     // NdotL=-1: 1.0 - factor_reduction_max
     // NdotL>=0: 1.0

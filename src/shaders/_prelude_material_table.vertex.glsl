@@ -58,7 +58,7 @@ uint findRangeBinarySearch(uint vertexId, uint numRanges, uint dwordOffset) {
     uint left = 0u;
     uint right = numRanges - 1u;
 
-    for (uint i = 0u; i < 16u; i++) { 
+    for (uint i = 0u; i < 16u; i++) {
         if (left > right) {
             break;
         }
@@ -79,7 +79,7 @@ uint findRangeBinarySearch(uint vertexId, uint numRanges, uint dwordOffset) {
         }
     }
 
-    return 0u; 
+    return 0u;
 }
 
 uint readVertexId(uint dwordOffset, uint iMaterialLookupEntry) {
@@ -98,7 +98,7 @@ uint findRange(uint vertexId, uint numRanges, uint dwordOffset) {
             }
         }
         iRange = iRange == 0u? 0u : iRange - 1u;
-    } else { 
+    } else {
         iRange = findRangeBinarySearch(vertexId, numRanges, dwordOffset);
     }
     return iRange;
@@ -170,7 +170,7 @@ MaterialInfo read_material_info(uint vertex_id) {
 
     offset += nrDwordsForVertexIdEntries(nrMaterialLookupEntries);
     uint materialId = iMaterialLookup;
-    
+
 #if MATERIAL_TABLE_DEBUG
     if(keepFinding) {
         if(materialId >= nrMaterialLookupEntries) {

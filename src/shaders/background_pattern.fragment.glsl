@@ -24,7 +24,7 @@ void main() {
 #endif
 
     glFragColor = out_color * u_opacity;
-    
+
     storeEmissiveColor(glFragColor,u_emissive_strength);
 
 #ifdef OVERDRAW_INSPECTOR

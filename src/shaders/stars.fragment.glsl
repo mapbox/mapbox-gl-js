@@ -17,7 +17,7 @@ in mediump float v_intensity;
 
 float shapeCircle(in vec2 uv)
 {
-    // Fade start, percentage of radius 
+    // Fade start, percentage of radius
     float beginFade = 0.6;
 
     // Linear fade to radius

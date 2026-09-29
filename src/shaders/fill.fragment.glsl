@@ -76,4 +76,3 @@ void main() {
 
     HANDLE_WIREFRAME_DEBUG;
 }
-

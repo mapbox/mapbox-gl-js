@@ -63,7 +63,7 @@ void main() {
 #else // CUSTOM_ANTIALIASING
     color = texture(u_image0, v_pos0);
 #ifdef LIGHTING_3D_MODE
-#ifdef LIGHTING_3D_ALPHA_EMISSIVENESS 
+#ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
 #ifdef USE_MRT1_RGBA
     // See comment above on why u_image1 holds an exact premultiplied contribution.
     vec4 emissive_premult = u_emissive_texture_available > 0.5 ? texture(u_image1, v_pos0) : vec4(0.0);

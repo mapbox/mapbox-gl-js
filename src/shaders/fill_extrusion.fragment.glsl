@@ -119,7 +119,7 @@ float flood_radiance = 0.0;
     shadowed_lighting_factor = shadowed_light_factor_normal(normal, v_pos_light_view_0, v_pos_light_view_1, 1.0 / gl_FragCoord.w);
 #endif // RENDER_CUTOFF
     color.rgb = apply_lighting(color.rgb, normal, shadowed_lighting_factor);
-#endif // !FLOOD_LIGHT 
+#endif // !FLOOD_LIGHT
 #else // RENDER_SHADOWS
     color.rgb = apply_lighting(color.rgb, normal);
 #ifdef FLOOD_LIGHT

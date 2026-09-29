@@ -25,20 +25,20 @@ uniform float u_time;
 
 uniform float u_boxSize;
 
-uniform float u_velocityConeAperture; 
+uniform float u_velocityConeAperture;
 
-uniform float u_velocity; 
+uniform float u_velocity;
 
 // Main direction
 uniform vec3 u_direction;
 
 
-uniform float u_horizontalOscillationRadius; 
-uniform float u_horizontalOscillationRate; 
+uniform float u_horizontalOscillationRadius;
+uniform float u_horizontalOscillationRate;
 
 uniform float u_billboardSize;
 
-// Thinning 
+// Thinning
 uniform vec2 u_thinningCenterPos;
 uniform vec3 u_thinningShape;
 // .x - start
@@ -96,7 +96,7 @@ void main() {
     float horizontalOscillationAngle = u_horizontalOscillationRate * u_time * (-1.0 + 2.0 * a_snowParticleDataHorizontalOscillation.y);
     simPosLocal.xy += horizontalOscillationRadius * vec2(cos(horizontalOscillationAngle), sin(horizontalOscillationAngle));
 
-    vec3 simPos = localX * simPosLocal.x + 
+    vec3 simPos = localX * simPosLocal.x +
                   localY * simPosLocal.y +
                   localZ * simPosLocal.z;
 

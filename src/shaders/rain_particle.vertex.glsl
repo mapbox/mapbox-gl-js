@@ -20,9 +20,9 @@ uniform float u_time;
 
 uniform float u_boxSize;
 
-uniform float u_velocityConeAperture; 
+uniform float u_velocityConeAperture;
 
-uniform float u_velocity; 
+uniform float u_velocity;
 
 uniform vec2 u_rainDropletSize;
 
@@ -37,7 +37,7 @@ void main() {
 
     float halfBoxSize = 0.5 * u_boxSize;
 
-    pos *= halfBoxSize; 
+    pos *= halfBoxSize;
     pos += u_cam_pos;
 
     //
@@ -71,7 +71,7 @@ void main() {
     vec3 simPosLocal = vec3(0, 0, 0);
     simPosLocal += directionLocal * velocityScale * u_time;
 
-    vec3 simPos = localX * simPosLocal.x + 
+    vec3 simPos = localX * simPosLocal.x +
                   localY * simPosLocal.y +
                   localZ * simPosLocal.z;
 

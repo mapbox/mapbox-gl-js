@@ -94,7 +94,7 @@ in highp vec2 v_dash;
 // Large distance sentinel that makes the conflict test find nothing for a zero-flagged conflict segment.
 const highp float ROUND_JOIN_NO_CONFLICT = 32768.0;
 
-// Distance from this fragment to a conflicting segment's centre line. 
+// Distance from this fragment to a conflicting segment's centre line.
 // conflictOffset runs from the segment's first coordinate to this fragment.
 // conflictDir runs from its first coordinate to its second, both already in pixel space.
 highp float roundJoinConflictDistance(highp vec2 conflictOffset, highp vec2 conflictDir, mediump float test) {
@@ -106,8 +106,8 @@ highp float roundJoinConflictDistance(highp vec2 conflictOffset, highp vec2 conf
     return length(conflictOffset - t * conflictDir);
 }
 
-// How far inside (testBounds.x, testBounds.y) this fragment is: 1 well inside, 0 well outside. 
-// pxStep is passed in rather than taken from fwidth() to ensure that no derivative 
+// How far inside (testBounds.x, testBounds.y) this fragment is: 1 well inside, 0 well outside.
+// pxStep is passed in rather than taken from fwidth() to ensure that no derivative
 // ends up in non-uniform control flow.
 float insideRoundJoinTestArea(highp float dist, vec2 testBounds, float pxStep) {
     float inside = 1.0 - smoothstep(testBounds.y - pxStep, testBounds.y + pxStep, dist);
@@ -122,7 +122,7 @@ float insideRoundJoinConflictBody(highp float dist, vec3 testBounds, float pxSte
     return insideRoundJoinTestArea(dist, body, pxStep);
 }
 
-// How far inside the conflicting segment's 'fill' this fragment is: 1 well inside, 0 well outside. 
+// How far inside the conflicting segment's 'fill' this fragment is: 1 well inside, 0 well outside.
 // 'Fill' is its body inset by its border width on whichever sides it has one.
 float insideRoundJoinConflictFill(highp float dist, vec3 testBounds, float pxStep) {
     float gap = testBounds.x;
@@ -211,7 +211,7 @@ void main() {
                                                         v_round_join_conflict_dir.zw,
                                                         v_round_join_conflict_test.y);
 
-        // The conflicting segment's test bounds {x: gap width, y: outer, z: border}. 
+        // The conflicting segment's test bounds {x: gap width, y: outer, z: border}.
         // With an assumption that line-width, line-gap-width and line-border-width are constant along a feature.
         vec3 testBounds = vec3(max(v_width2_dilute.y - ANTIALIASING, 0.0),
                                    v_width2_dilute.x - ANTIALIASING,
@@ -226,9 +226,9 @@ void main() {
         alpha2 = max(alpha2, insideConflictFill);
 
         // Two-pass stencil path makes antialiasing fragments partly filled but claim stencil buffer
-        // based on u_alpha_discard_threshold, when 'line-opacity' < 1.0. It leaves border-background 
-        // hairline in the border-clipped area, where this and conflict segment disagree regarding the color. 
-        // Raise own alpha to fix body-coverage conflict. 
+        // based on u_alpha_discard_threshold, when 'line-opacity' < 1.0. It leaves border-background
+        // hairline in the border-clipped area, where this and conflict segment disagree regarding the color.
+        // Raise own alpha to fix body-coverage conflict.
         // Skipped under line-blur and the dilute scale, which hold coverage below on purpose.
         // dilute_scale is a mediump varying: on FP16 hardware an exact 1.0 can interpolate to just under it
         // and silently disable this fix. 0.004 is ~4 FP16 ULP at 1.0; the slack it allows is under 0.4% coverage.
