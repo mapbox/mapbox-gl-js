@@ -1,0 +1,41 @@
+{
+  "version": 8,
+  "_comment": "A constant line-color with a data-driven line-color-use-theme is stored per feature, so changing it without a transition must rewrite the feature blocks. Should render blue.",
+  "metadata": {
+    "test": {
+      "width": 32,
+      "height": 32,
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "setPaintProperty on a constant color with data-driven use-theme doesn't update feature blocks on native"}
+      ],
+      "operations": [
+        ["wait"],
+        ["setPaintProperty", "line", "line-color", "blue"],
+        ["wait"]
+      ]
+    }
+  },
+  "transition": {"duration": 0, "delay": 0},
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {"kind": "a"},
+        "geometry": {"type": "LineString", "coordinates": [[-20, 0], [20, 0]]}
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": 10,
+        "line-color": "red",
+        "line-color-use-theme": ["match", ["get", "kind"], "a", "none", "default"]
+      }
+    }
+  ]
+}

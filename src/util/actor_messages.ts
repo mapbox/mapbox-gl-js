@@ -33,7 +33,6 @@ type GlobalParams = {
         BUILDING_GEN_URL?: string;
     },
     contextOptions?: {
-        maxBindingPoints: number;
         maxUniformBlockSizeDwords: number;
     }
 };

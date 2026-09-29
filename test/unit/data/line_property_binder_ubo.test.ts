@@ -151,30 +151,72 @@ describe('LinePropertyBinderUBO', () => {
             const layer = createTestLayer({'line-width': 3, 'line-opacity': 0.5});
             const binder = new LinePropertyBinderUBO(layer, 10, null);
 
-            const cv = binder.getConstantUniformValues(10, null);
+            const cv = binder.getConstantUniformValues(null);
             expect(cv.width).toEqual(3);
             expect(cv.opacity).toEqual(0.5);
         });
     });
 
-    describe('device-limit batching', () => {
-        test('clamps gracefully when exceeding max binding points', () => {
+    describe('updatePaint', () => {
+        function changePaint(layer: LineStyleLayer, name: string, value: unknown) {
+            layer.setPaintProperty(name as never, value as never);
+            layer.updateTransitions({transition: {duration: 0, delay: 0}, now: 0});
+            layer.recalculate(new EvaluationParameters(10), []);
+        }
+
+        test('is unchanged until the layer paint changes', () => {
+            const layer = createTestLayer({'line-width': ['get', 'width']});
+            const binder = new LinePropertyBinderUBO(layer, 10, null);
+            binder.updatePaint(layer);
+            expect(binder.updatePaint(layer)).toEqual('unchanged');
+        });
+
+        test('only refreshes constants when feature blocks store no constants', () => {
+            const layer = createTestLayer({'line-width': ['get', 'width']});
+            const binder = new LinePropertyBinderUBO(layer, 10, null);
+            binder.updatePaint(layer);
+            changePaint(layer, 'line-opacity', 0.5);
+            expect(binder.updatePaint(layer)).toEqual('constants');
+        });
+
+        test('asks for a feature update when a constant color is stored per feature', () => {
+            const layer = createTestLayer({
+                'line-color': 'grey',
+                'line-color-use-theme': ['match', ['get', 'road-type'], 'street', 'none', 'default']
+            });
+            const binder = new LinePropertyBinderUBO(layer, 10, null);
+            binder.updatePaint(layer);
+            changePaint(layer, 'line-color', 'blue');
+            expect(binder.updatePaint(layer)).toEqual('features');
+        });
+
+        test('asks for a feature update on the first call when a constant color is stored per feature', () => {
+            const layer = createTestLayer({
+                'line-color': 'grey',
+                'line-color-use-theme': ['match', ['get', 'road-type'], 'street', 'none', 'default']
+            });
+            const binder = new LinePropertyBinderUBO(layer, 10, null);
+            expect(binder.updatePaint(layer)).toEqual('features');
+        });
+
+    });
+
+    describe('batching', () => {
+        test('allocates as many batches as needed, each feature keeping its own slot', () => {
             // line-width data-driven → line-floorwidth also becomes data-driven (see
             // "maxFeaturesPerBatch fits data-driven blocks in the UBO" above), so the block is 2
-            // vec4 = 8 dwords → floor(8 / 8) = 1 feature/batch here. Line uses 2 bindings/batch (no
-            // indirection block): batch 0 -> points 0,1; batch 1 -> points 2,3 (still under the
-            // limit 4); batch 2 -> points 4,5 (>= limit 4, clamps) — one binding point later than
-            // with symbol's 3-bindings/batch stride, which would clamp starting at batch 1.
+            // vec4 = 8 dwords → floor(8 / 8) = 1 feature/batch here, and 20 features need 20
+            // batches, past the 12 that per-batch binding points used to allow on a 24-binding device.
             const layer = createTestLayer({'line-width': ['get', 'width']});
-            const binder = new LinePropertyBinderUBO(layer, 10, null, '', 4, 8);
+            const binder = new LinePropertyBinderUBO(layer, 10, null, '', 8);
             expect(binder.maxFeaturesPerBatch).toEqual(1);
             const canonical = new CanonicalTileID(0, 0, 0);
 
-            const indices = [0, 1, 2, 3, 4].map((i) => binder.populateUBO(createTestFeature({width: i + 1}), i, canonical, []));
-            // Features 0 -> batch 0, feature 1 -> batch 1 (both fit under the limit); features 2+
-            // would need batch 2+ (points >= 4 >= limit 4) and clamp to batch 0 / local 0.
-            expect(indices).toEqual([0, 0, 0, 0, 0]);
-            expect(binder.ubos.length).toEqual(2);
+            const count = 20;
+            const indices = Array.from({length: count}, (_, i) => binder.populateUBO(createTestFeature({width: i + 1}), i, canonical, []));
+            expect(indices).toEqual(new Array(count).fill(0));
+            expect(binder.ubos.length).toEqual(count);
+            expect(new Set(binder.ubos.map(ubo => ubo.propertiesData[0])).size).toEqual(count);
         });
     });
 

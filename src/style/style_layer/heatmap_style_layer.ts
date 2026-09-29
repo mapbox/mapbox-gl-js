@@ -85,7 +85,7 @@ class HeatmapStyleLayer extends StyleLayer {
     }
 
     override queryRadius(bucket: Bucket): number {
-        return getMaximumPaintValue('heatmap-radius', this, (bucket as CircleBucket<HeatmapStyleLayer>));
+        return getMaximumPaintValue('heatmap-radius', this, (bucket as CircleBucket<HeatmapStyleLayer>).programConfigurations.get(this.id));
     }
 
     override queryIntersectsFeature(

@@ -380,10 +380,10 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                 // 'layer' is omitted from worker→main serialization (see register() in
                 // line_property_binder_ubo.ts). Reassign the current style layer before any
                 // evaluation so paint values are up-to-date.
-                uboBinder.reassignLayer(layer);
+                uboBinder.layer = layer;
                 const renderZoom = painter.transform.zoom;
                 const brightness = painter.style.getBrightness ? painter.style.getBrightness() : null;
-                const cv = uboBinder.getConstantUniformValues(renderZoom, brightness);
+                const cv = uboBinder.getConstantUniformValues(brightness);
                 const lineUniformValuesRef = uniformValues as UniformValues<LineUniformsType>;
                 lineUniformValuesRef['u_lpp_color'] = cv.color_np_color;
                 lineUniformValuesRef['u_lpp_border_color'] = cv.border_np_color;

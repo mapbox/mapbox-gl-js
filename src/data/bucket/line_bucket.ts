@@ -213,7 +213,6 @@ class LineBucket implements Bucket {
     worldview: string;
     hasAppearances: boolean | null;
 
-    maxUniformBufferBindings: number | null | undefined;
     maxUniformBlockSizeDwords: number | null | undefined;
 
     // One UBO paint-property binder per style layer sharing this bucket (see class doc on
@@ -255,7 +254,10 @@ class LineBucket implements Bucket {
         this.layoutVertexArray2 = new LineExtLayoutArray();
         this.patternVertexArray = new LinePatternLayoutArray();
         this.indexArray = new TriangleIndexArray();
-        this.programConfigurations = new ProgramConfigurationSet(options.layers, {zoom: options.zoom, lut: options.lut});
+        // Only the line pattern program reads paint attributes; every other layer gets its paint from UBOs.
+        // Changing line-pattern always relayouts, so the set of pattern layers is fixed for the bucket's lifetime.
+        const patternLayers = options.layers.filter(layer => !!layer.paint.get('line-pattern').constantOr(1));
+        this.programConfigurations = new ProgramConfigurationSet(patternLayers, {zoom: options.zoom, lut: options.lut});
         this.segments = new SegmentVector();
         this.sourceLayerName = options.sourceLayerName || '';
         this.maxLineLength = 0;
@@ -271,13 +273,12 @@ class LineBucket implements Bucket {
         this.worldview = options.worldview;
         this.hasAppearances = null;
 
-        this.maxUniformBufferBindings = options.maxUniformBufferBindings;
         this.maxUniformBlockSizeDwords = options.maxUniformBlockSizeDwords;
 
         this.uboBinders = {};
         this.maxFeaturesPerBatch = Number.MAX_SAFE_INTEGER;
         for (const layer of this.layers) {
-            const binder = new LinePropertyBinderUBO(layer, options.zoom, options.lut, this.worldview, this.maxUniformBufferBindings, this.maxUniformBlockSizeDwords);
+            const binder = new LinePropertyBinderUBO(layer, options.zoom, options.lut, this.worldview, this.maxUniformBlockSizeDwords);
             this.uboBinders[layer.id] = binder;
             if (binder.maxFeaturesPerBatch < this.maxFeaturesPerBatch) this.maxFeaturesPerBatch = binder.maxFeaturesPerBatch;
         }

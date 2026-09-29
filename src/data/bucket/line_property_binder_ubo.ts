@@ -1,10 +1,9 @@
-import {LinePropertiesUBO, LINE_PROP_COUNT, LINE_UBO_BINDINGS_PER_BATCH} from './line_properties_ubo';
+import {LinePropertiesUBO, LINE_PROP_COUNT} from './line_properties_ubo';
 import {HEADER_DATA_DRIVEN_MASK, HEADER_BLOCK_SIZE_VEC4, HEADER_OFFSETS, floatToBits} from './paint_property_ubo';
 import {PaintPropertyBinderUBO} from './paint_property_binder_ubo';
 import {register} from '../../util/web_worker_transfer';
 
 import type {EvaluationContext} from './paint_property_binder_ubo';
-import type EvaluationParameters from '../../style/evaluation_parameters';
 import type LineStyleLayer from '../../style/style_layer/line_style_layer';
 import type {LUT} from '../../util/lut';
 import type {Feature, FeatureState} from '../../style-spec/expression';
@@ -55,6 +54,8 @@ const DASH_BIT_INDEX = PROP_NAMES.indexOf('line-dasharray');
 export const DASH_BIT = 1 << DASH_BIT_INDEX;
 const DASH_FLAT_OFFSET = LinePropertiesUBO.EVAL_FLAT_OFFSETS[DASH_BIT_INDEX];
 
+const MAX_TRACKED_PROPS: readonly number[] = ['line-width', 'line-gap-width', 'line-offset'].map(name => PROP_NAMES.indexOf(name));
+
 // Default value per property, indexed like PROP_NAMES (colors default via getColor/the "no prop"
 // branch in _evaluateColorValue, so their entries here are unused placeholders; dash's entry is
 // likewise unused — its flat slot is always written explicitly, see evaluateAllProperties below).
@@ -96,9 +97,19 @@ export type LineConstantUniformValues = {
  * rewrite it.
  */
 export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer, LineConstantUniformValues, LinePropertiesUBO> {
-    constructor(layer: LineStyleLayer, zoom: number, lut: LUT | null, worldview: string = '', maxUniformBufferBindings?: number | null, uboSizeDwords?: number | null) {
-        super(layer, zoom, lut, worldview, maxUniformBufferBindings, uboSizeDwords);
+    // Largest absolute value seen per property, indexed like PROP_NAMES; read by queryRenderedFeatures to
+    // pad the query geometry for data-driven width, gap width and offset.
+    maxValues: Float32Array;
+
+    constructor(layer: LineStyleLayer, zoom: number, lut: LUT | null, worldview: string = '', uboSizeDwords?: number | null) {
+        super(layer, zoom, lut, worldview, uboSizeDwords);
+        this.maxValues = new Float32Array(PROP_NAMES.length);
         this._finishInitialization();
+    }
+
+    getMaxValue(property: string): number {
+        const i = PROP_NAMES.indexOf(property);
+        return i >= 0 ? this.maxValues[i] : 0;
     }
 
     protected _propNames(): readonly string[] {
@@ -111,10 +122,6 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
 
     protected _createUBO(batchIndex: number): LinePropertiesUBO {
         return new LinePropertiesUBO(null, batchIndex, this.uboSizeDwords, this.header);
-    }
-
-    protected override _bindingsPerBatch(): number {
-        return LINE_UBO_BINDINGS_PER_BATCH;
     }
 
     protected _flatScratch(): Float32Array {
@@ -180,6 +187,12 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
     ): Float32Array {
         const flat = super.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, formattedSection, activeAppearance);
 
+        for (let i = 0; i < MAX_TRACKED_PROPS.length; i++) {
+            const prop = MAX_TRACKED_PROPS[i];
+            const offset = LinePropertiesUBO.EVAL_FLAT_OFFSETS[prop];
+            this.maxValues[prop] = Math.max(this.maxValues[prop], Math.abs(flat[offset]), Math.abs(flat[offset + 1]));
+        }
+
         const pos = this._pendingDashPosition;
         this._pendingDashPosition = null;
         flat[DASH_FLAT_OFFSET] = pos ? pos.tl[0] : 0;
@@ -208,15 +221,15 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
      */
     protected updateHeader(): void {
         let dataDrivenMask = 0;
-        let cameraMask = 0;
+        let hasConstantsInBlocks = false;
         let dataDrivenOffsetVec4 = 0;
         let allDataDrivenLightConstant = true;
 
         const floorZoom = this._floorZoom;
         for (let i = 0; i < LINE_PROP_COUNT; i++) {
             if (i === DASH_BIT_INDEX) {
-                // Dash has no expression-driven zoom range or camera mask — see class doc — so it
-                // skips the generic isDataDriven/zoom-range machinery below entirely.
+                // Dash has no expression-driven zoom range (see class doc), so it skips the generic
+                // isDataDriven/zoom-range machinery below entirely.
                 if (this._isDashDataDriven()) {
                     dataDrivenMask |= DASH_BIT;
                     this.zoomDependency[i] = 0;
@@ -240,13 +253,10 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
             const isDataDriven = layerIsDataDriven || (isColor && this._isUseThemeDataDriven(name));
 
             // Constant properties use u_lpp_* uniforms — they get no data-driven block (offset 0).
-            if (!isDataDriven) {
-                const unevaluated = this._layerUnevaluated(name);
-                if (unevaluated && unevaluated.expression && unevaluated.expression.kind === 'camera') cameraMask |= (1 << i);
-                continue;
-            }
+            if (!isDataDriven) continue;
 
             dataDrivenMask |= (1 << i);
+            if (!layerIsDataDriven) hasConstantsInBlocks = true;
 
             const zoomExpr = this._zoomExprOf(this._layerUnevaluated(name));
             const isZoomDep = !!zoomExpr;
@@ -277,32 +287,27 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
         this.header[HEADER_BLOCK_SIZE_VEC4] = dataDrivenOffsetVec4;
 
         this.isLightConstant = allDataDrivenLightConstant;
-        this.cameraMask = cameraMask;
+        this.hasConstantsInBlocks = hasConstantsInBlocks;
     }
 
     /**
-     * Refresh sharedZoomRanges and cameraMask from the current layer's unevaluated expressions.
+     * Refresh sharedZoomRanges from the current layer's unevaluated expressions.
      * Called after a runtime property change.
      */
     protected _recomputeSharedRanges(): void {
         const floorZoom = this._floorZoom;
-        let cameraMask = 0;
         let colorHeaderChanged = false;
 
         for (let i = 0; i < LINE_PROP_COUNT; i++) {
-            // Dash never carries a zoom range or a camera expression (see class doc) — nothing to
-            // recompute. Its own data-driven-ness (dash/cap constant vs. not) also can't change
-            // without a bucket rebuild, unlike the shared-zoom-range refresh this method exists for.
+            // Dash never carries a zoom range (see class doc), so there's nothing to recompute. Its own
+            // data-driven-ness (dash/cap constant vs. not) also can't change without a bucket rebuild.
             if (i === DASH_BIT_INDEX) continue;
 
             const name = PROP_NAMES[i];
             const isDataDriven = (this.header[HEADER_DATA_DRIVEN_MASK] & (1 << i)) !== 0;
             const isZoomDep = this.zoomDependency[i] === 1;
 
-            if (!isDataDriven) {
-                const unevaluated = this._layerUnevaluated(name);
-                if (unevaluated && unevaluated.expression && unevaluated.expression.kind === 'camera') cameraMask |= (1 << i);
-            } else if (isZoomDep) {
+            if (isDataDriven && isZoomDep) {
                 const zoomExpr = this._zoomExprOf(this._layerUnevaluated(name));
                 if (zoomExpr) {
                     this._computeZoomRange(zoomExpr, floorZoom, this.sharedZoomRanges, i * 2);
@@ -315,7 +320,6 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
             }
         }
 
-        this.cameraMask = cameraMask;
         // The header buffer is shared by reference across every batch's UBO, so a color's shared-
         // zoom slot changing here must be re-uploaded on the next upload() for every batch.
         if (colorHeaderChanged) {
@@ -370,27 +374,26 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
     /**
      * Build the u_lpp_* constant-property uniform values from the current layer.
      */
-    protected _buildConstantUniforms(renderParams: EvaluationParameters | null, emptyFeature: Feature, brightness: number | null | undefined): LineConstantUniformValues {
+    protected _buildConstantUniforms(brightness: number | null | undefined): LineConstantUniformValues {
         return {
-            'color_np_color': this._constantColor(0, PROP_NAMES[0], renderParams, emptyFeature, brightness, [0, 0, 0, 1]),
-            'border_np_color': this._constantColor(1, PROP_NAMES[1], renderParams, emptyFeature, brightness, [0, 0, 0, 0]),
-            opacity: this._constantFloat(2, PROP_NAMES[2], renderParams, emptyFeature, PROP_DEFAULTS[2]),
-            blur: this._constantFloat(3, PROP_NAMES[3], renderParams, emptyFeature, PROP_DEFAULTS[3]),
-            width: this._constantFloat(4, PROP_NAMES[4], renderParams, emptyFeature, PROP_DEFAULTS[4]),
-            'gap_width': this._constantFloat(5, PROP_NAMES[5], renderParams, emptyFeature, PROP_DEFAULTS[5]),
-            offset: this._constantFloat(6, PROP_NAMES[6], renderParams, emptyFeature, PROP_DEFAULTS[6]),
-            floorwidth: this._constantFloat(7, PROP_NAMES[7], renderParams, emptyFeature, PROP_DEFAULTS[7]),
-            'border_width': this._constantFloat(8, PROP_NAMES[8], renderParams, emptyFeature, PROP_DEFAULTS[8]),
-            'emissive_strength': this._constantFloat(9, PROP_NAMES[9], renderParams, emptyFeature, PROP_DEFAULTS[9]),
-            'side_z_offset': this._constantFloat(11, PROP_NAMES[11], renderParams, emptyFeature, PROP_DEFAULTS[11]),
+            'color_np_color': this._constantColor(PROP_NAMES[0], brightness, [0, 0, 0, 1]),
+            'border_np_color': this._constantColor(PROP_NAMES[1], brightness, [0, 0, 0, 0]),
+            opacity: this._constantFloat(PROP_NAMES[2], PROP_DEFAULTS[2]),
+            blur: this._constantFloat(PROP_NAMES[3], PROP_DEFAULTS[3]),
+            width: this._constantFloat(PROP_NAMES[4], PROP_DEFAULTS[4]),
+            'gap_width': this._constantFloat(PROP_NAMES[5], PROP_DEFAULTS[5]),
+            offset: this._constantFloat(PROP_NAMES[6], PROP_DEFAULTS[6]),
+            floorwidth: this._constantFloat(PROP_NAMES[7], PROP_DEFAULTS[7]),
+            'border_width': this._constantFloat(PROP_NAMES[8], PROP_DEFAULTS[8]),
+            'emissive_strength': this._constantFloat(PROP_NAMES[9], PROP_DEFAULTS[9]),
+            'side_z_offset': this._constantFloat(PROP_NAMES[11], PROP_DEFAULTS[11]),
         };
     }
 }
 
-// 'layer' is omitted because LineStyleLayer is not serializable. It must be re-assigned on
-// the main thread before any main-thread method (getConstantUniformValues, bind, etc.) is called
-// — see reassignLayer(), called from line_bucket.ts wherever the bucket is handed a fresh layer.
+// 'layer' is omitted because LineStyleLayer is not serializable. It must be re-assigned on the main
+// thread before any main-thread method (getConstantUniformValues, bind, etc.) is called.
 // featureVertexRangesFromVtIndex is symbol-only in spirit (backs appearance updates), but the
 // shared base's _ensureRangeMaps builds it unconditionally, so line instances carry an (unused,
 // empty) copy that must be omitted here too.
-register(LinePropertyBinderUBO, 'LinePropertyBinderUBO', {omit: ['layer', 'cachedConstantUniforms', 'cachedConstantRenderZoom', 'cachedConstantBrightness', 'cachedConstantPaint', 'featureVertexRangesFromId', 'featureVertexRangesFromVtIndex']});
+register(LinePropertyBinderUBO, 'LinePropertyBinderUBO', {omit: ['layer', 'cachedConstantUniforms', 'cachedConstantBrightness', 'cachedConstantPaint', 'featureVertexRangesFromId', 'featureVertexRangesFromVtIndex']});

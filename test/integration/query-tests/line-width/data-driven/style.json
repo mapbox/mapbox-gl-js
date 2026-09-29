@@ -1,0 +1,56 @@
+{
+    "version": 8,
+    "_comment": "Point 6px off a line whose data-driven width is 20px must hit it, so the query must be padded by the largest per-feature width.",
+    "metadata": {
+        "test": {
+            "width": 64,
+            "height": 64,
+            "queryGeometry": [
+                32,
+                26
+            ]
+        }
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 0,
+    "sources": {
+        "mapbox": {
+            "type": "geojson",
+            "data": {
+                "type": "Feature",
+                "properties": {
+                    "w": 20
+                },
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": [
+                        [
+                            -20,
+                            0
+                        ],
+                        [
+                            20,
+                            0
+                        ]
+                    ]
+                }
+            }
+        }
+    },
+    "layers": [
+        {
+            "id": "line",
+            "type": "line",
+            "source": "mapbox",
+            "paint": {
+                "line-width": [
+                    "get",
+                    "w"
+                ]
+            }
+        }
+    ]
+}

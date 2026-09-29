@@ -560,11 +560,10 @@ class Style extends Evented<MapEvents> {
             config: getBroadcastableConfig(),
         };
 
-        // Send UBO limits to workers so they can size batches correctly for this device.
+        // Send the UBO size limit to workers so they can size batches correctly for this device.
         if (this.map.painter && this.map.painter.context) {
-            const maxBindingPoints = this.map.painter.context.maxUniformBufferBindings;
             const maxUniformBlockSizeDwords = Math.floor(this.map.painter.context.maxUniformBlockSize / 4);
-            globalWorkerParams.contextOptions = {maxBindingPoints, maxUniformBlockSizeDwords};
+            globalWorkerParams.contextOptions = {maxUniformBlockSizeDwords};
         }
 
         if (this.isRootStyle()) {

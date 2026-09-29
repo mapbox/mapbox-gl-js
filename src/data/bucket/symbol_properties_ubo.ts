@@ -12,7 +12,7 @@ import {PaintPropertiesUBO, HEADER_DZR_MASK} from './paint_property_ubo';
  *   - Properties buffer (SymbolPaintPropertiesUniform):   per-feature data-driven blocks
  *   - Block indices buffer (SymbolPaintPropertiesIndexUniform): feature→block index mapping
  *
- * Binding points: batchIndex*3 (header), batchIndex*3+1 (properties), batchIndex*3+2 (indices).
+ * Binding points: 0 (header), 1 (properties), 2 (indices), shared by all batches.
  *
  * Constant properties are NOT stored here — they are passed as u_spp_* uniforms.
  *

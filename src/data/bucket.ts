@@ -44,7 +44,6 @@ export type BucketParameters<Layer extends StyleLayer> = {
     worldview: string | undefined;
     localizable: boolean;
     availableImages: ImageId[];
-    maxUniformBufferBindings?: number | null;
     maxUniformBlockSizeDwords?: number | null;
 };
 

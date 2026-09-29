@@ -3,7 +3,6 @@ import Color from '../../style-spec/util/color';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import {PossiblyEvaluatedPropertyValue, type PossiblyEvaluatedValue} from '../../style/properties';
 import {packUint8ToFloat} from '../../shaders/encode_attribute';
-import {warnOnce} from '../../util/util';
 
 import type {PaintPropertiesUBO} from './paint_property_ubo';
 import type StyleLayer from '../../style/style_layer';
@@ -15,9 +14,6 @@ import type Context from '../../gl/context';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {FormattedSection} from '../../style-spec/expression/types/formatted';
 import type SymbolAppearance from '../../style/appearance';
-
-// WebGL2 minimum guaranteed value for MAX_UNIFORM_BUFFER_BINDINGS (OpenGL ES 3.0.6 table 6.33)
-const WEBGL2_MIN_UNIFORM_BUFFER_BINDINGS = 24;
 
 /**
  * True if `prop` is a data-driven paint property whose expression reads feature-state.
@@ -83,6 +79,8 @@ export type ZoomExpression = CameraExpression | CompositeExpression;
 // so a single cache safely serves every binder instance.
 const cameraWrapCache = new WeakMap<object, PossiblyEvaluatedPropertyValue<unknown>>();
 
+const EMPTY_FEATURE: Feature = {type: 1, id: undefined, properties: {}, geometry: []};
+
 /**
  * Shared base for per-layer paint-property UBO binders (SymbolPropertyBinderUBO,
  * LinePropertyBinderUBO). Owns feature tracking, batching, zoom-range bookkeeping, and the
@@ -97,7 +95,6 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
     zoom: number;
     lut: LUT | null;
     worldview: string;
-    maxUniformBufferBindings: number;
 
     // Per-feature tracking, in insertion (populate) order. One entry per populateUBO call;
     // the entry's index IS the feature's global index (see _writeFeatureBlock).
@@ -132,9 +129,8 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
     isAllConstant: boolean;
 
     // Cached result of getConstantUniformValues (main-thread only, excluded from serialization).
-    // Invalidated when the layer changes or when zoom/brightness change for camera expressions.
+    // Invalidated when the layer paint or brightness changes.
     cachedConstantUniforms: TConstantUniforms | null;
-    cachedConstantRenderZoom: number | null;
     cachedConstantBrightness: number | null | undefined;
     // Identity of the layer.paint object the cache was computed from. layer.recalculate() produces a
     // fresh paint object on every Style.update() a paint/config change triggers, so an identity change
@@ -153,10 +149,12 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
     // When true, updateDynamicExpressions can be skipped on brightness-only changes.
     isLightConstant!: boolean;
 
-    // Bitmask: 1 = property is a constant camera (zoom-only) expression, computed in updateHeader.
-    // CPU-only — camera properties go through uniforms (re-evaluated at render zoom), not the GPU
-    // UBO, so this is not part of the header.
-    cameraMask!: number;
+    // True when a property whose layer value isn't data-driven is still stored in per-feature blocks (e.g. forced
+    // there by a data-driven companion property), so a change of that value has to rewrite every feature.
+    hasConstantsInBlocks!: boolean;
+
+    // The layer's paintVersion that this binder last caught up with (main-thread only, see updatePaint).
+    paintVersion: number | undefined;
 
     // Per-property zoom classification, one byte per property, computed in updateHeader (subclass:
     // symbol's 3-way ZOOM_* enum, line's plain 0/1 boolean). CPU-side bookkeeping that decides what
@@ -178,11 +176,7 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
     protected abstract updateHeader(): void;
     protected abstract _recomputeSharedRanges(): void;
     protected abstract _evaluatePropertyAt(i: number, ctx: EvaluationContext): void;
-    protected abstract _buildConstantUniforms(
-        renderParams: EvaluationParameters | null,
-        emptyFeature: Feature,
-        brightness: number | null | undefined
-    ): TConstantUniforms;
+    protected abstract _buildConstantUniforms(brightness: number | null | undefined): TConstantUniforms;
 
     /**
      * Bitmask of properties that must not be rewritten by the update path (feature-state /
@@ -195,22 +189,11 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         return 0;
     }
 
-    /**
-     * Number of consecutive UBO binding points each batch occupies — must match the concrete
-     * TUBO's PaintPropertiesUBO._bindingsPerBatch() (3 with an indirection block, symbol; 2
-     * without, line). Used only for the device-limit check below, since the binder never binds
-     * UBOs itself.
-     */
-    protected _bindingsPerBatch(): number {
-        return 3;
-    }
-
-    constructor(layer: TLayer, zoom: number, lut: LUT | null, worldview: string = '', maxUniformBufferBindings?: number | null, uboSizeDwords?: number | null) {
+    constructor(layer: TLayer, zoom: number, lut: LUT | null, worldview: string = '', uboSizeDwords?: number | null) {
         this.layer = layer;
         this.zoom = zoom;
         this.lut = lut;
         this.worldview = worldview;
-        this.maxUniformBufferBindings = maxUniformBufferBindings || WEBGL2_MIN_UNIFORM_BUFFER_BINDINGS;
         this.uboSizeDwords = uboSizeDwords || 4096;
 
         this.allFeatureVtIndices = [];
@@ -221,7 +204,6 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         this.featureCount = 0;
 
         this.cachedConstantUniforms = null;
-        this.cachedConstantRenderZoom = null;
         this.cachedConstantBrightness = undefined;
         this.cachedConstantPaint = null;
     }
@@ -567,13 +549,7 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
      */
     getCurrentBatchIndex(): number {
         if (this.maxFeaturesPerBatch === 0) return 0;
-        const batchIndex = Math.floor(this.featureCount / this.maxFeaturesPerBatch);
-
-        if (this._checkBatchExceedsDeviceLimitAndWarn(batchIndex)) {
-            return 0;
-        }
-
-        return batchIndex;
+        return Math.floor(this.featureCount / this.maxFeaturesPerBatch);
     }
 
     /**
@@ -582,35 +558,16 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
      *
      * The feature's global index equals its insertion position in the data-driven case (populateUBO
      * pushes once and increments featureCount once per feature) and is 0 in the all-constant case
-     * (every feature deduplicates to entry 0). batch/local then follow from maxFeaturesPerBatch, with
-     * the same device-limit clamp populateUBO applies — so this reproduces the slot populateUBO chose
-     * without storing it per feature.
+     * (every feature deduplicates to entry 0). batch/local then follow from maxFeaturesPerBatch, as
+     * in populateUBO — so this reproduces the slot populateUBO chose without storing it per feature.
      */
     protected _writeFeatureBlock(i: number, allValues: Float32Array): boolean {
         const globalFeatureIndex = this.isAllConstant ? 0 : i;
         const batchIndex = Math.floor(globalFeatureIndex / this.maxFeaturesPerBatch);
-        if (this._checkBatchExceedsDeviceLimitAndWarn(batchIndex)) {
-            // match populateUBO's clamp: overflow features share slot 0 and render
-            // with the first feature's properties, but the tile still loads.
-            return false;
-        }
         const localFeatureIndex = globalFeatureIndex % this.maxFeaturesPerBatch;
         const ubo = this.ubos[batchIndex];
         if (!ubo) return false;
         ubo.writeDataDrivenBlock(allValues, localFeatureIndex, this._immutableAfterPopulateMask());
-        return true;
-    }
-
-    // Each UBO batch consumes _bindingsPerBatch() binding points (header, properties, and,
-    // for symbol, block-indices), so a batch whose highest binding point exceeds the device
-    // limit can't be bound. Such features fall back to batch 0 / local 0 (sharing slot 0).
-    // populateUBO (worker) and _writeFeatureBlock (main, on update) apply this identical rule
-    // so a feature's update lands in the slot populate originally chose.
-    protected _checkBatchExceedsDeviceLimitAndWarn(batchIndex: number): boolean {
-        const bindings = this._bindingsPerBatch();
-        const highestBindingPoint = batchIndex * bindings + (bindings - 1);
-        if (highestBindingPoint < this.maxUniformBufferBindings) return false;
-        warnOnce(`Too many features for UBO paint properties: batch ${batchIndex} requires binding points up to ${highestBindingPoint}, device limit ${this.maxUniformBufferBindings}. Some features will render incorrectly.`);
         return true;
     }
 
@@ -700,32 +657,24 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         }
 
         // Determine batch and local index
-        let batchIndex = Math.floor(globalFeatureIndex / this.maxFeaturesPerBatch);
-        let localIndex = globalFeatureIndex % this.maxFeaturesPerBatch;
+        const batchIndex = Math.floor(globalFeatureIndex / this.maxFeaturesPerBatch);
+        const localIndex = globalFeatureIndex % this.maxFeaturesPerBatch;
 
         if (isNewEntry) {
-            // Validate batch index against device limit before allocating.
-            if (this._checkBatchExceedsDeviceLimitAndWarn(batchIndex)) {
-                // Clamp gracefully instead of crashing the worker — overflow features share slot 0
-                // and render with the first feature's properties, but the tile still loads.
-                batchIndex = 0;
-                localIndex = 0;
-            } else {
-                // Create new batch if needed (shares the layer's header array). GPU buffers are
-                // allocated lazily on the main thread after transfer; the worker passes no context.
-                if (!this.ubos[batchIndex]) {
-                    this.ubos[batchIndex] = this._createUBO(batchIndex);
-                }
+            // Create new batch if needed (shares the layer's header array). GPU buffers are
+            // allocated lazily on the main thread after transfer; the worker passes no context.
+            if (!this.ubos[batchIndex]) {
+                this.ubos[batchIndex] = this._createUBO(batchIndex);
+            }
 
-                // Evaluate only when the result will actually be stored: an all-constant binder's
-                // block is zero-sized (writeDataDrivenBlock no-ops below, constants go through
-                // uniforms instead), so evaluating here would just discard the full per-property
-                // evaluation (color packing, LUT resolution, ...) for every feature of every tile.
-                if (!this.isAllConstant) {
-                    const allValues = this.evaluateAllProperties(feature, {}, canonical, availableImages, brightness, formattedSection);
-                    // Write data-driven block for this feature (no constant block — uniforms handle constants)
-                    this.ubos[batchIndex].writeDataDrivenBlock(allValues, localIndex);
-                }
+            // Evaluate only when the result will actually be stored: an all-constant binder's
+            // block is zero-sized (writeDataDrivenBlock no-ops below, constants go through
+            // uniforms instead), so evaluating here would just discard the full per-property
+            // evaluation (color packing, LUT resolution, ...) for every feature of every tile.
+            if (!this.isAllConstant) {
+                const allValues = this.evaluateAllProperties(feature, {}, canonical, availableImages, brightness, formattedSection);
+                // Write data-driven block for this feature (no constant block — uniforms handle constants)
+                this.ubos[batchIndex].writeDataDrivenBlock(allValues, localIndex);
             }
         }
 
@@ -751,8 +700,6 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         brightness?: number | null
     ): void {
         this.layer = styleLayer;
-        // Layer changed — constant uniform values may have new paint property values.
-        this.cachedConstantUniforms = null;
 
         this._ensureRangeMaps();
         for (const featureId of featureIds) {
@@ -779,13 +726,10 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         brightness?: number | null
     ): void {
         this.layer = styleLayer;
-        // Layer changed — constant uniform values may have new property values, and zoom
-        // stop values may have changed
-        this.cachedConstantUniforms = null;
+        // Zoom stop values may have changed
         this._recomputeSharedRanges();
         // Skip per-feature re-evaluation when no data-driven properties: constant properties
-        // are read from this.layer at draw time via getConstantUniformValues(), which was
-        // already invalidated above.
+        // are read from this.layer at draw time via getConstantUniformValues().
         if (this.header[HEADER_DATA_DRIVEN_MASK] === 0) return;
 
         for (let i = 0; i < this.allFeatureVtIndices.length; i++) {
@@ -794,27 +738,26 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
     }
 
     /**
-     * Reassign the style layer this binder reads from (e.g. a bucket shared by multiple style
-     * layers must always point at that layer's current, possibly just-recalculated instance).
-     * Only clears the constant-uniform cache when the layer identity actually changed, since
-     * recomputing it is otherwise wasted work.
+     * Catch up with paint changes that don't relayout (constant values, transitions). Constants are read from the
+     * layer at draw time, so usually only the shared zoom ranges need a refresh ('constants'). Feature blocks need
+     * a re-evaluation ('features') when they store constants, including on the first call: workers don't receive
+     * paint changes that don't relayout, so a tile loaded after one has blocks evaluated with the old paint.
      */
-    reassignLayer(layer: TLayer): void {
-        if (this.layer === layer) return;
+    updatePaint(layer: TLayer): 'unchanged' | 'constants' | 'features' {
+        if (this.paintVersion === layer.paintVersion) return 'unchanged';
+        this.paintVersion = layer.paintVersion;
         this.layer = layer;
-        this.cachedConstantUniforms = null;
+        this._recomputeSharedRanges();
+        return this.hasConstantsInBlocks ? 'features' : 'constants';
     }
 
     /**
-     * Evaluate a constant color property for the uniform block, given its bit index and paint
-     * property name. `fallback` differs per property (e.g. line-border-color has no default paint
-     * spec value, so it falls back to transparent rather than opaque black).
+     * Evaluate a constant color property for the uniform block, given its paint property name.
+     * `fallback` differs per property (e.g. line-border-color has no default paint spec value, so
+     * it falls back to transparent rather than opaque black).
      */
     protected _constantColor(
-        propIdx: number,
         propName: string,
-        renderParams: EvaluationParameters | null,
-        emptyFeature: Feature,
         brightness: number | null | undefined,
         fallback: [number, number, number, number]
     ): [number, number, number, number] {
@@ -822,74 +765,36 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         if (!prop) return fallback;
 
         const useThemeProp = this._paintGet<string>(`${propName}-use-theme`);
-        const effectiveLut = this._effectiveLut(useThemeProp, emptyFeature, {}, [], undefined, brightness, undefined);
-
-        // Camera expressions need re-evaluation at render zoom; constants use the
-        // already-evaluated value from the style layer (no EvaluationParameters needed).
-        const isCamera = !!(this.cameraMask & (1 << propIdx));
-        const color = isCamera && renderParams ?
-            prop.property.evaluate(prop.value, renderParams, emptyFeature, {}, undefined, []) || Color.transparent :
-            prop.constantOr(Color.transparent);
-        return color.toNonPremultipliedRenderColor(effectiveLut).toArray01();
+        const effectiveLut = this._effectiveLut(useThemeProp, EMPTY_FEATURE, {}, [], undefined, brightness, undefined);
+        return prop.constantOr(Color.transparent).toNonPremultipliedRenderColor(effectiveLut).toArray01();
     }
 
     /**
-     * Evaluate a constant float property for the uniform block, given its bit index and paint
-     * property name.
+     * Evaluate a constant float property for the uniform block, given its paint property name.
      */
-    protected _constantFloat(
-        propIdx: number,
-        propName: string,
-        renderParams: EvaluationParameters | null,
-        emptyFeature: Feature,
-        defaultVal: number
-    ): number {
+    protected _constantFloat(propName: string, defaultVal: number): number {
         const prop = this._paintGet<number>(propName);
-        if (!prop) return defaultVal;
-        const isCamera = !!(this.cameraMask & (1 << propIdx));
-        if (isCamera && renderParams) {
-            const evaluated = prop.property.evaluate(prop.value, renderParams, emptyFeature, {}, undefined, []);
-            return evaluated ?? defaultVal;
-        }
-        return prop.constantOr(defaultVal);
+        return prop ? prop.constantOr(defaultVal) : defaultVal;
     }
 
     /**
-     * Return values for the constant-property uniforms.
+     * Return values for the constant-property uniforms. Called once per draw call.
      *
-     * Called once per draw call. Evaluates at the current render zoom so that camera (zoom-only)
-     * expressions are up-to-date every frame.
-     *
-     * Result is cached: constant layers without camera or zoom-dep properties cache
-     * indefinitely until the layer changes; otherwise the cache invalidates on renderZoom
-     * or brightness change.
+     * Camera (zoom-only) expressions come already evaluated at the current zoom, since the style
+     * recalculates layer paint on every zoom change, which also gives layer.paint a new identity.
      */
-    getConstantUniformValues(renderZoom: number, brightness?: number | null): TConstantUniforms {
-        const hasCameraExpr = !!this.cameraMask;
-
-        // Cache hit: camera (zoom-only) expressions must be re-evaluated at the current render
-        // zoom, so invalidate on renderZoom change when one is present.
-        // cachedConstantPaint guards against stale constant colors when a paint update arrives without
-        // a live transition (e.g. root transition {duration: 0}); layer.recalculate() produces a fresh
-        // layer.paint object whenever a paint/config change is applied.
+    getConstantUniformValues(brightness?: number | null): TConstantUniforms {
         // Truthy check (not !== null) because the field may be undefined after worker→main
         // transfer (constructor is not called during deserialization, omitted fields stay undefined).
         if (this.cachedConstantUniforms &&
                 this.cachedConstantPaint === this.layer.paint &&
-                this.cachedConstantBrightness === brightness &&
-                (!hasCameraExpr || this.cachedConstantRenderZoom === renderZoom)) {
+                this.cachedConstantBrightness === brightness) {
             return this.cachedConstantUniforms;
         }
 
-        const renderParams = hasCameraExpr ?
-            new EvaluationParameters(renderZoom, {brightness, worldview: this.worldview}) :
-            null;
-        const emptyFeature: Feature = {type: 1, id: undefined, properties: {}, geometry: []};
-
-        const result = this._buildConstantUniforms(renderParams, emptyFeature, brightness);
+        const result = this._buildConstantUniforms(brightness);
 
         this.cachedConstantUniforms = result;
-        this.cachedConstantRenderZoom = renderZoom;
         this.cachedConstantBrightness = brightness;
         this.cachedConstantPaint = this.layer.paint;
         return result;

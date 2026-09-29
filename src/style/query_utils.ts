@@ -2,22 +2,15 @@ import Point from '@mapbox/point-geometry';
 
 import type {PossiblyEvaluatedPropertyValue} from './properties';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
-import type CircleBucket from '../data/bucket/circle_bucket';
-import type LineBucket from '../data/bucket/line_bucket';
 
 export function getMaximumPaintValue(
     property: string,
     layer: TypedStyleLayer,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    bucket: CircleBucket<any> | LineBucket,
+    dataDrivenValues: {getMaxValue: (property: string) => number},
 ): number {
 
     const value = ((layer.paint as {get: (prop: string) => PossiblyEvaluatedPropertyValue<number>}).get(property)).value;
-    if (value.kind === 'constant') {
-        return value.value;
-    } else {
-        return bucket.programConfigurations.get(layer.id).getMaxValue(property);
-    }
+    return value.kind === 'constant' ? value.value : dataDrivenValues.getMaxValue(property);
 }
 
 export function translateDistance(translate: [number, number]): number {

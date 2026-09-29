@@ -169,6 +169,32 @@ describe('StyleLayer#setPaintProperty', () => {
     });
 });
 
+describe('StyleLayer#paintVersion', () => {
+    test('changes when a paint property changes', () => {
+        const layer = createStyleLayer({id: 'background', type: 'background'});
+        const version = layer.paintVersion;
+
+        layer.setPaintProperty('background-opacity', 0.5);
+        layer.updateTransitions({transition: {duration: 0}, now: 0});
+
+        expect(layer.paintVersion).not.toEqual(version);
+    });
+
+    test('changes on every recalculation of a transition, including the last one', () => {
+        const layer = createStyleLayer({id: 'background', type: 'background'});
+        layer.setPaintProperty('background-opacity', 0.5);
+        layer.updateTransitions({transition: {duration: 100}, now: 0});
+
+        const versions = [50, 150, 200].map(now => {
+            layer.recalculate({zoom: 0, now});
+            return layer.paintVersion;
+        });
+
+        expect(new Set(versions).size).toEqual(2);
+        expect(versions[2]).toEqual(versions[1]);
+    });
+});
+
 describe('StyleLayer#setLayoutProperty', () => {
     test('sets new property value', () => {
         const layer = createStyleLayer({

@@ -52,7 +52,6 @@ class Context {
     gl: WebGL2RenderingContext;
     maxTextureSize: number;
     maxUniformBlockSize: number;
-    maxUniformBufferBindings: number;
 
     clearColor: ClearColor;
     clearDepth: ClearDepth;
@@ -195,8 +194,6 @@ class Context {
         // Cap it to a max of 32KB to avoid allocating big UBO buffers
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.maxUniformBlockSize = Math.min(gl.getParameter(gl.MAX_UNIFORM_BLOCK_SIZE), 32 * 1024);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        this.maxUniformBufferBindings = gl.getParameter(gl.MAX_UNIFORM_BUFFER_BINDINGS);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.extBlendFuncExtended = gl.getExtension('WEBGL_blend_func_extended');
         this.extParallelShaderCompile = gl.getExtension('KHR_parallel_shader_compile');

@@ -70,6 +70,9 @@ class StyleLayer extends Evented {
     iconImageUseTheme: string | null | undefined;
     appearances: Array<SymbolAppearance>;
     appearancesVersion: number;
+    // Bumped whenever evaluated paint values may change without a relayout: on a paint property change and on
+    // every frame of a paint transition, including the last one.
+    paintVersion: number;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _unevaluatedLayout!: Layout<any>;
@@ -110,6 +113,7 @@ class StyleLayer extends Evented {
         this.iconImageUseTheme = iconImageUseTheme;
         this.appearances = new Array<SymbolAppearance>();
         this.appearancesVersion = 0;
+        this.paintVersion = 0;
 
         this._featureFilter = {filter: () => true, needGeometry: false, needFeature: false};
         this._filterCompiled = false;
@@ -287,6 +291,7 @@ class StyleLayer extends Evented {
 
     updateTransitions(parameters: TransitionParameters) {
         this._transitioningPaint = this._transitionablePaint.transitioned(parameters, this._transitioningPaint);
+        this.paintVersion++;
     }
 
     hasTransition(): boolean {
@@ -299,6 +304,7 @@ class StyleLayer extends Evented {
             (this as any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters, undefined, availableImages, this.iconImageUseTheme);
         }
 
+        if (this.hasTransition()) this.paintVersion++;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         (this as any).paint = this._transitioningPaint.possiblyEvaluate(parameters, undefined, availableImages);
     }

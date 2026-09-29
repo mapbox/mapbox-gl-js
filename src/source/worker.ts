@@ -59,7 +59,6 @@ export default class MapWorker {
     isSpriteLoaded: WorkerScopeRegistry<boolean>;
     referrer: string | null | undefined;
     brightness: number | null | undefined;
-    maxUniformBufferBindings: number | null | undefined;
     maxUniformBlockSizeDwords: number | null | undefined;
     worldview: string | undefined;
     rtlPluginParsingListeners: Array<RTLParsingListener>;
@@ -197,9 +196,7 @@ export default class MapWorker {
         Object.assign(config, params.config);
 
         if (params.contextOptions) {
-            const {maxBindingPoints, maxUniformBlockSizeDwords} = params.contextOptions;
-            this.maxUniformBufferBindings = maxBindingPoints;
-            this.maxUniformBlockSizeDwords = maxUniformBlockSizeDwords;
+            this.maxUniformBlockSizeDwords = params.contextOptions.maxUniformBlockSizeDwords;
         }
     }
 
@@ -447,7 +444,6 @@ export default class MapWorker {
                 tileProvider,
                 brightness: this.brightness,
                 worldview: this.worldview,
-                maxUniformBufferBindings: this.maxUniformBufferBindings,
                 maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords,
             });
         } else if (tileProvider) {

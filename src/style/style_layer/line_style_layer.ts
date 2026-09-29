@@ -198,11 +198,11 @@ class LineStyleLayer extends StyleLayer {
     }
 
     override queryRadius(bucket: Bucket): number {
-        const lineBucket = bucket as LineBucket;
+        const uboBinder = (bucket as LineBucket).uboBinders[this.id];
         const width = getLineWidth(
-            getMaximumPaintValue('line-width', this, lineBucket),
-            getMaximumPaintValue('line-gap-width', this, lineBucket));
-        const offset = getMaximumPaintValue('line-offset', this, lineBucket);
+            getMaximumPaintValue('line-width', this, uboBinder),
+            getMaximumPaintValue('line-gap-width', this, uboBinder));
+        const offset = getMaximumPaintValue('line-offset', this, uboBinder);
 
         return width / 2 + Math.abs(offset) + translateDistance(this.paint.get('line-translate'));
     }

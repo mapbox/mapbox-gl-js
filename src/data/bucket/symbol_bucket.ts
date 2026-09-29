@@ -832,7 +832,6 @@ class SymbolBucket implements Bucket, SymbolSource {
 
     worldview: string;
     localizable: boolean;
-    maxUniformBufferBindings: number | null | undefined;
     maxUniformBlockSizeDwords: number | null | undefined;
     iconAtlasPositions: ImagePositionMap | undefined;
     hasAppearances: boolean | null;
@@ -868,7 +867,6 @@ class SymbolBucket implements Bucket, SymbolSource {
 
         this.worldview = options.worldview;
         this.localizable = options.localizable;
-        this.maxUniformBufferBindings = options.maxUniformBufferBindings;
         this.maxUniformBlockSizeDwords = options.maxUniformBlockSizeDwords;
 
         this.textSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['text-size'], this.worldview, options.availableImages);
@@ -941,8 +939,8 @@ class SymbolBucket implements Bucket, SymbolSource {
             })
         );
 
-        this.text.uboBinder = new SymbolPropertyBinderUBO(this.layers[0], this.zoom, this.lut, true, '', this.maxUniformBufferBindings, this.maxUniformBlockSizeDwords);
-        this.icon.uboBinder = new SymbolPropertyBinderUBO(this.layers[0], this.zoom, this.lut, false, '', this.maxUniformBufferBindings, this.maxUniformBlockSizeDwords);
+        this.text.uboBinder = new SymbolPropertyBinderUBO(this.layers[0], this.zoom, this.lut, true, '', this.maxUniformBlockSizeDwords);
+        this.icon.uboBinder = new SymbolPropertyBinderUBO(this.layers[0], this.zoom, this.lut, false, '', this.maxUniformBlockSizeDwords);
 
         this.glyphOffsetArray = new GlyphOffsetArray();
         this.lineVertexArray = new SymbolLineVertexArray();

@@ -3,6 +3,8 @@
 - Avoid placing parent-tile symbols when using the global placement.
 - Extend global placement debug info.
 - Fix symbol fading not finishing when using global placement.
+- Fix a rendering issue when drawing thousands of data-driven lines and symbols.
+- Fix a severe performance regression when updating data-driven line layers with `setPaintProperty`.
 - Improve memory use & map load time, especially for 3D layers.
 - Improve 3D Lanes map load performance.
 - Fix an issue with GeoJSON geometries past longitude -+360 rendering incorrectly.

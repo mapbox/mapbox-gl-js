@@ -11,19 +11,13 @@ import {PaintPropertiesUBO} from './paint_property_ubo';
 export const LINE_PROP_COUNT = 12;
 
 /**
- * Number of consecutive UBO binding points a line UBO batch occupies: header + properties. One
- * fewer than symbol's 3 — see the class doc below for why line has no indirection block.
- */
-export const LINE_UBO_BINDINGS_PER_BATCH = 2;
-
-/**
  * Manages Uniform Buffer Objects (UBOs) for line paint properties.
  *
  * Uses 2 separate GPU buffers per batch aligned with the GL Native UBO layout:
  *   - Header buffer  (LinePaintPropertiesHeaderUniform): 5 uvec4 layout descriptor
  *   - Properties buffer (LinePaintPropertiesUniform):    per-feature data-driven blocks
  *
- * Binding points: batchIndex*2 (header), batchIndex*2+1 (properties). Unlike symbol, line has no
+ * Binding points: 0 (header), 1 (properties), shared by all batches. Unlike symbol, line has no
  * indirection (block-indices) buffer: that buffer exists to let symbol *appearances* deduplicate
  * property blocks, and line has no appearance concept, so `a_feature_index` addresses the
  * properties buffer directly (see readLinePaintProperties() in line.vertex.glsl).
@@ -106,10 +100,6 @@ export class LinePropertiesUBO extends PaintPropertiesUBO {
 
     protected _blockNames(): readonly [string, string] {
         return ['LinePaintPropertiesHeaderUniform', 'LinePaintPropertiesUniform'];
-    }
-
-    protected override _bindingsPerBatch(): number {
-        return LINE_UBO_BINDINGS_PER_BATCH;
     }
 
     /**

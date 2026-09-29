@@ -241,7 +241,6 @@ export type WorkerSourceOptions = {
     tileProvider?: TileProvider<ArrayBuffer | ImageBitmap>;
     brightness?: number;
     worldview?: string;
-    maxUniformBufferBindings?: number;
     maxUniformBlockSizeDwords?: number;
 };
 

@@ -46,6 +46,24 @@ describe('SymbolPropertiesUBO', () => {
         expect(() => new SymbolPropertiesUBO(context, 0, 4096, makeHeader(0, 0))).not.toThrow();
     });
 
+    test('bind uses the same binding points for every batch', () => {
+        const gl = window.document.createElement('canvas').getContext('webgl2');
+        const context = new Context(gl);
+        // No linked program here: stub the block lookup, but let bindBufferBase change real GL state.
+        vi.spyOn(gl, 'getUniformBlockIndex').mockReturnValue(0);
+        vi.spyOn(gl, 'uniformBlockBinding').mockImplementation(() => {});
+
+        // A batch far past MAX_UNIFORM_BUFFER_BINDINGS / 3 used to need binding points beyond the limit.
+        const batchIndex = gl.getParameter(gl.MAX_UNIFORM_BUFFER_BINDINGS) as number;
+        const ubo = new SymbolPropertiesUBO(context, batchIndex, 4096, makeHeader(0, 0));
+        ubo.bind(context, gl.createProgram());
+
+        expect(gl.getError()).toEqual(gl.NO_ERROR);
+        expect(gl.getIndexedParameter(gl.UNIFORM_BUFFER_BINDING, 0)).toBe(ubo.headerBuffer);
+        expect(gl.getIndexedParameter(gl.UNIFORM_BUFFER_BINDING, 1)).toBe(ubo.propertiesBuffer);
+        expect(gl.getIndexedParameter(gl.UNIFORM_BUFFER_BINDING, 2)).toBe(ubo.blockIndicesBuffer);
+    });
+
     test('writeDataDrivenBlock stores feature data at correct offset', () => {
         // Only opacity is data-driven:
         //   data-driven block: opacity(1 dword) → pad to 4 → dataDrivenBlockSizeVec4 = 1
@@ -392,42 +410,31 @@ describe('SymbolPropertyBinderUBO', () => {
             expect(binder.featureVertexRangesFromId.size).toEqual(0);
         });
 
-        test('clamps gracefully when exceeding max binding points', () => {
+        test('allocates as many batches as needed, each feature keeping its own slot', () => {
             const layer = createTestLayer({'text-opacity': ['get', 'opacity']});
-            // Small maxUniformBufferBindings (6) and a tiny UBO (8 dwords → 2 features/batch) so the
-            // limit is hit after a handful of features. batchIndex 2 needs bindings 6,7,8 > limit 6.
-            const binder = new SymbolPropertyBinderUBO(layer, 10, null, true, '', 6, 8);
+            // Tiny UBO (8 dwords → 2 features/batch) so 30 features need 15 batches, past the 8 that
+            // per-batch binding points used to allow on a 24-binding device.
+            const binder = new SymbolPropertyBinderUBO(layer, 10, null, true, '', 8);
             const canonical = new CanonicalTileID(0, 0, 0);
+            expect(binder.maxFeaturesPerBatch).toEqual(2);
 
-            const maxPerBatch = binder.maxFeaturesPerBatch;
-            expect(maxPerBatch).toEqual(2);
-
-            // Fill batches 0 and 1 (positions 0..3), all valid.
-            for (let i = 0; i < 2 * maxPerBatch; i++) {
-                binder.populateUBO(createTestFeature({opacity: i / 10}, `f-${i}`), i, canonical, []);
+            const count = 30;
+            const localIndices = [];
+            for (let i = 0; i < count; i++) {
+                localIndices.push(binder.populateUBO(createTestFeature({opacity: i / 100}, `f-${i}`), i, canonical, []));
             }
+            expect(localIndices).toEqual(Array.from({length: count}, (_, i) => i % 2));
+            expect(binder.ubos.length).toEqual(15);
 
-            const feature = createTestFeature({opacity: 0.5}, 'too-many');
-
-            // The next feature falls in batchIndex 2, which exceeds the limit. Should not throw —
-            // returns 0 (clamped to slot 0) and still tracks the feature.
-            let returnedIndex: number | undefined;
-            expect(() => {
-                returnedIndex = binder.populateUBO(feature, 2 * maxPerBatch, canonical, []);
-            }).not.toThrow();
-            expect(returnedIndex).toEqual(0);
-
-            // Feature still tracked (no throw, no new batch allocated for the nonexistent batch 2),
-            // but its update is skipped rather than clobbering slot 0: the overflow feature renders
-            // with the first feature's (batch 0 / slot 0) properties instead. Distinct opacity for
-            // the overflow feature proves slot 0 keeps the first feature's value, not the overflow one.
+            // Re-evaluation writes every feature back to its own batch/slot.
             const vtLayer = {
-                feature: (idx: number) => createTestFeature({opacity: idx === 2 * maxPerBatch ? 0.9 : 0.1})
+                feature: (idx: number) => createTestFeature({opacity: 0.5 + idx / 100})
             } as unknown as VectorTileLayer;
-            expect(() => binder.updateDynamicExpressions(layer, vtLayer, canonical, [], {})).not.toThrow();
-            expect(binder.ubos.length).toEqual(2);
-            expect(binder.allFeatureVtIndices.length).toEqual(2 * maxPerBatch + 1);
-            expect(binder.ubos[0].propertiesData[0]).toBeCloseTo(0.1, 5);
+            binder.updateDynamicExpressions(layer, vtLayer, canonical, [], {});
+            const blockDwords = binder.header[HEADER_BLOCK_SIZE_VEC4] * 4;
+            for (let i = 0; i < count; i++) {
+                expect(binder.ubos[Math.floor(i / 2)].propertiesData[(i % 2) * blockDwords]).toBeCloseTo(0.5 + i / 100, 5);
+            }
         });
     });
 
@@ -488,7 +495,7 @@ describe('SymbolPropertyBinderUBO', () => {
             const layer = createTestLayer({});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
 
-            const cv = binder.getConstantUniformValues(10);
+            const cv = binder.getConstantUniformValues();
 
             expect(cv.opacity).toBeCloseTo(1.0, 5);
             expect(cv['halo_width']).toBeCloseTo(0.0, 5);
@@ -502,7 +509,7 @@ describe('SymbolPropertyBinderUBO', () => {
             const layer = createTestLayer({'text-opacity': 0.7, 'text-halo-width': 2.5});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
 
-            const cv = binder.getConstantUniformValues(10);
+            const cv = binder.getConstantUniformValues();
 
             expect(cv.opacity).toBeCloseTo(0.7, 5);
             expect(cv['halo_width']).toBeCloseTo(2.5, 5);
@@ -512,7 +519,7 @@ describe('SymbolPropertyBinderUBO', () => {
             const layer = createTestLayer({'text-color': 'red'});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
 
-            const cv = binder.getConstantUniformValues(10);
+            const cv = binder.getConstantUniformValues();
 
             // Non-premultiplied red: r=1, g=0, b=0, a=1
             expect(cv['fill_np_color'][0]).toBeCloseTo(1.0, 2); // r
@@ -525,8 +532,8 @@ describe('SymbolPropertyBinderUBO', () => {
             const layer = createTestLayer({'text-opacity': 0.5});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
 
-            const cv1 = binder.getConstantUniformValues(10);
-            const cv2 = binder.getConstantUniformValues(10);
+            const cv1 = binder.getConstantUniformValues();
+            const cv2 = binder.getConstantUniformValues();
 
             expect(cv1).toBe(cv2); // exact same reference — no recompute
         });
@@ -535,26 +542,22 @@ describe('SymbolPropertyBinderUBO', () => {
             const layer = createTestLayer({'text-opacity': 0.5});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
 
-            const cv1 = binder.getConstantUniformValues(10, 0.5);
-            const cv2 = binder.getConstantUniformValues(10, 0.9);
+            const cv1 = binder.getConstantUniformValues(0.5);
+            const cv2 = binder.getConstantUniformValues(0.9);
 
             expect(cv1).not.toBe(cv2); // different brightness → recompute
         });
 
-        test('cache is invalidated when updateDynamicExpressions reassigns the layer', () => {
+        test('cache is invalidated when the layer paint is recalculated', () => {
             const layer = createTestLayer({'text-opacity': 0.5});
             const binder = new SymbolPropertyBinderUBO(layer, 10, null, true);
+            binder.getConstantUniformValues();
 
-            const cv1 = binder.getConstantUniformValues(10);
-            expect(binder.cachedConstantUniforms).not.toBeNull();
+            layer.setPaintProperty('text-opacity', 0.25);
+            layer.updateTransitions({transition: {duration: 0, delay: 0}, now: 0});
+            layer.recalculate(new EvaluationParameters(0), []);
 
-            // Simulate a layer update — sets cachedConstantUniforms to null
-            const canonical = new CanonicalTileID(0, 0, 0);
-            binder.updateDynamicExpressions(layer, null, canonical, [], {});
-            expect(binder.cachedConstantUniforms).toBeNull();
-
-            const cv2 = binder.getConstantUniformValues(10);
-            expect(cv1).not.toBe(cv2); // cache was cleared → new object
+            expect(binder.getConstantUniformValues().opacity).toBeCloseTo(0.25, 5);
         });
     });
 

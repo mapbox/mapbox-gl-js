@@ -97,12 +97,12 @@ export function getBlockIndicesTemplate(propsDwords: number): Uint32Array {
  *                           line addresses its properties buffer directly with no indirection,
  *                           since it has no appearance concept to deduplicate)
  *
- * Binding points: batchIndex*n (header), batchIndex*n+1 (properties), and, when present,
- * batchIndex*n+2 (indices), where n = _bindingsPerBatch() (2 or 3).
+ * Binding points: 0 (header), 1 (properties), and, when present, 2 (indices), shared by every batch
+ * since each draw call binds exactly one batch.
  *
  * Constant properties are NOT stored here — they are passed as uniforms at draw time.
  *
- * Subclasses supply their own header size, property count, binding count, and per-property
+ * Subclasses supply their own header size, property count, block names, and per-property
  * flat-buffer copy logic through the abstract hooks below; everything else — buffer allocation,
  * dirty tracking, upload, bind, destroy — is identical across layers.
  */
@@ -136,12 +136,6 @@ export abstract class PaintPropertiesUBO {
     // 2 names (header, properties) when the layer has no indirection block (line); 3 (header,
     // properties, indices) when it does (symbol).
     protected abstract _blockNames(): readonly [string, string] | readonly [string, string, string];
-    // Number of consecutive UBO binding points this layer's UBO occupies per batch — 3 when
-    // _blockNames() includes an index block, 2 otherwise. Default matches the 3-block shape;
-    // line overrides it.
-    protected _bindingsPerBatch(): number {
-        return 3;
-    }
 
     constructor(context: Context | null, batchIndex: number, uboSizeDwords: number, header: Uint32Array) {
         this.batchIndex = batchIndex;
@@ -305,8 +299,9 @@ export abstract class PaintPropertiesUBO {
     /**
      * Bind all of this layer's UBOs to their binding points for the given shader program.
      *
-     * Binding points: batchIndex*n (header), batchIndex*n+1 (properties), and, when this layer
-     * has an indirection block, batchIndex*n+2 (indices) — where n = _bindingsPerBatch().
+     * Binding points: 0 (header), 1 (properties), and, when this layer has an indirection block,
+     * 2 (indices). Every batch reuses them, so the batch count isn't limited by
+     * MAX_UNIFORM_BUFFER_BINDINGS.
      */
     bind(context: Context, program: WebGLProgram): void {
         const gl = context.gl;
@@ -320,11 +315,10 @@ export abstract class PaintPropertiesUBO {
         };
 
         const blockNames = this._blockNames();
-        const base = this.batchIndex * this._bindingsPerBatch();
-        bindBlock(blockNames[0], this.headerBuffer, base);
-        bindBlock(blockNames[1], this.propertiesBuffer, base + 1);
+        bindBlock(blockNames[0], this.headerBuffer, 0);
+        bindBlock(blockNames[1], this.propertiesBuffer, 1);
         if (blockNames.length === 3) {
-            bindBlock(blockNames[2], this.blockIndicesBuffer, base + 2);
+            bindBlock(blockNames[2], this.blockIndicesBuffer, 2);
         }
     }
 

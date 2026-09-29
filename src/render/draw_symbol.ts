@@ -826,15 +826,13 @@ function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, lay
     const programConfiguration = buffers.uboBinder ? null : buffers.programConfigurations.get(layer.id);
 
     // Set constant paint property uniforms (u_spp_*) for UBO mode.
-    // These are evaluated at the current render zoom so camera (zoom-only) expressions
-    // are up-to-date every frame without requiring a UBO rewrite.
     if (buffers.uboBinder) {
         // 'layer' is omitted from worker→main serialization (see register() in symbol_property_binder_ubo.ts).
         // Reassign the current style layer before any evaluation so paint values are up-to-date.
         buffers.uboBinder.layer = layer;
         const renderZoom = painter.transform.zoom;
         const brightness = painter.style.getBrightness ? painter.style.getBrightness() : null;
-        const cv = buffers.uboBinder.getConstantUniformValues(renderZoom, brightness);
+        const cv = buffers.uboBinder.getConstantUniformValues(brightness);
         uniformValues['u_spp_fill_np_color']     = cv.fill_np_color;
         uniformValues['u_spp_halo_np_color']     = cv.halo_np_color;
         uniformValues['u_spp_opacity']           = cv.opacity;

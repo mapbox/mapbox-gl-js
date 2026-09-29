@@ -5,7 +5,6 @@ import {register} from '../../util/web_worker_transfer';
 
 import type {PossiblyEvaluatedPropertyValue} from '../../style/properties';
 import type {EvaluationContext, ZoomExpression} from './paint_property_binder_ubo';
-import type EvaluationParameters from '../../style/evaluation_parameters';
 import type SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
 import type {Feature, FeatureState} from '../../style-spec/expression';
 import type {FormattedSection} from '../../style-spec/expression/types/formatted';
@@ -73,8 +72,8 @@ export type ConstantUniformValues = {
 export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleLayer, ConstantUniformValues, SymbolPropertiesUBO> {
     isText: boolean;
 
-    constructor(layer: SymbolStyleLayer, zoom: number, lut: LUT | null, isText: boolean, worldview: string = '', maxUniformBufferBindings?: number | null, uboSizeDwords?: number | null) {
-        super(layer, zoom, lut, worldview, maxUniformBufferBindings, uboSizeDwords);
+    constructor(layer: SymbolStyleLayer, zoom: number, lut: LUT | null, isText: boolean, worldview: string = '', uboSizeDwords?: number | null) {
+        super(layer, zoom, lut, worldview, uboSizeDwords);
         this.isText = isText;
         this.allFormattedSections = [];
         this.activeAppearanceByVtIndex = null;
@@ -108,7 +107,7 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
 
         let dataDrivenMask = 0;
         let dzrMask = 0;
-        let cameraMask = 0;
+        let hasConstantsInBlocks = false;
         let dataDrivenOffsetVec4 = 0;
         let allDataDrivenLightConstant = true;
 
@@ -126,13 +125,10 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
             const isDataDriven = layerIsDataDriven || appearanceForceDataDriven;
 
             // Constant properties use u_spp_* uniforms — they get no data-driven block (offset 0).
-            if (!isDataDriven) {
-                const unevaluated = this._layerUnevaluated(name);
-                if (unevaluated && unevaluated.expression && unevaluated.expression.kind === 'camera') cameraMask |= (1 << i);
-                continue;
-            }
+            if (!isDataDriven) continue;
 
             dataDrivenMask |= (1 << i);
+            if (!layerIsDataDriven) hasConstantsInBlocks = true;
 
             // Examine the zoom ranges that can drive this property across the layer paint and every
             // appearance overriding it. This is internal bookkeeping only (decides what
@@ -185,17 +181,16 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
         this.header[HEADER_BLOCK_SIZE_VEC4] = dataDrivenOffsetVec4;
 
         this.isLightConstant = allDataDrivenLightConstant;
-        this.cameraMask = cameraMask;
+        this.hasConstantsInBlocks = hasConstantsInBlocks;
     }
 
     /**
-     * Refresh sharedZoomRanges and cameraMask from the current layer's unevaluated expressions.
+     * Refresh sharedZoomRanges from the current layer's unevaluated expressions.
      * Called after a runtime property change
      */
     protected _recomputeSharedRanges(): void {
         const floorZoom = this._floorZoom;
         const names = PROP_NAMES[+this.isText];
-        let cameraMask = 0;
         let colorHeaderChanged = false;
 
         for (let i = 0; i < PROP_COUNT; i++) {
@@ -205,10 +200,7 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
             const isZoomDep = dep !== ZOOM_INDEPENDENT;
             const hasAppearanceZoomStops = dep === ZOOM_DIFFERENT_RANGES;
 
-            if (!isDataDriven) {
-                const unevaluated = this._layerUnevaluated(name);
-                if (unevaluated && unevaluated.expression && unevaluated.expression.kind === 'camera') cameraMask |= (1 << i);
-            } else if (isZoomDep && !hasAppearanceZoomStops) {
+            if (isDataDriven && isZoomDep && !hasAppearanceZoomStops) {
                 // Appearance-zoom-stops properties skip this because their per-feature
                 // [zm, zM] is recomputed in evaluateAllProperties._writeZoomRange.
                 const zoom = this._collectZoomSignatures(name as keyof AppearancePaintProps, floorZoom);
@@ -226,7 +218,6 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
             }
         }
 
-        this.cameraMask = cameraMask;
         // The header buffer is shared by reference across every batch's UBO, so a color's shared-
         // zoom slot changing here must be re-uploaded on the next upload() for every batch.
         if (colorHeaderChanged) {
@@ -448,17 +439,17 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
     /**
      * Build the u_spp_* constant-property uniform values from the current layer.
      */
-    protected _buildConstantUniforms(renderParams: EvaluationParameters | null, emptyFeature: Feature, brightness: number | null | undefined): ConstantUniformValues {
+    protected _buildConstantUniforms(brightness: number | null | undefined): ConstantUniformValues {
         const names = PROP_NAMES[+this.isText];
         return {
-            'fill_np_color': this._constantColor(0, names[0], renderParams, emptyFeature, brightness, [0, 0, 0, 1]),
-            'halo_np_color': this._constantColor(1, names[1], renderParams, emptyFeature, brightness, [0, 0, 0, 1]),
-            opacity: this._constantFloat(2, names[2], renderParams, emptyFeature, 1.0),
-            'halo_width': this._constantFloat(3, names[3], renderParams, emptyFeature, 0.0),
-            'halo_blur': this._constantFloat(4, names[4], renderParams, emptyFeature, 0.0),
-            'emissive_strength': this._constantFloat(5, names[5], renderParams, emptyFeature, 0.0),
-            'occlusion_opacity': this._constantFloat(6, names[6], renderParams, emptyFeature, 1.0),
-            'z_offset': this._constantFloat(7, names[7], renderParams, emptyFeature, 0.0),
+            'fill_np_color': this._constantColor(names[0], brightness, [0, 0, 0, 1]),
+            'halo_np_color': this._constantColor(names[1], brightness, [0, 0, 0, 1]),
+            opacity: this._constantFloat(names[2], 1.0),
+            'halo_width': this._constantFloat(names[3], 0.0),
+            'halo_blur': this._constantFloat(names[4], 0.0),
+            'emissive_strength': this._constantFloat(names[5], 0.0),
+            'occlusion_opacity': this._constantFloat(names[6], 1.0),
+            'z_offset': this._constantFloat(names[7], 0.0),
         };
     }
 }
@@ -466,4 +457,4 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
 // 'layer' is omitted because SymbolStyleLayer is not serializable. It must be re-assigned on
 // the main thread before any main-thread method (getConstantUniformValues, bind, etc.) is called.
 // See draw_symbol.ts: `buffers.uboBinder.layer = layer` before drawSymbolElements().
-register(SymbolPropertyBinderUBO, 'SymbolPropertyBinderUBO', {omit: ['layer', 'cachedConstantUniforms', 'cachedConstantRenderZoom', 'cachedConstantBrightness', 'cachedConstantPaint', 'activeAppearanceByVtIndex', 'featureVertexRangesFromId', 'featureVertexRangesFromVtIndex']});
+register(SymbolPropertyBinderUBO, 'SymbolPropertyBinderUBO', {omit: ['layer', 'cachedConstantUniforms', 'cachedConstantBrightness', 'cachedConstantPaint', 'activeAppearanceByVtIndex', 'featureVertexRangesFromId', 'featureVertexRangesFromVtIndex']});

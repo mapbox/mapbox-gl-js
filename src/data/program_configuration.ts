@@ -800,7 +800,9 @@ export class ProgramConfigurationSet<Layer extends TypedStyleLayer> {
 
     updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layers: ReadonlyArray<TypedStyleLayer>, availableImages: ImageId[], imagePositions: SpritePositions, isBrightnessChanged: boolean, brightness?: number | null, worldview?: string) {
         for (const layer of layers) {
-            this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, this._featureMap, this._featureMapWithoutIds, vtLayer, layer, availableImages, imagePositions, isBrightnessChanged, brightness || 0, worldview) || this.needsUpload;
+            const pc = this.programConfigurations[layer.id];
+            if (!pc) continue;
+            this.needsUpload = pc.updatePaintArrays(featureStates, this._featureMap, this._featureMapWithoutIds, vtLayer, layer, availableImages, imagePositions, isBrightnessChanged, brightness || 0, worldview) || this.needsUpload;
         }
     }
 
