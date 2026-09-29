@@ -18,14 +18,22 @@ function handleOperation(map, operations, opIndex, doneCb) {
 
 const MIN_FRAMES = 1;
 
+function setTimer(ms) {
+    renderTestNow.current = ms;
+    mapboxgl.setNow(renderTestNow.current);
+}
+
 export const operationHandlers = {
     wait(map, params, doneCb) {
         if (params.length) {
-            renderTestNow.current += params[0];
-            mapboxgl.setNow(renderTestNow.current);
+            setTimer(renderTestNow.current + params[0]);
         }
 
         waitForRender(map, () => map.loaded(), doneCb);
+    },
+    setTimer(map, params, doneCb) {
+        setTimer(params[0]);
+        doneCb();
     },
     forceContextRestart(map, params, doneCb) {
         const canvas = map.getCanvas();
