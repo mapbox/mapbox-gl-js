@@ -402,6 +402,27 @@ describe('SourceCache#removeTile', () => {
         expect(unload).toEqual(1);
     });
 
+    test('does not set reload timer for aborted tile', () => {
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+        let loadCallback;
+
+        const {sourceCache} = createSourceCache({
+            loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                tile.setExpiryData({expires: new Date(Date.now() + 3600 * 1000).toUTCString()});
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                loadCallback = callback;
+            }
+        });
+
+        sourceCache._addTile(tileID);
+        sourceCache._removeTile(tileID.key);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        loadCallback(null);
+
+        expect(sourceCache._timers[tileID.key]).toBeFalsy();
+    });
+
     test('_tileLoaded after _removeTile skips tile.added', () => {
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
 

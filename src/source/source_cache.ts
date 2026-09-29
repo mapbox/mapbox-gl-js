@@ -301,6 +301,10 @@ class SourceCache extends Evented {
     }
 
     _tileLoaded(tile: Tile, id: number, previousState: TileState, err?: Error | null, data?: LoadVectorTileResult | null) {
+        // Sources call back with no error for aborted tiles; these are already unloaded and out of the
+        // pyramid, so arming a reload timer for them would leak it past clearTiles() and retain the map.
+        if (tile.aborted) return;
+
         if (err) {
             tile.state = 'errored';
             if (isHttpNotFound(err)) {

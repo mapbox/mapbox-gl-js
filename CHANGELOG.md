@@ -1,6 +1,7 @@
 ## Unreleased
 
 - Respect `extra_bounds` on all TileJSON source types.
+- Fix a regression with `map.remove()` where it could retain the map instance in memory.
 
 ## 3.32.0-rc.1
 
