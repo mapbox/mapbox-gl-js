@@ -2,6 +2,7 @@
 
 - Respect `extra_bounds` on all TileJSON source types.
 - Fix a regression with `map.remove()` where it could retain the map instance in memory.
+- Fix light/fog/snow/rain transitions.
 
 ## 3.32.0-rc.1
 

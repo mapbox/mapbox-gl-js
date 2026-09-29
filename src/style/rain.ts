@@ -38,11 +38,14 @@ class Rain extends Evented {
 
         const rainProperties = getProperties();
 
-        this._transitionable = new Transitionable(rainProperties, scope, configOptions);
-        this.set(rainOptions, configOptions);
-        this._transitioning = this._transitionable.untransitioned();
+        // Take a defensive snapshot of `configOptions` rather than holding a
+        // live reference to it. `updateConfig`/`resetConfig` below are called
+        // with a fresh snapshot on every config change
+        this._transitionable = new Transitionable(rainProperties, scope, new Map(configOptions));
         this.properties = new PossiblyEvaluated(rainProperties);
         this.scope = scope;
+        this.set(rainOptions);
+        this.resetConfig(configOptions);
     }
 
     get state(): RainState {
@@ -88,11 +91,20 @@ class Rain extends Evented {
         }
 
         this._options = properties;
-        this._transitionable.setTransitionOrValue(this._options, configOptions);
+        this._transitionable.setTransitionOrValue(this._options, configOptions ? new Map(configOptions) : undefined);
     }
 
     updateConfig(configOptions?: ConfigOptions | null) {
-        this._transitionable.setTransitionOrValue(this._options, configOptions);
+        this._transitionable.setTransitionOrValue(this._options, new Map(configOptions));
+    }
+
+    // Like `updateConfig`, but also resets `_transitioning` to the freshly-updated value,
+    // skipping any transition. Used by the constructor (there is no prior visible state
+    // to transition from yet) and at initial style load, where the constructor-time config
+    // snapshot may be missing options from sibling imports that hadn't loaded yet.
+    resetConfig(configOptions?: ConfigOptions | null) {
+        this.updateConfig(configOptions);
+        this._transitioning = this._transitionable.untransitioned();
     }
 
     updateTransitions(parameters: TransitionParameters) {

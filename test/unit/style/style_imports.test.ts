@@ -3212,7 +3212,7 @@ describe('Style initial config load', () => {
         expect(layer.getLayoutProperty('visibility')).toEqual('visible');
     });
 
-    test('Config-dependent fog property is evaluated against the live config map', async () => {
+    test('Config-dependent fog property is evaluated against the current config value', async () => {
         const {style} = newStubStyle();
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -3246,13 +3246,109 @@ describe('Style initial config load', () => {
         style.update(new EvaluationParameters(0));
         expect(style.fog.properties.get('range')).toEqual([1, 5]);
 
-        // Mutating config at runtime must flow through to fog without us
-        // having to rebuild the Fog instance — verifies the live-reference
-        // wiring matches what `StyleLayer` does.
+        // Mutating config at runtime must flow through to fog. Unlike a style
+        // layer, `Fog` does *not* hold a live reference to `style.options` —
+        // `Style#updateConfigDependencies` explicitly calls `fog.updateConfig()`
+        // with a fresh snapshot on every config change (see `Fog#updateConfig`),
+        // which is what lets a config-driven fog transition interpolate from the
+        // old value instead of both ends of the transition reading the same,
+        // already-mutated map.
         style.setConfigProperty('standard', 'fogStart', 2);
         style.setConfigProperty('standard', 'fogEnd', 8);
         style.update(new EvaluationParameters(0));
         expect(style.fog.properties.get('range')).toEqual([2, 8]);
+    });
+
+    test('Config-dependent ambient light intensity transitions instead of jumping', async () => {
+        // Regression test for a bug where switching a config option driving
+        // `lights` (e.g. Standard's `lightPreset`) jumped instantly instead of
+        // easing, because `Lights` held a live reference to `style.options`:
+        // the "prior" value's expression and the "final" value's expression
+        // both read the same already-mutated map, so they always evaluated to
+        // the same result and nothing animated.
+        const {style} = newStubStyle();
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const initialStyle = createStyleJSON({
+            transition: {duration: 1000, delay: 0},
+            imports: [{
+                id: 'standard',
+                url: '/standard.json',
+                config: {preset: 'day'},
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                data: createStyleJSON({
+                    lights: [
+                        {
+                            type: 'ambient',
+                            id: 'environment',
+                            properties: {intensity: ['match', ['config', 'preset'], 'night', 0, 1]}
+                        },
+                        {
+                            type: 'directional',
+                            id: 'sun',
+                            properties: {intensity: 0, direction: [0, 0]}
+                        }
+                    ],
+                    schema: {preset: {default: 'day'}}
+                })
+            }]
+        });
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(initialStyle);
+        await waitFor(style, "style.load");
+
+        const transition = {duration: 1000, delay: 0};
+        style.update(new EvaluationParameters(0, {now: 0, transition}));
+        expect(style.ambientLight.properties.get('intensity')).toBe(1);
+
+        style.setConfigProperty('standard', 'preset', 'night');
+
+        // The first `update` after the config change sets up the transition
+        // (prior = 1, final = 0); a later one, mid-transition, must report a
+        // value strictly between the two — not the end value early.
+        style.update(new EvaluationParameters(0, {now: 0, transition}));
+        style.update(new EvaluationParameters(0, {now: 500, transition}));
+        const midIntensity = style.ambientLight.properties.get('intensity');
+        expect(midIntensity).toBeGreaterThan(0);
+        expect(midIntensity).toBeLessThan(1);
+
+        style.update(new EvaluationParameters(0, {now: 1000, transition}));
+        expect(style.ambientLight.properties.get('intensity')).toBe(0);
+    });
+
+    test('Initial load refreshes env config without a full updateConfigDependencies pass', async () => {
+        // `Fog`/`Lights`/`Snow`/`Rain` take a defensive snapshot of the config
+        // map instead of a live reference (unlike style layers), so on initial
+        // load they must still be explicitly refreshed once imports have
+        // settled — otherwise they'd be stuck with whatever snapshot existed
+        // at construction time, before sibling imports populated
+        // `style.options`. `Style#_reloadImports`'s `initialLoad` branch must
+        // therefore call `_updateEnvConfig()` even though it skips the full
+        // (and, for layers, redundant) `updateConfigDependencies()` pass.
+        const {style} = newStubStyle();
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const initialStyle = createStyleJSON({
+            imports: [{
+                id: 'standard',
+                url: '/standard.json',
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                data: createStyleJSON({
+                    fog: {range: [0, 10], color: 'white', 'horizon-blend': 0.1}
+                })
+            }]
+        });
+
+        const updateConfigDependenciesSpy = vi.spyOn(style, 'updateConfigDependencies');
+        const updateEnvConfigSpy = vi.spyOn(style, '_updateEnvConfig');
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(initialStyle);
+        await waitFor(style, "style.load");
+
+        expect(updateConfigDependenciesSpy).not.toHaveBeenCalled();
+        expect(updateEnvConfigSpy).toHaveBeenCalled();
     });
 
     test('Cross-fragment config references resolve in every setLayers broadcast', async () => {
@@ -3315,6 +3411,114 @@ describe('Style initial config load', () => {
             expect(call.optionKeys).toContain(hasBKey);
             expect(call.optionKeys).toContain(bEnabledKey);
         }
+    });
+
+    test('Ambient light referencing a not-yet-loaded nested import resolves without a transition', async () => {
+        // Regression test for the `imports/config-reference` render test.
+        // `lights` on a fragment is constructed (`setLights`, during `_load`)
+        // before that same fragment's own nested imports have resolved
+        // (`_loadImports` runs after `proceedWithStyleLoad`). So `Lights`'s
+        // config snapshot, taken at construction time, is missing the nested
+        // import's config. `_updateEnvConfig('reset')` in `_reloadImports`'s
+        // initial-load branch refreshes the snapshot afterwards — but it must
+        // also reset `_transitioning`, not just `_transitionable`, or
+        // `recalculate()` keeps reading the stale (pre-nested-import) value.
+        const {style} = newStubStyle();
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const initialStyle = createStyleJSON({
+            imports: [{
+                id: 'basemap',
+                url: '/basemap.json',
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                data: createStyleJSON({
+                    lights: [
+                        {
+                            type: 'ambient',
+                            id: 'environment',
+                            properties: {intensity: ['match', ['config', 'preset', 'nested'], 'night', 0, 1]}
+                        },
+                        {
+                            type: 'directional',
+                            id: 'sun',
+                            properties: {intensity: 0, direction: [0, 0]}
+                        }
+                    ],
+                    imports: [{
+                        id: 'nested',
+                        url: '/nested.json',
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                        data: createStyleJSON({schema: {preset: {default: 'night'}}})
+                    }]
+                })
+            }]
+        });
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(initialStyle);
+        await waitFor(style, 'style.load');
+
+        style.update(new EvaluationParameters(0));
+
+        // Must resolve against the nested import's `preset: night` default,
+        // not the value the snapshot saw at construction time (no `preset`
+        // key at all, so `match` falls through to its default branch, 1).
+        expect(style.ambientLight.properties.get('intensity')).toBe(0);
+        // And it must snap directly to that value rather than transitioning
+        // from the stale one — there is no earlier visible state to animate
+        // from at initial load.
+        expect(style.ambientLight.hasTransition()).toBe(false);
+    });
+
+    test('Runtime setFog keeps a defensive config snapshot so a later config change transitions instead of jumping', async () => {
+        // Regression test: `Fog#set` used to pass the live `configOptions` map
+        // straight through to `setTransitionOrValue`, which stores it as the
+        // new `_options` map (`properties.ts`'s `Transitionable#setTransitionOrValue`).
+        // The next config change would then mutate that same live map in place,
+        // so both the "prior" and "final" side of the transition read the
+        // already-mutated value and nothing animated.
+        const {style} = newStubStyle();
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const initialStyle = createStyleJSON({
+            transition: {duration: 1000, delay: 0},
+            imports: [{
+                id: 'standard',
+                url: '/standard.json',
+                config: {preset: 'day'},
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                data: createStyleJSON({
+                    schema: {preset: {default: 'day'}}
+                })
+            }]
+        });
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(initialStyle);
+        await waitFor(style, 'style.load');
+
+        style.setFog({
+            range: [0, 10],
+            color: ['match', ['config', 'preset', 'standard'], 'night', 'black', 'white'],
+            'horizon-blend': 0
+        });
+
+        const transition = {duration: 1000, delay: 0};
+        style.update(new EvaluationParameters(0, {now: 0, transition}));
+        expect(style.fog.properties.get('color').toString()).toBe('rgba(255,255,255,1)');
+
+        style.setConfigProperty('standard', 'preset', 'night');
+
+        style.update(new EvaluationParameters(0, {now: 0, transition}));
+        style.update(new EvaluationParameters(0, {now: 500, transition}));
+        const midColor = style.fog.properties.get('color');
+        // Mid-transition, the color must be strictly between white and black —
+        // not already snapped to black.
+        expect(midColor.r).toBeGreaterThan(0);
+        expect(midColor.r).toBeLessThan(1);
+
+        style.update(new EvaluationParameters(0, {now: 1000, transition}));
+        expect(style.fog.properties.get('color').toString()).toBe('rgba(0,0,0,1)');
     });
 });
 

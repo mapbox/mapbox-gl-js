@@ -892,6 +892,20 @@ class Style extends Evented<MapEvents> {
         this._updateMapProjection();
         if (!initialLoad) {
             this.updateConfigDependencies();
+        } else {
+            // Layers already hold live references to `this.options` (see
+            // `_reloadImports`'s broadcast comment below), so config values are
+            // baked in without a redundant `updateConfigDependencies()` pass.
+            // Lights/fog/snow/rain take their own defensive copy of the config
+            // map instead (needed so config-driven transitions can interpolate
+            // between an old and a new snapshot rather than seeing the same
+            // live map on both ends), so they still
+            // need this explicit refresh: at construction time, sibling
+            // imports may not have populated `this.options` yet. Reset (rather
+            // than transition) their `_transitioning` state: there is no
+            // earlier *visible* value to animate from, so snapping to the
+            // now-correct config value is the right initial-load behavior.
+            this._updateEnvConfig('reset');
         }
         this._updateLayers(this._dependentLayerIds((deps) => deps.isIndoorDependent));
         this.map._triggerCameraUpdate(this.camera);
@@ -3043,30 +3057,43 @@ class Style extends Evented<MapEvents> {
         return ids;
     }
 
+    // Refreshes lights/fog/snow/rain against the current `this.options` config
+    // snapshot. Each of those classes takes its own defensive copy of the
+    // config map, so this must be called whenever `this.options` changes
+    // for their config-driven properties (including data-driven transitions)
+    // to pick up the new values. `mode: 'reset'` (see call sites) uses each
+    // object's `resetConfig` instead of `updateConfig`, which additionally
+    // skips any transition and snaps straight to the new value.
+    _updateEnvConfig(mode: 'update' | 'reset' = 'update') {
+        const method = mode === 'reset' ? 'resetConfig' : 'updateConfig';
+
+        if (this.ambientLight) {
+            this.ambientLight[method](this.options);
+        }
+
+        if (this.directionalLight) {
+            this.directionalLight[method](this.options);
+        }
+
+        if (this.fog) {
+            this.fog[method](this.options);
+        }
+
+        if (this.snow) {
+            this.snow[method](this.options);
+        }
+
+        if (this.rain) {
+            this.rain[method](this.options);
+        }
+    }
+
     updateConfigDependencies(configKey?: string) {
         this._updateLayers(this._dependentLayerIds((deps) => {
             return configKey ? deps.hasConfigDependency(configKey) : deps.isConfigDependent;
         }));
 
-        if (this.ambientLight) {
-            this.ambientLight.updateConfig(this.options);
-        }
-
-        if (this.directionalLight) {
-            this.directionalLight.updateConfig(this.options);
-        }
-
-        if (this.fog) {
-            this.fog.updateConfig(this.options);
-        }
-
-        if (this.snow) {
-            this.snow.updateConfig(this.options);
-        }
-
-        if (this.rain) {
-            this.rain.updateConfig(this.options);
-        }
+        this._updateEnvConfig();
 
         this.forEachFragmentStyle((style: Style) => {
             const colorTheme = style._styleColorTheme.colorThemeOverride ? style._styleColorTheme.colorThemeOverride : style._styleColorTheme.colorTheme;
