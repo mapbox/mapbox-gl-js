@@ -68,6 +68,16 @@ describe('CustomSource', () => {
         });
     });
 
+    test('respects bounds above the default maxzoom', () => {
+        const {source} = createSource({
+            async loadTile() {},
+            bounds: [-47, -7, -45, -5],
+            maxzoom: 24
+        });
+
+        expect(source.hasTile(new OverscaledTileID(23, 0, 23, 3122426, 4334370))).toBe(true);
+    });
+
     test('fires "dataloading" event', async () => {
         const {source, eventedParent} = createSource({
             async loadTile() {}

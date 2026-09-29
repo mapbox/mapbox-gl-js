@@ -650,13 +650,6 @@ class SourceCache extends Evented {
                 isTerrainDEM: this.usedForTerrain,
                 calculateQuadrantVisibility: isBatchedModelType
             });
-
-            if (this._source.hasTile) {
-
-                const hasTile = this._source.hasTile.bind(this._source);
-
-                idealTileIDs = idealTileIDs.filter((coord) => hasTile(coord));
-            }
         }
 
         if (idealTileIDs.length > 0 && this.transform.projection.name !== 'globe' &&
@@ -709,6 +702,10 @@ class SourceCache extends Evented {
         for (const id in this._tiles) {
             const tile = this._tiles[id];
             tile.dashIdealZ = tile.tileID.overscaledZ;
+        }
+
+        if (this._source.hasTile) {
+            idealTileIDs = idealTileIDs.filter((coord) => this._source.hasTile(coord));
         }
 
         // Retain is a list of tiles that we shouldn't delete, even if they are not

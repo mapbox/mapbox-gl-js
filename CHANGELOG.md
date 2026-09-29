@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Respect `extra_bounds` on all TileJSON source types.
+
 ## 3.32.0-rc.1
 
 ### Features and improvements ✨

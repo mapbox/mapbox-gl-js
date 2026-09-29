@@ -17,15 +17,16 @@ function contains(bounds: LngLatBounds, tileID: CanonicalTileID): boolean {
 }
 
 class TileBounds {
-    bounds?: LngLatBounds;
-    extraBounds?: LngLatBounds[];
-    minzoom: number;
-    maxzoom: number;
+    readonly bounds: LngLatBounds | null;
+    readonly extraBounds: LngLatBounds[] | null;
+    readonly minzoom: number;
+    readonly maxzoom: number;
 
-    constructor(bounds?: [number, number, number, number] | null, minzoom?: number | null, maxzoom?: number | null) {
-        this.bounds = bounds ? LngLatBounds.convert(this.validateBounds(bounds)) : null;
-        this.minzoom = minzoom || 0;
-        this.maxzoom = maxzoom || 24;
+    constructor(tileJSON: Pick<TileJSON, 'bounds' | 'extra_bounds' | 'minzoom' | 'maxzoom'>) {
+        this.bounds = tileJSON.bounds ? LngLatBounds.convert(this.validateBounds(tileJSON.bounds)) : null;
+        this.extraBounds = tileJSON.extra_bounds && tileJSON.extra_bounds.length > 0 ? tileJSON.extra_bounds.map(b => LngLatBounds.convert(this.validateBounds(b))) : null;
+        this.minzoom = tileJSON.minzoom || 0;
+        this.maxzoom = tileJSON.maxzoom || 24;
     }
 
     // left, bottom, right, top
@@ -33,15 +34,6 @@ class TileBounds {
         // make sure the bounds property contains valid longitude and latitudes
         if (!Array.isArray(bounds) || bounds.length !== 4) return [-180, -90, 180, 90];
         return [Math.max(-180, bounds[0]), Math.max(-90, bounds[1]), Math.min(180, bounds[2]), Math.min(90, bounds[3])];
-    }
-
-    addExtraBounds(extraBounds?: [number, number, number, number][] | null) {
-        if (!extraBounds) return;
-        if (!this.extraBounds) this.extraBounds = [];
-
-        for (const bounds of extraBounds) {
-            this.extraBounds.push(LngLatBounds.convert(this.validateBounds(bounds)));
-        }
     }
 
     contains(tileID: CanonicalTileID): boolean {
@@ -64,15 +56,6 @@ class TileBounds {
         }
 
         return false;
-    }
-
-    static fromTileJSON(tileJSON: Partial<TileJSON>): TileBounds | null {
-        if (!tileJSON.bounds && !tileJSON.extra_bounds) return null;
-
-        const tileBounds = new TileBounds(tileJSON.bounds, tileJSON.minzoom, tileJSON.maxzoom);
-        tileBounds.addExtraBounds(tileJSON.extra_bounds);
-
-        return tileBounds;
     }
 }
 

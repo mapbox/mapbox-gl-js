@@ -2144,6 +2144,44 @@ describe('Visible coords with shadows', () => {
     });
 });
 
+test('applies Source#hasTile to shadow caster tiles', async () => {
+    const transform = new Transform();
+    transform.resize(512, 512);
+    transform.center = new LngLat(40.7125638, -74.0052634);
+    transform.zoom = 19.7;
+    transform.pitch = 69;
+    transform.bearing = 39.2;
+
+    const {sourceCache, eventedParent} = createSourceCache({
+        reparseOverscaled: true,
+        maxzoom: 16,
+        hasTile: (id: OverscaledTileID) => id.canonical.x !== 40178,
+        loadTile(tile, callback) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            tile.state = 'loaded';
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            callback(null);
+        }
+    });
+    sourceCache.updateCacheSize(transform);
+    sourceCache.castsShadows = true;
+
+    await new Promise(resolve => {
+        eventedParent.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform, 512, false, [0.25, -0.433, -0.866]);
+                expect(sourceCache.getIds().sort()).toStrictEqual([
+                    new OverscaledTileID(19, 0, 16, 40179, 32769).key,
+                    new OverscaledTileID(19, 0, 16, 40179, 32768).key,
+                    new OverscaledTileID(19, 0, 16, 40179, 32767).key,
+                ].sort());
+                resolve();
+            }
+        });
+        sourceCache.getSource().onAdd();
+    });
+});
+
 test('sortCoordinatesByDistance', () => {
     const transform = new Transform();
     transform.resize(512, 512);

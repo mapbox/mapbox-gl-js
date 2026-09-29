@@ -535,6 +535,8 @@ export type ModelSourceSpecification = {
     "maxzoom"?: number,
     "minzoom"?: number,
     "tiles"?: Array<string>,
+    "bounds"?: [number, number, number, number],
+    "extra_bounds"?: Array<[number, number, number, number]>,
     "models"?: ModelSourceModelsSpecification
 };
 
