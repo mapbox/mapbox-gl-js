@@ -85,6 +85,15 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         }
     }
 
+    if (painter.depthPrepassPhase) {
+        if (!rtt) {
+            const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+            drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, ColorMode.disabled, conflateLayer);
+        }
+        PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_RENDERING, `FillExtrusion.draw(depth-prepass)`, "FillExtrusion", perfStartTime);
+        return;
+    }
+
     if (painter.renderPass === 'shadow' && painter.shadowRenderer) {
         const shadowRenderer = painter.shadowRenderer;
         if (terrain) {
@@ -110,21 +119,26 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         if (!rtt && color.a !== 0.0) {
             const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
+            // Fully opaque, unpatterned extrusions write depth and color in a single pass.
             if (opacity === 1 && noPattern) {
                 drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, ColorMode.unblended, conflateLayer);
             } else {
                 // Draw transparent buildings in two passes so that only the closest surface is drawn.
-                // First draw all the extrusions into only the depth buffer. No colors are drawn.
-                drawExtrusionTiles(painter, source, layer, coords, depthMode,
-                    StencilMode.disabled,
-                    ColorMode.disabled,
-                    conflateLayer);
+                // First draw all the extrusions into only the depth buffer. No colors are drawn. A
+                // grouped depth prepass already did this for the whole group of layers.
+                if (!painter.hasGrouped3DDepthPrepass(painter.currentLayer)) {
+                    drawExtrusionTiles(painter, source, layer, coords, depthMode,
+                        StencilMode.disabled,
+                        ColorMode.disabled,
+                        conflateLayer);
+                }
 
                 // Then draw all the extrusions a second type, only coloring fragments if they have the
                 // same depth value as the closest fragment in the previous pass. Use the stencil buffer
-                // to prevent the second draw in cases where we have coincident polygons.
+                // to prevent the second draw in cases where we have coincident polygons. Polygons in
+                // another layer of the group share the stencil id, thus they also blend one time only.
                 drawExtrusionTiles(painter, source, layer, coords, depthMode,
-                    painter.stencilModeFor3D(),
+                    painter.stencilModeFor3DGroup(painter.currentLayer),
                     painter.colorModeForRenderPass(),
                     conflateLayer);
 

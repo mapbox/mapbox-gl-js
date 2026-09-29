@@ -7,6 +7,7 @@ import Point from '@mapbox/point-geometry';
 import {vec3, vec4} from 'gl-matrix';
 import EXTENT from '../../style-spec/data/extent';
 import {Point3D} from '../../util/line_clipping';
+import Color from '../../style-spec/util/color';
 
 import type {Layout, Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {CanonicalTileID} from '../../source/tile_id';
@@ -51,6 +52,12 @@ class FillExtrusionStyleLayer extends StyleLayer {
 
     override is3D(terrainEnabled?: boolean): boolean {
         return true;
+    }
+
+    override hasBlended3DDepthPrepass(): boolean {
+        const opacity = this.paint.get('fill-extrusion-opacity');
+        if (opacity <= 0 || opacity >= 1) return false;
+        return this.paint.get('fill-extrusion-color').constantOr(Color.white).a !== 0;
     }
 
     override hasShadowPass(): boolean {

@@ -69,6 +69,11 @@ class BuildingStyleLayer extends StyleLayer {
         return true;
     }
 
+    override hasBlended3DDepthPrepass(): boolean {
+        const opacity = this.paint.get('building-opacity');
+        return opacity > 0 && opacity < 1 && this.paint.get('building-vertical-scale') > 0;
+    }
+
     override queryRadius(bucket: Bucket): number {
         return 0;
     }

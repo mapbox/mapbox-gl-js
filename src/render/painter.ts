@@ -169,6 +169,11 @@ const draw: Record<CoreStyleLayer['type'], DrawStyleLayer> & Partial<Record<HDSt
     custom,
 };
 
+// Highest stencil ref that the per-frame allocator can give. The stencil buffer has 8 bits. The
+// ground effect passes of the fill-extrusion and building layers use 0xFF and 0xFE as fixed refs,
+// so the allocator must not give these two values. The value 0 means "not written".
+const MAX_STENCIL_ID = 0xFD;
+
 const prepare: Partial<Record<CoreStyleLayer['type'] | HDStyleLayer['type'] | StandardStyleLayer['type'], PrepareStyleLayer>> = {
     line: prepareLine,
     raster: prepareRaster,
@@ -255,6 +260,11 @@ class Painter {
     _customRenderArgsFrameCounter?: number;
     currentStencilSource: string | null | undefined;
     currentShadowCascade!: number;
+    // If true, blended 3D layers draw to the depth buffer only.
+    depthPrepassPhase: boolean;
+    _grouped3DDepthPrepassStart: number;
+    _grouped3DDepthPrepassEnd: number;
+    _grouped3DStencil: StencilMode | null;
     _shadowCullCache: ShadowCullCache | null;
     nextStencilID!: number;
     id!: string;
@@ -439,6 +449,10 @@ class Painter {
         this.lastPaintStartTimeStamp = 0;
         this._shadowCullCache = null;
         this._backgroundTiles = {};
+        this.depthPrepassPhase = false;
+        this._grouped3DDepthPrepassStart = -1;
+        this._grouped3DDepthPrepassEnd = -1;
+        this._grouped3DStencil = null;
 
         this.conflationActive = false;
         this.replacementSource = new ReplacementSource();
@@ -653,6 +667,7 @@ class Painter {
         this.nextStencilID = 1;
         this.currentStencilSource = undefined;
         this._tileClippingMaskIDs = {};
+        this._grouped3DStencil = null;
 
         // As a temporary workaround for https://github.com/mapbox/mapbox-gl-js/issues/5490,
         // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
@@ -696,7 +711,7 @@ class Painter {
         const context = this.context;
         const gl = context.gl;
 
-        if (this.nextStencilID + tileIDs.length > 256) {
+        if (this.nextStencilID + tileIDs.length - 1 > MAX_STENCIL_ID) {
             // we'll run out of fresh IDs so we need to clear and start from scratch
             this.clearStencil();
         }
@@ -725,13 +740,88 @@ class Painter {
     stencilModeFor3D(): StencilMode {
         this.currentStencilSource = undefined;
 
-        if (this.nextStencilID + 1 > 256) {
+        if (this.nextStencilID > MAX_STENCIL_ID) {
             this.clearStencil();
         }
 
         const id = this.nextStencilID++;
         const gl = this.context.gl;
         return new StencilMode({func: gl.NOTEQUAL, mask: 0xFF}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
+    }
+
+    /**
+     * A blended 3D layer draws depth first and color second, so that only the closest surface
+     * blends. If each layer does this alone, two adjacent layers on the same buildings blend the
+     * same pixel two times. The result is more opaque than the opacity of each layer.
+     *
+     * This method starts a group at `this.currentLayer`, if two or more such layers follow each
+     * other. All layers in the group draw depth first. The caller then draws them again as usual,
+     * and each layer skips its own depth pass and uses the stencil id of the group.
+     *
+     * The layers in a group must follow each other. If a layer that draws color is between them,
+     * the 3D geometry of a later layer hides it.
+     *
+     * @private
+     */
+    _beginGrouped3DDepthPrepass(
+        orderedLayers: Array<TypedStyleLayer>,
+        coordsForLayer: (layer: TypedStyleLayer, sourceCache?: SourceCache) => Array<OverscaledTileID> | null | undefined,
+    ) {
+        const start = this.currentLayer;
+        if (!orderedLayers[start].hasBlended3DDepthPrepass()) return;
+
+        const groupTypes: string[] = [];
+        let end = start;
+        for (let i = start; i < orderedLayers.length; i++) {
+            const layer = orderedLayers[i];
+            if (layer.isHidden(this.transform.zoom)) continue;
+            if (!layer.hasBlended3DDepthPrepass() || groupTypes.includes(layer.type)) break;
+            groupTypes.push(layer.type);
+            end = i + 1;
+        }
+        if (groupTypes.length < 2) return;
+
+        this._grouped3DDepthPrepassStart = start;
+        this._grouped3DDepthPrepassEnd = end;
+        this._grouped3DStencil = null;
+
+        this.depthPrepassPhase = true;
+        for (this.currentLayer = start; this.currentLayer < end; this.currentLayer++) {
+            const layer = orderedLayers[this.currentLayer];
+            const sourceCache = this.style.getLayerSourceCache(layer);
+            this.renderLayer(this, sourceCache, layer, coordsForLayer(layer, sourceCache));
+        }
+        this.depthPrepassPhase = false;
+        this.currentLayer = start;
+    }
+
+    /**
+     * True if a grouped depth prepass wrote the depth of `layerIndex`. The layer must then skip
+     * its own depth pass.
+     *
+     * @private
+     */
+    hasGrouped3DDepthPrepass(layerIndex: number): boolean {
+        return layerIndex >= this._grouped3DDepthPrepassStart && layerIndex < this._grouped3DDepthPrepassEnd;
+    }
+
+    /**
+     * Stencil mode for the color pass of a blended 3D layer. All layers in a group share one
+     * stencil id. Coincident surfaces in two different layers thus blend one time only, and the
+     * first layer in style order wins. A layer outside a group gets its own id.
+     *
+     * @private
+     */
+    stencilModeFor3DGroup(layerIndex: number): StencilMode {
+        if (!this.hasGrouped3DDepthPrepass(layerIndex)) {
+            return this.stencilModeFor3D();
+        }
+        if (!this._grouped3DStencil) {
+            this._grouped3DStencil = this.stencilModeFor3D();
+        }
+        // stencilModeFor3D() invalidates the tile clipping masks. Do the same for the shared id.
+        this.currentStencilSource = undefined;
+        return this._grouped3DStencil;
     }
 
     stencilModeForClipping(tileID: OverscaledTileID): Readonly<StencilMode> {
@@ -760,7 +850,7 @@ class Painter {
         const stencilValues = coords[0].overscaledZ - minTileZ + 1;
         if (stencilValues > 1) {
             this.currentStencilSource = undefined;
-            if (this.nextStencilID + stencilValues > 256) {
+            if (this.nextStencilID + stencilValues - 1 > MAX_STENCIL_ID) {
                 this.clearStencil();
             }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1419,6 +1509,10 @@ class Painter {
 
         this.currentLayer = 0;
         this.firstLightBeamLayer = Number.MAX_SAFE_INTEGER;
+        this.depthPrepassPhase = false;
+        this._grouped3DDepthPrepassStart = -1;
+        this._grouped3DDepthPrepassEnd = -1;
+        this._grouped3DStencil = null;
 
         const groundShadowLayerIndex = shadowRenderer ? shadowRenderer.getGroundShadowLayerIndex() : -1;
 
@@ -1502,6 +1596,10 @@ class Painter {
             // Blit depth after all 3D content done
             if (layersRequireFinalDepth && last3DLayerIdx !== -1 && this.currentLayer === last3DLayerIdx + 1 && !this.transform.isOrthographic) {
                 this.blitDepth();
+            }
+
+            if (!drapingEnabled && this._grouped3DDepthPrepassEnd <= this.currentLayer) {
+                this._beginGrouped3DDepthPrepass(orderedLayers, coordsForTranslucentLayer);
             }
 
             if (!this.terrain) {

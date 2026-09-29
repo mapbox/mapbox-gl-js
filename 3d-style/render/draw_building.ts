@@ -42,6 +42,7 @@ interface DrawParams {
     floodLightIntensity: number;
     floodLightColor: [number, number, number];
     depthOnly?: boolean;
+    stencilMode?: Readonly<StencilMode>;
 }
 
 function drawTiles(params: DrawParams) {
@@ -173,7 +174,7 @@ function drawTiles(params: DrawParams) {
                 if (building.layoutFacadePaintBuffer) {
                     dynamicBuffers = dynamicBuffers.concat([building.layoutFacadeDataBuffer, building.layoutFacadeVerticalRangeBuffer, building.layoutFacadePaintBuffer]);
                 }
-                const stencilMode = StencilMode.disabled;
+                const stencilMode = params.stencilMode || StencilMode.disabled;
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 program.draw(painter, context.gl.TRIANGLES, params.depthMode, stencilMode, params.blendMode, isShadowPass ? CullFaceMode.disabled : CullFaceMode.backCW,
                     uniformValues, layer.id, building.layoutVertexBuffer, building.indexBuffer,
@@ -361,25 +362,36 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
         const floodLightEnabled = floodLightIntensity > 0;
 
         const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
-        if (opacity < 1.0) {
-            // Draw transparent buildings in two passes so that only the closest surface is drawn.
-            // Insert a draw call to draw all the buildings into only the depth buffer. No colors are drawn.
-            drawTiles({
-                painter,
-                source,
-                layer,
-                coords,
-                defines: definesForPass,
-                blendMode: ColorMode.disabled,
-                depthMode,
-                opacity,
-                verticalScale,
-                facadeEmissiveChance,
-                facadeAOIntensity,
-                floodLightIntensity,
-                floodLightColor,
-                depthOnly: true
-            });
+        const twoPass = layer.hasBlended3DDepthPrepass();
+
+        // Draws all the buildings into only the depth buffer. No colors are drawn.
+        const drawDepthPass = () => drawTiles({
+            painter,
+            source,
+            layer,
+            coords,
+            defines: definesForPass,
+            blendMode: ColorMode.disabled,
+            depthMode,
+            opacity,
+            verticalScale,
+            facadeEmissiveChance,
+            facadeAOIntensity,
+            floodLightIntensity,
+            floodLightColor,
+            depthOnly: true
+        });
+
+        if (painter.depthPrepassPhase) {
+            if (twoPass) drawDepthPass();
+            PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_RENDERING, `Building.draw(depth-prepass)`, "Building", perfStartTime);
+            return;
+        }
+
+        // Draw transparent buildings in two passes, so that only the closest surface is drawn.
+        // A grouped depth prepass already did the depth pass for all layers in the group.
+        if (twoPass && !painter.hasGrouped3DDepthPrepass(painter.currentLayer)) {
+            drawDepthPass();
         }
 
         const blendMode = painter.colorModeForRenderPass();
@@ -396,7 +408,10 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
             facadeEmissiveChance,
             facadeAOIntensity,
             floodLightIntensity,
-            floodLightColor
+            floodLightColor,
+            // The stencil rejects coincident surfaces, so each pixel blends one time only.
+            // Layers in the same group share the stencil id.
+            stencilMode: twoPass ? painter.stencilModeFor3DGroup(painter.currentLayer) : undefined
         });
 
         const geFrontCutoffArray = layer.paint.get('building-front-cutoff');

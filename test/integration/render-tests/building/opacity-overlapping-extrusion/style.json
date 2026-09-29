@@ -1,0 +1,218 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "operations": [],
+      "image-threshold": [
+        {
+          "platform-tag-contains": "",
+          "threshold": 0.0004
+        }
+      ],
+      "_comment": "A transparent `building` layer and a transparent `fill-extrusion` layer over interpenetrating geometry. Each transparent 3D layer primes the depth buffer and then blends only its own closest surface; done per layer, the extrusion blends a second time over the already blended building. The painter hoists the depth pass of the whole run of blended 3D layers ahead of every color pass, so each pixel is blended exactly once."
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.6,
+        "direction": [
+          195,
+          30
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "fill-extrusion": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                [
+                  [
+                    11.568937291974436,
+                    48.13248952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.13230681039484
+                  ],
+                  [
+                    11.56931009612731,
+                    48.13230681039484
+                  ],
+                  [
+                    11.56931009612731,
+                    48.13248952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.13248952281412
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            }
+          }
+        ]
+      }
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                [
+                  [
+                    11.569042171323328,
+                    48.13225792844267
+                  ],
+                  [
+                    11.568892516402427,
+                    48.13225792844267
+                  ],
+                  [
+                    11.568892516402427,
+                    48.132165552549
+                  ],
+                  [
+                    11.569042171323328,
+                    48.132165552549
+                  ],
+                  [
+                    11.569042171323328,
+                    48.13225792844267
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                [
+                  [
+                    11.568937291974436,
+                    48.13246952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.13246952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.13246952281412
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "bearing": 0,
+  "pitch": 70,
+  "zoom": 17.9,
+  "center": [
+    11.5690998,
+    48.1323676
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "fill-extrusion",
+      "type": "fill-extrusion",
+      "source": "fill-extrusion",
+      "minzoom": 16,
+      "paint": {
+        "fill-extrusion-base": 0,
+        "fill-extrusion-height": 12,
+        "fill-extrusion-color": "rgb(255,100,100)",
+        "fill-extrusion-opacity": 0.5
+      }
+    },
+    {
+      "id": "building",
+      "type": "building",
+      "source": "geojson",
+      "minzoom": 16,
+      "layout": {
+        "building-roof-shape": "hipped",
+        "building-base": 0,
+        "building-height": 10
+      },
+      "paint": {
+        "building-color": [
+          "match",
+          [
+            "get",
+            "building-part"
+          ],
+          "wall",
+          [
+            "hsl",
+            41,
+            90,
+            90
+          ],
+          "roof",
+          [
+            "hsl",
+            25,
+            43,
+            80
+          ],
+          [
+            "hsl",
+            41,
+            90,
+            90
+          ]
+        ],
+        "building-ambient-occlusion-intensity": 1,
+        "building-opacity": 0.5
+      }
+    }
+  ]
+}

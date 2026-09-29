@@ -8,6 +8,7 @@
 - Improve memory use & map load time, especially for 3D layers.
 - Improve 3D Lanes map load performance.
 - Fix an issue with GeoJSON geometries past longitude -+360 rendering incorrectly.
+- Fix transparent `building` and `fill-extrusion` layers blending the same pixel twice where they cover the same buildings, making the overlap look more opaque than either layer's opacity asks for.
 - Fix light/fog/snow/rain transitions.
 - Respect `extra_bounds` on all TileJSON source types.
 - Fix a regression with `map.remove()` where it could retain the map instance in memory.

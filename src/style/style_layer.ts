@@ -375,6 +375,19 @@ class StyleLayer extends Evented {
         return false;
     }
 
+    /**
+     * True if this layer draws see-through 3D geometry in two passes: first the depth buffer,
+     * then the color of the closest surface only. The painter groups the depth passes of adjacent
+     * layers of this type, because each pixel must blend one time only.
+     * An opaque layer must return false. It must draw even if a nearer layer is see-through,
+     * or a hole becomes visible.
+     *
+     * @private
+     */
+    hasBlended3DDepthPrepass(): boolean {
+        return false;
+    }
+
     createBucket?(parameters: BucketParameters<this>): Bucket;
 
     hasOffscreenPass(): boolean {
