@@ -1,0 +1,147 @@
+{
+  "description": "Changing model-roughness at runtime updates already loaded batched-model tiles.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setPaintProperty",
+          "landmarks",
+          "model-roughness",
+          0.12
+        ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "Changing model-roughness at runtime doesn't update already loaded batched-model tiles"}
+      ],
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2111"]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment"
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.5,
+        "direction": [
+          30,
+          85
+        ]
+      }
+    }
+  ],
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "file-system-tiles": {
+      "type": "batched-model",
+      "maxzoom": 14,
+      "tiles": [
+        "local://models/landmark/mbx/{x}-{y}-{z}.glb"
+      ]
+    }
+  },
+  "pitch": 60,
+  "zoom": 16,
+  "bearing": 170,
+  "center": [
+    11.5757,
+    48.1373
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "minzoom": 14.0,
+      "type": "model",
+      "source": "file-system-tiles",
+      "paint": {
+        "model-color-mix-intensity": [
+          "match",
+          [
+            "get",
+            "part"
+          ],
+          "logo",
+          0.0,
+          "roof",
+          0.0,
+          0.4589999914169312
+        ],
+        "model-emissive-strength": [
+          "match",
+          [
+            "get",
+            "part"
+          ],
+          "door",
+          1.0,
+          "logo",
+          0.0,
+          "window",
+          0.456,
+          0.0
+        ],
+        "model-scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "model-color": [
+          "match",
+          [
+            "get",
+            "part"
+          ],
+          "door",
+          [
+            "rgba",
+            0.0,
+            255.0,
+            204.0,
+            1.0
+          ],
+          "roof",
+          [
+            "rgba",
+            178.5,
+            178.5,
+            178.5,
+            1.0
+          ],
+          "window",
+          [
+            "rgba",
+            0.0,
+            149.0,
+            230.0,
+            1.0
+          ],
+          [
+            "rgba",
+            255.0,
+            255.0,
+            255.0,
+            1.0
+          ]
+        ],
+        "model-opacity": 1.0,
+        "model-roughness": 1.0
+      },
+      "id": "landmarks"
+    }
+  ]
+}
