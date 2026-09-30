@@ -41,9 +41,9 @@ in highp ivec4 a_round_join_conflict_segments;
 in highp vec3 a_packed;
 #endif
 
-#ifdef RENDER_LINE_DASH
+uniform bool u_has_dash;
+
 in float a_linesofar;
-#endif
 
 uniform mat4 u_matrix;
 uniform mat2 u_pixels_to_tile_units;
@@ -104,12 +104,10 @@ out float stub_side;
 uniform float u_width_addition;
 #endif
 
-#ifdef RENDER_LINE_DASH
 uniform highp float u_floor_width_scale;
 uniform vec2 u_texsize;
 uniform float u_tile_units_to_pixels;
 out highp vec2 v_tex;
-#endif
 
 #if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_BORDER_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
 out highp vec3 v_uv;
@@ -204,11 +202,9 @@ out lowp float v_blur;
 out lowp float v_floorwidth;
 out lowp float v_border_width;
 out lowp float v_emissive_strength;
-#ifdef RENDER_LINE_DASH
 /// x = dash pattern length in tile units, y = dash coverage fraction in [0, 1] — both derived
 /// from paint_properties.dash (see LinePaintProperties.dash) and read by the fragment shader.
 out highp vec2 v_dash;
-#endif
 
 /// Read a data-driven color property: slot packs [minRG, minBA, maxRG, maxBA]. Falls back to
 /// the constant uniform when the property isn't data-driven. Line colors never carry a
@@ -628,7 +624,7 @@ void main() {
 #endif
 #endif
 
-#ifdef RENDER_LINE_DASH
+if (u_has_dash) {
     highp vec4 dashf = paint_properties.dash;
     // highp before /65535: that literal is Inf in mediump/FP16 (e.g. Mali-G71).
     highp float dash_w = dashf.w;
@@ -643,7 +639,10 @@ void main() {
     float dash_coverage = float(dash_bits >> 4u) / 4095.0;
     v_tex = vec2(a_linesofar * scale / (floorwidth * u_floor_width_scale), (-normal.y * dash_half_height + dashf.x + 0.5) / u_texsize.y);
     v_dash = vec2(totalLength, dash_coverage);
-#endif
+} else {
+    v_tex = vec2(0.0);
+    v_dash = vec2(0.0);
+}
 
     v_width2_dilute = vec4(outset, inset, dilute_scale, dilute_border_scale);
 #ifdef VARIABLE_LINE_WIDTH

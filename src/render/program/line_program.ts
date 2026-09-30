@@ -19,6 +19,7 @@ export type LineUniformsType = {
     ['u_width_scale']: Uniform1f;
     ['u_floor_width_scale']: Uniform1f;
     ['u_units_to_pixels']: Uniform2f;
+    ['u_has_dash']: Uniform1i;
     ['u_dash_image']: Uniform1i;
     ['u_gradient_image']: Uniform1i;
     ['u_border_gradient_image']: Uniform1i;
@@ -72,7 +73,7 @@ export type LinePatternUniformsType = {
     ['u_opacity_multiplier']: Uniform1f;
 };
 
-export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_BORDER_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'LINE_JOIN_NONE' | 'ELEVATED' | 'ELEVATED_ROADS' | 'VARIABLE_LINE_WIDTH' | 'VARIABLE_LINE_EMISSIVE_STRENGTH' | 'CROSS_SLOPE_VERTICAL' | 'CROSS_SLOPE_HORIZONTAL' | 'ELEVATION_REFERENCE_SEA' | 'ELEVATION_GROUND_SCALE' | 'LINE_PATTERN_TRANSITION' | 'USE_MRT1' | 'DUAL_SOURCE_BLENDING' | 'LINE_BLEND_MULTIPLY' | 'LINE_BLEND_ADDITIVE' | 'DEBUG_ELEVATION_ID';
+export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_BORDER_GRADIENT' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'LINE_JOIN_NONE' | 'ELEVATED' | 'ELEVATED_ROADS' | 'VARIABLE_LINE_WIDTH' | 'VARIABLE_LINE_EMISSIVE_STRENGTH' | 'CROSS_SLOPE_VERTICAL' | 'CROSS_SLOPE_HORIZONTAL' | 'ELEVATION_REFERENCE_SEA' | 'ELEVATION_GROUND_SCALE' | 'LINE_PATTERN_TRANSITION' | 'USE_MRT1' | 'DUAL_SOURCE_BLENDING' | 'LINE_BLEND_MULTIPLY' | 'LINE_BLEND_ADDITIVE' | 'DEBUG_ELEVATION_ID';
 
 const lineUniforms = (context: Context): LineUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
@@ -82,6 +83,7 @@ const lineUniforms = (context: Context): LineUniformsType => ({
     'u_floor_width_scale': new Uniform1f(context),
     'u_units_to_pixels': new Uniform2f(context),
     'u_dash_image': new Uniform1i(context),
+    'u_has_dash': new Uniform1i(context),
     'u_gradient_image': new Uniform1i(context),
     'u_border_gradient_image': new Uniform1i(context),
     'u_image_height': new Uniform1f(context),
@@ -163,6 +165,7 @@ const lineUniformValues = (
             1 / transform.pixelsToGLUnits[0],
             1 / transform.pixelsToGLUnits[1]
         ],
+        'u_has_dash': +hasDash(layer),
         'u_dash_image': 0,
         'u_gradient_image': 1,
         'u_border_gradient_image': 2,
@@ -258,7 +261,6 @@ function calculateMatrix(painter: Painter, tile: Tile, layer: LineStyleLayer, ma
 
 const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
     const values: LineDefinesType[] = [];
-    if (hasDash(layer)) values.push('RENDER_LINE_DASH');
     if (layer.paint.get('line-gradient')) values.push('RENDER_LINE_GRADIENT');
     if (layer.paint.get('line-blend-mode') === 'multiply') values.push('LINE_BLEND_MULTIPLY');
     if (layer.paint.get('line-blend-mode') === 'additive') values.push('LINE_BLEND_ADDITIVE');
@@ -282,9 +284,9 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
     return values;
 };
 
-function hasDash(layer: LineStyleLayer) {
+function hasDash(layer: LineStyleLayer): boolean {
     const dashPropertyValue = layer.paint.get('line-dasharray').value;
-    return dashPropertyValue.kind !== 'constant' || dashPropertyValue.value;
+    return dashPropertyValue.kind !== 'constant' || dashPropertyValue.value != null;
 }
 
 export {

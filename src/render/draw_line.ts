@@ -448,6 +448,13 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                 if (tile.lineAtlasTexture) {
                     tile.lineAtlasTexture.bind(gl.LINEAR, gl.REPEAT);
                 }
+            } else if (!image) {
+                // u_dash_image is always an active sampler in the line program now that
+                // dash usage is gated by the u_has_dash uniform instead of a #define. Bind a
+                // safe texture to unit 0 so it never aliases the current render target and
+                // triggers a framebuffer feedback loop.
+                context.activeTexture.set(gl.TEXTURE0);
+                painter.emptyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             }
             if (image && programConfiguration) {
                 context.activeTexture.set(gl.TEXTURE0);

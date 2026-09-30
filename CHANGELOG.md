@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Improve line rendering performance by using a uniform instead of a shader permutation for `line-dasharray`.
 - Avoid placing parent-tile symbols when using the global placement.
 - Extend global placement debug info.
 - Fix symbol fading not finishing when using global placement.

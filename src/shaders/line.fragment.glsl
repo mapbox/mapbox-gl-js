@@ -28,12 +28,12 @@ in highp float v_road_z_offset;
 in float stub_side;
 #endif
 
-#ifdef RENDER_LINE_DASH
+uniform bool u_has_dash;
+
 uniform sampler2D u_dash_image;
 uniform highp float u_floor_width_scale;
 
 in highp vec2 v_tex;
-#endif
 
 #ifdef DEBUG_ELEVATION_ID
 in vec3 v_elevation_id_col;
@@ -83,12 +83,10 @@ in lowp float v_blur;
 in lowp float v_floorwidth;
 in lowp float v_border_width;
 in lowp float v_emissive_strength;
-#ifdef RENDER_LINE_DASH
 // x = dash pattern length in tile units, y = dash coverage fraction in [0, 1] — computed in the
 // vertex shader from the UBO/uniform-sourced dash properties, which the fragment shader has no
 // access to. See line.vertex.glsl for details.
 in highp vec2 v_dash;
-#endif
 
 #ifdef LINE_ROUND_JOIN_CLIP_BORDER_OVERLAP
 // Large distance sentinel that makes the conflict test find nothing for a zero-flagged conflict segment.
@@ -243,7 +241,7 @@ void main() {
 #endif
 #endif
 
-#ifdef RENDER_LINE_DASH
+if (u_has_dash) {
     // v_dash.x/y were computed in the vertex shader from paint_properties.dash (raw atlas
     // descriptor decode moved there — see line.vertex.glsl — since only it has UBO access).
     highp float dash_len = v_dash.x;
@@ -282,7 +280,7 @@ void main() {
             linearstep(0.5 - gamma, 0.5 + gamma, sdf1)
         ), dash_coverage, fade);
     }
-#endif
+}
 
     highp vec4 out_color;
 #ifdef RENDER_LINE_GRADIENT

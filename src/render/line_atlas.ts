@@ -60,7 +60,7 @@ class LineAtlas {
         return dasharray.join(',') + lineCap;
     }
 
-    getDashRanges(dasharray: Array<number>, lineAtlasWidth: number, stretch: number): Array<DashRange> {
+    getDashRanges(dasharray: Array<number>, stretch: number): Array<DashRange> {
         // If dasharray has an odd length, both the first and last parts
         // are dashes and should be joined seamlessly.
         const oddDashArray = dasharray.length % 2 === 1;
@@ -190,7 +190,7 @@ class LineAtlas {
 
         if (length !== 0) {
             const stretch = this.width / length;
-            const ranges = this.getDashRanges(dasharray, this.width, stretch);
+            const ranges = this.getDashRanges(dasharray, stretch);
 
             if (round) {
                 this.addRoundDash(ranges, stretch, n);
