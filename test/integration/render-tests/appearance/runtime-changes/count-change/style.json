@@ -1,0 +1,65 @@
+{
+  "description": "Adding an appearance at runtime shows the icon of the new active appearance: bank instead of bakery.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64,
+      "operations": [
+        ["wait"],
+        ["setLayerProperty", "test_layer", "appearances",
+          [
+            {
+              "condition": [">", ["zoom"], 1],
+              "properties": {
+                "icon-image": "bakery-12"
+              }
+            },
+            {
+              "condition": true,
+              "properties": {
+                "icon-image": "bank-12"
+              }
+            }
+          ]
+        ]
+      ]
+    }
+  },
+  "sources": {
+    "test_source": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "test_layer",
+      "type": "symbol",
+      "source": "test_source",
+      "appearances": [
+        {
+          "condition": ["<", ["zoom"], 1],
+          "properties": {
+            "icon-image": "bakery-12"
+          }
+        }
+      ]
+    }
+  ]
+}
