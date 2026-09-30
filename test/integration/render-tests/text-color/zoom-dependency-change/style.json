@@ -1,0 +1,76 @@
+{
+  "description": "Changing a data-driven color to a zoom-dependent one has to interpolate it between zoom levels.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64,
+      "operations": [
+        ["wait"],
+        [
+          "setPaintProperty",
+          "symbol",
+          "text-color",
+          [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            0,
+            [
+              "get",
+              "color"
+            ],
+            1,
+            "blue"
+          ]
+        ],
+        ["wait"]
+      ]
+    }
+  },
+  "zoom": 0.5,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "color": "red"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            0,
+            0
+          ]
+        }
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": "T",
+        "text-size": 40,
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-color": [
+          "get",
+          "color"
+        ]
+      }
+    }
+  ]
+}

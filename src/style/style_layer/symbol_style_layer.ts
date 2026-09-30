@@ -284,16 +284,16 @@ class SymbolStyleLayer extends StyleLayer {
             const overriden = this.paint.get(overridable) as unknown as PossiblyEvaluatedPropertyValue<PaintProps>;
             const override = new FormatSectionOverride(overriden);
             const styleExpression = new StyleExpression(override, overriden.property.specification, this.scope, this.options, this.layout.get('icon-image-use-theme'));
+            const isLightConstant = overriden.value.kind === 'constant' || overriden.value.isLightConstant;
             let expression = null;
-            // eslint-disable-next-line no-warning-comments
-            // TODO: check why were the `isLightConstant` values omitted from the construction of these expressions
             if (overriden.value.kind === 'constant' || overriden.value.kind === 'source') {
-                expression = (new ZoomConstantExpression('source', styleExpression) as SourceExpression);
+                expression = (new ZoomConstantExpression('source', styleExpression, isLightConstant) as SourceExpression);
             } else {
                 expression = (new ZoomDependentExpression('composite',
                                                           styleExpression,
                                                           overriden.value.zoomStops,
-                                                          overriden.value.interpolationType) as CompositeExpression);
+                                                          overriden.value.interpolationType,
+                                                          isLightConstant) as CompositeExpression);
             }
             (this.paint._values as unknown as Record<string, PossiblyEvaluatedPropertyValue<unknown>>)[overridable] =
                 new PossiblyEvaluatedPropertyValue(overriden.property,

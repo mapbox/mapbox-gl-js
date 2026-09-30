@@ -1,0 +1,90 @@
+{
+  "description": "A feature state change recalculates per-feature values, which have to keep the text-color of the formatted section.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 96,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setFeatureState",
+          {
+            "source": "geojson",
+            "id": 0
+          },
+          {
+            "hover": true
+          }
+        ]
+      ]
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "id": 0,
+        "properties": {
+          "x": "black",
+          "y": "blue"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            0,
+            0
+          ]
+        }
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": [
+          "format",
+          "A",
+          {
+            "text-color": "red"
+          },
+          "B",
+          {}
+        ],
+        "text-size": 40,
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-color": [
+          "case",
+          [
+            "boolean",
+            [
+              "feature-state",
+              "hover"
+            ],
+            false
+          ],
+          [
+            "get",
+            "y"
+          ],
+          [
+            "get",
+            "x"
+          ]
+        ]
+      }
+    }
+  ]
+}

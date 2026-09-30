@@ -1,0 +1,122 @@
+{
+  "description": "A brightness change recalculates per-feature values, which have to keep the text-color of the formatted section.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 96,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setLights",
+          [
+            {
+              "type": "ambient",
+              "id": "environment",
+              "properties": {
+                "intensity": 0.7
+              }
+            },
+            {
+              "type": "directional",
+              "id": "sun_light",
+              "properties": {
+                "intensity": 0.8,
+                "direction": [
+                  200.0,
+                  30.0
+                ]
+              }
+            }
+          ]
+        ]
+      ]
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.05
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.05,
+        "direction": [
+          200.0,
+          30.0
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "x": "black",
+          "y": "blue"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            0,
+            0
+          ]
+        }
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": [
+          "format",
+          "A",
+          {
+            "text-color": "red"
+          },
+          "B",
+          {}
+        ],
+        "text-size": 40,
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-color": [
+          "step",
+          [
+            "measure-light",
+            "brightness"
+          ],
+          [
+            "get",
+            "x"
+          ],
+          0.4,
+          [
+            "get",
+            "y"
+          ]
+        ]
+      }
+    }
+  ]
+}
