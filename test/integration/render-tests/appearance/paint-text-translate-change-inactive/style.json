@@ -1,0 +1,111 @@
+{
+  "description": "Translate set by an appearance is stored per feature, so features without an active appearance still have to follow the change of the layer value.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setPaintProperty",
+          "symbol",
+          "text-translate",
+          [
+            0,
+            0
+          ]
+        ]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "To be fixed"}
+      ],
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2072"]
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "id": 1,
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -10,
+                0
+              ]
+            }
+          },
+          {
+            "id": 2,
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          },
+          {
+            "id": 3,
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                10,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-allow-overlap": true,
+        "text-field": "T",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-translate": [
+          0,
+          10
+        ]
+      },
+      "appearances": [
+        {
+          "name": "selected",
+          "condition": [
+            "==",
+            [
+              "id"
+            ],
+            2
+          ],
+          "properties": {
+            "text-translate": [
+              0,
+              -10
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
