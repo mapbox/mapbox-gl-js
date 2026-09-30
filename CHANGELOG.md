@@ -9,11 +9,7 @@
 - Improve 3D Lanes map load performance.
 - Fix an issue with GeoJSON geometries past longitude -+360 rendering incorrectly.
 - Fix transparent `building` and `fill-extrusion` layers blending the same pixel twice where they cover the same buildings, making the overlap look more opaque than either layer's opacity asks for.
-- Fix light/fog/snow/rain transitions.
-- Respect `extra_bounds` on all TileJSON source types.
-- Fix a regression with `map.remove()` where it could retain the map instance in memory.
-
-### Features and improvements ✨
+- Add support for offsetting a control from its corner via `map.addControl(control, {position, offset: {x, y}})`.
 
 ### Bug fixes 🐞
 
@@ -21,9 +17,10 @@
 - Fix collision boxes not matching rotated symbols that use appearances with a layout `icon-rotate` or `text-rotate`.
 
 ### Breaking changes ⚠️
+
 - The base size of icons in the `text-field` property is now calculated at the tile zoom level with the largest text size. As a result, the icons can be smaller when the text size depends on the zoom level.
 
-## 3.32.0-rc.1
+## 3.32.0
 
 ### Features and improvements ✨
 
@@ -35,7 +32,6 @@
 - Add support for symbol fading when using the global placement.
 - Add debug visualization support when using the global placement.
 - `CustomLayerInterface#render`/`#prerender` now receive a `CustomLayerRenderParameters` object as an 8th argument, exposing `projectionMatrix` (camera→clip), `viewMatrix` (world→camera) pair, plus the globe horizon `globeClippingPlane` and the globe center's screen position `globeCenterInScreenPixels`.
-- Add support for offsetting a control from its corner via `map.addControl(control, {position, offset: {x, y}})`.
 
 ### Bug fixes 🐞
 
@@ -45,6 +41,9 @@
 - Fix features rendering at the wrong position when a layer uses a `within` filter and the map uses a projection other than Mercator or globe.
 - Fix global placement throwing an error when placing symbols with no text.
 - Fix setting `padding` as a sideeffect in a `preloadOnly` animation.
+- Respect `extra_bounds` on all TileJSON source types.
+- Fix a regression with `map.remove()` where it could retain the map instance in memory.
+- Fix light/fog/snow/rain transitions.
 
 ## 3.31.0
 
