@@ -1,5 +1,5 @@
 {
-  "_comment": "A conflated SD traffic layer is switched on only after the HD coverage tile has loaded, so its first parse runs with coverage present and drops the covered road classes. Exercises the parse-time removal path, which the other Berlin tests do not reach because their conflated layer parses before coverage arrives.",
+  "description": "A conflated SD traffic layer is switched on only after the HD coverage tile has loaded, so its first parse runs with coverage present and drops the covered road classes. Exercises the parse-time removal path, which the other Berlin tests do not reach because their conflated layer parses before coverage arrives.",
   "version": 8,
   "metadata": {
     "test": {

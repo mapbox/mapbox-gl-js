@@ -1,8 +1,8 @@
 {
+  "description": "A layer with appearances and a layout `icon-rotate`. The merged appearance bounds already include the 45° rotation, so the collision box must match the box of the same icon without appearances and must not be rotated a second time.",
   "version": 8,
   "metadata": {
     "test": {
-      "_comment": "A layer with appearances and a layout `icon-rotate`. The merged appearance bounds already include the 45° rotation, so the collision box must match the box of the same icon without appearances and must not be rotated a second time.",
       "width": 64,
       "height": 64,
       "collisionDebug": true,

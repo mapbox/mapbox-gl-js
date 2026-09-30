@@ -1,4 +1,5 @@
 {
+  "description": "A round-joined, bordered line made of many short straight segments (~80m each), positioned so a round join lands near a tile boundary. On some backends the tile-ownership clip mask fails to reject the neighboring tile's overlapping join geometry, producing a visible seam/notch in the line at the tile edge.",
   "version": 8,
   "metadata": {
     "test": {
@@ -9,8 +10,7 @@
         ]
       ],
       "width": 900,
-      "height": 80,
-      "description": "A round-joined, bordered line made of many short straight segments (~80m each), positioned so a round join lands near a tile boundary. On some backends the tile-ownership clip mask fails to reject the neighboring tile's overlapping join geometry, producing a visible seam/notch in the line at the tile edge."
+      "height": 80
     }
   },
   "center": [

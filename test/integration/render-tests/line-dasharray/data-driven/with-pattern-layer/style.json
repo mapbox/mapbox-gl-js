@@ -1,6 +1,6 @@
 {
-  "version": 8,
   "description": "Regression for a data-driven line-dasharray sharing a bucket with an unrelated line-pattern layer. The dash layer must still render its own per-feature dash pattern, not a solid line or another feature's dash.",
+  "version": 8,
   "metadata": {
     "test": {
       "width": 64,

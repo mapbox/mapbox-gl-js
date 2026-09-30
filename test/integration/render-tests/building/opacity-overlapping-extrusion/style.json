@@ -1,4 +1,5 @@
 {
+  "description": "A transparent `building` layer and a transparent `fill-extrusion` layer over interpenetrating geometry. Each transparent 3D layer primes the depth buffer and then blends only its own closest surface; done per layer, the extrusion blends a second time over the already blended building. The painter hoists the depth pass of the whole run of blended 3D layers ahead of every color pass, so each pixel is blended exactly once.",
   "version": 8,
   "metadata": {
     "test": {
@@ -10,8 +11,7 @@
           "platform-tag-contains": "",
           "threshold": 0.0004
         }
-      ],
-      "_comment": "A transparent `building` layer and a transparent `fill-extrusion` layer over interpenetrating geometry. Each transparent 3D layer primes the depth buffer and then blends only its own closest surface; done per layer, the extrusion blends a second time over the already blended building. The painter hoists the depth pass of the whole run of blended 3D layers ahead of every color pass, so each pixel is blended exactly once."
+      ]
     }
   },
   "lights": [

@@ -1,6 +1,6 @@
 {
+  "description": "A constant line-color with a data-driven line-color-use-theme is stored per feature, so changing it without a transition must rewrite the feature blocks. Should render blue.",
   "version": 8,
-  "_comment": "A constant line-color with a data-driven line-color-use-theme is stored per feature, so changing it without a transition must rewrite the feature blocks. Should render blue.",
   "metadata": {
     "test": {
       "width": 32,

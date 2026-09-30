@@ -1,6 +1,6 @@
 {
+  "description": "Mercator control for fit-bounds-asymmetric-padding: isolates whether a framing difference is projection-specific or a pre-existing cameraForLatLngBounds padding-semantics difference.",
   "version": 8,
-  "_comment": "Mercator control for fit-bounds-asymmetric-padding: isolates whether a framing difference is projection-specific or a pre-existing cameraForLatLngBounds padding-semantics difference.",
   "metadata": {
     "test": {
       "width": 512,

@@ -1,6 +1,6 @@
 {
-  "version": 8,
   "description": "Line features count enough to increase UBO batch usage + constant-line layer shares the bucket",
+  "version": 8,
   "metadata": {
     "test": {
       "width": 128,

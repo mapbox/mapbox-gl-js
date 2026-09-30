@@ -1,8 +1,8 @@
 {
+  "description": "Two adjacent procedural buildings. Building 0 is set to 'select' state (red), then building 1 is set to 'hover' state (green) in a separate coalesce step. Both state-driven colors must be visible at the end; a regression that re-bakes non-changed footprints from an incremental state delta would revert building 0 to the default beige.",
   "version": 8,
   "metadata": {
     "test": {
-      "_comment": "Two adjacent procedural buildings. Building 0 is set to 'select' state (red), then building 1 is set to 'hover' state (green) in a separate coalesce step. Both state-driven colors must be visible at the end; a regression that re-bakes non-changed footprints from an incremental state delta would revert building 0 to the default beige.",
       "height": 256,
       "width": 384,
       "operations": [

@@ -1,6 +1,6 @@
 {
+  "description": "Terrain must be dropped under Albers. map-projections/unsupported-fog already covers fog; both are declared here and neither may render.",
   "version": 8,
-  "_comment": "Terrain must be dropped under Albers. map-projections/unsupported-fog already covers fog; both are declared here and neither may render.",
   "metadata": {
     "test": {
       "height": 512,

@@ -1,6 +1,6 @@
 {
+  "description": "Mercator twin of filter-within-symbol: pins that the `within` filter selects the same three points and does not displace their labels under Mercator.",
   "version": 8,
-  "_comment": "Mercator twin of filter-within-symbol: pins that the `within` filter selects the same three points and does not displace their labels under Mercator.",
   "metadata": {
     "test": {
       "width": 512,

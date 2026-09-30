@@ -1,6 +1,6 @@
 {
+  "description": "Circle layer with a `within` filter under Albers. `within` selects features by geography, so the same three points match as in the mercator twin (filter-within-mercator), but they must be drawn at their Albers screen positions. Adding a filter must not move where features render.",
   "version": 8,
-  "_comment": "Circle layer with a `within` filter under Albers. `within` selects features by geography, so the same three points match as in the mercator twin (filter-within-mercator), but they must be drawn at their Albers screen positions. Adding a filter must not move where features render.",
   "metadata": {
     "test": {
       "width": 512,

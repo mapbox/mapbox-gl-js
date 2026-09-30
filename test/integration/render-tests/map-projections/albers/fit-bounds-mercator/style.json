@@ -1,6 +1,6 @@
 {
+  "description": "Mercator control for fit-bounds: same bounds, same padding, no projection. Isolates whether a fit-bounds difference comes from the projection or from the camera-fitting code itself.",
   "version": 8,
-  "_comment": "Mercator control for fit-bounds: same bounds, same padding, no projection. Isolates whether a fit-bounds difference comes from the projection or from the camera-fitting code itself.",
   "metadata": {
     "test": {
       "width": 512,

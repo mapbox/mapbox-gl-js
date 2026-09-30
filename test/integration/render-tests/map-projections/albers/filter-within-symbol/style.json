@@ -1,6 +1,6 @@
 {
+  "description": "Symbol layer with a `within` filter under Albers. Symbol anchors come from the same tile geometry as any other bucket, so a filtered layer reusing unreprojected geometry places labels at their Mercator positions.",
   "version": 8,
-  "_comment": "Symbol layer with a `within` filter under Albers. Symbol anchors come from the same tile geometry as any other bucket, so a filtered layer reusing unreprojected geometry places labels at their Mercator positions.",
   "metadata": {
     "test": {
       "width": 512,

@@ -1,6 +1,6 @@
 {
+  "description": "Same, with asymmetric padding: the camera offset padding introduces must be applied in screen space, not in the projection's world space.",
   "version": 8,
-  "_comment": "Same, with asymmetric padding: the camera offset padding introduces must be applied in screen space, not in the projection's world space.",
   "metadata": {
     "test": {
       "width": 512,

@@ -1,6 +1,6 @@
 {
+  "description": "fitBounds must frame a geographic bounding box correctly under Albers, where the projected shape of the box is not a screen-aligned rectangle. Uniform padding.",
   "version": 8,
-  "_comment": "fitBounds must frame a geographic bounding box correctly under Albers, where the projected shape of the box is not a screen-aligned rectangle. Uniform padding.",
   "metadata": {
     "test": {
       "width": 512,

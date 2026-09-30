@@ -1,6 +1,6 @@
 {
+  "description": "Mercator twin of filter-within-line: pins that the `within` filter selects the line and does not displace it under Mercator.",
   "version": 8,
-  "_comment": "Mercator twin of filter-within-line: pins that the `within` filter selects the line and does not displace it under Mercator.",
   "metadata": {
     "test": {
       "width": 512,

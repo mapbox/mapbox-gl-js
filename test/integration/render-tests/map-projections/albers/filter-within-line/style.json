@@ -1,6 +1,6 @@
 {
+  "description": "Line layer with a `within` filter under Albers. Line geometry is resampled when reprojected, so a filtered layer reusing unreprojected geometry renders a visibly different path.",
   "version": 8,
-  "_comment": "Line layer with a `within` filter under Albers. Line geometry is resampled when reprojected, so a filtered layer reusing unreprojected geometry renders a visibly different path.",
   "metadata": {
     "test": {
       "width": 512,

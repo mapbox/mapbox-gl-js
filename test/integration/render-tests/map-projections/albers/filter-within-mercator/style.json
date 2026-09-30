@@ -1,6 +1,6 @@
 {
+  "description": "Mercator twin of filter-within: same source, same `within` filter. Pins that the filter selects the same three features and does not displace them under Mercator, so any difference in filter-within is attributable to projection handling.",
   "version": 8,
-  "_comment": "Mercator twin of filter-within: same source, same `within` filter. Pins that the filter selects the same three features and does not displace them under Mercator, so any difference in filter-within is attributable to projection handling.",
   "metadata": {
     "test": {
       "width": 512,
