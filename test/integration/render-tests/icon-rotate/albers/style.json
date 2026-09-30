@@ -5,9 +5,6 @@
       "_comment": "A crosswalk on a north-south road in Albers. `icon-rotate` with map alignment is measured from true north, but Albers turns the meridians at 20°E ~70° away from the tile's up direction. The crosswalk, rotated 90°, must lie straight across the road.",
       "width": 64,
       "height": 64,
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
-      ],
       "operations": [
         ["addImage", "crosswalk", "./image/crosswalk.png"],
         [
