@@ -1605,6 +1605,48 @@ describe('Style#getPaintProperty', () => {
         style.setPaintProperty('background', 'background-color', value);
         expect(style._changes.isDirty()).toBeTruthy();
     });
+
+    test('#6033 fires a helpful error and returns undefined for an unknown paint property name, instead of throwing', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [
+                {
+                    "id": "background",
+                    "type": "background"
+                }
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+
+        let errorMessage: string | undefined;
+        style.on('error', ({error}) => { errorMessage = error.message; });
+
+        let result: unknown;
+        expect(() => { result = style.getPaintProperty('background', 'fill-radius'); }).not.toThrow();
+        expect(result).toBeUndefined();
+        expect(errorMessage).toMatch(/fill-radius.*not a paint property/);
+    });
+
+    test('#6033 still resolves a valid "<property>-transition" name', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [
+                {
+                    "id": "background",
+                    "type": "background",
+                    "paint": {"background-color-transition": {duration: 500}}
+                }
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+        expect(style.getPaintProperty('background', 'background-color-transition')).toEqual({duration: 500});
+    });
 });
 
 describe('Style#setLayoutProperty', () => {
