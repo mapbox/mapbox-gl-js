@@ -1,0 +1,152 @@
+{
+  "description": "Paint property and feature state changes made during a config transition are applied after it: left circle is red, right circle is green.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 32,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setStyleImportConfigProperty",
+          "transition-import",
+          "flag",
+          true
+        ],
+        [
+          "pinBooleanTransitionProgress",
+          0.5
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setPaintProperty",
+          "circle",
+          "circle-color",
+          [
+            "coalesce",
+            [
+              "feature-state",
+              "color"
+            ],
+            [
+              "get",
+              "color-after"
+            ]
+          ]
+        ],
+        [
+          "setFeatureState",
+          {
+            "source": "geojson",
+            "id": 1
+          },
+          {
+            "color": "red"
+          }
+        ],
+        [
+          "wait"
+        ],
+        [
+          "pinBooleanTransitionProgress",
+          1.0
+        ],
+        [
+          "wait"
+        ]
+      ],
+      "skip-test": [
+        {
+          "platform-tag-contains": "web",
+          "reason": "gl-native only: animated config change (pinBooleanTransitionProgress) is not supported in gl-js."
+        }
+      ]
+    }
+  },
+  "zoom": 2,
+  "imports": [
+    {
+      "id": "transition-import",
+      "url": "",
+      "data": {
+        "version": 8,
+        "schema": {
+          "flag": {
+            "default": false,
+            "type": "boolean",
+            "metadata": {
+              "mapbox:transition-duration-ms": 1000
+            }
+          }
+        },
+        "sources": {},
+        "layers": []
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "id": 1,
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -5,
+                0
+              ]
+            },
+            "properties": {
+              "color-before": "black",
+              "color-after": "green"
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 2,
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                5,
+                0
+              ]
+            },
+            "properties": {
+              "color-before": "black",
+              "color-after": "green"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 5,
+        "circle-color": [
+          "coalesce",
+          [
+            "feature-state",
+            "color"
+          ],
+          [
+            "get",
+            "color-before"
+          ]
+        ]
+      }
+    }
+  ]
+}
