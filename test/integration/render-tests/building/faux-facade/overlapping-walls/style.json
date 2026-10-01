@@ -7,9 +7,6 @@
       "width": 512,
       "operations": [
       ],
-      "skip-test": [
-        {"platform-tag-contains": "swiftshader", "reason": "Z-offset requires more tweaking https://github.com/mapbox/mapbox-sdk/pull/8406"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0015}
       ]

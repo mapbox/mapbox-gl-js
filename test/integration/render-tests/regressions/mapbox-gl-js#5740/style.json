@@ -5,7 +5,6 @@
     "test": {
       
       "pixelRatio": 2,
-      "fadeDuration": 1000,
       "width": 64,
       "height": 64,
       "operations": [
@@ -25,14 +24,12 @@
           1000
         ]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "native-macos", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/10619"},
-        {"platform-tag-contains": "native-ios", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/10619"},
-        {"platform-tag-contains": "native-android-gl-adreno", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/10619"},
-        {"platform-tag-contains": "native-android-gl-mali", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/10619"}
-      ],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.00056}
+        {"platform-tag-contains": "", "threshold": 0.00056},
+        {"platform-tag-contains": "native-macos", "threshold": 0.0012},
+        {"platform-tag-contains": "native-ios", "threshold": 0.0012},
+        {"platform-tag-contains": "native-android-gl-adreno", "threshold": 0.00092},
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.00092}
       ]
     }
   },

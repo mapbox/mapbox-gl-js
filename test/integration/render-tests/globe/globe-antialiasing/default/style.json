@@ -8,11 +8,11 @@
           ["wait"]
         ],
         "skip-test": [
-          {"platform-tag-contains": "web-windows-chrome", "reason": "Occasionally crashing with 'Error occured during [\"wait\"]':"},
-          {"platform-tag-contains": "native-linux-gl", "reason": "skip - Requires support for standard derivatives"}
+          {"platform-tag-contains": "web-windows-chrome", "reason": "Occasionally crashing with 'Error occured during [\"wait\"]':"}
         ],
         "image-threshold": [
-          {"platform-tag-contains": "native", "threshold": 0.000348}
+          {"platform-tag-contains": "native", "threshold": 0.000348},
+          {"platform-tag-contains": "native-linux-gl", "threshold": 0.00045}
         ]
       }
     },

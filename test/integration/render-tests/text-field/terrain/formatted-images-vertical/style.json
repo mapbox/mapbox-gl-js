@@ -6,10 +6,12 @@
       "width": 128,
       "pixelRatio": 2,
       "skip-test": [
-        {"platform-tag-contains": "native-android-gl", "reason": "not implemented in gl-native yet"}
+        {"platform-tag-contains": "native-android-gl-adreno", "reason": "not implemented in gl-native yet"}
       ],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.0002}
+        {"platform-tag-contains": "", "threshold": 0.0002},
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.00034},
+        {"platform-tag-contains": "native-android-gl-powervr", "threshold": 0.00028}
       ]
     }
   },

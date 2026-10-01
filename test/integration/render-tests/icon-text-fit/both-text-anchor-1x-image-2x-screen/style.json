@@ -5,12 +5,10 @@
       "pixelRatio": 2,
       "width": 200,
       "height": 150,
-      "skip-test": [
-        {"platform-tag-contains": "web-windows-chrome", "reason": "Bug: missing icons. https://github.com/mapbox/mapbox-gl-js/issues/12409"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00035},
-        {"platform-tag-contains": "native", "threshold": 0.0039}
+        {"platform-tag-contains": "native", "threshold": 0.0039},
+        {"platform-tag-contains": "web-windows", "threshold": 0.00074}
       ]
     }
   },

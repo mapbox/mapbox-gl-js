@@ -7,11 +7,9 @@
           ["setProjection", "globe"],
           ["wait"]
         ],
-        "skip-test": [
-          {"platform-tag-contains": "native-linux-gl", "reason": "skip - Requires support for standard derivatives"}
-        ],
         "image-threshold": [
-          {"platform-tag-contains": "native", "threshold": 0.00035}
+          {"platform-tag-contains": "native", "threshold": 0.00035},
+          {"platform-tag-contains": "native-linux-gl", "threshold": 0.00045}
         ]
       }
     },

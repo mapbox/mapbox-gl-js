@@ -5,13 +5,7 @@
     "test": {
       "width": 256,
       "height": 256,
-      "collisionDebug": true,
-      "skip-test": [
-        {"platform-tag-contains": "native-macos", "reason": "skip - https://mapbox.atlassian.net/browse/MAPSNAT-3730"},
-        {"platform-tag-contains": "native-ios", "reason": "skip - https://mapbox.atlassian.net/browse/MAPSNAT-3730"},
-        {"platform-tag-contains": "native-android-gl-mali", "reason": "skip - https://mapbox.atlassian.net/browse/MAPSNAT-3730"},
-        {"platform-tag-contains": "native-android-vulkan", "reason": "skip - https://mapbox.atlassian.net/browse/MAPSNAT-3730"}
-      ]
+      "collisionDebug": true
     }
   },
   "sources": {

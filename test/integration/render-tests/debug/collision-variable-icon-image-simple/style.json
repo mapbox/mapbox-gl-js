@@ -5,12 +5,10 @@
       "height": 128,
       "width": 128,
       "collisionDebug": true,
-      "skip-test": [
-        {"platform-tag-contains": "native-linux-egl", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/3841"},
-        {"platform-tag-contains": "native-android-vulkan", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/3841"}
-      ],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.00019}
+        {"platform-tag-contains": "", "threshold": 0.00019},
+        {"platform-tag-contains": "native-linux-egl", "threshold": 0.00039},
+        {"platform-tag-contains": "native-android-vulkan", "threshold": 0.00039}
       ]
     }
   },
