@@ -4,6 +4,7 @@
 - Improve map load performance on lower zooms via faster polygon triangulation.
 - Fix zero-length cap in SVG not drawn in various browsers.
 - Add `raster-mask` and `raster-mask-mode` paint properties so a raster layer can be clipped to, or excluded from, the geometry of a fill layer
+- Revert fix line geometry: clamp fake-round join anchor on short segments.
 
 ## 3.34.0-rc.1
 
