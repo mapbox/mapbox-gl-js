@@ -8,7 +8,7 @@
 - Fix a severe performance regression when updating data-driven line layers with `setPaintProperty`.
 - Improve memory use & map load time, especially for 3D layers.
 - Improve 3D Lanes map load performance.
-- Fix an issue with GeoJSON geometries past longitude -+360 rendering incorrectly.
+- Fix an issue with GeoJSON geometries past longitude -+360 or latitude +-85 rendering incorrectly.
 - Fix transparent `building` and `fill-extrusion` layers blending the same pixel twice where they cover the same buildings, making the overlap look more opaque than either layer's opacity asks for.
 - Add support for offsetting a control from its corner via `map.addControl(control, {position, offset: {x, y}})`.
 
