@@ -1,0 +1,65 @@
+{
+  "description": "Querying uses the changed constant symbol-z-offset, so the raised label is found where it is rendered.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 96,
+      "width": 64,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setPaintProperty",
+          "raised",
+          "symbol-z-offset",
+          200
+        ]
+      ],
+      "queryGeometry": [
+        32,
+        8
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "web", "reason": "To be fixed"}
+      ],
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2072"]
+    }
+  },
+  "pitch": 60,
+  "zoom": 14,
+  "center": [
+    0,
+    0
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "raised",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": "T",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "symbol-z-offset": 0
+      }
+    }
+  ]
+}
