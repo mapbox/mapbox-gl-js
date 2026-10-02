@@ -1,0 +1,81 @@
+{
+  "description": "Equal symbol-sort-key keeps source order: blue, orange, grey icons bottom to top.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "icon": "square-12"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -8,
+                6
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "icon": "fav-square-18"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "icon": "night-roadblock-12"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                8,
+                -6
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "layer",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-sort-key": 1,
+        "icon-image": [
+          "get",
+          "icon"
+        ],
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      }
+    }
+  ]
+}

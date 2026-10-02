@@ -1,0 +1,107 @@
+{
+  "description": "Equal symbol-sort-key keeps source order: red, green, blue texts bottom to top.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "v": 1
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -8,
+                6
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "v": 2
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "v": 3
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                8,
+                -6
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "layer",
+      "source": "geojson",
+      "type": "symbol",
+      "layout": {
+        "symbol-sort-key": 1,
+        "text-field": [
+          "to-string",
+          [
+            "get",
+            "v"
+          ]
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 24,
+        "text-allow-overlap": true,
+        "text-ignore-placement": true
+      },
+      "paint": {
+        "text-color": "white",
+        "text-halo-color": [
+          "match",
+          [
+            "get",
+            "v"
+          ],
+          1,
+          "red",
+          2,
+          "green",
+          3,
+          "blue",
+          "black"
+        ],
+        "text-halo-width": 6
+      }
+    }
+  ]
+}

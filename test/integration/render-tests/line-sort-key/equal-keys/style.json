@@ -1,0 +1,109 @@
+{
+  "description": "Equal line-sort-key keeps source order: red, green, blue drawn bottom to top.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "v": 1
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -16,
+                  7
+                ],
+                [
+                  2,
+                  7
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "v": 2
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -9,
+                  0
+                ],
+                [
+                  9,
+                  0
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "v": 3
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -2,
+                  -7
+                ],
+                [
+                  16,
+                  -7
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "layer",
+      "source": "geojson",
+      "type": "line",
+      "layout": {
+        "line-sort-key": 1
+      },
+      "paint": {
+        "line-width": 14,
+        "line-color": [
+          "match",
+          [
+            "get",
+            "v"
+          ],
+          1,
+          "red",
+          2,
+          "green",
+          3,
+          "blue",
+          "black"
+        ]
+      }
+    }
+  ]
+}
