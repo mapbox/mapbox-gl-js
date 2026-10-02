@@ -121,7 +121,8 @@ debug/ # served by `npm start`
 - Any PR that changes rendering behavior (shader changes, draw function logic, bucket data changes) must include a render test in `test/integration/render-tests/`
 - For query behavior changes, add corresponding query tests covering all affected layer types
 - Render tests for bug fixes must fail without the fix; a tolerance loose enough to pass either way is useless
-- Every render test `style.json` must include a `_comment` field explaining what it checks; drop unused intermediate `wait` steps
+- Every render test `style.json` must start with a `description` field explaining what it checks
+- Keep render tests minimal: omit anything that can be dropped, e.g. unused `wait` steps (including a trailing one), empty feature `properties`, empty `layout` objects, or `pixelRatio` when the test doesn't need it
 - Don't inflate render test tolerance to make a failing test pass — investigate the root cause
 - Size render test expected images to the minimum needed (e.g., 32×64, not 128×128)
 
