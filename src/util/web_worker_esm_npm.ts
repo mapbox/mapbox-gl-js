@@ -5,6 +5,11 @@ import WorkerClass from './worker_class';
 // its dependencies into a separate chunk. Also works when self-hosted
 // same-origin without a bundler.
 export function createWorker(): Worker {
+    if (WorkerClass.workerFactory) return WorkerClass.workerFactory();
+
+    // eslint-disable-next-line new-cap
+    if (WorkerClass.workerClass != null) return new WorkerClass.workerClass();
+
     if (WorkerClass.workerUrl) {
         return new Worker(WorkerClass.workerUrl, {type: 'module'});
     }
