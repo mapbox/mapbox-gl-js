@@ -5,7 +5,7 @@
 #define INV_SQRT2 0.70710678
 #define ELEVATION_BIAS 0.0001
 
-#define NUM_SAMPLES_PER_RING 16
+#define NUM_VISIBILITY_SAMPLES_PER_RING 16
 
 uniform mat4 u_matrix;
 uniform mat2 u_extrude_scale;
@@ -41,15 +41,15 @@ out float v_visibility;
 #pragma mapbox: define mediump float stroke_width
 #pragma mapbox: define lowp float stroke_opacity
 
-vec2 calc_offset(vec2 extrusion, float radius, float stroke_width,  float view_scale) {
-    return extrusion * (radius + stroke_width) * u_extrude_scale * view_scale;
+vec2 calc_offset(vec2 extrusion, float radius, float stroke_width,  float perspective_scale) {
+    return extrusion * (radius + stroke_width) * u_extrude_scale * perspective_scale;
 }
 
-float cantilevered_elevation(vec2 pos, float radius, float stroke_width, float view_scale) {
-    vec2 c1 = pos + calc_offset(vec2(-1.0, -1.0), radius, stroke_width, view_scale);
-    vec2 c2 = pos + calc_offset(vec2(1.0, -1.0), radius, stroke_width, view_scale);
-    vec2 c3 = pos + calc_offset(vec2(1.0, 1.0), radius, stroke_width, view_scale);
-    vec2 c4 = pos + calc_offset(vec2(-1.0, 1.0), radius, stroke_width, view_scale);
+float cantilevered_elevation(vec2 pos, float radius, float stroke_width, float perspective_scale) {
+    vec2 c1 = pos + calc_offset(vec2(-1.0, -1.0), radius, stroke_width, perspective_scale);
+    vec2 c2 = pos + calc_offset(vec2(1.0, -1.0), radius, stroke_width, perspective_scale);
+    vec2 c3 = pos + calc_offset(vec2(1.0, 1.0), radius, stroke_width, perspective_scale);
+    vec2 c4 = pos + calc_offset(vec2(-1.0, 1.0), radius, stroke_width, perspective_scale);
     float h1 = elevation(c1) + ELEVATION_BIAS;
     float h2 = elevation(c2) + ELEVATION_BIAS;
     float h3 = elevation(c3) + ELEVATION_BIAS;
@@ -65,8 +65,8 @@ float circle_elevation(vec2 pos) {
 #endif
 }
 
-vec4 project_vertex(vec2 extrusion, vec4 world_center, vec4 projected_center, float radius, float stroke_width,  float view_scale, mat3 surface_vectors) {
-    vec2 sample_offset = calc_offset(extrusion, radius, stroke_width, view_scale);
+vec4 project_vertex(vec2 extrusion, vec4 world_center, vec4 projected_center, float radius, float stroke_width,  float perspective_scale, mat3 surface_vectors) {
+    vec2 sample_offset = calc_offset(extrusion, radius, stroke_width, perspective_scale);
 #ifdef PITCH_WITH_MAP
     #ifdef PROJECTION_GLOBE_VIEW
         return u_matrix * ( world_center + vec4(sample_offset.x * surface_vectors[0] + sample_offset.y * surface_vectors[1], 0) );
@@ -75,16 +75,6 @@ vec4 project_vertex(vec2 extrusion, vec4 world_center, vec4 projected_center, fl
     #endif
 #else
     return projected_center + vec4(sample_offset, 0, 0);
-#endif
-}
-
-float get_sample_step() {
-#ifdef PITCH_WITH_MAP
-    return 2.0 * PI / float(NUM_SAMPLES_PER_RING);
-#else
-    // We want to only sample the top half of the circle when it is viewport-aligned.
-    // This is to prevent the circle from intersecting with the ground plane below it at high pitch.
-    return PI / float(NUM_SAMPLES_PER_RING);
 #endif
 }
 
@@ -133,58 +123,62 @@ void main() {
 
     vec4 projected_center = u_matrix * world_center;
 
-    float view_scale = 0.0;
+    float perspective_scale = 0.0;
     #ifdef PITCH_WITH_MAP
         #ifdef SCALE_WITH_MAP
-            view_scale = 1.0;
+            perspective_scale = 1.0;
         #else
             // Pitching the circle with the map effectively scales it with the map
             // To counteract the effect for pitch-scale: viewport, we rescale the
             // whole circle based on the pitch scaling effect at its central point
-            view_scale = projected_center.w / u_camera_to_center_distance;
+            perspective_scale = projected_center.w / u_camera_to_center_distance;
         #endif
     #else
         #ifdef SCALE_WITH_MAP
-            view_scale = u_camera_to_center_distance;
+            perspective_scale = u_camera_to_center_distance;
         #else
-            view_scale = projected_center.w;
+            perspective_scale = projected_center.w;
         #endif
     #endif
-    gl_Position = project_vertex(extrude, world_center, projected_center, radius, stroke_width, view_scale, surface_vectors);
+    gl_Position = project_vertex(extrude, world_center, projected_center, radius, stroke_width, perspective_scale, surface_vectors);
 
-    float visibility = 0.0;
-    #ifdef TERRAIN
-        float step = get_sample_step();
+    float terrain_visibility = 0.0;
+    #ifdef TERRAIN // Enable terrain occlusion calculations
+        float arc;
         vec4 occlusion_world_center;
         vec4 occlusion_projected_center;
         #ifdef PITCH_WITH_MAP
+            arc = 2.0 * PI;
             // to prevent the circle from self-intersecting with the terrain underneath on a sloped hill,
             // we calculate the elevation at each corner and pick the highest one when computing visibility.
-            float cantilevered_height = cantilevered_elevation(circle_center, radius, stroke_width, view_scale);
+            float cantilevered_height = cantilevered_elevation(circle_center, radius, stroke_width, perspective_scale);
             occlusion_world_center = vec4(circle_center, cantilevered_height, 1);
             occlusion_projected_center = u_matrix * occlusion_world_center;
         #else
+            // Viewport-aligned: sample only the top half so the circle doesn't hit the ground plane at high pitch.
+            arc = PI;
             occlusion_world_center = world_center;
             occlusion_projected_center = projected_center;
         #endif
+        float step = arc / float(NUM_VISIBILITY_SAMPLES_PER_RING);
         for(int ring = 0; ring < NUM_VISIBILITY_RINGS; ring++) {
-            float scale = (float(ring) + 1.0)/float(NUM_VISIBILITY_RINGS);
-            for(int i = 0; i < NUM_SAMPLES_PER_RING; i++) {
-                vec2 extrusion = vec2(cos(step * float(i)), -sin(step * float(i))) * scale;
-                vec4 frag_pos = project_vertex(extrusion, occlusion_world_center, occlusion_projected_center, radius, stroke_width, view_scale, surface_vectors);
-                visibility += float(!isOccluded(frag_pos));
+            float ring_radius_fraction = (float(ring) + 1.0)/float(NUM_VISIBILITY_RINGS);
+            for(int i = 0; i < NUM_VISIBILITY_SAMPLES_PER_RING; i++) {
+                vec2 extrusion = vec2(cos(step * float(i)), -sin(step * float(i))) * ring_radius_fraction;
+                vec4 frag_pos = project_vertex(extrusion, occlusion_world_center, occlusion_projected_center, radius, stroke_width, perspective_scale, surface_vectors);
+                terrain_visibility += float(!isOccluded(frag_pos));
             }
         }
-        visibility /= float(NUM_VISIBILITY_RINGS) * float(NUM_SAMPLES_PER_RING);
+        terrain_visibility /= float(NUM_VISIBILITY_RINGS) * float(NUM_VISIBILITY_SAMPLES_PER_RING);
     #else
-        visibility = 1.0;
+        terrain_visibility = 1.0;
     #endif
     // This is a temporary overwrite until we add support for terrain occlusion for the globe view
     // Having a separate overwrite here makes the metal shader generation simpler for the default case
     #ifdef PROJECTION_GLOBE_VIEW
-        visibility = 1.0;
+        terrain_visibility = 1.0;
     #endif
-    v_visibility = visibility;
+    v_visibility = terrain_visibility;
 
     // This is a minimum blur distance that serves as a faux-antialiasing for
     // the circle. since blur is a ratio of the circle's size and the intent is

@@ -25,7 +25,7 @@ vec3 toTilePosition(vec2 screenPos) {
 }
 
 void main() {
-    vec2 quadCenterPos = a_pos_2f;
+    vec2 anchorScreenPos = a_pos_2f;
     float radius = a_radius;
     int vertexIdx = a_flags.y;
 
@@ -37,7 +37,7 @@ void main() {
 
     // Screen position of the quad might have been computed with different camera parameters.
     // Transform the point to a proper position on the current viewport
-    vec3 tilePos = toTilePosition(quadCenterPos);
+    vec3 tilePos = toTilePosition(anchorScreenPos);
     vec4 clipPos = u_matrix * vec4(tilePos, 1.0);
 
     highp float camera_to_anchor_distance = clipPos.w;

@@ -2,7 +2,6 @@
 //
 // File-scope macros, not functions with inner #ifdefs: Adreno's GLSL compiler
 // miscompiles the latter in large programs (feature-cutout + instanced models).
-
 #if defined(VIEWPORT_ORIGIN_TOP_LEFT) || defined(FLIP_Y)
 #define fragcoord_to_bottom_left_uv(frag, size) vec2((frag).x / (size).x, 1.0 - (frag).y / (size).y)
 #define fragcoord_to_ndc_y(fragY, invY) (1.0 - (fragY) * (invY) * 2.0)
