@@ -1562,15 +1562,6 @@ export type MapEvents = {
     'speedindexcompleted': {speedIndex: number};
 
     /**
-     * Fired after RTL text plugin state changes.
-     *
-     * @event pluginStateChange
-     * @instance
-     * @private
-     */
-    'pluginStateChange': {pluginStatus: string, pluginURL: string};
-
-    /**
      * Fired in worker.js after sprite loaded.
      *
      * @event pluginStateChange

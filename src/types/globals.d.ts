@@ -1,5 +1,4 @@
 import type MapWorker from '../source/worker';
-import type {RtlTextPlugin} from '../source/rtl_text_plugin';
 
 // Ambient augmentations of the environment's built-in DOM types. This file is
 // intentionally never imported: tsconfig `include` still pulls it into the
@@ -29,7 +28,6 @@ declare global {
     // Worker plumbing attached to the worker global scope.
     interface Worker {
         worker: MapWorker;
-        registerRTLTextPlugin?: (rtlTextPlugin: RtlTextPlugin) => void;
     }
 
     // File System Access API, used by the devtools control.

@@ -23,8 +23,6 @@ import {
     MercatorCoordinate,
     FreeCameraOptions,
     Evented,
-    setRTLTextPlugin,
-    getRTLTextPluginStatus,
     addTileProvider,
     prewarm,
     clearPrewarmedResources,
@@ -133,9 +131,6 @@ new Evented();
 // setNow / restoreNow
 setNow(12345) satisfies void;
 restoreNow() satisfies void;
-
-// RTL plugin
-getRTLTextPluginStatus() satisfies string;
 
 // prewarm / clearPrewarmedResources
 prewarm() satisfies void;

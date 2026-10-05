@@ -49,16 +49,6 @@ mapboxgl.maxParallelImageRequests = 10;
  */
 mapboxgl.clearStorage(() => {});
 
-/**
- * Get RTL Text Plugin Status
- */
-mapboxgl.getRTLTextPluginStatus() satisfies mapboxgl.PluginStatus;
-
-/**
- * Set RTL Text Plugin
- */
-mapboxgl.setRTLTextPlugin("https://github.com", e => {}, false) satisfies void;
-
 mapboxgl.prewarm() satisfies void;
 
 mapboxgl.clearPrewarmedResources() satisfies void;

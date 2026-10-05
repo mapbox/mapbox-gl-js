@@ -16,7 +16,6 @@ import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from './geo/mercator_coordinate';
 import {Evented} from './util/evented';
 import config, {setAccessToken, setBaseApiUrl, setMaxParallelImageRequests, getDracoUrl, setDracoUrl, getMeshoptUrl, setMeshoptUrl, getBuildingGenUrl, setBuildingGenUrl} from './util/config';
-import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
 import {addTileProvider} from './source/tile_provider';
 import {getWorkerCount, setWorkerCount} from './util/worker_pool';
 import WorkerClass from './util/worker_class';
@@ -42,7 +41,6 @@ export type * from './source/source_types';
 export type * from './types/deprecated-aliases';
 
 export type {PointLike} from './types/point-like';
-export type {PluginStatus} from './source/rtl_text_plugin';
 
 export type {Event, ErrorEvent} from './util/evented';
 export type {GeoJSONFeature, TargetFeature} from './util/vectortile_to_geojson';
@@ -90,8 +88,6 @@ export type {
 const exported = {
     version,
     supported,
-    setRTLTextPlugin,
-    getRTLTextPluginStatus,
     setSdkInfo,
     addTileProvider,
     Map,
@@ -379,30 +375,6 @@ const exported = {
  *     alert('Your browser does not support Mapbox GL');
  * }
  * @see [Example: Check for browser support](https://www.mapbox.com/mapbox-gl-js/example/check-for-support/)
- */
-
-/**
- * Sets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text).
- * Necessary for supporting the Arabic and Hebrew languages, which are written right-to-left. Mapbox Studio loads this plugin by default.
- *
- * @function setRTLTextPlugin
- * @param {string} pluginURL URL pointing to the Mapbox RTL text plugin source.
- * @param {Function} callback Called with an error argument if there is an error, or no arguments if the plugin loads successfully.
- * @param {boolean} lazy If set to `true`, MapboxGL will defer loading the plugin until right-to-left text is encountered, and
- * right-to-left text will be rendered only after the plugin finishes loading.
- * @example
- * mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.4.0/mapbox-gl-rtl-text.js');
- * @see [Example: Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
- */
-
-/**
- * Gets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text) status.
- * The status can be `unavailable` (not requested or removed), `loading`, `loaded`, or `error`.
- * If the status is `loaded` and the plugin is requested again, an error will be thrown.
- *
- * @function getRTLTextPluginStatus
- * @example
- * const pluginStatus = mapboxgl.getRTLTextPluginStatus();
  */
 
 export default exported;

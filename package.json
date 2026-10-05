@@ -36,6 +36,7 @@
     "@eslint/compat": "^2.1.0",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
+    "@mapbox/mapbox-gl-rtl-text": "^1.0.0",
     "@mapbox/mapbox-gl-styles": "^2.2.0",
     "@mapbox/mapbox-gl-supported": "^4.0.0",
     "@mapbox/mvt-fixtures": "^4.0.0",

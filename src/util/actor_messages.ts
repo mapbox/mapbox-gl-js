@@ -6,7 +6,6 @@ import type {LayerSpecification, ProjectionSpecification, SourceSpecification} f
 import type {LoadGeoJSONRequest} from '../source/geojson_source';
 import type {LoadGeoJSONResult} from '../source/geojson_worker_source';
 import type {OverscaledTileID} from '../source/tile_id';
-import type {PluginState} from '../source/rtl_text_plugin';
 import type {StyleImageMap} from '../style/style_image';
 import type {TDecodingResult, TProcessingBatch} from '../data/mrt/types';
 import type {Source} from '../source/source';
@@ -161,11 +160,6 @@ export type WorkerInbox = {
     'setProjection': {
         params: ProjectionSpecification;
         result: void;
-    };
-
-    'syncRTLPluginState': {
-        params: PluginState;
-        result: boolean;
     };
 
     'updateLayers': {

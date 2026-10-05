@@ -56,11 +56,6 @@ import styleSpec from '../style-spec/reference/latest';
 import {getGlobalWorkerPool as getWorkerPool} from '../util/worker_pool_factory';
 import deref from '../style-spec/deref';
 import emptyStyle from '../style-spec/empty';
-import {
-    registerForPluginStateChange,
-    evented as rtlTextPluginEvented,
-    triggerPluginCompletionEvent
-} from '../source/rtl_text_plugin';
 import PauseablePlacement from './pauseable_placement';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
 import {GlobalPlacement} from '../placement/global_placement';
@@ -449,7 +444,6 @@ class Style extends Evented<MapEvents> {
     _drapingLoaded?: boolean;
     _initialBroadcastDone: boolean;
     _programPrecompiler: ProgramPrecompiler | null;
-    _rtlTextPluginCallback: (state: {pluginStatus: string; pluginURL: string | null | undefined}) => void;
     _changes: StyleChanges;
     _optionsChanged: boolean;
     _availableImages: ImageId[];
@@ -487,8 +481,6 @@ class Style extends Evented<MapEvents> {
     _hasAppearances: boolean;
 
     _hasDataDrivenEmissive: boolean;
-
-    static registerForPluginStateChange: typeof registerForPluginStateChange;
 
     constructor(map: MapboxMap, options: StyleOptions = {}) {
         super();
@@ -632,32 +624,6 @@ class Style extends Evented<MapEvents> {
         };
         this._styleColorThemeForScope = {};
         this._initialConfig = options.initialConfig;
-
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
-        this._rtlTextPluginCallback = Style.registerForPluginStateChange((event) => {
-            const state = {
-                pluginStatus: event.pluginStatus,
-                pluginURL: event.pluginURL
-            };
-            self.dispatcher.send('syncRTLPluginState', state)
-                .then((results) => {
-                    triggerPluginCompletionEvent(null);
-                    const allComplete = results.every((elem) => elem);
-                    if (allComplete) {
-                        for (const id in self._sourceCaches) {
-                            const sourceCache = self._sourceCaches[id];
-                            const sourceCacheType = sourceCache.getSource().type;
-                            if (sourceCacheType === 'vector' || sourceCacheType === 'geojson') {
-                                sourceCache.reload(); // Should be a no-op if the plugin loads before any tiles load
-                            }
-                        }
-                    }
-                })
-                .catch((err: Error) => {
-                    triggerPluginCompletionEvent(err);
-                });
-        });
 
         this.on('data', (event) => {
             if (event.dataType !== 'source' || event.sourceDataType !== 'metadata') {
@@ -4581,8 +4547,6 @@ class Style extends Evented<MapEvents> {
             this._spriteRequest = null;
         }
 
-        rtlTextPluginEvented.off('pluginStateChange', this._rtlTextPluginCallback);
-
         for (const layerId in this._mergedLayers) {
             const layer = this._mergedLayers[layerId];
             layer.setEventedParent(null);
@@ -5411,7 +5375,5 @@ class Style extends Evented<MapEvents> {
         });
     }
 }
-
-Style.registerForPluginStateChange = registerForPluginStateChange;
 
 export default Style;
