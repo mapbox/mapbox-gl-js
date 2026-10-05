@@ -5,8 +5,9 @@
       "width": 514,
       "height": 514,
       "pixelRatio": 0.25,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2041"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - https://mapbox.atlassian.net/browse/MAPSNAT-2041"}
+        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-2041"}
       ]
     }
   },

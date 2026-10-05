@@ -17,7 +17,7 @@
         ["wait"]
       ],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - Not yet implemented"}
+        {"platform-tag-contains": "native", "reason": "Not yet implemented"}
       ]
     }
   },

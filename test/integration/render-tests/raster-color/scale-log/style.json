@@ -19,6 +19,7 @@
           "threshold": 0.02
         }
       ],
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-844"],
       "skip-test": [
         {
           "platform-tag-contains": "native-android",

@@ -4,6 +4,7 @@
     "test": {
       "width": 256,
       "height": 256,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-2237"],
       "skip-test": [
         {"platform-tag-contains": "native-android-gl-mali", "reason": "To be fixed https://mapbox.atlassian.net/browse/MAPS3D-2237"},
         {"platform-tag-contains": "native-android-gl-powervr", "reason": "To be fixed - https://mapbox.atlassian.net/browse/MAPS3D-2237"}

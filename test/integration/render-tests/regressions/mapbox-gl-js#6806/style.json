@@ -5,6 +5,7 @@
     "test": {
       "height": 64,
       "width": 64,
+      "tickets": ["https://github.com/mapbox/mapbox-gl-js/pull/6812"],
       "skip-test": [
         {"platform-tag-contains": "native-android", "reason": "pending https://github.com/mapbox/mapbox-gl-js/pull/6812"}
       ],

@@ -19,7 +19,7 @@
         ]
       ],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - padding debug option is not implemented in renderer"}
+        {"platform-tag-contains": "native", "reason": "padding debug option is not implemented in renderer"}
       ]
     }
   },

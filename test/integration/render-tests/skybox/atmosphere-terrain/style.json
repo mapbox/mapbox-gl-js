@@ -7,6 +7,7 @@
       "operations": [
         ["wait"]
       ],
+      "tickets": ["https://github.com/mapbox/mapbox-gl-js/issues/12407", "https://mapbox.atlassian.net/browse/MAPSNAT-2137"],
       "skip-test": [
         {"platform-tag-contains": "web-windows-chrome", "reason": "Timing out on CI. Tracked in https://github.com/mapbox/mapbox-gl-js/issues/12407"},
         {"platform-tag-contains": "native-ios", "reason": "skip due to CI timeout: https://mapbox.atlassian.net/browse/MAPSNAT-2137"},

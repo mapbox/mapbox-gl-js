@@ -11,6 +11,7 @@
             600
         ]
       ],
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-608", "https://mapbox.atlassian.net/browse/GLJS-398"],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Flaky, https://mapbox.atlassian.net/browse/GLJS-608"},
         {"platform-tag-contains": "web-linux-chrome", "reason": "Timing out https://mapbox.atlassian.net/browse/GLJS-398"},

@@ -8,9 +8,10 @@
         ["setProjection", "albers"],
         ["wait"]
       ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1494"],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "line-width projected"},
-        {"platform-tag-contains": "native", "reason": "skip - Known issues https://mapbox.atlassian.net/browse/MAPS3D-1494"}
+        {"platform-tag-contains": "native", "reason": "Known issues https://mapbox.atlassian.net/browse/MAPS3D-1494"}
       ]
     }
   },

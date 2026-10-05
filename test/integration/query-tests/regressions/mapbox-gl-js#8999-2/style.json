@@ -9,6 +9,7 @@
           100,
           40
       ],
+      "tickets": ["https://github.com/mapbox/mapbox-gl-js/pull/9138"],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-js/pull/9138"}
       ]

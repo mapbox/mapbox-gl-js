@@ -6,7 +6,7 @@
       "height": 512,
       "debug": true,
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - GL JS specific"}
+        {"platform-tag-contains": "native", "reason": "GL JS specific"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.005}

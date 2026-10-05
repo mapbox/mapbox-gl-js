@@ -4,6 +4,7 @@
     "test": {
       "height": 512,
       "width": 512,
+      "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/pull/5693"],
       "skip-test": [
         {"platform-tag-contains": "native-android-gl-adreno", "reason": "Hard cutoff shadow issue that is not present on Android Mali. https://github.com/mapbox/mapbox-gl-native-internal/pull/5693"},
         {"platform-tag-contains": "native-android-gl-mali", "reason": "Hard cutoff shadow issue that is not present on Android Mali. https://github.com/mapbox/mapbox-gl-native-internal/pull/5693"},

@@ -4,6 +4,7 @@
     "test": {
       "collisionDebug": true,
       "height": 256,
+      "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/3841"],
       "skip-test": [
         {"platform-tag-contains": "native-linux-egl", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/3841"}
       ],

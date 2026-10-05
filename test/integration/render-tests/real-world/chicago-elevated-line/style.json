@@ -41,6 +41,7 @@
         ["wait"],
         ["wait"]
       ],
+      "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/10412"],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/10412"}
       ]

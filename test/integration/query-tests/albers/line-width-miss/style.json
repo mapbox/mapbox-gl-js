@@ -1,6 +1,6 @@
 {
   "version": 8,
-  "_comment": "Miss counterpart to line-width-hit: y=212 is outside even the over-large query region described there, so no feature may be returned.",
+  "description": "Miss counterpart to line-width-hit: y=212 is outside even the over-large query region described there, so no feature may be returned.",
   "metadata": {
     "test": {
       "width": 512,

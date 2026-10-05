@@ -4,6 +4,7 @@
     "test": {
       "width": 512,
       "height": 512,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-671"],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Unimplemented in -js: https://mapbox.atlassian.net/browse/MAPS3D-671"}
       ],

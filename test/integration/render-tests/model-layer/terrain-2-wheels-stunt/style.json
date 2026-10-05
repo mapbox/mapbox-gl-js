@@ -5,6 +5,7 @@
       "width": 1024,
       "height": 1024,
       "pixelRatio": 0.5,
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-608"],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Flaky, https://mapbox.atlassian.net/browse/GLJS-608"}
       ],

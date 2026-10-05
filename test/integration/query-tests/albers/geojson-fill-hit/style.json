@@ -1,6 +1,6 @@
 {
   "version": 8,
-  "_comment": "Same reprojected hit test for a GeoJSON polygon source.",
+  "description": "Same reprojected hit test for a GeoJSON polygon source.",
   "metadata": {
     "test": {
       "width": 512,

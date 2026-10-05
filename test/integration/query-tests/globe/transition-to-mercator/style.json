@@ -9,6 +9,7 @@
         [270, 56],
         [270, 60]
       ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3056"],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-3056"}
       ]

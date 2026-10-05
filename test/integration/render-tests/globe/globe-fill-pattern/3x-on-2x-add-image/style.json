@@ -73,8 +73,9 @@
           "wait"
         ]
       ],
+      "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/3348"],
       "skip-test": [
-        {"platform-tag-contains": "native-android-gl-mali", "reason": "skip - https://github.com/mapbox/mapbox-gl-native-internal/issues/3348"}
+        {"platform-tag-contains": "native-android-gl-mali", "reason": "https://github.com/mapbox/mapbox-gl-native-internal/issues/3348"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.001}

@@ -8,6 +8,7 @@
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0001}
       ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4059"],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-4059"}
       ]

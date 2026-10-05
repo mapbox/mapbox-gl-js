@@ -8,6 +8,7 @@
         ["setProjection", "albers"],
         ["wait"]
       ],
+      "tickets": ["https://github.com/mapbox/mapbox-gl-js/issues/11221"],
       "skip-test": [
         {"platform-tag-contains": "web-macos-chrome", "reason": "Pattern should be seamless across tile edges https://github.com/mapbox/mapbox-gl-js/issues/11221"},
         {"platform-tag-contains": "web-linux", "reason": "Pattern should be seamless across tile edges https://github.com/mapbox/mapbox-gl-js/issues/11221"},

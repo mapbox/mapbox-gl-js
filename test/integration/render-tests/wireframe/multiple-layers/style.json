@@ -7,7 +7,7 @@
       "showLayers2DWireframe": true,
       "showLayers3DWireframe": true,
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - needs issue"}
+        {"platform-tag-contains": "native", "reason": "needs issue"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.008}

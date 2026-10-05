@@ -4,8 +4,9 @@
     "test": {
       "height": 300,
       "width": 512,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2492"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - needs fix https://mapbox.atlassian.net/browse/MAPSNAT-2492"}
+        {"platform-tag-contains": "native", "reason": "needs fix https://mapbox.atlassian.net/browse/MAPSNAT-2492"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0021}

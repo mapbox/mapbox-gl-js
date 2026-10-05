@@ -7,7 +7,7 @@ import {deepEqual, generateDiffLog} from '../lib/json-diff.js';
 import {integrationTests} from 'virtual:integration-tests';
 import {getStatsHTML, setupHTML, updateHTML, registerSkipped, fragmentIdFor} from '../../util/html_generator';
 import {mapboxgl} from '../lib/mapboxgl.js';
-import {sendFragment, sendBrowserDiagnostics, detectPlatformTagFromUserAgent, matchSkipTestRule, type SkipRuleMatch} from '../lib/utils';
+import {sendFragment, sendBrowserDiagnostics, detectPlatformTagFromUserAgent, matchSkipTestRule, parseTickets, validateTestFile, type SkipRuleMatch} from '../lib/utils';
 import {transformRequest} from '../lib/transform-request.js';
 
 setupHTML(import.meta.env.VITE_EMBED_PASSED_IMAGES === 'true');
@@ -36,6 +36,7 @@ type TestMetadata = {
     expectedPath?: string;
     imgDiff?: string;
     error?: Error;
+    tickets?: string[];
 }
 
 const container = document.createElement('div');
@@ -56,6 +57,7 @@ const embedPassedImages = import.meta.env.VITE_EMBED_PASSED_IMAGES === 'true';
 const getTest = (queryTestName: string, preflightError?: unknown) => async () => {
     let errorMessage: string | undefined;
     reportFragmentName = queryTestName;
+    const {tickets} = parseTickets(integrationTests[queryTestName]?.style?.metadata?.test?.tickets);
     try {
         if (preflightError) {
             throw preflightError;
@@ -128,6 +130,7 @@ const getTest = (queryTestName: string, preflightError?: unknown) => async () =>
         const testMetaData: TestMetadata = {
             name: queryTestName,
             testPath: `${testPath}/style.json`,
+            tickets,
             width: options.width,
             height: options.height,
             minDiff: options.minDiff || 0,
@@ -176,6 +179,7 @@ const getTest = (queryTestName: string, preflightError?: unknown) => async () =>
             name: queryTestName,
             status: 'failed',
             error,
+            tickets,
             errors: []
         });
 
@@ -190,7 +194,8 @@ const skippedTests: Record<string, SkipRuleMatch> = {};
 
 Object.keys(integrationTests).forEach((testName) => {
     const style = integrationTests[testName]?.style;
-    const {match: skipMatch, validationError} = matchSkipTestRule(style?.metadata?.test?.['skip-test'], platformTag);
+    const {match: skipMatch, validationError: skipError} = matchSkipTestRule(style?.metadata?.test?.['skip-test'], platformTag);
+    const validationError = validateTestFile(style) || skipError;
     if (validationError) {
         test(testName, {timeout}, getTest(testName, new Error(validationError)));
     } else if (skipMatch) {
@@ -211,7 +216,8 @@ afterAll(async () => {
                 testName,
                 testPath ? `${testPath}/style.json` : undefined,
                 skipMatch.reasons,
-                skipMatch.rules
+                skipMatch.rules,
+                parseTickets(integrationTests[testName]?.style?.metadata?.test?.tickets).tickets
             )
         );
     }

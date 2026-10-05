@@ -13,7 +13,7 @@
             ["updateFakeCanvas", "canvas", "./image/0-half-size.png", "./image/0-half-size.png"]
         ],
         "skip-test": [
-          {"platform-tag-contains": "native", "reason": "skip - js specific"}
+          {"platform-tag-contains": "native", "reason": "js specific"}
         ]
       }
     },

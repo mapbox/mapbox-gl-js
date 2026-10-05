@@ -4,6 +4,7 @@
     "test": {
       "width": 32,
       "height": 64,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3482"],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Broken in similar way as gl-native https://mapbox.atlassian.net/browse/MAPSNAT-3482"}
       ]

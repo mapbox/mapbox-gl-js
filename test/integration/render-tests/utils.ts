@@ -68,6 +68,7 @@ export function parseOptions(currentFixture, style, platformTag) {
         ...testMetadata
     };
     delete options['image-threshold']; // handled above; don't let it leak into the options object
+    delete options.tickets; // report-only metadata, not a map option
 
     if (import.meta.env.VITE_SPRITE_FORMAT !== 'null' && !options.spriteFormat) {
         options.spriteFormat = import.meta.env.VITE_SPRITE_FORMAT;

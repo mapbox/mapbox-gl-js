@@ -8,6 +8,7 @@
             [285, 270],
             [315, 300]
         ],
+        "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1928"],
         "skip-test": [
           {"platform-tag-contains": "web", "reason": "Non-deterministic"},
           {"platform-tag-contains": "native-linux", "reason": "https://mapbox.atlassian.net/browse/MAPS3D-1928"}

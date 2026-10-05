@@ -4,6 +4,7 @@
     "test": {
       "width": 512,
       "height": 512,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3867"],
       "skip-test": [
         {"platform-tag-contains": "native-android-gl-powervr", "reason": "To be fixed - https://mapbox.atlassian.net/browse/MAPSNAT-3867"}
       ],

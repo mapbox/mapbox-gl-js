@@ -3,10 +3,11 @@
    "metadata": {
     "test": {
       
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3819"],
       "skip-test": [
-        {"platform-tag-contains": "native-android-gl-mali", "reason": "Fails on this platform in CI (originally skipped for Firebase timeouts, MAPSNAT-3819)"},
-        {"platform-tag-contains": "native-android-gl-powervr", "reason": "Fails on this platform in CI (originally skipped for Firebase timeouts, MAPSNAT-3819)"},
-        {"platform-tag-contains": "native-ios", "reason": "MAPSNAT-3819: skip to stay within Firebase timout, move to internal tests once available - covered by new LOD counterpart"}
+        {"platform-tag-contains": "native-android-gl-mali", "reason": "Fails on this platform in CI (originally skipped for Firebase timeouts, https://mapbox.atlassian.net/browse/MAPSNAT-3819)"},
+        {"platform-tag-contains": "native-android-gl-powervr", "reason": "Fails on this platform in CI (originally skipped for Firebase timeouts, https://mapbox.atlassian.net/browse/MAPSNAT-3819)"},
+        {"platform-tag-contains": "native-ios", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-3819: skip to stay within Firebase timout, move to internal tests once available - covered by new LOD counterpart"}
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}

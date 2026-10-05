@@ -10,7 +10,7 @@
           ]
       ],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - js specific"}
+        {"platform-tag-contains": "native", "reason": "js specific"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00025}

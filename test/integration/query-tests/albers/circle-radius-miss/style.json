@@ -1,6 +1,6 @@
 {
   "version": 8,
-  "_comment": "Miss counterpart to circle-radius-hit: x=78 is outside the drawn circle. It would be a hit if the radius were scaled by an uncompensated Mercator pixelToTileUnitsFactor, so this pins the compensation described there.",
+  "description": "Miss counterpart to circle-radius-hit: x=78 is outside the drawn circle. It would be a hit if the radius were scaled by an uncompensated Mercator pixelToTileUnitsFactor, so this pins the compensation described there.",
   "metadata": {
     "test": {
       "width": 512,

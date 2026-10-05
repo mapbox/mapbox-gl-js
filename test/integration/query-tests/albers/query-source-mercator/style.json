@@ -1,5 +1,6 @@
 {
   "version": 8,
+  "description": "Mercator twin of query-source-albers. Same source, same filter, and deliberately the same expected.json: it establishes the baseline that switching projection must not perturb.",
   "metadata": {
     "test": {
       "width": 512,
@@ -190,6 +191,5 @@
         "fill-color": "#3060c0"
       }
     }
-  ],
-  "_comment": "Mercator twin of query-source-albers. Same source, same filter, and deliberately the same expected.json: it establishes the baseline that switching projection must not perturb."
+  ]
 }

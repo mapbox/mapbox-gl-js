@@ -1,8 +1,8 @@
 {
     "version": 8,
+    "description": "Because text-allow-overlap is true, the query results will be reordered based on rotated rendering order (compare to rotated-after-insert, in which the results match the order in the original data)",
     "metadata": {
         "test": {
-            "description": "Because text-allow-overlap is true, the query results will be reordered based on rotated rendering order (compare to rotated-after-insert, in which the results match the order in the original data)",
             "width": 256,
             "height": 256,
             "queryGeometry": [

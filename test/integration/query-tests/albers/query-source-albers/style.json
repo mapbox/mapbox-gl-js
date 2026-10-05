@@ -1,5 +1,6 @@
 {
   "version": 8,
+  "description": "querySourceFeatures under Albers with a property filter, mirroring the FIPS lookup in requirement 6. Source features come from the tile's own geometry and are never reprojected, so this must return exactly what the Mercator twin (query-source-mercator) returns - the two expected.json files are identical, and that equality is the actual assertion.",
   "metadata": {
     "test": {
       "width": 512,
@@ -193,6 +194,5 @@
   ],
   "projection": {
     "name": "albers"
-  },
-  "_comment": "querySourceFeatures under Albers with a property filter, mirroring the FIPS lookup in requirement 6. Source features come from the tile's own geometry and are never reprojected, so this must return exactly what the Mercator twin (query-source-mercator) returns - the two expected.json files are identical, and that equality is the actual assertion."
+  }
 }

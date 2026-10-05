@@ -6,7 +6,7 @@
             "spriteFormat": "raster",
             "showElevationIdDebug": true,
             "skip-test": [
-                {"platform-tag-contains": "native", "reason": "skip - Tested separately in internal tests with different data"}
+                {"platform-tag-contains": "native", "reason": "Tested separately in internal tests with different data"}
             ],
             "image-threshold": [
                 {"platform-tag-contains": "", "threshold": 0.00035}

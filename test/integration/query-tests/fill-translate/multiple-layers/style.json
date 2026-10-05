@@ -7,6 +7,7 @@
             "queryGeometry": [
                 20, 30
             ],
+            "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/12701"],
             "skip-test": [
                 {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/12701"}
             ]

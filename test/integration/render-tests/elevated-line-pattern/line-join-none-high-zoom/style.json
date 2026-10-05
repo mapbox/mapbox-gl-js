@@ -5,6 +5,7 @@
       "pixelRatio": 2,
       "width": 360,
       "height": 120,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1544"],
       "skip-test": [
         {"platform-tag-contains": "native-ios", "reason": "To be fixed https://mapbox.atlassian.net/browse/MAPS3D-1544"}
       ],

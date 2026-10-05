@@ -42,7 +42,7 @@
         ]
       ],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - to be ported"}
+        {"platform-tag-contains": "native", "reason": "to be ported"}
       ]
     }
   },

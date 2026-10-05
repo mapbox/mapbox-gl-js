@@ -1,6 +1,6 @@
 {
     "version": 8,
-    "_comment": "Point 6px off a line whose data-driven width is 20px must hit it, so the query must be padded by the largest per-feature width.",
+    "description": "Point 6px off a line whose data-driven width is 20px must hit it, so the query must be padded by the largest per-feature width.",
     "metadata": {
         "test": {
             "width": 64,

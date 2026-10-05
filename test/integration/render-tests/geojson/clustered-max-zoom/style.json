@@ -4,6 +4,7 @@
     "test": {
       "width": 32,
       "height": 32,
+      "tickets": ["https://github.com/mapbox/mapbox-gl-js/pull/10300"],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-js/pull/10300"}
       ]

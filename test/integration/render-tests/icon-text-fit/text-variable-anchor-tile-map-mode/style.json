@@ -5,6 +5,7 @@
       
       "mapMode": "tile",
       "debug": true,
+      "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/523"],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Mapbox-gl-js does not support tile-mode"},
         {"platform-tag-contains": "native-linux", "reason": "https://github.com/mapbox/mapbox-gl-native-internal/issues/523"},

@@ -4,8 +4,9 @@
     "test": {
       "width": 250,
       "height": 64,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2559"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - https://mapbox.atlassian.net/browse/MAPSNAT-2559"}
+        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-2559"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "web", "threshold": 0.00095}

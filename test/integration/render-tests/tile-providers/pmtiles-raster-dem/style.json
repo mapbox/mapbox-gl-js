@@ -5,7 +5,7 @@
       "height": 256,
       "width": 256,
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - GL JS specific"}
+        {"platform-tag-contains": "native", "reason": "GL JS specific"}
       ]
     }
   },

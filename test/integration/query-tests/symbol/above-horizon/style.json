@@ -19,6 +19,7 @@
           700
         ]
       ],
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-892"],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "To be ported: https://mapbox.atlassian.net/browse/GLJS-892"}
       ]

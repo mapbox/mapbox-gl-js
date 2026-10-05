@@ -4,6 +4,7 @@
     "test": {
       "debug": true,
       "mapMode": "tile",
+      "tickets": ["https://github.com/mapbox/api-gl/issues/1265"],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Mapbox-gl-js does not support tile-mode"},
         {"platform-tag-contains": "native", "reason": "Slight difference because of anti-aliasing"},

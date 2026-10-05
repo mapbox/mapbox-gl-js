@@ -130,6 +130,13 @@ function getMatchingRules(rules: string[], platformTag: string): number[] {
     return matches;
 }
 
+// Jira issue or GitHub issue / pull request URL. The groups capture the parts of the shorthand.
+const TICKET_URL_PATTERN = /^https:\/\/(?:mapbox\.atlassian\.net\/browse\/([A-Z][A-Z0-9]+-[1-9][0-9]*)|github\.com\/([A-Za-z0-9-]+\/[A-Za-z0-9._-]+)\/(?:issues|pull)\/([1-9][0-9]*))$/;
+// Jira key (MAPS3D-1494) or GitHub reference (owner/repo#N). At least 4 characters in the project key, so words
+// like UTF-8 or SHA-256 are not taken as tickets.
+const TICKET_NAME_PATTERN = /^(?:[A-Z][A-Z0-9]{3,}-[1-9][0-9]*|[A-Za-z0-9-]+\/[A-Za-z0-9._-]+#[1-9][0-9]*)$/;
+const TICKET_URL_EXAMPLES = `'https://mapbox.atlassian.net/browse/MAPS3D-1494' or 'https://github.com/mapbox/mapbox-gl-js/issues/1234'`;
+
 export function matchSkipTestRule(skipTestValue: unknown, platformTag: string | undefined): SkipRuleEvaluation {
     if (!platformTag) return {};
     if (!skipTestValue) return {};
@@ -199,6 +206,116 @@ export function matchSkipTestRule(skipTestValue: unknown, platformTag: string | 
     }
 
     return {match: {rules: matchedRules, reasons: matchedReasons}};
+}
+
+export type TicketsEvaluation = {
+    tickets?: string[];
+    validationError?: string;
+};
+
+/** Validates `metadata.test.tickets`. */
+export function parseTickets(ticketsValue: unknown): TicketsEvaluation {
+    if (ticketsValue === undefined) return {};
+    if (!Array.isArray(ticketsValue)) {
+        return {validationError: `'metadata.test.tickets' must be an array of ticket URLs.`};
+    }
+    for (const [index, ticket] of ticketsValue.entries()) {
+        if (typeof ticket !== 'string' || !TICKET_URL_PATTERN.test(ticket)) {
+            return {validationError: `Invalid entry at index ${index} of 'metadata.test.tickets'. Expected a full ticket URL such as ${TICKET_URL_EXAMPLES}.`};
+        }
+    }
+    return {tickets: ticketsValue as string[]};
+}
+
+const URL_IN_TEXT = /https?:\/\/[^\s"'()[\]<>,;]+/g;
+
+/** Shorthand of a ticket URL (`MAPS3D-1494`, `owner/repo#N`); undefined for any other URL. */
+function ticketName(url: string): string | undefined {
+    const match = TICKET_URL_PATTERN.exec(url);
+    if (!match) return undefined;
+    return match[1] || `${match[2]}#${match[3]}`;
+}
+
+const TICKET_TOKEN = /[A-Za-z0-9._/#-]+/g;
+
+/** Ticket shorthands mentioned as whole words in free text, without duplicates. */
+function findTicketNames(text: string): string[] {
+    const names: string[] = [];
+    for (const match of text.matchAll(TICKET_TOKEN)) {
+        const token = match[0].replace(/\.+$/, '');
+        if (TICKET_NAME_PATTERN.test(token) && !names.includes(token)) names.push(token);
+    }
+    return names;
+}
+
+/** URLs in free text, without duplicates and without trailing dots and colons. */
+function findUrls(text: string): string[] {
+    const urls: string[] = [];
+    for (const match of text.matchAll(URL_IN_TEXT)) {
+        const url = match[0].replace(/[.:]+$/, '');
+        if (!urls.includes(url)) urls.push(url);
+    }
+    return urls;
+}
+
+const REMOVED_COMMENT_KEYS = ['comment', '_comment'];
+const REMOVED_COMMENT_KEYS_ALL = ['comment', '_comment', 'description'];
+
+function asObject(value: unknown): Record<string, unknown> | undefined {
+    return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : undefined;
+}
+
+function checkNoCommentKeys(object: Record<string, unknown>, location: string, keys: string[]): string | undefined {
+    const key = keys.find((k) => k in object);
+    if (key === undefined) return undefined;
+    return `'${key}' is no longer supported (found at ${location}). Move its text to the top-level 'description' field of the test file.`;
+}
+
+function checkRuleReasons(testMetadata: Record<string, unknown>, field: string, tickets: string[]): string | undefined {
+    const rules = testMetadata[field];
+    if (!Array.isArray(rules)) return undefined;
+    for (const [index, rule] of rules.entries()) {
+        const reason = asObject(rule)?.reason;
+        if (typeof reason !== 'string') continue;
+        for (const url of findUrls(reason)) {
+            if (tickets.includes(url)) continue;
+            if (!TICKET_URL_PATTERN.test(url)) {
+                return `The reason of ${field} rule ${index} contains the URL '${url}', which is not a ticket URL. A reason may only link tickets such as ${TICKET_URL_EXAMPLES}, and each must also be listed in 'metadata.test.tickets'.`;
+            }
+            return `Ticket '${url}' is mentioned in the reason of ${field} rule ${index}, but is missing from 'metadata.test.tickets'. Every ticket in a skip-test or ignore-metrics reason must also be listed there, e.g. "tickets": ["${url}"].`;
+        }
+        for (const name of findTicketNames(reason)) {
+            if (tickets.some((ticket) => ticketName(ticket) === name)) continue;
+            const [repo, number] = name.split('#');
+            const example = number ? `https://github.com/${repo}/issues/${number}` : `https://mapbox.atlassian.net/browse/${name}`;
+            return `Ticket '${name}' is mentioned in the reason of ${field} rule ${index}, but its URL is missing from 'metadata.test.tickets'. Every ticket in a skip-test or ignore-metrics reason must also be listed there as a full URL, e.g. "tickets": ["${example}"].`;
+        }
+    }
+    return undefined;
+}
+
+/**
+ * Checks the platform-independent conventions of a test file (`style.json` / `test.json`): no `comment` /
+ * `_comment` keys, no `description` key in `metadata` or `metadata.test`, `metadata.test.tickets` holds ticket
+ * URLs, and every ticket mentioned in a `skip-test` or `ignore-metrics` reason is listed in `tickets`. Returns an
+ * error message, or undefined if the file is valid.
+ */
+export function validateTestFile(file: unknown): string | undefined {
+    const root = asObject(file);
+    if (!root) return undefined;
+    const rootError = checkNoCommentKeys(root, 'the top level', REMOVED_COMMENT_KEYS);
+    if (rootError) return rootError;
+    const metadata = asObject(root.metadata);
+    if (!metadata) return undefined;
+    const testError1 = checkNoCommentKeys(metadata, `'metadata'`, REMOVED_COMMENT_KEYS_ALL);
+    if (testError1) return testError1;
+    const testMetadata = asObject(metadata.test);
+    if (!testMetadata) return undefined;
+    const testError2 = checkNoCommentKeys(testMetadata, `'metadata.test'`, REMOVED_COMMENT_KEYS_ALL);
+    if (testError2) return testError2;
+    const {tickets = [], validationError} = parseTickets(testMetadata.tickets);
+    if (validationError) return validationError;
+    return checkRuleReasons(testMetadata, 'skip-test', tickets) || checkRuleReasons(testMetadata, 'ignore-metrics', tickets);
 }
 
 type ImageThresholdRule = {

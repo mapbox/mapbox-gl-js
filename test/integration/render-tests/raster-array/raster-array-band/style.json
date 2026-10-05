@@ -14,6 +14,7 @@
         ],
         ["wait"]
       ],
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-844"],
       "skip-test": [
         {"platform-tag-contains": "native-android", "reason": "Fails due to https://mapbox.atlassian.net/browse/GLJS-844"}
       ]

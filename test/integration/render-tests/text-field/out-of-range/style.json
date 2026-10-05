@@ -4,8 +4,9 @@
     "test": {
       "height": 32,
       "width": 128,
+      "tickets": ["https://mapbox.atlassian.net/browse/RICO-10069"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - check in native if porting is needed https://mapbox.atlassian.net/browse/RICO-10069"}
+        {"platform-tag-contains": "native", "reason": "check in native if porting is needed https://mapbox.atlassian.net/browse/RICO-10069"}
       ]
     }
   },

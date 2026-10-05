@@ -20,6 +20,7 @@ export type TestReportData = {
     skippedReasons?: string[];
     matchedSkipRules?: string[];
     matchedExpectedFile?: string;
+    tickets?: string[];
 };
 
 type DecoratedTestData = TestReportData & {
@@ -42,6 +43,9 @@ const renderResultHTML = compile(`
     <h2><span class="label" style="background: <%= r.color %>"><%= r.status %></span> <%= r.name %></h2>
     <% if (r.testPath) { %>
       <p class="diff"><strong>Test path:</strong> <%= r.testPath %></p>
+    <% } %>
+    <% if (r.tickets && r.tickets.length) { %>
+      <p class="tickets"><strong>Tickets:</strong><% for (const ticket of r.tickets) { %> <a href="<%= ticket %>"><%= ticket %></a><% } %></p>
     <% } %>
     <% if (r.showImages !== false && (!r.error || r.actual || r.expected)) { %>
       <% if (r.isRenderTest && (r.actual || r.expected)) { %>
@@ -121,6 +125,7 @@ img { margin: 0 10px 10px 0; border: 1px dotted #ccc; image-rendering: pixelated
 .diff { color: #777; }
 .retry-note { color: #b26a00; }
 .ignore-reason { color: #555; font-style: italic; }
+.tickets { color: #555; }
 .test p, .test pre { margin: 0 0 10px; }
 .test pre { font-size: 14px; }
 .label { color: white; font-size: 18px; padding: 2px 6px 3px; border-radius: 3px; margin-right: 3px; vertical-align: bottom; display: inline-block; }
@@ -324,7 +329,7 @@ function runReportUpdateState(): void {
     (window as ReportWindow).updateState?.();
 }
 
-export function registerSkipped(name: string, testPath?: string, skippedReasons?: string[], matchedSkipRules?: string[]): string {
+export function registerSkipped(name: string, testPath?: string, skippedReasons?: string[], matchedSkipRules?: string[], tickets?: string[]): string {
     return updateHTML({
         name,
         status: 'skipped',
@@ -332,6 +337,7 @@ export function registerSkipped(name: string, testPath?: string, skippedReasons?
         testPath,
         skippedReasons,
         matchedSkipRules,
+        tickets,
     });
 }
 

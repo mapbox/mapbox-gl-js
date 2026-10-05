@@ -1,6 +1,6 @@
 {
   "version": 8,
-  "_comment": "GeoJSON polygon must not be hit at its unreprojected Mercator position.",
+  "description": "GeoJSON polygon must not be hit at its unreprojected Mercator position.",
   "metadata": {
     "test": {
       "width": 512,

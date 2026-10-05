@@ -4,6 +4,7 @@
     "test": {
       "width": 512,
       "height": 64,
+      "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/12888"],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/12888"}
       ]

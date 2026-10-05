@@ -1,6 +1,6 @@
 {
-  "_comment": "Checks traffic-layer conflation: SD traffic lines hidden in HD coverage area (sdCoverageFadeRange=[14.4,14.9], sdCoverageSourceLayers=[(sd-traffic)traffic]), HD traffic lines visible. SD road lines hidden via hd_covered property. Berlin area at zoom 15. hd-area fill-opacity 0.3 is intentional for coverage regression monitoring. Structure matches production debug style: empty root + basemap import (background + SD layers) + hd-roads-config import (HD overlay).",
   "version": 8,
+  "description": "Same view as berlin-traffic-zoom15, with showHDTraffic switched off by a setConfigProperty operation after the first frames. Zoom 15 is above ceil(sdCoverageFadeRange.max), so the parse removed the SD traffic features HD covers, and the render-time path cannot draw back features the parse removed. Switching HD off therefore has to relayout those tiles. hd-coverage-helper is gated on the same config as the HD traffic layers so that hiding them also withdraws the coverage they justify. The expectation is a render of this style with showHDTraffic already false at load: the runtime flip must land on the same picture. Checks traffic-layer conflation: SD traffic lines hidden in HD coverage area (sdCoverageFadeRange=[14.4,14.9], sdCoverageSourceLayers=[(sd-traffic)traffic]), HD traffic lines visible. SD road lines hidden via hd_covered property. Berlin area at zoom 15. hd-area fill-opacity 0.3 is intentional for coverage regression monitoring. Structure matches production debug style: empty root + basemap import (background + SD layers) + hd-roads-config import (HD overlay).",
   "metadata": {
     "test": {
       "width": 600,
@@ -794,6 +794,5 @@
         ]
       }
     }
-  ],
-  "description": "Same view as berlin-traffic-zoom15, with showHDTraffic switched off by a setConfigProperty operation after the first frames. Zoom 15 is above ceil(sdCoverageFadeRange.max), so the parse removed the SD traffic features HD covers, and the render-time path cannot draw back features the parse removed. Switching HD off therefore has to relayout those tiles. hd-coverage-helper is gated on the same config as the HD traffic layers so that hiding them also withdraws the coverage they justify. The expectation is a render of this style with showHDTraffic already false at load: the runtime flip must land on the same picture."
+  ]
 }

@@ -1,6 +1,6 @@
 {
   "version": 8,
-  "_comment": "Mercator twin of query-source-vector-albers; same source layer, same filter, and deliberately the same expected.json.",
+  "description": "Mercator twin of query-source-vector-albers; same source layer, same filter, and deliberately the same expected.json.",
   "metadata": {
     "test": {
       "width": 512,

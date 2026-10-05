@@ -4,6 +4,7 @@
     "test": {
       "width": 64,
       "height": 64,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2636"],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-2636"},
         {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-2636"}

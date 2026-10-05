@@ -1,6 +1,6 @@
 {
   "version": 8,
-  "_comment": "querySourceFeatures on a vector source, restricted with sourceLayers plus a property filter - the exact shape of the FIPS lookup in requirement 6. Its Mercator twin (query-source-vector-mercator) carries an identical expected.json, so the pair asserts that source features, which are read straight from tile geometry and never reprojected, are unaffected by the active projection.",
+  "description": "querySourceFeatures on a vector source, restricted with sourceLayers plus a property filter - the exact shape of the FIPS lookup in requirement 6. Its Mercator twin (query-source-vector-mercator) carries an identical expected.json, so the pair asserts that source features, which are read straight from tile geometry and never reprojected, are unaffected by the active projection.",
   "metadata": {
     "test": {
       "width": 512,

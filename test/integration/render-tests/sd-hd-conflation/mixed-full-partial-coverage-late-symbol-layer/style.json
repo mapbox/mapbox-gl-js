@@ -1,5 +1,5 @@
 {
-  "description": "Mixed HD coverage: some road classes are fully covered and others only partly. Fully covered SD (magenta primary line + P symbols) must disappear; partly covered SD (cyan pedestrian line + E symbols) may remain only where HD does not cover it.",
+  "description": "Same scene as mixed-full-partial-coverage, but the sd-primary-symbols layer is added only after the HD coverage tile has loaded. Symbols have no draw-time hiding, so the covered ones can only be removed by the parse. The result must match mixed-full-partial-coverage, where the layer was present from the start. Mixed HD coverage: some road classes are fully covered and others only partly. Fully covered SD (magenta primary line + P symbols) must disappear; partly covered SD (cyan pedestrian line + E symbols) may remain only where HD does not cover it.",
   "version": 8,
   "metadata": {
     "test": {
@@ -218,6 +218,5 @@
         ]
       }
     }
-  ],
-  "_comment": "Same scene as mixed-full-partial-coverage, but the sd-primary-symbols layer is added only after the HD coverage tile has loaded. Symbols have no draw-time hiding, so the covered ones can only be removed by the parse. The result must match mixed-full-partial-coverage, where the layer was present from the start."
+  ]
 }

@@ -14,6 +14,7 @@
         }],
         ["wait"]
       ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3865"],
       "skip-test": [
         {"platform-tag-contains": "native-android-gl-powervr", "reason": "To be fixed - https://mapbox.atlassian.net/browse/MAPSNAT-3865"}
       ],

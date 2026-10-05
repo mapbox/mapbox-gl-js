@@ -9,6 +9,7 @@
         32
       ],
       "debug": true,
+      "tickets": ["https://github.com/mapbox/mapbox-gl-js/issues/2716"],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "https://github.com/mapbox/mapbox-gl-js/issues/2716"}
       ]

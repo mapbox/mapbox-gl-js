@@ -6,7 +6,7 @@
       "width": 256,
       "operations": [],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - gl-native specific zero exaggeration behavior is covered in internal tests"}
+        {"platform-tag-contains": "native", "reason": "gl-native specific zero exaggeration behavior is covered in internal tests"}
       ]
     }
   },

@@ -5,6 +5,7 @@
     "test": {
       "width": 24,
       "height": 24,
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-1591"],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Not implemented, https://mapbox.atlassian.net/browse/GLJS-1591"}
       ]

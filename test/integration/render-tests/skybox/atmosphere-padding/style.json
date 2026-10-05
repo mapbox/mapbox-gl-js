@@ -19,9 +19,10 @@
           "wait"
         ]
       ],
+      "tickets": ["https://github.com/mapbox/mapbox-gl-js/issues/10314"],
       "skip-test": [
         {"platform-tag-contains": "web", "reason": "Flaky https://github.com/mapbox/mapbox-gl-js/issues/10314"},
-        {"platform-tag-contains": "native", "reason": "skip - padding debug option is not implemented in renderer"}
+        {"platform-tag-contains": "native", "reason": "padding debug option is not implemented in renderer"}
       ]
     }
   },

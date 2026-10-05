@@ -6,6 +6,7 @@
       "pixelRatio": 2,
       "height": 64,
       "width": 64,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3954"],
       "skip-test": [
         {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-3954"}
       ]

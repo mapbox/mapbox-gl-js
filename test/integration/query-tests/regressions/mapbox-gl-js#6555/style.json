@@ -17,7 +17,7 @@
             "queryOptions": {
             },
             "skip-test": [
-                {"platform-tag-contains": "native", "reason": "skip - no querySourceFeatures in mbgl-node; needs issue"}
+                {"platform-tag-contains": "native", "reason": "no querySourceFeatures in mbgl-node; needs issue"}
             ]
         }
     },

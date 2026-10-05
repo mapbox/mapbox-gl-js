@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import {styleText} from 'node:util';
 import {compile} from 'yeahjs';
 import createServer from './server.js';
+import {validateTestFile} from './utils.js';
 // eslint-disable-next-line import-x/order
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
@@ -48,6 +49,8 @@ export default async function (directory, implementation, options, run) {
             const id = path.dirname(fixture).replace(/\\/g, '/');
             const style = require(path.join(directory, fixture));
 
+            // Validate the file as written, before defaults are merged into metadata.test below.
+            const validationError = validateTestFile(style);
             server.localizeURLs(style);
 
             style.metadata = style.metadata || {};
@@ -56,7 +59,7 @@ export default async function (directory, implementation, options, run) {
                 width: 512,
                 height: 512,
                 pixelRatio: 1,
-                allowed: 0.00015, ...style.metadata.test};
+                allowed: 0.00015, ...style.metadata.test, validationError};
 
             return style;
         })
@@ -72,7 +75,7 @@ export default async function (directory, implementation, options, run) {
                 return false;
             }
 
-            if (test.skip) {
+            if (test.skip && !test.validationError) {
                 console.log(styleText('gray', `* skipped ${test.id}`));
                 return false;
             }
@@ -122,6 +125,11 @@ export default async function (directory, implementation, options, run) {
                 }
 
                 resolve();
+            }
+
+            if (test.validationError) {
+                handleResult(new Error(`${test.id}/${options.fixtureFilename || 'style.json'}: ${test.validationError}`));
+                return;
             }
 
             try {

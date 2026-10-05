@@ -11,7 +11,7 @@
           ]
       ],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - js specific"}
+        {"platform-tag-contains": "native", "reason": "js specific"}
       ]
     }
   },

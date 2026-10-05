@@ -15,8 +15,9 @@
           }
         }]
       ],
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-1285"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "skip - https://mapbox.atlassian.net/browse/GLJS-1285"}
+        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/GLJS-1285"}
       ]
     }
   },

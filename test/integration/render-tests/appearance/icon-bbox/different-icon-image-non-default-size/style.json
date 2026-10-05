@@ -5,6 +5,7 @@
       "width": 64,
       "height": 64,
       "collisionDebug": true,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3730"],
       "skip-test": [
         {"platform-tag-contains": "native-macos", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-3730"},
         {"platform-tag-contains": "native-ios", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-3730"},

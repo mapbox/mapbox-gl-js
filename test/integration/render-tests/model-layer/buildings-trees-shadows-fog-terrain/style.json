@@ -13,6 +13,7 @@
         }],
         ["wait"]
       ],
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-398"],
       "skip-test": [
         {"platform-tag-contains": "web-linux-chrome", "reason": "Timing out https://mapbox.atlassian.net/browse/GLJS-398"}
       ],

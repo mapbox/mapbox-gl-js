@@ -1,6 +1,6 @@
 {
   "version": 8,
-  "_comment": "queryRenderedFeatures must hit a vector-tile polygon where Albers actually draws it. This screen point is inside the polygon only after reprojection; under Mercator it is water.",
+  "description": "queryRenderedFeatures must hit a vector-tile polygon where Albers actually draws it. This screen point is inside the polygon only after reprojection; under Mercator it is water.",
   "metadata": {
     "test": {
       "width": 512,
