@@ -44,12 +44,19 @@ void main() {
 #ifdef USE_MRT1_RGBA
     // u_image1 stores the emissive-only premultiplied color contribution (exact, not a
     // scalar estimate), so the unlit portion is recovered by direct subtraction.
-    vec4 emissive_premult = u_emissive_texture_available > 0.5 ? texture(u_image1, v_pos0) : vec4(0.0);
+    // Uniform branch so the sample is skipped when no emissive attachment is bound.
+    vec4 emissive_premult = vec4(0.0);
+    if (u_emissive_texture_available > 0.5) {
+        emissive_premult = texture(u_image1, v_pos0);
+    }
     vec3 unlit_base = raster.rgb - emissive_premult.rgb;
     raster.rgb = apply_lighting_ground(vec4(unlit_base, 1.0)).rgb + emissive_premult.rgb;
     color = vec4(clamp(raster.rgb, vec3(0), vec3(1)) * antialias, antialias);
 #else
-    float emissive_strength = u_emissive_texture_available > 0.5 ? texture(u_image1, v_pos0).r : raster.a;
+    float emissive_strength = raster.a;
+    if (u_emissive_texture_available > 0.5) {
+        emissive_strength = texture(u_image1, v_pos0).r;
+    }
     raster = apply_lighting_with_emission_ground(raster, emissive_strength);
     color = vec4(clamp(raster.rgb, vec3(0), vec3(1)) * antialias, antialias);
 #endif // USE_MRT1_RGBA
@@ -66,12 +73,18 @@ void main() {
 #ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
 #ifdef USE_MRT1_RGBA
     // See comment above on why u_image1 holds an exact premultiplied contribution.
-    vec4 emissive_premult = u_emissive_texture_available > 0.5 ? texture(u_image1, v_pos0) : vec4(0.0);
+    vec4 emissive_premult = vec4(0.0);
+    if (u_emissive_texture_available > 0.5) {
+        emissive_premult = texture(u_image1, v_pos0);
+    }
     vec3 unlit_base = color.rgb - emissive_premult.rgb;
     color.rgb = apply_lighting_ground(vec4(unlit_base, 1.0)).rgb + emissive_premult.rgb;
     color.a = 1.0;
 #else
-    float emissive_strength = u_emissive_texture_available > 0.5 ? texture(u_image1, v_pos0).r : color.a;
+    float emissive_strength = color.a;
+    if (u_emissive_texture_available > 0.5) {
+        emissive_strength = texture(u_image1, v_pos0).r;
+    }
     color = apply_lighting_with_emission_ground(color, emissive_strength);
     color.a = 1.0;
 #endif // LIGHTING_3D_ALPHA_EMISSIVENESS

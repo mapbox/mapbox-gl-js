@@ -42,16 +42,26 @@ void main() {
 #ifdef USE_MRT1_RGBA
     // u_image1 stores the emissive-only premultiplied color contribution (exact, not a
     // scalar estimate), so the unlit portion is recovered by direct subtraction.
-    vec4 emissive_premult = u_emissive_texture_available > 0.5 ? texture(u_image1, v_pos0) : vec4(0.0);
+    // Uniform branch so the sample is skipped when no emissive attachment is bound.
+    vec4 emissive_premult = vec4(0.0);
+    if (u_emissive_texture_available > 0.5) {
+        emissive_premult = texture(u_image1, v_pos0);
+    }
     unlit_base = image_color.rgb - emissive_premult.rgb;
     emissive_base = emissive_premult.rgb;
 #else
-    float emissive_strength = u_emissive_texture_available > 0.5 ? texture(u_image1, v_pos0).r : image_color.a;
+    float emissive_strength = image_color.a;
+    if (u_emissive_texture_available > 0.5) {
+        emissive_strength = texture(u_image1, v_pos0).r;
+    }
     unlit_base = image_color.rgb * (1.0 - emissive_strength);
     emissive_base = image_color.rgb * emissive_strength;
 #endif // !USE_MRT1_RGBA
     float ndotl = u_shadow_direction.z;
-    float occlusion = ndotl < 0.0 ? 1.0 : shadow_occlusion(v_pos_light_view_0, v_pos_light_view_1, 1.0 / gl_FragCoord.w, 0.0);
+    float occlusion = 1.0;
+    if (ndotl >= 0.0) {
+        occlusion = shadow_occlusion(v_pos_light_view_0, v_pos_light_view_1, 1.0 / gl_FragCoord.w, 0.0);
+    }
     ndotl = max(0.0, ndotl);
     // "lit" uses pretty much "shadowed_light_factor_normal_unbiased" as the directional component.
     vec3 lit = apply_lighting(unlit_base, normal, mix(1.0, (1.0 - (u_shadow_intensity * occlusion)) * ndotl, cutoffOpacity));
@@ -67,13 +77,19 @@ void main() {
 #ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
 #ifdef USE_MRT1_RGBA
     // See comment above on why u_image1 holds an exact premultiplied contribution.
-    vec4 emissive_premult = u_emissive_texture_available > 0.5 ? texture(u_image1, v_pos0) : vec4(0.0);
+    vec4 emissive_premult = vec4(0.0);
+    if (u_emissive_texture_available > 0.5) {
+        emissive_premult = texture(u_image1, v_pos0);
+    }
     vec3 unlit_base = image_color.rgb - emissive_premult.rgb;
     color.rgb = apply_lighting(unlit_base, normal, lighting_factor) + emissive_premult.rgb;
     color.a = 1.0;
 #else
     color = apply_lighting(image_color, normal, lighting_factor);
-    float emissive_strength = u_emissive_texture_available > 0.5 ? texture(u_image1, v_pos0).r : image_color.a;
+    float emissive_strength = image_color.a;
+    if (u_emissive_texture_available > 0.5) {
+        emissive_strength = texture(u_image1, v_pos0).r;
+    }
     color.rgb = mix(color.rgb, image_color.rgb, emissive_strength);
     color.a = 1.0;
 #endif // USE_MRT1_RGBA
