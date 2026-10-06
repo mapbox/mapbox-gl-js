@@ -1,26 +1,30 @@
 ## Unreleased
 
-- Improve line rendering performance by using a uniform instead of a shader permutation for `line-dasharray`.
-- Avoid placing parent-tile symbols when using the global placement.
-- Extend global placement debug info.
-- Fix symbol fading not finishing when using global placement.
-- Fix a rendering issue when drawing thousands of data-driven lines and symbols.
-- Fix a severe performance regression when updating data-driven line layers with `setPaintProperty`.
-- Improve memory use & map load time, especially for 3D layers.
-- Improve 3D Lanes map load performance.
-- Fix an issue with GeoJSON geometries past longitude -+360 or latitude +-85 rendering incorrectly.
-- Fix transparent `building` and `fill-extrusion` layers blending the same pixel twice where they cover the same buildings, making the overlap look more opaque than either layer's opacity asks for.
-- Add support for offsetting a control from its corner via `map.addControl(control, {position, offset: {x, y}})`.
-
-### Bug fixes 🐞
-
-- Fix map-aligned `icon-rotate` and `text-rotate` not being measured from true north in projections other than Mercator or globe, which misrotated symbols such as crosswalks.
-- Fix collision boxes not matching rotated symbols that use appearances with a layout `icon-rotate` or `text-rotate`.
+## 3.33.0-rc.1
 
 ### Breaking changes ⚠️
 
 - Right-to-left text (such as Arabic and Hebrew) is now supported out of the box, loading a small WebAssembly module the first time it appears on the map. `setRTLTextPlugin`, `getRTLTextPluginStatus` and the `PluginStatus` type are removed.
 - The base size of icons in the `text-field` property is now calculated at the tile zoom level with the largest text size. As a result, the icons can be smaller when the text size depends on the zoom level.
+
+### Features and improvements ✨
+
+- Improve memory use & map load time, especially for 3D layers.
+- Improve line rendering performance by using a uniform instead of a shader permutation for `line-dasharray`.
+- Add support for offsetting a control from its corner via `map.addControl(control, {position, offset: {x, y}})`.
+- Improve 3D Lanes map load performance.
+- Avoid placing parent-tile symbols when using the global placement.
+- Extend global placement debug info.
+
+### Bug fixes 🐞
+
+- Fix a severe performance regression when updating data-driven line layers with `setPaintProperty`.
+- Fix a rendering issue when drawing thousands of data-driven lines and symbols.
+- Fix transparent `building` and `fill-extrusion` layers blending the same pixel twice where they cover the same buildings, making the overlap look more opaque than either layer's opacity asks for.
+- Fix an issue with GeoJSON geometries past longitude -+360 or latitude +-85 rendering incorrectly.
+- Fix map-aligned `icon-rotate` and `text-rotate` not being measured from true north in projections other than Mercator or globe, which misrotated symbols such as crosswalks.
+- Fix collision boxes not matching rotated symbols that use appearances with a layout `icon-rotate` or `text-rotate`.
+- Fix symbol fading not finishing when using global placement.
 
 ## 3.32.0
 
