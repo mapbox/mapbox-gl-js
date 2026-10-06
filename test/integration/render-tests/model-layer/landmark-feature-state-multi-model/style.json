@@ -1,0 +1,84 @@
+{
+  "version": 8,
+  "description": "Two landmarks. Landmark 24222973 is set to 'selected' state (high emissive), then landmark 14543549 is set to 'selected' state in a separate coalesce step. Both states must be visible at the end; a regression that re-evaluates non-changed nodes from an incremental state delta would revert landmark 24222973 to the default.",
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "operations": [
+        ["wait"],
+        [
+          "setFeatureState",
+          {"source": "landmark", "id": 24222973},
+          {"selected": true}
+        ],
+        ["wait"],
+        [
+          "setFeatureState",
+          {"source": "landmark", "id": 14543549},
+          {"selected": true}
+        ],
+        ["wait"]
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001}
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.2
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.2
+      }
+    }
+  ],
+  "sources": {
+    "landmark": {
+      "type": "batched-model",
+      "maxzoom": 14,
+      "tiles": [
+        "local://models/landmark/mbx-meshopt/{x}-{y}-{z}.glb"
+      ]
+    }
+  },
+  "zoom": 15.0,
+  "pitch": 45,
+  "bearing": 0,
+  "center": [-122.40498, 37.79276],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#aaaaaa"
+      }
+    },
+    {
+      "id": "landmark",
+      "type": "model",
+      "source": "landmark",
+      "paint": {
+        "model-emissive-strength": [
+          "case",
+          ["boolean", ["feature-state", "selected"], false],
+          3.0,
+          0.0
+        ]
+      }
+    }
+  ]
+}
