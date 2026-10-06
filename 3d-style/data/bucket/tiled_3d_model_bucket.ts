@@ -221,7 +221,7 @@ class Tiled3dModelBucket implements Bucket {
         const layers = withStateUpdates ? this.stateDependentLayers : this.layers;
         if (!deepEqual(states, this.states)) {
             for (const layer of layers) {
-                this.evaluate(layer, states);
+                this.evaluate(layer, states, withStateUpdates);
             }
         }
         this.states = structuredClone(states);
@@ -303,12 +303,14 @@ class Tiled3dModelBucket implements Bucket {
         }
     }
 
-    evaluate(layer: ModelStyleLayer, states?: FeatureStates) {
+    evaluate(layer: ModelStyleLayer, states?: FeatureStates, isFeatureStateDelta: boolean = false) {
         const nodesInfo = this.getNodesInfo();
         const canonical = this.id.canonical;
+        const changedIds = isFeatureStateDelta && states ? new Set(Object.keys(states)) : null;
         for (const nodeInfo of nodesInfo) {
             if (!nodeInfo.node.meshes) continue;
             const evaluationFeature = nodeInfo.feature;
+            if (changedIds && !changedIds.has(String(evaluationFeature.id))) continue;
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const state = states && states[evaluationFeature.id];
             if (deepEqual(state, nodeInfo.state)) continue;
