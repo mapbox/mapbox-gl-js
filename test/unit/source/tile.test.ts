@@ -1,5 +1,4 @@
 import {describe, test, expect, vi} from '../../util/vitest';
-import {createSymbolBucket} from '../../util/create_symbol_layer';
 import Tile from '../../../src/source/tile';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import writePbf from '../../../src/source/vector_tile_to_pbf';
@@ -257,32 +256,6 @@ describe('expiring tiles', () => {
         });
         expect(tile.getExpiryTimeout()).toEqual(8000);
     });
-});
-
-describe('rtl text detection', () => {
-    test(
-        'Tile#hasRTLText is true when a tile loads a symbol bucket with rtl text',
-        () => {
-            const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1), 512, 22);
-            // Create a stub symbol bucket
-            const symbolBucket = createSymbolBucket('test', 'Test', 'test', new CollisionBoxArray());
-            // symbolBucket has not been populated yet so we force override the value in the stub
-            symbolBucket.hasRTLText = true;
-            tile.loadVectorData(
-                createVectorData({rawTileData: rawTileData as ArrayBuffer, buckets: [symbolBucket]}),
-                createPainter({
-                    getLayer() {
-                        return symbolBucket.layers[0];
-                    },
-                    getOwnLayer() {
-                        return symbolBucket.layers[0];
-                    }
-                })
-            );
-
-            expect(tile.hasRTLText).toBeTruthy();
-        }
-    );
 });
 
 function createVectorData(options?: {buckets?: Bucket[]; rawTileData?: ArrayBuffer}): WorkerSourceVectorTileResult {

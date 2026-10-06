@@ -611,17 +611,6 @@ test('SymbolBucket detects rtl text', () => {
     expect(ltrBucket.hasRTLText).toBeFalsy();
 });
 
-// Test to prevent symbol bucket with rtl from text being culled by worker serialization.
-test('SymbolBucket with rtl text is NOT empty even though no symbol instances are created', () => {
-    const rtlBucket = bucketSetup('مرحبا');
-    const options = {iconDependencies: {}, glyphDependencies: {}};
-    rtlBucket.createArrays();
-    rtlBucket.populate([{feature}], options);
-
-    expect(rtlBucket.isEmpty()).toBeFalsy();
-    expect(rtlBucket.symbolInstances.length).toEqual(0);
-});
-
 test('SymbolBucket detects rtl text mixed with ltr text', () => {
     const mixedBucket = bucketSetup('مرحبا translates to hello');
     const options = {iconDependencies: {}, glyphDependencies: {}};

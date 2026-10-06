@@ -3,6 +3,7 @@ import {performSymbolLayout, postRasterizationSymbolLayout, type SymbolBucketDat
 import {CollisionBoxArray} from '../data/array_types';
 import DictionaryCoder from '../util/dictionary_coder';
 import SymbolBucket from '../data/bucket/symbol_bucket';
+import {waitForRTL} from '../symbol/rtl_text';
 import LineBucket from '../data/bucket/line_bucket';
 import FillBucket from '../data/bucket/fill_bucket';
 import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
@@ -395,7 +396,7 @@ class WorkerTile {
                 const bucketIndex = featureIndex.bucketLayerIDs.length;
                 featureIndex.bucketLayerIDs.push(family.map((l) => makeFQID(l.id, l.scope)));
 
-                const processBucket = () => {
+                const processBucket = (): Promise<void> | void => {
                     // Recalculate right before populate: `family` layers are shared across tiles and recalculate
                     // mutates their zoom-dependent layout in place. On the async prepare() path another tile could
                     // otherwise recalculate at a different zoom in between, giving wrong zoom-stepped values (e.g. model-id).
@@ -433,6 +434,10 @@ class WorkerTile {
                     if (HD.attachExtension) HD.attachExtension(bucket, this.frcCoverage ? this.frcCoverage.sourceLayers : null);
 
                     bucket.populate(features, options, this.tileID.canonical, this.tileTransform);
+
+                    // Shaping happens in populate, so load RTL support and populate again
+                    const rtlLoading = bucket instanceof SymbolBucket && bucket.hasRTLText && waitForRTL();
+                    if (rtlLoading) return rtlLoading.then(processBucket);
                 };
 
                 // Only module-relevant layers go through the async prepare() path; everything
@@ -440,7 +445,8 @@ class WorkerTile {
                 if (layer.mayUse('HD') || layer.mayUse('Standard')) {
                     asyncBucketLoads.push(layer.prepare().then(() => processBucket()));
                 } else {
-                    processBucket();
+                    const loading = processBucket();
+                    if (loading) asyncBucketLoads.push(loading);
                 }
             }
         }

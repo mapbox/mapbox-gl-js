@@ -49,7 +49,7 @@ import EvaluationParameters from '../../style/evaluation_parameters';
 import Formatted from '../../style-spec/expression/types/formatted';
 import ResolvedImage from '../../style-spec/expression/types/resolved_image';
 import {ImageVariant as ImageVariantClass} from '../../style-spec/expression/types/image_variant';
-import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../source/rtl_text_plugin';
+import {rtl} from '../../symbol/rtl_text';
 import {resamplePred} from '../../geo/projection/resample';
 import tileTransform, {getNorthOffset} from '../../geo/projection/tile_transform';
 import {tileCoordToECEF, globeToMercatorTransition} from '../../geo/projection/globe_util';
@@ -1455,16 +1455,10 @@ class SymbolBucket implements Bucket, SymbolSource {
                 // conversion here.
                 const resolvedTokens = layer.getValueAndResolveTokens('text-field', evaluationFeature, canonical, availableImages);
                 const formattedText = Formatted.factory(resolvedTokens);
-                if (containsRTLText(formattedText)) {
-                    this.hasRTLText = true;
-                }
-                if (
-                    !this.hasRTLText || // non-rtl text so can proceed safely
-                    getRTLTextPluginStatus() === 'unavailable' || // We don't intend to lazy-load the rtl text plugin, so proceed with incorrect shaping
-                    (this.hasRTLText && globalRTLTextPlugin.isParsed()) // Use the rtlText plugin to shape text
-                ) {
-                    text = transformText(formattedText, layer, evaluationFeature);
-                }
+                // RTL text is skipped until the worker loads RTL support and populates the bucket again
+                const isRTL = containsRTLText(formattedText);
+                if (isRTL) this.hasRTLText = true;
+                if (!isRTL || rtl) text = transformText(formattedText, layer, evaluationFeature);
             }
 
             let icon: ResolvedImage | null | undefined;
@@ -1995,9 +1989,7 @@ class SymbolBucket implements Bucket, SymbolSource {
     }
 
     isEmpty(): boolean {
-        // When the bucket encounters only rtl-text but the plugin isn't loaded, no symbol instances will be created.
-        // In order for the bucket to be serialized, and not discarded as an empty bucket both checks are necessary.
-        return this.symbolInstances.length === 0 && !this.hasRTLText;
+        return this.symbolInstances.length === 0;
     }
 
     uploadPending(): boolean {

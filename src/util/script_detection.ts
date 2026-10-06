@@ -367,7 +367,7 @@ export function charInRTLScript(char: number): boolean {
         isChar['Arabic Presentation Forms-B'](char);
 }
 
-export function charInSupportedScript(char: number, canRenderRTL: boolean): boolean {
+export function charInSupportedScript(char: number): boolean {
     // This is a rough heuristic: whether we "can render" a script
     // actually depends on the properties of the font being used
     // and whether differences from the ideal rendering are considered
@@ -375,9 +375,6 @@ export function charInSupportedScript(char: number, canRenderRTL: boolean): bool
 
     // Even in Latin script, we "can't render" combinations such as the fi
     // ligature, but we don't consider that semantically significant.
-    if (!canRenderRTL && charInRTLScript(char)) {
-        return false;
-    }
     if ((char >= 0x0900 && char <= 0x0DFF) ||
         // Main blocks for Indic scripts and Sinhala
         (char >= 0x0F00 && char <= 0x109F) ||
@@ -401,9 +398,9 @@ export function stringContainsRTLText(chars: string): boolean {
     return false;
 }
 
-export function isStringInSupportedScript(chars: string, canRenderRTL: boolean): boolean {
+export function isStringInSupportedScript(chars: string): boolean {
     for (const char of chars) {
-        if (!charInSupportedScript(char.charCodeAt(0), canRenderRTL)) {
+        if (!charInSupportedScript(char.charCodeAt(0))) {
             return false;
         }
     }

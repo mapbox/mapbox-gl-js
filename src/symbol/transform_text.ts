@@ -1,4 +1,4 @@
-import {plugin as rtlTextPlugin} from '../source/rtl_text_plugin';
+import {rtl} from './rtl_text';
 
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {Feature} from '../style-spec/expression/index';
@@ -13,8 +13,8 @@ function transformText(text: string, layer: SymbolStyleLayer, feature: Feature) 
         text = text.toLocaleLowerCase();
     }
 
-    if (rtlTextPlugin.applyArabicShaping) {
-        text = rtlTextPlugin.applyArabicShaping(text);
+    if (rtl) {
+        text = rtl.applyArabicShaping(text);
     }
 
     return text;

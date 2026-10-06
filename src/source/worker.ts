@@ -6,7 +6,6 @@ import GeoJSONWorkerSource from './geojson_worker_source';
 import * as Standard from '../../modules/standard_worker';
 import * as RasterArrayWorker from '../../modules/raster_array_worker';
 import assert from '../style-spec/util/assert';
-import {plugin as globalRTLTextPlugin, rtlPluginStatus} from './rtl_text_plugin';
 import {enforceCacheSizeLimit} from '../util/tile_request_cache';
 // `LRUCache` is used eagerly on the main thread but only lazily on the worker (via the MRT
 // decoder), which puts it in its own tiny chunk. Referencing it from the worker entry folds
@@ -21,7 +20,6 @@ import {loadTileProvider} from './tile_provider';
 
 import type Projection from '../geo/projection/projection';
 import type {ImageId} from '../style-spec/expression/types/image_id';
-import type {RtlTextPlugin} from './rtl_text_plugin';
 import type {MainInbox, WorkerInbox} from '../util/actor_messages';
 import type RasterArrayTileWorkerSource from './raster_array_tile_worker_source';
 import type {WorkerSourceType, WorkerSource, WorkerSourceConstructor, WorkerSourceRequest} from './worker_source';
@@ -37,11 +35,6 @@ type WorkerScopeRegistry<T> = Record<string, Record<string, T>>;
  * WorkerSources grouped by mapId, style scope, sourceType, and sourceId.
  */
 type WorkerSourceRegistry = WorkerScopeRegistry<Record<string, Record<string, WorkerSource>>>;
-
-type RTLParsingListener = {
-    resolve: (value: boolean) => void;
-    reject: (err: Error) => void;
-};
 
 /**
  * @private
@@ -61,7 +54,6 @@ export default class MapWorker {
     brightness: number | null | undefined;
     maxUniformBlockSizeDwords: number | null | undefined;
     worldview: string | undefined;
-    rtlPluginParsingListeners: Array<RTLParsingListener>;
 
     constructor(self: Worker) {
         PerformanceUtils.measure('workerEvaluateScript');
@@ -72,7 +64,6 @@ export default class MapWorker {
         this.availableImages = {};
         this.availableModels = {};
         this.isSpriteLoaded = {};
-        this.rtlPluginParsingListeners = [];
 
         this.projections = {};
         this.defaultProjection = getProjection({name: 'mercator'});
@@ -88,25 +79,6 @@ export default class MapWorker {
 
         // [mapId][scope][sourceType][sourceName] => worker source instance
         this.workerSources = {};
-
-        // The RTL text plugin self-registers here during module eval.
-        this.self.registerRTLTextPlugin = (rtlTextPlugin: RtlTextPlugin) => {
-            if (globalRTLTextPlugin.isParsed()) {
-                throw new Error('RTL text plugin already registered.');
-            }
-            globalRTLTextPlugin.setState({
-                pluginStatus: rtlPluginStatus.parsed,
-                pluginURL: globalRTLTextPlugin.getPluginURL()
-            });
-            globalRTLTextPlugin['applyArabicShaping'] = rtlTextPlugin.applyArabicShaping;
-            globalRTLTextPlugin['processBidirectionalText'] = rtlTextPlugin.processBidirectionalText;
-            globalRTLTextPlugin['processStyledBidirectionalText'] = rtlTextPlugin.processStyledBidirectionalText;
-
-            for (const {resolve} of this.rtlPluginParsingListeners) {
-                resolve(true);
-            }
-            this.rtlPluginParsingListeners = [];
-        };
     }
 
     clearCaches(mapId: number, _params: WorkerInbox['clearCaches']['params']) {
@@ -331,41 +303,6 @@ export default class MapWorker {
         }
 
         return null;
-    }
-
-    async syncRTLPluginState(_mapId: number, state: WorkerInbox['syncRTLPluginState']['params']): Promise<WorkerInbox['syncRTLPluginState']['result']> {
-        if (globalRTLTextPlugin.isParsed()) {
-            return true;
-        }
-        if (globalRTLTextPlugin.isParsing()) {
-            return new Promise((resolve, reject) => {
-                this.rtlPluginParsingListeners.push({resolve, reject});
-            });
-        }
-
-        globalRTLTextPlugin.setState(state);
-        const pluginURL = globalRTLTextPlugin.getPluginURL();
-        if (!globalRTLTextPlugin.isLoaded() || globalRTLTextPlugin.isParsed() || globalRTLTextPlugin.isParsing()) {
-            return false;
-        }
-
-        globalRTLTextPlugin.setState({pluginStatus: rtlPluginStatus.parsing, pluginURL});
-        try {
-            await import(/* webpackIgnore: true */ /* @vite-ignore */ pluginURL);
-            if (globalRTLTextPlugin.isParsed()) {
-                // registerRTLTextPlugin (the only path to `parsed`) already resolved
-                // and cleared the waiting listeners during import eval.
-                return true;
-            }
-            return new Promise<boolean>((resolve, reject) => {
-                this.rtlPluginParsingListeners.push({resolve, reject});
-            });
-        } catch (e: unknown) {
-            globalRTLTextPlugin.setState({pluginStatus: rtlPluginStatus.error, pluginURL});
-            for (const {reject} of this.rtlPluginParsingListeners) reject(e as Error);
-            this.rtlPluginParsingListeners = [];
-            throw e;
-        }
     }
 
     getAvailableImages(mapId: number, scope: string): ImageId[] {

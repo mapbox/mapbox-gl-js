@@ -15,11 +15,6 @@ import StyleLayer from '../../../src/style/style_layer';
 import Transform from '../../../src/geo/transform';
 import {Event} from '../../../src/util/evented';
 import styleSpec from '../../../src/style-spec/reference/latest';
-import {
-    setRTLTextPlugin,
-    clearRTLTextPlugin,
-    evented as rtlTextPluginEvented
-} from '../../../src/source/rtl_text_plugin';
 import Tile from '../../../src/source/tile';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import {ImageId} from '../../../src/style-spec/expression/types/image_id';
@@ -82,58 +77,6 @@ function createGeoJSONSource() {
         }
     };
 }
-
-describe('Style', () => {
-    test('registers plugin state change listener', () => {
-        clearRTLTextPlugin();
-        mockFetch({
-            '.*': () => new Response(null)
-        });
-        vi.spyOn(Style, 'registerForPluginStateChange');
-        const style = new Style(new StubMap());
-        vi.spyOn(style.dispatcher, 'send').mockImplementation(() => Promise.resolve([]));
-        expect(Style.registerForPluginStateChange).toHaveBeenCalledTimes(1);
-
-        setRTLTextPlugin("/plugin.js",);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        expect(style.dispatcher.send.mock.calls[0][0]).toEqual("syncRTLPluginState");
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        expect(style.dispatcher.send.mock.calls[0][1]).toEqual({
-            pluginStatus: 'deferred',
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            pluginURL: expect.stringContaining("/plugin.js")
-        });
-        // window.clearFakeWorkerPresence();
-    });
-
-    /**
-     * @note Currently we cannot mock workers
-     * @see https://github.com/vitest-dev/vitest/issues/4033
-     * @todo Test with `@vitest/web-worker`
-     */
-    test.skip('loads plugin immediately if already registered', async () => {
-        clearRTLTextPlugin();
-        mockFetch({
-            '/plugin.js': () => new Response("doesn't matter")
-        });
-        window.URL.createObjectURL = () => 'blob:';
-
-        await new Promise(resolve => {
-            let firstError = true;
-            setRTLTextPlugin("/plugin.js", (error) => {
-                // Getting this error message shows the bogus URL was succesfully passed to the worker
-                // We'll get the error from all workers, only pay attention to the first one
-                if (firstError) {
-                    expect(error.message).toEqual('RTL Text Plugin failed to import scripts from /plugin.js');
-                    firstError = false;
-                    resolve();
-                }
-            });
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            new Style(createStyleJSON());
-        });
-    });
-});
 
 describe('Style#loadURL', () => {
     test('fires "dataloading"', () => {
@@ -461,18 +404,6 @@ describe('Style#_remove', () => {
         expect(sourceCache.clearTiles).toHaveBeenCalledTimes(1);
     });
 
-    test('deregisters plugin listener', async () => {
-        const style = new Style(new StubMap());
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        style.loadJSON(createStyleJSON());
-        vi.spyOn(style.dispatcher, 'broadcast');
-
-        await waitFor(style, "style.load");
-        style._remove();
-
-        rtlTextPluginEvented.fire(new Event('pluginStateChange'));
-        expect(style.dispatcher.broadcast).not.toHaveBeenCalledWith('syncRTLPluginState');
-    });
 });
 
 test('Style#update', () => {

@@ -5,7 +5,7 @@ import {
     needsRotationInVerticalMode
 } from '../util/script_detection';
 import verticalizePunctuation from '../util/verticalize_punctuation';
-import {plugin as rtlTextPlugin} from '../source/rtl_text_plugin';
+import {rtl} from './rtl_text';
 import ONE_EM from './one_em';
 import {warnOnce} from '../util/util';
 import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
@@ -284,10 +284,9 @@ function shapeText(
     // dividing by it makes the image explode over the whole range the tile is shown at.
     const lineBreaks = determineLineBreaks(logicalInput, spacing, maxWidth, glyphMap, imagePositions, layoutTextSize, textSizeFactor);
 
-    const {processBidirectionalText, processStyledBidirectionalText} = rtlTextPlugin;
-    if (processBidirectionalText && logicalInput.sections.length === 1) {
+    if (rtl && logicalInput.sections.length === 1) {
         // Bidi doesn't have to be style-aware
-        const untaggedLines = processBidirectionalText(logicalInput.toString(), lineBreaks);
+        const untaggedLines = rtl.processBidirectionalText(logicalInput.toString(), lineBreaks);
         for (const line of untaggedLines) {
             const taggedLine = new TaggedString();
             taggedLine.text = line;
@@ -297,9 +296,8 @@ function shapeText(
             }
             lines.push(taggedLine);
         }
-    } else if (processStyledBidirectionalText) {
-        // Need version of mapbox-gl-rtl-text with style support for combining RTL text with formatting
-        const processedLines = processStyledBidirectionalText(logicalInput.text, logicalInput.sectionIndex, lineBreaks);
+    } else if (rtl) {
+        const processedLines = rtl.processStyledBidirectionalText(logicalInput.text, logicalInput.sectionIndex, lineBreaks);
         for (const line of processedLines) {
             const taggedLine = new TaggedString();
             taggedLine.text = line[0];

@@ -168,6 +168,8 @@ export function setupIntegrationTestsMiddlewares({reportPath}: {reportPath: stri
             server.middlewares.use('/mapbox-gl-styles', serveStatic(resolve(import.meta.dirname, 'node_modules/@mapbox/mapbox-gl-styles'), staticCacheOptions));
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
             server.middlewares.use('/mvt-fixtures', serveStatic(resolve(import.meta.dirname, 'node_modules/@mapbox/mvt-fixtures'), staticCacheOptions));
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
+            server.middlewares.use('/mapbox-gl-rtl-text', serveStatic(resolve(import.meta.dirname, 'node_modules/@mapbox/mapbox-gl-rtl-text/dist'), staticCacheOptions));
         }
     };
 }

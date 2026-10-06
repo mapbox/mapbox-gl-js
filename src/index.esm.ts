@@ -13,7 +13,6 @@ setBundleDistribution(isMapboxHTTPCDNURL(import.meta.url) ? 'cdn' : 'other');
 export type * from './source/source_types';
 
 export type {PointLike} from './types/point-like';
-export type {PluginStatus} from './source/rtl_text_plugin';
 export type {Event, ErrorEvent} from './util/evented';
 
 export type {GeoJSONFeature, TargetFeature} from './util/vectortile_to_geojson';
@@ -173,7 +172,6 @@ export {_Point as Point};
 export {default as MercatorCoordinate} from './geo/mercator_coordinate';
 export {Evented} from './util/evented';
 export {FreeCameraOptions} from './ui/free_camera';
-export {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
 export {setSdkInfo} from './util/mapbox';
 export {addTileProvider} from './source/tile_provider';
 export {prewarm, clearPrewarmedResources} from './util/worker_pool_factory';

@@ -3,6 +3,6 @@ import config from '../../../src/util/config';
 
 // We are self-hosting test files.
 config.REQUIRE_ACCESS_TOKEN = false;
+config.RTL_TEXT_URL = `${location.origin}/mapbox-gl-rtl-text/mapbox-gl-rtl-text.wasm`;
 
 mapboxgl.prewarm();
-mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.4.0/mapbox-gl-rtl-text.js');

@@ -19,6 +19,7 @@
 
 ### Breaking changes ⚠️
 
+- Right-to-left text (such as Arabic and Hebrew) is now supported out of the box, loading a small WebAssembly module the first time it appears on the map. `setRTLTextPlugin`, `getRTLTextPluginStatus` and the `PluginStatus` type are removed.
 - The base size of icons in the `text-field` property is now calculated at the tile zoom level with the largest text size. As a result, the icons can be smaller when the text size depends on the zoom level.
 
 ## 3.32.0

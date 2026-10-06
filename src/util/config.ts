@@ -29,6 +29,7 @@ export type Config = {
     MESHOPT_URL: string;
     MESHOPT_SIMD_URL: string;
     BUILDING_GEN_URL: string;
+    RTL_TEXT_URL: string;
     DEFAULT_STYLE: string;
     GLYPHS_URL: string;
     TILES3D_URL_PREFIX: string;
@@ -71,6 +72,7 @@ const config: Config = {
     MESHOPT_URL: '/mapbox-gl-js/meshopt_base_v1.2.wasm',
     MESHOPT_SIMD_URL: '/mapbox-gl-js/meshopt_simd_v1.2.wasm',
     BUILDING_GEN_URL: '/mapbox-gl-js/building-gen/building_gen_v1.2.6.wasm',
+    RTL_TEXT_URL: '/mapbox-gl-js/rtl_text_v1.0.0.wasm',
     GLYPHS_URL: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
     TILES3D_URL_PREFIX: '3dtiles/v1',
     TILE_PROVIDER_URLS: Object.assign(Object.create(null) as Record<string, string>, {
@@ -98,6 +100,7 @@ export function getBroadcastableConfig() {
         MESHOPT_URL: config.MESHOPT_URL,
         MESHOPT_SIMD_URL: config.MESHOPT_SIMD_URL,
         BUILDING_GEN_URL: config.BUILDING_GEN_URL,
+        RTL_TEXT_URL: config.RTL_TEXT_URL,
     };
 }
 
