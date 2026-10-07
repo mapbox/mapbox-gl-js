@@ -3,8 +3,8 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 128,
-      "height": 128,
+      "width": 64,
+      "height": 64,
       "globalPlacement": true,
       "collisionDebug": true
     }
@@ -20,7 +20,7 @@
         "type": "FeatureCollection",
         "features": [
           {"type": "Feature", "geometry": {"type": "Point", "coordinates": [0, 0]}},
-          {"type": "Feature", "geometry": {"type": "Point", "coordinates": [175, 0]}}
+          {"type": "Feature", "geometry": {"type": "Point", "coordinates": [145, 0]}}
         ]
       }
     }
