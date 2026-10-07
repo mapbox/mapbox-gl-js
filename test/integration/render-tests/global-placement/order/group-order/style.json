@@ -6,7 +6,8 @@
       "skip-test": [],
       "width": 128,
       "height": 128,
-      "globalPlacement": true
+      "globalPlacement": true,
+      "collisionDebug": true
     }
   },
   "center": [

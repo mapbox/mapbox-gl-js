@@ -6,7 +6,8 @@
       "spriteFormat": "raster",
       "width": 256,
       "height": 96,
-      "globalPlacement": true
+      "globalPlacement": true,
+      "collisionDebug": true
     }
   },
   "center": [
