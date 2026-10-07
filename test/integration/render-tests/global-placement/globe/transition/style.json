@@ -1,33 +1,31 @@
 {
-  "description": "Pinned at zoom 5.5, inside the animated globe<->mercator projection morph (GLOBE_ZOOM_THRESHOLD_MIN=5..MAX=6). Checks that SymbolBucket#addToPlacement blends the globe-ECEF anchor toward its mercator-projected position (mirroring CollisionIndex#placeCollisionBox) instead of using the raw globe position, which would visibly offset the symbol mid-transition.",
+  "description": "Pinned at zoom 5.5, inside the animated globe<->mercator projection morph (GLOBE_ZOOM_THRESHOLD_MIN=5..MAX=6). Checks that SymbolBucket#addToPlacement blends the globe-ECEF anchor toward its mercator-projected position (mirroring CollisionIndex#placeCollisionBox) instead of using the raw globe position, which would offset the collision box from the icon mid-transition. Globe and mercator positions match at the map center, so the symbol is placed away from it at a high latitude under a high pitch, where the difference is several pixels.",
   "version": 8,
   "metadata": {
     "test": {
-      "width": 64,
-      "height": 64,
+      "width": 128,
+      "height": 128,
       "globalPlacement": true,
       "collisionDebug": true
     }
   },
-  "center": [10, 10],
+  "center": [0, 70],
   "zoom": 5.5,
+  "pitch": 70,
   "projection": {"name": "globe"},
   "sprite": "local://sprites/sprite",
   "sources": {
     "points": {
       "type": "geojson",
       "data": {
-        "type": "Feature",
-        "geometry": {"type": "Point", "coordinates": [10, 10]}
+        "type": "FeatureCollection",
+        "features": [
+          {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-2.5, 72.8]}}
+        ]
       }
     }
   },
   "layers": [
-    {
-      "id": "background",
-      "type": "background",
-      "paint": {"background-color": "white"}
-    },
     {
       "id": "symbol",
       "type": "symbol",
