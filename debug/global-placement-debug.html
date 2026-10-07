@@ -173,17 +173,23 @@ function formatTileId(tileID) {
     return `${c.z}/${c.x}/${c.y}`;
 }
 
-function formatSettings(rules) {
-    if (!rules) return '';
+function formatPartSettings(rules) {
     const parts = [];
     if (!rules.insertIntoCollisionGrid) parts.push('ignore-placement');
     const cr = rules.collisionRules;
     if (!cr) parts.push('allow-overlap');
-    else {
-        if (cr.symbolVariantToIgnoreCollisionWith) parts.push(`ignoreCollisionWith=${formatVariantId(cr.symbolVariantToIgnoreCollisionWith)}`);
-        if (cr.onlyIfPlaced) parts.push(`onlyIfPlaced=${formatVariantId(cr.onlyIfPlaced)}`);
-    }
+    else if (cr.symbolVariantToIgnoreCollisionWith) parts.push(`ignoreCollisionWith=${formatVariantId(cr.symbolVariantToIgnoreCollisionWith)}`);
     return parts.join(', ');
+}
+
+function formatSettings(placementRules, partPlacementRules) {
+    const parts = [];
+    if (placementRules && placementRules.onlyIfPlaced) parts.push(`onlyIfPlaced=${formatVariantId(placementRules.onlyIfPlaced)}`);
+    (partPlacementRules || []).forEach((rules, index) => {
+        const partSettings = formatPartSettings(rules);
+        if (partSettings) parts.push(`part ${index}: ${partSettings}`);
+    });
+    return parts.join('; ');
 }
 
 function variantIdKey(id) {
@@ -263,7 +269,7 @@ function refreshInspector() {
             <td>${record.featureId !== undefined ? record.featureId : ''}</td>
             <td class="status-${statusName}">${statusName}</td>
             <td>${formatVariantId(record.blockedBy)}</td>
-            <td>${formatSettings(record.placementRules)}</td>
+            <td>${formatSettings(record.placementRules, record.partPlacementRules)}</td>
         `;
         tr.addEventListener('click', () => console.log('placement debug record', lastRecords[index]));
         if (statusName === 'COLLIDED' && record.blockedBy) {

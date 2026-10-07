@@ -1,13 +1,13 @@
 import {describe, test, expect, vi} from '../../util/vitest';
 import {GlobalPlacement} from '../../../src/placement/global_placement';
-import {defaultPlacementRules} from '../../../src/placement/placement_rules';
+import {defaultPlacementRules, defaultPartPlacementRules} from '../../../src/placement/placement_rules';
 import {VariantPlacementResult} from '../../../src/placement/placement_debug';
 import {SymbolIdOrigin, SymbolPlacementType, SymbolVariantVisibility} from '../../../src/placement/types';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 
 import type {Geometry} from '../../../src/placement/geometry';
 import type {GlobalPlacementPriority} from '../../../src/placement/global_placement_priority';
-import type {PlacementRules} from '../../../src/placement/placement_rules';
+import type {PartPlacementRules, PlacementRules} from '../../../src/placement/placement_rules';
 import type {SymbolVariantId, SymbolVariantVisibilityValue} from '../../../src/placement/types';
 
 type NotifyFn = (variantId: SymbolVariantId, placementRunTimestamp: number) => void;
@@ -48,9 +48,38 @@ function box(left: number, top: number, right: number, bottom: number): Geometry
 
 const testTileID = new OverscaledTileID(0, 0, 0, 0, 0);
 
-function addSymbolVariant(placement: GlobalPlacement, variantId: SymbolVariantId, priority: GlobalPlacementPriority, geometry: Geometry, placementRules: PlacementRules, tileID: OverscaledTileID = testTileID, featureId?: string | number) {
+// Adds a variant made of a single part holding the whole geometry.
+function addSymbolVariant(
+    placement: GlobalPlacement,
+    variantId: SymbolVariantId,
+    priority: GlobalPlacementPriority,
+    geometry: Geometry,
+    partPlacementRules: PartPlacementRules,
+    placementRules: PlacementRules = defaultPlacementRules(),
+    tileID: OverscaledTileID = testTileID,
+    featureId?: string | number
+) {
     placement.startSymbolVariantProcessing(variantId, priority, placementRules, tileID, featureId);
-    for (const geometryElement of geometry) placement.addGeometry(geometryElement);
+    placement.addSymbolVariantPart(geometry, partPlacementRules);
+    placement.finishVariantProcessing();
+}
+
+// Adds a variant made of two parts.
+function addTwoPartSymbolVariant(
+    placement: GlobalPlacement,
+    variantId: SymbolVariantId,
+    priority: GlobalPlacementPriority,
+    firstGeometry: Geometry,
+    firstPartRules: PartPlacementRules,
+    secondGeometry: Geometry,
+    secondPartRules: PartPlacementRules,
+    placementRules: PlacementRules = defaultPlacementRules(),
+    tileID: OverscaledTileID = testTileID,
+    featureId?: string | number
+) {
+    placement.startSymbolVariantProcessing(variantId, priority, placementRules, tileID, featureId);
+    placement.addSymbolVariantPart(firstGeometry, firstPartRules);
+    placement.addSymbolVariantPart(secondGeometry, secondPartRules);
     placement.finishVariantProcessing();
 }
 
@@ -85,7 +114,7 @@ describe('InteractiveGlobalPlacement', () => {
 
         placement.startPlacement(123, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(10, 10, 20, 20), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(10, 10, 20, 20), defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -99,8 +128,8 @@ describe('InteractiveGlobalPlacement', () => {
 
         placement.startPlacement(123, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 15, 15), defaultPlacementRules());
-        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(10, 10, 20, 20), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 15, 15), defaultPartPlacementRules());
+        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(10, 10, 20, 20), defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -114,8 +143,8 @@ describe('InteractiveGlobalPlacement', () => {
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(0, 0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
-        addSymbolVariant(placement, createVariantId(0, 1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(20, 20, 30, 30), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0, 0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
+        addSymbolVariant(placement, createVariantId(0, 1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(20, 20, 30, 30), defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -129,8 +158,8 @@ describe('InteractiveGlobalPlacement', () => {
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(0, 0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
-        addSymbolVariant(placement, createVariantId(0, 1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_VISIBLE_VARIANT_INVISIBLE, 0, 0), box(20, 20, 30, 30), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0, 0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
+        addSymbolVariant(placement, createVariantId(0, 1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_VISIBLE_VARIANT_INVISIBLE, 0, 0), box(20, 20, 30, 30), defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -144,9 +173,9 @@ describe('InteractiveGlobalPlacement', () => {
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(0), createPriority(2, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
-        addSymbolVariant(placement, createVariantId(1, 0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(9, 9, 12, 12), defaultPlacementRules());
-        addSymbolVariant(placement, createVariantId(1, 1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(12, 12, 14, 14), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0), createPriority(2, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
+        addSymbolVariant(placement, createVariantId(1, 0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(9, 9, 12, 12), defaultPartPlacementRules());
+        addSymbolVariant(placement, createVariantId(1, 1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(12, 12, 14, 14), defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -160,8 +189,8 @@ describe('InteractiveGlobalPlacement', () => {
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
-        const rulesWithoutCollisions: PlacementRules = {collisionRules: undefined, insertIntoCollisionGrid: true};
+        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
+        const rulesWithoutCollisions: PartPlacementRules = {collisionRules: undefined, insertIntoCollisionGrid: true};
         addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(5, 5, 15, 15), rulesWithoutCollisions);
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
@@ -177,7 +206,7 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
         addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), {collisionRules: {}, insertIntoCollisionGrid: false});
-        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(5, 5, 15, 15), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(5, 5, 15, 15), defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -191,7 +220,7 @@ describe('InteractiveGlobalPlacement', () => {
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
         addSymbolVariant(placement,
             createVariantId(1),
             createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0),
@@ -211,14 +240,14 @@ describe('InteractiveGlobalPlacement', () => {
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(20, 20, 30, 30), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(20, 20, 30, 30), defaultPartPlacementRules());
         addSymbolVariant(placement,
             createVariantId(1),
             createPriority(0, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0),
             box(29, 29, 39, 39),
             {collisionRules: {symbolVariantToIgnoreCollisionWith: createVariantId(0)}, insertIntoCollisionGrid: true}
         );
-        addSymbolVariant(placement, createVariantId(2), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(11, 11, 21, 21), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(2), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(11, 11, 21, 21), defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -234,9 +263,9 @@ describe('InteractiveGlobalPlacement', () => {
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
-        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(10.5, 10.5, 15, 15), defaultPlacementRules());
-        addSymbolVariant(placement, createVariantId(2), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_VISIBLE_VARIANT_INVISIBLE, 0, 0), box(10.5, 10.5, 15, 15), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
+        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(10.5, 10.5, 15, 15), defaultPartPlacementRules());
+        addSymbolVariant(placement, createVariantId(2), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_VISIBLE_VARIANT_INVISIBLE, 0, 0), box(10.5, 10.5, 15, 15), defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -252,8 +281,8 @@ describe('InteractiveGlobalPlacement', () => {
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
-        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(10, 10, 15, 15), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
+        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(10, 10, 15, 15), defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -279,10 +308,10 @@ describe('InteractiveGlobalPlacement', () => {
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source1);
-        for (let id = 0; id <= 3; id++) addSymbolVariant(placement, createVariantId(id), samePriority, boxes[id], defaultPlacementRules());
+        for (let id = 0; id <= 3; id++) addSymbolVariant(placement, createVariantId(id), samePriority, boxes[id], defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.startSymbolSourceProcessing(source2);
-        for (let id = 4; id <= 7; id++) addSymbolVariant(placement, createVariantId(id), samePriority, boxes[id], defaultPlacementRules());
+        for (let id = 4; id <= 7; id++) addSymbolVariant(placement, createVariantId(id), samePriority, boxes[id], defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -309,11 +338,11 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startPlacement(0, screenWidth, screenHeight);
         // source1 gets ids 7..4 (lowest priority), added in decreasing id order.
         placement.startSymbolSourceProcessing(source1);
-        for (const id of [7, 6, 5, 4]) addSymbolVariant(placement, createVariantId(id), priorityForId(id), boxes[id], defaultPlacementRules());
+        for (const id of [7, 6, 5, 4]) addSymbolVariant(placement, createVariantId(id), priorityForId(id), boxes[id], defaultPartPlacementRules());
         placement.finishSourceProcessing();
         // source2 gets ids 3..0 (highest priority), added in decreasing id order.
         placement.startSymbolSourceProcessing(source2);
-        for (const id of [3, 2, 1, 0]) addSymbolVariant(placement, createVariantId(id), priorityForId(id), boxes[id], defaultPlacementRules());
+        for (const id of [3, 2, 1, 0]) addSymbolVariant(placement, createVariantId(id), priorityForId(id), boxes[id], defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -329,13 +358,13 @@ describe('InteractiveGlobalPlacement', () => {
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), geometry, defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), geometry, defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), geometry, defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), geometry, defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -374,14 +403,25 @@ describe('InteractiveGlobalPlacement', () => {
         expect(() => placement.startSymbolVariantProcessing(createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), defaultPlacementRules(), testTileID)).toThrow();
     });
 
-    test('should drop a variant that receives no geometry', () => {
+    test('should throw on a part without geometry', () => {
         const placement = new GlobalPlacement();
         const source = createFakeSource();
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
         placement.startSymbolVariantProcessing(createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), defaultPlacementRules(), testTileID);
-        // No addGeometry() calls: the variant is culled/degenerate.
+
+        expect(() => placement.addSymbolVariantPart([], defaultPartPlacementRules())).toThrow();
+    });
+
+    test('should drop a variant that receives no part', () => {
+        const placement = new GlobalPlacement();
+        const source = createFakeSource();
+
+        placement.startPlacement(0, screenWidth, screenHeight);
+        placement.startSymbolSourceProcessing(source);
+        placement.startSymbolVariantProcessing(createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), defaultPlacementRules(), testTileID);
+        // No addSymbolVariantPart() calls: the variant is culled/degenerate.
         placement.finishVariantProcessing();
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
@@ -390,14 +430,14 @@ describe('InteractiveGlobalPlacement', () => {
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
-    test('should hide an already-visible variant that receives no geometry this run', () => {
+    test('should hide an already-visible variant that receives no part this run', () => {
         const placement = new GlobalPlacement();
         const source = createFakeSource();
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
         placement.startSymbolVariantProcessing(createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), defaultPlacementRules(), testTileID);
-        // No addGeometry() calls: e.g. dynamically generated geometry turned out empty this run.
+        // No addSymbolVariantPart() calls: e.g. dynamically generated geometry turned out empty this run.
         placement.finishVariantProcessing();
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
@@ -406,16 +446,16 @@ describe('InteractiveGlobalPlacement', () => {
         expect(source.showSymbolVariant).not.toHaveBeenCalled();
     });
 
-    test('should not let a variant dropped for empty geometry collide with or block later variants', () => {
+    test('should not let a variant dropped for having no part collide with or block later variants', () => {
         const placement = new GlobalPlacement();
         const source = createFakeSource();
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
         placement.startSymbolVariantProcessing(createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), defaultPlacementRules(), testTileID);
-        // No geometry added for variant 0: it must be dropped rather than occupy space in the grid.
+        // No part added for variant 0: it must be dropped rather than occupy space in the grid.
         placement.finishVariantProcessing();
-        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -430,9 +470,15 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
         // Higher priority (sorts first), plain rules: this is the variant that onlyIfPlaced below refers to.
-        addSymbolVariant(placement, createVariantId(0, 0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0, 0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
         // Lower priority, only eligible for placement once variant (0, 0) has actually been placed.
-        addSymbolVariant(placement, createVariantId(1, 0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(20, 20, 30, 30), {collisionRules: {onlyIfPlaced: createVariantId(0, 0)}, insertIntoCollisionGrid: true});
+        addSymbolVariant(placement,
+            createVariantId(1, 0),
+            createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0),
+            box(20, 20, 30, 30),
+            defaultPartPlacementRules(),
+            {onlyIfPlaced: createVariantId(0, 0)}
+        );
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -448,10 +494,16 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
         // Higher priority (sorts first), plain rules: symbolId 0 gets placed, but via variantIdx 0.
-        addSymbolVariant(placement, createVariantId(0, 0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0, 0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
         // References variantIdx 1 of symbol 0, which is never placed (only variantIdx 0 is), so this
         // variant must remain ineligible even though symbolId 0 itself was placed.
-        addSymbolVariant(placement, createVariantId(1, 0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(20, 20, 30, 30), {collisionRules: {onlyIfPlaced: createVariantId(0, 1)}, insertIntoCollisionGrid: true});
+        addSymbolVariant(placement,
+            createVariantId(1, 0),
+            createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0),
+            box(20, 20, 30, 30),
+            defaultPartPlacementRules(),
+            {onlyIfPlaced: createVariantId(0, 1)}
+        );
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -467,10 +519,16 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
         // Higher priority (sorts first), plain rules: this is the variant that onlyIfPlaced below refers to.
-        addSymbolVariant(placement, createVariantId(0, 0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0, 0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
         // Overlaps box0. onlyIfPlaced is satisfied (variant (0, 0) is placed), but onlyIfPlaced alone
         // does not grant collision immunity, so this variant must still be hidden due to the overlap.
-        addSymbolVariant(placement, createVariantId(1, 0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(5, 5, 15, 15), {collisionRules: {onlyIfPlaced: createVariantId(0, 0)}, insertIntoCollisionGrid: true});
+        addSymbolVariant(placement,
+            createVariantId(1, 0),
+            createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0),
+            box(5, 5, 15, 15),
+            defaultPartPlacementRules(),
+            {onlyIfPlaced: createVariantId(0, 0)}
+        );
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -485,14 +543,15 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
         // Higher priority (sorts first), plain rules: this is the variant that the rules below refer to.
-        addSymbolVariant(placement, createVariantId(0, 0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0, 0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
         // Overlaps box0, but ignores collision with it, and only needs it to have been placed: both
         // mechanisms must cooperate for this variant to become eligible despite the overlap.
         addSymbolVariant(placement,
             createVariantId(1, 0),
             createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0),
             box(5, 5, 15, 15),
-            {collisionRules: {symbolVariantToIgnoreCollisionWith: createVariantId(0, 0), onlyIfPlaced: createVariantId(0, 0)}, insertIntoCollisionGrid: true}
+            {collisionRules: {symbolVariantToIgnoreCollisionWith: createVariantId(0, 0)}, insertIntoCollisionGrid: true},
+            {onlyIfPlaced: createVariantId(0, 0)}
         );
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
@@ -502,15 +561,169 @@ describe('InteractiveGlobalPlacement', () => {
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
+    test('should check onlyIfPlaced for variants that allow overlap', () => {
+        const placement = new GlobalPlacement();
+        const source = createFakeSource();
+
+        placement.startPlacement(0, screenWidth, screenHeight);
+        placement.startSymbolSourceProcessing(source);
+        addSymbolVariant(placement, createVariantId(0, 0), createPriority(2, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
+        // Allows overlap and still depends on a placed variant: the dependency is a rule of the
+        // variant, not of the collision check.
+        addSymbolVariant(placement,
+            createVariantId(1, 0),
+            createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0),
+            box(5, 5, 15, 15),
+            {collisionRules: undefined, insertIntoCollisionGrid: true},
+            {onlyIfPlaced: createVariantId(0, 0)}
+        );
+        // The same, but the referenced variant is never added, so this one stays ineligible.
+        addSymbolVariant(placement,
+            createVariantId(2, 0),
+            createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0),
+            box(5, 5, 15, 15),
+            {collisionRules: undefined, insertIntoCollisionGrid: true},
+            {onlyIfPlaced: createVariantId(3, 0)}
+        );
+        placement.finishSourceProcessing();
+        placement.finishPlacementRun();
+
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(1, createVariantId(0, 0), 0);
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(2, createVariantId(1, 0), 0);
+        expect(source.showSymbolVariant).toHaveBeenCalledTimes(2);
+        expect(source.hideSymbolVariant).not.toHaveBeenCalled();
+    });
+
+    test('should hide every part of a variant when one of them collides', () => {
+        const placement = new GlobalPlacement();
+        const source = createFakeSource();
+        const freeBox = box(40, 40, 50, 50);
+        const collidingBox = box(5, 5, 15, 15);
+
+        placement.startPlacement(0, screenWidth, screenHeight);
+        placement.startSymbolSourceProcessing(source);
+        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
+        // Overlaps variant 0's box: a variant is placed as a whole, so the colliding part hides the
+        // free one too.
+        addTwoPartSymbolVariant(placement,
+            createVariantId(1),
+            createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0),
+            freeBox, defaultPartPlacementRules(),
+            collidingBox, defaultPartPlacementRules()
+        );
+        placement.finishSourceProcessing();
+        placement.finishPlacementRun();
+
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 0);
+        expect(source.hideSymbolVariant).not.toHaveBeenCalled();
+    });
+
+    test('should not check collisions between parts of one variant', () => {
+        const placement = new GlobalPlacement();
+        const source = createFakeSource();
+
+        placement.startPlacement(0, screenWidth, screenHeight);
+        placement.startSymbolSourceProcessing(source);
+        // Parts are checked before any of them is inserted into the grid, so overlapping parts of
+        // one variant do not hide it.
+        addTwoPartSymbolVariant(placement,
+            createVariantId(0),
+            createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0),
+            box(0, 0, 10, 10), defaultPartPlacementRules(),
+            box(5, 5, 15, 15), defaultPartPlacementRules()
+        );
+        placement.finishSourceProcessing();
+        placement.finishPlacementRun();
+
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 0);
+        expect(source.hideSymbolVariant).not.toHaveBeenCalled();
+    });
+
+    test('should not check collisions for parts without collision rules', () => {
+        const placement = new GlobalPlacement();
+        const source = createFakeSource();
+        const collidingBox = box(5, 5, 15, 15);
+        const freeBox = box(40, 40, 50, 50);
+
+        placement.startPlacement(0, screenWidth, screenHeight);
+        placement.startSymbolSourceProcessing(source);
+        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
+        // The only part overlapping box0 allows overlap, so nothing is left to hide this variant.
+        addTwoPartSymbolVariant(placement,
+            createVariantId(1),
+            createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0),
+            collidingBox, {collisionRules: undefined, insertIntoCollisionGrid: true},
+            freeBox, defaultPartPlacementRules()
+        );
+        placement.finishSourceProcessing();
+        placement.finishPlacementRun();
+
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(1, createVariantId(0), 0);
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(2, createVariantId(1), 0);
+        expect(source.hideSymbolVariant).not.toHaveBeenCalled();
+    });
+
+    test('should check collisions for parts with collision rules', () => {
+        const placement = new GlobalPlacement();
+        const source = createFakeSource();
+        const collidingBox = box(5, 5, 15, 15);
+        // Overlaps nothing, so the variant carrying it can only be hidden by its other part.
+        const freeBox = box(40, 40, 50, 50);
+
+        placement.startPlacement(0, screenWidth, screenHeight);
+        placement.startSymbolSourceProcessing(source);
+        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
+        // The part that allows overlap is the free one, so the overlapping part is still checked
+        // and hides the whole variant.
+        addTwoPartSymbolVariant(placement,
+            createVariantId(1),
+            createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0),
+            freeBox, {collisionRules: undefined, insertIntoCollisionGrid: true},
+            collidingBox, defaultPartPlacementRules()
+        );
+        placement.finishSourceProcessing();
+        placement.finishPlacementRun();
+
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 0);
+        expect(source.hideSymbolVariant).not.toHaveBeenCalled();
+    });
+
+    test('should put into the collision grid only parts that ask for it', () => {
+        const placement = new GlobalPlacement();
+        const source = createFakeSource();
+        const ignoredBox = box(0, 0, 10, 10);
+        const insertedBox = box(40, 40, 50, 50);
+        const boxOverIgnoredOne = box(5, 5, 15, 15);
+        const boxOverInsertedOne = box(45, 45, 55, 55);
+
+        placement.startPlacement(0, screenWidth, screenHeight);
+        placement.startSymbolSourceProcessing(source);
+        addTwoPartSymbolVariant(placement,
+            createVariantId(0),
+            createPriority(2, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0),
+            ignoredBox, {collisionRules: {}, insertIntoCollisionGrid: false},
+            insertedBox, defaultPartPlacementRules()
+        );
+        addSymbolVariant(placement, createVariantId(1), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), boxOverIgnoredOne, defaultPartPlacementRules());
+        addSymbolVariant(placement, createVariantId(2), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), boxOverInsertedOne, defaultPartPlacementRules());
+        placement.finishSourceProcessing();
+        placement.finishPlacementRun();
+
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(1, createVariantId(0), 0);
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(2, createVariantId(1), 0);
+        expect(source.showSymbolVariant).toHaveBeenCalledTimes(2);
+        expect(source.hideSymbolVariant).not.toHaveBeenCalled();
+    });
+
     test('objects outside of grid should be invisible', () => {
         const placement = new GlobalPlacement();
         const source = createFakeSource();
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(-200, -200, -150, -150), defaultPlacementRules());
-        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_VISIBLE_VARIANT_INVISIBLE, 0, 0), box(250, 250, 300, 300), defaultPlacementRules());
-        addSymbolVariant(placement, createVariantId(2), createPriority(0, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(-200, 10, -150, 20), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(-200, -200, -150, -150), defaultPartPlacementRules());
+        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_VISIBLE_VARIANT_INVISIBLE, 0, 0), box(250, 250, 300, 300), defaultPartPlacementRules());
+        addSymbolVariant(placement, createVariantId(2), createPriority(0, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(-200, 10, -150, 20), defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -520,13 +733,54 @@ describe('InteractiveGlobalPlacement', () => {
         expect(source.hideSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(2), 0);
         expect(source.showSymbolVariant).not.toHaveBeenCalled();
     });
+
+    test('should place a variant when at least one of its parts lies inside the grid', () => {
+        const placement = new GlobalPlacement();
+        const source = createFakeSource();
+
+        placement.startPlacement(0, screenWidth, screenHeight);
+        placement.startSymbolSourceProcessing(source);
+        // Geometry out of bounds collides with nothing, so a variant that is out of bounds only
+        // partially is placed by whatever geometry is left within bounds.
+        addTwoPartSymbolVariant(placement,
+            createVariantId(0),
+            createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0),
+            box(0, 0, 10, 10), defaultPartPlacementRules(),
+            box(-300, -300, -290, -290), defaultPartPlacementRules()
+        );
+        placement.finishSourceProcessing();
+        placement.finishPlacementRun();
+
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 0);
+        expect(source.hideSymbolVariant).not.toHaveBeenCalled();
+    });
+
+    test('should hide a variant only when all of its parts lie outside the grid', () => {
+        const placement = new GlobalPlacement();
+        const source = createFakeSource();
+
+        placement.startPlacement(0, screenWidth, screenHeight);
+        placement.startSymbolSourceProcessing(source);
+        addTwoPartSymbolVariant(placement,
+            createVariantId(0),
+            createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0),
+            box(-300, -300, -290, -290), defaultPartPlacementRules(),
+            box(-400, -400, -390, -390), defaultPartPlacementRules()
+        );
+        placement.finishSourceProcessing();
+        placement.finishPlacementRun();
+
+        expect(source.showSymbolVariant).not.toHaveBeenCalled();
+        expect(source.hideSymbolVariant).not.toHaveBeenCalled();
+    });
+
     test('should not collect debug data by default', () => {
         const placement = new GlobalPlacement();
         const source = createFakeSource();
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
@@ -537,6 +791,7 @@ describe('InteractiveGlobalPlacement', () => {
         const placement = new GlobalPlacement();
         const source = createFakeSource();
         const placementRules = defaultPlacementRules();
+        const partPlacementRules = defaultPartPlacementRules();
         const featureId = 'feature-42';
 
         // Two elements, so that a variant's whole geometry is covered and not just a single element.
@@ -547,16 +802,16 @@ describe('InteractiveGlobalPlacement', () => {
 
         placement.startPlacement(0, screenWidth, screenHeight, true);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), multiElementGeometry, placementRules, testTileID, featureId);
+        addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), multiElementGeometry, partPlacementRules, placementRules, testTileID, featureId);
         // Overlaps the first element above and therefore loses the collision.
-        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(5, 5, 15, 15), placementRules);
+        addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(5, 5, 15, 15), partPlacementRules, placementRules);
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
         expect(placement.debugSymbols()).toEqual([
-            {geometry: multiElementGeometry, collisionPadding: VISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(0), tileID: testTileID, featureId, placementRules, status: VariantPlacementResult.PLACED, blockedBy: undefined},
+            {geometry: multiElementGeometry, collisionPadding: VISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(0), tileID: testTileID, featureId, placementRules, partPlacementRules: [partPlacementRules], status: VariantPlacementResult.PLACED, blockedBy: undefined},
             // Not placed, blockedBy names variant 0's collision box that it actually hit.
-            {geometry: box(5, 5, 15, 15), collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(1), tileID: testTileID, featureId: undefined, placementRules, status: VariantPlacementResult.COLLIDED, blockedBy: createVariantId(0)},
+            {geometry: box(5, 5, 15, 15), collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(1), tileID: testTileID, featureId: undefined, placementRules, partPlacementRules: [partPlacementRules],  status: VariantPlacementResult.COLLIDED, blockedBy: createVariantId(0)},
         ]);
     });
 
@@ -574,38 +829,40 @@ describe('InteractiveGlobalPlacement', () => {
         const outOfBoundsBox = box(300, 300, 400, 400);
 
         // Descending subgroup order, so the variants are evaluated in the order they are added here.
-        const addVariant = (variantId: SymbolVariantId, subgroupOrder: number, geometry: Geometry, placementRules: PlacementRules) => {
-            addSymbolVariant(placement, variantId, createPriority(subgroupOrder, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), geometry, placementRules);
+        const addVariant = (variantId: SymbolVariantId, subgroupOrder: number, geometry: Geometry, placementRules: PlacementRules = defaultPlacementRules()) => {
+            addSymbolVariant(placement, variantId, createPriority(subgroupOrder, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), geometry, defaultPartPlacementRules(), placementRules);
         };
 
         placement.startPlacement(0, screenWidth, screenHeight, true);
         placement.startSymbolSourceProcessing(source);
-        addVariant(createVariantId(0, 0), 6, placedBox, defaultPlacementRules());
+        addVariant(createVariantId(0, 0), 6, placedBox);
         // Two more variants of the symbol placed above, the second one also colliding: losing to
         // another variant of the same symbol is decided before any collision check runs.
-        addVariant(createVariantId(0, 1), 5, freeBox, defaultPlacementRules());
-        addVariant(createVariantId(0, 2), 4, collidingBox, defaultPlacementRules());
+        addVariant(createVariantId(0, 1), 5, freeBox);
+        addVariant(createVariantId(0, 2), 4, collidingBox);
         // Depend on a variant that is never added, so they can never become eligible. Symbol 1 is
         // itself never placed, so the second one isolates the dependency from OTHER_VARIANT_PLACED
         // while still colliding.
-        const dependentRules = (): PlacementRules => ({collisionRules: {onlyIfPlaced: createVariantId(2)}, insertIntoCollisionGrid: true});
+        const dependentRules = (): PlacementRules => ({onlyIfPlaced: createVariantId(2)});
         addVariant(createVariantId(1, 0), 3, freeBox, dependentRules());
         addVariant(createVariantId(1, 1), 2, collidingBox, dependentRules());
 
-        addVariant(createVariantId(3), 1, collidingBox, defaultPlacementRules());
-        addVariant(createVariantId(4), 0, outOfBoundsBox, defaultPlacementRules());
+        addVariant(createVariantId(3), 1, collidingBox);
+        addVariant(createVariantId(4), 0, outOfBoundsBox);
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
 
         // Only COLLIDED and OTHER_VARIANT_PLACED name a blockedBy.
+        const partPlacementRules = [defaultPartPlacementRules()];
+
         expect(placement.debugSymbols()).toEqual([
-            {geometry: placedBox, collisionPadding: VISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(0, 0), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), status: VariantPlacementResult.PLACED, blockedBy: undefined},
-            {geometry: freeBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(0, 1), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), status: VariantPlacementResult.OTHER_VARIANT_PLACED, blockedBy: createVariantId(0, 0)},
-            {geometry: collidingBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(0, 2), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), status: VariantPlacementResult.OTHER_VARIANT_PLACED, blockedBy: createVariantId(0, 0)},
-            {geometry: freeBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(1, 0), tileID: testTileID, featureId: undefined, placementRules: dependentRules(), status: VariantPlacementResult.DEPENDENCY_NOT_PLACED, blockedBy: undefined},
-            {geometry: collidingBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(1, 1), tileID: testTileID, featureId: undefined, placementRules: dependentRules(), status: VariantPlacementResult.DEPENDENCY_NOT_PLACED, blockedBy: undefined},
-            {geometry: collidingBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(3), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), status: VariantPlacementResult.COLLIDED, blockedBy: createVariantId(0, 0)},
-            {geometry: outOfBoundsBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(4), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), status: VariantPlacementResult.OUT_OF_BOUNDS, blockedBy: undefined},
+            {geometry: placedBox, collisionPadding: VISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(0, 0), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), partPlacementRules, status: VariantPlacementResult.PLACED, blockedBy: undefined},
+            {geometry: freeBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(0, 1), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), partPlacementRules, status: VariantPlacementResult.OTHER_VARIANT_PLACED, blockedBy: createVariantId(0, 0)},
+            {geometry: collidingBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(0, 2), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), partPlacementRules, status: VariantPlacementResult.OTHER_VARIANT_PLACED, blockedBy: createVariantId(0, 0)},
+            {geometry: freeBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(1, 0), tileID: testTileID, featureId: undefined, placementRules: dependentRules(), partPlacementRules, status: VariantPlacementResult.DEPENDENCY_NOT_PLACED, blockedBy: undefined},
+            {geometry: collidingBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(1, 1), tileID: testTileID, featureId: undefined, placementRules: dependentRules(), partPlacementRules, status: VariantPlacementResult.DEPENDENCY_NOT_PLACED, blockedBy: undefined},
+            {geometry: collidingBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(3), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), partPlacementRules, status: VariantPlacementResult.COLLIDED, blockedBy: createVariantId(0, 0)},
+            {geometry: outOfBoundsBox, collisionPadding: INVISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(4), tileID: testTileID, featureId: undefined, placementRules: defaultPlacementRules(), partPlacementRules, status: VariantPlacementResult.OUT_OF_BOUNDS, blockedBy: undefined},
         ]);
     });
 
@@ -615,7 +872,7 @@ describe('InteractiveGlobalPlacement', () => {
 
         placement.startPlacement(0, screenWidth, screenHeight, true);
         placement.startSymbolSourceProcessing(source);
-        addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
+        addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
         placement.finishSourceProcessing();
         placement.finishPlacementRun();
         expect(placement.debugSymbols()).toHaveLength(1);
@@ -633,7 +890,7 @@ describe('InteractiveGlobalPlacement', () => {
         const runOnce = (timestamp: number, collectDebugData: boolean) => {
             placement.startPlacement(timestamp, screenWidth, screenHeight, collectDebugData);
             placement.startSymbolSourceProcessing(source);
-            addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPlacementRules());
+            addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
             placement.finishSourceProcessing();
             placement.finishPlacementRun();
         };

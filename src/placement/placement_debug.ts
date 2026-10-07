@@ -1,5 +1,5 @@
 import type {Geometry} from './geometry';
-import type {PlacementRules} from './placement_rules';
+import type {PartPlacementRules, PlacementRules} from './placement_rules';
 import type {SymbolVariantId} from './types';
 
 export const VariantPlacementResult = {
@@ -12,9 +12,13 @@ export const VariantPlacementResult = {
      * won the placement, so this one cannot be shown.
      */
     OTHER_VARIANT_PLACED: 2,
-    /** Hidden: the variant this one is tied to via `CollisionRules.onlyIfPlaced` was not placed. */
+    /** Hidden: the variant this one is tied to via `PlacementRules.onlyIfPlaced` was not placed. */
     DEPENDENCY_NOT_PLACED: 3,
-    /** Hidden: the variant's geometry lies outside the placement bounds. */
+    /**
+     * Hidden: the whole variant geometry is outside of placement bounds.
+     * Geometry out of bounds collides with nothing, so a variant that is out of bounds only
+     * partially is placed by whatever geometry is left within them.
+     */
     OUT_OF_BOUNDS: 4,
 } as const;
 
@@ -38,12 +42,15 @@ export type PlacementDebugSymbol = {
     tileID: TileIdentity;
     // The real source feature id, if one could be resolved; absent for generated/synthetic ids.
     featureId?: string | number;
-    // Snapshot of the collision settings this variant was placed under.
+    // Snapshot of the rules this variant was placed under.
     placementRules: PlacementRules;
+    // Snapshot of the rules each of the variant's parts was placed under, in the order the parts
+    // were added.
+    partPlacementRules: ReadonlyArray<PartPlacementRules>;
     status: VariantPlacementResultValue;
     // The other variant that caused this one to be hidden. Only meaningful (and only ever set)
     // for COLLIDED (the variant it geometrically hit) and OTHER_VARIANT_PLACED (the sibling
     // variant of the same symbol that won). The other statuses are already fully explained by
-    // `status` plus `placementRules.collisionRules.onlyIfPlaced`.
+    // `status` plus `placementRules.onlyIfPlaced`.
     blockedBy?: SymbolVariantId;
 };

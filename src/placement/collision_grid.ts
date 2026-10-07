@@ -11,6 +11,15 @@ import type {Geometry, GeometryElement, BoxGeometryElement} from './geometry';
  */
 export type IntersectionResult = 'outside-of-grid' | 'intersects' | 'does-not-intersect';
 
+/**
+ * Data structure to test intersections with rectangles and circles on a 2D plane.
+ *
+ * The grid covers a limited area and stores nothing outside of it, so a geometry fully out of the
+ * grid collides with nothing: `intersects` reports `'outside-of-grid'` without checking it, and
+ * `insert` stores it nowhere. A geometry that only sticks out of the grid is stored as a whole and
+ * is checked as a whole, so a collision out of the grid is still found, as long as both geometries
+ * share a cell inside the grid.
+ */
 export class CollisionGrid<T> {
     _grid: GridIndex<number>;
     _cellSize: number;

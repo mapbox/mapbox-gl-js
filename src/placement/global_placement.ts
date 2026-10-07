@@ -4,10 +4,10 @@ import {comparePriority} from './global_placement_priority';
 import {VariantPlacementResult} from './placement_debug';
 import {SymbolVariantVisibility} from './types';
 
-import type {GeometryElement} from './geometry';
+import type {Geometry, GeometryElement} from './geometry';
 import type {GlobalPlacementPriority} from './global_placement_priority';
 import type {PlacementDebugSymbol, TileIdentity, VariantPlacementResultValue} from './placement_debug';
-import type {PlacementRules} from './placement_rules';
+import type {PartPlacementRules, PlacementRules} from './placement_rules';
 import type {SymbolSource} from './symbol_source';
 import type {SymbolId, SymbolVariantId} from './types';
 
@@ -75,13 +75,18 @@ function addVariantId(set: VariantIdSet, id: SymbolVariantId) {
     byVariantIdx.add(id.variantIdx);
 }
 
+type PartInfo = {
+    geometry: Geometry;
+    rules: PartPlacementRules;
+};
+
 type SymbolInfo = {
     priority: GlobalPlacementPriority;
     source: SymbolSource;
     variantId: SymbolVariantId;
-    // Streamed in via addGeometry() between startSymbolVariantProcessing() and
-    // finishVariantProcessing().
-    geometry: Array<GeometryElement>;
+    // Streamed in via addSymbolVariantPart() between startSymbolVariantProcessing() and
+    // finishVariantProcessing(). Never empty once finishVariantProcessing() has kept the entry.
+    parts: Array<PartInfo>;
     placementRules: PlacementRules;
     tileID: TileIdentity;
     featureId?: string | number;
@@ -106,7 +111,7 @@ type SymbolInfo = {
  * placement.startSymbolSourceProcessing(source);
  * for (const symbolVariant of symbolVariants) {
  *     placement.startSymbolVariantProcessing(...);
- *     for (const geometryElement of symbolVariant.geometry) placement.addGeometry(geometryElement);
+ *     for (const part of symbolVariant.parts) placement.addSymbolVariantPart(part.geometry, part.rules);
  *     placement.finishVariantProcessing();
  * }
  * placement.finishSourceProcessing();
@@ -124,7 +129,7 @@ export class GlobalPlacement {
     // layerOriginKey(symbolId) -> symbolId.symbolId -> the variantIdx that won placement
     _placedSymbolIds: Map<number, Map<number, number>>;
     _processingSource: SymbolSource | null;
-    // The variant currently streaming geometry in is always the last entry of _symbols.
+    // The variant currently streaming parts in is always the last entry of _symbols.
     _variantProcessingStarted: boolean;
     _collectDebugData: boolean;
     _debugSymbols: Array<PlacementDebugSymbol>;
@@ -209,25 +214,31 @@ export class GlobalPlacement {
         if (!source) throw new Error('Attempt to start a symbol variant processing outside of symbol source processing');
         if (this._variantProcessingStarted) throw new Error('Attempt to begin a symbol variant processing before finishing the previous one');
 
-        this._symbols.push({priority, source, variantId, geometry: [], placementRules, tileID, featureId});
+        this._symbols.push({priority, source, variantId, parts: [], placementRules, tileID, featureId});
 
-        const rules = placementRules.collisionRules;
-        if (rules) {
-            if (rules.onlyIfPlaced) {
-                assert(!symbolIdEquals(rules.onlyIfPlaced.symbolId, variantId.symbolId));
-                addVariantId(this._onlyIfPlacedReferencedIds, rules.onlyIfPlaced);
-            }
+        if (placementRules.onlyIfPlaced) {
+            assert(!symbolIdEquals(placementRules.onlyIfPlaced.symbolId, variantId.symbolId));
+            addVariantId(this._onlyIfPlacedReferencedIds, placementRules.onlyIfPlaced);
         }
 
         this._variantProcessingStarted = true;
     }
 
-    // Adds one geometry element to the variant started by startSymbolVariantProcessing(). Geometry
-    // is expressed in logical (device-independent) screen pixels, the same space as startPlacement's
-    // screenWidth/screenHeight.
-    addGeometry(geometryElement: GeometryElement) {
-        if (!this._variantProcessingStarted) throw new Error('Attempt to add geometry outside of symbol variant processing');
-        this._symbols.at(-1)!.geometry.push(geometryElement);
+    /**
+     * Adds one part of the variant started by startSymbolVariantProcessing(): a piece of geometry
+     * with the rules it is placed by.
+     *
+     * All the parts of a variant are placed as a whole: if any of them fails its rules, none of them
+     * is shown. Parts of one variant never collide with each other.
+     *
+     * Geometry is expressed in logical (device-independent) screen pixels, the same space as
+     * startPlacement's screenWidth/screenHeight, and must not be empty. It is stored by reference,
+     * so callers must not mutate it afterwards.
+     */
+    addSymbolVariantPart(geometry: Geometry, rules: PartPlacementRules) {
+        if (!this._variantProcessingStarted) throw new Error('Attempt to add a symbol variant part outside of symbol variant processing');
+        if (geometry.length === 0) throw new Error('Attempt to add a symbol variant part without geometry');
+        this._symbols.at(-1)!.parts.push({geometry, rules});
     }
 
     finishVariantProcessing() {
@@ -235,8 +246,8 @@ export class GlobalPlacement {
         this._variantProcessingStarted = false;
 
         const symbol = this._symbols.at(-1)!;
-        if (symbol.geometry.length === 0) {
-            // A begun variant can receive no geometry (every element culled, or dynamically generated
+        if (symbol.parts.length === 0) {
+            // A begun variant can receive no part (every element culled, or dynamically generated
             // geometry that turns out empty). It cannot be placed, so a currently-visible variant has to
             // be hidden here: finishPlacementRun never sees a dropped symbol and would otherwise leave it
             // visible forever without any collision box in the grid.
@@ -264,30 +275,45 @@ export class GlobalPlacement {
             return VariantPlacementResult.OTHER_VARIANT_PLACED;
         }
 
-        const collisionRules = symbol.placementRules.collisionRules;
-        if (collisionRules) {
-            const onlyIfPlaced = collisionRules.onlyIfPlaced;
-            if (onlyIfPlaced && !hasVariantId(this._placedVariantIds, onlyIfPlaced)) {
-                return VariantPlacementResult.DEPENDENCY_NOT_PLACED;
-            }
+        const onlyIfPlaced = symbol.placementRules.onlyIfPlaced;
+        if (onlyIfPlaced && !hasVariantId(this._placedVariantIds, onlyIfPlaced)) {
+            return VariantPlacementResult.DEPENDENCY_NOT_PLACED;
+        }
 
+        const onBlocked = this._collectDebugData ? (data: SymbolVariantId) => { this._lastBlockedBy = data; } : noOpOnBlocked;
+
+        // The variant is placed as a whole, so we do not want to insert its parts right away: inserted
+        // parts would collide with the parts checked after them.
+        let anyPartChecked = false;
+        let anyCheckedPartInGrid = false;
+        for (const part of symbol.parts) {
+            const collisionRules = part.rules.collisionRules;
+            if (!collisionRules) continue;
+            anyPartChecked = true;
             const ignoreVariantId = collisionRules.symbolVariantToIgnoreCollisionWith;
-            const onBlocked = this._collectDebugData ? (data: SymbolVariantId) => { this._lastBlockedBy = data; } : noOpOnBlocked;
             const intersectionResult = grid.intersects(
-                symbol.geometry,
+                part.geometry,
                 collisionPadding,
                 (data) => ignoreVariantId !== undefined && symbolVariantIdEquals(data, ignoreVariantId),
                 onBlocked
             );
-            if (intersectionResult === 'outside-of-grid') return VariantPlacementResult.OUT_OF_BOUNDS;
             if (intersectionResult === 'intersects') return VariantPlacementResult.COLLIDED;
+            if (intersectionResult === 'does-not-intersect') anyCheckedPartInGrid = true;
         }
+        // Out of bounds only if the whole variant is: a part inside the grid keeps the rest of it placeable.
+        if (anyPartChecked && !anyCheckedPartInGrid) return VariantPlacementResult.OUT_OF_BOUNDS;
 
-        if (symbol.placementRules.insertIntoCollisionGrid) {
-            // insert() only fails when every element lies outside the grid
-            // gl-native has a geometry cap and can also return TooManyGeometries but we don't have that in GL JS
-            if (!grid.insert(symbol.geometry, symbol.variantId)) return VariantPlacementResult.OUT_OF_BOUNDS;
+        let anyPartInserted = false;
+        let anyPartNotInserted = false;
+        for (const part of symbol.parts) {
+            if (!part.rules.insertIntoCollisionGrid) continue;
+            // insert() only fails when every element lies outside the grid.
+            // gl-native has a geometry cap and can also return TooManyGeometries but we don't have that in GL JS.
+            if (grid.insert(part.geometry, symbol.variantId)) anyPartInserted = true;
+            else anyPartNotInserted = true;
         }
+        // A variant whose parts all opt out of the grid is placed without ever touching it.
+        if (anyPartNotInserted && !anyPartInserted) return VariantPlacementResult.OUT_OF_BOUNDS;
 
         return VariantPlacementResult.PLACED;
     }
@@ -319,13 +345,18 @@ export class GlobalPlacement {
 
             if (this._collectDebugData) {
                 const displayedPadding = visible ? VISIBLE_VARIANTS_COLLISION_PADDING : collisionPadding;
+                // Parts of a variant are streamed in one after another, so their geometry elements
+                // are recorded in that same order here.
+                const elements: Array<GeometryElement> = [];
+                for (const part of symbol.parts) elements.push(...part.geometry);
                 this._debugSymbols.push({
-                    geometry: symbol.geometry,
+                    geometry: elements,
                     collisionPadding: displayedPadding,
                     variantId: symbol.variantId,
                     tileID: symbol.tileID,
                     featureId: symbol.featureId,
                     placementRules: symbol.placementRules,
+                    partPlacementRules: symbol.parts.map((part) => part.rules),
                     status,
                     blockedBy: this._lastBlockedBy,
                 });

@@ -66,7 +66,13 @@ export type TileCoverageRect = {
 };
 
 /**
- * Identity of a specific variant (alternative, or optional icon/text part) of a symbol.
+ * Identity of a specific variant of a symbol: distinguishes alternatives of the same symbol,
+ * either different text-variable-anchor values or upcoming alternatives.
+ * https://docs.google.com/document/d/1FlJVwpQ8K7kq4qRTlZPktEawGgIiX3iV6cGshO8gsqo/edit?tab=t.50jxdmq297xl#heading=h.v0ilikc309b9
+ *
+ * Parts of a symbol are not variants: mandatory parts are the parts of one variant
+ * (GlobalPlacement#addSymbolVariantPart), while an optional text/icon part (for layers with
+ * *-optional: true) is a separate symbol tied to the mandatory one by PlacementRules.onlyIfPlaced.
  */
 export type SymbolVariantId = {
     symbolId: SymbolId;

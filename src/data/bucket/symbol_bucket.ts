@@ -67,7 +67,7 @@ import {Elevation} from '../../terrain/elevation';
 import {getFogOpacityAtTileCoord, FOG_SYMBOL_CLIPPING_THRESHOLD} from '../../style/fog_helpers';
 import {MIN_COLLISION_PERSPECTIVE_RATIO} from '../../geo/projection/projection_util';
 import {SymbolIdOrigin, SymbolPlacementType, SymbolVariantVisibility, hasStableId} from '../../placement/types';
-import {defaultPlacementRules} from '../../placement/placement_rules';
+import {defaultPlacementRules, defaultPartPlacementRules} from '../../placement/placement_rules';
 import {subgroupOrderForLayerPosition} from '../../placement/symbol_placement_parameters';
 import {type CollisionBoxArray, type CollisionBox, type SymbolInstance, SymbolOrientationArray} from '../array_types';
 import {type SymbolQuad, getIconQuads, getGlyphQuads} from '../../symbol/quads';
@@ -1141,10 +1141,11 @@ class SymbolBucket implements Bucket, SymbolSource {
         const unwrappedTileID = tile.tileID.toUnwrapped();
         const tileIdentity: TileIdentity = {overscaledZ: tile.tileID.overscaledZ, wrap: tile.tileID.wrap, canonical: tile.tileID.canonical};
         const pitched = transform.pitch > 0;
-        // Minimal first version: default collision rules (collide against, and insert into, the
-        // collision grid). Priority is built per instance below so its current visibility feeds back
-        // into placement.
+        // Minimal first version: no dependency on another variant, and every part uses the default
+        // rules (collide against, and insert into, the collision grid). Priority is built per instance
+        // below so its current visibility feeds back into placement.
         const placementRules = defaultPlacementRules();
+        const partPlacementRules = defaultPartPlacementRules();
 
         // Size is evaluated once per run for the current zoom (mirroring the shader's per-frame size
         // interpolation); the per-feature value is read below via getSymbolInstance{Icon,Text}Size.
@@ -1252,7 +1253,9 @@ class SymbolBucket implements Bucket, SymbolSource {
             const right = (box.x2 * scale + box.padding) * tileToViewport + anchor.x;
             const bottom = (box.y2 * scale + box.padding) * tileToViewport + anchor.y;
             if (!(left < right) || !(top < bottom)) return;
-            globalPlacement.addGeometry({kind: 'box', left, top, right, bottom});
+            // One box is one part: the icon and the text of a symbol are placed as a whole, but each of
+            // them brings its own rules.
+            globalPlacement.addSymbolVariantPart([{kind: 'box', left, top, right, bottom}], partPlacementRules);
         };
 
         for (let index = 0; index < this.symbolInstances.length; index++) {
