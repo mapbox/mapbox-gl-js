@@ -595,9 +595,6 @@ export class SymbolBuffers {
             if (this.iconTransitioningVertexArray.length > 0) {
                 this.iconTransitioningVertexBuffer = context.createVertexBuffer(this.iconTransitioningVertexArray, iconTransitioningAttributes.members, true);
             }
-            if (this.fadeVertexArray.length > 0) {
-                this.fadeVertexBuffer = context.createVertexBuffer(this.fadeVertexArray, placementFadeAttributes.members, true);
-            }
             if (this.globeExtVertexArray.length > 0) {
                 this.globeExtVertexBuffer = context.createVertexBuffer(this.globeExtVertexArray, symbolGlobeExtAttributes.members, true);
             }
@@ -619,6 +616,9 @@ export class SymbolBuffers {
                 this.featureIdBuffer = context.createVertexBuffer(this.featureIdArray, featureIdAttributes.members, false);
             }
         }
+        if (this.fadeUploadPending()) {
+            this.fadeVertexBuffer = context.createVertexBuffer(this.fadeVertexArray, placementFadeAttributes.members, true);
+        }
         if (upload || update) {
             this.programConfigurations.upload(context);
 
@@ -626,6 +626,12 @@ export class SymbolBuffers {
                 this.uboBinder.upload(context);
             }
         }
+    }
+
+    // New placement seeds the fade array (see SymbolBucket#_initPlacementOpacities) when it first runs
+    // on the bucket, which can be after the bucket was uploaded; the buffer is created whenever that happens
+    fadeUploadPending(): boolean {
+        return this.fadeVertexArray.length > 0 && !this.fadeVertexBuffer;
     }
 
     destroy() {
