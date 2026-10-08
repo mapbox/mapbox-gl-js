@@ -20,6 +20,7 @@
 
 ### Bug fixes 🐞
 
+- Fix coverage stencil marks including polygons for other road classes, which hid roads that should stay visible.
 - Fix a severe performance regression when updating data-driven line layers with `setPaintProperty`.
 - Fix a rendering issue when drawing thousands of data-driven lines and symbols.
 - Fix transparent `building` and `fill-extrusion` layers blending the same pixel twice where they cover the same buildings, making the overlap look more opaque than either layer's opacity asks for.
