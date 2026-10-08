@@ -42,6 +42,7 @@ in highp vec3 a_packed;
 #endif
 
 uniform bool u_has_dash;
+uniform bool u_has_border;
 
 in float a_linesofar;
 
@@ -380,16 +381,16 @@ void main() {
     // The distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
     float ANTIALIASING = 1.0 / u_device_pixel_ratio / 2.0;
-#ifdef RENDER_LINE_BORDER
 #ifndef VARIABLE_LINE_WIDTH
-    // Increase distance for lines with border to improve distance based
-    // anti-aliasing (fwidth-based) of the border edges.
-    // The multiplier was determined experimentally to achieve pixel-perfect
-    // anti-aliasing of the border for extremely pitched lines near the
-    // horizon: lower values cause aliasing on the borders, while higher
-    // values yield no further visual improvement.
-    ANTIALIASING *= 8.0;
-#endif
+    if (u_has_border) {
+        // Increase distance for lines with border to improve distance based
+        // anti-aliasing (fwidth-based) of the border edges.
+        // The multiplier was determined experimentally to achieve pixel-perfect
+        // anti-aliasing of the border for extremely pitched lines near the
+        // horizon: lower values cause aliasing on the borders, while higher
+        // values yield no further visual improvement.
+        ANTIALIASING *= 8.0;
+    }
 #endif
 
     vec2 a_extrude = vec2(a_data.xy) - 128.0;
@@ -557,13 +558,13 @@ void main() {
         }
         else
         {
-#ifdef RENDER_LINE_BORDER
-            // if line is wide enough, reduce opacity of thin borders only - no change of border width
-            float border_ratio = (border_width * u_width_scale + ANTIALIASING) / outset;
-            screen_width *= border_ratio;
-            float max_border_component = max(screen_width.x, screen_width.y);
-            dilute_border_scale = min(1.0, max_border_component / min_pixel);
-#endif
+            if (u_has_border) {
+                // if line is wide enough, reduce opacity of thin borders only - no change of border width
+                float border_ratio = (border_width * u_width_scale + ANTIALIASING) / outset;
+                screen_width *= border_ratio;
+                float max_border_component = max(screen_width.x, screen_width.y);
+                dilute_border_scale = min(1.0, max_border_component / min_pixel);
+            }
         }
     }
 #endif

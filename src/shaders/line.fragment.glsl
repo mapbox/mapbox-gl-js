@@ -29,6 +29,7 @@ in float stub_side;
 #endif
 
 uniform bool u_has_dash;
+uniform bool u_has_border;
 
 uniform sampler2D u_dash_image;
 uniform highp float u_floor_width_scale;
@@ -154,10 +155,10 @@ void main() {
     // The distance over which the line edge fades out.
     // Note: the same ANTIALIASING value is used in the line vertex shader.
     float ANTIALIASING = 1.0 / u_device_pixel_ratio / 2.0;
-#ifdef RENDER_LINE_BORDER
 #ifndef VARIABLE_LINE_WIDTH
-    ANTIALIASING *= 8.0;
-#endif
+    if (u_has_border) {
+        ANTIALIASING *= 8.0;
+    }
 #endif
 
     // Calculate the antialiasing fade factor. This is either when fading in
@@ -178,8 +179,8 @@ void main() {
     // Coverage of this line's border band: 0 in the border, 1 in the fill.
     // Declared and resolved early to use in the round-join clip tests below
     float alpha2 = 1.0;
-#ifdef RENDER_LINE_BORDER
 #ifndef VARIABLE_LINE_WIDTH
+    if (u_has_border) {
     // Calculate the rate of change of the distance across the line.
     pxStep = fwidth(dist);
     // Find the distance to the closer edge of the line.
@@ -238,7 +239,7 @@ void main() {
         }
     }
 #endif
-#endif
+    }
 #endif
 
 if (u_has_dash) {
@@ -323,9 +324,8 @@ if (u_has_dash) {
         }
     }
 
-#ifdef RENDER_LINE_BORDER
 #ifndef VARIABLE_LINE_WIDTH
-    if (alpha2 < 1.) {
+    if (u_has_border && alpha2 < 1.) {
 #ifdef RENDER_LINE_BORDER_GRADIENT
         // line-border-gradient takes precedence over border_color and the auto-derived border color.
         vec4 border_gradient_color = texture(u_border_gradient_image, v_uv.xy);
@@ -350,7 +350,6 @@ if (u_has_dash) {
 #endif
         out_color *= v_width2_dilute.w;
     }
-#endif
 #endif
 
     vec2 cutout_factors = vec2(0.0);
