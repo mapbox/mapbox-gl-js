@@ -202,6 +202,9 @@ class SourceCache extends Evented {
     }
 
     _unloadTile(tile: Tile): void {
+        // A removed tile can still have loads in flight (e.g. an expiry refresh); late responses must not touch it
+        tile.aborted = true;
+        this._abortTile(tile);
         if (this._source.unloadTile)
             return this._source.unloadTile(tile);
     }
@@ -1025,8 +1028,6 @@ class SourceCache extends Evented {
         if ((tile.hasData() && tile.state !== 'reloading') || tile.state === 'empty') {
             this._cache.add(tile.tileID, tile, tile.getExpiryTimeout() as number | undefined);
         } else {
-            tile.aborted = true;
-            this._abortTile(tile);
             this._unloadTile(tile);
         }
     }

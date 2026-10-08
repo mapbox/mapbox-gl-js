@@ -233,6 +233,40 @@ describe('CustomSource', () => {
         });
     });
 
+    test('does not draw a late loadTile result into a tile evicted from the cache', async () => {
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+        const flush = () => new Promise((resolve) => { setTimeout(resolve, 0); });
+
+        // Every request waits until the test releases it, like a slow network
+        const pending: Array<() => void> = [];
+        const loadTile = vi.fn(() => new Promise((resolve) => {
+            pending.push(() => resolve(new window.ImageData(512, 512)));
+        }));
+
+        const {source, sourceCache} = createSource({loadTile, maxTileCacheSize: 0});
+        sourceCache.onAdd();
+        sourceCache.updateCacheSize(sourceCache.transform);
+
+        sourceCache._addTile(tileID);
+        pending.shift()();
+        await flush();
+
+        // A second reload replaces tile.request, so the first one can no longer be aborted
+        sourceCache._reloadTile(tileID.key, 'reloading');
+        const staleResponse = pending.shift();
+        sourceCache._reloadTile(tileID.key, 'reloading');
+        pending.shift()();
+        await flush();
+
+        sourceCache._removeTile(tileID.key);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        source.loadTileData.mockClear();
+        staleResponse();
+        await flush();
+
+        expect(source.loadTileData).not.toHaveBeenCalled();
+    });
+
     test('hasTile', async () => {
         const {sourceCache, eventedParent} = createSource({
             loadTile: async () => {},
