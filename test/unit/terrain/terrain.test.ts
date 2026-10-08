@@ -654,10 +654,13 @@ describe('Elevation', () => {
                     const cache = map.style.getOwnSourceCache('trace');
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     cache.transform = map.painter.transform;
+                    // z0 isn't an ideal tile at this zoom, so a map update would remove it if it's still loading
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    cache.update = () => {};
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     cache._addTile(new OverscaledTileID(0, 0, 0, 0, 0));
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                    cache.onAdd();
+                    cache.onAdd(map);
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     cache.reload();
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

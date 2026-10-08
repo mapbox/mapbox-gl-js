@@ -5,7 +5,7 @@ import {parseStyle, parseOptions, getActualImage, calculateDiff, diffCanvas, dif
 import {integrationTests} from 'virtual:integration-tests';
 import {getStatsHTML, updateHTML, registerSkipped, fragmentIdFor} from '../../util/html_generator';
 import {mapboxgl} from '../lib/mapboxgl.js';
-import {sendFragment, sendBrowserDiagnostics, detectPlatformTagFromUserAgent, matchSkipTestRule, parseTickets, validateTestFile, type SkipRuleMatch} from '../lib/utils';
+import {sendFragment, sendFragments, sendBrowserDiagnostics, detectPlatformTagFromUserAgent, matchSkipTestRule, parseTickets, validateTestFile, type SkipRuleMatch} from '../lib/utils';
 
 function getEnvironmentParams() {
     let timeout = 30000;
@@ -32,7 +32,8 @@ function loadPngFromUrl(url: string): Promise<ImageDataWithCanvas> {
             const canvas = document.createElement('canvas');
             canvas.width = image.width;
             canvas.height = image.height;
-            const ctx = canvas.getContext('2d')!;
+            // CPU-backed canvas avoids a GPU readback in getImageData
+            const ctx = canvas.getContext('2d', {willReadFrequently: true})!;
             ctx.drawImage(image, 0, 0);
             resolve({imageData: ctx.getImageData(0, 0, canvas.width, canvas.height), canvas});
         };
@@ -88,6 +89,18 @@ type TestMetadata = {
 let reportFragment: string | undefined;
 let reportFragmentName: string | undefined;
 
+// Report fragments are sent in batches because a POST per test adds up to seconds over a full run.
+// Keyed by fragment id, so a retry still replaces the prior attempt's fragment.
+const pendingFragments = new Map<number, string>();
+let pendingFragmentsSize = 0;
+
+function flushFragments() {
+    const fragments = Array.from(pendingFragments);
+    pendingFragments.clear();
+    pendingFragmentsSize = 0;
+    return sendFragments(fragments);
+}
+
 // Passed-test images are embedded only when explicitly opted in (never on CI --
 // the flag is forced off there by the vite config). Failed tests always embed.
 const embedPassedImages = import.meta.env.VITE_EMBED_PASSED_IMAGES === 'true';
@@ -111,10 +124,12 @@ const getTest = (renderTestName: string, preflightError?: unknown) => async () =
             getActualImage(style, options, renderTestName),
         ]);
 
-        const actual = getActualImageDataURL(actualImageData, mapRef.current, {w, h}, options);
+        // PNG-encoded lazily since passing tests on CI never need it
+        let actual: string | undefined;
+        const getActual = () => (actual ??= getActualImageDataURL(actualImageData, mapRef.current, {w, h}, options));
 
         if (import.meta.env.VITE_CI === 'false') {
-            await server.commands.writeFile(`${testPath}/actual.png`, actual.split(',')[1], {encoding: 'base64'});
+            await server.commands.writeFile(`${testPath}/actual.png`, getActual().split(',')[1], {encoding: 'base64'});
         }
 
         if (!expectedImage && import.meta.env.VITE_UPDATE === 'false') {
@@ -128,11 +143,10 @@ const getTest = (renderTestName: string, preflightError?: unknown) => async () =
         // embed the actual/expected images alongside the error instead of just the
         // bare error text.
         let diff = Infinity;
-        let diffImage: Uint8ClampedArray | undefined;
         let diffError: unknown;
         if (expectedImage) {
             try {
-                ({diff, diffImage} = calculateDiff(actualImageData, expectedImage.imageData.data, {w, h}, options['diff-calculation-threshold']));
+                diff = calculateDiff(actualImageData, expectedImage.imageData.data, {w, h}, options['diff-calculation-threshold']);
             } catch (e) {
                 diffError = e;
             }
@@ -157,14 +171,17 @@ const getTest = (renderTestName: string, preflightError?: unknown) => async () =
             // side-by-side at a shared width/height -- embed them at their own natural
             // size instead of a diff image.
             testMetaData.error = diffError instanceof Error ? diffError : new Error(String(diffError));
-            testMetaData.actual = actual;
+            testMetaData.actual = getActual();
             if (expectedImage) testMetaData.expected = expectedImage.canvas.toDataURL();
         } else {
             testMetaData.width = w;
             testMetaData.height = h;
         }
 
-        if (!diffError && diffImage && (!pass || embedPassedImages)) {
+        if (!diffError && expectedImage && (!pass || embedPassedImages)) {
+            // Diff image is only rendered when needed, since most tests pass and don't show it
+            const diffImage = new Uint8ClampedArray(w * h * 4);
+            calculateDiff(actualImageData, expectedImage.imageData.data, {w, h}, options['diff-calculation-threshold'], diffImage);
             diffCanvas.width = w;
             diffCanvas.height = h;
             const diffImageData = new ImageData(diffImage, w, h);
@@ -176,7 +193,7 @@ const getTest = (renderTestName: string, preflightError?: unknown) => async () =
                 await server.commands.writeFile(`${testPath}/diff.png`, imgDiff.split(',')[1], {encoding: 'base64'});
             }
 
-            testMetaData.actual = actual;
+            testMetaData.actual = getActual();
             testMetaData.expected = expectedImage.canvas.toDataURL();
             testMetaData.imgDiff = imgDiff;
         }
@@ -186,7 +203,7 @@ const getTest = (renderTestName: string, preflightError?: unknown) => async () =
             // platform-tag, so a subsequent run resolves the freshly-written image instead of
             // silently preferring a higher-priority expected-<tag>.png that update left untouched.
             const updateProp = expectedImage ? expectedImage.prop : 'expected';
-            await server.commands.writeFile(`${testPath}/${updateProp}.png`, actual.split(',')[1], {encoding: 'base64'});
+            await server.commands.writeFile(`${testPath}/${updateProp}.png`, getActual().split(',')[1], {encoding: 'base64'});
         } else if (diffError) {
             errorMessage = `Render test ${renderTestName} failed with error: ${diffError}`;
         } else if (!pass) {
@@ -228,7 +245,7 @@ Object.keys(integrationTests).forEach((testName) => {
 afterAll(async () => {
     for (const [testName, skipMatch] of Object.entries(skippedTests)) {
         const testPath = integrationTests[testName]?.path;
-        await sendFragment(
+        pendingFragments.set(
             fragmentIdFor(testName),
             registerSkipped(
                 testName,
@@ -239,6 +256,7 @@ afterAll(async () => {
             )
         );
     }
+    await flushFragments();
     await sendBrowserDiagnostics();
     await sendFragment(0, getStatsHTML());
     // We cannot use `server.commands.writeFile` here because the HTML file is large
@@ -250,8 +268,10 @@ afterAll(async () => {
 afterEach(async () => {
     // Send under the test's stable fragment id so a retry overwrites the prior
     // attempt's fragment instead of adding a second entry for the same test.
-    if (reportFragmentName !== undefined) {
-        await sendFragment(fragmentIdFor(reportFragmentName), reportFragment);
+    if (reportFragmentName !== undefined && reportFragment) {
+        pendingFragments.set(fragmentIdFor(reportFragmentName), reportFragment);
+        pendingFragmentsSize += reportFragment.length;
+        if (pendingFragmentsSize > 1e6) await flushFragments();
     }
 });
 

@@ -260,19 +260,13 @@ export function getActualImageDataURL(actualImageData, map, {w, h}, options) {
     return map.getCanvas().toDataURL();
 }
 
-export function calculateDiff(actualImageData, expectedImageData, {w, h}, threshold) {
-    // set up Uint8ClampedArray to write diff into
-    const diffImage = new Uint8ClampedArray(w * h * 4);
-
-    // Use pixelmatch to compare actual and expected images and write diff
-    // all inputs must be Uint8Array or Uint8ClampedArray
+export function calculateDiff(actualImageData, expectedImageData, {w, h}, threshold, diffImage?: Uint8ClampedArray) {
+    // all inputs must be Uint8Array or Uint8ClampedArray; the diff is drawn only if diffImage is passed
     const options = {
         threshold,
         checkerboard: false
     };
-    const diff = pixelmatch(actualImageData, expectedImageData, diffImage, w, h, options) / (w * h);
-
-    return {diff, diffImage};
+    return pixelmatch(actualImageData, expectedImageData, diffImage, w, h, options) / (w * h);
 }
 
 export async function getActualImage(style, options, currentTestName) {

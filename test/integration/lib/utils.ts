@@ -1,5 +1,5 @@
-export function sendFragment(id: number, data: string | undefined) {
-    if (!data) {
+export function sendFragments(fragments: Array<[number, string]>) {
+    if (!fragments.length) {
         return Promise.resolve();
     }
 
@@ -8,11 +8,12 @@ export function sendFragment(id: number, data: string | undefined) {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            id,
-            data: btoa(data),
-        })
+        body: JSON.stringify(fragments.map(([id, data]) => ({id, data: btoa(data)})))
     });
+}
+
+export function sendFragment(id: number, data: string | undefined) {
+    return data ? sendFragments([[id, data]]) : Promise.resolve();
 }
 
 function parseBrowserFromUserAgent(ua: string): string | undefined {

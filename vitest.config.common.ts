@@ -116,10 +116,10 @@ export function setupIntegrationTestsMiddlewares({reportPath}: {reportPath: stri
                 });
 
                 return req.on('end', () => {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    const {id, data} = JSON.parse(body);
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    reportFragmentsMap.set(id, Buffer.from(data, 'base64').toString());
+                    const fragments = JSON.parse(body) as Array<{id: number; data: string}>;
+                    for (const {id, data} of fragments) {
+                        reportFragmentsMap.set(id, Buffer.from(data, 'base64').toString());
+                    }
                     res.writeHead(200, {'Content-Type': 'application/json'});
                     res.end(JSON.stringify({status: 'ok'}));
                 });

@@ -194,7 +194,8 @@ describe('Map#setStyle', () => {
         await waitFor(map, "render");
         // Wait for the terrain renderer to be created asynchronously (Standard loads lazily)
         await vi.waitUntil(() => !!map.painter._terrain, {timeout: 3000});
-        expect(initStyleObj.setTerrain).toHaveBeenCalledTimes(1);
+        // Called again once the lazy module finishes loading if it wasn't loaded yet
+        expect(initStyleObj.setTerrain).toHaveBeenCalled();
         expect(map.style.terrain).toBeTruthy();
         expect(map.getTerrain()).toEqual(null);
         expect(map.painter._terrain?.isUsingMockSource()).toBeTruthy();
