@@ -178,9 +178,6 @@ void main() {
     }
 #endif
 
-    gl_Position = mix(u_matrix * vec4(v_pos, 1), AWAY, hidden);
-    gl_Position.z -= depth_offset * gl_Position.w;
-
 #if defined(RENDER_FRONT_CUTOFF) || defined(ROUTE_CORRIDOR)
 #ifdef ROUTE_CORRIDOR
     float tileUnitsPerMeter = floor(u_route_corridor[3].w);
@@ -198,6 +195,10 @@ void main() {
 #ifdef RENDER_FRONT_CUTOFF
     v_dither_opacity = min(v_dither_opacity, frontCutoffOpacity);
 #endif
+    hidden = max(hidden, float(v_dither_opacity <= 0.0));
 #endif
+
+    gl_Position = mix(u_matrix * vec4(v_pos, 1), AWAY, hidden);
+    gl_Position.z -= depth_offset * gl_Position.w;
 
 }
