@@ -1,0 +1,203 @@
+{
+  "description": "Tile 14/8713/5754 has coverage masks 1, 4, and 256. Mask 4 covers primary. The traffic layers use the same class filters as the production traffic layers. Primary is hidden inside that mask. The hd-traffic source draws the non-tunnel and tunnel lines and is not in the coverage list.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        ["wait"],
+        ["wait"],
+        ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001}
+      ]
+    }
+  },
+  "center": [11.451866, 47.12595],
+  "zoom": 14.99,
+  "bearing": 0,
+  "pitch": 0,
+  "sources": {},
+  "layers": [],
+  "imports": [
+    {
+      "id": "roads",
+      "url": "",
+      "config": {
+        "sdCoverageFadeRange": [14.4, 14.9],
+        "sdCoverageSourceLayers": ["(traffic)traffic"]
+      },
+      "data": {
+        "version": 8,
+        "schema": {
+          "sdCoverageFadeRange": {
+            "default": [0, 0],
+            "type": "number",
+            "array": true
+          },
+          "sdCoverageSourceLayers": {
+            "default": ["road", "structure"],
+            "type": "string",
+            "array": true
+          }
+        },
+        "sources": {
+          "hd-roads": {
+            "type": "vector",
+            "tiles": ["local://tiles/hd/hd-road-{z}-{x}-{y}.mvt"]
+          },
+          "traffic": {
+            "type": "vector",
+            "tiles": ["local://tiles/traffic/traffic-{z}-{x}-{y}.mvt"],
+            "maxzoom": 15
+          },
+          "hd-traffic": {
+            "type": "vector",
+            "tiles": ["local://tiles/hd-traffic/hd-traffic-{z}-{x}-{y}.mvt"],
+            "maxzoom": 14
+          }
+        },
+        "layers": [
+          {
+            "id": "background",
+            "type": "background",
+            "paint": {"background-color": "#f4f1ea"}
+          },
+          {
+            "id": "coverage",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_coverage",
+            "paint": {
+              "fill-color": [
+                "match",
+                ["to-number", ["get", "frc_mask"]],
+                1, "#e05050",
+                4, "#e6c200",
+                256, "#3060d0",
+                "#bbbbbb"
+              ],
+              "fill-opacity": 0.45
+            }
+          },
+          {
+            "id": "traffic-street-tunnel",
+            "type": "line",
+            "source": "traffic",
+            "source-layer": "traffic",
+            "minzoom": 16,
+            "layout": {"line-cap": "round"},
+            "filter": ["all", ["==", ["get", "structure"], "tunnel"], ["step", ["zoom"], false, 12, ["match", ["get", "class"], ["secondary", "secondary_link"], true, false], 13, ["match", ["get", "class"], ["secondary", "secondary_link", "tertiary", "tertiary_link"], true, false], 15, ["match", ["get", "class"], ["secondary", "secondary_link", "tertiary", "tertiary_link", "street", "street_limited", "service"], true, false]], ["==", ["geometry-type"], "LineString"]],
+            "paint": {
+              "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 12, 4, 14, 5, 18, 10],
+              "line-color": ["match", ["get", "class"], ["motorway", "motorway_link"], "hsl(129, 43%, 53%)", ["primary", "primary_link"], "hsl(55, 100%, 55%)", ["secondary", "secondary_link"], "hsl(80, 100%, 50%)", "hsl(160, 70%, 75%)"]
+            }
+          },
+          {
+            "id": "traffic-street-road",
+            "type": "line",
+            "source": "traffic",
+            "source-layer": "traffic",
+            "minzoom": 16,
+            "layout": {"line-cap": "round"},
+            "filter": ["all", ["match", ["get", "structure"], ["bridge", "tunnel"], false, true], ["step", ["zoom"], false, 12, ["match", ["get", "class"], ["secondary", "secondary_link"], true, false], 13, ["match", ["get", "class"], ["secondary", "secondary_link", "tertiary", "tertiary_link"], true, false], 15, ["match", ["get", "class"], ["secondary", "secondary_link", "tertiary", "tertiary_link", "street", "street_limited", "service"], true, false]], ["==", ["geometry-type"], "LineString"]],
+            "paint": {
+              "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 12, 4, 14, 5, 18, 10],
+              "line-color": ["match", ["get", "class"], ["motorway", "motorway_link"], "hsl(129, 43%, 53%)", ["primary", "primary_link"], "hsl(55, 100%, 55%)", ["secondary", "secondary_link"], "hsl(80, 100%, 50%)", "hsl(160, 70%, 75%)"]
+            }
+          },
+          {
+            "id": "traffic-street-bridge",
+            "type": "line",
+            "source": "traffic",
+            "source-layer": "traffic",
+            "minzoom": 16,
+            "layout": {"line-cap": "round"},
+            "filter": ["all", ["==", ["get", "structure"], "bridge"], ["step", ["zoom"], false, 12, ["match", ["get", "class"], ["secondary", "secondary_link"], true, false], 13, ["match", ["get", "class"], ["secondary", "secondary_link", "tertiary", "tertiary_link"], true, false], 15, ["match", ["get", "class"], ["secondary", "secondary_link", "tertiary", "tertiary_link", "street", "street_limited", "service"], true, false]], ["==", ["geometry-type"], "LineString"]],
+            "paint": {
+              "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 12, 4, 14, 5, 18, 10],
+              "line-color": ["match", ["get", "class"], ["motorway", "motorway_link"], "hsl(129, 43%, 53%)", ["primary", "primary_link"], "hsl(55, 100%, 55%)", ["secondary", "secondary_link"], "hsl(80, 100%, 50%)", "hsl(160, 70%, 75%)"]
+            }
+          },
+          {
+            "id": "traffic-trunk-motorway-high",
+            "type": "line",
+            "source": "traffic",
+            "source-layer": "traffic",
+            "minzoom": 16,
+            "layout": {"line-cap": "round"},
+            "filter": ["all", ["step", ["zoom"], ["==", ["get", "class"], "motorway"], 9, ["match", ["get", "class"], ["motorway", "primary", "trunk"], true, false], 10, ["match", ["get", "class"], ["motorway", "primary", "trunk", "motorway_link"], true, false], 12, ["match", ["get", "class"], ["motorway", "motorway_link", "primary", "primary_link", "trunk", "trunk_link"], true, false]], ["==", ["geometry-type"], "LineString"]],
+            "paint": {
+              "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 8, 4, 14, 8, 18, 12],
+              "line-offset": ["interpolate", ["exponential", 1.5], ["zoom"], 10, ["match", ["get", "driving_side"], "right", 4, -4], 14, ["match", ["get", "driving_side"], "right", 5, -5], 18, ["match", ["get", "driving_side"], "right", 21, -15]],
+              "line-color": ["match", ["get", "class"], ["motorway", "motorway_link"], "hsl(129, 43%, 53%)", ["primary", "primary_link"], "hsl(55, 100%, 55%)", ["secondary", "secondary_link"], "hsl(80, 100%, 50%)", "hsl(160, 70%, 75%)"]
+            }
+          },
+          {
+            "id": "traffic-street-secondary",
+            "type": "line",
+            "source": "traffic",
+            "source-layer": "traffic",
+            "minzoom": 12,
+            "maxzoom": 16,
+            "layout": {"line-cap": "round"},
+            "filter": ["all", ["step", ["zoom"], false, 12, ["match", ["get", "class"], ["secondary", "secondary_link"], true, true], 13, ["match", ["get", "class"], ["secondary", "secondary_link", "tertiary", "tertiary_link"], true, true], 15, ["match", ["get", "class"], ["secondary", "secondary_link", "tertiary", "tertiary_link", "street", "street_limited", "service"], true, true]], ["==", ["geometry-type"], "LineString"]],
+            "paint": {
+              "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 12, 4, 14, 5, 18, 10],
+              "line-offset": ["interpolate", ["exponential", 1.5], ["zoom"], 10, ["match", ["get", "driving_side"], "right", 2, -2], 14.5, ["match", ["get", "driving_side"], "right", 4, -4], 16, ["match", ["get", "driving_side"], "right", 8.5, -8.5], 18, ["match", ["get", "driving_side"], "right", 15, -15]],
+              "line-color": ["match", ["get", "class"], ["motorway", "motorway_link"], "hsl(129, 43%, 53%)", ["primary", "primary_link"], "hsl(55, 100%, 55%)", ["secondary", "secondary_link"], "hsl(80, 100%, 50%)", "hsl(160, 70%, 75%)"]
+            }
+          },
+          {
+            "id": "traffic-trunk-motorway-low",
+            "type": "line",
+            "source": "traffic",
+            "source-layer": "traffic",
+            "minzoom": 8,
+            "maxzoom": 16,
+            "layout": {"line-cap": "round"},
+            "filter": ["all", ["step", ["zoom"], ["==", ["get", "class"], "motorway"], 9, ["match", ["get", "class"], ["motorway", "primary", "trunk"], true, false], 10, ["match", ["get", "class"], ["motorway", "primary", "trunk", "motorway_link"], true, false], 12, ["match", ["get", "class"], ["motorway", "motorway_link", "primary", "primary_link", "trunk", "trunk_link"], true, false]], ["==", ["geometry-type"], "LineString"]],
+            "paint": {
+              "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 8, 4, 14, 8, 18, 12],
+              "line-offset": ["interpolate", ["exponential", 1.5], ["zoom"], 10, ["match", ["get", "driving_side"], "right", 3, -3], 14, ["match", ["get", "driving_side"], "right", 5, -5], 18, ["match", ["get", "driving_side"], "right", 15, -15]],
+              "line-color": ["match", ["get", "class"], ["motorway", "motorway_link"], "hsl(129, 43%, 53%)", ["primary", "primary_link"], "hsl(55, 100%, 55%)", ["secondary", "secondary_link"], "hsl(80, 100%, 50%)", "hsl(160, 70%, 75%)"]
+            }
+          },
+          {
+            "id": "traffic-tunnel-hd",
+            "type": "line",
+            "source": "hd-traffic",
+            "source-layer": "traffic",
+            "minzoom": 14,
+            "layout": {"line-cap": "round", "line-elevation-reference": "hd-road-markup"},
+            "filter": ["all", [">=", ["get", "congestion_numeric"], 40], ["==", ["get", "structure"], "tunnel"], ["step", ["zoom"], ["match", ["get", "class"], ["motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link", "secondary", "secondary_link"], true, false], 13, ["match", ["get", "class"], ["motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link", "secondary", "secondary_link", "tertiary", "tertiary_link"], true, false], 15, ["match", ["get", "class"], ["motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link", "secondary", "tertiary", "tertiary_link", "secondary_link", "street", "street_limited", "service"], true, false]]],
+            "paint": {
+              "line-color": ["step", ["get", "congestion_numeric"], "hsla(130, 95%, 60%, 0)", 40, "#e77423", 80, "#cc1100", 100, "#80002a"],
+              "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 14, 5, 18, 10, 19, 18, 22, 120],
+              "line-opacity": ["interpolate", ["linear"], ["zoom"], 16.5, 1, 17.5, 0.7, 20, 0.4],
+              "line-offset": ["interpolate", ["linear"], ["zoom"], 15.5, ["match", ["get", "driving_side"], "right", 5, -5], 18, 0],
+              "line-occlusion-opacity": 0.5
+            }
+          },
+          {
+            "id": "traffic-line-hd",
+            "type": "line",
+            "source": "hd-traffic",
+            "source-layer": "traffic",
+            "minzoom": 14,
+            "layout": {"line-cap": "round", "line-elevation-reference": "hd-road-markup"},
+            "filter": ["all", [">=", ["get", "congestion_numeric"], 40], ["!=", ["get", "structure"], "tunnel"], ["step", ["zoom"], ["match", ["get", "class"], ["motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link", "secondary", "secondary_link"], true, false], 13, ["match", ["get", "class"], ["motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link", "secondary", "secondary_link", "tertiary", "tertiary_link"], true, false], 15, ["match", ["get", "class"], ["motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link", "secondary", "tertiary", "tertiary_link", "secondary_link", "street", "street_limited", "service"], true, false]]],
+            "paint": {
+              "line-color": ["step", ["get", "congestion_numeric"], "hsla(130, 95%, 60%, 0)", 40, "#e77423", 80, "#cc1100", 100, "#80002a"],
+              "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 14, 5, 18, 10, 19, 18, 22, 120],
+              "line-opacity": ["interpolate", ["linear"], ["zoom"], 16.5, 1, 17.5, 0.7, 20, 0.4],
+              "line-offset": ["interpolate", ["linear"], ["zoom"], 15.5, ["match", ["get", "driving_side"], "right", 5, -5], 18, 0]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

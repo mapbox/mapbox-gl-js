@@ -147,25 +147,41 @@ export class FrcCoverageRenderer {
             const bit = 1 << frc;
             if ((tile.frcMask & bit) === 0) continue;
 
-            let minIndex = Infinity;
-            let maxIndex = 0;
-            let maxVertex = 0;
-            let found = false;
+            let runIndex = 0;
+            let runEnd = 0;
+            let runVertex = 0;
+            let inRun = false;
+            let segments: SegmentVector | null = null;
+
+            const emit = () => {
+                if (!segments) segments = new SegmentVector();
+                segments.segments.push({
+                    vertexOffset: 0,
+                    primitiveOffset: runIndex,
+                    vertexLength: runVertex,
+                    primitiveLength: runEnd - runIndex,
+                    vaos: {},
+                    sortKey: 0
+                });
+            };
 
             for (const r of ranges) {
-                if ((r.frcMask & bit) === 0) continue;
-                minIndex = Math.min(minIndex, r.indexOffset);
-                maxIndex = Math.max(maxIndex, r.indexOffset + r.indexCount);
-                maxVertex = Math.max(maxVertex, r.vertexOffset + r.vertexCount);
-                found = true;
+                if ((r.frcMask & bit) === 0) {
+                    if (inRun) {
+                        emit();
+                        inRun = false;
+                    }
+                    continue;
+                }
+                if (!inRun) {
+                    runIndex = r.indexOffset;
+                    inRun = true;
+                }
+                runEnd = r.indexOffset + r.indexCount;
+                runVertex = r.vertexOffset + r.vertexCount;
             }
-
-            if (found) {
-                // vertexOffset=0 because indices contain absolute vertex positions.
-                // vertexLength covers all vertices up to the last one referenced.
-                frcLevelSegments[frc] = SegmentVector.simpleSegment(
-                    0, minIndex, maxVertex, maxIndex - minIndex);
-            }
+            if (inRun) emit();
+            if (segments) frcLevelSegments[frc] = segments;
         }
 
         const vertexBuffer = context.createVertexBuffer(vertexArray, posAttributes.members);

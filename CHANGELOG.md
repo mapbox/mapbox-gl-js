@@ -14,6 +14,7 @@
 - Raise the maximum number of sources in a style to 64.
 
 ### Bug fixes 🐞
+- Fix coverage stencil marks including polygons for other road classes, which hid roads that should stay visible.
 - Fix dark line artifacts on non-standard procedural building geometry.
 - Fix ESM terrain module loading for elevated-lines requiring terrain.
 - Fix validation of style light transition properties.
