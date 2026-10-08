@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Fix imported styles silently rendering nothing when the import fires a non-fatal error while loading.
 - Fix raster tiles occasionally showing the image of a different tile after zooming or panning on a slow network.
 
 ## 3.33.0-rc.1

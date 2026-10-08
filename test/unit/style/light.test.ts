@@ -5,6 +5,7 @@ import {sphericalPositionToCartesian} from '../../../src/util/util';
 import Light from '../../../src/style/light';
 import styleSpec from '../../../src/style-spec/reference/latest';
 import Color from '../../../src/style-spec/util/color';
+import {prepareDebug} from '../../../modules/debug';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const spec = styleSpec.light;
@@ -68,7 +69,8 @@ describe('Light#setLight', () => {
         expect(light.properties.get('color')).toEqual(new Color(1, 0.5, 0.5, 1));
     });
 
-    test('validates by default', () => {
+    test('validates by default', async () => {
+        await prepareDebug();
         const light = new Light({});
         const lightSpy = vi.spyOn(light, '_validate');
         vi.spyOn(console, 'error').mockImplementation(() => {});

@@ -806,10 +806,11 @@ class Style extends Evented<MapEvents> {
         for (const importSpec of imports) {
             const style = this._createFragmentStyle(importSpec);
 
-            // Merge everything and update layers after the import style is settled.
+            // Merge everything and update layers after the import style is settled. Errors fired before
+            // the import is marked loaded mean it failed (request or validation); later ones are non-fatal.
             const waitForStyle = new Promise((resolve) => {
                 style.once('style.import.load', resolve);
-                style.once('error', resolve);
+                style.once('error', (e) => { if (!style._loaded) resolve(e); });
             }).then(() => {
                 this.mergeAll();
                 // Fire a data event so that updateSources() runs after _mergedLayers is populated,
@@ -1001,8 +1002,6 @@ class Style extends Evented<MapEvents> {
             return;
         }
 
-        this.updateConfig(this._config, json.schema);
-
         // In ESM builds, the dev chunk (validators) is dynamically imported.
         // Await it before validating top-level style JSON so the call below
         // is meaningful — `validateStyle` no-ops when `Debug` isn't loaded yet.
@@ -1021,6 +1020,9 @@ class Style extends Evented<MapEvents> {
         }
 
         this._loaded = true;
+
+        // Errors fired before the style is marked loaded are treated as load failures by the parent style.
+        this.updateConfig(this._config, json.schema);
 
         // Issue TileJSON requests immediately, before the expensive deep clone of the full style JSON.
         // addSource() does not depend on this.stylesheet, so it's safe to call here.

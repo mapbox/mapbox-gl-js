@@ -4,4 +4,4 @@
 // builds, where the debug chunk is dynamically imported instead.
 export {DebugModule} from './debug_imports';
 
-export async function prepareDebug() { return Promise.resolve(); }
+export function prepareDebug(): Promise<void> { return Promise.resolve(); }

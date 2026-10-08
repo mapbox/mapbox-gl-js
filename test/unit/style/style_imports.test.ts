@@ -136,6 +136,35 @@ describe('Style#loadURL', () => {
         await waitFor(style, "style.load");
     });
 
+    test('non-fatal import errors don\'t prevent merging import layers', async () => {
+        const {style} = newStubStyle();
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const fragment = createStyleJSON({
+            // A failing color theme image delays building the import layer order past the error below
+            'color-theme': {data: 'invalid'},
+            layers: [{id: 'land', type: 'background'}]
+        });
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const initialStyle = createStyleJSON({
+            // Config on an import without schema fires an error early in the import load
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            imports: [{id: 'streets', url: '', config: {}, data: fragment}],
+        });
+
+        mockFetch({
+            '/style.json': () => new Response(JSON.stringify(initialStyle))
+        });
+
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+
+        style.loadURL('/style.json');
+        await waitFor(style, "style.load");
+
+        expect(style.order).toEqual([makeFQID('land', 'streets')]);
+    });
+
     test('imports style from JSON', async () => {
         const {style} = newStubStyle();
 
