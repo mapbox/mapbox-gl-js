@@ -75,6 +75,18 @@ describe('validateExpression', () => {
     });
 });
 
+describe('config serialization', () => {
+    test.each([
+        [['config', 'key']],
+        [['config', 'key', 'scope']],
+    ])('%j', (expression) => {
+        const {result, value} = createExpression(expression);
+        expect(result).toEqual('success');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        expect(value.expression.serialize()).toEqual(expression);
+    });
+});
+
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 describe('createExpression coerces interpolate of string colors when a color spec is given', () => {
     const expectColorEqual = (actual, expected) => {
