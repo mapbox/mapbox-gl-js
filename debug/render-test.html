@@ -114,12 +114,16 @@
             performanceMetricsCollection: false,
             scaleFactor,
             maxZoom: options.maxZoom,
-            emissiveColorPrecision: options.emissiveColorPrecision
+            emissiveColorPrecision: options.emissiveColorPrecision,
+            placementAlgorithm: options.globalPlacement ? 'global' : options.placementAlgorithm || 'default',
         });
 
         if (options.spriteFormat) {
             map._spriteFormat = options.spriteFormat;
         }
+
+        const usesGlobalPlacement = options.globalPlacement || options.placementAlgorithm === 'global';
+        map._staticMode = Boolean(usesGlobalPlacement && options.staticMode !== false);
 
         map.removeControl(map._logoControl);
 
