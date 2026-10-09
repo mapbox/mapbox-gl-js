@@ -30,6 +30,7 @@ import {VectorTile} from '@mapbox/vector-tile';
 import {CollisionBoxArray} from '../../../src/data/array_types';
 import {performSymbolLayout, postRasterizationSymbolLayout} from '../../../src/symbol/symbol_layout';
 import FeatureIndex from '../../../src/data/feature_index';
+import SymbolBucket from '../../../src/data/bucket/symbol_bucket';
 import {createSymbolBucket} from '../../util/create_symbol_layer';
 import {getProjection} from '../../../src/geo/projection/index';
 import vectorStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
@@ -1212,28 +1213,6 @@ describe('Style#removeLayer', () => {
             });
 
         });
-    });
-
-    test('releases the removed layer\'s symbol id range', async () => {
-        const style = new Style(new StubMap());
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        style.loadJSON(createStyleJSON({
-            layers: [{
-                id: 'background',
-                type: 'background'
-            }]
-        }));
-
-        await waitFor(style, 'style.load');
-
-        const layer = style._layers.background;
-        style.symbolIdRangeAllocator.allocateRange(layer.runtimeLayerUID, 5);
-
-        style.removeLayer('background');
-
-        // A re-allocation for the same runtimeLayerUID restarts from zero, proving the
-        // allocator's counter for this layer was dropped rather than left stale.
-        expect(style.symbolIdRangeAllocator.allocateRange(layer.runtimeLayerUID, 1)).toEqual(0);
     });
 
     test('fires an error on non-existence', async () => {
@@ -3348,6 +3327,7 @@ describe('Style#_updatePlacement', () => {
             bucket.populate([{feature: symbolPlacementFeature}], {iconDependencies: {}, glyphDependencies: {}});
             const bucketData = performSymbolLayout(bucket, symbolPlacementStacks, symbolPlacementGlyphPositions, null, null, null, null, null, null, projection);
             postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
+            bucket.bucketInstanceId = SymbolBucket.maxBucketInstanceId++;
 
             const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
             const tile = new Tile(tileID, 512, 0, {transform: {projection}});

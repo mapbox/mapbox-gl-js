@@ -4,6 +4,7 @@
 import {describe, test, expect} from '../../util/vitest';
 import CrossTileSymbolIndex, {TileLayerIndex} from '../../../src/symbol/cross_tile_symbol_index';
 import {OverscaledTileID} from '../../../src/source/tile_id';
+import SymbolBucket from '../../../src/data/bucket/symbol_bucket';
 
 const styleLayer = {
     id: 'test',
@@ -40,7 +41,8 @@ function makeTile(tileID, symbolInstances) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             length: symbolInstances.length
         },
-        layerIds: ['test']
+        layerIds: ['test'],
+        bucketInstanceId: SymbolBucket.maxBucketInstanceId++
     };
     return {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

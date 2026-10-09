@@ -2,7 +2,6 @@ import type Transform from '../geo/transform';
 import type BuildingIndex from '../source/building_index';
 import type {FogState} from '../style/fog_helpers';
 import type {GlobalPlacement} from './global_placement';
-import type {SymbolIdRangeAllocator} from './symbol_id_range_allocator';
 import type {ReplacementSource} from '../../3d-style/source/replacement_source';
 
 /**
@@ -21,7 +20,6 @@ export function subgroupOrderForLayerPosition(layerPosition: number): number {
 // Renderer-side state shared by every layer within one placement run
 export type SymbolPlacementParameters = {
     globalPlacement: GlobalPlacement;
-    idRangeAllocator: SymbolIdRangeAllocator;
     transform: Transform;
     buildingIndex: BuildingIndex;
     fogState: FogState | null;

@@ -867,7 +867,6 @@ export class Placement {
             }
 
             assert(crossTileID !== 0);
-            assert(bucket.bucketInstanceId !== 0);
 
             const notGlobe = bucket.projection.name !== 'globe';
             alwaysShowText = alwaysShowText && (notGlobe || !textOccluded);

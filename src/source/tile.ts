@@ -334,6 +334,11 @@ class Tile {
         this._queryPaddingPaintVersions = {};
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
+            // Assign a new unique bucket instance ID to this symbol bucket.
+            // We cannot do it in the constructor because it happens in the worker.
+            if (bucket instanceof SymbolBucket && !bucket.bucketInstanceId) {
+                bucket.bucketInstanceId = SymbolBucket.maxBucketInstanceId++;
+            }
             const layer = painter.style.getOwnLayer(id);
             if (!layer) continue;
             const queryRadius = layer.queryRadius(bucket) || 0;

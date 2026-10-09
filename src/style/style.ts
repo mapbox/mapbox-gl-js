@@ -59,7 +59,6 @@ import emptyStyle from '../style-spec/empty';
 import PauseablePlacement from './pauseable_placement';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
 import {GlobalPlacement} from '../placement/global_placement';
-import {SymbolIdRangeAllocator} from '../placement/symbol_id_range_allocator';
 import {subgroupOrderForLayerPosition} from '../placement/symbol_placement_parameters';
 import EXTENT from '../style-spec/data/extent';
 import {transformPointToTile} from '../../3d-style/source/replacement_source';
@@ -465,8 +464,6 @@ class Style extends Evented<MapEvents> {
     pauseablePlacement!: PauseablePlacement;
     placement!: Placement;
     globalPlacement: GlobalPlacement | null;
-    // Generated symbol id ranges for the new placement pipeline, keyed by layer.
-    symbolIdRangeAllocator: SymbolIdRangeAllocator;
     // Cache of _driveGlobalPlacement's groupOrders, valid as long as _mergedOrderVersion
     // matches _groupOrdersVersion (i.e. _mergedOrder hasn't been rebuilt since).
     _groupOrders: PlacementGroupOrders | null;
@@ -503,7 +500,6 @@ class Style extends Evented<MapEvents> {
         this._buildingIndex = new BuildingIndex(this);
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
         this.globalPlacement = null;
-        this.symbolIdRangeAllocator = new SymbolIdRangeAllocator();
         this._groupOrders = null;
         this._groupOrdersVersion = -1;
 
@@ -3317,7 +3313,6 @@ class Style extends Evented<MapEvents> {
 
         this._layerExpressionDependencies.delete(layer.fqid);
         this._changes.removeLayer(layer);
-        this.symbolIdRangeAllocator.releaseLayer(layer.runtimeLayerUID);
 
         const sourceCache = this.getOwnLayerSourceCache(layer);
 
@@ -4861,7 +4856,6 @@ class Style extends Evented<MapEvents> {
 
         const placementParameters: SymbolPlacementParameters = {
             globalPlacement,
-            idRangeAllocator: this.symbolIdRangeAllocator,
             transform,
             buildingIndex: this._buildingIndex,
             fogState,

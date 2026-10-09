@@ -235,7 +235,7 @@ class SymbolStyleLayer extends StyleLayer {
     }
 
     override placeSymbols(parameters: SymbolPlacementParameters, tiles: Array<Tile>, styleLayerOrder: number, sourceCache: SourceCache, checkAgainstClipLayer: boolean, childCoverageRectsByTileKey: ReadonlyMap<number, Array<TileCoverageRect>>): void {
-        const {globalPlacement, idRangeAllocator, transform, buildingIndex, fogState, groupOrders, replacementSource, mercatorCenter, fadeDuration} = parameters;
+        const {globalPlacement, transform, buildingIndex, fogState, groupOrders, replacementSource, mercatorCenter, fadeDuration} = parameters;
         const layerUid = this.runtimeLayerUID;
 
         const statefulPlacement = isStateDependent(this.paint.get('placement-group')) ||
@@ -268,7 +268,7 @@ class SymbolStyleLayer extends StyleLayer {
             const invMatrix = bucketProjection.createInversionMatrix(tileTransform, tile.tileID.canonical);
             const textPixelRatio = tile.tileSize / EXTENT;
             const childCoverageRects = childCoverageRectsByTileKey.get(tile.tileID.key) || [];
-            bucket.addToPlacement(globalPlacement, idRangeAllocator, layerUid, posMatrix, invMatrix, mercatorCenter, tileTransform, textPixelRatio, tile, fogState, groupOrders, styleLayerOrder, featureStates, checkAgainstClipLayer ? replacementSource : null, fadeDuration, childCoverageRects);
+            bucket.addToPlacement(globalPlacement, layerUid, posMatrix, invMatrix, mercatorCenter, tileTransform, textPixelRatio, tile, fogState, groupOrders, styleLayerOrder, featureStates, checkAgainstClipLayer ? replacementSource : null, fadeDuration, childCoverageRects);
             globalPlacement.finishSourceProcessing();
         }
     }

@@ -115,7 +115,6 @@ import type {SymbolVariantId, SymbolId, TileCoverageRect} from '../../placement/
 import type {GlobalPlacement} from '../../placement/global_placement';
 import type {TileIdentity} from '../../placement/placement_debug';
 import type {GlobalPlacementPriority} from '../../placement/global_placement_priority';
-import type {SymbolIdRangeAllocator} from '../../placement/symbol_id_range_allocator';
 import type {PlacementGroupOrders} from '../../placement/symbol_placement_parameters';
 import type Transform from '../../geo/transform';
 import type Tile from '../../source/tile';
@@ -391,6 +390,14 @@ const ICON_TRANSITIONING_STRIDE = 2;
 const FADE_TARGET_VISIBLE = 1;
 const FADE_SETTLED = 2;
 const FADE_SETTLED_HIDDEN = FADE_SETTLED;
+
+// Generated symbol ids pack the bucket instance and the symbol's index within it into one number,
+// leaving room for 2^29 bucket instances before exceeding Number.MAX_SAFE_INTEGER.
+const MAX_SYMBOLS_PER_BUCKET = 2 ** 24;
+
+function generatedSymbolId(bucketInstanceId: number, index: number): number {
+    return bucketInstanceId * MAX_SYMBOLS_PER_BUCKET + index;
+}
 
 function fadeState(target: boolean, settled: boolean): number {
     return (target ? FADE_TARGET_VISIBLE : 0) | (settled ? FADE_SETTLED : 0);
@@ -752,6 +759,7 @@ register(CollisionBuffers, 'CollisionBuffers');
  */
 class SymbolBucket implements Bucket, SymbolSource {
     static addDynamicAttributes: typeof addDynamicAttributes;
+    static maxBucketInstanceId: number = 0;
 
     collisionBoxArray: CollisionBoxArray;
     zoom: number;
@@ -781,14 +789,10 @@ class SymbolBucket implements Bucket, SymbolSource {
     symbolInstances!: SymbolInstanceArray;
     hasAnySecondaryIcon: boolean;
     sortKeyRanges: Array<SortKeyRange>;
-    // New placement pipeline (see addToPlacement). Start of this bucket's generated symbolId range;
-    // assigned on the first placement run and then stable. The variant for symbolInstances[i] uses
-    // symbolId (placementIdRangeStart + i).
-    placementIdRangeStart: number | null;
-    // Current per-instance visibility, fed back into placement next run as
-    // GlobalPlacementPriority.symbolVariantVisibility so it can detect visible<->hidden transitions
-    // and apply the right collision hysteresis. Parallel to symbolInstances; allocated (all hidden)
-    // alongside placementIdRangeStart.
+    // New placement pipeline (see addToPlacement). Current per-instance visibility, fed back into
+    // placement next run as GlobalPlacementPriority.symbolVariantVisibility so it can detect
+    // visible<->hidden transitions and apply the right collision hysteresis. Parallel to
+    // symbolInstances; allocated (all hidden) on the first placement run, empty until then.
     placementVariantVisible: Array<boolean>;
     placementFadeRefTime: Float64Array;
     placementFadeRunning: Uint8Array;
@@ -857,7 +861,6 @@ class SymbolBucket implements Bucket, SymbolSource {
         this.fullyClipped = false;
         this.hasAnyIconTextFit = false;
         this.sortKeyRanges = [];
-        this.placementIdRangeStart = null;
         this.placementVariantVisible = [];
         this.placementFadeRefTime = new Float64Array(0);
         this.placementFadeRunning = new Uint8Array(0);
@@ -1032,11 +1035,11 @@ class SymbolBucket implements Bucket, SymbolSource {
     }
 
     // Sets the variant's instance to fade toward visible or hidden, recovering the instance index
-    // arithmetically from the generated id. Mirrors the geometry fed in addToPlacement:
+    // from the generated id (see generatedSymbolId). Mirrors the geometry fed in addToPlacement:
     // the default text placement and the icon.
     _setSymbolVariantVisibility(variantId: SymbolVariantId, visible: boolean, now: number): void {
-        assert(this.placementIdRangeStart !== null);
-        const index = variantId.symbolId.symbolId - this.placementIdRangeStart;
+        assert(this.placementVariantVisible.length > 0);
+        const index = variantId.symbolId.symbolId - this.bucketInstanceId * MAX_SYMBOLS_PER_BUCKET;
         const instance = this.symbolInstances.get(index);
 
         const settled = this.placementFadeRunning[index] === 0;
@@ -1084,7 +1087,7 @@ class SymbolBucket implements Bucket, SymbolSource {
     // not seen it and its decisions have gone stale -- keeping them would let a returning tile
     // outrank the symbols that are actually on screen, since a visible symbol is placed first.
     resetPlacementVisibility(): void {
-        if (this.placementIdRangeStart === null) {
+        if (this.placementVariantVisible.length === 0) {
             // Never fed to new placement (legacy placement, or not placed yet), so there is no state to drop.
             return;
         }
@@ -1108,7 +1111,7 @@ class SymbolBucket implements Bucket, SymbolSource {
     // one-time warning), and symbols with neither an icon nor a text collision box are skipped
     // silently. `textPixelRatio` (tile.tileSize / EXTENT) converts tile-space offsets to CSS pixels,
     // matching the legacy collision index formula (see CollisionIndex#placeCollisionBox).
-    addToPlacement(globalPlacement: GlobalPlacement, idRangeAllocator: SymbolIdRangeAllocator, layerUid: number, posMatrix: mat4, invMatrix: mat4, mercatorCenter: [number, number], transform: Transform, textPixelRatio: number, tile: Tile, fogState: FogState | null | undefined, groupOrders: PlacementGroupOrders, styleLayerOrder: number, featureStates: FeatureStates, replacementSource: ReplacementSource | null, fadeDuration: number, childCoverageRects: ReadonlyArray<TileCoverageRect>): void {
+    addToPlacement(globalPlacement: GlobalPlacement, layerUid: number, posMatrix: mat4, invMatrix: mat4, mercatorCenter: [number, number], transform: Transform, textPixelRatio: number, tile: Tile, fogState: FogState | null | undefined, groupOrders: PlacementGroupOrders, styleLayerOrder: number, featureStates: FeatureStates, replacementSource: ReplacementSource | null, fadeDuration: number, childCoverageRects: ReadonlyArray<TileCoverageRect>): void {
         if (this.symbolInstances.length === 0) return;
 
         this._fadeDuration = fadeDuration;
@@ -1119,14 +1122,13 @@ class SymbolBucket implements Bucket, SymbolSource {
 
         if (!tile.collisionBoxArray) return;
 
-        if (this.placementIdRangeStart === null) {
-            this.placementIdRangeStart = idRangeAllocator.allocateRange(layerUid, this.symbolInstances.length);
+        if (this.placementVariantVisible.length === 0) {
+            assert(this.symbolInstances.length <= MAX_SYMBOLS_PER_BUCKET);
             this.placementVariantVisible = new Array<boolean>(this.symbolInstances.length).fill(false);
             this.placementFadeRefTime = new Float64Array(this.symbolInstances.length);
             this.placementFadeRunning = new Uint8Array(this.symbolInstances.length);
             this._initPlacementOpacities();
         }
-        const rangeStart = this.placementIdRangeStart;
         const placementNow = globalPlacement.timestamp();
 
         const layer = this.layers[0];
@@ -1301,7 +1303,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 if (clipped) break;
             }
 
-            const symbolId: SymbolId = {styleLayerId: layerUid, symbolIdOrigin: SymbolIdOrigin.GENERATED, symbolId: rangeStart + index};
+            const symbolId: SymbolId = {styleLayerId: layerUid, symbolIdOrigin: SymbolIdOrigin.GENERATED, symbolId: generatedSymbolId(this.bucketInstanceId, index)};
             const variantId: SymbolVariantId = {symbolId, variantIdx: 0};
 
             // This tile may be a coarser tile retained alongside an already-loaded finer child tile

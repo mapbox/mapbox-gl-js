@@ -6,7 +6,6 @@ import FormatSectionOverride from '../../../src/style/format_section_override';
 import {getPaintProperties} from '../../../src/style/style_layer/symbol_style_layer_properties';
 import Transform from '../../../src/geo/transform';
 import {OverscaledTileID} from '../../../src/source/tile_id';
-import {SymbolIdRangeAllocator} from '../../../src/placement/symbol_id_range_allocator';
 
 function createSymbolLayer(layerProperties) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -111,7 +110,6 @@ describe('placeSymbols', () => {
     function createParameters(globalPlacement: ReturnType<typeof createGlobalPlacement>) {
         return {
             globalPlacement,
-            idRangeAllocator: new SymbolIdRangeAllocator(),
             transform: createTransform(),
             buildingIndex: undefined,
             fogState: null,

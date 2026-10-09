@@ -233,7 +233,6 @@ class CrossTileSymbolIndex {
         [fqid: string]: CrossTileSymbolLayerIndex;
     };
     crossTileIDs: CrossTileIDs;
-    maxBucketInstanceId: number;
     bucketsInCurrentPlacement: {
         [_: number]: boolean;
     };
@@ -241,7 +240,6 @@ class CrossTileSymbolIndex {
     constructor() {
         this.layerIndexes = {};
         this.crossTileIDs = new CrossTileIDs();
-        this.maxBucketInstanceId = 0;
         this.bucketsInCurrentPlacement = {};
     }
 
@@ -268,10 +266,6 @@ class CrossTileSymbolIndex {
             const symbolBucket = (tile.getBucket(styleLayer) as SymbolBucket);
             if (!symbolBucket || styleLayer.fqid !== symbolBucket.layerIds[0])
                 continue;
-
-            if (!symbolBucket.bucketInstanceId) {
-                symbolBucket.bucketInstanceId = ++this.maxBucketInstanceId;
-            }
 
             if (layerIndex.addBucket(tile.tileID, symbolBucket, this.crossTileIDs)) {
                 symbolBucketsChanged = true;
