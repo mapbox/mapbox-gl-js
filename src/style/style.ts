@@ -1624,6 +1624,7 @@ class Style extends Evented<MapEvents> {
 
             };
             lutImage.onload = () => {
+                if (!this.imageManager.images.has(this.scope)) return;
                 if (this._styleColorTheme.lutLoadingCorrelationID !== correlationID) {
                     resolve();
                     return;
