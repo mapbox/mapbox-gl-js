@@ -1,0 +1,113 @@
+{
+  "description": "A building filter using worldview sees the map worldview, so the building is kept.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "worldview": "US",
+      "operations": [],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00017}
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.6,
+        "cast-shadows": true
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "extrude": "true",
+              "underground": "false"
+            },
+            "geometry": {
+              "coordinates": [
+                [
+                  [
+                    11.568937291974436,
+                    48.13246952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.13246952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.13246952281412
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "bearing": 45,
+  "pitch": 40,
+  "zoom": 18,
+  "center": [11.5690998, 48.1323676],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "building",
+      "type": "building",
+      "source": "geojson",
+      "minzoom": 16,
+      "filter": ["==", ["worldview"], "US"],
+      "layout": {
+        "building-roof-shape": "gabled",
+        "building-base": 0,
+        "building-height": 10
+      },
+      "paint": {
+        "building-color": [
+          "match",
+          ["get", "building-part"],
+          "wall",
+          ["hsl", 41, 90, 90],
+          "roof",
+          ["hsl", 25, 43, 80],
+          ["hsl", 41, 90, 90]
+        ],
+        "building-ambient-occlusion-intensity": 1
+      }
+    }
+  ]
+}

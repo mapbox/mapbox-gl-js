@@ -427,6 +427,10 @@ export class BuildingBucket implements BucketWithGroundEffect {
         buildingGen.setStructuralOptions(true);
         buildingGen.setFacadeClassifierOptions(3.0);
 
+        const featureFilter = this.layers[0]._featureFilter;
+        const needGeometry = featureFilter.needGeometry;
+        const filterParameters = new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors});
+
         // First, we process facade data. For building parts, facades are linked to the
         // parent building, so we also create a map linking feature id to source id to
         // query later.
@@ -440,12 +444,8 @@ export class BuildingBucket implements BucketWithGroundEffect {
                 continue;
             }
 
-            const needGeometry = this.layers[0]._featureFilter.needGeometry;
-            if (needGeometry && !this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), feature, canonical))
-                continue;
-
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
-            if (!needGeometry && !this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical))
+            if (!featureFilter.filter(filterParameters, evaluationFeature, canonical))
                 continue;
 
             const geometry = loadRenderGeometry(feature, evaluationFeature, needGeometry, canonical, tileTransform);
@@ -512,10 +512,6 @@ export class BuildingBucket implements BucketWithGroundEffect {
                 continue;
             }
 
-            const needGeometry = this.layers[0]._featureFilter.needGeometry;
-            if (needGeometry && !this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), feature, canonical))
-                continue;
-
             let buildingId: number | null = null;
             if (feature.properties && Object.hasOwn(feature.properties, 'building_id')) {
                 buildingId = Number(feature.properties['building_id']);
@@ -525,7 +521,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
             }
 
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
-            if (!needGeometry && !this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical))
+            if (!featureFilter.filter(filterParameters, evaluationFeature, canonical))
                 continue;
 
             const geometry = loadRenderGeometry(feature, evaluationFeature, needGeometry, canonical, tileTransform);
