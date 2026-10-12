@@ -56,6 +56,13 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return this.paint.get('fill-extrusion-color').constantOr(Color.white).a !== 0;
     }
 
+    override isPlacementAffectedByPaintChanges(prev: unknown): boolean {
+        const prevPaint = prev as this['paint'];
+        // Symbols with symbol-z-elevate are raised onto the building height scaled by these properties (see BuildingIndex).
+        return this.paint.get('fill-extrusion-vertical-scale') !== prevPaint.get('fill-extrusion-vertical-scale') ||
+            (this.paint.get('fill-extrusion-opacity') > 0) !== (prevPaint.get('fill-extrusion-opacity') > 0);
+    }
+
     override hasShadowPass(): boolean {
         return this.paint.get('fill-extrusion-cast-shadows');
     }

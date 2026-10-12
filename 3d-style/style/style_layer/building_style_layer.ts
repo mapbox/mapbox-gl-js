@@ -49,6 +49,13 @@ class BuildingStyleLayer extends StyleLayer {
         return this.paint.get('building-cutoff-fade-range');
     }
 
+    override isPlacementAffectedByPaintChanges(prev: unknown): boolean {
+        const prevPaint = prev as this['paint'];
+        // Symbols with symbol-z-elevate are raised onto the building height scaled by these properties (see BuildingIndex).
+        return this.paint.get('building-vertical-scale') !== prevPaint.get('building-vertical-scale') ||
+            (this.paint.get('building-opacity') > 0) !== (prevPaint.get('building-opacity') > 0);
+    }
+
     override hasShadowPass(): boolean {
         return this.paint.get('building-cast-shadows');
     }

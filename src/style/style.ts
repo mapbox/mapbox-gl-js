@@ -2140,10 +2140,15 @@ class Style extends Evented<MapEvents> {
 
         for (const layerId of this._mergedOrder) {
             const layer = this._mergedLayers[layerId];
+            const prevPaint = layer.paint;
             // Layers hidden with `visibility` keep stale values: anything that shows a layer again marks it dirty.
             // Layers out of their zoom range catch up on the changes they depend on once they're back in range.
             if ((layer.visibility !== 'none' || layer.hasTransition()) && (layer._dirty || !layer.isHidden(parameters.zoom))) {
                 layer.recalculate(parameters, this._availableImages);
+            }
+            // Paint-only changes don't relayout, so placement has to be invalidated explicitly.
+            if (prevPaint && prevPaint !== layer.paint && layer.isPlacementAffectedByPaintChanges(prevPaint)) {
+                this._setLabelPlacementStale();
             }
             if (!layer.isHidden(parameters.zoom)) {
 

@@ -302,6 +302,15 @@ class StyleLayer extends Evented {
         return false;
     }
 
+    /**
+     * Returns true if the paint change since `prevPaint` invalidates the last label placement.
+     * @private
+     */
+    isPlacementAffectedByPaintChanges(prevPaint: unknown): boolean {
+        // No-op; can be overridden by derived classes.
+        return false;
+    }
+
     isHidden(zoom: number): boolean {
         if (this.minzoom && zoom < this.minzoom) return true;
         if (this.maxzoom && zoom >= this.maxzoom) return true;

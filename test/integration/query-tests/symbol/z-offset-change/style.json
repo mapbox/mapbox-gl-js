@@ -19,11 +19,7 @@
       "queryGeometry": [
         32,
         8
-      ],
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "To be fixed"}
-      ],
-      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2072"]
+      ]
     }
   },
   "pitch": 60,
@@ -32,6 +28,10 @@
     0,
     0
   ],
+  "transition": {
+    "duration": 0,
+    "delay": 0
+  },
   "sources": {
     "geojson": {
       "type": "geojson",

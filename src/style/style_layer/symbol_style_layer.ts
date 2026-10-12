@@ -303,6 +303,12 @@ class SymbolStyleLayer extends StyleLayer {
         }
     }
 
+    override isPlacementAffectedByPaintChanges(prev: unknown): boolean {
+        const prevPaint = prev as this['paint'];
+        // Placement caches the elevation of collision boxes, which depends on a constant symbol-z-offset.
+        return this.paint.get('symbol-z-offset').constantOr(undefined) !== prevPaint.get('symbol-z-offset').constantOr(undefined);
+    }
+
     override _handleOverridablePaintPropertyUpdate<T, R>(name: string, oldValue: PropertyValue<T, R>, newValue: PropertyValue<T, R>): boolean {
         if (!this.layout || oldValue.isDataDriven() || newValue.isDataDriven()) {
             return false;

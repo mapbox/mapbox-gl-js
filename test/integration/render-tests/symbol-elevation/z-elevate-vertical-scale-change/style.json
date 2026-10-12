@@ -1,0 +1,69 @@
+{
+  "description": "Placement uses the changed fill-extrusion-vertical-scale, so the symbol-z-elevate label is raised onto the building roof.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 96,
+      "width": 64,
+      "operations": [
+        ["wait"],
+        ["setPaintProperty", "building", "fill-extrusion-vertical-scale", 1]
+      ]
+    }
+  },
+  "transition": {"duration": 0},
+  "pitch": 60,
+  "zoom": 17,
+  "center": [0, 0],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {"height": 20},
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[[-0.00005, -0.00005], [0.00005, -0.00005], [0.00005, 0.00005], [-0.00005, 0.00005], [-0.00005, -0.00005]]]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {"type": "Point", "coordinates": [0, 0]}
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "building",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "filter": ["==", ["geometry-type"], "Polygon"],
+      "paint": {
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-color": "white",
+        "fill-extrusion-vertical-scale": 0
+      }
+    },
+    {
+      "id": "label",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": ["==", ["geometry-type"], "Point"],
+      "layout": {
+        "symbol-z-elevate": true,
+        "text-field": "T",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      },
+      "paint": {
+        "text-color": "red"
+      }
+    }
+  ]
+}

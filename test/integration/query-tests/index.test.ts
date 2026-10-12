@@ -119,6 +119,10 @@ const getTest = (queryTestName: string, preflightError?: unknown) => async () =>
         await map.once('load');
         await applyOperations(map, options);
 
+        // Request one more frame for one last tail frame
+        // to align with render tests behavior
+        await new Promise(requestAnimationFrame);
+
         // toDataURL() is an expensive canvas readback + PNG encode, so compute
         // it lazily and only once, on first use. In the common CI case (passing
         // test, passed images not embedded) it is never needed.

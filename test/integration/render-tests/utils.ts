@@ -214,10 +214,8 @@ export async function renderMap(style, options, currentTestName) {
     // 3. Run the operations on the map
     await applyOperations(mapRef.current, options, currentTestName);
 
-    // 4. Wait until the map is idle and ensure that call stack is empty
-    mapRef.current.repaint = true;
-    // eslint-disable-next-line no-promise-executor-return
-    await new Promise(resolve => requestAnimationFrame(mapRef.current!._requestDomTask.bind(mapRef.current, resolve)));
+    // 4. Request one more frame for one last tail frame to align with GL Native behavior
+    await new Promise(requestAnimationFrame);
 
     return mapRef.current;
 }
