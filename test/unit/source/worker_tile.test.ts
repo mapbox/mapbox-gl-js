@@ -8,6 +8,12 @@ import {RenderSourceType} from '../../../src/source/render_source_type';
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 import {getProjection} from '../../../src/geo/projection/index';
 import Point from '@mapbox/point-geometry';
+import {LocalGlyphRasterizer, LocalGlyphMode} from '../../../src/render/local_glyph_rasterizer';
+import {AlphaImage} from '../../../src/util/image';
+
+import type {GlyphMap} from '../../../src/render/glyph_manager';
+import type SymbolBucket from '../../../src/data/bucket/symbol_bucket';
+import type {WorkerSourceVectorTileResult} from '../../../src/source/worker_source';
 
 function createWorkerTile(params = {}) {
     return new WorkerTile({
@@ -380,5 +386,54 @@ describe('WorkerTile#parse cross-source elevation sidecar', () => {
     test('leaves the sidecar undefined when cross-source elevation is off', async () => {
         const result = await parse(createWorkerTile({crossSourceElevationEnabled: false}));
         expect(result.parsedElevationFeatures).toBeUndefined();
+    });
+});
+
+describe('WorkerTile local glyphs', () => {
+    const TinySDF = class {
+        draw() {
+            return {data: new Uint8ClampedArray(900), width: 30, height: 30, glyphWidth: 48, glyphHeight: 48, glyphLeft: 0, glyphTop: 0, glyphAdvance: 48};
+        }
+    };
+
+    // Parses a tile with one 'a東' label, where the main thread serves only 'a'
+    function parseLabel(): Promise<{requested: Record<string, number[]>, result: WorkerSourceVectorTileResult}> {
+        vi.spyOn(LocalGlyphRasterizer, 'TinySDF', 'get').mockImplementation(() => TinySDF);
+
+        const tile = createWorkerTile({zoom: 10, tileID: new OverscaledTileID(10, 0, 10, 0, 0)});
+        tile.localGlyphs = new LocalGlyphRasterizer({mode: LocalGlyphMode.ideographs, fontFamily: 'sans-serif'});
+
+        const layerIndex = new StyleLayerIndex([{id: 'label', source: 'source', type: 'symbol', layout: {'text-field': ['get', 'name']}}]);
+        const data = new Wrapper({_geojsonTileLayer: [{type: 1, geometry: [4096, 4096], tags: {name: 'a東'}}]});
+
+        let requested: Record<string, number[]>;
+        const actor = {
+            send: (type: string, params: {stacks: Record<string, number[]>}) => {
+                if (type !== 'getGlyphs') return Promise.reject(new Error(`unexpected ${type}`));
+                requested = params.stacks;
+                const glyphMap: GlyphMap = {};
+                for (const stack in params.stacks) {
+                    const id = 'a'.codePointAt(0);
+                    const bitmap = new AlphaImage({width: 10, height: 10});
+                    glyphMap[stack] = {glyphs: {[id]: {id, bitmap, metrics: {width: 4, height: 4, left: 0, top: -8, advance: 6}}}, ascender: undefined, descender: undefined};
+                }
+                return Promise.resolve(glyphMap);
+            }
+        };
+
+        return new Promise((resolve, reject) => {
+            tile.parse(data, layerIndex, [], [], actor, (err, result) => (err ? reject(err) : resolve({requested, result})));
+        });
+    }
+
+    test('requests only non-local glyphs from the main thread', async () => {
+        const {requested} = await parseLabel();
+        expect(Object.values(requested)).toEqual([['a'.codePointAt(0)]]);
+    });
+
+    test('lays out both main-thread and locally rasterized glyphs', async () => {
+        const {result} = await parseLabel();
+        // 4 vertices per glyph quad
+        expect((result.buckets[0] as SymbolBucket).text.layoutVertexArray.length).toEqual(8);
     });
 });

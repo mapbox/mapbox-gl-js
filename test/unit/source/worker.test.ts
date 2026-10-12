@@ -1,7 +1,9 @@
 import {test, expect} from '../../util/vitest';
 import '../../../src/util/worker_pool_factory';
 import MapWorker from '../../../src/source/worker';
+import {LocalGlyphMode} from '../../../src/render/local_glyph_rasterizer';
 
+import type VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source';
 import type {OverscaledTileID} from '../../../src/source/tile_id';
 import type {WorkerSourceConstructor, WorkerSource} from '../../../src/source/worker_source';
 
@@ -65,4 +67,24 @@ test('removeSource discards the worker source instance', async () => {
     await worker.removeSource(999, {type: 'vector', source: 'sourceId', scope: 'scope'});
 
     expect(worker.getExistingWorkerSource(999, {type: 'vector', source: 'sourceId', scope: 'scope'})).toBeUndefined();
+});
+
+function getVectorSourceGlyphs(worker: MapWorker, mapId: number) {
+    const source = worker.getWorkerSource(mapId, {type: 'vector', source: 'sourceId', scope: ''}) as VectorTileWorkerSource;
+    return source.localGlyphs;
+}
+
+test('vector worker sources get the local glyph rasterizer from global params', () => {
+    const worker = new MapWorker(_self);
+    worker.setGlobalParams(0, {referrer: '', config: {}, localGlyphs: {mode: LocalGlyphMode.ideographs, fontFamily: 'sans-serif'}});
+
+    expect(getVectorSourceGlyphs(worker, 0).fontFamily).toEqual('sans-serif');
+});
+
+test('clearCaches discards the local glyph rasterizer', () => {
+    const worker = new MapWorker(_self);
+    worker.setGlobalParams(0, {referrer: '', config: {}, localGlyphs: {mode: LocalGlyphMode.ideographs, fontFamily: 'sans-serif'}});
+    worker.clearCaches(0, undefined);
+
+    expect(getVectorSourceGlyphs(worker, 0)).toBeUndefined();
 });

@@ -1,5 +1,6 @@
 import type {ConfigOptions} from '../style-spec/types/config_options';
 import type {GlyphMap, FontStacks} from '../render/glyph_manager';
+import type {LocalGlyphConfig} from '../render/local_glyph_rasterizer';
 import type {ImageId, StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {ImageRasterizationTasks, RasterizedImageMap} from '../render/image_manager';
 import type {LayerSpecification, ProjectionSpecification, SourceSpecification} from '../style-spec/types';
@@ -33,7 +34,9 @@ type GlobalParams = {
     },
     contextOptions?: {
         maxUniformBlockSizeDwords: number;
-    }
+    },
+    // Set when workers may rasterize local glyphs themselves instead of requesting them from main
+    localGlyphs?: LocalGlyphConfig;
 };
 
 /**

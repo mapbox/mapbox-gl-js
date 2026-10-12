@@ -22,6 +22,7 @@ import type {Cancelable} from '../types/cancelable';
 import type {TileProvider} from './tile_provider';
 import type {ImageId} from '../style-spec/expression/types/image_id';
 import type {StyleModelMap} from '../style/style_mode';
+import type {LocalGlyphRasterizer} from '../render/local_glyph_rasterizer';
 
 /**
  * The {@link WorkerSource} implementation that supports {@link VectorTileSource}.
@@ -45,11 +46,12 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
     scheduler?: Scheduler | null;
     brightness?: number | null;
     maxUniformBlockSizeDwords?: number | null;
+    localGlyphs?: LocalGlyphRasterizer;
 
     /**
      * @private
      */
-    constructor({actor, layerIndex, availableImages, availableModels, isSpriteLoaded, tileProvider, brightness, maxUniformBlockSizeDwords}: WorkerSourceOptions) {
+    constructor({actor, layerIndex, availableImages, availableModels, isSpriteLoaded, tileProvider, brightness, maxUniformBlockSizeDwords, localGlyphs}: WorkerSourceOptions) {
         super();
         this.actor = actor;
         this.layerIndex = layerIndex;
@@ -64,6 +66,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
         this.scheduler = actor.scheduler;
         this.brightness = brightness;
         this.maxUniformBlockSizeDwords = maxUniformBlockSizeDwords;
+        this.localGlyphs = localGlyphs;
     }
 
     /**
@@ -158,6 +161,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
         const workerTile = this.loading[uid] = new WorkerTile(params);
         workerTile.maxUniformBlockSizeDwords = this.maxUniformBlockSizeDwords;
+        workerTile.localGlyphs = this.localGlyphs;
 
         const reload = (err: Error | null, result?: WorkerSourceVectorTileResult | null) => {
             const reloadCallback = workerTile.reloadCallback;

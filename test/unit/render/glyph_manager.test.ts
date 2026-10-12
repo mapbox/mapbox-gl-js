@@ -2,7 +2,8 @@
 // @ts-nocheck
 import {test, expect, vi} from '../../util/vitest';
 import parseGlyphPBF from '../../../src/style/parse_glyph_pbf';
-import GlyphManager, {LocalGlyphMode} from '../../../src/render/glyph_manager';
+import GlyphManager from '../../../src/render/glyph_manager';
+import {LocalGlyphRasterizer, LocalGlyphMode} from '../../../src/render/local_glyph_rasterizer';
 import {GlyphLoader} from '../../../src/style/glyph_loader';
 
 // eslint-disable-next-line import-x/extensions
@@ -94,6 +95,22 @@ test('GlyphManager doesn\'t request twice 0-255 PBF if a glyph is missing', asyn
     });
 });
 
+test('GlyphManager returns the baseline of a stack requested without glyphs', async () => {
+    createLoadGlyphRangeStub();
+    const manager = createGlyphManager();
+
+    await new Promise(resolve => {
+        manager.getGlyphs({'Arial Unicode MS': [55]}, () => {
+            manager.getGlyphs({'Arial Unicode MS': []}, (err, result) => {
+                expect(err).toBeFalsy();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                expect(result['Arial Unicode MS']).toEqual({glyphs: {}, ascender: glyphData.ascender, descender: glyphData.descender});
+                resolve();
+            });
+        });
+    });
+});
+
 test('GlyphManager requests remote CJK PBF', async () => {
     vi.spyOn(GlyphLoader, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate, transform, callback) => {
         setTimeout(() => callback(null, glyphData));
@@ -126,7 +143,7 @@ test('GlyphManager does not cache CJK chars that should be rendered locally', as
         }
         setTimeout(() => callback(null, overlappingGlyphs));
     });
-    vi.spyOn(GlyphManager, 'TinySDF', 'get').mockImplementation(() => TinySDF);
+    vi.spyOn(LocalGlyphRasterizer, 'TinySDF', 'get').mockImplementation(() => TinySDF);
     const manager = createGlyphManager('sans-serif');
 
     await new Promise(resolve => {
@@ -149,7 +166,7 @@ test('GlyphManager does not cache CJK chars that should be rendered locally', as
 });
 
 test('GlyphManager generates CJK PBF locally', async () => {
-    vi.spyOn(GlyphManager, 'TinySDF', 'get').mockImplementation(() => TinySDF);
+    vi.spyOn(LocalGlyphRasterizer, 'TinySDF', 'get').mockImplementation(() => TinySDF);
 
     const manager = createGlyphManager('sans-serif');
 
@@ -163,7 +180,7 @@ test('GlyphManager generates CJK PBF locally', async () => {
 });
 
 test('GlyphManager generates Katakana PBF locally', async () => {
-    vi.spyOn(GlyphManager, 'TinySDF', 'get').mockImplementation(() => TinySDF);
+    vi.spyOn(LocalGlyphRasterizer, 'TinySDF', 'get').mockImplementation(() => TinySDF);
 
     const manager = createGlyphManager('sans-serif');
 
@@ -178,7 +195,7 @@ test('GlyphManager generates Katakana PBF locally', async () => {
 });
 
 test('GlyphManager generates Hiragana PBF locally', async () => {
-    vi.spyOn(GlyphManager, 'TinySDF', 'get').mockImplementation(() => TinySDF);
+    vi.spyOn(LocalGlyphRasterizer, 'TinySDF', 'get').mockImplementation(() => TinySDF);
 
     const manager = createGlyphManager('sans-serif');
 
@@ -194,7 +211,7 @@ test('GlyphManager generates Hiragana PBF locally', async () => {
 
 test('GlyphManager caches locally generated glyphs', async () => {
     let drawCallCount = 0;
-    vi.spyOn(GlyphManager, 'TinySDF', 'get').mockImplementation(() => (class {
+    vi.spyOn(LocalGlyphRasterizer, 'TinySDF', 'get').mockImplementation(() => (class {
         constructor() {
             this.fontWeight = '400';
         }
@@ -228,7 +245,7 @@ test('GlyphManager caches locally generated glyphs', async () => {
 });
 
 test('GlyphManager locally generates latin glyphs', async () => {
-    vi.spyOn(GlyphManager, 'TinySDF', 'get').mockImplementation(() => (class {
+    vi.spyOn(LocalGlyphRasterizer, 'TinySDF', 'get').mockImplementation(() => (class {
         constructor() {
             this.fontWeight = '400';
         }

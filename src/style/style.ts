@@ -6,7 +6,8 @@ import createStyleLayer from './create_style_layer';
 import {LayerExpressionDependencies} from './layer_expression_dependencies';
 import loadSprite from './load_sprite';
 import ImageManager from '../render/image_manager';
-import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager';
+import GlyphManager from '../render/glyph_manager';
+import {LocalGlyphMode, isDocumentFont} from '../render/local_glyph_rasterizer';
 import Light from './light';
 import Terrain, {DrapeRenderMode} from './terrain';
 import Fog from './fog';
@@ -543,6 +544,17 @@ class Style extends Evented<MapEvents> {
             this.dispatcher = new Dispatcher(getWorkerPool(), this);
         }
 
+        if (options.glyphManager) {
+            this.glyphManager = options.glyphManager;
+        } else {
+            this.glyphManager = new GlyphManager(map._requestManager,
+                options.localFontFamily ?
+                    LocalGlyphMode.all :
+                    (options.localIdeographFontFamily ? LocalGlyphMode.ideographs : LocalGlyphMode.none),
+                options.localFontFamily || options.localIdeographFontFamily,
+                options.fontstackCompositing);
+        }
+
         const globalWorkerParams: WorkerInbox['setGlobalParams']['params'] = {
             referrer: getReferrer(),
             config: getBroadcastableConfig(),
@@ -555,6 +567,10 @@ class Style extends Evented<MapEvents> {
         }
 
         if (this.isRootStyle()) {
+            const {mode, fontFamily} = this.glyphManager.localGlyphs;
+            if (fontFamily && !isDocumentFont(fontFamily)) {
+                globalWorkerParams.localGlyphs = {mode, fontFamily};
+            }
             this.dispatcher.broadcast('setGlobalParams', globalWorkerParams);
         }
 
@@ -565,17 +581,6 @@ class Style extends Evented<MapEvents> {
             this.imageManager.setEventedParent(this);
         }
         this.imageManager.addScope(this.scope);
-
-        if (options.glyphManager) {
-            this.glyphManager = options.glyphManager;
-        } else {
-            this.glyphManager = new GlyphManager(map._requestManager,
-                options.localFontFamily ?
-                    LocalGlyphMode.all :
-                    (options.localIdeographFontFamily ? LocalGlyphMode.ideographs : LocalGlyphMode.none),
-                options.localFontFamily || options.localIdeographFontFamily,
-                options.fontstackCompositing);
-        }
 
         if (options.modelManager) {
             this.modelManager = options.modelManager;

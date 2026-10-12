@@ -45,6 +45,8 @@ import type {PromoteIdSpecification} from '../style-spec/types';
 import type {TileTransform} from '../geo/projection/tile_transform';
 import type {LUT} from "../util/lut";
 import type {GlyphMap} from '../render/glyph_manager';
+import type {LocalGlyphRasterizer} from '../render/local_glyph_rasterizer';
+import type {StyleGlyphs} from '../style/style_glyph';
 import type {ImagePositionMap} from '../render/image_atlas';
 import type {ImageRasterizationTasks} from '../render/image_manager';
 import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
@@ -126,6 +128,7 @@ class WorkerTile {
     scaleFactor: number;
     indoor: IndoorTileOptions | null;
     maxUniformBlockSizeDwords: number | null | undefined;
+    localGlyphs?: LocalGlyphRasterizer;
 
     status!: 'parsing' | 'done';
     data!: VectorTile;
@@ -664,11 +667,21 @@ class WorkerTile {
 
             if (!this.extraShadowCaster) {
                 const stacks = mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
+                // Request from the main thread only the glyphs this worker can't rasterize itself
+                const localIds: Record<string, number[]> = {};
+                if (this.localGlyphs) {
+                    for (const stack in stacks) {
+                        localIds[stack] = stacks[stack].filter((id) => this.localGlyphs.supports(id));
+                        stacks[stack] = stacks[stack].filter((id) => !this.localGlyphs.supports(id));
+                    }
+                }
+                const localGlyphs: Record<string, StyleGlyphs> = {};
                 if (Object.keys(stacks).length) {
                     actor.send('getGlyphs', {uid: this.uid, stacks}, {metadata: taskMetadata})
                         .then((result: GlyphMap) => {
                             if (!error) {
                                 glyphMap = result;
+                                for (const stack in localGlyphs) Object.assign(glyphMap[stack].glyphs, localGlyphs[stack]);
                                 maybePrepare();
                             }
                         })
@@ -710,6 +723,12 @@ class WorkerTile {
                     patternMap = new Map();
                     iconRasterizationTasks = new Map();
                     patternRasterizationTasks = new Map();
+                }
+
+                // Rasterize local glyphs while the main thread handles the requests above
+                for (const stack in localIds) {
+                    const glyphs: StyleGlyphs = localGlyphs[stack] = {};
+                    for (const id of localIds[stack]) glyphs[id] = this.localGlyphs.draw(stack, id);
                 }
             }
 

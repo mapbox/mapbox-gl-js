@@ -41,7 +41,7 @@
     "@mapbox/mapbox-gl-supported": "^4.0.0",
     "@mapbox/mvt-fixtures": "^4.0.0",
     "@mapbox/point-geometry": "^1.1.0",
-    "@mapbox/tiny-sdf": "^2.2.0",
+    "@mapbox/tiny-sdf": "^2.3.0",
     "@mapbox/unitbezier": "^1.0.0",
     "@mapbox/vector-tile": "^3.0.0",
     "@octokit/rest": "^22.0.1",

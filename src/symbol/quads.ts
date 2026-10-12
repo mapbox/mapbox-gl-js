@@ -1,7 +1,7 @@
 import Point from '@mapbox/point-geometry';
 import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
 import {ICON_PADDING} from '../render/image_atlas';
-import {SDF_SCALE} from '../render/glyph_manager';
+import {SDF_SCALE} from '../render/local_glyph_rasterizer';
 import {isVerticalClosePunctuation, isVerticalOpenPunctuation} from '../util/verticalize_punctuation';
 import ONE_EM from './one_em';
 

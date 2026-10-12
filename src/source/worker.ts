@@ -17,6 +17,8 @@ import {getProjection} from '../geo/projection/index';
 import {isWorker} from '../util/util';
 import config from '../util/config';
 import {loadTileProvider} from './tile_provider';
+import {LocalGlyphRasterizer} from '../render/local_glyph_rasterizer';
+import offscreenCanvasSupported from '../util/offscreen_canvas_supported';
 
 import type Projection from '../geo/projection/projection';
 import type {ImageId} from '../style-spec/expression/types/image_id';
@@ -54,6 +56,7 @@ export default class MapWorker {
     brightness: number | null | undefined;
     maxUniformBlockSizeDwords: number | null | undefined;
     worldview: string | undefined;
+    localGlyphs: Record<number, LocalGlyphRasterizer>;
 
     constructor(self: Worker) {
         PerformanceUtils.measure('workerEvaluateScript');
@@ -64,6 +67,7 @@ export default class MapWorker {
         this.availableImages = {};
         this.availableModels = {};
         this.isSpriteLoaded = {};
+        this.localGlyphs = {};
 
         this.projections = {};
         this.defaultProjection = getProjection({name: 'mercator'});
@@ -87,6 +91,7 @@ export default class MapWorker {
         delete this.availableModels[mapId];
         delete this.workerSources[mapId];
         delete this.isSpriteLoaded[mapId];
+        delete this.localGlyphs[mapId];
     }
 
     checkIfReady(_mapId: number, _params: WorkerInbox['checkIfReady']['params']) {
@@ -169,6 +174,10 @@ export default class MapWorker {
 
         if (params.contextOptions) {
             this.maxUniformBlockSizeDwords = params.contextOptions.maxUniformBlockSizeDwords;
+        }
+
+        if (params.localGlyphs && offscreenCanvasSupported()) {
+            this.localGlyphs[mapId] = new LocalGlyphRasterizer(params.localGlyphs);
         }
     }
 
@@ -382,6 +391,7 @@ export default class MapWorker {
                 brightness: this.brightness,
                 worldview: this.worldview,
                 maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords,
+                localGlyphs: this.localGlyphs[mapId],
             });
         } else if (tileProvider) {
             // Reload (e.g. setUrl/setTiles) re-broadcasts loadTileProvider with

@@ -14,6 +14,7 @@ import type {CollisionBoxArray} from '../data/array_types';
 import type DEMData from '../data/dem_data';
 import type {DEMSourceEncoding} from '../data/dem_data';
 import type {GlyphMap} from '../render/glyph_manager';
+import type {LocalGlyphRasterizer} from '../render/local_glyph_rasterizer';
 import type {StyleImageMap} from '../style/style_image';
 import type {PromoteIdSpecification} from '../style-spec/types';
 import type Projection from '../geo/projection/projection';
@@ -242,6 +243,7 @@ export type WorkerSourceOptions = {
     brightness?: number;
     worldview?: string;
     maxUniformBlockSizeDwords?: number;
+    localGlyphs?: LocalGlyphRasterizer;
 };
 
 export interface WorkerSourceConstructor {

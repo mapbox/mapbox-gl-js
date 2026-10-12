@@ -2,6 +2,7 @@
 
 - Fix imported styles silently rendering nothing when the import fires a non-fatal error while loading.
 - Fix raster tiles occasionally showing the image of a different tile after zooming or panning on a slow network.
+- Improve performance on map views with CJK glyphs by moving CJK rasterization offscreen.
 - Fix `building` layer filters that use `distance`, `within` or `worldview` dropping buildings.
 - Improve tile load performance via optimization of style property values recalculation.
 

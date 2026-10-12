@@ -1,4 +1,4 @@
-import {SDF_SCALE} from '../render/glyph_manager';
+import {SDF_SCALE} from '../render/local_glyph_rasterizer';
 import {AlphaImage} from '../util/image';
 import {register} from '../util/web_worker_transfer';
 import potpack from 'potpack';
