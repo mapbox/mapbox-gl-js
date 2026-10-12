@@ -6,12 +6,11 @@ import {translateDistance, translate} from '../query_utils';
 import {getLayoutProperties, getPaintProperties} from './fill_style_layer_properties';
 import ProgramConfiguration from '../../data/program_configuration';
 
-import type {Transitionable, Transitioning, Layout, PossiblyEvaluated, ConfigOptions} from '../properties';
+import type {PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {FeatureState} from '../../style-spec/expression/index';
 import type {BucketParameters} from '../../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {LayoutProps, PaintProps} from './fill_style_layer_properties';
-import type EvaluationParameters from '../evaluation_parameters';
 import type Transform from '../../geo/transform';
 import type {LayerSpecification} from '../../style-spec/types';
 import type {TilespaceQueryGeometry} from '../query_geometry';
@@ -19,17 +18,12 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {RuntimeModuleType} from '../style_layer';
 import type {CreateProgramParams} from '../../render/painter';
 import type {LUT} from "../../util/lut";
-import type {ImageId} from '../../style-spec/expression/types/image_id';
 import type {ProgramName} from '../../render/program';
 
 class FillStyleLayer extends StyleLayer {
     override type!: 'fill';
 
-    override _unevaluatedLayout!: Layout<LayoutProps>;
     override layout!: PossiblyEvaluated<LayoutProps>;
-
-    override _transitionablePaint!: Transitionable<PaintProps>;
-    override _transitioningPaint!: Transitioning<PaintProps>;
     override paint!: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
@@ -61,9 +55,7 @@ class FillStyleLayer extends StyleLayer {
         };
     }
 
-    override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
-        super.recalculate(parameters, availableImages);
-
+    override _finalizeEvaluated() {
         const outlineColor = this.paint._values['fill-outline-color'];
 
         if (outlineColor.value.kind === 'constant' && outlineColor.value.value === undefined) {

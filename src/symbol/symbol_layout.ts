@@ -297,7 +297,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
     bucket.iconsNeedLinear = false;
 
     const layout = bucket.layers[0].layout;
-    const unevaluatedLayoutValues = bucket.layers[0]._unevaluatedLayout._values;
 
     const sizes = {} as Sizes;
 
@@ -308,8 +307,8 @@ export function performSymbolLayout(bucket: SymbolBucket,
     const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = sizes.iconSizeScaleRange;
     sizes.textScaleFactor = clamp(sizes.scaleFactor, textSizeScaleRangeMin, textSizeScaleRangeMax);
     sizes.iconScaleFactor = clamp(sizes.scaleFactor, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
-    const unevaluatedTextSize = unevaluatedLayoutValues['text-size'];
-    const unevaluatedIconSize = unevaluatedLayoutValues['icon-size'];
+    const unevaluatedTextSize = bucket.layers[0].getLayoutPropertyValue<number, PossiblyEvaluatedPropertyValue<number>>('text-size');
+    const unevaluatedIconSize = bucket.layers[0].getLayoutPropertyValue<number, PossiblyEvaluatedPropertyValue<number>>('icon-size');
 
     if (bucket.textSizeData.kind === 'composite') {
         const {minZoom, maxZoom} = bucket.textSizeData;
@@ -478,7 +477,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
         let iconAnchor: SymbolAnchor;
         const iconTextFit = layout.get('icon-text-fit').evaluate(feature, {}, canonical);
         if (feature.icon && feature.icon.hasPrimary()) {
-            const icons = getScaledImageVariant(feature.icon, bucket.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, bucket.zoom, feature, pixelRatio, sizes.iconScaleFactor, worldview, availableImages);
+            const icons = getScaledImageVariant(feature.icon, bucket.iconSizeData, unevaluatedIconSize, canonical, bucket.zoom, feature, pixelRatio, sizes.iconScaleFactor, worldview, availableImages);
             iconPrimary = icons.iconPrimary;
             iconSecondary = icons.iconSecondary;
             const primaryImageSerialized = iconPrimary.toString();
@@ -698,7 +697,7 @@ function getAppearanceImagePosition(bucket: SymbolBucket, symbolLayer: SymbolSty
         // so that the image variant key matches what was stored in iconPositions.
         const unevaluatedIconSize = (appearance.hasLayoutProperty('icon-size') ?
             appearance.getUnevaluatedLayoutProperty('icon-size') :
-            symbolLayer._unevaluatedLayout._values['icon-size']) as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
+            symbolLayer.getLayoutPropertyValue('icon-size')) as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
         const iconSizeData = getSizeData(bucket.zoom, unevaluatedIconSize, bucket.worldview, availableImages);
         const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, bucket.zoom, feature, bucket.pixelRatio, iconScaleFactor, bucket.worldview, availableImages);
         imagePositionToUse = imagePositions.get(imageVariant.iconPrimary.toString());
@@ -1284,7 +1283,7 @@ function addSymbol(bucket: SymbolBucket,
 
     let textOffset0 = 0;
     let textOffset1 = 0;
-    if (layer._unevaluatedLayout.getValue('text-radial-offset') === undefined) {
+    if (layer.getLayoutPropertyValue('text-radial-offset').value === undefined) {
         const evaluatedTextOffset = layer.layout.get('text-offset').evaluate(feature, {}, canonical);
         textOffset0 = evaluatedTextOffset[0] * ONE_EM;
         textOffset1 = evaluatedTextOffset[1] * ONE_EM;

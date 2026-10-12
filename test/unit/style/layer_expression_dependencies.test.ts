@@ -13,7 +13,7 @@ describe('LayerExpressionDependencies', () => {
             filter: ['==', ['get', 'x'], ['config', 'foo']]
         }));
         expect(deps.hasConfigDependency('foo')).toBeTruthy();
-        expect(deps.isConfigDependent).toBeTruthy();
+        expect(deps.hasConfigDependency()).toBeTruthy();
     });
 
     test('reports config dependencies from paint and layout properties', () => {
@@ -33,7 +33,7 @@ describe('LayerExpressionDependencies', () => {
             source: 'src'
         });
         const deps = new LayerExpressionDependencies(layer);
-        expect(deps.isConfigDependent).toBeFalsy();
+        expect(deps.hasConfigDependency()).toBeFalsy();
 
         layer.setPaintProperty('fill-color', ['config', 'fillColor']);
         expect(deps.hasConfigDependency('fillColor')).toBeTruthy();
@@ -41,7 +41,7 @@ describe('LayerExpressionDependencies', () => {
 
     test('background layer has empty dependencies', () => {
         const deps = new LayerExpressionDependencies(createStyleLayer({id: 'bg', type: 'background'}));
-        expect(deps.isConfigDependent).toBeFalsy();
+        expect(deps.hasConfigDependency()).toBeFalsy();
         expect(deps.isIndoorDependent).toBeFalsy();
     });
 
@@ -53,7 +53,7 @@ describe('LayerExpressionDependencies', () => {
             filter: ['==', ['get', 'x'], 1]
         });
         const deps = new LayerExpressionDependencies(layer);
-        expect(deps.isConfigDependent).toBeFalsy();
+        expect(deps.hasConfigDependency()).toBeFalsy();
 
         layer.filter = ['==', ['get', 'x'], ['config', 'foo']];
         deps.invalidateFilter();
@@ -73,7 +73,7 @@ describe('LayerExpressionDependencies', () => {
         layer.filter = ['==', ['get', 'x'], 1];
         deps.invalidateFilter();
         expect(deps.hasConfigDependency('foo')).toBeFalsy();
-        expect(deps.isConfigDependent).toBeFalsy();
+        expect(deps.hasConfigDependency()).toBeFalsy();
     });
 
     test('config dependencies from paint properties survive filter invalidation', () => {

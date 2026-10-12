@@ -1,8 +1,8 @@
-import {DataConstantProperty, Properties, Transitionable} from '../style/properties';
+import {DataConstantProperty, PropertyValue} from '../style/properties';
 import styleSpec from '../style-spec/reference/latest';
 import EvaluationParameters from '../../src/style/evaluation_parameters';
 
-import type {PossiblyEvaluated, ConfigOptions} from '../style/properties';
+import type {ConfigOptions} from '../style/properties';
 import type {RGBAImage} from "./image";
 import type {Texture3D} from '../../src/render/texture';
 import type {ColorThemeSpecification} from "../style-spec/types";
@@ -14,32 +14,8 @@ export type LUT = {
     texture?: Texture3D;
 };
 
-type Props = {
-    data?: DataConstantProperty<string>;
-};
+const colorThemeDataProperty = new DataConstantProperty<string>((styleSpec.colorTheme as Record<string, StylePropertySpecification>).data);
 
-const colorThemeReference = styleSpec.colorTheme as Record<string, StylePropertySpecification>;
-
-const colorizationProperties: Properties<Props> = new Properties({
-    data: new DataConstantProperty(colorThemeReference.data)
-});
-
-export function evaluateColorThemeProperties(
-    scope: string,
-    values?: ColorThemeSpecification,
-    configOptions?: ConfigOptions | null,
-    worldview?: string
-): PossiblyEvaluated<Props> {
-    const properties = {...values};
-    for (const name of Object.keys(colorThemeReference)) {
-        // Fallback to use default style specification when the properties wasn't set
-        if (properties[name] === undefined) {
-            properties[name] = colorThemeReference[name].default;
-        }
-    }
-
-    const transitionable = new Transitionable(colorizationProperties, scope, new Map(configOptions));
-    transitionable.setTransitionOrValue<ColorThemeSpecification>(properties, configOptions);
-    const transitioning = transitionable.untransitioned();
-    return transitioning.possiblyEvaluate(new EvaluationParameters(0.0, {worldview}));
+export function evaluateColorThemeData(scope: string, data: ColorThemeSpecification['data'], configOptions?: ConfigOptions | null): string {
+    return new PropertyValue(colorThemeDataProperty, data, scope, configOptions).possiblyEvaluate(new EvaluationParameters(0));
 }

@@ -1,6 +1,6 @@
 import {filterObject} from '../util/util';
 import {Evented} from '../util/evented';
-import {Layout, Transitionable, PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from './properties';
+import {PropertyValues, PossiblyEvaluated, PossiblyEvaluatedPropertyValue, ZOOM_DEPENDENCY, LIGHT_DEPENDENCY, IMAGE_DEPENDENCY} from './properties';
 import {supportsPropertyExpression} from '../style-spec/util/properties';
 import featureFilter from '../style-spec/feature_filter/index';
 import {makeFQID} from '../util/fqid';
@@ -13,7 +13,7 @@ import SymbolAppearance from './appearance';
 import type {Bucket, BucketParameters} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureFilter, FilterExpression} from '../style-spec/feature_filter/index';
-import type {TransitionParameters, PropertyValue, ConfigOptions, Transitioning, Properties} from './properties';
+import type {TransitionParameters, PropertyValue, ConfigOptions, Properties} from './properties';
 import type EvaluationParameters from './evaluation_parameters';
 import type Transform from '../geo/transform';
 import type {
@@ -61,6 +61,7 @@ class StyleLayer extends Evented {
     metadata: unknown;
     type: LayerSpecification['type'] | 'custom';
     source!: string;
+    sourceFqid: string | undefined;
     sourceLayer: string | null | undefined;
     slot: string | null | undefined;
     minzoom: number | null | undefined;
@@ -73,16 +74,20 @@ class StyleLayer extends Evented {
     // Bumped whenever evaluated paint values may change without a relayout: on a paint property change and on
     // every frame of a paint transition, including the last one.
     paintVersion: number;
+    // Whether the layer must be re-evaluated even if no input in its property dependencies changed: set on a value
+    // or transition change and kept while a transition is in progress.
+    _dirty: boolean;
+    // The parameters and images of the last re-evaluation, to tell which property dependencies have changed
+    _recalcParameters: EvaluationParameters | null;
+    _recalcImages: ImageId[] | null;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _unevaluatedLayout!: Layout<any>;
+    _layoutValues!: PropertyValues<any>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     readonly layout!: PossiblyEvaluated<any>;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _transitionablePaint!: Transitionable<any>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _transitioningPaint!: Transitioning<any>;
+    _paintValues!: PropertyValues<any>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     readonly paint!: PossiblyEvaluated<any>;
 
@@ -114,6 +119,9 @@ class StyleLayer extends Evented {
         this.appearances = new Array<SymbolAppearance>();
         this.appearancesVersion = 0;
         this.paintVersion = 0;
+        this._dirty = true;
+        this._recalcParameters = null;
+        this._recalcImages = null;
 
         this._featureFilter = {filter: () => true, needGeometry: false, needFeature: false};
         this._filterCompiled = false;
@@ -126,6 +134,7 @@ class StyleLayer extends Evented {
 
         if (layer.type && layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'slot' && layer.type !== 'placement-group') {
             this.source = layer.source;
+            this.sourceFqid = makeFQID(layer.source, scope);
             this.sourceLayer = layer['source-layer'];
             this.filter = layer.filter;
         }
@@ -137,11 +146,11 @@ class StyleLayer extends Evented {
         }
 
         if (properties.layout) {
-            this._unevaluatedLayout = new Layout(properties.layout, this.scope, options, this.iconImageUseTheme);
+            this._layoutValues = new PropertyValues(properties.layout, false, this.scope, options, this.iconImageUseTheme);
         }
 
         if (properties.paint) {
-            this._transitionablePaint = new Transitionable(properties.paint, this.scope, options);
+            this._paintValues = new PropertyValues(properties.paint, true, this.scope, options);
 
             for (const property in layer.paint) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -151,7 +160,7 @@ class StyleLayer extends Evented {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.setLayoutProperty(property, layer.layout[property]);
             }
-            this._transitioningPaint = this._transitionablePaint.untransitioned();
+            this._paintValues.snap();
             this.paint = new PossiblyEvaluated(properties.paint);
         }
     }
@@ -175,7 +184,7 @@ class StyleLayer extends Evented {
             return this.visibility as LayoutSpecification[T];
         }
 
-        return this._unevaluatedLayout.getValue(name) as LayoutSpecification[T] | undefined;
+        return this._layoutValues.getValue(name) as LayoutSpecification[T] | undefined;
     }
 
     setLayoutProperty<T extends keyof LayoutSpecification>(name: string, value: LayoutSpecification[T]): void {
@@ -184,13 +193,14 @@ class StyleLayer extends Evented {
             return;
         }
 
-        const layout = this._unevaluatedLayout;
+        const layout = this._layoutValues;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const specProps = layout._properties.properties;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (!specProps[name]) return; // skip unrecognized properties
 
         layout.setValue(name, value);
+        this._dirty = true;
         if (name === 'visibility') {
             this.possiblyEvaluateVisibility();
         }
@@ -202,26 +212,35 @@ class StyleLayer extends Evented {
             this.appearances.push(new SymbolAppearance(a.condition, a.name, a.properties, this.scope, this.options, this.iconImageUseTheme));
         });
         this.appearancesVersion++;
+        this._dirty = true;
     }
 
     possiblyEvaluateVisibility() {
-        if (!this._unevaluatedLayout._values.visibility) {
-            // Early return for layers which don't have a visibility property.
-            return;
-        }
-        this.visibility = this._unevaluatedLayout._values.visibility.possiblyEvaluate({zoom: 0} as EvaluationParameters) as 'visible' | 'none' | undefined;
+        const value = this.getLayoutPropertyValue('visibility');
+        if (value) this.visibility = value.possiblyEvaluate({zoom: 0} as EvaluationParameters) as 'visible' | 'none' | undefined;
+    }
+
+    // The `PropertyValue` set for a layout or paint property or its default; undefined if the layer type lacks it
+    getLayoutPropertyValue<T = unknown, R = unknown>(name: string): PropertyValue<T, R> | undefined {
+        const entry = this._layoutValues && this._layoutValues._values[name];
+        return (entry && entry.value) as PropertyValue<T, R> | undefined;
+    }
+
+    getPaintPropertyValue<T = unknown, R = unknown>(name: string): PropertyValue<T, R> | undefined {
+        const entry = this._paintValues && this._paintValues._values[name];
+        return (entry && entry.value) as PropertyValue<T, R> | undefined;
     }
 
     getPaintProperty<T extends keyof PaintSpecification>(name: T): PaintSpecification[T] | undefined {
         if (name.endsWith(TRANSITION_SUFFIX)) {
-            return this._transitionablePaint.getTransition(name.slice(0, -TRANSITION_SUFFIX.length)) as PaintSpecification[T];
+            return this._paintValues.getTransition(name.slice(0, -TRANSITION_SUFFIX.length)) as PaintSpecification[T];
         } else {
-            return this._transitionablePaint.getValue(name) as PaintSpecification[T];
+            return this._paintValues.getValue(name) as PaintSpecification[T];
         }
     }
 
     isPaintProperty<T extends keyof PaintSpecification>(name: T): boolean {
-        const paint = this._transitionablePaint;
+        const paint = this._paintValues;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const specProps = paint._properties.properties;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -229,7 +248,7 @@ class StyleLayer extends Evented {
     }
 
     setPaintProperty<T extends keyof PaintSpecification>(name: T, value: PaintSpecification[T]): boolean {
-        const paint = this._transitionablePaint;
+        const paint = this._paintValues;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const specProps = paint._properties.properties;
 
@@ -290,24 +309,52 @@ class StyleLayer extends Evented {
     }
 
     updateTransitions(parameters: TransitionParameters) {
-        this._transitioningPaint = this._transitionablePaint.transitioned(parameters, this._transitioningPaint);
+        this._paintValues.updateTransitions(parameters);
         this.paintVersion++;
+        this._dirty = true;
     }
 
     hasTransition(): boolean {
-        return this._transitioningPaint.hasTransition();
+        return this._paintValues.hasTransition();
     }
 
+    // The `*_DEPENDENCY` flags of all set layout, paint and appearance values.
+    getPropertyDependencies(): number {
+        let deps = (this._layoutValues ? this._layoutValues.deps : 0) | (this._paintValues ? this._paintValues.deps : 0);
+        for (const {unevaluatedLayout, unevaluatedPaint} of this.appearances) {
+            if (unevaluatedLayout) deps |= unevaluatedLayout.deps | unevaluatedPaint.deps;
+        }
+        return deps;
+    }
+
+    // Re-evaluates the values that depend on parameters changed since the last recalculation, or all of them if the
+    // layer is dirty; layers are shared across tiles on the worker, so tiles of the same zoom mostly reuse values.
     recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
-        if (this._unevaluatedLayout) {
+        const last = this._recalcParameters;
+        let changedDeps: number | undefined;
+        if (!this._dirty && last && parameters.worldview === last.worldview && parameters.activeFloors === last.activeFloors) {
+            changedDeps = this.getPropertyDependencies() & (
+                (parameters.zoom !== last.zoom || parameters.pitch !== last.pitch ? ZOOM_DEPENDENCY : 0)
+                | (parameters.brightness !== last.brightness ? LIGHT_DEPENDENCY : 0)
+                | (availableImages !== this._recalcImages ? IMAGE_DEPENDENCY : 0));
+            if (!changedDeps) return;
+        }
+        this._recalcParameters = parameters;
+        this._recalcImages = availableImages;
+        if (this._layoutValues) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-            (this as any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters, undefined, availableImages, this.iconImageUseTheme);
+            (this as any).layout = this._layoutValues.possiblyEvaluate(parameters, undefined, availableImages, this.iconImageUseTheme, changedDeps);
         }
 
         if (this.hasTransition()) this.paintVersion++;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        (this as any).paint = this._transitioningPaint.possiblyEvaluate(parameters, undefined, availableImages);
+        (this as any).paint = this._paintValues.possiblyEvaluate(parameters, undefined, availableImages, undefined, changedDeps);
+        this._dirty = this.hasTransition();
+        this._finalizeEvaluated(parameters, availableImages);
     }
+
+    // Fixes up the freshly evaluated `layout` and `paint`; overridden by layers that derive or rewrite values
+    _finalizeEvaluated(_parameters: EvaluationParameters, _availableImages: ImageId[]) {}
 
     serialize(): LayerSpecification {
         assert(this.type !== 'custom', 'Custom layers cannot be serialized');
@@ -322,8 +369,8 @@ class StyleLayer extends Evented {
             'minzoom': this.minzoom,
             'maxzoom': this.maxzoom,
             'filter': this.filter,
-            'layout': this._unevaluatedLayout && this._unevaluatedLayout.serialize(),
-            'paint': this._transitionablePaint && this._transitionablePaint.serialize()
+            'layout': this._layoutValues && this._layoutValues.serialize(),
+            'paint': this._paintValues && this._paintValues.serialize()
         } as LayerSpecification;
 
         if (this.appearances.length !== 0) {
@@ -350,7 +397,7 @@ class StyleLayer extends Evented {
 
     // Conservative predicate used to preload a lazy module on both threads before the
     // first relevant tile parses/deserializes. Reads the *raw* layout declaration via
-    // `_unevaluatedLayout` because this runs on the worker before layers have been
+    // `_layoutValues` because this runs on the worker before layers have been
     // recalculated, and on the main thread during recalculate. Data-driven expression
     // declarations return true conservatively — the worst case is an unnecessary preload.
     // Subclasses override this to indicate which module(s) they require.
@@ -519,8 +566,7 @@ class StyleLayer extends Evented {
  * @private
  */
 export function rawLayoutMayUseHD(layer: StyleLayer, propName: string, predicate: (v: string) => boolean): boolean {
-    if (!layer._unevaluatedLayout) return false;
-    const val = layer._unevaluatedLayout.getValue(propName);
+    const val = layer.getLayoutPropertyValue(propName)?.value;
     if (val === undefined) return false;
     if (typeof val !== 'string') return true;
     return predicate(val);

@@ -68,7 +68,7 @@ import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_utils'
 import ModelManager from '../../3d-style/render/model_manager';
 import {ProgramPrecompiler} from '../render/program_precompiler';
 import {RGBAImage} from '../util/image';
-import {evaluateColorThemeProperties} from '../util/lut';
+import {evaluateColorThemeData} from '../util/lut';
 import EvaluationParameters from './evaluation_parameters';
 import featureFilter from '../style-spec/feature_filter/index';
 import {TargetFeature} from '../util/vectortile_to_geojson';
@@ -937,7 +937,7 @@ class Style extends Evented<MapEvents> {
             // live map on both ends), so they still
             // need this explicit refresh: at construction time, sibling
             // imports may not have populated `this.options` yet. Reset (rather
-            // than transition) their `_transitioning` state: there is no
+            // than transition) their displayed values: there is no
             // earlier *visible* value to animate from, so snapping to the
             // now-correct config value is the right initial-load behavior.
             this._updateEnvConfig('reset');
@@ -1590,8 +1590,7 @@ class Style extends Evented<MapEvents> {
         if (!theme.data) {
             return null;
         }
-        const properties = evaluateColorThemeProperties(this.scope, theme, this.options);
-        return properties.get('data');
+        return evaluateColorThemeData(this.scope, theme.data, this.options);
     }
 
     _loadColorTheme(inputData: string | null): Promise<void> {
@@ -1935,14 +1934,14 @@ class Style extends Evented<MapEvents> {
             return true;
         }
 
-        for (const id in this._sourceCaches) {
-            if (this._sourceCaches[id].hasTransition()) {
+        for (const id in this._mergedSourceCaches) {
+            if (this._mergedSourceCaches[id].hasTransition()) {
                 return true;
             }
         }
 
-        for (const layerId in this._layers) {
-            const layer = this._layers[layerId];
+        for (const layerId in this._mergedLayers) {
+            const layer = this._mergedLayers[layerId];
             if (layer.hasTransition()) {
                 return true;
             }
@@ -1955,14 +1954,10 @@ class Style extends Evented<MapEvents> {
         for (const layerId in this._mergedLayers) {
             const layer = this._mergedLayers[layerId];
 
-            if (layer._transitionablePaint && layer._transitionablePaint._values) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                const transitionableValue = layer._transitionablePaint._values['line-emissive-strength'];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-                if (transitionableValue && transitionableValue.value && transitionableValue.value.isDataDriven()) {
-                    this._hasDataDrivenEmissive = true;
-                    return;
-                }
+            const value = layer.getPaintPropertyValue('line-emissive-strength');
+            if (value && value.isDataDriven()) {
+                this._hasDataDrivenEmissive = true;
+                return;
             }
         }
         this._hasDataDrivenEmissive = false;
@@ -2140,7 +2135,11 @@ class Style extends Evented<MapEvents> {
 
         for (const layerId of this._mergedOrder) {
             const layer = this._mergedLayers[layerId];
-            if (layer.visibility !== 'none' || layer.hasTransition()) layer.recalculate(parameters, this._availableImages);
+            // Layers hidden with `visibility` keep stale values: anything that shows a layer again marks it dirty.
+            // Layers out of their zoom range catch up on the changes they depend on once they're back in range.
+            if ((layer.visibility !== 'none' || layer.hasTransition()) && (layer._dirty || !layer.isHidden(parameters.zoom))) {
+                layer.recalculate(parameters, this._availableImages);
+            }
             if (!layer.isHidden(parameters.zoom)) {
 
                 if (layer.mayUse('HD')) {
@@ -2189,8 +2188,7 @@ class Style extends Evented<MapEvents> {
 
             // Mark HD road coverage source caches as used when any layer uses their source
             if (layer.source) {
-                const coverageFqid = makeFQID(layer.source, layer.scope);
-                const coverageCache = this._mergedHdRoadCoverageSourceCaches[coverageFqid];
+                const coverageCache = this._mergedHdRoadCoverageSourceCaches[layer.sourceFqid];
                 if (coverageCache && !coverageCache.used) {
                     coverageCache.used = true;
                 }
@@ -3079,6 +3077,7 @@ class Style extends Evented<MapEvents> {
             const layer = this.getLayer(id);
             if (layer) {
                 layer.possiblyEvaluateVisibility();
+                layer._dirty = true;
                 this._updateLayer(layer);
                 this._changes.setDirty();
             }
@@ -3125,9 +3124,7 @@ class Style extends Evented<MapEvents> {
     }
 
     updateConfigDependencies(configKey?: string) {
-        this._updateLayers(this._dependentLayerIds((deps) => {
-            return configKey ? deps.hasConfigDependency(configKey) : deps.isConfigDependent;
-        }));
+        this._updateLayers(this._dependentLayerIds((deps) => deps.hasConfigDependency(configKey)));
 
         this._updateEnvConfig();
 
@@ -3786,7 +3783,7 @@ class Style extends Evented<MapEvents> {
     _updateLayer(layer: TypedStyleLayer) {
         this._changes.updateLayer(layer);
         const sourceCache = this.getLayerSourceCache(layer);
-        const fqid = makeFQID(layer.source, layer.scope);
+        const fqid = layer.sourceFqid;
         const sourceCacheUpdates = this._changes.getUpdatedSourceCaches();
         if (layer.source && !sourceCacheUpdates[fqid] &&
             // Skip for raster layers (https://github.com/mapbox/mapbox-gl-js/issues/7865)
@@ -5138,7 +5135,7 @@ class Style extends Evented<MapEvents> {
     }
 
     getLayerSourceCache(layer: TypedStyleLayer): SourceCache | undefined {
-        const fqid = makeFQID(layer.source, layer.scope);
+        const fqid = layer.sourceFqid;
         if (layer.type === 'symbol') return this._mergedSymbolSourceCaches[fqid];
         if (layer.type === 'fill-extrusion') return this._mergedFillExtrusionSourceCaches[fqid] || this._mergedOtherSourceCaches[fqid];
         // Layers using hd_road_coverage source-layer render from the HdRoadCoverage

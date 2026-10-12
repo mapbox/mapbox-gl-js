@@ -17,6 +17,7 @@ import type {
 import type {
     Feature,
     FeatureState,
+    StyleExpression,
     StylePropertyExpression,
     SourceExpression,
     CompositeExpression
@@ -38,16 +39,11 @@ type Overrides = {
 
 /**
  * Implements a number of classes that define state and behavior for paint and layout properties, most
- * importantly their respective evaluation chains:
+ * importantly their evaluation chain:
  *
- *       Transitionable paint property value
- *     → Transitioning paint property value
- *     → Possibly evaluated paint property value
- *     → Fully evaluated paint property value
- *
- *       Layout property value
- *     → Possibly evaluated layout property value
- *     → Fully evaluated layout property value
+ *       Set value (`PropertyValue`) in a `PropertyValues` entry, with its displayed transition state
+ *     → Possibly evaluated value, for the current zoom and other global parameters (`PossiblyEvaluated`)
+ *     → Fully evaluated value, for a specific feature
  *
  * @module
  * @private
@@ -66,7 +62,7 @@ type Overrides = {
  *
  *  There are two main implementations of the interface -- one for properties that allow data-driven values,
  *  and one for properties that don't. There are a few "special case" implementations as well:
- *  one for `heatmap-color` and `line-gradient`, and one for `light-position`.
+ *  one for `heatmap-color` and `line-gradient`, and ones for light directions and positions.
  *
  * @private
  */
@@ -81,6 +77,12 @@ export interface Property<T, R> {
     ) => R;
     interpolate: (a: R, b: R, t: number) => R;
 }
+
+// Inputs other than the property value itself that a possibly evaluated value can change with, so a layer can skip
+// re-evaluation while none of them change. Config and worldview changes are handled by the style.
+export const ZOOM_DEPENDENCY = 1;
+export const LIGHT_DEPENDENCY = 2;
+export const IMAGE_DEPENDENCY = 4;
 
 /**
  *  `PropertyValue` represents the value part of a property key-value unit. It's used to represent both
@@ -105,11 +107,24 @@ export class PropertyValue<T, R> {
     property: Property<T, R>;
     value: PropertyValueSpecification<T> | undefined;
     expression: StylePropertyExpression;
+    deps: number;
 
     constructor(property: Property<T, R>, value?: PropertyValueSpecification<T>, scope?: string | null, options?: ConfigOptions | null, iconImageUseTheme?: string | null) {
         this.property = property;
         this.value = value;
         this.expression = normalizePropertyExpression(value === undefined ? property.specification.default : value, property.specification, scope, options, iconImageUseTheme);
+
+        // Source and composite values keep their expression and get the available images only at feature
+        // evaluation, so just constant and camera values with an `image` expression depend on them. Image
+        // and formatted properties count as dependent regardless, since config values can hold `image` too.
+        const {kind} = this.expression;
+        const type = property.specification.type;
+        const styleExpression = (this.expression as {_styleExpression?: StyleExpression})._styleExpression;
+        this.deps =
+            (kind === 'camera' || kind === 'composite' ? ZOOM_DEPENDENCY : 0)
+            | ((this.expression as {isLightConstant?: boolean}).isLightConstant === false ? LIGHT_DEPENDENCY : 0)
+            | ((kind === 'constant' || kind === 'camera') &&
+                (type === 'resolvedImage' || type === 'formatted' || (styleExpression && styleExpression.isImageDependent)) ? IMAGE_DEPENDENCY : 0);
     }
 
     isIndoorDependent(): boolean {
@@ -130,7 +145,7 @@ export class PropertyValue<T, R> {
     }
 }
 
-// ------- Transitionable -------
+// ------- PropertyValues -------
 
 export type TransitionParameters = {
     now: TimePoint;
@@ -138,88 +153,152 @@ export type TransitionParameters = {
 };
 
 /**
- * Paint properties are _transitionable_: they can change in a fluid manner, interpolating or cross-fading between
- * old and new value. The duration of the transition, and the delay before it begins, is configurable.
- *
- * `TransitionablePropertyValue` is a compositional class that stores both the property value and that transition
- * configuration.
- *
- * A `TransitionablePropertyValue` can calculate the next step in the evaluation chain for paint property values:
- * `TransitioningPropertyValue`.
+ * The displayed state of a paint property value: as long as a transition is in progress, it keeps a reference to the
+ * prior state, and interpolates between it and the new value based on the current time and the configured transition
+ * duration and delay.
  *
  * @private
  */
-class TransitionablePropertyValue<T, R> {
+type TransitionState<T, R> = {
+    value: PropertyValue<T, R>;
+    prior: TransitionState<T, R> | null;
+    begin: TimePoint;
+    end: TimePoint;
+};
+
+export function possiblyEvaluateTransition<T, R>(
+    state: TransitionState<T, R>,
+    parameters: EvaluationParameters,
+    canonical?: CanonicalTileID,
+    availableImages?: ImageId[],
+    iconImageUseTheme?: string,
+): R {
+    const now = parameters.now || 0;
+    const finalValue = state.value.possiblyEvaluate(parameters, canonical, availableImages, iconImageUseTheme);
+    const prior = state.prior;
+    if (!prior) {
+        // No prior value.
+        return finalValue;
+    } else if (now > state.end) {
+        // Transition from prior value is now complete.
+        state.prior = null;
+        return finalValue;
+    } else if (state.value.isDataDriven()) {
+        // Transitions to data-driven properties are not supported.
+        // We snap immediately to the data-driven value so that, when we perform layout,
+        // we see the data-driven function and can use it to populate vertex buffers.
+        state.prior = null;
+        return finalValue;
+    } else if (now < state.begin) {
+        // Transition hasn't started yet.
+        return possiblyEvaluateTransition(prior, parameters, canonical, availableImages, iconImageUseTheme);
+    } else {
+        // Interpolate between recursively-calculated prior value and final.
+        const t = (now - state.begin) / (state.end - state.begin);
+        return state.value.property.interpolate(possiblyEvaluateTransition(prior, parameters, canonical, availableImages, iconImageUseTheme), finalValue, easeCubicInOut(t));
+    }
+}
+
+/**
+ * `PropertyValueEntry` stores the latest set value of a layout or paint property, its transition configuration,
+ * and the displayed `state`. Paint properties are _transitionable_: they can change in a fluid manner, interpolating
+ * or cross-fading between old and new value, with a configurable duration and delay. Their displayed state only
+ * catches up with the set value on the next `updateTransitions` or `snap`; other values are displayed once set,
+ * including layout values that the spec marks as transitionable.
+ *
+ * @private
+ */
+class PropertyValueEntry<T, R> {
     property: Property<T, R>;
     value: PropertyValue<T, R>;
     transition: TransitionSpecification | undefined;
+    state: TransitionState<T, R>;
+    // The last evaluated value and the property value it was evaluated from
+    evaluated: R | undefined;
+    evaluatedFrom: PropertyValue<T, R> | null;
 
     constructor(property: Property<T, R>, scope?: string | null, options?: ConfigOptions | null, iconImageUseTheme?: string | null) {
         this.property = property;
         this.value = new PropertyValue(property, undefined, scope, options, iconImageUseTheme);
-    }
-
-    transitioned(parameters: TransitionParameters, prior: TransitioningPropertyValue<T, R>): TransitioningPropertyValue<T, R> {
-        return new TransitioningPropertyValue(this.property, this.value, prior,
-            ({...parameters.transition, ...this.transition}), parameters.now);
-    }
-
-    untransitioned(): TransitioningPropertyValue<T, R> {
-        return new TransitioningPropertyValue(this.property, this.value, null, {}, 0);
+        this.state = {value: this.value, prior: null, begin: 0, end: 0};
+        this.evaluated = undefined;
+        this.evaluatedFrom = null;
     }
 }
 
 /**
  * A helper type: given an object type `Properties` whose values are each of type `Property<T, R>`, it calculates
- * an object type with the same keys and values of type `TransitionablePropertyValue<T, R>`.
+ * an object type with the same keys and values of type `PropertyValueEntry<T, R>`.
  *
  * @private
  */
-type TransitionablePropertyValues<Properties> = {
+type PropertyValueEntries<Properties> = {
     [Key in keyof Properties]: Properties[Key] extends Property<infer T, infer R> ?
-        TransitionablePropertyValue<T, R> :
+        PropertyValueEntry<T, R> :
         never;
 };
 
 /**
- * `Transitionable` stores a map of all (property name, `TransitionablePropertyValue`) pairs for paint properties of a
- * given layer type. It can calculate the `TransitioningPropertyValue`s for all of them at once, producing a
- * `Transitioning` instance for the same set of properties.
+ * A helper type: given an object type `Properties` whose values are each of type `Property<T, R>`, it calculates
+ * an object type with the same keys and values of type `PropertyValueSpecification<T>`.
  *
  * @private
  */
-export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
+export type PropertyValueSpecifications<Props> = Partial<{
+    [Key in keyof Props]: Props[Key] extends Property<infer T, unknown> ?
+        PropertyValueSpecification<T extends Color ? string : T> :
+        never;
+}>;
+
+/**
+ * `PropertyValues` stores a map of all (property name, `PropertyValueEntry`) pairs for the layout or paint properties
+ * of a given layer type. It advances their transitions and calculates their possibly-evaluated values all at once,
+ * producing a `PossiblyEvaluated` instance for the same set of properties.
+ *
+ * @private
+ */
+export class PropertyValues<Props extends {[Key in keyof Props]: Props[Key]}> {
     _properties: Properties<Props>;
-    _values: TransitionablePropertyValues<Props>;
+    _canTransition: boolean;
+    _values: PropertyValueEntries<Props>;
     _scope: string | null | undefined;
     _options: ConfigOptions | null | undefined;
     _iconImageUseTheme?: string | null;
     _isIndoorDependent: boolean;
     configDependencies: Set<string>;
+    deps: number;
+    // Whether any displayed value has a prior state, updated whenever transitions start, snap or get evaluated
+    _hasTransition: boolean;
 
-    constructor(properties: Properties<Props>, scope?: string | null, options?: ConfigOptions | null, iconImageUseTheme?: string | null) {
+    constructor(properties: Properties<Props>, canTransition: boolean, scope?: string | null, options?: ConfigOptions | null, iconImageUseTheme?: string | null) {
         this._properties = properties;
+        this._canTransition = canTransition;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        this._values = (Object.create(properties.defaultTransitionablePropertyValues));
+        this._values = (Object.create(properties.defaultPropertyValues));
         this._scope = scope;
         this._options = options;
         this._iconImageUseTheme = iconImageUseTheme;
         this._isIndoorDependent = false;
         this.configDependencies = new Set();
+        this.deps = 0;
+        this._hasTransition = false;
     }
 
     getValue<S extends keyof Props, T>(name: S): PropertyValueSpecification<T> | undefined {
         return clone(this._values[name].value.value as PropertyValueSpecification<T> | undefined);
     }
 
-    setValue<S extends keyof Props, T>(name: S, value?: PropertyValueSpecification<T>) {
+    setValue<S extends keyof Props>(name: S, value?: unknown) {
         if (!Object.hasOwn(this._values, name)) {
-            this._values[name] = new TransitionablePropertyValue(this._values[name].property, this._scope, this._options, this._iconImageUseTheme) as TransitionablePropertyValues<Props>[S];
+            this._values[name] = new PropertyValueEntry(this._values[name].property, this._scope, this._options, this._iconImageUseTheme) as PropertyValueEntries<Props>[S];
         }
         // Note that we do not _remove_ an own property in the case where a value is being reset
         // to the default: the transition might still be non-default.
-        const propertyValue = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._scope, this._options, this._iconImageUseTheme);
-        this._values[name].value = propertyValue;
+        const entry = this._values[name];
+        const propertyValue = new PropertyValue(entry.property, value === null ? undefined : clone(value), this._scope, this._options, this._iconImageUseTheme);
+        entry.value = propertyValue;
+        if (!this._canTransition || !entry.property.specification.transition) entry.state = {value: propertyValue, prior: null, begin: 0, end: 0};
+        this.deps |= propertyValue.deps;
         if (propertyValue.expression.configDependencies) {
             for (const key of propertyValue.expression.configDependencies) this.configDependencies.add(key);
             this._isIndoorDependent = this._isIndoorDependent || propertyValue.isIndoorDependent();
@@ -251,7 +330,7 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
 
     setTransition<S extends keyof Props>(name: S, value?: TransitionSpecification) {
         if (!Object.hasOwn(this._values, name)) {
-            this._values[name] = new TransitionablePropertyValue(this._values[name].property) as TransitionablePropertyValues<Props>[S];
+            this._values[name] = new PropertyValueEntry(this._values[name].property) as PropertyValueEntries<Props>[S];
         }
         this._values[name].transition = clone(value) || undefined;
     }
@@ -272,243 +351,55 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
         return result;
     }
 
-    transitioned(parameters: TransitionParameters, prior: Transitioning<Props>): Transitioning<Props> {
-        const result = new Transitioning(this._properties);
-        for (const property of Object.keys(this._values)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            result._values[property] = this._values[property].transitioned(parameters, prior._values[property]);
-        }
-        return result;
-    }
-
-    untransitioned(): Transitioning<Props> {
-        const result = new Transitioning(this._properties);
-        for (const property of Object.keys(this._values)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            result._values[property] = this._values[property].untransitioned();
-        }
-        return result;
-    }
-
-    isIndoorDependent(): boolean {
-        return this._isIndoorDependent;
-    }
-}
-
-// ------- Transitioning -------
-
-/**
- * `TransitioningPropertyValue` implements the first of two intermediate steps in the evaluation chain of a paint
- * property value. In this step, transitions between old and new values are handled: as long as the transition is in
- * progress, `TransitioningPropertyValue` maintains a reference to the prior value, and interpolates between it and
- * the new value based on the current time and the configured transition duration and delay. The product is the next
- * step in the evaluation chain: the "possibly evaluated" result type `R`. See below for more on this concept.
- *
- * @private
- */
-class TransitioningPropertyValue<T, R> {
-    property: Property<T, R>;
-    value: PropertyValue<T, R>;
-    prior: TransitioningPropertyValue<T, R> | null | undefined;
-    begin: TimePoint;
-    end: TimePoint;
-
-    constructor(property: Property<T, R>,
-        value: PropertyValue<T, R>,
-        prior: TransitioningPropertyValue<T, R> | null | undefined,
-        transition: TransitionSpecification,
-        now: TimePoint) {
-        const delay = transition.delay || 0;
-        const duration = transition.duration || 0;
-        now = now || 0;
-        this.property = property;
-        this.value = value;
-        this.begin = now + delay;
-        this.end = this.begin + duration;
-        if (property.specification.transition && (transition.delay || transition.duration)) {
-            this.prior = prior;
-        }
-    }
-
-    possiblyEvaluate(
-        parameters: EvaluationParameters,
-        canonical?: CanonicalTileID,
-        availableImages?: ImageId[],
-    ): R {
+    // Starts a transition from the displayed state to the latest set value for every property set since the last update
+    updateTransitions(parameters: TransitionParameters) {
         const now = parameters.now || 0;
-        const finalValue = this.value.possiblyEvaluate(parameters, canonical, availableImages);
-        const prior = this.prior;
-        if (!prior) {
-            // No prior value.
-            return finalValue;
-        } else if (now > this.end) {
-            // Transition from prior value is now complete.
-            this.prior = null;
-            return finalValue;
-        } else if (this.value.isDataDriven()) {
-            // Transitions to data-driven properties are not supported.
-            // We snap immediately to the data-driven value so that, when we perform layout,
-            // we see the data-driven function and can use it to populate vertex buffers.
-            this.prior = null;
-            return finalValue;
-        } else if (now < this.begin) {
-            // Transition hasn't started yet.
-            return prior.possiblyEvaluate(parameters, canonical, availableImages);
-        } else {
-            // Interpolate between recursively-calculated prior value and final.
-            const t = (now - this.begin) / (this.end - this.begin);
-            return this.property.interpolate(prior.possiblyEvaluate(parameters, canonical, availableImages), finalValue, easeCubicInOut(t));
+        for (const entry of Object.values<PropertyValueEntry<unknown, unknown>>(this._values)) {
+            if (entry.value === entry.state.value) continue;
+            const transition = {...parameters.transition, ...entry.transition};
+            const begin = now + (transition.delay || 0);
+            const prior = transition.delay || transition.duration ? entry.state : null;
+            entry.state = {value: entry.value, prior, begin, end: begin + (transition.duration || 0)};
+            if (prior) this._hasTransition = true;
         }
     }
-}
 
-/**
- * A helper type: given an object type `Properties` whose values are each of type `Property<T, R>`, it calculates
- * an object type with the same keys and values of type `TransitioningPropertyValue<T, R>`.
- *
- * @private
- */
-type TransitioningPropertyValues<Properties> = {
-    [Key in keyof Properties]: Properties[Key] extends Property<infer T, infer R> ?
-        TransitioningPropertyValue<T, R> :
-        never;
-};
-
-/**
- * `Transitioning` stores a map of all (property name, `TransitioningPropertyValue`) pairs for paint properties of a
- * given layer type. It can calculate the possibly-evaluated values for all of them at once, producing a
- * `PossiblyEvaluated` instance for the same set of properties.
- *
- * @private
- */
-export class Transitioning<Props extends {
-    [Prop in keyof Props]: Props[Prop]
-}> {
-    _properties: Properties<Props>;
-    _values: TransitioningPropertyValues<Props>;
-
-    constructor(properties: Properties<Props>) {
-        this._properties = properties;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        this._values = (Object.create(properties.defaultTransitioningPropertyValues));
-    }
-
-    possiblyEvaluate(
-        parameters: EvaluationParameters,
-        canonical?: CanonicalTileID,
-        availableImages?: ImageId[],
-    ): PossiblyEvaluated<Props> {
-        const result = new PossiblyEvaluated(this._properties);
-        for (const property of Object.keys(this._values)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            result._values[property] = this._values[property].possiblyEvaluate(parameters, canonical, availableImages);
+    // Displays the latest set values right away, dropping any transitions in progress
+    snap() {
+        for (const entry of Object.values<PropertyValueEntry<unknown, unknown>>(this._values)) {
+            entry.state = {value: entry.value, prior: null, begin: 0, end: 0};
         }
-        return result;
+        this._hasTransition = false;
     }
 
     hasTransition(): boolean {
-        for (const property of Object.keys(this._values)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            if (this._values[property].prior) {
-                return true;
-            }
-        }
-        return false;
-    }
-}
-
-// ------- Layout -------
-
-/**
- * A helper type: given an object type `Properties` whose values are each of type `Property<T, R>`, it calculates
- * an object type with the same keys and values of type `PropertyValue<T, R>`.
- *
- * @private
- */
-type PropertyValues<Props> = {
-    [Key in keyof Props]: Props[Key] extends Property<infer T, infer R> ? PropertyValue<T, R> : never;
-};
-
-/**
- * A helper type: given an object type `Properties` whose values are each of type `Property<T, R>`, it calculates
- * an object type with the same keys and values of type `PropertyValueSpecification<T>`.
- *
- * @private
- */
-export type PropertyValueSpecifications<Props> = Partial<{
-    [Key in keyof Props]: Props[Key] extends Property<infer T, unknown> ?
-        PropertyValueSpecification<T extends Color ? string : T> :
-        never;
-}>;
-
-/**
- * Because layout properties are not transitionable, they have a simpler representation and evaluation chain than
- * paint properties: `PropertyValue`s are possibly evaluated, producing possibly evaluated values, which are then
- * fully evaluated.
- *
- * `Layout` stores a map of all (property name, `PropertyValue`) pairs for layout properties of a
- * given layer type. It can calculate the possibly-evaluated values for all of them at once, producing a
- * `PossiblyEvaluated` instance for the same set of properties.
- *
- * @private
- */
-export class Layout<Props extends {
-    [Prop in keyof Props]: Props[Prop]
-}> {
-    _properties: Properties<Props>;
-    _values: PropertyValues<Props>;
-    _scope: string;
-    _options: ConfigOptions | null | undefined;
-    _iconImageUseTheme: string | null | undefined;
-    _isIndoorDependent: boolean;
-    configDependencies: Set<string>;
-
-    constructor(properties: Properties<Props>, scope: string, options?: ConfigOptions | null, iconImageUseTheme?: string | null) {
-        this._properties = properties;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        this._values = (Object.create(properties.defaultPropertyValues));
-        this._scope = scope;
-        this._options = options;
-        this._iconImageUseTheme = iconImageUseTheme;
-        this._isIndoorDependent = false;
-        this.configDependencies = new Set();
+        return this._hasTransition;
     }
 
-    getValue<S extends keyof Props, T>(name: S): PropertyValueSpecification<T> | void {
-        return clone(this._values[name].value as PropertyValueSpecification<T> | void);
-    }
-
-    setValue<S extends keyof Props>(name: S, value: unknown) {
-        const propertyValue = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._scope, this._options, this._iconImageUseTheme) as PropertyValues<Props>[S];
-        this._values[name] = propertyValue;
-        if (propertyValue.expression.configDependencies) {
-            for (const key of propertyValue.expression.configDependencies) this.configDependencies.add(key);
-            this._isIndoorDependent = this._isIndoorDependent || propertyValue.isIndoorDependent();
-        }
-    }
-
-    serialize(): PropertyValueSpecifications<Props> {
-        const result = {} as PropertyValueSpecifications<Props>;
-        for (const property of Object.keys(this._values) as Array<keyof Props>) {
-            const value = this.getValue(property) as Props[keyof Props];
-            if (value !== undefined) {
-                result[property] = value;
-            }
-        }
-        return result;
-    }
-
+    // Evaluates the displayed values, interpolating transitions in progress. If `changedDeps` (the `*_DEPENDENCY` flags
+    // of parameters that changed since the last evaluation) is given, values that don't depend on any of them and aren't
+    // transitioning are reused from the last evaluation.
     possiblyEvaluate(
         parameters: EvaluationParameters,
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
-        iconImageUseTheme?: string
+        iconImageUseTheme?: string,
+        changedDeps?: number
     ): PossiblyEvaluated<Props> {
         const result = new PossiblyEvaluated(this._properties);
-        for (const property of Object.keys(this._values)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            result._values[property] = this._values[property].possiblyEvaluate(parameters, canonical, availableImages, iconImageUseTheme);
+        let hasTransition = false;
+        for (const name of Object.keys(this._values)) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const entry: PropertyValueEntry<unknown, unknown> = this._values[name];
+            const state = entry.state;
+            if (changedDeps === undefined || state.prior || entry.evaluatedFrom !== state.value || (state.value.deps & changedDeps)) {
+                entry.evaluated = possiblyEvaluateTransition(state, parameters, canonical, availableImages, iconImageUseTheme);
+                entry.evaluatedFrom = state.value;
+                if (state.prior) hasTransition = true;
+            }
+            result._values[name] = entry.evaluated;
         }
+        this._hasTransition = hasTransition;
         return result;
     }
 
@@ -811,7 +702,7 @@ export class PositionProperty implements Property<[number, number, number], Posi
 /**
  * `Properties` holds objects containing default values for the layout or paint property set of a given
  * layer type. These objects are immutable, and they are used as the prototypes for the `_values` members of
- * `Transitionable`, `Transitioning`, `Layout`, and `PossiblyEvaluated`. This allows these classes to avoid
+ * `PropertyValues` and `PossiblyEvaluated`. This allows these classes to avoid
  * doing work in the common case where a property has no explicit value set and should be considered to take
  * on the default value: using `for (const property of Object.keys(this._values))`, they can iterate over
  * only the _own_ properties of `_values`, skipping repeated calculation of transitions and possible/final
@@ -821,17 +712,13 @@ export class PositionProperty implements Property<[number, number, number], Posi
  */
 export class Properties<Props extends {[Key in keyof Props]: Props[Key]}> {
     properties: Props;
-    defaultPropertyValues: PropertyValues<Props>;
-    defaultTransitionablePropertyValues: TransitionablePropertyValues<Props>;
-    defaultTransitioningPropertyValues: TransitioningPropertyValues<Props>;
+    defaultPropertyValues: PropertyValueEntries<Props>;
     defaultPossiblyEvaluatedValues: PossiblyEvaluatedPropertyValues<Props>;
     overridableProperties: Array<string>;
 
     constructor(properties: Props) {
         this.properties = properties;
-        this.defaultPropertyValues = {} as PropertyValues<Props>;
-        this.defaultTransitionablePropertyValues = {} as TransitionablePropertyValues<Props>;
-        this.defaultTransitioningPropertyValues = {} as TransitioningPropertyValues<Props>;
+        this.defaultPropertyValues = {} as PropertyValueEntries<Props>;
         this.defaultPossiblyEvaluatedValues = {} as PossiblyEvaluatedPropertyValues<Props>;
         this.overridableProperties = [] as Array<string>;
 
@@ -843,22 +730,14 @@ export class Properties<Props extends {[Key in keyof Props]: Props[Key]}> {
                 this.overridableProperties.push(property);
             }
 
-            type PropertyValueType = typeof this.defaultPropertyValues[typeof property];
-            type TransitionablePropertyValueType = typeof this.defaultTransitionablePropertyValues[typeof property];
-            type TransitioningPropertyValueType = typeof this.defaultTransitioningPropertyValues[typeof property];
+            type PropertyValueEntryType = typeof this.defaultPropertyValues[typeof property];
             type PossiblyEvaluatedValueType = typeof this.defaultPossiblyEvaluatedValues[typeof property];
 
-            const defaultPropertyValue = this.defaultPropertyValues[property] =
-                new PropertyValue(prop, undefined) as PropertyValueType;
-
-            const defaultTransitionablePropertyValue = this.defaultTransitionablePropertyValues[property] =
-                new TransitionablePropertyValue(prop) as TransitionablePropertyValueType;
-
-            this.defaultTransitioningPropertyValues[property] =
-                defaultTransitionablePropertyValue.untransitioned() as TransitioningPropertyValueType;
+            const defaultEntry = this.defaultPropertyValues[property] =
+                new PropertyValueEntry(prop) as PropertyValueEntryType;
 
             this.defaultPossiblyEvaluatedValues[property] =
-                defaultPropertyValue.possiblyEvaluate(defaultParameters) as PossiblyEvaluatedValueType;
+                defaultEntry.value.possiblyEvaluate(defaultParameters) as PossiblyEvaluatedValueType;
         }
     }
 }

@@ -25,14 +25,7 @@ import ProgramConfiguration from '../../data/program_configuration';
 import EXTENT from '../../style-spec/data/extent';
 import {getSymbolPlacementTileProjectionMatrix} from '../../geo/projection/projection_util';
 
-import type {
-    PropertyValue,
-    ConfigOptions, Properties,
-    Transitionable,
-    Transitioning,
-    Layout,
-    PossiblyEvaluated
-} from '../properties';
+import type {PropertyValue, ConfigOptions, Properties, PossiblyEvaluated} from '../properties';
 import type {FormattedSection} from '../../style-spec/expression/types/formatted';
 import type {FormattedSectionExpression} from '../../style-spec/expression/definitions/format';
 import type {CreateProgramParams} from '../../render/painter';
@@ -82,11 +75,7 @@ const getProperties = () => {
 class SymbolStyleLayer extends StyleLayer {
     override type!: 'symbol';
 
-    override _unevaluatedLayout!: Layout<LayoutProps>;
     override layout!: PossiblyEvaluated<LayoutProps>;
-
-    override _transitionablePaint!: Transitionable<PaintProps>;
-    override _transitioningPaint!: Transitioning<PaintProps>;
     override paint!: PossiblyEvaluated<PaintProps>;
 
     _colorAdjustmentMatrix: mat4;
@@ -96,12 +85,16 @@ class SymbolStyleLayer extends StyleLayer {
     _brightnessMax!: number;
 
     hasOcclusionOpacityProperties: boolean;
+    // The overridable paint properties that `text-field` overrides, and the evaluated `text-field` they were found for
+    _overriddenProperties: Array<keyof PaintProps>;
+    _overridesTextField: PossiblyEvaluatedPropertyValue<Formatted> | null;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         super(layer, getProperties(), scope, lut, options, layer.layout ? layer.layout['icon-image-use-theme'] : null);
         this._colorAdjustmentMatrix = mat4.identity([]);
         this.hasOcclusionOpacityProperties = (layer.paint !== undefined) && (('icon-occlusion-opacity' in layer.paint) || ('text-occlusion-opacity' in layer.paint));
+        this._overridesTextField = null;
     }
 
     override _handleSpecialPaintPropertyUpdate(name: string) {
@@ -110,9 +103,7 @@ class SymbolStyleLayer extends StyleLayer {
         }
     }
 
-    override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
-        super.recalculate(parameters, availableImages);
-
+    override _finalizeEvaluated(parameters: EvaluationParameters, availableImages: ImageId[]) {
         if (this.appearances) {
             this.appearances.forEach(a => {
                 a.recalculate(parameters, availableImages, this.iconImageUseTheme);
@@ -203,7 +194,7 @@ class SymbolStyleLayer extends StyleLayer {
     ): string {
         const property = this.layout.get(name) as unknown as PossiblyEvaluatedPropertyValue<LayoutProps[T]>;
         const value = property.evaluate(feature, {}, canonical, availableImages) as unknown as string;
-        const unevaluated = this._unevaluatedLayout._values[name];
+        const unevaluated = this.getLayoutPropertyValue(name);
         if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value) && value) {
             return resolveTokens(feature.properties, value);
         }
@@ -222,7 +213,7 @@ class SymbolStyleLayer extends StyleLayer {
         if (!property) return;
 
         const value = property.evaluate(feature, {}, canonical, availableImages);
-        const unevaluated = appearance.getUnevaluatedLayoutProperties()._values[name];
+        const unevaluated = appearance.getUnevaluatedLayoutProperties()._values[name].value;
         if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value) && value && typeof value === 'string') {
             return resolveTokens(feature.properties, value);
         }
@@ -283,10 +274,13 @@ class SymbolStyleLayer extends StyleLayer {
     }
 
     _setPaintOverrides() {
-        for (const overridable of getProperties().paint.overridableProperties as Array<keyof PaintProps>) {
-            if (!SymbolStyleLayer.hasPaintOverride(this.layout, overridable)) {
-                continue;
-            }
+        const textField = this.layout.get('text-field');
+        if (this._overridesTextField !== textField) {
+            this._overridesTextField = textField;
+            this._overriddenProperties = (getProperties().paint.overridableProperties as Array<keyof PaintProps>)
+                .filter(name => SymbolStyleLayer.hasPaintOverride(this.layout, name));
+        }
+        for (const overridable of this._overriddenProperties) {
             const overriden = this.paint.get(overridable) as unknown as PossiblyEvaluatedPropertyValue<PaintProps>;
             const override = new FormatSectionOverride(overriden);
             const styleExpression = new StyleExpression(override, overriden.property.specification, this.scope, this.options, this.layout.get('icon-image-use-theme'));

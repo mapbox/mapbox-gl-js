@@ -2,18 +2,15 @@ import StyleLayer from '../style_layer';
 import ClipBucket from '../../data/bucket/clip_bucket';
 import {getLayoutProperties, getPaintProperties} from './clip_style_layer_properties';
 
-import type {Layout, PossiblyEvaluated, ConfigOptions} from '../properties';
+import type {PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './clip_style_layer_properties';
-import type EvaluationParameters from '../evaluation_parameters';
 import type {LayerSpecification} from '../../style-spec/types';
 import type {LUT} from "../../util/lut";
-import type {ImageId} from '../../style-spec/expression/types/image_id';
 
 class ClipStyleLayer extends StyleLayer {
     override type!: 'clip';
 
-    override _unevaluatedLayout!: Layout<LayoutProps>;
     override layout!: PossiblyEvaluated<LayoutProps>;
     override paint!: PossiblyEvaluated<PaintProps>;
 
@@ -23,10 +20,6 @@ class ClipStyleLayer extends StyleLayer {
             paint: getPaintProperties()
         };
         super(layer, properties, scope, lut, options);
-    }
-
-    override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
-        super.recalculate(parameters, availableImages);
     }
 
     override createBucket(parameters: BucketParameters<this>): ClipBucket {

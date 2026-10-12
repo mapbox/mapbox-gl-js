@@ -2,7 +2,7 @@ import StyleLayer from '../style_layer';
 import {getLayoutProperties, getPaintProperties} from './raster_style_layer_properties';
 import {type ColorRampScale, renderColorRamp} from '../../util/color_ramp';
 
-import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
+import type {PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {RGBAImage} from '../../util/image';
 import type {PaintProps} from './raster_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';
@@ -18,8 +18,6 @@ export const COLOR_MIX_FACTOR = (Math.pow(COLOR_RAMP_RES, 2) - 1) / (255 * COLOR
 class RasterStyleLayer extends StyleLayer {
     override type!: 'raster';
 
-    override _transitionablePaint!: Transitionable<PaintProps>;
-    override _transitioningPaint!: Transitioning<PaintProps>;
     override paint!: PossiblyEvaluated<PaintProps>;
 
     colorRamp!: RGBAImage;
@@ -47,8 +45,7 @@ class RasterStyleLayer extends StyleLayer {
     }
 
     hasColorMap(): boolean {
-        const expr = this._transitionablePaint._values['raster-color'].value;
-        return !!expr.value;
+        return !!this.getPaintPropertyValue('raster-color').value;
     }
 
     override tileCoverLift(): number {
@@ -89,13 +86,13 @@ class RasterStyleLayer extends StyleLayer {
         if (!this.hasColorMap()) return;
         if (!this._curRampRange) return;
 
-        const expression = this._transitionablePaint._values['raster-color'].value.expression;
-        const [start, end] = overrideRange || this._transitionablePaint._values['raster-color-range'].value.expression.evaluate({zoom: 0}) || [NaN, NaN];
+        const expression = this.getPaintPropertyValue('raster-color').expression;
+        const [start, end] = overrideRange || this.getPaintPropertyValue('raster-color-range').expression.evaluate({zoom: 0}) || [NaN, NaN];
 
         if (isNaN(start) && isNaN(end)) return;
         if (start === this._curRampRange[0] && end === this._curRampRange[1]) return;
 
-        const scale = this._transitionablePaint._values['raster-color-scale'].value.expression.evaluate<undefined | ColorRampScale>({zoom: 0});
+        const scale = this.getPaintPropertyValue('raster-color-scale').expression.evaluate<undefined | ColorRampScale>({zoom: 0});
 
         this.colorRamp = renderColorRamp({
             expression,

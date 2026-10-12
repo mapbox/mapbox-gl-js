@@ -6,7 +6,7 @@ import Point from '@mapbox/point-geometry';
 import assert from '../../../src/style-spec/util/assert';
 import {BuildingBucket, prepareBuildingGen} from '../../../modules/hd_worker';
 
-import type {Layout, Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../../../src/style/properties';
+import type {PossiblyEvaluated, ConfigOptions} from '../../../src/style/properties';
 import type {Bucket, BucketParameters} from '../../../src/data/bucket';
 import type {DEMSampler} from '../../../src/terrain/elevation';
 import type {FeatureState} from '../../../src/style-spec/expression';
@@ -21,11 +21,7 @@ import type {RuntimeModuleType} from '../../../src/style/style_layer';
 class BuildingStyleLayer extends StyleLayer {
     override type!: 'building';
 
-    override _unevaluatedLayout!: Layout<LayoutProps>;
     override layout!: PossiblyEvaluated<LayoutProps>;
-
-    override _transitionablePaint!: Transitionable<PaintProps>;
-    override _transitioningPaint!: Transitioning<PaintProps>;
     override paint!: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {

@@ -15,11 +15,15 @@ export const HD: Partial<typeof HDType> = {
     buildElevationRequestParams,
 };
 
-export async function prepareHD() {
-    try {
-        const {HD: hdModule} = await import('./hd_main_imports');
+let pending: Promise<void> | null = null;
+
+export function prepareHD(): Promise<void> {
+    if (pending !== null) return pending;
+    pending = import('./hd_main_imports').then(({HD: hdModule}) => {
         Object.assign(HD, hdModule);
-    } catch (error) {
+    }).catch(() => {
+        pending = null;
         warnOnce('Could not load HD module.');
-    }
+    });
+    return pending;
 }

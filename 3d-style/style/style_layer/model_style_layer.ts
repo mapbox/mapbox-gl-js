@@ -6,7 +6,7 @@ import {ModelBucket, prepareStandard} from '../../../modules/standard_worker';
 import {Standard} from '../../../modules/standard_registry';
 
 import type Tiled3dModelBucket from '../../data/bucket/tiled_3d_model_bucket';
-import type {Layout, Transitionable, Transitioning, PossiblyEvaluated, PropertyValue, ConfigOptions} from '../../../src/style/properties';
+import type {PossiblyEvaluated, PropertyValue, ConfigOptions} from '../../../src/style/properties';
 import type Point from '@mapbox/point-geometry';
 import type {LayerSpecification, ModelLayerSpecification} from '../../../src/style-spec/types';
 import type {PaintProps, LayoutProps} from './model_style_layer_properties';
@@ -26,11 +26,7 @@ import type {DEMSampler} from '../../../src/terrain/elevation';
 class ModelStyleLayer extends StyleLayer {
     override type!: 'model';
 
-    override _unevaluatedLayout!: Layout<LayoutProps>;
     override layout!: PossiblyEvaluated<LayoutProps>;
-
-    override _transitionablePaint!: Transitionable<PaintProps>;
-    override _transitioningPaint!: Transitioning<PaintProps>;
     override paint!: PossiblyEvaluated<PaintProps>;
 
     modelManager!: ModelManager;
@@ -123,14 +119,8 @@ class ModelStyleLayer extends StyleLayer {
     }
 
     _isPropertyZoomDependent(name: string): boolean {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const prop = this._transitionablePaint._values[name];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        return prop != null && prop.value != null &&
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            prop.value.expression != null &&
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            prop.value.expression instanceof ZoomDependentExpression;
+        const value = this.getPaintPropertyValue(name);
+        return value != null && value.expression instanceof ZoomDependentExpression;
     }
 
     isZoomDependent(): boolean {

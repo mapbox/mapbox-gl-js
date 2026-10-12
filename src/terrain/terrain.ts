@@ -1257,8 +1257,8 @@ export class Terrain extends Elevation {
             if (isHidden || layer.type !== 'line') continue;
 
             // Check if layer has a zoom dependent "line-width" or "line-emissive-strength" expression
-            const widthExpression = layer.widthExpression();
-            const emissiveStrengthExpression = layer.emissiveStrengthExpression();
+            const widthExpression = layer.getPaintPropertyValue('line-width').expression;
+            const emissiveStrengthExpression = layer.getPaintPropertyValue('line-emissive-strength').expression;
             if (!(widthExpression instanceof ZoomDependentExpression) &&
                 !(emissiveStrengthExpression instanceof ZoomDependentExpression)) continue;
 

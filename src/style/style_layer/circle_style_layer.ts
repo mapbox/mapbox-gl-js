@@ -12,7 +12,7 @@ import {latFromMercatorY, mercatorZfromAltitude} from '../../geo/mercator_coordi
 import EXTENT from '../../style-spec/data/extent';
 import {circleDefinesValues} from '../../render/program/circle_program';
 
-import type {Transitionable, Transitioning, Layout, PossiblyEvaluated, ConfigOptions} from '../properties';
+import type {PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {Ray} from '../../util/primitives';
 import type {FeatureState} from '../../style-spec/expression/index';
 import type Transform from '../../geo/transform';
@@ -31,11 +31,7 @@ import type {ProgramName} from '../../render/program';
 class CircleStyleLayer extends StyleLayer {
     override type!: 'circle';
 
-    override _unevaluatedLayout!: Layout<LayoutProps>;
     override layout!: PossiblyEvaluated<LayoutProps>;
-
-    override _transitionablePaint!: Transitionable<PaintProps>;
-    override _transitioningPaint!: Transitioning<PaintProps>;
     override paint!: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {

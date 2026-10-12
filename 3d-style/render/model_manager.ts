@@ -80,6 +80,9 @@ class ModelManager extends Evented {
             }
         }
 
+        // Already requested models fire `data` when their own load settles, so there's nothing to report
+        if (idsToLoad.length === 0) return;
+
         this.numModelsLoading[scope] = (this.numModelsLoading[scope] || 0) + idsToLoad.length;
 
         Promise.allSettled(modelLoads)

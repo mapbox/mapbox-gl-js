@@ -11,8 +11,8 @@ import ProgramConfiguration from '../../data/program_configuration';
 import Step from '../../style-spec/expression/definitions/step';
 import {lineDefinesValues} from '../../render/program/line_program';
 
-import type {PossiblyEvaluatedValue, PropertyValue, PossiblyEvaluatedPropertyValue, ConfigOptions, Properties, Transitionable, Transitioning, Layout} from '../properties';
-import type {Feature, FeatureState, ZoomConstantExpression, StylePropertyExpression} from '../../style-spec/expression/index';
+import type {PossiblyEvaluatedValue, PropertyValue, PossiblyEvaluatedPropertyValue, ConfigOptions, Properties} from '../properties';
+import type {Feature, FeatureState, ZoomConstantExpression} from '../../style-spec/expression/index';
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './line_style_layer_properties';
 import type Transform from '../../geo/transform';
@@ -25,7 +25,6 @@ import type {Map as MapboxMap} from '../../ui/map';
 import type {DynamicDefinesType} from '../../render/program/program_uniforms';
 import type SourceCache from '../../source/source_cache';
 import type {LUT} from "../../util/lut";
-import type {ImageId} from '../../style-spec/expression/types/image_id';
 import type {ProgramName} from '../../render/program';
 import type {LineBlendDensityReadback, LineBlendFbos} from '../../render/draw_line';
 
@@ -91,7 +90,6 @@ const getLineFloorwidthProperty = () => {
 class LineStyleLayer extends StyleLayer {
     override type!: 'line';
 
-    override _unevaluatedLayout!: Layout<LayoutProps>;
     override layout!: PossiblyEvaluated<LayoutProps>;
 
     gradientVersion: number;
@@ -102,8 +100,6 @@ class LineStyleLayer extends StyleLayer {
     hasElevatedBuckets: boolean;
     hasNonElevatedBuckets: boolean;
 
-    override _transitionablePaint!: Transitionable<PaintProps>;
-    override _transitioningPaint!: Transitioning<PaintProps>;
     override paint!: PossiblyEvaluated<PaintProps>;
 
     lineBlendFbos: LineBlendFbos | null;
@@ -127,7 +123,7 @@ class LineStyleLayer extends StyleLayer {
     override _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'line-gradient') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-            const expression: ZoomConstantExpression<'source'> = ((this._transitionablePaint._values['line-gradient'].value.expression) as any);
+            const expression: ZoomConstantExpression<'source'> = ((this.getPaintPropertyValue('line-gradient').expression) as any);
             this.stepInterpolant = expression._styleExpression && expression._styleExpression.expression instanceof Step;
             this.gradientVersion = (this.gradientVersion + 1) % Number.MAX_SAFE_INTEGER;
         } else if (name === 'line-gradient-use-theme') {
@@ -136,7 +132,7 @@ class LineStyleLayer extends StyleLayer {
             this.gradientVersion = (this.gradientVersion + 1) % Number.MAX_SAFE_INTEGER;
         } else if (name === 'line-border-gradient') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-            const expression: ZoomConstantExpression<'source'> = ((this._transitionablePaint._values['line-border-gradient'].value.expression) as any);
+            const expression: ZoomConstantExpression<'source'> = ((this.getPaintPropertyValue('line-border-gradient').expression) as any);
             this.borderStepInterpolant = expression._styleExpression && expression._styleExpression.expression instanceof Step;
             this.borderGradientVersion = (this.borderGradientVersion + 1) % Number.MAX_SAFE_INTEGER;
         } else if (name === 'line-border-gradient-use-theme') {
@@ -144,26 +140,8 @@ class LineStyleLayer extends StyleLayer {
         }
     }
 
-    gradientExpression(): StylePropertyExpression {
-        return this._transitionablePaint._values['line-gradient'].value.expression;
-    }
-
-    borderGradientExpression(): StylePropertyExpression {
-        return this._transitionablePaint._values['line-border-gradient'].value.expression;
-    }
-
-    widthExpression(): StylePropertyExpression {
-        return this._transitionablePaint._values['line-width'].value.expression;
-    }
-
-    emissiveStrengthExpression(): StylePropertyExpression {
-        return this._transitionablePaint._values['line-emissive-strength'].value.expression;
-    }
-
-    override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
-        super.recalculate(parameters, availableImages);
-
-        (this.paint._values as Record<string, unknown>)['line-floorwidth'] = getLineFloorwidthProperty().possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);
+    override _finalizeEvaluated(parameters: EvaluationParameters) {
+        (this.paint._values as Record<string, unknown>)['line-floorwidth'] = getLineFloorwidthProperty().possiblyEvaluate(this.getPaintPropertyValue('line-width'), parameters);
     }
 
     override createBucket(parameters: BucketParameters<this>): LineBucket {
@@ -293,8 +271,7 @@ class LineStyleLayer extends StyleLayer {
 export default LineStyleLayer;
 
 function lineMayUseLite(layer: LineStyleLayer): boolean {
-    if (!layer._unevaluatedLayout) return false;
-    const ref = layer._unevaluatedLayout.getValue('line-elevation-reference');
+    const ref = layer.getLayoutPropertyValue('line-elevation-reference')?.value;
     // Any explicit reference other than 'none' — including hd-road-markup and
     // data-driven expressions (conservatively) — is treated as needing Lite. hd-road-markup
     // technically never calls forceTerrainMode on its own, but styles that use it commonly
@@ -303,7 +280,7 @@ function lineMayUseLite(layer: LineStyleLayer): boolean {
     if (ref !== undefined && (typeof ref !== 'string' || ref !== 'none')) return true;
     // Reference is 'none' or unset: a non-zero line-z-offset still forces terrain
     // mode, silently falling back to a ground reference (see LineBucket#populate).
-    const zOffset = layer._unevaluatedLayout.getValue('line-z-offset');
+    const zOffset = layer.getLayoutPropertyValue('line-z-offset')?.value;
     if (zOffset === undefined) return false;
     if (typeof zOffset !== 'number') return true;
     return zOffset !== 0;

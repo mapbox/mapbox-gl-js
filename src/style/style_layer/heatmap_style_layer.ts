@@ -8,7 +8,7 @@ import Point from '@mapbox/point-geometry';
 import ProgramConfiguration from '../../data/program_configuration';
 
 import type {RGBAImage} from '../../util/image';
-import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
+import type {PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type Texture from '../../render/texture';
 import type Framebuffer from '../../gl/framebuffer';
@@ -31,8 +31,6 @@ class HeatmapStyleLayer extends StyleLayer {
     colorRamp!: RGBAImage;
     colorRampTexture: Texture | null | undefined;
 
-    override _transitionablePaint!: Transitionable<PaintProps>;
-    override _transitioningPaint!: Transitioning<PaintProps>;
     override paint!: PossiblyEvaluated<PaintProps>;
 
     override createBucket(parameters: BucketParameters<this>): HeatmapBucket {
@@ -57,7 +55,7 @@ class HeatmapStyleLayer extends StyleLayer {
     }
 
     _updateColorRamp() {
-        const expression = this._transitionablePaint._values['heatmap-color'].value.expression;
+        const expression = this.getPaintPropertyValue('heatmap-color').expression;
         this.colorRamp = renderColorRamp({
             expression,
             evaluationKey: 'heatmapDensity',

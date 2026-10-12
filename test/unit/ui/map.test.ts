@@ -1018,6 +1018,18 @@ describe('Map', () => {
         expect(!map.isMoving()).toBeTruthy();
     });
 
+    test('Map#loaded() is true with precipitation', async () => {
+        const style = createStyle();
+        style.snow = {density: 1, intensity: 1};
+        const map = createMap({style});
+
+        await waitFor(map, "load");
+        await waitFor(map, "render");
+        await waitFor(map, "render");
+        expect(map.loaded()).toBeTruthy();
+        map.remove();
+    });
+
     test('#removeLayer restores Map#loaded() to true', async () => {
         const map = createMap({
             style: Object.assign(createStyle(), {

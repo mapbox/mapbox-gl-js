@@ -242,12 +242,13 @@ class ModelBucket implements Bucket {
         const usesHdRoadMarkupElevation = this.layers[0].paint.get('model-elevation-reference') === 'hd-road-markup';
         const elevationFeatures = usesHdRoadMarkupElevation ? options.elevationFeatures : undefined;
 
+        const globalProperties = new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors});
         for (const {feature, id, index, sourceLayerIndex} of features) {
             // use non numeric id, if in properties, too.
             const featureId = id ?? ((feature.properties && Object.hasOwn(feature.properties, "id")) ? feature.properties["id"] : undefined);
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors}), evaluationFeature, canonical))
+            if (!this.layers[0]._featureFilter.filter(globalProperties, evaluationFeature, canonical))
                 continue;
 
             const bucketFeature: BucketFeature = {

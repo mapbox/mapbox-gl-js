@@ -75,6 +75,8 @@ export class StyleExpression {
     _enumValues?: {[_: string]: unknown} | null;
     configDependencies: Set<string>;
     isIndoorDependent: boolean;
+    // Whether the result depends on the available images passed to `evaluate`
+    isImageDependent: boolean;
 
     constructor(expression: Expression, propertySpec?: StylePropertySpecification | null, scope?: string | null, options?: ConfigOptions | null, iconImageUseTheme?: string | null) {
         this.expression = expression;
@@ -88,6 +90,7 @@ export class StyleExpression {
         const dependencies = expressionDependencies.getExpressionDependencies(expression);
         this.configDependencies = dependencies.configDependencies;
         this.isIndoorDependent = dependencies.isIndoorDependent;
+        this.isImageDependent = dependencies.isImageDependent;
     }
 
     evaluateWithoutErrorHandling(

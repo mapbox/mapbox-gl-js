@@ -1,6 +1,6 @@
 import {createExpression} from "../style-spec/expression";
 import latest from "../style-spec/reference/latest";
-import {PossiblyEvaluated, type ConfigOptions, Layout, type PossiblyEvaluatedPropertyValue} from "./properties";
+import {PossiblyEvaluated, type ConfigOptions, PropertyValues, type PossiblyEvaluatedPropertyValue} from "./properties";
 import {getAppearanceLayoutProperties, type AppearanceLayoutProps, getAppearancePaintProperties, type AppearancePaintProps} from "./appearance_properties";
 
 import type {Feature, FeatureState, GlobalProperties, StyleExpression} from "../style-spec/expression";
@@ -26,9 +26,9 @@ class SymbolAppearance {
     condition!: StyleExpression;
     name?: string;
     layoutProperties?: PossiblyEvaluated<AppearanceLayoutProps>;
-    unevaluatedLayout?: Layout<AppearanceLayoutProps>;
+    unevaluatedLayout?: PropertyValues<AppearanceLayoutProps>;
     paintProperties?: PossiblyEvaluated<AppearancePaintProps>;
-    unevaluatedPaint?: Layout<AppearancePaintProps>;
+    unevaluatedPaint?: PropertyValues<AppearancePaintProps>;
     private readonly _conditionSpec: AppearanceSpecification["condition"];
     private readonly _propertiesSpec: AppearancePropertiesInput | undefined;
 
@@ -47,9 +47,9 @@ class SymbolAppearance {
 
         if (properties) {
             this.layoutProperties = new PossiblyEvaluated(getAppearanceLayoutProperties());
-            this.unevaluatedLayout = new Layout(getAppearanceLayoutProperties(), scope, options, iconImageUseTheme);
+            this.unevaluatedLayout = new PropertyValues(getAppearanceLayoutProperties(), false, scope, options, iconImageUseTheme);
             this.paintProperties = new PossiblyEvaluated(getAppearancePaintProperties());
-            this.unevaluatedPaint = new Layout(getAppearancePaintProperties(), scope, options, '');
+            this.unevaluatedPaint = new PropertyValues(getAppearancePaintProperties(), true, scope, options, '');
 
             for (const property in properties) {
                 if (property in this.unevaluatedLayout._values) {
@@ -58,6 +58,7 @@ class SymbolAppearance {
                     this.unevaluatedPaint.setValue(property as keyof AppearancePaintProps, properties[property as keyof AppearancePaintProps]);
                 }
             }
+            this.unevaluatedPaint.snap();
         }
     }
 
@@ -82,16 +83,16 @@ class SymbolAppearance {
         return this.paintProperties.get(name);
     }
 
-    getUnevaluatedLayoutProperties(): Layout<AppearanceLayoutProps> {
+    getUnevaluatedLayoutProperties(): PropertyValues<AppearanceLayoutProps> {
         return this.unevaluatedLayout;
     }
 
     getUnevaluatedLayoutProperty(name: keyof AppearanceLayoutProps) {
-        return this.unevaluatedLayout._values[name];
+        return this.unevaluatedLayout._values[name].value;
     }
 
     getUnevaluatedPaintProperty(name: keyof AppearancePaintProps) {
-        return this.unevaluatedPaint._values[name];
+        return this.unevaluatedPaint._values[name].value;
     }
 
     recalculate(parameters: EvaluationParameters, availableImages: ImageId[], iconImageUseTheme?: string) {
@@ -155,11 +156,11 @@ class SymbolAppearance {
     }
 
     hasLayoutProperty(name: keyof AppearanceLayoutProps) {
-        return this.unevaluatedLayout && this.unevaluatedLayout._values[name].value !== undefined;
+        return this.unevaluatedLayout && this.unevaluatedLayout._values[name].value.value !== undefined;
     }
 
     hasPaintProperty(name: keyof AppearancePaintProps) {
-        return this.unevaluatedPaint && this.unevaluatedPaint._values[name].value !== undefined;
+        return this.unevaluatedPaint && this.unevaluatedPaint._values[name].value.value !== undefined;
     }
 }
 

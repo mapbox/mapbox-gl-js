@@ -100,7 +100,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             const noShadowCutoff = 0.65;
 
             if (opacity < noShadowCutoff) {
-                const expression = layer._transitionablePaint._values['fill-extrusion-opacity'].value.expression;
+                const expression = layer.getPaintPropertyValue('fill-extrusion-opacity').expression;
                 if (expression instanceof ZoomDependentExpression) {
                     // avoid rendering shadows during fade in / fade out on terrain
                     return;

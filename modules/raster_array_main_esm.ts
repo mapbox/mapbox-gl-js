@@ -7,11 +7,15 @@ import type {RasterArray as RasterArrayType} from './raster_array_main_imports';
 // lazy_source_types) so the MRT decoder stays out of the always-loaded core bundle.
 export const RasterArray: Partial<typeof RasterArrayType> = {};
 
-export async function prepareRasterArray(): Promise<void> {
-    try {
-        const {RasterArray: rasterArrayModule} = await import('./raster_array_main_imports');
+let pending: Promise<void> | null = null;
+
+export function prepareRasterArray(): Promise<void> {
+    if (pending !== null) return pending;
+    pending = import('./raster_array_main_imports').then(({RasterArray: rasterArrayModule}) => {
         Object.assign(RasterArray, rasterArrayModule);
-    } catch (error) {
+    }).catch(() => {
+        pending = null;
         warnOnce('Could not load raster-array module.');
-    }
+    });
+    return pending;
 }

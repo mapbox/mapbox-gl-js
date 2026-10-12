@@ -116,11 +116,12 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
             circleSortKey = styleLayer.layout.get('circle-sort-key');
         }
 
+        const globalProperties = new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors});
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors}), evaluationFeature, canonical))
+            if (!this.layers[0]._featureFilter.filter(globalProperties, evaluationFeature, canonical))
                 continue;
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

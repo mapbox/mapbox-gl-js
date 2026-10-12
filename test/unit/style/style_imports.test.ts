@@ -3072,7 +3072,7 @@ describe('Style#setConfigProperty', () => {
         await waitFor(style, "style.load");
 
         const layerFqid = makeFQID('circle', 'standard');
-        expect(style._layerExpressionDependencies.get(layerFqid).isConfigDependent).toBe(false);
+        expect(style._layerExpressionDependencies.get(layerFqid).hasConfigDependency()).toBe(false);
 
         const fragmentStyle = style.getFragmentStyle('standard');
         fragmentStyle.setFilter('circle', ['==', ['get', 'kind'], ['config', 'kind']]);
@@ -3082,7 +3082,7 @@ describe('Style#setConfigProperty', () => {
         expect(style._layerExpressionDependencies.get(layerFqid).hasConfigDependency('kind')).toBe(true);
 
         fragmentStyle.setFilter('circle', null);
-        expect(style._layerExpressionDependencies.get(layerFqid).isConfigDependent).toBe(false);
+        expect(style._layerExpressionDependencies.get(layerFqid).hasConfigDependency()).toBe(false);
     });
 
     test('Accepts a bare object (no ["literal", ...] wrapper) for an object-typed option', async () => {
@@ -3152,7 +3152,7 @@ describe('Style initial config load', () => {
         // The layer is config-dependent, so it should be tracked as such.
         const layerFqid = makeFQID('circle', 'standard');
         const fragmentStyle = style.getFragmentStyle('standard');
-        expect(fragmentStyle._layerExpressionDependencies.get(layerFqid).isConfigDependent).toBe(true);
+        expect(fragmentStyle._layerExpressionDependencies.get(layerFqid).hasConfigDependency()).toBe(true);
 
         // But because the layer was constructed with a live reference to the
         // shared options Map, no source-cache reload should have been queued
@@ -3450,7 +3450,7 @@ describe('Style initial config load', () => {
         // config snapshot, taken at construction time, is missing the nested
         // import's config. `_updateEnvConfig('reset')` in `_reloadImports`'s
         // initial-load branch refreshes the snapshot afterwards — but it must
-        // also reset `_transitioning`, not just `_transitionable`, or
+        // also snap the displayed values, not just update the set ones, or
         // `recalculate()` keeps reading the stale (pre-nested-import) value.
         const {style} = newStubStyle();
 
@@ -3502,7 +3502,7 @@ describe('Style initial config load', () => {
     test('Runtime setFog keeps a defensive config snapshot so a later config change transitions instead of jumping', async () => {
         // Regression test: `Fog#set` used to pass the live `configOptions` map
         // straight through to `setTransitionOrValue`, which stores it as the
-        // new `_options` map (`properties.ts`'s `Transitionable#setTransitionOrValue`).
+        // new `_options` map (`properties.ts`'s `PropertyValues#setTransitionOrValue`).
         // The next config change would then mutate that same live map in place,
         // so both the "prior" and "final" side of the transition read the
         // already-mutated value and nothing animated.

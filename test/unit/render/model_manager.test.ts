@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import {describe, test, expect, vi} from '../../util/vitest';
+import {describe, test, expect, vi, waitFor} from '../../util/vitest';
 import ModelManager from '../../../3d-style/render/model_manager';
 import {Evented} from '../../../src/util/evented';
 import {RequestManager} from '../../../src/util/mapbox';
@@ -228,6 +228,21 @@ describe('ModelManager', () => {
 
         modelManager.addModelsFromBucket(['https://www.example.com/1', 'https://www.example.com/2', 'https://www.example.com/3'], 'basemap');
 
+    });
+
+    test('#addModelsFromBucket doesn\'t fire data when all models were already requested', async () => {
+        const {modelManager, eventedParent} = createModelManager();
+        vi.spyOn(modelManager, 'loadModel').mockImplementation((id, url) => Promise.resolve({id, url}));
+
+        modelManager.addModelsFromBucket(['https://www.example.com/1'], 'basemap');
+        await waitFor(eventedParent, 'data');
+
+        let dataEvents = 0;
+        eventedParent.on('data', () => dataEvents++);
+        modelManager.addModelsFromBucket(['https://www.example.com/1'], 'basemap');
+        await new Promise(resolve => { setTimeout(resolve, 0); });
+
+        expect(dataEvents).toEqual(0);
     });
 
     test('#reloadModels', () => {

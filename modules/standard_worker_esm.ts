@@ -7,14 +7,18 @@ export let Tiled3dModelBucket;
 export let Tiled3dModelWorkerSource;
 export let loaded = false;
 
-export async function prepareStandard(): Promise<void> {
-    try {
-        const mod = await import('./standard_worker_imports');
+let pending: Promise<void> | null = null;
+
+export function prepareStandard(): Promise<void> {
+    if (pending !== null) return pending;
+    pending = import('./standard_worker_imports').then((mod) => {
         ModelBucket = mod.ModelBucket;
         Tiled3dModelBucket = mod.Tiled3dModelBucket;
         Tiled3dModelWorkerSource = mod.Tiled3dModelWorkerSource;
         loaded = true;
-    } catch (error) {
+    }).catch(() => {
+        pending = null;
         warnOnce('Could not load Standard module.');
-    }
+    });
+    return pending;
 }

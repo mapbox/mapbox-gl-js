@@ -5,7 +5,7 @@ import {warnOnce, degToRad} from '../../util/util';
 import {vec3, quat} from 'gl-matrix';
 import assert from '../../style-spec/util/assert';
 
-import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
+import type {PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {PaintProps} from './sky_style_layer_properties';
 import type Texture from '../../render/texture';
 import type Painter from '../../render/painter';
@@ -31,8 +31,6 @@ function getCelestialDirection(azimuth: number, altitude: number, leftHanded: bo
 class SkyLayer extends StyleLayer {
     override type!: 'sky';
 
-    override _transitionablePaint!: Transitionable<PaintProps>;
-    override _transitioningPaint!: Transitioning<PaintProps>;
     override paint!: PossiblyEvaluated<PaintProps>;
     _lightPosition!: Position;
 
@@ -78,7 +76,7 @@ class SkyLayer extends StyleLayer {
     }
 
     _updateColorRamp() {
-        const expression = this._transitionablePaint._values['sky-gradient'].value.expression;
+        const expression = this.getPaintPropertyValue('sky-gradient').expression;
         this.colorRamp = renderColorRamp({
             expression,
             evaluationKey: 'skyRadialProgress'

@@ -3,11 +3,15 @@ import {Standard} from './standard_registry_esm';
 
 export {Standard};
 
-export async function prepareStandard(): Promise<void> {
-    try {
-        const {Standard: standardModule} = await import('./standard_main_imports');
+let pending: Promise<void> | null = null;
+
+export function prepareStandard(): Promise<void> {
+    if (pending !== null) return pending;
+    pending = import('./standard_main_imports').then(({Standard: standardModule}) => {
         Object.assign(Standard, standardModule);
-    } catch (error) {
+    }).catch(() => {
+        pending = null;
         warnOnce('Could not load Standard module.');
-    }
+    });
+    return pending;
 }

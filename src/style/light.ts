@@ -1,24 +1,10 @@
 import styleSpec from '../style-spec/reference/latest';
-import {Evented} from '../util/evented';
-import {
-    validateStyle,
-    validateLight,
-    emitValidationErrors
-} from './validate_style';
-import {
-    Properties,
-    Transitionable,
-    DataConstantProperty,
-    PositionProperty
-} from './properties';
+import {validateLight} from './validate_style';
+import {Properties, DataConstantProperty, PositionProperty} from './properties';
+import {StyleProperties} from './style_properties';
 
-import type {Validator} from './validate_style';
 import type Color from '../style-spec/util/color';
-import type EvaluationParameters from './evaluation_parameters';
 import type {StyleSetterOptions} from '../style/style';
-import type {TransitionParameters,
-    Transitioning,
-    PossiblyEvaluated} from './properties';
 import type {LightSpecification} from '../style-spec/types';
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 
@@ -43,17 +29,13 @@ const getProperties = (): Properties<Props> => properties || (properties = new P
  * Represents the light used to light extruded features.
  * Note that these lights are part of the legacy light API.
  */
-class Light extends Evented {
-    _transitionable: Transitionable<Props>;
-    _transitioning: Transitioning<Props>;
-    properties!: PossiblyEvaluated<Props>;
+class Light extends StyleProperties<Props> {
     id!: string;
 
     constructor(lightOptions?: LightSpecification, id: string = "flat") {
-        super();
-        this._transitionable = new Transitionable(getProperties());
+        super(getProperties());
         this.setLight(lightOptions, id);
-        this._transitioning = this._transitionable.untransitioned();
+        this._transitionable.snap();
     }
 
     getLight(): LightSpecification {
@@ -64,37 +46,8 @@ class Light extends Evented {
         if (this._validate(validateLight, light, options)) {
             return;
         }
-        this._transitionable.setTransitionOrValue(light);
+        this._setValues(light);
         this.id = id;
-    }
-
-    updateTransitions(parameters: TransitionParameters) {
-        this._transitioning = this._transitionable.transitioned(parameters, this._transitioning);
-    }
-
-    hasTransition(): boolean {
-        return this._transitioning.hasTransition();
-    }
-
-    recalculate(parameters: EvaluationParameters) {
-        this.properties = this._transitioning.possiblyEvaluate(parameters);
-    }
-
-    _validate(
-        validate: Validator,
-        value: unknown,
-        options?: {
-            validate?: boolean;
-        },
-    ): boolean {
-        if (options && options.validate === false) {
-            return false;
-        }
-
-        return emitValidationErrors(this, validate.call(validateStyle, {value,
-            // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
-            style: {glyphs: true, sprite: true},
-            styleSpec}));
     }
 }
 

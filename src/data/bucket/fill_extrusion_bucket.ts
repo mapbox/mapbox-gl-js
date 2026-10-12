@@ -928,11 +928,12 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
         this.edgeRadius = this.layers[0].layout.get('fill-extrusion-edge-radius') / this.tileToMeter;
         this.wallMode = this.layers[0].paint.get('fill-extrusion-line-width').constantOr(1.0) !== 0.0;
+        const globalProperties = new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors});
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors}), evaluationFeature, canonical))
+            if (!this.layers[0]._featureFilter.filter(globalProperties, evaluationFeature, canonical))
                 continue;
             const bucketFeature: BucketFeature = {
                 id,

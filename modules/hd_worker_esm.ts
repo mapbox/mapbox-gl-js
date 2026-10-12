@@ -24,9 +24,11 @@ export let anyDeferredElevationFeatures: ((buckets: Record<string, Bucket>) => b
 let waitForBuildingGen: (() => Promise<void> | null) | undefined;
 export let loaded = false;
 
-export async function prepareHD() {
-    try {
-        const mod = await import('./hd_worker_imports');
+let pending: Promise<void> | null = null;
+
+export function prepareHD(): Promise<void> {
+    if (pending !== null) return pending;
+    pending = import('./hd_worker_imports').then((mod) => {
         BuildingBucket = mod.BuildingBucket;
         parseElevationFeatures = mod.parseElevationFeatures;
         attachExtension = mod.attachExtension;
@@ -39,9 +41,11 @@ export async function prepareHD() {
         anyDeferredElevationFeatures = mod.anyDeferredElevationFeatures;
         waitForBuildingGen = mod.waitForBuildingGen;
         loaded = true;
-    } catch (error) {
+    }).catch(() => {
+        pending = null;
         warnOnce('Could not load HD module.');
-    }
+    });
+    return pending;
 }
 
 // Procedural-building geometry needs the building-gen WASM on top of the HD JS chunk.

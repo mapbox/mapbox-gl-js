@@ -11,11 +11,12 @@ type ExpressionDependencies = {
 
 /**
  * A read-through view over the config options and other dynamic inputs a
- * layer's expressions depend on. Layout and paint dependencies are read live
- * from the layer's `Layout` and `Transitionable` containers, which track them
- * as property values are set. Dependencies of the layer's filter are computed
- * here, lazily on first query (compiling the static filter is not free), and
- * can be dropped with {@link invalidateFilter} when the filter changes.
+ * layer's expressions depend on. Layout, paint and appearance dependencies
+ * are read live from the layer's `PropertyValues` containers, which track
+ * them as property values are set. Dependencies of the layer's filter are
+ * computed here, lazily on first query (compiling the static filter is not
+ * free), and can be dropped with {@link invalidateFilter} when the filter
+ * changes.
  *
  * Lives outside `StyleLayer` on purpose: only `Style` queries dependencies,
  * so worker-side layers carry no dependency-tracking state or work.
@@ -60,26 +61,23 @@ export class LayerExpressionDependencies {
         };
     }
 
-    hasConfigDependency(key: string): boolean {
-        const {_unevaluatedLayout, _transitionablePaint} = this._layer;
-        if (_unevaluatedLayout && _unevaluatedLayout.configDependencies.has(key)) return true;
-        if (_transitionablePaint && _transitionablePaint.configDependencies.has(key)) return true;
+    // Whether the layer depends on the config option `key`, or on any config option if no key is given
+    hasConfigDependency(key?: string): boolean {
+        const has = (deps: Set<string>) => (key ? deps.has(key) : deps.size !== 0);
+        const {_layoutValues, _paintValues} = this._layer;
+        if (_layoutValues && has(_layoutValues.configDependencies)) return true;
+        if (_paintValues && has(_paintValues.configDependencies)) return true;
+        for (const {unevaluatedLayout, unevaluatedPaint} of this._layer.appearances) {
+            if (unevaluatedLayout && (has(unevaluatedLayout.configDependencies) || has(unevaluatedPaint.configDependencies))) return true;
+        }
         const filterDeps = this._filterDeps;
-        return filterDeps ? filterDeps.configDependencies.has(key) : false;
-    }
-
-    get isConfigDependent(): boolean {
-        const {_unevaluatedLayout, _transitionablePaint} = this._layer;
-        if (_unevaluatedLayout && _unevaluatedLayout.configDependencies.size !== 0) return true;
-        if (_transitionablePaint && _transitionablePaint.configDependencies.size !== 0) return true;
-        const filterDeps = this._filterDeps;
-        return filterDeps ? filterDeps.configDependencies.size !== 0 : false;
+        return filterDeps ? has(filterDeps.configDependencies) : false;
     }
 
     get isIndoorDependent(): boolean {
-        const {_unevaluatedLayout, _transitionablePaint} = this._layer;
-        if (_unevaluatedLayout && _unevaluatedLayout.isIndoorDependent()) return true;
-        if (_transitionablePaint && _transitionablePaint.isIndoorDependent()) return true;
+        const {_layoutValues, _paintValues} = this._layer;
+        if (_layoutValues && _layoutValues.isIndoorDependent()) return true;
+        if (_paintValues && _paintValues.isIndoorDependent()) return true;
         const filterDeps = this._filterDeps;
         return filterDeps ? filterDeps.isIndoorDependent : false;
     }

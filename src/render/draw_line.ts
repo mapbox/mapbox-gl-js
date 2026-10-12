@@ -43,7 +43,7 @@ export function prepare(layer: LineStyleLayer, sourceCache: SourceCache, painter
     layer.hasNonElevatedBuckets = false;
 
     // Prepare() is only needed when there is a possibility that elevated buckets exist
-    if (layer._unevaluatedLayout.getValue('line-elevation-reference') === undefined && layer._unevaluatedLayout.getValue('line-z-offset') === undefined) {
+    if (layer.getLayoutPropertyValue('line-elevation-reference').value === undefined && layer.getLayoutPropertyValue('line-z-offset').value === undefined) {
         layer.hasNonElevatedBuckets = true;
         return;
     }
@@ -324,7 +324,7 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                 dashIdealZ !== tile.tileID.overscaledZ) {
                 const bz = bucket.zoom;
                 if (!(bz in floorwidthByZoom)) {
-                    floorwidthByZoom[bz] = Math.max(0.01, layer.widthExpression().evaluate({zoom: bz}));
+                    floorwidthByZoom[bz] = Math.max(0.01, layer.getPaintPropertyValue('line-width').expression.evaluate({zoom: bz}));
                 }
                 savedFloorwidth = widthProperty.value.value;
                 widthProperty.value.value = floorwidthByZoom[bz] * Math.pow(2, dashIdealZ - bz);
@@ -419,7 +419,7 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                     (uboBinder.header[HEADER_DATA_DRIVEN_MASK] & FLOORWIDTH_BIT) === 0) {
                     const bz = bucket.zoom;
                     if (!(bz in floorwidthByZoom)) {
-                        floorwidthByZoom[bz] = Math.max(0.01, layer.widthExpression().evaluate({zoom: bz}));
+                        floorwidthByZoom[bz] = Math.max(0.01, layer.getPaintPropertyValue('line-width').expression.evaluate({zoom: bz}));
                     }
                     lineUniformValuesRef['u_lpp_floorwidth'] = floorwidthByZoom[bz] * Math.pow(2, dashIdealZ - bz);
                 }
@@ -428,14 +428,14 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
             if (gradient) {
                 updateAndBindGradientTexture(
                     bucket.gradients[layer.id], layer.gradientVersion, layer.stepInterpolant,
-                    layer.gradientExpression(),
+                    layer.getPaintPropertyValue('line-gradient').expression,
                     layer.paint.get('line-gradient-use-theme').constantOr('default') === 'none',
                     gl.TEXTURE1);
             }
             if (borderGradient) {
                 updateAndBindGradientTexture(
                     bucket.borderGradients[layer.id], layer.borderGradientVersion, layer.borderStepInterpolant,
-                    layer.borderGradientExpression(),
+                    layer.getPaintPropertyValue('line-border-gradient').expression,
                     layer.paint.get('line-border-gradient-use-theme').constantOr('default') === 'none',
                     gl.TEXTURE2);
             }

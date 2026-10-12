@@ -872,15 +872,14 @@ class SymbolBucket implements Bucket, SymbolSource {
         this.placementViewportMatrix = mat4.identity([]);
 
         const layer = this.layers[0];
-        const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
 
         this.worldview = options.worldview;
         this.localizable = options.localizable;
         this.maxUniformBlockSizeDwords = options.maxUniformBlockSizeDwords;
 
-        this.textSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['text-size'], this.worldview, options.availableImages);
+        this.textSizeData = getSizeData(this.zoom, layer.getLayoutPropertyValue('text-size'), this.worldview, options.availableImages);
 
-        this.iconSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['icon-size'], this.worldview, options.availableImages);
+        this.iconSizeData = getSizeData(this.zoom, layer.getLayoutPropertyValue('icon-size'), this.worldview, options.availableImages);
 
         const layout = this.layers[0].layout;
         const sortKey = layout.get('symbol-sort-key');
@@ -1532,8 +1531,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             });
 
             if (icon) {
-                const unevaluatedLayoutValues = symbolLayer._unevaluatedLayout._values;
-                const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, this.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor, this.worldview, availableImages);
+                const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, this.iconSizeData, symbolLayer.getLayoutPropertyValue('icon-size'), canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor, this.worldview, availableImages);
                 addImageVariantToIcons(iconPrimary);
 
                 if (iconSecondary) {
@@ -1627,7 +1625,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         if (icon) {
             const unevaluatedIconSize = (appearance.hasLayoutProperty('icon-size') ?
                 appearance.getUnevaluatedLayoutProperty('icon-size') :
-                layer._unevaluatedLayout._values['icon-size']) as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
+                layer.getLayoutPropertyValue('icon-size')) as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
             const iconSizeData = getSizeData(this.zoom, unevaluatedIconSize, this.worldview, availableImages);
             const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor, this.worldview, availableImages);
             return {iconPrimary, iconSecondary};

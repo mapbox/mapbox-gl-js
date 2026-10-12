@@ -48,6 +48,7 @@ import type {LUT} from "../../src/util/lut";
 import type {ModelUniformsType, ModelDepthUniformsType} from '../render/program/model_program';
 import type {LightOverrides} from './lights';
 import type {ModelPartStyleUBO} from '../data/bucket/model_part_style_ubo';
+import type {PossiblyEvaluatedPropertyValue} from '../../src/style/properties';
 
 export default drawModels;
 
@@ -579,7 +580,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
             const noShadowCutoff = 0.65;
 
             if (opacity < noShadowCutoff) {
-                const expression = layer._transitionablePaint._values['model-opacity'].value.expression;
+                const expression = layer.getPaintPropertyValue('model-opacity').expression;
                 if (expression instanceof ZoomDependentExpression) {
                     // avoid rendering shadows during fade in / fade out on terrain
                     return;
@@ -864,9 +865,8 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
     layer.modelManager = modelManager;
     const shadowRenderer = painter.shadowRenderer;
 
-    if (!Object.hasOwn(layer._unevaluatedLayout._values, 'model-id')) { return; }
-
-    const modelIdUnevaluatedProperty = layer._unevaluatedLayout._values['model-id'];
+    const modelIdUnevaluatedProperty = layer.getLayoutPropertyValue<string, PossiblyEvaluatedPropertyValue<string>>('model-id');
+    if (modelIdUnevaluatedProperty.value === undefined) { return; }
 
     const evaluationParameters = {...layer.layout.get("model-id").parameters} as EvaluationParameters;
 

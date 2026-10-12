@@ -318,8 +318,7 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
     }
 
     protected _layerUnevaluated(propName: string): {expression?: StylePropertyExpression} | undefined {
-        const tv = (this.layer._transitionablePaint._values as Record<string, {value?: {expression?: StylePropertyExpression}}>)[propName];
-        return tv && tv.value;
+        return this.layer.getPaintPropertyValue(propName);
     }
 
     /**
@@ -781,7 +780,8 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
      * Return values for the constant-property uniforms. Called once per draw call.
      *
      * Camera (zoom-only) expressions come already evaluated at the current zoom, since the style
-     * recalculates layer paint on every zoom change, which also gives layer.paint a new identity.
+     * recalculates the paint of layers with such expressions on every zoom change, which also gives
+     * layer.paint a new identity.
      */
     getConstantUniformValues(brightness?: number | null): TConstantUniforms {
         // Truthy check (not !== null) because the field may be undefined after worker→main

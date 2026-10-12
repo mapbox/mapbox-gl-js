@@ -1,21 +1,19 @@
 import styleSpec from '../style-spec/reference/latest';
 import {smoothstep} from '../util/util';
-import {Evented} from '../util/evented';
-import {validateStyle, validateFog, emitValidationErrors} from './validate_style';
-import {Properties, Transitionable, PossiblyEvaluated, DataConstantProperty} from './properties';
+import {validateFog} from './validate_style';
+import {Properties, DataConstantProperty} from './properties';
+import {StyleProperties} from './style_properties';
 import {FOG_PITCH_START, FOG_PITCH_END, FOG_OPACITY_THRESHOLD, getFogOpacityAtLngLat, getFogOpacityAtMercCoord, getFogOpacityForBounds} from './fog_helpers';
 import {number as interpolate, array as vecInterpolate} from '../style-spec/util/interpolate';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
 import EXTENT from '../style-spec/data/extent';
 
 import type {mat4, vec3} from 'gl-matrix';
-import type {Validator} from './validate_style';
 import type {Frustum} from '../util/primitives';
 import type {OverscaledTileID} from '../source/tile_id';
 import type Color from '../style-spec/util/color';
 import type {FogSpecification} from '../style-spec/types';
-import type EvaluationParameters from './evaluation_parameters';
-import type {TransitionParameters, ConfigOptions, Transitioning} from './properties';
+import type {ConfigOptions} from './properties';
 import type LngLat from '../geo/lng_lat';
 import type Transform from '../geo/transform';
 import type {StyleSetterOptions} from '../style/style';
@@ -37,20 +35,12 @@ type Props = {
 
 const fogReference = styleSpec.fog as Record<string, StylePropertySpecification>;
 
-class Fog extends Evented {
-    _transitionable: Transitionable<Props>;
-    _transitioning: Transitioning<Props>;
-    properties: PossiblyEvaluated<Props>;
-    _options!: FogSpecification;
-    scope: string;
-
+class Fog extends StyleProperties<Props> {
     // Alternate projections do not yet support fog.
     // Hold on to transform so that we know whether a projection is set.
     _transform: Transform;
 
     constructor(fogOptions: FogSpecification | null | undefined, transform: Transform, scope: string, configOptions?: ConfigOptions | null) {
-        super();
-
         const fogProperties: Properties<Props> = new Properties({
             "range": new DataConstantProperty(fogReference.range),
             "color": new DataConstantProperty(fogReference.color),
@@ -64,15 +54,10 @@ class Fog extends Evented {
             "vertical-range": new DataConstantProperty(fogReference["vertical-range"]),
         });
 
-        // Take a defensive snapshot of `configOptions` rather than holding a
-        // live reference to it. `updateConfig`/`resetConfig` below are called
-        // with a fresh snapshot on every config change
-        this._transitionable = new Transitionable(fogProperties, scope, new Map(configOptions));
+        super(fogProperties, scope, new Map(configOptions));
         this._transform = transform;
-        this.properties = new PossiblyEvaluated(fogProperties);
-        this.scope = scope;
         this.set(fogOptions);
-        this.resetConfig(configOptions);
+        this._transitionable.snap();
     }
 
     get state(): FogState {
@@ -112,8 +97,7 @@ class Fog extends Evented {
             }
         }
 
-        this._options = properties;
-        this._transitionable.setTransitionOrValue(this._options, configOptions ? new Map(configOptions) : undefined);
+        this._setValues(properties, configOptions);
     }
 
     getOpacity(pitch: number): number {
@@ -176,49 +160,6 @@ class Fog extends Evented {
         }
 
         return false;
-    }
-
-    updateConfig(configOptions?: ConfigOptions | null) {
-        this._transitionable.setTransitionOrValue(this._options, new Map(configOptions));
-    }
-
-    // Like `updateConfig`, but also resets `_transitioning` to the freshly-updated value,
-    // skipping any transition. Used by the constructor (there is no prior visible state
-    // to transition from yet) and at initial style load, where the constructor-time config
-    // snapshot may be missing options from sibling imports that hadn't loaded yet.
-    resetConfig(configOptions?: ConfigOptions | null) {
-        this.updateConfig(configOptions);
-        this._transitioning = this._transitionable.untransitioned();
-    }
-
-    updateTransitions(parameters: TransitionParameters) {
-        this._transitioning = this._transitionable.transitioned(parameters, this._transitioning);
-    }
-
-    hasTransition(): boolean {
-        return this._transitioning.hasTransition();
-    }
-
-    recalculate(parameters: EvaluationParameters) {
-        this.properties = this._transitioning.possiblyEvaluate(parameters);
-    }
-
-    _validate(
-        validate: Validator,
-        value: unknown,
-        options?: {
-            validate?: boolean;
-        },
-    ): boolean {
-        if (options && options.validate === false) {
-            return false;
-        }
-
-        return emitValidationErrors(this, validate.call(validateStyle, {
-            value,
-            style: {glyphs: true, sprite: true},
-            styleSpec
-        }));
     }
 }
 

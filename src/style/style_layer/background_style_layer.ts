@@ -1,7 +1,7 @@
 import StyleLayer from '../style_layer';
 import {getLayoutProperties, getPaintProperties} from './background_style_layer_properties';
 
-import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
+import type {PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {PaintProps} from './background_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';
 import type {CreateProgramParams} from '../../render/painter';
@@ -11,8 +11,6 @@ import type {ProgramName} from '../../render/program';
 class BackgroundStyleLayer extends StyleLayer {
     override type!: 'background';
 
-    override _transitionablePaint!: Transitionable<PaintProps>;
-    override _transitioningPaint!: Transitioning<PaintProps>;
     override paint!: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {

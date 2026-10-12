@@ -77,8 +77,7 @@ class RasterParticleStyleLayer extends StyleLayer {
     }
 
     hasColorMap(): boolean {
-        const expr = this._transitionablePaint._values['raster-particle-color'].value;
-        return !!expr.value;
+        return !!this.getPaintPropertyValue('raster-particle-color').value;
     }
 
     override getProgramIds(): ProgramName[] {
@@ -107,8 +106,8 @@ class RasterParticleStyleLayer extends StyleLayer {
     _updateColorRamp() {
         if (!this.hasColorMap()) return;
 
-        const expression = this._transitionablePaint._values['raster-particle-color'].value.expression;
-        const end: number = this._transitionablePaint._values['raster-particle-max-speed'].value.expression.evaluate({zoom: 0});
+        const expression = this.getPaintPropertyValue('raster-particle-color').expression;
+        const end: number = this.getPaintPropertyValue('raster-particle-max-speed').expression.evaluate({zoom: 0});
 
         this.colorRamp = renderColorRamp({
             expression,

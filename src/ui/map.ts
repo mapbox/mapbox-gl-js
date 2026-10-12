@@ -4727,11 +4727,6 @@ export class Map extends Camera {
             this._styleDirty = true;
         }
 
-        // Whenever precipitation effects are present -> force constant redraw
-        if (this.style && (this.style.snow || this.style.rain)) {
-            this._styleDirty = true;
-        }
-
         // Background patterns are rasterized in a worker thread, while
         // it's still in progress we need to keep rendering
         if (this.style && this.style.imageManager.hasPatternsInFlight()) {
@@ -4796,7 +4791,11 @@ export class Map extends Camera {
         // Style#updateSources could have caused them to be set again.
         const somethingDirty = this._sourcesDirty || this._styleDirty || this._placementDirty || averageElevationChanged;
 
-        if (somethingDirty || this._repaint) {
+        // Precipitation animates on its own, so keep repainting; its properties only
+        // change with zoom, light or transitions, which already dirty the style
+        const precipitating = !!(this.style && (this.style.snow || this.style.rain));
+
+        if (somethingDirty || this._repaint || precipitating) {
             this.triggerRepaint();
         } else {
             const willIdle = this.idle();
