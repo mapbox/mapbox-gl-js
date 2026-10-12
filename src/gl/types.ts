@@ -1,13 +1,11 @@
-const WebGL2BlendFuncExtended = {
-    /* WEBGL_blend_func_extended is not yet available as a TypeScript type */
-    SRC1_COLOR_WEBGL: 0x88F9,
-    SRC1_ALPHA_WEBGL: 0x8589,
-    ONE_MINUS_SRC1_COLOR_WEBGL: 0x88FA,
-    ONE_MINUS_SRC1_ALPHA_WEBGL: 0x88FB,
-    MAX_DUAL_SOURCE_DRAW_BUFFERS_WEBGL: 0x88FC,
-} as const;
-
-export type WebGL2BlendFuncExtended = typeof WebGL2BlendFuncExtended;
+/* WEBGL_blend_func_extended is not yet available as a TypeScript type */
+export type WebGL2BlendFuncExtended = {
+    readonly SRC1_COLOR_WEBGL: 0x88F9;
+    readonly SRC1_ALPHA_WEBGL: 0x8589;
+    readonly ONE_MINUS_SRC1_COLOR_WEBGL: 0x88FA;
+    readonly ONE_MINUS_SRC1_ALPHA_WEBGL: 0x88FB;
+    readonly MAX_DUAL_SOURCE_DRAW_BUFFERS_WEBGL: 0x88FC;
+};
 
 type WebGL2BlendFuncExtendedConstants = WebGL2BlendFuncExtended['SRC1_COLOR_WEBGL'] | WebGL2BlendFuncExtended['SRC1_ALPHA_WEBGL'] | WebGL2BlendFuncExtended['ONE_MINUS_SRC1_COLOR_WEBGL'] | WebGL2BlendFuncExtended['ONE_MINUS_SRC1_ALPHA_WEBGL'];
 
