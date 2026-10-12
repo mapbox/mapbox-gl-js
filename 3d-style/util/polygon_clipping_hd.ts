@@ -26,10 +26,7 @@ export function clip(subjectPolygon: Point[][], clipRing: Point[]): Point[][][] 
     const geom = toMultiPolygon(subjectPolygon);
     const clipGeom = toMultiPolygon([clipRing]);
 
-    const polygons = martinez.intersection(geom, clipGeom) as martinez.MultiPolygon;
-    if (polygons == null) return [];
-
-    return fromMultiPolygon(polygons);
+    return fromMultiPolygon(martinez.intersection(geom, clipGeom));
 }
 
 export function polygonSubdivision(subjectPolygon: Point[][], subdivisionEdges: EdgeIterator, edgeExtension: number = 0): Point[][][] {
@@ -75,7 +72,7 @@ export function polygonSubdivision(subjectPolygon: Point[][], subdivisionEdges: 
     }
 
     if (clipGeometry.length > 0) {
-        polygons = martinez.diff(polygons, clipGeometry) as martinez.MultiPolygon;
+        polygons = martinez.diff(polygons, clipGeometry);
     }
 
     // Martinez can emit nearly-identical floats for the same logical cut
@@ -200,20 +197,13 @@ function fromMultiPolygon(geometry: martinez.MultiPolygon, scale: number = 1.0, 
     // Share one canonicalizer across all rings so close vertices in different
     // sub-polygons (e.g., the two sides of a cut) collapse to the same integer.
     const canonicalizer = roundingTolerance != null ? new VertexCanonicalizer(roundingTolerance) : null;
-    return geometry.map(poly => poly.map((ring, ringIdx) => {
-        const r = ring.map(p => {
-            const x = p[0] * scale;
-            const y = p[1] * scale;
-            if (canonicalizer) {
-                const [ix, iy] = canonicalizer.canonicalize(x, y);
-                return new Point(ix, iy);
-            }
-            return new Point(Math.round(x), Math.round(y));
-        });
-        if (ringIdx > 0) {
-            // Reverse holes
-            r.reverse();
+    return geometry.map(poly => poly.map(ring => ring.map(p => {
+        const x = p[0] * scale;
+        const y = p[1] * scale;
+        if (canonicalizer) {
+            const [ix, iy] = canonicalizer.canonicalize(x, y);
+            return new Point(ix, iy);
         }
-        return r;
-    }));
+        return new Point(Math.round(x), Math.round(y));
+    })));
 }

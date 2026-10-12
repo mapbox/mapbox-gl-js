@@ -74,7 +74,7 @@
     "geojson-vt": "^5.0.4",
     "gl-matrix": "^3.4.4",
     "kdbush": "^4.1.0",
-    "martinez-polygon-clipping": "^0.8.1",
+    "martinez-polygon-clipping": "^0.9.0",
     "npm-run-all2": "^9.0.1",
     "pbf": "^5.1.0",
     "pixelmatch": "^7.2.0",
