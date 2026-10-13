@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Fix coverage stencil marks including polygons for other road classes, which hid roads that should stay visible.
 - Fix imported styles silently rendering nothing when the import fires a non-fatal error while loading.
 - Fix raster tiles occasionally showing the image of a different tile after zooming or panning on a slow network.
 - Improve performance on map views with CJK glyphs by moving CJK rasterization offscreen.
@@ -8,7 +9,7 @@
 - Fix 0 fadeDuration symbol placement offset.
 - Improve model rendering performance.
 
-## 3.33.0-rc.1
+## 3.33.0
 
 ### Breaking changes ⚠️
 
@@ -26,7 +27,6 @@
 
 ### Bug fixes 🐞
 
-- Fix coverage stencil marks including polygons for other road classes, which hid roads that should stay visible.
 - Fix a severe performance regression when updating data-driven line layers with `setPaintProperty`.
 - Fix a rendering issue when drawing thousands of data-driven lines and symbols.
 - Fix transparent `building` and `fill-extrusion` layers blending the same pixel twice where they cover the same buildings, making the overlap look more opaque than either layer's opacity asks for.
