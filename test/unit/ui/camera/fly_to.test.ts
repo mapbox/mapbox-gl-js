@@ -7,6 +7,8 @@ import Transform from '../../../../src/geo/transform';
 import browser from '../../../../src/util/browser';
 import {fixedLngLat, fixedNum} from '../../../util/fixed';
 
+import type LngLat from '../../../../src/geo/lng_lat';
+
 describe('camera', () => {
     describe('#flyTo', () => {
         test('pans to specified location', () => {
@@ -994,6 +996,42 @@ describe('camera', () => {
             camera.flyTo({center: [10, 10], padding: {top: 200}, preloadOnly: true});
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(camera.getPadding()).toEqual({top: 0, bottom: 0, left: 0, right: 0});
+        });
+
+        test('long flight at high zoom arrives without a jump', () => {
+            // The path formula used to land meters short of the target and snap to it on the last frame.
+            const from = {lng: 27.558721, lat: 53.901516}; // Minsk
+            const to = {lng: 121.450615, lat: 31.225972}; // Shanghai
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const camera = createCamera({zoom: 20, pitch: 30, center: from});
+            const stub = vi.spyOn(browser, 'now');
+
+            stub.mockImplementation(() => 0);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            camera.flyTo({center: to, zoom: 20, pitch: 30, duration: 10000});
+
+            stub.mockImplementation(() => 9983);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            camera.simulateFrame();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+            const beforeLast: LngLat = camera.getCenter();
+
+            stub.mockImplementation(() => 10000);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            camera.simulateFrame();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+            const last: LngLat = camera.getCenter();
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(camera._moving).toBeFalsy();
+            expect(last.lat).toBeCloseTo(to.lat, 9);
+            expect(last.lng).toBeCloseTo(to.lng, 9);
+
+            // The last step is a few centimeters at most. Degrees to meters at this latitude.
+            const metersPerDegree = 111320;
+            const dy = (last.lat - beforeLast.lat) * metersPerDegree;
+            const dx = (last.lng - beforeLast.lng) * metersPerDegree * Math.cos(to.lat * Math.PI / 180);
+            expect(Math.hypot(dx, dy)).toBeLessThan(0.05);
         });
     });
 });

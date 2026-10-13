@@ -1716,7 +1716,10 @@ class Camera extends Evented<MapEvents> {
          */
         function r(i: number) {
             const b = (w1 * w1 - w0 * w0 + (i ? -1 : 1) * rho2 * rho2 * u1 * u1) / (2 * (i ? w1 : w0) * rho2 * u1);
-            return Math.log(Math.sqrt(b * b + 1) - b);
+            // log(sqrt(b² + 1) - b) == -asinh(b). The subtraction loses most digits when b is large
+            // (a long flight at high zoom). The path then ends short of the target by meters, and
+            // the last frame snaps to it.
+            return -Math.asinh(b);
         }
 
         function sinh(n: number) { return (Math.exp(n) - Math.exp(-n)) / 2; }
