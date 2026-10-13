@@ -1,6 +1,6 @@
 ## Unreleased
 
-## 3.33.0-rc.1
+## 3.33.0
 
 ### Breaking changes ⚠️
 
