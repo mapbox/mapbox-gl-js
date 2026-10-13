@@ -40,9 +40,11 @@ import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {ImageId} from '../../../src/style-spec/expression/types/image_id';
 import type {StyleModelMap} from '../../../src/style/style_mode';
 
+const rotationScaleYZFlip: mat4 = [];
+
 class ModelFeature {
     feature: EvaluationFeature;
-    featureStates: FeatureState;
+    featureStates: FeatureState | undefined;
     instancedDataOffset: number;
     instancedDataCount: number;
 
@@ -177,6 +179,7 @@ class ModelBucket implements Bucket {
     terrainElevationMax: number;
 
     hasZoomDependentProperties: boolean;
+    evaluatedPaint: ModelStyleLayer['paint'] | undefined;
     modelUris: Array<string>;
     modelsRequested: boolean;
 
@@ -309,6 +312,7 @@ class ModelBucket implements Bucket {
             for (const id in states) {
                 if (Object.hasOwn(instances.idToFeaturesIndex, id)) {
                     const feature = instances.features[instances.idToFeaturesIndex[id]];
+                    feature.featureStates = states[id];
                     this.evaluate(feature, states[id], instances, true);
                     this.uploaded = false;
                 }
@@ -318,29 +322,29 @@ class ModelBucket implements Bucket {
     }
 
     updateZoomBasedPaintProperties(): boolean {
-        if (!this.hasZoomDependentProperties) {
-            return false;
-        }
+        // the layer replaces its paint object whenever re-evaluation may change the values
+        const paint = this.layers[0].paint;
+        if (!this.hasZoomDependentProperties || paint === this.evaluatedPaint) return false;
+        this.evaluatedPaint = paint;
 
-        // layer.paint.get('model-rotation').isZoom
+        const canonical = this.canonical;
+        const rotationProp = paint.get('model-rotation');
+        const scaleProp = paint.get('model-scale');
+        const translationProp = paint.get('model-translation');
+
         let reuploadNeeded = false;
         for (const modelId in this.instancesPerModel) {
             const instances = this.instancesPerModel[modelId];
             for (const feature of instances.features) {
-                const layer = this.layers[0];
-                const evaluationFeature = feature.feature;
-                const canonical = this.canonical;
-
-                const rotation = layer.paint.get('model-rotation').evaluate(evaluationFeature, {}, canonical);
-
-                const scale = layer.paint.get('model-scale').evaluate(evaluationFeature, {}, canonical);
-
-                const translation = layer.paint.get('model-translation').evaluate(evaluationFeature, {}, canonical);
+                const {feature: evaluationFeature, featureStates} = feature;
+                const rotation = rotationProp.evaluate(evaluationFeature, featureStates, canonical);
+                const scale = scaleProp.evaluate(evaluationFeature, featureStates, canonical);
+                const translation = translationProp.evaluate(evaluationFeature, featureStates, canonical);
 
                 if (!vec3.exactEquals(feature.rotation, rotation) ||
                     !vec3.exactEquals(feature.scale, scale) ||
                     !vec3.exactEquals(feature.translation, translation)) {
-                    this.evaluate(feature, feature.featureStates, instances, true);
+                    this.evaluate(feature, featureStates, instances, true);
                     reuploadNeeded = true;
                 }
             }
@@ -534,22 +538,16 @@ class ModelBucket implements Bucket {
     }
 
     evaluate(feature: ModelFeature, featureState: FeatureState, perModelVertexArray: PerModelAttributes, update: boolean) {
-        const layer = this.layers[0];
+        const paint = this.layers[0].paint;
         const evaluationFeature = feature.feature;
         const canonical = this.canonical;
 
-        const rotation = feature.rotation = layer.paint.get('model-rotation').evaluate(evaluationFeature, featureState, canonical);
+        const rotation = feature.rotation = paint.get('model-rotation').evaluate(evaluationFeature, featureState, canonical);
+        const scale = feature.scale = paint.get('model-scale').evaluate(evaluationFeature, featureState, canonical);
+        const translation = feature.translation = paint.get('model-translation').evaluate(evaluationFeature, featureState, canonical);
+        const {r, g, b} = paint.get('model-color').evaluate(evaluationFeature, featureState, canonical);
+        const a = paint.get('model-color-mix-intensity').evaluate(evaluationFeature, featureState, canonical);
 
-        const scale = feature.scale = layer.paint.get('model-scale').evaluate(evaluationFeature, featureState, canonical);
-
-        const translation = feature.translation = layer.paint.get('model-translation').evaluate(evaluationFeature, featureState, canonical);
-
-        // When layer.paint.get('model-color') is constant, evaluate returns the object defined in the spec.
-        // If we don't create a new object here we would be updating that, causing problems afterwards
-        const {r, g, b} = layer.paint.get('model-color').evaluate(evaluationFeature, featureState, canonical);
-        const a = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, featureState, canonical);
-
-        const rotationScaleYZFlip: mat4 = [];
         if (this.maxVerticalOffset < translation[2]) this.maxVerticalOffset = translation[2];
 
         // Track per model and per bucket maximum scaling as well as per instance translation
@@ -566,12 +564,11 @@ class ModelBucket implements Bucket {
         assert(perModelVertexArray.instancedDataArray.bytesPerElement === 64);
 
         const vaOffset2 = Math.round(100.0 * a) + b / 1.05;
+        const va = perModelVertexArray.instancedDataArray.float32;
 
         for (let i = 0; i < feature.instancedDataCount; ++i) {
             const instanceOffset = feature.instancedDataOffset + i;
             const offset = instanceOffset * 16;
-
-            const va = perModelVertexArray.instancedDataArray.float32;
             let terrainElevationContribution = 0;
             if (update) {
                 terrainElevationContribution = va[offset + 6] - perModelVertexArray.instancesEvaluatedElevation[instanceOffset];

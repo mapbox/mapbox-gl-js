@@ -6,6 +6,7 @@
 - Fix `building` layer filters that use `distance`, `within` or `worldview` dropping buildings.
 - Improve tile load performance via optimization of style property values recalculation.
 - Fix 0 fadeDuration symbol placement offset.
+- Improve model rendering performance.
 
 ## 3.33.0-rc.1
 

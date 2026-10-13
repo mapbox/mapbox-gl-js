@@ -10,8 +10,9 @@ export type Segment = {
     primitiveOffset: number;
     vertexLength: number;
     primitiveLength: number;
+    // per layer, then per program: shadow and color passes draw the same segments with different programs
     vaos: {
-        [_: string]: VertexArrayObject;
+        [_: string]: Map<WebGLProgram, VertexArrayObject>;
     };
     batchIndex?: number; // UBO batch index for symbol batching
 };
@@ -66,7 +67,7 @@ class SegmentVector {
     destroy() {
         for (const segment of this.segments) {
             for (const k in segment.vaos) {
-                segment.vaos[k].destroy();
+                for (const vao of segment.vaos[k].values()) vao.destroy();
             }
         }
     }

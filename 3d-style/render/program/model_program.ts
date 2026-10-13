@@ -29,7 +29,6 @@ export type ModelUniformsType = {
     ['u_emissiveFactor']: Uniform4f;
     ['u_metallicFactor']: Uniform1f;
     ['u_roughnessFactor']: Uniform1f;
-    ['u_baseTextureIsAlpha']: Uniform1i;
     ['u_alphaMask']: Uniform1i;
     ['u_alphaCutoff']: Uniform1f;
     ['u_baseColorTexture']: Uniform1i;
@@ -62,7 +61,6 @@ const modelUniforms = (context: Context): ModelUniformsType => ({
     'u_emissiveFactor': new Uniform4f(context),
     'u_metallicFactor': new Uniform1f(context),
     'u_roughnessFactor': new Uniform1f(context),
-    'u_baseTextureIsAlpha': new Uniform1i(context),
     'u_alphaMask': new Uniform1i(context),
     'u_alphaCutoff': new Uniform1f(context),
     'u_baseColorTexture': new Uniform1i(context),
@@ -81,68 +79,61 @@ const modelUniforms = (context: Context): ModelUniformsType => ({
 
 const emptyMat4 = new Float32Array(mat4.identity([]));
 
-const zeroVec3: [number, number, number] = [0, 0, 0];
+const lightMatScratch = mat3.create();
+
+export type ModelLayerUniformValues = {
+    lightPos: [number, number, number];
+    lightIntensity: number;
+    lightColor: [number, number, number];
+    colorMix: [number, number, number, number];
+    aoIntensity: number;
+};
+
+// Values that are the same for every mesh of a layer draw. Uniform3f/Uniform4f keep a reference to the array they
+// were set with, so these arrays must not be mutated after creation.
+const modelLayerUniformValues = (painter: Painter, layer: ModelStyleLayer): ModelLayerUniformValues => {
+    const light = painter.style.light.properties;
+    const p = light.get('position');
+    const lightPos: [number, number, number] = [-p.x, -p.y, p.z];
+    if (light.get('anchor') === 'viewport') {
+        vec3.transformMat3(lightPos, lightPos, mat3.fromRotation(lightMatScratch, -painter.transform.angle));
+    }
+    const c = light.get('color').toNonPremultipliedRenderColor(null);
+    const colorMix = layer.paint.get('model-color').constantOr(Color.white).toNonPremultipliedRenderColor(null).toArray01();
+    colorMix[3] = layer.paint.get('model-color-mix-intensity').constantOr(0.0);
+
+    return {
+        lightPos,
+        lightIntensity: light.get('intensity'),
+        lightColor: [c.r, c.g, c.b],
+        colorMix,
+        aoIntensity: layer.paint.get('model-ambient-occlusion-intensity')
+    };
+};
 
 const modelUniformValues = (
     matrix: mat4,
     lightingMatrix: mat4,
     normalMatrix: mat4,
     nodeMatrix: mat4,
-    painter: Painter,
+    layerValues: ModelLayerUniformValues,
     opacity: number,
-    baseColorFactor: Color,
-    emissiveFactor: Color,
-    metallicFactor: number,
-    roughnessFactor: number,
     material: Material,
     emissiveStrength: number,
-    layer: ModelStyleLayer,
     cameraPos: [number, number, number] = [0, 0, 0],
     occlusionTextureTransform?: [number, number, number, number] | null,
     materialOverride?: MaterialOverride | null,
     modelColorMix?: [number, number, number, number],
     ditheredDiscardThreshold: number = 1.0,
-    lighting3DMode: boolean = false,
 ): UniformValues<ModelUniformsType> => {
 
-    let lightPos: [number, number, number] = zeroVec3;
-    let lightIntensity = 0;
-    let lightColorArr: [number, number, number] = zeroVec3;
-
-    if (!lighting3DMode) {
-        const light = painter.style.light;
-        const _lp = light.properties.get('position');
-        lightPos = [-_lp.x, -_lp.y, _lp.z];
-        const anchor = light.properties.get('anchor');
-        if (anchor === 'viewport') {
-            const lightMat = mat3.create();
-            mat3.fromRotation(lightMat, -painter.transform.angle);
-            vec3.transformMat3(lightPos, lightPos, lightMat);
-        }
-        const lightColor = light.properties.get('color').toNonPremultipliedRenderColor(null);
-        lightIntensity = light.properties.get('intensity');
-        lightColorArr = [lightColor.r, lightColor.g, lightColor.b];
-    }
-
     const alphaMask = material.alphaMode === 'MASK';
+    const pbr = material.pbrMetallicRoughness;
 
-    const aoIntensity = layer.paint.get('model-ambient-occlusion-intensity');
-
-    const colorMix = layer.paint.get('model-color').constantOr(Color.white).toNonPremultipliedRenderColor(null);
-    colorMix.a = layer.paint.get('model-color-mix-intensity').constantOr(0.0);
-
-    if (modelColorMix) {
-        colorMix.r = modelColorMix[0];
-        colorMix.g = modelColorMix[1];
-        colorMix.b = modelColorMix[2];
-        colorMix.a = modelColorMix[3];
-    }
-
+    let colorMix = modelColorMix || layerValues.colorMix;
     if (materialOverride) {
-        colorMix.r = materialOverride.color.r;
-        colorMix.g = materialOverride.color.g;
-        colorMix.b = materialOverride.color.b;
-        colorMix.a = materialOverride.colorMix;
+        const c = materialOverride.color;
+        colorMix = [c.r, c.g, c.b, materialOverride.colorMix];
         emissiveStrength = materialOverride.emissionStrength;
         opacity = materialOverride.opacity * opacity;
     }
@@ -152,26 +143,25 @@ const modelUniformValues = (
         'u_lighting_matrix': lightingMatrix as Float32Array,
         'u_normal_matrix': normalMatrix as Float32Array,
         'u_node_matrix': (nodeMatrix ? nodeMatrix : emptyMat4) as Float32Array,
-        'u_lightpos': lightPos,
-        'u_lightintensity': lightIntensity,
-        'u_lightcolor': lightColorArr,
+        'u_lightpos': layerValues.lightPos,
+        'u_lightintensity': layerValues.lightIntensity,
+        'u_lightcolor': layerValues.lightColor,
         'u_camera_pos': cameraPos,
         'u_opacity': opacity,
-        'u_baseTextureIsAlpha': 0,
         'u_alphaMask': +alphaMask,
         'u_alphaCutoff': material.alphaCutoff,
-        'u_baseColorFactor': baseColorFactor.toNonPremultipliedRenderColor(null).toArray01(),
-        'u_emissiveFactor': emissiveFactor.toNonPremultipliedRenderColor(null).toArray01(),
-        'u_metallicFactor': metallicFactor,
-        'u_roughnessFactor': roughnessFactor,
+        'u_baseColorFactor': pbr.baseColorFactor.toNonPremultipliedRenderColor(null).toArray01(),
+        'u_emissiveFactor': material.emissiveFactor.toNonPremultipliedRenderColor(null).toArray01(),
+        'u_metallicFactor': pbr.metallicFactor,
+        'u_roughnessFactor': pbr.roughnessFactor,
         'u_baseColorTexture': TextureSlots.BaseColor,
         'u_metallicRoughnessTexture': TextureSlots.MetallicRoughness,
         'u_normalTexture': TextureSlots.Normal,
         'u_occlusionTexture': TextureSlots.Occlusion,
         'u_emissionTexture': TextureSlots.Emission,
         'u_lutTexture': TextureSlots.LUT,
-        'u_color_mix': colorMix.toArray01(),
-        'u_aoIntensity': aoIntensity,
+        'u_color_mix': colorMix,
+        'u_aoIntensity': layerValues.aoIntensity,
         'u_emissive_strength': emissiveStrength,
         'u_occlusionTextureTransform': occlusionTextureTransform ? occlusionTextureTransform : [0, 0, 0, 0] as [number, number, number, number],
         'u_dithered_discard_threshold': ditheredDiscardThreshold,
@@ -208,6 +198,7 @@ const modelDepthUniformValues = (
 
 export {
     modelUniforms,
+    modelLayerUniformValues,
     modelUniformValues,
     modelDepthUniforms,
     modelDepthUniformValues

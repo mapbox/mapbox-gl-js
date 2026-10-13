@@ -159,21 +159,20 @@ function projectPoints(points: Array<vec3>, origin: vec3, axis: vec3, out: [numb
     return out;
 }
 
-function intersectsFrustum(frustum: Frustum, aabbPoints: Array<vec3>): number {
+// The box corner farthest along a plane normal is outside only if all corners are, and the nearest one is inside
+// only if all corners are, so testing these two per plane is equivalent to testing all 8 corners. Negated `>= 0`
+// so that NaN (e.g. a degenerate frustum) counts as outside, like the per-corner test did.
+function intersectsFrustum(frustum: Frustum, min: vec3, max: vec3, minZ: number, maxZ: number): number {
     let fullyInside = true;
 
     for (let p = 0; p < frustum.planes.length; p++) {
         const plane = frustum.planes[p];
-        let pointsInside = 0;
+        const a = plane[0], b = plane[1], c = plane[2], d = plane[3];
 
-        for (let i = 0; i < aabbPoints.length; i++) {
-            pointsInside += +(vec3.dot(plane, aabbPoints[i]) + plane[3] >= 0);
-        }
-
-        if (pointsInside === 0)
+        if (!((a > 0 ? max[0] : min[0]) * a + (b > 0 ? max[1] : min[1]) * b + (c > 0 ? maxZ : minZ) * c + d >= 0))
             return 0;
 
-        if (pointsInside !== aabbPoints.length)
+        if (fullyInside && !((a > 0 ? min[0] : max[0]) * a + (b > 0 ? min[1] : max[1]) * b + (c > 0 ? minZ : maxZ) * c + d >= 0))
             fullyInside = false;
     }
 
@@ -497,7 +496,7 @@ class Aabb {
             return 0;
         }
 
-        return intersectsFrustum(frustum, this.getCorners());
+        return intersectsFrustum(frustum, this.min, this.max, this.min[2], this.max[2]);
     }
 
     intersectsFlat(frustum: Frustum): number {
@@ -506,14 +505,7 @@ class Aabb {
         }
 
         // Perform intersection test against flattened (z === 0) aabb
-        const aabbPoints: vec3[] = [
-            [this.min[0], this.min[1], 0.0],
-            [this.max[0], this.min[1], 0.0],
-            [this.max[0], this.max[1], 0.0],
-            [this.min[0], this.max[1], 0.0]
-        ];
-
-        return intersectsFrustum(frustum, aabbPoints);
+        return intersectsFrustum(frustum, this.min, this.max, 0, 0);
     }
 
     // Performs precise intersection test using separating axis theorem.

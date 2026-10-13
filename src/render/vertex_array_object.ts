@@ -45,7 +45,9 @@ class VertexArrayObject {
         }
         let dynamicBuffersDiffer = this.boundDynamicVertexBuffers.length !== dynamicVertexBuffers.length;
         for (let i = 0; !dynamicBuffersDiffer && i < dynamicVertexBuffers.length; i++) {
-            if (this.boundDynamicVertexBuffers[i] !== dynamicVertexBuffers[i]) {
+            const a = this.boundDynamicVertexBuffers[i], b = dynamicVertexBuffers[i];
+            // a buffer with the same layout (e.g. per-tile instances of a shared model mesh) is just repointed below
+            if (a !== b && (!a || !b || a.attributes !== b.attributes)) {
                 dynamicBuffersDiffer = true;
             }
         }
@@ -64,9 +66,13 @@ class VertexArrayObject {
             this.freshBind(program, layoutVertexBuffer, paintVertexBuffers, indexBuffer, vertexOffset, dynamicVertexBuffers, vertexAttribDivisorValue);
         } else {
             context.bindVertexArrayOES.set(this.vao);
-            for (const dynamicBuffer of dynamicVertexBuffers) {
+            for (let i = 0; i < dynamicVertexBuffers.length; i++) {
+                const dynamicBuffer = dynamicVertexBuffers[i];
                 if (dynamicBuffer) {
                     dynamicBuffer.bind();
+                    if (dynamicBuffer !== this.boundDynamicVertexBuffers[i]) {
+                        dynamicBuffer.setVertexAttribPointers(context.gl, program, vertexOffset);
+                    }
                     if (vertexAttribDivisorValue && dynamicBuffer.instanceCount) {
                         dynamicBuffer.setVertexAttribDivisor(context.gl, program, vertexAttribDivisorValue);
                     }
@@ -75,6 +81,7 @@ class VertexArrayObject {
             if (indexBuffer && indexBuffer.dynamicDraw) {
                 indexBuffer.bind();
             }
+            this.boundDynamicVertexBuffers = dynamicVertexBuffers;
         }
     }
 

@@ -569,7 +569,9 @@ class Program<Us extends UniformBindings> {
         const vertexAttribDivisorValue = instanceCount && instanceCount > 0 ? 1 : undefined;
         for (const segment of segments.get()) {
             const vaos = segment.vaos || (segment.vaos = {});
-            const vao: VertexArrayObject = vaos[layerID] || (vaos[layerID] = new VertexArrayObject());
+            const layerVaos = vaos[layerID] || (vaos[layerID] = new Map<WebGLProgram, VertexArrayObject>());
+            let vao = layerVaos.get(this.program);
+            if (!vao) layerVaos.set(this.program, vao = new VertexArrayObject());
             vao.bind(
                 context,
                 this,
