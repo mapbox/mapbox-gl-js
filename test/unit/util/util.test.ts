@@ -2,7 +2,7 @@
 // @ts-nocheck
 import Point from '@mapbox/point-geometry';
 import {describe, test, expect} from '../../util/vitest';
-import {mapValue, degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, parseExpiryData, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle} from '../../../src/util/util';
+import {mapValue, degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, parseExpiryData, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle} from '../../../src/util/util';
 
 const EPSILON = 1e-8;
 
@@ -27,8 +27,6 @@ describe('util', () => {
     expect(easeCubicInOut(0.2)).toEqual(0.03200000000000001);
     expect(easeCubicInOut(0.5)).toEqual(0.5);
     expect(easeCubicInOut(1)).toEqual(1);
-    expect(keysDifference({a: 1}, {})).toEqual(['a']);
-    expect(keysDifference({a: 1}, {a: 1})).toEqual([]);
     expect({a: 1, b: 2}).toEqual({a: 1, b: 2});
     expect(pick({a: 1, b: 2, c: 3}, ['a', 'c'])).toEqual({a: 1, c: 3});
     expect(pick({a: 1, b: 2, c: 3}, ['a', 'c', 'd'])).toEqual({a: 1, c: 3});

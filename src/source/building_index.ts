@@ -80,8 +80,7 @@ class BuildingIndex {
             let tile = sourceCache ? sourceCache.getTile(tileID) : null;
 
             if (!tile && sourceCache) {
-                for (const cachedTileKey in sourceCache._tiles) {
-                    const cachedTile = sourceCache._tiles[cachedTileKey];
+                for (const cachedTile of sourceCache._tiles.values()) {
                     if (tileID.canonical.isChildOf(cachedTile.tileID.canonical)) {
                         tile = cachedTile;
                         break;

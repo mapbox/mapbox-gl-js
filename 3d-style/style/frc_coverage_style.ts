@@ -13,7 +13,7 @@ import type Style from '../../src/style/style';
 // lazy code below out of core.
 export {updateFrcCoverageFadeRange} from './frc_coverage_eager';
 
-type SourceCacheTiles = {_tiles: Record<string, Tile>; _sourceLoaded?: boolean};
+type SourceCacheTiles = {_tiles: Map<number, Tile>; _sourceLoaded?: boolean};
 
 /// Per-Style state for HD road coverage conflation.
 /// Owned by Style via _hdCoverage; null when conflation is not configured.
@@ -37,9 +37,8 @@ export function updateFrcCoverage(style: Style, state: HdCoverageState) {
         const tiles = (sourceCache as unknown as SourceCacheTiles)._tiles;
         // Single loop over all loaded tiles — covers tiles with coverage data and
         // loaded/errored tiles without data (frcMask=0 unblocks deferred parse).
-        for (const key in tiles) {
-            const tile = tiles[key];
-            if (!tile || !tile.loaded()) continue;
+        for (const tile of tiles.values()) {
+            if (!tile.loaded()) continue;
             const polygons = tile.frcCoveragePolygons;
             if (polygons && polygons.length > 0) {
                 state.manager.addTileCoverage(tile.tileID.canonical, polygons);
@@ -58,11 +57,10 @@ export function updateFrcCoverage(style: Style, state: HdCoverageState) {
         for (const cacheMap of caches) {
             for (const cacheFqid in cacheMap) {
                 const sc = cacheMap[cacheFqid] as unknown as SourceCacheTiles & {_reloadTile: (id: number, state: string) => void};
-                for (const key in sc._tiles) {
-                    const tile = sc._tiles[key];
-                    if (tile && tile.hasDeferredRoadStructure) {
+                for (const [id, tile] of sc._tiles) {
+                    if (tile.hasDeferredRoadStructure) {
                         tile.hasDeferredRoadStructure = false;
-                        sc._reloadTile(+key, 'reloading');
+                        sc._reloadTile(id, 'reloading');
                     }
                 }
             }

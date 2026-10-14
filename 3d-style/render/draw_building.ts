@@ -116,8 +116,7 @@ function drawTiles(params: DrawParams) {
                 {config: programConfiguration, defines, overrideFog: false});
         } else if (!isBloomPass) {
 
-            const tileMatrix = painter.transform.calculatePosMatrix(coord.toUnwrapped(), painter.transform.worldSize);
-            mat4.scale(tileMatrix, tileMatrix, [1, 1, params.verticalScale]);
+            const tileMatrix = mat4.scale(new Float64Array(16), painter.transform.calculatePosMatrix(coord.toUnwrapped()), [1, 1, params.verticalScale]);
 
             // For tilespace XY, normals are ZUp. Flip Y to follow tile coordinate system orientation.
             // Take vertical scale into account and convert Z to meters.

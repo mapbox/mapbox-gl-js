@@ -3980,16 +3980,16 @@ test('Style#areTilesLoaded', async () => {
     await new Promise((resolve) => {
         style.on('style.load', () => {
             const fakeTileId = new OverscaledTileID(0, 0, 0, 0, 0);
-            style.getOwnSourceCache('geojson')._tiles[fakeTileId.key] = new Tile(fakeTileId);
+            style.getOwnSourceCache('geojson')._tiles.set(fakeTileId.key, new Tile(fakeTileId));
             expect(style.areTilesLoaded()).toEqual(false);
 
-            style.getOwnSourceCache('geojson')._tiles[fakeTileId.key].state = 'loaded';
+            style.getOwnSourceCache('geojson')._tiles.get(fakeTileId.key).state = 'loaded';
             expect(style.areTilesLoaded()).toEqual(true);
 
-            style.getSourceCache(makeFQID('geojson', 'basemap'))._tiles[fakeTileId.key] = new Tile(fakeTileId);
+            style.getSourceCache(makeFQID('geojson', 'basemap'))._tiles.set(fakeTileId.key, new Tile(fakeTileId));
             expect(style.areTilesLoaded()).toEqual(false);
 
-            style.getSourceCache(makeFQID('geojson', 'basemap'))._tiles[fakeTileId.key].state = 'loaded';
+            style.getSourceCache(makeFQID('geojson', 'basemap'))._tiles.get(fakeTileId.key).state = 'loaded';
             expect(style.areTilesLoaded()).toEqual(true);
 
             resolve();
@@ -4022,7 +4022,7 @@ test('Style#_updateTilesForChangedImages', async () => {
     const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
 
     const tile = new Tile(tileID);
-    sourceCache._tiles[tileID.key] = tile;
+    sourceCache._tiles.set(tileID.key, tile);
     vi.spyOn(tile, 'setDependencies');
 
     expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(false);

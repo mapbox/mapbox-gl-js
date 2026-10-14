@@ -1056,6 +1056,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         this.indexBuffer.destroy();
         this.programConfigurations.destroy();
         this.segments.destroy();
+        new SegmentVector(this.triangleSubSegments.map(s => s.segment)).destroy();
     }
 
     addFeature(featureId: number, feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[], tileTransform: TileTransform, brightness?: number | null) {
@@ -1740,7 +1741,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                     vertexLength: renderSegment.vertexLength,
                     primitiveOffset: renderSegment.primitiveOffset,
                     sortKey: undefined,
-                    vaos: {}
+                    vaos: renderSegment.vaos
                 };
             } else {
                 activeSegment.vertexLength += renderSegment.vertexLength;

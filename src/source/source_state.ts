@@ -131,7 +131,7 @@ class SourceFeatureState {
         tile.refreshFeatureState(painter);
     }
 
-    coalesceChanges(tiles: Record<string | number, Tile>, painter: Painter) {
+    coalesceChanges(tiles: Map<number, Tile>, painter: Painter) {
         //track changes with full state objects, but only for features that got modified
         const featuresChanged: LayerFeatureStates = Object.create(null) as LayerFeatureStates;
 
@@ -177,8 +177,7 @@ class SourceFeatureState {
 
         if (Object.keys(featuresChanged).length === 0) return;
 
-        for (const id in tiles) {
-            const tile = tiles[id];
+        for (const tile of tiles.values()) {
             tile.refreshFeatureState(painter, featuresChanged);
         }
     }

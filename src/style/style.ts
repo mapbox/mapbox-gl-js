@@ -2708,9 +2708,7 @@ class Style extends Evented<MapEvents> {
         const sources = this._mergedSourceCaches;
         for (const id in sources) {
             const source = sources[id];
-            const tiles = source._tiles;
-            for (const t in tiles) {
-                const tile = tiles[t];
+            for (const tile of source._tiles.values()) {
                 if (!(tile.state === 'loaded' || tile.state === 'errored')) return false;
             }
         }

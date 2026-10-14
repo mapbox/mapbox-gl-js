@@ -158,9 +158,9 @@ describe('Map', () => {
             await waitFor(map, "load");
             const fakeTileId = new OverscaledTileID(0, 0, 0, 0, 0);
             map.addSource('geojson', createStyleSource());
-            map.style.getOwnSourceCache('geojson')._tiles[fakeTileId.key] = new Tile(fakeTileId);
+            map.style.getOwnSourceCache('geojson')._tiles.set(fakeTileId.key, new Tile(fakeTileId));
             expect(map.areTilesLoaded()).toEqual(false);
-            map.style.getOwnSourceCache('geojson')._tiles[fakeTileId.key].state = 'loaded';
+            map.style.getOwnSourceCache('geojson')._tiles.get(fakeTileId.key).state = 'loaded';
             expect(map.areTilesLoaded()).toEqual(true);
         });
     });
@@ -176,9 +176,9 @@ describe('Map', () => {
             map.addSource('geojson', createStyleSource());
             const source = map.getSource('geojson');
             const fakeTileId = new OverscaledTileID(0, 0, 0, 0, 0);
-            map.style.getOwnSourceCache('geojson')._tiles[fakeTileId.key] = new Tile(fakeTileId);
+            map.style.getOwnSourceCache('geojson')._tiles.set(fakeTileId.key, new Tile(fakeTileId));
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            map.style.getOwnSourceCache('geojson')._tiles[fakeTileId.key].state = tileState;
+            map.style.getOwnSourceCache('geojson')._tiles.get(fakeTileId.key).state = tileState;
 
             return {map, source};
         }

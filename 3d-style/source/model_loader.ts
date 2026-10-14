@@ -405,7 +405,7 @@ function convertNode(nodeDesc: GLTFNode, gltf: GLTF, meshes: Array<Array<Mesh>>)
     const {matrix, rotation, translation, scale, mesh, extras, children, name} = nodeDesc;
     const node = {} as ModelNode;
     node.name = name;
-    node.localMatrix = matrix || mat4.fromRotationTranslationScale([], rotation || [0, 0, 0, 1], translation || [0, 0, 0], scale || [1, 1, 1]);
+    node.localMatrix = matrix ? Float64Array.from(matrix) : mat4.fromRotationTranslationScale(new Float64Array(16), rotation || [0, 0, 0, 1], translation || [0, 0, 0], scale || [1, 1, 1]);
     node.globalMatrix = mat4.clone(node.localMatrix);
     if (mesh !== undefined) {
         node.meshes = meshes[mesh];

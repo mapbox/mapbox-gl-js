@@ -33,7 +33,7 @@ async function depthProgramLinked(style) {
     // Force a frame after the HD chunk has loaded, so the depth pass actually runs.
     map.triggerRepaint();
     await waitFor(map, 'idle');
-    return Object.values(map.painter.cache).some((program) => program.name === 'elevatedStructuresDepthReconstruct');
+    return Array.from(map.painter.cache.values()).some((program) => program.name === 'elevatedStructuresDepthReconstruct');
 }
 
 describe('elevated fill depth program', () => {

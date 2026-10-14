@@ -271,26 +271,6 @@ export function asyncAll<Item, Result>(
     });
 }
 
-/*
- * Compute the difference between the keys in one object and the keys
- * in another object.
- *
- * @returns keys difference
- * @private
- */
-export function keysDifference<S, T>(
-    obj: Record<PropertyKey, S>,
-    other: Record<PropertyKey, T>,
-): Array<string> {
-    const difference: string[] = [];
-    for (const i in obj) {
-        if (!(i in other)) {
-            difference.push(i);
-        }
-    }
-    return difference;
-}
-
 /**
  * Given an object and a number of properties as strings, return version
  * of that object with only those properties.
@@ -793,28 +773,28 @@ export function computeColorAdjustmentMatrix(
 
     const sa = saturation / 3.0;
     const sb = 1.0 - 2.0 * sa;
-    const saturationMatrix: mat4 = [
+    const saturationMatrix: mat4 = Float64Array.of(
         sb,  sa,  sa,  0.0,
         sa,  sb,  sa,  0.0,
         sa,  sa,  sb,  0.0,
         0.0, 0.0, 0.0, 1.0
-    ];
+    );
 
     const cs = 0.5 - 0.5 * contrast;
-    const contrastMatrix: mat4 = [
+    const contrastMatrix: mat4 = Float64Array.of(
         contrast, 0.0,      0.0,      0.0,
         0.0,      contrast, 0.0,      0.0,
         0.0,      0.0,      contrast, 0.0,
         cs,       cs,       cs,       1.0
-    ];
+    );
 
     const hl = brightnessMax - brightnessMin;
-    const brightnessMatrix: mat4 = [
+    const brightnessMatrix: mat4 = Float64Array.of(
         hl,            0.0,           0.0,           0.0,
         0.0,           hl,            0.0,           0.0,
         0.0,           0.0,           hl,            0.0,
         brightnessMin, brightnessMin, brightnessMin, 1.0
-    ];
+    );
 
     mat4.multiply(m, brightnessMatrix, contrastMatrix);
     mat4.multiply(m, m, saturationMatrix);

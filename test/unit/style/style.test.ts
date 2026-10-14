@@ -3061,7 +3061,7 @@ test('Style#_updateTilesForChangedImages', async () => {
     const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
 
     const tile = new Tile(tileID);
-    sourceCache._tiles[tileID.key] = tile;
+    sourceCache._tiles.set(tileID.key, tile);
     vi.spyOn(tile, 'setDependencies');
 
     expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(false);

@@ -163,7 +163,7 @@ describe('CrossTileSymbolIndex.addLayer', () => {
         expect(mainInstances[0].crossTileID).toEqual(1);
         expect(mainInstances[1].crossTileID).toEqual(2);
 
-        const layerIndex = index.layerIndexes[styleLayer.id];
+        const layerIndex = index.layerIndexes.get(styleLayer.id);
         expect([...layerIndex.usedCrossTileIDs[6]]).toEqual([1, 2]);
 
         // copies parent ids without duplicate ids in this tile
@@ -199,7 +199,7 @@ describe('CrossTileSymbolIndex.addLayer', () => {
         expect(firstInstances[0].crossTileID).toEqual(1);
         expect(firstInstances[1].crossTileID).toEqual(2);
 
-        const layerIndex = index.layerIndexes[styleLayer.id];
+        const layerIndex = index.layerIndexes.get(styleLayer.id);
         expect([...layerIndex.usedCrossTileIDs[6]]).toEqual([1, 2]);
 
         // uses same ids when tile gets updated
@@ -245,11 +245,11 @@ test('CrossTileSymbolIndex.pruneUnusedLayers', () => {
     index.addLayer(styleLayer, [tile], 0, {name: 'mercator'});
     expect(instances[0].crossTileID).toEqual(1);
     expect(instances[1].crossTileID).toEqual(2);
-    expect(index.layerIndexes[styleLayer.id]).toBeTruthy();
+    expect(index.layerIndexes.get(styleLayer.id)).toBeTruthy();
 
     // remove styleLayer
     index.pruneUnusedLayers([]);
-    expect(index.layerIndexes[styleLayer.id]).toBeFalsy();
+    expect(index.layerIndexes.get(styleLayer.id)).toBeFalsy();
 });
 
 test('TileLayerIndex.findMatches sort order', () => {

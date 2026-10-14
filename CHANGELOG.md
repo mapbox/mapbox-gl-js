@@ -8,7 +8,7 @@
 - Fix a sudden camera jump at the end of long `flyTo` camera animations.
 - Improve tile load performance via optimization of style property values recalculation.
 - Fix 0 fadeDuration symbol placement offset.
-- Improve model rendering performance.
+- Improve rendering performance via per-frame main thread work optimizations.
 
 ## 3.33.0
 

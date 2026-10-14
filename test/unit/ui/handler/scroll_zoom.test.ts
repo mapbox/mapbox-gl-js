@@ -247,9 +247,8 @@ describe('ScrollZoomHandler', () => {
             map._renderTaskQueue.run();
 
             // Simulate the switching of DEM tiles (due to LOD perhaps) to low elevation dems
-            const tiles = map.style.getOwnSourceCache('mapbox-dem')._tiles;
-            for (const tile in tiles)
-                tiles[tile].dem = zeroElevationDem;
+            for (const tile of map.style.getOwnSourceCache('mapbox-dem')._tiles.values())
+                tile.dem = zeroElevationDem;
 
             // Let easing function to modify the zoom
             let prevZoom = map.getZoom();

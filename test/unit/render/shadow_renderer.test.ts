@@ -44,7 +44,7 @@ function styleWithModelSource(models) {
 async function drewGroundShadows(style) {
     const map = createMap({zoom: 12, center: [0, 0], style});
     await waitFor(map, 'idle');
-    return Object.values(map.painter.cache).some((program) => program.name === 'groundShadow');
+    return Array.from(map.painter.cache.values()).some((program) => program.name === 'groundShadow');
 }
 
 function drewGroundShadowsForCaster(features) {

@@ -172,7 +172,6 @@ class Transform {
     worldMinY!: number;
     worldMaxY!: number;
 
-    cameraFrustum!: Frustum;
     frustumCorners!: FrustumCorners;
     _tileCoverLift: number;
 
@@ -196,24 +195,14 @@ class Transform {
     _center: LngLat;
     _edgeInsets: EdgeInsets;
     _constraining!: boolean;
-    _projMatrixCache: {
-        [_: number]: mat4;
-    };
-    _alignedProjMatrixCache: {
-        [_: number]: mat4;
-    };
-    _pixelsToTileUnitsCache!: {
-        [_: number]: mat2;
-    };
-    _expandedProjMatrixCache: {
-        [_: number]: mat4;
-    };
-    _fogTileMatrixCache: {
-        [_: number]: mat4;
-    };
-    _distanceTileDataCache: {
-        [_: number]: FeatureDistanceData;
-    };
+    _frustumCache: Map<number, Frustum>;
+    _posMatrixCache: Map<number, mat4>;
+    _projMatrixCache: Map<number, mat4>;
+    _alignedProjMatrixCache: Map<number, mat4>;
+    _pixelsToTileUnitsCache: Map<number, mat2>;
+    _expandedProjMatrixCache: Map<number, mat4>;
+    _fogTileMatrixCache: Map<number, mat4>;
+    _distanceTileDataCache: Map<number, FeatureDistanceData>;
     _camera: FreeCamera;
     _centerAltitude: number;
     _centerAltitudeValidForExaggeration: number | null | undefined;
@@ -257,11 +246,14 @@ class Transform {
         this._nearClipOffset = 0;
         this._unmodified = true;
         this._edgeInsets = new EdgeInsets();
-        this._projMatrixCache = {};
-        this._alignedProjMatrixCache = {};
-        this._fogTileMatrixCache = {};
-        this._expandedProjMatrixCache = {};
-        this._distanceTileDataCache = {};
+        this._frustumCache = new Map();
+        this._posMatrixCache = new Map();
+        this._projMatrixCache = new Map();
+        this._alignedProjMatrixCache = new Map();
+        this._pixelsToTileUnitsCache = new Map();
+        this._fogTileMatrixCache = new Map();
+        this._expandedProjMatrixCache = new Map();
+        this._distanceTileDataCache = new Map();
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
         this._averageElevation = 0;
@@ -557,7 +549,7 @@ class Transform {
     set averageElevation(averageElevation: number) {
         this._averageElevation = averageElevation;
         this._calcFogMatrices();
-        this._distanceTileDataCache = {};
+        this._distanceTileDataCache.clear();
     }
 
     get zoom(): number { return this._zoom; }
@@ -1314,12 +1306,13 @@ class Transform {
         const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
         const isGlobe = this.projection.name === 'globe';
         const zInMeters = !isGlobe;
-        const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z, zInMeters);
+        const cameraFrustum = this.getFrustum(z);
         const cameraCoord = isGlobe ? this._camera.mercatorPosition : this.pointCoordinate(this.getCameraPoint());
         const meterToTile = numTiles * mercatorZfromAltitude(1, this.center.lat);
         const cameraAltitude = this._camera.position[2] / mercatorZfromAltitude(1, this.center.lat);
         const cameraPoint = [numTiles * cameraCoord.x, numTiles * cameraCoord.y, cameraAltitude * (zInMeters ? 1 : meterToTile)];
         const verticalFrustumIntersect = isGlobe || hasExaggeration;
+        const cameraForward = this._camera.forward();
         // Let's consider an example for !roundZoom: e.g. tileZoom 16 is used from zoom 16 all the way to zoom 16.99.
         // This would mean that the minimal distance to split would be based on distance from camera to center of 16.99 zoom.
         // The same is already incorporated in logic behind roundZoom for raster (so there is no adjustment needed in following line).
@@ -1518,21 +1511,18 @@ class Transform {
 
             let closestDistance = Number.MAX_VALUE;
             let closestElevation = 0.0;
-            const corners = it.aabb.getCorners();
-            const distanceXyz: [number, number, number] = [0, 0, 0];
-            for (const corner of corners) {
-                vec3.sub(distanceXyz, corner, cameraPoint);
-                if (!isGlobe) {
-                    if (useElevationData) {
-                        distanceXyz[2] *= meterToTile;
-                    } else {
-                        distanceXyz[2] = cameraHeight;
-                    }
-                }
-                const dist = vec3.dot(distanceXyz, this._camera.forward());
+            const {min, max} = it.aabb;
+            // corners in the same order as Aabb#getCorners, since ties keep the first corner's elevation
+            for (let i = 0; i < 8; i++) {
+                const q = i & 3;
+                const cx = (q === 1 || q === 2 ? max[0] : min[0]) - cameraPoint[0];
+                const cy = (q >= 2 ? max[1] : min[1]) - cameraPoint[1];
+                let cz = (i >= 4 ? max[2] : min[2]) - cameraPoint[2];
+                if (!isGlobe) cz = useElevationData ? cz * meterToTile : cameraHeight;
+                const dist = cx * cameraForward[0] + cy * cameraForward[1] + cz * cameraForward[2];
                 if (dist < closestDistance) {
                     closestDistance = dist;
-                    closestElevation = Math.abs(distanceXyz[2]);
+                    closestElevation = Math.abs(cz);
                 }
             }
 
@@ -2210,16 +2200,19 @@ class Transform {
         this._constrain();
     }
 
-    calculatePosMatrix(unwrappedTileID: UnwrappedTileID, worldSize: number): mat4 {
-        return this.projection.createTileMatrix(this, worldSize, unwrappedTileID);
+    // Returns a cached matrix, so callers must not modify it
+    calculatePosMatrix(unwrappedTileID: UnwrappedTileID): mat4 {
+        let posMatrix = this._posMatrixCache.get(unwrappedTileID.key);
+        if (!posMatrix) {
+            posMatrix = this.projection.createTileMatrix(this, this.worldSize, unwrappedTileID);
+            this._posMatrixCache.set(unwrappedTileID.key, posMatrix);
+        }
+        return posMatrix;
     }
 
     calculateDistanceTileData(unwrappedTileID: UnwrappedTileID): FeatureDistanceData {
-        const distanceDataKey = unwrappedTileID.key;
-        const cache = this._distanceTileDataCache;
-        if (cache[distanceDataKey]) {
-            return cache[distanceDataKey];
-        }
+        const cached = this._distanceTileDataCache.get(unwrappedTileID.key);
+        if (cached) return cached;
 
         //Calculate the offset of the tile
         const canonical = unwrappedTileID.canonical;
@@ -2242,13 +2235,13 @@ class Transform {
 
         const cX = (center.x - tX) * windowScaleFactor;
         const cY = (center.y - tY) * windowScaleFactor;
-        cache[distanceDataKey] = {
+        const data: FeatureDistanceData = {
             bearing: [bX, bY],
             center: [cX, cY],
             scale: (scale / EXTENT) * windowScaleFactor
         };
-
-        return cache[distanceDataKey];
+        this._distanceTileDataCache.set(unwrappedTileID.key, data);
+        return data;
     }
 
     /**
@@ -2261,17 +2254,15 @@ class Transform {
      * @private
      */
     calculateFogTileMatrix(unwrappedTileID: UnwrappedTileID): mat4 {
-        const fogTileMatrixKey = unwrappedTileID.key;
-        const cache = this._fogTileMatrixCache;
-        if (cache[fogTileMatrixKey]) {
-            return cache[fogTileMatrixKey];
-        }
+        const cached = this._fogTileMatrixCache.get(unwrappedTileID.key);
+        if (cached) return cached;
 
         const posMatrix = this.projection.createTileMatrix(this, this.cameraWorldSizeForFog, unwrappedTileID);
         mat4.multiply(posMatrix, this.worldToFogMatrix, posMatrix);
 
-        cache[fogTileMatrixKey] = new Float32Array(posMatrix);
-        return cache[fogTileMatrixKey];
+        const fogTileMatrix = new Float32Array(posMatrix);
+        this._fogTileMatrixCache.set(unwrappedTileID.key, fogTileMatrix);
+        return fogTileMatrix;
     }
 
     /**
@@ -2284,20 +2275,10 @@ class Transform {
         aligned: boolean = false,
         expanded: boolean = false,
     ): mat4 {
-        const projMatrixKey = unwrappedTileID.key;
-        let cache: Record<number, mat4>;
-        if (expanded) {
-            cache = this._expandedProjMatrixCache;
-        } else if (aligned) {
-            cache = this._alignedProjMatrixCache;
-        } else {
-            cache = this._projMatrixCache;
-        }
-        if (cache[projMatrixKey]) {
-            return cache[projMatrixKey];
-        }
+        const cache = expanded ? this._expandedProjMatrixCache : aligned ? this._alignedProjMatrixCache : this._projMatrixCache;
+        const cached = cache.get(unwrappedTileID.key);
+        if (cached) return cached;
 
-        const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.worldSize);
         let projMatrix: mat4;
         if (this.projection.isReprojectedInTileSpace) {
             projMatrix = this.mercatorMatrix;
@@ -2307,22 +2288,18 @@ class Transform {
         } else {
             projMatrix = aligned ? this.alignedProjMatrix : this.projMatrix;
         }
-        mat4.multiply(posMatrix, projMatrix, posMatrix);
-
-        cache[projMatrixKey] = new Float32Array(posMatrix);
-        return cache[projMatrixKey];
+        const tileProjMatrix = mat4.multiply(new Float32Array(16), projMatrix, this.calculatePosMatrix(unwrappedTileID));
+        cache.set(unwrappedTileID.key, tileProjMatrix);
+        return tileProjMatrix;
     }
 
     calculatePixelsToTileUnitsMatrix(tile: Tile): mat2 {
-        const key = tile.tileID.key;
-        const cache = this._pixelsToTileUnitsCache;
-        if (cache[key]) {
-            return cache[key];
-        }
+        const cached = this._pixelsToTileUnitsCache.get(tile.tileID.key);
+        if (cached) return cached;
 
         const matrix = getPixelsToTileUnitsMatrix(tile, this);
-        cache[key] = matrix;
-        return cache[key];
+        this._pixelsToTileUnitsCache.set(tile.tileID.key, matrix);
+        return matrix;
     }
 
     customLayerMatrix(): mat4 {
@@ -2574,8 +2551,8 @@ class Transform {
         // Captured before the reprojection adjustments, which apply to the combined matrix only.
         this._cameraToClip = cameraToClip;
 
-        const worldToClipPerspective = mat4.mul([], cameraToClipPerspective, worldToCamera);
-        const m = mat4.mul([], cameraToClip, worldToCamera);
+        const worldToClipPerspective = mat4.mul(new Float64Array(16), cameraToClipPerspective, worldToCamera);
+        const m = mat4.mul(new Float64Array(16), cameraToClip, worldToCamera);
 
         if (this.projection.isReprojectedInTileSpace) {
             // Projections undistort as you zoom in (shear, scale, rotate).
@@ -2602,6 +2579,7 @@ class Transform {
         // For tile cover calculation, use inverted of base (non elevated) matrix
         // as tile elevations are in tile coordinates and relative to center elevation.
         mat4.invert(this.invProjMatrix, this.projMatrix);
+        this._frustumCache.clear();
 
         if (isGlobe) {
             const expandedCameraToClipPerspective = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, Infinity);
@@ -2616,9 +2594,6 @@ class Transform {
         mat4.invert(this._mat4Scratch, cameraToClip);
         const clipToCamera = this._mat4Scratch;
         this.frustumCorners = FrustumCorners.fromInvProjectionMatrix(clipToCamera, this.horizonLineFromTop(), this.height);
-
-        // Create a camera frustum in mercator units
-        this.cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, 0.0, !isGlobe);
 
         mat4.fromScaling(this.skyboxMatrix, [1, -1, 1]);
         mat4.rotateX(this.skyboxMatrix, this.skyboxMatrix, this._pitch);
@@ -2660,7 +2635,7 @@ class Transform {
         mat4.multiply(this.pixelMatrix, this.labelPlaneMatrix, worldToClipPerspective);
 
         this._calcFogMatrices();
-        this._distanceTileDataCache = {};
+        this._distanceTileDataCache.clear();
 
         // inverse matrix for conversion from screen coordinates to location
         if (!mat4.invert(this.pixelMatrixInverse, this.pixelMatrix)) throw new Error("failed to invert matrix");
@@ -2679,14 +2654,15 @@ class Transform {
             mat4.multiply(new Float64Array(16), worldToCamera, this.globeMatrix) :
             worldToCamera;
 
-        this._projMatrixCache = {};
-        this._alignedProjMatrixCache = {};
-        this._pixelsToTileUnitsCache = {};
-        this._expandedProjMatrixCache = {};
+        this._posMatrixCache.clear();
+        this._projMatrixCache.clear();
+        this._alignedProjMatrixCache.clear();
+        this._pixelsToTileUnitsCache.clear();
+        this._expandedProjMatrixCache.clear();
     }
 
     _calcFogMatrices() {
-        this._fogTileMatrixCache = {};
+        this._fogTileMatrixCache.clear();
 
         const cameraWorldSizeForFog = this.cameraWorldSizeForFog;
         const cameraPixelsPerMeter = this.cameraPixelsPerMeter;
@@ -2985,9 +2961,20 @@ class Transform {
         return this._cameraToClip;
     }
 
+    // Returns a cached frustum, so callers must not modify it
     getFrustum(zoom: number): Frustum {
-        const zInMeters = this.projection.zAxisUnit === 'meters';
-        return Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, zoom, zInMeters);
+        let frustum = this._frustumCache.get(zoom);
+        if (!frustum) {
+            const zInMeters = this.projection.zAxisUnit === 'meters';
+            frustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, zoom, zInMeters);
+            this._frustumCache.set(zoom, frustum);
+        }
+        return frustum;
+    }
+
+    // Camera frustum in mercator units
+    get cameraFrustum(): Frustum {
+        return this.getFrustum(0);
     }
 }
 

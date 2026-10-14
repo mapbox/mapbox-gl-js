@@ -1112,11 +1112,19 @@ export class Placement {
                 iconAllowOverlap && (textAllowOverlap || !bucket.hasTextData() || layout.get('text-optional')),
                 true);
 
-        const addOpacities = (iconOrText: SymbolBuffers, numVertices: number, opacity: number) => {
+        // clear() keeps the previous values in place, and the GPU buffer always holds them, so compare
+        // before overwriting and skip the upload when nothing changed
+        const addOpacities = (iconOrText: SymbolBuffers, numVertices: number, opacity: number): boolean => {
+            const array = iconOrText.opacityVertexArray;
+            let changed = false;
             for (let i = 0; i < numVertices / 4; i++) {
-                iconOrText.opacityVertexArray.emplaceBack(opacity);
+                if (array.uint32[array.length] !== opacity) changed = true;
+                array.emplaceBack(opacity);
             }
+            return changed;
         };
+        let textOpacityChanged = false;
+        let iconOpacityChanged = false;
 
         let visibleInstanceCount = 0;
 
@@ -1197,9 +1205,9 @@ export class Placement {
                 // Vertical text fades in/out on collision the same way as corresponding
                 // horizontal text. Switch between vertical/horizontal should be instantaneous
                 const horizontalOpacity = horizontalHidden ? PACKED_HIDDEN_OPACITY : packedOpacity;
-                addOpacities(bucket.text, numHorizontalGlyphVertices, horizontalOpacity);
+                if (addOpacities(bucket.text, numHorizontalGlyphVertices, horizontalOpacity)) textOpacityChanged = true;
                 const verticalOpacity = verticalHidden ? PACKED_HIDDEN_OPACITY : packedOpacity;
-                addOpacities(bucket.text, numVerticalGlyphVertices, verticalOpacity);
+                if (addOpacities(bucket.text, numVerticalGlyphVertices, verticalOpacity)) textOpacityChanged = true;
 
                 // If this label is completely faded, mark it so that we don't have to calculate
                 // its position at render time. If this layer has variable placement, shift the various
@@ -1238,13 +1246,13 @@ export class Placement {
 
                 if (placedIconSymbolIndex >= 0) {
                     const horizontalOpacity = !horizontalHidden ? packedOpacity : PACKED_HIDDEN_OPACITY;
-                    addOpacities(bucket.icon, numIconVertices, horizontalOpacity);
+                    if (addOpacities(bucket.icon, numIconVertices, horizontalOpacity)) iconOpacityChanged = true;
                     array.get(placedIconSymbolIndex).hidden = iconHidden;
                 }
 
                 if (verticalPlacedIconSymbolIndex >= 0) {
                     const verticalOpacity = !verticalHidden ? packedOpacity : PACKED_HIDDEN_OPACITY;
-                    addOpacities(bucket.icon, symbolInstance.numVerticalIconVertices, verticalOpacity);
+                    if (addOpacities(bucket.icon, symbolInstance.numVerticalIconVertices, verticalOpacity)) iconOpacityChanged = true;
                     array.get(verticalPlacedIconSymbolIndex).hidden = iconHidden;
                 }
             }
@@ -1315,10 +1323,10 @@ export class Placement {
             this.retainedQueryData[bucket.bucketInstanceId].featureSortOrder = bucket.featureSortOrder;
         }
 
-        if (bucket.hasTextData() && bucket.text.opacityVertexBuffer) {
+        if (textOpacityChanged && bucket.hasTextData() && bucket.text.opacityVertexBuffer) {
             bucket.text.opacityVertexBuffer.updateData(bucket.text.opacityVertexArray);
         }
-        if (bucket.hasIconData() && bucket.icon.opacityVertexBuffer) {
+        if (iconOpacityChanged && bucket.hasIconData() && bucket.icon.opacityVertexBuffer) {
             bucket.icon.opacityVertexBuffer.updateData(bucket.icon.opacityVertexArray);
         }
         if (bucket.hasIconCollisionBoxData() && bucket.iconCollisionBox.collisionVertexBuffer) {

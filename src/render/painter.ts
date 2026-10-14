@@ -232,7 +232,7 @@ class Painter {
     quadTriangleIndexBuffer!: IndexBuffer;
     mercatorBoundsBuffer!: VertexBuffer;
     mercatorBoundsSegments!: SegmentVector;
-    _tileClippingMaskIDs!: Record<number, number>;
+    _tileClippingMaskIDs!: Map<number, number>;
     stencilClearMode!: StencilMode;
     style!: Style;
     options!: PainterOptions;
@@ -269,7 +269,7 @@ class Painter {
     nextStencilID!: number;
     id!: string;
     _showOverdrawInspector!: boolean;
-    cache!: Record<string, Program<UniformBindings>>;
+    cache: Map<string, Program<UniformBindings>>;
     symbolFadeChange!: number;
     // This frame's timestamp, reused by the symbol program's GLOBAL_PLACEMENT_FADE uniforms
     now!: number;
@@ -301,7 +301,7 @@ class Painter {
     renderDefaultSouthPole: boolean;
     renderElevatedRasterBackface!: boolean;
     _fogVisible: boolean;
-    _cachedTileFogOpacities: Record<number, [number, number]>;
+    _cachedTileFogOpacities: Map<number, [number, number]>;
     _shadowRenderer?: ShadowRenderer;
     _lightsUniforms: UniformValues<LightsUniformsType> | null = null;
     _fogUniforms: UniformValues<FogUniformsType> | null = null;
@@ -372,6 +372,7 @@ class Painter {
         this._forceFullRgbaEmissive = emissiveColorPrecision === 'exact';
 
         this.transform = transform;
+        this.cache = new Map();
         this._tileTextures = {};
         this.frameCopies = [];
         this.loadTimeStamps = [];
@@ -459,7 +460,7 @@ class Painter {
         this.longestCutoffRange = 0.0;
         this.minCutoffZoom = 0.0;
         this._fogVisible = false;
-        this._cachedTileFogOpacities = {};
+        this._cachedTileFogOpacities = new Map();
 
         this._wireframeDebugCache = new WireframeDebugCache();
         this.renderDefaultNorthPole = true;
@@ -666,7 +667,7 @@ class Painter {
 
         this.nextStencilID = 1;
         this.currentStencilSource = undefined;
-        this._tileClippingMaskIDs = {};
+        this._tileClippingMaskIDs = new Map();
         this._grouped3DStencil = null;
 
         // As a temporary workaround for https://github.com/mapbox/mapbox-gl-js/issues/5490,
@@ -683,7 +684,7 @@ class Painter {
     resetStencilClippingMasks() {
         if (!this.terrain) {
             this.currentStencilSource = undefined;
-            this._tileClippingMaskIDs = {};
+            this._tileClippingMaskIDs = new Map();
         }
     }
 
@@ -696,7 +697,7 @@ class Painter {
             let dirtyStencilClippingMasks = false;
             // Equivalent tile set is already rendered in stencil
             for (const coord of tileIDs) {
-                if (this._tileClippingMaskIDs[coord.key] === undefined) {
+                if (!this._tileClippingMaskIDs.has(coord.key)) {
                     dirtyStencilClippingMasks = true;
                     break;
                 }
@@ -721,11 +722,12 @@ class Painter {
 
         const program = this.getOrCreateProgram('clippingMask');
 
-        this._tileClippingMaskIDs = {};
+        this._tileClippingMaskIDs = new Map();
 
         for (const tileID of tileIDs) {
             const tile = sourceCache.getTile(tileID);
-            const id = this._tileClippingMaskIDs[tileID.key] = this.nextStencilID++;
+            const id = this.nextStencilID++;
+            this._tileClippingMaskIDs.set(tileID.key, id);
             const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = this.getTileBoundsBuffers(tile);
 
             program.draw(this, gl.TRIANGLES, DepthMode.disabled,
@@ -827,8 +829,9 @@ class Painter {
     stencilModeForClipping(tileID: OverscaledTileID): Readonly<StencilMode> {
         if (this.terrain) return this.terrain.stencilModeForRTTOverlap(tileID);
         const gl = this.context.gl;
-        assert(this._tileClippingMaskIDs[tileID.key] != null);
-        return new StencilMode({func: gl.EQUAL, mask: 0xFF}, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
+        const id = this._tileClippingMaskIDs.get(tileID.key);
+        assert(id != null);
+        return new StencilMode({func: gl.EQUAL, mask: 0xFF}, id, 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
     /*
@@ -1257,7 +1260,7 @@ class Painter {
             this._fogVisible = false;
         }
 
-        this._cachedTileFogOpacities = {};
+        this._cachedTileFogOpacities.clear();
 
         if (this.terrain) {
             this.terrain.updateTileBinding(coordsDescendingSymbol);
@@ -1977,25 +1980,25 @@ class Painter {
     }
 
     getOrCreateProgram<T extends ProgramName>(name: T, options?: CreateProgramParams): Program<ProgramUniformsType[T]> {
-        this.cache = this.cache || {};
         const {defines, config, overrideFog, overrideRtt, overrideTerrain, overrideGlobe, precompiled} = options || {};
 
         const globalDefines = this.currentGlobalDefines(name, overrideFog, overrideRtt, overrideTerrain, overrideGlobe);
-        const allDefines = globalDefines.concat(defines || []);
-
         const shaderSource = this.getShaderSource(name);
-        const hdUniforms = HD.programUniforms as Record<string, (context: Context) => UniformBindings> | undefined;
-        const standardUniforms = Standard.programUniforms as Record<string, (context: Context) => UniformBindings> | undefined;
-        const uniforms = (programUniforms as Record<string, (context: Context) => UniformBindings>)[name] ||
-            (hdUniforms && hdUniforms[name]) ||
-            (standardUniforms && standardUniforms[name]);
-        const key = Program.cacheKey(shaderSource, name, allDefines, config);
+        const key = Program.cacheKey(shaderSource, name, globalDefines, defines, config);
 
-        if (!this.cache[key]) {
-            this.cache[key] = new Program(this.context, name, shaderSource, config, uniforms, allDefines, precompiled);
+        let program = this.cache.get(key);
+        if (!program) {
+            const hdUniforms = HD.programUniforms as Record<string, (context: Context) => UniformBindings> | undefined;
+            const standardUniforms = Standard.programUniforms as Record<string, (context: Context) => UniformBindings> | undefined;
+            const uniforms = (programUniforms as Record<string, (context: Context) => UniformBindings>)[name] ||
+                (hdUniforms && hdUniforms[name]) ||
+                (standardUniforms && standardUniforms[name]);
+            const allDefines = defines ? globalDefines.concat(defines) : globalDefines;
+            program = new Program(this.context, name, shaderSource, config, uniforms, allDefines, precompiled);
+            this.cache.set(key, program);
         }
 
-        return this.cache[key] as Program<ProgramUniformsType[T]>;
+        return program as Program<ProgramUniformsType[T]>;
     }
 
     // Returns shader source metadata for a program name, including the usedDefines set
@@ -2201,12 +2204,13 @@ class Painter {
     }
 
     isTileAffectedByFog(id: OverscaledTileID): boolean {
-        if (!this.style || !this.style.fog) return false;
+        if (!this._fogVisible) return false;
         if (this.transform.projection.name === 'globe') return true;
 
-        let cachedRange = this._cachedTileFogOpacities[id.key];
+        let cachedRange = this._cachedTileFogOpacities.get(id.key);
         if (!cachedRange) {
-            this._cachedTileFogOpacities[id.key] = cachedRange = this.style.fog.getOpacityForTile(id);
+            cachedRange = this.style.fog.getOpacityForTile(id);
+            this._cachedTileFogOpacities.set(id.key, cachedRange);
         }
 
         return cachedRange[0] >= FOG_OPACITY_THRESHOLD || cachedRange[1] >= FOG_OPACITY_THRESHOLD;

@@ -9,7 +9,7 @@ import type Style from '../../src/style/style';
 import type {CanonicalTileID} from '../../src/source/tile_id';
 import type {ElevationCoverageSnapshot} from '../../src/source/elevation_coverage_snapshot';
 
-type SourceCacheTiles = {_tiles: Record<string, Tile>; _sourceLoaded?: boolean; used?: boolean};
+type SourceCacheTiles = {_tiles: Map<number, Tile>; _sourceLoaded?: boolean; used?: boolean};
 
 /// Signature of provider tiles covering featureTile; changes on add, remove, or reparse.
 function coverageSignature(snapshot: ElevationCoverageSnapshot, featureTile: CanonicalTileID): string {
@@ -47,9 +47,8 @@ function areElevationProvidersReady(style: Style, providerFQIDs: Set<string>): b
         const sc = resolveIngestSourceCache(style, fqid) as unknown as SourceCacheTiles | undefined;
         if (!sc) return false;
         if (!sc._sourceLoaded) return false;
-        for (const key in sc._tiles) {
-            const tile = sc._tiles[key];
-            if (tile && (tile.state === 'loading' || tile.state === 'reloading')) return false;
+        for (const tile of sc._tiles.values()) {
+            if (tile.state === 'loading' || tile.state === 'reloading') return false;
         }
     }
     return true;
@@ -168,12 +167,10 @@ export function reparseElevationConsumerTiles(
         for (const cacheFqid in cacheMap) {
             if (!consumerFQIDs.has(cacheFqid)) continue;
             const sc = cacheMap[cacheFqid] as unknown as SourceCacheTiles & {_reloadTile: (id: number, state: string) => void};
-            for (const key in sc._tiles) {
-                const tile = sc._tiles[key];
-                if (!tile) continue;
+            for (const [id, tile] of sc._tiles) {
                 if (shouldReload && !shouldReload(tile)) continue;
                 tile.hasDeferredElevationFeatures = false;
-                sc._reloadTile(+key, 'reloading');
+                sc._reloadTile(id, 'reloading');
             }
         }
     }
@@ -291,9 +288,8 @@ export function updateElevationCoverage(style: Style, state: HdElevationState) {
         const sourceCache = resolveIngestSourceCache(style, fqid);
         if (!sourceCache) continue;
         const tiles = (sourceCache as unknown as SourceCacheTiles)._tiles;
-        for (const key in tiles) {
-            const tile = tiles[key];
-            if (!tile || !tile.loaded()) continue;
+        for (const tile of tiles.values()) {
+            if (!tile.loaded()) continue;
             const features = tile.parsedElevationFeatures;
             if (features === undefined) {
                 allIngestElevationParsed = false;

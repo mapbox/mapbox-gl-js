@@ -67,6 +67,10 @@ export function floatToBits(value: number): number {
     return _floatBitsScratchU32[0];
 }
 
+// Block-to-binding-point assignment is program state that lasts for the program's lifetime, so it's
+// done once per program. Bit i is set when block i is active (variants may optimize a block out).
+const activeBlocksByProgram: WeakMap<WebGLProgram, number> = new WeakMap();
+
 // Symbol-only (see PaintPropertiesUBO._blockNames doc — line has no indirection block at all).
 // The block-indices buffer is a pure identity mapping (blockIndices[i] = i): dedup currently
 // happens at the vertex-attribute level (duplicate features get the same index written into the
@@ -306,20 +310,22 @@ export abstract class PaintPropertiesUBO {
     bind(context: Context, program: WebGLProgram): void {
         const gl = context.gl;
 
-        const bindBlock = (blockName: string, buffer: WebGLBuffer | null, bindingPoint: number) => {
-            if (!buffer) return;
-            const blockIndex = gl.getUniformBlockIndex(program, blockName);
-            if (blockIndex === (gl.INVALID_INDEX as number)) return;
-            gl.uniformBlockBinding(program, blockIndex, bindingPoint);
-            gl.bindBufferBase(gl.UNIFORM_BUFFER, bindingPoint, buffer);
-        };
-
-        const blockNames = this._blockNames();
-        bindBlock(blockNames[0], this.headerBuffer, 0);
-        bindBlock(blockNames[1], this.propertiesBuffer, 1);
-        if (blockNames.length === 3) {
-            bindBlock(blockNames[2], this.blockIndicesBuffer, 2);
+        let activeBlocks = activeBlocksByProgram.get(program);
+        if (activeBlocks === undefined) {
+            const blockNames = this._blockNames();
+            activeBlocks = 0;
+            for (let i = 0; i < blockNames.length; i++) {
+                const blockIndex = gl.getUniformBlockIndex(program, blockNames[i]);
+                if (blockIndex === (gl.INVALID_INDEX as number)) continue;
+                gl.uniformBlockBinding(program, blockIndex, i);
+                activeBlocks |= 1 << i;
+            }
+            activeBlocksByProgram.set(program, activeBlocks);
         }
+
+        if ((activeBlocks & 1) && this.headerBuffer) gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, this.headerBuffer);
+        if ((activeBlocks & 2) && this.propertiesBuffer) gl.bindBufferBase(gl.UNIFORM_BUFFER, 1, this.propertiesBuffer);
+        if ((activeBlocks & 4) && this.blockIndicesBuffer) gl.bindBufferBase(gl.UNIFORM_BUFFER, 2, this.blockIndicesBuffer);
     }
 
     /**

@@ -507,7 +507,7 @@ describe('setupAndUpdateElevationCoverage', () => {
     });
 
     test('cross-source → same-source clears stale HdElevationState gate', () => {
-        const providerCache = {used: false, _tiles: {}, _sourceLoaded: true};
+        const providerCache = {used: false, _tiles: new Map(), _sourceLoaded: true};
         const state = mkCrossSourceState(['provider']);
         const painter = {elevationCoverageSnapshot: {stale: true}};
         const style = {
@@ -529,7 +529,7 @@ describe('setupAndUpdateElevationCoverage', () => {
     });
 
     test('deactivation resets _terrainActiveLast so reactivation reparses consumers', () => {
-        const providerCache = {used: false, _tiles: {}, _sourceLoaded: true};
+        const providerCache = {used: false, _tiles: new Map(), _sourceLoaded: true};
         const state = mkCrossSourceState(['provider']);
         // Was last seen with terrain inactive; deactivation must clear this so a
         // later reactivation is treated as a first frame (prevTerrainActive undefined).
@@ -574,7 +574,7 @@ describe('setupAndUpdateElevationCoverage', () => {
         const painter = {elevationCoverageSnapshot: {stale: true}};
         const style = {
             _mergedLayers: mkConsumerLayers(),
-            _mergedOtherSourceCaches: {consumer: {_tiles: {'1': consumerTile}, _reloadTile: consumerReload}},
+            _mergedOtherSourceCaches: {consumer: {_tiles: new Map([[1, consumerTile]]), _reloadTile: consumerReload}},
             _mergedSymbolSourceCaches: {},
             _hdElevation: state,
             mergeSources: vi.fn(),
@@ -591,7 +591,7 @@ describe('setupAndUpdateElevationCoverage', () => {
     });
 
     test('zoom-dependent terrain flattened to 0 is treated as inactive → snapshot built', () => {
-        const providerCache = {used: false, _tiles: {}, _sourceLoaded: true};
+        const providerCache = {used: false, _tiles: new Map(), _sourceLoaded: true};
         const painter = {elevationCoverageSnapshot: {stale: true}};
         const style = {
             _mergedLayers: mkSameSourceLayers(),
@@ -617,7 +617,7 @@ describe('setupAndUpdateElevationCoverage', () => {
         const painter = {elevationCoverageSnapshot: 'stale'};
         const style = {
             _mergedLayers: mkBerlinLayers(),
-            _mergedOtherSourceCaches: {[providerFqid]: {_tiles: {}, _sourceLoaded: true}},
+            _mergedOtherSourceCaches: {[providerFqid]: {_tiles: new Map(), _sourceLoaded: true}},
             _mergedSymbolSourceCaches: {},
             _hdElevation: undefined,
             map: {painter},
@@ -639,7 +639,7 @@ describe('setupAndUpdateElevationCoverage', () => {
     test('hidden HD fill plus coverage helper does not force provider tiles', () => {
         const scope = 'hd-roads-config';
         const providerFqid = makeFQID('hd-roads', scope);
-        const providerCache = {used: false, _tiles: {}, _sourceLoaded: true};
+        const providerCache = {used: false, _tiles: new Map(), _sourceLoaded: true};
         const mergeSources = vi.fn();
         const painter = {elevationCoverageSnapshot: 'stale'};
         const style = {
@@ -675,8 +675,8 @@ describe('setupAndUpdateElevationCoverage', () => {
         const style = {
             _mergedLayers: mkBerlinLayersHdOff(),
             _mergedOtherSourceCaches: {
-                [providerFqid]: {_tiles: {}, _sourceLoaded: true},
-                [consumerFqid]: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
+                [providerFqid]: {_tiles: new Map(), _sourceLoaded: true},
+                [consumerFqid]: {_tiles: new Map([[1, consumerTile]]), _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
             _hdElevation: state,
@@ -704,8 +704,8 @@ describe('setupAndUpdateElevationCoverage', () => {
         const style = {
             _mergedLayers: mkBerlinLayersMarkupOnly(),
             _mergedOtherSourceCaches: {
-                [hdFqid]: {_tiles: {'1': hdTile}, _sourceLoaded: true, _reloadTile: hdReloadSpy},
-                [consumerFqid]: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
+                [hdFqid]: {_tiles: new Map([[1, hdTile]]), _sourceLoaded: true, _reloadTile: hdReloadSpy},
+                [consumerFqid]: {_tiles: new Map([[1, consumerTile]]), _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
             _hdElevation: state,
@@ -732,7 +732,7 @@ describe('setupAndUpdateElevationCoverage', () => {
         const style = {
             _mergedLayers: mkBerlinLayersHdOff(),
             _mergedOtherSourceCaches: {
-                [consumerFqid]: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
+                [consumerFqid]: {_tiles: new Map([[1, consumerTile]]), _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
             _hdElevation: undefined,
@@ -748,7 +748,7 @@ describe('setupAndUpdateElevationCoverage', () => {
 
 describe('updateElevationCoverage does not force-load ingest caches', () => {
     test('leaves unused provider caches unused', () => {
-        const providerCache = {used: false, _tiles: {}, _sourceLoaded: true};
+        const providerCache = {used: false, _tiles: new Map(), _sourceLoaded: true};
         const state = mkCrossSourceState(['provider']);
         const style = {
             ...mkCrossSourceStyle(mkConsumerLayers()),
@@ -779,8 +779,8 @@ describe('updateElevationCoverage reparse (covering tile)', () => {
         const style = {
             ...mkCrossSourceStyle(mkConsumerLayers()),
             _mergedOtherSourceCaches: {
-                provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
-                consumer: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
+                provider: {_tiles: new Map([[1, providerTile]]), used: false, _sourceLoaded: true},
+                consumer: {_tiles: new Map([[1, consumerTile]]), _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
             map: {painter: {elevationCoverageSnapshot: null}},
@@ -810,8 +810,8 @@ describe('updateElevationCoverage reparse (covering tile)', () => {
         const style = {
             ...mkCrossSourceStyle(layers),
             _mergedOtherSourceCaches: {
-                provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
-                consumer: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
+                provider: {_tiles: new Map([[1, providerTile]]), used: false, _sourceLoaded: true},
+                consumer: {_tiles: new Map([[1, consumerTile]]), _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
             map: {painter: {elevationCoverageSnapshot: null}},
@@ -838,8 +838,8 @@ describe('updateElevationCoverage reparse (covering tile)', () => {
         const style = {
             ...mkCrossSourceStyle(mkConsumerLayers()),
             _mergedOtherSourceCaches: {
-                provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
-                consumer: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
+                provider: {_tiles: new Map([[1, providerTile]]), used: false, _sourceLoaded: true},
+                consumer: {_tiles: new Map([[1, consumerTile]]), _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
             map: {painter: {elevationCoverageSnapshot: null}},
@@ -867,8 +867,8 @@ describe('updateElevationCoverage reparse (covering tile)', () => {
         const style = {
             ...mkCrossSourceStyle(mkConsumerLayers()),
             _mergedOtherSourceCaches: {
-                provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
-                consumer: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
+                provider: {_tiles: new Map([[1, providerTile]]), used: false, _sourceLoaded: true},
+                consumer: {_tiles: new Map([[1, consumerTile]]), _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
             map: {painter: {elevationCoverageSnapshot: null}},
@@ -899,8 +899,8 @@ describe('updateElevationCoverage reparse (covering tile)', () => {
         const style = {
             ...mkCrossSourceStyle(mkConsumerLayers()),
             _mergedOtherSourceCaches: {
-                provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
-                consumer: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
+                provider: {_tiles: new Map([[1, providerTile]]), used: false, _sourceLoaded: true},
+                consumer: {_tiles: new Map([[1, consumerTile]]), _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
             map: {painter: {elevationCoverageSnapshot: null}},
@@ -933,8 +933,8 @@ describe('updateElevationCoverage reparse (covering tile)', () => {
         const style = {
             ...mkCrossSourceStyle(mkConsumerLayers()),
             _mergedOtherSourceCaches: {
-                provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
-                terrain: {_tiles: {'1': nonConsumerTile}, _reloadTile: reloadSpy},
+                provider: {_tiles: new Map([[1, providerTile]]), used: false, _sourceLoaded: true},
+                terrain: {_tiles: new Map([[1, nonConsumerTile]]), _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
             map: {painter: {elevationCoverageSnapshot: null}},
@@ -959,8 +959,8 @@ describe('updateElevationCoverage reparse (covering tile)', () => {
         const style = {
             ...mkCrossSourceStyle(),
             _mergedOtherSourceCaches: {
-                provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
-                consumer: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
+                provider: {_tiles: new Map([[1, providerTile]]), used: false, _sourceLoaded: true},
+                consumer: {_tiles: new Map([[1, consumerTile]]), _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
             map: {painter: {elevationCoverageSnapshot: null}},
@@ -995,8 +995,8 @@ describe('updateElevationCoverage reparse (covering tile)', () => {
         const style = {
             ...mkCrossSourceStyle(),
             _mergedOtherSourceCaches: {
-                provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
-                consumer: {_tiles: {'1': consumerTile}, _reloadTile: vi.fn()},
+                provider: {_tiles: new Map([[1, providerTile]]), used: false, _sourceLoaded: true},
+                consumer: {_tiles: new Map([[1, consumerTile]]), _reloadTile: vi.fn()},
             },
             _mergedSymbolSourceCaches: {},
             map: {painter: {elevationCoverageSnapshot: null}},
@@ -1032,8 +1032,8 @@ describe('updateElevationCoverage under terrain', () => {
         const style = {
             ...mkCrossSourceStyle(mkConsumerLayers()),
             _mergedOtherSourceCaches: {
-                provider: {_tiles: {'1': providerTile}, used: false, _sourceLoaded: true},
-                consumer: {_tiles: {'1': consumerTile}, _reloadTile: reloadSpy},
+                provider: {_tiles: new Map([[1, providerTile]]), used: false, _sourceLoaded: true},
+                consumer: {_tiles: new Map([[1, consumerTile]]), _reloadTile: reloadSpy},
             },
             _mergedSymbolSourceCaches: {},
             terrain: {},
@@ -1115,8 +1115,8 @@ describe('reparseElevationConsumerTiles (terrain toggle)', () => {
         const style = {
             ...mkCrossSourceStyle(mkConsumerLayers()),
             _mergedOtherSourceCaches: {
-                consumer: {_tiles: {'1': consumerTile}, _reloadTile: consumerReload},
-                terrain: {_tiles: {'1': nonConsumerTile}, _reloadTile: nonConsumerReload},
+                consumer: {_tiles: new Map([[1, consumerTile]]), _reloadTile: consumerReload},
+                terrain: {_tiles: new Map([[1, nonConsumerTile]]), _reloadTile: nonConsumerReload},
             },
             _mergedSymbolSourceCaches: {},
         };

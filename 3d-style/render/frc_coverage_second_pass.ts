@@ -13,7 +13,7 @@ import type Painter from '../../src/render/painter';
 /// Equal to tileClipID means we're outside the polygon (polygon inverted stencil).
 export function stencilModeForFrcCoverage(painter: Painter, tileID: OverscaledTileID): Readonly<StencilMode> {
     const gl = painter.context.gl;
-    const clipId = painter._tileClippingMaskIDs[tileID.key] || 0;
+    const clipId = painter._tileClippingMaskIDs.get(tileID.key) || 0;
     return new StencilMode({func: gl.EQUAL, mask: 0xFF}, clipId, 0x00, gl.KEEP, gl.KEEP, gl.KEEP);
 }
 
@@ -21,7 +21,7 @@ export function stencilModeForFrcCoverage(painter: Painter, tileID: OverscaledTi
 /// Inside polygon has stencil = ~clipId (after INVERT carve in renderFrcCoverageMasks).
 function stencilModeInsideFrcCoverage(painter: Painter, tileID: OverscaledTileID): Readonly<StencilMode> {
     const gl = painter.context.gl;
-    const clipId = painter._tileClippingMaskIDs[tileID.key] || 0;
+    const clipId = painter._tileClippingMaskIDs.get(tileID.key) || 0;
     return new StencilMode({func: gl.EQUAL, mask: 0xFF}, ~clipId & 0xFF, 0x00, gl.KEEP, gl.KEEP, gl.KEEP);
 }
 
@@ -61,7 +61,7 @@ function renderFrcCoverageMasks(painter: Painter, coords: Array<OverscaledTileID
         const levelSegments = info.buffers.frcLevelSegments[frcLevel];
         if (!levelSegments) continue;
 
-        const clipId = painter._tileClippingMaskIDs[coord.key] || 0;
+        const clipId = painter._tileClippingMaskIDs.get(coord.key) || 0;
         program.draw(painter, gl.TRIANGLES, DepthMode.disabled,
             new StencilMode({func: gl.EQUAL, mask: 0xFF}, clipId, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT),
             ColorMode.disabled, CullFaceMode.disabled,
@@ -87,7 +87,7 @@ function restoreFrcCoverageMasks(painter: Painter, coords: Array<OverscaledTileI
         const levelSegments = info.buffers.frcLevelSegments[frcLevel];
         if (!levelSegments) continue;
 
-        const clipId = painter._tileClippingMaskIDs[coord.key] || 0;
+        const clipId = painter._tileClippingMaskIDs.get(coord.key) || 0;
         program.draw(painter, gl.TRIANGLES, DepthMode.disabled,
             new StencilMode({func: gl.EQUAL, mask: 0xFF}, ~clipId & 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.INVERT),
             ColorMode.disabled, CullFaceMode.disabled,

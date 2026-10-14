@@ -75,7 +75,7 @@ describe('SourceFeatureState prototype-pollution hardening', () => {
         state.updateState('default', '__proto__', {pollutionCanaryHover: true});
         // coalesceChanges runs `Object.assign(this.state[sourceLayer][feature], …)`
         // which is the second-stage pollution sink if the first stage missed.
-        state.coalesceChanges({}, undefined);
+        state.coalesceChanges(new Map(), undefined);
 
         expect({}.pollutionCanaryHover).toBeUndefined();
     });

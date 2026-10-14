@@ -75,12 +75,20 @@ const instancingUniforms = (context: Context): InstancingUniformType => ({
 
 type UniformGroupKey = 'terrainUniforms' | 'globeUniforms' | 'fogUniforms' | 'cutoffUniforms' | 'lightsUniforms' | 'shadowUniforms';
 
+function appendUsedDefines(key: string, source: ShaderSource, defines: DynamicDefinesType[]): string {
+    for (const define of defines) {
+        // Custom value defines (e.g. "MAX_SYMBOL_FEATURES 128") are always included
+        if (define.includes(' ') || source.usedDefines.has(define)) key += `/${define}`;
+    }
+    return key;
+}
+
 class Program<Us extends UniformBindings> {
     program: WebGLProgram;
     attributes: Record<string, number>;
     fixedUniforms!: Readonly<Us>;
-    // Cache fixedUniforms entries to avoid allocations during draw calls
-    fixedUniformsEntries!: ReadonlyArray<[string, IUniform<unknown>]>;
+    // Fixed uniforms present in the linked program (others are compiled out by defines)
+    activeUniforms!: ReadonlyArray<[string, IUniform<unknown>]>;
     binderUniforms!: Array<BinderUniform>;
     failedToCreate!: boolean;
     terrainUniforms: TerrainUniformsType | undefined;
@@ -105,29 +113,18 @@ class Program<Us extends UniformBindings> {
     _fixedUniformsFn: (arg1: Context) => Us;
     _precompiled: boolean;
 
+    // Called on every draw, so the key is concatenated directly instead of joining an array.
     static cacheKey(
         source: ShaderSource,
         name: string,
-        defines: DynamicDefinesType[],
+        globalDefines: DynamicDefinesType[],
+        defines?: DynamicDefinesType[] | null,
         programConfiguration?: ProgramConfiguration | null,
     ): string {
-        const parts: string[] = [name];
-
-        if (programConfiguration) {
-            parts.push(programConfiguration.cacheKey);
-        }
-
-        for (const define of defines) {
-            // Include known defines that are used, or all custom string defines (like MAX_SYMBOL_FEATURES)
-            if (typeof define === 'string' && define.includes(' ')) {
-                // Custom numeric define (e.g., "MAX_SYMBOL_FEATURES 128")
-                parts.push(define);
-            } else if (source.usedDefines.has(define)) {
-                parts.push(define);
-            }
-        }
-
-        return parts.join('/');
+        let key = name;
+        if (programConfiguration) key += `/${programConfiguration.cacheKey}`;
+        key = appendUsedDefines(key, source, globalDefines);
+        return defines ? appendUsedDefines(key, source, defines) : key;
     }
 
     constructor(
@@ -264,7 +261,7 @@ class Program<Us extends UniformBindings> {
         }
 
         this.fixedUniforms = this._fixedUniformsFn(context);
-        this.fixedUniformsEntries = Object.entries(this.fixedUniforms);
+        this.activeUniforms = Object.entries<IUniform<unknown>>(this.fixedUniforms).filter(([name, uniform]) => uniform.fetchUniformLocation(this.program, name));
         this.binderUniforms = this.configuration ? this.configuration.getUniforms(context) : [];
 
         if (this.forceManualRenderingForInstanceIDShaders) {
@@ -545,7 +542,7 @@ class Program<Us extends UniformBindings> {
         context.setColorMode(colorMode);
         context.setCullFace(cullFaceMode);
 
-        for (const [name, uniform] of this.fixedUniformsEntries) {
+        for (const [name, uniform] of this.activeUniforms) {
             uniform.set(this.program, name, uniformValues[name]);
         }
 

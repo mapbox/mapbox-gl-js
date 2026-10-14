@@ -519,10 +519,8 @@ export class ShadowRenderer {
 
     calculateShadowPassMatrixFromTile(unwrappedId: UnwrappedTileID): mat4 {
         const tr = this.painter.transform;
-        const tileMatrix = tr.calculatePosMatrix(unwrappedId, tr.worldSize);
         const lightMatrix = this._cascades[this.painter.currentShadowCascade].matrix;
-        mat4.multiply(tileMatrix, lightMatrix, tileMatrix);
-        return Float32Array.from(tileMatrix);
+        return mat4.multiply(new Float32Array(16), lightMatrix, tr.calculatePosMatrix(unwrappedId));
     }
 
     calculateShadowPassMatrixFromMatrix(matrix: mat4): mat4 {
@@ -540,7 +538,7 @@ export class ShadowRenderer {
         const gl = context.gl;
         const uniforms = this._uniformValues;
 
-        const tileMatrix = transform.calculatePosMatrix(unwrappedTileID, transform.worldSize);
+        const tileMatrix = transform.calculatePosMatrix(unwrappedTileID);
 
         for (let i = 0; i < this._cascades.length; i++) {
             const scratch = getLightMatrixScratch(i);

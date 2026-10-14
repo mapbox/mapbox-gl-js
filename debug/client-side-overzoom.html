@@ -124,14 +124,11 @@
 
             const sourceCache = map.style.getSourceCache('wind');
             if (sourceCache) {
-                let total = 0;
                 let overzoomed = 0;
-                for (const key in sourceCache._tiles) {
-                    total++;
-                    const tile = sourceCache._tiles[key];
-                    if (tile && tile.parentTile) overzoomed++;
+                for (const tile of sourceCache._tiles.values()) {
+                    if (tile.parentTile) overzoomed++;
                 }
-                ozcountEl.textContent = `${overzoomed} / ${total}`;
+                ozcountEl.textContent = `${overzoomed} / ${sourceCache._tiles.size}`;
             }
         }
 

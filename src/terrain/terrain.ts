@@ -42,7 +42,7 @@ import {number as interpolate} from '../style-spec/util/interpolate';
 import type Framebuffer from '../gl/framebuffer';
 import type Program from '../render/program';
 import type {Callback} from '../types/callback';
-import type {Map} from '../ui/map';
+import type {Map as MapboxMap} from '../ui/map';
 import type Painter from '../render/painter';
 import type Style from '../style/style';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
@@ -132,7 +132,7 @@ class TerrainInternalSource extends Evented {
 }
 
 class MockSourceCache extends SourceCache {
-    constructor(map: Map) {
+    constructor(map: MapboxMap) {
         const source = new TerrainInternalSource(
             'mock-dem', 'raster-dem', 512,
             0, Math.ceil(map.transform.maxZoom),
@@ -164,7 +164,7 @@ class ProxySourceCache extends SourceCache {
     renderCachePool: Array<number>;
     proxyCachedFBO: Partial<Record<string | number, Partial<Record<string | number, number>>>>;
 
-    constructor(map: Map) {
+    constructor(map: MapboxMap) {
 
         const source = new TerrainInternalSource(
             'proxy', 'geojson', 512,
@@ -194,26 +194,26 @@ class ProxySourceCache extends SourceCache {
             reparseOverscaled: this._source.reparseOverscaled
         });
 
-        const incoming: Record<string, string> = idealTileIDs.reduce((acc, tileID) => {
-            acc[tileID.key] = '';
-            if (!this._tiles[tileID.key]) {
+        const incoming = new Set<number>();
+        for (const tileID of idealTileIDs) {
+            incoming.add(tileID.key);
+            if (!this._tiles.has(tileID.key)) {
                 const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), transform.tileZoom, undefined, undefined, this._source.worldview);
                 tile.state = 'loaded';
-                this._tiles[tileID.key] = tile;
+                this._tiles.set(tileID.key, tile);
             }
-            return acc;
-        }, {});
+        }
 
-        for (const id in this._tiles) {
-            if (!(id in incoming)) {
+        for (const [id, tile] of this._tiles) {
+            if (!incoming.has(id)) {
                 this.freeFBO(id);
-                this._tiles[id].unloadVectorData();
-                delete this._tiles[id];
+                tile.unloadVectorData();
+                this._tiles.delete(id);
             }
         }
     }
 
-    freeFBO(id: string) {
+    freeFBO(id: number) {
         const fbos = this.proxyCachedFBO[id];
         if (fbos !== undefined) {
             const fboIds = (Object.values(fbos));
@@ -1516,7 +1516,7 @@ export class Terrain extends Elevation {
             // 1. overlap is handled by proxy render to texture tiles (there is no overlap there)
             // 2. here we handle only brief zoom out semi-transparent color intensity flickering
             //    and that is avoided fine by stenciling primitives as part of drawing (instead of additional tile quad step).
-            this._overlapStencilMode.ref = this.painter._tileClippingMaskIDs[id.key];
+            this._overlapStencilMode.ref = this.painter._tileClippingMaskIDs.get(id.key);
         } // else this._overlapStencilMode.ref is set to a single value used per proxy tile, in _setupStencil.
         return this._overlapStencilMode;
     }
@@ -1525,14 +1525,15 @@ export class Terrain extends Elevation {
         const painter = this.painter;
         const context = this.painter.context;
         const gl = context.gl;
-        painter._tileClippingMaskIDs = {};
+        painter._tileClippingMaskIDs = new Map();
         context.setColorMode(ColorMode.disabled);
         context.setDepthMode(DepthMode.disabled);
 
         const program = painter.getOrCreateProgram('clippingMask');
 
         for (const tileID of proxiedCoords) {
-            const id = painter._tileClippingMaskIDs[tileID.key] = --ref;
+            const id = --ref;
+            painter._tileClippingMaskIDs.set(tileID.key, id);
             program.draw(painter, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
                 new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),

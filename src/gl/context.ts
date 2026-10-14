@@ -2,7 +2,6 @@ import IndexBuffer from './index_buffer';
 import VertexBuffer from './vertex_buffer';
 import Framebuffer from './framebuffer';
 import ColorMode from './color_mode';
-import {deepEqual} from '../util/util';
 import {ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, BlendEquation, CullFace, CullFaceSide, FrontFace, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha, PixelStoreUnpackFlipY} from './value';
 
 import type DepthMode from './depth_mode';
@@ -386,7 +385,8 @@ class Context {
     }
 
     setColorMode(colorMode: Readonly<ColorMode>) {
-        if (deepEqual(colorMode.blendFunction, ColorMode.Replace)) {
+        // Color modes without blending share the ColorMode.Replace array, so a reference check is enough
+        if (colorMode.blendFunction === ColorMode.Replace) {
             this.blend.set(false);
         } else {
             this.blend.set(true);

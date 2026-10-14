@@ -110,13 +110,14 @@ class CrossTileIDs {
 }
 
 class CrossTileSymbolLayerIndex {
-    indexes: Partial<Record<string | number, Partial<Record<string | number, TileLayerIndex>>>>;
-    usedCrossTileIDs: Partial<Record<string | number, Set<number>>>;
+    // Indexed by overscaled zoom; addBucket relies on visiting zooms in ascending order.
+    indexes: Array<Map<number, TileLayerIndex> | undefined>;
+    usedCrossTileIDs: Array<Set<number> | undefined>;
     lng: number;
 
     constructor() {
-        this.indexes = {};
-        this.usedCrossTileIDs = {};
+        this.indexes = [];
+        this.usedCrossTileIDs = [];
         this.lng = 0;
     }
 
@@ -128,27 +129,26 @@ class CrossTileSymbolLayerIndex {
     handleWrapJump(lng: number) {
         const wrapDelta = Math.round((lng - this.lng) / 360);
         if (wrapDelta !== 0) {
-            for (const zoom in this.indexes) {
-                const zoomIndexes = this.indexes[zoom];
-                const newZoomIndex: Record<string, TileLayerIndex> = {};
-                for (const key in zoomIndexes) {
+            for (let z = 0; z < this.indexes.length; z++) {
+                const zoomIndexes = this.indexes[z];
+                if (!zoomIndexes) continue;
+                const newZoomIndex = new Map<number, TileLayerIndex>();
+                for (const index of zoomIndexes.values()) {
                     // change the tileID's wrap and add it to a new index
-                    const index = zoomIndexes[key];
                     index.tileID = index.tileID.unwrapTo(index.tileID.wrap + wrapDelta);
-                    newZoomIndex[index.tileID.key] = index;
+                    newZoomIndex.set(index.tileID.key, index);
                 }
-                this.indexes[zoom] = newZoomIndex;
+                this.indexes[z] = newZoomIndex;
             }
         }
         this.lng = lng;
     }
 
     addBucket(tileID: OverscaledTileID, bucket: SymbolBucket, crossTileIDs: CrossTileIDs): boolean {
-        if (this.indexes[tileID.overscaledZ] &&
-            this.indexes[tileID.overscaledZ][tileID.key]) {
-
-            if (this.indexes[tileID.overscaledZ][tileID.key].bucketInstanceId ===
-                bucket.bucketInstanceId) {
+        const tileZ = tileID.overscaledZ;
+        const existing = this.indexes[tileZ] && this.indexes[tileZ].get(tileID.key);
+        if (existing) {
+            if (existing.bucketInstanceId === bucket.bucketInstanceId) {
                 return false;
             } else {
                 // We're replacing this bucket with an updated version
@@ -156,8 +156,7 @@ class CrossTileSymbolLayerIndex {
                 // the new bucket can claim them.
                 // The old index entries themselves stick around until
                 // 'removeStaleBuckets' is called.
-                this.removeBucketCrossTileIDs(tileID.overscaledZ,
-                    this.indexes[tileID.overscaledZ][tileID.key]);
+                this.removeBucketCrossTileIDs(tileZ, existing);
             }
         }
 
@@ -166,23 +165,20 @@ class CrossTileSymbolLayerIndex {
             symbolInstance.crossTileID = 0;
         }
 
-        if (!this.usedCrossTileIDs[tileID.overscaledZ]) {
-            this.usedCrossTileIDs[tileID.overscaledZ] = new Set();
-        }
-        const zoomCrossTileIDs = this.usedCrossTileIDs[tileID.overscaledZ];
+        let zoomCrossTileIDs = this.usedCrossTileIDs[tileZ];
+        if (!zoomCrossTileIDs) zoomCrossTileIDs = this.usedCrossTileIDs[tileZ] = new Set();
 
-        for (const zoom in this.indexes) {
-            const zoomIndexes = this.indexes[zoom];
-            if (Number(zoom) > tileID.overscaledZ) {
-                for (const id in zoomIndexes) {
-                    const childIndex = zoomIndexes[id];
+        for (let z = 0; z < this.indexes.length; z++) {
+            const zoomIndexes = this.indexes[z];
+            if (!zoomIndexes) continue;
+            if (z > tileZ) {
+                for (const childIndex of zoomIndexes.values()) {
                     if (childIndex.tileID.isChildOf(tileID)) {
                         childIndex.findMatches(bucket.symbolInstances, tileID, zoomCrossTileIDs);
                     }
                 }
             } else {
-                const parentCoord = tileID.scaledTo(Number(zoom));
-                const parentIndex = zoomIndexes[parentCoord.key];
+                const parentIndex = zoomIndexes.get(tileID.scaledTo(z).key);
                 if (parentIndex) {
                     parentIndex.findMatches(bucket.symbolInstances, tileID, zoomCrossTileIDs);
                 }
@@ -198,28 +194,28 @@ class CrossTileSymbolLayerIndex {
             }
         }
 
-        if (this.indexes[tileID.overscaledZ] === undefined) {
-            this.indexes[tileID.overscaledZ] = {};
-        }
-        this.indexes[tileID.overscaledZ][tileID.key] = new TileLayerIndex(tileID, bucket.symbolInstances, bucket.bucketInstanceId);
+        let zoomIndexes = this.indexes[tileZ];
+        if (!zoomIndexes) zoomIndexes = this.indexes[tileZ] = new Map<number, TileLayerIndex>();
+        zoomIndexes.set(tileID.key, new TileLayerIndex(tileID, bucket.symbolInstances, bucket.bucketInstanceId));
 
         return true;
     }
 
-    removeBucketCrossTileIDs(zoom: string | number, removedBucket: TileLayerIndex) {
+    removeBucketCrossTileIDs(zoom: number, removedBucket: TileLayerIndex) {
         for (const crossTileID of removedBucket.crossTileIDs) {
             this.usedCrossTileIDs[zoom].delete(crossTileID);
         }
     }
 
-    removeStaleBuckets(currentIDs: Partial<Record<string | number, boolean>>): boolean {
+    removeStaleBuckets(currentIDs: Set<number>): boolean {
         let tilesChanged = false;
-        for (const z in this.indexes) {
+        for (let z = 0; z < this.indexes.length; z++) {
             const zoomIndexes = this.indexes[z];
-            for (const tileKey in zoomIndexes) {
-                if (!currentIDs[zoomIndexes[tileKey].bucketInstanceId]) {
-                    this.removeBucketCrossTileIDs(z, zoomIndexes[tileKey]);
-                    delete zoomIndexes[tileKey];
+            if (!zoomIndexes) continue;
+            for (const [tileKey, index] of zoomIndexes) {
+                if (!currentIDs.has(index.bucketInstanceId)) {
+                    this.removeBucketCrossTileIDs(z, index);
+                    zoomIndexes.delete(tileKey);
                     tilesChanged = true;
                 }
             }
@@ -229,18 +225,12 @@ class CrossTileSymbolLayerIndex {
 }
 
 class CrossTileSymbolIndex {
-    layerIndexes: {
-        [fqid: string]: CrossTileSymbolLayerIndex;
-    };
+    layerIndexes: Map<string, CrossTileSymbolLayerIndex>;
     crossTileIDs: CrossTileIDs;
-    bucketsInCurrentPlacement: {
-        [_: number]: boolean;
-    };
 
     constructor() {
-        this.layerIndexes = {};
+        this.layerIndexes = new Map();
         this.crossTileIDs = new CrossTileIDs();
-        this.bucketsInCurrentPlacement = {};
     }
 
     addLayer(
@@ -249,14 +239,14 @@ class CrossTileSymbolIndex {
         lng: number,
         projection: Projection,
     ): boolean {
-        let layerIndex = this.layerIndexes[styleLayer.fqid];
+        let layerIndex = this.layerIndexes.get(styleLayer.fqid);
         if (layerIndex === undefined) {
-            layerIndex = this.layerIndexes[styleLayer.fqid] = new CrossTileSymbolLayerIndex();
+            layerIndex = new CrossTileSymbolLayerIndex();
+            this.layerIndexes.set(styleLayer.fqid, layerIndex);
         }
 
         let symbolBucketsChanged = false;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const currentBucketIDs: Record<string, any> = {};
+        const currentBucketIDs = new Set<number>();
 
         if (projection.name !== 'globe') {
             layerIndex.handleWrapJump(lng);
@@ -270,7 +260,7 @@ class CrossTileSymbolIndex {
             if (layerIndex.addBucket(tile.tileID, symbolBucket, this.crossTileIDs)) {
                 symbolBucketsChanged = true;
             }
-            currentBucketIDs[symbolBucket.bucketInstanceId] = true;
+            currentBucketIDs.add(symbolBucket.bucketInstanceId);
         }
 
         if (layerIndex.removeStaleBuckets(currentBucketIDs)) {
@@ -281,14 +271,10 @@ class CrossTileSymbolIndex {
     }
 
     pruneUnusedLayers(usedLayers: Array<string>) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const usedLayerMap: Record<string, any> = {};
-        usedLayers.forEach((usedLayer) => {
-            usedLayerMap[usedLayer] = true;
-        });
-        for (const layerId in this.layerIndexes) {
-            if (!usedLayerMap[layerId]) {
-                delete this.layerIndexes[layerId];
+        const usedLayerSet = new Set(usedLayers);
+        for (const layerId of this.layerIndexes.keys()) {
+            if (!usedLayerSet.has(layerId)) {
+                this.layerIndexes.delete(layerId);
             }
         }
     }

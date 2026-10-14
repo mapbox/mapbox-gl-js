@@ -118,7 +118,7 @@ describe('CustomSource', () => {
                 expect(err.error.message).toEqual('Error loading tile');
                 expect(loadTile).toHaveBeenCalledTimes(1);
                 expect(source.loadTileData).not.toHaveBeenCalled(); // loadTileData must not be called if loadTile throws
-                expect(sourceCache._tiles[tileID.key].state).toEqual('errored'); //  tile must be in the `errored` state if `loadTile` throws
+                expect(sourceCache._tiles.get(tileID.key).state).toEqual('errored'); //  tile must be in the `errored` state if `loadTile` throws
                 resolve();
             });
 
@@ -145,7 +145,7 @@ describe('CustomSource', () => {
                 if (e.dataType === 'source' && e.tile) {
                     expect(loadTile).toHaveBeenCalledTimes(1);
                     expect(source.loadTileData).toHaveBeenCalledTimes(1);
-                    expect(sourceCache._tiles[tileID.key].state).toEqual('loaded');
+                    expect(sourceCache._tiles.get(tileID.key).state).toEqual('loaded');
                     resolve();
                 }
             });
@@ -172,7 +172,7 @@ describe('CustomSource', () => {
                 if (e.dataType === 'source' && e.tile) {
                     expect(loadTile).toHaveBeenCalledTimes(1);
                     expect(source.loadTileData).not.toHaveBeenCalled();
-                    expect(sourceCache._tiles[tileID.key].state).toEqual('errored');
+                    expect(sourceCache._tiles.get(tileID.key).state).toEqual('errored');
                     resolve();
                 }
             });
@@ -200,7 +200,7 @@ describe('CustomSource', () => {
                 if (e.dataType === 'source' && e.tile) {
                     expect(loadTile).toHaveBeenCalledTimes(1);
                     expect(source.loadTileData).toHaveBeenCalledTimes(1);
-                    expect(sourceCache._tiles[tileID.key].state).toEqual('loaded');
+                    expect(sourceCache._tiles.get(tileID.key).state).toEqual('loaded');
                     resolve();
                 }
             });

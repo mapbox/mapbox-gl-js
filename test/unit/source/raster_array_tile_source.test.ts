@@ -243,7 +243,7 @@ describe('RasterArrayTileSource#collectOverzoomParentTileIDs', () => {
     test('returns nothing when source has no overzoomed tiles and no dataMaxzoom', () => {
         const source = createSource();
 
-        const result = source.collectOverzoomParentTileIDs({}, []);
+        const result = source.collectOverzoomParentTileIDs(new Map(), []);
         expect(result).toEqual([]);
     });
 
@@ -252,10 +252,10 @@ describe('RasterArrayTileSource#collectOverzoomParentTileIDs', () => {
         const parent = tile(4, 10, 10);
         const child = tile(8, 169, 162, parent);
 
-        const tiles = {
-            [parent.tileID.key]: parent,
-            [child.tileID.key]: child,
-        };
+        const tiles = new Map([
+            [parent.tileID.key, parent],
+            [child.tileID.key, child],
+        ]);
 
         const result = source.collectOverzoomParentTileIDs(tiles, []);
         expect(result).toHaveLength(1);
@@ -269,9 +269,9 @@ describe('RasterArrayTileSource#collectOverzoomParentTileIDs', () => {
         const child = tile(8, 169, 162, parent);
 
         // Note: parent NOT in cache map.
-        const tiles = {
-            [child.tileID.key]: child,
-        };
+        const tiles = new Map([
+            [child.tileID.key, child],
+        ]);
 
         const result = source.collectOverzoomParentTileIDs(tiles, []);
         expect(result).toEqual([]);
@@ -281,9 +281,9 @@ describe('RasterArrayTileSource#collectOverzoomParentTileIDs', () => {
         const source = createSource();
         (source as unknown as {_dataMaxzoom: number})._dataMaxzoom = 4;
         const parent = tile(4, 10, 10);
-        const tiles = {
-            [parent.tileID.key]: parent,
-        };
+        const tiles = new Map([
+            [parent.tileID.key, parent],
+        ]);
 
         const idealTileID = new OverscaledTileID(8, 0, 8, 169, 162);
 
@@ -301,7 +301,7 @@ describe('RasterArrayTileSource#collectOverzoomParentTileIDs', () => {
     test('does not retain parents for ideal tiles at or below dataMaxzoom', () => {
         const source = createSource();
         (source as unknown as {_dataMaxzoom: number})._dataMaxzoom = 4;
-        const tiles = {};
+        const tiles = new Map<number, RasterArrayTile>();
 
         const idealTileID = new OverscaledTileID(4, 0, 4, 10, 10);
 

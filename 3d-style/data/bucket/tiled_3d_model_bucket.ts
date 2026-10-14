@@ -8,6 +8,7 @@ import {clamp} from '../../../src/util/util';
 import {DEMSampler} from '../../../src/terrain/elevation';
 import {ZoomConstantExpression} from '../../../src/style-spec/expression/index';
 import {Aabb} from '../../../src/util/primitives';
+import EXTENT from '../../../src/style-spec/data/extent';
 import {vec3, mat4} from 'gl-matrix';
 import deepEqual from '../../../src/style-spec/util/deep_equal';
 import featureFilter, {type FeatureFilter} from '../../../src/style-spec/feature_filter/index';
@@ -87,6 +88,8 @@ export class Tiled3dModelFeature {
     cameraCollisionOpacity: number;
     targetLod: number;
     state: FeatureState | null;
+    // BVH heights by tile coordinate, filled on the main thread by getHeightAtTileCoord, so never transferred
+    bvhHeightLookup: Map<number, number | null> | undefined;
     constructor(node: ModelNode) {
         this.node = node;
         this.hiddenByReplacement = false;
@@ -614,22 +617,23 @@ class Tiled3dModelBucket implements Bucket {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             if (nodeInfo.node.hidden === true) return {height: Infinity, maxHeight: nodeInfo.feature.properties["height"], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
 
-            mat4.invert(nodeInverse, nodeInfo.node.globalMatrix);
-            tmpVertex[0] = x;
-            tmpVertex[1] = y;
-            tmpVertex[2] = 0;
-            vec3.transformMat4(tmpVertex, tmpVertex, nodeInverse);
-
             if (nodeInfo.node.meshBVH) {
-                const qx = tmpVertex[0];
-                const qy = tmpVertex[1];
-                heightQueryAabbMinScratch[0] = qx - 1;
-                heightQueryAabbMinScratch[1] = qy - 1;
-                heightQueryAabbMinScratch[2] = -1000;
-                heightQueryAabbMaxScratch[0] = qx + 1;
-                heightQueryAabbMaxScratch[1] = qy + 1;
-                heightQueryAabbMaxScratch[2] = 1000;
-                const height = nodeInfo.node.meshBVH.findHighestPoint(heightQueryAabbMinScratch, heightQueryAabbMaxScratch);
+                // depends only on the node's static geometry, and symbols query the same anchors on every placement
+                const lookupKey = (x + EXTENT) * 4 * EXTENT + (y + EXTENT);
+                nodeInfo.bvhHeightLookup ??= new Map();
+                let height = nodeInfo.bvhHeightLookup.get(lookupKey);
+                if (height === undefined) {
+                    mat4.invert(nodeInverse, nodeInfo.node.globalMatrix);
+                    vec3.transformMat4(tmpVertex, vec3.set(tmpVertex, x, y, 0), nodeInverse);
+                    heightQueryAabbMinScratch[0] = tmpVertex[0] - 1;
+                    heightQueryAabbMinScratch[1] = tmpVertex[1] - 1;
+                    heightQueryAabbMinScratch[2] = -1000;
+                    heightQueryAabbMaxScratch[0] = tmpVertex[0] + 1;
+                    heightQueryAabbMaxScratch[1] = tmpVertex[1] + 1;
+                    heightQueryAabbMaxScratch[2] = 1000;
+                    height = nodeInfo.node.meshBVH.findHighestPoint(heightQueryAabbMinScratch, heightQueryAabbMaxScratch);
+                    nodeInfo.bvhHeightLookup.set(lookupKey, height);
+                }
                 if (height !== null) {
                     return {height, maxHeight: nodeInfo.feature.properties["height"] as number, hidden: nodeInfo.hiddenByReplacement, verticalScale: nodeInfo.evaluatedScale[2]};
                 }
@@ -637,6 +641,9 @@ class Tiled3dModelBucket implements Bucket {
             }
 
             if (!mesh.heightmap) continue;
+
+            mat4.invert(nodeInverse, nodeInfo.node.globalMatrix);
+            vec3.transformMat4(tmpVertex, vec3.set(tmpVertex, x, y, 0), nodeInverse);
 
             const xCell = ((tmpVertex[0] - mesh.aabb.min[0]) / (mesh.aabb.max[0] - mesh.aabb.min[0]) * HEIGHTMAP_DIM) | 0;
             const yCell = ((tmpVertex[1] - mesh.aabb.min[1]) / (mesh.aabb.max[1] - mesh.aabb.min[1]) * HEIGHTMAP_DIM) | 0;

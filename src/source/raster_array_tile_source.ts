@@ -133,17 +133,15 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
      * @private
      */
     collectOverzoomParentTileIDs(
-        tiles: Partial<Record<string | number, RasterArrayTile>>,
+        tiles: Map<number, RasterArrayTile>,
         idealTileIDs: ReadonlyArray<OverscaledTileID>,
     ): OverscaledTileID[] {
         const retained: OverscaledTileID[] = [];
 
         // Retain parents that existing overzoomed tiles already point to.
-        for (const tileKey in tiles) {
-            const tile = tiles[tileKey];
-            if (!tile) continue;
+        for (const tile of tiles.values()) {
             const parent = tile.parentTile;
-            if (parent && tiles[parent.tileID.key]) {
+            if (parent && tiles.has(parent.tileID.key)) {
                 retained.push(parent.tileID);
             }
         }
@@ -154,7 +152,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
             for (const tileID of idealTileIDs) {
                 if (tileID.canonical.z <= dataMaxzoom) continue;
                 const parentID = tileID.scaledTo(dataMaxzoom);
-                if (tiles[parentID.key]) retained.push(parentID);
+                if (tiles.has(parentID.key)) retained.push(parentID);
             }
         }
 

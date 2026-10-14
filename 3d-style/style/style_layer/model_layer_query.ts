@@ -180,8 +180,7 @@ export function loadMatchingModelFeature(bucket: Tiled3dModelBucket, featureInde
     // AABB check
     const node = nodeInfo.node;
     const tile = tilespaceGeometry.tile;
-    const tileMatrix = transform.calculatePosMatrix(tile.tileID.toUnwrapped(), transform.worldSize);
-    const modelMatrix = tileMatrix;
+    const tileMatrix = transform.calculatePosMatrix(tile.tileID.toUnwrapped());
     const scale = nodeInfo.evaluatedScale;
     let elevation = 0;
     if (transform.elevation && node.elevation) {
@@ -190,7 +189,7 @@ export function loadMatchingModelFeature(bucket: Tiled3dModelBucket, featureInde
     const anchorX = node.anchor ? node.anchor[0] : 0;
     const anchorY = node.anchor ? node.anchor[1] : 0;
 
-    mat4.translate(modelMatrix, modelMatrix, [anchorX * (scale[0] - 1), anchorY * (scale[1] - 1), elevation]);
+    const modelMatrix = mat4.translate(new Float64Array(16), tileMatrix, [anchorX * (scale[0] - 1), anchorY * (scale[1] - 1), elevation]);
     mat4.scale(modelMatrix, modelMatrix, scale);
 
     // Collision checks are performed in screen space. Corners are in ndc space.

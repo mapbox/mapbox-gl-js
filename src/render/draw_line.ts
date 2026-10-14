@@ -24,6 +24,7 @@ import {HD} from '../../modules/hd_main';
 import {HEADER_DATA_DRIVEN_MASK} from '../data/bucket/paint_property_ubo';
 import {FLOORWIDTH_BIT} from '../data/bucket/line_property_binder_ubo';
 
+import type {LineConstantUniformValues} from '../data/bucket/line_property_binder_ubo';
 import type Context from '../gl/context';
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -202,6 +203,9 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
 
     // Cache line-width evaluation per bucket zoom for dash anchoring to avoid evaluating per tile.
     const floorwidthByZoom: Record<number, number> = {};
+
+    // Constant paint values are the same for every tile of the layer, so evaluate them once per draw.
+    let constantValues: LineConstantUniformValues | null = null;
 
     // Collect tiles with partial polygon coverage for second pass stencil rendering.
     // Per-level segments are looked up at draw time via bucket.frcData.frcPerLevel.get(frc) — zero alloc.
@@ -382,8 +386,11 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                 // evaluation so paint values are up-to-date.
                 uboBinder.layer = layer;
                 const renderZoom = painter.transform.zoom;
-                const brightness = painter.style.getBrightness ? painter.style.getBrightness() : null;
-                const cv = uboBinder.getConstantUniformValues(brightness);
+                if (!constantValues) {
+                    const brightness = painter.style.getBrightness ? painter.style.getBrightness() : null;
+                    constantValues = uboBinder.getConstantUniformValues(brightness);
+                }
+                const cv = constantValues;
                 const lineUniformValuesRef = uniformValues as UniformValues<LineUniformsType>;
                 lineUniformValuesRef['u_lpp_color'] = cv.color_np_color;
                 lineUniformValuesRef['u_lpp_border_color'] = cv.border_np_color;
@@ -894,7 +901,7 @@ function drawLineToFbo(painter: Painter, sourceCache: SourceCache, layer: LineSt
     const savedStencilIDs = painter._tileClippingMaskIDs;
     const savedNextStencilID = painter.nextStencilID;
     painter.currentStencilSource = undefined;
-    painter._tileClippingMaskIDs = {};
+    painter._tileClippingMaskIDs = new Map();
     painter.nextStencilID = 1;
     painter._renderTileClippingMasks(layer, sourceCache, coords);
 
@@ -978,7 +985,7 @@ function drawLineBlendDraped(painter: Painter, sourceCache: SourceCache, layer: 
     const savedStencilIDs = painter._tileClippingMaskIDs;
     const savedNextStencilID = painter.nextStencilID;
     painter.currentStencilSource = undefined;
-    painter._tileClippingMaskIDs = {};
+    painter._tileClippingMaskIDs = new Map();
     painter.nextStencilID = 1;
 
     const savedTerrain = painter._terrain;

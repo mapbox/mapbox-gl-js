@@ -60,18 +60,19 @@ export default drawModels;
 const lightingMatrixScratch = new Float64Array(16);
 const normalMatrixScratch = new Float64Array(16);
 const fogMatrixScratch = new Float64Array(16);
-// Per-tile caches used in drawBatchedModels: hold (M * tileMatrix) for the current tile,
+// Per-tile cache used in drawBatchedModels: holds (M * tileMatrix) for the current tile,
 // then per-node we apply translate/scale on top instead of doing a full mat4.multiply.
-const lightingTileMatrix = new Float64Array(16);
 const projTileMatrix = new Float64Array(16);
-// transpose(invert(lightingTileMatrix)). Per node the normal matrix derives from this with a
-// single column scale: translate(t) drops out (upper-3x3 of column 3 is zero for affine M^-T)
-// and the per-node S(s) inverts to a column scale by 1/s. Avoids a per-node mat4.invert.
+// transpose(invert(negCameraPosZScale * tileMatrix)). Per node the normal matrix derives from this
+// with a single column scale: translate(t) drops out (upper-3x3 of column 3 is zero for affine
+// M^-T) and the per-node S(s) inverts to a column scale by 1/s. Avoids a per-node mat4.invert.
 const lightingTileNormalMatrix = new Float64Array(16);
 // Per-mesh scratch holding the light-mesh worldViewProjection, rebuilt from projTileMatrix
 // before each program.draw. Can't share with the lighting/normal/fog scratches — those are
 // all alive at modelUniformValues time.
 const wvpTileScratch = new Float64Array(16);
+const wvpNodeScratch = new Float64Array(16);
+const anchorScratch: vec3 = [0, 0, 0];
 // Per-node column scale applied to lightingTileNormalMatrix: 1/s with a Y-flip baked in.
 const normalScaleScratch: vec3 = [0, 0, 0];
 // Placeholder passed to modelUniformValues for u_normal_matrix in the instanced path;
@@ -112,10 +113,7 @@ type SortedNode = {
     nodeInfo: Tiled3dModelFeature;
     depth: number;
     opacity: number;
-    wvpForNode: mat4;
-    nodeModelMatrix: mat4;
-    // Per-node tile-space translation; reused post-sort to rebuild the lighting matrix
-    // from the per-tile cache without doing a full mat4.multiply.
+    // Per-node tile-space translation; reused post-sort to build the node matrices.
     tileTranslation: vec3;
 };
 
@@ -885,7 +883,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
         if (painter.renderPass === 'shadow' && shadowRenderer) {
             if (painter.currentShadowCascade === 1 && bucket.isInsideFirstShadowMapFrustum) continue;
 
-            const tileMatrix = tr.calculatePosMatrix(coord.toUnwrapped(), tr.worldSize);
+            const tileMatrix = tr.calculatePosMatrix(coord.toUnwrapped());
             renderData.tileMatrix.set(tileMatrix);
             renderData.shadowTileMatrix.set(shadowRenderer.calculateShadowPassMatrixFromMatrix(tileMatrix));
             renderData.aabb.min = [0, 0, 0];
@@ -1152,13 +1150,13 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     const cameraPos = vec3.scale([], [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
     const negCameraPos = vec3.negate([], cameraPos);
     // compute model parameters matrices
-    const negCameraPosMatrix = mat4.fromTranslation([], negCameraPos);
+    const negCameraPosMatrix = mat4.fromTranslation(new Float64Array(16), negCameraPos);
     const metersPerPixel = getMetersPerPixelAtLatitude(tr.center.lat, tr.zoom);
     const pixelsPerMeter = 1.0 / metersPerPixel;
-    const zScaleMatrix = mat4.fromScaling([], [1.0, 1.0, pixelsPerMeter]);
+    const zScaleMatrix = mat4.fromScaling(new Float64Array(16), [1.0, 1.0, pixelsPerMeter]);
     // Precomputed once so the per-node lighting path can collapse two muls into one:
-    // (negCam * zScale) * tileModelMatrix == negCam * (zScale * tileModelMatrix).
-    const negCameraPosZScaleMatrix = mat4.multiply([], negCameraPosMatrix, zScaleMatrix);
+    // (negCam * zScale) * nodeModelMatrix == negCam * (zScale * nodeModelMatrix).
+    const negCameraPosZScaleMatrix = mat4.multiply(new Float64Array(16), negCameraPosMatrix, zScaleMatrix);
     const layerOpacity = layer.paint.get('model-opacity').constantOr(1.0);
     const layerValues = modelLayerUniformValues(painter, layer);
 
@@ -1210,13 +1208,13 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
             if (shadowRenderer) {
                 singleCascade = shadowRenderer.getMaxCascadeForTile(coord.toUnwrapped()) === 0;
             }
-            const tileMatrix = tr.calculatePosMatrix(coord.toUnwrapped(), tr.worldSize);
+            const tileMatrix = tr.calculatePosMatrix(coord.toUnwrapped());
             const hasMapboxFeatures = !!(bucket.modelTraits & ModelTraits.HasMapboxMeshFeatures);
-            mat4.multiply(lightingTileMatrix, negCameraPosZScaleMatrix, tileMatrix);
             mat4.multiply(projTileMatrix, tr.expandedFarZProjMatrix, tileMatrix);
             // Pre-bake the tile-level normal matrix once. Per-node it just needs a column scale
             // (1/evaluatedScale with a Y-flip baked in) — no per-node mat4.invert.
-            mat4.invert(lightingTileNormalMatrix, lightingTileMatrix);
+            mat4.multiply(lightingTileNormalMatrix, negCameraPosZScaleMatrix, tileMatrix);
+            mat4.invert(lightingTileNormalMatrix, lightingTileNormalMatrix);
             mat4.transpose(lightingTileNormalMatrix, lightingTileNormalMatrix);
             // Per-tile cache of cascade.matrix * tileMatrix; per-node setupShadowsFromTileCache
             // applies translate + maybe scale instead of doing a fresh cascade-mul.
@@ -1323,12 +1321,12 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     elevation + nodeInfo.evaluatedTranslation[2]];
                 const tileModelMatrix = applyTileTransform(tileModelMatrixScratch, tileMatrix, tileTranslation, scale);
 
-                // keep model and nodemodel matrices separate for rendering door lights
-                const nodeModelMatrix = mat4.multiply([], tileModelMatrix, node.globalMatrix);
-                const wvpForNode = mat4.multiply([], tr.expandedFarZProjMatrix, nodeModelMatrix);
-                // Only the z (depth) component of the projected anchor is used below; computing
-                // the full vec4.transformMat4 would do 3 unused mul-adds and allocate two arrays.
-                const depth = wvpForNode[2] * anchorX + wvpForNode[6] * anchorY + wvpForNode[10] * elevation + wvpForNode[14];
+                // Only the projected depth of the anchor is used for sorting, so transform just the anchor here
+                // and leave the node's full matrices until after culling.
+                vec3.transformMat4(anchorScratch, vec3.set(anchorScratch, anchorX, anchorY, elevation), node.globalMatrix);
+                vec3.transformMat4(anchorScratch, anchorScratch, tileModelMatrix);
+                const proj = tr.expandedFarZProjMatrix;
+                const depth = proj[2] * anchorScratch[0] + proj[6] * anchorScratch[1] + proj[10] * anchorScratch[2] + proj[14];
 
                 node.hidden = false;
                 let opacity = layerOpacity;
@@ -1349,8 +1347,6 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     nodeInfo,
                     depth,
                     opacity,
-                    wvpForNode,
-                    nodeModelMatrix,
                     tileTranslation
                 };
 
@@ -1377,8 +1373,8 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
             }
 
             for (const sortedNode of sortedNodes) {
-                const nodeInfo = sortedNode.nodeInfo;
-                const node = nodeInfo.node;
+                const {nodeInfo, tileTranslation, opacity} = sortedNode;
+                const {node, evaluatedScale} = nodeInfo;
                 // Cascade matrices and shadow texture binds depend on (worldMatrix, normalOffset),
                 // both of which only change between meshes when normalOffset flips. Track the last
                 // value so we can skip the redundant work for subsequent meshes of this node.
@@ -1388,26 +1384,10 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     const id = node.id || node.name || 'footprint';
                     if (!footprints.has(id)) {
                         // Footprints are consumed after the tile loop, so this needs its own allocation.
-                        const mvp = applyTileTransform(new Float64Array(16), projTileMatrix, sortedNode.tileTranslation, sortedNode.nodeInfo.evaluatedScale);
+                        const mvp = applyTileTransform(new Float64Array(16), projTileMatrix, tileTranslation, evaluatedScale);
                         footprints.set(id, {node, mvp});
                     }
                 }
-
-                // negCameraPosZScale * tileMatrix is precomputed once per tile; rebuild the per-node
-                // lighting matrix on top of it via translate/scale instead of a full mat4.multiply.
-                const evaluatedScale = sortedNode.nodeInfo.evaluatedScale;
-                applyTileTransform(lightingMatrixScratch, lightingTileMatrix, sortedNode.tileTranslation, evaluatedScale);
-
-                // Normal matrix derives from the tile-level transpose-of-inverse with a single column scale:
-                // upper-3x3 of (lightingTileMatrix * T(t) * S(s))^-T equals upper-3x3(lightingTileMatrix^-T) * diag(1/s).
-                // Y-flip is baked into the same scale.
-                normalScaleScratch[0] = 1 / evaluatedScale[0];
-                normalScaleScratch[1] = -1 / evaluatedScale[1];
-                normalScaleScratch[2] = 1 / evaluatedScale[2];
-                mat4.scale(normalMatrixScratch, lightingTileNormalMatrix, normalScaleScratch);
-
-                // lighting matrix should take node.matrix into account
-                mat4.multiply(lightingMatrixScratch, lightingMatrixScratch, node.globalMatrix);
 
                 const emissiveStrength = hasMapboxFeatures ? 0.0 : nodeInfo.emissiveStrength;
 
@@ -1419,10 +1399,24 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     continue;
                 }
 
-                // Hoisted per-node: inputs (nodeModelMatrix, transform, current cascade) are mesh-invariant.
-                const nodeFogMatrix = layerFogMatrix ? mat4.multiply(fogMatrixScratch, layerFogMatrix, sortedNode.nodeModelMatrix) : null;
+                // Node matrices are mesh-invariant, so they're built once per node; shadow passes need only their own.
+                const nodeModelMatrix = applyTileTransform(tileModelMatrixScratch, tileMatrix, tileTranslation, evaluatedScale);
+                mat4.multiply(nodeModelMatrix, nodeModelMatrix, node.globalMatrix);
+                const nodeFogMatrix = layerFogMatrix ? mat4.multiply(fogMatrixScratch, layerFogMatrix, nodeModelMatrix) : null;
                 const nodeShadowPassMatrix = (isShadowPass && shadowRenderer) ?
-                    shadowRenderer.calculateShadowPassMatrixFromMatrix(sortedNode.nodeModelMatrix) : null;
+                    shadowRenderer.calculateShadowPassMatrixFromMatrix(nodeModelMatrix) : null;
+                if (!isShadowPass) {
+                    mat4.multiply(wvpNodeScratch, tr.expandedFarZProjMatrix, nodeModelMatrix);
+                    mat4.multiply(lightingMatrixScratch, negCameraPosZScaleMatrix, nodeModelMatrix);
+
+                    // Normal matrix derives from the tile-level transpose-of-inverse with a single column scale: with
+                    // L = negCameraPosZScale * tileMatrix, upper-3x3 of (L * T(t) * S(s))^-T equals upper-3x3(L^-T) * diag(1/s).
+                    // Y-flip is baked into the same scale.
+                    normalScaleScratch[0] = 1 / evaluatedScale[0];
+                    normalScaleScratch[1] = -1 / evaluatedScale[1];
+                    normalScaleScratch[2] = 1 / evaluatedScale[2];
+                    mat4.scale(normalMatrixScratch, lightingTileNormalMatrix, normalScaleScratch);
+                }
 
                 const passes = inTransition ? 2 : 1;
                 const useLodWhenNotTransitioning = hasLod && Math.round(targetLod) === 1;
@@ -1434,7 +1428,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         const mesh = meshes[i];
                         // Light mesh only exists in the primary mesh array, not LOD meshes
                         const isLight = !isLodMeshes && i === node.lightMeshIndex;
-                        let worldViewProjection = sortedNode.wvpForNode;
+                        let worldViewProjection: mat4 = wvpNodeScratch;
                         if (isLight) {
                             if (!isLightBeamPass && !painter.terrain && painter.shadowRenderer) {
                                 if (painter.currentLayer < painter.firstLightBeamLayer) {
@@ -1444,14 +1438,14 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             }
                             // Lights come in tilespace, so wvp is built from the tile matrix without node transforms.
                             // Scratch is safe to reuse across light meshes — program.draw uploads synchronously.
-                            worldViewProjection = applyTileTransform(wvpTileScratch, projTileMatrix, sortedNode.tileTranslation, sortedNode.nodeInfo.evaluatedScale);
+                            worldViewProjection = applyTileTransform(wvpTileScratch, projTileMatrix, tileTranslation, evaluatedScale);
                         } else if (isLightBeamPass) {
                             continue;
                         }
 
                         if (isShadowPass) {
                             if (stats) stats.numRenderedVerticesInShadowPass += mesh.vertexArray.length;
-                            drawShadowCaster(mesh, sortedNode.nodeModelMatrix, painter, layer, nodeShadowPassMatrix);
+                            drawShadowCaster(mesh, nodeModelMatrix, painter, layer, nodeShadowPassMatrix);
                             continue;
                         }
 
@@ -1505,7 +1499,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             if (lastShadowsNormalOffset !== useNormalOffset) {
                                 for (let c = 0; c < cascadeTileMatrices.length; c++) {
                                     const out = shadowLightMatrices[c] = shadowLightMatrices[c] || new Float64Array(16);
-                                    applyTileTransform(out, cascadeTileMatrices[c], sortedNode.tileTranslation, sortedNode.nodeInfo.evaluatedScale);
+                                    applyTileTransform(out, cascadeTileMatrices[c], tileTranslation, evaluatedScale);
                                 }
                                 shadowRenderer.setupShadowsFromCascadeMatrices(shadowLightMatrices, program, useNormalOffset);
                                 lastShadowsNormalOffset = useNormalOffset;
@@ -1528,7 +1522,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                                 normalMatrixScratch,
                                 node.globalMatrix,
                                 layerValues,
-                                sortedNode.opacity,
+                                opacity,
                                 material,
                                 emissiveStrength,
                                 zeroCameraPos,
@@ -1543,7 +1537,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             partStyleUBO.bind(context, program.program);
                         }
 
-                        if (!isLight && (nodeInfo.hasTranslucentParts || sortedNode.opacity < 1.0)) {
+                        if (!isLight && (nodeInfo.hasTranslucentParts || opacity < 1.0)) {
 
                             program.draw(painter, context.gl.TRIANGLES, depthModeRW, StencilMode.disabled, ColorMode.disabled, CullFaceMode.backCCW,
                                 uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
@@ -1551,7 +1545,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                                 undefined, dynamicBuffers);
                         }
 
-                        const meshNeedsBlending = isLight || sortedNode.opacity < 1.0 || nodeInfo.hasTranslucentParts;
+                        const meshNeedsBlending = isLight || opacity < 1.0 || nodeInfo.hasTranslucentParts;
                         const colorMode = meshNeedsBlending ? ColorMode.alphaBlended : ColorMode.unblended;
                         const depthMode = !isLight ? depthModeRW : depthModeRO;
                         program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.backCCW,

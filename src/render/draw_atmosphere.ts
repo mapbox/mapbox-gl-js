@@ -1,7 +1,7 @@
 import Color from '../style-spec/util/color';
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
-import {default as ColorMode, ZERO, ONE, ONE_MINUS_SRC_ALPHA} from '../gl/color_mode';
+import {default as ColorMode, ONE, ONE_MINUS_SRC_ALPHA} from '../gl/color_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import {
     globeToMercatorTransition,
@@ -71,7 +71,7 @@ class Atmosphere {
 
     constructor() {
         this.colorModeAlphaBlendedWriteRGB = new ColorMode([ONE, ONE_MINUS_SRC_ALPHA, ONE, ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, false]);
-        this.colorModeWriteAlpha = new ColorMode([ONE, ZERO, ONE, ZERO], Color.transparent, [false, false, false, true]);
+        this.colorModeWriteAlpha = new ColorMode(ColorMode.Replace, Color.transparent, [false, false, false, true]);
 
         this.params = createDefaultStarsParams();
         this.updateNeeded = true;
