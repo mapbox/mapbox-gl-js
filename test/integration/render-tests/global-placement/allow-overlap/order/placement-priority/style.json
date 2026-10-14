@@ -1,0 +1,149 @@
+{
+  "description": "Within one placement-group, the order set by placement-priority decides how icon-allow-overlap plays out, regardless of layer order. In the left pair the flagged symbol is placed first and blocks the normal one, so the normal symbol is hidden. In the right pair it is placed second and, allowing overlap, is placed over the normal one, so both are visible.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "collisionDebug": true,
+      "globalPlacement": true,
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "skip - Not yet implemented"
+        }
+      ]
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "flagged",
+              "p": 10
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -12,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "normal",
+              "p": 1
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -12,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "flagged",
+              "p": 1
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                12,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "normal",
+              "p": 10
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                12,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/standard",
+  "layers": [
+    {
+      "id": "shared-group",
+      "type": "placement-group"
+    },
+    {
+      "id": "flagged",
+      "type": "symbol",
+      "source": "points",
+      "filter": [
+        "==",
+        [
+          "get",
+          "kind"
+        ],
+        "flagged"
+      ],
+      "layout": {
+        "icon-image": "cafe",
+        "icon-size": 0.5,
+        "icon-offset": [
+          12,
+          -12
+        ],
+        "icon-allow-overlap": true
+      },
+      "paint": {
+        "placement-priority": [
+          "get",
+          "p"
+        ],
+        "placement-group": "shared-group"
+      }
+    },
+    {
+      "id": "normal",
+      "type": "symbol",
+      "source": "points",
+      "filter": [
+        "==",
+        [
+          "get",
+          "kind"
+        ],
+        "normal"
+      ],
+      "layout": {
+        "icon-image": "information",
+        "icon-size": 0.5
+      },
+      "paint": {
+        "placement-priority": [
+          "get",
+          "p"
+        ],
+        "placement-group": "shared-group"
+      }
+    }
+  ]
+}

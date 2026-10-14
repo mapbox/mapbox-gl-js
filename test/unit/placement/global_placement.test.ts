@@ -1,6 +1,6 @@
 import {describe, test, expect, vi} from '../../util/vitest';
 import {GlobalPlacement} from '../../../src/placement/global_placement';
-import {defaultPlacementRules, defaultPartPlacementRules} from '../../../src/placement/placement_rules';
+import {defaultPlacementRules} from '../../../src/placement/placement_rules';
 import {VariantPlacementResult} from '../../../src/placement/placement_debug';
 import {SymbolIdOrigin, SymbolPlacementType, SymbolVariantVisibility} from '../../../src/placement/types';
 import {OverscaledTileID} from '../../../src/source/tile_id';
@@ -16,6 +16,13 @@ type FakeSource = {
     showSymbolVariant: ReturnType<typeof vi.fn<NotifyFn>>;
     hideSymbolVariant: ReturnType<typeof vi.fn<NotifyFn>>;
 };
+
+function defaultPartPlacementRules(): PartPlacementRules {
+    return {
+        collisionRules: {},
+        insertIntoCollisionGrid: true
+    };
+}
 
 function createFakeSource(): FakeSource {
     return {showSymbolVariant: vi.fn<NotifyFn>(), hideSymbolVariant: vi.fn<NotifyFn>()};

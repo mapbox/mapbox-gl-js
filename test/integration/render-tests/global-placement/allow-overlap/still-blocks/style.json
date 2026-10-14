@@ -1,0 +1,62 @@
+{
+  "description": "icon-allow-overlap is not icon-ignore-placement: a symbol that allows overlap is still inserted into the collision grid, so it hides an overlapping lower-priority icon.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "collisionDebug": true,
+      "globalPlacement": true,
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "skip - Not yet implemented"
+        }
+      ]
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "a": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/standard",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "lower",
+      "type": "symbol",
+      "source": "a",
+      "layout": {
+        "icon-image": "cafe",
+        "icon-size": 0.5,
+        "icon-offset": [
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "id": "top",
+      "type": "symbol",
+      "source": "a",
+      "layout": {
+        "icon-image": "information",
+        "icon-size": 0.5,
+        "icon-allow-overlap": true
+      }
+    }
+  ]
+}

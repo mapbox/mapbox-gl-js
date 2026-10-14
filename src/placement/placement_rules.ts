@@ -36,6 +36,6 @@ export function defaultPlacementRules(): PlacementRules {
     return {};
 }
 
-export function defaultPartPlacementRules(): PartPlacementRules {
-    return {collisionRules: {}, insertIntoCollisionGrid: true};
+export function partPlacementRules(allowOverlap: boolean, ignorePlacement: boolean): PartPlacementRules {
+    return {collisionRules: allowOverlap ? undefined : {}, insertIntoCollisionGrid: !ignorePlacement};
 }

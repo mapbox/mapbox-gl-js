@@ -1,0 +1,151 @@
+{
+  "description": "The order of placement-group layers decides how icon-ignore-placement plays out, regardless of layer order. In the left pair the flagged symbol is placed first and, ignoring placement, does not block the normal one, so both are visible. In the right pair it is placed second and still collides with the normal one, so it is hidden.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "collisionDebug": true,
+      "globalPlacement": true,
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "skip - Not yet implemented"
+        }
+      ]
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "flagged",
+              "g": "front-group"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -12,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "normal",
+              "g": "back-group"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -12,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "flagged",
+              "g": "back-group"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                12,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "normal",
+              "g": "front-group"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                12,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/standard",
+  "layers": [
+    {
+      "id": "back-group",
+      "type": "placement-group"
+    },
+    {
+      "id": "flagged",
+      "type": "symbol",
+      "source": "points",
+      "filter": [
+        "==",
+        [
+          "get",
+          "kind"
+        ],
+        "flagged"
+      ],
+      "layout": {
+        "icon-image": "cafe",
+        "icon-size": 0.5,
+        "icon-offset": [
+          12,
+          -12
+        ],
+        "icon-ignore-placement": true
+      },
+      "paint": {
+        "placement-group": [
+          "get",
+          "g"
+        ]
+      }
+    },
+    {
+      "id": "normal",
+      "type": "symbol",
+      "source": "points",
+      "filter": [
+        "==",
+        [
+          "get",
+          "kind"
+        ],
+        "normal"
+      ],
+      "layout": {
+        "icon-image": "information",
+        "icon-size": 0.5
+      },
+      "paint": {
+        "placement-group": [
+          "get",
+          "g"
+        ]
+      }
+    },
+    {
+      "id": "front-group",
+      "type": "placement-group"
+    }
+  ]
+}

@@ -9,6 +9,7 @@
 - Improve tile load performance via optimization of style property values recalculation.
 - Fix 0 fadeDuration symbol placement offset.
 - Improve rendering performance via per-frame main thread work optimizations.
+- Add support of *-ignore-placement and *-allow-overlap in global placement.
 
 ## 3.33.0
 

@@ -67,7 +67,7 @@ import {Elevation} from '../../terrain/elevation';
 import {getFogOpacityAtTileCoord, FOG_SYMBOL_CLIPPING_THRESHOLD} from '../../style/fog_helpers';
 import {MIN_COLLISION_PERSPECTIVE_RATIO} from '../../geo/projection/projection_util';
 import {SymbolIdOrigin, SymbolPlacementType, SymbolVariantVisibility, hasStableId} from '../../placement/types';
-import {defaultPlacementRules, defaultPartPlacementRules} from '../../placement/placement_rules';
+import {defaultPlacementRules, partPlacementRules} from '../../placement/placement_rules';
 import {subgroupOrderForLayerPosition} from '../../placement/symbol_placement_parameters';
 import {type CollisionBoxArray, type CollisionBox, type SymbolInstance, SymbolOrientationArray} from '../array_types';
 import {type SymbolQuad, getIconQuads, getGlyphQuads} from '../../symbol/quads';
@@ -110,6 +110,7 @@ import type {AppearanceProps} from '../../style/appearance_properties';
 import type {FeatureState, GlobalProperties} from '../../style-spec/expression';
 import type ImageManager from '../../render/image_manager';
 import type {AppearanceUpdateResult} from './feature_appearances';
+import type {PartPlacementRules} from '../../placement/placement_rules';
 import type {SymbolSource} from '../../placement/symbol_source';
 import type {SymbolVariantId, SymbolId, TileCoverageRect} from '../../placement/types';
 import type {GlobalPlacement} from '../../placement/global_placement';
@@ -1148,11 +1149,13 @@ class SymbolBucket implements Bucket, SymbolSource {
         const unwrappedTileID = tile.tileID.toUnwrapped();
         const tileIdentity: TileIdentity = {overscaledZ: tile.tileID.overscaledZ, wrap: tile.tileID.wrap, canonical: tile.tileID.canonical};
         const pitched = transform.pitch > 0;
-        // Minimal first version: no dependency on another variant, and every part uses the default
-        // rules (collide against, and insert into, the collision grid). Priority is built per instance
-        // below so its current visibility feeds back into placement.
+        // Icon and text parts collide against the collision grid unless their `*-allow-overlap` is set,
+        // and are inserted into it unless their `*-ignore-placement` is set.
+        // Priority is built per instance below so its current visibility feeds back into placement.
+        // Variants and appearances not yet supported.
         const placementRules = defaultPlacementRules();
-        const partPlacementRules = defaultPartPlacementRules();
+        const iconPartPlacementRules = partPlacementRules(layer.layout.get('icon-allow-overlap'), layer.layout.get('icon-ignore-placement'));
+        const textPartPlacementRules = partPlacementRules(layer.layout.get('text-allow-overlap'), layer.layout.get('text-ignore-placement'));
 
         // Size is evaluated once per run for the current zoom (mirroring the shader's per-frame size
         // interpolation); the per-feature value is read below via getSymbolInstance{Icon,Text}Size.
@@ -1248,7 +1251,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         // contribute nothing.
         // `getScale` is called only once `box` is known to exist: a symbol with no icon (or no text)
         // has no valid placedIconSymbolIndex/placedSymbolArray entry to evaluate a size from.
-        const addCollisionBox = (box: SingleCollisionBox | undefined, instance: SymbolInstance, symbolZOffsetValue: number, getScale: () => number) => {
+        const addCollisionBox = (box: SingleCollisionBox | undefined, rules: PartPlacementRules, instance: SymbolInstance, symbolZOffsetValue: number, getScale: () => number) => {
             if (!box) return;
             const anchor = projectCollisionBoxAnchor(box, instance, symbolZOffsetValue);
             // Occluded, too far away to be worth a place or behind the camera
@@ -1262,7 +1265,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             if (!(left < right) || !(top < bottom)) return;
             // One box is one part: the icon and the text of a symbol are placed as a whole, but each of
             // them brings its own rules.
-            globalPlacement.addSymbolVariantPart([{kind: 'box', left, top, right, bottom}], partPlacementRules);
+            globalPlacement.addSymbolVariantPart([{kind: 'box', left, top, right, bottom}], rules);
         };
 
         for (let index = 0; index < this.symbolInstances.length; index++) {
@@ -1343,8 +1346,8 @@ class SymbolBucket implements Bucket, SymbolSource {
             globalPlacement.startSymbolVariantProcessing(variantId, priority, placementRules, tileIdentity, featureId);
             if (!clipped && !shadowedByChildTile) {
                 const symbolZOffsetValue = needsFeatureForZOffset && feature ? symbolZOffsetProperty.evaluate(feature, {}) : constantSymbolZOffset;
-                addCollisionBox(collisionArrays.iconBox, instance, symbolZOffsetValue, () => this.getSymbolInstanceIconSize(iconZoomSize, zoom, instance.placedIconSymbolIndex));
-                addCollisionBox(collisionArrays.textBox, instance, symbolZOffsetValue, () => this.getSymbolInstanceTextSize(textZoomSize, instance, zoom, index));
+                addCollisionBox(collisionArrays.iconBox, iconPartPlacementRules, instance, symbolZOffsetValue, () => this.getSymbolInstanceIconSize(iconZoomSize, zoom, instance.placedIconSymbolIndex));
+                addCollisionBox(collisionArrays.textBox, textPartPlacementRules, instance, symbolZOffsetValue, () => this.getSymbolInstanceTextSize(textZoomSize, instance, zoom, index));
             }
             globalPlacement.finishVariantProcessing();
         }

@@ -1,0 +1,113 @@
+{
+  "description": "A symbol with icon-ignore-placement does not block lower-priority icons that overlap it, but the third icon still collides with the second one.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "collisionDebug": true,
+      "globalPlacement": true,
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "skip - Not yet implemented"
+        }
+      ]
+    }
+  },
+  "sources": {
+    "a": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "id": 1,
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 2,
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                10,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 3,
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                10,
+                10
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/standard",
+  "layers": [
+    {
+      "id": "symbol-3",
+      "type": "symbol",
+      "source": "a",
+      "filter": [
+        "==",
+        [
+          "id"
+        ],
+        3
+      ],
+      "layout": {
+        "icon-image": "cafe"
+      }
+    },
+    {
+      "id": "symbol-2",
+      "type": "symbol",
+      "source": "a",
+      "filter": [
+        "==",
+        [
+          "id"
+        ],
+        2
+      ],
+      "layout": {
+        "icon-image": "restaurant"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "a",
+      "filter": [
+        "==",
+        [
+          "id"
+        ],
+        1
+      ],
+      "layout": {
+        "icon-ignore-placement": true,
+        "icon-image": "information"
+      }
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "description": "A text-only layer with text-ignore-placement does not block a lower-priority label that overlaps it, so both labels are placed.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "collisionDebug": true,
+      "globalPlacement": true,
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "skip - Not yet implemented"
+        }
+      ]
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "a": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/standard",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "lower",
+      "type": "symbol",
+      "source": "a",
+      "layout": {
+        "text-field": "LOWER",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 12
+      },
+      "paint": {
+        "text-color": "red"
+      }
+    },
+    {
+      "id": "top",
+      "type": "symbol",
+      "source": "a",
+      "layout": {
+        "text-field": "TOP",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 12,
+        "text-offset": [
+          1,
+          1
+        ],
+        "text-ignore-placement": true
+      },
+      "paint": {
+        "text-color": "green"
+      }
+    }
+  ]
+}
