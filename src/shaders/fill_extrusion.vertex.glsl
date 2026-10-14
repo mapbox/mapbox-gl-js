@@ -266,6 +266,9 @@ void main() {
 #ifdef RENDER_FRONT_CUTOFF
     v_dither_opacity = min(v_dither_opacity, frontCutoffOpacity);
 #endif
+    if (centroid_pos.x > 0.0 && centroid_pos.y > 0.0) {
+        hidden = max(hidden, float(v_dither_opacity <= 0.0));
+    }
 #endif
 
 #ifdef RENDER_WALL_MODE
