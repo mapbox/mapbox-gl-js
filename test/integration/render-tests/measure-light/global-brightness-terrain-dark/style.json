@@ -41,8 +41,7 @@
         {"platform-tag-contains": "swiftshader", "reason": "Diff is higher than allowed"}
       ],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.003},
-        {"platform-tag-contains": "swiftshader", "threshold": 0.0005}
+        {"platform-tag-contains": "", "threshold": 0.003}
       ]
     }
   },

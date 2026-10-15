@@ -16,9 +16,7 @@
       ],
       "maxZoom": 11.5,
       "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Flaky network metrics"},
-        {"platform-tag-contains": "native-ios-metal", "reason": "Flaky"},
-        {"platform-tag-contains": "native-android", "reason": "Flaky"}
+        {"platform-tag-contains": "native", "reason": "Flaky network metrics"}
       ]
     }
   },

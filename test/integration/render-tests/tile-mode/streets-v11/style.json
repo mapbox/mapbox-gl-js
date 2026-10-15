@@ -15,7 +15,6 @@
                 {"platform-tag-contains": "native", "reason": "ignored due to flaky metrics results"}
             ],
             "image-threshold": [
-                {"platform-tag-contains": "", "threshold": 0.0005},
                 {"platform-tag-contains": "native", "threshold": 0.02}
             ]
         }

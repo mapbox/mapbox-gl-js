@@ -14,9 +14,7 @@
         {"platform-tag-contains": "native-macos", "reason": "skip due to CI timeout: https://mapbox.atlassian.net/browse/MAPSNAT-2137"}
       ],
       "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Flaky network metrics"},
-        {"platform-tag-contains": "native-ios-metal", "reason": "Flaky"},
-        {"platform-tag-contains": "native-android", "reason": "Flaky"}
+        {"platform-tag-contains": "native", "reason": "Flaky network metrics"}
       ]
     }
   },

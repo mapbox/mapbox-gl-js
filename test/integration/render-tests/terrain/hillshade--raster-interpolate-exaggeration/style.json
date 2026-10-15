@@ -5,8 +5,7 @@
       "height": 256,
       "width": 256,
       "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Flaky"},
-        {"platform-tag-contains": "native-android", "reason": "Flaky"}
+        {"platform-tag-contains": "native", "reason": "Flaky"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0005}
