@@ -1,7 +1,7 @@
 import {HEADER_DATA_DRIVEN_MASK, HEADER_BLOCK_SIZE_VEC4} from './paint_property_ubo';
 import Color from '../../style-spec/util/color';
 import EvaluationParameters from '../../style/evaluation_parameters';
-import {PossiblyEvaluatedPropertyValue, type PossiblyEvaluatedValue} from '../../style/properties';
+import {PossiblyEvaluatedPropertyValue, LIGHT_DEPENDENCY, type PossiblyEvaluatedValue} from '../../style/properties';
 import {packUint8ToFloat} from '../../shaders/encode_attribute';
 
 import type {PaintPropertiesUBO} from './paint_property_ubo';
@@ -144,10 +144,6 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
     activeAppearanceByVtIndex?: Map<number, SymbolAppearance | null> | null;
 
     uboSizeDwords: number;
-
-    // True when no data-driven property uses measure-light expressions.
-    // When true, updateDynamicExpressions can be skipped on brightness-only changes.
-    isLightConstant!: boolean;
 
     // True when a property whose layer value isn't data-driven is still stored in per-feature blocks (e.g. forced
     // there by a data-driven companion property), so a change of that value has to rewrite every feature.
@@ -541,6 +537,32 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
             if (isPaintStateDependent(paint._values[name])) return true;
         }
         return false;
+    }
+
+    /**
+     * Returns true if any property stored in per-feature blocks depends on light (`measure-light`).
+     * When false, brightness changes alone cannot alter UBO contents (constant uniforms are
+     * re-evaluated at draw time), so updateDynamicExpressions can be skipped. Checks the
+     * unevaluated value, since a constant stored per feature (e.g. forced there by an appearance)
+     * evaluates to a constant with no light information.
+     *
+     * Called per bucket.update with the fresh `layer` argument so runtime setPaintProperty edits
+     * are picked up.
+     */
+    hasLightDependentBlocks(layer: TLayer): boolean {
+        const mask = this.header[HEADER_DATA_DRIVEN_MASK];
+        const names = this._propNames();
+        for (let i = 0; i < names.length; i++) {
+            if ((mask & (1 << i)) && this._dependsOnLight(layer, names[i])) return true;
+        }
+        return false;
+    }
+
+    protected _dependsOnLight(layer: TLayer, name: string): boolean {
+        // Derived properties (e.g. `line-floorwidth`, evaluated from `line-width`) have no unevaluated value of
+        // their own; their source property has its own bit and is checked separately.
+        const value = layer.getPaintPropertyValue(name);
+        return !!value && (value.deps & LIGHT_DEPENDENCY) !== 0;
     }
 
     /**

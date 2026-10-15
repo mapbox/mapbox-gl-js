@@ -223,7 +223,6 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
         let dataDrivenMask = 0;
         let hasConstantsInBlocks = false;
         let dataDrivenOffsetVec4 = 0;
-        let allDataDrivenLightConstant = true;
 
         const floorZoom = this._floorZoom;
         for (let i = 0; i < LINE_PROP_COUNT; i++) {
@@ -262,10 +261,6 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
             const isZoomDep = !!zoomExpr;
             this.zoomDependency[i] = isZoomDep ? 1 : 0;
 
-            // Check if this data-driven expression depends on light/brightness.
-            const expr = prop && prop.value as {isLightConstant?: boolean} | undefined;
-            if (expr && expr.isLightConstant === false) allDataDrivenLightConstant = false;
-
             // Fixed, vec4-aligned slot size: every property (color or float) takes exactly 1 vec4 —
             // line has no DZR 2-vec4 case (see line_properties_ubo.ts class doc).
             this.header[HEADER_OFFSETS + i] = dataDrivenOffsetVec4;
@@ -286,7 +281,6 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
         this.header[HEADER_DATA_DRIVEN_MASK] = dataDrivenMask;
         this.header[HEADER_BLOCK_SIZE_VEC4] = dataDrivenOffsetVec4;
 
-        this.isLightConstant = allDataDrivenLightConstant;
         this.hasConstantsInBlocks = hasConstantsInBlocks;
     }
 

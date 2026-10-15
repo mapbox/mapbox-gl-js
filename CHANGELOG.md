@@ -11,6 +11,7 @@
 - Improve rendering performance via per-frame main thread work optimizations.
 - Add support of *-ignore-placement and *-allow-overlap in global placement.
 - Fix `projection` documentation incorrectly stating that custom layers are not supported on globe.
+- Fix per-feature symbol/line paint value update based on light changes.
 
 ## 3.33.0
 

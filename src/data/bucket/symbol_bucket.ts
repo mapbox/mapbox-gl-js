@@ -1930,12 +1930,11 @@ class SymbolBucket implements Bucket, SymbolSource {
 
         // UBO-based updates
         if (canonical) {
-            // Update all features when brightness or other dynamic expressions change.
-            // Skip when all data-driven properties are light-constant: brightness doesn't affect
-            // stored UBO values in that case (constant uniforms handle the rendering adjustment).
+            // Update all features when brightness changes and a property stored per feature depends on it.
+            // Brightness changes of constant uniforms are applied at draw time.
             if (isBrightnessChanged) {
                 for (const binder of [this.text.uboBinder, this.icon.uboBinder]) {
-                    if (binder && !binder.isLightConstant) {
+                    if (binder && binder.hasLightDependentBlocks(layers[0] as SymbolStyleLayer)) {
                         binder.updateDynamicExpressions(layers[0] as SymbolStyleLayer, vtLayer, canonical, availableImages, states, brightness);
                     }
                 }

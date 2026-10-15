@@ -18,12 +18,11 @@
             0
           ]
         ]
-      ],
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "To be fixed"}
-      ],
-      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2072"]
+      ]
     }
+  },
+  "transition": {
+    "duration": 0
   },
   "sources": {
     "geojson": {

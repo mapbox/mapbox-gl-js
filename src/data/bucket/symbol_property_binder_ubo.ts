@@ -2,6 +2,7 @@ import {SymbolPropertiesUBO} from './symbol_properties_ubo';
 import {HEADER_DATA_DRIVEN_MASK, HEADER_DZR_MASK, HEADER_BLOCK_SIZE_VEC4, HEADER_OFFSETS, HEADER_SHARED_ZOOM, floatToBits} from './paint_property_ubo';
 import {PaintPropertyBinderUBO, isPaintStateDependent} from './paint_property_binder_ubo';
 import {register} from '../../util/web_worker_transfer';
+import {LIGHT_DEPENDENCY} from '../../style/properties';
 
 import type {PossiblyEvaluatedPropertyValue} from '../../style/properties';
 import type {EvaluationContext, ZoomExpression} from './paint_property_binder_ubo';
@@ -109,7 +110,6 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
         let dzrMask = 0;
         let hasConstantsInBlocks = false;
         let dataDrivenOffsetVec4 = 0;
-        let allDataDrivenLightConstant = true;
 
         const floorZoom = this._floorZoom;
         const names = PROP_NAMES[+this.isText];
@@ -150,11 +150,6 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
             const needsBlockZoom = hasAppearanceZoomStops || (isTranslate && isZoomDep);
             if (needsBlockZoom) dzrMask |= (1 << i);
 
-            // Check if this data-driven expression depends on light/brightness.
-            // Same pattern as program_configuration.ts:313-314.
-            const expr = prop && prop.value as {isLightConstant?: boolean} | undefined;
-            if (expr && expr.isLightConstant === false) allDataDrivenLightConstant = false;
-
             // Fixed, vec4-aligned slot size: scalars always take 1 vec4; colors and translate take
             // 1 vec4 (Independent/SameZoomRange, zoom range read from the header — translate never
             // needs this since it has no shared-zoom header slot) or 2 vec4 (DifferentZoomRanges,
@@ -180,7 +175,6 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
         this.header[HEADER_DZR_MASK] = dzrMask;
         this.header[HEADER_BLOCK_SIZE_VEC4] = dataDrivenOffsetVec4;
 
-        this.isLightConstant = allDataDrivenLightConstant;
         this.hasConstantsInBlocks = hasConstantsInBlocks;
     }
 
@@ -386,6 +380,19 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
                     return true;
                 }
             }
+        }
+        return false;
+    }
+
+    /**
+     * Also checks appearances: an appearance value using `measure-light` must be re-evaluated on
+     * brightness changes even if the layer value doesn't depend on light.
+     */
+    protected override _dependsOnLight(layer: SymbolStyleLayer, name: string): boolean {
+        if (super._dependsOnLight(layer, name)) return true;
+        const key = name as keyof AppearancePaintProps;
+        for (const appearance of layer.getAppearances() || []) {
+            if (appearance.hasPaintProperty(key) && (appearance.getUnevaluatedPaintProperty(key).deps & LIGHT_DEPENDENCY)) return true;
         }
         return false;
     }

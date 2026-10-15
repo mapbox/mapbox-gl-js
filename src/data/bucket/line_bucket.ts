@@ -524,7 +524,7 @@ class LineBucket implements Bucket {
             if (isBrightnessChanged) {
                 for (const layer of layers as ReadonlyArray<LineStyleLayer>) {
                     const binder = this.uboBinders[layer.id];
-                    if (binder && !binder.isLightConstant) {
+                    if (binder && binder.hasLightDependentBlocks(layer)) {
                         binder.updateDynamicExpressions(layer, vtLayer, canonical, availableImages, states, brightness);
                     }
                 }

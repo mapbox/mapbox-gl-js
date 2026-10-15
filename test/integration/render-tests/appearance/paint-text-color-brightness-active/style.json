@@ -1,0 +1,151 @@
+{
+  "description": "A light-dependent paint property set by an appearance has to follow the brightness change for features with the active appearance even if the layer value doesn't depend on light.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4215"],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-4215"}
+      ],
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setLights",
+          [
+            {
+              "type": "ambient",
+              "id": "environment",
+              "properties": {
+                "intensity": 0.7
+              }
+            },
+            {
+              "type": "directional",
+              "id": "sun_light",
+              "properties": {
+                "intensity": 0.8,
+                "direction": [
+                  200.0,
+                  30.0
+                ]
+              }
+            }
+          ]
+        ]
+      ]
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.05
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.05,
+        "direction": [
+          200.0,
+          30.0
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "id": 1,
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -10,
+                0
+              ]
+            }
+          },
+          {
+            "id": 2,
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          },
+          {
+            "id": 3,
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                10,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-allow-overlap": true,
+        "text-field": "T",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-color": "blue"
+      },
+      "appearances": [
+        {
+          "name": "selected",
+          "condition": [
+            "==",
+            [
+              "id"
+            ],
+            2
+          ],
+          "properties": {
+            "text-color": [
+              "step",
+              [
+                "measure-light",
+                "brightness"
+              ],
+              "red",
+              0.4,
+              "green"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
