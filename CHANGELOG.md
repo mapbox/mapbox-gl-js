@@ -10,6 +10,7 @@
 - Fix 0 fadeDuration symbol placement offset.
 - Improve rendering performance via per-frame main thread work optimizations.
 - Add support of *-ignore-placement and *-allow-overlap in global placement.
+- Fix `projection` documentation incorrectly stating that custom layers are not supported on globe.
 
 ## 3.33.0
 
