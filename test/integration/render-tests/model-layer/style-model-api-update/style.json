@@ -4,13 +4,10 @@
     "test": {
       "height": 512,
       "operations": [
-        ["addModel", "tree", "/models/tree.glb"],
+        ["addModel", "tree", "local://models/tree.glb"],
         ["wait"],
-        ["addModel", "tree", "/models/nested-cubes.glb"],
+        ["addModel", "tree", "local://models/nested-cubes.glb"],
         ["wait"]
-      ],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "timing out on missing files from cache"}
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}

@@ -4,18 +4,15 @@
     "test": {
       "height": 512,
       "operations": [
-        ["addModel", "tree-diffuse", "/models/tree.glb"],
+        ["addModel", "tree-diffuse", "local://models/tree.glb"],
         ["wait"],
-        ["addModel", "tree", "/models/tree-metallic.glb"],
+        ["addModel", "tree", "local://models/tree-metallic.glb"],
         ["wait"],
         ["removeModel", "tree-diffuse"],
-        ["addModel", "tree-diffuse", "/models/tree-no-material.glb"],
+        ["addModel", "tree-diffuse", "local://models/tree-no-material.glb"],
         ["wait"],
         ["setPaintProperty", "tree-layer-combined", "model-opacity", 0.0],
         ["wait"]
-      ],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "timing out on missing files from cache"}
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}
@@ -38,6 +35,7 @@
       "data": "local://data/trees.geojson"
     }
   },
+  "transition": {"duration": 0},
   "pitch": 60,
   "bearing": 0,
   "zoom": 15,

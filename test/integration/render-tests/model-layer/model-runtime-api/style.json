@@ -6,12 +6,12 @@
       "width": 512,
       "operations": [
         ["wait"],
-        ["addModel", "maple", "/models/maple.glb"],
-        ["addModel", "maple1", "/models/maple1.glb"],
-        ["addModel", "oak1", "/models/oak1.glb"],
-        ["addModel", "oak2", "/models/oak2.glb"],
-        ["addModel", "oak3", "/models/oak3.glb"],
-        ["addModel", "spur1", "/models/spur1.glb"],
+        ["addModel", "maple", "local://models/maple.glb"],
+        ["addModel", "maple1", "local://models/maple1.glb"],
+        ["addModel", "oak1", "local://models/oak1.glb"],
+        ["addModel", "oak2", "local://models/oak2.glb"],
+        ["addModel", "oak3", "local://models/oak3.glb"],
+        ["addModel", "spur1", "local://models/spur1.glb"],
         ["wait"],
         ["addLayer", {
               "id": "tree-layer",
@@ -34,9 +34,6 @@
               }
         }],
         ["wait"]
-      ],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "timing out on missing files from cache"}
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}
