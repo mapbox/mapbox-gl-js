@@ -84,11 +84,10 @@
           "wait"
         ]
       ],
-      "tickets": ["https://github.com/mapbox/mapbox-gl-js/issues/3327"],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "non-deterministic on AMD graphics cards"},
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-js/issues/3327"}
-      ]
+        {"platform-tag-contains": "web", "reason": "non-deterministic on AMD graphics cards"}
+      ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4283"]
     }
   },
   "pitch": 60,

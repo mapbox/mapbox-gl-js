@@ -88,13 +88,10 @@
           "wait"
         ]
       ],
-      "tickets": ["https://github.com/mapbox/mapbox-gl-js/issues/3327"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-js/issues/3327"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0004}
-      ]
+      ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4283"]
     }
   },
   "pitch": 60,
