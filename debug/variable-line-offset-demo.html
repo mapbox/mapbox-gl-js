@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Variable Line Offset Demo - Multi-Line Rendering</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        html, body, #map {
+            height: 100%;
+        }
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            max-width: 400px;
+            z-index: 1;
+        }
+        .info-panel h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+        .info-panel p {
+            margin: 5px 0;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .info-panel code {
+            background: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .info-panel .legend {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+<div class="info-panel">
+    <h3>Variable Line Offset Demo</h3>
+    <p><strong>Feature:</strong> <code>line-offset</code> with <code>line-progress</code></p>
+    <p>The red line offset varies from -10px to +10px along its length.</p>
+
+    <div class="legend">
+        <h4 style="margin: 10px 0 5px 0; font-size: 14px;">Layer Controls</h4>
+        <div class="legend-item">
+            <input type="checkbox" id="toggle-background" checked>
+            <label for="toggle-background">Background Line (20px)</label>
+        </div>
+        <div class="legend-item">
+            <input type="checkbox" id="toggle-variable" checked>
+            <label for="toggle-variable">Variable Offset Line</label>
+        </div>
+    </div>
+</div>
+
+<div id="map"></div>
+
+<script src="../dist/mapbox-gl-dev.js"></script>
+
+<script>
+// Set access token (fallback token for localhost testing)
+mapboxgl.accessToken = 'pk.eyJ1IjoiZ2wtanMtdGVhbSIsImEiOiJjbTV1d3l0d3AwMThnMmpzZ2M5OTNyeDE1In0.2nygBIo7PXbkFCCt6LEBgw';
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    devtools: true,
+    zoom: 13,
+    center: [-122.45, 37.78],
+    sprite: 'mapbox://sprites/mapbox/streets-v11',
+    glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+    hash: true
+});
+
+map.on('load', () => {
+    map.showTileBoundaries = false;
+
+    // Clear any cached tiles first
+    if (map.style && map.style.sourceCaches) {
+        Object.values(map.style.sourceCaches).forEach(sourceCache => {
+            if (sourceCache.clearTiles) sourceCache.clearTiles();
+        });
+    }
+
+    // Simple straight line in San Francisco
+    const data = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "coordinates": [
+                        [-122.48, 37.78],
+                        [-122.42, 37.78]
+                    ],
+                    "type": "LineString"
+                }
+            }
+        ]
+    };
+
+    // Add source with lineMetrics enabled for variable offset
+    map.addSource('line', {
+        type: 'geojson',
+        lineMetrics: true,  // REQUIRED for line-progress
+        data: data
+    });
+
+    // Background line - thick gray line (20px)
+    map.addLayer({
+        id: 'background-line',
+        type: 'line',
+        source: 'line',
+        paint: {
+            'line-color': '#999',
+            'line-width': 20
+        }
+    });
+
+    // Variable offset line - red line with offset from -10 to +10
+    map.addLayer({
+        id: 'variable-line',
+        type: 'line',
+        source: 'line',
+        paint: {
+            'line-color': '#ff0000',
+            'line-width': 4,
+            'line-offset': [
+                'interpolate',
+                ['linear'],
+                ['line-progress'],
+                0, -10,  // Start: -10px offset
+                1, 10    // End: +10px offset
+            ]
+        }
+    });
+
+    // Layer Controls - Event Listeners
+    document.getElementById('toggle-background').addEventListener('change', (e) => {
+        map.setLayoutProperty('background-line', 'visibility', e.target.checked ? 'visible' : 'none');
+    });
+
+    document.getElementById('toggle-variable').addEventListener('change', (e) => {
+        map.setLayoutProperty('variable-line', 'visibility', e.target.checked ? 'visible' : 'none');
+    });
+});
+</script>
+</body>
+</html>

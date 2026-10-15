@@ -192,6 +192,11 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
         definesValues.push('DEBUG_ELEVATION_ID');
     }
 
+    const offset = layer.paint.get('line-offset').value;
+    if (offset.kind !== 'constant' && offset.isLineProgressConstant === false) {
+        definesValues.push("VARIABLE_LINE_OFFSET");
+    }
+
     if (isDraping) {
         if (painter.emissiveMode === 'dual-source-blending' && !constantEmissiveStrength) {
             definesValues.push('DUAL_SOURCE_BLENDING');

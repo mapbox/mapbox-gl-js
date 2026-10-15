@@ -139,3 +139,37 @@ test('LineBucket segmentation', () => {
 
     expect(console.warn).toHaveBeenCalledTimes(1);
 });
+
+test.each([false, true])('LineBucket writes variable offsets with variable width %s', (variableWidth) => {
+    const layer = new LineStyleLayer({
+        id: 'test',
+        type: 'line',
+        paint: {
+            'line-width': variableWidth ? ['interpolate', ['linear'], ['line-progress'], 0, 2, 1, 10] : 4,
+            'line-offset': ['interpolate', ['linear'], ['line-progress'], 0, -10, 1, 10]
+        }
+    });
+    layer.recalculate({zoom: 14});
+    const bucket = new LineBucket({layers: [layer]});
+
+    bucket.addFeature({type: 2, properties: {'mapbox_clip_start': 0, 'mapbox_clip_end': 1}}, [[
+        new Point(0, 0),
+        new Point(100, 0)
+    ]]);
+
+    const vertices = bucket.zOffsetVertexArray;
+    expect(vertices.length).toBe(bucket.layoutVertexArray.length);
+    expect(Array.from(vertices.float32.slice(0, 4))).toEqual([0, variableWidth ? 1 : 0, -10, 0]);
+    expect(Array.from(vertices.float32.slice((vertices.length - 1) * 4, vertices.length * 4)))
+        .toEqual([0, variableWidth ? 5 : 0, 10, 0]);
+});
+
+test('LineBucket with constant offset does not allocate per-vertex offset data', () => {
+    const layer = new LineStyleLayer({id: 'test', type: 'line', paint: {'line-offset': 5}});
+    layer.recalculate({zoom: 14});
+    const bucket = new LineBucket({layers: [layer]});
+
+    bucket.addFeature({type: 2, properties: {}}, [[new Point(0, 0), new Point(100, 0)]]);
+
+    expect(bucket.zOffsetVertexArray.length).toBe(0);
+});

@@ -12,7 +12,7 @@
 
 in ivec2 a_pos_normal;
 in uvec4 a_data;
-#if defined(ELEVATED) || defined(ELEVATED_ROADS)
+#if defined(ELEVATED) || defined(ELEVATED_ROADS) || defined(VARIABLE_LINE_OFFSET)
 in vec4 a_z_offset_width;
 #endif
 #ifdef ELEVATION_GROUND_SCALE
@@ -131,6 +131,11 @@ void main() {
     gapwidth = gapwidth / 2.0;
     float halfwidth = (u_width_scale * width) / 2.0;
     offset = -1.0 * offset * u_width_scale;
+
+#ifdef VARIABLE_LINE_OFFSET
+    // Variable offset uses the same scaling as regular offset
+    offset = -1.0 * a_z_offset_width.z * u_width_scale;
+#endif
 
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
     float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + (halfwidth == 0.0 ? 0.0 : ANTIALIASING);
