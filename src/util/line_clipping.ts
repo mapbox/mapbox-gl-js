@@ -3,7 +3,8 @@ import Point from '@mapbox/point-geometry';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import {segmentSegmentIntersection} from './intersection_tests';
 
-import type {EdgeIterator, Range} from '../../3d-style/elevation/elevation_feature';
+import type {EdgeIterator} from '../../3d-style/elevation/elevation_feature';
+import type {Range} from './util';
 
 export interface LineInfo {
     progress: Range;     // normalized range in the parent line

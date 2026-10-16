@@ -4,7 +4,7 @@ import assert from '../../src/style-spec/util/assert';
 import {ElevationFeatureParser} from "./elevation_feature_parser";
 import {tileToMeter} from "../../src/geo/mercator_coordinate";
 import {Ray2D} from "../../src/util/primitives";
-import {clamp, smoothstep} from "../../src/util/util";
+import {clamp, smoothstep, type Range} from "../../src/util/util";
 import {MARKUP_ELEVATION_BIAS} from "./elevation_constants";
 import EXTENT from "../../src/style-spec/data/extent";
 import Point from "@mapbox/point-geometry";
@@ -79,11 +79,6 @@ interface EdgeProps {
     vec: vec2;      // a -> b
     dir: vec2;      // norm(vec)
     len: number;    // magnitude(vec)
-}
-
-export interface Range {
-    min: number;
-    max: number;
 }
 
 // Hard-coded depth after which roads are rendered as tunnels

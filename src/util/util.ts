@@ -5,9 +5,17 @@ import assert from '../style-spec/util/assert';
 import deepEqual from '../style-spec/util/deep_equal';
 
 import type {vec4} from 'gl-matrix';
-import type {Range} from '../../3d-style/elevation/elevation_feature';
 import type {Callback} from '../types/callback';
-import type {ExpiryData} from '../source/tile';
+
+export interface Range {
+    min: number;
+    max: number;
+}
+
+export type ExpiryData = {
+    cacheControl?: string | null;
+    expires?: Date | string | null;
+};
 
 const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
@@ -55,7 +63,7 @@ const TILE_CORNERS = [[0, 0], [1, 0], [1, 1], [0, 1]] as const;
 export function furthestTileCorner(bearing: number): Readonly<[number, number]> {
     const alignedBearing = ((bearing + 45) + 360) % 360;
     const cornerIdx = Math.round(alignedBearing / 90) % 4;
-    return TILE_CORNERS[cornerIdx];
+    return TILE_CORNERS[cornerIdx]!;
 }
 
 /**
@@ -119,10 +127,10 @@ export function getAABBPointSquareDist(min: Array<number>, max: Array<number>, p
     let sqDist = 0.0;
 
     for (let i = 0; i < 2; ++i) {
-        const v = point ? point[i] : 0.0;
-        assert(min[i] < max[i], 'Invalid aabb min and max inputs, min[i] must be < max[i].');
-        if (min[i] > v) sqDist += (min[i] - v) * (min[i] - v);
-        if (max[i] < v) sqDist += (v - max[i]) * (v - max[i]);
+        const v = point ? point[i]! : 0.0;
+        assert(min[i]! < max[i]!, 'Invalid aabb min and max inputs, min[i] must be < max[i].');
+        if (min[i]! > v) sqDist += (min[i]! - v) * (min[i]! - v);
+        if (max[i]! < v) sqDist += (v - max[i]!) * (v - max[i]!);
     }
 
     return sqDist;
@@ -163,9 +171,9 @@ export function bufferConvexPolygon(ring: Point[], buffer: number): Point[] {
     for (let currIdx = 0; currIdx < ring.length; currIdx++) {
         const prevIdx = wrap(currIdx - 1, -1, ring.length - 1);
         const nextIdx = wrap(currIdx + 1, -1, ring.length - 1);
-        const prev = ring[prevIdx];
-        const curr = ring[currIdx];
-        const next = ring[nextIdx];
+        const prev = ring[prevIdx]!;
+        const curr = ring[currIdx]!;
+        const next = ring[nextIdx]!;
         const p1 = prev.sub(curr).unit();
         const p2 = next.sub(curr).unit();
         const interiorAngle = p2.angleWithSep(p1.x, p1.y);
@@ -265,7 +273,6 @@ export function asyncAll<Item, Result>(
         fn(item, (err, result) => {
             if (err) error = err;
             results[i] = result;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             if (--remaining === 0) callback(error, results);
         });
     });
@@ -288,7 +295,7 @@ export function asyncAll<Item, Result>(
 export function pick<T extends object, K extends keyof T>(src: T, properties: Array<K>): Pick<T, K> {
     const result = {} as Pick<T, K>;
     for (let i = 0; i < properties.length; i++) {
-        const k = properties[i];
+        const k = properties[i]!;
         if (k in src) {
             result[k] = src[k];
         }
@@ -314,9 +321,9 @@ export function uniqueId(): number {
  * @private
  */
 export function uuid(): string {
-    function b(a?: undefined): string {
+    function b(a?: string): string {
         return a ?
-            (a ^ Math.random() * (16 >> a / 4)).toString(16) :
+            (+a ^ Math.random() * (16 >> +a / 4)).toString(16) :
             // eslint-disable-next-line @typescript-eslint/no-unsafe-unary-minus
             (([1e7] as unknown as string) + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b);
     }
@@ -359,6 +366,8 @@ export function validateUuid(str?: string | null): boolean {
     return str ? UUID_V4_RE.test(str) : false;
 }
 
+type Methods = Record<string, ((...args: unknown[]) => unknown) | undefined>;
+
 /**
  * Given an array of member function names as strings, replace all of them
  * with bound versions that will always refer to `context` as `this`. This
@@ -381,10 +390,10 @@ export function validateUuid(str?: string | null): boolean {
  * @private
  */
 export function bindAll(fns: Array<string>, context: unknown): void {
+    const methods = context as Methods;
     fns.forEach((fn) => {
-        if (!context[fn]) { return; }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        context[fn] = context[fn].bind(context);
+        if (!methods[fn]) { return; }
+        methods[fn] = methods[fn].bind(context);
     });
 }
 
@@ -402,7 +411,7 @@ export function mapObject<T, U>(
 ): Record<PropertyKey, U> {
     const output: Record<PropertyKey, U> = {};
     for (const key in input) {
-        output[key] = iterator.call(context || this, input[key], key, input);
+        output[key] = iterator.call(context || this, input[key] as T, key, input);
     }
     return output;
 }
@@ -460,7 +469,7 @@ export function mapValue(value: number, min: number, max: number, outMin: number
  */
 export function arraysIntersect<T>(a: Array<T>, b: Array<T>): boolean {
     for (let l = 0; l < a.length; l++) {
-        if (b.includes(a[l])) return true;
+        if (b.includes(a[l] as T)) return true;
     }
     return false;
 }
@@ -630,11 +639,8 @@ export function isFullscreen(): boolean {
 
 export function storageAvailable(type: string): boolean {
     try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const storage = self[type];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        storage.setItem('_mapbox_test_', 1);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        const storage = (self as unknown as Record<string, Storage>)[type]!;
+        storage.setItem('_mapbox_test_', 1 as unknown as string);
         storage.removeItem('_mapbox_test_');
         return true;
     } catch (e) {
@@ -664,12 +670,12 @@ export function b64DecodeUnicode(str: string): string {
 export function base64DecToArr(sBase64: string): Uint8Array {
     const str = atob(sBase64);
     const arr = new Uint8Array(str.length);
-    for (let i = 0; i < str.length; i++) arr[i] = str.codePointAt(i);
+    for (let i = 0; i < str.length; i++) arr[i] = str.codePointAt(i)!;
     return arr;
 }
 
 export function getColumn(matrix: mat4, col: number): vec4 {
-    return [matrix[col * 4], matrix[col * 4 + 1], matrix[col * 4 + 2], matrix[col * 4 + 3]];
+    return [matrix[col * 4]!, matrix[col * 4 + 1]!, matrix[col * 4 + 2]!, matrix[col * 4 + 3]!];
 }
 
 export function setColumn(matrix: mat4, col: number, values: vec4) {
@@ -699,7 +705,7 @@ export function lowerBound(array: number[], startIndex: number, finishIndex: num
     while (startIndex < finishIndex) {
         const middleIndex = (startIndex + finishIndex) >> 1;
 
-        if (array[middleIndex] < target) {
+        if (array[middleIndex]! < target) {
             startIndex = middleIndex + 1;
         } else {
             finishIndex = middleIndex;
@@ -713,7 +719,7 @@ export function upperBound(array: number[], startIndex: number, finishIndex: num
     while (startIndex < finishIndex) {
         const middleIndex = (startIndex + finishIndex) >> 1;
 
-        if (array[middleIndex] <= target) {
+        if (array[middleIndex]! <= target) {
             startIndex = middleIndex + 1;
         } else {
             finishIndex = middleIndex;

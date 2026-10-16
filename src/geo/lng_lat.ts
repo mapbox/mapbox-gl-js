@@ -244,7 +244,7 @@ export class LngLatBounds {
         } else if (Array.isArray(sw) && sw.length === 4) {
             this.setSouthWest([sw[0], sw[1]]).setNorthEast([sw[2], sw[3]]);
         } else {
-            this.setSouthWest(sw[0] as LngLatLike).setNorthEast(sw[1] as LngLatLike);
+            this.setSouthWest((sw as [LngLatLike, LngLatLike])[0]).setNorthEast((sw as [LngLatLike, LngLatLike])[1]);
         }
     }
 
@@ -509,7 +509,8 @@ export class LngLatBounds {
      * const llb = mapboxgl.LngLatBounds.convert(arr);
      * console.log(llb);   // = LngLatBounds {_sw: LngLat {lng: -73.9876, lat: 40.7661}, _ne: LngLat {lng: -73.9397, lat: 40.8002}}
      */
-    static convert(input: LngLatBoundsLike): LngLatBounds {
+    static convert(input: LngLatBoundsLike): LngLatBounds;
+    static convert(input: LngLatBoundsLike | null | undefined): LngLatBounds | undefined {
         if (!input) return;
         if (input instanceof LngLatBounds) return input;
         return new LngLatBounds(input);

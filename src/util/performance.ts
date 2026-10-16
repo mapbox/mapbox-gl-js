@@ -1,8 +1,6 @@
 import {isWorker} from '../util/util';
 import {LivePerformanceMarkers} from '../util/live_performance';
 
-import type {RequestParameters} from '../util/ajax';
-
 export const PerformanceMarkers = {
     libraryEvaluate: 'library-evaluate',
     frameGPU: 'frame-gpu',
@@ -141,15 +139,14 @@ export const PerformanceUtils = {
     },
     clearMetrics() {
         for (const marker in LivePerformanceMarkers) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            performance.clearMarks(LivePerformanceMarkers[marker]);
+            performance.clearMarks(LivePerformanceMarkers[marker as keyof typeof LivePerformanceMarkers]);
         }
     }
 } as const;
 
 PerformanceUtils.mark(PerformanceMarkers.libraryEvaluate);
 
-export function getPerformanceMeasurement(request?: RequestParameters | null): Array<PerformanceEntry> {
+export function getPerformanceMeasurement(request?: {url: string} | null): Array<PerformanceEntry> {
     const url = request ? request.url.toString() : undefined;
     if (!url) {
         return [];

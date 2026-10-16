@@ -11,14 +11,14 @@ import Texture from '../render/texture';
 import {resolveTileProvider, loadTileProvider, processTileJSON} from './tile_provider';
 
 import type {TileProvider} from './tile_provider';
-import type {ISource, SourceEvents, SourceRasterLayer} from './source';
+import type {ISource, SourceEvents} from './source';
+import type {SourceRasterLayer, TileJSON} from '../types/tilejson';
 import type {OverscaledTileID} from './tile_id';
 import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
-import type {TileJSON} from '../types/tilejson';
 import type {
     RasterSourceSpecification,
     RasterDEMSourceSpecification,

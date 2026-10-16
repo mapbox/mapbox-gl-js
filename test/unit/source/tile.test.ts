@@ -12,7 +12,7 @@ import type GeoJSON from 'geojson';
 import type Painter from '../../../src/render/painter';
 import type {Bucket} from '../../../src/data/bucket';
 import type {Feature} from '../../../src/source/geojson_wrapper';
-import type {ExpiryData} from '../../../src/source/tile';
+import type {ExpiryData} from '../../../src/util/util';
 import type {default as GeoJSONFeature} from '../../../src/util/vectortile_to_geojson';
 import type {WorkerSourceVectorTileResult} from '../../../src/source/worker_source';
 

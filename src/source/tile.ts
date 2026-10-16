@@ -26,6 +26,7 @@ import SegmentVector from '../data/segment';
 import {transitionTileAABBinECEF, globeNormalizeECEF, tileCoordToECEF, globeToMercatorTransition, interpolateVec3} from '../geo/projection/globe_util';
 import {vec3, mat4} from 'gl-matrix';
 
+import type {ExpiryData} from '../util/util';
 import type RasterParticleState from '../render/raster_particle_state';
 import type {RenderSourceType} from './render_source_type';
 import type FeatureIndex from '../data/feature_index';
@@ -70,11 +71,6 @@ export type TileState =
     | 'unloaded'  // Tile data has been deleted.
     | 'errored'   // Tile data was not loaded because of an error.
     | 'expired';  // Tile data was previously loaded, but has expired per its HTTP headers and is in the process of refreshing.
-
-export type ExpiryData = {
-    cacheControl?: string;
-    expires?: Date | string;
-};
 
 // a tile bounds outline used for getting reprojected tile geometry in non-mercator projections
 const BOUNDS_FEATURE = (() => {

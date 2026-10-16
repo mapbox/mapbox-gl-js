@@ -26,9 +26,9 @@ class EvaluationParameters {
         this.zoom = zoom;
 
         if (options) {
-            this.now = options.now;
-            this.fadeDuration = options.fadeDuration;
-            this.transition = options.transition;
+            this.now = options.now!;
+            this.fadeDuration = options.fadeDuration!;
+            this.transition = options.transition!;
             this.pitch = options.pitch;
             this.brightness = options.brightness;
             this.worldview = options.worldview;

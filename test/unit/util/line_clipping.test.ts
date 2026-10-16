@@ -1,7 +1,9 @@
-import {EdgeIterator, type Range} from '../../../3d-style/elevation/elevation_feature';
+import {EdgeIterator} from '../../../3d-style/elevation/elevation_feature';
 import {clipLine, clipLines, lineSubdivision, Point4D, type LineInfo} from '../../../src/util/line_clipping';
 import {describe, test, expect} from '../../util/vitest';
 import Point from '@mapbox/point-geometry';
+
+import type {Range} from '../../../src/util/util';
 
 function compareLineInfo(actual: LineInfo, expected: LineInfo, tolerance: number): boolean {
     return Math.abs(actual.progress.min - expected.progress.min) <= tolerance &&

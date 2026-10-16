@@ -1,4 +1,19 @@
-import type {SourceVectorLayer, SourceRasterLayer} from '../source/source';
+export type SourceRasterLayer = {
+    id: string;
+    maxzoom?: number;
+    minzoom?: number;
+    fields?: {
+        bands?: Array<string | number>;
+        range?: [number, number];
+    };
+};
+
+export type SourceVectorLayer = {
+    id: string;
+    source?: string;
+    maxzoom?: number;
+    minzoom?: number;
+};
 
 export type TileJSON = {
     tilejson: '3.0.0' | '2.2.0' | '2.1.0' | '2.0.1' | '2.0.0' | '1.0.0';

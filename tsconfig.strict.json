@@ -228,6 +228,19 @@
     "./src/style-spec/visit.ts",
     "./src/util/verticalize_punctuation.ts",
     "./src/placement/global_placement.ts",
-    "./src/util/vectortile_to_geojson.ts"
+    "./src/util/vectortile_to_geojson.ts",
+    "./src/data/mrt/overzoom_util.ts",
+    "./src/placement/layer_uid.ts",
+    "./src/symbol/rtl_text.ts",
+    "./src/ui/animation_frame_provider.ts",
+    "./src/util/mat4.ts",
+    "./src/types/tilejson.ts",
+    "./src/style/evaluation_parameters.ts",
+    "./src/util/util.ts",
+    "./src/geo/edge_insets.ts",
+    "./src/shaders/encode_attribute.ts",
+    "./src/util/eased_variable.ts",
+    "./src/geo/lng_lat.ts",
+    "./3d-style/elevation/elevation_feature_parser.ts"
   ]
 }

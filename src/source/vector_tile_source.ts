@@ -14,7 +14,8 @@ import {HD, prepareHD} from '../../modules/hd_main';
 import {terrainEnabled} from '../style/terrain';
 import {Standard, prepareStandard} from '../../modules/standard_main';
 
-import type {ISource, SourceEvents, SourceVectorLayer} from './source';
+import type {ISource, SourceEvents} from './source';
+import type {SourceVectorLayer, TileJSON} from '../types/tilejson';
 import type {OverscaledTileID} from './tile_id';
 import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
@@ -22,7 +23,6 @@ import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
 import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
-import type {TileJSON} from '../types/tilejson';
 import type Actor from '../util/actor';
 import type {WorkerInbox} from '../util/actor_messages';
 import type {LoadVectorTileResult} from './load_vector_tile';

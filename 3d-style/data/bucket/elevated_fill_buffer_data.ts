@@ -4,7 +4,7 @@ import FillBufferData from '../../../src/data/bucket/fill_buffer_data';
 import assert from '../../../src/style-spec/util/assert';
 import {register} from '../../../src/util/web_worker_transfer';
 
-import type {Range} from '../../elevation/elevation_feature';
+import type {Range} from '../../../src/util/util';
 import type {LUT} from '../../../src/util/lut';
 import type FillStyleLayer from '../../../src/style/style_layer/fill_style_layer';
 import type Context from '../../../src/gl/context';

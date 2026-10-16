@@ -8,6 +8,7 @@ import image from '../source/image_source';
 import canvas from '../source/canvas_source';
 import custom from '../source/custom_source';
 
+import type {SourceRasterLayer, SourceVectorLayer} from '../types/tilejson';
 import type {CanonicalTileID, OverscaledTileID} from './tile_id';
 import type Tile from './tile';
 import type Dispatcher from '../util/dispatcher';
@@ -24,23 +25,6 @@ import type {CanvasSourceSpecification} from '../source/canvas_source';
 export type {Source};
 
 export type SourceEvents = Pick<MapEvents, 'data' | 'dataloading' | 'error'>;
-
-export type SourceRasterLayer = {
-    id: string;
-    maxzoom?: number;
-    minzoom?: number;
-    fields?: {
-        bands?: Array<string | number>;
-        range?: [number, number];
-    };
-};
-
-export type SourceVectorLayer = {
-    id: string;
-    source?: string;
-    maxzoom?: number;
-    minzoom?: number;
-};
 
 /**
  * The `Source` interface must be implemented by each source type, including "core" types like `vector`, `raster`,

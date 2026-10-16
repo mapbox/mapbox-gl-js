@@ -1,14 +1,19 @@
 import type Point from '@mapbox/point-geometry';
-import type {SymbolFeature} from '../data/bucket/symbol_bucket';
+import type Formatted from '../style-spec/expression/types/formatted';
 
-export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
+type MergeableFeature = {
+    text: Formatted | undefined;
+    geometry: Array<Array<Point>>;
+};
+
+export default function <T extends MergeableFeature>(features: Array<T>): Array<T> {
     const leftIndex: {
         [_: string]: number;
     } = {};
     const rightIndex: {
         [_: string]: number;
     } = {};
-    const mergedFeatures: (SymbolFeature | undefined)[] = [];
+    const mergedFeatures: (T | undefined)[] = [];
     let mergedIndex = 0;
 
     function add(k: number) {

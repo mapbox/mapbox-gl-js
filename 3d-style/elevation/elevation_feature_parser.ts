@@ -41,7 +41,7 @@ class PropertyParser {
 
         // Geometry is required to exist
         this._geometry = feature.loadGeometry();
-        if (this._geometry.length === 0 || this._geometry[0].length === 0) {
+        if (this._geometry.length === 0 || this._geometry[0]!.length === 0) {
             this._valid = false;
         }
 
@@ -69,7 +69,7 @@ class PropertyParser {
     }
 
     private get(name: string, required: boolean, setter: Setter, convert?: Convert): PropertyParser {
-        const value = Object.hasOwn(this.feature.properties, name) ? +this.feature.properties[name] : undefined;
+        const value = Object.hasOwn(this.feature.properties, name) ? +this.feature.properties[name]! : undefined;
         if (this._valid && value !== undefined && !Number.isNaN(value)) {
             if (convert) {
                 setter(convert(value));
@@ -169,7 +169,7 @@ const schemaV101 = new VersionSchema(
 
 export abstract class ElevationFeatureParser {
     static getPoint(points: Point[][]): vec2 {
-        return vec2.fromValues(points[0][0].x, points[0][0].y);
+        return vec2.fromValues(points[0]![0]!.x, points[0]![0]!.y);
     }
 
     static decodeRelativeHeight(height: number) {

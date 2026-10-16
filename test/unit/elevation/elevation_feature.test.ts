@@ -2,7 +2,7 @@
 import {describe, test, expect} from '../../util/vitest';
 import {PbfReader} from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
-import {EdgeIterator, ElevationFeature, ElevationFeatureSampler, ElevationFeatures, mergeElevationFeatures, type Edge, type Range, type Vertex} from '../../../3d-style/elevation/elevation_feature';
+import {EdgeIterator, ElevationFeature, ElevationFeatureSampler, ElevationFeatures, mergeElevationFeatures, type Edge, type Vertex} from '../../../3d-style/elevation/elevation_feature';
 import {getElevationFeature, getOverlappingElevationParts} from '../../../3d-style/elevation/get_elevation_feature';
 import {serialize, deserialize} from '../../../src/util/web_worker_transfer';
 // @ts-expect-error: Cannot find module
@@ -14,6 +14,7 @@ import {CanonicalTileID} from '../../../src/source/tile_id';
 import {HD_ELEVATION_SOURCE_LAYER, PROPERTY_ELEVATION_ID} from '../../../3d-style/elevation/elevation_constants';
 import Point from '@mapbox/point-geometry';
 
+import type {Range} from '../../../src/util/util';
 import type {Transferable} from '../../../src/types/transferable';
 import type {BucketFeature} from '../../../src/data/bucket';
 import type {Bounds} from '../../../src/style-spec/util/geometry_util';

@@ -2,7 +2,7 @@ import assert from '../../../src/style-spec/util/assert';
 import Point from '@mapbox/point-geometry';
 import {register} from '../../../src/util/web_worker_transfer';
 import {ELEVATION_CLIP_MARGIN, MARKUP_ELEVATION_BIAS, PROPERTY_ELEVATION_ID} from '../../elevation/elevation_constants';
-import {ElevationFeatureSampler, EdgeIterator, elevationIdDebugColor, mergeElevationFeatures, type ElevationFeature, type Range} from '../../elevation/elevation_feature';
+import {ElevationFeatureSampler, EdgeIterator, elevationIdDebugColor, mergeElevationFeatures, type ElevationFeature} from '../../elevation/elevation_feature';
 import {getElevationFeature, getOverlappingElevationParts} from '../../elevation/get_elevation_feature';
 import {tileToMeter} from '../../../src/geo/mercator_coordinate';
 import {clipLines, lineSubdivision, type LineInfo} from '../../../src/util/line_clipping';
@@ -10,6 +10,7 @@ import EXTENT from '../../../src/style-spec/data/extent';
 import {FrcSegmentData, buildFrcLevelSegments} from '../frc_segment_builder';
 import {featureFrcLevel, matchesCoverageSourceLayer} from '../frc_road_classes';
 
+import type {Range} from '../../../src/util/util';
 import type {ElevationParams} from '../../../src/source/elevation_coverage_snapshot';
 import type {CanonicalTileID} from '../../../src/source/tile_id';
 import type {BucketFeature} from '../../../src/data/bucket';

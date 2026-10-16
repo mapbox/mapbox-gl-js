@@ -24,7 +24,7 @@ import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import assert from '../../style-spec/util/assert';
 import {Point4D, clipLine} from '../../util/line_clipping';
-import {mapRange, warnOnce} from '../../util/util';
+import {mapRange, warnOnce, type Range} from '../../util/util';
 import {tileToMeter} from '../../geo/mercator_coordinate';
 // Import LineAtlas as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
@@ -33,7 +33,7 @@ import {number as interpolate} from '../../style-spec/util/interpolate';
 import {type ElevationType} from '../../../3d-style/elevation/elevation_constants';
 
 import type Point from "@mapbox/point-geometry";
-import type {ElevationFeature, Range} from '../../../3d-style/elevation/elevation_feature';
+import type {ElevationFeature} from '../../../3d-style/elevation/elevation_feature';
 import type {ElevationParams} from '../../source/elevation_coverage_snapshot';
 import type {LineHDExtension} from '../../../3d-style/data/bucket/line_hd_extension';
 import type {ProjectionSpecification} from '../../style-spec/types';
