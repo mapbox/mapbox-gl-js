@@ -291,7 +291,7 @@ describe('line-floorwidth', () => {
 });
 
 describe('layout values', () => {
-    test('applies a layout value the spec marks as transitionable', () => {
+    test('applies a building-height layout value immediately', () => {
         const layer = createStyleLayer({id: 'building', type: 'building', source: 's', layout: {'building-height': 10}});
         layer.recalculate(new EvaluationParameters(16), []);
 

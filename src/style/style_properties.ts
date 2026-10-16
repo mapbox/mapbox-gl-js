@@ -28,7 +28,7 @@ export class StyleProperties<Props extends {[Key in keyof Props]: Props[Key]}> e
     constructor(properties: Properties<Props>, scope?: string, configOptions?: ConfigOptions | null) {
         super();
         this.scope = scope;
-        this._transitionable = new PropertyValues(properties, true, scope, configOptions);
+        this._transitionable = new PropertyValues(properties, scope, configOptions);
         this.properties = new PossiblyEvaluated(properties);
     }
 

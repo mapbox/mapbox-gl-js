@@ -47,9 +47,9 @@ class SymbolAppearance {
 
         if (properties) {
             this.layoutProperties = new PossiblyEvaluated(getAppearanceLayoutProperties());
-            this.unevaluatedLayout = new PropertyValues(getAppearanceLayoutProperties(), false, scope, options, iconImageUseTheme);
+            this.unevaluatedLayout = new PropertyValues(getAppearanceLayoutProperties(), scope, options, iconImageUseTheme);
             this.paintProperties = new PossiblyEvaluated(getAppearancePaintProperties());
-            this.unevaluatedPaint = new PropertyValues(getAppearancePaintProperties(), true, scope, options, '');
+            this.unevaluatedPaint = new PropertyValues(getAppearancePaintProperties(), scope, options, '');
 
             for (const property in properties) {
                 if (property in this.unevaluatedLayout._values) {

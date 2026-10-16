@@ -716,8 +716,7 @@ export type LineLayerSpecification = {
          * @experimental This property is experimental and subject to change in future versions.
          */
         "line-width-unit"?: PropertyValueSpecification<"pixels" | "meters">,
-        "line-elevation-ground-scale"?: DataDrivenPropertyValueSpecification<number>,
-        "line-elevation-ground-scale-transition"?: TransitionSpecification
+        "line-elevation-ground-scale"?: DataDrivenPropertyValueSpecification<number>
     },
     "paint"?: {
         "line-opacity"?: DataDrivenPropertyValueSpecification<number>,
@@ -1166,15 +1165,10 @@ export type BuildingLayerSpecification = {
         "building-facade-window"?: DataDrivenPropertyValueSpecification<[number, number]>,
         "building-roof-shape"?: DataDrivenPropertyValueSpecification<"flat" | "hipped" | "gabled" | "parapet" | "mansard" | "skillion" | "pyramidal">,
         "building-height"?: DataDrivenPropertyValueSpecification<number>,
-        "building-height-transition"?: TransitionSpecification,
         "building-base"?: DataDrivenPropertyValueSpecification<number>,
-        "building-base-transition"?: TransitionSpecification,
         "building-flood-light-wall-radius"?: DataDrivenPropertyValueSpecification<number>,
-        "building-flood-light-wall-radius-transition"?: TransitionSpecification,
         "building-flood-light-ground-radius"?: DataDrivenPropertyValueSpecification<number>,
-        "building-flood-light-ground-radius-transition"?: TransitionSpecification,
-        "building-flip-roof-orientation"?: DataDrivenPropertyValueSpecification<boolean>,
-        "building-flip-roof-orientation-transition"?: TransitionSpecification
+        "building-flip-roof-orientation"?: DataDrivenPropertyValueSpecification<boolean>
     },
     "paint"?: {
         "building-opacity"?: PropertyValueSpecification<number>,

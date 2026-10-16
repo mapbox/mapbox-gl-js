@@ -2486,7 +2486,6 @@
       "minimum": 0,
       "units": "meters",
       "doc": "The height of the procedural buildings.",
-      "transition": true,
       "private": true,
       "sdk-support": {
         "basic functionality": {
@@ -2511,7 +2510,6 @@
       "minimum": 0,
       "units": "meters",
       "doc": "The height with which to extrude the base of this layer. Must be less than or equal to `building-height`.",
-      "transition": true,
       "requires": [
         "building-height"
       ],
@@ -2544,7 +2542,6 @@
       "requires": [
         "lights"
       ],
-      "transition": true,
       "expression": {
         "interpolated": true,
         "parameters": [
@@ -2575,7 +2572,6 @@
       "requires": [
         "lights"
       ],
-      "transition": true,
       "expression": {
         "interpolated": true,
         "parameters": [
@@ -2602,7 +2598,6 @@
       "private": true,
       "default": false,
       "doc": "Flips the orientation of the roofs for the buildings. This only affects simple geometries. Namely buildings whose footprints form a quadrilateral. By default (false), the roof ridge takes the direction of the longer edge of the quadrilateral.",
-      "transition": true,
       "requires": [
         "building-roof-shape"
       ],
@@ -2946,7 +2941,6 @@
       "requires": [
         "line-z-offset"
       ],
-      "transition": true,
       "property-type": "data-driven"
     }
   },

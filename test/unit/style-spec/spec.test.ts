@@ -21,6 +21,15 @@ import * as spec from '../../../src/style-spec/style-spec';
     });
 });
 
+test(`v8 layout properties are not transitionable`, () => {
+    for (const k of Object.keys(spec.v8).filter(k => k.startsWith('layout_'))) {
+        for (const p in spec.v8[k]) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(spec.v8[k][p].transition, `${k}.${p}`).toBeFalsy();
+        }
+    }
+});
+
 test(`v8 Spec SDK Support section`, () => {
     const v = 'v8';
     const propObjs = [].concat(spec[v].paint).concat(spec[v].layout);

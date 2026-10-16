@@ -146,11 +146,11 @@ class StyleLayer extends Evented {
         }
 
         if (properties.layout) {
-            this._layoutValues = new PropertyValues(properties.layout, false, this.scope, options, this.iconImageUseTheme);
+            this._layoutValues = new PropertyValues(properties.layout, this.scope, options, this.iconImageUseTheme);
         }
 
         if (properties.paint) {
-            this._paintValues = new PropertyValues(properties.paint, true, this.scope, options);
+            this._paintValues = new PropertyValues(properties.paint, this.scope, options);
 
             for (const property in layer.paint) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

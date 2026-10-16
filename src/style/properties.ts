@@ -259,7 +259,6 @@ export type PropertyValueSpecifications<Props> = Partial<{
  */
 export class PropertyValues<Props extends {[Key in keyof Props]: Props[Key]}> {
     _properties: Properties<Props>;
-    _canTransition: boolean;
     _values: PropertyValueEntries<Props>;
     _scope: string | null | undefined;
     _options: ConfigOptions | null | undefined;
@@ -270,9 +269,8 @@ export class PropertyValues<Props extends {[Key in keyof Props]: Props[Key]}> {
     // Whether any displayed value has a prior state, updated whenever transitions start, snap or get evaluated
     _hasTransition: boolean;
 
-    constructor(properties: Properties<Props>, canTransition: boolean, scope?: string | null, options?: ConfigOptions | null, iconImageUseTheme?: string | null) {
+    constructor(properties: Properties<Props>, scope?: string | null, options?: ConfigOptions | null, iconImageUseTheme?: string | null) {
         this._properties = properties;
-        this._canTransition = canTransition;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this._values = (Object.create(properties.defaultPropertyValues));
         this._scope = scope;
@@ -297,7 +295,7 @@ export class PropertyValues<Props extends {[Key in keyof Props]: Props[Key]}> {
         const entry = this._values[name];
         const propertyValue = new PropertyValue(entry.property, value === null ? undefined : clone(value), this._scope, this._options, this._iconImageUseTheme);
         entry.value = propertyValue;
-        if (!this._canTransition || !entry.property.specification.transition) entry.state = {value: propertyValue, prior: null, begin: 0, end: 0};
+        if (!entry.property.specification.transition) entry.state = {value: propertyValue, prior: null, begin: 0, end: 0};
         this.deps |= propertyValue.deps;
         if (propertyValue.expression.configDependencies) {
             for (const key of propertyValue.expression.configDependencies) this.configDependencies.add(key);
