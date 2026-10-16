@@ -83,7 +83,7 @@ export default function groupByLayout(
                 k = layer.id;
             } else {
                 k =  getKey(layer);
-                // The usage of "line-progress" inside "line-width" or "line-emissive-strength"
+                // The usage of "line-progress" inside "line-width", "line-offset", or "line-emissive-strength"
                 // makes the property act like a layout property: the bucket needs to evaluate it
                 // per-vertex against the first layer's paint, so layers that disagree on whether
                 // line-progress is used can't share a bucket.
@@ -91,6 +91,10 @@ export default function groupByLayout(
                     const lineWidth = layer["paint"]['line-width'];
                     if (containsKey(lineWidth, 'line-progress')) {
                         k += `/${stringify(layer["paint"]['line-width'])}`;
+                    }
+                    const lineOffset = layer["paint"]['line-offset'];
+                    if (containsKey(lineOffset, 'line-progress')) {
+                        k += `/line-offset:${stringify(lineOffset)}`;
                     }
                     const lineEmissiveStrength = layer["paint"]['line-emissive-strength'];
                     if (containsKey(lineEmissiveStrength, 'line-progress')) {
