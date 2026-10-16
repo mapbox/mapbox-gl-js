@@ -207,9 +207,6 @@ void main() {
 #ifdef RENDER_SHADOWS
 #ifdef RENDER_CUTOFF
     shadowed_lighting_factor = shadowed_light_factor_normal_opacity(xy_flipped_normal, v_pos_light_view_0, v_pos_light_view_1, 1.0 / gl_FragCoord.w, v_cutoff_opacity);
-    if (v_cutoff_opacity == 0.0) {
-        discard;
-    }
 #else // RENDER_CUTOFF
     shadowed_lighting_factor = shadowed_light_factor_normal(xy_flipped_normal, v_pos_light_view_0, v_pos_light_view_1, 1.0 / gl_FragCoord.w);
 #endif // RENDER_CUTOFF
