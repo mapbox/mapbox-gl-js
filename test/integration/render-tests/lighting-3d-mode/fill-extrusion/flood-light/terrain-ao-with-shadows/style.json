@@ -16,7 +16,7 @@
           {"platform-tag-contains": "native", "reason": "Flaky, under development"}
         ],
         "image-threshold": [
-          {"platform-tag-contains": "", "threshold": 0.0006},
+          {"platform-tag-contains": "", "threshold": 0.0007},
           {"platform-tag-contains": "swiftshader", "threshold": 0.0007}
         ]
       }

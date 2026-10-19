@@ -321,8 +321,7 @@ class FillBucket implements Bucket {
                 lineSegment.primitiveLength += ring.length;
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-            const indices: number[] = earcut(flattened, holeIndices);
+            const indices = earcut(flattened, holeIndices);
             assert(indices.length % 3 === 0);
 
             for (let i = 0; i < indices.length; i += 3) {

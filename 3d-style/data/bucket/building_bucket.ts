@@ -1016,8 +1016,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
 
             // Store footprint data for later conflation with fill-extrusions and model layers
             {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                const indices = earcut(footprintFlattened, null, 2) as Array<number>;
+                const indices = earcut(footprintFlattened, null, 2);
                 assert(indices.length % 3 === 0);
                 assert(footprintFlattened.length / 2 < 0xFFFF); // enforce 16bit indices
 

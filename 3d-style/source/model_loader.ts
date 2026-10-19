@@ -552,8 +552,7 @@ function parseLegacyFootprintMesh(gltfNode: GLTFNode): FootprintMesh | null | un
 
     // Triangulate the footprint and compute grid acceleration structure for
     // more performant intersection queries.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-    const indices: number[] = earcut(vertices.flatMap(v => [v.x, v.y]), []);
+    const indices = earcut(vertices.flatMap(v => [v.x, v.y]));
 
     if (indices.length === 0) {
         return null;

@@ -17,7 +17,10 @@ const feature = vt.layers.water.feature(0);
 function createPolygon(numPoints) {
     const points: Array<any> = [];
     for (let i = 0; i < numPoints; i++) {
-        points.push(new Point(2048 + 256 * Math.cos(i / numPoints * 2 * Math.PI, 2048 + 256 * Math.sin(i / numPoints * 2 * Math.PI))));
+        points.push(new Point(
+            2048 + 256 * Math.cos(i / numPoints * 2 * Math.PI),
+            2048 + 256 * Math.sin(i / numPoints * 2 * Math.PI)
+        ));
     }
     return points;
 }

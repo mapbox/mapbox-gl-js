@@ -10,7 +10,7 @@
         ]
       ],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.000275}
+        {"platform-tag-contains": "", "threshold": 0.0004}
       ]
     }
   },

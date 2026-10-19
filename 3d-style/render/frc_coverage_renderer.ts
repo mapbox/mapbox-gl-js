@@ -120,9 +120,7 @@ export class FrcCoverageRenderer {
                 }
             }
             // Use earcut for proper triangulation (handles concave and multi-ring polygons)
-            // earcut library lacks proper type definitions
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            const triangles = earcut(flatCoords, holeIndices.length > 0 ? holeIndices : undefined) as number[];
+            const triangles = earcut(flatCoords, holeIndices.length > 0 ? holeIndices : undefined);
             for (let i = 0; i < triangles.length; i += 3) {
                 indexArray.emplaceBack(
                     polyBaseVertex + triangles[i],

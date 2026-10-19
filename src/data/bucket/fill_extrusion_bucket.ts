@@ -1256,33 +1256,23 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                     }
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                 const indices = this.wallMode ? wallGeometry.indices : earcut(flattened, holeIndices);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 assert(indices.length % 3 === 0);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 for (let j = 0; j < indices.length; j += 3) {
                     this.footprintIndices.emplaceBack(
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         fpSegment.vertexOffset + indices[j + 0],
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         fpSegment.vertexOffset + indices[j + 1],
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         fpSegment.vertexOffset + indices[j + 2]);
 
                     // clockwise winding order.
                     this.indexArray.emplaceBack(
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         topIndex + indices[j],
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         topIndex + indices[j + 2],
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         topIndex + indices[j + 1]);
                     segment.primitiveLength++;
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 fpSegment.indexCount += indices.length;
                 fpSegment.vertexCount += this.footprintVertices.length - fpSegment.vertexOffset;
             }

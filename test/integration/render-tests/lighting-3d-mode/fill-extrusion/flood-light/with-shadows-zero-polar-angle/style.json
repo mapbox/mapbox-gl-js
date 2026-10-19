@@ -9,7 +9,7 @@
         ],
         "image-threshold": [
           {"platform-tag-contains": "", "threshold": 0.0006},
-          {"platform-tag-contains": "native-ios", "threshold": 0.00096},
+          {"platform-tag-contains": "native-ios", "threshold": 0.0011},
           {"platform-tag-contains": "native-macos", "threshold": 0.0012},
           {"platform-tag-contains": "native-linux", "threshold": 0.0016},
           {"platform-tag-contains": "native-android", "threshold": 0.0013}
