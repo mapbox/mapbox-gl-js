@@ -175,7 +175,7 @@ export {FreeCameraOptions} from './ui/free_camera';
 export {setSdkInfo} from './util/mapbox';
 export {addTileProvider} from './source/tile_provider';
 export {prewarm, clearPrewarmedResources} from './util/worker_pool_factory';
-export {setWorkerUrl} from './util/worker_class';
+export {setWorkerUrl, setWorkerClass, setWorkerFactory} from './util/worker_class';
 export {getWorkerCount, setWorkerCount} from './util/worker_pool';
 export {setAccessToken, setBaseApiUrl, setMaxParallelImageRequests, getDracoUrl, setDracoUrl, getMeshoptUrl, setMeshoptUrl, getBuildingGenUrl, setBuildingGenUrl} from './util/config';
 
