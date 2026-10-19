@@ -203,7 +203,8 @@ function strokePath(context: Context, tree: UsvgTree, path: Path, colorReplaceme
     const stroke = path.stroke;
     if (!stroke) return;
 
-    const path2d = makePath2d(path);
+    const hasCap = stroke.linecap === LineCap.LINE_CAP_ROUND || stroke.linecap === LineCap.LINE_CAP_SQUARE;
+    const path2d = buildPath(path, new Path2D(), hasCap ? stroke.width! * 1e-3 : 0);
     context.lineWidth = stroke.width!;
     context.miterLimit = stroke.miterlimit!;
     context.setLineDash(stroke.dasharray);
@@ -401,25 +402,51 @@ function makeTransform(transform?: Transform) {
         new DOMMatrix();
 }
 
-function buildPath<T extends CanvasPath = Path2D>(path: Path, path2d: T): T {
+/**
+ * Replays a uSVG path onto a canvas path.
+ *
+ * @param zeroLengthExtent Length of a horizontal segment added to each zero-length subpath.
+ * SVG draws round and square caps on zero-length subpaths, but canvas drops them (each browser differently);
+ * the added segment makes every browser draw the caps. SVG would orient square caps along the nearest
+ * non-zero segment instead, when the path has one.
+ */
+function buildPath<T extends CanvasPath = Path2D>(path: Path, path2d: T, zeroLengthExtent: number = 0): T {
     const step = path.step!;
 
     let x = path.diffs[0]! * step;
     let y = path.diffs[1]! * step;
     path2d.moveTo(x, y);
 
+    // tracked per subpath, reset at each moveTo and closePath
+    let subpathStartX = x;
+    let subpathStartY = y;
+    let subpathHasSegment = false;
+    let subpathStaysAtStart = true;
+    const extendIfZeroLength = (): boolean => {
+        if (zeroLengthExtent <= 0 || !subpathHasSegment || !subpathStaysAtStart) return false;
+        path2d.lineTo(subpathStartX + zeroLengthExtent, subpathStartY);
+        return true;
+    };
+
     for (let i = 0, j = 2; i < path.commands.length; i++) {
         switch (path.commands[i]) {
         case PathCommand.PATH_COMMAND_MOVE: {
+            extendIfZeroLength();
             x += path.diffs[j++]! * step;
             y += path.diffs[j++]! * step;
             path2d.moveTo(x, y);
+            subpathStartX = x;
+            subpathStartY = y;
+            subpathHasSegment = false;
+            subpathStaysAtStart = true;
             break;
         }
         case PathCommand.PATH_COMMAND_LINE: {
             x += path.diffs[j++]! * step;
             y += path.diffs[j++]! * step;
             path2d.lineTo(x, y);
+            subpathHasSegment = true;
+            subpathStaysAtStart = subpathStaysAtStart && x === subpathStartX && y === subpathStartY;
             break;
         }
         case PathCommand.PATH_COMMAND_QUAD: {
@@ -428,6 +455,8 @@ function buildPath<T extends CanvasPath = Path2D>(path: Path, path2d: T): T {
             x = cpx + path.diffs[j++]! * step;
             y = cpy + path.diffs[j++]! * step;
             path2d.quadraticCurveTo(cpx, cpy, x, y);
+            subpathHasSegment = true;
+            subpathStaysAtStart = subpathStaysAtStart && cpx === subpathStartX && cpy === subpathStartY && x === subpathStartX && y === subpathStartY;
             break;
         }
         case PathCommand.PATH_COMMAND_CUBIC: {
@@ -438,16 +467,30 @@ function buildPath<T extends CanvasPath = Path2D>(path: Path, path2d: T): T {
             x = cp2x + path.diffs[j++]! * step;
             y = cp2y + path.diffs[j++]! * step;
             path2d.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+            subpathHasSegment = true;
+            subpathStaysAtStart = subpathStaysAtStart && cp1x === subpathStartX && cp1y === subpathStartY && cp2x === subpathStartX && cp2y === subpathStartY && x === subpathStartX && y === subpathStartY;
             break;
         }
         case PathCommand.PATH_COMMAND_CLOSE: {
-            path2d.closePath();
+            // `M x y Z` counts as a zero-length subpath too; closing one would make Chrome drop it again,
+            // so it stays open and the next subpath starts back at the start point as closePath() would
+            subpathHasSegment = true;
+            if (extendIfZeroLength()) {
+                path2d.moveTo(subpathStartX, subpathStartY);
+            } else {
+                path2d.closePath();
+            }
+            subpathHasSegment = false;
+            subpathStaysAtStart = true;
             break;
         }
         default:
             assert(false, `Unknown path command "${path.commands[i]}"`);
         }
     }
+
+    // An open last subpath has no following moveTo to trigger this check; a closed one was handled at its close
+    extendIfZeroLength();
 
     return path2d;
 }
