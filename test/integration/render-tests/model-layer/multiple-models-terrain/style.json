@@ -7,8 +7,7 @@
       "pixelRatio": 0.5,
       "tickets": ["https://mapbox.atlassian.net/browse/GLJS-608"],
       "skip-test": [
-        {"platform-tag-contains": "web-macos", "reason": "Flaky, https://mapbox.atlassian.net/browse/GLJS-608"},
-        {"platform-tag-contains": "web-linux", "reason": "Flaky, https://mapbox.atlassian.net/browse/GLJS-608"}
+        {"platform-tag-contains": "web", "reason": "Flaky (checked oct-2026): on all web platforms, some CI runs fail with a large diff. https://mapbox.atlassian.net/browse/GLJS-608"}
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}

@@ -16,8 +16,9 @@
         ["wait"],
         ["wait"]
       ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4293"],
       "skip-test": [
-        {"platform-tag-contains": "native-linux", "reason": "size mismatch"}
+        {"platform-tag-contains": "native-linux", "reason": "Checked oct-2026: renders no image (Invalid size for actual image), so no override image is possible. https://mapbox.atlassian.net/browse/MAPSNAT-4293"}
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}

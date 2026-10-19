@@ -5,14 +5,10 @@
             "width": 64,
             "height": 64,
             "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2780"],
-            "skip-test": [
-                {"platform-tag-contains": "native-ios", "reason": "skip before fixing issue: https://mapbox.atlassian.net/browse/MAPSNAT-2780"},
-                {"platform-tag-contains": "native-macos", "reason": "skip before fixing issue: https://mapbox.atlassian.net/browse/MAPSNAT-2780"}
-            ],
             "image-threshold": [
                 {"platform-tag-contains": "", "threshold": 0.00123},
                 {"platform-tag-contains": "native", "threshold": 0.0018},
-        {"platform-tag-contains": "native-android", "threshold": 0.0027}
+                {"platform-tag-contains": "native-android", "threshold": 0.0027}
             ]
         }
     },

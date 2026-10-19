@@ -16,7 +16,7 @@
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3865"],
       "skip-test": [
-        {"platform-tag-contains": "native-android-gl-powervr", "reason": "To be fixed - https://mapbox.atlassian.net/browse/MAPSNAT-3865"}
+        {"platform-tag-contains": "native-android-gl-powervr", "reason": "Flaky (checked oct-2026): on some CI runs the sky is drawn in flat, saturated colors instead of a smooth gradient. https://mapbox.atlassian.net/browse/MAPSNAT-3865"}
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}

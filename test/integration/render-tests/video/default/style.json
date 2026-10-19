@@ -6,8 +6,7 @@
       "height": 512,
       "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/601"],
       "skip-test": [
-        {"platform-tag-contains": "web-macos-safari", "reason": "Sometimes timing out"},
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/601"}
+        {"platform-tag-contains": "native", "reason": "'Video' source type not supported: https://github.com/mapbox/mapbox-gl-native/issues/601"}
       ]
     }
   },
