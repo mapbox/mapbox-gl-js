@@ -1,20 +1,27 @@
 ## Unreleased
 
+- Improve map load performance on lower zooms via faster polygon triangulation.
+- Fix zero-length cap in SVG not drawn in various browsers.
+
+## 3.34.0-rc.1
+
+### Features and improvements ✨
+
+- Improve performance on map views with CJK glyphs by moving CJK rasterization offscreen.
+- Improve tile load performance via optimization of style property values recalculation.
+- Improve rendering performance via per-frame main thread work optimizations.
+- Add support of *-ignore-placement and *-allow-overlap in global placement.
+
+### Bug fixes 🐞
+
 - Fix coverage stencil marks including polygons for other road classes, which hid roads that should stay visible.
 - Fix imported styles silently rendering nothing when the import fires a non-fatal error while loading.
 - Fix raster tiles occasionally showing the image of a different tile after zooming or panning on a slow network.
-- Improve map load performance on lower zooms via faster polygon triangulation.
-- Improve performance on map views with CJK glyphs by moving CJK rasterization offscreen.
 - Fix `building` layer filters that use `distance`, `within` or `worldview` dropping buildings.
 - Fix a sudden camera jump at the end of long `flyTo` camera animations.
-- Improve tile load performance via optimization of style property values recalculation.
 - Fix 0 fadeDuration symbol placement offset.
-- Improve rendering performance via per-frame main thread work optimizations.
-- Add support of *-ignore-placement and *-allow-overlap in global placement.
 - Fix `projection` documentation incorrectly stating that custom layers are not supported on globe.
 - Fix per-feature symbol/line paint value update based on light changes.
-- Fix zero-length cap in SVG not drawn in various browsers.
-
 
 ## 3.33.0
 
