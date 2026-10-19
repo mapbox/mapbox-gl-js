@@ -4,9 +4,7 @@
     "test": {
       "height": 128,
       "width": 64,
-      "skip-test": [
-        {"platform-tag-contains": "native-android-gl-powervr", "reason": "Needs to be investigated and fixed."}
-      ]
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4287"]
     }
   },
   "zoom": 11.7,

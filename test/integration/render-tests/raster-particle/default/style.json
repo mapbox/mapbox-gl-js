@@ -7,9 +7,7 @@
       "operations": [
         ["wait", 100]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "native-android-vulkan", "reason": "Needs to be investigated and fixed"}
-      ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4287"],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0003}
       ]

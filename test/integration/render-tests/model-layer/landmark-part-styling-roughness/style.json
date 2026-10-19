@@ -2,10 +2,7 @@
   "version": 8,
    "metadata": {
     "test": {
-      
-      "skip-test": [
-        {"platform-tag-contains": "native-android-gl-mali", "reason": "Fails on this platform in CI"}
-      ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4287"],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ],

@@ -2,11 +2,9 @@
   "version": 8,
    "metadata": {
     "test": {
-      
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4287"],
       "skip-test": [
-        {"platform-tag-contains": "native-ios", "reason": "Incorrect label rendering"},
-        {"platform-tag-contains": "native-android-gl-mali", "reason": "Fails on this platform in CI"},
-        {"platform-tag-contains": "native-android-gl-powervr", "reason": "Fails on this platform in CI"}
+        {"platform-tag-contains": "native-ios", "reason": "Incorrect label rendering"}
       ],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Flaky, under development"}

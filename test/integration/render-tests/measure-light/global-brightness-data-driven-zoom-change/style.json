@@ -48,9 +48,7 @@
           "wait"
         ]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "native-android-vulkan", "reason": "TODO - misc artefact, enable for Vulkan"}
-      ],
+      "tickets":["https://mapbox.atlassian.net/browse/MAPS3D-2354"],
       "image-threshold": [
         {"platform-tag-contains": "native-android-gl-powervr", "threshold": 0.0003},
         {"platform-tag-contains": "swiftshader", "threshold": 0.00025}
