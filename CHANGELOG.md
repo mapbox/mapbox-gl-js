@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 3.34.0-rc.1
+
 - Fix coverage stencil marks including polygons for other road classes, which hid roads that should stay visible.
 - Fix imported styles silently rendering nothing when the import fires a non-fatal error while loading.
 - Fix raster tiles occasionally showing the image of a different tile after zooming or panning on a slow network.
