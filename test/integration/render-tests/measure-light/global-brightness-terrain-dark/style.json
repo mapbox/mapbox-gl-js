@@ -37,9 +37,6 @@
           "wait"
         ]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "swiftshader", "reason": "Diff is higher than allowed"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.003}
       ]
