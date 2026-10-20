@@ -5,13 +5,13 @@
       "height": 168,
       "width": 128,
       "pixelRatio": 2,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4290"],
       "skip-test": [
-        {"platform-tag-contains": "native-android-gl-adreno", "reason": "not implemented in gl-native yet"}
+        {"platform-tag-contains": "native-android-gl-adreno", "reason": "Checked oct-2026: renders an empty image. https://mapbox.atlassian.net/browse/MAPSNAT-4290"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0002},
-        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.00034},
-        {"platform-tag-contains": "native-android-gl-powervr", "threshold": 0.00028}
+        {"platform-tag-contains": "native-android-gl", "threshold": 0.00034}
       ]
     }
   },

@@ -9,9 +9,7 @@
             "operations": [
                 ["waitFrameReady", 30]
             ],
-            "skip-test": [
-                {"platform-tag-contains": "native-linux-egl", "reason": "not implemented in gl-native yet"}
-            ],
+            "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3820", "https://mapbox.atlassian.net/browse/MAPSNAT-4289"],
             "ignore-metrics": [
                 {"platform-tag-contains": "native", "reason": "flaky due to occlusion/waitFrameReady"}
             ],

@@ -7,9 +7,7 @@
       "operations": [
         ["wait"]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "swiftshader", "reason": "Wrong clear color"}
-      ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4289"],
       "ignore-metrics": [
         {"platform-tag-contains": "native", "reason": "Under development"}
       ],

@@ -4,9 +4,7 @@
     "test": {
       "height": 256,
       "width": 256,
-      "skip-test": [
-        {"platform-tag-contains": "swiftshader", "reason": "swiftshader debugging needed"}
-      ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4289"],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0006}
       ]
