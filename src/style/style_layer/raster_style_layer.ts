@@ -11,6 +11,7 @@ import type SourceCache from '../../source/source_cache';
 import type ImageSource from '../../source/image_source';
 import type {LUT} from "../../util/lut";
 import type {ProgramName} from '../../render/program';
+import type {RuntimeModuleType} from '../style_layer';
 
 export const COLOR_RAMP_RES = 1024;
 export const COLOR_MIX_FACTOR = (Math.pow(COLOR_RAMP_RES, 2) - 1) / (255 * COLOR_RAMP_RES * (COLOR_RAMP_RES + 3));
@@ -46,6 +47,12 @@ class RasterStyleLayer extends StyleLayer {
 
     hasColorMap(): boolean {
         return !!this.getPaintPropertyValue('raster-color').value;
+    }
+
+    // `raster-mask` is implemented in the raster-array module, which is otherwise only loaded
+    // for `raster-array` sources.
+    override mayUse(type: RuntimeModuleType): boolean {
+        return type === 'RasterArray' && !!this.paint.get('raster-mask');
     }
 
     override tileCoverLift(): number {

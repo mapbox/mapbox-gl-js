@@ -1,0 +1,74 @@
+{
+  "description": "raster-mask on an image source: the image is drawn only inside the mask fill's geometry (left half). Image sources skip tile overlap stenciling, so this covers the stencil mode path used for image, video and canvas sources.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+      ],
+      "height": 256,
+      "width": 256
+    }
+  },
+  "center": [-122.514426, 37.562984],
+  "zoom": 16,
+  "sources": {
+    "image": {
+      "type": "image",
+      "coordinates": [
+        [-122.51596391201019, 37.56238816766053],
+        [-122.51467645168304, 37.56410183312965],
+        [-122.51309394836426, 37.563391708549425],
+        [-122.51423120498657, 37.56161849366671]
+      ],
+      "url": "local://image/0.png"
+    },
+    "mask": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [-122.52, 37.555],
+              [-122.514426, 37.555],
+              [-122.514426, 37.57],
+              [-122.52, 37.57],
+              [-122.52, 37.555]
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "red"
+      }
+    },
+    {
+      "id": "mask-fill",
+      "type": "fill",
+      "source": "mask",
+      "paint": {
+        "fill-color": "lime",
+        "fill-opacity": 0
+      }
+    },
+    {
+      "id": "image",
+      "type": "raster",
+      "source": "image",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-mask": "mask-fill",
+        "raster-mask-mode": "clip-path-intersect"
+      }
+    }
+  ]
+}

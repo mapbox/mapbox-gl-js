@@ -1,0 +1,90 @@
+{
+  "description": "raster-mask with raster-mask-import and raster-mask-mode clip-path-exclude: the raster is drawn over land only, using the water featureset published by the import.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "not implemented in gl-native yet"
+        }
+      ],
+      "height": 256,
+      "width": 256
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 1,
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "",
+      "data": {
+        "version": 8,
+        "featuresets": {
+          "water": {
+            "selectors": [
+              {
+                "layer": "water-fill"
+              }
+            ]
+          }
+        },
+        "sources": {
+          "streets": {
+            "type": "vector",
+            "maxzoom": 14,
+            "tiles": [
+              "local://tiles/{z}-{x}-{y}.mvt"
+            ]
+          }
+        },
+        "layers": [
+          {
+            "id": "background",
+            "type": "background",
+            "paint": {
+              "background-color": "red"
+            }
+          },
+          {
+            "id": "water-fill",
+            "type": "fill",
+            "source": "streets",
+            "source-layer": "water",
+            "paint": {
+              "fill-color": "lime",
+              "fill-opacity": 0
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 1,
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-mask": "water",
+        "raster-mask-import": "basemap",
+        "raster-mask-mode": "clip-path-exclude"
+      }
+    }
+  ]
+}

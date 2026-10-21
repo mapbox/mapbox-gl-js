@@ -3295,6 +3295,11 @@ export class Map extends Camera {
      * map.removeImport('basemap');
      */
     removeImport(importId: string): this {
+        const maskUser = this.style._getRasterMaskUser(importId, 'import');
+        if (maskUser) {
+            this.fire(new ErrorEvent(new Error(`Import "${importId}" cannot be removed while layer "${maskUser}" uses it in "raster-mask-import".`)));
+            return this;
+        }
         this.style.removeImport(importId);
         return this;
     }
@@ -3376,6 +3381,12 @@ export class Map extends Camera {
      */
     removeLayer(id: string): this {
         if (!this._isValidId(id)) {
+            return this;
+        }
+
+        const maskUser = this.style._getRasterMaskUser(id, 'layer');
+        if (maskUser) {
+            this.fire(new ErrorEvent(new Error(`Layer "${id}" cannot be removed while layer "${maskUser}" uses it in "raster-mask".`)));
             return this;
         }
 

@@ -1,0 +1,88 @@
+{
+  "description": "raster-mask under terrain: the raster and the mask fill are both draped into the same offscreen tile, so the mask must be written into the render-to-texture framebuffer's stencil per proxy tile.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+      ],
+      "height": 256,
+      "width": 256,
+      "operations": [
+        ["wait"]
+      ],
+      "maxZoom": 11.5
+    }
+  },
+  "center": [-113.26903, 35.9654],
+  "zoom": 11,
+  "pitch": 45,
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 15,
+      "tileSize": 256
+    },
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "mask": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [-113.4, 35.9],
+              [-113.26903, 35.9],
+              [-113.26903, 36.1],
+              [-113.4, 36.1],
+              [-113.4, 35.9]
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "red"
+      }
+    },
+    {
+      "id": "mask-fill",
+      "type": "fill",
+      "source": "mask",
+      "paint": {
+        "fill-color": "lime",
+        "fill-opacity": 0
+      }
+    },
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-mask": "mask-fill",
+        "raster-mask-mode": "clip-path-intersect"
+      }
+    }
+  ]
+}

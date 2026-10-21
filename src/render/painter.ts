@@ -844,7 +844,8 @@ class Painter {
      *
      * Returns [StencilMode for tile overscaleZ map, sortedCoords].
      */
-    stencilConfigForOverlap(tileIDs: Array<OverscaledTileID>): [{
+    // `refLimit` is the exclusive upper bound for the allocated refs; see `STENCIL_MASK_BIT`.
+    stencilConfigForOverlap(tileIDs: Array<OverscaledTileID>, refLimit: number = MAX_STENCIL_ID + 1): [{
         [_: number]: Readonly<StencilMode>;
     }, Array<OverscaledTileID>] {
         const gl = this.context.gl;
@@ -853,7 +854,7 @@ class Painter {
         const stencilValues = coords[0].overscaledZ - minTileZ + 1;
         if (stencilValues > 1) {
             this.currentStencilSource = undefined;
-            if (this.nextStencilID + stencilValues - 1 > MAX_STENCIL_ID) {
+            if (this.nextStencilID + stencilValues > refLimit) {
                 this.clearStencil();
             }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

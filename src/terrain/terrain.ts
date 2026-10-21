@@ -20,7 +20,7 @@ import {clamp, warnOnce} from '../util/util';
 import assert from '../style-spec/util/assert';
 import {vec3, mat4, vec4} from 'gl-matrix';
 import Color from '../style-spec/util/color';
-import StencilMode from '../gl/stencil_mode';
+import StencilMode, {STENCIL_MASK_BIT} from '../gl/stencil_mode';
 import {DepthStencilAttachment} from '../gl/value';
 import {drawTerrainRaster} from './draw_terrain_raster';
 import {Elevation} from './elevation';
@@ -285,6 +285,9 @@ export class Terrain extends Elevation {
     };
     proxySourceCache: ProxySourceCache;
     renderingToTexture!: boolean;
+    // Key of the proxy tile currently being rendered in renderBatch, so that draw
+    // functions can resolve proxied coordinates for source caches other than their own.
+    _currentProxyKey: number | null | undefined;
     _style!: Style;
     _mockSourceCache: MockSourceCache;
     orthoMatrix: Float32Array;
@@ -987,6 +990,7 @@ export class Terrain extends Elevation {
                 const proxiedCoords = sourceCache ? this.proxyToSource[proxy.key][sourceCache.id] : [proxy];
                 if (!proxiedCoords) continue; // when tile is not loaded yet for the source cache.
 
+                this._currentProxyKey = proxy.key;
                 const coords = (proxiedCoords as Array<OverscaledTileID>);
                 context.viewport.set([0, 0, fbo.fb.width, fbo.fb.height]);
                 if (currentStencilSource !== (sourceCache ? sourceCache.id : null)) {
@@ -1488,7 +1492,9 @@ export class Terrain extends Elevation {
             this._overlapStencilType = false;
             return;
         }
-        if (this._stencilRef + stencilRange > 255) {
+        // Refs for a `raster-mask` layer must stay below the mask bit; see `STENCIL_MASK_BIT`.
+        const maxRef = layer.type === 'raster' && layer.paint.get('raster-mask') ? STENCIL_MASK_BIT - 1 : 255;
+        if (this._stencilRef + stencilRange > maxRef) {
             context.clear({stencil: 0});
             this._stencilRef = 0;
         }
@@ -1501,6 +1507,15 @@ export class Terrain extends Elevation {
 
     clipOrMaskOverlapStencilType(): boolean {
         return this._overlapStencilType === 'Clip' || this._overlapStencilType === 'Mask';
+    }
+
+    // Returns the proxied coordinates of an arbitrary source cache for the proxy tile that is
+    // currently being drawn into. Used by draw functions that need geometry from a source other
+    // than their own layer's, e.g. `raster-mask`.
+    getCurrentProxiedCoords(sourceCacheId: string): Array<ProxiedTileID> | null | undefined {
+        if (this._currentProxyKey == null) return null;
+        const proxied = this.proxyToSource[this._currentProxyKey];
+        return proxied ? proxied[sourceCacheId] : null;
     }
 
     stencilModeForRTTOverlap(id: OverscaledTileID): Readonly<StencilMode> {

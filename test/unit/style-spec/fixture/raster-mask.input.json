@@ -1,0 +1,92 @@
+{
+  "version": 8,
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "mapbox://styles/mapbox/standard"
+    }
+  ],
+  "sources": {
+    "water": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v8"
+    },
+    "precipitation": {
+      "type": "raster-array",
+      "url": "mapbox://mapbox.precipitation-v1"
+    }
+  },
+  "layers": [
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "water",
+      "source-layer": "water",
+      "paint": {
+        "fill-opacity": 0
+      }
+    },
+    {
+      "id": "water-outline",
+      "type": "line",
+      "source": "water",
+      "source-layer": "water"
+    },
+    {
+      "id": "mask-layer",
+      "type": "raster",
+      "source": "precipitation",
+      "paint": {
+        "raster-mask": "water"
+      }
+    },
+    {
+      "id": "mask-layer-defined-later",
+      "type": "raster",
+      "source": "precipitation",
+      "paint": {
+        "raster-mask": "water-later"
+      }
+    },
+    {
+      "id": "mask-featureset",
+      "type": "raster",
+      "source": "precipitation",
+      "paint": {
+        "raster-mask": "water",
+        "raster-mask-import": "basemap"
+      }
+    },
+    {
+      "id": "mask-layer-missing",
+      "type": "raster",
+      "source": "precipitation",
+      "paint": {
+        "raster-mask": "nope"
+      }
+    },
+    {
+      "id": "mask-layer-not-fill",
+      "type": "raster",
+      "source": "precipitation",
+      "paint": {
+        "raster-mask": "water-outline"
+      }
+    },
+    {
+      "id": "mask-import-missing",
+      "type": "raster",
+      "source": "precipitation",
+      "paint": {
+        "raster-mask": "water",
+        "raster-mask-import": "nope"
+      }
+    },
+    {
+      "id": "water-later",
+      "type": "fill",
+      "source": "water",
+      "source-layer": "water"
+    }
+  ]
+}

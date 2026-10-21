@@ -1,0 +1,64 @@
+{
+  "description": "raster-mask with a mask layer backed by a vector tile source: an invisible fill layer (fill-opacity 0) on the `water` source-layer is used as the mask, as a user would set it up next to a basemap. The raster is drawn over water only, and the red background shows over land.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {
+          "platform-tag-contains": "native",
+          "reason": "not implemented in gl-native yet"
+        }
+      ],
+      "height": 256,
+      "width": 256
+    }
+  },
+  "center": [0, 0],
+  "zoom": 1,
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 1,
+      "tileSize": 256
+    },
+    "streets": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "red"
+      }
+    },
+    {
+      "id": "water-mask",
+      "type": "fill",
+      "source": "streets",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lime",
+        "fill-opacity": 0
+      }
+    },
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-mask": "water-mask",
+        "raster-mask-mode": "clip-path-intersect"
+      }
+    }
+  ]
+}

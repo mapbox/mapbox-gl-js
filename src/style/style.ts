@@ -30,6 +30,7 @@ import {prepareStandard as prepareStandardMain} from '../../modules/standard_mai
 import {Lite, prepareLite as prepareLiteMain} from '../../modules/lite_main';
 import {HD_ROAD_COVERAGE_SOURCE_LAYER} from '../source/frc_coverage_snapshot';
 import {DebugModule, prepareDebug} from '../../modules/debug';
+import {prepareRasterArray as prepareRasterArrayMain} from '../../modules/raster_array_main';
 import {
     validateStyle,
     validateLayoutProperty,
@@ -442,6 +443,7 @@ class Style extends Evented<MapEvents> {
     };
     _loaded: boolean;
     _drapingLoaded?: boolean;
+    _rasterArrayLoaded?: boolean;
     _initialBroadcastDone: boolean;
     _programPrecompiler: ProgramPrecompiler | null;
     _changes: StyleChanges;
@@ -603,6 +605,7 @@ class Style extends Evented<MapEvents> {
         this._crossSourceElevationActive = false;
         this._loaded = false;
         this._drapingLoaded = undefined;
+        this._rasterArrayLoaded = undefined;
         this._initialBroadcastDone = false;
         this._programPrecompiler = this.map._precompilePrograms && this.isRootStyle() ?
             new ProgramPrecompiler() :
@@ -1847,6 +1850,9 @@ class Style extends Evented<MapEvents> {
         if (this._drapingLoaded === false)
             return false;
 
+        if (this._rasterArrayLoaded === false)
+            return false;
+
         for (const {style} of this.fragments) {
             if (!style.loaded()) return false;
         }
@@ -2186,6 +2192,13 @@ class Style extends Evented<MapEvents> {
                     // doesn't wait for it), and the first render silently skips elevation.
                     this.checkCanvasFingerprintNoise();
                     if (!this.disableElevatedTerrain) this._startLiteLoad();
+                }
+
+                if (layer.mayUse('RasterArray')) {
+                    // Main-thread only, like Lite: `raster-mask` on a raster layer of any source
+                    // type. Until the module loads, `drawRaster` skips the masked layer rather
+                    // than drawing it unmasked.
+                    this._startRasterArrayLoad();
                 }
 
                 const sourceCache = this.getLayerSourceCache(layer);
@@ -4160,6 +4173,28 @@ class Style extends Evented<MapEvents> {
                 this.applyProjectionUpdate();
                 this.map._update(false);
             }
+        });
+    }
+
+    _getRasterMaskUser(id: string, target: 'layer' | 'import'): string | undefined {
+        for (const layerId of this._order) {
+            const layer = this._layers[layerId];
+            if (layer.type !== 'raster' || !layer.getPaintProperty('raster-mask')) continue;
+            const importId = layer.getPaintProperty('raster-mask-import');
+            if (target === 'import' ? importId === id : !importId && layer.getPaintProperty('raster-mask') === id) {
+                return layerId;
+            }
+        }
+        return undefined;
+    }
+
+    _startRasterArrayLoad() {
+        if (this._rasterArrayLoaded !== undefined) return;
+        this._rasterArrayLoaded = false;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        prepareRasterArrayMain().then(() => {
+            this._rasterArrayLoaded = true;
+            if (!this.map._removed) this.map.triggerRepaint();
         });
     }
 

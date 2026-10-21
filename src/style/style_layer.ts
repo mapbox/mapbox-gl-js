@@ -42,7 +42,7 @@ import type {QueryResult} from '../source/query_features';
 
 const TRANSITION_SUFFIX = '-transition';
 
-export type RuntimeModuleType = 'HD' | 'Standard' | 'Lite';
+export type RuntimeModuleType = 'HD' | 'Standard' | 'Lite' | 'RasterArray';
 
 type LayerRenderingStats = {
     numRenderedVerticesInTransparentPass: number;

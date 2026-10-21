@@ -1,0 +1,100 @@
+{
+  "description": "raster-mask: raster is drawn only outside the referenced fill layer's geometry (right half). The semi-transparent blue fill drawn after the raster spans the whole viewport and must not be clipped, which verifies that the reserved stencil bit is reset after the masked layer is drawn.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+      ],
+      "height": 256,
+      "width": 256
+    }
+  },
+  "center": [13.418056, 52.499167],
+  "zoom": 16,
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "mask": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [13.41, 52.49],
+              [13.418056, 52.49],
+              [13.418056, 52.51],
+              [13.41, 52.51],
+              [13.41, 52.49]
+            ]
+          ]
+        }
+      }
+    },
+    "overlay": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [13.4, 52.48],
+              [13.43, 52.48],
+              [13.43, 52.52],
+              [13.4, 52.52],
+              [13.4, 52.48]
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "red"
+      }
+    },
+    {
+      "id": "mask-fill",
+      "type": "fill",
+      "source": "mask",
+      "paint": {
+        "fill-color": "lime",
+        "fill-opacity": 0
+      }
+    },
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-mask": "mask-fill",
+        "raster-mask-mode": "clip-path-exclude"
+      }
+    },
+    {
+      "id": "overlay-fill",
+      "type": "fill",
+      "source": "overlay",
+      "paint": {
+        "fill-color": "blue",
+        "fill-opacity": 0.4
+      }
+    }
+  ]
+}
