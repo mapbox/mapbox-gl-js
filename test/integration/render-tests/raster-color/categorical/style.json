@@ -4,11 +4,7 @@
     "test": {
       "width": 256,
       "height": 256,
-      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-619"],
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "The algorithm for raster colour gradient texels stretching needs an adjustment"},
-        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/GLJS-619"}
-      ]
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-619"]
     }
   },
   "center": [0, 0],

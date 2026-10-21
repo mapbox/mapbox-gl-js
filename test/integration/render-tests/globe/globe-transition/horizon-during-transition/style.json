@@ -9,10 +9,6 @@
         ["wait"],
         ["setZoom", 4.5],
         ["wait"]
-      ],
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "Pending globe view implementation"},
-        {"platform-tag-contains": "native", "reason": "pending globe-view implementation"}
       ]
     }
   },

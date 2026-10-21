@@ -7,9 +7,9 @@
       "operations": [
         ["wait"]
       ],
-      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-844"],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3188"],
       "skip-test": [
-        {"platform-tag-contains": "native-android", "reason": "Fails due to https://mapbox.atlassian.net/browse/GLJS-844"}
+        {"platform-tag-contains": "native-android", "reason": "Raster layer renders as a single color on all Android devices (checked oct 2026): https://mapbox.atlassian.net/browse/MAPSNAT-3188"}
       ]
     }
   },

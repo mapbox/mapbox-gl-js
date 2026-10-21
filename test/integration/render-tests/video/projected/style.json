@@ -10,7 +10,7 @@
       ],
       "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/601"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/601"}
+        {"platform-tag-contains": "native", "reason": "Source type 'video' not supported on native: https://github.com/mapbox/mapbox-gl-native/issues/601"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0005}

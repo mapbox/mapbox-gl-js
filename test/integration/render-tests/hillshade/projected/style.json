@@ -6,7 +6,7 @@
       "width": 256,
       "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"}
+        {"platform-tag-contains": "native", "reason": "Support for non-Mercator projections: https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"}
       ]
     }
   },

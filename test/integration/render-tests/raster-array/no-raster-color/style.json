@@ -7,10 +7,7 @@
       "operations": [
         ["wait"]
       ],
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-1924"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "to be ported https://mapbox.atlassian.net/browse/MAPSNAT-1924"}
-      ]
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4297"]
     }
   },
   "center": [
