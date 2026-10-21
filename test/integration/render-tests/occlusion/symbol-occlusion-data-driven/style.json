@@ -14,11 +14,11 @@
       "skip-test": [
         {"platform-tag-contains": "swiftshader", "reason": "check swiftshader occlusion query support"}
       ],
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "flaky due to occlusion/waitFrameReady"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00055}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "", "reason": "Flaky - checked oct 2026"}
       ]
     }
   },

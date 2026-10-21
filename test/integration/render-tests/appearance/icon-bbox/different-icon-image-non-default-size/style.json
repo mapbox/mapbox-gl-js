@@ -5,10 +5,7 @@
       "width": 64,
       "height": 64,
       "collisionDebug": true,
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3730"],
-      "ignore-metrics": [
-        {"platform-tag-contains": "native-android-vulkan", "reason": "GFX probes report 0 draw calls, buffers and frame buffers"}
-      ]
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3730"]
     }
   },
   "sources": {

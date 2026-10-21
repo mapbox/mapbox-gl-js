@@ -9,9 +9,6 @@
         ["setZoom", 12.17],
         ["wait"]
       ],
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Unstable network metrics"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00224}
       ]

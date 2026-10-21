@@ -8,9 +8,6 @@
         ["wait"]
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4289"],
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Under development"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.001}
       ]

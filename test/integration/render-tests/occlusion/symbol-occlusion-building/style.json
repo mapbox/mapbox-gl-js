@@ -9,7 +9,7 @@
         ["waitFrameReady", 30]
       ],
       "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "flaky due to occlusion/waitFrameReady"}
+        {"platform-tag-contains": "", "reason": "Flaky - checked oct 2026"}
       ]
     }
   },

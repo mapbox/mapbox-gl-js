@@ -4,9 +4,6 @@
     "test": {
       "height": 300,
       "width": 512,
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "ignored due to flaky metrics results"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0021}
       ]

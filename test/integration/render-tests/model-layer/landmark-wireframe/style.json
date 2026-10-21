@@ -4,9 +4,6 @@
     "test": {
       
       "showLayers3DWireframe": true,
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0013}
       ]

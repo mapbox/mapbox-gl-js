@@ -7,9 +7,6 @@
       "height": 1024,
       "pixelRatio": 0.5,
       "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-2236"],
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00025},
         {"platform-tag-contains": "native", "threshold": 0.00065}

@@ -24,9 +24,6 @@
       "queryGeometry": [
         32,
         40
-      ],
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
       ]
     }
   },

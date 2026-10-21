@@ -6,9 +6,6 @@
       "height": 256,
       "operations": [
         ["wait"]
-      ],
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Flaky network metrics"}
       ]
     }
   },

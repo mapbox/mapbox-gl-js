@@ -8,9 +8,6 @@
       "operations": [
         ["wait"]
       ],
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Flaky network metrics"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0007}
       ]

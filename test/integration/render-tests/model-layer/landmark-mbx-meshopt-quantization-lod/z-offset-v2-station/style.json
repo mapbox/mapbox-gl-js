@@ -14,9 +14,6 @@
       "skip-test": [
         {"platform-tag-contains": "web-macos-safari", "reason": "Checked oct-2026: label placement depends on which tests ran before in the same browser session. https://mapbox.atlassian.net/browse/GLJS-2112"}
       ],
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0012},
         {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.0025}

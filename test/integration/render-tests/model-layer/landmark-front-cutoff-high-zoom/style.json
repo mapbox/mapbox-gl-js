@@ -2,10 +2,7 @@
   "version": 8,
    "metadata": {
     "test": {
-      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2113"],
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
-      ]
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2113"]
     }
   },
   "lights": [

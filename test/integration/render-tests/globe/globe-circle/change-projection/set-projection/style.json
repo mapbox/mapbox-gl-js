@@ -14,9 +14,6 @@
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0009}
-      ],
-      "ignore-metrics": [
-        {"platform-tag-contains": "native-android-gl-adreno", "reason": "Flaky rendering metrics"}
       ]
     }
   },

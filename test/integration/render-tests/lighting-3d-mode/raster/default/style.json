@@ -2,10 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256,
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
-      ]
+      "height": 256
     }
   },
   "center": [

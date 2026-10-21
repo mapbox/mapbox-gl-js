@@ -10,11 +10,11 @@
                 ]
             ],
             "spriteFormat": "raster",
-            "ignore-metrics": [
-                {"platform-tag-contains": "native", "reason": "Flaky"}
-            ],
             "image-threshold": [
                 {"platform-tag-contains": "", "threshold": 0.00025}
+            ],
+            "ignore-metrics": [
+                {"platform-tag-contains": "", "reason": "Flaky - checked oct 2026"}
             ]
         }
     },

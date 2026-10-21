@@ -26,9 +26,6 @@
         ["addModel", "tree-diffuse", "local://models/tree-no-material.glb"],
         ["wait"]
       ],
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Flaky, under development"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0015}
       ]

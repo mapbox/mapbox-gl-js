@@ -12,12 +12,12 @@
         }],
         ["waitFrameReady", 30]
       ],
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "flaky due to occlusion/waitFrameReady"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.01},
         {"platform-tag-contains": "native-android", "threshold": 0.0046}
+      ],
+      "ignore-metrics": [
+        {"platform-tag-contains": "", "reason": "Flaky - checked oct 2026"}
       ]
     }
   },

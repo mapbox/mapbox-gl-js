@@ -10,9 +10,6 @@
         ["setZoom", 17.7],
         ["wait", 10.0]
       ],
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Flaky"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00055}
       ]

@@ -8,9 +8,6 @@
         ["wait"],
         ["setZoom", 15.4],
         ["wait"]
-      ],
-      "ignore-metrics": [
-        {"platform-tag-contains": "native", "reason": "Unstable network metrics"}
       ]
     }
   },
