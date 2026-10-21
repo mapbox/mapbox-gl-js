@@ -75,7 +75,7 @@ float sample_elevation(vec2 apos) {
 out vec2 v_normal;
 out vec4 v_width2_dilute; // xy fow width, z for dilute of whole line w for dilute of border
 out float v_gamma_scale;
-out vec2 v_tile_pos;
+out highp vec2 v_tile_pos;
 
 #ifdef ELEVATED_ROADS
 out highp float v_road_z_offset;
