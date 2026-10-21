@@ -13,7 +13,7 @@ uniform bool u_clip_to_tile_borders;
 in vec4 v_width2_dilute;
 in vec2 v_normal;
 in float v_gamma_scale;
-in vec2 v_tile_pos;
+in highp vec2 v_tile_pos;
 
 #ifdef LINE_ROUND_JOIN_CLIP_BORDER_OVERLAP
 in highp vec4 v_round_join_conflict_offset;
