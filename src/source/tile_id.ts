@@ -25,7 +25,6 @@ export class CanonicalTileID {
 
     isChildOf(parent: CanonicalTileID): boolean {
         const zDifference = this.z - parent.z;
-        // We're first testing for z == 0, to avoid a 32 bit shift, which is undefined.
         return parent.z === 0 || (
             parent.z < this.z &&
                 parent.x === (this.x >> zDifference) &&
@@ -115,7 +114,6 @@ export class OverscaledTileID {
             return false;
         }
         const zDifference = this.canonical.z - parent.canonical.z;
-        // We're first testing for z == 0, to avoid a 32 bit shift, which is undefined.
         return parent.overscaledZ === 0 || (
             parent.overscaledZ < this.overscaledZ &&
                 parent.canonical.z < this.canonical.z &&
