@@ -1266,7 +1266,19 @@ export type RasterLayerSpecification = {
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
-        "raster-elevation-reference"?: "sea" | "ground" | ExpressionSpecification
+        "raster-elevation-reference"?: "sea" | "ground" | ExpressionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "raster-mask"?: string,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "raster-mask-import"?: string,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "raster-mask-mode"?: "clip-path-intersect" | "clip-path-exclude"
     },
     "appearances"?: Array<AppearanceSpecification>
 };

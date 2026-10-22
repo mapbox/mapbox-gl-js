@@ -10792,6 +10792,64 @@
         "interpolated": false
       },
       "property-type": "data-constant"
+    },
+    "raster-mask": {
+      "type": "string",
+      "required": false,
+      "experimental": true,
+      "private": true,
+      "doc": "The id of a `fill` layer in the same style whose polygons should clip this layer. Only the geometry is used: set `fill-opacity` to 0 to keep the layer invisible, but don't hide it with `visibility`, `minzoom` or `maxzoom`. To use a featureset from another import, see `raster-mask-import`. Elevated `fill` layers and `raster-elevation` are not supported. This layer is only drawn where the mask's data has loaded, and not at all if the mask can't be used.",
+      "example": "water",
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.34.0"
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "raster-mask-import": {
+      "type": "string",
+      "required": false,
+      "experimental": true,
+      "private": true,
+      "doc": "The id of an import of this style. When set, `raster-mask` is the id of a featureset of that import instead of a layer id, and the mask is made of the `fill` layers the featureset selects. If the featureset can't be found, or selects no `fill` layers, this layer is not drawn.",
+      "example": "basemap",
+      "transition": false,
+      "requires": [
+        "raster-mask"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.34.0"
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "raster-mask-mode": {
+      "type": "enum",
+      "doc": "Whether this layer is drawn inside or outside the mask.",
+      "values": {
+        "clip-path-intersect": {
+          "doc": "Draw only where the mask layer's geometry covers the map."
+        },
+        "clip-path-exclude": {
+          "doc": "Draw only where the mask layer's geometry does not cover the map."
+        }
+      },
+      "default": "clip-path-intersect",
+      "experimental": true,
+      "private": true,
+      "transition": false,
+      "requires": [
+        "raster-mask"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.34.0"
+        }
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_raster-particle": {

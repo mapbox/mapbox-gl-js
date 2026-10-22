@@ -1,0 +1,14 @@
+[
+  {
+    "message": "layers[5].paint.raster-mask: layer \"nope\" not found",
+    "line": 65
+  },
+  {
+    "message": "layers[6].paint.raster-mask: layer \"water-outline\" must be a \"fill\" layer",
+    "line": 73
+  },
+  {
+    "message": "layers[7].paint.raster-mask-import: import \"nope\" not found",
+    "line": 82
+  }
+]

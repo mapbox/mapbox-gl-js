@@ -107,6 +107,27 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
         }
     }
 
+    if (type === 'raster' && isObject(layer.paint)) {
+        const paint = layer.paint as Record<string, unknown>;
+        const maskId = unbundle(paint['raster-mask']);
+        const importId = unbundle(paint['raster-mask-import']);
+        if (isString(maskId) && maskId) {
+            if (isString(importId) && importId) {
+                // The featureset itself can only be checked once the import has loaded.
+                if (!(style.imports || []).some((i) => unbundle(i.id) === importId)) {
+                    errors.push(new ValidationError(`${key}.paint.raster-mask-import`, paint['raster-mask-import'], `import "${importId}" not found`));
+                }
+            } else {
+                const maskLayer = (style.layers || []).find((l) => unbundle(l.id) === maskId);
+                if (!maskLayer) {
+                    errors.push(new ValidationError(`${key}.paint.raster-mask`, paint['raster-mask'], `layer "${maskId}" not found`));
+                } else if (unbundle(maskLayer.type) !== 'fill') {
+                    errors.push(new ValidationError(`${key}.paint.raster-mask`, paint['raster-mask'], `layer "${maskId}" must be a "fill" layer`));
+                }
+            }
+        }
+    }
+
     errors = errors.concat(validateObject({
         key,
         value: layer,

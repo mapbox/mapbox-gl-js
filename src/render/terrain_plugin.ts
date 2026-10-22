@@ -18,6 +18,7 @@ export type ITerrainRenderer =
         | 'update' | 'updateTileBinding'
         | 'renderBatch' | 'postRender' | 'prepareDrawTile'
         | 'setupElevationDraw' | 'stencilModeForRTTOverlap' | 'clipOrMaskOverlapStencilType'
+        | 'getCurrentProxiedCoords'
         | '_clearRenderCacheForTile' | 'resetTileLookupCache' | 'getScaledDemTileSize'
         | 'attenuationRange' | 'getDemUpscale'
         | 'destroy'

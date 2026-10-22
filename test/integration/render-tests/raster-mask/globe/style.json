@@ -1,0 +1,78 @@
+{
+  "description": "raster-mask on globe: globe force-enables draping, so the mask has to survive render-to-texture. The raster must be clipped to the western hemisphere polygon while the basemap background stays visible elsewhere.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+      ],
+      "height": 256,
+      "width": 256,
+      "operations": [
+        ["wait"]
+      ]
+    }
+  },
+  "projection": {
+    "name": "globe"
+  },
+  "center": [0, 0],
+  "zoom": 1,
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 2,
+      "tileSize": 256
+    },
+    "mask": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [-180, -85],
+              [0, -85],
+              [0, 85],
+              [-180, 85],
+              [-180, -85]
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "red"
+      }
+    },
+    {
+      "id": "mask-fill",
+      "type": "fill",
+      "source": "mask",
+      "paint": {
+        "fill-color": "lime",
+        "fill-opacity": 0
+      }
+    },
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-mask": "mask-fill",
+        "raster-mask-mode": "clip-path-intersect"
+      }
+    }
+  ]
+}
