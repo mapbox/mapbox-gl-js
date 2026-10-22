@@ -6,7 +6,7 @@
       "height": 48,
       "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/1730"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native-internal/issues/1730"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: data-driven line-dasharray and line-cap - mapbox/mapbox-gl-native-internal#1730"}
       ]
     }
   },

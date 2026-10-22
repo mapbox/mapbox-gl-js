@@ -6,7 +6,7 @@
       "height": 768,
       "pixelRatio": 0.5,
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: in gl-native"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.008}

@@ -10,8 +10,8 @@
         ],
         "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1928"],
         "skip-test": [
-          {"platform-tag-contains": "web", "reason": "Non-deterministic"},
-          {"platform-tag-contains": "native-linux", "reason": "https://mapbox.atlassian.net/browse/MAPS3D-1928"}
+          {"platform-tag-contains": "web", "reason": "flaky: non-deterministic"},
+          {"platform-tag-contains": "native-linux", "reason": "flaky: MAPS3D-1928"}
         ]
       }
     },

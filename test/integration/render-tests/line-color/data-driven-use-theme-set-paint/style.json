@@ -6,7 +6,7 @@
       "width": 32,
       "height": 32,
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "setPaintProperty on a constant color with data-driven use-theme doesn't update feature blocks on native"}
+        {"platform-tag-contains": "native", "reason": "bug: setPaintProperty on a constant color with data-driven use-theme does not update feature blocks"}
       ],
       "operations": [
         ["wait"],

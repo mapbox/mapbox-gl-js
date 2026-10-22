@@ -10,7 +10,7 @@
       ],
       "tickets": ["https://github.com/mapbox/mapbox-gl-js/pull/11836"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "Invalid URIs - https://github.com/mapbox/mapbox-gl-js/pull/11836"}
+        {"platform-tag-contains": "native", "reason": "bug: invalid source URIs - mapbox/mapbox-gl-js#11836"}
       ]
     }
   },

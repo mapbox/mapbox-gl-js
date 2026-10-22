@@ -9,7 +9,7 @@
                 ["wait"]
             ],
             "skip-test": [
-                {"platform-tag-contains": "web", "reason": "Requires support for hd-roads-markup/elevationId - not yet supported in gl-js"}
+                {"platform-tag-contains": "web", "reason": "not-implemented: hd-roads-markup/elevationId in gl-js"}
             ],
             "image-threshold": [
                 {"platform-tag-contains": "", "threshold": 0.00025}

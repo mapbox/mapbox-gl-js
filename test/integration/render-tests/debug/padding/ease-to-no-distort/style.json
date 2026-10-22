@@ -38,7 +38,7 @@
       ],
       "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/16212"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "The native render-test runner does not support the easeTo operation or showPadding. https://github.com/mapbox/mapbox-gl-native/issues/16212"}
+        {"platform-tag-contains": "native", "reason": "runner-limitation: the native runner does not support the easeTo operation or showPadding - mapbox/mapbox-gl-native#16212"}
       ]
     }
   },

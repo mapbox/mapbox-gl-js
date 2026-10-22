@@ -7,7 +7,7 @@
       "height": 1024,
       "pixelRatio": 0.5,
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "Conflation needs to be implemented first"}
+        {"platform-tag-contains": "web", "reason": "not-implemented: conflation in gl-js"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00055}

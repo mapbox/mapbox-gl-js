@@ -23,8 +23,8 @@
         ["wait", 100]
       ],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "Not sure this is correct behavior"},
-        {"platform-tag-contains": "native", "reason": "fails on gl-native, as symbol index is not functional at static map mode - needs issue"}
+        {"platform-tag-contains": "web", "reason": "bug: not sure this is correct behavior"},
+        {"platform-tag-contains": "native", "reason": "bug: symbol index does not work in static map mode"}
       ]
     }
   },

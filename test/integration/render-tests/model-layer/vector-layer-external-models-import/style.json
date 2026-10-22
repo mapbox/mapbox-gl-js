@@ -8,7 +8,7 @@
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2117"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "needs fix https://mapbox.atlassian.net/browse/MAPSNAT-2117"}
+        {"platform-tag-contains": "native", "reason": "bug: model layer does not work with style imports - MAPSNAT-2117"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00025}

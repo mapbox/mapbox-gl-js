@@ -14,7 +14,7 @@
   "metadata": {
     "test": {
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "ignore - gl-native parses arrays as expressions"}
+        {"platform-tag-contains": "native", "reason": "not-applicable: web-only - gl-native parses arrays as expressions"}
       ]
     }
   }

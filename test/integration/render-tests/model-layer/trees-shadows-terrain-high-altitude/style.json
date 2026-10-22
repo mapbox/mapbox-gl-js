@@ -10,7 +10,7 @@
         ["wait"]
       ],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "dem/vector/trees tiles need to be updated"}
+        {"platform-tag-contains": "native", "reason": "bug: dem/vector/trees tiles need to be updated"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00085}

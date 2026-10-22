@@ -21,8 +21,8 @@
       ],
       "tickets": ["https://github.com/mapbox/mapbox-gl-js/issues/10314"],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "Flaky https://github.com/mapbox/mapbox-gl-js/issues/10314"},
-        {"platform-tag-contains": "native", "reason": "padding debug option is not implemented in renderer"}
+        {"platform-tag-contains": "web", "reason": "flaky: mapbox/mapbox-gl-js#10314"},
+        {"platform-tag-contains": "native", "reason": "not-implemented: padding debug option in gl-native"}
       ]
     }
   },

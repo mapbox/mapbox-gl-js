@@ -24,7 +24,7 @@
             ],
             "tickets": ["https://github.com/mapbox/mapbox-gl-js/pull/9198"],
             "skip-test": [
-                {"platform-tag-contains": "native", "reason": "Port https://github.com/mapbox/mapbox-gl-js/pull/9198"}
+                {"platform-tag-contains": "native", "reason": "not-implemented: evaluated properties in query results - mapbox/mapbox-gl-js#9198"}
             ]
         }
     },

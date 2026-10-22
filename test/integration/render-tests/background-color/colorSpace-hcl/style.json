@@ -5,7 +5,7 @@
       "width": 64,
       "height": 64,
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "needs issue"}
+        {"platform-tag-contains": "native", "reason": "bug: needs a ticket"}
       ]
     }
   },

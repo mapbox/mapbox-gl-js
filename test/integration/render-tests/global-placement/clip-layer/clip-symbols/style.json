@@ -9,7 +9,7 @@
       "collisionDebug": true,
       "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1623"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPS3D-1623"}
+        {"platform-tag-contains": "native", "reason": "bug: clip layer does not work correctly - MAPS3D-1623"}
       ]
     }
   },

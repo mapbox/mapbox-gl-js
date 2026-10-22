@@ -18,7 +18,7 @@
         ]
       ],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "Support image updates with different size"}
+        {"platform-tag-contains": "web", "reason": "not-implemented: image updates with a different size in gl-js"}
       ]
     }
   },

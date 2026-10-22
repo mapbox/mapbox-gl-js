@@ -6,7 +6,7 @@
       "width": 256,
       "operations": [],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "ignore - fill extrusion hidden on terrain opening"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: fill extrusion hidden on terrain opening in gl-native"}
       ]
     }
   },

@@ -10,8 +10,8 @@
         ],
         "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/3296"],
         "skip-test": [
-          {"platform-tag-contains": "native-android", "reason": "https://github.com/mapbox/mapbox-gl-native-internal/issues/3296"},
-          {"platform-tag-contains": "native-linux", "reason": "https://github.com/mapbox/mapbox-gl-native-internal/issues/3296"}
+          {"platform-tag-contains": "native-android", "reason": "bug: query fails - mapbox/mapbox-gl-native-internal#3296"},
+          {"platform-tag-contains": "native-linux", "reason": "bug: query fails - mapbox/mapbox-gl-native-internal#3296"}
         ]
       }
     },

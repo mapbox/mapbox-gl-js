@@ -5,7 +5,7 @@
       "debug": true,
       "mapMode": "tile",
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "Mapbox-gl-js does not support tile-mode"}
+        {"platform-tag-contains": "web", "reason": "not-applicable: native-only - gl-js does not support tile-mode"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "native", "threshold": 0.004}

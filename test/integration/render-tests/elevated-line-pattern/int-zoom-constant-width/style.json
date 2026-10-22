@@ -7,8 +7,8 @@
       "height": 256,
       "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1544"],
       "skip-test": [
-        {"platform-tag-contains": "native-android", "reason": "To be fixed https://mapbox.atlassian.net/browse/MAPS3D-1544"},
-        {"platform-tag-contains": "native-ios", "reason": "To be fixed https://mapbox.atlassian.net/browse/MAPS3D-1544"}
+        {"platform-tag-contains": "native-android", "reason": "bug: line-progress for elevated lines is sometimes wrong - MAPS3D-1544"},
+        {"platform-tag-contains": "native-ios", "reason": "bug: line-progress for elevated lines is sometimes wrong - MAPS3D-1544"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00355}

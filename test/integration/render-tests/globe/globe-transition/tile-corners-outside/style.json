@@ -6,7 +6,7 @@
       "height": 512,
       "tickets": ["https://github.com/mapbox/mapbox-gl-js/pull/12075"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-js/pull/12075"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: tile loading changes - mapbox/mapbox-gl-js#12075"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.05}

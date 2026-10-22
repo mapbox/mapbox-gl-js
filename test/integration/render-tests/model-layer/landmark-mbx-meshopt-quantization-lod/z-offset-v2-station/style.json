@@ -12,7 +12,7 @@
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2112"],
       "skip-test": [
-        {"platform-tag-contains": "web-macos-safari", "reason": "Checked oct-2026: label placement depends on which tests ran before in the same browser session. https://mapbox.atlassian.net/browse/GLJS-2112"}
+        {"platform-tag-contains": "web-macos-safari", "reason": "bug: label placement depends on which tests ran before in the same browser session (checked oct-2026) - GLJS-2112"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0012},

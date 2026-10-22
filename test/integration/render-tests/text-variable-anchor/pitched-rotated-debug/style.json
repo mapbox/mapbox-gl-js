@@ -5,7 +5,7 @@
       "height": 256,
       "collisionDebug": true,
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "Non-deterministiic when rendered in browser"}
+        {"platform-tag-contains": "web", "reason": "flaky: non-deterministic in the browser"}
       ]
     }
   },

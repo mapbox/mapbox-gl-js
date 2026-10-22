@@ -6,8 +6,8 @@
       "height": 64,
       "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1494"],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "blur issues"},
-        {"platform-tag-contains": "native", "reason": "Known issues https://mapbox.atlassian.net/browse/MAPS3D-1494"}
+        {"platform-tag-contains": "web", "reason": "bug: blur issues"},
+        {"platform-tag-contains": "native", "reason": "bug: elevated lines issues - MAPS3D-1494"}
       ]
     }
   },

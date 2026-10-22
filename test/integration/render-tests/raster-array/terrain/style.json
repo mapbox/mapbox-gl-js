@@ -16,7 +16,7 @@
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-1924"],
       "skip-test": [
-        {"platform-tag-contains": "native-android", "reason": "to be ported https://mapbox.atlassian.net/browse/MAPSNAT-1924"}
+        {"platform-tag-contains": "native-android", "reason": "not-implemented: raster-array - MAPSNAT-1924"}
       ]
     }
   },

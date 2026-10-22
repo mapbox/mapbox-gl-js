@@ -42,7 +42,7 @@
         ]
       ],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "to be ported"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: in gl-native"}
       ]
     }
   },

@@ -44,7 +44,7 @@
   "metadata": {
     "test": {
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "ignore"}
+        {"platform-tag-contains": "native", "reason": "bug: no details, needs investigation"}
       ]
     }
   }

@@ -5,7 +5,7 @@
       "width": 512,
       "height": 512,
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "GL JS specific"}
+        {"platform-tag-contains": "native", "reason": "not-applicable: web-only"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.005}

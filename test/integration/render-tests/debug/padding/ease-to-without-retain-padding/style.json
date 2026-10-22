@@ -21,7 +21,7 @@
         ]
       ],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "retainPadding is not supported"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: retainPadding in gl-native"}
       ]
     }
   },

@@ -14,7 +14,7 @@
       ],
       "tickets": ["https://github.com/mapbox/mapbox-gl-js/issues/12407"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: in gl-native"}
       ]
     }
   },

@@ -13,7 +13,7 @@
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/GLJS-608", "https://mapbox.atlassian.net/browse/GLJS-398"],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "Flaky, https://mapbox.atlassian.net/browse/GLJS-608"}
+        {"platform-tag-contains": "web", "reason": "flaky: on all web platforms, some CI runs fail with a large diff (checked oct-2026) - GLJS-608"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0003}

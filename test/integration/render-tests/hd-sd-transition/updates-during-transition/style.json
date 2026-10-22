@@ -62,7 +62,7 @@
       "skip-test": [
         {
           "platform-tag-contains": "web",
-          "reason": "gl-native only: animated config change (pinBooleanTransitionProgress) is not supported in gl-js."
+          "reason": "not-applicable: native-only - animated config change (pinBooleanTransitionProgress)"
         }
       ]
     }

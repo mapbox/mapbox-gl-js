@@ -7,7 +7,7 @@
       "pixelRatio": 2,
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4290"],
       "skip-test": [
-        {"platform-tag-contains": "native-android-gl-adreno", "reason": "Checked oct-2026: renders an empty image. https://mapbox.atlassian.net/browse/MAPSNAT-4290"}
+        {"platform-tag-contains": "native-android-gl-adreno", "reason": "bug: renders an empty image (checked oct-2026) - MAPSNAT-4290"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0002},

@@ -16,7 +16,7 @@
         ]
       ],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "needs investigation"}
+        {"platform-tag-contains": "native", "reason": "bug: needs investigation"}
       ]
     }
   },

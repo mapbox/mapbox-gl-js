@@ -26,7 +26,7 @@
                 ]
             ],
             "skip-test": [
-                {"platform-tag-contains": "web", "reason": "gl-native only: elevated HD road markup (geojson line with hd-road-markup elevation reference not supported in gl-js)"}
+                {"platform-tag-contains": "web", "reason": "not-applicable: native-only - elevated HD road markup (GeoJSON line with hd-road-markup elevation reference)"}
             ],
             "image-threshold": [
                 {"platform-tag-contains": "", "threshold": 0.00025}

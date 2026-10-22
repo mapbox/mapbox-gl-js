@@ -182,9 +182,11 @@ Tests can be skipped on a per-platform basis directly in `style.json` under `met
 
 ```json
 "skip-test": [
-  {"platform-tag-contains": "web-linux-firefox", "reason": "flaky, see https://github.com/mapbox/mapbox-gl-js/issues/12345"}
+  {"platform-tag-contains": "web-linux-firefox", "reason": "flaky: mapbox/mapbox-gl-js#12345"}
 ]
 ```
+
+Start each reason with its kind: `bug`, `flaky`, `not-implemented`, `runner-limitation` or `not-applicable` (by design, for example `not-applicable: native-only`). Use the form `<kind>: <what> - <ticket>`. Each ticket mentioned in a reason must also be in `metadata.test.tickets` as a full URL.
 
 The HTML report includes a section listing every skipped test with its matching rules and reasons, making it easy to audit what's being ignored and why.
 

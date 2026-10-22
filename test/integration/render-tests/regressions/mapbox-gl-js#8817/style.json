@@ -12,7 +12,7 @@
       ],
       "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/15737"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/15737"}
+        {"platform-tag-contains": "native", "reason": "runner-limitation: the native runner cannot pause sources - mapbox/mapbox-gl-native#15737"}
       ]
     }
   },

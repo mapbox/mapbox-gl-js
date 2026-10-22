@@ -6,7 +6,7 @@
       "height": 64,
       "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/12888"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/12888"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: CanvasSource repeats across the antimeridian - mapbox/mapbox-gl-native#12888"}
       ]
     }
   },

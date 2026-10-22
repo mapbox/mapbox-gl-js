@@ -6,7 +6,7 @@
       "height": 125,
       "tickets": ["https://github.com/mapbox/mapbox-gl-js/issues/7023"],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "https://github.com/mapbox/mapbox-gl-js/issues/7023"}
+        {"platform-tag-contains": "web", "reason": "bug: GeoJSON polygon rendering is unreliable - mapbox/mapbox-gl-js#7023"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "native", "threshold": 0.00026}

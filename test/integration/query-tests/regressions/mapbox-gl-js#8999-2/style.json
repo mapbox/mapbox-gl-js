@@ -11,7 +11,7 @@
       ],
       "tickets": ["https://github.com/mapbox/mapbox-gl-js/pull/9138"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-js/pull/9138"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: extrusion queries for polygons with coincident points - mapbox/mapbox-gl-js#9138"}
       ]
     }
   },

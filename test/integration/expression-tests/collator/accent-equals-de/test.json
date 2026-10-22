@@ -67,7 +67,7 @@
   "metadata": {
     "test": {
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "Locale-specific behavior changes based on platform."}
+        {"platform-tag-contains": "native", "reason": "not-applicable: web-only - locale-specific behavior differs by platform"}
       ]
     }
   }

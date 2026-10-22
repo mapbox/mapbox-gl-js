@@ -9,7 +9,7 @@
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3188"],
       "skip-test": [
-        {"platform-tag-contains": "native-android", "reason": "Raster layer renders as a single color on all Android devices (checked oct 2026): https://mapbox.atlassian.net/browse/MAPSNAT-3188"}
+        {"platform-tag-contains": "native-android", "reason": "bug: raster layer renders as a single color on all Android devices (checked oct-2026) - MAPSNAT-3188"}
       ]
     }
   },

@@ -13,7 +13,7 @@
         ]
       ],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "limit number of holes experimental for native"}
+        {"platform-tag-contains": "web", "reason": "not-applicable: native-only - experimental limit for the number of holes"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0025}

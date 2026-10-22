@@ -5,7 +5,7 @@
       "height": 32,
       "width": 256,
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: in gl-native"}
       ]
     }
   },

@@ -34,7 +34,7 @@
   "metadata": {
     "test": {
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "Even the 'en' locale may not be present on some test systems."}
+        {"platform-tag-contains": "native", "reason": "runner-limitation: the 'en' locale is missing on some test systems"}
       ]
     }
   }

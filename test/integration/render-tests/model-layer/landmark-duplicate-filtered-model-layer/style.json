@@ -9,7 +9,7 @@
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1872"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not yet implemented https://mapbox.atlassian.net/browse/MAPS3D-1872"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: multiple model layers with the same source - MAPS3D-1872"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0005}

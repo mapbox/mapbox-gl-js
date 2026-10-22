@@ -10,7 +10,7 @@
         ["wait"]
       ],
       "skip-test": [
-        {"platform-tag-contains": "native-android", "reason": "Fill extrusion ambient occlusion difference"}
+        {"platform-tag-contains": "native-android", "reason": "bug: fill extrusion ambient occlusion difference"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00065},

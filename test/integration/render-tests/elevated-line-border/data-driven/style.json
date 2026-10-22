@@ -6,8 +6,8 @@
       "height": 64,
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-1551"],
       "skip-test": [
-        {"platform-tag-contains": "native-android", "reason": "To be fixed https://mapbox.atlassian.net/browse/MAPSNAT-1551"},
-        {"platform-tag-contains": "native-ios", "reason": "To be fixed https://mapbox.atlassian.net/browse/MAPSNAT-1551"}
+        {"platform-tag-contains": "native-android", "reason": "bug: line border rendering error - MAPSNAT-1551"},
+        {"platform-tag-contains": "native-ios", "reason": "bug: line border rendering error - MAPSNAT-1551"}
       ]
     }
   },

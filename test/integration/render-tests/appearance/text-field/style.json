@@ -8,7 +8,7 @@
       "width": 64,
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3954"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-3954"}
+        {"platform-tag-contains": "native", "reason": "bug: text-color blinks on layer property updates - MAPSNAT-3954"}
       ]
     }
   },

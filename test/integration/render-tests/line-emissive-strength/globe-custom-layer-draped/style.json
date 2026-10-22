@@ -12,7 +12,7 @@
         ["wait"]
       ],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "js specific"}
+        {"platform-tag-contains": "native", "reason": "not-applicable: web-only"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0005}

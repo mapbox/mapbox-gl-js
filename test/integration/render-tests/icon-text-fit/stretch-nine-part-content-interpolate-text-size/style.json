@@ -6,8 +6,8 @@
       "height": 64,
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2636"],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-2636"},
-        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-2636"}
+        {"platform-tag-contains": "web", "reason": "bug: icon-text-fit image changes size only at integer zoom levels - MAPSNAT-2636"},
+        {"platform-tag-contains": "native", "reason": "bug: icon-text-fit image changes size only at integer zoom levels - MAPSNAT-2636"}
       ]
     }
   },

@@ -8,7 +8,7 @@
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2492"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug with line metrics on multi line string features https://mapbox.atlassian.net/browse/MAPSNAT-2492"}
+        {"platform-tag-contains": "native", "reason": "bug: line metrics do not work with MultiLineString - MAPSNAT-2492"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0021}

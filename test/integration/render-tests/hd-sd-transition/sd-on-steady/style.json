@@ -35,7 +35,7 @@
         ]
       ],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "gl-native only: animated config change (pinBooleanTransitionProgress) is not supported in gl-js."}
+        {"platform-tag-contains": "web", "reason": "not-applicable: native-only - animated config change (pinBooleanTransitionProgress)"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00025}

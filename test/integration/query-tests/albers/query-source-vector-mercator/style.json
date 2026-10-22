@@ -22,7 +22,7 @@
       "skip-test": [
         {
           "platform-tag-contains": "web",
-          "reason": "querySourceFeatures is driven by metadata.test.querySource, which only the native render-test runner implements; the gl-js query harness reads queryGeometry only."
+          "reason": "runner-limitation: the gl-js query harness reads only queryGeometry, metadata.test.querySource (querySourceFeatures) is only in the native runner"
         }
       ]
     }

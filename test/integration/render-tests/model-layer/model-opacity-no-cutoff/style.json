@@ -5,7 +5,7 @@
       "width": 512,
       "height": 512,
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "GLTF interleaved arrays not supported in -js"}
+        {"platform-tag-contains": "web", "reason": "not-implemented: glTF interleaved arrays in gl-js"}
       ]
     }
   },

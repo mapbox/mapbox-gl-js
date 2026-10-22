@@ -17,7 +17,7 @@
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4293"],
       "skip-test": [
-        {"platform-tag-contains": "native-linux", "reason": "Checked oct-2026: renders no image (Invalid size for actual image), so no override image is possible. https://mapbox.atlassian.net/browse/MAPSNAT-4293"}
+        {"platform-tag-contains": "native-linux", "reason": "bug: renders no image (invalid size for actual image), so no override image is possible (checked oct-2026) - MAPSNAT-4293"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00103}

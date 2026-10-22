@@ -15,7 +15,7 @@
         ["setSize", 128, 1024]
       ],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "Implemented for mapbox-gl-native only"}
+        {"platform-tag-contains": "web", "reason": "runner-limitation: the gl-js runner does not support the setSize operation"}
       ]
     }
   },

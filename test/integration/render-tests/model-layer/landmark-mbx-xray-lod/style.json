@@ -7,7 +7,7 @@
       "height": 256,
       "tickets": ["https://mapbox.atlassian.net/browse/GLJS-1241"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/GLJS-1241"}
+        {"platform-tag-contains": "native", "reason": "bug: runtime errors on xray style with 3D models - GLJS-1241"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00025}

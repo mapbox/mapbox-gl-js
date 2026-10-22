@@ -4,7 +4,7 @@
     "test": {
       "axonometric": true,
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "axonometric rendering in gl-js tbd"}
+        {"platform-tag-contains": "web", "reason": "not-implemented: axonometric rendering in gl-js"}
       ]
     }
   },

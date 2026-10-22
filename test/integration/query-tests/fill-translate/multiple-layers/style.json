@@ -9,7 +9,7 @@
             ],
             "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/12701"],
             "skip-test": [
-                {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-native/issues/12701"}
+                {"platform-tag-contains": "native", "reason": "bug: tile queryPadding differs from gl-js - mapbox/mapbox-gl-native#12701"}
             ]
         }
     },

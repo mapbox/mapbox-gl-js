@@ -7,7 +7,7 @@
       "width": 64,
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4215"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-4215"}
+        {"platform-tag-contains": "native", "reason": "bug: setPaintProperty with data-driven use-theme does not update rendering - MAPSNAT-4215"}
       ],
       "operations": [
         [

@@ -10,7 +10,7 @@
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/GLJS-1290"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "needs fixing https://mapbox.atlassian.net/browse/GLJS-1290"}
+        {"platform-tag-contains": "native", "reason": "bug: needs fixing - GLJS-1290"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00025}

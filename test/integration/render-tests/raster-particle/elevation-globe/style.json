@@ -9,7 +9,7 @@
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2267"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-2267"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: raster-particle elevation - MAPSNAT-2267"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0003}

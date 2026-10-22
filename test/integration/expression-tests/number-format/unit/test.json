@@ -28,7 +28,7 @@
   "metadata": {
     "test": {
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "ignore - not implemented in gl-native"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: in gl-native"}
       ]
     }
   }

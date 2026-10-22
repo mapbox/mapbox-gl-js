@@ -6,7 +6,7 @@
       "width": 64,
       "tickets": ["https://github.com/mapbox/mapbox-gl-js-internal/pull/2485"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-js-internal/pull/2485"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: feature-dependent config expressions - mapbox/mapbox-gl-js-internal#2485"}
       ]
     }
   },

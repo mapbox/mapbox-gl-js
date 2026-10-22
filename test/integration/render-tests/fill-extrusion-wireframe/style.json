@@ -7,7 +7,7 @@
       "showLayers3DWireframe": true,
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSPERF-86"],
       "skip-test": [
-        {"platform-tag-contains": "native-android-gl-mali", "reason": "Flaky (checked oct-2026): the wireframe image differs between CI runs. https://mapbox.atlassian.net/browse/MAPSPERF-86"}
+        {"platform-tag-contains": "native-android-gl-mali", "reason": "flaky: the wireframe image differs between CI runs (checked oct-2026) - MAPSPERF-86"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.002}

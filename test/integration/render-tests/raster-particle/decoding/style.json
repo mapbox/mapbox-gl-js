@@ -19,7 +19,7 @@
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2181"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://mapbox.atlassian.net/browse/MAPSNAT-2181"}
+        {"platform-tag-contains": "native", "reason": "bug: raster-particle decoding - MAPSNAT-2181"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.006}

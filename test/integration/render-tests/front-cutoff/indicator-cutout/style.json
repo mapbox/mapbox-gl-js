@@ -10,7 +10,7 @@
         ["wait"]
       ],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "gl-native only: indicator cutout with front cutoff"}
+        {"platform-tag-contains": "web", "reason": "not-applicable: native-only - location indicator cutout with front cutoff"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.005}

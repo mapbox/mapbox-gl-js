@@ -18,7 +18,7 @@
   "metadata": {
     "test": {
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "This tests RTL text plugin behavior specific to GL JS"}
+        {"platform-tag-contains": "native", "reason": "not-applicable: web-only - RTL text plugin"}
       ]
     }
   }

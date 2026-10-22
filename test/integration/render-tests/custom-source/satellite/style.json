@@ -25,7 +25,7 @@
         ["wait"]
       ],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: in gl-native"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.02975}

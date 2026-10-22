@@ -36,8 +36,8 @@
             ],
             "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2740"],
             "skip-test": [
-                {"platform-tag-contains": "native-ios", "reason": "skip metal shader issue: https://mapbox.atlassian.net/browse/MAPSNAT-2740"},
-                {"platform-tag-contains": "native-macos", "reason": "skip metal shader issue: https://mapbox.atlassian.net/browse/MAPSNAT-2740"}
+                {"platform-tag-contains": "native-ios", "reason": "bug: Metal shader renders a different line symbol size than OpenGL - MAPSNAT-2740"},
+                {"platform-tag-contains": "native-macos", "reason": "bug: Metal shader renders a different line symbol size than OpenGL - MAPSNAT-2740"}
             ]
         }
     },

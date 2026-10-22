@@ -17,7 +17,7 @@
         ["wait", 1500]
       ],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "needs setPitchBearing operation port"}
+        {"platform-tag-contains": "native", "reason": "runner-limitation: the native runner does not support the setPitchBearing operation"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.08}

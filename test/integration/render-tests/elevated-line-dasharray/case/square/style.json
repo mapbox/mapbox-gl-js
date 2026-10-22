@@ -6,7 +6,7 @@
       "width": 200,
       "tickets": ["https://github.com/mapbox/mapbox-gl-js/issues/9531"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "https://github.com/mapbox/mapbox-gl-js/issues/9531"}
+        {"platform-tag-contains": "native", "reason": "bug: line-dasharray with square line-cap - mapbox/mapbox-gl-js#9531"}
       ]
     }
   },

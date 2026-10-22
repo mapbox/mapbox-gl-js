@@ -17,7 +17,7 @@
         ]
       ],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "To be fixed"}
+        {"platform-tag-contains": "web", "reason": "bug: to be fixed"}
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2100"]
     }
