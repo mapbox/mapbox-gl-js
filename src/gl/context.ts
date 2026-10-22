@@ -190,9 +190,15 @@ class Context {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
         // Query UBO limits for dynamic sizing (WebGL2 minimum: 16KB, 36 binding points)
-        // Cap it to a max of 32KB to avoid allocating big UBO buffers
+        // Cap it to a max of 32KB to avoid allocating big UBO buffers.
+        // On PowerVR GPUs (e.g. DXT-48-1536 on Pixel 10), ANGLE's OpenGL ES backend returns zeros or wrong values
+        // from uniform blocks once a draw's blocks add up to more than ~2.5KB, so cap it to 1KB there. ANGLE's
+        // Vulkan backend and WebGL without ANGLE on the same GPU are not affected
+        // (https://github.com/mapbox/mapbox-gl-js/issues/13742)
+        const isPowerVRAngleGLES = this.renderer && this.renderer.includes("PowerVR") && this.renderer.includes("OpenGL ES");
+        const maxUniformBlockSizeCap = isPowerVRAngleGLES ? 1024 : 32 * 1024;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        this.maxUniformBlockSize = Math.min(gl.getParameter(gl.MAX_UNIFORM_BLOCK_SIZE), 32 * 1024);
+        this.maxUniformBlockSize = Math.min(gl.getParameter(gl.MAX_UNIFORM_BLOCK_SIZE), maxUniformBlockSizeCap);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.extBlendFuncExtended = gl.getExtension('WEBGL_blend_func_extended');
         this.extParallelShaderCompile = gl.getExtension('KHR_parallel_shader_compile');

@@ -5,6 +5,7 @@
 - Fix zero-length cap in SVG not drawn in various browsers.
 - Add `raster-mask` and `raster-mask-mode` paint properties so a raster layer can be clipped to, or excluded from, the geometry of a fill layer
 - Revert fix line geometry: clamp fake-round join anchor on short segments.
+- Fix data-driven line and symbol paint properties not rendering on PowerVR GPUs (e.g. Pixel 10).
 
 ## 3.34.0-rc.1
 
