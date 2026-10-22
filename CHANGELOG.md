@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Fix `transformRequest` headers missing from requests for glTF buffers and textures.
 - Improve map load performance on lower zooms via faster polygon triangulation.
 - Fix zero-length cap in SVG not drawn in various browsers.
 - Add `raster-mask` and `raster-mask-mode` paint properties so a raster layer can be clipped to, or excluded from, the geometry of a fill layer

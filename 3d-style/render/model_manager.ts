@@ -46,12 +46,11 @@ class ModelManager extends Evented {
 
     async loadModel(id: string, url: string): Promise<Model | null | undefined> {
         try {
-            const request = await this.requestManager.transformRequest(url, ResourceType.Model);
-            if (!this.modelByURL[url]) return null;
-
             await prepareStandard();
             if (!Standard.loadModel) return null;
-            return await Standard.loadModel(request, id, url);
+            const model = await Standard.loadModel((uri) => this.requestManager.transformRequest(uri, ResourceType.Model), id, url);
+            if (!this.modelByURL[url]) return null;
+            return model;
         } catch (e) {
             if ((e as {status?: number}).status === 404) return null;
             this.fire(new ErrorEvent(new Error(`Could not load model ${id} from ${url}`, {cause: e})));

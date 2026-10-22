@@ -734,8 +734,8 @@ export default function convertModel(gltf: GLTF): Array<ModelNode> {
 
 // Fetches a glTF, converts it, and builds a Model. Reached from core `ModelManager` through the
 // `Standard` facade so that the glTF/draco/meshopt loaders stay out of core.
-export async function loadModel(requestParameters: RequestParameters, id: string, url: string): Promise<Model> {
-    const gltf = await loadGLTF(requestParameters);
+export async function loadModel(transformRequest: (url: string) => Promise<RequestParameters>, id: string, url: string): Promise<Model> {
+    const gltf = await loadGLTF(url, transformRequest);
     const model = new Model(id, url, undefined, undefined, convertModel(gltf));
     model.computeBoundsAndApplyParent();
     return model;

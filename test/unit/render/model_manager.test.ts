@@ -4,7 +4,7 @@ import {describe, test, expect, vi, waitFor} from '../../util/vitest';
 import ModelManager from '../../../3d-style/render/model_manager';
 import {Evented} from '../../../src/util/evented';
 import {RequestManager} from '../../../src/util/mapbox';
-import {mockFetch} from '../../util/network';
+import {mockFetch, getPNGResponse} from '../../util/network';
 
 function createModelManager() {
     const eventedParent = new Evented();
@@ -330,6 +330,130 @@ describe('ModelManager', () => {
         await modelManager.loadModel('model', url);
 
         expect(sentAuthorization).toEqual('Bearer token');
+    });
+
+    test('#loadModel drops a model removed while transformRequest is pending', async () => {
+        let releaseTransform: () => void;
+        const transformReleased = new Promise<void>((resolve) => { releaseTransform = resolve; });
+        const modelManager = new ModelManager(new RequestManager(async (url) => {
+            await transformReleased;
+            return {url};
+        }));
+        modelManager.setEventedParent(new Evented());
+        mockFetch({
+            'model\\.gltf': () => Promise.resolve(new Response(JSON.stringify({asset: {version: '2.0'}, scene: 0, scenes: [{nodes: []}]})))
+        });
+
+        const loaded = new Promise((resolve) => { modelManager.once('data', resolve); });
+        modelManager.addModel('model', 'https://www.example.com/model.gltf', 'basemap');
+        modelManager.removeModel('model', 'basemap');
+        releaseTransform();
+        await loaded;
+
+        expect(modelManager.getModel('model', 'basemap')).toBeNull();
+    });
+
+    describe('#loadModel with files referenced by the glTF', () => {
+        const dataUri = 'data:application/octet-stream;base64,AAAAAA==';
+        const blobUri = 'blob:https://www.example.com/0b4e2a5c-1d1f-4f4e-9d36-7f5e1f2c9a10';
+
+        async function loadGLTFFiles(transformRequest: (url: string) => {url: string; headers?: Record<string, string>}, {bufferUri = 'buffer.bin', gltfStatus = 200, bufferStatus = 200} = {}) {
+            const eventedParent = new Evented();
+            const errors: string[] = [];
+            eventedParent.on('error', ({error}) => errors.push((error as Error).message));
+            const modelManager = new ModelManager(new RequestManager(transformRequest));
+            modelManager.setEventedParent(eventedParent);
+
+            const png = await getPNGResponse();
+            const requests: Record<string, Request> = {};
+            const respond = (body: BodyInit, status = 200) => (request: Request) => {
+                requests[decodeURIComponent(request.url).split('/').pop().split('?')[0]] = request;
+                return Promise.resolve(new Response(status === 200 ? body : null, {status}));
+            };
+            mockFetch({
+                'model\\.gltf': respond(JSON.stringify({
+                    asset: {version: '2.0'},
+                    scene: 0,
+                    scenes: [{nodes: []}],
+                    buffers: [{uri: bufferUri, byteLength: 4}],
+                    images: [{uri: 'image.png'}]
+                }), gltfStatus),
+                'buffer\\.bin': respond(new ArrayBuffer(4), bufferStatus),
+                'image\\.png': respond(png),
+                '^(data|blob):': (request: Request) => ([dataUri, blobUri].includes(request.url) ? Promise.resolve(new Response(new ArrayBuffer(4))) : Promise.reject(new TypeError('Failed to fetch')))
+            });
+
+            const loaded = new Promise((resolve) => { modelManager.once('data', resolve); });
+            modelManager.addModel('model', 'https://www.example.com/model.gltf', 'basemap');
+            await loaded;
+
+            return {requests, errors};
+        }
+
+        test('sends the headers added by transformRequest with the buffer request', async () => {
+            const {requests} = await loadGLTFFiles((url) => ({url, headers: {authorization: 'Bearer token'}}));
+            expect(requests['buffer.bin']?.headers.get('authorization')).toEqual('Bearer token');
+        });
+
+        test('sends the headers added by transformRequest with the image request', async () => {
+            const {requests} = await loadGLTFFiles((url) => ({url, headers: {authorization: 'Bearer token'}}));
+            expect(requests['image.png']?.headers.get('authorization')).toEqual('Bearer token');
+        });
+
+        test('applies a URL rewrite of transformRequest to the buffer once', async () => {
+            const {requests} = await loadGLTFFiles((url) => ({url: url.replace('example.com', 'cdn.example.com')}));
+            expect(requests['buffer.bin']?.url).toEqual('https://www.cdn.example.com/buffer.bin');
+        });
+
+        test('resolves the buffer against the glTF URL returned by transformRequest', async () => {
+            const {requests} = await loadGLTFFiles((url) => ({url: url.endsWith('.gltf') ? url.replace('www.example.com', 'cdn.example') : url}));
+            expect(requests['buffer.bin']?.url).toEqual('https://cdn.example/buffer.bin');
+        });
+
+        test('requests all images at once, not limited by the raster image request queue', async () => {
+            const imageCount = 24;
+            const modelManager = new ModelManager(new RequestManager());
+            modelManager.setEventedParent(new Evented());
+
+            const png = await getPNGResponse();
+            let inFlight = 0;
+            let peakInFlight = 0;
+            mockFetch({
+                'model\\.gltf': () => Promise.resolve(new Response(JSON.stringify({
+                    asset: {version: '2.0'},
+                    scene: 0,
+                    scenes: [{nodes: []}],
+                    images: Array.from({length: imageCount}, (_, i) => ({uri: `image${i}.png`}))
+                }))),
+                'image\\d+\\.png': async () => {
+                    peakInFlight = Math.max(peakInFlight, ++inFlight);
+                    await new Promise((resolve) => { setTimeout(resolve, 20); });
+                    inFlight--;
+                    return new Response(png);
+                }
+            });
+
+            const loaded = new Promise((resolve) => { modelManager.once('data', resolve); });
+            modelManager.addModel('model', 'https://www.example.com/model.gltf', 'basemap');
+            await loaded;
+
+            expect(peakInFlight).toEqual(imageCount);
+        });
+
+        test.each([dataUri, blobUri])('loads a buffer from %s when transformRequest appends a query', async (bufferUri) => {
+            const {errors} = await loadGLTFFiles((url) => ({url: `${url}?sig=abc`}), {bufferUri});
+            expect(errors).toEqual([]);
+        });
+
+        test('fires an error when a referenced file is missing', async () => {
+            const {errors} = await loadGLTFFiles((url) => ({url}), {bufferStatus: 404});
+            expect(errors).toEqual(['Could not load model model from https://www.example.com/model.gltf']);
+        });
+
+        test('fires no error when the glTF is missing', async () => {
+            const {errors} = await loadGLTFFiles((url) => ({url}), {gltfStatus: 404});
+            expect(errors).toEqual([]);
+        });
     });
 
     test('#destroy', () => {

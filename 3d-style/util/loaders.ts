@@ -282,11 +282,12 @@ function resolveUrl(url: string, baseUrl?: string) {
     return (new URL(url, baseUrl)).href;
 }
 
-async function loadBuffer(buffer: {uri: string; byteLength: number}, gltf: GLTF, index: number, baseUrl?: string, signal?: AbortSignal): Promise<void> {
-    const response = await fetch(resolveUrl(buffer.uri, baseUrl), {signal});
-    const arrayBuffer = await response.arrayBuffer();
-    assert(arrayBuffer.byteLength >= buffer.byteLength);
-    gltf.buffers[index] = arrayBuffer;
+type GetRequest = (uri: string) => Promise<RequestParameters>;
+
+async function loadBuffer(buffer: {uri: string; byteLength: number}, gltf: GLTF, index: number, getRequest: GetRequest, signal?: AbortSignal): Promise<void> {
+    const {data} = await getArrayBuffer(await getRequest(buffer.uri), signal);
+    assert(data.byteLength >= buffer.byteLength);
+    gltf.buffers[index] = data;
 }
 
 function getGLTFBytes(gltf: GLTF, bufferViewIndex: number): Uint8Array<ArrayBuffer> {
@@ -295,13 +296,10 @@ function getGLTFBytes(gltf: GLTF, bufferViewIndex: number): Uint8Array<ArrayBuff
     return new Uint8Array<ArrayBuffer>(buffer, bufferView.byteOffset || 0, bufferView.byteLength);
 }
 
-async function loadImage(img: {uri?: string; bufferView?: number; mimeType: string}, gltf: GLTF, index: number, baseUrl?: string, signal?: AbortSignal): Promise<void> {
+async function loadImage(img: {uri?: string; bufferView?: number; mimeType: string}, gltf: GLTF, index: number, getRequest: GetRequest, signal?: AbortSignal): Promise<void> {
     if (img.uri) {
-        const uri = resolveUrl(img.uri, baseUrl);
-        const response = await fetch(uri, {signal});
-        const blob = await response.blob();
-        const imageBitmap = await createImageBitmap(blob);
-        gltf.images[index] = imageBitmap;
+        const {data} = await getArrayBuffer(await getRequest(img.uri), signal);
+        gltf.images[index] = await createImageBitmap(new Blob([data]));
     } else if (img.bufferView !== undefined) {
         const bytes = getGLTFBytes(gltf, img.bufferView);
         const blob = new Blob([bytes], {type: img.mimeType});
@@ -310,7 +308,7 @@ async function loadImage(img: {uri?: string; bufferView?: number; mimeType: stri
     }
 }
 
-export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 0, baseUrl?: string, signal?: AbortSignal): Promise<GLTF> {
+export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 0, getRequest: GetRequest = (uri) => Promise.resolve({url: resolveUrl(uri)}), signal?: AbortSignal): Promise<GLTF> {
     const startTime = PerformanceUtils.now();
 
     const gltf: GLTF = {json: null, images: [], buffers: []};
@@ -346,7 +344,7 @@ export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 
         for (let i = 0; i < buffers.length; i++) {
             const buffer = buffers[i];
             if (buffer.uri) {
-                bufferLoads.push(loadBuffer(buffer, gltf, i, baseUrl, signal));
+                bufferLoads.push(loadBuffer(buffer, gltf, i, getRequest, signal));
             } else if (!gltf.buffers[i]) {
                 gltf.buffers[i] = null;
             }
@@ -368,7 +366,7 @@ export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 
     }
     if (images) {
         for (let i = 0; i < images.length; i++) {
-            assetLoads.push(loadImage(images[i], gltf, i, baseUrl, signal));
+            assetLoads.push(loadImage(images[i], gltf, i, getRequest, signal));
         }
     }
 
@@ -397,11 +395,19 @@ export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 
     return gltf;
 }
 
-// Takes the full `RequestParameters` (not just a URL) so that headers and credentials
-// added by a `transformRequest` callback reach the network request.
-export async function loadGLTF(requestParameters: RequestParameters, signal?: AbortSignal): Promise<GLTF> {
-    const {data: buffer} = await getArrayBuffer(requestParameters, signal);
-    return decodeGLTF(buffer, 0, requestParameters.url, signal);
+export async function loadGLTF(url: string, transformRequest: GetRequest, signal?: AbortSignal): Promise<GLTF> {
+    const request = await transformRequest(url);
+    const {data: buffer} = await getArrayBuffer(request, signal);
+    const baseUrl = resolveUrl(request.url, document.baseURI);
+    const getReferencedRequest: GetRequest = async (uri) => {
+        const resolved = resolveUrl(uri, baseUrl);
+        return {...await transformRequest(resolved), url: resolved};
+    };
+    try {
+        return await decodeGLTF(buffer, 0, getReferencedRequest, signal);
+    } catch (e) {
+        throw new Error(`Could not load glTF ${url}`, {cause: e});
+    }
 }
 
 export function load3DTile(data: ArrayBuffer): Promise<GLTF> {
