@@ -66,6 +66,11 @@ uniform mat3 u_curve_points_x;
 uniform mat3 u_curve_points_y;
 uniform mat3 u_curve_points_z;
 uniform float u_curve_point_count;
+// xyz: arrow head base point, w: line progress at the base.
+uniform vec4 u_curve_arrow_head;
+// Line progress from which body vertices are moved onto the arrow head base. Values above 1 draw no arrow head.
+uniform float u_curve_arrow_head_snap;
+uniform float u_curve_arrow_head_width;
 #endif
 
 #ifdef ELEVATED
@@ -377,6 +382,7 @@ void main() {
 #if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_BORDER_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET) || defined(RENDER_LINE_CURVE)
     line_progress = a_packed[2];
 #endif
+    float arrow_head_fraction = -1.0;
 
     // The distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
@@ -410,7 +416,20 @@ void main() {
     bool left = normal.y == 1.0;
 
 #ifdef RENDER_LINE_CURVE
-    CurveResult curve = calculateCurve(line_progress);
+    // The arrow head is a straight triangle from the base point to the last curve point, its width
+    // shrinking linearly to zero at the tip. Body vertices shortly before the base are moved onto it,
+    // so the step from body to head width starts at the base.
+    CurveResult curve;
+    if (line_progress >= u_curve_arrow_head_snap) {
+        float head_start = u_curve_arrow_head.w;
+        vec3 head_tip = getCurvePoint(int(u_curve_point_count) - 1);
+        float head_fraction = clamp((1.0 - line_progress) / (1.0 - head_start), 0.0, 1.0);
+        curve.point = mix(head_tip, u_curve_arrow_head.xyz, head_fraction);
+        curve.tangent = head_tip.xy - u_curve_arrow_head.xy;
+        arrow_head_fraction = line_progress > head_start ? head_fraction : -1.0;
+    } else {
+        curve = calculateCurve(line_progress);
+    }
     pos = curve.point.xy * 8192.0;
     a_extrude = length(a_extrude) * normalize(curve.tangent);
     a_extrude = left ? vec2(-a_extrude.y, a_extrude.x) : vec2(a_extrude.y, -a_extrude.x);
@@ -457,6 +476,12 @@ void main() {
     ANTIALIASING = !left && zero_right_width ? 0.0 : ANTIALIASING;
 #else
     halfwidth = (u_width_scale * width) / 2.0;
+#endif
+
+#ifdef RENDER_LINE_CURVE
+    if (arrow_head_fraction >= 0.0) {
+        halfwidth = (halfwidth + u_width_scale * u_curve_arrow_head_width * 0.5) * arrow_head_fraction;
+    }
 #endif
 
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
