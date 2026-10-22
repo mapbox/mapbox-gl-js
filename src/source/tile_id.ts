@@ -25,10 +25,10 @@ export class CanonicalTileID {
 
     isChildOf(parent: CanonicalTileID): boolean {
         const zDifference = this.z - parent.z;
-        return parent.z === 0 || (
-            parent.z < this.z &&
+        return parent.z < this.z && (
+            parent.z === 0 || (
                 parent.x === (this.x >> zDifference) &&
-                parent.y === (this.y >> zDifference));
+                parent.y === (this.y >> zDifference)));
     }
 
     // given a list of urls, choose a url template and return a tile URL
@@ -113,12 +113,7 @@ export class OverscaledTileID {
             // We can't be a child if we're in a different world copy
             return false;
         }
-        const zDifference = this.canonical.z - parent.canonical.z;
-        return parent.overscaledZ === 0 || (
-            parent.overscaledZ < this.overscaledZ &&
-                parent.canonical.z < this.canonical.z &&
-                parent.canonical.x === (this.canonical.x >> zDifference) &&
-                parent.canonical.y === (this.canonical.y >> zDifference));
+        return parent.overscaledZ < this.overscaledZ && this.canonical.isChildOf(parent.canonical);
     }
 
     children(sourceMaxZoom: number): Array<OverscaledTileID> {

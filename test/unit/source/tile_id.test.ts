@@ -31,6 +31,31 @@ describe('CanonicalTileID', () => {
         expect(new CanonicalTileID(9, 2, 3).equals(new CanonicalTileID(3, 2, 1))).toBeFalsy();
     });
 
+    test('.isChildOf', () => {
+        const child = new CanonicalTileID(4, 2, 3);
+        expect(child.isChildOf(new CanonicalTileID(3, 1, 1))).toBeTruthy();
+        expect(child.isChildOf(new CanonicalTileID(2, 0, 0))).toBeTruthy();
+        expect(child.isChildOf(new CanonicalTileID(1, 0, 0))).toBeTruthy();
+        expect(child.isChildOf(new CanonicalTileID(0, 0, 0))).toBeTruthy();
+        expect(child.isChildOf(new CanonicalTileID(5, 4, 6))).toBeFalsy();
+        expect(child.isChildOf(new CanonicalTileID(4, 2, 4))).toBeFalsy();
+        expect(child.isChildOf(new CanonicalTileID(3, 2, 2))).toBeFalsy();
+        expect(child.isChildOf(new CanonicalTileID(2, 1, 0))).toBeFalsy();
+        expect(child.isChildOf(new CanonicalTileID(1, 0, 1))).toBeFalsy();
+        expect(child.isChildOf(new CanonicalTileID(4, 2, 3))).toBeFalsy();
+
+        // A tile is never a child of itself, including the root tile.
+        expect(new CanonicalTileID(0, 0, 0).isChildOf(new CanonicalTileID(0, 0, 0))).toBeFalsy();
+        expect(new CanonicalTileID(0, 0, 0).isChildOf(new CanonicalTileID(1, 0, 0))).toBeFalsy();
+        expect(new CanonicalTileID(1, 0, 0).isChildOf(new CanonicalTileID(0, 0, 0))).toBeTruthy();
+
+        const maxChild = new CanonicalTileID(25, 33554431, 33554431);
+        for (let z = 0; z < 25; z++) {
+            const xy = Math.pow(2, z) - 1;
+            expect(maxChild.isChildOf(new CanonicalTileID(z, xy, xy))).toBeTruthy();
+        }
+    });
+
     describe('.url', () => {
         test('replaces {z}/{x}/{y}', () => {
             expect(new CanonicalTileID(1, 0, 0).url(['{z}/{x}/{y}.json'])).toEqual('1/0/0.json');
