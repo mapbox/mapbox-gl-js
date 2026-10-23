@@ -1,0 +1,65 @@
+{
+  "description": "Two labels in one tile collide after a rotation; the hidden label is captured halfway through its fade-out, so it must render at ~50% opacity.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "fadeDuration": 100,
+      "globalPlacement": true,
+      "collisionDebug": true,
+      "mapMode": "continuous",
+      "operations": [
+        ["setTimer", 0],
+        ["wait"],
+        ["setTimer", 100],
+        ["wait"],
+        ["setBearing", 90],
+        ["wait"],
+        ["setTimer", 150],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [11.25, -11.178],
+  "zoom": 4,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {"name": "A"},
+            "geometry": {"type": "Point", "coordinates": [10.6348, -11.178]}
+          },
+          {
+            "type": "Feature",
+            "properties": {"name": "B"},
+            "geometry": {"type": "Point", "coordinates": [11.8652, -11.178]}
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": ["get", "name"],
+        "text-size": 24,
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      },
+      "paint": {"text-color": "black"}
+    }
+  ]
+}

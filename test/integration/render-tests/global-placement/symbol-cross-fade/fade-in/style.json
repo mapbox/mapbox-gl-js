@@ -8,12 +8,12 @@
       "fadeDuration": 100,
       "globalPlacement": true,
       "collisionDebug": true,
+      "mapMode": "continuous",
       "operations": [
+        ["setTimer", 0],
         ["wait"],
-        ["wait", 50]
-      ],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-implemented: in gl-native"}
+        ["setTimer", 50],
+        ["wait"]
       ]
     }
   },
