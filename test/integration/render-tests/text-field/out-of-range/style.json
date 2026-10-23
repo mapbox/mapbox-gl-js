@@ -3,11 +3,7 @@
   "metadata": {
     "test": {
       "height": 32,
-      "width": 128,
-      "tickets": ["https://mapbox.atlassian.net/browse/RICO-10069"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-implemented: check if gl-native needs a port - RICO-10069"}
-      ]
+      "width": 128
     }
   },
   "center": [0, 0],
