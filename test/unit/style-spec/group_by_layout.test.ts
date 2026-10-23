@@ -63,3 +63,11 @@ test('group works even for differing layout key orders', () => {
         }
     ]]);
 });
+
+test('group separates line-progress offsets but shares identical expressions', () => {
+    const a = {id: 'a', type: 'line', paint: {'line-offset': ['*', ['line-progress'], 10]}};
+    const b = {id: 'b', type: 'line', paint: {'line-offset': ['*', ['line-progress'], -10]}};
+    const c = {id: 'c', type: 'line', paint: {'line-offset': ['*', ['line-progress'], 10]}};
+    const d = {id: 'd', type: 'line', paint: {'line-offset': 5}};
+    expect(group([a, b, c, d], {})).toEqual([[a, c], [b], [d]]);
+});

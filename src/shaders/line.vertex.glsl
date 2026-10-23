@@ -13,7 +13,7 @@
 
 in ivec2 a_pos_normal;
 in uvec4 a_data;
-#if defined(ELEVATED) || defined(ELEVATED_ROADS) || defined(VARIABLE_LINE_WIDTH) || defined(VARIABLE_LINE_EMISSIVE_STRENGTH)
+#if defined(ELEVATED) || defined(ELEVATED_ROADS) || defined(VARIABLE_LINE_WIDTH) || defined(VARIABLE_LINE_OFFSET) || defined(VARIABLE_LINE_EMISSIVE_STRENGTH)
 in vec4 a_z_offset_width;
 #endif
 #ifdef DEBUG_ELEVATION_ID
@@ -436,6 +436,10 @@ void main() {
     a_z_offset += curve.point.z;
 #endif
 
+#ifdef VARIABLE_LINE_OFFSET
+    offset = -1.0 * a_z_offset_width.z * u_width_scale;
+#endif
+
     // these transformations used to be applied in the JS and native code bases.
     // moved them into the shader for clarity and simplicity.
     gapwidth = gapwidth / 2.0;
@@ -446,6 +450,9 @@ void main() {
 #ifdef VARIABLE_LINE_WIDTH
     float left_width = a_z_offset_width.y;
     float right_width = a_z_offset_width.z;
+#ifdef VARIABLE_LINE_OFFSET
+    right_width = left_width;
+#endif
     bool zero_right_width = border_width == 0.0 && right_width == 0.0;
     halfwidth = left ? left_width : right_width;
     halfwidth += u_width_addition * (zero_right_width ? (left ? 1.0 : 0.0) : 0.5);

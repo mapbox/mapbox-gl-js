@@ -110,6 +110,7 @@ export type GradientTexture = {
 type LineProgressFeatures = {
     zOffset: number;
     variableWidth: number;
+    variableOffset: number;
     elevationGroundScale: number;
     variableEmissiveStrength: number;
 };
@@ -134,6 +135,7 @@ class LineBucket implements Bucket {
     lineClips: LineClips | null | undefined;
     zOffsetValue!: PossiblyEvaluatedValue<number>;
     variableWidthValue!: PossiblyEvaluatedValue<number>;
+    variableOffsetValue!: PossiblyEvaluatedValue<number>;
     variableEmissiveStrengthValue!: PossiblyEvaluatedValue<number>;
     elevationGroundScaleValue!: PossiblyEvaluatedValue<number>;
     lineFeature!: BucketFeature;
@@ -678,6 +680,11 @@ class LineBucket implements Bucket {
             this.variableEmissiveStrengthValue = lineEmissiveStrength;
         }
 
+        const lineOffset = paint.get('line-offset').value;
+        if (lineOffset.kind !== 'constant' && lineOffset.isLineProgressConstant === false) {
+            this.variableOffsetValue = lineOffset;
+        }
+
         // Only set elevationGroundScaleValue for sea level reference lines with non-default value
         if (this.isSeaLevelReference) {
             const elevationGroundScaleExpr = layout.get('line-elevation-ground-scale').value;
@@ -1219,7 +1226,7 @@ class LineBucket implements Bucket {
 
     evaluateLineProgressFeatures(distance: number): LineProgressFeatures | null {
         assert(distance >= 0);
-        if (!this.variableWidthValue && !this.variableEmissiveStrengthValue && this.elevationType !== 'offset') {
+        if (!this.variableWidthValue && !this.variableOffsetValue && !this.variableEmissiveStrengthValue && this.elevationType !== 'offset') {
             return null;
         }
         this.evaluationGlobals.lineProgress = 0;
@@ -1233,19 +1240,24 @@ class LineBucket implements Bucket {
             variableWidth = this.variableWidthValue.evaluate(this.evaluationGlobals, this.lineFeature) || 0.0;
             variableWidth = variableWidth * 0.5;
         }
+        let variableOffset = 0.0;
+        if (this.variableOffsetValue && this.variableOffsetValue.kind !== 'constant') {
+            variableOffset = this.variableOffsetValue.evaluate(this.evaluationGlobals, this.lineFeature) || 0.0;
+        }
+
         let variableEmissiveStrength = 0.0;
         if (this.variableEmissiveStrengthValue && this.variableEmissiveStrengthValue.kind !== 'constant') {
             variableEmissiveStrength = this.variableEmissiveStrengthValue.evaluate(this.evaluationGlobals, this.lineFeature) || 0.0;
         }
         const elevationGroundScale = this.evaluateElevationGroundScale();
         if (this.elevationType !== 'offset') {
-            return {zOffset: 0.0, variableWidth, elevationGroundScale, variableEmissiveStrength};
+            return {zOffset: 0.0, variableWidth, variableOffset, elevationGroundScale, variableEmissiveStrength};
         }
         if (this.zOffsetValue.kind === 'constant') {
-            return {zOffset: this.zOffsetValue.value, variableWidth, elevationGroundScale, variableEmissiveStrength};
+            return {zOffset: this.zOffsetValue.value, variableWidth, variableOffset, elevationGroundScale, variableEmissiveStrength};
         }
         const zOffset: number = this.zOffsetValue.evaluate(this.evaluationGlobals, this.lineFeature) || 0.0;
-        return {zOffset, variableWidth, elevationGroundScale, variableEmissiveStrength};
+        return {zOffset, variableWidth, variableOffset, elevationGroundScale, variableEmissiveStrength};
     }
 
     evaluateElevationGroundScale(): number {
@@ -1401,7 +1413,7 @@ class LineBucket implements Bucket {
             this.zOffsetVertexArray.emplaceBack(
                 lineProgressFeatures.zOffset,
                 lineProgressFeatures.variableWidth,
-                lineProgressFeatures.variableWidth,
+                this.variableOffsetValue ? lineProgressFeatures.variableOffset : lineProgressFeatures.variableWidth,
                 lineProgressFeatures.variableEmissiveStrength
             );
             if (this.showElevationIdDebug) {
