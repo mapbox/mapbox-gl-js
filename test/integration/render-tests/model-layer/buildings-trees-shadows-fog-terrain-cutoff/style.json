@@ -8,7 +8,6 @@
       "operations": [
         ["wait"]
       ],
-      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-398"],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00085}
       ]

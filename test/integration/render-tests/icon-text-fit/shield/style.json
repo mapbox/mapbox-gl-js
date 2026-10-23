@@ -5,7 +5,6 @@
       "width": 250,
       "height": 64,
       "spriteFormat": "icon_set",
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2559"],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00095}
       ]

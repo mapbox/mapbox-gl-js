@@ -41,7 +41,7 @@
     "test": {
       "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/8720"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-implemented: interpolate-hcl and interpolate-lab - mapbox/mapbox-gl-native#8720"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: interpolate-hcl and interpolate-lab - mapbox/mapbox-gl-native#8720 (closed-stale)"}
       ]
     }
   }

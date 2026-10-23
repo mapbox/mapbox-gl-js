@@ -15,9 +15,9 @@
           }
         }]
       ],
-      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-1285"],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4308"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: images missing in initial viewport after styleimagemissing - GLJS-1285"}
+        {"platform-tag-contains": "native", "reason": "bug: images missing in initial viewport after styleimagemissing - MAPSNAT-4308"}
       ]
     }
   },

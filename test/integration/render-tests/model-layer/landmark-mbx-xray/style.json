@@ -5,9 +5,9 @@
       
       "width": 256,
       "height": 256,
-      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-1241"],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4309"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: runtime errors on xray style with 3D models - GLJS-1241"}
+        {"platform-tag-contains": "native", "reason": "bug: the boolean layer filter is rejected and the frame renders black - MAPSNAT-4309"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00025}

@@ -3,8 +3,9 @@
   "version": 8,
   "metadata": {
     "test": {
+      "tickets": ["https://github.com/mapbox/mapbox-sdk/pull/20008"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not implemented in gl-native yet"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: raster-mask paint property - mapbox/mapbox-sdk#20008"}
       ],
       "height": 256,
       "width": 256,

@@ -3,8 +3,7 @@
   "metadata": {
     "test": {
       "debug": true,
-      "height": 256,
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4296"]
+      "height": 256
     }
   },
   "center": [

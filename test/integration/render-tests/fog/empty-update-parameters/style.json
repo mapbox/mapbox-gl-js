@@ -12,7 +12,7 @@
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-1959"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-implemented: fallback to default fog values - MAPSNAT-1959"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: fallback to default fog values - MAPSNAT-1959 (won't do)"}
       ]
     }
   },

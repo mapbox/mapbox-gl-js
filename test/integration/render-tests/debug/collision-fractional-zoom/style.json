@@ -4,7 +4,7 @@
     "test": {
       "collisionDebug": true,
       "height": 256,
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/3841"],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4295"],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.003}
       ]

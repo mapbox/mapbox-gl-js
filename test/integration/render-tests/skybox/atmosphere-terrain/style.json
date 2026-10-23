@@ -6,8 +6,7 @@
       "width": 512,
       "operations": [
         ["wait"]
-      ],
-      "tickets": ["https://github.com/mapbox/mapbox-gl-js/issues/12407", "https://mapbox.atlassian.net/browse/MAPSNAT-2137"]
+      ]
     }
   },
   "center": [-113.27903, 35.98],

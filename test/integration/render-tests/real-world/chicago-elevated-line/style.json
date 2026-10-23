@@ -43,7 +43,7 @@
       ],
       "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/10412"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: viewport collision - mapbox/mapbox-gl-native#10412"}
+        {"platform-tag-contains": "native", "reason": "bug: viewport collision - mapbox/mapbox-gl-native#10412 (closed-stale)"}
       ]
     }
   },

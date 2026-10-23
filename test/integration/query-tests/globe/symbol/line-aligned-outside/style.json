@@ -8,10 +8,6 @@
             "queryGeometry": [
                 [220, 260],
                 [290, 330]
-            ],
-            "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/3286"],
-            "skip-test": [
-                {"platform-tag-contains": "native", "reason": "not-implemented: feature queries on globe - mapbox/mapbox-gl-native-internal#3286"}
             ]
         }
     },

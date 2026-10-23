@@ -7,7 +7,7 @@
       "width": 64,
       "tickets": ["https://github.com/mapbox/mapbox-gl-js/pull/6812"],
       "skip-test": [
-        {"platform-tag-contains": "native-android", "reason": "not-implemented: half float image for heatmap - mapbox/mapbox-gl-js#6812"}
+        {"platform-tag-contains": "native-android", "reason": "not-implemented: half float image for heatmap - mapbox/mapbox-gl-js#6812 (closed-stale)"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0008}

@@ -16,7 +16,7 @@
             "tickets": ["https://github.com/mapbox/mapbox-gl-js/pull/6803", "https://github.com/mapbox/api-maps/issues/1480", "https://github.com/mapbox/mapbox-gl-native/issues/10397"],
             "skip-test": [
                 {"platform-tag-contains": "web", "reason": "bug: current behavior conflicts with mapbox/mapbox-gl-js#6803, can be fixed after mapbox/api-maps#1480"},
-                {"platform-tag-contains": "native", "reason": "not-implemented: mixed-zoom - mapbox/mapbox-gl-native#10397"}
+                {"platform-tag-contains": "native", "reason": "not-implemented: mixed-zoom - mapbox/mapbox-gl-native#10397 (closed-stale)"}
             ]
         }
     },

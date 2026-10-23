@@ -8,9 +8,9 @@
         ["wait"],
         ["removeModel", "tree-diffuse"]
       ],
-      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-1290"],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4311"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: needs fixing - GLJS-1290"}
+        {"platform-tag-contains": "native", "reason": "bug: the test hangs after removeModel, the still image never completes - MAPSNAT-4311"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00025}

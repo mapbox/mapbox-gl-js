@@ -12,9 +12,9 @@
           "wait"
         ]
       ],
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2393"],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4310"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: glyph placement differs from gl-js - MAPSNAT-2393"}
+        {"platform-tag-contains": "native", "reason": "bug: glyph placement differs from gl-js - MAPSNAT-4310"}
       ]
     }
   },

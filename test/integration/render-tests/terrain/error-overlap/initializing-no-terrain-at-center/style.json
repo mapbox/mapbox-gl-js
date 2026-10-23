@@ -9,8 +9,7 @@
         [
           "wait"
         ]
-      ],
-      "tickets": ["https://github.com/mapbox/mapbox-gl-js/issues/12407"]
+      ]
     }
   },
   "center": [0.005, 0.01],

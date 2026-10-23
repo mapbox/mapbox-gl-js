@@ -4,7 +4,6 @@
     "test": {
       "height": 512,
       "width": 512,
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/pull/5693"],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0008},
         {"platform-tag-contains": "native", "threshold": 0.0025}
