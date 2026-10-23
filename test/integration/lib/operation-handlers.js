@@ -195,6 +195,13 @@ export const operationHandlers = {
         map.setFreeCameraOptions(options);
         doneCb();
     },
+    setSize(map, params, doneCb) {
+        const container = map.getContainer();
+        container.style.width = `${params[0]}px`;
+        container.style.height = `${params[1]}px`;
+        map.resize();
+        waitForRender(map, () => map.loaded(), doneCb);
+    },
     setFov(map, params, doneCb) {
         map.setVerticalFieldOfView(params[0]);
         waitForRender(map, () => true, doneCb);

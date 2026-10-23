@@ -10,9 +10,6 @@
         ["setZoom", 0],
         ["wait"],
         ["setSize", 128, 1024]
-      ],
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "runner-limitation: the gl-js runner does not support the setSize operation"}
       ]
     }
   },

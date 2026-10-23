@@ -14,8 +14,9 @@
         ["wait"],
         ["setSize", 128, 1024]
       ],
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2128"],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "runner-limitation: the gl-js runner does not support the setSize operation"}
+        {"platform-tag-contains": "web", "reason": "bug: after setSize the globe is smaller and placed differently than in gl-native - GLJS-2128"}
       ]
     }
   },
