@@ -11,6 +11,27 @@ type DashRange = {
     zeroLength: boolean;
 };
 
+// Empty dasharrays draw a full line. Negative lengths are replaced with 0.
+// Returns the input when nothing changes so the common path does not allocate.
+function normalizeDasharray(dasharray: Array<number>): Array<number> {
+    if (dasharray.length === 0) {
+        return [1];
+    }
+
+    for (let i = 0; i < dasharray.length; i++) {
+        if (dasharray[i] < 0) {
+            warnOnce('Negative value is found in line dasharray, replacing values with 0');
+            const normalized = dasharray.slice();
+            for (let j = i; j < normalized.length; j++) {
+                if (normalized[j] < 0) normalized[j] = 0;
+            }
+            return normalized;
+        }
+    }
+
+    return dasharray;
+}
+
 /**
  * A LineAtlas lets us reuse rendered dashed lines
  * by writing many of them to a texture and then fetching their positions
@@ -57,7 +78,10 @@ class LineAtlas {
     }
 
     getKey(dasharray: Array<number>, lineCap: string): string {
-        return dasharray.join(',') + lineCap;
+        // Same normalization as addDash. Callers (LineBucket#addFeatureDashes, getDash)
+        // recompute this key from the array they passed in, so the key must not depend
+        // on mutating that array.
+        return normalizeDasharray(dasharray).join(',') + lineCap;
     }
 
     getDashRanges(dasharray: Array<number>, stretch: number): Array<DashRange> {
@@ -161,6 +185,11 @@ class LineAtlas {
     }
 
     addDash(dasharray: Array<number>, lineCap: string): null | SpritePosition {
+        // Copy before baking. Empty arrays become a solid line ([1]) and negative
+        // entries become 0. Mutating the caller's array would change the key that
+        // addFeatureDashes / getDash compute afterwards, so the dash position would
+        // be stored under a key nothing looks up (missing lines on some tiles).
+        dasharray = normalizeDasharray(dasharray);
         const key = this.getKey(dasharray, lineCap);
         if (this.positions[key]) return this.positions[key];
 
@@ -173,18 +202,8 @@ class LineAtlas {
             return null;
         }
 
-        // dasharray is empty, draws a full line (no dash or no gap length represented, default behavior)
-        if (dasharray.length === 0) {
-            // insert a single dash range in order to draw a full line
-            dasharray.push(1);
-        }
-
         let length = 0;
         for (let i = 0; i < dasharray.length; i++) {
-            if (dasharray[i] < 0) {
-                warnOnce('Negative value is found in line dasharray, replacing values with 0');
-                dasharray[i] = 0;
-            }
             length += dasharray[i];
         }
 
