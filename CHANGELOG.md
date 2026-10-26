@@ -7,6 +7,7 @@
 - Fix `Map#setGlyphsUrl` not changing the glyphs of labels that are already loaded.
 - Revert fix line geometry: clamp fake-round join anchor on short segments.
 - Fix visibility of the logo control based on imported source.
+- Fix a thin unlit line in the fill-extrusion flood light at very sharp polygon corners.
 
 ## 3.34.0-rc.1
 

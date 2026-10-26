@@ -83,6 +83,8 @@ export const fillExtrusionGroundDataDrivenProperties: Array<string> = [
 const FACTOR = Math.pow(2, 13);
 const TANGENT_CUTOFF = 4;
 const NORM = Math.pow(2, 15) - 1;
+// Corner quad segment length, in tile units.
+const CORNER_SEGMENT_LENGTH = 1;
 
 const QUAD_VERTS = 4;
 const QUAD_TRIS = 2;
@@ -485,6 +487,25 @@ function getAngularOffsetFactor(na: Point, nb: Point): number {
     return factor;
 }
 
+// Only on the open side of the corner; on the other side the quad would fold and leak glow.
+function needsCornerQuad(factor: number, radiusSign: number, pb: Point, bounds: [Point, Point]): boolean {
+    return Math.abs(factor) >= NORM && radiusSign * factor > 0 && !pointOutsideBounds(pb, bounds);
+}
+
+function countCornerQuads(polyline: Array<Point>, bounds: [Point, Point], radiusSign: number): number {
+    const n = polyline.length;
+    let count = 0;
+    for (let i = 0; i < n; i++) {
+        const pa = polyline[i === 0 ? n - 1 : i - 1];
+        const pb = polyline[i];
+        const pc = polyline[i === n - 1 ? 0 : i + 1];
+        const na = pb.sub(pa)._perp()._unit();
+        const nb = pc.sub(pb)._perp()._unit();
+        if (needsCornerQuad(getAngularOffsetFactor(na, nb), radiusSign, pb, bounds)) count++;
+    }
+    return count;
+}
+
 const borderCheck = [
     (a: Point): boolean => { return a.x < 0; }, // left
     (a: Point): boolean => { return a.x > EXTENT; }, // right
@@ -545,6 +566,7 @@ export class GroundEffect {
     _segmentToRegionTriCounts: {
         [key: number]: Array<number>;
     };
+    _numGroundQuads: number;
     regionSegments: {
         [key: number]: SegmentVector | null | undefined;
     };
@@ -564,6 +586,7 @@ export class GroundEffect {
         this._segmentToGroundQuads[0] = [];
         this._segmentToRegionTriCounts = {};
         this._segmentToRegionTriCounts[0] = [0, 0, 0, 0, 0];
+        this._numGroundQuads = 0;
         this.regionSegments = {};
         this.regionSegments[4] = new SegmentVector();
     }
@@ -578,9 +601,10 @@ export class GroundEffect {
         const n = polyline.length;
         if (n > 2) {
             let sid = Math.max(0, this._segments.get().length - 1);
-            const numNewVerts = n * 4;
+            const radiusSign = Math.sign(maxRadius);
+            const numNewVerts = (n + countCornerQuads(polyline, bounds, radiusSign)) * QUAD_VERTS;
             const numExistingVerts = this.vertexArray.length;
-            const numExistingTris = this._segmentToGroundQuads[sid].length * QUAD_TRIS;
+            const numExistingTris = this._numGroundQuads * QUAD_TRIS;
             const segment = this._segments._prepareSegment(numNewVerts, numExistingVerts, numExistingTris);
             const newSegmentAdded = sid !== this._segments.get().length - 1;
             if (newSegmentAdded) {
@@ -611,6 +635,10 @@ export class GroundEffect {
                 const a0 = prevFactor;
                 const a1 = factor;
 
+                if (needsCornerQuad(factor, radiusSign, pb, bounds)) {
+                    this._addCornerQuad(pb, na, nb, radiusSign, maxRadius, segment, sid);
+                }
+
                 if (isEdgeOutsideBounds(pa, pb, bounds) ||
                     (roundedEdges && pointOutsideBounds(pa, bounds) && pointOutsideBounds(pb, bounds))) {
                     prevFactor = factor;
@@ -626,18 +654,42 @@ export class GroundEffect {
                 addGroundVertex(this.vertexArray, pa, pb, 0, 0, a1);
                 segment.vertexLength += QUAD_VERTS;
 
-                // When a tile belongs to more than one region it needs to be duplicated for that region.
                 const regions = getTileRegions(pa, pb, na, maxRadius); // Note: mutates na
-                for (const rid of regions) {
-                    this._segmentToGroundQuads[sid].push({
-                        id: idx,
-                        region: rid
-                    });
-                    this._segmentToRegionTriCounts[sid][rid] += QUAD_TRIS;
-                    segment.primitiveLength += QUAD_TRIS;
-                }
+                this._addQuadToRegions(idx, regions, segment, sid);
                 prevFactor = factor;
             }
+        }
+    }
+
+    // Fills the gap at a sharp corner `pb` with one quad on a tiny segment.
+    _addCornerQuad(pb: Point, na: Point, nb: Point, radiusSign: number, maxRadius: number, segment: Segment, sid: number) {
+        const dir = new Point(na.y + nb.y, -(na.x + nb.x));
+        if (dir.mag() < 1e-6) return; // edges point in opposite directions
+        const q = pb.add(dir._unit()._mult(CORNER_SEGMENT_LENGTH))._round();
+        // The radius sign makes the quad always fan open.
+        const factor = radiusSign * NORM;
+
+        const idx = segment.vertexLength;
+        addGroundVertex(this.vertexArray, pb, q, 1, 1, factor);
+        addGroundVertex(this.vertexArray, pb, q, 1, 0, factor);
+        addGroundVertex(this.vertexArray, pb, q, 0, 1, factor);
+        addGroundVertex(this.vertexArray, pb, q, 0, 0, factor);
+        segment.vertexLength += QUAD_VERTS;
+
+        // The quad's far edge reaches TANGENT_CUTOFF * radius past each end.
+        const spread = q.sub(pb)._unit()._mult(TANGENT_CUTOFF * maxRadius);
+        const normal = q.sub(pb)._perp()._unit();
+        const regions = getTileRegions(pb.sub(spread), q.add(spread), normal, maxRadius); // Note: mutates normal
+        this._addQuadToRegions(idx, regions, segment, sid);
+    }
+
+    // When a tile belongs to more than one region the quad is drawn once per region.
+    _addQuadToRegions(idx: number, regions: Array<number>, segment: Segment, sid: number) {
+        for (const rid of regions) {
+            this._segmentToGroundQuads[sid].push({id: idx, region: rid});
+            this._segmentToRegionTriCounts[sid][rid] += QUAD_TRIS;
+            segment.primitiveLength += QUAD_TRIS;
+            this._numGroundQuads++;
         }
     }
 
