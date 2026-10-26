@@ -45,7 +45,10 @@ class GlyphManager {
     }
 
     setURL(url: string) {
+        if (url === this.url) return;
         this.url = url;
+        // Glyphs from the previous URL must not be reused.
+        this.entries = {};
     }
 
     getGlyphs(glyphs: FontStacks, callback: Callback<GlyphMap>) {

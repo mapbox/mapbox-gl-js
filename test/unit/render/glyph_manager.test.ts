@@ -275,3 +275,22 @@ test('GlyphManager locally generates latin glyphs', async () => {
         });
     });
 });
+
+test('GlyphManager requests the glyphs again after a URL change', async () => {
+    const stub = vi.spyOn(GlyphLoader, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate, transform, callback) => {
+        setTimeout(() => callback(null, glyphData));
+    });
+    const manager = createGlyphManager();
+    const getGlyphs = () => new Promise(resolve => {
+        manager.getGlyphs({'Arial Unicode MS': [55]}, resolve);
+    });
+
+    await getGlyphs();
+    manager.setURL('https://localhost/other/{fontstack}/{range}.pbf');
+    await getGlyphs();
+
+    expect(stub.mock.calls.map(call => call[2])).toEqual([
+        'https://localhost/fonts/v1/{fontstack}/{range}.pbf',
+        'https://localhost/other/{fontstack}/{range}.pbf'
+    ]);
+});

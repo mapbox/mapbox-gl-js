@@ -120,7 +120,7 @@ class GlyphLoader {
         requestManager: RequestManager,
         callback: Callback<GlyphRange>
     ): void {
-        const cacheKey = `${font}:${range}`;
+        const cacheKey = `${urlTemplate}:${font}:${range}`;
 
         if (this.cachedRanges.has(cacheKey)) {
             const cached = this.cachedRanges.get(cacheKey);

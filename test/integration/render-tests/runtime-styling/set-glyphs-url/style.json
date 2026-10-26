@@ -1,0 +1,41 @@
+{
+  "description": "Checks that a glyphs URL change after the first render lays out loaded symbols again with the new glyphs.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 64,
+      "operations": [
+        ["wait"],
+        ["setGlyphsUrl", "local://glyphs/{fontstack}AscenderDescender/{range}.pbf"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {"type": "Point", "coordinates": [0, 0]}
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": "HELLO",
+        "text-size": 24,
+        "text-font": ["NotoCJK"]
+      }
+    }
+  ]
+}

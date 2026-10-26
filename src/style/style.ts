@@ -5235,7 +5235,12 @@ class Style extends Evented<MapEvents> {
 
     setGlyphsUrl(url: string) {
         this.stylesheet.glyphs = url;
+        if (url === this.glyphManager.url) return;
         this.glyphManager.setURL(url);
+        // Lay out the symbols of loaded tiles again with the new glyphs.
+        for (const id in this._mergedSymbolSourceCaches) {
+            this._mergedSymbolSourceCaches[id].reload();
+        }
     }
 
     getOwnSourceCache(source: string): SourceCache | undefined {
