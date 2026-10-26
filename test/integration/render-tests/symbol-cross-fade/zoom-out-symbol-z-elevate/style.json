@@ -1,0 +1,118 @@
+{
+  "description": "On zoom out, a symbol-z-elevate label that exists only in the held child tile must fade out instead of disappearing at once.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "fadeDuration": 300,
+      "mapMode": "continuous-snapshot",
+      "operations": [
+        ["setSourceProperty", "point", "enable-symbols-fade-out", true],
+        ["setTimer", 0],
+        ["wait"],
+        ["setTimer", 300],
+        ["wait"],
+        ["setTimer", 600],
+        ["wait"],
+        ["setZoom", 1.9],
+        ["wait"],
+        ["setTimer", 900],
+        ["wait"],
+        ["setTimer", 1050],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [
+    -100,
+    39
+  ],
+  "zoom": 2,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "z2"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -100,
+                41.5
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "all"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -100,
+                36.5
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "label",
+      "type": "symbol",
+      "source": "point",
+      "filter": [
+        "any",
+        [
+          "==",
+          [
+            "get",
+            "name"
+          ],
+          "all"
+        ],
+        [
+          "step",
+          [
+            "zoom"
+          ],
+          false,
+          2,
+          true
+        ]
+      ],
+      "layout": {
+        "symbol-z-elevate": true,
+        "text-field": [
+          "get",
+          "name"
+        ],
+        "text-size": 16,
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-color": "black"
+      }
+    }
+  ]
+}

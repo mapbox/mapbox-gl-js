@@ -1,0 +1,77 @@
+{
+  "description": "On zoom out, a tile held for symbol fade must not draw fill-extrusion: the right box exists only at zoom 2 and must not be drawn at zoom 1.9. The label exists only at zoom 2 to hold a tile.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "fadeDuration": 300,
+      "mapMode": "continuous-snapshot",
+      "operations": [
+        ["setSourceProperty", "poly", "enable-symbols-fade-out", true],
+        ["setSourceProperty", "point", "enable-symbols-fade-out", true],
+        ["setTimer", 0],
+        ["wait"],
+        ["setTimer", 300],
+        ["wait"],
+        ["setTimer", 600],
+        ["wait"],
+        ["setZoom", 1.9],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [-100, 39],
+  "zoom": 2,
+  "sources": {
+    "poly": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {"name": "all"},
+            "geometry": {"type": "Polygon", "coordinates": [[[-105, 36], [-101, 36], [-101, 42], [-105, 42], [-105, 36]]]}
+          },
+          {
+            "type": "Feature",
+            "properties": {"name": "z2"},
+            "geometry": {"type": "Polygon", "coordinates": [[[-99, 36], [-95, 36], [-95, 42], [-99, 42], [-99, 36]]]}
+          }
+        ]
+      }
+    },
+    "point": {
+      "type": "geojson",
+      "data": {"type": "Feature", "properties": {"name": "z2"}, "geometry": {"type": "Point", "coordinates": [-97, 39]}}
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "poly",
+      "filter": ["any", ["==", ["get", "name"], "all"], ["step", ["zoom"], false, 2, true]],
+      "paint": {
+        "fill-extrusion-color": "blue",
+        "fill-extrusion-height": 1000
+      }
+    },
+    {
+      "id": "label",
+      "type": "symbol",
+      "source": "point",
+      "filter": ["step", ["zoom"], false, 2, true],
+      "layout": {
+        "text-field": ["get", "name"],
+        "text-size": 16,
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      },
+      "paint": {
+        "text-color": "black"
+      }
+    }
+  ]
+}
