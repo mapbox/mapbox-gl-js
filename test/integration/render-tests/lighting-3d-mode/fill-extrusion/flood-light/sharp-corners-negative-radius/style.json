@@ -1,0 +1,150 @@
+{
+  "description": "Flood light with a negative ground radius glows inside the polygon. The notches in the top edge are sharper than the ground effect miter cutoff, so the two edge quads at each notch tip cannot meet; a corner quad must fill the wedge, or an unlit gap shows at each tip.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 300,
+      "image-threshold": [
+        {
+          "platform-tag-contains": "",
+          "threshold": 0.0005
+        }
+      ]
+    }
+  },
+  "center": [
+    0.0,
+    -0.07
+  ],
+  "zoom": 9.75,
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.6
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.4
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "autoMaxZoom": true,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.269493,
+                    -0.3
+                  ],
+                  [
+                    0.269493,
+                    0.0
+                  ],
+                  [
+                    0.187455,
+                    0.0
+                  ],
+                  [
+                    0.161696,
+                    -0.089831
+                  ],
+                  [
+                    0.135937,
+                    0.0
+                  ],
+                  [
+                    0.074638,
+                    0.0
+                  ],
+                  [
+                    0.053899,
+                    -0.089831
+                  ],
+                  [
+                    0.03316,
+                    0.0
+                  ],
+                  [
+                    -0.038059,
+                    0.0
+                  ],
+                  [
+                    -0.053899,
+                    -0.089831
+                  ],
+                  [
+                    -0.069738,
+                    0.0
+                  ],
+                  [
+                    -0.152254,
+                    0.0
+                  ],
+                  [
+                    -0.161696,
+                    -0.089831
+                  ],
+                  [
+                    -0.171138,
+                    0.0
+                  ],
+                  [
+                    -0.269493,
+                    0.0
+                  ],
+                  [
+                    -0.269493,
+                    -0.3
+                  ],
+                  [
+                    0.269493,
+                    -0.3
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "range",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-flood-light-ground-radius": -5000,
+        "fill-extrusion-flood-light-color": "blue",
+        "fill-extrusion-flood-light-intensity": 1,
+        "fill-extrusion-height": 0,
+        "fill-extrusion-opacity": 1,
+        "fill-extrusion-color": "rgba(0, 0, 0, 0)"
+      }
+    }
+  ]
+}

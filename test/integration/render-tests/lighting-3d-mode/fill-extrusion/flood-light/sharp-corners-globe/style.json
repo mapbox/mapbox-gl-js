@@ -1,0 +1,156 @@
+{
+  "description": "Flood light with a positive ground radius around sharp spikes on globe, below zoom 6 where tiles are laid out for the globe. The spike tips must be lit, as in mercator. The paint change forces a repaint once the ground effect shaders have loaded.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 300,
+      "image-threshold": [
+        {
+          "platform-tag-contains": "",
+          "threshold": 0.001
+        }
+      ],
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "wait",
+          500
+        ],
+        [
+          "setPaintProperty",
+          "range",
+          "fill-extrusion-flood-light-intensity",
+          0.999
+        ]
+      ]
+    }
+  },
+  "center": [
+    5.6,
+    7.3
+  ],
+  "zoom": 5.5,
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.6
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.4
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "autoMaxZoom": true,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    3.6,
+                    4.6
+                  ],
+                  [
+                    7.6,
+                    4.6
+                  ],
+                  [
+                    7.6,
+                    6.6
+                  ],
+                  [
+                    6.705,
+                    6.6
+                  ],
+                  [
+                    6.6,
+                    8.1
+                  ],
+                  [
+                    6.495,
+                    6.6
+                  ],
+                  [
+                    5.705,
+                    6.6
+                  ],
+                  [
+                    5.6,
+                    8.1
+                  ],
+                  [
+                    5.495,
+                    6.6
+                  ],
+                  [
+                    4.705,
+                    6.6
+                  ],
+                  [
+                    4.6,
+                    8.1
+                  ],
+                  [
+                    4.495,
+                    6.6
+                  ],
+                  [
+                    3.6,
+                    6.6
+                  ],
+                  [
+                    3.6,
+                    4.6
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "range",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-flood-light-ground-radius": 110000,
+        "fill-extrusion-flood-light-color": "blue",
+        "fill-extrusion-flood-light-intensity": 1,
+        "fill-extrusion-height": 0,
+        "fill-extrusion-opacity": 1,
+        "fill-extrusion-color": "rgba(0, 0, 0, 0)"
+      }
+    }
+  ],
+  "projection": {
+    "name": "globe"
+  }
+}

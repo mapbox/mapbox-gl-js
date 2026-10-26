@@ -1,0 +1,138 @@
+{
+  "description": "Building flood light glows outside the footprint. The spikes on the north edge are sharper than the ground effect miter cutoff, so the two edge quads at each spike tip cannot meet; a corner quad must fill the wedge, or an unlit gap shows at each tip.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 300,
+      "image-threshold": [
+        {
+          "platform-tag-contains": "",
+          "threshold": 0.0005
+        }
+      ]
+    }
+  },
+  "center": [
+    11.57547,
+    48.13795
+  ],
+  "zoom": 17,
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.6
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.4
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    11.575066,
+                    48.137459
+                  ],
+                  [
+                    11.575874,
+                    48.137459
+                  ],
+                  [
+                    11.575874,
+                    48.137818
+                  ],
+                  [
+                    11.575847,
+                    48.137818
+                  ],
+                  [
+                    11.575739,
+                    48.138177
+                  ],
+                  [
+                    11.575632,
+                    48.137818
+                  ],
+                  [
+                    11.575578,
+                    48.137818
+                  ],
+                  [
+                    11.57547,
+                    48.138177
+                  ],
+                  [
+                    11.575362,
+                    48.137818
+                  ],
+                  [
+                    11.575308,
+                    48.137818
+                  ],
+                  [
+                    11.575201,
+                    48.138177
+                  ],
+                  [
+                    11.575093,
+                    48.137818
+                  ],
+                  [
+                    11.575066,
+                    48.137818
+                  ],
+                  [
+                    11.575066,
+                    48.137459
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "building",
+      "type": "building",
+      "source": "geojson",
+      "layout": {
+        "building-height": 10,
+        "building-flood-light-ground-radius": 30
+      },
+      "paint": {
+        "building-color": "white",
+        "building-flood-light-intensity": 1,
+        "building-flood-light-color": "blue"
+      }
+    }
+  ]
+}
