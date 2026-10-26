@@ -8,7 +8,13 @@ uniform lowp float u_device_pixel_ratio;
 uniform highp float u_width_scale;
 uniform float u_alpha_discard_threshold;
 uniform lowp float u_opacity_multiplier;
+#ifdef ELEVATED_ROADS
 uniform bool u_clip_to_tile_borders;
+// 1.0 per tile quadrant (x: top-left, y: top-right, z: bottom-left, w: bottom-right) that a direct child tile
+// of the same layer draws over. Elevated lines cannot use stencil clipping, so the parent discards these parts
+// to avoid blending translucent lines twice.
+uniform vec4 u_child_quadrants;
+#endif
 
 in vec4 v_width2_dilute;
 in vec2 v_normal;
@@ -428,11 +434,18 @@ if (u_has_dash) {
     glFragColor = vec4(v_elevation_id_col, 1.0);
 #endif
 
+#ifdef ELEVATED_ROADS
     if (u_clip_to_tile_borders) {
         if (v_tile_pos.x > 1.0 || v_tile_pos.y > 1.0 || v_tile_pos.x < 0.0 || v_tile_pos.y < 0.0) {
             discard;
         }
+        vec2 quadrant = step(vec2(0.5), v_tile_pos);
+        vec2 row = mix(u_child_quadrants.xz, u_child_quadrants.yw, quadrant.x);
+        if (mix(row.x, row.y, quadrant.y) > 0.5) {
+            discard;
+        }
     }
+#endif
 
     HANDLE_WIREFRAME_DEBUG;
 }
