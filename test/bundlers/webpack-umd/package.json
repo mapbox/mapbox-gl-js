@@ -6,7 +6,7 @@
     "build": "webpack --mode=development && cp index.html dist/"
   },
   "devDependencies": {
-    "@babel/core": "^8.0.7",
+    "@babel/core": "^8.0.9",
     "@babel/preset-env": "^8.0.7",
     "babel-loader": "^10.0.0",
     "webpack": "^5.112.0",
