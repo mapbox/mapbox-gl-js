@@ -665,21 +665,23 @@ export class GroundEffect {
     _addCornerQuad(pb: Point, na: Point, nb: Point, radiusSign: number, maxRadius: number, segment: Segment, sid: number) {
         const dir = new Point(na.y + nb.y, -(na.x + nb.x));
         if (dir.mag() < 1e-6) return; // edges point in opposite directions
-        const q = pb.add(dir._unit()._mult(CORNER_SEGMENT_LENGTH))._round();
+        // Vertex packing truncates pb, so start from the same point.
+        const p = new Point(Math.trunc(pb.x), Math.trunc(pb.y));
+        const q = p.add(dir._unit()._mult(CORNER_SEGMENT_LENGTH))._round();
         // The radius sign makes the quad always fan open.
         const factor = radiusSign * NORM;
 
         const idx = segment.vertexLength;
-        addGroundVertex(this.vertexArray, pb, q, 1, 1, factor);
-        addGroundVertex(this.vertexArray, pb, q, 1, 0, factor);
-        addGroundVertex(this.vertexArray, pb, q, 0, 1, factor);
-        addGroundVertex(this.vertexArray, pb, q, 0, 0, factor);
+        addGroundVertex(this.vertexArray, p, q, 1, 1, factor);
+        addGroundVertex(this.vertexArray, p, q, 1, 0, factor);
+        addGroundVertex(this.vertexArray, p, q, 0, 1, factor);
+        addGroundVertex(this.vertexArray, p, q, 0, 0, factor);
         segment.vertexLength += QUAD_VERTS;
 
         // The quad's far edge reaches TANGENT_CUTOFF * radius past each end.
-        const spread = q.sub(pb)._unit()._mult(TANGENT_CUTOFF * maxRadius);
-        const normal = q.sub(pb)._perp()._unit();
-        const regions = getTileRegions(pb.sub(spread), q.add(spread), normal, maxRadius); // Note: mutates normal
+        const spread = q.sub(p)._unit()._mult(TANGENT_CUTOFF * maxRadius);
+        const normal = q.sub(p)._perp()._unit();
+        const regions = getTileRegions(p.sub(spread), q.add(spread), normal, maxRadius); // Note: mutates normal
         this._addQuadToRegions(idx, regions, segment, sid);
     }
 
