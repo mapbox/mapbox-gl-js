@@ -971,7 +971,7 @@ export type MapEvents = {
      *     console.log('A zoomstart event occurred.');
      * });
      */
-    'zoomstart': {originalEvent?: WheelEvent | TouchEvent} | void;
+    'zoomstart': {originalEvent?: WheelEvent | TouchEvent};
 
     /**
      * Fired repeatedly during an animated transition from one zoom level to another,
@@ -991,7 +991,7 @@ export type MapEvents = {
      * });
      * @see [Example: Update a choropleth layer by zoom level](https://www.mapbox.com/mapbox-gl-js/example/updating-choropleth/)
      */
-    'zoom': {originalEvent?: WheelEvent | TouchEvent} | void;
+    'zoom': {originalEvent?: WheelEvent | TouchEvent};
 
     /**
      * Fired just after the map completes a transition from one zoom level to another
@@ -1012,7 +1012,7 @@ export type MapEvents = {
      *     console.log('A zoomend event occurred.');
      * });
      */
-    'zoomend': {originalEvent?: WheelEvent | TouchEvent} | void;
+    'zoomend': {originalEvent?: WheelEvent | TouchEvent};
 
     /**
      * Fired when a "drag to rotate" interaction starts. See {@link DragRotateHandler}.
@@ -1085,7 +1085,7 @@ export type MapEvents = {
      *     console.log('A pitchstart event occurred.');
      * });
      */
-    'pitchstart': {originalEvent?: MouseEvent | TouchEvent} | void;
+    'pitchstart': {originalEvent?: MouseEvent | TouchEvent};
 
     /**
      * Fired repeatedly during the map's pitch (tilt) animation between
@@ -1105,7 +1105,7 @@ export type MapEvents = {
      *     console.log('A pitch event occurred.');
      * });
      */
-    'pitch': {originalEvent?: MouseEvent | TouchEvent} | void;
+    'pitch': {originalEvent?: MouseEvent | TouchEvent};
 
     /**
      * Fired immediately after the map's pitch (tilt) finishes changing as
@@ -1124,7 +1124,7 @@ export type MapEvents = {
      *     console.log('A pitchend event occurred.');
      * });
      */
-    'pitchend': {originalEvent?: MouseEvent | TouchEvent} | void;
+    'pitchend': {originalEvent?: MouseEvent | TouchEvent};
 
     /**
      * Fired when a "box zoom" interaction starts. See {@link BoxZoomHandler}.
@@ -1196,7 +1196,7 @@ export type MapEvents = {
      *     console.log('A resize event occurred.');
      * });
      */
-    'resize': object | void;
+    'resize': object;
 
     /** @section Lifecycle */
 
