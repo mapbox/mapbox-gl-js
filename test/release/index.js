@@ -59,7 +59,8 @@ const pages = [
     },
     {
         "key": "mapbox-gl-rtl-text",
-        "title": "Add support for right-to-left scripts"
+        "title": "Add support for right-to-left scripts",
+        "url": "./debug/rtl-text.html"
     },
     {
         "key": "heatmap-layer",
