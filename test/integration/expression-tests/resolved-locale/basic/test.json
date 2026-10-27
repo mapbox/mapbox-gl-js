@@ -30,12 +30,5 @@
       ],
       "en"
     ]
-  },
-  "metadata": {
-    "test": {
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "runner-limitation: the 'en' locale is missing on some test systems"}
-      ]
-    }
   }
 }
