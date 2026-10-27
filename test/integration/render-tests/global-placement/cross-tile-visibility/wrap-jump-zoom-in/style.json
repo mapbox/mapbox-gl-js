@@ -1,0 +1,53 @@
+{
+  "description": "The center moves from longitude 179.9 across the antimeridian to -179.95 and the zoom goes from 5 to 6 in one jump. All tiles are renumbered one wrap down without moving on screen: the z5 tile with the labels goes from wrap 0 to wrap -1. Then the labels are handed over from it to its z6 child of wrap -1. State is shared only between tiles of the same wrap, so the handover must follow the renumbering. 'Kept' is in the tiles of either zoom and is visible before the jump. 'Rival' is only in tiles of zoom 6, overlaps 'Kept' and it appears first in the source while sharing the same tile, so it is placed first when neither label was visible before. 'Kept' continues its visible state from the old tile, which ranks it above 'Rival', so only 'Kept' is drawn. If the state were lost, only 'Rival' would be drawn.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 96,
+      "height": 64,
+      "fadeDuration": 0,
+      "globalPlacement": true,
+      "mapMode": "continuous",
+      "operations": [
+        ["wait"],
+        ["setCenter", [-179.95, -2.5]],
+        ["setZoom", 6],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [179.9, -2.5],
+  "zoom": 5,
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {"type": "Feature", "properties": {"name": "Rival"}, "geometry": {"type": "Point", "coordinates": [179.95, -2.5]}},
+          {"type": "Feature", "properties": {"name": "Kept"}, "geometry": {"type": "Point", "coordinates": [179.85, -2.5]}}
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "label",
+      "type": "symbol",
+      "source": "points",
+      "filter": ["any", ["==", ["get", "name"], "Kept"], ["all", ["==", ["get", "name"], "Rival"], [">=", ["zoom"], 6]]],
+      "layout": {
+        "text-field": ["get", "name"],
+        "text-size": 12,
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      },
+      "paint": {"text-color": "black"}
+    }
+  ]
+}

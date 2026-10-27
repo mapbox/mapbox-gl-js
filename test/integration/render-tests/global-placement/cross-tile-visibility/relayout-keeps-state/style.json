@@ -1,0 +1,52 @@
+{
+  "description": "'Kept' is visible before the change. Changing the layer filter lays the z5 tile out again, so the layer gets a new bucket. The new filter also lets 'Rival' in. 'Rival' overlaps 'Kept' and it appears first in the source while sharing the same tile, so it is placed first when neither label was visible before. 'Kept' continues its visible state from the old bucket, which ranks it above 'Rival', so only 'Kept' is drawn. If the state were lost, only 'Rival' would be drawn.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "fadeDuration": 0,
+      "globalPlacement": true,
+      "mapMode": "continuous",
+      "operations": [
+        ["wait"],
+        ["setFilter", "label", ["all"]],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [2.5, -2.5],
+  "zoom": 5,
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {"type": "Feature", "properties": {"name": "Rival"}, "geometry": {"type": "Point", "coordinates": [2.6, -2.5]}},
+          {"type": "Feature", "properties": {"name": "Kept"}, "geometry": {"type": "Point", "coordinates": [2.5, -2.5]}}
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "label",
+      "type": "symbol",
+      "source": "points",
+      "filter": ["==", ["get", "name"], "Kept"],
+      "layout": {
+        "text-field": ["get", "name"],
+        "text-size": 12,
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      },
+      "paint": {"text-color": "black"}
+    }
+  ]
+}

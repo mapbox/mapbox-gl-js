@@ -1,0 +1,53 @@
+{
+  "description": "The source's maxzoom is 5, so zooming in from 5 to 6 hands the labels over from the z5 tile to an overscaled copy of it. 'Kept' is in the tiles of either zoom and is visible before the zoom. 'Rival' is only in the new tile, overlaps 'Kept' and it appears first in the source while sharing the same tile, so it is placed first when neither label was visible before. 'Kept' continues its visible state from the old tile, which ranks it above 'Rival', so only 'Kept' is drawn. If the state were lost, only 'Rival' would be drawn.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "fadeDuration": 0,
+      "globalPlacement": true,
+      "mapMode": "continuous",
+      "operations": [
+        ["wait"],
+        ["setZoom", 6],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [2.5, -2.5],
+  "zoom": 5,
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "maxzoom": 5,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {"type": "Feature", "properties": {"name": "Rival"}, "geometry": {"type": "Point", "coordinates": [2.6, -2.5]}},
+          {"type": "Feature", "properties": {"name": "Kept"}, "geometry": {"type": "Point", "coordinates": [2.5, -2.5]}}
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "label",
+      "type": "symbol",
+      "source": "points",
+      "filter": ["any", ["==", ["get", "name"], "Kept"], ["all", ["==", ["get", "name"], "Rival"], [">=", ["zoom"], 6]]],
+      "layout": {
+        "text-field": ["get", "name"],
+        "text-size": 12,
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      },
+      "paint": {"text-color": "black"}
+    }
+  ]
+}
