@@ -16,9 +16,7 @@
         ["setZoom", 5.13 ],
         ["wait", 1500]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "runner-limitation: the native runner does not support the setPitchBearing operation"}
-      ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-1642"],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.08}
       ]
