@@ -61,7 +61,7 @@ class LogoControl implements IControl {
 
     _logoRequired(): boolean {
         if (!this._map.style) return true;
-        const sourceCaches = this._map.style._sourceCaches;
+        const sourceCaches = this._map.style._mergedSourceCaches;
         if (Object.entries(sourceCaches).length === 0) return true;
         for (const id in sourceCaches) {
             const source = sourceCaches[id].getSource();

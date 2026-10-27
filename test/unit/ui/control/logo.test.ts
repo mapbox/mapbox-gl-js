@@ -1,6 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import {test, expect, createMap as globalCreateMap} from '../../../util/vitest';
+import {test, expect, waitFor, createMap as globalCreateMap} from '../../../util/vitest';
+import {mockFetch} from '../../../util/network';
 import VectorTileSource from '../../../../src/source/vector_tile_source';
 
 function createMap(logoPosition, logoRequired, deleteStyle) {
@@ -84,6 +85,40 @@ test('LogoControl is not displayed when the mapbox_logo property is false', () =
             map.getContainer().querySelectorAll('.mapboxgl-ctrl-top-left > .mapboxgl-ctrl')[0].style.display
         ).toEqual('none');
     });
+});
+
+test('LogoControl is not displayed when an imported style source has the mapbox_logo property set to false', async () => {
+    mockFetch({
+        '/tilejson.json': () => new Response(JSON.stringify({
+            tiles: ['http://example.com/{z}/{x}/{y}.pbf'],
+            // eslint-disable-next-line camelcase
+            mapbox_logo: false
+        }))
+    });
+
+    const map = globalCreateMap({
+        style: {
+            version: 8,
+            imports: [{
+                id: 'basemap',
+                url: '',
+                data: {
+                    version: 8,
+                    sources: {composite: {type: 'vector', url: '/tilejson.json'}},
+                    layers: []
+                }
+            }],
+            sources: {},
+            layers: []
+        }
+    });
+
+    await waitFor(map, 'load');
+
+    expect(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        map.getContainer().querySelector('.mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl').style.display
+    ).toEqual('none');
 });
 
 test('LogoControl is not added more than once', () => {
