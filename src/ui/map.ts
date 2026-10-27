@@ -1146,9 +1146,9 @@ export class Map extends Camera {
             if (this.getZoom() < minZoom) {
                 this.setZoom(minZoom);
             } else {
-                this.fire(new Event('zoomstart'))
-                    .fire(new Event('zoom'))
-                    .fire(new Event('zoomend'));
+                this.fire(new Event('zoomstart', {}))
+                    .fire(new Event('zoom', {}))
+                    .fire(new Event('zoomend', {}));
             }
 
             return this;
@@ -1187,9 +1187,9 @@ export class Map extends Camera {
             if (this.getZoom() > maxZoom) {
                 this.setZoom(maxZoom);
             } else {
-                this.fire(new Event('zoomstart'))
-                    .fire(new Event('zoom'))
-                    .fire(new Event('zoomend'));
+                this.fire(new Event('zoomstart', {}))
+                    .fire(new Event('zoom', {}))
+                    .fire(new Event('zoomend', {}));
             }
 
             return this;
@@ -1231,9 +1231,9 @@ export class Map extends Camera {
             if (this.getPitch() < minPitch) {
                 this.setPitch(minPitch);
             } else {
-                this.fire(new Event('pitchstart'))
-                    .fire(new Event('pitch'))
-                    .fire(new Event('pitchend'));
+                this.fire(new Event('pitchstart', {}))
+                    .fire(new Event('pitch', {}))
+                    .fire(new Event('pitchend', {}));
             }
 
             return this;
@@ -1276,9 +1276,9 @@ export class Map extends Camera {
             if (this.getPitch() > maxPitch) {
                 this.setPitch(maxPitch);
             } else {
-                this.fire(new Event('pitchstart'))
-                    .fire(new Event('pitch'))
-                    .fire(new Event('pitchend'));
+                this.fire(new Event('pitchstart', {}))
+                    .fire(new Event('pitch', {}))
+                    .fire(new Event('pitchend', {}));
             }
 
             return this;

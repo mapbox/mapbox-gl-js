@@ -70,6 +70,27 @@ map.on('touchstart', 'layerId', (event) => {
     event.preventDefault();
 });
 
+map.on('zoom', (event) => {
+    event.originalEvent satisfies WheelEvent | TouchEvent | MouseEvent | KeyboardEvent | undefined;
+});
+
+map.on('pitch', (event) => {
+    event.originalEvent satisfies MouseEvent | TouchEvent | KeyboardEvent | FocusEvent | undefined;
+    new FocusEvent('blur') satisfies typeof event.originalEvent;
+});
+
+map.on('zoomend', (event) => {
+    new FocusEvent('blur') satisfies typeof event.originalEvent;
+});
+
+map.on('pitchend', (event) => {
+    new FocusEvent('blur') satisfies typeof event.originalEvent;
+});
+
+map.on('pitchstart', (event) => {
+    new FocusEvent('blur') satisfies typeof event.originalEvent;
+});
+
 // Custom events
 map.fire('flystart', {});
 map.once('flystart', () => {});

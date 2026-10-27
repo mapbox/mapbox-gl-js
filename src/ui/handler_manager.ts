@@ -26,7 +26,7 @@ import type {Map} from './map';
 import type {MapEvents} from './events';
 import type {Handler, HandlerResult} from './handler';
 
-export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
+export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent | FocusEvent;
 
 /**
  * One of modifier [KeyboardEvent.key](https://developer.mozilla.org/docs/Web/API/KeyboardEvent/key) values.
@@ -713,7 +713,7 @@ class HandlerManager {
 
     }
 
-    _fireEvent(type: keyof MapEvents, event?: MouseEvent | TouchEvent) {
+    _fireEvent(type: keyof MapEvents, event?: InputEvent) {
         const eventData = (event ? {originalEvent: event} : {});
         this._map.fire(new Event(type, eventData as MapEvents[keyof MapEvents]));
     }
