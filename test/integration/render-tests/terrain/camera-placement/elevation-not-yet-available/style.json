@@ -10,9 +10,9 @@
         ["setZoom", 15.28],
         ["wait"]
       ],
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-1642"],
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2132", "https://mapbox.atlassian.net/browse/MAPSNAT-1642"],
       "skip-test": [
-        {"platform-tag-contains": "web-macos-safari", "reason": "flaky: some CI runs fail with a large diff (checked oct-2026)"},
+        {"platform-tag-contains": "web-macos-safari", "reason": "flaky: some CI runs fail with a large diff (checked oct-2026) - GLJS-2132"},
         {"platform-tag-contains": "native", "reason": "bug: the camera ends up higher above the terrain than in gl-js - MAPSNAT-1642"}
       ]
     }

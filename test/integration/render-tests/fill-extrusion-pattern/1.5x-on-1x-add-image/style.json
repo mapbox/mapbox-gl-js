@@ -84,9 +84,6 @@
           "wait"
         ]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "flaky: non-deterministic on AMD GPUs"}
-      ],
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4283"]
     }
   },

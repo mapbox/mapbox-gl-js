@@ -5,9 +5,6 @@
       "width": 1024,
       "height": 1024,
       "pixelRatio": 0.5,
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "flaky: terrain model tests in CI"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00026}
       ]
