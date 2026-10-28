@@ -3,11 +3,7 @@
   "metadata": {
     "test": {
       "width": 64,
-      "height": 64,
-      "tickets": ["https://github.com/mapbox/mapbox-gl-js/pull/9189"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-implemented: line-pattern takes precedence over line-dasharray - mapbox/mapbox-gl-js#9189"}
-      ]
+      "height": 64
     }
   },
   "sources": {

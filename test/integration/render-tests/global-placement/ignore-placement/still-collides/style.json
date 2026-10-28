@@ -6,13 +6,7 @@
       "width": 64,
       "height": 64,
       "collisionDebug": true,
-      "globalPlacement": true,
-      "skip-test": [
-        {
-          "platform-tag-contains": "native",
-          "reason": "not-implemented: in gl-native"
-        }
-      ]
+      "globalPlacement": true
     }
   },
   "center": [
