@@ -2,13 +2,9 @@
   "version": 8,
   "metadata": {
     "test": {
-      
       "width": 256,
       "height": 256,
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/3425"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: pattern rendering differs on globe - mapbox/mapbox-gl-native-internal#3425"}
-      ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4328"],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.001}
       ]

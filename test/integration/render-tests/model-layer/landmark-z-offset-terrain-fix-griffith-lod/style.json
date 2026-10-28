@@ -10,9 +10,6 @@
         ["wait"],
         ["wait"]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: to be fixed"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0065}
       ]

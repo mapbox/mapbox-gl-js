@@ -4,15 +4,13 @@
     "test": {
       "height": 200,
       "width": 200,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4331"],
       "operations": [
         ["wait"],
         ["setTerrain", {
           "exaggeration": 1
         }],
         ["wait"]
-      ],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: needs a ticket"}
       ]
     }
   },

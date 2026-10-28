@@ -4,9 +4,7 @@
     "test": {
       "width": 64,
       "height": 64,
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: needs a ticket"}
-      ]
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4326"]
     }
   },
   "zoom": 5,

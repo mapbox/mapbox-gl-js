@@ -6,8 +6,9 @@
       "height": 512,
       "showLayers2DWireframe": true,
       "showLayers3DWireframe": true,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSPERF-86"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: needs a ticket"}
+        {"platform-tag-contains": "native-android-gl-mali", "reason": "flaky: the wireframe image differs between CI runs (checked oct-2026) - MAPSPERF-86"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.008}

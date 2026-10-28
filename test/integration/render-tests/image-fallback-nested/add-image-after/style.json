@@ -2,6 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2135"],
       "height": 64,
       "width": 128,
       "operations": [
@@ -48,10 +49,6 @@
         ["wait"],
         ["addImage", "rocket", "./image/rocket.png"],
         ["wait"]
-      ],
-      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-1005"],
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "bug: to be re-enabled - GLJS-1005"}
       ]
     }
   },

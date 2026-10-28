@@ -6,6 +6,7 @@
       "height": 256,
       "width": 256,
       "fadeDuration": 100,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4329"],
       "operations": [
         ["wait", 100],
         ["wait", 100],
@@ -21,10 +22,6 @@
         ["wait"],
         ["wait", 100],
         ["wait", 100]
-      ],
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "bug: not sure this is correct behavior"},
-        {"platform-tag-contains": "native", "reason": "bug: symbol index does not work in static map mode"}
       ]
     }
   },

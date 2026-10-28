@@ -10,7 +10,7 @@
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4059"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: fill-extrusion radius at narrow corners - MAPSNAT-4059"}
+        {"platform-tag-contains": "native", "reason": "bug: a fill extrusion with edge radius and narrow corners renders nothing - MAPSNAT-4059"}
       ]
     }
   },

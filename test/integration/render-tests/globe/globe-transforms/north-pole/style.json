@@ -8,10 +8,7 @@
         ["setProjection", "globe"],
         ["wait"]
       ],
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/3425"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: pattern rendering differs on globe - mapbox/mapbox-gl-native-internal#3425"}
-      ]
+      "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/3425"]
     }
   },
   "center": [

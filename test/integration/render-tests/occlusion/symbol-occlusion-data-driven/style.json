@@ -11,9 +11,6 @@
           30
         ]
       ],
-      "skip-test": [
-        {"platform-tag-contains": "swiftshader", "reason": "bug: check SwiftShader occlusion query support"}
-      ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00055}
       ],

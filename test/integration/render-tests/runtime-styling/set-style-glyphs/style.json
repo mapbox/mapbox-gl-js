@@ -49,12 +49,9 @@
           "wait"
         ]
       ],
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native/pull/16091"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: started failing after mapbox/mapbox-gl-native#16091"}
-      ],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.0003}
+        {"platform-tag-contains": "", "threshold": 0.0003},
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.0015}
       ]
     }
   },

@@ -4,9 +4,9 @@
     "test": {
       "width": 128,
       "height": 128,
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3474"],
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2134"],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "bug: broken in a similar way as gl-native - MAPSNAT-3474"}
+        {"platform-tag-contains": "web", "reason": "bug: with icon-text-fit and vertical text, gl-js draws the layout icon-image instead of the icon-image of the active appearance - GLJS-2134"}
       ]
     }
   },

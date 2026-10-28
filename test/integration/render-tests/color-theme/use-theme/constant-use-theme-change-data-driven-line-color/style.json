@@ -19,7 +19,7 @@
       "skip-test": [
         {
           "platform-tag-contains": "web",
-          "reason": "bug: to be fixed"
+          "reason": "bug: a *-use-theme change on a data-driven color does not update the rendering without a relayout - GLJS-2100"
         }
       ],
       "tickets": [

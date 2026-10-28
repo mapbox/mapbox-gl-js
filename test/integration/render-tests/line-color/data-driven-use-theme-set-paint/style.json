@@ -5,9 +5,7 @@
     "test": {
       "width": 32,
       "height": 32,
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: setPaintProperty on a constant color with data-driven use-theme does not update feature blocks"}
-      ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4215"],
       "operations": [
         ["wait"],
         ["setPaintProperty", "line", "line-color", "blue"],

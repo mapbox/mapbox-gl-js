@@ -17,7 +17,7 @@
         ]
       ],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "bug: to be fixed"}
+        {"platform-tag-contains": "web", "reason": "bug: a *-use-theme change on a data-driven color does not update the rendering without a relayout - GLJS-2100"}
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2100"]
     }

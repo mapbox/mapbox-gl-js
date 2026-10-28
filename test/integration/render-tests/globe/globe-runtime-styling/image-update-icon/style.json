@@ -16,7 +16,7 @@
       ],
       "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/3348"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: API render tests on globe - mapbox/mapbox-gl-native-internal#3348"}
+        {"platform-tag-contains": "native", "reason": "bug: updateImage of an icon on globe gives an incorrect result - mapbox/mapbox-gl-native-internal#3348"}
       ]
     }
   },

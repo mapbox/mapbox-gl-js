@@ -4,9 +4,9 @@
     "test": {
       "height": 32,
       "width": 32,
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3482"],
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2134"],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "bug: broken in a similar way as gl-native - MAPSNAT-3482"}
+        {"platform-tag-contains": "web", "reason": "bug: gl-js draws the layout icon when the active appearance has an empty icon-image - GLJS-2134"}
       ]
     }
   },

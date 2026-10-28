@@ -4,8 +4,8 @@
     "test": {
       "height": 256,
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "bug: renders broken on gl-js - GLJS-2117"},
-        {"platform-tag-contains": "gl", "reason": "bug: renders broken on OpenGL, like on gl-js - GLJS-2117"}
+        {"platform-tag-contains": "web-macos-safari", "reason": "flaky: the image differs between CI runs (checked oct-2026) - GLJS-2117"},
+        {"platform-tag-contains": "gl", "reason": "bug: the rendering is broken on OpenGL, as on gl-js - GLJS-2117"}
       ],
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4283", "https://mapbox.atlassian.net/browse/GLJS-2117"]
     }

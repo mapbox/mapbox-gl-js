@@ -6,8 +6,10 @@
       "collisionDebug": true,
       "mapMode": "tile",
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "not-applicable: native-only - gl-js does not support tile-mode"},
-        {"platform-tag-contains": "native", "reason": "bug: slight difference because of anti-aliasing"}
+        {"platform-tag-contains": "web", "reason": "not-applicable: native-only - gl-js does not support tile-mode"}
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "native-linux-egl-swiftshader", "threshold": 0.0004}
       ]
     }
   },

@@ -7,7 +7,7 @@
       "pixelRatio": 0.25,
       "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2041"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: circle-radius at the antimeridian - MAPSNAT-2041"}
+        {"platform-tag-contains": "native", "reason": "bug: circles at the antimeridian render incorrectly - MAPSNAT-2041"}
       ]
     }
   },

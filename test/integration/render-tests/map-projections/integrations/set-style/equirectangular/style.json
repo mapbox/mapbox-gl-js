@@ -13,9 +13,9 @@
         ["setStyle", "local://mapbox-gl-styles/styles/basic-v9.json"],
         ["wait"]
       ],
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/3101"],
+      "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: projection null should default to globe - mapbox/mapbox-gl-native-internal#3101"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: non-Mercator projections - mapbox/mapbox-gl-native-internal#2534"}
       ]
     }
   },
