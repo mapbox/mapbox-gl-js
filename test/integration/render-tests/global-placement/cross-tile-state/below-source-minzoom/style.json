@@ -1,0 +1,62 @@
+{
+  "description": "The source's minzoom is 5, so zooming out to 4.5 leaves no tile to take over the label of the last z5 tile. That tile must be held until its label has faded out instead of being released at once. The clock is frozen halfway through the fade, so the label is drawn at about half opacity; releasing the tile at once would leave the image blank.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "collisionDebug": true,
+      "mapMode": "continuous-snapshot",
+      "width": 96,
+      "height": 48,
+      "fadeDuration": 100,
+      "globalPlacement": true,
+      "operations": [
+        ["setTimer", 0],
+        ["wait"],
+        ["setTimer", 100],
+        ["wait"],
+        ["setZoom", 4.5],
+        ["wait"],
+        ["setTimer", 150],
+        ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "skip - Not yet implemented"}
+      ]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 5,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [0, 0]
+      },
+      "minzoom": 5
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": "Label",
+        "text-size": 24,
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      },
+      "paint": {
+        "text-color": "black"
+      }
+    }
+  ]
+}

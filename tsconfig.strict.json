@@ -230,7 +230,6 @@
     "./src/placement/global_placement.ts",
     "./src/util/vectortile_to_geojson.ts",
     "./src/data/mrt/overzoom_util.ts",
-    "./src/placement/layer_uid.ts",
     "./src/symbol/rtl_text.ts",
     "./src/ui/animation_frame_provider.ts",
     "./src/util/mat4.ts",

@@ -38,7 +38,6 @@ import type {Expression} from '../../style-spec/expression/expression';
 import type {CanonicalTileID} from '../../source/tile_id';
 import type Tile from '../../source/tile';
 import type {SymbolPlacementParameters} from '../../placement/symbol_placement_parameters';
-import type {TileCoverageRect} from '../../placement/types';
 import type {LUT} from "../../util/lut";
 import type {ImageId} from '../../style-spec/expression/types/image_id';
 import type {ProgramName} from '../../render/program';
@@ -225,9 +224,8 @@ class SymbolStyleLayer extends StyleLayer {
         return new SymbolBucket(parameters);
     }
 
-    override placeSymbols(parameters: SymbolPlacementParameters, tiles: Array<Tile>, styleLayerOrder: number, sourceCache: SourceCache, checkAgainstClipLayer: boolean, childCoverageRectsByTileKey: ReadonlyMap<number, Array<TileCoverageRect>>): void {
+    override placeSymbols(parameters: SymbolPlacementParameters, tiles: Array<Tile>, styleLayerOrder: number, sourceCache: SourceCache, checkAgainstClipLayer: boolean): void {
         const {globalPlacement, transform, buildingIndex, fogState, groupOrders, replacementSource, mercatorCenter, fadeDuration} = parameters;
-        const layerUid = this.runtimeLayerUID;
 
         const statefulPlacement = isStateDependent(this.paint.get('placement-group')) ||
             isStateDependent(this.paint.get('placement-priority'));
@@ -258,8 +256,7 @@ class SymbolStyleLayer extends StyleLayer {
             const posMatrix = getSymbolPlacementTileProjectionMatrix(tile.tileID, bucketProjection, tileTransform, tileTransform.projection.name);
             const invMatrix = bucketProjection.createInversionMatrix(tileTransform, tile.tileID.canonical);
             const textPixelRatio = tile.tileSize / EXTENT;
-            const childCoverageRects = childCoverageRectsByTileKey.get(tile.tileID.key) || [];
-            bucket.addToPlacement(globalPlacement, layerUid, posMatrix, invMatrix, mercatorCenter, tileTransform, textPixelRatio, tile, fogState, groupOrders, styleLayerOrder, featureStates, checkAgainstClipLayer ? replacementSource : null, fadeDuration, childCoverageRects);
+            bucket.addToPlacement(globalPlacement, posMatrix, invMatrix, mercatorCenter, tileTransform, textPixelRatio, tile, fogState, groupOrders, styleLayerOrder, featureStates, checkAgainstClipLayer ? replacementSource : null, fadeDuration);
             globalPlacement.finishSourceProcessing();
         }
     }

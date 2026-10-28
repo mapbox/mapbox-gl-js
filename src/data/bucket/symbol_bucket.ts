@@ -66,7 +66,7 @@ import {xyTransformMat4} from '../../util/mat4';
 import {Elevation} from '../../terrain/elevation';
 import {getFogOpacityAtTileCoord, FOG_SYMBOL_CLIPPING_THRESHOLD} from '../../style/fog_helpers';
 import {MIN_COLLISION_PERSPECTIVE_RATIO} from '../../geo/projection/projection_util';
-import {SymbolIdOrigin, SymbolPlacementType, SymbolVariantVisibility, hasStableId} from '../../placement/types';
+import {SymbolPlacementType, SymbolVariantVisibility} from '../../placement/types';
 import {defaultPlacementRules, partPlacementRules} from '../../placement/placement_rules';
 import {subgroupOrderForLayerPosition} from '../../placement/symbol_placement_parameters';
 import {type CollisionBoxArray, type CollisionBox, type SymbolInstance, SymbolOrientationArray} from '../array_types';
@@ -112,7 +112,7 @@ import type ImageManager from '../../render/image_manager';
 import type {AppearanceUpdateResult} from './feature_appearances';
 import type {PartPlacementRules} from '../../placement/placement_rules';
 import type {SymbolSource} from '../../placement/symbol_source';
-import type {SymbolVariantId, SymbolId, TileCoverageRect} from '../../placement/types';
+import type {SymbolVariantId} from '../../placement/types';
 import type {GlobalPlacement} from '../../placement/global_placement';
 import type {TileIdentity} from '../../placement/placement_debug';
 import type {GlobalPlacementPriority} from '../../placement/global_placement_priority';
@@ -396,7 +396,7 @@ const FADE_SETTLED_HIDDEN = FADE_SETTLED;
 // leaving room for 2^29 bucket instances before exceeding Number.MAX_SAFE_INTEGER.
 const MAX_SYMBOLS_PER_BUCKET = 2 ** 24;
 
-function generatedSymbolId(bucketInstanceId: number, index: number): number {
+export function generatedSymbolId(bucketInstanceId: number, index: number): number {
     return bucketInstanceId * MAX_SYMBOLS_PER_BUCKET + index;
 }
 
@@ -439,6 +439,9 @@ export class SymbolBuffers {
     // Global placement's fade state
     fadeVertexArray: SymbolFadeArray;
     fadeVertexBuffer: VertexBuffer | null | undefined;
+    // Inclusive range of fadeVertexArray entries changed since the last upload
+    _minFadeStateChangeIndex: number;
+    _maxFadeStateChangeIndex: number;
 
     zOffsetVertexArray: ZOffsetVertexArray;
     zOffsetVertexBuffer!: VertexBuffer;
@@ -471,6 +474,8 @@ export class SymbolBuffers {
         this.dynamicLayoutVertexArray = new SymbolDynamicLayoutArray();
         this.opacityVertexArray = new SymbolOpacityArray();
         this.fadeVertexArray = new SymbolFadeArray();
+        this._minFadeStateChangeIndex = Infinity;
+        this._maxFadeStateChangeIndex = -1;
         this.placedSymbolArray = new PlacedSymbolArray();
         this.iconTransitioningVertexArray = new SymbolIconTransitioningArray();
         this.globeExtVertexArray = new SymbolGlobeExtArray();
@@ -624,9 +629,8 @@ export class SymbolBuffers {
                 this.featureIdBuffer = context.createVertexBuffer(this.featureIdArray, featureIdAttributes.members, false);
             }
         }
-        if (this.fadeUploadPending()) {
-            this.fadeVertexBuffer = context.createVertexBuffer(this.fadeVertexArray, placementFadeAttributes.members, true);
-        }
+        this._uploadFadeState(context);
+
         if (upload || update) {
             this.programConfigurations.upload(context);
 
@@ -636,10 +640,21 @@ export class SymbolBuffers {
         }
     }
 
+    _uploadFadeState(context: Context) {
+        if (this.fadeVertexArray.length > 0 && !this.fadeVertexBuffer) {
+            this.fadeVertexBuffer = context.createVertexBuffer(this.fadeVertexArray, placementFadeAttributes.members, true);
+        } else if (this._maxFadeStateChangeIndex >= 0 && this.fadeVertexBuffer) {
+            this.fadeVertexBuffer.updateData(this.fadeVertexArray, this._minFadeStateChangeIndex, this._maxFadeStateChangeIndex + 1);
+        }
+        this._minFadeStateChangeIndex = Infinity;
+        this._maxFadeStateChangeIndex = -1;
+    }
+
     // New placement seeds the fade array (see SymbolBucket#_initPlacementOpacities) when it first runs
-    // on the bucket, which can be after the bucket was uploaded; the buffer is created whenever that happens
+    // on the bucket, which can be after the bucket was uploaded; the buffer is created whenever that happens.
+    // Later fade state changes are uploaded in a batch, covering only the changed range.
     fadeUploadPending(): boolean {
-        return this.fadeVertexArray.length > 0 && !this.fadeVertexBuffer;
+        return (this.fadeVertexArray.length > 0 && !this.fadeVertexBuffer) || this._maxFadeStateChangeIndex >= 0;
     }
 
     destroy() {
@@ -797,8 +812,12 @@ class SymbolBucket implements Bucket, SymbolSource {
     placementVariantVisible: Array<boolean>;
     placementFadeRefTime: Float64Array;
     placementFadeRunning: Uint8Array;
+    // One flag per symbol, parallel to symbolInstances and allocated with the placement state: 1 if
+    // a rendered descendant tile owns the symbol's anchor, 0 otherwise. Set by
+    // TilePlacementRelationsIndex. This copy feeds no geometry to placement then: the descendant
+    // places the symbol.
+    nonOwnedSymbols: Uint8Array;
     _activeFadeCount: number;
-    _fadeDuration: number;
     pixelRatio: number;
     tilePixelRatio!: number;
     compareText!: {
@@ -863,10 +882,10 @@ class SymbolBucket implements Bucket, SymbolSource {
         this.hasAnyIconTextFit = false;
         this.sortKeyRanges = [];
         this.placementVariantVisible = [];
+        this.nonOwnedSymbols = new Uint8Array(0);
         this.placementFadeRefTime = new Float64Array(0);
         this.placementFadeRunning = new Uint8Array(0);
         this._activeFadeCount = 0;
-        this._fadeDuration = 0;
 
         this.collisionCircleArray = [];
         this.placementInvProjMatrix = mat4.identity([]);
@@ -1013,12 +1032,12 @@ class SymbolBucket implements Bucket, SymbolSource {
     // placement::SymbolSource visibility callbacks, invoked by GlobalPlacement.finishPlacementRun()
     // only when a variant's visibility changes. placementRunTimestamp anchors the new fade ramp --
     // see _setSymbolVariantVisibility.
-    hideSymbolVariant(variantId: SymbolVariantId, placementRunTimestamp: number): void {
-        this._setSymbolVariantVisibility(variantId, false, placementRunTimestamp);
+    hideSymbolVariant(variantId: SymbolVariantId, placementRunTimestamp: number, fadeDuration: number): void {
+        this._setSymbolVariantVisibility(variantId, false, placementRunTimestamp, fadeDuration);
     }
 
-    showSymbolVariant(variantId: SymbolVariantId, placementRunTimestamp: number): void {
-        this._setSymbolVariantVisibility(variantId, true, placementRunTimestamp);
+    showSymbolVariant(variantId: SymbolVariantId, placementRunTimestamp: number, fadeDuration: number): void {
+        this._setSymbolVariantVisibility(variantId, true, placementRunTimestamp, fadeDuration);
     }
 
     // Fills the (until-now-empty) fade buffers with one settled-hidden entry per vertex, matching
@@ -1037,14 +1056,14 @@ class SymbolBucket implements Bucket, SymbolSource {
     // Sets the variant's instance to fade toward visible or hidden, recovering the instance index
     // from the generated id (see generatedSymbolId). Mirrors the geometry fed in addToPlacement:
     // the default text placement and the icon.
-    _setSymbolVariantVisibility(variantId: SymbolVariantId, visible: boolean, now: number): void {
+    _setSymbolVariantVisibility(variantId: SymbolVariantId, visible: boolean, now: number, fadeDuration: number): void {
         assert(this.placementVariantVisible.length > 0);
-        const index = variantId.symbolId.symbolId - this.bucketInstanceId * MAX_SYMBOLS_PER_BUCKET;
+        const index = variantId.symbolId - this.bucketInstanceId * MAX_SYMBOLS_PER_BUCKET;
         const instance = this.symbolInstances.get(index);
 
         const settled = this.placementFadeRunning[index] === 0;
-        const currentOpacity = evaluateFadeOpacity(this.placementFadeRefTime[index], this.placementVariantVisible[index], settled, now, this._fadeDuration);
-        const refTime = visible ? now - currentOpacity * this._fadeDuration : now - (1 - currentOpacity) * this._fadeDuration;
+        const currentOpacity = evaluateFadeOpacity(this.placementFadeRefTime[index], this.placementVariantVisible[index], settled, now, fadeDuration);
+        const refTime = visible ? now - currentOpacity * fadeDuration : now - (1 - currentOpacity) * fadeDuration;
 
         if (this.placementFadeRunning[index] === 0) this._activeFadeCount++;
 
@@ -1052,7 +1071,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         this.placementFadeRefTime[index] = refTime;
         this.placementFadeRunning[index] = 1;
 
-        this._writeFadeState(index, instance, refTime, fadeState(visible, false));
+        this._updateFadeState(index, instance, refTime, fadeState(visible, false));
     }
 
     hasActiveFade(): boolean {
@@ -1060,26 +1079,82 @@ class SymbolBucket implements Bucket, SymbolSource {
     }
 
     // A placed symbol owns a contiguous run of vertices from its vertexStartIndex (4 per glyph
-    // quad, one fade entry per vertex); write the same (refTime, state) into all of them.
-    _writeFadeState(index: number, instance: SymbolInstance, refTime: number, state: number): void {
+    // quad, one fade entry per vertex); write the same (refTime, state) into all of them. The GPU
+    // buffer is updated on the next upload, covering every vertex changed since the previous one.
+    _updateFadeState(index: number, instance: SymbolInstance, refTime: number, state: number): void {
         const write = (buffer: SymbolBuffers, placedIndex: number) => {
             if (placedIndex < 0) return;
             const placed = buffer.placedSymbolArray.get(placedIndex);
             const vertexStart = placed.vertexStartIndex;
-            for (let i = 0; i < placed.numGlyphs * 4; i++) buffer.fadeVertexArray.emplace(vertexStart + i, refTime, state);
-            if (buffer.fadeVertexBuffer) buffer.fadeVertexBuffer.updateData(buffer.fadeVertexArray);
+            const vertexCount = placed.numGlyphs * 4;
+            if (vertexCount === 0) return;
+            for (let i = 0; i < vertexCount; i++) buffer.fadeVertexArray.emplace(vertexStart + i, refTime, state);
+            buffer._minFadeStateChangeIndex = Math.min(buffer._minFadeStateChangeIndex, vertexStart);
+            buffer._maxFadeStateChangeIndex = Math.max(buffer._maxFadeStateChangeIndex, vertexStart + vertexCount - 1);
         };
 
         if (this.hasTextData()) write(this.text, this.defaultPlacedTextSymbolIndex(instance, index));
         if (this.hasIconData()) write(this.icon, instance.placedIconSymbolIndex);
     }
 
-    _settleFinishedFade(index: number, instance: SymbolInstance, now: number): void {
+    _settleFinishedFade(index: number, instance: SymbolInstance, now: number, fadeDuration: number): void {
         if (this.placementFadeRunning[index] === 0) return;
-        if (now - this.placementFadeRefTime[index] < this._fadeDuration) return;
+        if (now - this.placementFadeRefTime[index] < fadeDuration) return;
         this.placementFadeRunning[index] = 0;
         this._activeFadeCount--;
-        this._writeFadeState(index, instance, 0, fadeState(this.placementVariantVisible[index], true));
+        this._updateFadeState(index, instance, 0, fadeState(this.placementVariantVisible[index], true));
+    }
+
+    // Allocates the per-instance placement state (all hidden) on first use: either the first
+    // placement run, or state carried over from a related tile before it (see
+    // TilePlacementRelationsIndex).
+    ensurePlacementState(): void {
+        if (this.placementVariantVisible.length !== 0) return;
+        assert(this.symbolInstances.length <= MAX_SYMBOLS_PER_BUCKET);
+        this.placementVariantVisible = new Array<boolean>(this.symbolInstances.length).fill(false);
+        this.placementFadeRefTime = new Float64Array(this.symbolInstances.length);
+        this.placementFadeRunning = new Uint8Array(this.symbolInstances.length);
+        this.nonOwnedSymbols = new Uint8Array(this.symbolInstances.length);
+        this._initPlacementOpacities();
+    }
+
+    // Id of the instance that is the same for the symbol in every tile it's laid out in, used to match
+    // it across tiles, or undefined if it has none and has to be matched by its anchor instead.
+    // Stub: no symbol has a stable id yet. Should return the source feature's id once layout records,
+    // per instance, whether reusing it is safe (unique in the source layer, single point geometry,
+    // not repeated along the geometry).
+    stableIdFor(_index: number): number | undefined {
+        return undefined;
+    }
+
+    // Moves the placement state of `source`'s instance at `sourceIndex` to this bucket's instance at
+    // `targetIndex`, so the same symbol arriving from another tile (or a relayout) keeps its
+    // visibility and fade progress instead of fading in from hidden. The source copy is hidden at
+    // once, without fading out, as this copy now draws the label: fading it out would show the label
+    // twice. Does nothing if the source copy is hidden and not fading. Returns whether it moved any state.
+    takePlacementStateFrom(source: SymbolBucket, sourceIndex: number, targetIndex: number): boolean {
+        assert(sourceIndex < source.symbolInstances.length && targetIndex < this.symbolInstances.length);
+        if (sourceIndex >= source.placementVariantVisible.length) return false;
+        const visible = source.placementVariantVisible[sourceIndex];
+        const running = source.placementFadeRunning[sourceIndex];
+        if (!visible && running === 0) return false;
+        const refTime = source.placementFadeRefTime[sourceIndex];
+
+        this.ensurePlacementState();
+
+        assert(!this.placementVariantVisible[targetIndex] && this.placementFadeRunning[targetIndex] === 0);
+        this._activeFadeCount += running - this.placementFadeRunning[targetIndex];
+        this.placementVariantVisible[targetIndex] = visible;
+        this.placementFadeRefTime[targetIndex] = refTime;
+        this.placementFadeRunning[targetIndex] = running;
+        this._updateFadeState(targetIndex, this.symbolInstances.get(targetIndex), refTime, fadeState(visible, running === 0));
+
+        source._activeFadeCount -= running;
+        source.placementVariantVisible[sourceIndex] = false;
+        source.placementFadeRefTime[sourceIndex] = 0;
+        source.placementFadeRunning[sourceIndex] = 0;
+        source._updateFadeState(sourceIndex, source.symbolInstances.get(sourceIndex), 0, FADE_SETTLED_HIDDEN);
+        return true;
     }
 
     // Drops what new placement decided about this bucket's symbols, hiding all of them. Called when
@@ -1098,8 +1173,11 @@ class SymbolBucket implements Bucket, SymbolSource {
         this._activeFadeCount = 0;
 
         const hideAll = (buffer: SymbolBuffers) => {
-            for (let i = 0; i < buffer.fadeVertexArray.length; i++) buffer.fadeVertexArray.emplace(i, 0, FADE_SETTLED_HIDDEN);
-            if (buffer.fadeVertexBuffer) buffer.fadeVertexBuffer.updateData(buffer.fadeVertexArray);
+            const vertexCount = buffer.fadeVertexArray.length;
+            if (vertexCount === 0) return;
+            for (let i = 0; i < vertexCount; i++) buffer.fadeVertexArray.emplace(i, 0, FADE_SETTLED_HIDDEN);
+            buffer._minFadeStateChangeIndex = 0;
+            buffer._maxFadeStateChangeIndex = vertexCount - 1;
         };
         if (this.hasTextData()) hideAll(this.text);
         if (this.hasIconData()) hideAll(this.icon);
@@ -1111,10 +1189,8 @@ class SymbolBucket implements Bucket, SymbolSource {
     // one-time warning), and symbols with neither an icon nor a text collision box are skipped
     // silently. `textPixelRatio` (tile.tileSize / EXTENT) converts tile-space offsets to CSS pixels,
     // matching the legacy collision index formula (see CollisionIndex#placeCollisionBox).
-    addToPlacement(globalPlacement: GlobalPlacement, layerUid: number, posMatrix: mat4, invMatrix: mat4, mercatorCenter: [number, number], transform: Transform, textPixelRatio: number, tile: Tile, fogState: FogState | null | undefined, groupOrders: PlacementGroupOrders, styleLayerOrder: number, featureStates: FeatureStates, replacementSource: ReplacementSource | null, fadeDuration: number, childCoverageRects: ReadonlyArray<TileCoverageRect>): void {
+    addToPlacement(globalPlacement: GlobalPlacement, posMatrix: mat4, invMatrix: mat4, mercatorCenter: [number, number], transform: Transform, textPixelRatio: number, tile: Tile, fogState: FogState | null | undefined, groupOrders: PlacementGroupOrders, styleLayerOrder: number, featureStates: FeatureStates, replacementSource: ReplacementSource | null, fadeDuration: number): void {
         if (this.symbolInstances.length === 0) return;
-
-        this._fadeDuration = fadeDuration;
 
         if (replacementSource) {
             this.updateReplacement(tile.tileID, replacementSource);
@@ -1122,14 +1198,12 @@ class SymbolBucket implements Bucket, SymbolSource {
 
         if (!tile.collisionBoxArray) return;
 
-        if (this.placementVariantVisible.length === 0) {
-            assert(this.symbolInstances.length <= MAX_SYMBOLS_PER_BUCKET);
-            this.placementVariantVisible = new Array<boolean>(this.symbolInstances.length).fill(false);
-            this.placementFadeRefTime = new Float64Array(this.symbolInstances.length);
-            this.placementFadeRunning = new Uint8Array(this.symbolInstances.length);
-            this._initPlacementOpacities();
-        }
+        this.ensurePlacementState();
         const placementNow = globalPlacement.timestamp();
+        const nonOwnedSymbols = this.nonOwnedSymbols;
+        // A tile held for fading owns no area: the tiles taking over its area continue the state of
+        // the symbols they have too, and the rest fade out here, as legacy placement does
+        const holdingForFade = tile.holdingForFade();
 
         const layer = this.layers[0];
         if (layer.appearances && layer.appearances.length > 0) {
@@ -1305,16 +1379,13 @@ class SymbolBucket implements Bucket, SymbolSource {
                 if (clipped) break;
             }
 
-            const symbolId: SymbolId = {styleLayerId: layerUid, symbolIdOrigin: SymbolIdOrigin.GENERATED, symbolId: generatedSymbolId(this.bucketInstanceId, index)};
-            const variantId: SymbolVariantId = {symbolId, variantIdx: 0};
+            const variantId: SymbolVariantId = {symbolId: generatedSymbolId(this.bucketInstanceId, index), variantIdx: 0};
 
-            // This tile may be a coarser tile retained alongside an already-loaded finer child tile
-            // (e.g. while zooming out). Without a stable id, we can't dedupe the same feature placed
-            // from both tiles, so we conservatively hide all symbols from a parent tile wherever a child
-            // tile covers it
-            const shadowedByChildTile = childCoverageRects.length > 0 && !hasStableId(symbolId) &&
-                childCoverageRects.some((r) => instance.tileAnchorX >= r.min.x && instance.tileAnchorX < r.max.x &&
-                    instance.tileAnchorY >= r.min.y && instance.tileAnchorY < r.max.y);
+            // Every point of the map is owned by the finest rendered tile covering it: this tile may be
+            // a coarser one retained alongside finer child tiles (e.g. while zooming out), and only the
+            // owner feeds the symbols anchored there. The covered copy's state is
+            // carried over by TilePlacementRelationsIndex instead.
+            const nonOwned = nonOwnedSymbols[index] === 1;
 
             const feature = latestFeatureIndex ? latestFeatureIndex.loadFeature({
                 featureIndex: instance.featureIndex,
@@ -1328,7 +1399,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             const symbolPlacementPriority = needsFeatureForPlacementPriority && feature ? placementPriorityProperty.evaluate(feature, featureState) : placementPriorityFallback;
             const placementSubgroupOrder = needsFeatureForPlacementGroup && feature ? resolveGroupOrder(placementGroupProperty.evaluate(feature, featureState)) : placementSubgroupOrderFallback;
 
-            this._settleFinishedFade(index, instance, placementNow);
+            this._settleFinishedFade(index, instance, placementNow, fadeDuration);
 
             // Feed the instance's current visibility so placement can detect show/hide transitions
             // and pick the matching collision hysteresis. Placement is Fixed: along-line symbols are
@@ -1344,12 +1415,14 @@ class SymbolBucket implements Bucket, SymbolSource {
 
             // A symbol contributes its icon and/or text collision boxes as one variant.
             globalPlacement.startSymbolVariantProcessing(variantId, priority, placementRules, tileIdentity, featureId);
-            if (!clipped && !shadowedByChildTile) {
+
+            if (!clipped && !nonOwned && !holdingForFade) {
                 const symbolZOffsetValue = needsFeatureForZOffset && feature ? symbolZOffsetProperty.evaluate(feature, {}) : constantSymbolZOffset;
                 addCollisionBox(collisionArrays.iconBox, iconPartPlacementRules, instance, symbolZOffsetValue, () => this.getSymbolInstanceIconSize(iconZoomSize, zoom, instance.placedIconSymbolIndex));
                 addCollisionBox(collisionArrays.textBox, textPartPlacementRules, instance, symbolZOffsetValue, () => this.getSymbolInstanceTextSize(textZoomSize, instance, zoom, index));
             }
-            globalPlacement.finishVariantProcessing();
+
+            globalPlacement.finishVariantProcessing(fadeDuration);
         }
     }
 
@@ -2004,7 +2077,8 @@ class SymbolBucket implements Bucket, SymbolSource {
     }
 
     uploadPending(): boolean {
-        return !this.uploaded || this.text.programConfigurations.needsUpload || this.icon.programConfigurations.needsUpload;
+        return !this.uploaded || this.text.programConfigurations.needsUpload || this.icon.programConfigurations.needsUpload ||
+            this.text.fadeUploadPending() || this.icon.fadeUploadPending();
     }
 
     upload(context: Context, canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties) {

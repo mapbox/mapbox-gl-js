@@ -1,0 +1,56 @@
+{
+  "description": "Zooming in from 5 to 6 at 100 ms replaces the z5 tile with its z6 child, whose filter drops the label, so the copy in the z5 tile starts fading out. At 140 ms a filter change lays the z6 tile out again with the label: its new bucket has to continue the state of the z5 copy, which is handed over at once. The label is offset up at z5 and down at z6 so that its two copies don't overlap. Fades last 100 ms and the clock is frozen at 160 ms, so the label, fading back in from 0.6, is drawn at 0.8 opacity. A restarted fade would draw it at 0.2, and a z5 copy that wasn't handed over would still be drawn at 0.4 above it.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "collisionDebug": true,
+      "mapMode": "continuous-snapshot",
+      "width": 96,
+      "height": 48,
+      "fadeDuration": 100,
+      "globalPlacement": true,
+      "operations": [
+        ["setTimer", 0],
+        ["wait"],
+        ["setTimer", 100],
+        ["wait"],
+        ["setZoom", 6],
+        ["wait"],
+        ["setTimer", 140],
+        ["setFilter", "text", true],
+        ["wait"],
+        ["setTimer", 160],
+        ["wait"]
+      ],
+      "skip-test": [{"platform-tag-contains": "native", "reason": "skip - Not yet implemented"}]
+    }
+  },
+  "center": [2.5, -2.5],
+  "zoom": 5,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [2.5, -2.5]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {"id": "background", "type": "background", "paint": {"background-color": "white"}},
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "filter": ["<", ["zoom"], 6],
+      "layout": {
+        "text-field": "Label",
+        "text-size": 24,
+        "text-offset": ["step", ["zoom"], ["literal", [0, -0.3]], 6, ["literal", [0, 0.3]]],
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      },
+      "paint": {"text-color": "black"}
+    }
+  ]
+}

@@ -33,6 +33,7 @@ import FeatureIndex from '../../../src/data/feature_index';
 import SymbolBucket from '../../../src/data/bucket/symbol_bucket';
 import {createSymbolBucket} from '../../util/create_symbol_layer';
 import {getProjection} from '../../../src/geo/projection/index';
+import {TilePlacementRelationsIndex} from '../../../src/placement/tile_placement_relations_index';
 import vectorStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 import glyphData from '../../fixtures/fontstack-glyphs.json';
 
@@ -3338,7 +3339,8 @@ describe('Style#_updatePlacement', () => {
             vi.spyOn(style, 'getLayerSourceCache').mockReturnValue({
                 getRenderableIds: () => [0],
                 getTileByID: () => tile,
-                _state: {getState: () => ({})}
+                _state: {getState: () => ({})},
+                placementRelations: new TilePlacementRelationsIndex()
             });
 
             // t=1000: the symbol has no colliding neighbor, so it places and starts a

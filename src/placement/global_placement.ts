@@ -9,7 +9,7 @@ import type {GlobalPlacementPriority} from './global_placement_priority';
 import type {PlacementDebugSymbol, TileIdentity, VariantPlacementResultValue} from './placement_debug';
 import type {PartPlacementRules, PlacementRules} from './placement_rules';
 import type {SymbolSource} from './symbol_source';
-import type {SymbolId, SymbolVariantId} from './types';
+import type {SymbolVariantId} from './types';
 
 function noOpOnBlocked() {}
 
@@ -27,50 +27,23 @@ const GRID_CELL_SIZE = 32;
 const INVISIBLE_VARIANTS_COLLISION_PADDING = 1;
 const VISIBLE_VARIANTS_COLLISION_PADDING = 0;
 
-/**
- * Combines `styleLayerId` and `symbolIdOrigin` into a single safe-integer map key.
- * Unlike `symbolId` (which may be up to Number.MAX_SAFE_INTEGER) both
- * inputs here are small and bounded, so we can create a key without hashing
- */
-function layerOriginKey(id: SymbolId): number {
-    assert(id.styleLayerId >= 0 && id.styleLayerId < Number.MAX_SAFE_INTEGER / 2);
-    return id.styleLayerId * 2 + id.symbolIdOrigin;
-}
-
 function symbolVariantIdEquals(a: SymbolVariantId, b: SymbolVariantId): boolean {
-    return a.variantIdx === b.variantIdx &&
-        a.symbolId.styleLayerId === b.symbolId.styleLayerId &&
-        a.symbolId.symbolIdOrigin === b.symbolId.symbolIdOrigin &&
-        a.symbolId.symbolId === b.symbolId.symbolId;
+    return a.symbolId === b.symbolId && a.variantIdx === b.variantIdx;
 }
 
-function symbolIdEquals(a: SymbolId, b: SymbolId): boolean {
-    return a.styleLayerId === b.styleLayerId &&
-        a.symbolIdOrigin === b.symbolIdOrigin &&
-        a.symbolId === b.symbolId;
-}
-
-// layerOriginKey(symbolId) -> symbolId.symbolId -> Set<variantIdx>
-type VariantIdSet = Map<number, Map<number, Set<number>>>;
+// symbolId -> Set<variantIdx>
+type VariantIdSet = Map<number, Set<number>>;
 
 function hasVariantId(set: VariantIdSet, id: SymbolVariantId): boolean {
-    const bySymbolId = set.get(layerOriginKey(id.symbolId));
-    if (!bySymbolId) return false;
-    const byVariantIdx = bySymbolId.get(id.symbolId.symbolId);
+    const byVariantIdx = set.get(id.symbolId);
     return byVariantIdx !== undefined && byVariantIdx.has(id.variantIdx);
 }
 
 function addVariantId(set: VariantIdSet, id: SymbolVariantId) {
-    const key = layerOriginKey(id.symbolId);
-    let bySymbolId = set.get(key);
-    if (!bySymbolId) {
-        bySymbolId = new Map();
-        set.set(key, bySymbolId);
-    }
-    let byVariantIdx = bySymbolId.get(id.symbolId.symbolId);
+    let byVariantIdx = set.get(id.symbolId);
     if (!byVariantIdx) {
         byVariantIdx = new Set();
-        bySymbolId.set(id.symbolId.symbolId, byVariantIdx);
+        set.set(id.symbolId, byVariantIdx);
     }
     byVariantIdx.add(id.variantIdx);
 }
@@ -126,8 +99,8 @@ export class GlobalPlacement {
     // Only ids actually referenced by an onlyIfPlaced rule are tracked here.
     _onlyIfPlacedReferencedIds: VariantIdSet;
     _placedVariantIds: VariantIdSet;
-    // layerOriginKey(symbolId) -> symbolId.symbolId -> the variantIdx that won placement
-    _placedSymbolIds: Map<number, Map<number, number>>;
+    // symbolId -> the variantIdx that won placement
+    _placedSymbolIds: Map<number, number>;
     _processingSource: SymbolSource | null;
     // The variant currently streaming parts in is always the last entry of _symbols.
     _variantProcessingStarted: boolean;
@@ -182,24 +155,8 @@ export class GlobalPlacement {
         return this._timestamp;
     }
 
-    _hasPlacedSymbol(id: SymbolId): boolean {
-        const bySymbolId = this._placedSymbolIds.get(layerOriginKey(id));
-        return bySymbolId !== undefined && bySymbolId.has(id.symbolId);
-    }
-
-    _placedVariantIdxFor(id: SymbolId): number | undefined {
-        const bySymbolId = this._placedSymbolIds.get(layerOriginKey(id));
-        return bySymbolId && bySymbolId.get(id.symbolId);
-    }
-
     _addPlacedSymbol(id: SymbolVariantId) {
-        const key = layerOriginKey(id.symbolId);
-        let bySymbolId = this._placedSymbolIds.get(key);
-        if (!bySymbolId) {
-            bySymbolId = new Map();
-            this._placedSymbolIds.set(key, bySymbolId);
-        }
-        bySymbolId.set(id.symbolId.symbolId, id.variantIdx);
+        this._placedSymbolIds.set(id.symbolId, id.variantIdx);
     }
 
     startSymbolSourceProcessing(source: SymbolSource) {
@@ -217,7 +174,7 @@ export class GlobalPlacement {
         this._symbols.push({priority, source, variantId, parts: [], placementRules, tileID, featureId});
 
         if (placementRules.onlyIfPlaced) {
-            assert(!symbolIdEquals(placementRules.onlyIfPlaced.symbolId, variantId.symbolId));
+            assert(placementRules.onlyIfPlaced.symbolId !== variantId.symbolId);
             addVariantId(this._onlyIfPlacedReferencedIds, placementRules.onlyIfPlaced);
         }
 
@@ -241,7 +198,7 @@ export class GlobalPlacement {
         this._symbols.at(-1)!.parts.push({geometry, rules});
     }
 
-    finishVariantProcessing() {
+    finishVariantProcessing(fadeDuration: number) {
         if (!this._variantProcessingStarted) throw new Error('Attempt to finish a symbol variant processing that was not started');
         this._variantProcessingStarted = false;
 
@@ -252,7 +209,7 @@ export class GlobalPlacement {
             // be hidden here: finishPlacementRun never sees a dropped symbol and would otherwise leave it
             // visible forever without any collision box in the grid.
             if (symbol.priority.symbolVariantVisibility === SymbolVariantVisibility.VARIANT_VISIBLE) {
-                symbol.source.hideSymbolVariant(symbol.variantId, this._timestamp);
+                symbol.source.hideSymbolVariant(symbol.variantId, this._timestamp, fadeDuration);
             }
             this._symbols.pop();
         }
@@ -267,11 +224,9 @@ export class GlobalPlacement {
 
         this._lastBlockedBy = undefined;
 
-        if (this._hasPlacedSymbol(symbol.variantId.symbolId)) {
-            if (this._collectDebugData) {
-                const winningVariantIdx = this._placedVariantIdxFor(symbol.variantId.symbolId);
-                if (winningVariantIdx !== undefined) this._lastBlockedBy = {symbolId: symbol.variantId.symbolId, variantIdx: winningVariantIdx};
-            }
+        const winningVariantIdx = this._placedSymbolIds.get(symbol.variantId.symbolId);
+        if (winningVariantIdx !== undefined) {
+            if (this._collectDebugData) this._lastBlockedBy = {symbolId: symbol.variantId.symbolId, variantIdx: winningVariantIdx};
             return VariantPlacementResult.OTHER_VARIANT_PLACED;
         }
 
@@ -318,7 +273,7 @@ export class GlobalPlacement {
         return VariantPlacementResult.PLACED;
     }
 
-    finishPlacementRun() {
+    finishPlacementRun(fadeDuration: number) {
         if (!this._runStarted) throw new Error('Attempt to finish a placement run that was not started');
         this._runStarted = false;
 
@@ -339,8 +294,8 @@ export class GlobalPlacement {
             }
 
             if (wasVisible !== visible) {
-                if (visible) symbol.source.showSymbolVariant(symbol.variantId, timestamp);
-                else symbol.source.hideSymbolVariant(symbol.variantId, timestamp);
+                if (visible) symbol.source.showSymbolVariant(symbol.variantId, timestamp, fadeDuration);
+                else symbol.source.hideSymbolVariant(symbol.variantId, timestamp, fadeDuration);
             }
 
             if (this._collectDebugData) {

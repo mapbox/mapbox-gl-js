@@ -11,7 +11,7 @@ import {OverscaledTileID, CanonicalTileID, UnwrappedTileID} from '../../../src/s
 import Tile from '../../../src/source/tile';
 import Point from '@mapbox/point-geometry';
 import TriangleGridIndex from '../../../src/util/triangle_grid_index';
-import {ReplacementSource, transformPointToTile} from '../../../3d-style/source/replacement_source';
+import {ReplacementSource} from '../../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../../3d-style/util/conflation';
 import CrossTileSymbolIndex from '../../../src/symbol/cross_tile_symbol_index';
 import FeatureIndex from '../../../src/data/feature_index';
@@ -20,7 +20,7 @@ import {getProjection} from '../../../src/geo/projection/index';
 import vectorStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 import glyphData from '../../fixtures/fontstack-glyphs.json';
 import SegmentVector from '../../../src/data/segment';
-import SymbolBucket from '../../../src/data/bucket/symbol_bucket';
+import SymbolBucket, {generatedSymbolId} from '../../../src/data/bucket/symbol_bucket';
 import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
 import featureFilter from '../../../src/style-spec/feature_filter/index';
 import {GlobalPlacement} from '../../../src/placement/global_placement';
@@ -128,7 +128,7 @@ test('SymbolBucket#addToPlacement places a real symbol via the new placement pip
     const invMatrix = projection.createInversionMatrix(placementTransform, tileID.canonical);
     const mercatorCenter: [number, number] = [0, 0];
     const textPixelRatio = 512 / EXTENT;
-    const tile = {tileID, collisionBoxArray, latestFeatureIndex: null};
+    const tile = {tileID, collisionBoxArray, latestFeatureIndex: null, holdingForFade: () => false};
 
     const globalPlacement = new GlobalPlacement();
     const showSymbolVariantSpy = vi.spyOn(bucket, 'showSymbolVariant');
@@ -138,7 +138,7 @@ test('SymbolBucket#addToPlacement places a real symbol via the new placement pip
 
     globalPlacement.startPlacement(0, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null, null, INSTANT_FADE_DURATION, []);
+    bucket.addToPlacement(globalPlacement, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null, null, INSTANT_FADE_DURATION);
 
     // addToPlacement seeds the (until now empty) fade buffer with one settled-hidden entry per glyph
     // vertex, since new placement never runs Placement#updateBucketOpacities to build it from scratch.
@@ -149,7 +149,7 @@ test('SymbolBucket#addToPlacement places a real symbol via the new placement pip
     }
 
     globalPlacement.finishSourceProcessing();
-    globalPlacement.finishPlacementRun();
+    globalPlacement.finishPlacementRun(INSTANT_FADE_DURATION);
 
     // The fixture's single point feature has no colliding neighbor, so it should place successfully
     // (was invisible -> now visible), proving id allocation, size evaluation, anchor projection and
@@ -169,9 +169,9 @@ test('SymbolBucket#addToPlacement places a real symbol via the new placement pip
     showSymbolVariantSpy.mockClear();
     globalPlacement.startPlacement(1, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null, null, INSTANT_FADE_DURATION, []);
+    bucket.addToPlacement(globalPlacement, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null, null, INSTANT_FADE_DURATION);
     globalPlacement.finishSourceProcessing();
-    globalPlacement.finishPlacementRun();
+    globalPlacement.finishPlacementRun(INSTANT_FADE_DURATION);
 
     expect(showSymbolVariantSpy).not.toHaveBeenCalled();
     for (let i = 0; i < bucket.text.fadeVertexArray.length; i++) {
@@ -193,7 +193,7 @@ test('SymbolBucket#defaultPlacedTextSymbolIndex returns -1 for an icon-only inst
 
     // hasTextData() is bucket-wide: this bucket has real text elsewhere, but this particular
     // instance placed none of the four text variants (e.g. its text-field evaluated to empty) --
-    // the only signal available to _writeFadeState before it indexes into text.placedSymbolArray.
+    // the only signal available to _updateFadeState before it indexes into text.placedSymbolArray.
     const iconOnlyInstance = {
         rightJustifiedTextSymbolIndex: -1,
         centerJustifiedTextSymbolIndex: -1,
@@ -204,7 +204,7 @@ test('SymbolBucket#defaultPlacedTextSymbolIndex returns -1 for an icon-only inst
     // boxIndex is the instance's raw position in symbolInstances, which has no meaning in
     // bucket.text.placedSymbolArray's index space (one entry per instance that placed text, not
     // per instance overall) and can be >= placedSymbolArray.length for a bucket with any icon-only
-    // instances -- exactly the case that crashed _writeFadeState's `.get()` call.
+    // instances -- exactly the case that crashed _updateFadeState's `.get()` call.
     expect(bucket.defaultPlacedTextSymbolIndex(iconOnlyInstance, 5)).toEqual(-1);
 });
 
@@ -254,7 +254,7 @@ test('SymbolBucket#addToPlacement wraps a fade reference time past the 32-bit ra
     const invMatrix = projection.createInversionMatrix(placementTransform, tileID.canonical);
     const mercatorCenter: [number, number] = [0, 0];
     const textPixelRatio = 512 / EXTENT;
-    const tile = {tileID, collisionBoxArray, latestFeatureIndex: null};
+    const tile = {tileID, collisionBoxArray, latestFeatureIndex: null, holdingForFade: () => false};
 
     const globalPlacement = new GlobalPlacement();
 
@@ -264,9 +264,9 @@ test('SymbolBucket#addToPlacement wraps a fade reference time past the 32-bit ra
 
     globalPlacement.startPlacement(epochNow, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null, null, INSTANT_FADE_DURATION, []);
+    bucket.addToPlacement(globalPlacement, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null, null, INSTANT_FADE_DURATION);
     globalPlacement.finishSourceProcessing();
-    globalPlacement.finishPlacementRun();
+    globalPlacement.finishPlacementRun(INSTANT_FADE_DURATION);
 
     for (let i = 0; i < bucket.text.fadeVertexArray.length; i++) {
         expect(bucket.text.fadeVertexArray.int32[i * 2]).toEqual(wrapped);
@@ -292,7 +292,7 @@ test('SymbolBucket#addToPlacement hides a symbol clipped by a 3D-object/clip-lay
     const invMatrix = projection.createInversionMatrix(placementTransform, tileID.canonical);
     const mercatorCenter: [number, number] = [0, 0];
     const textPixelRatio = 512 / EXTENT;
-    const tile = {tileID, collisionBoxArray, latestFeatureIndex: null};
+    const tile = {tileID, collisionBoxArray, latestFeatureIndex: null, holdingForFade: () => false};
 
     const replacementSource = new ReplacementSource();
     replacementSource._setSources([createFullTileFootprintSource(new UnwrappedTileID(0, new CanonicalTileID(0, 0, 0)), 5)]);
@@ -302,9 +302,9 @@ test('SymbolBucket#addToPlacement hides a symbol clipped by a 3D-object/clip-lay
 
     globalPlacement.startPlacement(0, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, {}, replacementSource, INSTANT_FADE_DURATION, []);
+    bucket.addToPlacement(globalPlacement, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, {}, replacementSource, INSTANT_FADE_DURATION);
     globalPlacement.finishSourceProcessing();
-    globalPlacement.finishPlacementRun();
+    globalPlacement.finishPlacementRun(INSTANT_FADE_DURATION);
 
     // The symbol's anchor falls inside the clip footprint, so no geometry was fed for it: it never
     // gets a chance to place, unlike the equivalent unclipped run in the previous test.
@@ -332,59 +332,60 @@ function setUpForChildCoverageTest() {
     const invMatrix = projection.createInversionMatrix(placementTransform, tileID.canonical);
     const mercatorCenter: [number, number] = [0, 0];
     const textPixelRatio = 512 / EXTENT;
-    const tile = {tileID, collisionBoxArray, latestFeatureIndex: null};
+    const tile = {tileID, collisionBoxArray, latestFeatureIndex: null, holdingForFade: () => false};
 
-    // Whichever quadrant the fixture's anchor actually falls in, so a rect for that quadrant is
-    // guaranteed to cover it, and a rect for the opposite quadrant is guaranteed not to.
-    const anchor = bucket.symbolInstances.get(0);
-    const anchorQuadrant = {
-        x: anchor.tileAnchorX < EXTENT / 2 ? 0 : 1,
-        y: anchor.tileAnchorY < EXTENT / 2 ? 0 : 1,
-    };
-    const coverageRectForQuadrant = (qx: number, qy: number) => {
-        const childCanonical = new CanonicalTileID(1, qx, qy);
-        return {
-            min: transformPointToTile(0, 0, childCanonical, tileID.canonical),
-            max: transformPointToTile(EXTENT, EXTENT, childCanonical, tileID.canonical)
-        };
-    };
-
-    return {bucket, tile, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, anchorQuadrant, coverageRectForQuadrant};
+    return {bucket, tile, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio};
 }
 
-test('SymbolBucket#addToPlacement hides a symbol shadowed by a loaded child tile', () => {
-    const {bucket, tile, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, anchorQuadrant, coverageRectForQuadrant} = setUpForChildCoverageTest();
-    const childCoverageRects = [coverageRectForQuadrant(anchorQuadrant.x, anchorQuadrant.y)];
+test('SymbolBucket#addToPlacement hides a symbol owned by a rendered child tile', () => {
+    const {bucket, tile, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio} = setUpForChildCoverageTest();
+    bucket.ensurePlacementState();
+    bucket.nonOwnedSymbols[0] = 1;
 
     const globalPlacement = new GlobalPlacement();
     const showSymbolVariantSpy = vi.spyOn(bucket, 'showSymbolVariant');
 
     globalPlacement.startPlacement(0, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null, null, INSTANT_FADE_DURATION, childCoverageRects);
+    bucket.addToPlacement(globalPlacement, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null, null, INSTANT_FADE_DURATION);
     globalPlacement.finishSourceProcessing();
-    globalPlacement.finishPlacementRun();
+    globalPlacement.finishPlacementRun(INSTANT_FADE_DURATION);
 
-    // The symbol's anchor falls inside the child tile's coverage rect, so no geometry was fed for
-    // it: it never gets a chance to place, unlike the equivalent unshadowed run in the "places a
-    // real symbol" test above.
+    // The symbol is owned by a child tile, so no geometry was fed for it: it never gets a chance to
+    // place, unlike the equivalent unshadowed run in the "places a real symbol" test above.
     expect(showSymbolVariantSpy).not.toHaveBeenCalled();
     expect(bucket.placementVariantVisible).toEqual([false]);
 });
 
-test('SymbolBucket#addToPlacement still places a symbol outside any child coverage rect', () => {
-    const {bucket, tile, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, anchorQuadrant, coverageRectForQuadrant} = setUpForChildCoverageTest();
-    // The quadrant diagonally opposite the anchor's own -- guaranteed not to cover it.
-    const childCoverageRects = [coverageRectForQuadrant(1 - anchorQuadrant.x, 1 - anchorQuadrant.y)];
+test('SymbolBucket#addToPlacement hides the symbols of a tile held for fading', () => {
+    const {bucket, tile, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio} = setUpForChildCoverageTest();
+    tile.holdingForFade = () => true;
 
     const globalPlacement = new GlobalPlacement();
     const showSymbolVariantSpy = vi.spyOn(bucket, 'showSymbolVariant');
 
     globalPlacement.startPlacement(0, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null, null, INSTANT_FADE_DURATION, childCoverageRects);
+    bucket.addToPlacement(globalPlacement, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null, null, INSTANT_FADE_DURATION);
     globalPlacement.finishSourceProcessing();
-    globalPlacement.finishPlacementRun();
+    globalPlacement.finishPlacementRun(INSTANT_FADE_DURATION);
+
+    expect(showSymbolVariantSpy).not.toHaveBeenCalled();
+    expect(bucket.placementVariantVisible).toEqual([false]);
+});
+
+test('SymbolBucket#addToPlacement still places a symbol not owned by a rendered child tile', () => {
+    const {bucket, tile, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio} = setUpForChildCoverageTest();
+    bucket.ensurePlacementState();
+
+    const globalPlacement = new GlobalPlacement();
+    const showSymbolVariantSpy = vi.spyOn(bucket, 'showSymbolVariant');
+
+    globalPlacement.startPlacement(0, 100, 100);
+    globalPlacement.startSymbolSourceProcessing(bucket);
+    bucket.addToPlacement(globalPlacement, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, new Map(), 0, null, null, INSTANT_FADE_DURATION);
+    globalPlacement.finishSourceProcessing();
+    globalPlacement.finishPlacementRun(INSTANT_FADE_DURATION);
 
     expect(showSymbolVariantSpy).toHaveBeenCalledOnce();
     expect(bucket.placementVariantVisible).toEqual([true]);
@@ -435,16 +436,16 @@ function placeAndCapturePriority(bucket: SymbolBucket, groupOrders: Map<string, 
     const invMatrix = projection.createInversionMatrix(placementTransform, tileID.canonical);
     const mercatorCenter: [number, number] = [0, 0];
     const textPixelRatio = 512 / EXTENT;
-    const tile = {tileID, collisionBoxArray, latestFeatureIndex: withFeatureIndex ? fixtureFeatureIndex(tileID, promoteId) : null};
+    const tile = {tileID, collisionBoxArray, latestFeatureIndex: withFeatureIndex ? fixtureFeatureIndex(tileID, promoteId) : null, holdingForFade: () => false};
 
     const globalPlacement = new GlobalPlacement();
     const startVariantSpy = vi.spyOn(globalPlacement, 'startSymbolVariantProcessing');
 
     globalPlacement.startPlacement(0, 100, 100);
     globalPlacement.startSymbolSourceProcessing(bucket);
-    bucket.addToPlacement(globalPlacement, 1, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, groupOrders, styleLayerOrder, featureStates, null, INSTANT_FADE_DURATION, []);
+    bucket.addToPlacement(globalPlacement, posMatrix, invMatrix, mercatorCenter, placementTransform, textPixelRatio, tile, null, groupOrders, styleLayerOrder, featureStates, null, INSTANT_FADE_DURATION);
     globalPlacement.finishSourceProcessing();
-    globalPlacement.finishPlacementRun();
+    globalPlacement.finishPlacementRun(INSTANT_FADE_DURATION);
 
     expect(startVariantSpy).toHaveBeenCalledOnce();
     return startVariantSpy.mock.calls[0][1];
@@ -575,6 +576,58 @@ test('SymbolBucket#resetPlacementVisibility is a no-op before the bucket has eve
 
     expect(() => bucket.resetPlacementVisibility()).not.toThrow();
     expect(bucket.text.opacityVertexArray.length).toEqual(0);
+});
+
+function laidOutBucket(): SymbolBucket {
+    const bucket = bucketSetup();
+    const projection = getProjection({name: 'mercator'});
+    bucket.populate([{feature}], {iconDependencies: {}, glyphDependencies: {}});
+    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
+    return bucket;
+}
+
+test('SymbolBucket#takePlacementStateFrom continues the source symbol\'s fade', () => {
+    const FADE_ANIMATING_VISIBLE = 1;
+    const source = laidOutBucket();
+    source.ensurePlacementState();
+    source.showSymbolVariant({symbolId: generatedSymbolId(source.bucketInstanceId, 0), variantIdx: 0}, 42, INSTANT_FADE_DURATION);
+
+    const target = laidOutBucket();
+    expect(target.takePlacementStateFrom(source, 0, 0)).toBe(true);
+
+    expect(target.placementVariantVisible).toEqual([true]);
+    expect(target.placementFadeRefTime[0]).toEqual(42);
+    expect(target.hasActiveFade()).toBe(true);
+    expect(target.text.fadeVertexArray.length).toEqual(target.text.layoutVertexArray.length);
+    for (let i = 0; i < target.text.fadeVertexArray.length; i++) {
+        expect(target.text.fadeVertexArray.int32[i * 2]).toEqual(42);
+        expect(target.text.fadeVertexArray.int32[i * 2 + 1]).toEqual(FADE_ANIMATING_VISIBLE);
+    }
+});
+
+test('SymbolBucket#takePlacementStateFrom hides the source copy at once', () => {
+    const source = laidOutBucket();
+    source.ensurePlacementState();
+    source.showSymbolVariant({symbolId: generatedSymbolId(source.bucketInstanceId, 0), variantIdx: 0}, 42, INSTANT_FADE_DURATION);
+
+    laidOutBucket().takePlacementStateFrom(source, 0, 0);
+
+    expect(source.placementVariantVisible).toEqual([false]);
+    expect(source.hasActiveFade()).toBe(false);
+});
+
+test('SymbolBucket#takePlacementStateFrom of a hidden, settled source leaves the target as is', () => {
+    const source = laidOutBucket();
+    source.ensurePlacementState();
+
+    const target = laidOutBucket();
+    target.ensurePlacementState();
+    target.showSymbolVariant({symbolId: generatedSymbolId(target.bucketInstanceId, 0), variantIdx: 0}, 7, INSTANT_FADE_DURATION);
+    expect(target.takePlacementStateFrom(source, 0, 0)).toBe(false);
+
+    expect(target.placementVariantVisible).toEqual([true]);
+    expect(target.placementFadeRefTime[0]).toEqual(7);
 });
 
 test('SymbolBucket integer overflow', () => {

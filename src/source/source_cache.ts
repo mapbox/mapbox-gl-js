@@ -12,6 +12,7 @@ import SourceFeatureState from './source_state';
 import MercatorCoordinate, {mercatorXfromLng} from '../geo/mercator_coordinate';
 import {isHttpNotFound} from '../util/ajax';
 import LazySource from './lazy_source';
+import {TilePlacementRelationsIndex} from '../placement/tile_placement_relations_index';
 
 import type {CanonicalTileID} from './tile_id';
 import type Context from '../gl/context';
@@ -66,6 +67,7 @@ class SourceCache extends Evented {
     tileCoverLift: number;
     _state: SourceFeatureState;
     _loadedParentTiles: Map<number, Tile | null | undefined>;
+    placementRelations: TilePlacementRelationsIndex;
     _renderSourceType: RenderSourceType | null | undefined;
     _maxzoomOverride: number | null;
     _shadowCasterTiles: Set<number>;
@@ -87,6 +89,7 @@ class SourceCache extends Evented {
         this._minTileCacheSize = source.minTileCacheSize;
         this._maxTileCacheSize = source.maxTileCacheSize;
         this._loadedParentTiles = new Map();
+        this.placementRelations = new TilePlacementRelationsIndex();
         this.castsShadows = false;
         this.tileCoverLift = 0.0;
 
@@ -345,7 +348,21 @@ class SourceCache extends Evented {
         let responseHeaders: Headers = new Headers();
         if (data && data.headers) responseHeaders = data.headers;
 
+        this._syncPlacementRelations();
+
         this._source.fire(new Event('data', {dataType: 'source', tile, coord: tile.tileID, 'sourceCacheId': this.id, responseHeaders}));
+    }
+
+    // Keeps the relations between rendered symbol tiles current for global placement. Runs whenever
+    // the rendered set can change: a tile (re)loads, coverage is recomputed, or tiles are held for
+    // fading, retained again or removed.
+    _syncPlacementRelations() {
+        if (!this.map || this.map._placementAlgorithm !== 'global') return;
+        const tiles: Array<Tile> = [];
+        for (const tile of this._tiles.values()) {
+            if (this._isTileRenderable(tile, true)) tiles.push(tile);
+        }
+        this.placementRelations.sync(tiles);
     }
 
     _hasTunnelGeometry(): boolean {
@@ -780,16 +797,23 @@ class SourceCache extends Evented {
         // Construct a cache of loaded parents
         this._updateLoadedParentTileCache();
 
+        this._syncPlacementRelations();
+
         if (this._renderSourceType === RenderSourceType.Symbol && this._source.afterUpdate) {
             this._source.afterUpdate();
         }
     }
 
     releaseSymbolFadeTiles() {
+        let someTileWasRemoved = false;
         for (const [id, tile] of this._tiles) {
             if (tile.holdingForFade()) {
                 this._removeTile(id);
+                someTileWasRemoved = true;
             }
+        }
+        if (someTileWasRemoved) {
+            this._syncPlacementRelations();
         }
     }
 
@@ -1024,6 +1048,7 @@ class SourceCache extends Evented {
             this._source._clear();
 
         this._cache.reset();
+        this.placementRelations.clear();
 
         if (this.map && this.usedForTerrain && this.map.painter.terrain) {
             this.map.painter.terrain.resetTileLookupCache(this.id);

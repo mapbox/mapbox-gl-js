@@ -1,0 +1,52 @@
+{
+  "description": "Zooming out from 6 to 2 skips more zooms than a loaded child tile is retained for, so the z6 tile is held for fading before the z2 tile loads. The z2 tile has the same label and continues its state from the held tile, so only the z2 copy is drawn, fully opaque. The label is offset up at z6 and down at z2 so the copies don't overlap. Fades last 100 ms: the zoom happens at 100 ms and the clock is frozen at 140 ms, so a restarted fade would draw the z2 copy at 0.4 below the held copy fading out at 0.6.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "collisionDebug": true,
+      "mapMode": "continuous-snapshot",
+      "width": 64,
+      "height": 64,
+      "fadeDuration": 100,
+      "globalPlacement": true,
+      "operations": [
+        ["setTimer", 0],
+        ["wait"],
+        ["setTimer", 100],
+        ["setZoom", 2],
+        ["wait"],
+        ["setTimer", 140],
+        ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "not-implemented: in gl-native"}
+      ]
+    }
+  },
+  "center": [30.5, 30],
+  "zoom": 6,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [30.5, 30]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {"id": "background", "type": "background", "paint": {"background-color": "white"}},
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": "Label",
+        "text-size": 12,
+        "text-offset": ["step", ["zoom"], ["literal", [0, 1]], 6, ["literal", [0, -1]]],
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      }
+    }
+  ]
+}

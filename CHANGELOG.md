@@ -8,6 +8,7 @@
 - Revert fix line geometry: clamp fake-round join anchor on short segments.
 - Fix visibility of the logo control based on imported source.
 - Fix a thin unlit line in the fill-extrusion flood light at very sharp polygon corners.
+- Introduce cross-tile fade state support for global placement.
 
 ## 3.34.0-rc.1
 

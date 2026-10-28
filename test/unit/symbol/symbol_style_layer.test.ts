@@ -6,6 +6,7 @@ import FormatSectionOverride from '../../../src/style/format_section_override';
 import {getPaintProperties} from '../../../src/style/style_layer/symbol_style_layer_properties';
 import Transform from '../../../src/geo/transform';
 import {OverscaledTileID} from '../../../src/source/tile_id';
+import {TilePlacementRelationsIndex} from '../../../src/placement/tile_placement_relations_index';
 
 function createSymbolLayer(layerProperties) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -129,8 +130,9 @@ describe('placeSymbols', () => {
         };
         const tile = {getBucket: () => bucket, tileID: new OverscaledTileID(0, 0, 0, 0, 0), tileSize: 512};
         const globalPlacement = createGlobalPlacement();
+        const sourceCache = {placementRelations: new TilePlacementRelationsIndex()};
 
-        layer.placeSymbols(createParameters(globalPlacement), [tile], 0, undefined, false, new Map());
+        layer.placeSymbols(createParameters(globalPlacement), [tile], 0, sourceCache, false);
 
         expect(globalPlacement.startSymbolSourceProcessing).toHaveBeenCalledExactlyOnceWith(bucket);
         expect(bucket.addToPlacement).toHaveBeenCalledOnce();
@@ -142,7 +144,7 @@ describe('placeSymbols', () => {
         const tile = {getBucket: () => undefined};
         const globalPlacement = createGlobalPlacement();
 
-        layer.placeSymbols(createParameters(globalPlacement), [tile], 0, undefined, false, new Map());
+        layer.placeSymbols(createParameters(globalPlacement), [tile], 0, undefined, false);
 
         expect(globalPlacement.startSymbolSourceProcessing).not.toHaveBeenCalled();
         expect(globalPlacement.finishSourceProcessing).not.toHaveBeenCalled();
@@ -154,7 +156,7 @@ describe('placeSymbols', () => {
         const tile = {getBucket: () => bucket};
         const globalPlacement = createGlobalPlacement();
 
-        layer.placeSymbols(createParameters(globalPlacement), [tile], 0, undefined, false, new Map());
+        layer.placeSymbols(createParameters(globalPlacement), [tile], 0, undefined, false);
 
         expect(globalPlacement.startSymbolSourceProcessing).not.toHaveBeenCalled();
         expect(globalPlacement.finishSourceProcessing).not.toHaveBeenCalled();

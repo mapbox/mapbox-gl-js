@@ -62,11 +62,15 @@ class VertexBuffer {
         this.context.bindVertexBuffer.set(this.buffer);
     }
 
-    updateData(array: StructArray) {
+    // Uploads elements [start, end) of the array; the whole array by default.
+    updateData(array: StructArray, start: number = 0, end: number = array.length) {
+        if (start === end) return;
         assert(array.length === this.length);
+        assert(start >= 0 && start <= end && end <= array.length);
         const gl = this.context.gl;
         this.bind();
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, array.uint8, 0, array.length * array.bytesPerElement);
+        const bytesPerElement = array.bytesPerElement;
+        gl.bufferSubData(gl.ARRAY_BUFFER, start * bytesPerElement, array.uint8, start * bytesPerElement, (end - start) * bytesPerElement);
     }
 
     enableAttributes(gl: WebGL2RenderingContext, program: Program<UniformBindings>) {

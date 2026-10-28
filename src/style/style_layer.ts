@@ -4,7 +4,6 @@ import {PropertyValues, PossiblyEvaluated, PossiblyEvaluatedPropertyValue, ZOOM_
 import {supportsPropertyExpression} from '../style-spec/util/properties';
 import featureFilter from '../style-spec/feature_filter/index';
 import {makeFQID} from '../util/fqid';
-import {createRuntimeLayerUID} from '../placement/layer_uid';
 import {type FeatureState} from '../style-spec/expression/index';
 import {isStateConstant} from '../style-spec/expression/is_constant';
 import assert from '../style-spec/util/assert';
@@ -33,7 +32,6 @@ import type {CreateProgramParams} from '../render/painter';
 import type SourceCache from '../source/source_cache';
 import type Tile from '../source/tile';
 import type {SymbolPlacementParameters} from '../placement/symbol_placement_parameters';
-import type {TileCoverageRect} from '../placement/types';
 import type Painter from '../render/painter';
 import type {LUT} from '../util/lut';
 import type {ImageId} from '../style-spec/expression/types/image_id';
@@ -55,7 +53,6 @@ const drapedLayers = new Set(['fill', 'line', 'background', 'hillshade', 'raster
 class StyleLayer extends Evented {
     id: string;
     fqid: string;
-    readonly runtimeLayerUID: number;
     scope: string;
     lut: LUT | null;
     metadata: unknown;
@@ -110,7 +107,6 @@ class StyleLayer extends Evented {
 
         this.id = layer.id;
         this.fqid = makeFQID(this.id, scope);
-        this.runtimeLayerUID = createRuntimeLayerUID();
         this.type = layer.type;
         this.scope = scope;
         this.lut = lut;
@@ -173,7 +169,7 @@ class StyleLayer extends Evented {
 
     // Feeds this layer's placeable symbols into the given global placement run. No-op for
     // non-symbol layers; overridden by SymbolStyleLayer.
-    placeSymbols(_parameters: SymbolPlacementParameters, _tiles: Array<Tile>, _styleLayerOrder: number, _sourceCache: SourceCache, _checkAgainstClipLayer: boolean, _childCoverageRectsByTileKey: ReadonlyMap<number, Array<TileCoverageRect>>): void {}
+    placeSymbols(_parameters: SymbolPlacementParameters, _tiles: Array<Tile>, _styleLayerOrder: number, _sourceCache: SourceCache, _checkAgainstClipLayer: boolean): void {}
 
     isDraped(_sourceCache?: SourceCache): boolean {
         return !this.is3D(true) && drapedLayers.has(this.type);

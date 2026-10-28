@@ -132,39 +132,15 @@ const map = window.map = new mapboxgl.Map({
 map.showCollisionBoxes = true;
 
 const STATUS_NAMES = ['PLACED', 'COLLIDED', 'OTHER_VARIANT_PLACED', 'DEPENDENCY_NOT_PLACED', 'OUT_OF_BOUNDS'];
-// Matches SymbolIdOrigin in src/placement/types.ts: whether symbolId is the vector-tile feature's
-// own id (stable, reusable across placement runs) or a synthetic per-bucket counter. Only GENERATED
-// is wired up today -- addToPlacement() never takes the REUSED_FROM_SOURCE_FEATURE path yet.
-const SYMBOL_ID_ORIGIN_NAMES = ['reused-feature-id', 'generated'];
+// symbolId packs the bucket instance and the symbol's index in it (see generatedSymbolId in
+// src/data/bucket/symbol_bucket.ts) -- unpack it to something readable.
+const MAX_SYMBOLS_PER_BUCKET = 2 ** 24;
 
-// styleLayerId is a runtime-only counter (see src/placement/layer_uid.ts), not the style's layer
-// id -- reach into Style's internal layer registry to resolve it back to something readable.
-// _layers only holds one scope's own layers; layers actually placed can live inside an imported
-// fragment (e.g. the Standard style's basemap import), so use the merged, cross-fragment registry
-// (_mergedLayers, keyed by fqid) instead -- that's the same set placement itself iterates. Return
-// the layer object itself (not just its fqid) so callers can read .id/.scope separately -- the
-// fqid string joins them with an invisible control character, unreadable if printed directly.
-function layerForUid(uid) {
-    const layers = map.style && map.style._mergedLayers;
-    if (!layers) return null;
-    for (const fqid in layers) {
-        if (layers[fqid].runtimeLayerUID === uid) return layers[fqid];
-    }
-    return null;
-}
-
-// "featureId" here is symbolId.symbolId, GlobalPlacement's own internal per-variant identity --
-// NOT necessarily the same number as a debug record's own (real vector-tile) featureId column;
-// they only coincide when symbolIdOrigin is reused-feature-id, which nothing produces yet.
 function formatVariantId(id) {
     if (!id) return '';
-    const layer = layerForUid(id.symbolId.styleLayerId);
-    const origin = SYMBOL_ID_ORIGIN_NAMES[id.symbolId.symbolIdOrigin] || `origin:${id.symbolId.symbolIdOrigin}`;
-    const parts = [`layer: ${layer ? layer.id : `layer-uid:${id.symbolId.styleLayerId}`}`];
-    if (layer && layer.scope) parts.push(`import: ${layer.scope}`);
-    parts.push(`featureId: ${id.symbolId.symbolId} (${origin})`);
-    parts.push(`variantIdx: ${id.variantIdx}`);
-    return parts.join(', ');
+    const bucket = Math.floor(id.symbolId / MAX_SYMBOLS_PER_BUCKET);
+    const index = id.symbolId % MAX_SYMBOLS_PER_BUCKET;
+    return `bucket: ${bucket}, index: ${index}, variantIdx: ${id.variantIdx}`;
 }
 
 function formatTileId(tileID) {
@@ -193,7 +169,7 @@ function formatSettings(placementRules, partPlacementRules) {
 }
 
 function variantIdKey(id) {
-    return `${id.symbolId.styleLayerId}.${id.symbolId.symbolIdOrigin}.${id.symbolId.symbolId}.${id.variantIdx}`;
+    return `${id.symbolId}.${id.variantIdx}`;
 }
 
 // While hovering a COLLIDED row, draw just that symbol's geometry and the one that blocked it on a

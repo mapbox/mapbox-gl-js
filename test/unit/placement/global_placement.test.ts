@@ -2,7 +2,7 @@ import {describe, test, expect, vi} from '../../util/vitest';
 import {GlobalPlacement} from '../../../src/placement/global_placement';
 import {defaultPlacementRules} from '../../../src/placement/placement_rules';
 import {VariantPlacementResult} from '../../../src/placement/placement_debug';
-import {SymbolIdOrigin, SymbolPlacementType, SymbolVariantVisibility} from '../../../src/placement/types';
+import {SymbolPlacementType, SymbolVariantVisibility} from '../../../src/placement/types';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 
 import type {Geometry} from '../../../src/placement/geometry';
@@ -10,7 +10,7 @@ import type {GlobalPlacementPriority} from '../../../src/placement/global_placem
 import type {PartPlacementRules, PlacementRules} from '../../../src/placement/placement_rules';
 import type {SymbolVariantId, SymbolVariantVisibilityValue} from '../../../src/placement/types';
 
-type NotifyFn = (variantId: SymbolVariantId, placementRunTimestamp: number) => void;
+type NotifyFn = (variantId: SymbolVariantId, placementRunTimestamp: number, fadeDuration: number) => void;
 
 type FakeSource = {
     showSymbolVariant: ReturnType<typeof vi.fn<NotifyFn>>;
@@ -29,7 +29,7 @@ function createFakeSource(): FakeSource {
 }
 
 function createVariantId(id: number, variantIdx = 0): SymbolVariantId {
-    return {symbolId: {styleLayerId: 0, symbolIdOrigin: SymbolIdOrigin.GENERATED, symbolId: id}, variantIdx};
+    return {symbolId: id, variantIdx};
 }
 
 function createPriority(
@@ -54,6 +54,7 @@ function box(left: number, top: number, right: number, bottom: number): Geometry
 }
 
 const testTileID = new OverscaledTileID(0, 0, 0, 0, 0);
+const FADE_DURATION = 300;
 
 // Adds a variant made of a single part holding the whole geometry.
 function addSymbolVariant(
@@ -68,7 +69,7 @@ function addSymbolVariant(
 ) {
     placement.startSymbolVariantProcessing(variantId, priority, placementRules, tileID, featureId);
     placement.addSymbolVariantPart(geometry, partPlacementRules);
-    placement.finishVariantProcessing();
+    placement.finishVariantProcessing(FADE_DURATION);
 }
 
 // Adds a variant made of two parts.
@@ -87,7 +88,7 @@ function addTwoPartSymbolVariant(
     placement.startSymbolVariantProcessing(variantId, priority, placementRules, tileID, featureId);
     placement.addSymbolVariantPart(firstGeometry, firstPartRules);
     placement.addSymbolVariantPart(secondGeometry, secondPartRules);
-    placement.finishVariantProcessing();
+    placement.finishVariantProcessing(FADE_DURATION);
 }
 
 const screenWidth = 100;
@@ -99,7 +100,7 @@ describe('InteractiveGlobalPlacement', () => {
     test('should work without sources', () => {
         const placement = new GlobalPlacement();
         placement.startPlacement(0, screenWidth, screenHeight);
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
     });
 
     test('should work without symbols', () => {
@@ -109,7 +110,7 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         expect(source.showSymbolVariant).not.toHaveBeenCalled();
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
@@ -123,9 +124,9 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startSymbolSourceProcessing(source);
         addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(10, 10, 20, 20), defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 123);
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 123, FADE_DURATION);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -138,9 +139,9 @@ describe('InteractiveGlobalPlacement', () => {
         addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 15, 15), defaultPartPlacementRules());
         addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(10, 10, 20, 20), defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.hideSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(1), 123);
+        expect(source.hideSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(1), 123, FADE_DURATION);
         expect(source.showSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -153,9 +154,9 @@ describe('InteractiveGlobalPlacement', () => {
         addSymbolVariant(placement, createVariantId(0, 0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
         addSymbolVariant(placement, createVariantId(0, 1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(20, 20, 30, 30), defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0, 0), 0);
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0, 0), 0, FADE_DURATION);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -168,7 +169,7 @@ describe('InteractiveGlobalPlacement', () => {
         addSymbolVariant(placement, createVariantId(0, 0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
         addSymbolVariant(placement, createVariantId(0, 1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_VISIBLE_VARIANT_INVISIBLE, 0, 0), box(20, 20, 30, 30), defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         expect(source.showSymbolVariant).not.toHaveBeenCalled();
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
@@ -184,9 +185,9 @@ describe('InteractiveGlobalPlacement', () => {
         addSymbolVariant(placement, createVariantId(1, 0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(9, 9, 12, 12), defaultPartPlacementRules());
         addSymbolVariant(placement, createVariantId(1, 1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(12, 12, 14, 14), defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(1, 1), 0);
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(1, 1), 0, FADE_DURATION);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -200,9 +201,9 @@ describe('InteractiveGlobalPlacement', () => {
         const rulesWithoutCollisions: PartPlacementRules = {collisionRules: undefined, insertIntoCollisionGrid: true};
         addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(5, 5, 15, 15), rulesWithoutCollisions);
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(1), 0);
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(1), 0, FADE_DURATION);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -215,9 +216,9 @@ describe('InteractiveGlobalPlacement', () => {
         addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), {collisionRules: {}, insertIntoCollisionGrid: false});
         addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(5, 5, 15, 15), defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(1), 0);
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(1), 0, FADE_DURATION);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -235,9 +236,9 @@ describe('InteractiveGlobalPlacement', () => {
             {collisionRules: {symbolVariantToIgnoreCollisionWith: createVariantId(0)}, insertIntoCollisionGrid: true}
         );
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(1), 0);
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(1), 0, FADE_DURATION);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -256,7 +257,7 @@ describe('InteractiveGlobalPlacement', () => {
         );
         addSymbolVariant(placement, createVariantId(2), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(11, 11, 21, 21), defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         // Variant 1 is allowed to ignore its own collision with variant 0, but that
         // doesn't let variant 2 ignore colliding with variant 0 too.
@@ -274,7 +275,7 @@ describe('InteractiveGlobalPlacement', () => {
         addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(10.5, 10.5, 15, 15), defaultPartPlacementRules());
         addSymbolVariant(placement, createVariantId(2), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_VISIBLE_VARIANT_INVISIBLE, 0, 0), box(10.5, 10.5, 15, 15), defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         // Neither box1 nor box2 is far enough from box0 to survive the 1px hysteresis
         // padding applied to variants that weren't already fully visible.
@@ -291,7 +292,7 @@ describe('InteractiveGlobalPlacement', () => {
         addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
         addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(10, 10, 15, 15), defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         // box1 only touches box0 (no padding applied since it was already visible), so
         // no collision -- both stay visible with no notifications.
@@ -304,8 +305,8 @@ describe('InteractiveGlobalPlacement', () => {
         const source1 = createFakeSource();
         const source2 = createFakeSource();
         const showCalls: Array<[string, number]> = [];
-        source1.showSymbolVariant.mockImplementation((id: SymbolVariantId) => showCalls.push(['source1', id.symbolId.symbolId]));
-        source2.showSymbolVariant.mockImplementation((id: SymbolVariantId) => showCalls.push(['source2', id.symbolId.symbolId]));
+        source1.showSymbolVariant.mockImplementation((id: SymbolVariantId) => showCalls.push(['source1', id.symbolId]));
+        source2.showSymbolVariant.mockImplementation((id: SymbolVariantId) => showCalls.push(['source2', id.symbolId]));
 
         const boxes = [
             box(0, 0, 8, 8), box(5, 5, 13, 13), box(10, 10, 18, 18), box(15, 15, 23, 23),
@@ -320,7 +321,7 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startSymbolSourceProcessing(source2);
         for (let id = 4; id <= 7; id++) addSymbolVariant(placement, createVariantId(id), samePriority, boxes[id], defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         expect(showCalls).toEqual([['source1', 0], ['source1', 2], ['source2', 4], ['source2', 6]]);
         expect(source1.hideSymbolVariant).not.toHaveBeenCalled();
@@ -332,8 +333,8 @@ describe('InteractiveGlobalPlacement', () => {
         const source1 = createFakeSource();
         const source2 = createFakeSource();
         const showCalls: Array<[string, number]> = [];
-        source1.showSymbolVariant.mockImplementation((id: SymbolVariantId) => showCalls.push(['source1', id.symbolId.symbolId]));
-        source2.showSymbolVariant.mockImplementation((id: SymbolVariantId) => showCalls.push(['source2', id.symbolId.symbolId]));
+        source1.showSymbolVariant.mockImplementation((id: SymbolVariantId) => showCalls.push(['source1', id.symbolId]));
+        source2.showSymbolVariant.mockImplementation((id: SymbolVariantId) => showCalls.push(['source2', id.symbolId]));
 
         const boxes = [
             box(0, 0, 8, 8), box(5, 5, 13, 13), box(10, 10, 18, 18), box(15, 15, 23, 23),
@@ -351,7 +352,7 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startSymbolSourceProcessing(source2);
         for (const id of [3, 2, 1, 0]) addSymbolVariant(placement, createVariantId(id), priorityForId(id), boxes[id], defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         expect(showCalls).toEqual([['source2', 0], ['source2', 2], ['source1', 4], ['source1', 6]]);
         expect(source1.hideSymbolVariant).not.toHaveBeenCalled();
@@ -367,17 +368,17 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startSymbolSourceProcessing(source);
         addSymbolVariant(placement, createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), geometry, defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         placement.startPlacement(0, screenWidth, screenHeight);
         placement.startSymbolSourceProcessing(source);
         addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), geometry, defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         // If the grid/placed-ids from run1 leaked into run2, variant 1 would collide
         // with variant 0's old (now-cleared) placement and never be shown.
-        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(1), 0);
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(1), 0, FADE_DURATION);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -429,9 +430,9 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startSymbolSourceProcessing(source);
         placement.startSymbolVariantProcessing(createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), defaultPlacementRules(), testTileID);
         // No addSymbolVariantPart() calls: the variant is culled/degenerate.
-        placement.finishVariantProcessing();
+        placement.finishVariantProcessing(FADE_DURATION);
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         expect(source.showSymbolVariant).not.toHaveBeenCalled();
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
@@ -445,11 +446,11 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startSymbolSourceProcessing(source);
         placement.startSymbolVariantProcessing(createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), defaultPlacementRules(), testTileID);
         // No addSymbolVariantPart() calls: e.g. dynamically generated geometry turned out empty this run.
-        placement.finishVariantProcessing();
+        placement.finishVariantProcessing(FADE_DURATION);
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.hideSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 0);
+        expect(source.hideSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 0, FADE_DURATION);
         expect(source.showSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -461,12 +462,12 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startSymbolSourceProcessing(source);
         placement.startSymbolVariantProcessing(createVariantId(0), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), defaultPlacementRules(), testTileID);
         // No part added for variant 0: it must be dropped rather than occupy space in the grid.
-        placement.finishVariantProcessing();
+        placement.finishVariantProcessing(FADE_DURATION);
         addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(1), 0);
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(1), 0, FADE_DURATION);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -487,10 +488,10 @@ describe('InteractiveGlobalPlacement', () => {
             {onlyIfPlaced: createVariantId(0, 0)}
         );
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(1, createVariantId(0, 0), 0);
-        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(2, createVariantId(1, 0), 0);
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(1, createVariantId(0, 0), 0, FADE_DURATION);
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(2, createVariantId(1, 0), 0, FADE_DURATION);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -512,7 +513,7 @@ describe('InteractiveGlobalPlacement', () => {
             {onlyIfPlaced: createVariantId(0, 1)}
         );
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         // Variant (0, 0) was already visible, so no transition/notification for it either.
         expect(source.showSymbolVariant).not.toHaveBeenCalled();
@@ -537,7 +538,7 @@ describe('InteractiveGlobalPlacement', () => {
             {onlyIfPlaced: createVariantId(0, 0)}
         );
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         expect(source.showSymbolVariant).not.toHaveBeenCalled();
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
@@ -561,10 +562,10 @@ describe('InteractiveGlobalPlacement', () => {
             {onlyIfPlaced: createVariantId(0, 0)}
         );
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(1, createVariantId(0, 0), 0);
-        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(2, createVariantId(1, 0), 0);
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(1, createVariantId(0, 0), 0, FADE_DURATION);
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(2, createVariantId(1, 0), 0, FADE_DURATION);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -593,10 +594,10 @@ describe('InteractiveGlobalPlacement', () => {
             {onlyIfPlaced: createVariantId(3, 0)}
         );
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(1, createVariantId(0, 0), 0);
-        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(2, createVariantId(1, 0), 0);
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(1, createVariantId(0, 0), 0, FADE_DURATION);
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(2, createVariantId(1, 0), 0, FADE_DURATION);
         expect(source.showSymbolVariant).toHaveBeenCalledTimes(2);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
@@ -619,9 +620,9 @@ describe('InteractiveGlobalPlacement', () => {
             collidingBox, defaultPartPlacementRules()
         );
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 0);
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 0, FADE_DURATION);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -640,9 +641,9 @@ describe('InteractiveGlobalPlacement', () => {
             box(5, 5, 15, 15), defaultPartPlacementRules()
         );
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 0);
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 0, FADE_DURATION);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -663,10 +664,10 @@ describe('InteractiveGlobalPlacement', () => {
             freeBox, defaultPartPlacementRules()
         );
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(1, createVariantId(0), 0);
-        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(2, createVariantId(1), 0);
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(1, createVariantId(0), 0, FADE_DURATION);
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(2, createVariantId(1), 0, FADE_DURATION);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -689,9 +690,9 @@ describe('InteractiveGlobalPlacement', () => {
             collidingBox, defaultPartPlacementRules()
         );
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 0);
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 0, FADE_DURATION);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -714,10 +715,10 @@ describe('InteractiveGlobalPlacement', () => {
         addSymbolVariant(placement, createVariantId(1), createPriority(1, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), boxOverIgnoredOne, defaultPartPlacementRules());
         addSymbolVariant(placement, createVariantId(2), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), boxOverInsertedOne, defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(1, createVariantId(0), 0);
-        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(2, createVariantId(1), 0);
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(1, createVariantId(0), 0, FADE_DURATION);
+        expect(source.showSymbolVariant).toHaveBeenNthCalledWith(2, createVariantId(1), 0, FADE_DURATION);
         expect(source.showSymbolVariant).toHaveBeenCalledTimes(2);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
@@ -732,12 +733,12 @@ describe('InteractiveGlobalPlacement', () => {
         addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_VISIBLE_VARIANT_INVISIBLE, 0, 0), box(250, 250, 300, 300), defaultPartPlacementRules());
         addSymbolVariant(placement, createVariantId(2), createPriority(0, 0, SymbolVariantVisibility.VARIANT_VISIBLE, 0, 0), box(-200, 10, -150, 20), defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         // All three are entirely outside the padded working area
         // variant 2 was previously visible, so it must be hidden
         // 0 and 1 were already invisible, so no notification for them.
-        expect(source.hideSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(2), 0);
+        expect(source.hideSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(2), 0, FADE_DURATION);
         expect(source.showSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -756,9 +757,9 @@ describe('InteractiveGlobalPlacement', () => {
             box(-300, -300, -290, -290), defaultPartPlacementRules()
         );
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
-        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 0);
+        expect(source.showSymbolVariant).toHaveBeenCalledExactlyOnceWith(createVariantId(0), 0, FADE_DURATION);
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
     });
 
@@ -775,7 +776,7 @@ describe('InteractiveGlobalPlacement', () => {
             box(-400, -400, -390, -390), defaultPartPlacementRules()
         );
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         expect(source.showSymbolVariant).not.toHaveBeenCalled();
         expect(source.hideSymbolVariant).not.toHaveBeenCalled();
@@ -789,7 +790,7 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startSymbolSourceProcessing(source);
         addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         expect(placement.debugSymbols()).toEqual([]);
     });
@@ -813,7 +814,7 @@ describe('InteractiveGlobalPlacement', () => {
         // Overlaps the first element above and therefore loses the collision.
         addSymbolVariant(placement, createVariantId(1), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(5, 5, 15, 15), partPlacementRules, placementRules);
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         expect(placement.debugSymbols()).toEqual([
             {geometry: multiElementGeometry, collisionPadding: VISIBLE_VARIANTS_COLLISION_PADDING, variantId: createVariantId(0), tileID: testTileID, featureId, placementRules, partPlacementRules: [partPlacementRules], status: VariantPlacementResult.PLACED, blockedBy: undefined},
@@ -857,7 +858,7 @@ describe('InteractiveGlobalPlacement', () => {
         addVariant(createVariantId(3), 1, collidingBox);
         addVariant(createVariantId(4), 0, outOfBoundsBox);
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         // Only COLLIDED and OTHER_VARIANT_PLACED name a blockedBy.
         const partPlacementRules = [defaultPartPlacementRules()];
@@ -881,11 +882,11 @@ describe('InteractiveGlobalPlacement', () => {
         placement.startSymbolSourceProcessing(source);
         addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
         placement.finishSourceProcessing();
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
         expect(placement.debugSymbols()).toHaveLength(1);
 
         placement.startPlacement(1, screenWidth, screenHeight, true);
-        placement.finishPlacementRun();
+        placement.finishPlacementRun(FADE_DURATION);
 
         expect(placement.debugSymbols()).toEqual([]);
     });
@@ -899,7 +900,7 @@ describe('InteractiveGlobalPlacement', () => {
             placement.startSymbolSourceProcessing(source);
             addSymbolVariant(placement, createVariantId(0), createPriority(0, 0, SymbolVariantVisibility.SYMBOL_INVISIBLE, 0, 0), box(0, 0, 10, 10), defaultPartPlacementRules());
             placement.finishSourceProcessing();
-            placement.finishPlacementRun();
+            placement.finishPlacementRun(FADE_DURATION);
         };
 
         runOnce(0, true);

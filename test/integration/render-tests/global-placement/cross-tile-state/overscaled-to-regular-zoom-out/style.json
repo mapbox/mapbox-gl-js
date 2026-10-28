@@ -1,0 +1,90 @@
+{
+  "description": "The source's maxzoom is 5, so zooming out from 6 to 5 hands the labels over from an overscaled copy of the z5 tile to the z5 tile itself. 'Both' is in the tiles of either zoom, 'Fine' only in the old tile and 'Coarse' only in the new one. 'Both' is offset left at z5 and right at z6 so that its two copies don't overlap. Fades last 100 ms: the zoom happens at 60 ms and the clock is frozen at 80 ms, so 'Both', which continues its fade from the first tile, is drawn at 0.8 opacity, the disappearing label at 0.4 and the appearing one at 0.2. A restarted fade would draw 'Both' at 0.2.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "collisionDebug": true,
+      "mapMode": "continuous-snapshot",
+      "width": 64,
+      "height": 64,
+      "fadeDuration": 100,
+      "globalPlacement": true,
+      "operations": [
+        ["setTimer", 0],
+        ["wait"],
+        ["setTimer", 60],
+        ["wait"],
+        ["setZoom", 5],
+        ["wait"],
+        ["setTimer", 80],
+        ["wait"]
+      ],
+      "skip-test": [{"platform-tag-contains": "native", "reason": "skip - Not yet implemented"}]
+    }
+  },
+  "center": [2.5, -2.5],
+  "zoom": 6,
+  "sources": {
+    "both": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [2.5, -2.1]
+      },
+      "maxzoom": 5
+    },
+    "fine": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [2.5, -2.5]
+      },
+      "maxzoom": 5
+    },
+    "coarse": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [2.5, -2.9]
+      },
+      "maxzoom": 5
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {"id": "background", "type": "background", "paint": {"background-color": "white"}},
+    {
+      "id": "both",
+      "type": "symbol",
+      "source": "both",
+      "layout": {
+        "text-field": "Both",
+        "text-size": 12,
+        "text-offset": ["step", ["zoom"], ["literal", [-1.2, 0]], 6, ["literal", [1.2, 0]]],
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      }
+    },
+    {
+      "id": "fine",
+      "type": "symbol",
+      "source": "fine",
+      "filter": [">=", ["zoom"], 6],
+      "layout": {
+        "text-field": "Fine",
+        "text-size": 12,
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      }
+    },
+    {
+      "id": "coarse",
+      "type": "symbol",
+      "source": "coarse",
+      "filter": ["<", ["zoom"], 6],
+      "layout": {
+        "text-field": "Coarse",
+        "text-size": 12,
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      }
+    }
+  ]
+}

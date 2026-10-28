@@ -21,8 +21,11 @@
         import {getAccessToken} from './access_token_generated.js';
 
         import {renderTestNow} from '../test/integration/lib/constants.js';
-        import {applyOperations} from '../test/integration/lib/operation-handlers.js';
         import {transformRequest as baseTransformRequest} from '../test/integration/lib/transform-request.js';
+
+        // Outside bundler we need to expose mapboxgl globally for operations script
+        globalThis.mapboxgl = mapboxgl;
+        const {applyOperations} = await import('../test/integration/lib/operation-handlers.js');
 
         function transformRequest(url, resourceTypeEnum) {
             const req = baseTransformRequest(url, resourceTypeEnum);
@@ -149,7 +152,7 @@
         if (options.showElevationIdDebug) map.showElevationIdDebug = true;
         if (options.showPadding) map.showPadding = true;
         if (options.collisionDebug) map.showCollisionBoxes = true;
-        if (options.fadeDuration) map._isInitialLoad = false;
+        if (fadeDuration) map._isInitialLoad = false;
         if (options.forceEmissiveFallback) {
             map.painter._forceEmissiveMode = true;
             map.painter.emissiveMode = 'mrt-fallback';
