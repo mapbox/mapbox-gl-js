@@ -1,0 +1,66 @@
+{
+  "version": 8,
+  "description": "Symbol hit testing under Albers: the query point is on the label, which is placed at the reprojected position of its anchor.",
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "queryGeometry": [
+        54,
+        170
+      ]
+    }
+  },
+  "center": [
+    -96,
+    37.5
+  ],
+  "zoom": 3,
+  "projection": {
+    "name": "albers"
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "pt": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "name": "pt"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -115,
+            42
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "pt",
+      "type": "symbol",
+      "source": "pt",
+      "layout": {
+        "text-field": "Albers",
+        "text-size": 16,
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-color": "#3060c0"
+      }
+    }
+  ]
+}
