@@ -402,7 +402,6 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                 lineUniformValuesRef['u_lpp_floorwidth'] = cv.floorwidth;
                 lineUniformValuesRef['u_lpp_border_width'] = cv.border_width;
                 lineUniformValuesRef['u_lpp_emissive_strength'] = cv.emissive_strength;
-                lineUniformValuesRef['u_lpp_side_z_offset'] = cv.side_z_offset;
                 if (constantDashPosTo) {
                     lineUniformValuesRef['u_lpp_dash'] = [constantDashPosTo.tl[0], constantDashPosTo.tl[1], constantDashPosTo.br[0], constantDashPosTo.br[1]];
                 }

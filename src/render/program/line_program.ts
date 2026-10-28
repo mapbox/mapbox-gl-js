@@ -48,7 +48,6 @@ export type LineUniformsType = {
     ['u_lpp_border_width']: Uniform1f;
     ['u_lpp_emissive_strength']: Uniform1f;
     ['u_lpp_dash']: Uniform4f;
-    ['u_lpp_side_z_offset']: Uniform1f;
     ['u_lpp_zoom_fraction']: Uniform1f;
 };
 
@@ -112,7 +111,6 @@ const lineUniforms = (context: Context): LineUniformsType => ({
     'u_lpp_border_width': new Uniform1f(context),
     'u_lpp_emissive_strength': new Uniform1f(context),
     'u_lpp_dash': new Uniform4f(context),
-    'u_lpp_side_z_offset': new Uniform1f(context),
     'u_lpp_zoom_fraction': new Uniform1f(context),
 });
 
@@ -198,7 +196,6 @@ const lineUniformValues = (
         'u_lpp_border_width': 0.0,
         'u_lpp_emissive_strength': 0.0,
         'u_lpp_dash': [0, 0, 0, 0],
-        'u_lpp_side_z_offset': 0.0,
         'u_lpp_zoom_fraction': 0.0,
     };
 };

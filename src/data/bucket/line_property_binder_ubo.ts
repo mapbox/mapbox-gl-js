@@ -31,11 +31,7 @@ const PROP_NAMES: readonly string[] = [
     'line-floorwidth',
     'line-border-width',
     'line-emissive-strength',
-    'line-dasharray',
-    // GL-Native-only: absent from v8.json, so `_paintGet`/`_layerUnevaluated` always return
-    // undefined for it here and it is always treated as constant (value 0) in GL JS. The slot
-    // exists so GL Native can populate it once Line Shader UBO support lands there.
-    'line-side-z-offset'
+    'line-dasharray'
 ];
 
 // Bitmask bit for 'line-floorwidth' in LinePropertyBinderUBO.header[HEADER_DATA_DRIVEN_MASK] —
@@ -59,7 +55,7 @@ const MAX_TRACKED_PROPS: readonly number[] = ['line-width', 'line-gap-width', 'l
 // Default value per property, indexed like PROP_NAMES (colors default via getColor/the "no prop"
 // branch in _evaluateColorValue, so their entries here are unused placeholders; dash's entry is
 // likewise unused — its flat slot is always written explicitly, see evaluateAllProperties below).
-const PROP_DEFAULTS: readonly number[] = [0, 0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0, 0.0];
+const PROP_DEFAULTS: readonly number[] = [0, 0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0];
 
 // Flat scratch buffer for evaluateAllProperties — reused per call, eliminates per-feature inner array allocations.
 const evalFlatScratch = new Float32Array(LinePropertiesUBO.EVAL_FLAT_TOTAL);
@@ -78,7 +74,6 @@ export type LineConstantUniformValues = {
     floorwidth: number;
     border_width: number;
     emissive_strength: number;
-    side_z_offset: number;
 };
 
 /**
@@ -90,7 +85,7 @@ export type LineConstantUniformValues = {
  * the whole layer. See line_properties_ubo.ts for the exact header/block layout.
  *
  * `line-dasharray` (bit DASH_BIT_INDEX) rides along in the same block/header machinery as the
- * other 11 properties, but is populated differently: it carries no style expression to evaluate
+ * other 10 properties, but is populated differently: it carries no style expression to evaluate
  * per feature — its value is an atlas position resolved by LineBucket from the tile's LineAtlas.
  * See `_pendingDashPosition` and the `populateUBO`/`evaluateAllProperties` overrides below, and
  * `_immutableAfterPopulateMask` for why feature-state/dynamic-expression updates must never
@@ -380,7 +375,6 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
             floorwidth: this._constantFloat(PROP_NAMES[7], PROP_DEFAULTS[7]),
             'border_width': this._constantFloat(PROP_NAMES[8], PROP_DEFAULTS[8]),
             'emissive_strength': this._constantFloat(PROP_NAMES[9], PROP_DEFAULTS[9]),
-            'side_z_offset': this._constantFloat(PROP_NAMES[11], PROP_DEFAULTS[11]),
         };
     }
 }

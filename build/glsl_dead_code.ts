@@ -42,8 +42,6 @@ export const GL_NATIVE_ONLY_DEFINES: ReadonlyArray<string> = Object.freeze([
     'Z_TEST_OCCLUSION',
     'TERRAIN_FRAGMENT_OCCLUSION',
     'ZERO_EXAGGERATION',
-    // Native-only line rendering variant.
-    'RENDER_LINE_CURVE',
     // Native-only indicator cutout.
     'INDICATOR_CUTOUT',
     // Guards native-specific code paths in shared GLSL.

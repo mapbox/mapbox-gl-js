@@ -37,7 +37,7 @@ in highp ivec4 a_round_join_conflict_segments;
 
 // Includes in order: a_uv_x, a_split_index, a_line_progress to reduce attribute count on older devices.
 // Only line-gradient, line-border-gradient and line-trim-offset will requires a_packed info.
-#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_BORDER_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET) || defined(RENDER_LINE_CURVE)
+#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_BORDER_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
 in highp vec3 a_packed;
 #endif
 
@@ -58,20 +58,6 @@ uniform float u_z_offset;
 // Elevated-road VLW carpet: clip-space z pulled toward camera, 0.5 m at the map center (0 when disabled).
 // Always declared so GL locations resolve on all line program variants.
 uniform highp float u_road_view_depth_bias;
-
-#ifdef RENDER_LINE_CURVE
-// Encodes curve control points in 3x3 matrices for x, y, z
-// Note: Could be replaced with an uniform array once Metal support is implemented
-uniform mat3 u_curve_points_x;
-uniform mat3 u_curve_points_y;
-uniform mat3 u_curve_points_z;
-uniform float u_curve_point_count;
-// xyz: arrow head base point, w: line progress at the base.
-uniform vec4 u_curve_arrow_head;
-// Line progress from which body vertices are moved onto the arrow head base. Values above 1 draw no arrow head.
-uniform float u_curve_arrow_head_snap;
-uniform float u_curve_arrow_head_width;
-#endif
 
 #ifdef ELEVATED
 uniform lowp float u_zbias_factor;
@@ -157,7 +143,6 @@ struct LinePaintProperties {
     /// Raw dash-atlas descriptor [y, halfHeight|coverage<<4, lengthInt, lengthFract] (see
     /// LineAtlas.addDash) — never zoom-mixed, unlike every other member above (see readRaw).
     vec4 dash;
-    float side_z_offset;
 };
 
 /// Constant paint properties values shared for all features.
@@ -173,7 +158,6 @@ uniform lowp float u_lpp_border_width;
 uniform lowp float u_lpp_emissive_strength;
 // highp: see LinePaintProperties.dash — mediump/FP16 overflows this range on e.g. Mali.
 uniform highp vec4 u_lpp_dash;
-uniform mediump float u_lpp_side_z_offset;
 
 /// Fractional part of the current render zoom used to derive every data-driven property's
 /// zoom-interpolation factor from its packed [zm, zM] range (see zoomFactor() in _prelude_ubo_properties.glsl).
@@ -265,78 +249,8 @@ LinePaintProperties readLinePaintProperties() {
     props.border_width      = readFloat(base, (dataDrivenMask & (1u << 8u)) != 0u, u_lpp_header.header[2][3], u_lpp_border_width);
     props.emissive_strength = readFloat(base, (dataDrivenMask & (1u << 9u)) != 0u, u_lpp_header.header[3][0], u_lpp_emissive_strength);
     props.dash              = readRaw(base, (dataDrivenMask & (1u << 10u)) != 0u, u_lpp_header.header[3][1], u_lpp_dash);
-    props.side_z_offset     = readFloat(base, (dataDrivenMask & (1u << 11u)) != 0u, u_lpp_header.header[3][2], u_lpp_side_z_offset);
     return props;
 }
-
-#ifdef RENDER_LINE_CURVE
-
-vec3 getCurvePoint(int index) {
-    int row = index / 3;
-    int col = index - row * 3;
-
-    float x = u_curve_points_x[row][col];
-    float y = u_curve_points_y[row][col];
-    float z = u_curve_points_z[row][col];
-
-    return vec3(x, y, z);
-}
-
-vec3 catmullRom(vec3 p0, vec3 p1, vec3 p2, vec3 p3, float t) {
-    float t2 = t * t;
-    float t3 = t2 * t;
-    return 0.5 * (
-        2.0 * p1 +
-        (-p0 + p2) * t +
-        (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * t2 +
-        (-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3
-    );
-}
-
-vec2 catmullRomTangent(vec2 p0, vec2 p1, vec2 p2, vec2 p3, float t) {
-    float t2 = t * t;
-    return 0.5 * (
-        (-p0 + p2) +
-        (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * 2.0 * t +
-        (-p0 + 3.0 * p1 - 3.0 * p2 + p3) * 3.0 * t2
-    );
-}
-
-struct CurveResult {
-    vec3 point;      // x, y, elevation
-    vec2 tangent;    // tangent direction
-};
-
-CurveResult calculateCurve(float line_progress) {
-    float curve_progress = line_progress * (u_curve_point_count - 1.0);
-    float curve_progress_local = fract(curve_progress);
-    float curve_segment = floor(curve_progress);
-    int seg = int(curve_segment);
-
-    vec3 p1 = getCurvePoint(seg);
-    vec3 p2 = getCurvePoint(seg + 1);
-
-    float is_first_seg = step(curve_segment, 0.5);
-    vec3 p0_extrapolated = p1 - (p2 - p1);
-    vec3 p0_fetched = getCurvePoint(max(seg - 1, 0));
-    vec3 p0 = mix(p0_fetched, p0_extrapolated, is_first_seg);
-
-    int last_seg = int(u_curve_point_count) - 2;
-    float is_last_seg = step(float(last_seg) - 0.5, curve_segment);
-    vec3 p3_extrapolated = p2 + (p2 - p1);
-    vec3 p3_fetched = getCurvePoint(min(seg + 2, int(u_curve_point_count) - 1));
-    vec3 p3 = mix(p3_fetched, p3_extrapolated, is_last_seg);
-
-    vec3 point = catmullRom(p0, p1, p2, p3, curve_progress_local);
-    vec2 tangent = catmullRomTangent(p0.xy, p1.xy, p2.xy, p3.xy, curve_progress_local) * (u_curve_point_count - 1.0);
-
-    CurveResult result;
-    result.point = point;
-    result.tangent = tangent;
-    return result;
-}
-
-#endif
 
 #ifdef LINE_ROUND_JOIN_CLIP_BORDER_OVERLAP
 // xy is the tile coordinate, z the test flag carried in the low bit of the doubled x.
@@ -358,7 +272,6 @@ void main() {
     float border_width = paint_properties.border_width;
     vec4 border_color = paint_properties.border_color;
     float emissive_strength = paint_properties.emissive_strength;
-    float side_z_offset = paint_properties.side_z_offset;
 
 #ifdef VARIABLE_LINE_EMISSIVE_STRENGTH
     emissive_strength = a_z_offset_width.w;
@@ -380,10 +293,9 @@ void main() {
 #endif
 
     highp float line_progress = 0.0;
-#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_BORDER_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET) || defined(RENDER_LINE_CURVE)
+#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_BORDER_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
     line_progress = a_packed[2];
 #endif
-    float arrow_head_fraction = -1.0;
 
     // The distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
@@ -416,27 +328,6 @@ void main() {
     offset = -1.0 * offset * u_width_scale;
     bool left = normal.y == 1.0;
 
-#ifdef RENDER_LINE_CURVE
-    // The arrow head is a straight triangle from the base point to the last curve point, its width
-    // shrinking linearly to zero at the tip. Body vertices shortly before the base are moved onto it,
-    // so the step from body to head width starts at the base.
-    CurveResult curve;
-    if (line_progress >= u_curve_arrow_head_snap) {
-        float head_start = u_curve_arrow_head.w;
-        vec3 head_tip = getCurvePoint(int(u_curve_point_count) - 1);
-        float head_fraction = clamp((1.0 - line_progress) / (1.0 - head_start), 0.0, 1.0);
-        curve.point = mix(head_tip, u_curve_arrow_head.xyz, head_fraction);
-        curve.tangent = head_tip.xy - u_curve_arrow_head.xy;
-        arrow_head_fraction = line_progress > head_start ? head_fraction : -1.0;
-    } else {
-        curve = calculateCurve(line_progress);
-    }
-    pos = curve.point.xy * 8192.0;
-    a_extrude = length(a_extrude) * normalize(curve.tangent);
-    a_extrude = left ? vec2(-a_extrude.y, a_extrude.x) : vec2(a_extrude.y, -a_extrude.x);
-    a_z_offset += curve.point.z;
-#endif
-
     // these transformations used to be applied in the JS and native code bases.
     // moved them into the shader for clarity and simplicity.
     gapwidth = gapwidth / 2.0;
@@ -450,17 +341,6 @@ void main() {
     bool zero_right_width = border_width == 0.0 && right_width == 0.0;
     side_widths = u_width_scale * (zero_right_width ? vec2(left_width + u_width_addition) : vec2(left_width, right_width) + 0.5 * u_width_addition);
     halfwidth = left ? side_widths.x : (zero_right_width ? 0.0 : side_widths.y);
-
-    if (side_z_offset != 0.0) {
-        // Lift the side of the line asymmetrically, based on the sign of side_z_offset
-        float left_f = step(1.0, normal.y);
-        float is_negative = step(side_z_offset, 0.0);
-        float apply = mix(1.0 - left_f, left_f, is_negative);
-
-        a_extrude *= apply;
-        a_z_offset += abs(side_z_offset) * apply;
-        v_normal *= apply;
-    }
 
     // Variable width is used as an offset for non-zero border_widths case.
     // Then the width of the visible part is defined by border_width.
@@ -476,12 +356,6 @@ void main() {
     ANTIALIASING = !left && zero_right_width ? 0.0 : ANTIALIASING;
 #else
     halfwidth = (u_width_scale * width) / 2.0;
-#endif
-
-#ifdef RENDER_LINE_CURVE
-    if (arrow_head_fraction >= 0.0) {
-        halfwidth = (halfwidth + u_width_scale * u_curve_arrow_head_width * 0.5) * arrow_head_fraction;
-    }
 #endif
 
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);

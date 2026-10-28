@@ -4,11 +4,9 @@ import {PaintPropertiesUBO} from './paint_property_ubo';
 /**
  * Number of data-driven paint properties the line UBO carries (see the bit table in
  * LinePropertyBinderUBO). Includes `line-dasharray` at bit 10 (a raw, non-zoom-mixed slot — see
- * class doc below) and `line-side-z-offset` at bit 11 (a GL-Native-only property, absent from
- * v8.json — the slot is always constant 0 in GL JS, reserved so GL Native can populate it once
- * Line Shader UBO support lands there).
+ * class doc below).
  */
-export const LINE_PROP_COUNT = 12;
+export const LINE_PROP_COUNT = 11;
 
 /**
  * Manages Uniform Buffer Objects (UBOs) for line paint properties.
@@ -26,26 +24,24 @@ export const LINE_PROP_COUNT = 12;
  *
  * Line has none of symbol's appearance/formatted-section/DZR complexity: colors never carry a
  * per-feature-varying zoom range (always the "one shared range across the layer" case), so the
- * header layout is simpler than symbol's, but needs one more dword group to fit 12 properties
+ * header layout is simpler than symbol's, but needs one more dword group to fit 11 properties
  * (vs symbol's 9) worth of offsets:
  *
  *   [HEADER_DATA_DRIVEN_MASK]        bitmask: 1 = property i goes in the per-feature data-driven
- *                                    block; property order (bit index 0-11): line-color,
+ *                                    block; property order (bit index 0-10): line-color,
  *                                    line-border-color, line-opacity, line-blur, line-width,
  *                                    line-gap-width, line-offset, line-floorwidth,
- *                                    line-border-width, line-emissive-strength, line-dasharray,
- *                                    line-side-z-offset (GL-Native-only — see LINE_PROP_COUNT doc
- *                                    above; this bit is never set in GL JS).
+ *                                    line-border-width, line-emissive-strength, line-dasharray.
  *   [dword 1]                        reserved / always 0 for line (symbol's HEADER_DZR_MASK slot —
  *                                    line has no per-feature-varying zoom ranges at all, so this
  *                                    bit is never set and the shader never reads it).
  *   [HEADER_BLOCK_SIZE_VEC4]         size of the data-driven block in vec4 units.
  *   [HEADER_OFFSETS + i]             vec4-unit offset of property i within the data-driven block
- *                                    (dwords 3..14, one per property — only meaningful when
- *                                    property i's data-driven bit is set). With 12 properties this
- *                                    runs through dword 14 inclusive, leaving only dword 15 as
- *                                    padding — the header has no headroom left for a 13th
- *                                    property without growing HEADER_DWORDS from 20 to 24 (6 uvec4).
+ *                                    (dwords 3..13, one per property — only meaningful when
+ *                                    property i's data-driven bit is set). With 11 properties this
+ *                                    runs through dword 13 inclusive, leaving dwords 14 and 15 as
+ *                                    padding — the header has room for one more property before
+ *                                    HEADER_DWORDS has to grow from 20 to 24 (6 uvec4).
  *   [LINE_HEADER_SHARED_ZOOM + 0..3] [colorZm, colorZM, borderZm, borderZM] (as raw float bits,
  *                                    see floatToBits) — the shared [zm, zM] zoom range for
  *                                    line-color / line-border-color, read by the shader instead
@@ -53,7 +49,7 @@ export const LINE_PROP_COUNT = 12;
  *                                    their vec4 for the packed min/max color, leaving no room for
  *                                    a per-feature zoom range). Starts at the next uvec4 boundary
  *                                    (dword 16) rather than immediately after HEADER_OFFSETS,
- *                                    since dword 14 is the last one in use.
+ *                                    since dword 13 is the last one in use.
  *
  * Every data-driven property occupies a fixed, zoom-ready slot so the shader decode is
  * branchless and uniform for constant / zoom-interpolated cases alike (one `zoomFactor` + one
@@ -86,9 +82,9 @@ export class LinePropertiesUBO extends PaintPropertiesUBO {
     // is a simple uniform stride, unlike symbol's per-property-kind offsets:
     //   color[0..3], border_color[4..7], opacity[8..11], blur[12..15], width[16..19],
     //   gap_width[20..23], offset[24..27], floorwidth[28..31], border_width[32..35],
-    //   emissive_strength[36..39], dash[40..43], side_z_offset[44..47]
-    static readonly EVAL_FLAT_OFFSETS: readonly number[] = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44];
-    static readonly EVAL_FLAT_TOTAL = 48;
+    //   emissive_strength[36..39], dash[40..43]
+    static readonly EVAL_FLAT_OFFSETS: readonly number[] = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40];
+    static readonly EVAL_FLAT_TOTAL = 44;
 
     protected _headerBytes(): number {
         return LinePropertiesUBO.HEADER_BYTES;
