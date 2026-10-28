@@ -107,6 +107,7 @@ out highp float v_road_z_offset;
 #endif
 #ifdef VARIABLE_LINE_WIDTH
 out float stub_side;
+out highp vec2 v_distance;
 uniform float u_width_addition;
 #endif
 
@@ -442,14 +443,13 @@ void main() {
     float halfwidth;
     float dilute_scale = 1.0;
     float dilute_border_scale = 1.0;
-    float symmetric_outset = 0.0;
+    vec2 side_widths = vec2(0.0);
 #ifdef VARIABLE_LINE_WIDTH
     float left_width = a_z_offset_width.y;
     float right_width = a_z_offset_width.z;
     bool zero_right_width = border_width == 0.0 && right_width == 0.0;
-    halfwidth = left ? left_width : right_width;
-    halfwidth += u_width_addition * (zero_right_width ? (left ? 1.0 : 0.0) : 0.5);
-    halfwidth *= u_width_scale;
+    side_widths = u_width_scale * (zero_right_width ? vec2(left_width + u_width_addition) : vec2(left_width, right_width) + 0.5 * u_width_addition);
+    halfwidth = left ? side_widths.x : (zero_right_width ? 0.0 : side_widths.y);
 
     if (side_z_offset != 0.0) {
         // Lift the side of the line asymmetrically, based on the sign of side_z_offset
@@ -467,7 +467,7 @@ void main() {
     offset = border_width > 0.0 ? (left_width + right_width + u_width_addition) * u_width_scale : offset;
     halfwidth = border_width > 0.0 ? border_width * u_width_scale * 0.5 : halfwidth;
 
-    symmetric_outset = zero_right_width ? u_width_scale * (left_width + u_width_addition) : halfwidth;
+    side_widths = border_width > 0.0 ? vec2(halfwidth) : side_widths;
 
     // If the right width is 0, we are rendering an asymmetric line with a stub side
     // We should disable antialiasing and blur on this side to be able to stich two lines together
@@ -486,6 +486,9 @@ void main() {
 
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
     float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + (halfwidth > 0.0 ? ANTIALIASING : 0.0);
+#ifdef VARIABLE_LINE_WIDTH
+    v_distance = v_normal * outset;
+#endif
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
@@ -594,6 +597,20 @@ void main() {
     }
 #endif
 #endif
+#ifdef VARIABLE_LINE_WIDTH
+#ifndef RENDER_TO_TEXTURE
+    vec2 ndc = gl_Position.xy / gl_Position.w;
+    vec4 projected_tangent = u_matrix * vec4(extrude.y, -extrude.x, 0.0, 0.0);
+    vec2 screen_extrude = (projected_extrude.xy - ndc * projected_extrude.w) * u_units_to_pixels;
+    vec2 screen_tangent = (projected_tangent.xy - ndc * projected_tangent.w) * u_units_to_pixels;
+    float thickness = abs(screen_extrude.x * screen_tangent.y - screen_extrude.y * screen_tangent.x) / max(length(screen_tangent), 1e-6);
+    float thickness_px = max(thickness, 0.2 * length(screen_extrude)) / gl_Position.w * u_device_pixel_ratio;
+    float headroom_scale = gl_Position.w > 0.0 ? 1.0 + (1.0 - smoothstep(2.0, 4.0, thickness_px)) / max(thickness_px, 0.0001) : 1.0;
+    projected_extrude *= headroom_scale;
+    extrude *= headroom_scale;
+    v_distance *= headroom_scale;
+#endif
+#endif
     v_tile_pos = (v_tile_pos + extrude) / EXTENT;
 #ifdef ELEVATED_ROADS
     gl_Position = gl_Position + projected_extrude;
@@ -672,7 +689,7 @@ if (u_has_dash) {
 
     v_width2_dilute = vec4(outset, inset, dilute_scale, dilute_border_scale);
 #ifdef VARIABLE_LINE_WIDTH
-    v_width2_dilute.x = symmetric_outset;
+    v_width2_dilute.xy = side_widths;
 #endif
 
 #ifdef LINE_ROUND_JOIN_CLIP_BORDER_OVERLAP

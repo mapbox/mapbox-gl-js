@@ -32,6 +32,7 @@ in highp float v_road_z_offset;
 #endif
 #ifdef VARIABLE_LINE_WIDTH
 in float stub_side;
+in highp vec2 v_distance;
 #endif
 
 uniform bool u_has_dash;
@@ -178,7 +179,18 @@ void main() {
 
     // Compute blur alpha factor.
     float blur2 = (u_width_scale * blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
-    float alpha = clamp(min(dist - (v_width2_dilute.y - blur2), v_width2_dilute.x - dist) / blur2, 0.0, 1.0);
+    float alpha;
+#ifdef VARIABLE_LINE_WIDTH
+    float centre_distance = length(v_distance);
+    float edge = mix(v_width2_dilute.y, v_width2_dilute.x, 0.5 + 0.5 * v_distance.y / max(centre_distance, 1e-4));
+    float inv_radius = 1.0 / max(length(vec4(dFdx(v_distance), dFdy(v_distance))), 1e-4);
+    vec2 edges = clamp((vec2(edge, -edge) - centre_distance) * inv_radius, -1.0, 1.0);
+    vec2 window = edges * (1.0 - 0.5 * abs(edges));
+    float blur_fade = clamp(edge * (1.0 - centre_distance / (edge + ANTIALIASING)) / blur2, 0.0, 1.0);
+    alpha = mix(window.x - window.y, blur_fade, smoothstep(1.0, 2.0, u_width_scale * blur * inv_radius));
+#else
+    alpha = clamp(min(dist - (v_width2_dilute.y - blur2), v_width2_dilute.x - dist) / blur2, 0.0, 1.0);
+#endif
 
     float pxStep;
     float delta;
@@ -329,6 +341,12 @@ if (u_has_dash) {
             discard;
         }
     }
+#ifdef VARIABLE_LINE_WIDTH
+    // The geometry reaches past the filtered edge; transparent fragments must not write stencil.
+    if (alpha <= 0.0) {
+        discard;
+    }
+#endif
 
 #ifndef VARIABLE_LINE_WIDTH
     if (u_has_border && alpha2 < 1.) {
