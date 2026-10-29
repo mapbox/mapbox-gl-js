@@ -57,6 +57,46 @@ const viewportPadding = 100;
 
 type CollisionKey = {bucketInstanceId: number; featureIndex: number; collisionGroupID: number};
 
+function populateProjectedGlyphAnchors(first: symbolProjection.PlacedGlyph, last: symbolProjection.PlacedGlyph): vec3[] {
+    const result: vec3[] = [];
+    for (let i = first.path.length - 1; i >= 1; i--) {
+        result.push(first.path[i]);
+    }
+    for (let i = 1; i < last.path.length; i++) {
+        result.push(last.path[i]);
+    }
+    assert(result.length >= 2);
+    return result;
+}
+
+function projectPathToScreen(
+    projectedPath: vec3[],
+    labelToScreenMatrix: mat4,
+    first: symbolProjection.PlacedGlyph,
+    last: symbolProjection.PlacedGlyph,
+    elevationParams: symbolProjection.ElevationParams | null,
+) {
+    const firstLen = first.path.length;
+    for (let i = 0; i < projectedPath.length; i++) {
+        const p = projectedPath[i];
+        let z = p[2];
+        if (elevationParams) {
+            const point = i < firstLen - 1 ? first.tilePath[firstLen - 1 - i] : last.tilePath[i - firstLen + 2];
+            assert(point);
+            z = elevationParams.getElevation(point, elevationParams.elevation, elevationParams.elevationFeature)[2];
+        }
+        const projected = symbolProjection.project(p[0], p[1], z, labelToScreenMatrix);
+
+        // Do not try to place collision circles if even of the points is behind the camera.
+        // This is a plausible scenario with big camera pitch angles
+        if (projected[3] <= 0) {
+            projectedPath.length = 0;
+            return;
+        }
+        projectedPath[i] = projected;
+    }
+}
+
 /**
  * A collision index used to prevent symbols from overlapping. It keep tracks of
  * where previous symbols have been placed and is used to check if a new
@@ -227,7 +267,6 @@ class CollisionIndex implements CollisionDetector {
         textPixelPadding: number,
         tileID: OverscaledTileID,
     ): PlacedCollisionCircles {
-        const placedCollisionCircles = [];
         const elevation = this.transform.elevation;
         const projection = bucket.getProjection();
         const renderElevatedRoads = bucket.elevationType === 'road';
@@ -294,133 +333,103 @@ class CollisionIndex implements CollisionDetector {
             maxAngleCos
         ) : null;
 
+        if (!firstAndLastGlyph || screenAnchorPoint.occluded) {
+            return {circles: [], offscreen: true, collisionDetected: false, occluded: screenAnchorPoint.occluded};
+        }
+
+        const {first, last} = firstAndLastGlyph;
+        const projectedPath = populateProjectedGlyphAnchors(first, last);
+
+        // The path might need to be converted into screen space if a pitched map is used as the label space
+        if (labelToScreenMatrix) {
+            assert(pitchWithMap);
+            projectPathToScreen(projectedPath, labelToScreenMatrix, first, last, hasElevation && !isGlobe ? elevationParams : null);
+        }
+
+        let screenSpacePath: Point[][] = [];
+        if (projectedPath.length > 0) {
+            // Quickly check if the path is fully inside or outside of the padded collision region.
+            // For overlapping paths we'll only create collision circles for the visible segments
+            let minx = Infinity;
+            let maxx = -Infinity;
+            let miny = Infinity;
+            let maxy = -Infinity;
+
+            for (const p of projectedPath) {
+                minx = Math.min(minx, p[0]);
+                miny = Math.min(miny, p[1]);
+                maxx = Math.max(maxx, p[0]);
+                maxy = Math.max(maxy, p[1]);
+            }
+
+            const minX = -viewportPadding, minY = -viewportPadding;
+            const maxX = this.screenRightBoundary, maxY = this.screenBottomBoundary;
+
+            // Path visible
+            if (maxx >= minX && minx <= maxX && maxy >= minY && miny <= maxY) {
+                const ring: Point[] = [];
+                for (const p of projectedPath) ring.push(new Point(p[0], p[1]));
+                screenSpacePath = [ring];
+
+                if (minx < minX || maxx > maxX || miny < minY || maxy > maxY) {
+                    // Path partially visible, clip
+                    screenSpacePath = clipLines(screenSpacePath, minX, minY, maxX, maxY);
+                }
+            }
+        }
+
+        const radius = circlePixelDiameter * 0.5 * perspectiveRatio + textPixelPadding;
+        return this.placeCirclesAlongThePath(screenSpacePath, radius, allowOverlap, showCollisionCircles, collisionGroupPredicate);
+    }
+
+    placeCirclesAlongThePath(
+        path: Point[][],
+        radius: number,
+        allowOverlap: boolean,
+        showCollisionCircles: boolean,
+        collisionGroupPredicate: CollisionGroup['predicate'],
+    ): PlacedCollisionCircles {
+        // Tolerate a slightly longer distance than one diameter between two adjacent circles
+        const circleDist = radius * 2.5;
+
+        const placedCollisionCircles = [];
         let collisionDetected = false;
         let inGrid = false;
         let entirelyOffscreen = true;
 
-        if (firstAndLastGlyph && !screenAnchorPoint.occluded) {
-            const radius = circlePixelDiameter * 0.5 * perspectiveRatio + textPixelPadding;
-            const screenPlaneMin = new Point(-viewportPadding, -viewportPadding);
-            const screenPlaneMax = new Point(this.screenRightBoundary, this.screenBottomBoundary);
-            const interpolator = new PathInterpolator();
+        const interpolator = new PathInterpolator();
+        for (const seg of path) {
+            // interpolate positions for collision circles. Add a small padding to both ends of the segment
+            assert(seg.length > 0);
+            interpolator.reset(seg, radius * 0.25);
 
-            // Construct a projected path from projected line vertices. Anchor points are ignored and removed
-            const {first, last} = firstAndLastGlyph;
-            const firstLen = first.path.length;
+            const numCircles = interpolator.length <= 0.5 * radius ? 1 : Math.ceil(interpolator.paddedLength / circleDist) + 1;
 
-            let projectedPath: vec3[] = [];
-            for (let i = firstLen - 1; i >= 1; i--) {
-                projectedPath.push(first.path[i]);
-            }
-            for (let i = 1; i < last.path.length; i++) {
-                projectedPath.push(last.path[i]);
-            }
-            assert(projectedPath.length >= 2);
+            for (let i = 0; i < numCircles; i++) {
+                const t = i / Math.max(numCircles - 1, 1);
+                const circlePosition = interpolator.lerp(t);
 
-            // Tolerate a slightly longer distance than one diameter between two adjacent circles
-            const circleDist = radius * 2.5;
+                // add viewport padding to the position and perform initial collision check
+                const centerX = circlePosition.x + viewportPadding;
+                const centerY = circlePosition.y + viewportPadding;
 
-            // The path might need to be converted into screen space if a pitched map is used as the label space
-            if (labelToScreenMatrix) {
-                assert(pitchWithMap);
-                projectedPath = projectedPath.map(([x, y, z]: [number, number, number], index) => {
-                    if (hasElevation && !isGlobe) {
-                        const point = index < firstLen - 1 ? first.tilePath[firstLen - 1 - index] : last.tilePath[index - firstLen + 2];
-                        assert(point);
-                        assert(elevationParams);
-                        z = elevationParams.getElevation(point, elevation, elevationParams.elevationFeature)[2];
-                    }
-                    return symbolProjection.project(x, y, z, labelToScreenMatrix);
-                });
+                placedCollisionCircles.push(centerX, centerY, radius, 0);
 
-                // Do not try to place collision circles if even of the points is behind the camera.
-                // This is a plausible scenario with big camera pitch angles
-                if (projectedPath.some(point => point[3] <= 0)) {
-                    projectedPath = [];
+                const x1 = centerX - radius;
+                const y1 = centerY - radius;
+                const x2 = centerX + radius;
+                const y2 = centerY + radius;
+
+                entirelyOffscreen = entirelyOffscreen && this.isOffscreen(x1, y1, x2, y2);
+                inGrid = inGrid || this.isInsideGrid(x1, y1, x2, y2);
+
+                if (allowOverlap || !this.grid.hitTestCircle(centerX, centerY, radius, collisionGroupPredicate)) continue;
+                if (!showCollisionCircles) {
+                    return {circles: [], offscreen: false, collisionDetected: true, occluded: false};
                 }
-            }
-
-            let segments: Point[][] = [];
-
-            if (projectedPath.length > 0) {
-                // Quickly check if the path is fully inside or outside of the padded collision region.
-                // For overlapping paths we'll only create collision circles for the visible segments
-                let minx = Infinity;
-                let maxx = -Infinity;
-                let miny = Infinity;
-                let maxy = -Infinity;
-
-                for (const p of projectedPath) {
-                    minx = Math.min(minx, p[0]);
-                    miny = Math.min(miny, p[1]);
-                    maxx = Math.max(maxx, p[0]);
-                    maxy = Math.max(maxy, p[1]);
-                }
-
-                // Path visible
-                if (maxx >= screenPlaneMin.x && minx <= screenPlaneMax.x &&
-                    maxy >= screenPlaneMin.y && miny <= screenPlaneMax.y) {
-
-                    segments = [projectedPath.map(p => new Point(p[0], p[1]))];
-
-                    if (minx < screenPlaneMin.x || maxx > screenPlaneMax.x ||
-                        miny < screenPlaneMin.y || maxy > screenPlaneMax.y) {
-                        // Path partially visible, clip
-
-                        segments = clipLines(segments, screenPlaneMin.x, screenPlaneMin.y, screenPlaneMax.x, screenPlaneMax.y);
-                    }
-                }
-            }
-
-            for (const seg of segments) {
-                // interpolate positions for collision circles. Add a small padding to both ends of the segment
-
-                assert(seg.length > 0);
-
-                interpolator.reset(seg, radius * 0.25);
-
-                let numCircles = 0;
-
-                if (interpolator.length <= 0.5 * radius) {
-                    numCircles = 1;
-                } else {
-                    numCircles = Math.ceil(interpolator.paddedLength / circleDist) + 1;
-                }
-
-                for (let i = 0; i < numCircles; i++) {
-                    const t = i / Math.max(numCircles - 1, 1);
-                    const circlePosition = interpolator.lerp(t);
-
-                    // add viewport padding to the position and perform initial collision check
-                    const centerX = circlePosition.x + viewportPadding;
-                    const centerY = circlePosition.y + viewportPadding;
-
-                    placedCollisionCircles.push(centerX, centerY, radius, 0);
-
-                    const x1 = centerX - radius;
-                    const y1 = centerY - radius;
-                    const x2 = centerX + radius;
-                    const y2 = centerY + radius;
-
-                    entirelyOffscreen = entirelyOffscreen && this.isOffscreen(x1, y1, x2, y2);
-                    inGrid = inGrid || this.isInsideGrid(x1, y1, x2, y2);
-
-                    if (!allowOverlap) {
-                        if (this.grid.hitTestCircle(centerX, centerY, radius, collisionGroupPredicate)) {
-                            // Don't early exit if we're showing the debug circles because we still want to calculate
-                            // which circles are in use
-                            collisionDetected = true;
-                            if (!showCollisionCircles) {
-                                return {
-                                    circles: [],
-                                    offscreen: false,
-                                    collisionDetected,
-                                    occluded: false
-                                };
-                            }
-                        }
-                    }
-                }
+                // Don't early exit if we're showing the debug circles because we still want to calculate
+                // which circles are in use
+                collisionDetected = true;
             }
         }
 
@@ -429,7 +438,7 @@ class CollisionIndex implements CollisionDetector {
             circles: ((!showCollisionCircles && collisionDetected) || !inGrid) ? [] : placedCollisionCircles,
             offscreen: entirelyOffscreen,
             collisionDetected,
-            occluded: screenAnchorPoint.occluded
+            occluded: false
         };
     }
 

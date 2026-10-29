@@ -41,28 +41,32 @@ class SourceFeatureState {
 
     updateState(sourceLayer: string, featureId: number | string, newState: FeatureState) {
         const feature = String(featureId);
-        this.stateChanges[sourceLayer] = this.stateChanges[sourceLayer] || Object.create(null) as FeatureStates;
-        this.stateChanges[sourceLayer][feature] = this.stateChanges[sourceLayer][feature] || Object.create(null) as FeatureState;
-        Object.assign(this.stateChanges[sourceLayer][feature], newState);
+        const layerChanges = this.stateChanges[sourceLayer] = this.stateChanges[sourceLayer] || Object.create(null) as FeatureStates;
+        const featureChanges = layerChanges[feature] = layerChanges[feature] || Object.create(null) as FeatureState;
+        Object.assign(featureChanges, newState);
 
-        if (this.deletedStates[sourceLayer] === null) {
-            this.deletedStates[sourceLayer] = Object.create(null) as FeatureStates;
+        const layerDeletions = this.deletedStates[sourceLayer];
+        if (layerDeletions === null) {
+            const deletions = this.deletedStates[sourceLayer] = Object.create(null) as FeatureStates;
             for (const ft in this.state[sourceLayer]) {
-                if (ft !== feature) this.deletedStates[sourceLayer][ft] = null;
+                if (ft !== feature) deletions[ft] = null;
             }
-        } else {
-            const featureDeletionQueued = this.deletedStates[sourceLayer] && this.deletedStates[sourceLayer][feature] === null;
-            if (featureDeletionQueued) {
-                this.deletedStates[sourceLayer][feature] = Object.create(null) as FeatureState;
-                for (const prop in this.state[sourceLayer][feature]) {
-                    if (!newState[prop]) this.deletedStates[sourceLayer][feature][prop] = null;
-                }
-            } else {
-                for (const key in newState) {
-                    const deletionInQueue = this.deletedStates[sourceLayer] && this.deletedStates[sourceLayer][feature] && this.deletedStates[sourceLayer][feature][key] === null;
-                    if (deletionInQueue) delete this.deletedStates[sourceLayer][feature][key];
-                }
+            return;
+        }
+        if (!layerDeletions) return;
+
+        const featureDeletions = layerDeletions[feature];
+        if (featureDeletions === null) {
+            const deletions = layerDeletions[feature] = Object.create(null) as FeatureState;
+            for (const prop in this.state[sourceLayer][feature]) {
+                if (!newState[prop]) deletions[prop] = null;
             }
+            return;
+        }
+        if (!featureDeletions) return;
+
+        for (const key in newState) {
+            if (featureDeletions[key] === null) delete featureDeletions[key];
         }
     }
 

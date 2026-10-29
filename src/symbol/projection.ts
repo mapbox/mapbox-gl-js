@@ -34,7 +34,7 @@ export type ElevationParams = {
     elevationFeature: ElevationFeature | null;
 };
 
-type PlacedGlyph = {
+export type PlacedGlyph = {
     angle: number;
     path: Array<vec3>;
     point: vec3;
@@ -668,6 +668,32 @@ function projectTruncatedLineSegment(
     return vec3.scaleAndAdd(projectedUnit, previousProjectedPoint, projectedUnit, minimumLength) as [number, number, number];
 }
 
+function projectLinePoint(
+    index: number,
+    tilePoint: Point,
+    previousTilePoint: Point,
+    previousProjectedPoint: vec3,
+    truncationLength: number,
+    projectionCache: ProjectionCache,
+    labelPlaneMatrix: mat4,
+    elevationParams: ElevationParams | null | undefined,
+    projection: Projection,
+    tileID: CanonicalTileID,
+    blend?: GlobeLineBlend | null,
+): [number, number, number] {
+    const cached = projectionCache[index];
+    if (cached) return cached;
+
+    const projected = elevatePointAndProject(tilePoint, tileID, labelPlaneMatrix, projection, elevationParams, blend);
+    if (projected[3] > 0) {
+        return (projectionCache[index] = projected as unknown as [number, number, number]);
+    }
+    // The vertex is behind the plane of the camera, so we can't project it
+    // Instead, we'll create a vertex along the line that's far enough to include the glyph
+    // Don't cache because the new vertex might not be far enough out for future glyphs on the same segment
+    return projectTruncatedLineSegment(previousTilePoint, tilePoint, previousProjectedPoint, truncationLength, labelPlaneMatrix, elevationParams, projection, tileID, blend);
+}
+
 function placeGlyphAlongLine(
     offsetX: number,
     lineOffsetX: number,
@@ -719,10 +745,6 @@ function placeGlyphAlongLine(
     let prevVertex = currentVertex;
     let prevToCurrent = vec3.zero([]);
 
-    const getTruncatedLineSegment = () => {
-        return projectTruncatedLineSegment(prevVertex, currentVertex, prev, absOffsetX - distanceToPrev + 1, labelPlaneMatrix, elevationParams, reprojection, tileID.canonical, blend);
-    };
-
     while (distanceToPrev + currentSegmentDistance <= absOffsetX) {
         currentIndex += dir;
 
@@ -737,30 +759,18 @@ function placeGlyphAlongLine(
         if (returnPathInTileCoords) tilePath.push(prevVertex);
 
         currentVertex = new Point(lineVertexArray.getx(currentIndex), lineVertexArray.gety(currentIndex));
-        current = projectionCache[currentIndex];
-        if (!current) {
-            const projection = elevatePointAndProject(currentVertex, tileID.canonical, labelPlaneMatrix, reprojection, elevationParams, blend);
-            if (projection[3] > 0) {
-                current = projectionCache[currentIndex] = projection as unknown as [number, number, number];
-            } else {
-                // The vertex is behind the plane of the camera, so we can't project it
-                // Instead, we'll create a vertex along the line that's far enough to include the glyph
-                // Don't cache because the new vertex might not be far enough out for future glyphs on the same segment
-                current = getTruncatedLineSegment();
-            }
-        }
+        current = projectLinePoint(currentIndex, currentVertex, prevVertex, prev, absOffsetX - distanceToPrev + 1,
+            projectionCache, labelPlaneMatrix, elevationParams, reprojection, tileID.canonical, blend);
 
         distanceToPrev += currentSegmentDistance;
         const nextPrevToCurrent = vec3.sub([], current, prev);
         const nextSegmentDistance = vec3.distance(prev, current);
 
-        if (lineOffsetY) {
-            if (nextSegmentDistance > 0 && currentSegmentDistance > 0) {
-                // Theta is the angle between two neighbor segments
-                const cosTheta = vec3.dot(prevToCurrent, nextPrevToCurrent) / (currentSegmentDistance * nextSegmentDistance);
-                if (cosTheta < textMaxAngleThreshold) {
-                    return null;
-                }
+        if (lineOffsetY && nextSegmentDistance > 0 && currentSegmentDistance > 0) {
+            // Theta is the angle between two neighbor segments
+            const cosTheta = vec3.dot(prevToCurrent, nextPrevToCurrent) / (currentSegmentDistance * nextSegmentDistance);
+            if (cosTheta < textMaxAngleThreshold) {
+                return null;
             }
         }
 
@@ -773,7 +783,7 @@ function placeGlyphAlongLine(
         // If previously truncated, on signedDistanceFromCamera < 0, don't do it.
         // Cache as end point. The cache is cleared if there is need for flipping in updateLineLabels.
         if (projectionCache[currentIndex]) {
-            current = getTruncatedLineSegment();
+            current = projectTruncatedLineSegment(prevVertex, currentVertex, prev, absOffsetX - distanceToPrev + 1, labelPlaneMatrix, elevationParams, reprojection, tileID.canonical, blend);
             currentSegmentDistance = vec3.distance(prev, current);
             prevToCurrent = vec3.sub([], current, prev);
         }

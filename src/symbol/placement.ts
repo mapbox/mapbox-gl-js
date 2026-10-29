@@ -1,7 +1,7 @@
 import Point from '@mapbox/point-geometry';
 import assert from '../style-spec/util/assert';
 import {mat4, vec4} from 'gl-matrix';
-import {pointInFootprint, skipClipping, transformPointToTile} from '../../3d-style/source/replacement_source';
+import {isClippedByReplacement} from '../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../3d-style/util/conflation';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
 import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projection_util';
@@ -1090,17 +1090,10 @@ export class Placement {
         if (bucket.hasTextCollisionBoxData()) bucket.textCollisionBox.collisionVertexArray.clear();
 
         const layout = bucket.layers[0].layout;
-        const paint = bucket.layers[0].paint;
-        const hasClipping = !!bucket.layers[0].dynamicFilter();
         const duplicateOpacityState = new JointOpacityState(null, 0, false, false, true);
         const textAllowOverlap = layout.get('text-allow-overlap');
         const iconAllowOverlap = layout.get('icon-allow-overlap');
-        const variablePlacement = layout.get('text-variable-anchor');
-        const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
-        const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
-        const symbolZOffset = paint.get('symbol-z-offset');
-        const elevationFromSea = layout.get('symbol-elevation-reference') === 'sea';
-        const needsFeatureForElevation = !symbolZOffset.isConstant();
+        const hasCollisionBoxes = !!collisionBoxArray && (bucket.hasIconCollisionBoxData() || bucket.hasTextCollisionBoxData());
 
         // If allow-overlap is true, we can show symbols before placement runs on them
         // But we have to wait for placement if we potentially depend on a paired icon/text
@@ -1112,17 +1105,6 @@ export class Placement {
                 iconAllowOverlap && (textAllowOverlap || !bucket.hasTextData() || layout.get('text-optional')),
                 true);
 
-        // clear() keeps the previous values in place, and the GPU buffer always holds them, so compare
-        // before overwriting and skip the upload when nothing changed
-        const addOpacities = (iconOrText: SymbolBuffers, numVertices: number, opacity: number): boolean => {
-            const array = iconOrText.opacityVertexArray;
-            let changed = false;
-            for (let i = 0; i < numVertices / 4; i++) {
-                if (array.uint32[array.length] !== opacity) changed = true;
-                array.emplaceBack(opacity);
-            }
-            return changed;
-        };
         let textOpacityChanged = false;
         let iconOpacityChanged = false;
 
@@ -1146,19 +1128,6 @@ export class Placement {
                 tileAnchorY
             } = symbolInstance;
 
-            let feature: Feature = null;
-            const retainedQueryData = this.retainedQueryData[bucket.bucketInstanceId];
-            if (needsFeatureForElevation && symbolInstance && retainedQueryData) {
-                const featureIndex = tile.latestFeatureIndex;
-                feature = featureIndex.loadFeature({
-                    featureIndex: symbolInstance.featureIndex,
-                    bucketIndex: retainedQueryData.bucketIndex,
-                    sourceLayerIndex: retainedQueryData.sourceLayerIndex,
-                    layoutVertexArrayOffset: 0
-                });
-            }
-
-            const symbolZOffsetValue = symbolZOffset.evaluate(feature, {});
             const isDuplicate = seenCrossTileIDs.has(crossTileID);
 
             let opacityState = this.opacities[crossTileID];
@@ -1180,22 +1149,8 @@ export class Placement {
             const verticalHidden = placedOrientation === WritingMode.horizontal || placedOrientation === WritingMode.horizontalOnly;
             if ((hasText || hasIcon) && !opacityState.isHidden()) visibleInstanceCount++;
 
-            let clippedSymbol = false;
-            if ((hasText || hasIcon) && replacementSource) {
-                for (const region of bucket.activeReplacements) {
-                    if (skipClipping(region, layerIndex, LayerTypeMask.Symbol, scope)) continue;
-
-                    if (region.min.x > tileAnchorX || tileAnchorX > region.max.x || region.min.y > tileAnchorY || tileAnchorY > region.max.y) {
-                        continue;
-                    }
-
-                    const p = transformPointToTile(tileAnchorX, tileAnchorY, coord.canonical, region.footprintTileId.canonical);
-                    clippedSymbol = pointInFootprint(p, region.footprint);
-
-                    if (clippedSymbol) break;
-                }
-            }
-
+            const clippedSymbol = (hasText || hasIcon) && !!replacementSource &&
+                isClippedByReplacement(bucket.activeReplacements, tileAnchorX, tileAnchorY, coord.canonical, layerIndex, LayerTypeMask.Symbol, scope);
             if (clippedSymbol) {
                 this.collisionIndex.markSymbolAsClipped(bucket.bucketInstanceId, symbolInstance.featureIndex);
             }
@@ -1257,64 +1212,8 @@ export class Placement {
                 }
             }
 
-            if (bucket.hasIconCollisionBoxData() || bucket.hasTextCollisionBoxData()) {
-                if (collisionBoxArray) {
-                    const hasTextBox = symbolInstance.textBoxStartIndex < symbolInstance.textBoxEndIndex;
-                    const hasVerticalTextBox = symbolInstance.verticalTextBoxStartIndex < symbolInstance.verticalTextBoxEndIndex;
-                    const hasIconBox = symbolInstance.iconBoxStartIndex < symbolInstance.iconBoxEndIndex;
-                    const hasVerticalIconBox = symbolInstance.verticalIconBoxStartIndex < symbolInstance.verticalIconBoxEndIndex;
-                    let shift = new Point(0, 0);
-                    let used = true;
-                    if (hasTextBox || hasVerticalTextBox) {
-                        if (variablePlacement) {
-                            const variableOffset = this.variableOffsets[crossTileID];
-                            if (variableOffset) {
-                                // This will show either the currently placed position or the last
-                                // successfully placed position (so you can visualize what collision
-                                // just made the symbol disappear, and the most likely place for the
-                                // symbol to come back)
-                                shift = calculateVariableLayoutShift(variableOffset.anchor,
-                                   variableOffset.width,
-                                   variableOffset.height,
-                                   variableOffset.textOffset,
-                                   variableOffset.textScale);
-                                if (rotateWithMap) {
-                                    shift._rotate(pitchWithMap ? this.transform.angle : -this.transform.angle);
-                                }
-                            } else {
-                                // No offset -> this symbol hasn't been placed since coming on-screen
-                                // No single box is particularly meaningful and all of them would be too noisy
-                                // Use the center box just to show something's there, but mark it "not used"
-                                used = false;
-                            }
-                        }
-
-                        if (hasClipping) {
-                            used = !opacityState.clipped;
-                        }
-
-                        if (hasTextBox) {
-                            updateCollisionVertices(bucket.textCollisionBox.collisionVertexArray, opacityState.text.placed, !used || horizontalHidden, symbolZOffsetValue, elevationFromSea, shift.x, shift.y);
-                        }
-                        if (hasVerticalTextBox) {
-                            updateCollisionVertices(bucket.textCollisionBox.collisionVertexArray, opacityState.text.placed, !used || verticalHidden, symbolZOffsetValue, elevationFromSea, shift.x, shift.y);
-                        }
-                    }
-
-                    const verticalIconUsed = used && !verticalHidden && hasVerticalIconBox;
-
-                    if (hasIconBox) {
-                        updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, verticalIconUsed, symbolZOffsetValue, elevationFromSea,
-                            symbolInstance.hasIconTextFit ? shift.x : 0,
-                            symbolInstance.hasIconTextFit ? shift.y : 0);
-                    }
-
-                    if (hasVerticalIconBox) {
-                        updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, !verticalIconUsed, symbolZOffsetValue, elevationFromSea,
-                            symbolInstance.hasIconTextFit ? shift.x : 0,
-                            symbolInstance.hasIconTextFit ? shift.y : 0);
-                    }
-                }
+            if (hasCollisionBoxes) {
+                this.updateCollisionBoxes(bucket, symbolInstance, opacityState, horizontalHidden, verticalHidden, tile);
             }
         }
         bucket.fullyClipped = visibleInstanceCount === 0;
@@ -1348,6 +1247,76 @@ export class Placement {
             bucket.collisionCircleArray = instance.circles;
 
             delete this.collisionCircleArrays[bucket.bucketInstanceId];
+        }
+    }
+
+    updateCollisionBoxes(bucket: SymbolBucket, symbolInstance: SymbolInstance, opacityState: JointOpacityState, horizontalHidden: boolean, verticalHidden: boolean, tile: Tile) {
+        const layout = bucket.layers[0].layout;
+        const symbolZOffset = bucket.layers[0].paint.get('symbol-z-offset');
+        const elevationFromSea = layout.get('symbol-elevation-reference') === 'sea';
+
+        let feature: Feature = null;
+        const retainedQueryData = this.retainedQueryData[bucket.bucketInstanceId];
+        if (!symbolZOffset.isConstant() && retainedQueryData) {
+            feature = tile.latestFeatureIndex.loadFeature({
+                featureIndex: symbolInstance.featureIndex,
+                bucketIndex: retainedQueryData.bucketIndex,
+                sourceLayerIndex: retainedQueryData.sourceLayerIndex,
+                layoutVertexArrayOffset: 0
+            });
+        }
+        const symbolZOffsetValue = symbolZOffset.evaluate(feature, {});
+
+        const hasTextBox = symbolInstance.textBoxStartIndex < symbolInstance.textBoxEndIndex;
+        const hasVerticalTextBox = symbolInstance.verticalTextBoxStartIndex < symbolInstance.verticalTextBoxEndIndex;
+        const hasIconBox = symbolInstance.iconBoxStartIndex < symbolInstance.iconBoxEndIndex;
+        const hasVerticalIconBox = symbolInstance.verticalIconBoxStartIndex < symbolInstance.verticalIconBoxEndIndex;
+        let shift = new Point(0, 0);
+        let used = true;
+        if (hasTextBox || hasVerticalTextBox) {
+            if (layout.get('text-variable-anchor')) {
+                const variableOffset = this.variableOffsets[symbolInstance.crossTileID];
+                if (variableOffset) {
+                    // This will show either the currently placed position or the last
+                    // successfully placed position (so you can visualize what collision
+                    // just made the symbol disappear, and the most likely place for the
+                    // symbol to come back)
+                    shift = calculateVariableLayoutShift(variableOffset.anchor,
+                       variableOffset.width,
+                       variableOffset.height,
+                       variableOffset.textOffset,
+                       variableOffset.textScale);
+                    if (layout.get('text-rotation-alignment') === 'map') {
+                        shift._rotate(layout.get('text-pitch-alignment') === 'map' ? this.transform.angle : -this.transform.angle);
+                    }
+                } else {
+                    // No offset -> this symbol hasn't been placed since coming on-screen
+                    // No single box is particularly meaningful and all of them would be too noisy
+                    // Use the center box just to show something's there, but mark it "not used"
+                    used = false;
+                }
+            }
+
+            if (bucket.layers[0].dynamicFilter()) {
+                used = !opacityState.clipped;
+            }
+
+            if (hasTextBox) {
+                updateCollisionVertices(bucket.textCollisionBox.collisionVertexArray, opacityState.text.placed, !used || horizontalHidden, symbolZOffsetValue, elevationFromSea, shift.x, shift.y);
+            }
+            if (hasVerticalTextBox) {
+                updateCollisionVertices(bucket.textCollisionBox.collisionVertexArray, opacityState.text.placed, !used || verticalHidden, symbolZOffsetValue, elevationFromSea, shift.x, shift.y);
+            }
+        }
+
+        const verticalIconUsed = used && !verticalHidden && hasVerticalIconBox;
+        const iconShiftX = symbolInstance.hasIconTextFit ? shift.x : 0;
+        const iconShiftY = symbolInstance.hasIconTextFit ? shift.y : 0;
+        if (hasIconBox) {
+            updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, verticalIconUsed, symbolZOffsetValue, elevationFromSea, iconShiftX, iconShiftY);
+        }
+        if (hasVerticalIconBox) {
+            updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, !verticalIconUsed, symbolZOffsetValue, elevationFromSea, iconShiftX, iconShiftY);
         }
     }
 
@@ -1388,6 +1357,18 @@ export class Placement {
     setStale() {
         this.stale = true;
     }
+}
+
+// clear() keeps the previous values in place, and the GPU buffer always holds them, so compare
+// before overwriting and skip the upload when nothing changed
+function addOpacities(iconOrText: SymbolBuffers, numVertices: number, opacity: number): boolean {
+    const array = iconOrText.opacityVertexArray;
+    let changed = false;
+    for (let i = 0; i < numVertices / 4; i++) {
+        if (array.uint32[array.length] !== opacity) changed = true;
+        array.emplaceBack(opacity);
+    }
+    return changed;
 }
 
 function updateCollisionVertices(collisionVertexArray: CollisionVertexArray, placed: boolean, notUsed: boolean | number, elevation: number, elevationFromSea: boolean, shiftX?: number, shiftY?: number) {

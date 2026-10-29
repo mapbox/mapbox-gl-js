@@ -1628,37 +1628,19 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         // orignal segment boundaries due to different baseVertex values.
         const sortedTriangles = new TriangleIndexArray();
         segmentedFeatures.sort((a, b) => a.triangleSegmentIdx === b.triangleSegmentIdx ? a.subtile - b.subtile : a.triangleSegmentIdx - b.triangleSegmentIdx);
-        let segmentIdx = 0;
-        let segmentBeginIndex = 0;
-        let segmentEndIndex = 0;
-        for (const segmentedFeature of segmentedFeatures) {
-            if (segmentedFeature.triangleSegmentIdx !== segmentIdx) {
-                break;
-            }
-            segmentEndIndex++;
-        }
 
-        const segmentedFeaturesEndIndex = segmentedFeatures.length;
-
-        while (segmentBeginIndex !== segmentedFeatures.length) {
-            segmentIdx = segmentedFeatures[segmentBeginIndex].triangleSegmentIdx;
+        let segmentBegin = 0;
+        while (segmentBegin < segmentedFeatures.length) {
+            const segmentEnd = findTriangleSegmentEnd(segmentedFeatures, segmentBegin);
+            const segmentIdx = segmentedFeatures[segmentBegin].triangleSegmentIdx;
             // For each feature of this triangle segment (as in all triangles in `Segments[triSegIdx]`),
             // find the number of triangles in each subtile and construct new segments for rendering
-            let subTileIdx = 0;
-            let featuresBeginIndex = segmentBeginIndex;
-            let featuresEndIndex = segmentBeginIndex;
-
-            for (let seg = featuresBeginIndex; seg < segmentEndIndex; seg++) {
-                if (segmentedFeatures[seg].subtile !== subTileIdx) {
-                    break;
-                }
-                featuresEndIndex++;
-            }
-            while (featuresBeginIndex !== segmentEndIndex) {
-                const featuresBegin = segmentedFeatures[featuresBeginIndex];
-                subTileIdx = featuresBegin.subtile;
-                const subtileMin = this.centroidData.get(featuresBegin.centroidIdx).min.clone();
-                const subtileMax = this.centroidData.get(featuresBegin.centroidIdx).max.clone();
+            let featuresBegin = segmentBegin;
+            while (featuresBegin < segmentEnd) {
+                const featuresEnd = findSubtileEnd(segmentedFeatures, featuresBegin, segmentEnd);
+                const first = segmentedFeatures[featuresBegin];
+                const subtileMin = this.centroidData.get(first.centroidIdx).min.clone();
+                const subtileMax = this.centroidData.get(first.centroidIdx).max.clone();
 
                 // Add triangles of this subtile and construct a segment for rendering
                 const segment: Segment = {
@@ -1670,16 +1652,12 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                     vaos: {}
                 };
 
-                for (let featureIdx = featuresBeginIndex; featureIdx < featuresEndIndex; featureIdx++) {
-
+                for (let featureIdx = featuresBegin; featureIdx < featuresEnd; featureIdx++) {
                     const feature = segmentedFeatures[featureIdx];
                     const data = this.polygonSegments[feature.polygonSegmentIdx];
                     const centroidMin = this.centroidData.get(feature.centroidIdx).min;
                     const centroidMax = this.centroidData.get(feature.centroidIdx).max;
-                    const iArray = this.indexArray.uint16;
-                    for (let i = data.triangleArrayOffset; i < data.triangleArrayOffset + data.triangleCount; i++) {
-                        sortedTriangles.emplaceBack(iArray[i * 3], iArray[i * 3 + 1], iArray[i * 3 + 2]);
-                    }
+                    appendTriangles(sortedTriangles, this.indexArray, data.triangleArrayOffset, data.triangleCount);
                     segment.primitiveLength += data.triangleCount;
                     subtileMin.x = Math.min(subtileMin.x, centroidMin.x);
                     subtileMin.y = Math.min(subtileMin.y, centroidMin.y);
@@ -1689,22 +1667,9 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                 if (segment.primitiveLength > 0) {
                     this.triangleSubSegments.push({segment, min: subtileMin, max: subtileMax});
                 }
-                featuresBeginIndex = featuresEndIndex;
-                for (let seg = featuresBeginIndex; seg < segmentEndIndex; seg++) {
-                    if (segmentedFeatures[seg].subtile !== segmentedFeatures[featuresBeginIndex].subtile) {
-                        break;
-                    }
-                    featuresEndIndex++;
-                }
+                featuresBegin = featuresEnd;
             }
-
-            segmentBeginIndex = segmentEndIndex;
-            for (let seg = segmentBeginIndex; seg < segmentedFeaturesEndIndex; seg++) {
-                if (segmentedFeatures[seg].triangleSegmentIdx !== segmentedFeatures[segmentBeginIndex].triangleSegmentIdx) {
-                    break;
-                }
-                segmentEndIndex++;
-            }
+            segmentBegin = segmentEnd;
         }
         sortedTriangles._trim();
         this.indexArray = sortedTriangles;
@@ -2085,6 +2050,27 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         }
         return {height, hidden};
     }
+}
+
+function findTriangleSegmentEnd(features: Array<SegmentedFeature>, begin: number): number {
+    const triangleSegmentIdx = features[begin].triangleSegmentIdx;
+    let i = begin + 1;
+    while (i < features.length && features[i].triangleSegmentIdx === triangleSegmentIdx) i++;
+    return i;
+}
+
+function findSubtileEnd(features: Array<SegmentedFeature>, begin: number, end: number): number {
+    const subtile = features[begin].subtile;
+    let i = begin + 1;
+    while (i < end && features[i].subtile === subtile) i++;
+    return i;
+}
+
+function appendTriangles(dst: TriangleIndexArray, src: TriangleIndexArray, triangleOffset: number, triangleCount: number) {
+    if (triangleCount === 0) return;
+    const begin = dst.length;
+    dst.resize(begin + triangleCount);
+    dst.uint16.set(src.uint16.subarray(triangleOffset * 3, (triangleOffset + triangleCount) * 3), begin * 3);
 }
 
 // Unit vector from `from` to `to`, falling back to `fallback` when the two points coincide

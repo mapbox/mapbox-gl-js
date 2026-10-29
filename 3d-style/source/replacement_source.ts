@@ -58,6 +58,15 @@ export function skipClipping(region: Region, layerIndex: number, mask: number, s
     return region.order < layerIndex || region.order === ReplacementOrderLandmark || !(region.clipMask & mask) || scopeSkipsClipping(scope, region.clipScope);
 }
 
+export function isClippedByReplacement(regions: Array<Region>, x: number, y: number, tileID: CanonicalTileID, layerIndex: number, mask: number, scope: string): boolean {
+    for (const region of regions) {
+        if (skipClipping(region, layerIndex, mask, scope)) continue;
+        if (region.min.x > x || x > region.max.x || region.min.y > y || y > region.max.y) continue;
+        if (pointInFootprint(transformPointToTile(x, y, tileID, region.footprintTileId.canonical), region.footprint)) return true;
+    }
+    return false;
+}
+
 class ReplacementSource {
     _updateTime: number;
     _sourceIds: Array<string>;
