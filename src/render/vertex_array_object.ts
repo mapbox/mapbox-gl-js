@@ -69,8 +69,8 @@ class VertexArrayObject {
             for (let i = 0; i < dynamicVertexBuffers.length; i++) {
                 const dynamicBuffer = dynamicVertexBuffers[i];
                 if (dynamicBuffer) {
-                    dynamicBuffer.bind();
                     if (dynamicBuffer !== this.boundDynamicVertexBuffers[i]) {
+                        dynamicBuffer.bind();
                         dynamicBuffer.setVertexAttribPointers(context.gl, program, vertexOffset);
                     }
                     if (vertexAttribDivisorValue && dynamicBuffer.instanceCount) {

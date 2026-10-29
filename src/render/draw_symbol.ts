@@ -355,6 +355,9 @@ function drawLayerSymbols(
     const tileRenderState: Array<SymbolTileRenderState> = [];
 
     const mercatorCameraUp: [number, number, number] = [0, -1, 0];
+    // Symbols rotating with the viewport on the globe align to the camera up vector, the same for every tile
+    let globeCameraUp: [number, number, number] | undefined;
+    const getGlobeCameraUp = () => (globeCameraUp = globeCameraUp || computeGlobeCameraUp(tr));
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -518,16 +521,7 @@ function drawLayerSymbols(
             const uLabelPlaneMatrix = projectedPosOnLabelSpace ? identityMat4 : labelPlaneMatrixRendering;
             const rotateInShader = iconRotateWithMap && !iconPitchWithMap && !alongLine;
 
-            let globeCameraUp = mercatorCameraUp;
-            if ((isGlobeProjection || tr.mercatorFromTransition) && !iconRotateWithMap) {
-                // Each symbol rotating with the viewport requires per-instance information about
-                // how to align with the viewport. In 2D case rotation is shared between all of the symbols and
-                // hence embedded in the label plane matrix but in globe view this needs to be computed at runtime.
-                // Camera up vector together with surface normals can be used to find the correct orientation for each symbol.
-                globeCameraUp = computeGlobeCameraUp(tr);
-            }
-
-            const cameraUpVector = bucketIsGlobeProjection ? globeCameraUp : mercatorCameraUp;
+            const cameraUpVector = bucketIsGlobeProjection && (isGlobeProjection || tr.mercatorFromTransition) && !iconRotateWithMap ? getGlobeCameraUp() : mercatorCameraUp;
 
             const colorAdjustmentMatrix = layer.getColorAdjustmentMatrix(iconSaturation, iconContrast, iconBrightnessMin, iconBrightnessMax);
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter,
@@ -659,16 +653,7 @@ function drawLayerSymbols(
             // Unpitched point labels need to have their rotation applied after projection
             const rotateInShader = textRotateWithMap && !textPitchWithMap && !alongLine;
 
-            let globeCameraUp = mercatorCameraUp;
-            if ((isGlobeProjection || tr.mercatorFromTransition) && !textRotateWithMap) {
-                // Each symbol rotating with the viewport requires per-instance information about
-                // how to align with the viewport. In 2D case rotation is shared between all of the symbols and
-                // hence embedded in the label plane matrix but in globe view this needs to be computed at runtime.
-                // Camera up vector together with surface normals can be used to find the correct orientation for each symbol.
-                globeCameraUp = computeGlobeCameraUp(tr);
-            }
-
-            const cameraUpVector = bucketIsGlobeProjection ? globeCameraUp : mercatorCameraUp;
+            const cameraUpVector = bucketIsGlobeProjection && (isGlobeProjection || tr.mercatorFromTransition) && !textRotateWithMap ? getGlobeCameraUp() : mercatorCameraUp;
 
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, textPitchWithMap, painter,
                 matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, true, true, texSize, texSizeIcon, true, coord, globeToMercator, mercatorCenter, invMatrix,

@@ -550,12 +550,7 @@ class Program<Us extends UniformBindings> {
             configuration.setUniforms(this.program, context, this.binderUniforms, currentProperties, {zoom});
         }
 
-        const primitiveSize = {
-            [gl.POINTS]: 1,
-            [gl.LINES]: 2,
-            [gl.TRIANGLES]: 3,
-            [gl.LINE_STRIP]: 1
-        }[drawMode];
+        const primitiveSize = drawMode === gl.TRIANGLES ? 3 : drawMode === gl.LINES ? 2 : 1;
 
         this.checkUniforms(layerID, 'RENDER_SHADOWS', this.shadowUniforms);
 

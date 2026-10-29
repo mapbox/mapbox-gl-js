@@ -120,11 +120,16 @@ function hsla(ctx: EvaluationContext, [h, s, l, a]: Expression[]) {
     const alpha = a ? a.evaluate(ctx) : 1;
     const error = validateHSLA(h, s, l, alpha);
     if (error) throw new RuntimeError(error);
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-    const colorFunction = `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
-    const color = Color.parse(colorFunction);
-    if (!color) throw new RuntimeError(`Failed to parse HSLA color: ${colorFunction}`);
-    return color;
+    const hue = (h as unknown as number) % 360 / 360, sat = (s as unknown as number) / 100, lum = (l as unknown as number) / 100;
+    const m2 = lum <= 0.5 ? lum * (sat + 1) : lum + sat - lum * sat;
+    const m1 = lum * 2 - m2;
+    return new Color(hueToByte(m1, m2, hue + 1 / 3), hueToByte(m1, m2, hue), hueToByte(m1, m2, hue - 1 / 3), alpha as number);
+}
+
+// csscolorparser's css_hue_to_rgb, rounded to a byte
+function hueToByte(m1: number, m2: number, t: number): number {
+    t = t < 0 ? t + 1 : t > 1 ? t - 1 : t;
+    return Math.round(255 * (t * 6 < 1 ? m1 + (m2 - m1) * t * 6 : t * 2 < 1 ? m2 : t * 3 < 2 ? m1 + (m2 - m1) * (2 / 3 - t) * 6 : m1)) / 255;
 }
 
 function has<T extends object>(key: keyof T, obj: T): boolean {

@@ -78,11 +78,13 @@ export class JointPlacement {
     skipFade: boolean;
 
     clipped: boolean;
-    constructor(text: boolean, icon: boolean, skipFade: boolean, clipped: boolean = false) {
+    dynamicFiltered: boolean;
+    constructor(text: boolean, icon: boolean, skipFade: boolean, clipped: boolean = false, dynamicFiltered: boolean = false) {
         this.text = text;
         this.icon = icon;
         this.skipFade = skipFade;
         this.clipped = clipped;
+        this.dynamicFiltered = dynamicFiltered;
     }
 }
 
@@ -239,6 +241,7 @@ export type VariableOffset = {
 
 type ClippingData = {
     unwrappedTileID: UnwrappedTileID;
+    canReusePrevResult: boolean;
     dynamicFilter: FilterExpression;
     dynamicFilterNeedsFeature: boolean;
     needGeometry: boolean;
@@ -296,6 +299,7 @@ export class Placement {
     collisionCircleArrays: Partial<Record<number, CollisionCircleArray>>;
     buildingIndex: BuildingIndex | null | undefined;
     frontCutoffStart: number;
+    dynamicFilters: Map<string, FilterExpression>;
 
     constructor(transform: Transform, fadeDuration: number, crossSourceCollisions: boolean, prevPlacement?: Placement, fogState?: FogState | null, buildingIndex?: BuildingIndex | null, retiredCollisionDetector?: CollisionDetector | null) {
         this.transform = transform.clone();
@@ -317,6 +321,7 @@ export class Placement {
         this.retainedQueryData = {};
         this.collisionGroups = new CollisionGroups(crossSourceCollisions);
         this.collisionCircleArrays = {};
+        this.dynamicFilters = new Map();
 
         this.prevPlacement = prevPlacement;
         if (prevPlacement) {
@@ -384,8 +389,11 @@ export class Placement {
         assert(!!tile.latestFeatureIndex);
         if (!!dynamicFilter && tile.latestFeatureIndex) {
 
+            this.dynamicFilters.set(styleLayer.fqid, dynamicFilter);
+            const prev = this.prevPlacement;
             clippingData = {
                 unwrappedTileID,
+                canReusePrevResult: !!prev && !!prev.retainedQueryData[symbolBucket.bucketInstanceId] && prev.dynamicFilters.get(styleLayer.fqid) === dynamicFilter && this.transform.equals(prev.transform) && this.transform.cameraWorldSize === prev.transform.cameraWorldSize,
                 dynamicFilter,
                 dynamicFilterNeedsFeature,
                 needGeometry: dynamicFilterNeedsGeometry
@@ -504,7 +512,14 @@ export class Placement {
 
             let feature: Feature = null;
 
-            if ((clippingData && clippingData.dynamicFilterNeedsFeature) || needsFeatureForElevation) {
+            const prevResult = clippingData && clippingData.canReusePrevResult ? this.prevPlacement.placements[crossTileID] : undefined;
+            if (prevResult && prevResult.dynamicFiltered) {
+                this.placements[crossTileID] = new JointPlacement(false, false, false, true, true);
+                seenCrossTileIDs.add(crossTileID);
+                return;
+            }
+
+            if ((clippingData && clippingData.dynamicFilterNeedsFeature && !prevResult) || needsFeatureForElevation) {
                 const retainedQueryData = this.retainedQueryData[bucket.bucketInstanceId];
                 const vtFeature = latestFeatureIndex.loadFeature({
                     featureIndex: symbolInstance.featureIndex,
@@ -528,7 +543,7 @@ export class Placement {
                 feature = (clippingData && clippingData.needGeometry) ? toEvaluationFeature(vtFeature, true) : vtFeature;
             }
 
-            if (clippingData) {
+            if (clippingData && !prevResult) {
                 const globals = {
                     zoom: this.transform.zoom,
                     pitch: this.transform.pitch,
@@ -539,7 +554,7 @@ export class Placement {
                 const shouldClip = !filterFunc(globals, feature, canonicalTileId, new Point(symbolInstance.tileAnchorX, symbolInstance.tileAnchorY), this.transform.calculateDistanceTileData(clippingData.unwrappedTileID));
 
                 if (shouldClip) {
-                    this.placements[crossTileID] = new JointPlacement(false, false, false, true);
+                    this.placements[crossTileID] = new JointPlacement(false, false, false, true, true);
                     seenCrossTileIDs.add(crossTileID);
                     return;
                 }
