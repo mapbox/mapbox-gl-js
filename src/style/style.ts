@@ -4867,8 +4867,8 @@ class Style extends Evented<MapEvents> {
     }
 
     _releaseSymbolFadeTiles() {
-        for (const id in this._sourceCaches) {
-            this._sourceCaches[id].releaseSymbolFadeTiles();
+        for (const id in this._mergedSourceCaches) {
+            this._mergedSourceCaches[id].releaseSymbolFadeTiles();
         }
     }
 

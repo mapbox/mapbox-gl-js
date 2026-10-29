@@ -4000,6 +4000,30 @@ test('Style#areTilesLoaded', async () => {
     });
 });
 
+test('Style#_releaseSymbolFadeTiles releases fade-held tiles of imported sources', async () => {
+    const {style} = newStubStyle();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const fragment = createStyleJSON({sources: {geojson: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}}});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const rootStyle = createStyleJSON({imports: [{id: 'basemap', url: '', data: fragment}]});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    style.loadJSON(rootStyle);
+
+    await waitFor(style, 'style.load');
+
+    const sourceCache = style.getSourceCache(makeFQID('geojson', 'basemap'));
+    const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+    const tile = new Tile(tileID);
+    tile.state = 'loaded';
+    tile.setHoldDuration(300);
+    sourceCache._tiles.set(tileID.key, tile);
+
+    style._releaseSymbolFadeTiles();
+
+    expect(sourceCache._tiles.has(tileID.key)).toEqual(false);
+});
+
 test('Style#_updateTilesForChangedImages', async () => {
     const {style} = newStubStyle();
 

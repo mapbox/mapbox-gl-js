@@ -9,6 +9,7 @@
 - Fix visibility of the logo control based on imported source.
 - Fix a thin unlit line in the fill-extrusion flood light at very sharp polygon corners.
 - Introduce cross-tile fade state support for global placement.
+- Release tiles after fade completes for sources from imported styles.
 
 ## 3.34.0-rc.1
 
