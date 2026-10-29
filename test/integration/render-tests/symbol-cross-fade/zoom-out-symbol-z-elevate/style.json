@@ -21,6 +21,9 @@
         ["wait"],
         ["setTimer", 1050],
         ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "swiftshader", "threshold": 0.0005}
       ]
     }
   },
