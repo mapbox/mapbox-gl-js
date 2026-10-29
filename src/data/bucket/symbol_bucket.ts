@@ -415,6 +415,7 @@ const textZOffsetScratch = new ZOffsetVertexArray();
 const iconZOffsetScratch = new ZOffsetVertexArray();
 
 function appendZOffset(array: ZOffsetVertexArray, numVertices: number, value: number) {
+    if (numVertices === 0) return;
     const start = array.length;
     array.resize(start + numVertices);
     array.float32.fill(value, start, start + numVertices);

@@ -208,6 +208,26 @@ test('SymbolBucket#defaultPlacedTextSymbolIndex returns -1 for an icon-only inst
     expect(bucket.defaultPlacedTextSymbolIndex(iconOnlyInstance, 5)).toEqual(-1);
 });
 
+test('SymbolBucket#updateZOffset does not throw for a symbol with no vertices', () => {
+    const bucket = bucketSetup();
+    bucket.createArrays();
+    bucket.symbolInstances = {
+        length: 1,
+        get: () => ({
+            zOffset: 2,
+            numHorizontalGlyphVertices: 0,
+            numVerticalGlyphVertices: 0,
+            numIconVertices: 0,
+            numVerticalIconVertices: 0,
+            placedIconSymbolIndex: -1,
+            verticalPlacedIconSymbolIndex: -1
+        })
+    };
+    bucket.zOffsetBuffersNeedUpload = true;
+
+    expect(() => bucket.updateZOffset()).not.toThrow();
+});
+
 const PLACE_LABEL_SOURCE_LAYER_INDEX = 3;
 const PLACE_LABEL_FEATURE_INDEX = 10;
 

@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/mapbox-gl-style-spec",
-  "version": "14.34.1-alpha.1",
+  "version": "14.34.1-rc.1-SNAPSHOT-10-28--18-38.git-10a2a56",
   "description": "a specification for mapbox gl styles",
   "author": "Mapbox",
   "license": "SEE LICENSE IN LICENSE.txt",
