@@ -39,8 +39,9 @@ function convertTextures(gltf: GLTF, images: Array<TextureImage>): Array<ModelTe
                 wrapT: gl.REPEAT
             };
             if (textureDesc.sampler !== undefined) Object.assign(sampler, gltf.json.samplers[textureDesc.sampler]);
+            const source = textureDesc.extensions?.EXT_texture_webp?.source ?? textureDesc.source;
             textures.push({
-                image: images[textureDesc.source],
+                image: images[source],
                 sampler,
                 uploaded: false
             });

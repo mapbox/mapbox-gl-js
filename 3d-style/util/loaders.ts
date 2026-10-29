@@ -177,7 +177,7 @@ export type GLTF = {
         samplers?: Sampler[];
         scene: number;
         scenes?: Array<{name?: string; nodes: number[]}>;
-        textures?: Array<{source?: number; sampler?: number}>;
+        textures?: Array<{source?: number; sampler?: number; extensions?: {EXT_texture_webp?: {source: number}}}>;
     };
     images: TextureImage[];
     buffers: ArrayBuffer[];
