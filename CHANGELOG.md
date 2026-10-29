@@ -1,8 +1,6 @@
 ## Unreleased
 
 - Fix `transformRequest` headers missing from requests for glTF buffers and textures.
-- Improve map load performance on lower zooms via faster polygon triangulation.
-- Fix zero-length cap in SVG not drawn in various browsers.
 - Add `raster-mask` and `raster-mask-mode` paint properties so a raster layer can be clipped to, or excluded from, the geometry of a fill layer
 - Fix `Map#setGlyphsUrl` not changing the glyphs of labels that are already loaded.
 - Revert fix line geometry: clamp fake-round join anchor on short segments.
@@ -10,6 +8,15 @@
 - Fix a thin unlit line in the fill-extrusion flood light at very sharp polygon corners.
 - Introduce cross-tile fade state support for global placement.
 - Release tiles after fade completes for sources from imported styles.
+
+## 3.34.1
+
+<<<<<<< HEAD
+=======
+- Improve map load performance on lower zooms via faster polygon triangulation.
+- Fix zero-length cap in SVG not drawn in various browsers.
+- Add `raster-mask` and `raster-mask-mode` paint properties so a raster layer can be clipped to, or excluded from, the geometry of a fill layer
+>>>>>>> d9868a274d ([GLJS-2034] Allow clipping a layer using `raster-mask` paint property (#20008))
 
 ## 3.34.0-rc.1
 
