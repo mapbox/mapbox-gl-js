@@ -1,7 +1,7 @@
 ## Unreleased
-
+- Improve map load performance on lower zooms via faster polygon triangulation.
+- Fix zero-length cap in SVG not drawn in various browsers.
 - Fix `transformRequest` headers missing from requests for glTF buffers and textures.
-- Add `raster-mask` and `raster-mask-mode` paint properties so a raster layer can be clipped to, or excluded from, the geometry of a fill layer
 - Fix `Map#setGlyphsUrl` not changing the glyphs of labels that are already loaded.
 - Revert fix line geometry: clamp fake-round join anchor on short segments.
 - Fix visibility of the logo control based on imported source.
@@ -12,18 +12,14 @@
 
 ## 3.34.1
 
-- Improve map load performance on lower zooms via faster polygon triangulation.
-- Fix zero-length cap in SVG not drawn in various browsers.
-- Add `raster-mask` and `raster-mask-mode` paint properties so a raster layer can be clipped to, or excluded from, the geometry of a fill layer
-
-## 3.34.0-rc.1
-
 ### Features and improvements ✨
 
 - Improve performance on map views with CJK glyphs by moving CJK rasterization offscreen.
 - Improve tile load performance via optimization of style property values recalculation.
 - Improve rendering performance via per-frame main thread work optimizations.
 - Add support of *-ignore-placement and *-allow-overlap in global placement.
+- Add `raster-mask` and `raster-mask-mode` paint properties so a raster layer can be clipped to, or excluded from, the geometry of a fill layer
+
 
 ### Bug fixes 🐞
 
