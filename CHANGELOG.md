@@ -2,21 +2,14 @@
 
 ## 3.34.1
 
-<<<<<<< HEAD
-=======
-- Improve map load performance on lower zooms via faster polygon triangulation.
-- Fix zero-length cap in SVG not drawn in various browsers.
-- Add `raster-mask` and `raster-mask-mode` paint properties so a raster layer can be clipped to, or excluded from, the geometry of a fill layer
->>>>>>> d9868a274d ([GLJS-2034] Allow clipping a layer using `raster-mask` paint property (#20008))
-
-## 3.34.0-rc.1
-
 ### Features and improvements ✨
 
 - Improve performance on map views with CJK glyphs by moving CJK rasterization offscreen.
 - Improve tile load performance via optimization of style property values recalculation.
 - Improve rendering performance via per-frame main thread work optimizations.
 - Add support of *-ignore-placement and *-allow-overlap in global placement.
+- Add `raster-mask` and `raster-mask-mode` paint properties so a raster layer can be clipped to, or excluded from, the geometry of a fill layer
+
 
 ### Bug fixes 🐞
 
