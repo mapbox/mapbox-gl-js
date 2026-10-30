@@ -466,10 +466,29 @@ class LineBucket implements Bucket {
                 hasFeatureDashes = true;
 
             } else {
-                const constCap = capPropertyValue.value;
-                const constDash = dashPropertyValue.value;
-                if (!constDash) continue;
-                lineAtlas.addDash(constDash, constCap);
+                const dashExpression = layer.getPaintPropertyValue<Array<number>>('line-dasharray')?.expression;
+                const capExpression = layer.getLayoutPropertyValue<string>('line-cap')?.expression;
+                const dashStops = dashExpression && dashExpression.kind === 'camera' ? dashExpression.zoomStops : [];
+                const capStops = capExpression && capExpression.kind === 'camera' ? capExpression.zoomStops : [];
+
+                if (dashStops.length === 0 && capStops.length === 0) {
+                    const constCap = capPropertyValue.value;
+                    const constDash = dashPropertyValue.value;
+                    if (!constDash) continue;
+                    lineAtlas.addDash(constDash, constCap);
+                    continue;
+                }
+
+                // draw_line.ts looks the dash up at the camera zoom, which can be on the other
+                // side of a step from the tile zoom. Dash and cap aren't interpolated, so zoom 0
+                // and each stop cover every value they can take.
+                for (const zoom of [0, ...dashStops, ...capStops]) {
+                    const parameters = new EvaluationParameters(zoom, {worldview: this.worldview});
+                    const dash = dashStops.length ? dashExpression.evaluate<Array<number>>(parameters) : dashPropertyValue.value;
+                    const cap = capStops.length ? capExpression.evaluate<string>(parameters) : capPropertyValue.value;
+                    if (!dash) continue;
+                    lineAtlas.addDash(dash, cap);
+                }
             }
         }
 

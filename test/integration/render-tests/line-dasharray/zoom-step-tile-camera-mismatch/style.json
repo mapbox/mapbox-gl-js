@@ -1,0 +1,60 @@
+{
+  "description": "At map zoom 1.6 the line is drawn from zoom 1 tiles; a zoom-step line-dasharray with a stop at 1.5 renders the [1, 1] pattern from the map zoom, not the [2, 1] pattern from the tile zoom.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 32
+    }
+  },
+  "zoom": 1.6,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -10,
+            0
+          ],
+          [
+            10,
+            0
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": 4,
+        "line-dasharray": [
+          "step",
+          [
+            "zoom"
+          ],
+          [
+            "literal",
+            [
+              2,
+              1
+            ]
+          ],
+          1.5,
+          [
+            "literal",
+            [
+              1,
+              1
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
