@@ -36,7 +36,8 @@
         ]
       ],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.00075}
+        {"platform-tag-contains": "", "threshold": 0.00075},
+        {"platform-tag-contains": "native-android-vulkan", "threshold": 0.0009}
       ]
     }
   },

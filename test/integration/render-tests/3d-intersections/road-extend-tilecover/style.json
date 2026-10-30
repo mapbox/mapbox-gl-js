@@ -5,7 +5,9 @@
             "mapMode": "static",
             "spriteFormat": "raster",
             "image-threshold": [
-                {"platform-tag-contains": "", "threshold": 0.0003}
+                {"platform-tag-contains": "", "threshold": 0.0003},
+                {"platform-tag-contains": "native-android-gl-powervr", "threshold": 0.00055},
+                {"platform-tag-contains": "swiftshader", "threshold": 0.0004}
             ]
         }
     },

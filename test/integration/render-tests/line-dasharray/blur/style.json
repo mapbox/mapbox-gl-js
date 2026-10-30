@@ -1,0 +1,127 @@
+{
+    "description": "Dashed lines at line-blur 0/4/12/30. The dashed coverage filter reads blur2 as one device pixel, but a styled blur puts the falloff width there instead, so routing styled blur through it saturates the soft band and discards the blur. Locks styled blur onto the point-sampled ramp.",
+    "version": 8,
+    "metadata": {
+        "test": {
+            "width": 160,
+            "height": 192
+        }
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 13,
+    "sources": {
+        "l": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "blur": 0
+                        },
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [
+                                [
+                                    -0.014,
+                                    0.00566
+                                ],
+                                [
+                                    0.014,
+                                    0.00566
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "blur": 4
+                        },
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [
+                                [
+                                    -0.014,
+                                    0.00189
+                                ],
+                                [
+                                    0.014,
+                                    0.00189
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "blur": 12
+                        },
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [
+                                [
+                                    -0.014,
+                                    -0.00189
+                                ],
+                                [
+                                    0.014,
+                                    -0.00189
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "blur": 30
+                        },
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [
+                                [
+                                    -0.014,
+                                    -0.00566
+                                ],
+                                [
+                                    0.014,
+                                    -0.00566
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "layers": [
+        {
+            "id": "bg",
+            "type": "background",
+            "paint": {
+                "background-color": "#000000"
+            }
+        },
+        {
+            "id": "l",
+            "type": "line",
+            "source": "l",
+            "paint": {
+                "line-color": "#ffffff",
+                "line-width": 8,
+                "line-dasharray": [
+                    2,
+                    2
+                ],
+                "line-blur": [
+                    "get",
+                    "blur"
+                ]
+            }
+        }
+    ]
+}

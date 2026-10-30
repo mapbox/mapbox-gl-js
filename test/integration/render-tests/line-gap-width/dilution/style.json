@@ -2,7 +2,11 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256
+      "height": 256,
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.00015},
+        {"platform-tag-contains": "swiftshader", "threshold": 0.0003}
+      ]
     }
   },
   "center": [

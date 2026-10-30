@@ -1171,6 +1171,9 @@ class LineBucket implements Bucket {
                         // Add round cap or linejoin at end of segment
                         this.addCurrentVertex(currentVertex, vertexNormal, 1, 1, segment, lineProgressFeatures, true);
                     }
+
+                    // The segment is done. Unset vertices to disconnect segments.
+                    this.e1 = this.e2 = -1;
                 }
                 if (nextVertex) {
                     const vertexNormal = !middleVertex && startNormal ? startNormal : nextNormal;

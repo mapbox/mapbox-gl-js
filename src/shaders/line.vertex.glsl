@@ -447,7 +447,9 @@ void main() {
             // smoothly disable dilute for a very long lines outside viewport (2.5 -> 4.5)
             // bump width here and reduce opacity in fragment shader by dilute_scale factor
             dilute_scale = mix(max_extrude_component / min_pixel, 1.0, smoothstep(2.5, 4.5, is_out));
-            projected_extrude /= dilute_scale;
+            // Scaling z/w too tears the quad at high pitch.
+            projected_extrude.xy /= dilute_scale;
+            projected_extrude_xy = projected_extrude.xy;
         }
         else if (gapwidth > 0.0) {
             // For case layers (line-gap-width > 0), the visible border is just halfwidth
@@ -457,6 +459,12 @@ void main() {
             vec2 visible_screen_width = screen_width * visible_ratio;
             float max_visible_component = max(visible_screen_width.x, visible_screen_width.y);
             dilute_scale = min(1.0, max_visible_component / min_pixel);
+            if (!u_has_border) {
+            // Must match the coverage filter condition in the fragment shader.
+            if (u_has_dash && blur < 0.01 && halfwidth >= ANTIALIASING) {
+                dilute_scale = 1.0;
+            }
+            }
         }
         else
         {

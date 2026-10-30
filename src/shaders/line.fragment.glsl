@@ -190,6 +190,21 @@ void main() {
     alpha = mix(window.x - window.y, blur_fade, smoothstep(1.0, 2.0, u_width_scale * blur * inv_radius));
 #else
     alpha = clamp(min(dist - (v_width2_dilute.y - blur2), v_width2_dilute.x - dist) / blur2, 0.0, 1.0);
+    if (!u_has_border) {
+    float half_band = 0.5 * (v_width2_dilute.x - v_width2_dilute.y);
+    if (u_has_dash && blur < 0.01 && half_band >= ANTIALIASING) {
+        float edge_hi = v_width2_dilute.x - ANTIALIASING;
+        float edge_lo = v_width2_dilute.y > 0.0 ? v_width2_dilute.y - ANTIALIASING : -edge_hi;
+
+        // Capped because derivatives spike at miters, caps and tile clips.
+        float px = max(blur2, 1e-6);
+        float true_px = min(length(vec2(dFdx(v_normal.y), dFdy(v_normal.y))) * v_width2_dilute.x, 4.0 * px);
+        float t = clamp(true_px / px - 1.0, 0.0, 1.0);
+        float h = max(blur2, true_px) * mix(0.5, 1.5, t);
+
+        alpha = clamp(smoothstep(-h, h, edge_hi - dist) - smoothstep(-h, h, edge_lo - dist), 0.0, 1.0);
+    }
+    }
 #endif
 
     float pxStep;

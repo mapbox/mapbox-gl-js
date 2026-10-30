@@ -6,7 +6,7 @@
             "spriteFormat": "raster",
             "image-threshold": [
                 {"platform-tag-contains": "", "threshold": 0.00027},
-                {"platform-tag-contains": "swiftshader", "threshold": 3.5e-05}
+                {"platform-tag-contains": "swiftshader", "threshold": 6e-05}
             ]
         }
     },

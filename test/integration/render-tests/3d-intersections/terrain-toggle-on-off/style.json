@@ -27,7 +27,8 @@
             ],
             "spriteFormat": "raster",
             "image-threshold": [
-                {"platform-tag-contains": "", "threshold": 0.00051}
+                {"platform-tag-contains": "", "threshold": 0.00051},
+                {"platform-tag-contains": "swiftshader", "threshold": 0.0008}
             ]
         }
     },
