@@ -9,7 +9,7 @@ import {FAR_TL, FAR_TR} from '../../../src/util/primitives';
 import {fixedNum, fixedLngLat, fixedCoord, fixedPoint, fixedVec3, fixedVec4} from '../../util/fixed';
 import {FreeCameraOptions} from '../../../src/ui/free_camera';
 import MercatorCoordinate, {mercatorZfromAltitude, altitudeFromMercatorZ, MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate';
-import {vec3, quat} from 'gl-matrix';
+import {vec3, vec4, mat4, quat} from 'gl-matrix';
 import {degToRad, radToDeg} from '../../../src/util/util';
 
 describe('transform', () => {
@@ -53,6 +53,41 @@ describe('transform', () => {
         const transform = new Transform();
         transform.resize(500, 500);
         transform.center = {lng: 50, lat: -90};
+    });
+
+    test('projects terrain with the rendered camera projection', () => {
+        const transform = new Transform();
+        transform.resize(400, 300);
+        transform.zoom = 12;
+        transform.pitch = 10;
+        transform.bearing = 30;
+        transform.setOrthographicProjectionAtLowPitch(true);
+
+        const lngLat = new LngLat(0.01, 0.01);
+        const flatPoint = transform.locationPoint3D(lngLat);
+        transform._elevation = {getAtPointOrZero: () => 5000};
+
+        const coordinate = transform.locationCoordinate(lngLat);
+        const worldPoint: [number, number, number, number] = [
+            coordinate.x * transform.worldSize,
+            coordinate.y * transform.worldSize,
+            5000,
+            1
+        ];
+        const renderedPixelMatrix = mat4.multiply([], transform.labelPlaneMatrix, transform.projMatrix);
+        vec4.transformMat4(worldPoint, worldPoint, renderedPixelMatrix);
+        const renderedPoint = new Point(worldPoint[0] / worldPoint[3], worldPoint[1] / worldPoint[3]);
+
+        expect(transform.locationPoint3D(lngLat)).toEqual(renderedPoint);
+
+        transform._elevation = null;
+        expect(transform.locationPoint3D(lngLat)).toEqual(flatPoint);
+
+        transform.setOrthographicProjectionAtLowPitch(false);
+        transform._elevation = {getAtPointOrZero: () => 5000};
+        const perspectivePoint = transform.locationPoint3D(lngLat);
+        transform._elevation = null;
+        expect(transform.locationPoint3D(lngLat, 5000)).toEqual(perspectivePoint);
     });
 
     test('setLocationAt', () => {
