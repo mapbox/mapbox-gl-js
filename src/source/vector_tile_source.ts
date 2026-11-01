@@ -29,6 +29,12 @@ import type {LoadVectorTileResult} from './load_vector_tile';
 import type {RequestParameters} from '../util/ajax';
 import type {WorkerSourceVectorTileRequest, WorkerSourceVectorTileResult} from './worker_source';
 
+// The stable ID field is specific to Mapbox-hosted vector tiles.
+// For now it's a predefined field, but in the future it could be dynamically determined.
+function getStableIdField(url?: string): 'id' | null {
+    return url && isMapboxURL(url) ? 'id' : null;
+}
+
 /**
  * A source containing vector tiles in [Mapbox Vector Tile format](https://docs.mapbox.com/vector-tiles/reference/).
  * See the [Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector) for detailed documentation of options.
@@ -72,6 +78,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
     // eslint-disable-next-line camelcase
     mapbox_logo?: boolean;
     promoteId?: PromoteIdSpecification | null;
+    _stableIdField: 'id' | null;
 
     _options: VectorSourceSpecification & {provider?: string | false; collectResourceTiming: boolean};
     _collectResourceTiming: boolean;
@@ -114,6 +121,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
 
         Object.assign(this, pick(options, ['url', 'scheme', 'tileSize', 'promoteId']));
         this._options = {type: 'vector', ...options};
+        this._stableIdField = getStableIdField(this.url);
 
         this._collectResourceTiming = !!options.collectResourceTiming;
 
@@ -300,6 +308,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
     setUrl(url: string): this {
         this.url = url;
         this._options.url = url;
+        this._stableIdField = getStableIdField(url);
         this.reload();
 
         return this;
@@ -369,6 +378,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             showCollisionBoxes: this.map.showCollisionBoxes,
             showElevationIdDebug: this.map.painter ? this.map.painter._debugParams.showElevationIdDebug : false,
             promoteId: this.promoteId,
+            stableIdField: this._stableIdField,
             renderSourceType: tile.renderSourceType,
             frcCoverage: (() => {
                 const painter = this.map.painter;

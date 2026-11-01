@@ -76,6 +76,7 @@ export type WorkerSourceVectorTileRequest = WorkerSourceTileRequest & {
     maxZoom: number;
     pixelRatio: number;
     promoteId: PromoteIdSpecification | null | undefined;
+    stableIdField?: 'id' | null;
     scaleFactor: number;
     showCollisionBoxes: boolean;
     showElevationIdDebug: boolean;

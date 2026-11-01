@@ -770,7 +770,8 @@ export function checkCrossFadeImagePositions(primary: ImageVariant, secondary: I
 }
 
 export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: SymbolBucketData, showCollisionBoxes: boolean,
-    availableImages: ImageId[], canonical: CanonicalTileID, tileZoom: number, projection: Projection, brightness: number | null, imageMap: StyleImageMap<StringifiedImageVariant>, imageAtlas: {iconPositions: ImagePositionMap}) {
+    availableImages: ImageId[], canonical: CanonicalTileID, tileZoom: number, projection: Projection, brightness: number | null, imageMap: StyleImageMap<StringifiedImageVariant>, imageAtlas: {iconPositions: ImagePositionMap},
+    stableIdField?: 'id' | null) {
 
     bucket.iconAtlasPositions = imageAtlas.iconPositions;
     const {featureData, sizes, textAlongLine, symbolPlacement, coverageFrcMask, coveragePolygons, coverageTileZoom, symbolAnchorInFrcCoverage} = bucketData;
@@ -778,6 +779,10 @@ export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: 
     // no secondary. Include bucket.hasAnySecondaryIcon so transitioning vertices are created and the
     // iconTransitioningVertexBuffer is populated for appearance-driven cross-fades.
     const hasAnySecondaryIcon = bucketData.hasAnySecondaryIcon || bucket.hasAnySecondaryIcon;
+
+    // Index in symbolInstances of the symbol with each stable id, or -1 if several symbols share it;
+    // not built when the source has no stable ids
+    const symbolOfId = stableIdField ? new Map<number, number>() : null;
 
     for (const data of featureData) {
         const {shapedIcon, verticallyShapedIcon, feature, shapedTextOrientations, shapedText, layoutTextSize, layoutIconSize,
@@ -792,10 +797,35 @@ export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: 
         checkCrossFadeImagePositions(iconPrimary, iconSecondary, imageAtlas.iconPositions);
 
         if (shapedText || shapedIcon) {
+            const start = bucket.symbolInstances.length;
             addFeature(bucket, feature, shapedTextOrientations, shapedIcon, verticallyShapedIcon, imageMap, sizes, layoutTextSize,
                 layoutIconSize, textOffset, isSDFIcon, availableImages, canonical, projection, brightness, hasAnySecondaryIcon, iconTextFit,
                 iconOffset, textAlongLine, symbolPlacement, iconCollisionBounds, iconVerticalCollisionBounds, textCollisionBounds, textVerticalCollisionBounds,
                 coverageFrcMask, coveragePolygons, coverageTileZoom, symbolAnchorInFrcCoverage, elevationFeatureIndex);
+            // Only a single point keeps its anchor across tiles. A feature repeated along its geometry would give several
+            // symbols the same id, and a line or polygon anchor moves with the tile's clipping; those are matched by anchor instead
+            const stableId = symbolOfId ? feature[stableIdField] : undefined;
+            if (bucket.symbolInstances.length - start === 1 && feature.type === 'Point' && typeof stableId === 'number') {
+                // Only non-negative integers that a number holds exactly, so distinct uint64 ids can't collapse into one
+                if (!Number.isSafeInteger(stableId) || stableId < 0) {
+                    warnOnce(`Stable id ${stableId} in layer ${bucket.layers[0].id} is not uint64`);
+                } else if (symbolOfId.has(stableId)) {
+                    // Ids are not guaranteed unique in a source layer; symbols of features sharing one are matched by anchor instead
+                    warnOnce(`Duplicate stable id ${stableId} in layer ${bucket.layers[0].id}`);
+                    symbolOfId.set(stableId, -1);
+                } else {
+                    symbolOfId.set(stableId, start);
+                }
+            }
+        }
+    }
+
+    // One per symbol, parallel to symbolInstances; NaN for symbols without a stable id
+    bucket.stableIds = null;
+    if (symbolOfId) {
+        bucket.stableIds = new Float64Array(bucket.symbolInstances.length).fill(NaN);
+        for (const [id, index] of symbolOfId) {
+            if (index !== -1) bucket.stableIds[index] = id;
         }
     }
 

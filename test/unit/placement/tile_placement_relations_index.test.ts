@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import {test, expect} from '../../util/vitest';
+import {test, expect, vi} from '../../util/vitest';
 import {PbfReader} from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 import {OverscaledTileID} from '../../../src/source/tile_id';
@@ -36,14 +36,15 @@ function holdForFade(tile: Tile) {
 }
 
 // A laid-out bucket of one symbol of the same label per anchor, moved to that anchor in its tile's
-// space, so the same label can be placed at matching positions in tiles of different zoom levels
-function makeBucketAt(anchors: Array<[number, number]>, text = 'abcde'): SymbolBucket {
+// space, so the same label can be placed at matching positions in tiles of different zoom levels.
+// With `stableId`, every symbol gets it as its feature id and the bucket is laid out with stable ids.
+function makeBucketAt(anchors: Array<[number, number]>, text = 'abcde', stableId?: number): SymbolBucket {
     const bucket = createSymbolBucket('test', 'Test', text, new CollisionBoxArray());
     bucket.bucketInstanceId = ++SymbolBucket.maxBucketInstanceId;
     const projection = getProjection({name: 'mercator'});
-    bucket.populate(anchors.map(() => ({feature})), {iconDependencies: {}, glyphDependencies: {}});
+    bucket.populate(anchors.map(() => ({feature, id: stableId})), {iconDependencies: {}, glyphDependencies: {}});
     const data = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
-    postRasterizationSymbolLayout(bucket, data, null, null, null, null, projection, null, null, {});
+    postRasterizationSymbolLayout(bucket, data, null, null, null, null, projection, null, null, {}, stableId !== undefined ? 'id' : null);
     // SymbolInstanceArray elements are 80 bytes, starting with tileAnchorX and tileAnchorY
     anchors.forEach(([x, y], i) => {
         bucket.symbolInstances.float32[i * 20] = x;
@@ -52,8 +53,8 @@ function makeBucketAt(anchors: Array<[number, number]>, text = 'abcde'): SymbolB
     return bucket;
 }
 
-function makeBucket(x: number, y: number, text = 'abcde'): SymbolBucket {
-    return makeBucketAt([[x, y]], text);
+function makeBucket(x: number, y: number, text = 'abcde', stableId?: number): SymbolBucket {
+    return makeBucketAt([[x, y]], text, stableId);
 }
 
 function makeVisible(bucket: SymbolBucket, refTime: number, i = 0) {
@@ -460,6 +461,67 @@ test('TilePlacementRelationsIndex does not continue a parent symbol\'s state in 
     const childBucket = makeBucket(2002, 2000);
     index.sync([parent, makeTile(1, 0, 1, 0, 0, childBucket)]);
     expect(childBucket.placementVariantVisible).toEqual([false]);
+});
+
+test('TilePlacementRelationsIndex continues a parent symbol\'s state in a child symbol with the same stable id outside its cell', () => {
+    const index = new TilePlacementRelationsIndex();
+    const parentBucket = makeBucket(1000, 1000, 'abcde', 7);
+    makeVisible(parentBucket, 42);
+    const parent = makeTile(0, 0, 0, 0, 0, parentBucket);
+    index.sync([parent]);
+
+    const childBucket = makeBucket(2002, 2000, 'abcde', 7);
+    index.sync([parent, makeTile(1, 0, 1, 0, 0, childBucket)]);
+    expect(childBucket.placementVariantVisible).toEqual([true]);
+    expect(childBucket.placementFadeRefTime[0]).toEqual(42);
+});
+
+test('TilePlacementRelationsIndex does not continue a parent symbol\'s state in a child symbol with a different stable id in its cell', () => {
+    const index = new TilePlacementRelationsIndex();
+    const parentBucket = makeBucket(1000, 1000, 'abcde', 7);
+    makeVisible(parentBucket, 42);
+    const parent = makeTile(0, 0, 0, 0, 0, parentBucket);
+    index.sync([parent]);
+
+    const childBucket = makeBucket(2000, 2000, 'abcde', 8);
+    index.sync([parent, makeTile(1, 0, 1, 0, 0, childBucket)]);
+    expect(childBucket.placementVariantVisible).toEqual([false]);
+});
+
+test('TilePlacementRelationsIndex does not give a polygon feature\'s symbol a stable id', () => {
+    const bucket = createSymbolBucket('test', 'Test', 'abcde', new CollisionBoxArray());
+    const projection = getProjection({name: 'mercator'});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const polygon = new VectorTile(new PbfReader(vectorStub)).layers.water.feature(1);
+    bucket.populate([{feature: polygon, id: 7}], {iconDependencies: {}, glyphDependencies: {}});
+    const data = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    postRasterizationSymbolLayout(bucket, data, null, null, null, null, projection, null, null, {}, 'id');
+    expect(bucket.symbolInstances.length).toEqual(1);
+    expect(bucket.stableIdFor(0)).toEqual(undefined);
+});
+
+test('TilePlacementRelationsIndex does not give a stable id to symbols of different features sharing one', () => {
+    const bucket = makeBucketAt([[1000, 1000], [2000, 2000]], 'abcde', 7);
+    expect(bucket.stableIdFor(0)).toEqual(undefined);
+    expect(bucket.stableIdFor(1)).toEqual(undefined);
+});
+
+test('TilePlacementRelationsIndex does not give a symbol a negative stable id', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const bucket = makeBucket(1000, 1000, 'abcde', -7);
+    expect(bucket.stableIdFor(0)).toEqual(undefined);
+});
+
+test('TilePlacementRelationsIndex does not give a symbol a stable id outside of the safe integer range', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const bucket = makeBucket(1000, 1000, 'abcde', 2 ** 53);
+    expect(bucket.stableIdFor(0)).toEqual(undefined);
+});
+
+test('TilePlacementRelationsIndex warns about a stable id outside of the safe integer range', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    makeBucket(1000, 1000, 'abcde', 2 ** 53 + 2);
+    expect(warn).toHaveBeenCalledWith(`Stable id ${2 ** 53 + 2} in layer test is not uint64`);
 });
 
 test('TilePlacementRelationsIndex continues the state of each of two same label parent symbols in the same cell once', () => {

@@ -108,6 +108,7 @@ class WorkerTile {
     source: string;
     scope: string;
     promoteId: PromoteIdSpecification | null | undefined;
+    stableIdField: 'id' | null;
     overscaling: number;
     showCollisionBoxes: boolean;
     showElevationIdDebug: boolean;
@@ -155,6 +156,7 @@ class WorkerTile {
         this.showElevationIdDebug = params.showElevationIdDebug;
         this.collectResourceTiming = params.request ? params.request.collectResourceTiming : false;
         this.promoteId = params.promoteId;
+        this.stableIdField = params.stableIdField || null;
         this.renderSourceType = params.renderSourceType;
         this.frcCoverage = params.frcCoverage || null;
         this.elevation = params.elevation || null;
@@ -591,7 +593,7 @@ class WorkerTile {
                     for (const key in buckets) {
                         const bucket = buckets[key];
                         if (key in symbolLayoutData) {
-                            postRasterizationSymbolLayout(bucket as SymbolBucket, symbolLayoutData[key], this.showCollisionBoxes, availableImages, this.tileID.canonical, this.tileZoom, this.projection, this.brightness, iconMap, positions);
+                            postRasterizationSymbolLayout(bucket as SymbolBucket, symbolLayoutData[key], this.showCollisionBoxes, availableImages, this.tileID.canonical, this.tileZoom, this.projection, this.brightness, iconMap, positions, this.stableIdField);
                         } else if (bucket.hasPattern &&
                             (bucket instanceof LineBucket ||
                                 bucket instanceof FillBucket ||

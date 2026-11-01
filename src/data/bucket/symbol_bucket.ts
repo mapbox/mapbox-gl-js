@@ -804,6 +804,10 @@ class SymbolBucket implements Bucket, SymbolSource {
     features!: Array<SymbolFeature>;
     featureAppearanceData: Map<number, AppearanceFeatureData>;
     symbolInstances!: SymbolInstanceArray;
+    // One per symbol, parallel to symbolInstances: the value of the feature's stable id field, or NaN
+    // if it has none or the feature was laid out as more than one symbol. Built in the worker, null
+    // if the source has no stable ids.
+    stableIds: Float64Array | null;
     hasAnySecondaryIcon: boolean;
     sortKeyRanges: Array<SortKeyRange>;
     // New placement pipeline (see addToPlacement). Current per-instance visibility, fed back into
@@ -887,6 +891,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         this.placementFadeRefTime = new Float64Array(0);
         this.placementFadeRunning = new Uint8Array(0);
         this._activeFadeCount = 0;
+        this.stableIds = null;
 
         this.collisionCircleArray = [];
         this.placementInvProjMatrix = mat4.identity([]);
@@ -1121,11 +1126,11 @@ class SymbolBucket implements Bucket, SymbolSource {
 
     // Id of the instance that is the same for the symbol in every tile it's laid out in, used to match
     // it across tiles, or undefined if it has none and has to be matched by its anchor instead.
-    // Stub: no symbol has a stable id yet. Should return the source feature's id once layout records,
-    // per instance, whether reusing it is safe (unique in the source layer, single point geometry,
-    // not repeated along the geometry).
-    stableIdFor(_index: number): number | undefined {
-        return undefined;
+    stableIdFor(index: number): number | undefined {
+        if (!this.stableIds) return undefined;
+        assert(index < this.stableIds.length);
+        const id = this.stableIds[index];
+        return Number.isNaN(id) ? undefined : id;
     }
 
     // Moves the placement state of `source`'s instance at `sourceIndex` to this bucket's instance at
