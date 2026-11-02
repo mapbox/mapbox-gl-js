@@ -1,4 +1,7 @@
 ## Unreleased
+
+## 3.35.0-rc.1
+
 - Improve map load performance on lower zooms via faster polygon triangulation.
 - Fix zero-length cap in SVG not drawn in various browsers.
 - Fix `transformRequest` headers missing from requests for glTF buffers and textures.
