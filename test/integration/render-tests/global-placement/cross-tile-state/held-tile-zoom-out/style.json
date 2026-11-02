@@ -10,6 +10,7 @@
       "fadeDuration": 100,
       "globalPlacement": true,
       "operations": [
+        ["setSourceProperty", "point", "enable-symbols-fade-out", true],
         ["setTimer", 0],
         ["wait"],
         ["setTimer", 100],
@@ -17,9 +18,6 @@
         ["wait"],
         ["setTimer", 140],
         ["wait"]
-      ],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-implemented: in gl-native"}
       ]
     }
   },

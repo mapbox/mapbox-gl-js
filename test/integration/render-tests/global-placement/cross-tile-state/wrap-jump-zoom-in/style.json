@@ -14,11 +14,12 @@
         ["wait"],
         ["setTimer", 60],
         ["wait"],
-        ["jumpTo", {"center": [2.5, -2.5], "zoom": 6}],
+        ["setCenter", [2.5, -2.5]],
+        ["setZoom", 6],
         ["wait"],
-        ["setTimer", 80]
-      ],
-      "skip-test": [{"platform-tag-contains": "native", "reason": "skip - Not yet implemented"}]
+        ["setTimer", 80],
+        ["wait"]
+      ]
     }
   },
   "center": [362.5, -2.5],

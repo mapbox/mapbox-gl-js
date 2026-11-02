@@ -10,6 +10,12 @@
       "fadeDuration": 100,
       "globalPlacement": true,
       "operations": [
+        [
+          "setSourceProperty",
+          "point",
+          "enable-symbols-fade-out",
+          true
+        ],
         ["setTimer", 0],
         ["wait"],
         ["setTimer", 100],
@@ -17,12 +23,11 @@
         ["setZoom", 6],
         ["wait"],
         ["setTimer", 140],
-        ["setFilter", "text", true],
+        ["setFilter", "text", ["all"]],
         ["wait"],
         ["setTimer", 160],
         ["wait"]
-      ],
-      "skip-test": [{"platform-tag-contains": "native", "reason": "skip - Not yet implemented"}]
+      ]
     }
   },
   "center": [2.5, -2.5],

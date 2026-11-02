@@ -10,15 +10,18 @@
       "fadeDuration": 100,
       "globalPlacement": true,
       "operations": [
+        ["setSourceProperty", "both", "enable-symbols-fade-out", true],
+        ["setSourceProperty", "fine", "enable-symbols-fade-out", true],
+        ["setSourceProperty", "coarse", "enable-symbols-fade-out", true],
         ["setTimer", 0],
         ["wait"],
         ["setTimer", 60],
         ["wait"],
         ["setZoom", 6],
         ["wait"],
-        ["setTimer", 80]
-      ],
-      "skip-test": [{"platform-tag-contains": "native", "reason": "skip - Not yet implemented"}]
+        ["setTimer", 80],
+        ["wait"]
+      ]
     }
   },
   "center": [2.5, -2.5],
