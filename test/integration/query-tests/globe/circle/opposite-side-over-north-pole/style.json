@@ -8,10 +8,9 @@
         [230, 40],
         [345, 65]
       ],
-      "tickets": ["https://github.com/mapbox/mapbox-gl-js/pull/11836"],
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2142"],
       "skip-test": [
-        {"platform-tag-contains": "web", "reason": "bug: needs a baseline update"},
-        {"platform-tag-contains": "native", "reason": "bug: invalid source URIs - mapbox/mapbox-gl-js#11836"}
+        {"platform-tag-contains": "web", "reason": "bug: query misses a circle at the edge of the query box - GLJS-2142"}
       ]
     }
   },

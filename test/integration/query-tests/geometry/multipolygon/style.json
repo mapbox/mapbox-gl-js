@@ -14,9 +14,6 @@
           512,
           512
         ]
-      ],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: needs investigation"}
       ]
     }
   },

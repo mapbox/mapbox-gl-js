@@ -9,9 +9,9 @@
           100,
           40
       ],
-      "tickets": ["https://github.com/mapbox/mapbox-gl-js/pull/9138"],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4339"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-implemented: extrusion queries for polygons with coincident points - mapbox/mapbox-gl-js#9138"}
+        {"platform-tag-contains": "native", "reason": "bug: query returns the polygon without its collinear vertex - MAPSNAT-4339"}
       ]
     }
   },

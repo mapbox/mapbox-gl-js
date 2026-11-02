@@ -22,9 +22,9 @@
                 32,
                 16
             ],
-            "tickets": ["https://github.com/mapbox/mapbox-gl-js/pull/9198"],
+            "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4341"],
             "skip-test": [
-                {"platform-tag-contains": "native", "reason": "not-implemented: evaluated properties in query results - mapbox/mapbox-gl-js#9198"}
+                {"platform-tag-contains": "native", "reason": "not-implemented: the layer object with evaluated paint properties in query results - MAPSNAT-4341"}
             ]
         }
     },

@@ -8,9 +8,9 @@
         [70, 20],
         [390, 100]
       ],
-      "tickets": ["https://github.com/mapbox/mapbox-gl-js/pull/11836"],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4307"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: invalid source URIs - mapbox/mapbox-gl-js#11836"}
+        {"platform-tag-contains": "native", "reason": "bug: query box that crosses the antimeridian returns no features - MAPSNAT-4307"}
       ]
     }
   },

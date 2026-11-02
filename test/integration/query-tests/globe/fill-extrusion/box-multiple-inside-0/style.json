@@ -7,10 +7,6 @@
       "queryGeometry": [
         [260, 180],
         [360, 320]
-      ],
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4307"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: feature queries on globe return wrong results - MAPSNAT-4307"}
       ]
     }
   },

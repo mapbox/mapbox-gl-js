@@ -7,8 +7,9 @@
         10,
         100
       ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-224"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-implemented: in gl-native"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: queryRenderedFeatures on heatmap layers - MAPSNAT-224"}
       ]
     }
   },

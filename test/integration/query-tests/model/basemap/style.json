@@ -29,9 +29,6 @@
       "queryGeometry": [
         165,
         279
-      ],
-      "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.0015}
       ]
     }
   },

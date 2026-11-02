@@ -8,10 +8,6 @@
       "queryGeometry": [
           100,
           40
-      ],
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/14585"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-implemented: order of 3D features in query results - mapbox/mapbox-gl-native#14585"}
       ]
     }
   },

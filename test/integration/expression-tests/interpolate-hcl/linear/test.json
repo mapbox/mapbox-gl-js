@@ -39,9 +39,9 @@
   },
   "metadata": {
     "test": {
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/8720"],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-646"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-implemented: interpolate-hcl and interpolate-lab - mapbox/mapbox-gl-native#8720 (closed-stale)"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: interpolate-hcl and interpolate-lab - MAPSNAT-646"}
       ]
     }
   }

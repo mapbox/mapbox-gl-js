@@ -16,10 +16,11 @@
           "20"
         ]
       },
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2143"],
       "skip-test": [
         {
           "platform-tag-contains": "web",
-          "reason": "runner-limitation: the gl-js query harness reads only queryGeometry, metadata.test.querySource (querySourceFeatures) is only in the native runner"
+          "reason": "runner-limitation: the gl-js query harness reads only queryGeometry, not metadata.test.querySource (querySourceFeatures) - GLJS-2143"
         }
       ]
     }

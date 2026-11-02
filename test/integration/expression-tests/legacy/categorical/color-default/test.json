@@ -33,13 +33,5 @@
       ["rgba", 0, 255, 0, 1],
       ["rgba", 0, 0, 255, 1]
     ]
-  },
-  "metadata": {
-    "test": {
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/12747"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: legacy function conversion - mapbox/mapbox-gl-native#12747"}
-      ]
-    }
   }
 }

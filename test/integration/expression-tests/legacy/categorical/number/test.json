@@ -30,9 +30,9 @@
   },
   "metadata": {
     "test": {
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/12747"],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4343"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: legacy function conversion - mapbox/mapbox-gl-native#12747"}
+        {"platform-tag-contains": "native", "reason": "bug: legacy categorical functions without a default use an error placeholder instead of the property default (the evaluated result is the same) - MAPSNAT-4343"}
       ]
     }
   }

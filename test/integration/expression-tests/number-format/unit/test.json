@@ -27,8 +27,9 @@
   },
   "metadata": {
     "test": {
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-581"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-implemented: in gl-native"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: the unit option of number-format - MAPSNAT-581"}
       ]
     }
   }

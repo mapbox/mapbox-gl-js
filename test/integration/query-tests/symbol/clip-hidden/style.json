@@ -9,9 +9,9 @@
         [0, 0],
         [512, 512]
       ],
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3696"],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSPERF-167"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: querying clipped symbols gives wrong results - MAPSNAT-3696"}
+        {"platform-tag-contains": "native", "reason": "bug: querying clipped symbols gives wrong results - MAPSPERF-167"}
       ]
     }
   },

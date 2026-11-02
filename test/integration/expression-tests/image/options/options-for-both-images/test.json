@@ -74,13 +74,5 @@
         "params": {"fill_color": ["to-color", ["get", "alternative_color"]]}
       }
     ]
-  },
-  "metadata": {
-    "test": {
-      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-1240"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-implemented: non-premultiplied serialized color in gl-js - GLJS-1240"}
-      ]
-    }
   }
 }

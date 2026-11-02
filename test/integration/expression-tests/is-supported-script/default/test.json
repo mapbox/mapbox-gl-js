@@ -18,7 +18,7 @@
   "metadata": {
     "test": {
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-applicable: web-only - RTL text plugin"}
+        {"platform-tag-contains": "native", "reason": "not-applicable: the expected outputs come from the gl-js fallback without an isSupportedScript function (always true); gl-native returns the real result (false for Devanagari, the same as gl-js)"}
       ]
     }
   }

@@ -27,13 +27,5 @@
     },
     "outputs": [-1, -1, 0, 1, -1, -1],
     "serialized": ["match", ["get", "p"], 0, 0, 1, 1, -1]
-  },
-  "metadata": {
-    "test": {
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/12747"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: legacy function conversion - mapbox/mapbox-gl-native#12747"}
-      ]
-    }
   }
 }

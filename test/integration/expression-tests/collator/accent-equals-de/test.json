@@ -66,8 +66,9 @@
   },
   "metadata": {
     "test": {
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4342"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-applicable: web-only - locale-specific behavior differs by platform"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: locale-specific collation rules (German: ü = ue) - MAPSNAT-4342"}
       ]
     }
   }

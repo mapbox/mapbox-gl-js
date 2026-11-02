@@ -5,8 +5,9 @@
       "height": 100,
       "width": 200,
       "queryGeometry": [98, 57],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4340"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: needs investigation"}
+        {"platform-tag-contains": "native", "reason": "bug: query returns no features where terrain tiles are missing - MAPSNAT-4340"}
       ]
     }
   },

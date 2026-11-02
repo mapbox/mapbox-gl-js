@@ -51,9 +51,9 @@
   },
   "metadata": {
     "test": {
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/12747"],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-646"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: legacy function conversion - mapbox/mapbox-gl-native#12747"}
+        {"platform-tag-contains": "native", "reason": "not-implemented: colorSpace hcl/lab in legacy functions (uses RGB) - MAPSNAT-646"}
       ]
     }
   }

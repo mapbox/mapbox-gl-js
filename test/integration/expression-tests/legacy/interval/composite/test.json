@@ -53,9 +53,9 @@
   },
   "metadata": {
     "test": {
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/12747"],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4343"],
       "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: legacy function conversion - mapbox/mapbox-gl-native#12747"}
+        {"platform-tag-contains": "native", "reason": "bug: interval functions with zoom and property stops interpolate over zoom instead of using step - MAPSNAT-4343"}
       ]
     }
   }

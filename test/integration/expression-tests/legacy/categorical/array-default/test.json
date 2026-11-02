@@ -35,13 +35,5 @@
       ["literal", [1]],
       ["literal", [-1]]
     ]
-  },
-  "metadata": {
-    "test": {
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native/issues/12747"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: legacy function conversion - mapbox/mapbox-gl-native#12747"}
-      ]
-    }
   }
 }
