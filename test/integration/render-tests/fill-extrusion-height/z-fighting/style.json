@@ -3,6 +3,7 @@
   "metadata": {
     "test": {
       "height": 512,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4283"],
       "operations": [
         ["wait"],
         ["setPaintProperty", "extrusion", "fill-extrusion-ambient-occlusion-intensity", 0.001],

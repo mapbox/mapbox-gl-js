@@ -2,6 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4287"],
       "width": 200,
       "height": 200
     }

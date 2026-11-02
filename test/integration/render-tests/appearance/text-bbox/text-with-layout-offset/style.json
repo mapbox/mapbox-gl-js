@@ -3,6 +3,7 @@
   "metadata": {
     "test-purpose": "Verify that the text bounding box correctly wraps the text when text-offset is set in the layout (not the appearance). Before the fix, the bbox was double-offset: once by shapeText (which bakes the offset into coordinates) and once by getUpdateSymbolBoundingBox (which added it again as a translation).",
     "test": {
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4295"],
       "width": 256,
       "height": 256,
       "collisionDebug": true

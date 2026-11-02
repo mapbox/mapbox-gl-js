@@ -2,9 +2,9 @@
   "version": 8,
   "metadata": {
     "test": {
-      
       "width": 256,
       "height": 256,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4328"],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.001}
       ]

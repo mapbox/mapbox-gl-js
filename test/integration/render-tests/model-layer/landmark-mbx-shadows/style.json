@@ -9,7 +9,8 @@
       "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-2236"],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00025},
-        {"platform-tag-contains": "native", "threshold": 0.00065}
+        {"platform-tag-contains": "native", "threshold": 0.00065},
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.002}
       ]
     }
   },

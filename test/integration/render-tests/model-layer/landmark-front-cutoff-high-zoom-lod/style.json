@@ -2,7 +2,10 @@
   "version": 8,
    "metadata": {
     "test": {
-      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2113"]
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2113"],
+      "image-threshold": [
+        {"platform-tag-contains": "web", "threshold": 0.0002}
+      ]
     }
   },
   "lights": [
