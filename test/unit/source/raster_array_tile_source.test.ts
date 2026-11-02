@@ -231,6 +231,21 @@ describe('RasterArrayTileSource maxzoom cascade discovery', () => {
 
         expect(source.getDataMaxzoom()).toBe(3);
     });
+
+    test('reload seeds data maxzoom again from the new TileJSON metadata', () => {
+        const source = createSource();
+        vi.spyOn(source, 'load').mockImplementation(() => {});
+        source.onAdd(source.map);
+        source.maxzoom = 5;
+        source.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
+        (source as unknown as {_narrowDataMaxzoom: (z: number) => void})._narrowDataMaxzoom(3);
+
+        source.reload();
+        source.maxzoom = 8;
+        source.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
+
+        expect(source.getDataMaxzoom()).toBe(8);
+    });
 });
 
 describe('RasterArrayTileSource#collectOverzoomParentTileIDs', () => {

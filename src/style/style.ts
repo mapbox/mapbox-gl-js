@@ -49,7 +49,7 @@ import {
     getType as getSourceType,
 } from '../source/source';
 import {isLazySourceType, ensureSourceType} from '../source/lazy_source_types';
-import LazySource from '../source/lazy_source';
+import LazySource, {createLazySource} from '../source/lazy_source';
 import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures, shouldSkipFeatureVariant} from '../source/query_features';
 import SourceCache from '../source/source_cache';
 import {RenderSourceType} from '../source/render_source_type';
@@ -2477,7 +2477,7 @@ class Style extends Evented<MapEvents> {
         // `batched-model` in the Standard module). To keep `addSource` synchronous, add a
         // placeholder source now and upgrade it in place once the module resolves.
         const placeholder = isLazySourceType(source.type) && !getSourceType(source.type) ?
-            new LazySource(id, source as SourceSpecification, this.dispatcher, this) : undefined;
+            createLazySource(id, source as SourceSpecification, this.dispatcher, this) : undefined;
         const sourceInstance: Source = placeholder ?
             placeholder as unknown as Source :
             createSource(id, source, this.dispatcher, this);
@@ -2538,7 +2538,7 @@ class Style extends Evented<MapEvents> {
                         this.fire(new ErrorEvent(new Error(`Could not load module for source type "${source.type}".`)));
                         return;
                     }
-                    const realSource = createSource(id, source, this.dispatcher, this);
+                    const realSource = createSource(id, placeholder._options, this.dispatcher, this);
                     realSource.scope = this.scope;
                     setSourceEventedParent(realSource);
                     sourceCache.setSource(realSource);

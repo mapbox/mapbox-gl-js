@@ -8,6 +8,8 @@
 - Fix visibility of the logo control based on imported source.
 - Fix a thin unlit line in the fill-extrusion flood light at very sharp polygon corners.
 - Introduce cross-tile fade state support for global placement.
+- Add `setMinzoom` and `setMaxzoom` methods to vector and raster tile sources, which change the zoom range of a source after it is added.
+- Fix the setters of `raster-array` and `model` sources that throw an error before a layer uses the source.
 - Release tiles after fade completes for sources from imported styles.
 - Fix zoom-step `line-dasharray` disappearing on some tiles.
 

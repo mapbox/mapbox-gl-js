@@ -258,6 +258,48 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
         return this;
     }
 
+    /**
+     * Sets the source `minzoom` property and re-renders the map.
+     *
+     * @param {number} minzoom The minimum zoom level for which the source has tiles.
+     * @returns {RasterTileSource} Returns itself to allow for method chaining.
+     * @example
+     * map.addSource('source-id', {
+     *     type: 'raster',
+     *     url: 'mapbox://mapbox.satellite'
+     * });
+     *
+     * // Show no tiles from this source below zoom level 4.
+     * map.getSource('source-id').setMinzoom(4);
+     */
+    setMinzoom(minzoom: number): this {
+        this._options.minzoom = minzoom;
+        this.reload();
+
+        return this;
+    }
+
+    /**
+     * Sets the source `maxzoom` property and re-renders the map.
+     *
+     * @param {number} maxzoom The maximum zoom level for which the source has tiles. Above this zoom level, the map overscales the tiles from this level.
+     * @returns {RasterTileSource} Returns itself to allow for method chaining.
+     * @example
+     * map.addSource('source-id', {
+     *     type: 'raster',
+     *     url: 'mapbox://mapbox.satellite'
+     * });
+     *
+     * // Overscale the tiles of zoom level 10 at higher zoom levels.
+     * map.getSource('source-id').setMaxzoom(10);
+     */
+    setMaxzoom(maxzoom: number): this {
+        this._options.maxzoom = maxzoom;
+        this.reload();
+
+        return this;
+    }
+
     onRemove(_: Map) {
         this.cancelTileJSONRequest();
     }

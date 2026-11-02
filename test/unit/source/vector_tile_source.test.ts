@@ -814,6 +814,34 @@ describe('VectorTileSource', () => {
         }
     });
 
+    test('supports minzoom property updates', async () => {
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify(sourceFixture))
+        });
+        const source = createSource({url: '/source.json'});
+        await waitFor(source, 'data');
+
+        source.setMinzoom(4);
+        await waitFor(source, 'data');
+
+        expect(source.minzoom).toEqual(4);
+        expect(source.serialize()).toEqual({type: 'vector', url: '/source.json', minzoom: 4});
+    });
+
+    test('supports maxzoom property updates', async () => {
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify(sourceFixture))
+        });
+        const source = createSource({url: '/source.json'});
+        await waitFor(source, 'data');
+
+        source.setMaxzoom(6);
+        await waitFor(source, 'data');
+
+        expect(source.maxzoom).toEqual(6);
+        expect(source.serialize()).toEqual({type: 'vector', url: '/source.json', maxzoom: 6});
+    });
+
     test('non-AJAX error propagates through loadTile callback', async () => {
         const source = createSource({
             tiles: ["http://example.com/{z}/{x}/{y}.pbf"]

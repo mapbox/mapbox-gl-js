@@ -104,12 +104,26 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
     }
 
     override onAdd(map: MapboxMap): void {
+        this._seedDataMaxzoomOnMetadata();
         super.onAdd(map);
+    }
 
-        // Seed _dataMaxzoom from the TileJSON-resolved maxzoom so a user
-        // entering the map at a deeply overzoomed view (e.g., z18 with data
-        // up to z5) requests the correct ancestor immediately instead of
-        // cascading down one zoom level per 404.
+    override reload() {
+        // A reload can change `maxzoom` (e.g. through `setMaxzoom` or `setUrl`),
+        // so discard the discovered value and seed it again from the new TileJSON.
+        this._dataMaxzoom = undefined;
+        this._seedDataMaxzoomOnMetadata();
+        super.reload();
+    }
+
+    /**
+     * Seed _dataMaxzoom from the TileJSON-resolved maxzoom so a user
+     * entering the map at a deeply overzoomed view (e.g., z18 with data
+     * up to z5) requests the correct ancestor immediately instead of
+     * cascading down one zoom level per 404.
+     * @private
+     */
+    private _seedDataMaxzoomOnMetadata(): void {
         const onMetadata = (event: EventOf<SourceEvents, 'data', this>) => {
             if (event.dataType !== 'source' || event.sourceDataType !== 'metadata') return;
             this.off('data', onMetadata);

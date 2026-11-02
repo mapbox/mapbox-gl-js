@@ -28,6 +28,7 @@ function createSource(options: Partial<RasterDEMSourceSpecification>, transformC
         transform: {angle: 0, pitch: 0, showCollisionBoxes: false},
         _getMapId: () => 1,
         _requestManager: new RequestManager(transformCallback),
+        style: {clearSource: () => {}},
         getWorldview: () => undefined
     } as unknown as MapboxMap);
 
@@ -61,6 +62,17 @@ describe('RasterTileSource', () => {
         source.load();
         expect(source.serialize()).toEqual({type: "raster-dem", ...options});
         await waitFor(source, 'data');
+    });
+
+    test('supports maxzoom property updates', async () => {
+        const source = createSource({tiles: ['http://example.com/{z}/{x}/{y}.png']});
+        await waitFor(source, 'data');
+
+        source.setMaxzoom(10);
+        await waitFor(source, 'data');
+
+        expect(source.maxzoom).toEqual(10);
+        expect(source.serialize()).toEqual({type: 'raster-dem', tiles: ['http://example.com/{z}/{x}/{y}.png'], maxzoom: 10});
     });
 
     test('transforms request for TileJSON URL', async () => {

@@ -444,6 +444,8 @@ if (rasterSource) {
     rasterSource.reload() satisfies void;
     rasterSource.setTiles(["a", "b"]) satisfies mapboxgl.RasterTileSource;
     rasterSource.setUrl("https://github.com") satisfies mapboxgl.RasterTileSource;
+    rasterSource.setMinzoom(2) satisfies mapboxgl.RasterTileSource;
+    rasterSource.setMaxzoom(12) satisfies mapboxgl.RasterTileSource;
 }
 
 /**
@@ -454,6 +456,8 @@ if (vectorSource) {
     vectorSource.reload() satisfies void;
     vectorSource.setTiles(["a", "b"]) satisfies mapboxgl.VectorTileSource;
     vectorSource.setUrl("https://github.com") satisfies mapboxgl.VectorTileSource;
+    vectorSource.setMinzoom(2) satisfies mapboxgl.VectorTileSource;
+    vectorSource.setMaxzoom(12) satisfies mapboxgl.VectorTileSource;
 }
 
 /**
