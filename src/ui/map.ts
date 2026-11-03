@@ -5119,8 +5119,8 @@ export class Map extends Camera {
         PerformanceUtils.clearMetrics();
         removeAuthState(this.painter.context.gl);
 
-        mapSessionAPI.remove();
-        mapLoadEvent.remove();
+        mapSessionAPI.remove(this._getMapId());
+        mapLoadEvent.remove(this._getMapId());
 
         this._removed = true;
         this.fire(new Event('remove'));

@@ -28,6 +28,36 @@ function withFixedDate(now, fn) {
 
 restore();
 
+// Holds every request pending until the returned function fails them with a 500
+function deferFetchFailure(): () => Promise<void> {
+    const pending: Array<(response: Response) => void> = [];
+    vi.spyOn(window, 'fetch').mockImplementation(() => new Promise(resolve => { pending.push(resolve); }));
+    return async () => {
+        // Requests may await a cache lookup before reaching fetch
+        await new Promise(r => { setTimeout(r, 0); });
+        for (const resolve of pending) resolve(new window.Response(null, {status: 500}));
+        await new Promise(r => { setTimeout(r, 0); });
+    };
+}
+
+// Collects unhandled rejections until stop() is called, preventing them from being reported
+function captureUnhandledRejections(): {reasons: unknown[]; stop: () => void} {
+    const reasons: unknown[] = [];
+    const onRejection = (e: PromiseRejectionEvent) => {
+        e.preventDefault();
+        reasons.push(e.reason);
+    };
+    window.addEventListener('unhandledrejection', onRejection);
+    return {reasons, stop: () => window.removeEventListener('unhandledrejection', onRejection)};
+}
+
+// Lets fetch, response handling and unhandledrejection dispatch complete
+async function settle() {
+    await new Promise(r => { setTimeout(r, 0); });
+    await new Promise(r => { setTimeout(r, 0); });
+    await new Promise(r => { setTimeout(r, 0); });
+}
+
 function restore() {
     window.useFakeXMLHttpRequest = function () {
         const spy = vi.spyOn(window, 'fetch').mockImplementation(() => {
@@ -577,6 +607,17 @@ describe("mapbox", () => {
             expect(event.anonId).not.toEqual(anonId);
             expect(event.anonId).not.toEqual(null);
             expect(event.anonIdTimestamp).not.toEqual(null);
+        });
+
+        test('postEvent calls a throwing callback only once and surfaces its error', async () => {
+            const rejections = captureUnhandledRejections();
+            const callbackError = new Error('callback failed');
+            const callback = vi.fn(() => { throw callbackError; });
+            event.postEvent(Date.now(), {}, callback);
+            await settle();
+            rejections.stop();
+            expect(callback).toHaveBeenCalledTimes(1);
+            expect(rejections.reasons).toEqual([callbackError]);
         });
     });
 
@@ -1608,6 +1649,58 @@ describe("mapbox", () => {
                 equalWithPrecision(new Date(reqBody.created).valueOf(), now, 100);
             });
         });
+
+        test('delivers a request failure to the error callback', async () => {
+            const failRequests = deferFetchFailure();
+            const errorCb = vi.fn();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            event.postMapLoadEvent(1, skuToken, config.ACCESS_TOKEN, errorCb);
+            await failRequests();
+            expect(errorCb).toHaveBeenCalledTimes(1);
+        });
+
+        test('ignores a request failure that settles after remove()', async () => {
+            const failRequests = deferFetchFailure();
+            const errorCb = vi.fn();
+            const rejections = captureUnhandledRejections();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            event.postMapLoadEvent(1, skuToken, config.ACCESS_TOKEN, errorCb);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            event.remove(1);
+            await failRequests();
+            await settle();
+            rejections.stop();
+            expect(rejections.reasons).toEqual([]);
+            expect(errorCb).not.toHaveBeenCalled();
+        });
+
+        test('remove() of one map keeps error delivery for another map', async () => {
+            const failRequests = deferFetchFailure();
+            const errorCbB = vi.fn();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            event.postMapLoadEvent(2, skuToken, config.ACCESS_TOKEN, errorCbB);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            event.postMapLoadEvent(1, skuToken, config.ACCESS_TOKEN, () => {});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            event.remove(1);
+            await failRequests();
+            expect(errorCbB).toHaveBeenCalledTimes(1);
+        });
+
+        test('keeps draining the queue after an error callback throws', async () => {
+            const failRequests = deferFetchFailure();
+            const rejections = captureUnhandledRejections();
+            const errorCbB = vi.fn();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            event.postMapLoadEvent(1, skuToken, config.ACCESS_TOKEN, () => { throw new Error('callback failed'); });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            event.postMapLoadEvent(2, skuToken, config.ACCESS_TOKEN, errorCbB);
+            await failRequests();
+            await failRequests();
+            await settle();
+            rejections.stop();
+            expect(errorCbB).toHaveBeenCalledTimes(1);
+        });
     });
 
     describe('MapSessionAPI', () => {
@@ -1674,6 +1767,70 @@ describe("mapbox", () => {
                     resolve();
                 }, 0);
             });
+        });
+
+        test('delivers a request failure to the error callback', async () => {
+            const failRequests = deferFetchFailure();
+            const errorCb = vi.fn();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            sessionAPI.getSessionAPI(1, skuToken, config.ACCESS_TOKEN, errorCb);
+            await failRequests();
+            expect(errorCb).toHaveBeenCalledTimes(1);
+        });
+
+        test('ignores a request failure that settles after remove()', async () => {
+            const failRequests = deferFetchFailure();
+            const errorCb = vi.fn();
+            const rejections = captureUnhandledRejections();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            sessionAPI.getSessionAPI(1, skuToken, config.ACCESS_TOKEN, errorCb);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            sessionAPI.remove(1);
+            await failRequests();
+            await settle();
+            rejections.stop();
+            expect(rejections.reasons).toEqual([]);
+            expect(errorCb).not.toHaveBeenCalled();
+        });
+
+        test('remove() of one map keeps error delivery for another map', async () => {
+            const failRequests = deferFetchFailure();
+            const errorCbB = vi.fn();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            sessionAPI.getSessionAPI(2, skuToken, config.ACCESS_TOKEN, errorCbB);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            sessionAPI.getSessionAPI(1, skuToken, config.ACCESS_TOKEN, () => {});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            sessionAPI.remove(1);
+            await failRequests();
+            expect(errorCbB).toHaveBeenCalledTimes(1);
+        });
+
+        test('getSession calls a throwing callback only once and surfaces its error', async () => {
+            const rejections = captureUnhandledRejections();
+            const callbackError = new Error('callback failed');
+            const callback = vi.fn(() => { throw callbackError; });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            sessionAPI.getSession(Date.now(), skuToken, callback);
+            await settle();
+            rejections.stop();
+            expect(callback).toHaveBeenCalledTimes(1);
+            expect(rejections.reasons).toEqual([callbackError]);
+        });
+
+        test('keeps draining the queue after an error callback throws', async () => {
+            const failRequests = deferFetchFailure();
+            const rejections = captureUnhandledRejections();
+            const errorCbB = vi.fn();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            sessionAPI.getSessionAPI(1, skuToken, config.ACCESS_TOKEN, () => { throw new Error('callback failed'); });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            sessionAPI.getSessionAPI(2, skuToken, config.ACCESS_TOKEN, errorCbB);
+            await failRequests();
+            await failRequests();
+            await settle();
+            rejections.stop();
+            expect(errorCbB).toHaveBeenCalledTimes(1);
         });
     });
 

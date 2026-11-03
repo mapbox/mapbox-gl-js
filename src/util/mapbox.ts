@@ -484,15 +484,9 @@ export class TelemetryEvent {
 
         this.pendingRequest = true;
         postData(request)
-            .then(() => {
+            .then(() => callback(null), (err: Error) => callback(err))
+            .finally(() => {
                 this.pendingRequest = false;
-                callback(null);
-                this.saveEventData();
-                this.processRequests();
-            })
-            .catch((err: Error) => {
-                this.pendingRequest = false;
-                callback(err);
                 this.saveEventData();
                 this.processRequests();
             });
@@ -543,23 +537,24 @@ export class MapLoadEvent extends TelemetryEvent {
         [_: number]: boolean;
     };
     skuToken: string;
-    errorCb!: EventCallback;
+    errorCbs: Map<number, EventCallback>;
 
     constructor() {
         super('map.load');
         this.success = {};
         this.skuToken = '';
+        this.errorCbs = new Map();
     }
 
     postMapLoadEvent(mapId: number, skuToken: string, customAccessToken: string | null | undefined, callback: EventCallback) {
         this.skuToken = skuToken;
-        this.errorCb = callback;
+        this.errorCbs.set(mapId, callback);
 
         if (config.EVENTS_URL) {
             if (customAccessToken || config.ACCESS_TOKEN) {
                 this.queueRequest({id: mapId, timestamp: Date.now()}, customAccessToken);
             } else {
-                this.errorCb(new Error(AUTH_ERR_MSG));
+                callback(new Error(AUTH_ERR_MSG));
             }
         }
     }
@@ -594,15 +589,17 @@ export class MapLoadEvent extends TelemetryEvent {
 
         this.postEvent(timestamp, additionalPayload, (err) => {
             if (err) {
-                this.errorCb(err);
+                // The map may have been removed while the request was in flight
+                const errorCb = this.errorCbs.get(id);
+                if (errorCb) errorCb(err);
             } else {
                 if (id) this.success[id] = true;
             }
         }, customAccessToken);
     }
 
-    remove() {
-        this.errorCb = null;
+    remove(mapId: number) {
+        this.errorCbs.delete(mapId);
     }
 }
 
@@ -740,12 +737,13 @@ export class MapSessionAPI extends TelemetryEvent {
         [_: number]: boolean;
     };
     skuToken: string;
-    errorCb!: EventCallback;
+    errorCbs: Map<number, EventCallback>;
 
     constructor() {
         super('map.auth');
         this.success = {};
         this.skuToken = '';
+        this.errorCbs = new Map();
     }
 
     getSession(timestamp: number, token: string, callback: EventCallback, customAccessToken?: string | null) {
@@ -763,15 +761,9 @@ export class MapSessionAPI extends TelemetryEvent {
 
         this.pendingRequest = true;
         getData(request)
-            .then(() => {
+            .then(() => callback(null), (err: Error) => callback(err))
+            .finally(() => {
                 this.pendingRequest = false;
-                callback(null);
-                this.saveEventData();
-                this.processRequests();
-            })
-            .catch((err: Error) => {
-                this.pendingRequest = false;
-                callback(err);
                 this.saveEventData();
                 this.processRequests();
             });
@@ -779,13 +771,13 @@ export class MapSessionAPI extends TelemetryEvent {
 
     getSessionAPI(mapId: number, skuToken: string, customAccessToken: string | null | undefined, callback: EventCallback) {
         this.skuToken = skuToken;
-        this.errorCb = callback;
+        this.errorCbs.set(mapId, callback);
 
         if (config.EVENTS_URL && config.SESSION_PATH && config.API_URL) {
             if (customAccessToken || config.ACCESS_TOKEN) {
                 this.queueRequest({id: mapId, timestamp: Date.now()}, customAccessToken);
             } else {
-                this.errorCb(new Error(AUTH_ERR_MSG));
+                callback(new Error(AUTH_ERR_MSG));
             }
         }
     }
@@ -799,15 +791,17 @@ export class MapSessionAPI extends TelemetryEvent {
 
         this.getSession(timestamp, this.skuToken, (err) => {
             if (err) {
-                this.errorCb(err);
+                // The map may have been removed while the request was in flight
+                const errorCb = this.errorCbs.get(id);
+                if (errorCb) errorCb(err);
             } else {
                 if (id) this.success[id] = true;
             }
         }, customAccessToken);
     }
 
-    remove() {
-        this.errorCb = null;
+    remove(mapId: number) {
+        this.errorCbs.delete(mapId);
     }
 }
 

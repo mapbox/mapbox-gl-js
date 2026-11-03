@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Fix clean-up of telemetry classes.
+
 ## 3.35.0-rc.1
 
 - Improve map load performance on lower zooms via faster polygon triangulation.
