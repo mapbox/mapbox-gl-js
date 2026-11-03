@@ -9,15 +9,10 @@
  *
  * This module removes those branches at build time. It is deliberately conservative, only code that
  * is provably not reachable in gl-js is removed.
- * @see test/build/glsl_dead_code.test.js — This test re-derives the symbol list from source and
- * WILL fails if this list and the code disagree.
+ * @see test/unit/build/glsl_dead_code.test.ts, which fails when this list and the shaders disagree.
  */
 
-/**
- * Preprocessor symbols referenced by the shared GLSL that GL JS can never define.
- *
- * Every entry is verified by `test/build/glsl_dead_code.test.js`
- */
+/** Preprocessor symbols referenced by the shared GLSL that GL JS can never define. */
 export const GL_NATIVE_ONLY_DEFINES: ReadonlyArray<string> = Object.freeze([
     // Metal renders with a top-left viewport origin; Vulkan Immediate sets FLIP_Y.
     // WebGL is bottom-left. Shared GLSL consults those symbols only inside the
@@ -35,6 +30,7 @@ export const GL_NATIVE_ONLY_DEFINES: ReadonlyArray<string> = Object.freeze([
     'FEATURE_CUTOUT',
     'FEATURE_CUTOUT_VERTEX',
     'ROUTE_CORRIDOR',
+    'LINE_ROUND_JOIN_CLIP_BORDER_OVERLAP',
     // Native-only depth/occlusion and render-target capabilities.
     'CLIP_ZERO_TO_ONE',
     'FLOAT_RENDER_TARGET',
@@ -357,7 +353,7 @@ export function eliminateDeadBranches(
             throw new Error(
                 `${id} defines "${defined}", which build/glsl_dead_code.ts lists as never ` +
                 `defined in GL JS. Remove it from GL_NATIVE_ONLY_DEFINES (and re-run ` +
-                `npm run test-build) or stop defining it in GLSL.`
+                `npm run test-unit) or stop defining it in GLSL.`
             );
         }
     }

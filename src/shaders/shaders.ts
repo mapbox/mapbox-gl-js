@@ -275,9 +275,7 @@ uniform ${precision} ${type} u_${name};
 
     vertexSource = vertexSource.replace(PRAGMA_REGEX, (_, operation, precision, type: string, name: string) => {
 
-        const materialOffsetNameDefineName = `MATERIAL_ATTRIBUTE_OFFSET_${name}`;
         const attrType = type === 'float' ? 'vec2' : type;
-        const materialAttribExpression = `GET_ATTRIBUTE_${attrType}(a_${name}, materialInfo, ${materialOffsetNameDefineName})`;
         const unpackType = name.includes('color') ? 'color' : attrType;
 
         if (operation === 'define-attribute-vertex-shader-only') {
@@ -292,9 +290,7 @@ in ${precision} ${type} a_${name};
                 return `
 #ifndef HAS_UNIFORM_u_${name}
 uniform lowp float u_${name}_t;
-    #if !defined(${materialOffsetNameDefineName})
-        in ${precision} ${attrType} a_${name};
-    #endif
+in ${precision} ${attrType} a_${name};
 ${interpolation}out ${precision} ${type} ${name};
 #else
 uniform ${precision} ${type} u_${name};
@@ -313,11 +309,7 @@ uniform ${precision} ${type} u_${name};
                 } else {
                     return `
 #if !defined(HAS_UNIFORM_u_${name})
-    #ifdef ${materialOffsetNameDefineName}
-        ${name} = unpack_mix_${unpackType}(${materialAttribExpression}, u_${name}_t);
-    #else
-        ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
-    #endif
+    ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
 #else
     ${precision} ${type} ${name} = u_${name};
 #endif
@@ -342,9 +334,7 @@ uniform ${precision} ${type} u_${name};
                 return `
 #ifndef HAS_UNIFORM_u_${name}
 uniform lowp float u_${name}_t;
-    #if !defined(${materialOffsetNameDefineName})
-        in ${precision} ${attrType} a_${name};
-    #endif
+in ${precision} ${attrType} a_${name};
 #else
 uniform ${precision} ${type} u_${name};
 #endif
@@ -381,11 +371,7 @@ uniform ${precision} ${type} u_${name};
                     // vec4 attributes are only used for cross-faded properties, and are not packed
                     return `
 #ifndef HAS_UNIFORM_u_${name}
-    #ifdef ${materialOffsetNameDefineName}
-        ${precision} ${type} ${name} = ${materialAttribExpression};
-    #else
-        ${precision} ${type} ${name} = a_${name};
-    #endif
+    ${precision} ${type} ${name} = a_${name};
 #else
     ${precision} ${type} ${name} = u_${name};
 #endif
@@ -393,11 +379,7 @@ uniform ${precision} ${type} u_${name};
                 } else /* */ {
                     return `
 #ifndef HAS_UNIFORM_u_${name}
-    #ifdef ${materialOffsetNameDefineName}
-        ${precision} ${type} ${name} = unpack_mix_${unpackType}(${materialAttribExpression}, u_${name}_t);
-    #else
-        ${precision} ${type} ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
-    #endif
+    ${precision} ${type} ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
 #else
     ${precision} ${type} ${name} = u_${name};
 #endif

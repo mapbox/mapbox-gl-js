@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Remove unreachable shader code from the bundle.
 - Fix clean-up of telemetry classes.
 
 ## 3.35.0-rc.1

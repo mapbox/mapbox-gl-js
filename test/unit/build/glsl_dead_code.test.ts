@@ -1,15 +1,14 @@
-import assert from 'node:assert/strict';
-import test from 'node:test';
-import fs from 'node:fs';
-import path from 'node:path';
-import {fileURLToPath} from 'node:url';
-import {eliminateDeadBranches, GL_NATIVE_ONLY_DEFINES} from '../../build/glsl_dead_code.ts';
+/// <reference types="vite/client" />
+import {test, assert} from '../../util/vitest';
+import {eliminateDeadBranches, GL_NATIVE_ONLY_DEFINES} from '../../../build/glsl_dead_code';
 
-const root = fileURLToPath(new URL('../../', import.meta.url));
+const shaders: Record<string, string> = import.meta.glob(
+    ['/src/shaders/*.glsl', '/3d-style/shaders/*.glsl'], {eager: true, import: 'default'});
+
+const typescript: Record<string, string> = import.meta.glob(
+    ['/src/**/*.ts', '/3d-style/**/*.ts', '/test/**/*.ts'], {eager: true, query: '?raw', import: 'default'});
 
 const strip = (glsl: string): string => glsl.replace(/\s*\/\/.*$/gm, '');
-
-const read = (file: string): string => fs.readFileSync(file, 'utf8');
 
 // --- unit behaviour -------------------------------------------------------------------------
 
@@ -146,34 +145,6 @@ test('throws if the source defines a symbol claimed to be never defined', () => 
 
 // --- the symbol list must stay true of the real sources -------------------------------------
 
-/** Every `.glsl` in the shared corpus. */
-function shaderFiles(): string[] {
-    return ['src/shaders', '3d-style/shaders']
-        .flatMap((dir) => fs.readdirSync(path.join(root, dir))
-            .filter((f) => f.endsWith('.glsl'))
-            .map((f) => path.join(root, dir, f)));
-}
-
-/**
- * Every `.ts` that could contribute a `#define`, plus tests, which is the conservative choice:
- * a symbol mentioned anywhere in TypeScript is treated as possibly-definable.
- */
-function tsFiles(): string[] {
-    const out: string[] = [];
-    const walk = (dir: string): void => {
-        for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
-            const full = path.join(dir, entry.name);
-            if (entry.isDirectory()) {
-                if (entry.name !== 'node_modules') walk(full);
-            } else if (entry.name.endsWith('.ts')) {
-                out.push(full);
-            }
-        }
-    };
-    for (const dir of ['src', '3d-style', 'test']) walk(path.join(root, dir));
-    return out;
-}
-
 /**
  * Re-derives, from source, the set of conditional symbols GL JS can never define:
  * referenced by a shader conditional, not `#define`d in GLSL, not produced by one of the
@@ -183,8 +154,8 @@ function deriveNeverDefined(): Set<string> {
     const referenced = new Set<string>();
     const glslDefined = new Set<string>();
 
-    for (const file of shaderFiles()) {
-        for (const line of strip(read(file)).split('\n')) {
+    for (const source of Object.values(shaders)) {
+        for (const line of strip(source).split('\n')) {
             const s = line.trim();
             if (!s.startsWith('#')) continue;
             let m: RegExpExecArray | null;
@@ -205,8 +176,8 @@ function deriveNeverDefined(): Set<string> {
     const generatedPrefixes = ['HAS_UNIFORM_', 'HAS_ATTRIBUTE_', 'HAS_TEXTURE_', 'MAX_UBO_SIZE_VEC4', 'GL_'];
 
     let ts = '';
-    for (const file of tsFiles()) {
-        ts += `${read(file)
+    for (const source of Object.values(typescript)) {
+        ts += `${source
             .replace(/\/\*[\s\S]*?\*\//g, '')
             .replace(/\/\/.*$/gm, '')}\n`;
     }
@@ -221,66 +192,59 @@ function deriveNeverDefined(): Set<string> {
     return never;
 }
 
-test('every listed symbol is genuinely never defined in GL JS', () => {
+test('native-only define list matches the shared shaders', () => {
     const derived = deriveNeverDefined();
     const wrong = GL_NATIVE_ONLY_DEFINES.filter((name) => !derived.has(name));
     assert.deepEqual(wrong, [], `these symbols are reachable in GL JS and must be removed from ` +
-        `GL_NATIVE_ONLY_DEFINES in build/glsl_dead_code.js, or the code they guard is being ` +
+        `GL_NATIVE_ONLY_DEFINES in build/glsl_dead_code.ts, or the code they guard is being ` +
         `deleted from the shipped shaders: ${wrong.join(', ')}`);
 
-    // The other direction is an opportunity, not a defect: a newly-added gl-native-only symbol
-    // simply is not eliminated yet. Report it without failing.
     const missed = [...derived].filter((name) => !GL_NATIVE_ONLY_DEFINES.includes(name)).sort();
-    if (missed.length > 0) {
-        console.log(`note: additional never-defined shader symbols could be eliminated: ${missed.join(', ')}`);
-    }
+    assert.deepEqual(missed, [], `add these never-defined shader symbols to ` +
+        `GL_NATIVE_ONLY_DEFINES in build/glsl_dead_code.ts: ${missed.join(', ')}`);
 });
 
 test('no shader defines a symbol on the never-defined list', () => {
-    for (const file of shaderFiles()) {
-        assert.doesNotThrow(
-            () => eliminateDeadBranches(strip(read(file)), GL_NATIVE_ONLY_DEFINES, file),
-            `${path.relative(root, file)} defines a symbol listed as never defined`
-        );
+    for (const [file, source] of Object.entries(shaders)) {
+        eliminateDeadBranches(strip(source), GL_NATIVE_ONLY_DEFINES, file);
     }
 });
 
 test('output is directive-balanced for every shader in the corpus', () => {
     const count = (text: string, re: RegExp): number => (text.match(re) || []).length;
-    for (const file of shaderFiles()) {
-        const source = strip(read(file));
+    for (const [file, glsl] of Object.entries(shaders)) {
+        const source = strip(glsl);
         const out = eliminateDeadBranches(source, GL_NATIVE_ONLY_DEFINES, file);
-        const rel = path.relative(root, file);
 
         const opens = count(out, /^[ \t]*#[ \t]*(?:if|ifdef|ifndef)\b/gm);
         const closes = count(out, /^[ \t]*#[ \t]*endif\b/gm);
-        assert.equal(opens, closes, `${rel}: ${opens} openers vs ${closes} #endif after elimination`);
+        assert.equal(opens, closes, `${file}: ${opens} openers vs ${closes} #endif after elimination`);
 
         // An #else or #elif must never be left without an enclosing group.
-        assert.ok(count(out, /^[ \t]*#[ \t]*(?:else|elif)\b/gm) <= opens * 8, `${rel}: stray #else/#elif`);
+        assert.ok(count(out, /^[ \t]*#[ \t]*(?:else|elif)\b/gm) <= opens * 8, `${file}: stray #else/#elif`);
 
         // Elimination only ever removes text.
-        assert.ok(out.length <= source.length, `${rel}: output grew`);
+        assert.ok(out.length <= source.length, `${file}: output grew`);
 
         // Nothing outside a conditional may be touched.
         for (const directive of ['#version', '#extension', '#include', '#pragma']) {
             assert.equal(count(out, new RegExp(directive, 'g')), count(source, new RegExp(directive, 'g')),
-                `${rel}: ${directive} count changed`);
+                `${file}: ${directive} count changed`);
         }
     }
 });
 
 test('_prelude.glsl dead-code keeps GL conversion macros', () => {
-    const file = path.join(root, 'src/shaders/_prelude.glsl');
-    const out = eliminateDeadBranches(strip(read(file)), GL_NATIVE_ONLY_DEFINES, file);
+    const file = '/src/shaders/_prelude.glsl';
+    const out = eliminateDeadBranches(strip(shaders[file]), GL_NATIVE_ONLY_DEFINES, file);
     assert.match(out, /#define native_depth_epsilon\(eps\) \(eps\)/);
     assert.match(out, /#define ndc_xy_to_framebuffer_uv\(ndc_xy\) \(\(ndc_xy\) \* 0\.5 \+ 0\.5\)/);
     assert.equal(out.includes('highp float native_depth_epsilon'), false);
 });
 
 test('_prelude.fragment.glsl dead-code keeps GL conversion macros', () => {
-    const file = path.join(root, 'src/shaders/_prelude.fragment.glsl');
-    const out = eliminateDeadBranches(strip(read(file)), GL_NATIVE_ONLY_DEFINES, file);
+    const file = '/src/shaders/_prelude.fragment.glsl';
+    const out = eliminateDeadBranches(strip(shaders[file]), GL_NATIVE_ONLY_DEFINES, file);
     assert.match(out, /#define fragcoord_to_framebuffer_uv\(frag, inv\) \(\(frag\) \* \(inv\)\)/);
     assert.match(out, /#define fragcoord_to_ndc_y\(fragY, invY\) \(\(fragY\) \* \(invY\) \* 2\.0 - 1\.0\)/);
     assert.equal(out.includes('vec2 fragcoord_to_framebuffer_uv'), false);
@@ -289,8 +253,8 @@ test('_prelude.fragment.glsl dead-code keeps GL conversion macros', () => {
 test('_prelude_material_table.vertex.glsl is eliminated entirely', () => {
     // The whole file sits inside `#ifdef HAS_SHADER_STORAGE_BLOCK_material_buffer`, and WebGL 2
     // has no shader-storage-buffer support at all, so none of it can ever run in GL JS.
-    const file = path.join(root, 'src/shaders/_prelude_material_table.vertex.glsl');
-    const source = strip(read(file));
+    const file = '/src/shaders/_prelude_material_table.vertex.glsl';
+    const source = strip(shaders[file]);
     assert.ok(source.length > 4000, 'expected a multi-kB prelude');
     assert.equal(eliminateDeadBranches(source, GL_NATIVE_ONLY_DEFINES, file).trim(), '');
 });
@@ -298,8 +262,8 @@ test('_prelude_material_table.vertex.glsl is eliminated entirely', () => {
 test('removes a meaningful amount from the corpus', () => {
     let before = 0;
     let after = 0;
-    for (const file of shaderFiles()) {
-        const source = strip(read(file));
+    for (const [file, glsl] of Object.entries(shaders)) {
+        const source = strip(glsl);
         before += source.length;
         after += eliminateDeadBranches(source, GL_NATIVE_ONLY_DEFINES, file).length;
     }

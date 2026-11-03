@@ -1,7 +1,21 @@
 import {test, expect} from '../../util/vitest';
-import {compile, includeMap, parseUsedPreprocessorDefines} from '../../../src/shaders/shaders';
+import shaders, {compile, includeMap, parseUsedPreprocessorDefines} from '../../../src/shaders/shaders';
+import liteShaders from '../../../3d-style/shaders/shaders_lite';
+import standardShaders from '../../../3d-style/shaders/shaders_standard';
+import hdShaders from '../../../3d-style/shaders/shaders_hd';
 
 import type {DynamicDefinesType} from '../../../src/render/program/program_uniforms';
+
+test('pragma expansion only introduces GL JS runtime defines', () => {
+    for (const [name, source] of Object.entries({...shaders, ...liteShaders, ...standardShaders, ...hdShaders})) {
+        const defines = new Set<DynamicDefinesType>();
+        parseUsedPreprocessorDefines(source.vertexSource, defines);
+        parseUsedPreprocessorDefines(source.fragmentSource, defines);
+        const unknown = [...defines].filter((define) => !source.usedDefines.has(define) &&
+            !define.startsWith('HAS_UNIFORM_') && !define.startsWith('HAS_ATTRIBUTE_'));
+        expect(unknown, name).toEqual([]);
+    }
+});
 
 test('parseUsedPreprocessorDefines', () => {
     let defines: Set<DynamicDefinesType> = new Set();
