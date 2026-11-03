@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 3.34.2
+
 ## 3.34.1
 
 ### Features and improvements ✨
