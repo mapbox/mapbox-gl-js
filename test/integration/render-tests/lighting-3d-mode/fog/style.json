@@ -10,6 +10,12 @@
           "setStyle",
           "local://styles/chicago.json"
         ],
+        ["wait"],
+        ["removeLayer", "poi_label"],
+        ["removeLayer", "road_major_label"],
+        ["removeLayer", "place_label_other"],
+        ["removeLayer", "place_label_city"],
+        ["removeLayer", "country_label"],
         [
           "setZoom",
           13

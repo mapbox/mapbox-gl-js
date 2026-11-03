@@ -11,6 +11,11 @@
           "local://styles/standard-hd.json"
         ],
         ["wait"],
+        ["setConfigProperty", "basemap", "showPlaceLabels", false],
+        ["setConfigProperty", "basemap", "showRoadLabels", false],
+        ["setConfigProperty", "basemap", "showTransitLabels", false],
+        ["setConfigProperty", "basemap", "showPointOfInterestLabels", false],
+        ["setConfigProperty", "high-definition-roads-beta", "textSize", 0],
         ["wait"],
         ["wait"]
       ],
