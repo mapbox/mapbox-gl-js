@@ -41,7 +41,6 @@ import type {UniformValues} from './uniform_binding';
 import type {SymbolUniformsType} from './program/symbol_program';
 import type {CrossTileID, VariableOffset} from '../symbol/placement';
 import type {DynamicDefinesType} from './program/program_uniforms';
-import type {LightsUniformsType} from '../../3d-style/render/lights';
 import type Program from './program';
 
 export default drawSymbols;
@@ -63,6 +62,7 @@ type SymbolTileRenderState = {
         tile: Tile;
         renderWithShadows: boolean;
         labelPlaneMatrixInv: mat4 | null | undefined;
+        fogMatrix: mat4 | null;
     } | null;
 };
 
@@ -376,6 +376,10 @@ function drawLayerSymbols(
         const bucketIsGlobeProjection = bucket.projection.name === 'globe';
         const globeToMercator = bucketIsGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
         const tileMatrix = getSymbolTileProjectionMatrix(coord, bucket.getProjection(), tr);
+        // Like tileMatrix, a bucket built for another projection needs its own fog tile matrix.
+        const fogMatrix = bucket.getProjection().name !== tr.projection.name ?
+            mat4.multiply(mat4.create(), tr.worldToFogMatrix, bucket.getProjection().createTileMatrix(tr, tr.cameraWorldSizeForFog, coord.toUnwrapped())) :
+            null;
 
         const s = tr.calculatePixelsToTileUnitsMatrix(tile);
 
@@ -499,7 +503,8 @@ function drawLayerSymbols(
 
             setUBODefines(baseDefines);
 
-            const program = painter.getOrCreateProgram('symbol', {defines: baseDefines});
+            const affectedByFog = iconPitchWithMap && !bucketIsGlobeProjection && painter.isTileAffectedByFog(coord);
+            const program = painter.getOrCreateProgram('symbol', {defines: baseDefines, overrideFog: affectedByFog});
 
             const texSize: [number, number] = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
             const sizeData = bucket.iconSizeData;
@@ -564,6 +569,7 @@ function drawLayerSymbols(
                 tile,
                 renderWithShadows,
                 labelPlaneMatrixInv,
+                fogMatrix,
             };
         };
 
@@ -614,7 +620,8 @@ function drawLayerSymbols(
 
             setUBODefines(baseDefines);
 
-            const program = painter.getOrCreateProgram('symbol', {defines: baseDefines});
+            const affectedByFog = textPitchWithMap && !bucketIsGlobeProjection && painter.isTileAffectedByFog(coord);
+            const program = painter.getOrCreateProgram('symbol', {defines: baseDefines, overrideFog: affectedByFog});
 
             let texSizeIcon: [number, number] = [0, 0];
             let atlasTextureIcon: Texture | null = null;
@@ -687,6 +694,7 @@ function drawLayerSymbols(
                 tile,
                 renderWithShadows,
                 labelPlaneMatrixInv,
+                fogMatrix,
             };
         };
 
@@ -775,7 +783,7 @@ function drawLayerSymbols(
             painter.shadowRenderer.setupShadows(state.tile.tileID.toUnwrapped(), state.program, 'vector-tile');
         }
 
-        painter.uploadCommonLightUniforms(painter.context, state.program as unknown as Program<LightsUniformsType>);
+        painter.uploadCommonUniforms(painter.context, state.program, state.fogMatrix ? null : state.tile.tileID.toUnwrapped(), state.fogMatrix);
 
         if (state.hasHalo) {
             const uniformValues = (state.uniformValues);
