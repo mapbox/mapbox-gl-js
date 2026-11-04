@@ -723,7 +723,7 @@ class LineBucket implements Bucket {
             //
             // Dash keys are looked up in `dashPositions`, not `imagePositions`: on the pattern
             // path (addFeatures(), below) `imagePositions` is the *image* atlas, but dash keys
-            // (`dasharray.join(',') + lineCap`, see line_atlas.ts) only ever exist in the tile's
+            // (LineAtlas.getKey, see line_atlas.ts) only ever exist in the tile's
             // LineAtlas. The two coincide on the non-pattern populate() path, hence the default.
             //
             // `feature.patterns[layer.id]` is also where addPatternDependencies() stashes an

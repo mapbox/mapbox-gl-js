@@ -43,4 +43,26 @@ describe('LineAtlas', () => {
         expect(lineAtlas.addDash([0, 0], 'butt')).toBeTruthy();
         expect(lineAtlas.addDash([0, 0], 'round')).toBeTruthy();
     });
+
+    test('empty dasharray is not written back and stays findable by the original array', () => {
+        const atlas = new LineAtlas(64, 64);
+        const dash: Array<number> = [];
+        const pos = atlas.addDash(dash, 'round');
+        expect(dash).toEqual([]);
+        expect(pos).toBeTruthy();
+        // LineBucket#addFeatureDashes stores getKey() of the same array after addDash.
+        expect(atlas.positions[atlas.getKey(dash, 'round')]).toEqual(pos);
+        expect(atlas.getDash([], 'round')).toEqual(pos);
+        expect(atlas.getDash([1], 'round')).toEqual(pos);
+    });
+
+    test('negative dash values are not written back and stay findable', () => {
+        const atlas = new LineAtlas(64, 64);
+        const dash = [-1, 2];
+        const pos = atlas.addDash(dash, 'butt');
+        expect(dash).toEqual([-1, 2]);
+        expect(pos.br[0]).toEqual(2);
+        expect(atlas.getDash(dash, 'butt')).toEqual(pos);
+        expect(atlas.getDash([0, 2], 'butt')).toEqual(pos);
+    });
 });
