@@ -157,8 +157,8 @@ End with:
 
 ## Output format
 
-Always:
+When a repro page is warranted (see Edge cases):
 1. Write the file to `debug/repro/<N>.html`.
-2. Serve it and print `http://localhost:9966/debug/repro/<N>.html` once the server answers.
-3. Run `npm run check-debug-pages` and report it green.
+2. Get `npm run check-debug-pages` green.
+3. Print `http://localhost:9966/debug/repro/<N>.html` once the server answers (step 6 says who starts it).
 4. Do **not** commit or open a PR. Debug pages are local aids, not shipped.

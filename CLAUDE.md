@@ -45,7 +45,7 @@ Render tests:
 - Test name = folder path under `test/integration/render-tests/` (e.g. `circle-radius/literal`). `-t` matches substrings — use a trailing slash to narrow: `-t "circle-radius/"` not `-t "circle"` (also hits `circle-color`, `circle-blur`, etc.)
 - Always use `npm run test-render`, not `npx vitest` — the `pretest-render` hook rebuilds the ESM dev bundle (`dist/esm-dev/`)
 - Inspect diffs: `open test/integration/render-tests/render-tests.html`
-- Platform-specific failures → `metadata.test.skip-test` rules in the test's `style.json` (matched by `platform-tag-contains`), with the issue in `metadata.test.tickets`; see `test/integration/README.md`
+- Platform-specific failures → a `skip-test` rule under `metadata.test` in the test's `style.json` (`test.json` for expression tests), matched by `platform-tag-contains`, with a `reason` that names the issue and the issue URL in `metadata.test.tickets`; see `test/integration/README.md`
 
 ### Code Quality
 
