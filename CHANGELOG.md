@@ -1,5 +1,12 @@
 ## Unreleased
 
+<<<<<<< HEAD
+=======
+- Remove unreachable shader code from the bundle.
+- Fix clean-up of telemetry classes.
+- Apply fog to symbols with `icon-pitch-alignment` or `text-pitch-alignment` set to `map`.
+
+>>>>>>> b0d94c838d (Apply fog on map aligned symbols)
 ## 3.35.0-rc.1
 
 - Improve map load performance on lower zooms via faster polygon triangulation.

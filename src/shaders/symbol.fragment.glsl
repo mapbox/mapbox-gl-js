@@ -1,3 +1,4 @@
+#include "_prelude_fog.fragment.glsl"
 #include "_prelude_lighting.glsl"
 #include "_prelude_shadow.fragment.glsl"
 #include "_prelude_indicator_cutout.fragment.glsl"
@@ -95,7 +96,11 @@ void main() {
     if (is_sdf == ICON) {
         vec2 tex_icon = v_tex_a_icon;
         lowp float alpha = opacity * fade_opacity * u_opacity_multiplier;
-        glFragColor = texture(u_texture_icon, tex_icon) * alpha;
+        vec4 icon_color = texture(u_texture_icon, tex_icon) * alpha;
+#ifdef FOG
+        icon_color = fog_dither(fog_apply_premultiplied(icon_color, v_fog_pos));
+#endif
+        glFragColor = icon_color;
 
 #ifdef OVERDRAW_INSPECTOR
         glFragColor = vec4(1.0);
@@ -165,6 +170,10 @@ void main() {
             #endif
         #endif // RENDER_SHADOWS
     #endif
+
+#ifdef FOG
+    out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
+#endif
 
 #ifdef INDICATOR_CUTOUT
     out_color = applyCutout(out_color, v_z_offset);
