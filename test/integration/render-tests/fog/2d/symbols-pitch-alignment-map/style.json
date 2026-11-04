@@ -1,0 +1,142 @@
+{
+  "description": "Fog applies to map-pitched symbols (icon, glyphs, inline image and line label, west column and road) and not to viewport-pitched symbols (east column).",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 384
+    }
+  },
+  "center": [0, 0],
+  "zoom": 14,
+  "pitch": 65,
+  "fog": {
+    "range": [0, 3],
+    "color": "pink",
+    "horizon-blend": 0
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {"type": "Feature", "properties": {"align": "map"}, "geometry": {"type": "Point", "coordinates": [-0.003,-0.008]}},
+          {"type": "Feature", "properties": {"align": "map"}, "geometry": {"type": "Point", "coordinates": [-0.003,-0.004]}},
+          {"type": "Feature", "properties": {"align": "map"}, "geometry": {"type": "Point", "coordinates": [-0.003,0]}},
+          {"type": "Feature", "properties": {"align": "map"}, "geometry": {"type": "Point", "coordinates": [-0.003,0.004]}},
+          {"type": "Feature", "properties": {"align": "map"}, "geometry": {"type": "Point", "coordinates": [-0.003,0.008]}},
+          {"type": "Feature", "properties": {"align": "map"}, "geometry": {"type": "Point", "coordinates": [-0.003,0.012]}},
+          {"type": "Feature", "properties": {"align": "map"}, "geometry": {"type": "Point", "coordinates": [-0.003,0.016]}},
+          {"type": "Feature", "properties": {"align": "map"}, "geometry": {"type": "Point", "coordinates": [-0.003,0.02]}},
+          {"type": "Feature", "properties": {"align": "viewport"}, "geometry": {"type": "Point", "coordinates": [0.003,-0.008]}},
+          {"type": "Feature", "properties": {"align": "viewport"}, "geometry": {"type": "Point", "coordinates": [0.003,-0.004]}},
+          {"type": "Feature", "properties": {"align": "viewport"}, "geometry": {"type": "Point", "coordinates": [0.003,0]}},
+          {"type": "Feature", "properties": {"align": "viewport"}, "geometry": {"type": "Point", "coordinates": [0.003,0.004]}},
+          {"type": "Feature", "properties": {"align": "viewport"}, "geometry": {"type": "Point", "coordinates": [0.003,0.008]}},
+          {"type": "Feature", "properties": {"align": "viewport"}, "geometry": {"type": "Point", "coordinates": [0.003,0.012]}},
+          {"type": "Feature", "properties": {"align": "viewport"}, "geometry": {"type": "Point", "coordinates": [0.003,0.016]}},
+          {"type": "Feature", "properties": {"align": "viewport"}, "geometry": {"type": "Point", "coordinates": [0.003,0.02]}}
+        ]
+      }
+    },
+    "road": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {"type": "LineString", "coordinates": [[0, -0.02], [0, 0.1]]}
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#d8d2c4"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "road",
+      "paint": {
+        "line-color": "#404040",
+        "line-width": 24
+      }
+    },
+    {
+      "id": "road-label",
+      "type": "symbol",
+      "source": "road",
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 120,
+        "text-field": "ROAD LABEL",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": 16,
+        "text-pitch-alignment": "map",
+        "text-allow-overlap": true,
+        "text-ignore-placement": true
+      },
+      "paint": {
+        "text-color": "#ffd000"
+      }
+    },
+    {
+      "id": "map-pitched",
+      "type": "symbol",
+      "source": "points",
+      "filter": ["==", ["get", "align"], "map"],
+      "layout": {
+        "icon-image": "airport-12",
+        "icon-size": 1.5,
+        "icon-pitch-alignment": "map",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "text-field": ["format", ["image", "bus-12"], {}, " Map", {}],
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": 18,
+        "text-anchor": "right",
+        "text-offset": [-1.2, 0],
+        "text-pitch-alignment": "map",
+        "text-allow-overlap": true,
+        "text-ignore-placement": true
+      },
+      "paint": {
+        "text-color": "#1030a0",
+        "text-halo-color": "#ffffff",
+        "text-halo-width": 1.5
+      }
+    },
+    {
+      "id": "viewport-pitched",
+      "type": "symbol",
+      "source": "points",
+      "filter": ["==", ["get", "align"], "viewport"],
+      "layout": {
+        "icon-image": "airport-12",
+        "icon-size": 1.5,
+        "icon-pitch-alignment": "viewport",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "text-field": ["format", ["image", "bus-12"], {}, " Viewport", {}],
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": 18,
+        "text-anchor": "left",
+        "text-offset": [1.2, 0],
+        "text-pitch-alignment": "viewport",
+        "text-allow-overlap": true,
+        "text-ignore-placement": true
+      },
+      "paint": {
+        "text-color": "#1030a0",
+        "text-halo-color": "#ffffff",
+        "text-halo-width": 1.5
+      }
+    }
+  ]
+}

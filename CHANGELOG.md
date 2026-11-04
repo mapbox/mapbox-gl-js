@@ -1,6 +1,28 @@
 ## Unreleased
 
+<<<<<<< HEAD
 ## 3.34.2
+=======
+- Remove unreachable shader code from the bundle.
+- Fix clean-up of telemetry classes.
+- Apply fog to symbols with `icon-pitch-alignment` or `text-pitch-alignment` set to `map`.
+
+## 3.35.0-rc.1
+
+- Improve map load performance on lower zooms via faster polygon triangulation.
+- Fix zero-length cap in SVG not drawn in various browsers.
+- Fix `transformRequest` headers missing from requests for glTF buffers and textures.
+- Fix `Map#setGlyphsUrl` not changing the glyphs of labels that are already loaded.
+- Revert fix line geometry: clamp fake-round join anchor on short segments.
+- Fix thin lines fading and flickering at high pitch.
+- Fix visibility of the logo control based on imported source.
+- Fix a thin unlit line in the fill-extrusion flood light at very sharp polygon corners.
+- Introduce cross-tile fade state support for global placement.
+- Add `setMinzoom` and `setMaxzoom` methods to vector and raster tile sources, which change the zoom range of a source after it is added.
+- Fix the setters of `raster-array` and `model` sources that throw an error before a layer uses the source.
+- Release tiles after fade completes for sources from imported styles.
+- Fix zoom-step `line-dasharray` disappearing on some tiles.
+>>>>>>> b0d94c838d (Apply fog on map aligned symbols)
 
 ## 3.34.1
 

@@ -1,3 +1,4 @@
+#include "_prelude_fog.vertex.glsl"
 #include "_prelude_terrain.vertex.glsl"
 #include "_prelude_shadow.vertex.glsl"
 #include "_prelude_ubo_properties.glsl"
@@ -534,6 +535,11 @@ void main() {
     v_pos_light_view_0 = u_light_matrix_0 * vec4(shd_pos0, 1);
     v_pos_light_view_1 = u_light_matrix_1 * vec4(shd_pos1, 1);
     v_depth = gl_Position.w;
+#endif
+
+    // pos is in label-plane space (CPU-projected for line labels), so fog is evaluated at the tile-space anchor.
+#ifdef FOG
+    v_fog_pos = fog_position(world_pos);
 #endif
 
 #ifdef INDICATOR_CUTOUT
