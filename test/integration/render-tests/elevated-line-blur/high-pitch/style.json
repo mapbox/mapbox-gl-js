@@ -2,13 +2,12 @@
   "version": 8,
   "metadata": {
     "test": {
+      "image-threshold": [
+        {"platform-tag-contains": "native-linux", "threshold": 0.0008}
+      ],
       "width": 112,
       "height": 64,
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1494"],
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "bug: blur issues"},
-        {"platform-tag-contains": "native", "reason": "bug: elevated lines issues - MAPS3D-1494"}
-      ]
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1494"]
     }
   },
   "sources": {

@@ -4,11 +4,7 @@
     "test": {
       "width": 250,
       "height": 250,
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1494"],
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "bug: possibly wrong line progress values near line-joins and line-caps"},
-        {"platform-tag-contains": "native", "reason": "bug: elevated lines issues - MAPS3D-1494"}
-      ]
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1528"]
     }
   },
   "zoom": 11.25,

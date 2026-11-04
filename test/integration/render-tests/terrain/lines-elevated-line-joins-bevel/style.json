@@ -5,10 +5,7 @@
       "height": 300,
       "pixelRatio": 0.5,
       "width": 1024,
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2492"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "bug: line metrics do not work with MultiLineString - MAPSNAT-2492"}
-      ]
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2492"]
     }
   },
   "center": [

@@ -3,12 +3,7 @@
     "metadata": {
         "test": {
             "width": 64,
-            "height": 64,
-            "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1494"],
-            "skip-test": [
-                {"platform-tag-contains": "web", "reason": "bug: z-fighting"},
-                {"platform-tag-contains": "native", "reason": "bug: elevated lines issues - MAPS3D-1494"}
-            ]
+            "height": 64
         }
     },
     "sources": {

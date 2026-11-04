@@ -8,11 +8,7 @@
         ["setProjection", "albers"],
         ["wait"]
       ],
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1494"],
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "not-implemented: projected line-width for elevated lines in gl-js"},
-        {"platform-tag-contains": "native", "reason": "bug: elevated lines issues - MAPS3D-1494"}
-      ]
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1494"]
     }
   },
   "zoom": 6,

@@ -4,11 +4,7 @@
     "test": {
       "height": 300,
       "width": 512,
-      "tickets": ["https://github.com/mapbox/mapbox-gl-js-internal/pull/1909", "https://mapbox.atlassian.net/browse/MAPS3D-1494"],
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "bug: elevated lines implementation issues - mapbox/mapbox-gl-js-internal#1909"},
-        {"platform-tag-contains": "native", "reason": "bug: elevated lines issues - MAPS3D-1494"}
-      ]
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1494"]
     }
   },
   "center": [-113.21321082448964, 36.04692734782307],

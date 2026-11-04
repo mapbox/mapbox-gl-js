@@ -2,17 +2,16 @@
   "version": 8,
   "metadata": {
     "test": {
+      "image-threshold": [
+        {"platform-tag-contains": "native-android", "threshold": 0.0049}
+      ],
       "height": 256,
       "operations": [
         ["wait"],
         ["setPaintProperty", "line", "line-pattern", "border-dot-13"],
         ["wait"]
       ],
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1494"],
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "bug: pattern issues"},
-        {"platform-tag-contains": "native", "reason": "bug: elevated lines issues - MAPS3D-1494"}
-      ]
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1544"]
     }
   },
   "center": [

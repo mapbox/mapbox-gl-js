@@ -7,11 +7,6 @@
       "operations": [
         ["setProjection", "globe"],
         ["wait"]
-      ],
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1494"],
-      "skip-test": [
-        {"platform-tag-contains": "web", "reason": "not-implemented: elevated line pattern trim offset on globe in gl-js"},
-        {"platform-tag-contains": "native", "reason": "bug: elevated lines issues - MAPS3D-1494"}
       ]
     }
   },

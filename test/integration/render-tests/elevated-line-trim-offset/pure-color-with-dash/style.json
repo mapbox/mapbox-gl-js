@@ -2,13 +2,12 @@
     "version": 8,
     "metadata": {
       "test": {
+        "image-threshold": [
+          {"platform-tag-contains": "native-android", "threshold": 0.0008}
+        ],
         "width": 100,
         "height": 100,
-        "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1494"],
-        "skip-test": [
-          {"platform-tag-contains": "web", "reason": "bug: possibly wrong line progress values near line-joins and line-caps"},
-          {"platform-tag-contains": "native", "reason": "bug: elevated lines issues - MAPS3D-1494"}
-        ]
+        "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1544"]
       }
     },
     "zoom": 2,
