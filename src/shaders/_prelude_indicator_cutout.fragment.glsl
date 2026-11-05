@@ -8,7 +8,10 @@ uniform vec4 u_indicator_cutout_params;
 vec4 applyCutout(vec4 color, float height) {
 #ifdef INDICATOR_CUTOUT
     float verticalFadeRange = u_indicator_cutout_centers.z * 0.25; // Fade relative to the height of the indicator
-    float holeMinOpacity = mix(1.0, u_indicator_cutout_params.x, smoothstep(u_indicator_cutout_centers.z, u_indicator_cutout_centers.z + verticalFadeRange, height));
+    // smoothstep() written out: GLSL leaves it undefined for equal or reversed edges, which a ground-level or
+    // underground indicator produces. A zero range is a hard step that cuts only what is above the indicator.
+    float fadeT = verticalFadeRange == 0.0 ? float(height > u_indicator_cutout_centers.z) : clamp((height - u_indicator_cutout_centers.z) / verticalFadeRange, 0.0, 1.0);
+    float holeMinOpacity = mix(1.0, u_indicator_cutout_params.x, fadeT * fadeT * (3.0 - 2.0 * fadeT));
     float holeRadius = max(u_indicator_cutout_params.y, 0.0);
     float holeAspectRatio = u_indicator_cutout_params.z;
     float fadeStart = u_indicator_cutout_params.w;
