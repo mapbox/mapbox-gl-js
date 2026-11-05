@@ -13,7 +13,7 @@
         }],
         ["wait"]
       ],
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"],
+      "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/2534", "https://mapbox.atlassian.net/browse/GLJS-2150"],
       "image-threshold": [
         {"platform-tag-contains": "swiftshader", "threshold": 0.0004}
       ]

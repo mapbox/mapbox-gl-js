@@ -8,10 +8,7 @@
         ["setProjection", "albers"],
         ["wait"]
       ],
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-implemented: non-Mercator projections - mapbox/mapbox-gl-native-internal#2534"}
-      ],
+      "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/2534", "https://mapbox.atlassian.net/browse/GLJS-2151"],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00035}
       ]
