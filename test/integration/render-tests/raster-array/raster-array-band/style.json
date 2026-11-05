@@ -14,9 +14,8 @@
         ],
         ["wait"]
       ],
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3188"],
-      "skip-test": [
-        {"platform-tag-contains": "native-android", "reason": "bug: raster layer renders as a single color on all Android devices (checked oct-2026) - MAPSNAT-3188"}
+      "image-threshold": [
+        {"platform-tag-contains": "native-android", "threshold": 0.002}
       ]
     }
   },

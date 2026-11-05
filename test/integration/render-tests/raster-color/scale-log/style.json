@@ -17,11 +17,11 @@
         {
           "platform-tag-contains": "native",
           "threshold": 0.02
+        },
+        {
+          "platform-tag-contains": "native-android",
+          "threshold": 0.07
         }
-      ],
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-3188"],
-      "skip-test": [
-        {"platform-tag-contains": "native-android", "reason": "bug: raster layer renders as a single color on all Android devices (checked oct-2026) - MAPSNAT-3188"}
       ],
       "operations": [
         [
