@@ -6,6 +6,10 @@
       "width": 512,
       "height": 512,
       "showLayers3DWireframe": true,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSPERF-86"],
+      "skip-test": [
+        {"platform-tag-contains": "native-android-gl-mali", "reason": "Flaky (checked oct-2026): the wireframe image differs between CI runs. https://mapbox.atlassian.net/browse/MAPSPERF-86"}
+      ],
       "operations": [
         ["wait"]
       ],
