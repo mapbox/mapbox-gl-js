@@ -135,7 +135,9 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         rasterConfig.defines.push("PROJECTION_GLOBE_VIEW");
     }
     if (renderingWithElevation) {
-        rasterConfig.defines.push("RENDER_CUTOFF", "ELEVATED");
+        // Orthographic views have no cutoff; their zero cutoff params would divide by zero in the shader.
+        if (!painter.transform.isOrthographic) rasterConfig.defines.push("RENDER_CUTOFF");
+        rasterConfig.defines.push("ELEVATED");
     }
     if (isElevationReferenceTerrainGroundLevel) {
         rasterConfig.defines.push("ELEVATION_REFERENCE_GROUND");
