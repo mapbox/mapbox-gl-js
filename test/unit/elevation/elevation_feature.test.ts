@@ -12,6 +12,7 @@ import vectorTileStubZ17 from '../../fixtures/elevation/17-69826-45367.mvt?array
 import {vec2} from "gl-matrix";
 import {CanonicalTileID} from '../../../src/source/tile_id';
 import {HD_ELEVATION_SOURCE_LAYER, PROPERTY_ELEVATION_ID} from '../../../3d-style/elevation/elevation_constants';
+import {ElevationFeatureParser} from '../../../3d-style/elevation/elevation_feature_parser';
 import Point from '@mapbox/point-geometry';
 
 import type {Range} from '../../../src/util/util';
@@ -609,5 +610,32 @@ describe('mergeElevationFeatures cross-zoom cojoin', () => {
             {tileId: leftChild, feature: makeLeftFeature()},
         ], consumer);
         expect(parts).toHaveLength(1);
+    });
+});
+
+describe('ElevationFeatureParser', () => {
+    test('#parse scales geometry from the layer extent to EXTENT', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        const layer = new VectorTile(new PbfReader(vectorTileStubZ17)).layers[HD_ELEVATION_SOURCE_LAYER];
+        const halfExtentLayer = {
+            length: layer.length,
+            extent: layer.extent / 2,
+            feature(i: number) {
+                const f = layer.feature(i);
+                return {
+                    type: f.type,
+                    extent: layer.extent / 2,
+                    properties: f.properties,
+                    loadGeometry: () => f.loadGeometry().map(ring => ring.map(p => new Point(p.x / 2, p.y / 2))),
+                };
+            },
+        };
+
+        const expected = ElevationFeatureParser.parse(layer);
+        // @ts-expect-error: partial VectorTileLayer
+        const actual = ElevationFeatureParser.parse(halfExtentLayer);
+
+        expect(expected.vertices.length).toBeGreaterThan(0);
+        expect(actual).toEqual(expected);
     });
 });

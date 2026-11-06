@@ -4,6 +4,7 @@ import {warnOnce} from "../../src/util/util";
 import {vec2} from "gl-matrix";
 import {PROPERTY_ELEVATION_ID} from "./elevation_constants";
 import {computeBounds, type Bounds} from "../../src/style-spec/util/geometry_util";
+import {scaleGeometryToExtent} from "../../src/data/scale_geometry";
 
 import type Point from "@mapbox/point-geometry";
 
@@ -40,7 +41,7 @@ class PropertyParser {
         this._valid = true;
 
         // Geometry is required to exist
-        this._geometry = feature.loadGeometry();
+        this._geometry = scaleGeometryToExtent(feature.loadGeometry(), feature.extent);
         if (this._geometry.length === 0 || this._geometry[0]!.length === 0) {
             this._valid = false;
         }

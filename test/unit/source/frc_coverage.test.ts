@@ -354,10 +354,12 @@ describe('parseFrcCoverageFromLayer', () => {
         };
     }
 
-    function feature(frcMask, rings) {
+    function feature(frcMask, rings, extent = EXTENT) {
         return {
             // eslint-disable-next-line camelcase, @typescript-eslint/no-unsafe-assignment
             properties: {frc_mask: frcMask},
+            type: 3,
+            extent,
             loadGeometry() { return rings; },
         };
     }
@@ -409,6 +411,21 @@ describe('parseFrcCoverageFromLayer', () => {
 
     test('empty layer → []', () => {
         expect(parseFrcCoverageFromLayer(makeLayer([])).length).toBe(0);
+    });
+
+    test('rings are scaled from the layer extent to EXTENT', () => {
+        const half = EXTENT / 2;
+        const result = parseFrcCoverageFromLayer(makeLayer([feature(0b1, [squareRing(100, 200, 1000)], half)]));
+        expect(result.length).toBe(1);
+        expect(result[0].rings[0]).toEqual(squareRing(200, 400, 2000));
+    });
+
+    test('full-tile polygon at a smaller layer extent → rings=[]', () => {
+        const half = EXTENT / 2;
+        const ring = [new Point(0, 0), new Point(half, 0), new Point(half, half), new Point(0, half), new Point(0, 0)];
+        const result = parseFrcCoverageFromLayer(makeLayer([feature(0b1, [ring], half)]));
+        expect(result.length).toBe(1);
+        expect(result[0].hasGeometry()).toBe(false);
     });
 });
 

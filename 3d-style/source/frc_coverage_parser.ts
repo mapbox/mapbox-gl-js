@@ -1,4 +1,5 @@
 import EXTENT from '../../src/style-spec/data/extent';
+import {scaleGeometryToExtent} from '../../src/data/scale_geometry';
 import {FrcCoveragePolygon} from '../../src/source/frc_coverage_snapshot';
 
 import type {VectorTileLayer} from '@mapbox/vector-tile';
@@ -18,7 +19,7 @@ export function parseFrcCoverageFromLayer(layer: VectorTileLayer): FrcCoveragePo
         if (frcMaskRaw == null) continue;
         const frcMask = Number(frcMaskRaw);
         if (!frcMask) continue;
-        const rings = feature.loadGeometry();
+        const rings = scaleGeometryToExtent(feature.loadGeometry(), feature.extent);
         // Skip neighbor-tile features: all points should be within [0, EXTENT]
         if (rings.length > 0) {
             let isNeighbor = false;

@@ -4,6 +4,7 @@
 - Fix clean-up of telemetry classes.
 - Apply fog to symbols with `icon-pitch-alignment` or `text-pitch-alignment` set to `map`.
 - Fix raster array sampling on Android.
+- Fix HD road rendering in vector tiles with an extent other than 8192.
 
 ## 3.35.0-rc.1
 

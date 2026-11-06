@@ -119,6 +119,7 @@
     "./3d-style/data/building_attributes.ts",
     "./3d-style/data/model_attributes.ts",
     "./src/data/bounds_attributes.ts",
+    "./src/data/scale_geometry.ts",
     "./src/data/bucket/circle_attributes.ts",
     "./src/data/bucket/dash_attributes.ts",
     "./src/data/bucket/fill_attributes.ts",
