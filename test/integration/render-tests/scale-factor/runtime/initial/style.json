@@ -1,0 +1,173 @@
+{
+  "description": "Icon, text, appearance icon and imported icon at scale factor 2 set from the start.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 208,
+      "height": 44,
+      "scaleFactor": 2
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 4,
+  "sprite": "local://sprites/standard",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "imports": [
+    {
+      "id": "traffic",
+      "url": "",
+      "data": {
+        "version": 8,
+        "sprite": "local://sprites/standard",
+        "sources": {
+          "incidents": {
+            "type": "geojson",
+            "data": {
+              "type": "Point",
+              "coordinates": [
+                3.54,
+                0
+              ]
+            }
+          }
+        },
+        "layers": [
+          {
+            "id": "incidents",
+            "type": "symbol",
+            "source": "incidents",
+            "layout": {
+              "icon-image": [
+                "match",
+                [
+                  "geometry-type"
+                ],
+                "Point",
+                "police",
+                ""
+              ],
+              "icon-allow-overlap": true
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "points": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "icon"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -3.58,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "text"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -0.92,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "appearance"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                1.74,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "points",
+      "filter": [
+        "==",
+        [
+          "get",
+          "kind"
+        ],
+        "icon"
+      ],
+      "layout": {
+        "icon-image": "fire-station",
+        "icon-allow-overlap": true
+      }
+    },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "points",
+      "filter": [
+        "==",
+        [
+          "get",
+          "kind"
+        ],
+        "text"
+      ],
+      "layout": {
+        "text-field": "Label",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-allow-overlap": true
+      }
+    },
+    {
+      "id": "appearance",
+      "type": "symbol",
+      "source": "points",
+      "filter": [
+        "==",
+        [
+          "get",
+          "kind"
+        ],
+        "appearance"
+      ],
+      "layout": {
+        "icon-allow-overlap": true
+      },
+      "appearances": [
+        {
+          "name": "always",
+          "condition": true,
+          "properties": {
+            "icon-image": "bank"
+          }
+        }
+      ]
+    }
+  ]
+}
