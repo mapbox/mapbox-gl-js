@@ -3,7 +3,7 @@
   "version": 8,
   "metadata": {
     "test": {
-        "mapMode": "continuous-snapshot",
+        "mapMode": "continuous",
         "fadeDuration": 0,
         "width": 512,
         "height": 512,

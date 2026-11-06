@@ -6,7 +6,7 @@
       "width": 64,
       "height": 64,
       "fadeDuration": 300,
-      "mapMode": "continuous-snapshot",
+      "mapMode": "continuous",
       "operations": [
         ["setSourceProperty", "point", "enable-symbols-fade-out", true],
         ["setTimer", 0],

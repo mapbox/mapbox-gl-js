@@ -4,7 +4,7 @@
   "metadata": {
     "test": {
       "collisionDebug": true,
-      "mapMode": "continuous-snapshot",
+      "mapMode": "continuous",
       "width": 64,
       "height": 32,
       "fadeDuration": 100,
