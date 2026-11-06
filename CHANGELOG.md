@@ -3,6 +3,7 @@
 - Remove unreachable shader code from the bundle.
 - Fix clean-up of telemetry classes.
 - Apply fog to symbols with `icon-pitch-alignment` or `text-pitch-alignment` set to `map`.
+- Fix the docs and the warning of `Map#getFreeCameraOptions` and `Map#setFreeCameraOptions`, which said that free camera does not support the globe projection.
 - Fix raster array sampling on Android.
 - Fix HD road rendering in vector tiles with an extent other than 8192.
 

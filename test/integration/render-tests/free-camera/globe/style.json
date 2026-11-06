@@ -1,0 +1,48 @@
+{
+  "description": "Sets the free camera position and orientation with the globe projection at low zoom.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256,
+      "operations": [
+        ["setCameraPosition", [0, 10, 8000000]],
+        ["lookAtPoint", [15, 40]],
+        ["wait"]
+      ]
+    }
+  },
+  "projection": {"name": "globe"},
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[-40, -20], [-20, -20], [-20, 0], [-40, 0], [-40, -20]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[-40, 20], [-20, 20], [-20, 40], [-40, 40], [-40, 20]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[-40, 60], [-20, 60], [-20, 80], [-40, 80], [-40, 60]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[-20, 0], [0, 0], [0, 20], [-20, 20], [-20, 0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[-20, 40], [0, 40], [0, 60], [-20, 60], [-20, 40]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[-20, 80], [0, 80], [0, 100], [-20, 100], [-20, 80]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[0, -20], [20, -20], [20, 0], [0, 0], [0, -20]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[0, 20], [20, 20], [20, 40], [0, 40], [0, 20]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[0, 60], [20, 60], [20, 80], [0, 80], [0, 60]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[20, 0], [40, 0], [40, 20], [20, 20], [20, 0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[20, 40], [40, 40], [40, 60], [20, 60], [20, 40]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[20, 80], [40, 80], [40, 100], [20, 100], [20, 80]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[40, -20], [60, -20], [60, 0], [40, 0], [40, -20]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[40, 20], [60, 20], [60, 40], [40, 40], [40, 20]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[40, 60], [60, 60], [60, 80], [40, 80], [40, 60]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[60, 0], [80, 0], [80, 20], [60, 20], [60, 0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[60, 40], [80, 40], [80, 60], [60, 60], [60, 40]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[60, 80], [80, 80], [80, 100], [60, 100], [60, 80]]]}}
+        ]
+      }
+    }
+  },
+  "layers": [
+    {"id": "background", "type": "background", "paint": {"background-color": "hsl(206, 100%, 74%)"}},
+    {"id": "fill", "type": "fill", "source": "geojson", "paint": {"fill-color": "hsl(43, 90%, 56%)"}}
+  ]
+}

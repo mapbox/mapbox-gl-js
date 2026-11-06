@@ -169,7 +169,7 @@ export type ElevationBoxRaycast = {
     maxAltitude: number;
 };
 
-const freeCameraNotSupportedWarning = 'map.setFreeCameraOptions(...) and map.getFreeCameraOptions() are not yet supported for non-mercator projections.';
+const freeCameraNotSupportedWarning = 'map.setFreeCameraOptions(...) and map.getFreeCameraOptions() are supported only for the mercator and globe projections.';
 
 /**
  * Options for setting padding on calls to methods such as {@link Map#jumpTo}, {@link Map#easeTo}, {@link Map#flyTo},
@@ -1227,7 +1227,7 @@ class Camera extends Evented<MapEvents> {
     /**
      * Returns position and orientation of the camera entity.
      *
-     * This method is not supported for projections other than mercator.
+     * This method is supported only for the mercator and globe projections.
      *
      * @memberof Map#
      * @returns {FreeCameraOptions} The camera state.
@@ -1257,7 +1257,7 @@ class Camera extends Evented<MapEvents> {
      * can be invalid if it leads to the camera being upside down, the quaternion has zero length,
      * or the pitch is over the maximum pitch limit.
      *
-     * This method is not supported for projections other than mercator.
+     * This method is supported only for the mercator and globe projections.
      *
      * @memberof Map#
      * @param {FreeCameraOptions} options `FreeCameraOptions` object.

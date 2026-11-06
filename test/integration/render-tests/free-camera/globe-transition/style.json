@@ -1,0 +1,62 @@
+{
+  "description": "Sets the free camera position and orientation with the globe projection after the transition to mercator.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256,
+      "operations": [
+        ["setCameraPosition", [7.2, 43.5, 100000]],
+        ["lookAtPoint", [7.6, 43.9]],
+        ["wait"]
+      ]
+    }
+  },
+  "projection": {"name": "globe"},
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[6.0, 42.0], [6.5, 42.0], [6.5, 42.5], [6.0, 42.5], [6.0, 42.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[6.0, 43.0], [6.5, 43.0], [6.5, 43.5], [6.0, 43.5], [6.0, 43.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[6.0, 44.0], [6.5, 44.0], [6.5, 44.5], [6.0, 44.5], [6.0, 44.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[6.0, 45.0], [6.5, 45.0], [6.5, 45.5], [6.0, 45.5], [6.0, 45.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[6.5, 42.5], [7.0, 42.5], [7.0, 43.0], [6.5, 43.0], [6.5, 42.5]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[6.5, 43.5], [7.0, 43.5], [7.0, 44.0], [6.5, 44.0], [6.5, 43.5]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[6.5, 44.5], [7.0, 44.5], [7.0, 45.0], [6.5, 45.0], [6.5, 44.5]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[6.5, 45.5], [7.0, 45.5], [7.0, 46.0], [6.5, 46.0], [6.5, 45.5]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[7.0, 42.0], [7.5, 42.0], [7.5, 42.5], [7.0, 42.5], [7.0, 42.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[7.0, 43.0], [7.5, 43.0], [7.5, 43.5], [7.0, 43.5], [7.0, 43.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[7.0, 44.0], [7.5, 44.0], [7.5, 44.5], [7.0, 44.5], [7.0, 44.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[7.0, 45.0], [7.5, 45.0], [7.5, 45.5], [7.0, 45.5], [7.0, 45.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[7.5, 42.5], [8.0, 42.5], [8.0, 43.0], [7.5, 43.0], [7.5, 42.5]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[7.5, 43.5], [8.0, 43.5], [8.0, 44.0], [7.5, 44.0], [7.5, 43.5]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[7.5, 44.5], [8.0, 44.5], [8.0, 45.0], [7.5, 45.0], [7.5, 44.5]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[7.5, 45.5], [8.0, 45.5], [8.0, 46.0], [7.5, 46.0], [7.5, 45.5]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[8.0, 42.0], [8.5, 42.0], [8.5, 42.5], [8.0, 42.5], [8.0, 42.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[8.0, 43.0], [8.5, 43.0], [8.5, 43.5], [8.0, 43.5], [8.0, 43.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[8.0, 44.0], [8.5, 44.0], [8.5, 44.5], [8.0, 44.5], [8.0, 44.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[8.0, 45.0], [8.5, 45.0], [8.5, 45.5], [8.0, 45.5], [8.0, 45.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[8.5, 42.5], [9.0, 42.5], [9.0, 43.0], [8.5, 43.0], [8.5, 42.5]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[8.5, 43.5], [9.0, 43.5], [9.0, 44.0], [8.5, 44.0], [8.5, 43.5]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[8.5, 44.5], [9.0, 44.5], [9.0, 45.0], [8.5, 45.0], [8.5, 44.5]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[8.5, 45.5], [9.0, 45.5], [9.0, 46.0], [8.5, 46.0], [8.5, 45.5]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[9.0, 42.0], [9.5, 42.0], [9.5, 42.5], [9.0, 42.5], [9.0, 42.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[9.0, 43.0], [9.5, 43.0], [9.5, 43.5], [9.0, 43.5], [9.0, 43.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[9.0, 44.0], [9.5, 44.0], [9.5, 44.5], [9.0, 44.5], [9.0, 44.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[9.0, 45.0], [9.5, 45.0], [9.5, 45.5], [9.0, 45.5], [9.0, 45.0]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[9.5, 42.5], [10.0, 42.5], [10.0, 43.0], [9.5, 43.0], [9.5, 42.5]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[9.5, 43.5], [10.0, 43.5], [10.0, 44.0], [9.5, 44.0], [9.5, 43.5]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[9.5, 44.5], [10.0, 44.5], [10.0, 45.0], [9.5, 45.0], [9.5, 44.5]]]}},
+          {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[9.5, 45.5], [10.0, 45.5], [10.0, 46.0], [9.5, 46.0], [9.5, 45.5]]]}}
+        ]
+      }
+    }
+  },
+  "layers": [
+    {"id": "background", "type": "background", "paint": {"background-color": "hsl(206, 100%, 74%)"}},
+    {"id": "fill", "type": "fill", "source": "geojson", "paint": {"fill-color": "hsl(43, 90%, 56%)"}}
+  ]
+}

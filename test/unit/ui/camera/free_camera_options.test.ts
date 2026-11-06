@@ -2,11 +2,14 @@
 // @ts-nocheck
 import {vec3, quat} from 'gl-matrix';
 import {createCamera} from './utils';
-import {describe, test, expect} from '../../../util/vitest';
+import {describe, test, expect, vi} from '../../../util/vitest';
 import {FreeCameraOptions} from '../../../../src/ui/free_camera';
 import {fixedNum, fixedVec3} from '../../../util/fixed';
 import MercatorCoordinate from '../../../../src/geo/mercator_coordinate';
 import LngLat from '../../../../src/geo/lng_lat';
+
+import type Camera from '../../../../src/ui/camera';
+import type {MockInstance} from 'vitest';
 
 describe('camera', () => {
     describe('FreeCameraOptions', () => {
@@ -316,6 +319,75 @@ describe('camera', () => {
             expect(zoomstarted).toEqual('ok');
             expect(zoom).toEqual('ok');
             expect(zoomended).toEqual('ok');
+        });
+
+        describe('projections', () => {
+            const notSupportedWarning = /supported only for the mercator and globe projections/;
+
+            const setPose = (camera: Camera, eventData?: {data: string}): FreeCameraOptions => {
+                const options = camera.getFreeCameraOptions();
+                const {x, y, z} = options.position;
+                options.position = new MercatorCoordinate(x + 0.002, y - 0.001, z * 0.9);
+                options.setPitchBearing(30, 20);
+                camera.setFreeCameraOptions(options, eventData);
+                return options;
+            };
+
+            const expectPose = (actual: FreeCameraOptions, expected: FreeCameraOptions) => {
+                expect(actual.position.x).toBeCloseTo(expected.position.x, 12);
+                expect(actual.position.y).toBeCloseTo(expected.position.y, 12);
+                expect(actual.position.z).toBeCloseTo(expected.position.z, 12);
+                for (let i = 0; i < 4; i++) {
+                    expect(actual.orientation[i]).toBeCloseTo(expected.orientation[i], 9);
+                }
+            };
+
+            const warned = (warn: MockInstance<typeof console.warn>) => {
+                return warn.mock.calls.some(([message]) => notSupportedWarning.test(String(message)));
+            };
+
+            test('globe at low zoom returns the pose that was set', () => {
+                const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+                const camera = createCamera({projection: {name: 'globe'}, center: [24.9384, 60.1699], zoom: 2}) as Camera;
+
+                const expected = setPose(camera);
+
+                expectPose(camera.getFreeCameraOptions(), expected);
+                expect(camera.getPitch()).toBeCloseTo(30, 9);
+                expect(camera.getBearing()).toBeCloseTo(20, 9);
+                expect(warned(warn)).toBe(false);
+                warn.mockRestore();
+            });
+
+            test('globe after the transition to mercator fires zoom, pitch and rotate events', () => {
+                const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+                const camera = createCamera({projection: {name: 'globe'}, center: [24.9384, 60.1699], zoom: 6}) as Camera;
+                const fired: string[] = [];
+                for (const type of ['zoom', 'pitch', 'rotate'] as const) {
+                    camera.on(type, (e: {data?: string}) => { if (e.data === 'ok') fired.push(type); });
+                }
+
+                setPose(camera, {data: 'ok'});
+
+                expect(fired).toEqual(['zoom', 'rotate', 'pitch']);
+                expect(camera.getPitch()).toBeCloseTo(30, 9);
+                expect(camera.getBearing()).toBeCloseTo(20, 9);
+                expect(warned(warn)).toBe(false);
+                warn.mockRestore();
+            });
+
+            // The warning is logged only once per page, so this test runs after the globe tests.
+            test('other projections log a warning and ignore the pose', () => {
+                const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+                const camera = createCamera({projection: {name: 'albers'}, center: [-96, 37.5], zoom: 3}) as Camera;
+                const before = camera.transform.getFreeCameraOptions();
+
+                setPose(camera);
+
+                expect(warned(warn)).toBe(true);
+                expectPose(camera.transform.getFreeCameraOptions(), before);
+                warn.mockRestore();
+            });
         });
     });
 });
