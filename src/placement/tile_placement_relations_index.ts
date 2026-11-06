@@ -53,11 +53,17 @@ export class BucketSymbolIndex {
     // key within the cells of this tile covered by the anchor's cell. `matched` holds the symbols of
     // this bucket already matched in the same operation, which are skipped so that each is matched
     // at most once; the returned one is added to it.
-    findMatch(target: SymbolBucket, targetIndex: number, targetCanonical: CanonicalTileID, matched: Set<number>): number {
+    findMatch(target: SymbolBucket, targetIndex: number, targetCanonical: CanonicalTileID, matched: Set<number>, isInArea?: (tileAnchorX: number, tileAnchorY: number) => boolean): number {
         const stableId = target.stableIdFor(targetIndex);
         if (stableId !== undefined) {
             const match = this.stableIdMap.get(stableId);
             if (match === undefined || matched.has(match)) return -1;
+            // A symbol matched by stable id can be anchored outside the area in this tile. Its owner
+            // doesn't change, so it keeps its state.
+            if (isInArea) {
+                const {tileAnchorX, tileAnchorY} = this.bucket.symbolInstances.get(match);
+                if (!isInArea(tileAnchorX, tileAnchorY)) return -1;
+            }
             matched.add(match);
             return match;
         }
@@ -283,10 +289,11 @@ export class TilePlacementRelationsIndex {
         return changed ? unmatched : null;
     }
 
-    // Lets the symbol `i` of `bucket`, laid out in `tileID`, continue the placement state of the same
+    // Lets the symbol `i` of `bucket`, laid out in `entry`, continue the placement state of the same
     // symbol in `source`, unless that one is already in `matched`, the symbols taken so far by source
-    // bucket. Returns whether it took any state: a copy that is hidden and not fading has none.
-    _takeState(source: TileRelationEntry, layerId: string, bucket: SymbolBucket, i: number, tileID: OverscaledTileID, matched: Map<BucketSymbolIndex, Set<number>>): boolean {
+    // bucket, or `entry` doesn't own its anchor in `after`. Returns whether it took any state: a copy
+    // that is hidden and not fading has none.
+    _takeState(source: TileRelationEntry, layerId: string, bucket: SymbolBucket, i: number, entry: TileRelationEntry, after: TileLookup, matched: Map<BucketSymbolIndex, Set<number>>): boolean {
         const index = source.buckets.get(layerId);
         if (!index) return false;
         let taken = matched.get(index);
@@ -294,7 +301,8 @@ export class TilePlacementRelationsIndex {
             taken = new Set();
             matched.set(index, taken);
         }
-        const match = index.findMatch(bucket, i, tileID.canonical, taken);
+        const match = index.findMatch(bucket, i, entry.tile.tileID.canonical, taken,
+            (tileAnchorX, tileAnchorY) => finestCovering(after, source.tile.tileID, tileAnchorX, tileAnchorY) === entry);
         if (match < 0) return false;
         return bucket.takePlacementStateFrom(index.bucket, match, i);
     }
@@ -339,7 +347,7 @@ export class TilePlacementRelationsIndex {
                 let taken = false;
                 for (const level of before.owning.zooms) {
                     const owner = before.owning.byKey.get(keyAt(tileID, tileAnchorX, tileAnchorY, level));
-                    if (owner && owner !== entry && this._takeState(owner, layerId, bucket, i, tileID, matched)) {
+                    if (owner && owner !== entry && this._takeState(owner, layerId, bucket, i, entry, after, matched)) {
                         taken = true;
                         break;
                     }
@@ -349,7 +357,7 @@ export class TilePlacementRelationsIndex {
                 // over the held copy instead of fading in beside it while it fades out
                 for (const level of before.held.zooms) {
                     const held = before.held.byKey.get(keyAt(tileID, tileAnchorX, tileAnchorY, level));
-                    if (held && held !== entry && this._takeState(held, layerId, bucket, i, tileID, matched)) break;
+                    if (held && held !== entry && this._takeState(held, layerId, bucket, i, entry, after, matched)) break;
                 }
             }
         }
