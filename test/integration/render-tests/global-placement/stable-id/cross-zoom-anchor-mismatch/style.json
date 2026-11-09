@@ -1,0 +1,47 @@
+{
+  "description": "On Mapbox tiles, symbols are matched across zoom levels by feature id. 'Helsinki Old Church' has a slightly different anchor in the z14 and z15 tiles, so only the id match finds it. After zooming in, the church continues its fade-in instead of restarting it.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "mapMode": "continuous",
+      "width": 128,
+      "height": 20,
+      "fadeDuration": 100,
+      "globalPlacement": true,
+      "operations": [
+        ["setTimer", 0],
+        ["wait"],
+        ["setTimer", 50],
+        ["wait"],
+        ["setZoom", 15.69],
+        ["wait"],
+        ["setTimer", 100],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [24.939293, 60.166405],
+  "zoom": 14.69,
+  "bearing": 90,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v8-lite"
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {"id": "background", "type": "background", "paint": {"background-color": "white"}},
+    {
+      "id": "poi",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "poi_label",
+      "layout": {
+        "text-field": ["coalesce", ["get", "name_en"], ["get", "name"]],
+        "text-size": 13,
+        "text-font": ["NotoCJK"]
+      }
+    }
+  ]
+}

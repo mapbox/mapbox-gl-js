@@ -4,7 +4,7 @@
     "mapbox://tiles/mapbox.mapbox-streets-v8-lite/{z}/{x}/{y}.vector.pbf"
   ],
   "minzoom": 7,
-  "maxzoom": 7,
+  "maxzoom": 15,
   "vector_layers": [
     {
       "id": "admin",
@@ -17,6 +17,11 @@
         "maritime": "Maritime boundaries are 'true', all others are 'false'.",
         "worldview": "One of 'all', 'IN'."
       }
+    },
+    {
+      "id": "poi_label",
+      "source": "mapbox.mapbox-streets-v8-lite",
+      "minzoom": 6
     }
   ],
   "worldview": {
