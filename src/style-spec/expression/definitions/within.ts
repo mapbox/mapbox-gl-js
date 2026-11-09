@@ -215,6 +215,7 @@ class Within implements Expression {
     type: Type;
     geojson: GeoJSON.GeoJSON;
     geometries: GeoJSONPolygons;
+    readonly featureConstant = false;
 
     constructor(geojson: GeoJSON.GeoJSON, geometries: GeoJSONPolygons) {
         this.type = BooleanType;

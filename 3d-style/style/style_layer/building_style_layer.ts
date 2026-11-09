@@ -113,7 +113,6 @@ class BuildingStyleLayer extends StyleLayer {
 
         const screenQuery = queryGeometry.queryGeometry;
         const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return checkIntersection(projectedBase, projectedTop, projectedQueryGeometry);
     }
 }

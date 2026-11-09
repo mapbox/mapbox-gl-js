@@ -343,7 +343,7 @@ export class PropertyValues<Props extends {[Key in keyof Props]: Props[Key]}> {
 
             const transition = this.getTransition(property);
             if (transition !== undefined) {
-                result[`${property as string}-transition`] = transition;
+                (result as Record<string, unknown>)[`${property as string}-transition`] = transition;
             }
         }
         return result;
@@ -387,15 +387,14 @@ export class PropertyValues<Props extends {[Key in keyof Props]: Props[Key]}> {
         const result = new PossiblyEvaluated(this._properties);
         let hasTransition = false;
         for (const name of Object.keys(this._values)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const entry: PropertyValueEntry<unknown, unknown> = this._values[name];
+            const entry: PropertyValueEntry<unknown, unknown> = (this._values as Record<string, PropertyValueEntry<unknown, unknown>>)[name];
             const state = entry.state;
             if (changedDeps === undefined || state.prior || entry.evaluatedFrom !== state.value || (state.value.deps & changedDeps)) {
                 entry.evaluated = possiblyEvaluateTransition(state, parameters, canonical, availableImages, iconImageUseTheme);
                 entry.evaluatedFrom = state.value;
                 if (state.prior) hasTransition = true;
             }
-            result._values[name] = entry.evaluated;
+            (result._values as Record<string, unknown>)[name] = entry.evaluated;
         }
         this._hasTransition = hasTransition;
         return result;
@@ -491,7 +490,7 @@ export class PossiblyEvaluatedPropertyValue<T> {
  * @private
  */
 type PossiblyEvaluatedPropertyValues<Properties> = {
-    [Key in keyof Properties]: Properties[Key] extends Property<unknown, infer R> ? R : never;
+    [Key in keyof Properties]: Properties[Key] extends {possiblyEvaluate: (...args: never[]) => infer R} ? R : never;
 };
 
 /**
@@ -534,8 +533,7 @@ export class DataConstantProperty<T> implements Property<T, T> {
     }
 
     interpolate(a: T, b: T, t: number): T {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const interp: (a: T, b: T, t: number) => T | null | undefined = interpolate[this.specification.type];
+        const interp: (a: T, b: T, t: number) => T | null | undefined = interpolate[this.specification.type as keyof typeof interpolate] as (a: T, b: T, t: number) => T;
         if (interp) {
             return interp(a, b, t);
         } else {
@@ -596,8 +594,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
             return new PossiblyEvaluatedPropertyValue<T>(this, {kind: 'constant', value: undefined}, a.parameters);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const interp: (a: T, b: T, t: number) => T | null | undefined = interpolate[this.specification.type];
+        const interp: (a: T, b: T, t: number) => T | null | undefined = interpolate[this.specification.type as keyof typeof interpolate] as (a: T, b: T, t: number) => T;
         if (interp) {
             return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: interp(a.value.value, b.value.value, t)}, a.parameters);
         } else {

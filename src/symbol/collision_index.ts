@@ -434,7 +434,6 @@ class CollisionIndex implements CollisionDetector {
         }
 
         return {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             circles: ((!showCollisionCircles && collisionDetected) || !inGrid) ? [] : placedCollisionCircles,
             offscreen: entirelyOffscreen,
             collisionDetected,

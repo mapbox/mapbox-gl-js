@@ -101,8 +101,7 @@ export class InteractionSet {
     hoveredFeatures: Map<string, {feature: Feature; stop: boolean | void}>;
     prevHoveredFeatures: Map<string, {feature: Feature; stop: boolean | void}>;
 
-    constructor(map) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    constructor(map: MapboxMap) {
         this.map = map;
         this.interactionsByType = new Map(); // sort interactions into type buckets for fast handling
         this.delegatedInteractions = new Map();

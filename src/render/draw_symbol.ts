@@ -449,7 +449,7 @@ function drawLayerSymbols(
 
         };
 
-        const getIconState = () => {
+        const getIconState = (): SymbolTileRenderState['state'] => {
             const alongLine = iconRotateWithMap && layer.layout.get('symbol-placement') !== 'point';
 
             const baseDefines: DynamicDefinesType[] = [];

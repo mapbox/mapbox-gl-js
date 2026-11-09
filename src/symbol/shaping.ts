@@ -593,7 +593,7 @@ function shapeLines(shaping: Shaping,
 
         const lineMaxScale = line.getMaxScale();
         const maxLineOffset = (lineMaxScale - 1) * ONE_EM;
-        const positionedLine = {positionedGlyphs: [], lineOffset: 0};
+        const positionedLine: PositionedLine = {positionedGlyphs: [], lineOffset: 0};
         shaping.positionedLines[lineIndex] = positionedLine;
         const positionedGlyphs = positionedLine.positionedGlyphs;
         let lineOffset = 0.0;
@@ -704,12 +704,10 @@ function shapeLines(shaping: Shaping,
                     // Based on node-fontnik: 'top = heightAboveBaseline - Ascender'(it is not valid for locally
                     // generated glyph). Since the top is a constant: glyph's borderSize. So if we set image glyph with
                     // 'ascender = height', it means we pull down the glyph under baseline with a distance of glyph's borderSize.
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const imageAscender = metrics.height;
                     glyphOffset = -imageAscender * sectionScale;
 
                 }
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 verticalAdvance = metrics.advance;
 
                 // Difference between height of an image and one EM at max line scale.
@@ -720,10 +718,8 @@ function shapeLines(shaping: Shaping,
                 }
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             positionedGlyphs.push({glyph: codePoint, image, x, y: y + glyphOffset, vertical, scale: sectionScale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
             if (!vertical) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 x += metrics.advance * sectionScale + spacing;
             } else {
                 shaping.verticalizable = true;
@@ -738,11 +734,9 @@ function shapeLines(shaping: Shaping,
             // Justify the line so that its top is aligned with the current height of y, and its horizontal coordinates
             // are justified according to the TextJustifyType
             if (hasBaseline) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 justifyLine(positionedGlyphs, justify, lineOffset, baselineOffset, lineHeight * lineMaxScale / 2);
             } else {
                 // Scaled line height offset is counted in glyphOffset, so here just use an unscaled line height
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 justifyLine(positionedGlyphs, justify, lineOffset, 0, lineHeight / 2);
             }
         }

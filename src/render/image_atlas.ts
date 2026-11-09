@@ -196,7 +196,7 @@ export default class ImageAtlas {
         const patternPositions: ImagePositionMap = new Map();
         this.haveRenderCallbacks = [];
 
-        const bins = [];
+        const bins: Array<Rect> = [];
 
         const enableAtlasCaching = imageVersions !== undefined;
 
@@ -207,12 +207,9 @@ export default class ImageAtlas {
         const sortedIcons = enableAtlasCaching ? sortImagesMap(icons, variantCache) : icons;
         const sortedPatterns = enableAtlasCaching ? sortImagesMap(patterns, variantCache) : patterns;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.addImages(sortedIcons, iconPositions, ICON_PADDING, bins);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.addImages(sortedPatterns, patternPositions, PATTERN_PADDING, bins);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const {w, h} = potpack(bins);
         const image = new RGBAImage({width: w || 1, height: h || 1});
 

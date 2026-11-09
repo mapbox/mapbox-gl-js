@@ -65,7 +65,7 @@ export function farthestPixelDistanceOnSphere(tr: Transform, pixelsPerMeter: num
     const right = vec3.scale([], camera.right(), tanFovAboveCenter * aspectRatio);
     const dir = vec3.normalize([], vec3.add([], vec3.add([], forward, up), right));
 
-    const pointOnGlobe = [];
+    const pointOnGlobe: vec3 = [];
     const ray = new Ray(cameraPosition, dir);
 
     let pixelDistance: number;

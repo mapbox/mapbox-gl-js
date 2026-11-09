@@ -13,15 +13,13 @@ declare global {
     interface Window {map: Map}
 }
 
-type Middleware = (req: http.IncomingMessage, res: http.ServerResponse, next: () => void) => void;
-
 const ROOT = path.join(__dirname, '..', '..');
 const TILES = path.join(ROOT, 'test', 'integration', 'tiles');
 const PLUGIN_DISTS = globSync(path.join(ROOT, 'plugins', '*', 'dist'));
 const testNames = globSync(path.join(__dirname, '*', 'package.json')).map((p) => path.basename(path.dirname(p))).sort();
 
 function serve(roots: string[]): http.Server {
-    const middlewares = roots.map((root: string) => (serveStatic as (root: string) => Middleware)(root));
+    const middlewares = roots.map((root: string) => serveStatic(root));
     return http.createServer((req, res) => {
         const notFound = () => { res.writeHead(404); res.end(); };
         const middleware = middlewares.reduceRight<() => void>((next, serve) => () => serve(req, res, next), notFound);

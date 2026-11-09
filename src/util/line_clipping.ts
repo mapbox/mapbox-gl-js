@@ -31,18 +31,16 @@ export class Point4D extends Point3D {
     }
 }
 
-function clipFirst(a: Point, b: Point, axis: string, clip: number): void {
+function clipFirst(a: Point, b: Point, axis: 'x' | 'y', clip: number): void {
     const axis1 = axis === 'x' ? 'y' : 'x';
     const ratio = (clip - a[axis]) / (b[axis] - a[axis]);
     a[axis1] = Math.round(a[axis1] + (b[axis1] - a[axis1]) * ratio);
     a[axis] = clip;
     if (Object.hasOwn(a, 'z')) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        a['z'] = interpolate(a['z'], b['z'], ratio);
+        (a as Point3D)['z'] = interpolate((a as Point3D)['z'], (b as Point3D)['z'], ratio);
     }
     if (Object.hasOwn(a, 'w')) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        a['w'] = interpolate(a['w'], b['w'], ratio);
+        (a as Point4D)['w'] = interpolate((a as Point4D)['w'], (b as Point4D)['w'], ratio);
     }
 }
 
@@ -50,7 +48,7 @@ export function clipLine(p0: Point, p1: Point, boundsMin: number, boundsMax: num
     const clipAxis1 = boundsMin;
     const clipAxis2 = boundsMax;
 
-    for (const axis of ["x", "y"]) {
+    for (const axis of ["x", "y"] as const) {
         let a = p0;
         let b = p1;
         if (a[axis] >= b[axis]) {

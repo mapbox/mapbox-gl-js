@@ -29,11 +29,11 @@ test('worker source messages dispatched to the correct map instance', () => {
         return Promise.resolve();
     };
 
-    worker.workerSourceTypes['vector'] = function (this: WorkerSource, {actor}) {
+    // The test sends a made-up message type, so `actor` is typed by how it's used rather than as WorkerSourceActor.
+    worker.workerSourceTypes['vector'] = function (this: WorkerSource, {actor}: {actor: {send: (type: string, params: unknown) => Promise<unknown>}}) {
         this.loadTile = async function () {
             // we expect the map id to get appended in the call to the "real"
             // actor.send()
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             await actor.send('main thread task', {});
         };
     } as unknown as WorkerSourceConstructor;

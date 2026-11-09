@@ -2182,7 +2182,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 type: 'Point' as const, // Type doesn't matter
                 id: featureData.id,
                 properties: featureData.properties,
-                geometry: [] // Geometry doesn't matter
+                geometry: [] as Point[][] // Geometry doesn't matter
             };
 
             let activeAppearanceIndex: number;

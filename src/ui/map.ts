@@ -291,13 +291,13 @@ const defaultOptions = {
     trackResize: true,
     renderWorldCopies: true,
     refreshExpiredTiles: true,
-    minTileCacheSize: null,
-    maxTileCacheSize: null,
+    minTileCacheSize: null as number | null,
+    maxTileCacheSize: null as number | null,
     localIdeographFontFamily: 'sans-serif',
-    localFontFamily: null,
+    localFontFamily: null as string | null,
     fontstackCompositing: 'client',
-    transformRequest: null,
-    accessToken: null,
+    transformRequest: null as RequestTransformFunction | null,
+    accessToken: null as string | null,
     fadeDuration: 300,
     respectPrefersReducedMotion: true,
     crossSourceCollisions: true,
@@ -1895,8 +1895,7 @@ export class Map extends Camera {
         this._delegatedListeners[type].push(delegatedListener);
 
         for (const event in delegatedListener.delegates) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            this.on(event as T, delegatedListener.delegates[event]);
+            this.on(event as T, delegatedListener.delegates[event as MapEventType] as Listener<Extract<T, MapEventType>>);
         }
 
         return this;
@@ -1958,8 +1957,7 @@ export class Map extends Camera {
         const delegatedListener = this._createDelegatedListener(type as MapEventType, targets, listener);
 
         for (const event in delegatedListener.delegates) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            this.once(event as T, delegatedListener.delegates[event]);
+            this.once(event as T, delegatedListener.delegates[event as MapEventType] as Listener<Extract<T, MapEventType>>);
         }
 
         return this;
@@ -2007,8 +2005,7 @@ export class Map extends Camera {
                 const delegatedListener = listeners[i];
                 if (delegatedListener.listener === listener && areTargetsEqual(delegatedListener.targets, targets)) {
                     for (const event in delegatedListener.delegates) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                        this.off(event as T, delegatedListener.delegates[event]);
+                        this.off(event as T, delegatedListener.delegates[event as MapEventType] as Listener<Extract<T, MapEventType>>);
                     }
                     listeners.splice(i, 1);
                     return this;
@@ -4380,8 +4377,8 @@ export class Map extends Camera {
         this._resizeCanvas(this._containerWidth, this._containerHeight);
 
         const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
-        const positions = this._controlPositions = {};
-        ['top-left', 'top', 'top-right', 'right', 'bottom-right', 'bottom', 'bottom-left', 'left'].forEach((positionName) => {
+        const positions: {[p in ControlPosition]?: HTMLElement} = this._controlPositions = {};
+        (['top-left', 'top', 'top-right', 'right', 'bottom-right', 'bottom', 'bottom-left', 'left'] as ControlPosition[]).forEach((positionName) => {
             positions[positionName] = DOM.create('div', `mapboxgl-ctrl-${positionName}`, controlContainer);
         });
 

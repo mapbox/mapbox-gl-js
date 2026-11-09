@@ -491,7 +491,6 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         } else if (layer instanceof RasterParticleStyleLayer) {
             layerBand = layer.paint.get('raster-particle-array-band');
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const band = layerBand || this.getInitialBand(sourceLayer);
         if (band == null) return;
 
@@ -499,7 +498,6 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (tile.updateNeeded(layer.id, band) && !fallbackToPrevious) return;
 
         const textureDescriptor = tile.textureDescriptorPerLayer.get(layer.id);

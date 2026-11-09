@@ -54,7 +54,6 @@ export default function loadGeometry(
                     reproject(p);
                     line.push(p);
                 }
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 geometry[i] = line;
             }
         }

@@ -1359,9 +1359,7 @@ class Painter {
                 this.buildingTileBorderManager = new HD.BuildingTileBorderManager();
             }
             if (this.buildingTileBorderManager) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const buildingLayerSourceCache = this.style.getLayerSourceCache(buildingLayer);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.buildingTileBorderManager.updateBorders(buildingLayerSourceCache, buildingLayer);
             }
         }
@@ -1683,11 +1681,10 @@ class Painter {
 
         if (this.options.showTileBoundaries || this.options.showQueryGeometry || this.options.showTileAABBs) {
             // Use source with highest maxzoom
-            let selectedSource = null;
+            let selectedSource: SourceCache | null = null;
             orderedLayers.forEach((layer) => {
                 const sourceCache = style.getLayerSourceCache(layer);
                 if (sourceCache && !layer.isHidden(this.transform.zoom) && sourceCache.getVisibleCoordinates().length) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     if (!selectedSource || (selectedSource.getSource().maxzoom < sourceCache.getSource().maxzoom)) {
                         selectedSource = sourceCache;
                     }
@@ -1695,18 +1692,15 @@ class Painter {
             });
             if (selectedSource) {
                 if (this.options.showTileBoundaries && DebugModule.drawDebug) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     DebugModule.drawDebug(this, selectedSource, selectedSource.getVisibleCoordinates(), Color.red, false, this.options.showParseStatus);
                 }
 
                 Debug.run(() => {
                     if (!selectedSource) return;
                     if (this.options.showQueryGeometry && DebugModule.drawDebugQueryGeometry) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                         DebugModule.drawDebugQueryGeometry(this, selectedSource, selectedSource.getVisibleCoordinates());
                     }
                     if (this.options.showTileAABBs) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                         Debug.drawAabbs(this, selectedSource, selectedSource.getVisibleCoordinates());
                     }
                 });
@@ -1751,10 +1745,9 @@ class Painter {
         const isLayerSupported = unsupportedLayers ? !unsupportedLayers.includes(layer.type) : true;
         const isCustomLayerWithTerrain = this.terrain && layer.type === 'custom';
 
-        if (prepare[layer.type] && (isLayerSupported || isCustomLayerWithTerrain)) {
+        if (prepare[layer.type as keyof typeof prepare] && (isLayerSupported || isCustomLayerWithTerrain)) {
             const sourceCache = this.style.getLayerSourceCache(layer);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            prepare[layer.type](layer, sourceCache, this);
+            prepare[layer.type as keyof typeof prepare](layer, sourceCache, this);
         }
 
         this.gpuTimingEnd();
@@ -1772,7 +1765,7 @@ class Painter {
             (painter.terrain && layer.type === 'custom')) && layer.type !== 'clip' && layer.type !== 'slot' && layer.type !== 'placement-group' && draw[layer.type]) {
             draw[layer.type](painter, sourceCache, layer, coords, this.style.placement ? this.style.placement.variableOffsets : {}, this.options.isInitialLoad);
         }
-        if (!draw[layer.type]) {
+        if (!draw[layer.type as keyof typeof draw]) {
             // Trigger lazy module loads so drawing will be possible once they load.
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             if (layer.mayUse('HD')) setupHD();
@@ -2155,7 +2148,7 @@ class Painter {
 
     getBackgroundTiles(): Record<number, Tile> {
         const oldTiles = this._backgroundTiles;
-        const newTiles = this._backgroundTiles = {};
+        const newTiles: Record<number, Tile> = this._backgroundTiles = {};
 
         const tileSize = 512;
         const tileIDs = this.transform.coveringTiles({tileSize});

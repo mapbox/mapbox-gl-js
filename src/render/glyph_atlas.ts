@@ -41,7 +41,7 @@ export default class GlyphAtlas {
 
         for (const stack in stacks) {
             const glyphData = stacks[stack];
-            const glyphPositionMap = positions[stack] = {};
+            const glyphPositionMap: GlyphPositionMap = positions[stack] = {};
 
             for (const id in glyphData.glyphs) {
                 const src = glyphData.glyphs[+id];
@@ -59,7 +59,6 @@ export default class GlyphAtlas {
             }
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const {w, h} = potpack(bins);
         const image = new AlphaImage({width: w || 1, height: h || 1});
 

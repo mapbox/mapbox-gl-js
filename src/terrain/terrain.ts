@@ -748,7 +748,7 @@ export class Terrain extends Elevation {
         proxyTile: Tile,
         demTile: Tile | null | undefined,
         uniforms: UniformValues<TerrainUniformsType>,
-        uniformSuffix?: string | null,
+        uniformSuffix?: '_prev' | null,
     ): boolean {
         if (!demTile || demTile.demTexture == null)
             return false;
@@ -1032,13 +1032,11 @@ export class Terrain extends Elevation {
             }
             if (poolIndex === FBO_POOL_SIZE) {
                 poolIndex = 0;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.renderToBackBuffer(accumulatedDrapes);
             }
         }
 
         // Reset states and render last drapes
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.renderToBackBuffer(accumulatedDrapes);
         this.renderingToTexture = false;
 
@@ -1604,7 +1602,7 @@ export class Terrain extends Elevation {
             return this._setupProxiedCoordsForImageSource(sourceCache, sourceCoords, previousProxyToSource);
         }
         this._findCoveringTileCache[sourceCache.id] = this._findCoveringTileCache[sourceCache.id] || {};
-        const coords = this.proxiedCoords[sourceCache.id] = [];
+        const coords: Array<ProxiedTileID> = this.proxiedCoords[sourceCache.id] = [];
         const proxys = this.proxyCoords;
         for (let i = 0; i < proxys.length; i++) {
             const proxyTileID = proxys[i];
@@ -1658,7 +1656,7 @@ export class Terrain extends Elevation {
     }) {
         if (!sourceCache.getSource().loaded()) return;
 
-        const coords = this.proxiedCoords[sourceCache.id] = [];
+        const coords: Array<ProxiedTileID> = this.proxiedCoords[sourceCache.id] = [];
         const proxys = this.proxyCoords;
         const imageSource: ImageSource = sourceCache.getSource();
         // Special case where image is rendered outside of the map's bounds (eg. pole caps)

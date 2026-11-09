@@ -63,7 +63,7 @@ class TileCache {
             this.data[key] = [];
         }
 
-        const dataWrapper = {
+        const dataWrapper: {value: Tile; timeout: number | null | undefined} = {
             value: data,
             timeout: undefined
         };

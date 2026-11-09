@@ -174,7 +174,6 @@ class FeatureIndex {
                     featureGeometry = loadGeometry(feature, this.tileID.canonical, tileTransform);
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 return styleLayer.queryIntersectsFeature(tilespaceGeometry, feature, featureState, featureGeometry, this.z, transform, pixelPosMatrix, elevationHelper, layoutVertexArrayOffset, params.scope);
             };
 
@@ -378,7 +377,7 @@ class FeatureIndex {
 
     updateFeatureProperties(feature: Feature, target: QrfTarget, availableImages?: ImageId[]) {
         if (target.properties) {
-            const transformedProperties = {};
+            const transformedProperties: Record<string, string | number | boolean> = {};
             for (const name in target.properties) {
                 const expression = target.properties[name];
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

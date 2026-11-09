@@ -277,7 +277,7 @@ export function calculateModelMatrix(matrix: mat4, model: Readonly<Model>, state
 
     const orientation = model.orientation;
 
-    const rotationScaleYZFlip = [];
+    const rotationScaleYZFlip: mat4 = [];
     rotationScaleYZFlipMatrix(
         rotationScaleYZFlip,
         [
@@ -291,7 +291,7 @@ export function calculateModelMatrix(matrix: mat4, model: Readonly<Model>, state
 
     if (applyElevation && state.elevation) {
         let elevate = 0;
-        const rotateOnTerrain = [];
+        const rotateOnTerrain: quat = [];
         if (followTerrainSlope && state.elevation) {
             elevate = positionModelOnTerrain(rotateOnTerrain, state, model.aabb, matrix, position);
             const rotationOnTerrain = mat4.fromQuat([], rotateOnTerrain);

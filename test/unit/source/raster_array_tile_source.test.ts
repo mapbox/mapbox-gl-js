@@ -24,7 +24,7 @@ function createSource() {
     source.map = {
         triggerRepaint: vi.fn(),
         painter: {_terrain: null},
-        style: {getSourceCache: () => null},
+        style: {getSourceCache: (): null => null},
     } as unknown as MapboxMap;
 
     return source;
@@ -457,7 +457,7 @@ describe('RasterArrayTileSource TileJSON integration', () => {
             _refreshExpiredTiles: true,
             style: {clearSource: () => {}},
             painter: {_terrain: null},
-            getWorldview: () => undefined,
+            getWorldview: (): undefined => undefined,
             triggerRepaint: vi.fn(),
         } as unknown as MapboxMap);
 

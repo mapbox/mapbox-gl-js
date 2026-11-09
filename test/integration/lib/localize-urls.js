@@ -8,6 +8,23 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 import {createRequire} from 'module';
 const require = createRequire(import.meta.url);
 
+/**
+ * A test operation, e.g. `['setStyle', 'local://...']` or `['wait']`.
+ * @typedef {[string, (string | LocalizableStyle)?, ...unknown[]]} TestOperation
+ */
+
+/**
+ * The parts of a test style (or imported/operation style) that reference local URLs.
+ * @typedef {{
+ *   imports?: Array<{data?: LocalizableStyle}>,
+ *   metadata?: {test?: {operations?: TestOperation[]}}
+ * }} LocalizableStyle
+ */
+
+/**
+ * @param {LocalizableStyle} style
+ * @param {number} port
+ */
 export default function localizeURLs(style, port) {
     if (style.imports) {
         for (const importSpec of style.imports) {

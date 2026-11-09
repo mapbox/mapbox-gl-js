@@ -8,10 +8,11 @@ import type {PostprocessTileContext} from '../3d-style/elevation/evaluate_portal
 import type {IndoorTileOptions} from '../src/style/indoor_data';
 import type {WorkerSourceActor} from '../src/source/worker_source';
 import type {FrcCoveragePolygons} from '../src/source/frc_coverage_snapshot';
+import type * as HDWorkerImports from './hd_worker_imports';
 
 // Live bindings — updated by `prepareHD()` once the HD chunk finishes loading.
 // Readers (e.g. worker_tile) check `loaded` before invoking the hooks.
-export let BuildingBucket;
+export let BuildingBucket: typeof HDWorkerImports.BuildingBucket | undefined;
 export let parseElevationFeatures: ((data: VectorTile, canonical: CanonicalTileID) => ElevationFeature[] | undefined) | undefined;
 export let attachExtension: ((bucket: Bucket, coverageSourceLayers: string[] | null | undefined) => void) | undefined;
 export let postprocessTile: ((ctx: PostprocessTileContext) => void) | undefined;

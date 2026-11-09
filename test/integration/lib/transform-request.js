@@ -5,6 +5,11 @@
  * - mapbox:// URLs are normalized to api.mapbox.com by normalize functions
  * - This transforms them back to localhost test paths
  */
+/**
+ * @param {string} url
+ * @param {import('../../../src/util/ajax').ResourceType} resourceTypeEnum
+ * @returns {{url: string}}
+ */
 export function transformRequest(url, resourceTypeEnum) {
     if (url.startsWith('local://')) {
         return {

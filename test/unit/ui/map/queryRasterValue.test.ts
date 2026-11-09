@@ -3,15 +3,16 @@ import {getPNGResponse, mockFetch} from '../../../util/network';
 // @ts-expect-error Cannot find module
 import tile from '../../../integration/tiles/mapboxsatellite.msm-precip-demo/0/0/0.mrt?arraybuffer';
 
+// `doneAsync` lives in an untyped (`@ts-nocheck`) helper, so its callback arguments are typed here.
+type DoneRef = {resolve: (value?: unknown) => void; reject: (reason?: unknown) => void};
+
 describe('Map#queryRasterValue', () => {
     test('should fire error for empty source ID', async () => {
         const {withAsync, wait} = doneAsync();
         const map = createMap();
 
-        map.once('error', withAsync((e, doneRef) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        map.once('error', withAsync((e: {error: Error}, doneRef: DoneRef) => {
             expect(e.error.message).toBe(`IDs can't be empty.`);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -26,10 +27,8 @@ describe('Map#queryRasterValue', () => {
         const {withAsync, wait} = doneAsync();
         const map = createMap();
 
-        map.once('error', withAsync((e, doneRef) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        map.once('error', withAsync((e: {error: Error}, doneRef: DoneRef) => {
             expect(e.error.message).toMatch(/IDs can't contain special symbols/);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -70,10 +69,8 @@ describe('Map#queryRasterValue', () => {
 
         await waitFor(map, 'load');
 
-        map.once('error', withAsync((e, doneRef) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        map.once('error', withAsync((e: {error: Error}, doneRef: DoneRef) => {
             expect(e.error.message).toBe(`queryRasterValue support only "raster-array" sources.`);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -213,10 +210,8 @@ describe('Map#queryRasterValue', () => {
             }
         });
 
-        map.once('error', withAsync((e, doneRef) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        map.once('error', withAsync((e: {error: Error}, doneRef: DoneRef) => {
             expect(e.error.message).toBe(`Source with id "${sourceId}" does not exist in the style.`);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 

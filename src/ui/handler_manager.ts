@@ -33,19 +33,25 @@ export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent | 
  */
 export type PitchRotateKey = 'Control' | 'Alt' | 'Shift' | 'Meta';
 
+type DefaultHandlerName = 'boxZoom' | 'doubleClickZoom' | 'tapDragZoom' | 'touchPitch' | 'dragRotate' | 'dragPan' | 'touchZoomRotate' | 'scrollZoom' | 'keyboard';
+
 export type HandlerManagerOptions = {
     interactive: boolean;
     pitchWithRotate: boolean;
     clickTolerance: number;
     bearingSnap: number;
     pitchRotateKey?: PitchRotateKey;
-};
+} & Partial<Record<DefaultHandlerName, unknown>>;
 
 export type KeepGesture = 'always' | 'ifPointerDown' | 'never';
 
-type EventsInProgress = {
-    [T in keyof MapEvents]?: MapEvents[T];
-};
+// A camera change in progress, and the handler that started it.
+type EventInProgress = {handlerName: string; originalEvent?: InputEvent};
+
+// Handler methods looked up by DOM event name (see `Handler`); signatures vary per event.
+type HandlerEventMethods = Record<string, ((e: InputEvent | RenderFrameEvent, points?: Point | Point[], mapTouches?: TouchList) => HandlerResult | null | undefined) | undefined>;
+
+type EventsInProgress = Partial<Record<'zoom' | 'drag' | 'pitch' | 'rotate', EventInProgress>>;
 
 const isMoving = (p: EventsInProgress) => p.zoom || p.drag || p.pitch || p.rotate;
 
@@ -258,8 +264,7 @@ class HandlerManager {
 
         for (const name of ['boxZoom', 'doubleClickZoom', 'tapDragZoom', 'touchPitch', 'dragRotate', 'dragPan', 'touchZoomRotate', 'scrollZoom', 'keyboard'] as const) {
             if (options.interactive && options[name]) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                map[name].enable(options[name]);
+                (map as unknown as Record<DefaultHandlerName, {enable: (options?: unknown) => void}>)[name].enable(options[name]);
             }
         }
     }
@@ -403,9 +408,8 @@ class HandlerManager {
                 handler.reset();
 
             } else {
-                if (handler[eventName || e.type]) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-                    data = handler[eventName || e.type](e, points, mapTouches);
+                if ((handler as unknown as HandlerEventMethods)[eventName || e.type]) {
+                    data = (handler as unknown as HandlerEventMethods)[eventName || e.type](e, points, mapTouches);
                     this.mergeHandlerResult(mergedHandlerResult, eventsInProgress, data, handlerName, inputEvent);
                     if (data && data.needsRenderFrame) {
                         this._triggerRenderFrame();
@@ -455,23 +459,23 @@ class HandlerManager {
 
         // track which handler changed which camera property
         if (handlerResult.zoomDelta !== undefined) {
-            eventsInProgress.zoom = eventData as MapEvents['zoom'];
+            eventsInProgress.zoom = eventData as EventInProgress;
         }
         if (handlerResult.panDelta !== undefined) {
-            eventsInProgress.drag = eventData as MapEvents['drag'];
+            eventsInProgress.drag = eventData as EventInProgress;
         }
         if (handlerResult.pitchDelta !== undefined) {
-            eventsInProgress.pitch = eventData as MapEvents['pitch'];
+            eventsInProgress.pitch = eventData as EventInProgress;
         }
         if (handlerResult.bearingDelta !== undefined) {
-            eventsInProgress.rotate = eventData as MapEvents['rotate'];
+            eventsInProgress.rotate = eventData as EventInProgress;
         }
     }
 
     _applyChanges() {
         const combined: HandlerResult = {};
         const combinedEventsInProgress: EventsInProgress = {};
-        const combinedDeactivatedHandlers: Record<string, Handler> = {};
+        const combinedDeactivatedHandlers: Record<string, InputEvent | RenderFrameEvent> = {};
 
         for (const [change, eventsInProgress, deactivatedHandlers] of this._changes) {
             if (change.panDelta) combined.panDelta = (combined.panDelta || new Point(0, 0))._add(change.panDelta);
@@ -491,20 +495,17 @@ class HandlerManager {
         this._changes = [];
     }
 
-    _updateMapTransform(combinedResult: HandlerResult, combinedEventsInProgress: EventsInProgress, deactivatedHandlers: Record<string, Handler>) {
+    _updateMapTransform(combinedResult: HandlerResult, combinedEventsInProgress: EventsInProgress, deactivatedHandlers: Record<string, InputEvent | RenderFrameEvent>) {
         const map = this._map;
         const tr = map.transform;
 
-        const eventStarted = (type: string) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const eventStarted = (type: keyof EventsInProgress) => {
             const newEvent = combinedEventsInProgress[type];
             return newEvent && !this._eventsInProgress[type];
         };
 
-        const eventEnded = (type: string) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const eventEnded = (type: keyof EventsInProgress) => {
             const event = this._eventsInProgress[type];
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return event && !this._handlersById[event.handlerName].isActive();
         };
 
@@ -629,21 +630,18 @@ class HandlerManager {
         this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
     }
 
-    _fireEvents(newEventsInProgress: EventsInProgress, deactivatedHandlers: Record<string, Handler>, allowEndAnimation: boolean) {
+    _fireEvents(newEventsInProgress: EventsInProgress, deactivatedHandlers: Record<string, InputEvent | RenderFrameEvent>, allowEndAnimation: boolean) {
         const wasMoving = isMoving(this._eventsInProgress);
         const nowMoving = isMoving(newEventsInProgress);
 
-        const startEvents: EventsInProgress = {};
+        const startEvents: Record<string, InputEvent> = {};
 
         for (const eventName in newEventsInProgress) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const {originalEvent} = newEventsInProgress[eventName];
-            if (!this._eventsInProgress[eventName]) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const {originalEvent} = newEventsInProgress[eventName as keyof EventsInProgress];
+            if (!this._eventsInProgress[eventName as keyof EventsInProgress]) {
                 startEvents[`${eventName}start`] = originalEvent;
             }
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            this._eventsInProgress[eventName] = newEventsInProgress[eventName];
+            this._eventsInProgress[eventName as keyof EventsInProgress] = newEventsInProgress[eventName as keyof EventsInProgress];
         }
 
         // fire start events only after this._eventsInProgress has been updated
@@ -652,7 +650,6 @@ class HandlerManager {
         }
 
         for (const name in startEvents) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this._fireEvent(name as keyof MapEvents, startEvents[name]);
         }
 
@@ -661,30 +658,23 @@ class HandlerManager {
         }
 
         for (const eventName in newEventsInProgress) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const {originalEvent} = newEventsInProgress[eventName];
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            const {originalEvent} = newEventsInProgress[eventName as keyof EventsInProgress];
             this._fireEvent(eventName as keyof MapEvents, originalEvent);
         }
 
-        const endEvents: EventsInProgress = {};
+        const endEvents: Record<string, InputEvent> = {};
 
-        let originalEndEvent;
+        let originalEndEvent: InputEvent;
         for (const eventName in this._eventsInProgress) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const {handlerName, originalEvent} = this._eventsInProgress[eventName];
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            const {handlerName, originalEvent} = this._eventsInProgress[eventName as keyof EventsInProgress];
             if (!this._handlersById[handlerName].isActive()) {
-                delete this._eventsInProgress[eventName];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                originalEndEvent = deactivatedHandlers[handlerName] || originalEvent;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                delete this._eventsInProgress[eventName as keyof EventsInProgress];
+                originalEndEvent = (deactivatedHandlers[handlerName] || originalEvent) as InputEvent;
                 endEvents[`${eventName}end`] = originalEndEvent;
             }
         }
 
         for (const name in endEvents) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this._fireEvent(name as keyof MapEvents, endEvents[name]);
         }
 
@@ -699,11 +689,9 @@ class HandlerManager {
                 if (shouldSnapToNorth(inertialEase.bearing || this._map.getBearing())) {
                     inertialEase.bearing = 0;
                 }
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 this._map.easeTo(inertialEase, {originalEvent: originalEndEvent});
             } else {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                this._map.fire(new Event('moveend', {originalEvent: originalEndEvent}));
+                this._map.fire(new Event('moveend', {originalEvent: originalEndEvent as MouseEvent | TouchEvent | WheelEvent}));
                 if (shouldSnapToNorth(this._map.getBearing())) {
                     this._map.resetNorth();
                 }

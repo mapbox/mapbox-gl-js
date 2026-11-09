@@ -67,8 +67,8 @@ class Rain extends StyleProperties<Props> {
         const rainSpec = styleSpec.rain as Record<PropertyKey, StylePropertySpecification>;
         for (const name of Object.keys(rainSpec)) {
             // Fallback to use default style specification when the properties wasn't set
-            if (properties[name] === undefined) {
-                properties[name] = rainSpec[name].default;
+            if ((properties as Record<string, unknown>)[name] === undefined) {
+                (properties as Record<string, unknown>)[name] = rainSpec[name].default;
             }
         }
 

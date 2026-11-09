@@ -12,7 +12,7 @@ import type Dispatcher from '../../src/util/dispatcher';
 import type {Map as MapboxMap} from '../../src/ui/map';
 import type {Callback} from '../../src/types/callback';
 import type {ISource, SourceEvents} from '../../src/source/source';
-import type {ColorSpecification, ModelMaterialOverrideSpecification, ModelNodeOverrideSpecification, ModelSourceModelSpecification, ModelSourceModelsSpecification, ModelSourceSpecification} from '../../src/style-spec/types';
+import type {ColorSpecification, ModelMaterialOverridesSpecification, ModelNodeOverridesSpecification, ModelSourceModelSpecification, ModelSourceModelsSpecification, ModelSourceSpecification} from '../../src/style-spec/types';
 
 type ModelSourceModelInfo = {
     modelSpec: ModelSourceModelSpecification;
@@ -211,7 +211,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         }
     }
 
-    private static convertNodeOverrides(model: Model, overrides: ModelNodeOverrideSpecification) {
+    private static convertNodeOverrides(model: Model, overrides: ModelNodeOverridesSpecification) {
         // Legacy support: Previously, 'nodeOverrides' allowed both direct property overrides and specifying
         // node names to be overridden via feature states. The latter is now handled explicitly with 'nodeOverrideNames'.
         // This block maintains compatibility with older styles.
@@ -222,7 +222,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
             }
             return;
         }
-        Object.entries(overrides).forEach(([key, value]) => {
+        Object.entries(overrides).forEach(([key, value]: [string, Record<string, unknown>]) => {
 
             const nodeOverride: NodeOverride = {
                 orientation: [0, 0, 0],
@@ -247,7 +247,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         });
     }
 
-    private static convertMaterialOverrides(model: Model, overrides: ModelMaterialOverrideSpecification) {
+    private static convertMaterialOverrides(model: Model, overrides: ModelMaterialOverridesSpecification) {
         // Legacy support: Previously, 'materialOverrides' allowed both direct property overrides and specifying
         // material names to be overridden via feature states. The latter is now handled explicitly with 'materialOverrideNames'.
         // This block maintains compatibility with older styles.
@@ -260,7 +260,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         }
         Object.entries(overrides).forEach(([key, value]) => {
 
-            const modelColor = ModelSource.arrayFromColorSpecification(value['model-color'] as ColorSpecification | undefined);
+            const modelColor = ModelSource.arrayFromColorSpecification(value['model-color']);
             const materialOverride: MaterialOverride = {
                 color: modelColor !== undefined ? new Color(modelColor[0], modelColor[1], modelColor[2]) : new Color(1, 1, 1),
                 colorMix: 0,
@@ -268,17 +268,17 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
                 opacity: 1.0
             };
 
-            const modelColorMixIntensity = value['model-color-mix-intensity'] as number;
+            const modelColorMixIntensity = value['model-color-mix-intensity'];
             if (modelColorMixIntensity !== undefined) {
                 materialOverride.colorMix = modelColorMixIntensity;
             }
 
-            const modelEmissiveStrength = value['model-emissive-strength'] as number;
+            const modelEmissiveStrength = value['model-emissive-strength'];
             if (modelEmissiveStrength !== undefined) {
                 materialOverride.emissionStrength = modelEmissiveStrength;
             }
 
-            const modelOpacity = value['model-opacity'] as number;
+            const modelOpacity = value['model-opacity'];
             if (modelOpacity !== undefined) {
                 materialOverride.opacity = modelOpacity;
             }

@@ -149,12 +149,10 @@ class StyleLayer extends Evented {
             this._paintValues = new PropertyValues(properties.paint, this.scope, options);
 
             for (const property in layer.paint) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                this.setPaintProperty(property as keyof PaintSpecification, layer.paint[property]);
+                this.setPaintProperty(property as keyof PaintSpecification, (layer.paint as PaintSpecification)[property as keyof PaintSpecification]);
             }
             for (const property in layer.layout) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                this.setLayoutProperty(property, layer.layout[property]);
+                this.setLayoutProperty(property, (layer.layout as LayoutSpecification)[property as keyof LayoutSpecification]);
             }
             this._paintValues.snap();
             this.paint = new PossiblyEvaluated(properties.paint);

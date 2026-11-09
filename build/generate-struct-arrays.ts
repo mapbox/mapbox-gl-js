@@ -184,8 +184,7 @@ const layoutAttributes = {
     dash: dashAttributes
 };
 for (const name in layoutAttributes) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    createStructArrayType(`${name.replace(/-/g, '_')}_layout`, layoutAttributes[name]);
+    createStructArrayType(`${name.replace(/-/g, '_')}_layout`, layoutAttributes[name as keyof typeof layoutAttributes]);
 }
 
 // Globe extension arrays

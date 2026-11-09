@@ -92,8 +92,8 @@ class Fog extends StyleProperties<Props> {
 
         const properties = {...fog};
         for (const name of Object.keys(fogReference)) {
-            if (properties[name] === undefined) {
-                properties[name] = fogReference[name].default;
+            if ((properties as Record<string, unknown>)[name] === undefined) {
+                (properties as Record<string, unknown>)[name] = fogReference[name].default;
             }
         }
 

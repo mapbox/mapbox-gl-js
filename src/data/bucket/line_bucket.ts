@@ -197,7 +197,7 @@ class LineBucket implements Bucket {
     currentVertexIsOutside!: boolean;
     tessellationStep: number;
 
-    evaluationGlobals = {'zoom': 0, 'lineProgress': undefined};
+    evaluationGlobals: {'zoom': number; 'lineProgress': number | undefined} = {'zoom': 0, 'lineProgress': undefined};
 
     elevationType: ElevationType = 'none';
     isSeaLevelReference: boolean = false;

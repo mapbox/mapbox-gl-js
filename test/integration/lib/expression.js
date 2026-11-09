@@ -6,8 +6,61 @@ import compactStringify from 'json-stringify-pretty-compact';
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
+/**
+ * @typedef {{
+ *   zoom?: number,
+ *   availableImages?: string[],
+ *   canonicalID?: {z: number, x: number, y: number},
+ *   config?: Record<string, unknown>
+ * }} ExpressionGlobalsInput
+ */
+
+/**
+ * @typedef {{
+ *   properties?: Record<string, unknown>,
+ *   id?: string | number,
+ *   geometry?: {type: string, coordinates?: unknown}
+ * }} ExpressionFeatureInput
+ */
+
+/**
+ * @typedef {[ExpressionGlobalsInput, ExpressionFeatureInput, Record<string, unknown>?]} ExpressionInput
+ */
+
+/**
+ * @typedef {{
+ *   result: string,
+ *   isFeatureConstant?: boolean,
+ *   isZoomConstant?: boolean,
+ *   type?: string,
+ *   errors?: Array<{key: string, error: string}>
+ * }} CompilationResult
+ */
+
+/**
+ * An expression test fixture (`test.json`).
+ * @typedef {{
+ *   expression: unknown,
+ *   inputs?: ExpressionInput[],
+ *   propertySpec?: Record<string, unknown>,
+ *   expected?: {compiled: CompilationResult, outputs: unknown[], serialized?: unknown},
+ *   metadata?: unknown
+ * }} ExpressionFixture
+ */
+
+/**
+ * @typedef {{
+ *   compiled: CompilationResult,
+ *   recompiled: CompilationResult,
+ *   outputs: unknown[],
+ *   serialized: unknown,
+ *   roundTripOutputs: unknown[]
+ * }} ExpressionTestResult
+ */
+
 // we have to handle this edge case here because we have test fixtures for this
 // edge case, and we don't want to force update to mess with them
+/** @param {unknown} v */
 function stringify(v) {
     let s = compactStringify(v);
     // http://timelessrepo.com/json-isnt-a-javascript-subset
@@ -22,6 +75,10 @@ function stringify(v) {
 
 const decimalSigFigs = 6;
 
+/**
+ * @param {unknown} x
+ * @returns {unknown}
+ */
 function stripPrecision(x) {
     // Intended for test output serialization:
     // strips down to 6 decimal sigfigs but stops at decimal point
@@ -43,14 +100,20 @@ function stripPrecision(x) {
     } else if (Array.isArray(x)) {
         return x.map(stripPrecision);
     } else {
+        /** @type {Record<string, unknown>} */
         const stripped = {};
         for (const key of Object.keys(x)) {
-            stripped[key] = stripPrecision(x[key]);
+            stripped[key] = stripPrecision(/** @type {Record<string, unknown>} */ (x)[key]);
         }
         return stripped;
     }
 }
 
+/**
+ * @param {unknown} a
+ * @param {unknown} b
+ * @returns {boolean}
+ */
 function deepEqual(a, b) {
     if (typeof a !== typeof b)
         return false;
@@ -70,13 +133,14 @@ function deepEqual(a, b) {
     kb.sort();
 
     for (let i = 0; i < ka.length; i++)
-        if (ka[i] !== kb[i] || !deepEqual(a[ka[i]], b[ka[i]]))
+        if (ka[i] !== kb[i] || !deepEqual(/** @type {Record<string, unknown>} */ (a)[ka[i]], /** @type {Record<string, unknown>} */ (b)[ka[i]]))
             return false;
 
     return true;
 }
 
 function deriveNodePlatformTag() {
+    /** @type {Partial<Record<NodeJS.Platform, string>>} */
     const osMap = {darwin: 'macos', linux: 'linux', win32: 'windows'};
     const os = osMap[process.platform] || process.platform;
     return `web-${os}-node`;
@@ -92,14 +156,14 @@ function deriveNodePlatformTag() {
  * @param {{ skip: string[]; }} [options.ignores] - Object with a skip array containing test names to ignore.
  * @param {string} [options.fixtureFilename]
  * @param {string} [options.platformTag]
- * @param {Function} runExpressionTest - A function that runs a single expression test fixture.
+ * @param {(fixture: ExpressionFixture, params: import('./harness.js').TestMetadata) => ExpressionTestResult} runExpressionTest - A function that runs a single expression test fixture.
  * @returns {undefined} Terminates the process when testing is complete.
  */
 export function run(implementation, options, runExpressionTest) {
     const directory = path.join(__dirname, '../expression-tests');
     options.fixtureFilename = 'test.json';
     options.platformTag = options.platformTag || deriveNodePlatformTag();
-    harness(directory, implementation, options, (fixture, params, done) => {
+    harness(directory, implementation, options, (/** @type {ExpressionFixture} */ fixture, params, done) => {
         try {
             const result = runExpressionTest(fixture, params);
             const dir = path.join(directory, params.id);
@@ -107,7 +171,7 @@ export function run(implementation, options, runExpressionTest) {
             if (process.env.UPDATE) {
                 fixture.expected = {
                     compiled: result.compiled,
-                    outputs: stripPrecision(result.outputs),
+                    outputs: /** @type {unknown[]} */ (stripPrecision(result.outputs)),
                     serialized: result.serialized
                 };
 
@@ -137,10 +201,15 @@ export function run(implementation, options, runExpressionTest) {
                 html: ''
             };
 
+            /**
+             * @param {string} label
+             * @param {unknown} expectedJson
+             * @param {unknown} actualJson
+             */
             const diffJson = (label, expectedJson, actualJson) => {
                 let text = '';
                 let html = '';
-                diff.diffJson(expectedJson, actualJson)
+                diff.diffJson(/** @type {object} */ (expectedJson), /** @type {object} */ (actualJson))
                     .forEach((hunk) => {
                         if (hunk.added) {
                             text += `+ ${hunk.value}`;
@@ -169,7 +238,7 @@ export function run(implementation, options, runExpressionTest) {
                 diffJson('Serialized and re-compiled', expected.compiled, result.recompiled);
             }
 
-            const diffOutputs = (testOutputs) => {
+            const diffOutputs = (/** @type {unknown[]} */ testOutputs) => {
                 return expected.outputs.map((expectedOutput, i) => {
                     if (!deepEqual(expectedOutput, testOutputs[i])) {
                         return `f(${JSON.stringify(fixture.inputs[i])})\nExpected: ${JSON.stringify(expectedOutput)}\nActual: ${JSON.stringify(testOutputs[i])}`;

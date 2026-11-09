@@ -298,8 +298,7 @@ export function getGlyphQuads(
     textRotate?: number,
     textSizeFactor: number = 1,
 ): Array<SymbolQuad> {
-    const quads = [];
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    const quads: Array<SymbolQuad> = [];
     if (shaping.positionedLines.length === 0) return quads;
 
     const textRotateValue = textRotate !== undefined ? textRotate : layer.layout.get('text-rotate').evaluate(feature, {});
@@ -318,7 +317,7 @@ export function getGlyphQuads(
         currentOffset = getMidlineOffset(shaping, lineHeight, currentOffset, lineIndex);
         for (const positionedGlyph of line.positionedGlyphs) {
             if (!positionedGlyph.rect) continue;
-            const textureRect = positionedGlyph.rect || {};
+            const textureRect = (positionedGlyph.rect || {}) as TextureCoordinate;
 
             // The rects have an additional buffer that is not included in their size.
             const glyphPadding = 1.0;
@@ -352,7 +351,7 @@ export function getGlyphQuads(
                 lineOffset = positionedGlyph.image ? halfAdvance - positionedGlyph.metrics.width * positionedGlyph.scale / 2.0 : 0;
             }
 
-            const glyphOffset = alongLine ?
+            const glyphOffset: [number, number] = alongLine ?
                 [positionedGlyph.x + halfAdvance, positionedGlyph.y] :
                 [0, 0];
 
@@ -496,6 +495,5 @@ export function getGlyphQuads(
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return quads;
 }

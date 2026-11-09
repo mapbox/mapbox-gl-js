@@ -50,7 +50,6 @@ export function evaluatePortalGraphs({buckets, data, sourceLayerCoder, canonical
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const evaluatedPortals = ElevationPortalGraph.evaluate(unevaluatedPortals);
 
     for (const bucket of Object.values(buckets)) {

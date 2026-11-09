@@ -19,7 +19,8 @@ import type {OverscaledTileID} from '../../src/source/tile_id';
 import type Painter from '../../src/render/painter';
 import type BuildingStyleLayer from '../style/style_layer/building_style_layer';
 import type SourceCache from '../../src/source/source_cache';
-import type {DynamicDefinesType} from '../../src/render/program/program_uniforms';
+import type {DynamicDefinesType, ProgramUniformsType} from '../../src/render/program/program_uniforms';
+import type Program from '../../src/render/program';
 
 export default draw;
 
@@ -141,7 +142,6 @@ function drawTiles(params: DrawParams) {
 
             // Use cheaper non-facade shader for depth-only pass (used by two pass translucent rendering)
             if (params.depthOnly === true) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 programWithFacades = programWithoutFacades;
             } else {
                 const facadeDefines = defines.concat(["BUILDING_FAUX_FACADE", "HAS_ATTRIBUTE_a_faux_facade_color_emissive"]);
@@ -150,12 +150,10 @@ function drawTiles(params: DrawParams) {
             }
 
             if (shadowRenderer) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 shadowRenderer.setupShadowsFromMatrix(tileMatrix, programWithoutFacades, true);
 
                 if (programWithFacades !== programWithoutFacades) {
                     // Same shadow uniforms for both programs — skip the redundant cascade muls + texture binds.
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     programWithFacades.setShadowUniformValues(context, shadowRenderer.getShadowUniformValues());
                 }
             }
@@ -166,7 +164,7 @@ function drawTiles(params: DrawParams) {
             uniformValues = buildingBloomUniformValues(matrix);
         }
 
-        const renderBuilding = (building: BuildingGeometry, program) => {
+        const renderBuilding = (building: BuildingGeometry, program: Program<ProgramUniformsType['building' | 'buildingDepth' | 'buildingBloom']>) => {
             if (!isBloomPass) {
                 const segments = building.segmentsBucket;
                 let dynamicBuffers = [building.layoutNormalBuffer, building.layoutCentroidBuffer, building.layoutColorBuffer, building.layoutFloodLightDataBuffer];
@@ -174,7 +172,6 @@ function drawTiles(params: DrawParams) {
                     dynamicBuffers = dynamicBuffers.concat([building.layoutFacadeDataBuffer, building.layoutFacadeVerticalRangeBuffer, building.layoutFacadePaintBuffer]);
                 }
                 const stencilMode = params.stencilMode || StencilMode.disabled;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 program.draw(painter, context.gl.TRIANGLES, params.depthMode, stencilMode, params.blendMode, isShadowPass ? CullFaceMode.disabled : CullFaceMode.backCW,
                     uniformValues, layer.id, building.layoutVertexBuffer, building.indexBuffer,
                     segments, layer.paint, painter.transform.zoom,
@@ -182,7 +179,6 @@ function drawTiles(params: DrawParams) {
             } else {
                 const bloomGeometry = building.entranceBloom;
                 const dynamicBuffers = [bloomGeometry.layoutAttenuationBuffer, bloomGeometry.layoutColorBuffer];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 program.draw(painter, context.gl.TRIANGLES, params.depthMode, StencilMode.disabled, params.blendMode, CullFaceMode.disabled,
                     uniformValues, layer.id, bloomGeometry.layoutVertexBuffer, bloomGeometry.indexBuffer,
                     bloomGeometry.segmentsBucket, layer.paint, painter.transform.zoom,
@@ -190,7 +186,6 @@ function drawTiles(params: DrawParams) {
             }
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         painter.uploadCommonUniforms(context, programWithoutFacades, coord.toUnwrapped(), null, cutoffParams);
         if (bucket.buildingWithoutFacade) {
             renderBuilding(bucket.buildingWithoutFacade, programWithoutFacades);
@@ -198,7 +193,6 @@ function drawTiles(params: DrawParams) {
 
         if (bucket.buildingWithFacade) {
             if (programWithFacades !== programWithoutFacades) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 painter.uploadCommonUniforms(context, programWithFacades, coord.toUnwrapped(), null, cutoffParams);
             }
             renderBuilding(bucket.buildingWithFacade, programWithFacades);

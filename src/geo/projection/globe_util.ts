@@ -80,15 +80,15 @@ export function globePointCoordinate(tr: Transform, x: number, y: number, clampT
         // Find the tangent vector by interpolating between camera-to-globe and camera-to-click vectors.
         // First we'll find a point P1 on the clicked ray that forms a right-angled triangle with the camera position
         // and the center of the globe. Angle of the tanget vector is then used as the interpolation factor
-        const clampedP1 = [];
-        const origoToP1 = [];
+        const clampedP1: vec3 = [];
+        const origoToP1: vec3 = [];
 
         vec3.scale(clampedP1, dir, p0toCenterDist / cosAngle);
         vec3.normalize(origoToP1, vec3.sub(origoToP1, clampedP1, p0toCenter));
         vec3.normalize(dir, vec3.add(dir, p0toCenter, vec3.scale(dir, origoToP1, Math.tan(origoTangentAngle) * p0toCenterDist)));
     }
 
-    const pointOnGlobe = [];
+    const pointOnGlobe: vec3 = [];
     const ray = new Ray(point0, dir);
 
     ray.closestPointOnSphere(globeCenter, radius, pointOnGlobe);

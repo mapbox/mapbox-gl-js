@@ -29,7 +29,7 @@ function createSource(options: Partial<RasterDEMSourceSpecification>, transformC
         _getMapId: () => 1,
         _requestManager: new RequestManager(transformCallback),
         style: {clearSource: () => {}},
-        getWorldview: () => undefined
+        getWorldview: (): undefined => undefined
     } as unknown as MapboxMap);
 
     source.on('error', (e) => {
@@ -135,7 +135,7 @@ describe('RasterTileSource', () => {
             getActor() {
                 return {
                     // eslint-disable-next-line @typescript-eslint/require-await
-                    async send(_type: string, _params: unknown) { return null; },
+                    async send(_type: string, _params: unknown): Promise<null> { return null; },
                     sendCancelable(type: string, params: unknown, _options: unknown, callback: (err?: Error | null, result?: unknown) => void) {
                         Promise.resolve(this.send(type, params))
                             .then((result) => callback(null, result))
@@ -156,7 +156,7 @@ describe('RasterTileSource', () => {
         source.map = {
             _requestManager: new RequestManager(),
             _refreshExpiredTiles: true,
-            getWorldview: () => undefined,
+            getWorldview: (): undefined => undefined,
         } as unknown as MapboxMap;
         source.tiles = ['http://example.com/{z}/{x}/{y}.png'];
 
@@ -277,9 +277,9 @@ describe('RasterDEMTileSource provider', () => {
             _getMapId: () => 1,
             _requestManager: new RequestManager(),
             _refreshExpiredTiles: true,
-            style: {clearSource: () => {}, getLut: () => null, getBrightness: () => 0.0},
+            style: {clearSource: () => {}, getLut: (): null => null, getBrightness: () => 0.0},
             painter: {},
-            getWorldview: () => undefined,
+            getWorldview: (): undefined => undefined,
         } as unknown as MapboxMap);
 
         return {source, sendSpy};
@@ -352,9 +352,9 @@ describe('RasterDEMTileSource provider', () => {
             _getMapId: () => 1,
             _requestManager: new RequestManager(),
             _refreshExpiredTiles: true,
-            style: {clearSource: () => {}, getLut: () => null, getBrightness: () => 0.0},
+            style: {clearSource: () => {}, getLut: (): null => null, getBrightness: () => 0.0},
             painter: {},
-            getWorldview: () => undefined,
+            getWorldview: (): undefined => undefined,
         } as unknown as MapboxMap);
 
         const e = await errorPromise;

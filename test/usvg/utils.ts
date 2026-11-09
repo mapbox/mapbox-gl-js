@@ -3,7 +3,7 @@ export const scales = [0.5, 1, 2];
 export const formatScale = (s: number) => s.toFixed(1).replace('.', '_');
 export const formatName = (name: string, scale: number) => `${name}_scale_${formatScale(scale)}`;
 
-export const allowed = {
+export const allowed: Record<string, Record<number, number>> = {
     'painting_marker_marker-on-line': {
         1: 0.008425
     },

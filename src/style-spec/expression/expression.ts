@@ -8,6 +8,11 @@ export interface Expression {
     readonly type: Type;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value?: any;
+    /**
+     * Set by expressions whose feature-dependence can't be derived from their children
+     * (e.g. `within`, `distance`, `config`); `isFeatureConstant` returns it without recursing.
+     */
+    readonly featureConstant?: boolean;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate: (ctx: EvaluationContext) => any;
     eachChild: (fn: (arg1: Expression) => void) => void;

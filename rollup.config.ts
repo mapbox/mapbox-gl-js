@@ -114,10 +114,11 @@ function sourcemaps({watch}: {watch: boolean}): Plugin {
 }
 
 function onwarn(warning: RollupLog) {
-    const styleSpecPath = path.resolve('src', 'style-spec');
+    const styleSpecValidatePath = path.resolve('src', 'style-spec', 'validate') + path.sep;
     if (warning.code === 'CIRCULAR_DEPENDENCY') {
-        // Ignore circular dependencies in style-spec and throw on all others
-        if (!warning.ids[0].startsWith(styleSpecPath)) throw new Error(warning.message);
+        // The style-spec validators are mutually recursive through the `validate` dispatcher;
+        // that cycle is benign (function-only modules), so allow it and throw on all others.
+        if (!warning.ids.every(id => id.startsWith(styleSpecValidatePath))) throw new Error(warning.message);
     } else {
         console.error(`(!) ${warning.message}`);
     }

@@ -417,7 +417,6 @@ describe('SourceCache#removeTile', () => {
 
         sourceCache._addTile(tileID);
         sourceCache._removeTile(tileID.key);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         loadCallback(null);
 
         expect(sourceCache._timers.get(tileID.key)).toBeFalsy();
@@ -453,7 +452,6 @@ describe('SourceCache#removeTile', () => {
         sourceCache._reloadTile(tileID.key, 'expired');
         sourceCache._removeTile(tileID.key);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         return {sourceCache, tileID, reloadCallback};
     }
 
@@ -467,9 +465,7 @@ describe('SourceCache#removeTile', () => {
     });
 
     test('does not set reload timer when the reload of an evicted tile finishes late', () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const {sourceCache, tileID, reloadCallback} = evictTileWithReloadInFlight();
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         reloadCallback(null);
 
         expect(sourceCache._timers.get(tileID.key)).toBeFalsy();

@@ -2,14 +2,19 @@
 import fs from 'fs';
 import path from 'path';
 
+/** @type {import('serve-static').ServeStaticOptions} */
 export const defaultOptions = {
     index: false,
     fallthrough: false,
 };
 
+/**
+ * @param {import('http').IncomingMessage} req
+ * @param {import('http').ServerResponse} res
+ */
 export async function writeFile(req, res) {
     let body = '';
-    req.on('data', (data) => {
+    req.on('data', (/** @type {Buffer} */ data) => {
         body += data;
     });
 

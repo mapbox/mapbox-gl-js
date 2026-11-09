@@ -9,16 +9,30 @@ import MercatorCoordinate from '../src/geo/mercator_coordinate';
 import tileTransform, {getTilePoint} from '../src/geo/projection/tile_transform';
 import {getProjection} from '../src/geo/projection/index';
 import {fileURLToPath} from 'url';
+
+import type Point from '@mapbox/point-geometry';
+import type {StylePropertySpecification} from '../src/style-spec/style-spec';
+import type {FunctionSpecification} from '../src/style-spec/types';
+import type ParsingError from '../src/style-spec/expression/parsing_error';
+import type {CompilationResult} from './integration/lib/expression';
+
+// The feature passed to the evaluator: its `type` is the (possibly collapsed) geometry type and
+// its `geometry` is in tile coordinates, so it isn't a GeoJSON.Feature.
+type ExpressionTestFeature = {
+    type?: string;
+    id?: string | number;
+    properties: Record<string, unknown>;
+    geometry?: Point[][];
+};
+
 const __filename = fileURLToPath(import.meta.url);
 const projection = getProjection({name: 'mercator'});
 
 // @ts-expect-error - DOMMatrix is not defined in Node.js
 global.DOMMatrix = class {};
 
-function getPoint(coord, canonical) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+function getPoint(coord: GeoJSON.Position, canonical: CanonicalTileID): Point {
     const tileTr = tileTransform(canonical, projection);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const p = getTilePoint(tileTr, MercatorCoordinate.fromLngLat({lng: coord[0], lat: coord[1]}, 0));
     // Quantize to integer tile units the way GL Native's Projection::latLonToTileCoordinates
     // does, so these fixtures produce identical expectations in both runners.
@@ -27,75 +41,52 @@ function getPoint(coord, canonical) {
     return p;
 }
 
-function convertPoint(coord, canonical, out) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+function convertPoint(coord: GeoJSON.Position, canonical: CanonicalTileID, out: Point[][]) {
     out.push([getPoint(coord, canonical)]);
 }
 
-function convertPoints(coords, canonical, out) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+function convertPoints(coords: GeoJSON.Position[], canonical: CanonicalTileID, out: Point[][]) {
     for (let i = 0; i < coords.length; i++) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         convertPoint(coords[i], canonical, out);
     }
 }
 
-function convertLine(line, canonical, out) {
-    const l: Array<any> = [];
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+function convertLine(line: GeoJSON.Position[], canonical: CanonicalTileID, out: Point[][]) {
+    const l: Point[] = [];
     for (let i = 0; i < line.length; i++) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         l.push(getPoint(line[i], canonical));
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     out.push(l);
 }
 
-function convertLines(lines, canonical, out) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+function convertLines(lines: GeoJSON.Position[][], canonical: CanonicalTileID, out: Point[][]) {
     for (let i = 0; i < lines.length; i++) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         convertLine(lines[i], canonical, out);
     }
 }
 
-function getGeometry(feature, geometry, canonical) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+function getGeometry(feature: ExpressionTestFeature, geometry: {type: string; coordinates?: unknown}, canonical: CanonicalTileID) {
     if (geometry.coordinates) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const coords = geometry.coordinates;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const type = geometry.type;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         feature.type = type;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         feature.geometry = [];
         if (type === 'Point') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            convertPoint(coords, canonical, feature.geometry);
+            convertPoint(coords as GeoJSON.Position, canonical, feature.geometry);
         } else if (type === 'MultiPoint') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             feature.type = 'Point';
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            convertPoints(coords, canonical, feature.geometry);
+            convertPoints(coords as GeoJSON.Position[], canonical, feature.geometry);
         } else if (type === 'LineString') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            convertLine(coords, canonical, feature.geometry);
+            convertLine(coords as GeoJSON.Position[], canonical, feature.geometry);
         } else if (type === 'MultiLineString') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             feature.type = 'LineString';
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            convertLines(coords, canonical, feature.geometry);
+            convertLines(coords as GeoJSON.Position[][], canonical, feature.geometry);
         } else if (type === 'Polygon') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            convertLines(coords, canonical, feature.geometry);
+            convertLines(coords as GeoJSON.Position[][], canonical, feature.geometry);
         } else if (type === 'MultiPolygon') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             feature.type = 'Polygon';
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            for (let i = 0; i < coords.length; i++) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                convertLines(coords[i], canonical, feature.geometry);
+            for (let i = 0; i < (coords as GeoJSON.Position[][][]).length; i++) {
+                convertLines((coords as GeoJSON.Position[][][])[i], canonical, feature.geometry);
             }
         }
     }
@@ -109,36 +100,29 @@ if (process.argv[1] === __filename && process.argv.length > 2) {
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 run('js', {tests}, (fixture) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const spec = {...fixture.propertySpec};
+    const spec = {...fixture.propertySpec} as StylePropertySpecification;
     let availableImages: any;
-    let canonical: any;
+    let canonical: CanonicalTileID | null;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!spec['property-type']) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         spec['property-type'] = 'data-driven';
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!spec['expression']) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         spec['expression'] = {
             'interpolated': true,
             'parameters': ['zoom', 'feature']
         };
     }
 
-    const evaluateExpression = (expression, compilationResult) => {
+    // `expression` is reassigned from the parse result to its value below, so it has no single type.
+    const evaluateExpression = (expression: any, compilationResult: CompilationResult) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (expression.result === 'error') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             compilationResult.result = 'error';
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-            compilationResult.errors = expression.value.map((err) => ({
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            compilationResult.errors = expression.value.map((err: ParsingError) => ({
                 key: err.key,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 error: err.message
             }));
             return;
@@ -151,48 +135,35 @@ run('js', {tests}, (fixture) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const type = expression._styleExpression.expression.type; // :scream:
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         compilationResult.result = 'success';
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         compilationResult.isFeatureConstant = expression.kind === 'constant' || expression.kind === 'camera';
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         compilationResult.isZoomConstant = expression.kind === 'constant' || expression.kind === 'source';
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         compilationResult.type = toString(type);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         for (const input of fixture.inputs || []) {
             try {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                const feature = {properties: input[1].properties || {}} as GeoJSON.Feature;
+                const feature = {properties: input[1].properties || {}} as ExpressionTestFeature;
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 const featureState = input[2] || {};
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 availableImages = input[0].availableImages || [];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if ('canonicalID' in input[0]) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const id = input[0].canonicalID;
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                     canonical = new CanonicalTileID(id.z, id.x, id.y);
                 } else {
                     canonical = null;
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if ('id' in input[1]) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     feature.id = input[1].id;
                 }
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if ('geometry' in input[1]) {
                     if (canonical !== null) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         getGeometry(feature, input[1].geometry, canonical);
                     } else {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                         feature.type = input[1].geometry.type;
                     }
                 }
@@ -218,7 +189,6 @@ run('js', {tests}, (fixture) => {
             }
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (fixture.inputs) {
             return evaluationResult;
         }
@@ -231,15 +201,11 @@ run('js', {tests}, (fixture) => {
     // by the bare option id since these fixtures use no scope -- so
     // `["config", "key"]` resolves via EvaluationContext#getConfig.
     let configOptions: any;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     for (const input of fixture.inputs || []) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const config = input[0] && input[0].config;
         if (!config) continue;
         configOptions = new Map();
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         for (const key of Object.keys(config)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const value = config[key];
             const defaultExpression = createConfigExpression(value);
             if (defaultExpression.result === 'success') {
@@ -250,14 +216,13 @@ run('js', {tests}, (fixture) => {
         break;
     }
 
-    const result = {compiled: {}, recompiled: {}} as {compiled: any, recompiled: any, outputs: unknown, serialized: unknown, roundTripOutputs: unknown};
+    const result = {compiled: {}, recompiled: {}} as {compiled: CompilationResult, recompiled: CompilationResult, outputs: unknown, serialized: unknown, roundTripOutputs: unknown};
     const expression = (() => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (isFunction(fixture.expression)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-            return createPropertyExpression(convertFunction(fixture.expression, spec), spec, null, configOptions);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            return createPropertyExpression(convertFunction(fixture.expression as FunctionSpecification<unknown>, spec), spec, null, configOptions);
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             return createPropertyExpression(fixture.expression, spec, null, configOptions);
         }
     })();
@@ -274,7 +239,6 @@ run('js', {tests}, (fixture) => {
         // Type is allowed to change through serialization
         // (eg "array" -> "array<number, 3>")
         // Override the round-tripped type here so that the equality check passes
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         result.recompiled.type = result.compiled.type;
     }
 

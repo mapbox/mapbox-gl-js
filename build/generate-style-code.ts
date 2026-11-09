@@ -4,7 +4,24 @@ import {compile} from 'yeahjs';
 import spec from '../src/style-spec/reference/latest';
 import Color from '../src/style-spec/util/color';
 
-const customTypeBindings = {
+import type {StyleReference} from '../src/style-spec/reference/latest';
+
+// An entry of the (untyped) style spec reference, annotated by this script with `name` and `type_`.
+type SpecProperty = StyleReference[string];
+
+// Helpers exposed as globals for the .ejs templates.
+declare global {
+    var camelize: (str: string) => string;
+    var camelizeWithLeadingLowercase: (str: string) => string;
+    var flowType: (property: SpecProperty) => string;
+    var propertyType: (type: string, property: SpecProperty) => string;
+    var runtimeType: (property: SpecProperty) => string;
+    var defaultValue: (property: SpecProperty) => string;
+    var overrides: (property: SpecProperty) => string;
+    var propertyValue: (type: string, property: SpecProperty, valueType?: string) => string;
+}
+
+const customTypeBindings: Record<string, string> = {
     "directional.direction": "DirectionProperty",
 };
 
@@ -42,10 +59,10 @@ global.flowType = function (property) {
     case 'array':
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (property.length) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
             return `[${new Array(property.length).fill(global.flowType({type: property.value})).join(', ')}]`;
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             return `Array<${global.flowType({type: property.value, values: property.values})}${property.name === 'line-dasharray' ? ' | null | undefined' : ''}>`;
         }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -62,13 +79,11 @@ global.propertyType = function (type, property) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     switch (property['property-type']) {
     case 'data-driven':
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         return `DataDrivenProperty<${global.flowType(property)}>`;
     case 'color-ramp':
         return `ColorRampProperty`;
     case 'data-constant':
     case 'constant':
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         return `DataConstantProperty<${global.flowType(property)}>`;
     default:
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -95,10 +110,10 @@ global.runtimeType = function (property) {
     case 'array':
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (property.length) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             return `array(${global.runtimeType({type: property.value})}, ${property.length})`;
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             return `array(${global.runtimeType({type: property.value})})`;
         }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -132,7 +147,7 @@ global.defaultValue = function (property) {
 };
 
 global.overrides = function (property) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return `{ runtimeType: ${global.runtimeType(property)}, getOverride: (o: Record<string, unknown>) => o.${global.camelizeWithLeadingLowercase(property.name)}, hasOverride: (o: Record<string, unknown>) => !!o.${global.camelizeWithLeadingLowercase(property.name)} }`;
 };
 
@@ -159,7 +174,6 @@ global.propertyValue = function (type, property, valueType) {
     case 'data-driven':
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (property.overridable) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             return `new DataDrivenProperty(${spec}, ${global.overrides(property)})`;
         } else {
             return `new DataDrivenProperty(${spec})`;
@@ -178,8 +192,8 @@ global.propertyValue = function (type, property, valueType) {
 const layerPropertiesJs = compile(fs.readFileSync('src/style/style_layer/layer_properties.js.ejs', 'utf8'));
 const layerPropertiesJs3Dstyle = compile(fs.readFileSync('src/style/style_layer/layer_properties.js.ejs', 'utf8'));
 
-const appearanceLayoutProperties = [];
-const appearancePaintProperties = [];
+const appearanceLayoutProperties: SpecProperty[] = [];
+const appearancePaintProperties: SpecProperty[] = [];
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
 const layers = Object.keys(spec.layer.type.values).map((type) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

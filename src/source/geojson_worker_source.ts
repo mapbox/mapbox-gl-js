@@ -274,8 +274,8 @@ function getSuperclusterOptions({
     const mapExpressions: Record<string, any> = {};
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const reduceExpressions: Record<string, any> = {};
-    const globals = {accumulated: null, zoom: 0};
-    const feature = {properties: null};
+    const globals: {accumulated: unknown; zoom: number} = {accumulated: null, zoom: 0};
+    const feature: {properties: Record<string, unknown> | null} = {properties: null};
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const propertyNames = Object.keys(clusterProperties);
 
@@ -295,8 +295,7 @@ function getSuperclusterOptions({
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    superclusterOptions.map = (pointProperties) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    superclusterOptions.map = (pointProperties: Record<string, unknown>) => {
         feature.properties = pointProperties;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const properties: Record<string, any> = {};
@@ -307,13 +306,11 @@ function getSuperclusterOptions({
         return properties;
     };
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    superclusterOptions.reduce = (accumulated, clusterProperties) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    superclusterOptions.reduce = (accumulated: Record<string, unknown>, clusterProperties: Record<string, unknown>) => {
         feature.properties = clusterProperties;
         for (const key of propertyNames) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             globals.accumulated = accumulated[key];
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             accumulated[key] = reduceExpressions[key].evaluate(globals, feature);
         }
     };

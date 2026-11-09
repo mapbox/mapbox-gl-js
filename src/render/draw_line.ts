@@ -488,7 +488,7 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                     // migrated and already baked into uniformValues['u_lpp_opacity'] before this
                     // closure runs, so the mutation alone would arrive too late — patch the
                     // uniform directly as well.
-                    if (uboBinder) uniformValues['u_lpp_opacity'] = lineOpacity * occlusionOpacity;
+                    if (uboBinder) (uniformValues as UniformValues<LineUniformsType>)['u_lpp_opacity'] = lineOpacity * occlusionOpacity;
                 }
                 if (opacityMultiplier !== undefined) {
                     uniformValues['u_opacity_multiplier'] = opacityMultiplier;
@@ -514,7 +514,7 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                 }
                 if (lineOpacityForOcclusion != null) {
                     lineOpacityForOcclusion.value = lineOpacity; //restore
-                    if (uboBinder) uniformValues['u_lpp_opacity'] = lineOpacity;
+                    if (uboBinder) (uniformValues as UniformValues<LineUniformsType>)['u_lpp_opacity'] = lineOpacity;
                 }
             };
 

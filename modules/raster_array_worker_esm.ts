@@ -1,8 +1,10 @@
 import {warnOnce} from '../src/util/util';
 
+import type * as RasterArrayWorkerImports from './raster_array_worker_imports';
+
 // Live binding — set by `prepareRasterArray()` once the raster-array worker chunk finishes
 // loading. The worker checks it before invoking the source.
-export let RasterArrayTileWorkerSource;
+export let RasterArrayTileWorkerSource: typeof RasterArrayWorkerImports.RasterArrayTileWorkerSource | undefined;
 
 let pending: Promise<void> | null = null;
 

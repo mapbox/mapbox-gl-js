@@ -569,7 +569,7 @@ describe('SymbolPropertyBinderUBO', () => {
         }
 
         function makeSegment(batchIndex: number) {
-            return {vertexOffset: 0, primitiveOffset: 0, vertexLength: 4, primitiveLength: 2, vaos: {}, sortKey: undefined, batchIndex};
+            return {vertexOffset: 0, primitiveOffset: 0, vertexLength: 4, primitiveLength: 2, vaos: {}, sortKey: undefined as number | undefined, batchIndex};
         }
 
         test('groups segments by batchIndex', () => {
@@ -633,7 +633,7 @@ describe('SymbolPropertyBinderUBO', () => {
             const layer = createTestLayer({});
             const buffers = makeBuffers(layer);
             // Segment with no batchIndex
-            const seg = {vertexOffset: 0, primitiveOffset: 0, vertexLength: 4, primitiveLength: 2, vaos: {}, sortKey: undefined};
+            const seg = {vertexOffset: 0, primitiveOffset: 0, vertexLength: 4, primitiveLength: 2, vaos: {}, sortKey: undefined as number | undefined};
             buffers.segments = new SegmentVector([seg]);
 
             const {batchIndices} = buffers.getBatchGrouping(buffers.segments);

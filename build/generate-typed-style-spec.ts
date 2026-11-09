@@ -3,7 +3,14 @@ import assert from '../src/style-spec/util/assert';
 import spec from '../src/style-spec/reference/latest';
 import {supportsPropertyExpression, supportsZoomExpression} from '../src/style-spec/util/properties';
 
-function tag(tag, description = '', indent = '') {
+import type {StyleReference} from '../src/style-spec/reference/latest';
+
+// An entry of the (untyped) style spec reference, possibly modified by this script.
+type SpecProperty = StyleReference[string];
+
+type TypeOverride = (property: SpecProperty) => string;
+
+function tag(tag: string, description = '', indent = ''): string {
     return [
         '/**',
         ` * ${tag} ${description}`,
@@ -11,12 +18,12 @@ function tag(tag, description = '', indent = '') {
     ].map(line => `${indent}${line}`).join('\n');
 }
 
-function alias(from, to) {
+function alias(from: string, to: string): string {
     const deprecatedTag = tag('@deprecated', `Use \`${to}\` instead.`);
     return [deprecatedTag, `export type ${from} = ${to};`].join('\n');
 }
 
-function tsEnum(values) {
+function tsEnum(values: SpecProperty): string {
     if (Array.isArray(values)) {
         return values.map(v => JSON.stringify(v)).join(' | ');
     } else {
@@ -25,7 +32,7 @@ function tsEnum(values) {
     }
 }
 
-function tsType(property, overrideFn?: (any) => string) {
+function tsType(property: SpecProperty, overrideFn?: TypeOverride): string {
     if (overrideFn) return overrideFn(property);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -67,7 +74,7 @@ function tsType(property, overrideFn?: (any) => string) {
             return 'unknown';
         default:
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            return `${property.type.split('_').map(part => part.slice(0, 1).toUpperCase() + part.slice(1)).join('')}Specification`;
+            return `${property.type.split('_').map((part: string) => part.slice(0, 1).toUpperCase() + part.slice(1)).join('')}Specification`;
         }
     })();
 
@@ -85,18 +92,17 @@ function tsType(property, overrideFn?: (any) => string) {
     }
 }
 
-function tsProperty(key, property, overrideFn) {
+function tsProperty(key: string, property: SpecProperty, overrideFn?: TypeOverride): string {
     assert(property, `Property not found in the style-specification for ${key}`);
     if (key === '*') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return `[_: string]: ${tsType(property, overrideFn)}`;
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         return `"${key}"${property.required ? '' : '?'}: ${tsType(property, overrideFn)}${property['optional'] ? ' | null | undefined' : ''}`;
     }
 }
 
-function tsObjectDeclaration(key, properties, overrides = {}) {
+function tsObjectDeclaration(key: string, properties: SpecProperty, overrides: Record<string, TypeOverride> = {}): string {
     assert(properties, `Properties not found in the style-specification for ${key}`);
 
     let experimentalTag;
@@ -111,7 +117,7 @@ function tsObjectDeclaration(key, properties, overrides = {}) {
     return experimentalTag ? [experimentalTag, objectDeclaration].join('\n') : objectDeclaration;
 }
 
-function tsObject(properties, indent, overrides = {}) {
+function tsObject(properties: SpecProperty, indent: string, overrides: Record<string, TypeOverride> = {}): string {
     return `{
 ${// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     Object.keys(properties)
@@ -145,43 +151,37 @@ ${// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 ${indent}}`;
 }
 
-function tsSourceTypeName(key) {
+function tsSourceTypeName(key: string): string {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return key.replace(/source_(.)(.*)/, (_, _1, _2) => `${_1.toUpperCase()}${_2}Source`)
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         .replace(/_dem/, 'DEM')
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         .replace(/_array/, 'Array')
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         .replace(/Geojson/, 'GeoJSON');
 }
 
-function tsSourceSpecificationTypeName(key) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+function tsSourceSpecificationTypeName(key: string): string {
     return tsSourceTypeName(key).concat('Specification');
 }
 
-function tsLightTypeName(key) {
+function tsLightTypeName(key: string): string {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return key.split('-').map(k => k.replace(/(.)(.*)/, (_, _1, _2) => `${_1.toUpperCase()}${_2}`)).concat('LightSpecification').join('');
 }
 
-function tsLayerName(key) {
+function tsLayerName(key: string): string {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return key.split('-').map(k => k.replace(/(.)(.*)/, (_, _1, _2) => `${_1.toUpperCase()}${_2}`)).join('');
 }
 
-function tsLayerTypeName(key) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+function tsLayerTypeName(key: string): string {
     return tsLayerName(key).concat('Layer');
 }
 
-function tsLayerSpecificationTypeName(key) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+function tsLayerSpecificationTypeName(key: string): string {
     return tsLayerTypeName(key).concat('Specification');
 }
 
-function tsLayer(key) {
+function tsLayer(key: string): string {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const layer = structuredClone(spec.layer);
 
@@ -261,7 +261,7 @@ function tsLayer(key) {
     return definitions.join('\n\n');
 }
 
-function tsLight(key) {
+function tsLight(key: string): string {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const light = spec['light-3d'];
 
@@ -426,27 +426,24 @@ ${tsObjectDeclaration('SelectorPropertySpecification', spec.selectorProperty)}
 ${tsObjectDeclaration('AppearanceSpecification', spec.appearance)}
 
 ${// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    spec.source.map(key => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    spec.source.map((key: string) => {
         const sourceSpecName = tsSourceSpecificationTypeName(key);
         if (sourceSpecName === 'GeoJSONSourceSpecification') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return tsObjectDeclaration(sourceSpecName, spec[key], {data: () => 'GeoJSON.GeoJSON | string'});
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         return tsObjectDeclaration(sourceSpecName, spec[key]);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     }).join('\n\n')}
 
 export type SourceSpecification =
 ${// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    spec.source.map(key => `    | ${tsSourceSpecificationTypeName(key)}`// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    spec.source.map((key: string) => `    | ${tsSourceSpecificationTypeName(key)}`// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     ).join('\n')};
 
 export type IconsetSpecification =
 ${// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    spec.iconset.map(key => `    | ${// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    spec.iconset.map((key: string) => `    | ${
         tsObject(spec[key], '    ')}`// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     ).join('\n')};
 

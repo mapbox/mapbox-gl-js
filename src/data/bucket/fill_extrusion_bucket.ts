@@ -1725,9 +1725,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             fracMin[1] = subSegment.min.y / EXTENT;
             fracMax[0] = subSegment.max.x / EXTENT;
             fracMax[1] = subSegment.max.y / EXTENT;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const aabbMin = mix(tileMin, tileMax, fracMin);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const aabbMax = mix(tileMin, tileMax, fracMax);
             const aabb = new Aabb([aabbMin[0], aabbMin[1], minZ], [aabbMax[0], aabbMax[1], maxZ]);
             if (aabb.intersectsPrecise(frustum) === 0) {

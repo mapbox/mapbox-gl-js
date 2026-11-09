@@ -26,9 +26,9 @@ function getIconSet(suite: string) {
 }
 
 describe('uSVG', () => {
-    const diffs = {};
+    const diffs: Record<string, number> = {};
     const passed = [];
-    const failed = [];
+    const failed: string[] = [];
 
     const defaultAllowedDiff = 0.001;
 
@@ -62,11 +62,8 @@ describe('uSVG', () => {
         let html = `<h1>uSVG test-suite <span style="color: red;">${failed.length} failed</span> | <span style="color: green;">${passed.length} passed</span><span style="color: orange;"> | ${ignores.length} ignored</span></h1>`;
 
         for (const name of failed) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const [f1, f2, ...fileName] = name.replace(/_scale_.*$/, '').split('_');
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const orig = `https://github.com/RazrFalcon/resvg-test-suite/blob/master/tests/${f1}/${f2}/${fileName.join('-')}.svg`;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             html += `<div><h2><a href="${orig}">${name}</a>: ${diffs[name]}</h2><img src="./${name}.png"></div>`;
         }
         html += `<div><h2>Failed (${failed.length})</h2><pre>${JSON.stringify(failed, null, 2)}</pre></div>`;
@@ -119,7 +116,6 @@ describe('uSVG', () => {
                     const diff = pixelmatch(data, expectedImageData.data, diffImageData.data, width, height, options) / (width * height);
                     diffs[name] = diff;
 
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
                     const allowedDiff = allowed[icon.name]?.[scale] ?? defaultAllowedDiff;
 
                     // Only capture a screenshot for failures — it's expensive, and the report only shows failures
@@ -132,7 +128,6 @@ describe('uSVG', () => {
                         await page.screenshot({element: document.body, path: `./vitest/${name}.png`});
                     }
 
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     expect(diff).toBeLessThanOrEqual(allowedDiff);
                 });
             }

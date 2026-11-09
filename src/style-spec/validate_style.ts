@@ -1,5 +1,5 @@
 import {validateStyle as validateStyleMin} from './validate_style.min';
-import {v8} from './style-spec';
+import v8 from './reference/v8.json';
 import readStyle from './read_style';
 
 import type {StyleReference} from './reference/latest';

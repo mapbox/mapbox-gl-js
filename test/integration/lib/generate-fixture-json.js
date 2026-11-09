@@ -61,6 +61,7 @@ export function generateFixtureJson(suiteDir, stylePaths, includeImages = false)
             // https://vitest.dev/guide/browser/config.html#browser-api
             localizeURLs(json, 63315);
 
+            /** @type {{path: string} & Record<string, unknown>} */
             const testObject = {
                 path: dirName
             };
@@ -99,6 +100,10 @@ export function generateFixtureJson(suiteDir, stylePaths, includeImages = false)
     return testCases;
 }
 
+/**
+ * @param {string} filePath
+ * @returns {unknown}
+ */
 function parseJsonFromFile(filePath) {
     return JSON.parse(fs.readFileSync(filePath, {encoding: 'utf8'}));
 }

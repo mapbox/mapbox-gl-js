@@ -58,8 +58,7 @@ describe('clipLines', () => {
     const minY = -200;
     const maxY = 200;
 
-    const clipLineTest = (lines, linesInfo?: LineInfo[]) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const clipLineTest = (lines: Parameters<typeof clipLines>[0], linesInfo?: LineInfo[]) => {
         return clipLines(lines, minX, minY, maxX, maxY, linesInfo);
     };
 
@@ -186,7 +185,7 @@ describe('clipLines', () => {
             new Point(131.2356763, 0.956732)
         ];
 
-        expect(clipLineTest([line])[1]).toEqual(line[0][1]);
+        expect(clipLineTest([line])[1]).toEqual((line[0] as unknown as unknown[])[1]);
     });
 
     test('Non-clipped 4D points are bit exact', () => {
@@ -195,7 +194,7 @@ describe('clipLines', () => {
             new Point4D(131.2356763, 0.956732, 12.34521, 0.583421)
         ];
 
-        expect(clipLineTest([line])[1]).toEqual(line[0][1]);
+        expect(clipLineTest([line])[1]).toEqual((line[0] as unknown as unknown[])[1]);
     });
 
     test('Clipped points are rounded to the nearest integer', () => {

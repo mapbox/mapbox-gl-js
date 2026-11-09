@@ -38,11 +38,8 @@ describe('camera', () => {
                 expect(options.orientation).toBeTruthy();
                 frame = rotatedFrame(options.orientation);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.right)).toEqual([1, 0, 0]);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.up)).toEqual([0, -cosPi4, cosPi4]);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.forward)).toEqual([0, -cosPi4, -cosPi4]);
             });
 
@@ -52,11 +49,8 @@ describe('camera', () => {
                 expect(options.orientation).toBeTruthy();
                 frame = rotatedFrame(options.orientation);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.right)).toEqual([+0, 1, +0]);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.up)).toEqual([0, 0, 1]);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.forward)).toEqual([1, -0, -0]);
             });
 
@@ -66,11 +60,8 @@ describe('camera', () => {
                 expect(options.orientation).toBeTruthy();
                 frame = rotatedFrame(options.orientation);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.right)).toEqual([1.0, 0.0, 0.0]);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.up)).toEqual([0.0, -1.0, 0.0]);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.forward)).toEqual([0.0, 0.0, -1.0]);
             });
 
@@ -80,11 +71,8 @@ describe('camera', () => {
                 expect(options.orientation).toBeTruthy();
                 frame = rotatedFrame(options.orientation);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.right)).toEqual([cosPi4, -cosPi4, 0.0]);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.up)).toEqual([-cosPi4, -cosPi4, 0.0]);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.forward)).toEqual([0.0, 0.0, -1.0]);
             });
 
@@ -94,11 +82,8 @@ describe('camera', () => {
                 expect(options.orientation).toBeTruthy();
                 frame = rotatedFrame(options.orientation);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.right)).toEqual([-1.0, 0.0, 0.0]);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.up)).toEqual([0.0, 0.0, 1.0]);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.forward)).toEqual([+0.0, 1.0, -0.0]);
             });
 
@@ -108,11 +93,8 @@ describe('camera', () => {
                 expect(options.orientation).toBeTruthy();
                 frame = rotatedFrame(options.orientation);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.right)).toEqual([0.0, 1.0, 0.0]);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.up)).toEqual([0.0, 0.0, 1.0]);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.forward)).toEqual([1.0, -0.0, -0.0]);
             });
 
@@ -122,11 +104,8 @@ describe('camera', () => {
                 expect(options.orientation).toBeTruthy();
                 frame = rotatedFrame(options.orientation);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.right)).toEqual([1.0, 0.0, 0.0]);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.up)).toEqual([0.0, -cosPi4, cosPi4]);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(fixedVec3(frame.forward)).toEqual([0.0, -cosPi4, -cosPi4]);
             });
 
@@ -171,41 +150,29 @@ describe('camera', () => {
             options.setPitchBearing(0, 0);
             expect(options.orientation).toBeTruthy();
             frame = rotatedFrame(options.orientation);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.right)).toEqual([1, 0, 0]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.up)).toEqual([0, -1, 0]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.forward)).toEqual([0, 0, -1]);
 
             options.setPitchBearing(0, 180);
             expect(options.orientation).toBeTruthy();
             frame = rotatedFrame(options.orientation);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.right)).toEqual([-1, 0, 0]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.up)).toEqual([0, 1, 0]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.forward)).toEqual([0, 0, -1]);
 
             options.setPitchBearing(60, 0);
             expect(options.orientation).toBeTruthy();
             frame = rotatedFrame(options.orientation);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.right)).toEqual([1, 0, 0]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.up)).toEqual([0, -cos60, sin60]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.forward)).toEqual([0, -sin60, -cos60]);
 
             options.setPitchBearing(60, -450);
             expect(options.orientation).toBeTruthy();
             frame = rotatedFrame(options.orientation);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.right)).toEqual([+0, -1, -0]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.up)).toEqual([-cos60, -0, sin60]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.forward)).toEqual([-sin60, -0, -cos60]);
         });
 

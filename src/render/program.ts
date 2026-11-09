@@ -425,12 +425,12 @@ class Program<Us extends UniformBindings> {
         // program and readLinePaintProperties() (etc.) reads the wrong block.
         if (ubo) ubo.bind(context, debugProgram.program);
 
-        const copyUniformValues = (group: string, pSrc: Program<Us>, pDst: Program<UniformBindings>) => {
+        type UniformGroup = 'fixedUniforms' | 'terrainUniforms' | 'globeUniforms' | 'fogUniforms' | 'lightsUniforms' | 'shadowUniforms';
+        type UniformGroups = Readonly<Record<UniformGroup, UniformBindings | undefined>>;
+        const copyUniformValues = (group: UniformGroup, pSrc: UniformGroups, pDst: UniformGroups & {program: WebGLProgram}) => {
             if (pSrc[group] && pDst[group]) {
                 for (const name in pSrc[group]) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     if (pDst[group][name]) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                         pDst[group][name].set(pDst.program, name, pSrc[group][name].current);
                     }
                 }
@@ -543,7 +543,7 @@ class Program<Us extends UniformBindings> {
         context.setCullFace(cullFaceMode);
 
         for (const [name, uniform] of this.activeUniforms) {
-            uniform.set(this.program, name, uniformValues[name]);
+            uniform.set(this.program, name, uniformValues[name as keyof Us]);
         }
 
         if (configuration) {

@@ -35,7 +35,7 @@ describe('IconSet', () => {
         [[0, 5, 2, 3, 3, 7], [[0, 5], [7, 10], [13, 20]]],
         [[0, 3, 10, 13, 5, 8], [[0, 3], [13, 26], [31, 39]]],
     ])('stretch %o converted to areas %o by buildStretchAreas', (stretch, expected) => {
-        const metadata = {'stretch_x': stretch};
+        const metadata: Parameters<typeof buildStretchedAreas>[0] = {'stretch_x': stretch};
         buildStretchedAreas(metadata, 'x');
 
         expect(metadata['stretch_x_areas']).toEqual(expected);

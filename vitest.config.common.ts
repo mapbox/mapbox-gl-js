@@ -44,7 +44,7 @@ export function integrationTests({suiteDirs, includeImages}: {suiteDirs: string[
     const virtualModuleId = 'virtual:integration-tests';
     const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
-    const allRenderTests = {};
+    const allRenderTests: ReturnType<typeof generateFixtureJson> = {};
     for (const dir of suiteDirs) {
         const testFiles = getShardedTests(dir);
         const dirTests = generateFixtureJson(dir, testFiles, includeImages);
@@ -54,7 +54,6 @@ export function integrationTests({suiteDirs, includeImages}: {suiteDirs: string[
             if (allRenderTests[testName]) {
                 throw new Error(
                     `Test name conflict: "${testName}" exists in multiple directories: ` +
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     `"${allRenderTests[testName].path}" and "${testData.path}"`
                 );
             }
@@ -102,10 +101,8 @@ export function setupIntegrationTestsMiddlewares({reportPath}: {reportPath: stri
             const reportFragmentsMap = new Map<number, string>();
             let browserDiagnostics: Partial<DiagnosticInfo> = {};
             staticFolders.forEach((folder) => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
                 server.middlewares.use(`/${folder}`, serveStatic(resolve(import.meta.dirname, `test/integration/${folder}`), staticCacheOptions));
                 const internalPath = resolve(import.meta.dirname, `internal/test/integration/${folder}`);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
                 if (existsSync(internalPath)) server.middlewares.use(`/${folder}`, serveStatic(internalPath, staticCacheOptions));
             });
             server.middlewares.use('/report-html/send-fragment', (req, res) => {
@@ -164,11 +161,8 @@ export function setupIntegrationTestsMiddlewares({reportPath}: {reportPath: stri
                 });
             });
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
             server.middlewares.use('/mapbox-gl-styles', serveStatic(resolve(import.meta.dirname, 'node_modules/@mapbox/mapbox-gl-styles'), staticCacheOptions));
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
             server.middlewares.use('/mvt-fixtures', serveStatic(resolve(import.meta.dirname, 'node_modules/@mapbox/mvt-fixtures'), staticCacheOptions));
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
             server.middlewares.use('/mapbox-gl-rtl-text', serveStatic(resolve(import.meta.dirname, 'node_modules/@mapbox/mapbox-gl-rtl-text/dist'), staticCacheOptions));
         }
     };
@@ -179,7 +173,6 @@ export function serveDistPlugin(): Plugin {
     return {
         name: 'serve-dist',
         configureServer(server) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
             server.middlewares.use('/dist', serveStatic(resolve(import.meta.dirname, 'dist')));
         },
     };

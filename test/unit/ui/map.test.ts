@@ -810,7 +810,6 @@ describe('Map', () => {
 
             await new Promise(resolve => {
                 source.on("data", (e) => {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     if (e.sourceDataType === 'metadata') {
                         setTimeout(() => {
                             expect(clearSourceSpy).toHaveBeenCalledTimes(1);
@@ -875,7 +874,6 @@ describe('Map', () => {
 
             await new Promise(resolve => {
                 source.on("data", e => {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     if (e.sourceDataType === 'metadata') {
                         setTimeout(() => {
                             expect(clearSourceSpy).toHaveBeenCalledTimes(1);

@@ -4,6 +4,7 @@ import {parseActiveFloors} from '../../../3d-style/source/indoor_parser';
 import {CanonicalTileID} from '../../../src/source/tile_id';
 import Actor from '../../../src/util/actor';
 
+import type Point from '@mapbox/point-geometry';
 import type {MainInbox} from '../../../src/util/actor_messages';
 
 // Mock Actor
@@ -25,7 +26,7 @@ describe('IndoorParser', () => {
                 center_lat: 40.7128,
                 center_lon: -74.0060
             },
-            loadGeometry: () => []
+            loadGeometry: (): Point[][] => []
         };
 
         const data = {
@@ -69,7 +70,7 @@ describe('IndoorParser', () => {
                 center_lat: 40,
                 center_lon: -74
             },
-            loadGeometry: () => []
+            loadGeometry: (): Point[][] => []
         };
 
         const floorFeature = {

@@ -623,6 +623,7 @@ function extractDistanceGeometry(value: unknown): Array<DistanceGeometry> | null
 class Distance implements Expression {
     type: Type;
     geojson: Expression;
+    readonly featureConstant = false;
 
     constructor(geojson: Expression) {
         this.type = NumberType;

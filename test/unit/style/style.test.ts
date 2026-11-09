@@ -1422,7 +1422,6 @@ describe('Style#setPaintProperty', () => {
                         style.setPaintProperty('circle', 'circle-color', {type: 'identity', property: 'foo'});
                     }
 
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     if (begun && e.sourceDataType === 'content') {
                         // setData() worker-side work is complete; simulate an
                         // animation frame a few ms later, so that this test can
@@ -1707,7 +1706,6 @@ describe('Style#setLayerProperty', () => {
                         style.setLayerProperty('circle', 'circle-color', {type: 'identity', property: 'foo'});
                     }
 
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     if (begun && e.sourceDataType === 'content') {
                         // setData() worker-side work is complete; simulate an
                         // animation frame a few ms later, so that this test can

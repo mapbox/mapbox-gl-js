@@ -32,7 +32,7 @@ import type {CreateProgramParams} from '../../render/painter';
 import type {BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './symbol_style_layer_properties';
 import type EvaluationParameters from '../evaluation_parameters';
-import type {LayerSpecification} from '../../style-spec/types';
+import type {LayerSpecification, SymbolLayerSpecification} from '../../style-spec/types';
 import type {Feature, SourceExpression, CompositeExpression} from '../../style-spec/expression/index';
 import type {Expression} from '../../style-spec/expression/expression';
 import type {CanonicalTileID} from '../../source/tile_id';
@@ -89,8 +89,7 @@ class SymbolStyleLayer extends StyleLayer {
     _overridesTextField: PossiblyEvaluatedPropertyValue<Formatted> | null;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        super(layer, getProperties(), scope, lut, options, layer.layout ? layer.layout['icon-image-use-theme'] : null);
+        super(layer, getProperties(), scope, lut, options, layer.layout ? (layer.layout as SymbolLayerSpecification['layout'])['icon-image-use-theme'] as string : null);
         this._colorAdjustmentMatrix = mat4.identity([]);
         this.hasOcclusionOpacityProperties = (layer.paint !== undefined) && (('icon-occlusion-opacity' in layer.paint) || ('text-occlusion-opacity' in layer.paint));
         this._overridesTextField = null;
@@ -146,12 +145,11 @@ class SymbolStyleLayer extends StyleLayer {
         const writingModes = this.layout.get('text-writing-mode');
         if (writingModes) {
             // remove duplicates, preserving order
-            const deduped = [];
+            const deduped: typeof writingModes = [];
 
             for (const m of writingModes) {
                 if (!deduped.includes(m)) deduped.push(m);
             }
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this.layout._values['text-writing-mode'] = deduped;
         } else if (this.layout.get('symbol-placement') === 'point') {
             // default value for 'point' placement symbols
@@ -294,7 +292,6 @@ class SymbolStyleLayer extends StyleLayer {
             }
             (this.paint._values as unknown as Record<string, PossiblyEvaluatedPropertyValue<unknown>>)[overridable] =
                 new PossiblyEvaluatedPropertyValue(overriden.property,
-                                                   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                                                    expression,
                                                    overriden.parameters);
         }
@@ -316,7 +313,7 @@ class SymbolStyleLayer extends StyleLayer {
     static hasPaintOverride(layout: PossiblyEvaluated<LayoutProps>, propertyName: string): boolean {
         const textField = layout.get('text-field');
 
-        const property = getProperties().paint.properties[propertyName] as {overrides?: {hasOverride: (o: unknown) => boolean}};
+        const property = getProperties().paint.properties[propertyName as keyof PaintProps] as {overrides?: {hasOverride: (o: unknown) => boolean}};
         let hasOverrides = false;
 
         const checkSections = (sections: Array<FormattedSection> | Array<FormattedSectionExpression>) => {

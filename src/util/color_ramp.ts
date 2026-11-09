@@ -11,7 +11,7 @@ export type ColorRampScale = 'linear' | 'log';
 
 export type ColorRampParams = {
     expression: StylePropertyExpression;
-    evaluationKey: string;
+    evaluationKey: 'heatmapDensity' | 'lineProgress' | 'rasterValue' | 'rasterParticleSpeed' | 'skyRadialProgress';
     resolution?: number;
     scale?: ColorRampScale;
     image?: RGBAImage;

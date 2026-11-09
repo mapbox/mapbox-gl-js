@@ -23,7 +23,7 @@ function glsl(include: string[]) {
     const filter = createFilter(include);
     return {
         name: 'glsl',
-        transform(code, id) {
+        transform(code: string, id: string) {
             if (!filter(id)) return;
             return {
                 code: `export default ${JSON.stringify(code)};`

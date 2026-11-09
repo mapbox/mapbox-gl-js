@@ -66,8 +66,8 @@ class Snow extends StyleProperties<Props> {
         const snowSpec = styleSpec.snow as Record<PropertyKey, StylePropertySpecification>;
         for (const name of Object.keys(snowSpec)) {
             // Fallback to use default style specification when the properties wasn't set
-            if (properties[name] === undefined) {
-                properties[name] = snowSpec[name].default;
+            if ((properties as Record<string, unknown>)[name] === undefined) {
+                (properties as Record<string, unknown>)[name] = snowSpec[name].default;
             }
         }
 

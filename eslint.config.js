@@ -75,7 +75,6 @@ export default tseslint.config(
     globalIgnores(IGNORED_PATHS),
     includeIgnoreFile(gitignorePath),
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     ...config,
     /** @type {EslintConfig} */ (e18e.configs.recommended),
     tseslint.configs.recommendedTypeChecked,

@@ -14,12 +14,19 @@ const flagKeys = new Set(['transition', 'interpolated', 'use-theme', 'relaxZoomR
 // names, enum values, layer fields) sort after these, keeping their original relative order.
 const keyOrder = ['type', 'default', 'minimum', 'maximum', 'length', 'value', 'values', 'units', 'expression', 'interpolated', 'parameters', 'relaxZoomRestriction', 'transition', 'use-theme', 'property-type', 'appearance', 'overridable', 'tokens', 'function'];
 const keyRank = new Map(keyOrder.map((k, i) => [k, i]));
+/**
+ * @param {string} k - Metadata key.
+ * @returns {number} Sort rank for the key.
+ */
 function rankOf(k) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return keyRank.has(k) ? keyRank.get(k) : keyOrder.length;
 }
 
 /* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+/**
+ * @param {any} value - A (sub)value of the parsed style spec JSON.
+ * @returns {any} The minified value.
+ */
 function minify(value) {
     if (Array.isArray(value)) return value.map(minify);
     if (!value || typeof value !== 'object') return value;
@@ -28,6 +35,7 @@ function minify(value) {
     const keys = Object.keys(value);
     if (keys.length === 1 && keys[0] === 'doc') return 1;
 
+    /** @type {Record<string, unknown>} */
     const result = {};
     for (const k of keys.sort((a, b) => rankOf(a) - rankOf(b))) {
         let v = value[k];
@@ -54,16 +62,18 @@ function minify(value) {
 }
 /* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 
+/**
+ * @returns {import('rollup').Plugin} The rollup plugin.
+ */
 export default function minifyStyleSpec() {
     return {
         name: 'minify-style-spec',
         transform: (source, id) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             if (!/style\-spec[\\/]reference[\\/]v[0-9]+\.json$/.test(id)) {
                 return;
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const spec = JSON.parse(source);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             delete spec['expression_name'];

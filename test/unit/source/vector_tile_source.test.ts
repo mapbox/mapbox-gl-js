@@ -932,7 +932,6 @@ describe('VectorTileSource', () => {
         // Abort mid-transform, then let the transform resolve.
         tile.aborted = true;
         source.abortTile(tile);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         resolveTransform({url: 'http://example.com/10/5/5.png'});
 
         await new Promise(resolve => { setTimeout(resolve, 0); });

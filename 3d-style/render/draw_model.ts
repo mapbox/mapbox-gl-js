@@ -1005,7 +1005,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, layerValues
     if (node.meshes) {
         for (const mesh of node.meshes) {
             const definesValues = isGlobe ? [] : ['MODEL_POSITION_ON_GPU'];
-            const dynamicBuffers = [];
+            const dynamicBuffers: Array<VertexBuffer | null | undefined> = [];
             let program: Program<ModelUniformsType | ModelDepthUniformsType>;
             let uniformValues: UniformValues<ModelUniformsType | ModelDepthUniformsType>;
             let colorMode: ColorMode;
@@ -1028,7 +1028,6 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, layerValues
             } else {
 
                 const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 setupMeshDraw(definesValues, dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
                 program = painter.getOrCreateProgram('model', {defines: (definesValues as DynamicDefinesType[]), overrideFog: affectedByFog});
                 const material = mesh.material;
@@ -1065,7 +1064,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, layerValues
             assert(modelInstances.instancedDataArray.bytesPerElement === 64);
             const cullFaceMode = mesh.material.doubleSided ? CullFaceMode.disabled : CullFaceMode.backCCW;
             if (useInstancing) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                 dynamicBuffers.push(modelInstances.instancedDataBuffer);
                 program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, cullFaceMode,
                 uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
@@ -1076,10 +1075,9 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, layerValues
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 for (let i = 0; i < modelInstances.instancedDataArray.length; ++i) {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    uniformValues[instanceUniform] = new Float32Array(modelInstances.instancedDataArray.arrayBuffer, i * 64, 16);
+                    (uniformValues as UniformValues<ModelUniformsType & ModelDepthUniformsType>)[instanceUniform] = new Float32Array(modelInstances.instancedDataArray.arrayBuffer, i * 64, 16);
                     program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, cullFaceMode,
                     uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     undefined, dynamicBuffers);
                 }
             }

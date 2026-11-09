@@ -357,7 +357,7 @@ describe('ElevationFeature', () => {
     });
 
     test('#getElevationFeature', () => {
-        const feature = {};
+        const feature: {properties?: Record<string, unknown>} = {};
         feature['properties'] = {};
         const canonical = {z: 14, x: 1, y: 2, key: 0} as CanonicalTileID;
 
@@ -374,14 +374,12 @@ describe('ElevationFeature', () => {
         }
 
         {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             feature['properties'][PROPERTY_ELEVATION_ID] = 4;
             const actual = getElevationFeature(feature as BucketFeature, ids as ElevationFeature[], undefined, canonical);
             expect(actual).toBeUndefined();
         }
 
         {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             feature['properties'][PROPERTY_ELEVATION_ID] = 2;
             const actual = getElevationFeature(feature as BucketFeature, ids as ElevationFeature[], undefined, canonical);
             expect(actual).toMatchObject({feature: {id: 2}, tileId: canonical});

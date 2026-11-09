@@ -604,7 +604,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
         const linesCount = cellCount + 1;
         const vertexCount = lineSize * linesCount;
         const triangleCount = cellCount * cellCount * 2;
-        const verticesLongitudes = [];
+        const verticesLongitudes: number[] = [];
         const constrainedCoordinates = constrain(this.coordinates);
         const [minLng, minLat, lngDiff, latDiff] = calculateMinAndSize(constrainedCoordinates);
 
@@ -664,15 +664,10 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
             const processTriangle = (i0: number, i1: number, i2: number) => {
                 indices.emplaceBack(i0, i1, i2);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const l0 = verticesLongitudes[i0];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const l1 = verticesLongitudes[i1];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const l2 = verticesLongitudes[i2];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const minLongitude = Math.min(Math.min(l0, l1), l2);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const maxLongitude = Math.max(Math.max(l0, l1), l2);
                 const diff = maxLongitude - minLongitude;
                 if (diff > this.maxLongitudeTriangleSize) {

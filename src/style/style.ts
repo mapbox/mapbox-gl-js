@@ -2305,11 +2305,10 @@ class Style extends Evented<MapEvents> {
             throw new Error(`Unimplemented: ${unimplementedOps.map(op => op.command).join(', ')}.`);
         }
 
-        const changesPromises = [];
+        const changesPromises: unknown[] = [];
 
         changes.forEach((op) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            changesPromises.push(this[op.command](...op.args));
+            changesPromises.push((this as unknown as Record<string, (...args: unknown[]) => unknown>)[op.command](...op.args));
         });
 
         if (onFinish) {
@@ -4060,7 +4059,7 @@ class Style extends Evented<MapEvents> {
         const light = this.light.getLight();
         let _update = false;
         for (const key in lightOptions) {
-            if (!deepEqual(lightOptions[key], light[key])) {
+            if (!deepEqual(lightOptions[key as keyof LightSpecification], light[key as keyof LightSpecification])) {
                 _update = true;
                 break;
             }
@@ -4220,12 +4219,12 @@ class Style extends Evented<MapEvents> {
                 // Fallback to use default style specification when the properties wasn't set
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (!Object.hasOwn(options, name) && !!styleSpec.terrain[name].default) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                    options[name] = styleSpec.terrain[name].default;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    (options as Record<string, unknown>)[name] = styleSpec.terrain[name].default;
                 }
             }
             for (const key in terrainOptions) {
-                if (!deepEqual(terrainOptions[key], currSpec[key])) {
+                if (!deepEqual((terrainOptions as TerrainSpecification)[key as keyof TerrainSpecification], currSpec[key as keyof TerrainSpecification])) {
                     terrain.set(terrainOptions, this.options);
                     this.stylesheet.terrain = terrainOptions as TerrainSpecification;
                     const parameters = this._getTransitionParameters({duration: 0});

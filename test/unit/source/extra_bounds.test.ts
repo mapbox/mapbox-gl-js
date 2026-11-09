@@ -50,7 +50,7 @@ async function loadSource(type: string, SourceClass: SourceClass, bounds: Bounds
         _requestManager: new RequestManager(),
         _getMapId: () => 1,
         _language: null,
-        getWorldview: () => undefined,
+        getWorldview: (): undefined => undefined,
         style: {clearSource() {}}
     } as unknown as MapboxMap);
     await metadata;

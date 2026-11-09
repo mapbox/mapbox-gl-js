@@ -138,7 +138,7 @@ const style = {
                 "features": [
                     {
                         "type": "Feature",
-                        "properties": null,
+                        "properties": null as GeoJSON.GeoJsonProperties,
                         "geometry": {"type": "Point", "coordinates": [0, 0]}
                     },
                     {

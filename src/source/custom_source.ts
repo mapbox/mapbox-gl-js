@@ -287,7 +287,7 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
             // mark the tile as `loaded` and use an an empty image as tile data.
             // A map will render nothing in the tile’s space.
             if (data === null) {
-                const emptyImage = {width: this.tileSize, height: this.tileSize, data: null};
+                const emptyImage = {width: this.tileSize, height: this.tileSize, data: null as ImageData['data'] | null};
                 this.loadTileData(tile, emptyImage as T);
                 tile.state = 'loaded';
                 return callback(null);

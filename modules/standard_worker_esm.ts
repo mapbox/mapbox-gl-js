@@ -1,10 +1,12 @@
 import {warnOnce} from '../src/util/util';
 
+import type * as StandardWorkerImports from './standard_worker_imports';
+
 // Live bindings — updated by `prepareStandard()` once the Standard chunk finishes loading.
 // Readers (e.g. worker_tile) check `loaded` before invoking the hooks.
-export let ModelBucket;
-export let Tiled3dModelBucket;
-export let Tiled3dModelWorkerSource;
+export let ModelBucket: typeof StandardWorkerImports.ModelBucket | undefined;
+export let Tiled3dModelBucket: typeof StandardWorkerImports.Tiled3dModelBucket | undefined;
+export let Tiled3dModelWorkerSource: typeof StandardWorkerImports.Tiled3dModelWorkerSource | undefined;
 export let loaded = false;
 
 let pending: Promise<void> | null = null;

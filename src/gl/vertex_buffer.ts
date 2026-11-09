@@ -21,7 +21,7 @@ const AttributeType = {
     Int32: 'INT',
     Uint32: 'UNSIGNED_INT',
     Float32: 'FLOAT'
-};
+} as const;
 
 /**
  * The `VertexBuffer` class turns a `StructArray` into a WebGL buffer. Each member of the StructArray's
@@ -99,7 +99,6 @@ class VertexBuffer {
                     gl.vertexAttribPointer(
                         attribIndex,
                         member.components,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         gl[AttributeType[member.type]],
                         !!member.normalized,
                         this.itemSize,
@@ -109,7 +108,6 @@ class VertexBuffer {
                     gl.vertexAttribIPointer(
                         attribIndex,
                         member.components,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         gl[AttributeType[member.type]],
                         this.itemSize,
                         byteOffset

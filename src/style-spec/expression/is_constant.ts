@@ -1,7 +1,4 @@
 import CompoundExpression from './compound_expression';
-import Within from './definitions/within';
-import Distance from './definitions/distance';
-import Config from './definitions/config';
 
 import type {Expression} from './expression';
 
@@ -24,15 +21,7 @@ function isFeatureConstant(e: Expression): boolean {
         }
     }
 
-    if (e instanceof Within) {
-        return false;
-    }
-
-    if (e instanceof Distance) {
-        return false;
-    }
-
-    if (e instanceof Config) {
+    if (e.featureConstant !== undefined) {
         return e.featureConstant;
     }
 

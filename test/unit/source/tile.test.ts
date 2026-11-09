@@ -69,7 +69,7 @@ describe('querySourceFeatures', () => {
         tile.querySourceFeatures(result, {});
         expect(result.length).toEqual(0);
 
-        const layers = {_geojsonTileLayer: []};
+        const layers: Record<string, Feature[]> = {_geojsonTileLayer: []};
         tile.latestRawTileData = writePbf(layers) as unknown as ArrayBuffer;
 
         result = [];

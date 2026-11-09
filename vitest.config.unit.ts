@@ -45,19 +45,19 @@ function orchestratorGCReporter(): Reporter {
 function styleSpecFixtures() {
     const virtualModuleId = 'virtual:style-spec/fixtures';
     const resolvedVirtualModuleId = `\0${virtualModuleId}`;
-    const fixtureFiles = globSync('./test/unit/style-spec/fixture/*.input.json').reduce((acc, file) => {
+    const fixtureFiles = globSync('./test/unit/style-spec/fixture/*.input.json').reduce<Record<string, string>>((acc, file) => {
         acc[pathBasename(file).replace('.input.json', '')] = readFileSync(file).toString();
         return acc;
     }, {});
 
     return {
         name: 'style-spec-fixtures',
-        resolveId(id) {
+        resolveId(id: string) {
             if (id === virtualModuleId) {
                 return resolvedVirtualModuleId;
             }
         },
-        load(id) {
+        load(id: string) {
             if (id === resolvedVirtualModuleId) {
                 return `export const fixtures = ${JSON.stringify(fixtureFiles)}`;
             }

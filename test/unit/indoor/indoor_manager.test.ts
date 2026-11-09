@@ -21,7 +21,7 @@ function createMockStyle() {
     const style = {
         isIndoorEnabled: () => true,
         updateIndoorDependentLayers: updateSpy,
-        getIndoorSourceLayers: () => null,
+        getIndoorSourceLayers: (): null => null,
         map: {
             on: vi.fn(),
             transform: {

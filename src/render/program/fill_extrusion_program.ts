@@ -29,7 +29,7 @@ export type FillExtrusionDefinesType =
     | 'FILL_EXTRUSION_PATTERN_TRANSITION'
     | 'HAS_ATTRIBUTE_a_flood_light_ground_radius';
 
-const fillExtrusionAlignmentType = {
+const fillExtrusionAlignmentType: Record<string, number> = {
     'terrain': 0,
     'flat': 1,
 };
@@ -221,9 +221,7 @@ const fillExtrusionUniformValues = (
         'u_merc_center': [0, 0] as [number, number],
         'u_up_dir': [0, 0, 0] as [number, number, number],
         'u_height_lift': 0,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         'u_height_type': fillExtrusionAlignmentType[heightAlignment],
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         'u_base_type': fillExtrusionAlignmentType[baseAlignment],
         'u_ao': aoIntensityRadius,
         'u_edge_radius': edgeRadius,
@@ -253,9 +251,7 @@ const fillExtrusionDepthUniformValues = (matrix: mat4, edgeRadius: number, lineW
         'u_edge_radius': edgeRadius,
         'u_width_scale': lineWidthScale,
         'u_vertical_scale': verticalScale,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         'u_height_type': fillExtrusionAlignmentType[heightAlignment],
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         'u_base_type': fillExtrusionAlignmentType[baseAlignment],
     };
 };

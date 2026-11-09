@@ -1165,7 +1165,6 @@ describe('transform', () => {
                 getMinElevationBelowMSL: () => 0,
                 getMinMaxForVisibleTiles: () => null
             };
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             transform.elevation = elevation;
 
             transform.resize(200, 200);
@@ -1795,11 +1794,8 @@ describe('transform', () => {
             expect(transform.pitch).toEqual(transform.maxPitch);
             frame = rotatedFrame(transform.getFreeCameraOptions().orientation);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.right, 5)).toEqual([1, 0, 0]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.up, 5)).toEqual([0, -0.5, 0.86603]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.forward, 5)).toEqual([0, -0.86603, -0.5]);
         });
 
@@ -1858,11 +1854,8 @@ describe('transform', () => {
             transform.bearing = 0.0;
             frame = rotatedFrame(transform.getFreeCameraOptions().orientation);
             expect(transform.getFreeCameraOptions().position).toEqual(new MercatorCoordinate(0.5, 0.5, 0.29296875));
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(frame.right).toEqual([1, 0, 0]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(frame.up).toEqual([0, -1, 0]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(frame.forward).toEqual([0, 0, -1]);
 
             transform.center = new LngLat(24.9384, 60.1699);
@@ -1876,11 +1869,8 @@ describe('transform', () => {
             transform.pitch = 0;
             transform.bearing = 90;
             frame = rotatedFrame(transform.getFreeCameraOptions().orientation);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.right)).toEqual([0, 1, 0]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.up)).toEqual([1, -0, 0]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.forward)).toEqual([0, 0, -1]);
 
             // Invalid pitch
@@ -1888,11 +1878,8 @@ describe('transform', () => {
             transform.pitch = -10;
             frame = rotatedFrame(transform.getFreeCameraOptions().orientation);
             expect(fixedCoord(transform.getFreeCameraOptions().position, 5)).toEqual(new MercatorCoordinate(0.55556, 0.55672, 0.29297));
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(frame.right).toEqual([1, 0, 0]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(frame.up).toEqual([0, -1, 0]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(frame.forward).toEqual([0, 0, -1]);
 
             transform.bearing = 0;
@@ -1900,11 +1887,8 @@ describe('transform', () => {
             transform.center = new LngLat(0, -80);
             frame = rotatedFrame(transform.getFreeCameraOptions().orientation);
             expect(fixedCoord(transform.getFreeCameraOptions().position, 5)).toEqual(new MercatorCoordinate(0.5, 1.14146, 0.14648));
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.right, 5)).toEqual([1, 0, 0]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.up, 5)).toEqual([0, -0.5, 0.86603]);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedVec3(frame.forward, 5)).toEqual([0, -0.86603, -0.5]);
         });
 

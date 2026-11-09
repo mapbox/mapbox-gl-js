@@ -11,7 +11,7 @@ import type Dispatcher from '../../../src/util/dispatcher';
 
 describe('QueryFeatures#rendered', () => {
     test('returns empty object if source returns no tiles', () => {
-        const mockSourceCache = {tilesIn() { return []; }} as unknown as SourceCache;
+        const mockSourceCache = {tilesIn(): ReturnType<SourceCache['tilesIn']> { return []; }} as unknown as SourceCache;
         const query = {sourceCache: mockSourceCache, layers: {}};
         const transform = new Transform();
         const result = queryRenderedFeatures(undefined, query, [], transform, false);

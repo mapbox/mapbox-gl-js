@@ -43,11 +43,11 @@ import type {ImageRasterizationTasks} from '../render/image_manager';
 import type SymbolAppearance from '../style/appearance';
 
 function isPositionedIcon(icon: unknown): icon is PositionedIcon {
-    return icon["imagePrimary"] !== undefined &&
-        icon["top"] !== undefined &&
-        icon["bottom"] !== undefined &&
-        icon["left"] !== undefined &&
-        icon["right"] !== undefined;
+    return (icon as Partial<PositionedIcon>)["imagePrimary"] !== undefined &&
+        (icon as Partial<PositionedIcon>)["top"] !== undefined &&
+        (icon as Partial<PositionedIcon>)["bottom"] !== undefined &&
+        (icon as Partial<PositionedIcon>)["left"] !== undefined &&
+        (icon as Partial<PositionedIcon>)["right"] !== undefined;
 }
 
 function isFullyStretchableX(icon: PositionedIcon) {
@@ -435,8 +435,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                     if (singleLine) {
                         // If the shaping for the first justification was only a single line, we
                         // can re-use it for the other justifications
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                        shapedTextOrientations.horizontal[justification] = shapedTextOrientations.horizontal[0];
+                        shapedTextOrientations.horizontal[justification] = (shapedTextOrientations.horizontal as Record<number, Shaping>)[0];
                     } else {
                         // If using text-variable-anchor for the layer, we use a center anchor for all shapings and apply
                         // the offsets for the anchor in the placement step.
@@ -859,8 +858,7 @@ function reconcileTextImagePositions(shapedTextOrientations: ShapedTextOrientati
     // changed
 
     for (const orientation in shapedTextOrientations.horizontal) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        reconcileTextOrientationImagePositions(shapedTextOrientations.horizontal[orientation], atlasIconPositions);
+        reconcileTextOrientationImagePositions(shapedTextOrientations.horizontal[orientation as PlacementTypes], atlasIconPositions);
     }
 
     reconcileTextOrientationImagePositions(shapedTextOrientations.vertical, atlasIconPositions);
@@ -1154,8 +1152,7 @@ function getDefaultHorizontalShaping(horizontalShaping: Partial<Record<TextJusti
     // and all the justifications have the same collision box
     // eslint-disable-next-line no-unreachable-loop
     for (const justification in horizontalShaping) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return horizontalShaping[justification];
+        return horizontalShaping[justification as TextJustify];
     }
     return null;
 }

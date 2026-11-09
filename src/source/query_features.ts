@@ -234,14 +234,13 @@ function mergeRenderedFeatureLayers(tiles: RenderedFeatureLayers): QueryResult {
     // Merge results from all tiles, but if two tiles share the same
     // wrapped ID, don't duplicate features between the two tiles
     const result: QueryResult = {};
-    const wrappedIDLayerMap: Record<string, Record<number, boolean>> = {};
+    const wrappedIDLayerMap: Record<string, Record<string, Record<number, boolean>>> = {};
     for (const tile of tiles) {
         const queryResults = tile.queryResults;
         const wrappedID = tile.wrappedTileID;
         const wrappedIDLayers = wrappedIDLayerMap[wrappedID] = wrappedIDLayerMap[wrappedID] || {};
         for (const layerID in queryResults) {
             const tileFeatures = queryResults[layerID];
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const wrappedIDFeatures: Record<number, boolean> = wrappedIDLayers[layerID] = wrappedIDLayers[layerID] || {};
             const resultFeatures = result[layerID] = result[layerID] || [];
             for (const tileFeature of tileFeatures) {

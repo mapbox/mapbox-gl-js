@@ -693,7 +693,6 @@ export class BuildingBucket implements BucketWithGroundEffect {
                         minHeight: base,
                         sourceId: 0,
                         roofType,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         coordinates,
                         ringIndices
                     };

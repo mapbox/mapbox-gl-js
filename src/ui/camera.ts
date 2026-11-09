@@ -1944,7 +1944,7 @@ class Camera extends Evented<MapEvents> {
     }
 
     // emulates frame function for some transform
-    _emulate(frame: (Transform) => (number) => Transform, duration: number, initialTransform: Transform): Array<Transform> {
+    _emulate(frame: (tr: Transform) => (k: number) => Transform, duration: number, initialTransform: Transform): Array<Transform> {
         const frameRate = 15;
         const numFrames = Math.ceil(duration * frameRate / 1000);
 

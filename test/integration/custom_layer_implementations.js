@@ -1,3 +1,8 @@
+/** @typedef {import('../../src/ui/map').Map} MapboxMap */
+/** @typedef {import('../../src/style/style_layer/custom_style_layer').CustomLayerRenderEmissiveMode} EmissiveMode */
+/** @typedef {{z: number, x: number, y: number}} TileID */
+/** @typedef {WebGLProgram & {aPos?: number, uColor?: WebGLUniformLocation, uMatrix?: WebGLUniformLocation}} TestProgram */
+
 class NullIsland {
     constructor() {
         this.id = 'null-island';
@@ -5,6 +10,10 @@ class NullIsland {
         this.renderingMode = '2d';
     }
 
+    /**
+     * @param {MapboxMap} map
+     * @param {WebGL2RenderingContext} gl
+     */
     onAdd(map, gl) {
         const vertexSource = `
         uniform mat4 u_matrix;
@@ -25,12 +34,16 @@ class NullIsland {
         gl.shaderSource(fragmentShader, fragmentSource);
         gl.compileShader(fragmentShader);
 
-        this.program = gl.createProgram();
+        this.program = /** @type {TestProgram} */ (gl.createProgram());
         gl.attachShader(this.program, vertexShader);
         gl.attachShader(this.program, fragmentShader);
         gl.linkProgram(this.program);
     }
 
+    /**
+     * @param {WebGL2RenderingContext} gl
+     * @param {number[]} matrix
+     */
     render(gl, matrix) {
         gl.useProgram(this.program);
         gl.uniformMatrix4fv(gl.getUniformLocation(this.program, "u_matrix"), false, matrix);
@@ -45,6 +58,10 @@ class Tent3D {
         this.renderingMode = '3d';
     }
 
+    /**
+     * @param {MapboxMap} map
+     * @param {WebGL2RenderingContext} gl
+     */
     onAdd(map, gl) {
 
         const vertexSource = `
@@ -70,7 +87,7 @@ class Tent3D {
         gl.shaderSource(fragmentShader, fragmentSource);
         gl.compileShader(fragmentShader);
 
-        this.program = gl.createProgram();
+        this.program = /** @type {TestProgram} */ (gl.createProgram());
         gl.attachShader(this.program, vertexShader);
         gl.attachShader(this.program, fragmentShader);
         gl.linkProgram(this.program);
@@ -106,6 +123,10 @@ class Tent3D {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexArray, gl.STATIC_DRAW);
     }
 
+    /**
+     * @param {WebGL2RenderingContext} gl
+     * @param {number[]} matrix
+     */
     render(gl, matrix) {
         gl.useProgram(this.program);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
@@ -124,6 +145,10 @@ class TriangleDraped {
         this.renderingMode = '3d';
     }
 
+    /**
+     * @param {MapboxMap} map
+     * @param {WebGL2RenderingContext} gl
+     */
     onAdd(map, gl) {
         const vertexSource = `
         attribute vec2 aPos;
@@ -143,7 +168,7 @@ class TriangleDraped {
         gl.shaderSource(fragmentShader, fragmentSource);
         gl.compileShader(fragmentShader);
 
-        this.program = gl.createProgram();
+        this.program = /** @type {TestProgram} */ (gl.createProgram());
         gl.attachShader(this.program, vertexShader);
         gl.attachShader(this.program, fragmentShader);
         gl.linkProgram(this.program);
@@ -160,6 +185,9 @@ class TriangleDraped {
         return true;
     }
 
+    /**
+     * @param {WebGL2RenderingContext} gl
+     */
     renderToTile(gl) {
         gl.useProgram(this.program);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
@@ -179,9 +207,14 @@ class TriangleDrapedEmissive {
         this.renderingMode = '3d';
     }
 
+    /**
+     * @param {MapboxMap} map
+     * @param {WebGL2RenderingContext} gl
+     */
     onAdd(map, gl) {
         this.hasDualSourceBlending = !!gl.getExtension('WEBGL_blend_func_extended');
 
+        /** @type {Record<string, TestProgram>} */
         this.programs = {
             base: this._createProgram(gl, []),
             'mrt': this._createProgram(gl, ['EMISSIVE_MODE_MRT']),
@@ -198,6 +231,11 @@ class TriangleDrapedEmissive {
         gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
     }
 
+    /**
+     * @param {WebGL2RenderingContext} gl
+     * @param {string[]} defines
+     * @returns {TestProgram}
+     */
     _createProgram(gl, defines) {
         const defineBlock = defines.map((d) => `#define ${d}`).join('\n');
 
@@ -259,7 +297,7 @@ class TriangleDrapedEmissive {
             console.error(`triangle-draped-emissive[${label}]: fragment shader compile error:`, gl.getShaderInfoLog(fragmentShader));
         }
 
-        const program = gl.createProgram();
+        const program = /** @type {TestProgram} */ (gl.createProgram());
         gl.attachShader(program, vertexShader);
         gl.attachShader(program, fragmentShader);
         gl.linkProgram(program);
@@ -275,6 +313,11 @@ class TriangleDrapedEmissive {
         return true;
     }
 
+    /**
+     * @param {WebGL2RenderingContext} gl
+     * @param {TileID} tileId
+     * @param {EmissiveMode} [emissiveMode]
+     */
     renderToTile(gl, tileId, emissiveMode) {
         const program = this.programs[emissiveMode] || this.programs.base;
         gl.useProgram(program);
@@ -284,6 +327,9 @@ class TriangleDrapedEmissive {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
     }
 
+    /**
+     * @param {EmissiveMode} emissiveMode
+     */
     supportsEmissiveMode(emissiveMode) {
         if (emissiveMode === 'dual-source-blending') return this.hasDualSourceBlending;
         return true;
@@ -301,6 +347,10 @@ class WrappedTileDraped {
         this.wrapTileId = true;
     }
 
+    /**
+     * @param {MapboxMap} map
+     * @param {WebGL2RenderingContext} gl
+     */
     onAdd(map, gl) {
         const vertexSource = `
         attribute vec2 a_pos;
@@ -322,7 +372,7 @@ class WrappedTileDraped {
         gl.shaderSource(fragmentShader, fragmentSource);
         gl.compileShader(fragmentShader);
 
-        this.program = gl.createProgram();
+        this.program = /** @type {TestProgram} */ (gl.createProgram());
         gl.attachShader(this.program, vertexShader);
         gl.attachShader(this.program, fragmentShader);
         gl.linkProgram(this.program);
@@ -340,6 +390,9 @@ class WrappedTileDraped {
         return true;
     }
 
+    /**
+     * @param {TileID} tileId
+     */
     getColor(tileId) {
         if (tileId.x < 0) {
             return [0, 0, 0];
@@ -348,6 +401,10 @@ class WrappedTileDraped {
         }
     }
 
+    /**
+     * @param {WebGL2RenderingContext} gl
+     * @param {TileID} tileId
+     */
     renderToTile(gl, tileId) {
         gl.useProgram(this.program);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);

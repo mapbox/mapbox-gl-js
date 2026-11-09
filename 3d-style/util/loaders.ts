@@ -87,7 +87,7 @@ export const GLTF_TO_ARRAY_TYPE: {
     [GLTF_FLOAT]: Float32Array
 };
 
-const GLTF_TO_DRACO_TYPE = {
+const GLTF_TO_DRACO_TYPE: {[type: number]: string} = {
     [GLTF_BYTE]: 'DT_INT8',
     [GLTF_UBYTE]: 'DT_UINT8',
     [GLTF_SHORT]: 'DT_INT16',
@@ -227,7 +227,7 @@ function loadDracoMesh(primitive: GLTFPrimitive, gltf: GLTF) {
         const attribute = decoder.GetAttributeByUniqueId(mesh, config.attributes[attributeId]);
         const accessor = gltf.json.accessors[primitive.attributes[attributeId]];
         const ArrayType = GLTF_TO_ARRAY_TYPE[accessor.componentType];
-        const dracoTypeName = GLTF_TO_DRACO_TYPE[accessor.componentType] as string;
+        const dracoTypeName = GLTF_TO_DRACO_TYPE[accessor.componentType];
 
         const numComponents = GLTF_COMPONENTS[accessor.type];
 

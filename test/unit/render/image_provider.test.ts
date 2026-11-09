@@ -16,8 +16,8 @@ describe('ImageProvider', () => {
         tile._mrt = true as unknown as MapboxRasterTile;
 
         const mrtLayer = {
-            hasBand: (bandId) => bandId === 'icon',
-            hasDataForBand: (bandId) => bandId === 'icon',
+            hasBand: (bandId: string) => bandId === 'icon',
+            hasDataForBand: (bandId: string) => bandId === 'icon',
             getBandView: () => ({bytes: new Uint8Array(512 * 512 * 4), tileSize: 512, buffer: 0}),
         } as unknown as MapboxRasterLayer;
 

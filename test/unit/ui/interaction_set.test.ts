@@ -2,7 +2,11 @@ import {describe, test, expect} from '../../util/vitest';
 import {InteractionSet} from '../../../src/ui/interactions';
 import {Evented} from '../../../src/util/evented';
 
-function feature(json) {
+import type {Map as MapboxMap} from '../../../src/ui/map';
+import type Feature from '../../../src/util/vectortile_to_geojson';
+import type {QrfTarget} from '../../../src/source/query_features';
+
+function feature(json: Record<string, unknown>) {
     return {
         ...json,
         _vectorTileFeature: {},
@@ -28,7 +32,7 @@ describe('InteractionSet', () => {
         // @ts-expect-error
         map.getFeatureState = () => ({});
 
-        const interactions = new InteractionSet(map);
+        const interactions = new InteractionSet(map as unknown as MapboxMap);
 
         let clickHandled = false;
 
@@ -48,7 +52,7 @@ describe('InteractionSet', () => {
 
     test('propagates to next feature if false returned in handler', () => {
         const map = new Evented();
-        const interactions = new InteractionSet(map);
+        const interactions = new InteractionSet(map as unknown as MapboxMap);
 
         const featureset = {layerId: 'foo'};
         const layer = {id: featureset.layerId};
@@ -83,12 +87,12 @@ describe('InteractionSet', () => {
 
     test('#remove', () => {
         const map = new Evented();
-        const interactions = new InteractionSet(map);
+        const interactions = new InteractionSet(map as unknown as MapboxMap);
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         map.style = {
-            queryRenderedTargets: () => []
+            queryRenderedTargets: (): Feature[] => []
         };
 
         let clickHandled = false;
@@ -108,7 +112,7 @@ describe('InteractionSet', () => {
 
     test('respects featureset and filter', () => {
         const map = new Evented();
-        const interactions = new InteractionSet(map);
+        const interactions = new InteractionSet(map as unknown as MapboxMap);
 
         const featureset = {layerId: 'bar'};
         const layer = {id: featureset.layerId};
@@ -116,8 +120,7 @@ describe('InteractionSet', () => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         map.style = {
-            queryRenderedTargets: (_, featuresetQueryTargets) => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            queryRenderedTargets: (_: unknown, featuresetQueryTargets: QrfTarget[]) => {
                 expect(featuresetQueryTargets[0].filter.filter).toBeTruthy();
                 return [
                     feature({id: 3, layer, variants: {test: [{target: featureset, properties: {cool: true}}]}}),

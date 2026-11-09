@@ -12,6 +12,12 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 import {createRequire} from 'module';
 const require = createRequire(import.meta.url);
 
+/**
+ * @template T
+ * @param {T[]} array
+ * @param {number} seed
+ * @returns {T[]}
+ */
 function shuffle(array, seed) {
     let s = seed >>> 0;
     const a = array.slice();
@@ -26,6 +32,11 @@ function shuffle(array, seed) {
     return a;
 }
 
+/**
+ * @param {unknown} skipTestRules
+ * @param {string} [platformTag]
+ * @returns {boolean}
+ */
 function matchesSkipTest(skipTestRules, platformTag) {
     if (!Array.isArray(skipTestRules)) return false;
     return skipTestRules.some(rule => {
@@ -36,6 +47,38 @@ function matchesSkipTest(skipTestRules, platformTag) {
     });
 }
 
+/**
+ * Per-test metadata (`style.metadata.test`), also used to record the test's outcome.
+ * @typedef {{
+ *   id: string,
+ *   skip?: boolean,
+ *   ok?: boolean,
+ *   error?: unknown,
+ *   ignored?: string,
+ *   color?: string,
+ *   status?: string,
+ *   validationError?: string,
+ *   difference?: string
+ * } & Record<string, unknown>} TestMetadata
+ */
+
+/**
+ * @typedef {{
+ *   tests?: string[],
+ *   platformTag?: string,
+ *   fixtureFilename?: string,
+ *   shuffle?: boolean,
+ *   seed?: number
+ * }} HarnessOptions
+ */
+
+/**
+ * @template F
+ * @param {string} directory
+ * @param {string} implementation
+ * @param {HarnessOptions} options
+ * @param {(fixture: F, test: TestMetadata, done: (error?: unknown) => void) => void} run
+ */
 export default async function (directory, implementation, options, run) {
     const server = createServer();
 
@@ -97,6 +140,7 @@ export default async function (directory, implementation, options, run) {
 
         // eslint-disable-next-line no-await-in-loop -- tests must run sequentially
         await /** @type {Promise<void>} */(new Promise((resolve) => {
+            /** @param {unknown} [error] */
             function handleResult(error) {
                 if (error) {
                     test.error = error;
@@ -168,7 +212,7 @@ export default async function (directory, implementation, options, run) {
     }
 
     const totalCount = passedCount + ignorePassCount + ignoreCount + failedCount + erroredCount;
-    const pct = (count) => (100 * count / totalCount).toFixed(1);
+    const pct = (/** @type {number} */ count) => (100 * count / totalCount).toFixed(1);
 
     if (passedCount > 0) {
         console.log(styleText('green', `${passedCount} passed (${pct(passedCount)}%)`));
@@ -193,6 +237,7 @@ export default async function (directory, implementation, options, run) {
     const resultsTemplate = compile(fs.readFileSync(path.join(__dirname, '..', 'results.html.tmpl'), 'utf8'), {locals: ['unsuccessful', 'tests', 'stats', 'shuffle', 'seed']});
     const itemTemplate = compile(fs.readFileSync(path.join(directory, 'result_item.html.tmpl'), 'utf8'), {locals: ['r', 'hasFailedTests']});
 
+    /** @type {Record<string, number>} */
     const stats = {};
     for (const test of tests) {
         stats[test.status] = (stats[test.status] || 0) + 1;
@@ -221,6 +266,11 @@ export default async function (directory, implementation, options, run) {
     process.exit((failedCount + erroredCount) === 0 ? 0 : 1);
 }
 
+/**
+ * @param {fs.WriteStream} stream
+ * @param {string} data
+ * @returns {Promise<void>}
+ */
 function write(stream, data) {
     return new Promise((resolve) => {
         if (!stream.write(data)) {
