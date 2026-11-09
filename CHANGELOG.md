@@ -6,6 +6,7 @@
 - Fix the docs and the warning of `Map#getFreeCameraOptions` and `Map#setFreeCameraOptions`, which said that free camera does not support the globe projection.
 - Fix raster array sampling on Android.
 - Fix HD road rendering in vector tiles with an extent other than 8192.
+- Fix a line-dasharray of [] to consistently draw a solid line.
 
 ## 3.35.0-rc.1
 

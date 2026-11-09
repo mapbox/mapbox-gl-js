@@ -57,7 +57,7 @@ class LineAtlas {
     }
 
     getKey(dasharray: Array<number>, lineCap: string): string {
-        return dasharray.join(',') + lineCap;
+        return normalizeDasharray(dasharray).join(',') + lineCap;
     }
 
     getDashRanges(dasharray: Array<number>, stretch: number): Array<DashRange> {
@@ -160,8 +160,11 @@ class LineAtlas {
         }
     }
 
-    addDash(dasharray: Array<number>, lineCap: string): null | SpritePosition {
-        const key = this.getKey(dasharray, lineCap);
+    addDash(inputDasharray: Array<number>, lineCap: string): null | SpritePosition {
+        // Normalize a copy: the input is often a feature's or layer's own property value, and
+        // mutating it would change the key later lookups compute (see getKey).
+        const dasharray = normalizeDasharray(inputDasharray);
+        const key = dasharray.join(',') + lineCap;
         if (this.positions[key]) return this.positions[key];
 
         const round = lineCap === 'round';
@@ -173,20 +176,8 @@ class LineAtlas {
             return null;
         }
 
-        // dasharray is empty, draws a full line (no dash or no gap length represented, default behavior)
-        if (dasharray.length === 0) {
-            // insert a single dash range in order to draw a full line
-            dasharray.push(1);
-        }
-
         let length = 0;
-        for (let i = 0; i < dasharray.length; i++) {
-            if (dasharray[i] < 0) {
-                warnOnce('Negative value is found in line dasharray, replacing values with 0');
-                dasharray[i] = 0;
-            }
-            length += dasharray[i];
-        }
+        for (const dash of dasharray) length += dash;
 
         if (length !== 0) {
             const stretch = this.width / length;
@@ -229,6 +220,14 @@ class LineAtlas {
         this.positions[key] = pos;
         return pos;
     }
+}
+
+function normalizeDasharray(dasharray: Array<number>): Array<number> {
+    // An empty dasharray draws a full line: a single dash range covering the whole pattern.
+    if (dasharray.length === 0) return [1];
+    if (dasharray.every(dash => dash >= 0)) return dasharray;
+    warnOnce('Negative value is found in line dasharray, replacing values with 0');
+    return dasharray.map(dash => Math.max(dash, 0));
 }
 
 register(LineAtlas, 'LineAtlas');

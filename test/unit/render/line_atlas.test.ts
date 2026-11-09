@@ -43,4 +43,32 @@ describe('LineAtlas', () => {
         expect(lineAtlas.addDash([0, 0], 'butt')).toBeTruthy();
         expect(lineAtlas.addDash([0, 0], 'round')).toBeTruthy();
     });
+
+    test('empty dasharray is not mutated', () => {
+        const dasharray: number[] = [];
+        new LineAtlas(64, 64).addDash(dasharray, 'round');
+        expect(dasharray).toEqual([]);
+    });
+    test('empty dasharray resolves to the position it was added under', () => {
+        const atlas = new LineAtlas(64, 64);
+        const dasharray: number[] = [];
+        const entry = atlas.addDash(dasharray, 'round');
+        expect(atlas.positions[atlas.getKey(dasharray, 'round')]).toBe(entry);
+    });
+    test('empty dasharray draws a solid line, same as [1]', () => {
+        const atlas = new LineAtlas(64, 64);
+        expect(atlas.addDash([], 'butt')).toBe(atlas.addDash([1], 'butt'));
+    });
+    test('negative dasharray values are not mutated', () => {
+        const dasharray = [-1, 2];
+        new LineAtlas(64, 64).addDash(dasharray, 'butt');
+        expect(dasharray).toEqual([-1, 2]);
+    });
+    test('negative dasharray values resolve to the position they were added under', () => {
+        const atlas = new LineAtlas(64, 64);
+        const dasharray = [-1, 2];
+        const entry = atlas.addDash(dasharray, 'butt');
+        expect(atlas.getDash(dasharray, 'butt')).toBe(entry);
+        expect(atlas.addDash([0, 2], 'butt')).toBe(entry);
+    });
 });

@@ -1,0 +1,46 @@
+{
+  "description": "A data-driven line-dasharray that evaluates to [] draws a solid line, like [1, 0] does.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 32,
+      "tickets": ["https://github.com/mapbox/mapbox-gl-js/issues/13739", "https://github.com/mapbox/mapbox-gl-native-internal/issues/1730"],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "not-implemented: data-driven line-dasharray and line-cap - mapbox/mapbox-gl-native-internal#1730"}
+      ]
+    }
+  },
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {"kind": "solid"},
+            "geometry": {"type": "LineString", "coordinates": [[-15, 4], [15, 4]]}
+          },
+          {
+            "type": "Feature",
+            "properties": {"kind": "dashed"},
+            "geometry": {"type": "LineString", "coordinates": [[-15, -4], [15, -4]]}
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "road",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": 4,
+        "line-dasharray": ["match", ["get", "kind"], "solid", ["literal", []], ["literal", [2, 1]]]
+      }
+    }
+  ]
+}
