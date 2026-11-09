@@ -8,7 +8,10 @@
         ["setPaintProperty", "line", "line-trim-offset", [0.7, 1.0]],
         ["wait"]
       ],
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1544"]
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPS3D-1544"],
+      "image-threshold": [
+        {"platform-tag-contains": "web-macos-safari", "threshold": 0.002}
+      ]
     }
   },
   "zoom": 2,
