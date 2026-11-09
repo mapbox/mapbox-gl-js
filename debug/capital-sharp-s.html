@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="U+1E9E LATIN CAPITAL LETTER SHARP S rendered from the local glyph fixtures, next to the SS spelling for comparison.">
+    <meta name="mapbox:role" content="feature">
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #legend {
+            position: absolute; top: 0; left: 0; padding: 10px;
+            font: 13px/1.5 monospace; background: rgba(255,255,255,0.9);
+        }
+    </style>
+</head>
+
+<body>
+<div id="map"></div>
+<div id="legend">
+    Glyphs are served from test/integration/glyphs, not from the Mapbox API.<br>
+    The access token is only needed to initialise the map, not to load the glyphs.<br>
+    Expected: every line renders in full, including the &#x1E9E;.
+</div>
+
+<script type="module">
+import * as mapboxgl from '../dist/esm-dev/mapbox-gl.js';
+import {getAccessToken} from './access_token_generated.js';
+
+const labels = [
+    ['STRAẞE', 0.6],
+    ['STRASSE', 0.2],
+    ['Straße', -0.2],
+    ['GROẞENHAIN', -0.6]
+];
+
+const map = window.map = new mapboxgl.Map({
+    accessToken: getAccessToken(),
+    container: 'map',
+    zoom: 6,
+    center: [0, 0],
+    style: {
+        version: 8,
+        // Served by the debug server straight from the repository.
+        glyphs: '/test/integration/glyphs/{fontstack}/{range}.pbf',
+        sources: {
+            labels: {
+                type: 'geojson',
+                data: {
+                    type: 'FeatureCollection',
+                    features: labels.map(([text, lat]) => ({
+                        type: 'Feature',
+                        properties: {text},
+                        geometry: {type: 'Point', coordinates: [0, lat]}
+                    }))
+                }
+            }
+        },
+        layers: [
+            {
+                id: 'background',
+                type: 'background',
+                paint: {'background-color': '#ffffff'}
+            },
+            {
+                id: 'labels',
+                type: 'symbol',
+                source: 'labels',
+                layout: {
+                    'text-field': ['get', 'text'],
+                    'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+                    'text-size': 28,
+                    'text-allow-overlap': true
+                },
+                paint: {'text-color': '#101014'}
+            }
+        ]
+    },
+    hash: true
+});
+</script>
+</body>
+</html>
