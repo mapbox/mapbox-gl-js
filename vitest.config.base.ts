@@ -43,6 +43,8 @@ const baseConfig: UserConfig = {
             headless: true,
             screenshotFailures: false,
         },
+        // Some fixtures hardcode this port
+        api: {port: 63315},
         restoreMocks: true,
         unstubGlobals: true,
     },
