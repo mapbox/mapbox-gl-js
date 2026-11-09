@@ -39,9 +39,9 @@ class TriangleGridIndex {
 
         // Compute cell size from the input
 
-        const [min, max] = [vertices[0].clone(), vertices[0].clone()];
+        const [min, max] = [vertices[0]!.clone(), vertices[0]!.clone()];
         for (let i = 1; i < vertices.length; ++i) {
-            const v = vertices[i];
+            const v = vertices[i]!;
             min.x = Math.min(min.x, v.x);
             min.y = Math.min(min.y, v.y);
             max.x = Math.max(max.x, v.x);
@@ -79,9 +79,9 @@ class TriangleGridIndex {
 
         // For each triangle find all intersecting cells
         for (let t = 0; t < this.triangleCount; t++) {
-            const v0 = vertices[indices[t * 3 + 0]].sub(this.min);
-            const v1 = vertices[indices[t * 3 + 1]].sub(this.min);
-            const v2 = vertices[indices[t * 3 + 2]].sub(this.min);
+            const v0 = vertices[indices[t * 3 + 0]!]!.sub(this.min);
+            const v1 = vertices[indices[t * 3 + 1]!]!.sub(this.min);
+            const v2 = vertices[indices[t * 3 + 2]!]!.sub(this.min);
 
             const minx = toCellIdx(Math.floor(Math.min(v0.x, v1.x, v2.x)), this.xScale, this.cellsX);
             const maxx = toCellIdx(Math.floor(Math.max(v0.x, v1.x, v2.x)), this.xScale, this.cellsX);
@@ -109,7 +109,7 @@ class TriangleGridIndex {
 
                     const cellIdx = y * this.cellsX + x;
                     associatedTriangles.push(cellIdx, t);
-                    cellOffsets[cellIdx + 1]++;
+                    cellOffsets[cellIdx + 1]!++;
                 }
             }
         }
@@ -120,11 +120,11 @@ class TriangleGridIndex {
         }
 
         // Counting sort by cell: triangles were visited in ascending order, so each cell's list stays sorted
-        for (let i = 0; i < cellCountTotal; i++) cellOffsets[i + 1] += cellOffsets[i];
+        for (let i = 0; i < cellCountTotal; i++) cellOffsets[i + 1]! += cellOffsets[i]!;
         const payload = this.payload = new Uint32Array(associatedTriangles.length / 2);
         const cursor = cellOffsets.slice(0, cellCountTotal);
         for (let i = 0; i < associatedTriangles.length; i += 2) {
-            payload[cursor[associatedTriangles[i]]++] = associatedTriangles[i + 1];
+            payload[cursor[associatedTriangles[i]!]!++] = associatedTriangles[i + 1]!;
         }
     }
 
@@ -148,8 +148,8 @@ class TriangleGridIndex {
         const y = toCellIdx(p.y - this.min.y, this.yScale, this.cellsY);
 
         const cellIdx = y * this.cellsX + x;
-        const start = this.cellOffsets[cellIdx];
-        const end = this.cellOffsets[cellIdx + 1];
+        const start = this.cellOffsets[cellIdx]!;
+        const end = this.cellOffsets[cellIdx + 1]!;
 
         if (start === end) {
             return;
@@ -159,17 +159,17 @@ class TriangleGridIndex {
         this._lazyInitLookup();
 
         for (let i = start; i < end; i++) {
-            const triIdx = this.payload[i];
+            const triIdx = this.payload[i]!;
 
             // Check the lookup bitset if the triangle has been visited already
             const byte = Math.floor(triIdx / 8);
             const bit = 1 << (triIdx % 8);
 
-            if (this.lookup[byte] & bit) {
+            if (this.lookup![byte]! & bit) {
                 continue;
             }
 
-            this.lookup[byte] |= bit;
+            this.lookup![byte]! |= bit;
             out.push(triIdx);
 
             if (out.length === this.triangleCount) {
@@ -201,20 +201,20 @@ class TriangleGridIndex {
         for (let y = mny; y <= mxy; y++) {
             for (let x = mnx; x <= mxx; x++) {
                 const cellIdx = y * this.cellsX + x;
-                const end = this.cellOffsets[cellIdx + 1];
+                const end = this.cellOffsets[cellIdx + 1]!;
 
-                for (let i = this.cellOffsets[cellIdx]; i < end; i++) {
-                    const triIdx = this.payload[i];
+                for (let i = this.cellOffsets[cellIdx]!; i < end; i++) {
+                    const triIdx = this.payload[i]!;
 
                     // Check the lookup bitset if the triangle has been visited already
                     const byte = Math.floor(triIdx / 8);
                     const bit = 1 << (triIdx % 8);
 
-                    if (this.lookup[byte] & bit) {
+                    if (this.lookup![byte]! & bit) {
                         continue;
                     }
 
-                    this.lookup[byte] |= bit;
+                    this.lookup![byte]! |= bit;
                     out.push(triIdx);
 
                     if (out.length === this.triangleCount) {

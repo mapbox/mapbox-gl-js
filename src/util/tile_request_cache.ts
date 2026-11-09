@@ -1,7 +1,8 @@
 import {warnOnce, parseCacheControl} from './util';
 import {stripQueryParameters, setQueryParameters} from './url';
 
-import type Dispatcher from './dispatcher';
+// Structural stand-in for Dispatcher: importing it would put this module in an import cycle.
+type CacheLimitNotifier = {getActor: () => {notify: (type: 'enforceCacheSizeLimit', limit: number) => void}};
 
 const CACHE_NAME = 'mapbox-tiles';
 let cacheLimit = 500; // 50MB / (100KB/tile) ~= 500 tiles
@@ -148,7 +149,7 @@ let globalEntryCounter = Infinity;
 // thread it gets called from. And sometimes it doesn't. It *may* be
 // fine to run this on the main thread but out of caution this is being
 // dispatched on a worker. This can be investigated further in the future.
-export function cacheEntryPossiblyAdded(dispatcher: Dispatcher) {
+export function cacheEntryPossiblyAdded(dispatcher: CacheLimitNotifier) {
     globalEntryCounter++;
     if (globalEntryCounter > cacheCheckThreshold) {
         dispatcher.getActor().notify('enforceCacheSizeLimit', cacheLimit);
@@ -165,7 +166,7 @@ export function enforceCacheSizeLimit(limit: number) {
         .then(cache => {
             cache.keys().then(keys => {
                 for (let i = 0; i < keys.length - limit; i++) {
-                    cache.delete(keys[i]).catch((e: Error) => warnOnce(e.message));
+                    cache.delete(keys[i]!).catch((e: Error) => warnOnce(e.message));
                 }
             }).catch((e: Error) => warnOnce(e.message));
         })

@@ -19,9 +19,9 @@ export default function (
 ): Point {
     // find the bounding box of the outer ring
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    const outerRing = polygonRings[0];
+    const outerRing = polygonRings[0]!;
     for (let i = 0; i < outerRing.length; i++) {
-        const p = outerRing[i];
+        const p = outerRing[i]!;
         if (!i || p.x < minX) minX = p.x;
         if (!i || p.y < minY) minY = p.y;
         if (!i || p.x > maxX) maxX = p.x;
@@ -51,7 +51,7 @@ export default function (
 
     while (cellQueue.length) {
         // pick the most promising cell from the queue
-        const cell = cellQueue.pop();
+        const cell = cellQueue.pop()!;
 
         // update the best cell if we found a better one
         if (cell.d > bestCell.d || !bestCell.d) {
@@ -103,11 +103,11 @@ function pointToPolygonDist(p: Point, polygon: Array<Array<Point>>) {
     let minDistSq = Infinity;
 
     for (let k = 0; k < polygon.length; k++) {
-        const ring = polygon[k];
+        const ring = polygon[k]!;
 
         for (let i = 0, len = ring.length, j = len - 1; i < len; j = i++) {
-            const a = ring[i];
-            const b = ring[j];
+            const a = ring[i]!;
+            const b = ring[j]!;
 
             if ((a.y > p.y !== b.y > p.y) &&
                 (p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x)) inside = !inside;
@@ -124,10 +124,10 @@ function getCentroidCell(polygon: Array<Array<Point>>) {
     let area = 0;
     let x = 0;
     let y = 0;
-    const points = polygon[0];
+    const points = polygon[0]!;
     for (let i = 0, len = points.length, j = len - 1; i < len; j = i++) {
-        const a = points[i];
-        const b = points[j];
+        const a = points[i]!;
+        const b = points[j]!;
         const f = a.x * b.y - b.x * a.y;
         x += (a.x + b.x) * f;
         y += (a.y + b.y) * f;

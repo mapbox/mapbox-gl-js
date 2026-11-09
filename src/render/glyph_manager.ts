@@ -15,7 +15,7 @@ export type FontStacks = Record<FontStack, number[]>;
 type FontGlyph = {
     id: number;
     stack: FontStack;
-    glyph?: StyleGlyph;
+    glyph?: StyleGlyph | null;
 };
 
 type Entry = {
@@ -59,7 +59,7 @@ class GlyphManager {
         const url = this.url || config.GLYPHS_URL;
 
         for (const stack in glyphs) {
-            for (const id of glyphs[stack]) {
+            for (const id of glyphs[stack]!) {
                 all.push({stack, id});
             }
         }
@@ -105,32 +105,32 @@ class GlyphManager {
             if (!requests) {
                 requests = entry.requests[range] = [];
                 this.glyphLoader.loadGlyphRange(stack, range, url, this.requestManager,
-                    (err, response?: GlyphRange) => {
+                    (err, response) => {
                         if (response) {
                             entry.ascender = response.ascender;
                             entry.descender = response.descender;
                             for (const id in response.glyphs) {
                                 if (!this.localGlyphs.supports(+id)) {
-                                    entry.glyphs[+id] = response.glyphs[+id];
+                                    entry.glyphs[+id] = response.glyphs[+id]!;
                                 }
                             }
                             entry.ranges[range] = true;
                         }
-                        for (const cb of requests) {
+                        for (const cb of requests!) {
                             cb(err, response);
                         }
                         delete entry.requests[range];
                     });
             }
 
-            requests.push((err, result?: GlyphRange) => {
+            requests.push((err, result) => {
                 if (err) {
                     fnCallback(err);
                 } else if (result) {
-                    fnCallback(null, {stack, id, glyph: result.glyphs[id] || null});
+                    fnCallback(null, {stack, id, glyph: result.glyphs![id] || null});
                 }
             });
-        }, (err, glyphs?: Array<FontGlyph>) => {
+        }, (err, glyphs) => {
             if (err) {
                 callback(err);
             } else if (glyphs) {
@@ -144,7 +144,7 @@ class GlyphManager {
 
                 for (const {stack, id, glyph} of glyphs) {
                     // Clone the glyph so that our own copy of its ArrayBuffer doesn't get transferred.
-                    result[stack].glyphs[id] = glyph && {
+                    result[stack]!.glyphs![id] = glyph && {
                         id: glyph.id,
                         bitmap: glyph.bitmap.clone(),
                         metrics: glyph.metrics

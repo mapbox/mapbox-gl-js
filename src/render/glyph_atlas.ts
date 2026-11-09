@@ -23,7 +23,7 @@ export type GlyphRect = {
 };
 // {glyphID: glyphRect}
 export type GlyphPositionMap = {
-    [_: number]: GlyphRect;
+    [_: string]: GlyphRect;
 };
 
 // {fontStack: glyphPoistionMap}
@@ -40,7 +40,7 @@ export default class GlyphAtlas {
         const bins = [];
 
         for (const stack in stacks) {
-            const glyphData = stacks[stack];
+            const glyphData = stacks[stack]!;
             const glyphPositionMap: GlyphPositionMap = positions[stack] = {};
 
             for (const id in glyphData.glyphs) {
@@ -63,12 +63,12 @@ export default class GlyphAtlas {
         const image = new AlphaImage({width: w || 1, height: h || 1});
 
         for (const stack in stacks) {
-            const glyphData = stacks[stack];
+            const glyphData = stacks[stack]!;
 
             for (const id in glyphData.glyphs) {
                 const src = glyphData.glyphs[+id];
                 if (!src || src.bitmap.width === 0 || src.bitmap.height === 0) continue;
-                const bin = positions[stack][id];
+                const bin = positions[stack]![id]!;
                 const padding = src.metrics.localGlyph ? localGlyphPadding : glyphPadding;
                 AlphaImage.copy(src.bitmap, image, {x: 0, y: 0}, {x: bin.x + padding, y: bin.y + padding}, src.bitmap);
             }

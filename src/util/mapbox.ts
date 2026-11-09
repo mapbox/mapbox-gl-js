@@ -23,7 +23,6 @@ import {getLivePerformanceMetrics} from '../util/live_performance';
 import type {ResourceType, RequestParameters, RequestTransformFunction} from './ajax';
 import type {LivePerformanceData} from '../util/live_performance';
 import type {TileJSON} from '../types/tilejson';
-import type {Map as MapboxMap} from "../ui/map";
 
 // eslint-disable-next-line import-x/extensions -- Rollup resolves .d.ts by the ".d" part; renaming would break resolution
 import '../types/import-meta.d';
@@ -254,7 +253,7 @@ function getAccessToken(params: Array<string>): string | null {
     for (const param of params) {
         const match = param.match(ACCESS_TOKEN_PARAM_RE);
         if (match) {
-            return match[1];
+            return match[1]!;
         }
     }
     return null;
@@ -268,8 +267,8 @@ function parseUrl(url: string): UrlObject {
         throw new Error('Unable to parse URL object');
     }
     return {
-        protocol: parts[1],
-        authority: parts[2],
+        protocol: parts[1]!,
+        authority: parts[2]!,
         path: parts[3] || '/',
         params: parts[4] ? parts[4].split('&') : []
     };
@@ -293,7 +292,7 @@ export function parseAccessToken(accessToken?: string | null): {u?: string; atla
     }
 
     try {
-        const jsonData = JSON.parse(b64DecodeUnicode(parts[1])) as {u?: string; atlas?: number};
+        const jsonData = JSON.parse(b64DecodeUnicode(parts[1]!)) as {u?: string; atlas?: number};
         return jsonData;
     } catch (e) {
         return null;
@@ -513,9 +512,9 @@ export class PerformanceEvent extends TelemetryEvent {
             return;
         }
 
-        const {timestamp, performanceData, customAccessToken} = this.queue.shift();
+        const {timestamp, performanceData, customAccessToken} = this.queue.shift()!;
 
-        const additionalPayload = getLivePerformanceMetrics(performanceData);
+        const additionalPayload = getLivePerformanceMetrics(performanceData!);
 
         // Server will only process string for these entries
         for (const metadata of additionalPayload.metadata) {
@@ -561,7 +560,7 @@ export class MapLoadEvent extends TelemetryEvent {
 
     override processRequests() {
         if (this.pendingRequest || this.queue.length === 0) return;
-        const {id, timestamp, customAccessToken} = this.queue.shift();
+        const {id, timestamp, customAccessToken} = this.queue.shift()!;
 
         // Only one load event should fire per map
         if (id && this.success[id]) return;
@@ -590,7 +589,7 @@ export class MapLoadEvent extends TelemetryEvent {
         this.postEvent(timestamp, additionalPayload, (err) => {
             if (err) {
                 // The map may have been removed while the request was in flight
-                const errorCb = this.errorCbs.get(id);
+                const errorCb = this.errorCbs.get(id!);
                 if (errorCb) errorCb(err);
             } else {
                 if (id) this.success[id] = true;
@@ -604,7 +603,7 @@ export class MapLoadEvent extends TelemetryEvent {
 }
 
 type StyleLoadEventInput = {
-    map: MapboxMap;
+    map: object;
     style: string;
     importedStyles: string[];
 };
@@ -618,7 +617,7 @@ type StyleLoadEventPayload = {
 
 export class StyleLoadEvent extends TelemetryEvent {
     eventIdPerMapInstanceMap: Map<string, number>;
-    mapInstanceIdMap: WeakMap<MapboxMap, string>;
+    mapInstanceIdMap: WeakMap<object, string>;
 
     constructor() {
         super('style.load');
@@ -626,7 +625,7 @@ export class StyleLoadEvent extends TelemetryEvent {
         this.mapInstanceIdMap = new WeakMap();
     }
 
-    getMapInstanceId(map: MapboxMap): string {
+    getMapInstanceId(map: object): string {
         let instanceId = this.mapInstanceIdMap.get(map);
 
         if (!instanceId) {
@@ -674,9 +673,9 @@ export class StyleLoadEvent extends TelemetryEvent {
             return;
         }
 
-        const {timestamp, payload, customAccessToken} = this.queue.shift();
+        const {timestamp, payload, customAccessToken} = this.queue.shift()!;
 
-        this.postEvent(timestamp, payload, () => {}, customAccessToken);
+        this.postEvent(timestamp, payload!, () => {}, customAccessToken);
     }
 }
 
@@ -726,9 +725,9 @@ class MetricsEvent extends TelemetryEvent {
             return;
         }
 
-        const {timestamp, payload, customAccessToken} = this.queue.shift();
+        const {timestamp, payload, customAccessToken} = this.queue.shift()!;
 
-        this.postEvent(timestamp, payload, () => {}, customAccessToken);
+        this.postEvent(timestamp, payload!, () => {}, customAccessToken);
     }
 }
 
@@ -784,7 +783,7 @@ export class MapSessionAPI extends TelemetryEvent {
 
     override processRequests() {
         if (this.pendingRequest || this.queue.length === 0) return;
-        const {id, timestamp, customAccessToken} = this.queue.shift();
+        const {id, timestamp, customAccessToken} = this.queue.shift()!;
 
         // Only one load event should fire per map
         if (id && this.success[id]) return;
@@ -792,7 +791,7 @@ export class MapSessionAPI extends TelemetryEvent {
         this.getSession(timestamp, this.skuToken, (err) => {
             if (err) {
                 // The map may have been removed while the request was in flight
-                const errorCb = this.errorCbs.get(id);
+                const errorCb = this.errorCbs.get(id!);
                 if (errorCb) errorCb(err);
             } else {
                 if (id) this.success[id] = true;
@@ -843,7 +842,7 @@ export class TurnstileEvent extends TelemetryEvent {
             dueForEvent = true;
         }
 
-        const {timestamp: nextUpdate, customAccessToken} = this.queue.shift();
+        const {timestamp: nextUpdate, customAccessToken} = this.queue.shift()!;
         // Record turnstile event once per calendar day.
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (this.eventData.lastSuccess) {

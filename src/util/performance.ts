@@ -103,7 +103,7 @@ export const PerformanceUtils = {
         trackName?: string
     ) {
         if ((grpMask & performanceUtilsGroupsMask) === 0) return;
-        console.timeStamp(label, start, end !== undefined ? end : performance.now(), trackNameOrDefault());
+        (console as unknown as {timeStamp: (label: string, start?: string | number, end?: string | number, track?: string) => void}).timeStamp(label, start, end !== undefined ? end : performance.now(), trackNameOrDefault());
     },
 
     measure(name: string, begin?: string, end?: string) {

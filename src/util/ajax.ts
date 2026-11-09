@@ -241,9 +241,9 @@ async function makeXMLHttpRequest<T>(requestParameters: RequestParameters, signa
         const xhr: XMLHttpRequest = new XMLHttpRequest();
 
         const onAbort = () => {
-            signal.removeEventListener('abort', onAbort);
+            signal!.removeEventListener('abort', onAbort);
             xhr.abort();
-            reject(signal.reason as Error);
+            reject(signal!.reason as Error);
         };
 
         if (signal) {
@@ -255,7 +255,7 @@ async function makeXMLHttpRequest<T>(requestParameters: RequestParameters, signa
             xhr.responseType = 'arraybuffer';
         }
         for (const k in requestParameters.headers) {
-            xhr.setRequestHeader(k, requestParameters.headers[k]);
+            xhr.setRequestHeader(k, requestParameters.headers[k]!);
         }
         if (requestParameters.type === 'json') {
             xhr.responseType = 'text';
@@ -335,7 +335,7 @@ function sameOrigin(url: string) {
 // Limit concurrent image loads to help with raster sources performance on big screens.
 // See https://github.com/mapbox/mapbox-gl-js/issues/1470.
 let imageRequestQueue: Array<() => void>;
-let activeImageRequests: number;
+let activeImageRequests!: number;
 export const resetImageRequestQueue = () => {
     imageRequestQueue = [];
     activeImageRequests = 0;
@@ -373,7 +373,7 @@ function acquireImageRequest(signal?: AbortSignal): Promise<() => void> {
         const cancel = () => {
             const index = imageRequestQueue.indexOf(dequeue);
             if (index !== -1) imageRequestQueue.splice(index, 1);
-            reject(signal.reason as Error);
+            reject(signal!.reason as Error);
         };
 
         if (signal) signal.addEventListener('abort', cancel);

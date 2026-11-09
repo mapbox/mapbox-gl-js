@@ -38,11 +38,11 @@ function checkMaxAngle(
         // there isn't enough room for the label after the beginning of the line
         if (index < 0) return false;
 
-        anchorDistance -= line[index].dist(p);
-        p = line[index];
+        anchorDistance -= line[index]!.dist(p);
+        p = line[index]!;
     }
 
-    anchorDistance += line[index].dist(line[index + 1]);
+    anchorDistance += line[index]!.dist(line[index + 1]!);
     index++;
 
     // store recent corners and their total angle difference
@@ -51,8 +51,8 @@ function checkMaxAngle(
 
     // move forwards by the length of the label and check angles along the way
     while (anchorDistance < labelLength / 2) {
-        const prev = line[index - 1];
-        const current = line[index];
+        const prev = line[index - 1]!;
+        const current = line[index]!;
         const next = line[index + 1];
 
         // there isn't enough room for the label before the end of the line
@@ -69,8 +69,8 @@ function checkMaxAngle(
         recentAngleDelta += angleDelta;
 
         // remove corners that are far enough away from the list of recent anchors
-        while (anchorDistance - recentCorners[0].distance > windowSize) {
-            recentAngleDelta -= recentCorners.shift().angleDelta;
+        while (anchorDistance - recentCorners[0]!.distance > windowSize) {
+            recentAngleDelta -= recentCorners.shift()!.angleDelta;
         }
 
         // the sum of angles within the window area exceeds the maximum allowed value. check fails.

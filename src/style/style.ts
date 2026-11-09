@@ -727,7 +727,7 @@ class Style extends Evented<MapEvents> {
         imports: Array<ImportSpecification>,
         validate: boolean,
         beforeId?: string | null,
-    ): Promise<void> {
+    ): Promise<unknown> {
         // We take the root style into account when calculating the import depth.
         if (this.importDepth >= MAX_IMPORT_DEPTH - 1) {
             warnOnce(`Style doesn't support nesting deeper than ${MAX_IMPORT_DEPTH}`);
@@ -810,7 +810,7 @@ class Style extends Evented<MapEvents> {
 
         }
 
-        return Promise.allSettled(waitForStyles) as unknown as Promise<void>;
+        return Promise.allSettled(waitForStyles);
     }
 
     getImportGlobalIds(style: Style = this, ids: Set<string> = new Set()): string[] {
@@ -2308,7 +2308,7 @@ class Style extends Evented<MapEvents> {
         const changesPromises: unknown[] = [];
 
         changes.forEach((op) => {
-            changesPromises.push((this as unknown as Record<string, (...args: unknown[]) => unknown>)[op.command](...op.args));
+            changesPromises.push((this as this & Record<string, (...args: unknown[]) => unknown>)[op.command](...op.args));
         });
 
         if (onFinish) {
@@ -3490,7 +3490,7 @@ class Style extends Evented<MapEvents> {
                 objectKey: name,
                 value,
                 styleSpec
-            } as unknown as PropertyValidatorOptions));
+            } as PropertyValidatorOptions));
             if (errors) {
                 return;
             }
@@ -4873,7 +4873,7 @@ class Style extends Evented<MapEvents> {
 
     // Fragments and merging
 
-    addImport(importSpec: ImportSpecification, beforeId?: string | null): Promise<void> {
+    addImport(importSpec: ImportSpecification, beforeId?: string | null): Promise<unknown> {
         this._checkLoaded();
 
         const reservedImportIds = new Set(['__proto__', 'constructor', 'prototype']);

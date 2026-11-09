@@ -167,7 +167,7 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "icon-image-cross-fade": new DataConstantProperty(styleSpec["paint_symbol"]["icon-image-cross-fade"]),
     "text-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["text-opacity"]),
     "text-occlusion-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["text-occlusion-opacity"]),
-    "text-color": new DataDrivenProperty(styleSpec["paint_symbol"]["text-color"], { runtimeType: ColorType, getOverride: (o: Record<string, unknown>) => o.textColor, hasOverride: (o: Record<string, unknown>) => !!o.textColor }),
+    "text-color": new DataDrivenProperty(styleSpec["paint_symbol"]["text-color"], { runtimeType: ColorType, getOverride: (o: unknown) => (o as Record<string, unknown>).textColor, hasOverride: (o: unknown) => !!(o as Record<string, unknown>).textColor }),
     "text-halo-color": new DataDrivenProperty(styleSpec["paint_symbol"]["text-halo-color"]),
     "text-halo-width": new DataDrivenProperty(styleSpec["paint_symbol"]["text-halo-width"]),
     "text-halo-blur": new DataDrivenProperty(styleSpec["paint_symbol"]["text-halo-blur"]),

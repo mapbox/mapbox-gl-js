@@ -76,19 +76,19 @@ export class ElevationPortalGraph {
         do {
             end++;
 
-            if (end === portals.length || portals[begin].hash !== portals[end].hash) {
+            if (end === portals.length || portals[begin]!.hash !== portals[end]!.hash) {
                 assert(end - begin <= 2);
 
                 if (end - begin === 2) {
                     // This edge is shared by two polygons and a portal should be created.
                     // (More than two shared edges is undefined behavior.)
                     if (out < begin) {
-                        portals[out] = portals[begin];
-                        portals[begin] = null;
+                        portals[out] = portals[begin]!;
+                        portals[begin] = null!;
                     }
 
-                    const outPortal = portals[out];
-                    const endPortal = portals[end - 1];
+                    const outPortal = portals[out]!;
+                    const endPortal = portals[end - 1]!;
 
                     outPortal.type = outPortal.isTunnel !== endPortal.isTunnel ? 'tunnel' : 'polygon';
                     outPortal.connection = {a: outPortal.connection.a, b: endPortal.connection.a};

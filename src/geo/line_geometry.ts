@@ -13,10 +13,10 @@ function isClockWise(vertices: Array<Point>) {
     const n = vertices.length;
 
     for (let i = 0; i < n; i++) {
-        const x1 = vertices[i].x;
-        const y1 = vertices[i].y;
-        const x2 = vertices[(i + 1) % n].x;
-        const y2 = vertices[(i + 1) % n].y;
+        const x1 = vertices[i]!.x;
+        const y1 = vertices[i]!.y;
+        const x2 = vertices[(i + 1) % n]!.x;
+        const y2 = vertices[(i + 1) % n]!.y;
 
         signedArea += (x2 - x1) * (y2 + y1);
     }
@@ -26,7 +26,7 @@ function isClockWise(vertices: Array<Point>) {
 
 // Note: This function mostly matches the geometry processing code of the line bucket.
 export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
-    const isPolygon = vertices[0].x === vertices.at(-1).x && vertices[0].y === vertices.at(-1).y;
+    const isPolygon = vertices[0]!.x === vertices.at(-1)!.x && vertices[0]!.y === vertices.at(-1)!.y;
     const isCW = isClockWise(vertices);
     if (!isCW) {
         vertices = vertices.reverse();
@@ -42,12 +42,12 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
 
     // If the line has duplicate vertices at the ends, adjust start/length to remove them.
     let len = vertices.length;
-    while (len >= 2 && vertices[len - 1].equals(vertices[len - 2])) {
+    while (len >= 2 && vertices[len - 1]!.equals(vertices[len - 2]!)) {
         len--;
     }
     if (len < (isPolygon ? 3 : 2)) return wallGeometry;
     let first = 0;
-    while (first < len - 1 && vertices[first].equals(vertices[first + 1])) {
+    while (first < len - 1 && vertices[first]!.equals(vertices[first + 1]!)) {
         first++;
     }
 
@@ -59,7 +59,7 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
 
     if (isPolygon) {
         currentVertex = vertices[len - 2];
-        nextNormal = vertices[first].sub(currentVertex)._unit()._perp();
+        nextNormal = vertices[first]!.sub(currentVertex!)._unit()._perp();
     }
 
     for (let i = first; i < len; i++) {
@@ -69,7 +69,7 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
             vertices[i + 1]; // just the next vertex
 
         // if two consecutive vertices exist, skip the current one
-        if (nextVertex && vertices[i].equals(nextVertex)) continue;
+        if (nextVertex && vertices[i]!.equals(nextVertex)) continue;
 
         if (nextNormal) prevNormal = nextNormal;
         if (currentVertex) prevVertex = currentVertex;
@@ -79,7 +79,7 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
         // Calculate the normal towards the next vertex in this line. In case
         // there is no next vertex, pretend that the line is continuing straight,
         // meaning that we are just using the previous normal.
-        nextNormal = nextVertex ? nextVertex.sub(currentVertex)._unit()._perp() : prevNormal;
+        nextNormal = nextVertex ? nextVertex.sub(currentVertex!)._unit()._perp() : prevNormal;
 
         // If we still don't have a previous normal, this is the beginning of a
         // non-closed line, so we're doing a straight "join".
@@ -91,18 +91,18 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
         // prevNormal + nextNormal = (0, 0), its magnitude is 0, so the unit vector would be
         // undefined. In that case, we're keeping the joinNormal at (0, 0), so that the cosHalfAngle
         // below will also become 0 and miterLength will become Infinity.
-        let joinNormal = prevNormal.add(nextNormal);
+        let joinNormal = prevNormal!.add(nextNormal!);
         if (joinNormal.x !== 0 || joinNormal.y !== 0) {
             joinNormal._unit();
         }
 
-        const cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
+        const cosHalfAngle = joinNormal.x * nextNormal!.x + joinNormal.y * nextNormal!.y;
 
         // Calculate the length of the miter (the ratio of the miter to the width)
         // as the inverse of cosine of the angle between next and join normals
         const miterLength = cosHalfAngle !== 0 ? 1 / cosHalfAngle : Infinity;
 
-        const lineTurnsLeft = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0;
+        const lineTurnsLeft = prevNormal!.x * nextNormal!.y - prevNormal!.y * nextNormal!.x > 0;
 
         // Note: Currently only mitter join is supported for walls,
         // we can consider adding different join modes in later releases.
@@ -137,13 +137,13 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
 
         if (currentJoin === 'miter') {
             joinNormal._mult(miterLength);
-            addWallJoin(currentVertex, joinNormal, 0, 0);
+            addWallJoin(currentVertex!, joinNormal, 0, 0);
         } else if (currentJoin === 'flipbevel') {
             // miter is too big, flip the direction to make a beveled join
             // Almost parallel lines
-            joinNormal = nextNormal.mult(-1);
-            addWallJoin(currentVertex, joinNormal, 0, 0);
-            addWallJoin(currentVertex, joinNormal.mult(-1), 0, 0);
+            joinNormal = nextNormal!.mult(-1);
+            addWallJoin(currentVertex!, joinNormal, 0, 0);
+            addWallJoin(currentVertex!, joinNormal.mult(-1), 0, 0);
         } else { // bevel join
             const offset = -Math.sqrt(miterLength * miterLength - 1);
             const offsetA = lineTurnsLeft ? offset : 0;
@@ -151,19 +151,19 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
 
             // Close previous segment with a bevel
             if (prevVertex) {
-                addWallJoin(currentVertex, prevNormal, offsetA, offsetB);
+                addWallJoin(currentVertex!, prevNormal!, offsetA, offsetB);
             }
 
             if (nextVertex) {
-                addWallJoin(currentVertex, nextNormal, offsetA, offsetB);
+                addWallJoin(currentVertex!, nextNormal!, offsetA, offsetB);
             }
         }
 
     }
 
-    wallGeometry.geometry = [...innerWall, ...outerWall.reverse(), innerWall[0]];
+    wallGeometry.geometry = [...innerWall, ...outerWall.reverse(), innerWall[0]!];
 
-    wallGeometry.joinNormals = [...joinNormals, ...joinNormals.reverse(), joinNormals.at(-1)];
+    wallGeometry.joinNormals = [...joinNormals, ...joinNormals.reverse(), joinNormals.at(-1)!];
 
     // Build index buffer
     const numPoints = wallGeometry.geometry.length - 1;
@@ -207,7 +207,7 @@ export function dropBufferConnectionLines(polygon: Array<Point>, isPolygon: bool
     if (!isPolygon || polygon.length < 2) {
         return [polygon];
     } else if (polygon.length === 2) {
-        if (edgeIntersectsBox(polygon[0], polygon[1], tileCorners)) {
+        if (edgeIntersectsBox(polygon[0]!, polygon[1]!, tileCorners)) {
             return [polygon];
         }
         return [];
@@ -216,12 +216,12 @@ export function dropBufferConnectionLines(polygon: Array<Point>, isPolygon: bool
             const p0 = i === 0 ? polygon.at(-1) : polygon[(i - 1) % polygon.length];
             const p1 = polygon[i % polygon.length];
             const p2 = polygon[(i + 1) % polygon.length];
-            const intersectsPrev = edgeIntersectsBox(p0, p1, tileCorners);
-            const intersectsNext = edgeIntersectsBox(p1, p2, tileCorners);
+            const intersectsPrev = edgeIntersectsBox(p0!, p1!, tileCorners);
+            const intersectsNext = edgeIntersectsBox(p1!, p2!, tileCorners);
             const addPoint = intersectsPrev || intersectsNext;
 
             if (addPoint) {
-                lineSegment.push(p1);
+                lineSegment.push(p1!);
             }
             if (!addPoint || !intersectsNext) {
                 // Close segment and start new

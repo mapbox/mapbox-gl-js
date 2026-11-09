@@ -650,8 +650,7 @@ describe("mapbox", () => {
             config.API_URL = 'http://localhost:8080';
             const event = new mapbox.StyleLoadEvent();
             event.postStyleLoadEvent(makeExpirationToken(1774345201000), {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                map: {} as any,
+                map: {},
                 style: 'mapbox://styles/mapbox/streets-v12',
                 importedStyles: []
             });

@@ -12,7 +12,7 @@ import {number as interpolate} from '../../src/style-spec/util/interpolate';
 import {mulberry32} from '../../src/style-spec/util/random';
 
 // Module-level scratch: instance fields would be dropped by Object.create across the worker boundary.
-const scratchVec2 = [vec2.create(), vec2.create(), vec2.create(), vec2.create(), vec2.create(), vec2.create(), vec2.create()];
+const scratchVec2: [vec2, vec2, vec2, vec2, vec2, vec2, vec2] = [vec2.create(), vec2.create(), vec2.create(), vec2.create(), vec2.create(), vec2.create(), vec2.create()];
 // Separate scratch pair — getClosestEdge may run during the merge.
 const _mergeSafeMin = vec2.create();
 const _mergeSafeMax = vec2.create();
@@ -101,8 +101,8 @@ export class EdgeIterator {
     get(): [Point, Point] {
         assert(this.index < this.feature.vertices.length);
 
-        const vertex = this.feature.vertices[this.index];
-        const dir = this.feature.vertexProps[this.index].dir;
+        const vertex = this.feature.vertices[this.index]!;
+        const dir = this.feature.vertexProps[this.index]!.dir;
 
         // Compute perpendicular split line
         const perpX = dir[1];
@@ -142,22 +142,22 @@ export class ElevationFeature {
         // Ensure that if constantHeight is not provided then vertices, edges, and metersToTile must be provided
         assert(constantHeight == null ? vertices != null && edges != null && metersToTile != null : true);
         this.id = id;
-        this.heightRange = {min: constantHeight, max: constantHeight};
+        this.heightRange = {min: constantHeight!, max: constantHeight!};
         this.safeArea = safeArea;
         this.constantHeight = constantHeight;
 
-        if (this.constantHeight != null || (this.constantHeight == null && vertices.length === 0)) return;
+        if (this.constantHeight != null || (this.constantHeight == null && vertices!.length === 0)) return;
 
-        this.vertices = vertices;
-        this.edges = edges;
+        this.vertices = vertices!;
+        this.edges = edges!;
         for (let i = 0; i < this.vertices.length; i++) {
-            this.vertices[i].index = this.vertices[i].index !== undefined ? this.vertices[i].index : i;
+            this.vertices[i]!.index = this.vertices[i]!.index !== undefined ? this.vertices[i]!.index : i;
         }
 
         // Check that edges are valid
         this.edges = this.edges.filter(edge => edge.a < this.vertices.length &&
             edge.b < this.vertices.length &&
-            !vec2.exactEquals(this.vertices[edge.a].position, this.vertices[edge.b].position)
+            !vec2.exactEquals(this.vertices[edge.a]!.position, this.vertices[edge.b]!.position)
         );
 
         this.heightRange = {min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY};
@@ -169,8 +169,8 @@ export class ElevationFeature {
         }
 
         for (const edge of this.edges) {
-            const a = this.vertices[edge.a].position;
-            const b = this.vertices[edge.b].position;
+            const a = this.vertices[edge.a]!.position;
+            const b = this.vertices[edge.b]!.position;
 
             const vec = vec2.subtract(vec2.create(), b, a);
             const len = vec2.length(vec);
@@ -178,8 +178,8 @@ export class ElevationFeature {
 
             this.edgeProps.push({vec, dir, len});
 
-            const dirA = this.vertexProps[edge.a].dir;
-            const dirB = this.vertexProps[edge.b].dir;
+            const dirA = this.vertexProps[edge.a]!.dir;
+            const dirB = this.vertexProps[edge.b]!.dir;
 
             // Accumulate direction vectors for vertices
             vec2.add(dirA, dirA, dir);
@@ -195,7 +195,7 @@ export class ElevationFeature {
         // Perform additional tessellation step where edges are split into two
         // if they would generate geometry that deviates too much from a planar surface.
         // This is done to reduce z-clipping with between stackable polygons.
-        this.tessellate(metersToTile);
+        this.tessellate(metersToTile!);
     }
 
     // Sample point at the provided location
@@ -211,10 +211,10 @@ export class ElevationFeature {
         }
 
         const [idx, t] = closestEdge;
-        const aIdx = this.edges[idx].a;
-        const bIdx = this.edges[idx].b;
+        const aIdx = this.edges[idx]!.a;
+        const bIdx = this.edges[idx]!.b;
 
-        return interpolate(this.vertices[aIdx].height, this.vertices[bIdx].height, t);
+        return interpolate(this.vertices[aIdx]!.height, this.vertices[bIdx]!.height, t);
     }
 
     computeSlopeNormal(point: Point, metersToTile: number): vec3 {
@@ -223,11 +223,11 @@ export class ElevationFeature {
         if (!closestEdge) return vec3.fromValues(0, 0, 1);
 
         const edgeIdx = closestEdge[0];
-        const edge = this.edges[edgeIdx];
-        const a = this.vertices[edge.a];
-        const b = this.vertices[edge.b];
+        const edge = this.edges[edgeIdx]!;
+        const a = this.vertices[edge.a]!;
+        const b = this.vertices[edge.b]!;
 
-        const vec = this.edgeProps[edgeIdx].vec;
+        const vec = this.edgeProps[edgeIdx]!.vec;
         const edgeVec = vec3.fromValues(vec[0], vec[1], (b.height - a.height) * metersToTile);
         const norm = vec3.fromValues(edgeVec[1], -edgeVec[0], 0.0);
         vec3.cross(norm, norm, edgeVec);
@@ -261,20 +261,20 @@ export class ElevationFeature {
 
         vec2.set(pointVec, point.x, point.y);
         // The ray direction will be updated for each iteration of the loop.
-        const ray = new Ray2D(pointVec, null);
+        const ray = new Ray2D(pointVec, null!);
 
         for (let i = 0; i < this.edges.length; i++) {
-            const edge = this.edges[i];
-            const edgeDir = this.edgeProps[i].dir;
+            const edge = this.edges[i]!;
+            const edgeDir = this.edgeProps[i]!.dir;
             ray.dir = edgeDir;
 
             // Both end points of the edge have "direction" property which is the average direction
             // of the connected edges. For this reason a simplified quadrilateral interpolation is required.
-            const a = this.vertices[edge.a].position;
-            const b = this.vertices[edge.b].position;
+            const a = this.vertices[edge.a]!.position;
+            const b = this.vertices[edge.b]!.position;
 
-            const paResult = ray.intersectsPlane(a, this.vertexProps[edge.a].dir, pa);
-            const pbResult = ray.intersectsPlane(b, this.vertexProps[edge.b].dir, pb);
+            const paResult = ray.intersectsPlane(a, this.vertexProps[edge.a]!.dir, pa);
+            const pbResult = ray.intersectsPlane(b, this.vertexProps[edge.b]!.dir, pb);
 
             if (!paResult || !pbResult) {
                 continue;
@@ -287,7 +287,7 @@ export class ElevationFeature {
             const clampedT = clamp(t, 0.0, 1.0);
 
             // Use manhattan distance instead of euclidean one in order to distinguish the correct line.
-            const distAlongLine = Math.abs((t - clampedT) * this.edgeProps[i].len);
+            const distAlongLine = Math.abs((t - clampedT) * this.edgeProps[i]!.len);
             vec2.subtract(aPoint, pointVec, a);
             vec2.set(perpDir, edgeDir[1], -edgeDir[0]);
             const perpDist = Math.abs(vec2.dot(aPoint, perpDir));
@@ -313,8 +313,8 @@ export class ElevationFeature {
         const bPerp = vec3.create();
 
         for (let i = this.edges.length - 1; i >= 0; --i) {
-            const a = this.edges[i].a;
-            const b = this.edges[i].b;
+            const a = this.edges[i]!.a;
+            const b = this.edges[i]!.b;
 
             // Try to approximate how much the surface generated by perpendicular vectors at both edge end points
             // deviates from a planar surface. This is done by computing the closest distance between the two
@@ -322,10 +322,10 @@ export class ElevationFeature {
             //
             // This step is required to reduce z-fighting/z-clipping when using the elevation feature to compute
             // elevation for multiple geometries (with different topology) stacked on top of each other
-            const {position: aTilePos, height: aHeight, extent: aExtent} = this.vertices[a];
-            const {position: bTilePos, height: bHeight, extent: bExtent} = this.vertices[b];
-            const aDir = this.vertexProps[a].dir;
-            const bDir = this.vertexProps[b].dir;
+            const {position: aTilePos, height: aHeight, extent: aExtent} = this.vertices[a]!;
+            const {position: bTilePos, height: bHeight, extent: bExtent} = this.vertices[b]!;
+            const aDir = this.vertexProps[a]!.dir;
+            const bDir = this.vertexProps[b]!.dir;
 
             vec3.set(aPos, aTilePos[0] / metersToTile, aTilePos[1] / metersToTile, aHeight);
             vec3.set(bPos, bTilePos[0] / metersToTile, bTilePos[1] / metersToTile, bHeight);
@@ -352,7 +352,7 @@ export class ElevationFeature {
                 position: vec2.scale(pos, pos, 0.5),
                 height: 0.5 * (aHeight + bHeight),
                 extent: 0.5 * (aExtent + bExtent),
-                index: 0.5 * ((this.vertices[a].index !== undefined ? this.vertices[a].index : a) + (this.vertices[b].index !== undefined ? this.vertices[b].index : b)),
+                index: 0.5 * ((this.vertices[a]!.index !== undefined ? this.vertices[a]!.index : a) + (this.vertices[b]!.index !== undefined ? this.vertices[b]!.index : b)),
             });
 
             const dir = vec2.add(vec2.create(), aDir, bDir);
@@ -364,7 +364,7 @@ export class ElevationFeature {
             this.edges.push({a, b: mid});
             this.edges.push({a: mid, b});
 
-            const edgeVec = vec2.subtract(vec2.create(), this.vertices[mid].position, aTilePos);
+            const edgeVec = vec2.subtract(vec2.create(), this.vertices[mid]!.position, aTilePos);
             const edgeLen = vec2.length(edgeVec);
             const edgeDir = vec2.scale(vec2.create(), edgeVec, 1.0 / edgeLen);
             const props: EdgeProps = {
@@ -523,11 +523,11 @@ export abstract class ElevationFeatures {
             }
 
             // Match vertex range [vCurrent, vEnd) for this feature
-            while (vCurrent !== vEnd && vertices[vCurrent].id < feature.id) {
+            while (vCurrent !== vEnd && vertices[vCurrent]!.id < feature.id) {
                 vCurrent++;
             }
 
-            if (vCurrent === vEnd || vertices[vCurrent].id !== feature.id) {
+            if (vCurrent === vEnd || vertices[vCurrent]!.id !== feature.id) {
                 continue;
             }
 
@@ -537,11 +537,11 @@ export abstract class ElevationFeatures {
             // Extract edges with adjacent index values
             const vFirst = vCurrent;
 
-            while (vCurrent !== vEnd && vertices[vCurrent].id === feature.id) {
-                const vertex = vertices[vCurrent];
+            while (vCurrent !== vEnd && vertices[vCurrent]!.id === feature.id) {
+                const vertex = vertices[vCurrent]!;
                 outVertices.push({position: vertex.position, height: vertex.height, extent: vertex.extent, index: vertex.idx});
 
-                if (vCurrent !== vFirst && vertices[vCurrent - 1].idx === vertex.idx - 1) {
+                if (vCurrent !== vFirst && vertices[vCurrent - 1]!.idx === vertex.idx - 1) {
                     const idx = vCurrent - vFirst;
                     outEdges.push({a: idx - 1, b: idx});
                 }
@@ -555,7 +555,7 @@ export abstract class ElevationFeatures {
         }
 
         // Ensure that features are sorted by id
-        assert(elevationFeatures.every((feature, index, array) => index === 0 || array[index - 1].id <= feature.id));
+        assert(elevationFeatures.every((feature, index, array) => index === 0 || array[index - 1]!.id <= feature.id));
 
         return elevationFeatures;
     }
@@ -654,15 +654,15 @@ export function mergeElevationFeatures(consumerTileId: CanonicalTileID, parts: {
 
     const bounds: Bounds = {min, max};
 
-    if (sorted[0].feature.constantHeight != null) {
-        return new ElevationFeature(sorted[0].feature.id, bounds, sorted[0].feature.constantHeight);
+    if (sorted[0]!.feature.constantHeight != null) {
+        return new ElevationFeature(sorted[0]!.feature.id, bounds, sorted[0]!.feature.constantHeight);
     }
 
     // Sort by curve index, drop duplicates (first = highest zoom from the sort above).
-    mergedVertices.sort((a, b) => a.index - b.index);
+    mergedVertices.sort((a, b) => a.index! - b.index!);
     const deduped: Vertex[] = [];
     for (const vertex of mergedVertices) {
-        if (deduped.length === 0 || deduped.at(-1).index !== vertex.index) {
+        if (deduped.length === 0 || deduped.at(-1)!.index !== vertex.index) {
             deduped.push(vertex);
         }
     }
@@ -670,13 +670,13 @@ export function mergeElevationFeatures(consumerTileId: CanonicalTileID, parts: {
     // Connect consecutive vertices whose curve indices are adjacent (gaps mark separate spans).
     const edges: Edge[] = [];
     for (let i = 1; i < deduped.length; i++) {
-        if (deduped[i].index - deduped[i - 1].index <= 1.0) {
+        if (deduped[i]!.index! - deduped[i - 1]!.index! <= 1.0) {
             edges.push({a: i - 1, b: i});
         }
     }
 
     const metersToTile = 1.0 / tileToMeter(consumerTileId);
-    return new ElevationFeature(sorted[0].feature.id, bounds, undefined, deduped, edges, metersToTile);
+    return new ElevationFeature(sorted[0]!.feature.id, bounds, undefined, deduped, edges, metersToTile);
 }
 
 register(ElevationFeature, 'ElevationFeature');

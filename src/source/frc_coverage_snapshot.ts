@@ -20,7 +20,7 @@ export class FrcCoveragePolygon {
     }
 
     hasGeometry(): boolean {
-        return this.rings.length > 0 && this.rings[0].length > 0;
+        return this.rings.length > 0 && this.rings[0]!.length > 0;
     }
 }
 

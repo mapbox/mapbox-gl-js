@@ -49,7 +49,7 @@ export type KeepGesture = 'always' | 'ifPointerDown' | 'never';
 type EventInProgress = {handlerName: string; originalEvent?: InputEvent};
 
 // Handler methods looked up by DOM event name (see `Handler`); signatures vary per event.
-type HandlerEventMethods = Record<string, ((e: InputEvent | RenderFrameEvent, points?: Point | Point[], mapTouches?: TouchList) => HandlerResult | null | undefined) | undefined>;
+type HandlerEventMethods = Record<string, ((e: InputEvent | RenderFrameEvent, points?: Point | Point[], mapTouches?: Touch[]) => HandlerResult | null | undefined) | undefined>;
 
 type EventsInProgress = Partial<Record<'zoom' | 'drag' | 'pitch' | 'rotate', EventInProgress>>;
 
@@ -332,7 +332,7 @@ class HandlerManager {
         this.handleEvent(e, `${e.type}Window`);
     }
 
-    _getMapTouches(touches: TouchList): TouchList {
+    _getMapTouches(touches: TouchList): Touch[] {
         const mapTouches: Touch[] = [];
         for (const t of touches) {
             const target = (t.target as Node);
@@ -340,7 +340,7 @@ class HandlerManager {
                 mapTouches.push(t);
             }
         }
-        return mapTouches as unknown as TouchList;
+        return mapTouches;
     }
 
     // Track raw physical pointer state from the DOM events
@@ -408,8 +408,8 @@ class HandlerManager {
                 handler.reset();
 
             } else {
-                if ((handler as unknown as HandlerEventMethods)[eventName || e.type]) {
-                    data = (handler as unknown as HandlerEventMethods)[eventName || e.type](e, points, mapTouches);
+                if ((handler as Handler & HandlerEventMethods)[eventName || e.type]) {
+                    data = (handler as Handler & HandlerEventMethods)[eventName || e.type](e, points, mapTouches);
                     this.mergeHandlerResult(mergedHandlerResult, eventsInProgress, data, handlerName, inputEvent);
                     if (data && data.needsRenderFrame) {
                         this._triggerRenderFrame();

@@ -78,12 +78,12 @@ export class ViewportIntersectionStrategy {
 
         // Check intersection with viewport polygon, if any floor is visible
         for (const floorId of building.floorIds) {
-            const floor = building.floors[floorId];
+            const floor = building.floors[floorId]!;
             if (!floor.geometry) continue;
 
             const geometry = floor.geometry;
             if (geometry.type === 'Polygon') {
-                const floorPoly = this._convertRingToPoints(geometry.coordinates[0]);
+                const floorPoly = this._convertRingToPoints(geometry.coordinates[0]!);
                 if (polygonIntersectsPolygon(floorPoly, viewportPolygon)) {
                     return true;
                 }
@@ -99,14 +99,14 @@ export class ViewportIntersectionStrategy {
     }
 
     _convertRingToPoints(ring: number[][]): Point[] {
-        return ring.map(c => new Point(c[0], c[1]));
+        return ring.map(c => new Point(c[0]!, c[1]!));
     }
 
     _convertMultiPolygonToPoints(multiPoly: number[][][][]): Point[][] {
         // Convert each polygon's exterior ring
         return multiPoly.map(poly => {
             if (poly.length === 0) return [];
-            return poly[0].map(c => new Point(c[0], c[1]));
+            return poly[0]!.map(c => new Point(c[0]!, c[1]!));
         });
     }
 }

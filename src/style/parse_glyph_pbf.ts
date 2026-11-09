@@ -30,7 +30,7 @@ function readFontstack(pbf: PbfReader, end: number, glyphData: GlyphData) {
 
 function readGlyph(pbf: PbfReader, end: number): StyleGlyph {
     let id = 0, width = 0, height = 0, left = 0, top = 0, advance = 0;
-    let bitmap: Uint8Array;
+    let bitmap!: Uint8Array;
     let field: number;
     while ((field = pbf.nextField(end))) {
         if (field === 1) id = pbf.readVarint();

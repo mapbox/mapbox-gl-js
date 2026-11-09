@@ -123,7 +123,7 @@ export class FeatureAppearances {
     // appearance, or -1 if none match (= default/no appearance).
     private evaluateAllFeatures(globalProperties: GlobalProperties): number {
         for (let i = 0; i < this.appearances.length; i++) {
-            const a = this.appearances[i];
+            const a = this.appearances[i]!;
             if (!a.condition) continue;
             if (a.condition.evaluate(globalProperties, undefined, undefined, undefined) as boolean) {
                 return i;

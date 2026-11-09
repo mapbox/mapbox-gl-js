@@ -72,27 +72,27 @@ class SymbolAppearance {
     }
 
     getName(): string {
-        return this.name;
+        return this.name!;
     }
 
     getLayoutProperty(name: keyof AppearanceLayoutProps): PossiblyEvaluatedPropertyValue<ResolvedImage> | PossiblyEvaluatedPropertyValue<number> | PossiblyEvaluatedPropertyValue<[number, number]> {
-        return this.layoutProperties.get(name);
+        return this.layoutProperties!.get(name);
     }
 
     getPaintProperty(name: keyof AppearancePaintProps): PossiblyEvaluatedPropertyValue<Color> | PossiblyEvaluatedPropertyValue<number> | PossiblyEvaluatedPropertyValue<string> | PossiblyEvaluatedPropertyValue<[number, number]> {
-        return this.paintProperties.get(name);
+        return this.paintProperties!.get(name);
     }
 
     getUnevaluatedLayoutProperties(): PropertyValues<AppearanceLayoutProps> {
-        return this.unevaluatedLayout;
+        return this.unevaluatedLayout!;
     }
 
     getUnevaluatedLayoutProperty(name: keyof AppearanceLayoutProps) {
-        return this.unevaluatedLayout._values[name].value;
+        return this.unevaluatedLayout!._values[name].value;
     }
 
     getUnevaluatedPaintProperty(name: keyof AppearancePaintProps) {
-        return this.unevaluatedPaint._values[name].value;
+        return this.unevaluatedPaint!._values[name].value;
     }
 
     recalculate(parameters: EvaluationParameters, availableImages: ImageId[], iconImageUseTheme?: string) {

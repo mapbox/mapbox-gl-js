@@ -2,7 +2,7 @@ import assert from '../style-spec/util/assert';
 import {register} from './web_worker_transfer';
 import Color from '../style-spec/util/color';
 
-import type {LUT} from "./lut";
+import type {LUT} from "../style-spec/types/lut";
 
 export type Size = {
     width: number;
@@ -106,15 +106,15 @@ function copyImage<T extends RGBAImage | AlphaImage>(
                 dstData[dstPixelOffset + 0] = 255;
                 dstData[dstPixelOffset + 1] = 255;
                 dstData[dstPixelOffset + 2] = 255;
-                dstData[dstPixelOffset + 3] = srcData[srcByteOffset];
+                dstData[dstPixelOffset + 3] = srcData[srcByteOffset]!;
             }
         } else if (lut) {
             for (let i = 0; i < size.width; i++) {
                 const srcByteOffset = srcOffset + i * channels;
                 const dstPixelOffset = dstOffset + i * channels;
 
-                const alpha = srcData[srcByteOffset + 3];
-                const color = new Color(srcData[srcByteOffset + 0] / 255, srcData[srcByteOffset + 1] / 255, srcData[srcByteOffset + 2] / 255, alpha);
+                const alpha = srcData[srcByteOffset + 3]!;
+                const color = new Color(srcData[srcByteOffset + 0]! / 255, srcData[srcByteOffset + 1]! / 255, srcData[srcByteOffset + 2]! / 255, alpha);
                 const shifted = color.toNonPremultipliedRenderColor(lut).toArray();
 
                 dstData[dstPixelOffset + 0] = shifted[0];
@@ -125,7 +125,7 @@ function copyImage<T extends RGBAImage | AlphaImage>(
         } else {
             for (let i = 0; i < size.width * channels; i++) {
                 const srcByte = srcOffset + i;
-                dstData[dstOffset + i] = srcData[srcByte];
+                dstData[dstOffset + i] = srcData[srcByte]!;
             }
         }
     }

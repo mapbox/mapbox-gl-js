@@ -35,12 +35,15 @@ export type Serialized =
     | Array<Serialized>
     | SerializedObject;
 
+// Accepts constructors of any signature; `Class<unknown>` rejects those with typed parameters.
+type Constructor = new (...args: never[]) => unknown;
+
 /**
  * A class that can be serialized and deserialized.
  */
-type Klass<T extends Class<unknown> = Class<unknown>> = T & {
+type Klass<T extends Constructor = Constructor> = T & {
     _classRegistryKey?: string;
-    serialize?: (input: unknown, transferables?: Set<Transferable>) => SerializedObject | null;
+    serialize?: (input: unknown, transferables?: Set<Transferable> | null) => SerializedObject | null;
     deserialize?: (input: Serialized) => unknown;
 };
 
@@ -49,7 +52,7 @@ type Registry = Record<string, {
     omit: ReadonlyArray<string>;
 }>;
 
-type RegisterOptions<T extends Class<unknown>> = {
+type RegisterOptions<T extends Constructor> = {
     omit?: ReadonlyArray<keyof InstanceType<T>>;
 };
 
@@ -63,7 +66,7 @@ const registry: Registry = {};
  *
  * @private
  */
-export function register<T extends Class<unknown>>(klass: T, name: string, options: RegisterOptions<T> = {}) {
+export function register<T extends Constructor>(klass: T, name: string, options: RegisterOptions<T> = {}) {
     assert(name, 'Can\'t register a class without a name.');
     assert(!registry[name], `Class "${name}" is already registered.`);
 
@@ -83,7 +86,7 @@ register(Object, 'Object');
 register(Grid as Class<Grid>, 'Grid');
 
 // serialize points as objects
-delete Point.prototype.constructor;
+delete (Point.prototype as {constructor?: unknown}).constructor;
 
 register(Color, 'Color');
 register(Formatted, 'Formatted');
@@ -98,11 +101,11 @@ register(ZoomDependentExpression, 'ZoomDependentExpression');
 register(ZoomConstantExpression, 'ZoomConstantExpression');
 register(CompoundExpression, 'CompoundExpression', {omit: ['_evaluate']});
 for (const name in expressions) {
-    if (!registry[(expressions[name])._classRegistryKey]) register(expressions[name], `Expression${name}`);
+    if (!registry[(expressions[name]!)._classRegistryKey!]) register(expressions[name]!, `Expression${name}`);
 }
 
 function isArrayBuffer(val: unknown): val is ArrayBuffer {
-    return val && (val instanceof ArrayBuffer || (val.constructor && val.constructor.name === 'ArrayBuffer'));
+    return !!(val && (val instanceof ArrayBuffer || (val.constructor && val.constructor.name === 'ArrayBuffer')));
 }
 
 const ERROR_CTORS: Record<string, ErrorConstructor> = {
@@ -149,7 +152,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
     // Null-prototype objects (e.g. Object.create(null)) have no inherited
     // `constructor`, so fall back to the plain-Object codepath. They serialize
     // as plain dicts and round-trip as regular {} on the worker side.
-    const klass = (input.constructor || Object) as Klass;
+    const klass = (input!.constructor || Object) as Klass;
     const name = klass._classRegistryKey;
 
     // builtins are never registered, so plain objects and registered classes skip these checks
@@ -241,7 +244,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
     }
     assert(registry[name]);
 
-    const properties: SerializedObject = klass.serialize ?
+    const properties: SerializedObject | null = klass.serialize ?
         // (Temporary workaround) allow a class to provide static
         // `serialize()` and `deserialize()` methods to bypass the generic
         // approach.

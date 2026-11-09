@@ -66,7 +66,7 @@ class Ray {
             return false;
         }
 
-        const [dx, dy, dz] = this.dir;
+        const [dx, dy, dz] = this.dir as [number, number, number];
 
         const px = this.pos[0] - center[0];
         const py = this.pos[1] - center[1];
@@ -148,7 +148,7 @@ function projectPoints(points: Array<vec3>, origin: vec3, axis: vec3, out: [numb
     let max = -Infinity;
 
     for (let i = 0; i < points.length; i++) {
-        const p = points[i];
+        const p = points[i]!;
         const proj = (p[0] - ox) * ax + (p[1] - oy) * ay + (p[2] - oz) * az;
         if (proj < min) min = proj;
         if (proj > max) max = proj;
@@ -166,7 +166,7 @@ function intersectsFrustum(frustum: Frustum, min: vec3, max: vec3, minZ: number,
     let fullyInside = true;
 
     for (let p = 0; p < frustum.planes.length; p++) {
-        const plane = frustum.planes[p];
+        const plane = frustum.planes[p]!;
         const a = plane[0], b = plane[1], c = plane[2], d = plane[3];
 
         if (!((a > 0 ? max[0] : min[0]) * a + (b > 0 ? max[1] : min[1]) * b + (c > 0 ? maxZ : minZ) * c + d >= 0))
@@ -216,7 +216,7 @@ const FAR_BL = 7;
 function anyPointInsideOfPlane(points: Array<vec3>, plane: vec4): boolean {
     const a = plane[0], b = plane[1], c = plane[2], d = plane[3];
     for (let i = 0; i < points.length; i++) {
-        const p = points[i];
+        const p = points[i]!;
         if (a * p[0] + b * p[1] + c * p[2] + d >= 0) return true;
     }
     return false;
@@ -297,16 +297,16 @@ class Frustum {
         ];
 
         const frustumPlanes = frustumPlanePointIndices.map((p: vec3) => {
-            const a = vec3.sub([], frustumCoords[p[0]], frustumCoords[p[1]]);
-            const b = vec3.sub([], frustumCoords[p[2]], frustumCoords[p[1]]);
+            const a = vec3.sub([], frustumCoords[p[0]]!, frustumCoords[p[1]]!);
+            const b = vec3.sub([], frustumCoords[p[2]]!, frustumCoords[p[1]]!);
             const n = vec3.normalize([], vec3.cross([], a, b)) as [number, number, number];
-            const d = -vec3.dot(n, frustumCoords[p[1]]);
+            const d = -vec3.dot(n, frustumCoords[p[1]]!);
             return n.concat(d);
         }) as FrustumPlanes;
 
         const frustumPoints: vec3[] = [];
         for (let i = 0; i < frustumCoords.length; i++) {
-            frustumPoints.push([frustumCoords[i][0], frustumCoords[i][1], frustumCoords[i][2]]);
+            frustumPoints.push([frustumCoords[i]![0], frustumCoords[i]![1], frustumCoords[i]![2]]);
         }
         return new Frustum(frustumPoints as FrustumPoints, frustumPlanes);
     }
@@ -318,10 +318,10 @@ class Frustum {
     // and origin components in registers across all points.
     intersectsPrecise(vertices: Array<vec3>, faces: Array<vec4>, edges: Array<vec3>): number {
         for (let i = 0; i < faces.length; i++) {
-            if (!anyPointInsideOfPlane(vertices, faces[i])) return 0;
+            if (!anyPointInsideOfPlane(vertices, faces[i]!)) return 0;
         }
         for (let i = 0; i < this.planes.length; i++) {
-            if (!anyPointInsideOfPlane(vertices, this.planes[i])) return 0;
+            if (!anyPointInsideOfPlane(vertices, this.planes[i]!)) return 0;
         }
 
         const points = this.points;
@@ -337,14 +337,14 @@ class Frustum {
 
                 let minA = Infinity, maxA = -Infinity;
                 for (let k = 0; k < points.length; k++) {
-                    const p = points[k];
+                    const p = points[k]!;
                     const d = (p[0] - ox) * ax + (p[1] - oy) * ay + (p[2] - oz) * az;
                     if (d < minA) minA = d;
                     if (d > maxA) maxA = d;
                 }
                 let minB = Infinity, maxB = -Infinity;
                 for (let k = 0; k < vertices.length; k++) {
-                    const v = vertices[k];
+                    const v = vertices[k]!;
                     const d = (v[0] - ox) * ax + (v[1] - oy) * ay + (v[2] - oz) * az;
                     if (d < minB) minB = d;
                     if (d > maxB) maxB = d;
@@ -400,7 +400,7 @@ class Aabb {
         const corners = aabb.getCorners();
 
         for (let i = 0; i < corners.length; ++i) {
-            vec3.transformMat4(corners[i], corners[i], transform);
+            vec3.transformMat4(corners[i]!, corners[i]!, transform);
         }
         return Aabb.fromPoints(corners);
     }
@@ -413,11 +413,11 @@ class Aabb {
 
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
-                const value = transform[j * 4 + i];
-                const a = value * aabb.min[j];
-                const b = value * aabb.max[j];
-                min[i] += Math.min(a, b);
-                max[i] += Math.max(a, b);
+                const value = transform[j * 4 + i]!;
+                const a = value * aabb.min[j]!;
+                const b = value * aabb.max[j]!;
+                min[i]! += Math.min(a, b);
+                max[i]! += Math.max(a, b);
             }
         }
 
@@ -428,7 +428,7 @@ class Aabb {
         const corners = aabb.getCorners();
 
         for (let i = 0; i < corners.length; ++i) {
-            vec3.transformMat4(corners[i], corners[i], transform);
+            vec3.transformMat4(corners[i]!, corners[i]!, transform);
         }
         return corners;
     }
@@ -450,18 +450,18 @@ class Aabb {
     }
 
     distanceX(point: Array<number>): number {
-        const pointOnAabb = Math.max(Math.min(this.max[0], point[0]), this.min[0]);
-        return pointOnAabb - point[0];
+        const pointOnAabb = Math.max(Math.min(this.max[0], point[0]!), this.min[0]);
+        return pointOnAabb - point[0]!;
     }
 
     distanceY(point: Array<number>): number {
-        const pointOnAabb = Math.max(Math.min(this.max[1], point[1]), this.min[1]);
-        return pointOnAabb - point[1];
+        const pointOnAabb = Math.max(Math.min(this.max[1], point[1]!), this.min[1]);
+        return pointOnAabb - point[1]!;
     }
 
     distanceZ(point: Array<number>): number {
-        const pointOnAabb = Math.max(Math.min(this.max[2], point[2]), this.min[2]);
-        return pointOnAabb - point[2];
+        const pointOnAabb = Math.max(Math.min(this.max[2], point[2]!), this.min[2]);
+        return pointOnAabb - point[2]!;
     }
 
     getCorners(): Array<vec3> {
@@ -542,7 +542,7 @@ class Aabb {
 
     intersectsAabb(aabb: Aabb): boolean {
         for (let axis = 0; axis < 3; ++axis) {
-            if (this.min[axis] > aabb.max[axis] || aabb.min[axis] > this.max[axis]) {
+            if (this.min[axis]! > aabb.max[axis]! || aabb.min[axis]! > this.max[axis]!) {
                 return false;
             }
         }
@@ -561,15 +561,15 @@ class Aabb {
 
     encapsulate(aabb: Aabb) {
         for (let i = 0; i < 3; i++) {
-            this.min[i] = Math.min(this.min[i], aabb.min[i]);
-            this.max[i] = Math.max(this.max[i], aabb.max[i]);
+            this.min[i] = Math.min(this.min[i]!, aabb.min[i]!);
+            this.max[i] = Math.max(this.max[i]!, aabb.max[i]!);
         }
     }
 
     encapsulatePoint(point: vec3) {
         for (let i = 0; i < 3; i++) {
-            this.min[i] = Math.min(this.min[i], point[i]);
-            this.max[i] = Math.max(this.max[i], point[i]);
+            this.min[i] = Math.min(this.min[i]!, point[i]!);
+            this.max[i] = Math.max(this.max[i]!, point[i]!);
         }
     }
 

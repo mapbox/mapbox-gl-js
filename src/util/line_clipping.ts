@@ -69,20 +69,20 @@ export function clipLines(lines: Point[][], x1: number, y1: number, x2: number, 
     const clippedLines: Point[][] = [];
 
     for (let l = 0; l < lines.length; l++) {
-        const line = lines[l];
-        let clippedLine: Point[];
+        const line = lines[l]!;
+        let clippedLine: Point[] | undefined;
 
         const startOffset = clippedLines.length;
         let lineTotalLength = 0.0;
 
         for (let i = 0; i < line.length - 1; i++) {
-            let p0 = line[i];
-            let p1 = line[i + 1];
+            let p0 = line[i]!;
+            let p1 = line[i + 1]!;
 
             let segLen = 0.0;
             const lenSoFar = lineTotalLength;
-            let pStart: Point;
-            let pEnd: Point;
+            let pStart!: Point;
+            let pEnd!: Point;
 
             if (linesInfo) {
                 segLen = Math.hypot(p1.x - p0.x, p1.y - p0.y);
@@ -123,7 +123,7 @@ export function clipLines(lines: Point[][], x1: number, y1: number, x2: number, 
                 p1 = new Point(p0.x + (p1.x - p0.x) * ((y2 - p0.y) / (p1.y - p0.y)), y2)._round();
             }
 
-            if (!clippedLine || !p0.equals(clippedLine.at(-1))) {
+            if (!clippedLine || !p0.equals(clippedLine.at(-1)!)) {
                 clippedLine = [p0];
                 clippedLines.push(clippedLine);
 
@@ -140,8 +140,8 @@ export function clipLines(lines: Point[][], x1: number, y1: number, x2: number, 
             clippedLine.push(p1);
 
             if (linesInfo) {
-                linesInfo.at(-1).progress.max = lenSoFar + computeT(pStart, pEnd, p1) * segLen;
-                linesInfo.at(-1).nextPoint = pEnd;
+                linesInfo.at(-1)!.progress.max = lenSoFar + computeT(pStart, pEnd, p1) * segLen;
+                linesInfo.at(-1)!.nextPoint = pEnd;
             }
         }
 
@@ -149,8 +149,8 @@ export function clipLines(lines: Point[][], x1: number, y1: number, x2: number, 
         if (linesInfo) {
             if (lineTotalLength > 0.0) {
                 for (let i = startOffset; i < clippedLines.length; i++) {
-                    linesInfo[i].progress.min /= lineTotalLength;
-                    linesInfo[i].progress.max /= lineTotalLength;
+                    linesInfo[i]!.progress.min /= lineTotalLength;
+                    linesInfo[i]!.progress.max /= lineTotalLength;
                 }
             }
         }
@@ -184,8 +184,8 @@ export function lineSubdivision(subjectLine: Point[], edgeIterator: EdgeIterator
         const [c, d] = edgeIterator.get();
 
         for (let i = 0; i < subjectLine.length - 1; i++) {
-            const a = subjectLine[i];
-            const b = subjectLine[i + 1];
+            const a = subjectLine[i]!;
+            const b = subjectLine[i + 1]!;
 
             const intersection = segmentSegmentIntersection(a, b, c, d);
             if (intersection) {
@@ -216,10 +216,10 @@ export function lineSubdivision(subjectLine: Point[], edgeIterator: EdgeIterator
     if (progressOut) {
         pointDistances.push(0);
         for (let i = 1; i < subjectLine.length; i++) {
-            const a = subjectLine[i - 1];
-            const b = subjectLine[i];
+            const a = subjectLine[i - 1]!;
+            const b = subjectLine[i]!;
 
-            pointDistances.push(pointDistances[i - 1] + Math.hypot(a.x - b.x, a.y - b.y));
+            pointDistances.push(pointDistances[i - 1]! + Math.hypot(a.x - b.x, a.y - b.y));
         }
     }
 
@@ -238,32 +238,32 @@ export function lineSubdivision(subjectLine: Point[], edgeIterator: EdgeIterator
         if (intrIdx === intersections.length) {
             // No more intersection points. Copy remaining subject points
             while (subjIdx !== subjectLine.length) {
-                if (output.length === 0 || !output.at(-1).equals(subjectLine[subjIdx])) {
-                    output.push(subjectLine[subjIdx]);
+                if (output.length === 0 || !output.at(-1)!.equals(subjectLine[subjIdx]!)) {
+                    output.push(subjectLine[subjIdx]!);
                 }
                 subjIdx++;
             }
             break;
         }
 
-        if (intersections[intrIdx].t <= subjIdx) {
+        if (intersections[intrIdx]!.t <= subjIdx) {
             // Copy intersection point
-            if (output.length === 0 || !output.at(-1).equals(intersections[intrIdx].point)) {
-                output.push(intersections[intrIdx].point);
+            if (output.length === 0 || !output.at(-1)!.equals(intersections[intrIdx]!.point)) {
+                output.push(intersections[intrIdx]!.point);
             }
 
-            const pointIdx = Math.trunc(intersections[intrIdx].t);
+            const pointIdx = Math.trunc(intersections[intrIdx]!.t);
 
             if (separateSegments && output.length > 1 && pointIdx < subjectLine.length - 1) {
-                output = [intersections[intrIdx].point];
+                output = [intersections[intrIdx]!.point];
                 linesOut.push(output);
 
                 if (progressOut) {
-                    const fract = intersections[intrIdx].t - pointIdx;
-                    const distanceAtT = interpolate(pointDistances[pointIdx], pointDistances[pointIdx + 1], fract);
-                    const normT = distanceAtT / pointDistances.at(-1);
+                    const fract = intersections[intrIdx]!.t - pointIdx;
+                    const distanceAtT = interpolate(pointDistances[pointIdx]!, pointDistances[pointIdx + 1]!, fract);
+                    const normT = distanceAtT / pointDistances.at(-1)!;
 
-                    progressOut.at(-1).max = normT;
+                    progressOut.at(-1)!.max = normT;
                     progressOut.push({min: normT, max: 1.0});
                 }
             }
@@ -271,8 +271,8 @@ export function lineSubdivision(subjectLine: Point[], edgeIterator: EdgeIterator
             intrIdx++;
         } else {
             // Copy subject point
-            if (output.length === 0 || !output.at(-1).equals(subjectLine[subjIdx])) {
-                output.push(subjectLine[subjIdx]);
+            if (output.length === 0 || !output.at(-1)!.equals(subjectLine[subjIdx]!)) {
+                output.push(subjectLine[subjIdx]!);
             }
             subjIdx++;
         }

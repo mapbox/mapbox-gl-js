@@ -68,7 +68,7 @@ export function mousePos(el: HTMLElement, e: MouseEvent | WheelEvent): Point {
     return getScaledPoint(el, rect, e);
 }
 
-export function touchPos(el: HTMLElement, touches: TouchList): Array<Point> {
+export function touchPos(el: HTMLElement, touches: ArrayLike<Touch>): Array<Point> {
     const rect = el.getBoundingClientRect();
     const points: Point[] = [];
 

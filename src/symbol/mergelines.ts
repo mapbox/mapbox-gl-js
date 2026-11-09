@@ -22,34 +22,34 @@ export default function <T extends MergeableFeature>(features: Array<T>): Array<
     }
 
     function mergeFromRight(leftKey: string, rightKey: string, geom: Array<Array<Point>>) {
-        const i = rightIndex[leftKey];
+        const i = rightIndex[leftKey]!;
         delete rightIndex[leftKey];
         rightIndex[rightKey] = i;
 
-        mergedFeatures[i].geometry[0].pop();
+        mergedFeatures[i]!.geometry[0]!.pop();
 
-        mergedFeatures[i].geometry[0] = mergedFeatures[i].geometry[0].concat(geom[0]);
+        mergedFeatures[i]!.geometry[0] = mergedFeatures[i]!.geometry[0]!.concat(geom[0]!);
         return i;
     }
 
     function mergeFromLeft(leftKey: string, rightKey: string, geom: Array<Array<Point>>) {
-        const i = leftIndex[rightKey];
+        const i = leftIndex[rightKey]!;
         delete leftIndex[rightKey];
         leftIndex[leftKey] = i;
 
-        mergedFeatures[i].geometry[0].shift();
+        mergedFeatures[i]!.geometry[0]!.shift();
 
-        mergedFeatures[i].geometry[0] = geom[0].concat(mergedFeatures[i].geometry[0]);
+        mergedFeatures[i]!.geometry[0] = geom[0]!.concat(mergedFeatures[i]!.geometry[0]!);
         return i;
     }
 
     function getKey(text: string, geom: Array<Array<Point>>, onRight?: boolean | null) {
-        const point = onRight ? geom[0].at(-1) : geom[0][0];
+        const point = onRight ? geom[0]!.at(-1)! : geom[0]![0]!;
         return `${text}:${point.x}:${point.y}`;
     }
 
     for (let k = 0; k < features.length; k++) {
-        const feature = features[k];
+        const feature = features[k]!;
         const geom = feature.geometry;
         const text = feature.text ? feature.text.toString() : null;
 
@@ -65,14 +65,14 @@ export default function <T extends MergeableFeature>(features: Array<T>): Array<
             // found lines with the same text adjacent to both ends of the current line, merge all three
             const j = mergeFromLeft(leftKey, rightKey, geom);
 
-            const i = mergeFromRight(leftKey, rightKey, mergedFeatures[j].geometry);
+            const i = mergeFromRight(leftKey, rightKey, mergedFeatures[j]!.geometry);
 
             delete leftIndex[leftKey];
             delete rightIndex[rightKey];
 
-            rightIndex[getKey(text, mergedFeatures[i].geometry, true)] = i;
+            rightIndex[getKey(text, mergedFeatures[i]!.geometry, true)] = i;
 
-            mergedFeatures[j].geometry = null;
+            (mergedFeatures[j] as {geometry: Array<Array<Point>> | null}).geometry = null;
 
         } else if (leftKey in rightIndex) {
             // found mergeable line adjacent to the start of the current line, merge
@@ -90,5 +90,5 @@ export default function <T extends MergeableFeature>(features: Array<T>): Array<
         }
     }
 
-    return mergedFeatures.filter((f) => f.geometry);
+    return mergedFeatures.filter((f): f is T => !!f!.geometry);
 }

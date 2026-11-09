@@ -16,5 +16,5 @@ export type StyleGlyph = {
 };
 
 export type StyleGlyphs = {
-    [id: number]: StyleGlyph | null
+    [id: number]: StyleGlyph | null | undefined
 };

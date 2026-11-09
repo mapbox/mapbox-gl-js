@@ -47,7 +47,7 @@ class LineAtlas {
      */
     getDash(dasharray: Array<number>, lineCap: string): SpritePosition {
         const key = this.getKey(dasharray, lineCap);
-        return this.positions[key];
+        return this.positions[key]!;
     }
 
     trim() {
@@ -67,17 +67,17 @@ class LineAtlas {
 
         const ranges: DashRange[] = [];
 
-        let left = oddDashArray ? -dasharray.at(-1) * stretch : 0;
-        let right = dasharray[0] * stretch;
+        let left = oddDashArray ? -dasharray.at(-1)! * stretch : 0;
+        let right = dasharray[0]! * stretch;
         let isDash = true;
 
         ranges.push({left, right, isDash, zeroLength: dasharray[0] === 0});
 
-        let currentDashLength = dasharray[0];
+        let currentDashLength = dasharray[0]!;
         for (let i = 1; i < dasharray.length; i++) {
             isDash = !isDash;
 
-            const dashLength = dasharray[i];
+            const dashLength = dasharray[i]!;
             left = currentDashLength * stretch;
             currentDashLength += dashLength;
             right = currentDashLength * stretch;
@@ -95,10 +95,10 @@ class LineAtlas {
             const row = this.nextRow + n + y;
             const index = this.width * row;
             let currIndex = 0;
-            let range = ranges[currIndex];
+            let range = ranges[currIndex]!;
 
             for (let x = 0; x < this.width; x++) {
-                if (x / range.right > 1) { range = ranges[++currIndex]; }
+                if (x / range.right > 1) { range = ranges[++currIndex]!; }
 
                 const distLeft = Math.abs(x - range.left);
                 const distRight = Math.abs(x - range.right);
@@ -123,7 +123,7 @@ class LineAtlas {
         // Collapse any zero-length range
         // Collapse neighbouring same-type parts into a single part
         for (let i = ranges.length - 1; i >= 0; --i) {
-            const part = ranges[i];
+            const part = ranges[i]!;
             const next = ranges[i + 1];
             if (part.zeroLength) {
                 ranges.splice(i, 1);
@@ -134,8 +134,8 @@ class LineAtlas {
         }
 
         // Combine the first and last parts if possible
-        const first = ranges[0];
-        const last = ranges.at(-1);
+        const first = ranges[0]!;
+        const last = ranges.at(-1)!;
         if (first.isDash === last.isDash) {
             first.left = last.left - this.width;
             last.right = first.right + this.width;
@@ -143,11 +143,11 @@ class LineAtlas {
 
         const index = this.width * this.nextRow;
         let currIndex = 0;
-        let range = ranges[currIndex];
+        let range = ranges[currIndex]!;
 
         for (let x = 0; x < this.width; x++) {
             if (x / range.right > 1) {
-                range = ranges[++currIndex];
+                range = ranges[++currIndex]!;
             }
 
             const distLeft = Math.abs(x - range.left);
@@ -200,7 +200,7 @@ class LineAtlas {
         if (length !== 0) {
             const rowIndex = this.width * y;
             for (let x = 0; x < this.width; x++) {
-                if (this.image.data[rowIndex + x] >= 128) onTexels++;
+                if (this.image.data[rowIndex + x]! >= 128) onTexels++;
             }
         }
         // Quantize the dash coverage to 12 bits so it can share dash.y with the

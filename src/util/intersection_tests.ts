@@ -11,11 +11,11 @@ type MultiPolygon = ReadonlyArray<Polygon>;
 
 function polygonIntersectsPolygon(polygonA: Polygon, polygonB: Polygon): boolean {
     for (let i = 0; i < polygonA.length; i++) {
-        if (polygonContainsPoint(polygonB, polygonA[i])) return true;
+        if (polygonContainsPoint(polygonB, polygonA[i]!)) return true;
     }
 
     for (let i = 0; i < polygonB.length; i++) {
-        if (polygonContainsPoint(polygonA, polygonB[i])) return true;
+        if (polygonContainsPoint(polygonA, polygonB[i]!)) return true;
     }
 
     if (lineIntersectsLine(polygonA, polygonB)) return true;
@@ -32,22 +32,22 @@ function polygonIntersectsBufferedPoint(polygon: Polygon, point: Point, radius: 
 function polygonIntersectsMultiPolygon(polygon: Polygon, multiPolygon: MultiPolygon): boolean {
 
     if (polygon.length === 1) {
-        return multiPolygonContainsPoint(multiPolygon, polygon[0]);
+        return multiPolygonContainsPoint(multiPolygon, polygon[0]!);
     }
 
     for (let m = 0; m < multiPolygon.length; m++) {
-        const ring = multiPolygon[m];
+        const ring = multiPolygon[m]!;
         for (let n = 0; n < ring.length; n++) {
-            if (polygonContainsPoint(polygon, ring[n])) return true;
+            if (polygonContainsPoint(polygon, ring[n]!)) return true;
         }
     }
 
     for (let i = 0; i < polygon.length; i++) {
-        if (multiPolygonContainsPoint(multiPolygon, polygon[i])) return true;
+        if (multiPolygonContainsPoint(multiPolygon, polygon[i]!)) return true;
     }
 
     for (let k = 0; k < multiPolygon.length; k++) {
-        if (lineIntersectsLine(polygon, multiPolygon[k])) return true;
+        if (lineIntersectsLine(polygon, multiPolygon[k]!)) return true;
     }
 
     return false;
@@ -55,11 +55,11 @@ function polygonIntersectsMultiPolygon(polygon: Polygon, multiPolygon: MultiPoly
 
 function polygonIntersectsBufferedMultiLine(polygon: Polygon, multiLine: MultiLine, radius: number): boolean {
     for (let i = 0; i < multiLine.length; i++) {
-        const line = multiLine[i];
+        const line = multiLine[i]!;
 
         if (polygon.length >= 3) {
             for (let k = 0; k < line.length; k++) {
-                if (polygonContainsPoint(polygon, line[k])) return true;
+                if (polygonContainsPoint(polygon, line[k]!)) return true;
             }
         }
 
@@ -75,12 +75,12 @@ function lineIntersectsBufferedLine(lineA: Line, lineB: Line, radius: number) {
 
         // Check whether any point in either line is within radius of the other line
         for (let j = 0; j < lineB.length; j++) {
-            if (pointIntersectsBufferedLine(lineB[j], lineA, radius)) return true;
+            if (pointIntersectsBufferedLine(lineB[j]!, lineA, radius)) return true;
         }
     }
 
     for (let k = 0; k < lineA.length; k++) {
-        if (pointIntersectsBufferedLine(lineA[k], lineB, radius)) return true;
+        if (pointIntersectsBufferedLine(lineA[k]!, lineB, radius)) return true;
     }
 
     return false;
@@ -89,11 +89,11 @@ function lineIntersectsBufferedLine(lineA: Line, lineB: Line, radius: number) {
 function lineIntersectsLine(lineA: Line, lineB: Line) {
     if (lineA.length === 0 || lineB.length === 0) return false;
     for (let i = 0; i < lineA.length - 1; i++) {
-        const a0 = lineA[i];
-        const a1 = lineA[i + 1];
+        const a0 = lineA[i]!;
+        const a1 = lineA[i + 1]!;
         for (let j = 0; j < lineB.length - 1; j++) {
-            const b0 = lineB[j];
-            const b1 = lineB[j + 1];
+            const b0 = lineB[j]!;
+            const b1 = lineB[j + 1]!;
             if (lineSegmentIntersectsLineSegment(a0, a1, b0, b1)) return true;
         }
     }
@@ -131,12 +131,12 @@ function segmentSegmentIntersection(a0: Point, a1: Point, b0: Point, b1: Point):
 function pointIntersectsBufferedLine(p: Point, line: Line, radius: number) {
     const radiusSquared = radius * radius;
 
-    if (line.length === 1) return p.distSqr(line[0]) < radiusSquared;
+    if (line.length === 1) return p.distSqr(line[0]!) < radiusSquared;
 
     for (let i = 1; i < line.length; i++) {
         // Find line segments that have a distance <= radius^2 to p
         // In that case, we treat the line as "containing point p".
-        const v = line[i - 1], w = line[i];
+        const v = line[i - 1]!, w = line[i]!;
         if (distToSegmentSquared(p, v, w) < radiusSquared) return true;
     }
     return false;
@@ -160,10 +160,10 @@ function multiPolygonContainsPoint(rings: MultiPolygon, p: Point) {
     let p2: Point;
 
     for (let k = 0; k < rings.length; k++) {
-        ring = rings[k];
+        ring = rings[k]!;
         for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-            p1 = ring[i];
-            p2 = ring[j];
+            p1 = ring[i]!;
+            p2 = ring[j]!;
             if (((p1.y > p.y) !== (p2.y > p.y)) && (p.x < (p2.x - p1.x) * (p.y - p1.y) / (p2.y - p1.y) + p1.x)) {
                 c = !c;
             }
@@ -175,8 +175,8 @@ function multiPolygonContainsPoint(rings: MultiPolygon, p: Point) {
 function polygonContainsPoint(ring: Ring, p: Point): boolean {
     let c = false;
     for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-        const p1 = ring[i];
-        const p2 = ring[j];
+        const p1 = ring[i]!;
+        const p2 = ring[j]!;
         if (((p1.y > p.y) !== (p2.y > p.y)) && (p.x < (p2.x - p1.x) * (p.y - p1.y) / (p2.y - p1.y) + p1.x)) {
             c = !c;
         }
@@ -205,8 +205,8 @@ function polygonIntersectsBox(ring: Ring, boxX1: number, boxY1: number, boxX2: n
     }
 
     for (let i = 0; i < ring.length - 1; i++) {
-        const p1 = ring[i];
-        const p2 = ring[i + 1];
+        const p1 = ring[i]!;
+        const p2 = ring[i + 1]!;
         if (edgeIntersectsBox(p1, p2, corners)) return true;
     }
 
@@ -214,8 +214,8 @@ function polygonIntersectsBox(ring: Ring, boxX1: number, boxY1: number, boxX2: n
 }
 
 export function edgeIntersectsBox(e1: Point, e2: Point, corners: Array<Point>) {
-    const tl = corners[0];
-    const br = corners[2];
+    const tl = corners[0]!;
+    const br = corners[2]!;
     // the edge and box do not intersect in either the x or y dimensions
     if (((e1.x < tl.x) && (e2.x < tl.x)) ||
         ((e1.x > br.x) && (e2.x > br.x)) ||
@@ -223,10 +223,10 @@ export function edgeIntersectsBox(e1: Point, e2: Point, corners: Array<Point>) {
         ((e1.y > br.y) && (e2.y > br.y))) return false;
 
     // check if all corners of the box are on the same side of the edge
-    const dir = isCounterClockwise(e1, e2, corners[0]);
-    return dir !== isCounterClockwise(e1, e2, corners[1]) ||
-        dir !== isCounterClockwise(e1, e2, corners[2]) ||
-        dir !== isCounterClockwise(e1, e2, corners[3]);
+    const dir = isCounterClockwise(e1, e2, corners[0]!);
+    return dir !== isCounterClockwise(e1, e2, corners[1]!) ||
+        dir !== isCounterClockwise(e1, e2, corners[2]!) ||
+        dir !== isCounterClockwise(e1, e2, corners[3]!);
 }
 
 // Checks whether the triangle [p0, p1, p2] is on the left side of the edge [a, b].

@@ -65,7 +65,7 @@ class GlyphLoader {
         }
 
         if (fonts.length === 1) {
-            this._loadFont(fonts[0], range, urlTemplate, requestManager, callback);
+            this._loadFont(fonts[0]!, range, urlTemplate, requestManager, callback);
             return;
         }
 
@@ -107,7 +107,7 @@ class GlyphLoader {
         };
 
         for (let i = 0; i < fonts.length; i++) {
-            this._loadFont(fonts[i], range, urlTemplate, requestManager, (err, result) => {
+            this._loadFont(fonts[i]!, range, urlTemplate, requestManager, (err, result) => {
                 handleResult(i, err, result);
             });
         }
@@ -172,7 +172,7 @@ class GlyphLoader {
             if (result.glyphs) {
                 for (const id in result.glyphs) {
                     if (composedGlyphs[id] === undefined) {
-                        composedGlyphs[id] = result.glyphs[id];
+                        composedGlyphs[id] = result.glyphs[id]!;
                     }
                 }
             }

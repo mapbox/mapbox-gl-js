@@ -148,9 +148,9 @@ export class VertexCanonicalizer {
                 const bucket = inner.get(by + dy);
                 if (!bucket) continue;
                 for (const id of bucket) {
-                    if (Math.abs(this.xs[id] - x) <= t && Math.abs(this.ys[id] - y) <= t) {
-                        const ix = this.ixs[id];
-                        const iy = this.iys[id];
+                    if (Math.abs(this.xs[id]! - x) <= t && Math.abs(this.ys[id]! - y) <= t) {
+                        const ix = this.ixs[id]!;
+                        const iy = this.iys[id]!;
                         // Store this input as an alias so subsequent points
                         // within tolerance of it — but outside tolerance of
                         // the cluster's first representative — can still

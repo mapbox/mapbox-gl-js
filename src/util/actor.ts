@@ -252,7 +252,7 @@ class Actor<Outbox extends MessageMap> {
                 const keys = task.type.split('.');
                 const {source, scope} = params as {source: string; scope: string};
                 const workerSource = this.parent.getWorkerSource(task.sourceMapId, {type: keys[0] as WorkerSourceType, source, scope});
-                result = await (workerSource as unknown as Record<string, (params: unknown) => unknown>)[keys[1]](params);
+                result = await (workerSource as WorkerSource & Record<string, (params: unknown) => unknown>)[keys[1]](params);
             } else {
                 throw new Error(`Could not find function ${task.type}`);
             }

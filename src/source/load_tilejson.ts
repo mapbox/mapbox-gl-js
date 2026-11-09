@@ -31,7 +31,7 @@ export async function parseTileJSONRequest(source: TileJSONLike, requestManager:
     return {request, options};
 }
 
-function getInlinedTileJSON(data?: TileJSON, language?: string, worldview?: string): TileJSON | undefined | null {
+function getInlinedTileJSON(data?: TileJSON, language?: string | null, worldview?: string | null): TileJSON | undefined | null {
     if (!data) {
         return null;
     }
@@ -164,7 +164,7 @@ export default function loadTileJSON(
     if (options.url) {
         const controller = new AbortController();
         const load = async () => {
-            const requestParameters = await requestManager.transformRequest(requestManager.normalizeSourceURL(options.url, null, language, worldview), ResourceType.Source, controller.signal);
+            const requestParameters = await requestManager.transformRequest(requestManager.normalizeSourceURL(options.url!, null, language, worldview), ResourceType.Source, controller.signal);
             const {data} = await getJSON<Partial<TileJSON>>(requestParameters, controller.signal);
             loaded(null, data);
         };

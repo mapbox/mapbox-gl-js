@@ -2,7 +2,6 @@ import TinySDF from '@mapbox/tiny-sdf';
 import isChar from '../util/is_char_in_unicode_block';
 import {AlphaImage} from '../util/image';
 
-import type {Class} from '../types/class';
 import type {StyleGlyph} from '../style/style_glyph';
 
 /*
@@ -65,7 +64,7 @@ export class LocalGlyphRasterizer {
     tinySDFs: Partial<Record<FontWeight, TinySDF>>;
     glyphs: Record<FontWeight, Record<number, StyleGlyph>>;
 
-    static TinySDF: Class<TinySDF> = TinySDF;
+    static TinySDF: typeof TinySDF = TinySDF;
 
     constructor({mode, fontFamily}: LocalGlyphConfig) {
         this.mode = mode;

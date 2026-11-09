@@ -105,7 +105,7 @@ export class FrcCoverageSnapshot implements IFrcCoverageSnapshot {
     equals(other: Array<FrcCoverageTile>): boolean {
         if (this.tiles.length !== other.length) return false;
         for (let i = 0; i < this.tiles.length; ++i) {
-            const a = this.tiles[i], b = other[i];
+            const a = this.tiles[i]!, b = other[i]!;
             if (a.tileId.z !== b.tileId.z || a.tileId.x !== b.tileId.x || a.tileId.y !== b.tileId.y ||
                 a.frcMask !== b.frcMask || a.polygons.length !== b.polygons.length) {
                 return false;
@@ -127,14 +127,14 @@ function isQuadInsidePolygon(rings: Array<Array<Point>>,
         const n = ring.length;
         if (n < 2) continue;
         for (let i = 0, j = n - 1; i < n; j = i++) {
-            const ax = ring[j].x, ay = ring[j].y;
-            const bx = ring[i].x, by = ring[i].y;
+            const ax = ring[j]!.x, ay = ring[j]!.y;
+            const bx = ring[i]!.x, by = ring[i]!.y;
 
             for (let c = 0; c < 4; ++c) {
-                if ((ay > cy[c]) !== (by > cy[c])) {
-                    const xIntersect = ax + (bx - ax) * (cy[c] - ay) / (by - ay);
-                    if (cx[c] < xIntersect) {
-                        windCount[c]++;
+                if ((ay > cy[c]!) !== (by > cy[c]!)) {
+                    const xIntersect = ax + (bx - ax) * (cy[c]! - ay) / (by - ay);
+                    if (cx[c]! < xIntersect) {
+                        windCount[c]!++;
                     }
                 }
             }
@@ -151,7 +151,7 @@ function isQuadInsidePolygon(rings: Array<Array<Point>>,
         }
     }
     for (let c = 0; c < 4; ++c) {
-        if ((windCount[c] & 1) === 0) return false;
+        if ((windCount[c]! & 1) === 0) return false;
     }
     return true;
 }

@@ -1409,19 +1409,19 @@ register(StructArrayLayout1ub1, 'StructArrayLayout1ub1');
 
 class CollisionBoxStruct extends Struct {
     declare _structArray: CollisionBoxArray;
-    get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 0]; }
-    get projectedAnchorY(): number { return this._structArray.int16[this._pos2 + 1]; }
-    get projectedAnchorZ(): number { return this._structArray.int16[this._pos2 + 2]; }
-    get tileAnchorX(): number { return this._structArray.int16[this._pos2 + 3]; }
-    get tileAnchorY(): number { return this._structArray.int16[this._pos2 + 4]; }
-    get x1(): number { return this._structArray.float32[this._pos4 + 3]; }
-    get y1(): number { return this._structArray.float32[this._pos4 + 4]; }
-    get x2(): number { return this._structArray.float32[this._pos4 + 5]; }
-    get y2(): number { return this._structArray.float32[this._pos4 + 6]; }
-    get padding(): number { return this._structArray.int16[this._pos2 + 14]; }
-    get featureIndex(): number { return this._structArray.uint32[this._pos4 + 8]; }
-    get sourceLayerIndex(): number { return this._structArray.uint16[this._pos2 + 18]; }
-    get bucketIndex(): number { return this._structArray.uint16[this._pos2 + 19]; }
+    get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 0]!; }
+    get projectedAnchorY(): number { return this._structArray.int16[this._pos2 + 1]!; }
+    get projectedAnchorZ(): number { return this._structArray.int16[this._pos2 + 2]!; }
+    get tileAnchorX(): number { return this._structArray.int16[this._pos2 + 3]!; }
+    get tileAnchorY(): number { return this._structArray.int16[this._pos2 + 4]!; }
+    get x1(): number { return this._structArray.float32[this._pos4 + 3]!; }
+    get y1(): number { return this._structArray.float32[this._pos4 + 4]!; }
+    get x2(): number { return this._structArray.float32[this._pos4 + 5]!; }
+    get y2(): number { return this._structArray.float32[this._pos4 + 6]!; }
+    get padding(): number { return this._structArray.int16[this._pos2 + 14]!; }
+    get featureIndex(): number { return this._structArray.uint32[this._pos4 + 8]!; }
+    get sourceLayerIndex(): number { return this._structArray.uint16[this._pos2 + 18]!; }
+    get bucketIndex(): number { return this._structArray.uint16[this._pos2 + 19]!; }
 }
 
 CollisionBoxStruct.prototype.size = 40;
@@ -1448,30 +1448,30 @@ register(CollisionBoxArray, 'CollisionBoxArray');
 
 class PlacedSymbolStruct extends Struct {
     declare _structArray: PlacedSymbolArray;
-    get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 0]; }
-    get projectedAnchorY(): number { return this._structArray.int16[this._pos2 + 1]; }
-    get projectedAnchorZ(): number { return this._structArray.int16[this._pos2 + 2]; }
-    get tileAnchorX(): number { return this._structArray.float32[this._pos4 + 2]; }
-    get tileAnchorY(): number { return this._structArray.float32[this._pos4 + 3]; }
-    get glyphStartIndex(): number { return this._structArray.uint16[this._pos2 + 8]; }
-    get numGlyphs(): number { return this._structArray.uint16[this._pos2 + 9]; }
-    get vertexStartIndex(): number { return this._structArray.uint32[this._pos4 + 5]; }
-    get lineStartIndex(): number { return this._structArray.uint32[this._pos4 + 6]; }
-    get lineLength(): number { return this._structArray.uint32[this._pos4 + 7]; }
-    get segment(): number { return this._structArray.uint16[this._pos2 + 16]; }
-    get lowerSize(): number { return this._structArray.uint16[this._pos2 + 17]; }
-    get upperSize(): number { return this._structArray.uint16[this._pos2 + 18]; }
-    get lineOffsetX(): number { return this._structArray.float32[this._pos4 + 10]; }
-    get lineOffsetY(): number { return this._structArray.float32[this._pos4 + 11]; }
-    get writingMode(): number { return this._structArray.uint8[this._pos1 + 48]; }
-    get placedOrientation(): number { return this._structArray.uint8[this._pos1 + 49]; }
+    get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 0]!; }
+    get projectedAnchorY(): number { return this._structArray.int16[this._pos2 + 1]!; }
+    get projectedAnchorZ(): number { return this._structArray.int16[this._pos2 + 2]!; }
+    get tileAnchorX(): number { return this._structArray.float32[this._pos4 + 2]!; }
+    get tileAnchorY(): number { return this._structArray.float32[this._pos4 + 3]!; }
+    get glyphStartIndex(): number { return this._structArray.uint16[this._pos2 + 8]!; }
+    get numGlyphs(): number { return this._structArray.uint16[this._pos2 + 9]!; }
+    get vertexStartIndex(): number { return this._structArray.uint32[this._pos4 + 5]!; }
+    get lineStartIndex(): number { return this._structArray.uint32[this._pos4 + 6]!; }
+    get lineLength(): number { return this._structArray.uint32[this._pos4 + 7]!; }
+    get segment(): number { return this._structArray.uint16[this._pos2 + 16]!; }
+    get lowerSize(): number { return this._structArray.uint16[this._pos2 + 17]!; }
+    get upperSize(): number { return this._structArray.uint16[this._pos2 + 18]!; }
+    get lineOffsetX(): number { return this._structArray.float32[this._pos4 + 10]!; }
+    get lineOffsetY(): number { return this._structArray.float32[this._pos4 + 11]!; }
+    get writingMode(): number { return this._structArray.uint8[this._pos1 + 48]!; }
+    get placedOrientation(): number { return this._structArray.uint8[this._pos1 + 49]!; }
     set placedOrientation(x: number) { this._structArray.uint8[this._pos1 + 49] = x; }
-    get hidden(): number { return this._structArray.uint8[this._pos1 + 50]; }
+    get hidden(): number { return this._structArray.uint8[this._pos1 + 50]!; }
     set hidden(x: number) { this._structArray.uint8[this._pos1 + 50] = x; }
-    get crossTileID(): number { return this._structArray.uint32[this._pos4 + 13]; }
+    get crossTileID(): number { return this._structArray.uint32[this._pos4 + 13]!; }
     set crossTileID(x: number) { this._structArray.uint32[this._pos4 + 13] = x; }
-    get associatedIconIndex(): number { return this._structArray.int16[this._pos2 + 28]; }
-    get flipState(): number { return this._structArray.uint8[this._pos1 + 58]; }
+    get associatedIconIndex(): number { return this._structArray.int16[this._pos2 + 28]!; }
+    get flipState(): number { return this._structArray.uint8[this._pos1 + 58]!; }
     set flipState(x: number) { this._structArray.uint8[this._pos1 + 58] = x; }
 }
 
@@ -1499,41 +1499,41 @@ register(PlacedSymbolArray, 'PlacedSymbolArray');
 
 class SymbolInstanceStruct extends Struct {
     declare _structArray: SymbolInstanceArray;
-    get tileAnchorX(): number { return this._structArray.float32[this._pos4 + 0]; }
-    get tileAnchorY(): number { return this._structArray.float32[this._pos4 + 1]; }
-    get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 4]; }
-    get projectedAnchorY(): number { return this._structArray.int16[this._pos2 + 5]; }
-    get projectedAnchorZ(): number { return this._structArray.int16[this._pos2 + 6]; }
-    get rightJustifiedTextSymbolIndex(): number { return this._structArray.int16[this._pos2 + 7]; }
-    get centerJustifiedTextSymbolIndex(): number { return this._structArray.int16[this._pos2 + 8]; }
-    get leftJustifiedTextSymbolIndex(): number { return this._structArray.int16[this._pos2 + 9]; }
-    get verticalPlacedTextSymbolIndex(): number { return this._structArray.int16[this._pos2 + 10]; }
-    get placedIconSymbolIndex(): number { return this._structArray.int16[this._pos2 + 11]; }
-    get verticalPlacedIconSymbolIndex(): number { return this._structArray.int16[this._pos2 + 12]; }
-    get key(): number { return this._structArray.uint16[this._pos2 + 13]; }
-    get textBoxStartIndex(): number { return this._structArray.uint16[this._pos2 + 14]; }
-    get textBoxEndIndex(): number { return this._structArray.uint16[this._pos2 + 15]; }
-    get verticalTextBoxStartIndex(): number { return this._structArray.uint16[this._pos2 + 16]; }
-    get verticalTextBoxEndIndex(): number { return this._structArray.uint16[this._pos2 + 17]; }
-    get iconBoxStartIndex(): number { return this._structArray.uint16[this._pos2 + 18]; }
-    get iconBoxEndIndex(): number { return this._structArray.uint16[this._pos2 + 19]; }
-    get verticalIconBoxStartIndex(): number { return this._structArray.uint16[this._pos2 + 20]; }
-    get verticalIconBoxEndIndex(): number { return this._structArray.uint16[this._pos2 + 21]; }
-    get featureIndex(): number { return this._structArray.uint16[this._pos2 + 22]; }
-    get numHorizontalGlyphVertices(): number { return this._structArray.uint16[this._pos2 + 23]; }
-    get numVerticalGlyphVertices(): number { return this._structArray.uint16[this._pos2 + 24]; }
-    get numIconVertices(): number { return this._structArray.uint16[this._pos2 + 25]; }
-    get numVerticalIconVertices(): number { return this._structArray.uint16[this._pos2 + 26]; }
-    get useRuntimeCollisionCircles(): number { return this._structArray.uint16[this._pos2 + 27]; }
-    get crossTileID(): number { return this._structArray.uint32[this._pos4 + 14]; }
+    get tileAnchorX(): number { return this._structArray.float32[this._pos4 + 0]!; }
+    get tileAnchorY(): number { return this._structArray.float32[this._pos4 + 1]!; }
+    get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 4]!; }
+    get projectedAnchorY(): number { return this._structArray.int16[this._pos2 + 5]!; }
+    get projectedAnchorZ(): number { return this._structArray.int16[this._pos2 + 6]!; }
+    get rightJustifiedTextSymbolIndex(): number { return this._structArray.int16[this._pos2 + 7]!; }
+    get centerJustifiedTextSymbolIndex(): number { return this._structArray.int16[this._pos2 + 8]!; }
+    get leftJustifiedTextSymbolIndex(): number { return this._structArray.int16[this._pos2 + 9]!; }
+    get verticalPlacedTextSymbolIndex(): number { return this._structArray.int16[this._pos2 + 10]!; }
+    get placedIconSymbolIndex(): number { return this._structArray.int16[this._pos2 + 11]!; }
+    get verticalPlacedIconSymbolIndex(): number { return this._structArray.int16[this._pos2 + 12]!; }
+    get key(): number { return this._structArray.uint16[this._pos2 + 13]!; }
+    get textBoxStartIndex(): number { return this._structArray.uint16[this._pos2 + 14]!; }
+    get textBoxEndIndex(): number { return this._structArray.uint16[this._pos2 + 15]!; }
+    get verticalTextBoxStartIndex(): number { return this._structArray.uint16[this._pos2 + 16]!; }
+    get verticalTextBoxEndIndex(): number { return this._structArray.uint16[this._pos2 + 17]!; }
+    get iconBoxStartIndex(): number { return this._structArray.uint16[this._pos2 + 18]!; }
+    get iconBoxEndIndex(): number { return this._structArray.uint16[this._pos2 + 19]!; }
+    get verticalIconBoxStartIndex(): number { return this._structArray.uint16[this._pos2 + 20]!; }
+    get verticalIconBoxEndIndex(): number { return this._structArray.uint16[this._pos2 + 21]!; }
+    get featureIndex(): number { return this._structArray.uint16[this._pos2 + 22]!; }
+    get numHorizontalGlyphVertices(): number { return this._structArray.uint16[this._pos2 + 23]!; }
+    get numVerticalGlyphVertices(): number { return this._structArray.uint16[this._pos2 + 24]!; }
+    get numIconVertices(): number { return this._structArray.uint16[this._pos2 + 25]!; }
+    get numVerticalIconVertices(): number { return this._structArray.uint16[this._pos2 + 26]!; }
+    get useRuntimeCollisionCircles(): number { return this._structArray.uint16[this._pos2 + 27]!; }
+    get crossTileID(): number { return this._structArray.uint32[this._pos4 + 14]!; }
     set crossTileID(x: number) { this._structArray.uint32[this._pos4 + 14] = x; }
-    get textOffset0(): number { return this._structArray.float32[this._pos4 + 15]; }
-    get textOffset1(): number { return this._structArray.float32[this._pos4 + 16]; }
-    get collisionCircleDiameter(): number { return this._structArray.float32[this._pos4 + 17]; }
-    get zOffset(): number { return this._structArray.float32[this._pos4 + 18]; }
+    get textOffset0(): number { return this._structArray.float32[this._pos4 + 15]!; }
+    get textOffset1(): number { return this._structArray.float32[this._pos4 + 16]!; }
+    get collisionCircleDiameter(): number { return this._structArray.float32[this._pos4 + 17]!; }
+    get zOffset(): number { return this._structArray.float32[this._pos4 + 18]!; }
     set zOffset(x: number) { this._structArray.float32[this._pos4 + 18] = x; }
-    get hasIconTextFit(): number { return this._structArray.uint8[this._pos1 + 76]; }
-    get elevationFeatureIndex(): number { return this._structArray.uint16[this._pos2 + 39]; }
+    get hasIconTextFit(): number { return this._structArray.uint8[this._pos1 + 76]!; }
+    get elevationFeatureIndex(): number { return this._structArray.uint16[this._pos2 + 39]!; }
 }
 
 SymbolInstanceStruct.prototype.size = 80;
@@ -1562,7 +1562,7 @@ register(SymbolInstanceArray, 'SymbolInstanceArray');
  * @private
  */
 export class GlyphOffsetArray extends StructArrayLayout1f4 {
-    getoffsetX(index: number): number { return this.float32[index * 1 + 0]; }
+    getoffsetX(index: number): number { return this.float32[index * 1 + 0]!; }
 }
 
 register(GlyphOffsetArray, 'GlyphOffsetArray');
@@ -1571,18 +1571,18 @@ register(GlyphOffsetArray, 'GlyphOffsetArray');
  * @private
  */
 export class SymbolLineVertexArray extends StructArrayLayout2i4 {
-    getx(index: number): number { return this.int16[index * 2 + 0]; }
-    gety(index: number): number { return this.int16[index * 2 + 1]; }
+    getx(index: number): number { return this.int16[index * 2 + 0]!; }
+    gety(index: number): number { return this.int16[index * 2 + 1]!; }
 }
 
 register(SymbolLineVertexArray, 'SymbolLineVertexArray');
 
 class FeatureIndexStruct extends Struct {
     declare _structArray: FeatureIndexArray;
-    get featureIndex(): number { return this._structArray.uint32[this._pos4 + 0]; }
-    get sourceLayerIndex(): number { return this._structArray.uint16[this._pos2 + 2]; }
-    get bucketIndex(): number { return this._structArray.uint16[this._pos2 + 3]; }
-    get layoutVertexArrayOffset(): number { return this._structArray.uint16[this._pos2 + 4]; }
+    get featureIndex(): number { return this._structArray.uint32[this._pos4 + 0]!; }
+    get sourceLayerIndex(): number { return this._structArray.uint16[this._pos2 + 2]!; }
+    get bucketIndex(): number { return this._structArray.uint16[this._pos2 + 3]!; }
+    get layoutVertexArrayOffset(): number { return this._structArray.uint16[this._pos2 + 4]!; }
 }
 
 FeatureIndexStruct.prototype.size = 12;
@@ -1611,17 +1611,17 @@ register(FeatureIndexArray, 'FeatureIndexArray');
  * @private
  */
 export class FillExtrusionCentroidArray extends StructArrayLayout2ui4 {
-    geta_centroid_pos0(index: number): number { return this.uint16[index * 2 + 0]; }
-    geta_centroid_pos1(index: number): number { return this.uint16[index * 2 + 1]; }
+    geta_centroid_pos0(index: number): number { return this.uint16[index * 2 + 0]!; }
+    geta_centroid_pos1(index: number): number { return this.uint16[index * 2 + 1]!; }
 }
 
 register(FillExtrusionCentroidArray, 'FillExtrusionCentroidArray');
 
 class FillExtrusionWallStruct extends Struct {
     declare _structArray: FillExtrusionWallArray;
-    get a_join_normal_inside0(): number { return this._structArray.int16[this._pos2 + 0]; }
-    get a_join_normal_inside1(): number { return this._structArray.int16[this._pos2 + 1]; }
-    get a_join_normal_inside2(): number { return this._structArray.int16[this._pos2 + 2]; }
+    get a_join_normal_inside0(): number { return this._structArray.int16[this._pos2 + 0]!; }
+    get a_join_normal_inside1(): number { return this._structArray.int16[this._pos2 + 1]!; }
+    get a_join_normal_inside2(): number { return this._structArray.int16[this._pos2 + 2]!; }
 }
 
 FillExtrusionWallStruct.prototype.size = 6;

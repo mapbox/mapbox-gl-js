@@ -15,5 +15,5 @@ export function parseElevationFeatures(data: VectorTile, canonical: CanonicalTil
     if (!Object.hasOwn(data.layers, HD_ELEVATION_SOURCE_LAYER)) {
         return undefined;
     }
-    return ElevationFeatures.parseFrom(data.layers[HD_ELEVATION_SOURCE_LAYER], canonical);
+    return ElevationFeatures.parseFrom(data.layers[HD_ELEVATION_SOURCE_LAYER]!, canonical);
 }

@@ -37,7 +37,7 @@ export default class FeaturePositionMap {
         let j = this.ids.length - 1;
         while (i < j) {
             const m = (i + j) >> 1;
-            if (this.ids[m] >= intId) {
+            if (this.ids[m]! >= intId) {
                 j = m;
             } else {
                 i = m + 1;
@@ -45,9 +45,9 @@ export default class FeaturePositionMap {
         }
         const found = this.ids[i] === intId;
         while (this.ids[i] === intId) {
-            const index = this.positions[3 * i];
-            const start = this.positions[3 * i + 1];
-            const end = this.positions[3 * i + 2];
+            const index = this.positions[3 * i]!;
+            const start = this.positions[3 * i + 1]!;
+            const end = this.positions[3 * i + 2]!;
             fn(index, start, end);
             i++;
         }
@@ -98,13 +98,13 @@ function getNumericId(value: string | number): number {
 // uses Hoare partitioning & manual tail call optimization to avoid worst case scenarios
 function sort(ids: Float64Array, positions: Uint32Array, left: number, right: number) {
     while (left < right) {
-        const pivot = ids[(left + right) >> 1];
+        const pivot = ids[(left + right) >> 1]!;
         let i = left - 1;
         let j = right + 1;
 
         while (true) {
-            do i++; while (ids[i] < pivot);
-            do j--; while (ids[j] > pivot);
+            do i++; while (ids[i]! < pivot);
+            do j--; while (ids[j]! > pivot);
             if (i >= j) break;
             swap(ids, i, j);
             swap(positions, 3 * i, 3 * j);
@@ -123,8 +123,8 @@ function sort(ids: Float64Array, positions: Uint32Array, left: number, right: nu
 }
 
 function swap(arr: Uint32Array | Float64Array, i: number, j: number) {
-    const tmp = arr[i];
-    arr[i] = arr[j];
+    const tmp = arr[i]!;
+    arr[i] = arr[j]!;
     arr[j] = tmp;
 }
 

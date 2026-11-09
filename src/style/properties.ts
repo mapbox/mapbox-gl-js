@@ -112,7 +112,7 @@ export class PropertyValue<T, R> {
     constructor(property: Property<T, R>, value?: PropertyValueSpecification<T>, scope?: string | null, options?: ConfigOptions | null, iconImageUseTheme?: string | null) {
         this.property = property;
         this.value = value;
-        this.expression = normalizePropertyExpression(value === undefined ? property.specification.default : value, property.specification, scope, options, iconImageUseTheme);
+        this.expression = normalizePropertyExpression<unknown>(value === undefined ? property.specification.default : value, property.specification, scope, options, iconImageUseTheme);
 
         // Source and composite values keep their expression and get the available images only at feature
         // evaluation, so just constant and camera values with an `image` expression depend on them. Image
@@ -313,7 +313,7 @@ export class PropertyValues<Props extends {[Key in keyof Props]: Props[Key]}> {
                 if (name.endsWith('-transition')) {
                     const propName = name.slice(0, -'-transition'.length) as keyof Props;
                     if (specProperties[propName]) {
-                        this.setTransition(propName, value);
+                        this.setTransition(propName, value as TransitionSpecification | undefined);
                     }
                 } else if (Object.hasOwn(specProperties, name)) { // skip unrecognized properties
                     this.setValue(name, value);
@@ -343,7 +343,7 @@ export class PropertyValues<Props extends {[Key in keyof Props]: Props[Key]}> {
 
             const transition = this.getTransition(property);
             if (transition !== undefined) {
-                (result as Record<string, unknown>)[`${property as string}-transition`] = transition;
+                (result as Record<`${string}-transition`, TransitionSpecification>)[`${property as string}-transition`] = transition;
             }
         }
         return result;
@@ -386,15 +386,15 @@ export class PropertyValues<Props extends {[Key in keyof Props]: Props[Key]}> {
     ): PossiblyEvaluated<Props> {
         const result = new PossiblyEvaluated(this._properties);
         let hasTransition = false;
-        for (const name of Object.keys(this._values)) {
-            const entry: PropertyValueEntry<unknown, unknown> = (this._values as Record<string, PropertyValueEntry<unknown, unknown>>)[name];
+        for (const name of Object.keys(this._values) as Array<keyof Props>) {
+            const entry: PropertyValueEntry<unknown, unknown> = this._values[name];
             const state = entry.state;
             if (changedDeps === undefined || state.prior || entry.evaluatedFrom !== state.value || (state.value.deps & changedDeps)) {
                 entry.evaluated = possiblyEvaluateTransition(state, parameters, canonical, availableImages, iconImageUseTheme);
                 entry.evaluatedFrom = state.value;
                 if (state.prior) hasTransition = true;
             }
-            (result._values as Record<string, unknown>)[name] = entry.evaluated;
+            result._values[name] = entry.evaluated as PossiblyEvaluatedPropertyValues<Props>[keyof Props];
         }
         this._hasTransition = hasTransition;
         return result;
@@ -442,7 +442,7 @@ export class PossiblyEvaluatedPropertyValue<T> {
     property: DataDrivenProperty<T>;
     value: PossiblyEvaluatedValue<T>;
     parameters: EvaluationParameters;
-    iconImageUseTheme: string | null | undefined;
+    iconImageUseTheme: string | undefined;
 
     constructor(property: DataDrivenProperty<T>, value: PossiblyEvaluatedValue<T>, parameters: EvaluationParameters, iconImageUseTheme?: string) {
         this.property = property;
@@ -533,7 +533,7 @@ export class DataConstantProperty<T> implements Property<T, T> {
     }
 
     interpolate(a: T, b: T, t: number): T {
-        const interp: (a: T, b: T, t: number) => T | null | undefined = interpolate[this.specification.type as keyof typeof interpolate] as (a: T, b: T, t: number) => T;
+        const interp: ((a: T, b: T, t: number) => T) | undefined = (interpolate as Partial<Record<string, <U>(a: U, b: U, t: number) => U>>)[this.specification.type];
         if (interp) {
             return interp(a, b, t);
         } else {
@@ -567,7 +567,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         iconImageUseTheme?: string
     ): PossiblyEvaluatedPropertyValue<T> {
         if (value.expression.kind === 'constant' || value.expression.kind === 'camera') {
-            return new PossiblyEvaluatedPropertyValue<T>(this, {kind: 'constant', value: value.expression.evaluate(parameters, null, {}, canonical, availableImages, undefined, iconImageUseTheme)}, parameters);
+            return new PossiblyEvaluatedPropertyValue<T>(this, {kind: 'constant', value: value.expression.evaluate(parameters, null!, {}, canonical, availableImages, undefined, iconImageUseTheme)}, parameters);
         } else {
             return new PossiblyEvaluatedPropertyValue(this, value.expression, parameters, iconImageUseTheme);
         }
@@ -591,10 +591,10 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         // `Properties#defaultPossiblyEvaluatedValues`, which serves as the prototype of
         // `PossiblyEvaluated#_values`.
         if (a.value.value === undefined || b.value.value === undefined) {
-            return new PossiblyEvaluatedPropertyValue<T>(this, {kind: 'constant', value: undefined}, a.parameters);
+            return new PossiblyEvaluatedPropertyValue<T>(this, {kind: 'constant', value: undefined as T}, a.parameters);
         }
 
-        const interp: (a: T, b: T, t: number) => T | null | undefined = interpolate[this.specification.type as keyof typeof interpolate] as (a: T, b: T, t: number) => T;
+        const interp: ((a: T, b: T, t: number) => T) | undefined = (interpolate as Partial<Record<string, <U>(a: U, b: U, t: number) => U>>)[this.specification.type];
         if (interp) {
             return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: interp(a.value.value, b.value.value, t)}, a.parameters);
         } else {
@@ -640,7 +640,7 @@ export class ColorRampProperty implements Property<Color, boolean> {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
     ): boolean {
-        return !!value.expression.evaluate(parameters, null, {}, canonical, availableImages);
+        return !!value.expression.evaluate(parameters, null!, {}, canonical, availableImages);
     }
 
     interpolate(): boolean { return false; }

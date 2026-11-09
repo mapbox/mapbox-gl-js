@@ -15,6 +15,9 @@ import type {StylePropertySpecification} from '../src/style-spec/style-spec';
 import type {FunctionSpecification} from '../src/style-spec/types';
 import type ParsingError from '../src/style-spec/expression/parsing_error';
 import type {CompilationResult} from './integration/lib/expression';
+import type {Result} from '../src/style-spec/util/result';
+import type {Feature, GlobalProperties, StylePropertyExpression, ZoomConstantExpression, ZoomDependentExpression} from '../src/style-spec/expression/index';
+import type {EvaluationKind} from '../src/style-spec/expression/types';
 
 // The feature passed to the evaluator: its `type` is the (possibly collapsed) geometry type and
 // its `geometry` is in tile coordinates, so it isn't a GeoJSON.Feature.
@@ -115,13 +118,10 @@ run('js', {tests}, (fixture) => {
         };
     }
 
-    // `expression` is reassigned from the parse result to its value below, so it has no single type.
-    const evaluateExpression = (expression: any, compilationResult: CompilationResult) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (expression.result === 'error') {
+    const evaluateExpression = (parseResult: Result<StylePropertyExpression, ParsingError[]>, compilationResult: CompilationResult) => {
+        if (parseResult.result === 'error') {
             compilationResult.result = 'error';
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-            compilationResult.errors = expression.value.map((err: ParsingError) => ({
+            compilationResult.errors = parseResult.value.map((err: ParsingError) => ({
                 key: err.key,
                 error: err.message
             }));
@@ -130,17 +130,12 @@ run('js', {tests}, (fixture) => {
 
         const evaluationResult: Array<any> = [];
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        expression = expression.value;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        const expression = parseResult.value as ZoomConstantExpression<EvaluationKind> | ZoomDependentExpression<EvaluationKind>;
         const type = expression._styleExpression.expression.type; // :scream:
 
         compilationResult.result = 'success';
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         compilationResult.isFeatureConstant = expression.kind === 'constant' || expression.kind === 'camera';
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         compilationResult.isZoomConstant = expression.kind === 'constant' || expression.kind === 'source';
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         compilationResult.type = toString(type);
 
         for (const input of fixture.inputs || []) {
@@ -168,10 +163,9 @@ run('js', {tests}, (fixture) => {
                     }
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                let value = expression.evaluateWithoutErrorHandling(input[0], feature, featureState, canonical, availableImages);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
+                let value = expression.evaluateWithoutErrorHandling(input[0] as GlobalProperties, feature as Feature, featureState, canonical, availableImages);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (type.kind === 'color') {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     value = [value.r, value.g, value.b, value.a];

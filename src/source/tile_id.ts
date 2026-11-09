@@ -36,7 +36,7 @@ export class CanonicalTileID {
         const bbox = getTileBBox(this.x, this.y, this.z);
         const quadkey = getQuadkey(this.z, this.x, this.y);
 
-        return urls[(this.x + this.y) % urls.length]
+        return urls[(this.x + this.y) % urls.length]!
             .replace('{prefix}', (this.x % 16).toString(16) + (this.y % 16).toString(16))
             .replace(/{z}/g, String(this.z))
             .replace(/{x}/g, String(this.x))
