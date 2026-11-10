@@ -82,7 +82,7 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
     }
 
     protected _propNames(): readonly string[] {
-        return PROP_NAMES[+this.isText];
+        return PROP_NAMES[+this.isText]!;
     }
 
     protected _headerDwords(): number {
@@ -112,7 +112,7 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
         let dataDrivenOffsetVec4 = 0;
 
         const floorZoom = this._floorZoom;
-        const names = PROP_NAMES[+this.isText];
+        const names = PROP_NAMES[+this.isText]!;
         for (let i = 0; i < PROP_COUNT; i++) {
             const name = names[i];
             const isColor = i < 2;
@@ -165,8 +165,8 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
                 // Colors additionally get their shared range written into the header, since their
                 // block (when not DifferentZoomRanges) carries no per-feature zoom slot at all.
                 if (isColor) {
-                    this.header[HEADER_SHARED_ZOOM + i * 2] = floatToBits(this.sharedZoomRanges[i * 2]);
-                    this.header[HEADER_SHARED_ZOOM + i * 2 + 1] = floatToBits(this.sharedZoomRanges[i * 2 + 1]);
+                    this.header[HEADER_SHARED_ZOOM + i * 2] = floatToBits(this.sharedZoomRanges[i * 2]!);
+                    this.header[HEADER_SHARED_ZOOM + i * 2 + 1] = floatToBits(this.sharedZoomRanges[i * 2 + 1]!);
                 }
             }
         }
@@ -184,12 +184,12 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
      */
     protected _recomputeSharedRanges(): void {
         const floorZoom = this._floorZoom;
-        const names = PROP_NAMES[+this.isText];
+        const names = PROP_NAMES[+this.isText]!;
         let colorHeaderChanged = false;
 
         for (let i = 0; i < PROP_COUNT; i++) {
             const name = names[i];
-            const isDataDriven = (this.header[HEADER_DATA_DRIVEN_MASK] & (1 << i)) !== 0;
+            const isDataDriven = (this.header[HEADER_DATA_DRIVEN_MASK]! & (1 << i)) !== 0;
             const dep = this.zoomDependency[i];
             const isZoomDep = dep !== ZOOM_INDEPENDENT;
             const hasAppearanceZoomStops = dep === ZOOM_DIFFERENT_RANGES;
@@ -204,8 +204,8 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
                         // Colors: also refresh the header's shared-zoom slot (see updateHeader) —
                         // it's their only copy of the zoom range, unlike scalars/translate whose
                         // per-feature block slot gets rewritten via evaluateAllProperties instead.
-                        this.header[HEADER_SHARED_ZOOM + i * 2] = floatToBits(this.sharedZoomRanges[i * 2]);
-                        this.header[HEADER_SHARED_ZOOM + i * 2 + 1] = floatToBits(this.sharedZoomRanges[i * 2 + 1]);
+                        this.header[HEADER_SHARED_ZOOM + i * 2] = floatToBits(this.sharedZoomRanges[i * 2]!);
+                        this.header[HEADER_SHARED_ZOOM + i * 2 + 1] = floatToBits(this.sharedZoomRanges[i * 2 + 1]!);
                         colorHeaderChanged = true;
                     }
                 }
@@ -244,8 +244,8 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
             const zM = zoomRangeScratch[1];
             if (!hasZoom) {
                 hasZoom = true;
-                firstZm = zm;
-                firstZM = zM;
+                firstZm = zm!;
+                firstZM = zM!;
                 representative = expr;
             } else if (zm !== firstZm || zM !== firstZM) {
                 differs = true;
@@ -272,7 +272,7 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
         const pe = (fromAppearance ?
             (formattedSection && layerProp && layerProp.property.overrides && layerProp.property.overrides.hasOverride(formattedSection) ?
                 layerProp :
-                activeAppearance.paintProperties.get(appearanceName)) :
+                activeAppearance.paintProperties!.get(appearanceName)) :
             paint.get(propName as keyof typeof paint._values)) as unknown as PossiblyEvaluatedPropertyValue<T> | undefined;
 
         // Only a zoom-only expression that possiblyEvaluate collapsed to a constant needs
@@ -321,7 +321,7 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
             evalFlatScratch[flatOffset + 3] = max ? max[1] : 0;
         } else {
             evalFlatScratch[flatOffset + 2] = evalFlatScratch[flatOffset];
-            evalFlatScratch[flatOffset + 3] = evalFlatScratch[flatOffset + 1];
+            evalFlatScratch[flatOffset + 3] = evalFlatScratch[flatOffset + 1]!;
         }
     }
 
@@ -330,14 +330,14 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
      * to the color / translate / float evaluator by property kind.
      */
     protected _evaluatePropertyAt(i: number, ctx: EvaluationContext): void {
-        const names = PROP_NAMES[+this.isText];
-        const name = names[i];
+        const names = PROP_NAMES[+this.isText]!;
+        const name = names[i]!;
         const isColor = i < 2;
         const isVec2 = i === 8;
         const dep = this.zoomDependency[i];
         const isZoomDep = dep !== ZOOM_INDEPENDENT;
         const hasAppearanceZoomStops = dep === ZOOM_DIFFERENT_RANGES;
-        const flatOffset = SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[i];
+        const flatOffset = SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[i]!;
         // The [zm, zM] pair immediately follows the value within the property's slot
         // (4 floats for colors/translate, 2 for scalars) — see the flat-layout doc in
         // symbol_properties_ubo.ts.
@@ -372,11 +372,11 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
      */
     override hasStateDependentPaint(layer: SymbolStyleLayer): boolean {
         if (super.hasStateDependentPaint(layer)) return true;
-        const names = PROP_NAMES[+this.isText];
+        const names = PROP_NAMES[+this.isText]!;
         for (const appearance of layer.getAppearances() || []) {
             for (const name of names) {
                 const key = name as keyof AppearancePaintProps;
-                if (appearance.hasPaintProperty(key) && isPaintStateDependent(appearance.paintProperties.get(key))) {
+                if (appearance.hasPaintProperty(key) && isPaintStateDependent(appearance.paintProperties!.get(key))) {
                     return true;
                 }
             }
@@ -402,7 +402,7 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
      * and is applied per-vertex in the shader, so the draw-time matrix must omit translate.
      */
     hasPerFeatureTranslate(): boolean {
-        return (this.header[HEADER_DATA_DRIVEN_MASK] & (1 << 8)) !== 0;
+        return (this.header[HEADER_DATA_DRIVEN_MASK]! & (1 << 8)) !== 0;
     }
 
     /**
@@ -428,7 +428,7 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
         if (this.header[HEADER_DATA_DRIVEN_MASK] === 0) return false; // All constant — nothing per-feature to write
 
         this._ensureRangeMaps();
-        const positions = this.featureVertexRangesFromVtIndex.get(vtFeatureIndex);
+        const positions = this.featureVertexRangesFromVtIndex!.get(vtFeatureIndex);
         if (!positions) return false;
 
         // Evaluate per slot: sections of a formatted text-field each have their own UBO entry
@@ -447,16 +447,16 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
      * Build the u_spp_* constant-property uniform values from the current layer.
      */
     protected _buildConstantUniforms(brightness: number | null | undefined): ConstantUniformValues {
-        const names = PROP_NAMES[+this.isText];
+        const names = PROP_NAMES[+this.isText]!;
         return {
-            'fill_np_color': this._constantColor(names[0], brightness, [0, 0, 0, 1]),
-            'halo_np_color': this._constantColor(names[1], brightness, [0, 0, 0, 1]),
-            opacity: this._constantFloat(names[2], 1.0),
-            'halo_width': this._constantFloat(names[3], 0.0),
-            'halo_blur': this._constantFloat(names[4], 0.0),
-            'emissive_strength': this._constantFloat(names[5], 0.0),
-            'occlusion_opacity': this._constantFloat(names[6], 1.0),
-            'z_offset': this._constantFloat(names[7], 0.0),
+            'fill_np_color': this._constantColor(names[0]!, brightness, [0, 0, 0, 1]),
+            'halo_np_color': this._constantColor(names[1]!, brightness, [0, 0, 0, 1]),
+            opacity: this._constantFloat(names[2]!, 1.0),
+            'halo_width': this._constantFloat(names[3]!, 0.0),
+            'halo_blur': this._constantFloat(names[4]!, 0.0),
+            'emissive_strength': this._constantFloat(names[5]!, 0.0),
+            'occlusion_opacity': this._constantFloat(names[6]!, 1.0),
+            'z_offset': this._constantFloat(names[7]!, 0.0),
         };
     }
 }

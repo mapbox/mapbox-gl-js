@@ -13,7 +13,7 @@ import type {Frustum} from '../util/primitives';
 import type {OverscaledTileID} from '../source/tile_id';
 import type Color from '../style-spec/util/color';
 import type {FogSpecification} from '../style-spec/types';
-import type {ConfigOptions} from './properties';
+import type {ConfigOptions, PropertyValueSpecifications} from './properties';
 import type LngLat from '../geo/lng_lat';
 import type Transform from '../geo/transform';
 import type {StyleSetterOptions} from '../style/style';
@@ -42,21 +42,21 @@ class Fog extends StyleProperties<Props> {
 
     constructor(fogOptions: FogSpecification | null | undefined, transform: Transform, scope: string, configOptions?: ConfigOptions | null) {
         const fogProperties: Properties<Props> = new Properties({
-            "range": new DataConstantProperty(fogReference.range),
-            "color": new DataConstantProperty(fogReference.color),
+            "range": new DataConstantProperty(fogReference.range!),
+            "color": new DataConstantProperty(fogReference.color!),
             "color-use-theme": new DataConstantProperty({"type": "string", "property-type": "data-constant", "default": "default"}),
-            "high-color": new DataConstantProperty(fogReference["high-color"]),
+            "high-color": new DataConstantProperty(fogReference["high-color"]!),
             "high-color-use-theme": new DataConstantProperty({"type": "string", "property-type": "data-constant", "default": "default"}),
-            "space-color": new DataConstantProperty(fogReference["space-color"]),
+            "space-color": new DataConstantProperty(fogReference["space-color"]!),
             "space-color-use-theme": new DataConstantProperty({"type": "string", "property-type": "data-constant", "default": "default"}),
-            "horizon-blend": new DataConstantProperty(fogReference["horizon-blend"]),
-            "star-intensity": new DataConstantProperty(fogReference["star-intensity"]),
-            "vertical-range": new DataConstantProperty(fogReference["vertical-range"]),
+            "horizon-blend": new DataConstantProperty(fogReference["horizon-blend"]!),
+            "star-intensity": new DataConstantProperty(fogReference["star-intensity"]!),
+            "vertical-range": new DataConstantProperty(fogReference["vertical-range"]!),
         });
 
         super(fogProperties, scope, new Map(configOptions));
         this._transform = transform;
-        this.set(fogOptions);
+        this.set(fogOptions!);
         this._transitionable.snap();
     }
 
@@ -71,8 +71,8 @@ class Fog extends StyleProperties<Props> {
         return {
 
             range: isGlobe ? [
-                interpolate(globeFixedFogRange[0], fovAdjustedRange[0], transitionT),
-                interpolate(globeFixedFogRange[1], fovAdjustedRange[1], transitionT)
+                interpolate(globeFixedFogRange[0]!, fovAdjustedRange[0], transitionT),
+                interpolate(globeFixedFogRange[1]!, fovAdjustedRange[1], transitionT)
             ] : fovAdjustedRange,
 
             horizonBlend: this.properties.get('horizon-blend'),
@@ -93,11 +93,11 @@ class Fog extends StyleProperties<Props> {
         const properties = {...fog};
         for (const name of Object.keys(fogReference)) {
             if ((properties as Record<string, unknown>)[name] === undefined) {
-                (properties as Record<string, unknown>)[name] = fogReference[name].default;
+                (properties as Record<string, unknown>)[name] = fogReference[name]!.default;
             }
         }
 
-        this._setValues(properties, configOptions);
+        this._setValues(properties as PropertyValueSpecifications<Props>, configOptions);
     }
 
     getOpacity(pitch: number): number {
@@ -106,7 +106,7 @@ class Fog extends StyleProperties<Props> {
         const fogColor = (this.properties && this.properties.get('color')) || 1.0;
         const isGlobe = this._transform.projection.name === 'globe';
         const pitchFactor = isGlobe ? 1.0 : smoothstep(FOG_PITCH_START, FOG_PITCH_END, pitch);
-        return pitchFactor * (fogColor as Color).a;
+        return pitchFactor * (fogColor).a;
     }
 
     getOpacityAtLatLng(lngLat: LngLat, transform: Transform): number {
@@ -147,14 +147,14 @@ class Fog extends StyleProperties<Props> {
             const farPoint = frustum.points[pointIdx];
             let flatPoint: vec3 | null | undefined;
 
-            if (farPoint[2] >= 0.0) {
+            if (farPoint![2] >= 0.0) {
                 flatPoint = farPoint;
             } else {
                 const nearPoint = frustum.points[pointIdx - 4];
-                flatPoint = vecInterpolate(nearPoint as number[], farPoint as number[], nearPoint[2] / (nearPoint[2] - farPoint[2]));
+                flatPoint = vecInterpolate(nearPoint as number[], farPoint as number[], nearPoint![2] / (nearPoint![2] - farPoint![2]));
             }
 
-            if (getFogOpacityAtMercCoord(this.state, flatPoint[0], flatPoint[1], 0, this._transform) >= FOG_OPACITY_THRESHOLD) {
+            if (getFogOpacityAtMercCoord(this.state, flatPoint![0], flatPoint![1], 0, this._transform) >= FOG_OPACITY_THRESHOLD) {
                 return true;
             }
         }

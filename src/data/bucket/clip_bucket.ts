@@ -38,7 +38,7 @@ class ClipBucket implements Bucket {
 
     footprints: Array<Footprint>;
 
-    worldview: string;
+    worldview: string | undefined;
     hasAppearances: boolean | null;
 
     constructor(options: BucketParameters<ClipStyleLayer>) {
@@ -76,10 +76,10 @@ class ClipBucket implements Bucket {
 
         const globalProperties = new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors});
         for (const {feature, id, index, sourceLayerIndex} of features) {
-            const needGeometry = this.layers[0]._featureFilter.needGeometry;
+            const needGeometry = this.layers[0]!._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            if (!this.layers[0]._featureFilter.filter(globalProperties, evaluationFeature, canonical))
+            if (!this.layers[0]!._featureFilter.filter(globalProperties, evaluationFeature, canonical))
                 continue;
 
             const bucketFeature: BucketFeature = {
@@ -99,7 +99,7 @@ class ClipBucket implements Bucket {
             const {geometry, index, sourceLayerIndex} = bucketFeature;
 
             this.addFeature(bucketFeature, geometry, index, canonical, {}, options.availableImages, options.brightness);
-            const feature = features[index].feature;
+            const feature = features[index]!.feature;
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
     }
@@ -140,14 +140,14 @@ class ClipBucket implements Bucket {
                 }
 
                 for (let i = 0; i < ring.length; i++) {
-                    flattened.push(ring[i].x);
-                    flattened.push(ring[i].y);
-                    points.push(ring[i]);
+                    flattened.push(ring[i]!.x);
+                    flattened.push(ring[i]!.y);
+                    points.push(ring[i]!);
 
-                    min.x = Math.min(min.x, ring[i].x);
-                    min.y = Math.min(min.y, ring[i].y);
-                    max.x = Math.max(max.x, ring[i].x);
-                    max.y = Math.max(max.y, ring[i].y);
+                    min.x = Math.min(min.x, ring[i]!.x);
+                    min.y = Math.min(min.y, ring[i]!.y);
+                    max.x = Math.max(max.x, ring[i]!.x);
+                    max.y = Math.max(max.y, ring[i]!.y);
                 }
             }
 

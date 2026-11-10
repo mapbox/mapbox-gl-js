@@ -4,9 +4,9 @@ import type {
     StructArray,
     StructArrayMember
 } from '../util/struct_array';
-import type Program from '../render/program';
 import type Context from '../gl/context';
-import type {UniformBindings} from '../render/uniform_binding';
+
+export type AttributeLocator = {getAttributeLocation: (gl: WebGL2RenderingContext, name: string) => number};
 
 /**
  * @enum {string} AttributeType
@@ -73,7 +73,7 @@ class VertexBuffer {
         gl.bufferSubData(gl.ARRAY_BUFFER, start * bytesPerElement, array.uint8, start * bytesPerElement, (end - start) * bytesPerElement);
     }
 
-    enableAttributes(gl: WebGL2RenderingContext, program: Program<UniformBindings>) {
+    enableAttributes(gl: WebGL2RenderingContext, program: AttributeLocator) {
         for (const member of this.attributes) {
             const attribIndex = program.getAttributeLocation(gl, member.name);
             if (attribIndex !== -1) {
@@ -88,7 +88,7 @@ class VertexBuffer {
      * @param program The active WebGL program.
      * @param vertexOffset Index of the starting vertex of the segment.
      */
-    setVertexAttribPointers(gl: WebGL2RenderingContext, program: Program<UniformBindings>, vertexOffset?: number | null) {
+    setVertexAttribPointers(gl: WebGL2RenderingContext, program: AttributeLocator, vertexOffset?: number | null) {
         for (const member of this.attributes) {
             const attribIndex = program.getAttributeLocation(gl, member.name);
             if (attribIndex !== -1) {
@@ -117,9 +117,9 @@ class VertexBuffer {
         }
     }
 
-    setVertexAttribDivisor(gl: WebGL2RenderingContext, program: Program<UniformBindings>, value: number) {
+    setVertexAttribDivisor(gl: WebGL2RenderingContext, program: AttributeLocator, value: number) {
         for (let j = 0; j < this.attributes.length; j++) {
-            const member = this.attributes[j];
+            const member = this.attributes[j]!;
             const attribIndex = program.getAttributeLocation(gl, member.name);
             if (attribIndex !== -1 && this.instanceCount && this.instanceCount > 0) {
                 gl.vertexAttribDivisor(attribIndex, value);

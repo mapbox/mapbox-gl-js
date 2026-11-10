@@ -115,7 +115,7 @@ const modelUniformValues = (
     matrix: mat4,
     lightingMatrix: mat4,
     normalMatrix: mat4,
-    nodeMatrix: mat4,
+    nodeMatrix: mat4 | null,
     layerValues: ModelLayerUniformValues,
     opacity: number,
     material: Material,

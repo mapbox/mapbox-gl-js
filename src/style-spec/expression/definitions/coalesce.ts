@@ -49,14 +49,12 @@ class Coalesce implements Expression {
             new Coalesce(outputType, parsedArgs);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    evaluate(ctx: EvaluationContext): any {
-        let result = null;
+    evaluate(ctx: EvaluationContext): unknown {
+        let result: unknown = null;
         let argCount = 0;
         let firstImage: ResolvedImage | undefined;
         for (const arg of this.args) {
             argCount++;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             result = arg.evaluate(ctx);
             // we need to keep track of the first requested image in a coalesce statement
             // if coalesce can't find a valid image, we return the first image so styleimagemissing can fire

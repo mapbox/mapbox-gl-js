@@ -42,7 +42,7 @@ export type BucketParameters<Layer extends StyleLayer> = {
     tessellationStep: number | null | undefined;
     styleDefinedModelURLs: StyleModelMap;
     worldview: string | undefined;
-    localizable: boolean;
+    localizable: boolean | undefined;
     availableImages: ImageId[];
     maxUniformBlockSizeDwords?: number | null;
 };
@@ -181,7 +181,7 @@ export function deserialize(input: Array<Bucket>, style: Style): Record<string, 
     for (const bucket of input) {
         const layers = bucket.layerIds
             .map((id) => style.getLayer(id))
-            .filter(Boolean);
+            .filter(Boolean) as TypedStyleLayer[];
 
         if (layers.length === 0) {
             continue;
@@ -191,7 +191,7 @@ export function deserialize(input: Array<Bucket>, style: Style): Record<string, 
         // want to waste time serializing/copying them from the worker)
         bucket.layers = layers;
         if (bucket.stateDependentLayerIds) {
-            bucket.stateDependentLayers = bucket.stateDependentLayerIds.map((lId) => layers.filter((l) => l.id === lId)[0]);
+            bucket.stateDependentLayers = bucket.stateDependentLayerIds.map((lId) => layers.filter((l) => l.id === lId)[0]!);
         }
         if (bucket.updateExpressions) bucket.updateExpressions(layers);
         for (const layer of layers) {

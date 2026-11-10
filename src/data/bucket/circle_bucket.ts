@@ -107,7 +107,7 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
-        const styleLayer = this.layers[0];
+        const styleLayer = this.layers[0]!;
         const bucketFeatures = [];
         let circleSortKey = null;
 
@@ -118,10 +118,10 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
 
         const globalProperties = new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors});
         for (const {feature, id, index, sourceLayerIndex} of features) {
-            const needGeometry = this.layers[0]._featureFilter.needGeometry;
+            const needGeometry = this.layers[0]!._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            if (!this.layers[0]._featureFilter.filter(globalProperties, evaluationFeature, canonical))
+            if (!this.layers[0]!._featureFilter.filter(globalProperties, evaluationFeature, canonical))
                 continue;
 
             const sortKey = circleSortKey ?
@@ -146,7 +146,7 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
         if (circleSortKey) {
             bucketFeatures.sort((a, b) => {
                 // a.sortKey is always a number when in use
-                return a.sortKey - b.sortKey;
+                return a.sortKey! - b.sortKey!;
             });
         }
 
@@ -160,7 +160,7 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
 
         for (const bucketFeature of bucketFeatures) {
             const {geometry, index, sourceLayerIndex} = bucketFeature;
-            const feature = features[index].feature;
+            const feature = features[index]!.feature;
 
             this.addFeature(bucketFeature, geometry, index, options.availableImages, canonical, globeProjection, options.brightness, options.elevationFeatures);
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
@@ -274,7 +274,7 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
         z: number;
     }, normal: vec3) {
         const encode = 1 << 14;
-        this.globeExtVertexArray.emplaceBack(
+        this.globeExtVertexArray!.emplaceBack(
             pos.x, pos.y, pos.z,
             normal[0] * encode, normal[1] * encode, normal[2] * encode);
     }

@@ -135,18 +135,18 @@ class WorkerTile {
     data!: VectorTile;
     collisionBoxArray!: CollisionBoxArray;
 
-    abort!: () => void | null | undefined;
+    abort!: (() => void) | null | undefined;
     reloadCallback?: WorkerSourceVectorTileCallback | null | undefined;
     vectorTile!: VectorTile;
     rasterizeTask: AbortController | null | undefined;
 
     constructor(params: WorkerSourceVectorTileRequest) {
-        this.tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
+        this.tileID = new OverscaledTileID(params.tileID!.overscaledZ, params.tileID!.wrap, params.tileID!.canonical.z, params.tileID!.canonical.x, params.tileID!.canonical.y);
         this.tileZoom = params.tileZoom;
         this.uid = params.uid;
         this.zoom = params.zoom;
         this.lut = params.lut;
-        this.canonical = params.tileID.canonical;
+        this.canonical = params.tileID!.canonical;
         this.pixelRatio = params.pixelRatio;
         this.tileSize = params.tileSize;
         this.source = params.source;
@@ -154,7 +154,7 @@ class WorkerTile {
         this.overscaling = this.tileID.overscaleFactor();
         this.showCollisionBoxes = params.showCollisionBoxes;
         this.showElevationIdDebug = params.showElevationIdDebug;
-        this.collectResourceTiming = params.request ? params.request.collectResourceTiming : false;
+        this.collectResourceTiming = (params.request ? params.request.collectResourceTiming : false)!;
         this.promoteId = params.promoteId;
         this.stableIdField = params.stableIdField || null;
         this.renderSourceType = params.renderSourceType;
@@ -163,8 +163,8 @@ class WorkerTile {
         this.crossSourceElevationEnabled = !!params.crossSourceElevationEnabled;
         this.terrainEnabled = !!params.terrainEnabled;
         this.deferRoadStructure = false;
-        this.tileTransform = tileTransform(params.tileID.canonical, params.projection);
-        this.projection = params.projection;
+        this.tileTransform = tileTransform(params.tileID!.canonical, params.projection!);
+        this.projection = params.projection!;
         this.worldview = params.worldview;
         this.localizableLayerIds = params.localizableLayerIds;
         this.brightness = params.brightness;
@@ -172,7 +172,7 @@ class WorkerTile {
         this.tessellationStep = params.tessellationStep;
         this.scaleFactor = params.scaleFactor;
         this.worldview = params.worldview;
-        this.indoor = params.indoor;
+        this.indoor = params.indoor!;
     }
 
     // Whether a layer would actually produce a bucket for this tile. Used to avoid
@@ -199,8 +199,8 @@ class WorkerTile {
             let needsHD = !!this.indoor || !!this.frcCoverage; // Indoor needs HD.parseActiveFloors; FRC needs HD.attachExtension
             let needsStandard = false;
             for (const sourceLayerId in layerFamilies || {}) {
-                for (const family of layerFamilies[sourceLayerId]) {
-                    const layer = family[0];
+                for (const family of layerFamilies![sourceLayerId]!) {
+                    const layer = family[0]!;
                     // Layers that won't actually parse for this tile shouldn't force a
                     // module load. The same predicate is applied inside `_parseAfterHD`.
                     if (!this.isLayerActiveForTile(layer)) continue;
@@ -244,7 +244,7 @@ class WorkerTile {
         // we initially reserve space for a 256x256 atlas, but trim it after processing all line features
         const lineAtlas = new LineAtlas(256, 256);
 
-        const options: PopulateParameters = {
+        const options: PopulateParameters & {brightness: number} = {
             featureIndex,
             iconDependencies: new Map(),
             patternDependencies: new Map(),
@@ -295,15 +295,15 @@ class WorkerTile {
             let anyOtherLayers = false;
             let any3DLayer = false;
 
-            for (const family of layerFamilies[sourceLayerId]) {
-                if (family[0].type === 'symbol') {
+            for (const family of layerFamilies[sourceLayerId]!) {
+                if (family[0]!.type === 'symbol') {
                     anySymbolLayers = true;
-                } else if (family[0].type === 'fill-extrusion') {
+                } else if (family[0]!.type === 'fill-extrusion') {
                     anyFillExtrusionLayers = true;
                 } else {
                     anyOtherLayers = true;
                 }
-                if (family[0].is3D() && family[0].type !== 'model') {
+                if (family[0]!.is3D() && family[0]!.type !== 'model') {
                     any3DLayer = true;
                 }
             }
@@ -377,8 +377,8 @@ class WorkerTile {
                 options.elevationFeatures = HD.parseElevationFeatures(data, this.canonical);
             }
 
-            for (const family of layerFamilies[sourceLayerId]) {
-                const layer = family[0];
+            for (const family of layerFamilies[sourceLayerId]!) {
+                const layer = family[0]!;
 
                 if (this.extraShadowCaster && (!layer.is3D() || layer.type === 'model')) {
                     // avoid to spend resources in 2D layers or 3D model layers (trees) for extra shadow casters
@@ -405,7 +405,7 @@ class WorkerTile {
                     // Recalculate right before populate: `family` layers are shared across tiles and recalculate
                     // mutates their zoom-dependent layout in place. On the async prepare() path another tile could
                     // otherwise recalculate at a different zoom in between, giving wrong zoom-stepped values (e.g. model-id).
-                    recalculateLayers(family, this.zoom, options.brightness, availableImages, this.worldview, options.activeFloors);
+                    recalculateLayers(family, this.zoom, options.brightness, availableImages, this.worldview!, options.activeFloors);
                     const styleLayer: StyleLayer = layer;
                     assert(styleLayer.createBucket);
                     const bucket: Bucket = buckets[layer.id] = styleLayer.createBucket({
@@ -423,7 +423,7 @@ class WorkerTile {
                         projection: this.projection.spec,
                         tessellationStep: this.tessellationStep,
                         styleDefinedModelURLs: availableModels,
-                        worldview: this.worldview,
+                        worldview: this.worldview!,
                         localizable,
                         availableImages,
                         maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords
@@ -517,9 +517,9 @@ class WorkerTile {
                     for (const key in buckets) {
                         const bucket = buckets[key];
                         if (bucket instanceof SymbolBucket) {
-                            recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages, this.worldview, options.activeFloors);
+                            recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages, this.worldview!, options.activeFloors);
                             const layer = bucket.layers[0];
-                            const frc = symbolFrcCoverageForLayer(this.frcCoverage, this.source, layer.sourceLayer);
+                            const frc = symbolFrcCoverageForLayer(this.frcCoverage, this.source, layer!.sourceLayer!);
                             symbolLayoutData[key] = performSymbolLayout(
                                 bucket,
                                 glyphMap,
@@ -531,7 +531,7 @@ class WorkerTile {
                                 this.scaleFactor,
                                 this.pixelRatio,
                                 iconRasterizationTasks,
-                                this.worldview,
+                                this.worldview!,
                                 availableImages,
                                 frc.frcMask,
                                 frc.polygons,
@@ -544,9 +544,9 @@ class WorkerTile {
                     if (iconRasterizationTasks.size || patternRasterizationTasks.size) {
                         this.rasterizeTask = actor.sendCancelable('rasterizeImages', {scope: this.scope, iconTasks: iconRasterizationTasks, patternTasks: patternRasterizationTasks}, {}, (err, rasterizedImages) => {
                             if (!err) {
-                                for (const [id, data] of rasterizedImages.entries()) {
-                                    if (iconMap.has(id)) iconMap.set(id, Object.assign(iconMap.get(id), {data}));
-                                    if (patternMap.has(id)) patternMap.set(id, Object.assign(patternMap.get(id), {data}));
+                                for (const [id, data] of rasterizedImages!.entries()) {
+                                    if (iconMap.has(id)) iconMap.set(id, Object.assign(iconMap.get(id)!, {data}));
+                                    if (patternMap.has(id)) patternMap.set(id, Object.assign(patternMap.get(id)!, {data}));
                                 }
                             }
                             postRasterizationLayout(symbolLayoutData, glyphAtlas, m, imageVersions);
@@ -593,12 +593,12 @@ class WorkerTile {
                     for (const key in buckets) {
                         const bucket = buckets[key];
                         if (key in symbolLayoutData) {
-                            postRasterizationSymbolLayout(bucket as SymbolBucket, symbolLayoutData[key], this.showCollisionBoxes, availableImages, this.tileID.canonical, this.tileZoom, this.projection, this.brightness, iconMap, positions, this.stableIdField);
-                        } else if (bucket.hasPattern &&
+                            postRasterizationSymbolLayout(bucket as SymbolBucket, symbolLayoutData[key]!, this.showCollisionBoxes, availableImages, this.tileID.canonical, this.tileZoom, this.projection, this.brightness, iconMap, positions, this.stableIdField);
+                        } else if (bucket!.hasPattern &&
                             (bucket instanceof LineBucket ||
                                 bucket instanceof FillBucket ||
                                 bucket instanceof FillExtrusionBucket)) {
-                            recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages, this.worldview, options.activeFloors);
+                            recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages, this.worldview!, options.activeFloors);
                             const imagePositions: SpritePositions = Object.fromEntries(positions.patternPositions);
                             bucket.addFeatures(options, this.tileID.canonical, imagePositions, availableImages, this.tileTransform, this.brightness);
                         }
@@ -615,7 +615,7 @@ class WorkerTile {
                         hasTunnelGeometry,
                         glyphAtlasImage: glyphAtlas.image,
                         lineAtlas,
-                        imageAtlas: imageAtlasForTransfer,
+                        imageAtlas: imageAtlasForTransfer!,
                         brightness: options.brightness,
                         hasDeferredRoadStructure: this.deferRoadStructure,
                         frcCoveragePolygons,
@@ -633,7 +633,7 @@ class WorkerTile {
                     const variantCache = new Map<StringifiedImageVariant, ImageVariant>();
                     const sortedIcons = sortImagesMap(iconMap, variantCache);
                     const sortedPatterns = sortImagesMap(patternMap, variantCache);
-                    const descriptor = new AtlasContentDescriptor(sortedIcons, sortedPatterns, imageVersions, this.lut, this.scope, variantCache);
+                    const descriptor = new AtlasContentDescriptor(sortedIcons, sortedPatterns, imageVersions!, this.lut, this.scope, variantCache);
 
                     actor.send('checkAtlasCache', {descriptor, scope: this.scope})
                         .then((cachedPositions) => {
@@ -673,8 +673,8 @@ class WorkerTile {
                 const localIds: Record<string, number[]> = {};
                 if (this.localGlyphs) {
                     for (const stack in stacks) {
-                        localIds[stack] = stacks[stack].filter((id) => this.localGlyphs.supports(id));
-                        stacks[stack] = stacks[stack].filter((id) => !this.localGlyphs.supports(id));
+                        localIds[stack] = stacks[stack]!.filter((id) => this.localGlyphs!.supports(id));
+                        stacks[stack] = stacks[stack]!.filter((id) => !this.localGlyphs!.supports(id));
                     }
                 }
                 const localGlyphs: Record<string, StyleGlyphs> = {};
@@ -683,7 +683,7 @@ class WorkerTile {
                         .then((result: GlyphMap) => {
                             if (!error) {
                                 glyphMap = result;
-                                for (const stack in localGlyphs) Object.assign(glyphMap[stack].glyphs, localGlyphs[stack]);
+                                for (const stack in localGlyphs) Object.assign(glyphMap[stack]!.glyphs!, localGlyphs[stack]!);
                                 maybePrepare();
                             }
                         })
@@ -699,8 +699,8 @@ class WorkerTile {
 
                 imageVersions = new Map();
 
-                const icons = Array.from(options.iconDependencies.keys()).map((id) => ImageId.parse(id));
-                const patterns = Array.from(options.patternDependencies.keys()).map((id) => ImageId.parse(id));
+                const icons = Array.from(options.iconDependencies.keys()).map((id) => ImageId.parse(id)!);
+                const patterns = Array.from(options.patternDependencies.keys()).map((id) => ImageId.parse(id)!);
                 if (icons.length || patterns.length) {
                     actor.send('getImages', {icons, patterns, source: this.source, scope: this.scope, tileID: this.tileID}, {metadata: taskMetadata})
                         .then((getImagesResult) => {
@@ -730,7 +730,7 @@ class WorkerTile {
                 // Rasterize local glyphs while the main thread handles the requests above
                 for (const stack in localIds) {
                     const glyphs: StyleGlyphs = localGlyphs[stack] = {};
-                    for (const id of localIds[stack]) glyphs[id] = this.localGlyphs.draw(stack, id);
+                    for (const id of localIds[stack]!) glyphs[id] = this.localGlyphs!.draw(stack, id);
                 }
             }
 
@@ -754,13 +754,13 @@ class WorkerTile {
         this.scaleFactor = params.scaleFactor;
         this.showCollisionBoxes = params.showCollisionBoxes;
         this.showElevationIdDebug = params.showElevationIdDebug;
-        this.projection = params.projection;
+        this.projection = params.projection!;
         this.brightness = params.brightness;
-        this.tileTransform = tileTransform(params.tileID.canonical, params.projection);
+        this.tileTransform = tileTransform(params.tileID!.canonical, params.projection!);
         this.extraShadowCaster = params.extraShadowCaster;
         this.lut = params.lut;
         this.worldview = params.worldview;
-        this.indoor = params.indoor;
+        this.indoor = params.indoor!;
         this.frcCoverage = params.frcCoverage || null;
         this.elevation = params.elevation || null;
         this.crossSourceElevationEnabled = !!params.crossSourceElevationEnabled;
@@ -773,12 +773,12 @@ class WorkerTile {
             const requiredImageVariants = imageDependencies.get(imageName) || [];
             for (const imageVariant of requiredImageVariants) {
                 const imageVariantStr = imageVariant.toString();
-                const image = images.get(imageVariant.id.toString());
+                const image = images.get(imageVariant.id.toString())!;
                 if (!image.usvg) {
                     imageMap.set(imageVariantStr, image);
                 } else if (!imageRasterizationTasks.has(imageVariantStr)) {
                     imageRasterizationTasks.set(imageVariantStr, imageVariant);
-                    imageMap.set(imageVariantStr, {...image});
+                    imageMap.set(imageVariantStr, ({...image}));
                 }
             }
         }

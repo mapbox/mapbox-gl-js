@@ -96,10 +96,10 @@ export default function getTileMesh(canonical: CanonicalTileID, projection: Proj
     // iterate over all possible triangles, starting from the smallest level
     for (let i = numTriangles - 1; i >= 0; i--) {
         const k = i * 4;
-        const ax = coords[k + 0];
-        const ay = coords[k + 1];
-        const bx = coords[k + 2];
-        const by = coords[k + 3];
+        const ax = coords[k + 0]!;
+        const ay = coords[k + 1]!;
+        const bx = coords[k + 2]!;
+        const by = coords[k + 3]!;
         const mx = (ax + bx) >> 1;
         const my = (ay + by) >> 1;
         const cx = mx + my - ay;
@@ -118,14 +118,14 @@ export default function getTileMesh(canonical: CanonicalTileID, projection: Proj
         const rmy = reprojectedCoords[2 * mIndex + 1];
 
         // raster tiles are typically 512px, and we use 1px as an error threshold; 8192 / 512 = 16
-        const isUsed = Math.hypot((rax + rbx) / 2 - rmx, (ray + rby) / 2 - rmy) >= 16;
+        const isUsed = Math.hypot((rax! + rbx!) / 2 - rmx!, (ray! + rby!) / 2 - rmy!) >= 16;
 
         used[mIndex] = used[mIndex] || (isUsed ? 1 : 0);
 
         if (i < numParentTriangles) { // bigger triangles; accumulate error with children
             const leftChildIndex = ((ay + cy) >> 1) * gridSize + ((ax + cx) >> 1);
             const rightChildIndex = ((by + cy) >> 1) * gridSize + ((bx + cx) >> 1);
-            used[mIndex] = used[mIndex] || used[leftChildIndex] || used[rightChildIndex];
+            used[mIndex] = (used[mIndex] || used[leftChildIndex] || used[rightChildIndex])!;
         }
     }
 
@@ -139,8 +139,8 @@ export default function getTileMesh(canonical: CanonicalTileID, projection: Proj
 
         if (indexMap[k] === 0) {
             vertices.emplaceBack(
-                reprojectedCoords[2 * k + 0],
-                reprojectedCoords[2 * k + 1],
+                reprojectedCoords[2 * k + 0]!,
+                reprojectedCoords[2 * k + 1]!,
                 x * EXTENT / meshSize,
                 y * EXTENT / meshSize);
 
@@ -148,7 +148,7 @@ export default function getTileMesh(canonical: CanonicalTileID, projection: Proj
             indexMap[k] = ++numVertices;
         }
 
-        return indexMap[k] - 1;
+        return indexMap[k]! - 1;
     }
 
     function addTriangles(ax: number, ay: number, bx: number, by: number, cx: number, cy: number) {

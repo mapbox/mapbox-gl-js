@@ -178,10 +178,10 @@ export class DevTools implements IControl {
         this._styleElement.remove();
         this._folders.clear();
 
-        this._map = undefined;
-        this._pane = undefined;
-        this._container = undefined;
-        this._styleElement = undefined;
+        this._map = undefined!;
+        this._pane = undefined!;
+        this._container = undefined!;
+        this._styleElement = undefined!;
         this._savedState = null;
         this._pendingScrollTop = null;
     }
@@ -331,10 +331,10 @@ export class DevTools implements IControl {
         });
 
         if (!this._folders.has(folder)) {
-            this._folders.set(folder, {title: folder.title, bindings: new Map()});
+            this._folders.set(folder, {title: folder.title!, bindings: new Map()});
         }
         const entry = this._folders.get(folder);
-        entry.bindings.set(key, {label, binding, target: target as Record<string, unknown>, callback});
+        entry!.bindings.set(key, {label, binding, target: target as Record<string, unknown>, callback});
     }
 
     _captureDefaults(): void {
@@ -525,7 +525,7 @@ export class DevTools implements IControl {
         if (!this._pane || !window.showOpenFilePicker) return;
 
         window.showOpenFilePicker(filePickerOpts)
-            .then((fileHandles) => fileHandles[0].getFile())
+            .then((fileHandles) => fileHandles[0]!.getFile())
             .then((file) => file.text())
             .then((fileData) => {
                 const parsed = JSON.parse(fileData) as Record<string, unknown>;
@@ -560,8 +560,8 @@ export class DevTools implements IControl {
         this._addParameter(folder, map, 'repaint');
         this._addParameter(folder, map, 'showTileAABBs');
         this._addParameter(folder, map, 'showPadding');
-        this._addParameter(folder, map, 'showCollisionBoxes', null, () => map._update());
-        this._addParameter(folder, map.transform, 'freezeTileCoverage', null, () => map._update());
+        this._addParameter(folder, map, 'showCollisionBoxes', (null)!, () => map._update());
+        this._addParameter(folder, map.transform, 'freezeTileCoverage', (null)!, () => map._update());
         this._addParameter(folder, map, 'showTerrainWireframe');
         this._addParameter(folder, map, 'showLayers2DWireframe');
         this._addParameter(folder, map, 'showLayers3DWireframe');

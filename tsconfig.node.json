@@ -2,10 +2,10 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
+    "strictFunctionTypes": false,
+    "strictNullChecks": false,
     "allowImportingTsExtensions": true,
-    "emitDeclarationOnly": true,
-    "outDir": "./rollup/build/types-node",
-    "rootDir": ".",
+    "noEmit": true,
     "types": ["node", "geojson"]
   },
   "references": [
@@ -19,24 +19,15 @@
     "./src/style-spec/test.js",
     "./src/style-spec/rollup.config.js",
     "./internal/scripts/**/*",
-    "./plugins/**/rollup.config.ts",
-    "./test/bundlers/bundlers.test.ts"
+    "./plugins/**/rollup.config.ts"
   ],
   "exclude": [
-    "./node_modules",
     "./test/release/**/*",
     "./test/integration/render-tests/**/*",
     "./test/integration/query-tests/**/*",
-    "./test/integration/expression-tests/**/*",
     "./test/integration/csp-tests/**/*",
-    "./test/integration/data/**/*",
-    "./test/integration/glyphs/**/*",
     "./test/integration/image/**/*",
-    "./test/integration/models/**/*",
-    "./test/integration/sprites/**/*",
-    "./test/integration/styles/**/*",
     "./test/integration/tiles/**/*",
-    "./test/integration/tilesets/**/*",
     "./test/integration/lib/operation-handlers.js",
     "./test/bundlers/*/**/*",
     "./test/build/typings/**/*",

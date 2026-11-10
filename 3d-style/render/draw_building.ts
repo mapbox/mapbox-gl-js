@@ -127,7 +127,7 @@ function drawTiles(params: DrawParams) {
             const normalMatrix = normalMatrixScratch;
 
             // camera position in the tile coordinates
-            const mercCameraPos = painter.transform.getFreeCameraOptions().position;
+            const mercCameraPos = painter.transform.getFreeCameraOptions().position!;
             const tiles = 1 << coord.canonical.z;
             const cameraPos: [number, number, number] = [
                 ((mercCameraPos.x - coord.wrap) * tiles - coord.canonical.x) * EXTENT,

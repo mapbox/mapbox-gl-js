@@ -89,7 +89,7 @@ describe('pmtiles_provider', () => {
             await provider.loadTile({z: 0, x: 0, y: 0}, {request, signal: new AbortController().signal}).catch(() => {});
 
             expect(fetchSpy).toHaveBeenCalled();
-            const init = fetchSpy.mock.calls[0][1];
+            const init = fetchSpy.mock.calls[0]?.[1];
             if (!init) throw new Error('fetch was called without a RequestInit');
             expect((init.headers as Headers).get('Authorization')).toBe('SECRET');
             expect(init.credentials).toBe('include');
@@ -108,7 +108,7 @@ describe('pmtiles_provider', () => {
             await provider.load({request}).catch(() => {});
 
             expect(fetchSpy).toHaveBeenCalled();
-            const init = fetchSpy.mock.calls[0][1];
+            const init = fetchSpy.mock.calls[0]?.[1];
             if (!init) throw new Error('fetch was called without a RequestInit');
             expect((init.headers as Headers).get('Authorization')).toBe('SECRET');
             expect(init.credentials).toBe('include');

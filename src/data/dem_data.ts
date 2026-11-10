@@ -84,25 +84,25 @@ export default class DEMData {
             // tiles are loaded and the accurate data can be backfilled using DEMData#backfillBorder
             for (let x = 0; x < dim; x++) {
                 // left vertical border
-                values[this._idx(-1, x)] = values[this._idx(0, x)];
+                values[this._idx(-1, x)] = values[this._idx(0, x)]!;
                 // right vertical border
-                values[this._idx(dim, x)] = values[this._idx(dim - 1, x)];
+                values[this._idx(dim, x)] = values[this._idx(dim - 1, x)]!;
                 // left horizontal border
-                values[this._idx(x, -1)] = values[this._idx(x, 0)];
+                values[this._idx(x, -1)] = values[this._idx(x, 0)]!;
                 // right horizontal border
-                values[this._idx(x, dim)] = values[this._idx(x, dim - 1)];
+                values[this._idx(x, dim)] = values[this._idx(x, dim - 1)]!;
             }
             // corners
-            values[this._idx(-1, -1)] = values[this._idx(0, 0)];
-            values[this._idx(dim, -1)] = values[this._idx(dim - 1, 0)];
-            values[this._idx(-1, dim)] = values[this._idx(0, dim - 1)];
-            values[this._idx(dim, dim)] = values[this._idx(dim - 1, dim - 1)];
+            values[this._idx(-1, -1)] = values[this._idx(0, 0)]!;
+            values[this._idx(dim, -1)] = values[this._idx(dim - 1, 0)]!;
+            values[this._idx(-1, dim)] = values[this._idx(0, dim - 1)]!;
+            values[this._idx(dim, dim)] = values[this._idx(dim - 1, dim - 1)]!;
         }
 
         const unpack = sourceEncoding === "terrarium" ? unpackTerrarium : unpackMapbox;
         for (let i = 0; i < values.length; ++i) {
             const byteIdx = i * 4;
-            this.floatView[i] = unpack(this.pixels[byteIdx], this.pixels[byteIdx + 1], this.pixels[byteIdx + 2]);
+            this.floatView[i] = unpack(this.pixels[byteIdx]!, this.pixels[byteIdx + 1]!, this.pixels[byteIdx + 2]!);
         }
 
         this._timestamp = browser.now();
@@ -121,14 +121,14 @@ export default class DEMData {
         }
         const idx = this._idx(x, y);
 
-        return this.floatView[idx];
+        return this.floatView[idx]!;
     }
 
     set(x: number, y: number, v: number): number {
         const idx = this._idx(x, y);
         const p = this.floatView[idx];
         this.floatView[idx] = v;
-        return v - p;
+        return v - p!;
     }
 
     static getUnpackVector(encoding: DEMSourceEncoding) {
@@ -188,10 +188,10 @@ export default class DEMData {
             for (let x = xMin; x < xMax; x++) {
                 const i = 4 * this._idx(x, y);
                 const j = 4 * this._idx(x + ox, y + oy);
-                this.pixels[i + 0] = borderTile.pixels[j + 0];
-                this.pixels[i + 1] = borderTile.pixels[j + 1];
-                this.pixels[i + 2] = borderTile.pixels[j + 2];
-                this.pixels[i + 3] = borderTile.pixels[j + 3];
+                this.pixels[i + 0] = borderTile.pixels[j + 0]!;
+                this.pixels[i + 1] = borderTile.pixels[j + 1]!;
+                this.pixels[i + 2] = borderTile.pixels[j + 2]!;
+                this.pixels[i + 3] = borderTile.pixels[j + 3]!;
             }
         }
     }

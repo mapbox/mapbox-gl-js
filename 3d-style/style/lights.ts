@@ -9,7 +9,7 @@ import type {LightProps as DirectionalLightProps} from './directional_light_prop
 type LightProps = FlatLightProps | AmbientLightProps | DirectionalLightProps;
 
 class Lights<P extends LightProps> extends StyleProperties<P> {
-    _options: LightsSpecification;
+    _options!: LightsSpecification;
 
     constructor(options: LightsSpecification, properties: Properties<P>, scope: string, configOptions?: ConfigOptions | null) {
         super(properties, scope, new Map(configOptions));

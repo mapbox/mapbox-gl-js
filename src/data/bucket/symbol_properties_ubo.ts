@@ -59,10 +59,10 @@ export class SymbolPropertiesUBO extends PaintPropertiesUBO {
         const isTranslate = propIdx === 8;
         let size = 4;
         if (isColor || isTranslate) {
-            const isDzr = ((this.headerData[HEADER_DZR_MASK] >>> propIdx) & 1) !== 0;
+            const isDzr = ((this.headerData[HEADER_DZR_MASK]! >>> propIdx) & 1) !== 0;
             size = isDzr ? 8 : 4;
         }
-        const flatOffset = SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[propIdx];
+        const flatOffset = SymbolPropertiesUBO.EVAL_FLAT_OFFSETS[propIdx]!;
         this.propertiesData.set(flat.subarray(flatOffset, flatOffset + size), dwordOffset);
     }
 }

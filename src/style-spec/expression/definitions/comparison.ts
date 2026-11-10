@@ -7,6 +7,7 @@ import type {Expression, SerializedExpression, ExpressionRegistration} from '../
 import type EvaluationContext from '../evaluation_context';
 import type ParsingContext from '../parsing_context';
 import type {Type} from '../types';
+import type Collator from '../types/collator';
 
 type ComparisonOperator = '==' | '!=' | '<' | '>' | '<=' | '>=';
 
@@ -26,31 +27,19 @@ function isComparableType(op: ComparisonOperator, type: Type) {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function eq(ctx: EvaluationContext, a: any, b: any): boolean { return a === b; }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function neq(ctx: EvaluationContext, a: any, b: any): boolean { return a !== b; }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function lt(ctx: EvaluationContext, a: any, b: any): boolean { return a < b; }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function gt(ctx: EvaluationContext, a: any, b: any): boolean { return a > b; }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function lteq(ctx: EvaluationContext, a: any, b: any): boolean { return a <= b; }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function gteq(ctx: EvaluationContext, a: any, b: any): boolean { return a >= b; }
+function eq(ctx: EvaluationContext, a: unknown, b: unknown): boolean { return a === b; }
+function neq(ctx: EvaluationContext, a: unknown, b: unknown): boolean { return a !== b; }
+function lt(ctx: EvaluationContext, a: string | number, b: string | number): boolean { return a < b; }
+function gt(ctx: EvaluationContext, a: string | number, b: string | number): boolean { return a > b; }
+function lteq(ctx: EvaluationContext, a: string | number, b: string | number): boolean { return a <= b; }
+function gteq(ctx: EvaluationContext, a: string | number, b: string | number): boolean { return a >= b; }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-function eqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) === 0; }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function neqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return !eqCollate(ctx, a, b, c); }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-function ltCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) < 0; }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-function gtCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) > 0; }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-function lteqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) <= 0; }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-function gteqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) >= 0; }
+function eqCollate(ctx: EvaluationContext, a: string, b: string, c: Collator): boolean { return c.compare(a, b) === 0; }
+function neqCollate(ctx: EvaluationContext, a: string, b: string, c: Collator): boolean { return !eqCollate(ctx, a, b, c); }
+function ltCollate(ctx: EvaluationContext, a: string, b: string, c: Collator): boolean { return c.compare(a, b) < 0; }
+function gtCollate(ctx: EvaluationContext, a: string, b: string, c: Collator): boolean { return c.compare(a, b) > 0; }
+function lteqCollate(ctx: EvaluationContext, a: string, b: string, c: Collator): boolean { return c.compare(a, b) <= 0; }
+function gteqCollate(ctx: EvaluationContext, a: string, b: string, c: Collator): boolean { return c.compare(a, b) >= 0; }
 
 /**
  * Special form for comparison operators, implementing the signatures:

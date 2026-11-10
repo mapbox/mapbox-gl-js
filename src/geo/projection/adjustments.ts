@@ -28,9 +28,9 @@ export function getScaleAdjustment(transform: Transform): number {
 export function getProjectionAdjustmentInverted(transform: Transform): mat2 {
     const m = getProjectionAdjustments(transform, true);
     return mat2.invert([], [
-        m[0], m[1],
-        m[4], m[5]]
-    );
+        m[0]!, m[1]!,
+        m[4]!, m[5]!]
+    )!;
 }
 
 export function getProjectionInterpolationT(

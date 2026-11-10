@@ -24,7 +24,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-dem';
         this.maxzoom = 22;
-        this._options = {type: 'raster-dem', ...options};
+        this._options = {type: 'raster-dem', ...(options as Omit<typeof options, 'type'>)};
         this.encoding = options.encoding || "mapbox";
     }
 
@@ -88,7 +88,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
                 encoding: this.encoding,
             };
 
-            tile.request = tile.actor.sendCancelable('loadTile', params, {}, done.bind(this));
+            tile.request = tile.actor.sendCancelable('loadTile', params, {}, done.bind(this) as Callback<unknown>);
         } catch (err) {
             if (controller.signal.aborted) return callback(null);
             tile.state = 'errored';

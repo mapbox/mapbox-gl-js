@@ -86,8 +86,8 @@ export default class TouchPanHandler implements Handler {
             const point = touches[identifier];
             const prevPoint = this._touches[identifier];
             if (prevPoint) {
-                touchPointSum._add(point);
-                touchDeltaSum._add(point.sub(prevPoint));
+                touchPointSum._add(point!);
+                touchDeltaSum._add(point!.sub(prevPoint));
                 touchDeltaCount++;
                 touches[identifier] = point;
             }

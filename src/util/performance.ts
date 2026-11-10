@@ -65,8 +65,7 @@ export const PerformanceUtils = {
         return performanceUtilsGroupsMask;
     },
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    measureWithDetails(grpMask: number, name: string, track: string, startTime: number, properties?: any[][], color?: PerformanceMeasureDevToolsColor) {
+    measureWithDetails(grpMask: number, name: string, track: string, startTime: number, properties?: unknown[][], color?: PerformanceMeasureDevToolsColor) {
         if ((grpMask & performanceUtilsGroupsMask) === 0) return;
         performance.measure(name, {start: startTime, detail: {
             devtools: {
@@ -78,8 +77,7 @@ export const PerformanceUtils = {
         }});
     },
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    markWithDetails(grpMask: number, name: string, properties?: any[][], color?: PerformanceMeasureDevToolsColor) {
+    markWithDetails(grpMask: number, name: string, properties?: unknown[][], color?: PerformanceMeasureDevToolsColor) {
         if ((grpMask & performanceUtilsGroupsMask) === 0) return;
         performance.mark(name, {
             detail: {
@@ -117,8 +115,7 @@ export const PerformanceUtils = {
             name
         };
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    endMeasure(m: PerformanceMark, properties?: any[][]) {
+    endMeasure(m: PerformanceMark, properties?: unknown[][]) {
         performance.measure(m.name, {
             start: m.mark,
             detail: {

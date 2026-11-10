@@ -16,13 +16,13 @@ import type {OverscaledTileID} from '../source/tile_id';
 export const Debug: {
     debugCanvas: HTMLCanvasElement | null | undefined;
     aabbCorners: Array<Array<vec3>>;
-    extend: (...args: unknown[]) => void;
-    run: (...args: unknown[]) => void;
-    drawAabbs: (...args: unknown[]) => void;
-    clearAabbs: (...args: unknown[]) => void;
-    _drawBox: (...args: unknown[]) => void;
-    _drawLine: (...args: unknown[]) => void;
-    _drawQuad: (...args: unknown[]) => void;
+    extend: (dest: object, ...sources: Array<object | null | undefined>) => object;
+    run: (fn: () => unknown) => void;
+    drawAabbs: (painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) => void;
+    clearAabbs: () => void;
+    _drawBox: (ctx: CanvasRenderingContext2D, corners: Array<vec3 | null | undefined>) => void;
+    _drawLine: (ctx: CanvasRenderingContext2D, start?: vec2 | vec3 | null, end?: vec2 | vec3 | null) => void;
+    _drawQuad: (ctx: CanvasRenderingContext2D, corners: Array<vec2 | null | undefined>) => void;
     _initializeCanvas: (tr: Transform) => HTMLCanvasElement;
 } = {
     extend(dest: object, ...sources: Array<object | null | undefined>): object {
@@ -59,10 +59,10 @@ export const Debug: {
         return Debug.debugCanvas;
     },
 
-    _drawLine(ctx: CanvasRenderingContext2D, start?: [number, number], end?: [number, number]) {
+    _drawLine(ctx: CanvasRenderingContext2D, start?: vec2 | vec3 | null, end?: vec2 | vec3 | null) {
         if (!start || !end) return;
-        ctx.moveTo(...start);
-        ctx.lineTo(...end);
+        ctx.moveTo(...(start as [number, number]));
+        ctx.lineTo(...(end as [number, number]));
     },
 
     _drawQuad(ctx: CanvasRenderingContext2D, corners: Array<vec2 | null | undefined>) {
@@ -99,14 +99,14 @@ export const Debug: {
                 // Store AABBs as rectangular prisms in ECEF, this allows viewing them from other angles
                 // when transform.freezeTileCoverage is enabled.
                 for (const pos of corners) {
-                    vec3.transformMat4(pos, pos, worldToECEFMatrix);
+                    vec3.transformMat4(pos, pos, worldToECEFMatrix!);
                 }
                 return corners;
             });
         }
 
         const canvas = Debug._initializeCanvas(tr);
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d')!;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const tileCount = Debug.aabbCorners.length;
@@ -115,7 +115,7 @@ export const Debug: {
         ctx.lineWidth = 1.5;
 
         for (let i = 0; i <  tileCount; i++) {
-            const pixelCorners = Debug.aabbCorners[i].map((ecef: vec3) => {
+            const pixelCorners = Debug.aabbCorners[i]!.map((ecef: vec3) => {
                 // Clipping to prevent visual artifacts.
                 // We don't draw any lines if one of their points is behind the camera.
                 // This means that AABBs close to the camera may appear to be missing.
@@ -134,7 +134,7 @@ export const Debug: {
 
     clearAabbs() {
         if (!Debug.debugCanvas) return;
-        Debug.debugCanvas.getContext('2d').clearRect(0, 0, Debug.debugCanvas.width, Debug.debugCanvas.height);
+        Debug.debugCanvas.getContext('2d')!.clearRect(0, 0, Debug.debugCanvas.width, Debug.debugCanvas.height);
         Debug.aabbCorners = [];
     }
 };

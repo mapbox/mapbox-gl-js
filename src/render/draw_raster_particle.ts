@@ -249,7 +249,7 @@ function renderBackground(painter: Painter, layer: RasterParticleStyleLayer, til
 
     for (const tile of tiles) {
         const [, , particleState, renderBackground] = tile;
-        framebuffer.colorAttachment0.set(particleState.targetColorTexture.texture);
+        framebuffer.colorAttachment0!.set(particleState.targetColorTexture.texture);
         context.viewport.set([0, 0, framebuffer.width, framebuffer.height]);
         context.clear({color: Color.transparent});
         if (!renderBackground) continue;
@@ -303,12 +303,12 @@ function renderParticles(painter: Painter, sourceCache: SourceCache, layer: Rast
 
         context.activeTexture.set(gl.TEXTURE0 + VELOCITY_TEXTURE_UNIT);
         targetTileData.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-        framebuffer.colorAttachment0.set(targetTileState.targetColorTexture.texture);
+        framebuffer.colorAttachment0!.set(targetTileState.targetColorTexture.texture);
         const defines = targetTileData.defines;
         const program = painter.getOrCreateProgram('rasterParticleDraw', {defines, overrideFog: false});
 
         context.activeTexture.set(gl.TEXTURE0 + RASTER_PARTICLE_TEXTURE_UNIT);
-        const tileIDs = targetTileData.scalarData ? [] : [0, 1, 2, 3].map(idx => neighborCoord[idx](targetTileID));
+        const tileIDs = targetTileData.scalarData ? [] : [0, 1, 2, 3].map(idx => neighborCoord[idx]!(targetTileID));
         tileIDs.push(targetTileID);
         const x = targetTileID.canonical.x;
         const y = targetTileID.canonical.y;
@@ -325,7 +325,7 @@ function renderParticles(painter: Painter, sourceCache: SourceCache, layer: Rast
             const ny = tileID.canonical.y;
 
             state.particleTexture0.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
-            const rasterParticleTextureRes = state.particleTexture0.size;
+            const rasterParticleTextureRes = state.particleTexture0.size!;
             assert(rasterParticleTextureRes[0] === rasterParticleTextureRes[1]);
             const rasterParticleTextureSideLen = rasterParticleTextureRes[0];
             const tileOffset: [number, number] = [nx - x, ny - y];
@@ -334,7 +334,7 @@ function renderParticles(painter: Painter, sourceCache: SourceCache, layer: Rast
                 rasterParticleTextureSideLen,
                 tileOffset,
                 VELOCITY_TEXTURE_UNIT,
-                targetTileData.texture.size,
+                targetTileData.texture.size!,
                 RASTER_COLOR_TEXTURE_UNIT,
                 maxSpeed,
                 targetTileData.textureOffset,
@@ -381,9 +381,9 @@ function updateParticles(painter: Painter, layer: RasterParticleStyleLayer, tile
         particleTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         const uniforms = rasterParticleUpdateUniformValues(
             RASTER_PARTICLE_TEXTURE_UNIT,
-            particleTexture.size[0],
+            particleTexture.size![0],
             VELOCITY_TEXTURE_UNIT,
-            data.texture.size,
+            data.texture.size!,
 
             maxSpeed,
             speedFactor,
@@ -392,7 +392,7 @@ function updateParticles(painter: Painter, layer: RasterParticleStyleLayer, tile
             data.scale,
             data.offset
         );
-        particleFramebuffer.colorAttachment0.set(state.particleTexture1.texture);
+        particleFramebuffer.colorAttachment0!.set(state.particleTexture1.texture);
         context.clear({color: Color.transparent});
         const updateProgram = painter.getOrCreateProgram('rasterParticleUpdate', {defines: data.defines});
         updateProgram.draw(
@@ -524,7 +524,7 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
             const stencilMode = stencilModes[coord.overscaledZ];
             const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
 
-            program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.disabled,
+            program.draw(painter, gl.TRIANGLES, depthMode, stencilMode!, ColorMode.alphaBlended, CullFaceMode.disabled,
                 uniformValues, layer.id, tileBoundsBuffer,
                 tileBoundsIndexBuffer, tileBoundsSegments);
         }

@@ -58,7 +58,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const programName = image ? 'backgroundPattern' : 'background';
 
     let tileIDs = coords;
-    let backgroundTiles: Record<number, Tile>;
+    let backgroundTiles!: Record<number, Tile>;
     if (!tileIDs) {
         backgroundTiles = painter.getBackgroundTiles();
         tileIDs = Object.values(backgroundTiles).map(tile => tile.tileID);
@@ -109,7 +109,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
         painter.uploadCommonUniforms(context, program, unwrappedTileID);
 
-        const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
+        const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile!);
 
         program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, tileBoundsBuffer,

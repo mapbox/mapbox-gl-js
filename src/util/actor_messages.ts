@@ -49,7 +49,7 @@ export type WorkerInbox = {
     };
 
     'checkIfReady': {
-        params: void;
+        params: null;
         result: void;
     };
 

@@ -65,13 +65,13 @@ function drawPlacementDebug(painter: Painter) {
     const viewportSize: [number, number] = [tr.width * pixelRatio, tr.height * pixelRatio];
 
     for (let i = 0; i < DRAW_ORDER.length; i++) {
-        const segments = segmentsByStatus[i];
+        const segments = segmentsByStatus[i]!;
         if (segments.segments.length === 0) continue;
 
         program.draw(painter, gl.TRIANGLES,
             DepthMode.disabled, StencilMode.disabled,
             ColorMode.alphaBlended, CullFaceMode.disabled,
-            placementDebugUniformValues(viewportSize, DRAW_ORDER[i].color, OUTLINE_WIDTH * pixelRatio, INTERIOR_OPACITY, OUTLINE_OPACITY, COLLISION_PADDING_OPACITY),
+            placementDebugUniformValues(viewportSize, DRAW_ORDER[i]!.color, OUTLINE_WIDTH * pixelRatio, INTERIOR_OPACITY, OUTLINE_OPACITY, COLLISION_PADDING_OPACITY),
             '$placement-debug', vertexBuffer, indexBuffer, segments, null, tr.zoom);
     }
 

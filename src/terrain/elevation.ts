@@ -114,7 +114,7 @@ export class Elevation {
     /*
      * point.x and point.y are offset within tile, in 0 .. EXTENT coordinate space.
      */
-    static getAtTileOffset(tileID: OverscaledTileID, point: Point, elevation: Elevation | null, elevationFeature: ElevationFeature | null): number {
+    static getAtTileOffset(tileID: OverscaledTileID, point: Point, elevation: Elevation | null | undefined, elevationFeature: ElevationFeature | null): number {
         const tilesAtTileZoom = 1 << tileID.canonical.z;
         if (elevationFeature) {
             return elevationFeature.pointElevation(point);
@@ -132,8 +132,8 @@ export class Elevation {
         lat: number,
         worldSize: number,
         projection: Projection,
-    ): (arg1: Point, arg2: Elevation, arg3?: ElevationFeature) => [number, number, number] {
-        return ((p: Point, elevation: Elevation, elevationFeature?: ElevationFeature) => {
+    ): (arg1: Point, arg2: Elevation | null | undefined, arg3: ElevationFeature | null) => [number, number, number] {
+        return ((p: Point, elevation: Elevation | null | undefined, elevationFeature: ElevationFeature | null) => {
             assert(p);
             const z = this.getAtTileOffset(tileID, p, elevation, elevationFeature);
             const upVector = projection.upVector(tileID.canonical, p.x, p.y);
@@ -200,11 +200,11 @@ export class Elevation {
             xOffset *= 2;
             yOffset *= 2;
             const childOffset = 2 * Math.floor(yOffset) + Math.floor(xOffset);
-            index = tree.childOffsets[index] + childOffset;
+            index = tree.childOffsets[index]! + childOffset;
             xOffset = xOffset % 1;
             yOffset = yOffset % 1;
         }
-        return {min: this.exaggeration() * tree.minimums[index], max: this.exaggeration() * tree.maximums[index]};
+        return {min: this.exaggeration() * tree.minimums[index]!, max: this.exaggeration() * tree.maximums[index]!};
     }
 
     /**
@@ -330,7 +330,7 @@ export class DEMSampler {
     constructor(demTile: Tile, scale: number, offset: [number, number]) {
         this._demTile = demTile;
         // demTile.dem will always exist because the factory method `create` does the check
-        this._dem = this._demTile.dem;
+        this._dem = this._demTile.dem!;
         this._scale = scale;
         this._offset = offset;
     }

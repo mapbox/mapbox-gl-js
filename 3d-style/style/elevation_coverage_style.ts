@@ -74,7 +74,7 @@ export function layerHasMvtRoadElevation(layer: TypedStyleLayer): boolean {
 
 function hasElevationConsumers(style: Style): boolean {
     for (const layerId in style._mergedLayers) {
-        if (layerHasMvtRoadElevation(style._mergedLayers[layerId])) return true;
+        if (layerHasMvtRoadElevation(style._mergedLayers[layerId]!)) return true;
     }
     return false;
 }
@@ -83,7 +83,7 @@ function hasElevationConsumers(style: Style): boolean {
 export function collectElevationConsumerSourceFQIDs(style: Style): Set<string> {
     const consumers = new Set<string>();
     for (const layerId in style._mergedLayers) {
-        const layer = style._mergedLayers[layerId];
+        const layer = style._mergedLayers[layerId]!;
         if (layerHasMvtRoadElevation(layer)) {
             consumers.add(makeFQID(layer.source, layer.scope));
         }
@@ -96,7 +96,7 @@ export function collectElevationProviderSourceFQIDs(style: Style): Set<string> {
     const consumerFQIDs = collectElevationConsumerSourceFQIDs(style);
     const providers = new Set<string>();
     for (const layerId in style._mergedLayers) {
-        const layer = style._mergedLayers[layerId];
+        const layer = style._mergedLayers[layerId]!;
         if (!layer.source || !layerContributesHdRoadElevation(layer)) continue;
         const fqid = makeFQID(layer.source, layer.scope);
         if (consumerFQIDs.has(fqid)) continue;
@@ -132,7 +132,7 @@ export function crossSourceElevationEnabledForStyle(style: Style): boolean {
 export function collectElevationIngestSourceFQIDs(style: Style): Set<string> {
     const ingest = new Set<string>();
     for (const layerId in style._mergedLayers) {
-        const layer = style._mergedLayers[layerId];
+        const layer = style._mergedLayers[layerId]!;
         if (!layer.source || !layerContributesHdRoadElevation(layer)) continue;
         ingest.add(makeFQID(layer.source, layer.scope));
     }
@@ -149,7 +149,7 @@ export function reparseElevationConsumerTiles(
 ): void {
     const consumerFQIDs = new Set<string>();
     for (const layerId in style._mergedLayers) {
-        const layer = style._mergedLayers[layerId];
+        const layer = style._mergedLayers[layerId]!;
         if (layer.visibility !== 'none' && layerHasMvtRoadElevation(layer)) {
             consumerFQIDs.add(makeFQID(layer.source, layer.scope));
         }

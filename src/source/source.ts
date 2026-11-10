@@ -94,7 +94,7 @@ export interface ISource<T = Source['type']> extends Evented<SourceEvents> {
     readonly _clear?: () => void;
 }
 
-const sourceTypes: Partial<Record<Source['type'], Class<ISource>>> = {
+const sourceTypes = {
     vector,
     raster,
     'raster-dem': rasterDem,
@@ -103,7 +103,7 @@ const sourceTypes: Partial<Record<Source['type'], Class<ISource>>> = {
     image,
     canvas,
     custom
-};
+} as Partial<Record<Source['type'], Class<ISource>>>;
 
 export type SourceType = Source['type'];
 

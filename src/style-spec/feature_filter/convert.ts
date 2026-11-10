@@ -85,8 +85,7 @@ function _convertFilter(filter: FilterSpecification, expectedTypes: ExpectedType
         converted = convertComparisonOp(property, value, op, expectedTypes);
     } else if (op === 'any') {
         const children = filter.slice(1).map(f => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const types: Record<string, any> = {};
+            const types: ExpectedTypes = {};
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const child = _convertFilter(f, types);
 
@@ -139,8 +138,7 @@ function runtimeTypeChecks(expectedTypes: ExpectedTypes): true | unknown[] {
     return (['all'] as unknown[]).concat(conditions);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function convertComparisonOp(property: string, value: any, op: string, expectedTypes?: ExpectedTypes | null): unknown {
+function convertComparisonOp(property: string, value: unknown, op: string, expectedTypes?: ExpectedTypes | null): unknown {
     let get: unknown[];
     if (property === '$type') {
         return [op, ['geometry-type'], value];

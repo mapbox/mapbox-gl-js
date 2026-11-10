@@ -57,7 +57,7 @@ export default function (
             const result: StyleImages = {};
 
             for (const id in json) {
-                const {width, height, x, y, sdf, pixelRatio, stretchX, stretchY, content} = json[id];
+                const {width, height, x, y, sdf, pixelRatio, stretchX, stretchY, content} = json[id]!;
                 const data = new RGBAImage({width, height});
                 RGBAImage.copy(imageData, data, {x, y}, {x: 0, y: 0}, {width, height}, null);
                 result[id] = {

@@ -186,7 +186,7 @@ export class Snow extends PrecipitationBase {
             let base = 0;
             const sRand = mulberry32(1323123451230);
             for (let i = 0; i < positions.length; ++i) {
-                const p = positions[i];
+                const p = positions[i]!;
 
                 const velocityScale = sRand();
                 const directionConeHeading = sRand();

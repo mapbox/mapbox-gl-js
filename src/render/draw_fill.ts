@@ -124,7 +124,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, multip
 
     const patternProperty = layer.paint.get('fill-pattern');
     const patternTransition = layer.paint.get('fill-pattern-cross-fade');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     const constantPattern = patternProperty.constantOr(null);
 
     let activeElevationType = elevationType;
@@ -201,7 +201,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, multip
                 dynamicDefines.push('ELEVATED_ROADS');
                 // `renderElevatedRoads` implies the elevated path supplied us an
                 // `ElevatedFillBufferData`; cast to access its elevated vertex buffer.
-                dynamicBuffers.push((bufferData as ElevatedFillBufferData).elevatedLayoutVertexBuffer);
+                dynamicBuffers.push((bufferData as ElevatedFillBufferData).elevatedLayoutVertexBuffer!);
             }
             if (renderWithShadows) {
                 dynamicDefines.push('RENDER_SHADOWS', 'NORMAL_OFFSET');
@@ -222,7 +222,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, multip
             let transitionableConstantPattern = false;
             if (constantPattern && tile.imageAtlas) {
                 const atlas = tile.imageAtlas;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                 const pattern = ResolvedImage.from(constantPattern);
                 const primaryPatternImage = pattern.getPrimary().scaleSelf(browser.devicePixelRatio).toString();
                 const secondaryPatternImageVariant = pattern.getSecondary();
@@ -231,7 +231,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, multip
 
                 transitionableConstantPattern = !!primaryPosTo && !!secondaryPosTo;
 
-                if (primaryPosTo) programConfiguration.setConstantPatternPositions(primaryPosTo, secondaryPosTo);
+                if (primaryPosTo) programConfiguration.setConstantPatternPositions(primaryPosTo, secondaryPosTo!);
             }
 
             if (patternTransition > 0 && (transitionableConstantPattern || !!programConfiguration.getPatternTransitionVertexBuffer('fill-pattern'))) {
@@ -250,13 +250,13 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, multip
             const emissiveStrength = layer.paint.get('fill-emissive-strength');
 
             if (!isOutline) {
-                indexBuffer = bufferData.indexBuffer;
+                indexBuffer = bufferData.indexBuffer!;
                 segments = bufferData.triangleSegments;
                 uniformValues = image ?
                     fillPatternUniformValues(tileMatrix, emissiveStrength, painter, tile, groundShadowFactor, patternTransition) :
                     fillUniformValues(tileMatrix, emissiveStrength, groundShadowFactor);
             } else {
-                indexBuffer = bufferData.lineIndexBuffer;
+                indexBuffer = bufferData.lineIndexBuffer!;
                 segments = bufferData.lineSegments;
                 const drawingBufferSize: [number, number] =
                     (painter.terrain && painter.terrain.renderingToTexture) ? painter.terrain.drapeBufferSize : [gl.drawingBufferWidth, gl.drawingBufferHeight];
@@ -293,7 +293,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, multip
 
             program.draw(painter, drawMode, activeDepthMode,
                 stencilMode, colorMode, CullFaceMode.disabled, uniformValues,
-                layer.id, bufferData.layoutVertexBuffer, indexBuffer, segments,
+                layer.id, bufferData.layoutVertexBuffer!, indexBuffer, segments,
                 layer.paint, painter.transform.zoom, programConfiguration, dynamicBuffers);
         }
 

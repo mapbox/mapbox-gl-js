@@ -27,7 +27,7 @@ export class Movement {
 
     update(tr: Transform, ppmScaleFactor: number) {
         const options = tr.getFreeCameraOptions();
-        const cameraMercatorPos = options.position;
+        const cameraMercatorPos = options.position!;
 
         const elevation = cameraMercatorPos.toAltitude();
 
@@ -51,8 +51,8 @@ export class Movement {
             this._accumulatedElevation = 0;
         } else {
             const deltaX = -this._offsetXPrev + offsetXCur;
-            const deltaY = -this._offsetYPrev + offsetYCur;
-            const deltaE = -this._elevationPrev + elevation;
+            const deltaY = -this._offsetYPrev! + offsetYCur;
+            const deltaE = -this._elevationPrev! + elevation;
 
             this._accumulatedOffsetX += deltaX * ppmScale;
             this._accumulatedOffsetY += deltaY * ppmScale;
@@ -99,8 +99,8 @@ export function lerpClamp(a: number, b: number, t1: number, t2: number, tMid: nu
 }
 
 class DrawParams {
-    projectionMatrix: mat4;
-    modelviewMatrix: mat4;
+    projectionMatrix!: mat4;
+    modelviewMatrix!: mat4;
 }
 
 export class PrecipitationBase {

@@ -56,7 +56,7 @@ export class FrcCoverageRenderer {
 
         for (const key of this.tileBuffers.keys()) {
             if (!newKeys.has(key)) {
-                const buffers = this.tileBuffers.get(key);
+                const buffers = this.tileBuffers.get(key)!;
                 buffers.vertexBuffer.destroy();
                 buffers.indexBuffer.destroy();
                 for (const seg of buffers.frcLevelSegments) {
@@ -110,7 +110,7 @@ export class FrcCoverageRenderer {
             const holeIndices: number[] = [];
             let vertCount = 0;
             for (let ri = 0; ri < poly.rings.length; ri++) {
-                const ring = poly.rings[ri];
+                const ring = poly.rings[ri]!;
                 if (ring.length < 3) continue;
                 if (ri > 0) holeIndices.push(vertCount);
                 for (const p of ring) {
@@ -123,9 +123,9 @@ export class FrcCoverageRenderer {
             const triangles = earcut(flatCoords, holeIndices.length > 0 ? holeIndices : undefined);
             for (let i = 0; i < triangles.length; i += 3) {
                 indexArray.emplaceBack(
-                    polyBaseVertex + triangles[i],
-                    polyBaseVertex + triangles[i + 1],
-                    polyBaseVertex + triangles[i + 2]);
+                    polyBaseVertex + triangles[i]!,
+                    polyBaseVertex + triangles[i + 1]!,
+                    polyBaseVertex + triangles[i + 2]!);
             }
 
             ranges.push({

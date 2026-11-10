@@ -73,8 +73,7 @@ class Interpolate implements Expression {
         if (interpolation[0] === 'linear') {
             interpolation = {name: 'linear'};
         } else if (interpolation[0] === 'exponential') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const base = interpolation[1];
+            const base: unknown = interpolation[1];
             if (typeof base !== 'number')
                 return context.error(`Exponential interpolation requires a numeric base.`, 1, 1);
             interpolation = {

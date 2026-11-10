@@ -608,11 +608,9 @@ export function parseCacheControl(cacheControl: string): Record<string, number> 
     // Taken from [Wreck](https://github.com/hapijs/wreck)
     const re = /(?:^|(?:\s*\,\s*))([^\x00-\x20\(\)<>@\,;\:\\"\/\[\]\?\=\{\}\x7F]+)(?:\=(?:([^\x00-\x20\(\)<>@\,;\:\\"\/\[\]\?\=\{\}\x7F]+)|(?:\"((?:[^"\\]|\\.)*)\")))?/g;
 
-    const header: Record<string, string | number> = {};
-    cacheControl.replace(re, ($0, $1, $2, $3) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const header: Record<string, string | number | boolean> = {};
+    cacheControl.replace(re, ($0, $1: string, $2?: string, $3?: string) => {
         const value = $2 || $3;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         header[$1] = value ? value.toLowerCase() : true;
         return '';
     });

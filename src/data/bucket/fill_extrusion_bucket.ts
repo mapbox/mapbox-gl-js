@@ -179,7 +179,7 @@ class FootprintSegmentArray {
 
     get length(): number { return this.data.length; }
     push(s: FootprintSegment): void { this.data.push(s); }
-    get(i: number): FootprintSegment { return this.data[i]; }
+    get(i: number): FootprintSegment { return this.data[i]!; }
 
     static serialize(input: FootprintSegmentArray, transferables: Set<ArrayBuffer>): SerializedFootprintSegmentArray {
         const n = input.data.length;
@@ -187,7 +187,7 @@ class FootprintSegmentArray {
         const rings: Array<Array<number>> = [];
         rings.length = n;
         for (let i = 0; i < n; i++) {
-            const s = input.data[i];
+            const s = input.data[i]!;
             const o = i * 4;
             scalars[o]     = s.vertexOffset;
             scalars[o + 1] = s.vertexCount;
@@ -209,11 +209,11 @@ class FootprintSegmentArray {
         for (let i = 0; i < n; i++) {
             const o = i * 4;
             const fs = new FootprintSegment();
-            fs.vertexOffset = scalars[o];
-            fs.vertexCount = scalars[o + 1];
-            fs.indexOffset = scalars[o + 2];
-            fs.indexCount = scalars[o + 3];
-            fs.ringIndices = rings[i];
+            fs.vertexOffset = scalars[o]!;
+            fs.vertexCount = scalars[o + 1]!;
+            fs.indexOffset = scalars[o + 2]!;
+            fs.indexCount = scalars[o + 3]!;
+            fs.ringIndices = rings[i]!;
             arr.data[i] = fs;
         }
         return arr;
@@ -289,7 +289,7 @@ export class PartDataArray {
 
     get length(): number { return this.data.length; }
     push(p: PartData): void { this.data.push(p); }
-    get(i: number): PartData { return this.data[i]; }
+    get(i: number): PartData { return this.data[i]!; }
     find(fn: (p: PartData) => boolean): PartData | undefined { return this.data.find(fn); }
     [Symbol.iterator](): IterableIterator<PartData> { return this.data[Symbol.iterator](); }
 
@@ -297,7 +297,7 @@ export class PartDataArray {
         const n = input.data.length;
         const buffer = new Float64Array(n * PART_DATA_STRIDE);
         for (let i = 0; i < n; i++) {
-            const p = input.data[i];
+            const p = input.data[i]!;
             const o = i * PART_DATA_STRIDE;
             buffer[o]      = p.centroidXY.x;
             buffer[o + 1]  = p.centroidXY.y;
@@ -331,17 +331,17 @@ export class PartDataArray {
         for (let i = 0; i < n; i++) {
             const o = i * PART_DATA_STRIDE;
             const p = new PartData();
-            p.centroidXY = new Point(buf[o], buf[o + 1]);
-            p.min = new Point(buf[o + 2], buf[o + 3]);
-            p.max = new Point(buf[o + 4], buf[o + 5]);
-            p.groupCentroidPos = new Point(buf[o + 6], buf[o + 7]);
-            p.vertexArrayOffset = buf[o + 8];
-            p.vertexCount = buf[o + 9];
-            p.groundVertexArrayOffset = buf[o + 10];
-            p.groundVertexCount = buf[o + 11];
-            p.footprintSegLen = buf[o + 12];
-            p.height = buf[o + 13];
-            p.buildingId = buf[o + 14];
+            p.centroidXY = new Point(buf[o]!, buf[o + 1]!);
+            p.min = new Point(buf[o + 2]!, buf[o + 3]!);
+            p.max = new Point(buf[o + 4]!, buf[o + 5]!);
+            p.groupCentroidPos = new Point(buf[o + 6]!, buf[o + 7]!);
+            p.vertexArrayOffset = buf[o + 8]!;
+            p.vertexCount = buf[o + 9]!;
+            p.groundVertexArrayOffset = buf[o + 10]!;
+            p.groundVertexCount = buf[o + 11]!;
+            p.footprintSegLen = buf[o + 12]!;
+            p.height = buf[o + 13]!;
+            p.buildingId = buf[o + 14]!;
             // flags is always 0 at transfer time (set via constructor) and
             // gets mutated on the main thread during replacement.
             // footprintSegIdx is reconstructed as a running cursor into
@@ -436,7 +436,7 @@ class BorderCentroidData {
                 [Number.MAX_VALUE, -Number.MAX_VALUE]
             ];
         }
-        const b = this.borders[index];
+        const b = this.borders[index]!;
         if (i < b[0]) b[0] = i;
         if (i > b[1]) b[1] = i;
     }
@@ -497,10 +497,10 @@ function countCornerQuads(polyline: Array<Point>, bounds: [Point, Point], radius
     let count = 0;
     for (let i = 0; i < n; i++) {
         const pa = polyline[i === 0 ? n - 1 : i - 1];
-        const pb = polyline[i];
+        const pb = polyline[i]!;
         const pc = polyline[i === n - 1 ? 0 : i + 1];
-        const na = pb.sub(pa)._perp()._unit();
-        const nb = pc.sub(pb)._perp()._unit();
+        const na = pb.sub(pa!)._perp()._unit();
+        const nb = pc!.sub(pb)._perp()._unit();
         if (needsCornerQuad(getAngularOffsetFactor(na, nb), radiusSign, pb, bounds)) count++;
     }
     return count;
@@ -530,7 +530,7 @@ function getTileRegions(pa: Point, pb: Point, na: Point, maxRadius: number) {
     const points = [pa, pb, c, d];
     for (let i = 0; i < TILE_REGIONS; i++) {
         for (const point of points) {
-            if (borderCheck[i](point)) {
+            if (borderCheck[i]!(point)) {
                 regions.push(i);
                 break;
             }
@@ -555,8 +555,8 @@ export class GroundEffect {
     indexArray: TriangleIndexArray;
     indexBuffer!: IndexBuffer;
 
-    groundRadiusArray: FillExtrusionGroundRadiusLayoutArray = null;
-    groundRadiusBuffer: VertexBuffer = null;
+    groundRadiusArray: FillExtrusionGroundRadiusLayoutArray | null = null;
+    groundRadiusBuffer: VertexBuffer | null = null;
 
     _segments: SegmentVector;
 
@@ -592,7 +592,7 @@ export class GroundEffect {
     }
 
     getDefaultSegment(): SegmentVector {
-        return this.regionSegments[4];
+        return this.regionSegments[4]!;
     }
 
     hasData(): boolean { return this.vertexArray.length !== 0; }
@@ -615,22 +615,22 @@ export class GroundEffect {
             let prevFactor: number;
             {
                 const pa = polyline[n - 1];
-                const pb = polyline[0];
+                const pb = polyline[0]!;
                 const pc = polyline[1];
-                const na = pb.sub(pa)._perp()._unit();
-                const nb = pc.sub(pb)._perp()._unit();
+                const na = pb.sub(pa!)._perp()._unit();
+                const nb = pc!.sub(pb)._perp()._unit();
                 prevFactor = getAngularOffsetFactor(na, nb);
             }
             for (let i = 0; i < n; i++) {
                 const j = i === n - 1 ? 0 : i + 1;
                 const k = j === n - 1 ? 0 : j + 1;
 
-                const pa = polyline[i];
-                const pb = polyline[j];
+                const pa = polyline[i]!;
+                const pb = polyline[j]!;
                 const pc = polyline[k];
 
                 const na = pb.sub(pa)._perp()._unit();
-                const nb = pc.sub(pb)._perp()._unit();
+                const nb = pc!.sub(pb)._perp()._unit();
                 const factor = getAngularOffsetFactor(na, nb);
                 const a0 = prevFactor;
                 const a1 = factor;
@@ -688,8 +688,8 @@ export class GroundEffect {
     // When a tile belongs to more than one region the quad is drawn once per region.
     _addQuadToRegions(idx: number, regions: Array<number>, segment: Segment, sid: number) {
         for (const rid of regions) {
-            this._segmentToGroundQuads[sid].push({id: idx, region: rid});
-            this._segmentToRegionTriCounts[sid][rid] += QUAD_TRIS;
+            this._segmentToGroundQuads[sid]!.push({id: idx, region: rid});
+            this._segmentToRegionTriCounts[sid]![rid]! += QUAD_TRIS;
             segment.primitiveLength += QUAD_TRIS;
             this._numGroundQuads++;
         }
@@ -706,16 +706,16 @@ export class GroundEffect {
         const numSegments = segments.length;
         for (let i = 0; i < numSegments; i++) {
             const groundQuads = this._segmentToGroundQuads[i];
-            groundQuads.sort((a: GroundQuad, b: GroundQuad) => {
+            groundQuads!.sort((a: GroundQuad, b: GroundQuad) => {
                 return a.region - b.region;
             });
         }
 
         // Populate the index array.
         for (let i = 0; i < numSegments; i++) {
-            const groundQuads = this._segmentToGroundQuads[i];
-            const segment = segments[i];
-            const regionTriCounts = this._segmentToRegionTriCounts[i];
+            const groundQuads = this._segmentToGroundQuads[i]!;
+            const segment = segments[i]!;
+            const regionTriCounts = this._segmentToRegionTriCounts[i]!;
 
             const totalTriCount = regionTriCounts.reduce((acc: number, a: number) => { return acc + a; }, 0);
             assert(segment.primitiveLength === totalTriCount);
@@ -723,7 +723,7 @@ export class GroundEffect {
             // For each segment create 5 additional segments each representing a region.
             let regionTriCountOffset = 0;
             for (let k = 0; k <= TILE_REGIONS; k++) {
-                const triCount = regionTriCounts[k];
+                const triCount = regionTriCounts[k]!;
                 assert(triCount % QUAD_TRIS === 0);
 
                 if (triCount !== 0) {
@@ -748,17 +748,17 @@ export class GroundEffect {
             }
             for (let j = 0; j < groundQuads.length; j++) {
                 const groundQuad = groundQuads[j];
-                const idx = groundQuad.id;
+                const idx = groundQuad!.id;
                 this.indexArray.emplaceBack(idx, idx + 1, idx + 3);
                 this.indexArray.emplaceBack(idx, idx + 3, idx + 2);
             }
         }
 
         // Free up memory as we no longer need these.
-        this._segmentToGroundQuads = null;
-        this._segmentToRegionTriCounts = null;
+        this._segmentToGroundQuads = null!;
+        this._segmentToRegionTriCounts = null!;
         this._segments.destroy();
-        this._segments = null;
+        this._segments = null!;
     }
 
     addPaintPropertiesData(feature: Feature, index: number, imagePositions: SpritePositions, availableImages: ImageId[], canonical: CanonicalTileID, brightness?: number | null, worldview?: string) {
@@ -956,7 +956,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         this.polygonSegments = [];
         this.buildingGroups = new Map();
 
-        this.worldview = options.worldview;
+        this.worldview = options.worldview!;
         this.hasAppearances = null;
     }
 
@@ -980,14 +980,14 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         this.borderDEMTileTimestamp = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE];
         this.tileToMeter = tileToMeter(canonical);
 
-        this.edgeRadius = this.layers[0].layout.get('fill-extrusion-edge-radius') / this.tileToMeter;
-        this.wallMode = this.layers[0].paint.get('fill-extrusion-line-width').constantOr(1.0) !== 0.0;
+        this.edgeRadius = this.layers[0]!.layout.get('fill-extrusion-edge-radius') / this.tileToMeter;
+        this.wallMode = this.layers[0]!.paint.get('fill-extrusion-line-width').constantOr(1.0) !== 0.0;
         const globalProperties = new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors});
         for (const {feature, id, index, sourceLayerIndex} of features) {
-            const needGeometry = this.layers[0]._featureFilter.needGeometry;
+            const needGeometry = this.layers[0]!._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            if (!this.layers[0]._featureFilter.filter(globalProperties, evaluationFeature, canonical))
+            if (!this.layers[0]!._featureFilter.filter(globalProperties, evaluationFeature, canonical))
                 continue;
             const bucketFeature: BucketFeature = {
                 id,
@@ -1002,16 +1002,16 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             const vertexArrayOffset = this.layoutVertexArray.length;
             const featureIsPolygon = vectorTileFeatureTypes[bucketFeature.type] === 'Polygon';
             if (this.hasPattern) {
-                this.features.push({featureId: feature.id, feature: addPatternDependencies('fill-extrusion', this.layers, bucketFeature, this.zoom, this.pixelRatio, options)});
+                this.features.push({featureId: feature.id!, feature: addPatternDependencies('fill-extrusion', this.layers, bucketFeature, this.zoom, this.pixelRatio, options)});
             } else {
                 if (this.wallMode) {
                     for (const polygon of bucketFeature.geometry) {
                         for (const line of dropBufferConnectionLines(polygon, featureIsPolygon)) {
-                            this.addFeature(feature.id, bucketFeature, [line], index, canonical, {}, options.availableImages, tileTransform, options.brightness);
+                            this.addFeature(feature.id!, bucketFeature, [line], index, canonical, {}, options.availableImages, tileTransform, options.brightness);
                         }
                     }
                 } else {
-                    this.addFeature(feature.id, bucketFeature, bucketFeature.geometry, index, canonical, {}, options.availableImages, tileTransform, options.brightness);
+                    this.addFeature(feature.id!, bucketFeature, bucketFeature.geometry, index, canonical, {}, options.availableImages, tileTransform, options.brightness);
                 }
             }
 
@@ -1115,7 +1115,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
     addFeature(featureId: number, feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[], tileTransform: TileTransform, brightness?: number | null) {
 
-        const floodLightRadius = this.layers[0].paint.get('fill-extrusion-flood-light-ground-radius').evaluate(feature, {});
+        const floodLightRadius = this.layers[0]!.paint.get('fill-extrusion-flood-light-ground-radius').evaluate(feature, {});
         const maxRadius = floodLightRadius / this.tileToMeter;
 
         const tileBounds: [Point, Point] = [new Point(0, 0), new Point(EXTENT, EXTENT)];
@@ -1133,10 +1133,10 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         }
         borderCentroidData.buildingId = centroid.buildingId;
 
-        const base = this.layers[0].paint.get('fill-extrusion-base').evaluate(feature, {}, canonical);
+        const base = this.layers[0]!.paint.get('fill-extrusion-base').evaluate(feature, {}, canonical);
         const onGround = base <= 0;
 
-        const height = this.layers[0].paint.get('fill-extrusion-height').evaluate(feature, {}, canonical);
+        const height = this.layers[0]!.paint.get('fill-extrusion-height').evaluate(feature, {}, canonical);
         centroid.height = height;
         centroid.vertexArrayOffset = this.layoutVertexArray.length;
         centroid.groundVertexArrayOffset = this.groundEffect.vertexArray.length;
@@ -1145,7 +1145,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             this.layoutVertexExtArray = new FillExtrusionExtArray();
         }
 
-        let wallGeometry: WallGeometry;
+        let wallGeometry!: WallGeometry;
         if (this.wallMode) {
             if (isGlobe) {
                 warnOnce('Non zero fill-extrusion-line-width is not yet supported on globe.');
@@ -1156,7 +1156,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                 assert(false);
                 return;
             }
-            wallGeometry = createLineWallGeometry(geometry[0]);
+            wallGeometry = createLineWallGeometry(geometry[0]!);
             geometry = [wallGeometry.geometry];
         }
         const isPointOnInnerWall = (index: number, polygon: Array<Point>) => {
@@ -1166,8 +1166,8 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         const polygons = this.wallMode ? [geometry] : classifyRings(geometry, EARCUT_MAX_RINGS);
 
         for (let i = polygons.length - 1; i >= 0; i--) {
-            const polygon = polygons[i];
-            if (polygon.length === 0 || isEntirelyOutside(polygon[0])) {
+            const polygon = polygons[i]!;
+            if (polygon.length === 0 || isEntirelyOutside(polygon[0]!)) {
                 polygons.splice(i, 1);
             }
         }
@@ -1196,7 +1196,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
         const isDuplicate = (coords: Array<Point>, a: Point) => {
             if (coords.length === 0) return false;
-            const b = coords.at(-1);
+            const b = coords.at(-1)!;
             return a.x === b.x && a.y === b.y;
         };
 
@@ -1207,7 +1207,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             let numVertices = 0;
             for (const ring of polygon) {
                 // make sure the ring closes
-                if (isPolygon && !ring[0].equals(ring.at(-1))) ring.push(ring[0]);
+                if (isPolygon && !ring[0]!.equals(ring.at(-1)!)) ring.push(ring[0]!);
                 numVertices += (isPolygon ? (ring.length - 1) : ring.length);
             }
 
@@ -1237,7 +1237,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
                 // First we offset (inset) the top vertices (i.e the vertices that make up the roof).
                 for (let r = 0; r < polygon.length; r++) {
-                    const ring = polygon[r];
+                    const ring = polygon[r]!;
                     if (ring.length && r !== 0) {
                         holeIndices.push(flattened.length / 2);
                     }
@@ -1251,7 +1251,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                     {
                         const p0 = ring[0];
                         const p1 = ring[1];
-                        na = p1.sub(p0)._perp()._unit();
+                        na = p1!.sub(p0!)._perp()._unit();
                     }
 
                     // Store index to the end of this ring, we substract one because we don't add the last point to the
@@ -1259,13 +1259,13 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                     fpSegment.ringIndices.push(ring.length - 1);
 
                     for (let i = 1; i < ring.length; i++) {
-                        const p1 = ring[i];
+                        const p1 = ring[i]!;
                         const p2 = ring[i === ring.length - 1 ? 1 : i + 1];
 
                         const q = p1.clone();
 
                         if (edgeRadius) {
-                            nb = getEdgeNormal(p1, p2, na);
+                            nb = getEdgeNormal(p1, p2!, na);
                             const nm = getBisector(na, nb);
                             const cosHalfAngle = getCosHalfAngle(na, nb);
                             const offset = edgeRadius * Math.min(4, 1 / cosHalfAngle);
@@ -1284,7 +1284,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                         if (this.wallMode) {
                             const isInside = isPointOnInnerWall(i, ring);
                             const joinNormal = wallGeometry.joinNormals[i];
-                            addWallVertex(this.wallVertexArray, joinNormal, !isInside);
+                            addWallVertex(this.wallVertexArray, joinNormal!, !isInside);
                         }
 
                         segment.vertexLength++;
@@ -1298,12 +1298,12 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                             const array = this.layoutVertexExtArray;
                             const projectedP = projection.projectTilePoint(q.x, q.y, canonical);
                             const n = projection.upVector(canonical, q.x, q.y);
-                            addGlobeExtVertex(array, projectedP, n);
+                            addGlobeExtVertex(array!, projectedP, n);
                         }
                     }
 
                     if (onGround && (edgeRadius === 0 || optimiseGround)) {
-                        if (groundPolyline.length !== 0 && isDuplicate(groundPolyline, groundPolyline[0])) {
+                        if (groundPolyline.length !== 0 && isDuplicate(groundPolyline, groundPolyline[0]!)) {
                             groundPolyline.pop();
                         }
                         this.groundEffect.addData(groundPolyline, bounds, maxRadius);
@@ -1315,15 +1315,15 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
                 for (let j = 0; j < indices.length; j += 3) {
                     this.footprintIndices.emplaceBack(
-                        fpSegment.vertexOffset + indices[j + 0],
-                        fpSegment.vertexOffset + indices[j + 1],
-                        fpSegment.vertexOffset + indices[j + 2]);
+                        fpSegment.vertexOffset + indices[j + 0]!,
+                        fpSegment.vertexOffset + indices[j + 1]!,
+                        fpSegment.vertexOffset + indices[j + 2]!);
 
                     // clockwise winding order.
                     this.indexArray.emplaceBack(
-                        topIndex + indices[j],
-                        topIndex + indices[j + 2],
-                        topIndex + indices[j + 1]);
+                        topIndex + indices[j]!,
+                        topIndex + indices[j + 2]!,
+                        topIndex + indices[j + 1]!);
                     segment.primitiveLength++;
                 }
 
@@ -1332,10 +1332,10 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             }
 
             for (let r = 0; r < polygon.length; r++) {
-                const ring = polygon[r];
-                borderCentroidData.startRing(centroid, ring[0]);
-                let isPrevCornerConcave = ring.length > 4 && isAOConcaveAngle(ring[ring.length - 2], ring[0], ring[1]);
-                let offsetPrev = edgeRadius ? getRoundedEdgeOffset(ring[ring.length - 2], ring[0], ring[1], edgeRadius) : 0;
+                const ring = polygon[r]!;
+                borderCentroidData.startRing(centroid, ring[0]!);
+                let isPrevCornerConcave = ring.length > 4 && isAOConcaveAngle(ring[ring.length - 2]!, ring[0]!, ring[1]!);
+                let offsetPrev = edgeRadius ? getRoundedEdgeOffset(ring[ring.length - 2]!, ring[0]!, ring[1]!, edgeRadius) : 0;
 
                 // Geometry used by ground flood light and AO.
                 const groundPolyline: Array<Point> = [];
@@ -1348,13 +1348,13 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                 {
                     const p0 = ring[0];
                     const p1 = ring[1];
-                    na = p1.sub(p0)._perp()._unit();
+                    na = p1!.sub(p0!)._perp()._unit();
                 }
                 let cap = true;
                 for (let i = 1, edgeDistance = 0; i < ring.length; i++) {
-                    let p0 = ring[i - 1];
-                    let p1 = ring[i];
-                    const p2 = ring[i === ring.length - 1 ? 1 : i + 1];
+                    let p0 = ring[i - 1]!;
+                    let p1 = ring[i]!;
+                    const p2 = ring[i === ring.length - 1 ? 1 : i + 1]!;
 
                     borderCentroidData.appendEdge(centroid, p1, p0);
 
@@ -1421,7 +1421,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                     addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
                     if (this.wallMode) {
                         const isInside = isPointOnInnerWall(i - 1, ring);
-                        const joinNormal = wallGeometry.joinNormals[i - 1];
+                        const joinNormal = wallGeometry.joinNormals[i - 1]!;
                         addWallVertex(this.wallVertexArray, joinNormal, isInside);
                         addWallVertex(this.wallVertexArray, joinNormal, isInside);
                     }
@@ -1434,7 +1434,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                     addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
                     if (this.wallMode) {
                         const isInside = isPointOnInnerWall(i, ring);
-                        const joinNormal = wallGeometry.joinNormals[i];
+                        const joinNormal = wallGeometry.joinNormals[i]!;
                         addWallVertex(this.wallVertexArray, joinNormal, isInside);
                         addWallVertex(this.wallVertexArray, joinNormal, isInside);
                     }
@@ -1465,7 +1465,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                         }
 
                         // Make sure to fill in the gap in the corner only when both corresponding edges are in tile bounds.
-                        if (!isEdgeOutsideBounds(p2, ring[i], bounds)) {
+                        if (!isEdgeOutsideBounds(p2, ring[i]!, bounds)) {
                             const l = i === ring.length - 1 ? kFirst : segment.vertexLength;
 
                             // vertical side chamfer i.e. the space between consecutive walls.
@@ -1481,7 +1481,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                     }
 
                     if (isGlobe) {
-                        const array = this.layoutVertexExtArray;
+                        const array = this.layoutVertexExtArray!;
 
                         const projectedP0 = projection.projectTilePoint(p0.x, p0.y, canonical);
                         const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);
@@ -1497,7 +1497,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                 }
                 if (isPolygon) topIndex += (ring.length - 1);
                 if (onGround && edgeRadius && this.zoom >= 17) {
-                    if (groundPolyline.length !== 0 && isDuplicate(groundPolyline, groundPolyline[0])) {
+                    if (groundPolyline.length !== 0 && isDuplicate(groundPolyline, groundPolyline[0]!)) {
                         groundPolyline.pop();
                     }
                     this.groundEffect.addData(groundPolyline, bounds, maxRadius, edgeRadius > 0);
@@ -1553,8 +1553,8 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             this.featuresOnBorder.push(borderCentroidData);
             const borderIndex = this.featuresOnBorder.length - 1;
             for (let i = 0; i < borderCentroidData.borders.length; i++) {
-                if (borderCentroidData.borders[i][0] !== Number.MAX_VALUE) {
-                    this.borderFeatureIndices[i].push(borderIndex);
+                if (borderCentroidData.borders[i]![0] !== Number.MAX_VALUE) {
+                    this.borderFeatureIndices[i]!.push(borderIndex);
                 }
             }
         }
@@ -1599,7 +1599,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
     sortBorders() {
         for (let i = 0; i < this.borderFeatureIndices.length; i++) {
             const borders = this.borderFeatureIndices[i];
-            borders.sort((a, b) => this.featuresOnBorder[a].borders[i][0] - this.featuresOnBorder[b].borders[i][0]);
+            borders!.sort((a, b) => this.featuresOnBorder[a]!.borders![i]![0] - this.featuresOnBorder[b]!.borders![i]![0]);
         }
     }
 
@@ -1621,7 +1621,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             const subtile = bottom * 2 + (right ^ bottom);
             for (let i = 0; i < part.polygonSegLen; i++) {
                 const polySegIdx = part.polygonSegIdx + i;
-                segmentedFeatures.push({centroidIdx, subtile, polygonSegmentIdx: polySegIdx, triangleSegmentIdx: this.polygonSegments[polySegIdx].triangleSegIdx});
+                segmentedFeatures.push({centroidIdx, subtile, polygonSegmentIdx: polySegIdx, triangleSegmentIdx: this.polygonSegments[polySegIdx]!.triangleSegIdx});
             }
         }
         // Sort features based on their subtile index. Triangles can't be moved across
@@ -1632,29 +1632,29 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         let segmentBegin = 0;
         while (segmentBegin < segmentedFeatures.length) {
             const segmentEnd = findTriangleSegmentEnd(segmentedFeatures, segmentBegin);
-            const segmentIdx = segmentedFeatures[segmentBegin].triangleSegmentIdx;
+            const segmentIdx = segmentedFeatures[segmentBegin]!.triangleSegmentIdx;
             // For each feature of this triangle segment (as in all triangles in `Segments[triSegIdx]`),
             // find the number of triangles in each subtile and construct new segments for rendering
             let featuresBegin = segmentBegin;
             while (featuresBegin < segmentEnd) {
                 const featuresEnd = findSubtileEnd(segmentedFeatures, featuresBegin, segmentEnd);
-                const first = segmentedFeatures[featuresBegin];
+                const first = segmentedFeatures[featuresBegin]!;
                 const subtileMin = this.centroidData.get(first.centroidIdx).min.clone();
                 const subtileMax = this.centroidData.get(first.centroidIdx).max.clone();
 
                 // Add triangles of this subtile and construct a segment for rendering
                 const segment: Segment = {
-                    vertexOffset: this.segments.segments[segmentIdx].vertexOffset,
+                    vertexOffset: this.segments.segments[segmentIdx]!.vertexOffset,
                     primitiveOffset: sortedTriangles.length,
-                    vertexLength: this.segments.segments[segmentIdx].vertexLength,
+                    vertexLength: this.segments.segments[segmentIdx]!.vertexLength,
                     primitiveLength: 0,
                     sortKey: undefined,
                     vaos: {}
                 };
 
                 for (let featureIdx = featuresBegin; featureIdx < featuresEnd; featureIdx++) {
-                    const feature = segmentedFeatures[featureIdx];
-                    const data = this.polygonSegments[feature.polygonSegmentIdx];
+                    const feature = segmentedFeatures[featureIdx]!;
+                    const data = this.polygonSegments[feature.polygonSegmentIdx]!;
                     const centroidMin = this.centroidData.get(feature.centroidIdx).min;
                     const centroidMax = this.centroidData.get(feature.centroidIdx).max;
                     appendTriangles(sortedTriangles, this.indexArray, data.triangleArrayOffset, data.triangleCount);
@@ -1714,7 +1714,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         const tileMax = [((id.canonical.x + 1) / tiles) + id.wrap, ((id.canonical.y + 1) / tiles)];
 
         const mix = (a: Array<number>, b: Array<number>, c: Array<number>): Array<number> => {
-            return [lerp(a[0], b[0], c[0]), lerp(a[1], b[1], c[1])];
+            return [lerp(a[0]!, b[0]!, c[0]!), lerp(a[1]!, b[1]!, c[1]!)];
         };
         const fracMin = [];
         const fracMax = [];
@@ -1727,7 +1727,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             fracMax[1] = subSegment.max.y / EXTENT;
             const aabbMin = mix(tileMin, tileMax, fracMin);
             const aabbMax = mix(tileMin, tileMax, fracMax);
-            const aabb = new Aabb([aabbMin[0], aabbMin[1], minZ], [aabbMax[0], aabbMax[1], maxZ]);
+            const aabb = new Aabb([aabbMin[0]!, aabbMin[1]!, minZ], [aabbMax[0]!, aabbMax[1]!, maxZ]);
             if (aabb.intersectsPrecise(frustum) === 0) {
                 if (activeSegment) {
                     outSegments.segments.push(activeSegment);
@@ -1785,15 +1785,15 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         const notOnBorder = Number.MAX_VALUE;
         const span = 0x6; // any non zero value since span in this is not used in shader
         assert(borderCentroidData.intersectsCount() === 1);
-        if (b[0][0] !== notOnBorder || b[1][0] !== notOnBorder) {
-            const x = (b[0][0] !== notOnBorder ? 0 : (0x1FFF << 3)) | span;
-            const index = b[0][0] !== notOnBorder ? 0 : 1;
-            return new Point(x, (((((b[index][0] + b[index][1]) / 2) | 0) << 3) | span));
+        if (b[0]![0] !== notOnBorder || b[1]![0] !== notOnBorder) {
+            const x = (b[0]![0] !== notOnBorder ? 0 : (0x1FFF << 3)) | span;
+            const index = b[0]![0] !== notOnBorder ? 0 : 1;
+            return new Point(x, (((((b[index]![0] + b[index]![1]) / 2) | 0) << 3) | span));
         } else {
-            assert(b[2][0] !== notOnBorder || b[3][0] !== notOnBorder);
-            const y = (b[2][0] !== notOnBorder ? 0 : (0x1FFF << 3)) | span;
-            const index = b[2][0] !== notOnBorder ? 2 : 3;
-            return new Point((((((b[index][0] + b[index][1]) / 2) | 0) << 3) | span), y);
+            assert(b[2]![0] !== notOnBorder || b[3]![0] !== notOnBorder);
+            const y = (b[2]![0] !== notOnBorder ? 0 : (0x1FFF << 3)) | span;
+            const index = b[2]![0] !== notOnBorder ? 2 : 3;
+            return new Point((((((b[index]![0] + b[index]![1]) / 2) | 0) << 3) | span), y);
         }
     }
 
@@ -1804,19 +1804,19 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             // NaN ids (no numeric id before transfer) are left out: they'd break the sort and never match
             const all = new Uint32Array(data.length);
             let n = 0;
-            for (let i = 0; i < data.length; i++) if (!isNaN(data[i].buildingId)) all[n++] = i;
-            this.partsByBuildingId = all.subarray(0, n).sort((a, b) => data[a].buildingId - data[b].buildingId);
+            for (let i = 0; i < data.length; i++) if (!isNaN(data[i]!.buildingId)) all[n++] = i;
+            this.partsByBuildingId = all.subarray(0, n).sort((a, b) => data[a]!.buildingId - data[b]!.buildingId);
         }
         const order = this.partsByBuildingId;
         let lo = 0, hi = order.length;
         while (lo < hi) {
             const mid = (lo + hi) >> 1;
-            if (data[order[mid]].buildingId < buildingId) lo = mid + 1;
+            if (data[order[mid]!]!.buildingId < buildingId) lo = mid + 1;
             else hi = mid;
         }
-        for (let k = lo; k < order.length && data[order[k]].buildingId === buildingId; k++) {
-            data[order[k]].centroidXY = centroidXY;
-            this.writeCentroidToBuffer(data[order[k]]);
+        for (let k = lo; k < order.length && data[order[k]!]!.buildingId === buildingId; k++) {
+            data[order[k]!]!.centroidXY = centroidXY;
+            this.writeCentroidToBuffer(data[order[k]!]!);
         }
     }
 
@@ -1993,11 +1993,11 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             let startRing = 0;
             for (const endRing of seg.ringIndices) {
                 for (let i = startRing, j = endRing + startRing - 1; i < endRing + startRing; j = i++) {
-                    const x1 = this.footprintVertices.int16[(i + seg.vertexOffset) * 2 + 0];
-                    const y1 = this.footprintVertices.int16[(i + seg.vertexOffset) * 2 + 1];
+                    const x1 = this.footprintVertices.int16[(i + seg.vertexOffset) * 2 + 0]!;
+                    const y1 = this.footprintVertices.int16[(i + seg.vertexOffset) * 2 + 1]!;
                     const x2 = this.footprintVertices.int16[(j + seg.vertexOffset) * 2 + 0];
-                    const y2 = this.footprintVertices.int16[(j + seg.vertexOffset) * 2 + 1];
-                    if (((y1 > y) !== (y2 > y)) && (x < ((x2 - x1) * (y - y1) / (y2 - y1) + x1))) {
+                    const y2 = this.footprintVertices.int16[(j + seg.vertexOffset) * 2 + 1]!;
+                    if (((y1 > y) !== (y2 > y)) && (x < ((x2! - x1) * (y - y1) / (y2 - y1) + x1))) {
                         c = !c;
                     }
                 }
@@ -2025,13 +2025,13 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         // authoritative). Only materialize the PartData for the rare hit that
         // passes — footprintContainsPoint needs it, and `flags` can still be
         // mutated on the main thread so we must read it from the object.
-        const buf = this.centroidData.buffer;
+        const buf = this.centroidData.buffer!;
         const n = this.centroidData.length;
         for (let i = 0; i < n; i++) {
             const o = i * PART_DATA_STRIDE;
-            if (x > buf[o + 4] || buf[o + 2] > x || y > buf[o + 5] || buf[o + 3] > y) continue;
+            if (x > buf[o + 4]! || buf[o + 2]! > x || y > buf[o + 5]! || buf[o + 3]! > y) continue;
 
-            const h = buf[o + 13];
+            const h = buf[o + 13]!;
             if (h <= height) continue;
 
             const centroid = this.centroidData.get(i);
@@ -2051,16 +2051,16 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 }
 
 function findTriangleSegmentEnd(features: Array<SegmentedFeature>, begin: number): number {
-    const triangleSegmentIdx = features[begin].triangleSegmentIdx;
+    const triangleSegmentIdx = features[begin]!.triangleSegmentIdx;
     let i = begin + 1;
-    while (i < features.length && features[i].triangleSegmentIdx === triangleSegmentIdx) i++;
+    while (i < features.length && features[i]!.triangleSegmentIdx === triangleSegmentIdx) i++;
     return i;
 }
 
 function findSubtileEnd(features: Array<SegmentedFeature>, begin: number, end: number): number {
-    const subtile = features[begin].subtile;
+    const subtile = features[begin]!.subtile;
     let i = begin + 1;
-    while (i < end && features[i].subtile === subtile) i++;
+    while (i < end && features[i]!.subtile === subtile) i++;
     return i;
 }
 
@@ -2216,8 +2216,8 @@ function transformFootprintVertices(vertices: PosArray, offset: number, count: n
         let x = vertices.int16[(i + offset) * 2 + 0];
         let y = vertices.int16[(i + offset) * 2 + 1];
 
-        x = (x + centroidId.x * EXTENT) * zDiff - footprintId.x * EXTENT;
-        y = (y + centroidId.y * EXTENT) * zDiff - footprintId.y * EXTENT;
+        x = (x! + centroidId.x * EXTENT) * zDiff - footprintId.x * EXTENT;
+        y = (y! + centroidId.y * EXTENT) * zDiff - footprintId.y * EXTENT;
 
         out.push(new Point(x, y));
     }

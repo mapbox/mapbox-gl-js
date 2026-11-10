@@ -152,8 +152,7 @@ ${indent}}`;
 }
 
 function tsSourceTypeName(key: string): string {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    return key.replace(/source_(.)(.*)/, (_, _1, _2) => `${_1.toUpperCase()}${_2}Source`)
+    return key.replace(/source_(.)(.*)/, (_: string, _1: string, _2: string) => `${_1.toUpperCase()}${_2}Source`)
         .replace(/_dem/, 'DEM')
         .replace(/_array/, 'Array')
         .replace(/Geojson/, 'GeoJSON');
@@ -164,13 +163,11 @@ function tsSourceSpecificationTypeName(key: string): string {
 }
 
 function tsLightTypeName(key: string): string {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    return key.split('-').map(k => k.replace(/(.)(.*)/, (_, _1, _2) => `${_1.toUpperCase()}${_2}`)).concat('LightSpecification').join('');
+    return key.split('-').map(k => k.replace(/(.)(.*)/, (_: string, _1: string, _2: string) => `${_1.toUpperCase()}${_2}`)).concat('LightSpecification').join('');
 }
 
 function tsLayerName(key: string): string {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    return key.split('-').map(k => k.replace(/(.)(.*)/, (_, _1, _2) => `${_1.toUpperCase()}${_2}`)).join('');
+    return key.split('-').map(k => k.replace(/(.)(.*)/, (_: string, _1: string, _2: string) => `${_1.toUpperCase()}${_2}`)).join('');
 }
 
 function tsLayerTypeName(key: string): string {

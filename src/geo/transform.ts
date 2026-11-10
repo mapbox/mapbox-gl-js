@@ -64,7 +64,7 @@ export const OrthographicPitchTranstionValue = 15;
 
 const lerpMatrix = (out: mat4, a: mat4, b: mat4, value: number) => {
     for (let i = 0; i < 16; i++) {
-        out[i] = interpolate(a[i], b[i], value);
+        out[i] = interpolate(a[i]!, b[i]!, value);
     }
 
     return out;
@@ -634,8 +634,8 @@ class Transform {
         let weightSum = 0.0;
         for (let i = 0; i < elevationSamplePoints.length; i++) {
             const pt = new Point(
-                elevationSamplePoints[i][0] * this.width,
-                horizon + elevationSamplePoints[i][1] * (this.height - horizon)
+                elevationSamplePoints[i]![0]! * this.width,
+                horizon + elevationSamplePoints[i]![1]! * (this.height - horizon)
             );
             const hit = elevation.pointCoordinate(pt);
             if (!hit) continue;
@@ -933,7 +933,7 @@ class Transform {
         };
 
         for (let i = 0; i < coveringTiles.length; i++) {
-            const id = coveringTiles[i];
+            const id = coveringTiles[i]!;
 
             // Skip if not at the specified zoom level
             if (extendQuadrants && id.canonical.z !== maxZoom) continue;
@@ -1043,7 +1043,7 @@ class Transform {
             const numTiles = 1 << maxZoom;
             const isGlobe = this.projection.name === 'globe';
             const cameraCoord = isGlobe ? this._camera.mercatorPosition : this.pointCoordinate(this.getCameraPoint());
-            const cameraPoint = [numTiles * cameraCoord.x, numTiles * cameraCoord.y];
+            const cameraPoint: [number, number] = [numTiles * cameraCoord.x, numTiles * cameraCoord.y];
 
             // Keep only closest tiles to the camera position
             // Limit is found experimentally to fix landmark visibility issues in most cases without extending
@@ -1303,14 +1303,14 @@ class Transform {
         const centerCoord = this.locationCoordinate(this.center);
         const centerLatitude = this.center.lat;
         const numTiles = 1 << z;
-        const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
+        const centerPoint: [number, number, number] = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
         const isGlobe = this.projection.name === 'globe';
         const zInMeters = !isGlobe;
         const cameraFrustum = this.getFrustum(z);
         const cameraCoord = isGlobe ? this._camera.mercatorPosition : this.pointCoordinate(this.getCameraPoint());
         const meterToTile = numTiles * mercatorZfromAltitude(1, this.center.lat);
         const cameraAltitude = this._camera.position[2] / mercatorZfromAltitude(1, this.center.lat);
-        const cameraPoint = [numTiles * cameraCoord.x, numTiles * cameraCoord.y, cameraAltitude * (zInMeters ? 1 : meterToTile)];
+        const cameraPoint: [number, number, number] = [numTiles * cameraCoord.x, numTiles * cameraCoord.y, cameraAltitude * (zInMeters ? 1 : meterToTile)];
         const verticalFrustumIntersect = isGlobe || hasExaggeration;
         const cameraForward = this._camera.forward();
         // Let's consider an example for !roundZoom: e.g. tileZoom 16 is used from zoom 16 all the way to zoom 16.99.
@@ -1549,7 +1549,7 @@ class Transform {
         stack.push(newRootTile(0));
 
         while (stack.length > 0) {
-            const it = stack.pop();
+            const it = stack.pop()!;
             const x = it.x;
             const y = it.y;
             let fullyVisible = it.fullyVisible;
@@ -1706,7 +1706,7 @@ class Transform {
 
         // Relax the assertion on terrain, on high zoom we use distance to center of tile
         // while camera might be closer to selected center of map.
-        assert(!cover.length || this.elevation || cover[0].overscaledZ === overscaledZ || !isMercator);
+        assert(!cover.length || this.elevation || cover[0]!.overscaledZ === overscaledZ || !isMercator);
         return cover;
     }
 
@@ -2128,8 +2128,8 @@ class Transform {
         const minmax = elevation.visibleDemTiles.reduce((acc, t) => {
             if (t.dem) {
                 const tree = t.dem.tree;
-                acc.min = Math.min(acc.min, tree.minimums[0]);
-                acc.max = Math.max(acc.max, tree.maximums[0]);
+                acc.min = Math.min(acc.min, tree.minimums[0]!);
+                acc.max = Math.max(acc.max, tree.maximums[0]!);
             }
             return acc;
         }, {min: Number.MAX_VALUE, max: 0});

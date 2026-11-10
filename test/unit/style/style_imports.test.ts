@@ -846,6 +846,16 @@ describe('Style#addImport', () => {
         expect(errorSpy).toHaveBeenCalledTimes(2);
         expect(style.stylesheet.imports ?? []).toHaveLength(0);
     });
+
+    test('returns a resolved promise for a duplicate import id', async () => {
+        const {style} = newStubStyle();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        style.loadJSON(createStyleJSON({imports: [{id: 'basemap', url: '', data: {version: 8, sources: {}, layers: []}}]}));
+        await waitFor(style, 'style.load');
+        style.on('error', () => {});
+
+        await expect(style.addImport({id: 'basemap', url: '/style.json'})).resolves.toBeUndefined();
+    });
 });
 
 describe('Style#updateImport', () => {

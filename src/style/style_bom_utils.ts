@@ -39,7 +39,7 @@ export const StyleBOMUtils = {
                 visited.add(globalId);
                 bom.push({
                     style: globalId,
-                    modified: modified ? modified : null
+                    modified: (modified ? modified : null)!
                 });
             }
 
@@ -54,7 +54,7 @@ export const StyleBOMUtils = {
                         const data = (source as unknown as {data?: {modified?: number, created: number}}).data;
                         bom.push({
                             tileset: source.url,
-                            modified: data ? data.modified || data.created : null
+                            modified: (data ? data.modified || data.created : null)!
                         });
                     }
                 }

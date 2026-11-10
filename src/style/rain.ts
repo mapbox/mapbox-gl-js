@@ -7,7 +7,7 @@ import {getProperties, type RainProps as Props} from '../../3d-style/style/rain_
 
 import type {vec2, vec3} from 'gl-matrix';
 import type {RainSpecification} from '../style-spec/types';
-import type {ConfigOptions} from './properties';
+import type {ConfigOptions, PropertyValueSpecifications} from './properties';
 import type Transform from '../geo/transform';
 import type {StyleSetterOptions} from '../style/style';
 import type {StylePropertySpecification} from '../style-spec/style-spec';
@@ -26,7 +26,7 @@ interface RainState {
 class Rain extends StyleProperties<Props> {
     constructor(rainOptions: RainSpecification | null | undefined, transform: Transform, scope: string, configOptions?: ConfigOptions | null) {
         super(getProperties(), scope, new Map(configOptions));
-        this.set(rainOptions);
+        this.set(rainOptions!);
         this._transitionable.snap();
     }
 
@@ -68,11 +68,11 @@ class Rain extends StyleProperties<Props> {
         for (const name of Object.keys(rainSpec)) {
             // Fallback to use default style specification when the properties wasn't set
             if ((properties as Record<string, unknown>)[name] === undefined) {
-                (properties as Record<string, unknown>)[name] = rainSpec[name].default;
+                (properties as Record<string, unknown>)[name] = rainSpec[name]!.default;
             }
         }
 
-        this._setValues(properties, configOptions);
+        this._setValues(properties as PropertyValueSpecifications<Props>, configOptions);
     }
 }
 

@@ -245,7 +245,7 @@ export function compile(fragmentSource: string, vertexSource: string): ShaderSou
         usedDefines = new Set([...usedDefines, ...defineMap[includePath]]);
     }
 
-    fragmentSource = fragmentSource.replace(PRAGMA_REGEX, (_, operation, precision, type: string, name: string) => {
+    fragmentSource = fragmentSource.replace(PRAGMA_REGEX, ((_: string, operation: string, precision: string, type: string, name: string) => {
         fragmentPragmas.add(name);
         if (operation === 'define') {
             const interpolation = isIntegerType(type) ? 'flat ' : '';
@@ -271,9 +271,9 @@ uniform ${precision} ${type} u_${name};
         } else if (operation === 'initialize-attribute') {
             return '';
         }
-    });
+    }) as (substring: string, ...args: string[]) => string);
 
-    vertexSource = vertexSource.replace(PRAGMA_REGEX, (_, operation, precision, type: string, name: string) => {
+    vertexSource = vertexSource.replace(PRAGMA_REGEX, ((_: string, operation: string, precision: string, type: string, name: string) => {
 
         const attrType = type === 'float' ? 'vec2' : type;
         const unpackType = name.includes('color') ? 'color' : attrType;
@@ -387,7 +387,7 @@ uniform ${precision} ${type} u_${name};
                 }
             }
         }
-    });
+    }) as (substring: string, ...args: string[]) => string);
 
     return {fragmentSource, vertexSource, usedDefines, vertexIncludes, fragmentIncludes};
 }

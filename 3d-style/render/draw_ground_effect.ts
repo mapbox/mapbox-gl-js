@@ -114,7 +114,7 @@ export function drawGroundEffect<StyleLayerType extends TypedStyleLayer>(props: 
     } else if (subpass === 'emissive') {
         defines.push('USE_MRT1');
         context.activeTexture.set(gl.TEXTURE0);
-        framebufferCopyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+        framebufferCopyTexture!.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
     if (replacementActive) {
         defines.push('HAS_CENTROID');
@@ -136,7 +136,7 @@ export function drawGroundEffect<StyleLayerType extends TypedStyleLayer>(props: 
         const ao: [number, number] = [aoIntensity, aoRadius * meterToTile];
 
         const edgeRadiusTile = zoom >= 17 ? 0 : edgeRadius * meterToTile;
-        const fbSize = framebufferCopyTexture ? framebufferCopyTexture.size[0] : 0;
+        const fbSize = framebufferCopyTexture ? framebufferCopyTexture.size![0] : 0;
         const uniformValues = fillExtrusionGroundEffectUniformValues(matrix, opacity, aoPass, meterToTile, ao, floodLightIntensity, floodLightColor, attenuation, edgeRadiusTile, fbSize);
 
         const dynamicBuffers: Array<VertexBuffer | null | undefined> = [];
@@ -155,8 +155,7 @@ export function drawGroundEffect<StyleLayerType extends TypedStyleLayer>(props: 
 
     for (const coord of coords) {
         const tile = source.getTile(coord);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-        const bucket: BucketWithGroundEffect | null | undefined = (tile.getBucket(layer) as any);
+        const bucket = tile.getBucket(layer) as BucketWithGroundEffect | undefined;
         if (!bucket || bucket.projection.name !== tr.projection.name || !bucket.groundEffect || (bucket.groundEffect && !bucket.groundEffect.hasData())) continue;
 
         const groundEffect = bucket.groundEffect;
@@ -175,7 +174,7 @@ export function drawGroundEffect<StyleLayerType extends TypedStyleLayer>(props: 
 
         if (renderNeighbors) {
             for (let i = 0; i < 4; i++) {
-                const nCoord = neighborCoord[i](coord);
+                const nCoord = neighborCoord[i]!(coord);
                 const nTile = source.getTile(nCoord);
                 if (!nTile) continue;
 

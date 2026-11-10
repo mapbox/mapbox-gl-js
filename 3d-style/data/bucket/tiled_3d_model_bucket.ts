@@ -71,8 +71,13 @@ function addAABBsToGridIndex(node: ModelNode, key: number, grid: GridIndex) {
 
 assert(PartNames.length === MODEL_PART_COUNT, 'the part style block must have one entry per part the tiler can tag');
 
+type Tiled3dModelEvaluationFeature = Omit<EvaluationFeature, 'id' | 'properties'> & {
+    readonly id: string;
+    properties: {height: number; part?: typeof PartNames[number]};
+};
+
 export class Tiled3dModelFeature {
-    feature: EvaluationFeature;
+    feature: Tiled3dModelEvaluationFeature;
     evaluatedTranslation: [number, number, number];
     evaluatedScale: [number, number, number];
     hiddenByReplacement: boolean;
@@ -314,39 +319,38 @@ class Tiled3dModelBucket implements Bucket {
             if (!nodeInfo.node.meshes) continue;
             const evaluationFeature = nodeInfo.feature;
             if (changedIds && !changedIds.has(String(evaluationFeature.id))) continue;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const state = states && states[evaluationFeature.id];
             if (deepEqual(state, nodeInfo.state)) continue;
-            nodeInfo.state = structuredClone(state);
-            const hasFeatures = nodeInfo.node.meshes[0].hasFeatureData;
+            nodeInfo.state = structuredClone(state)!;
+            const hasFeatures = nodeInfo.node.meshes[0]!.hasFeatureData;
             nodeInfo.hasTranslucentParts = false;
 
             if (hasFeatures) {
                 for (let i = 0; i < PartNames.length; i++) {
                     const part = PartNames[i];
-                    if (part.length) {
+                    if (part!.length) {
                         evaluationFeature.properties['part'] = part;
                     }
 
-                    const color = layer.paint.get('model-color').evaluate(evaluationFeature, state, canonical).toPremultipliedRenderColor(null);
+                    const color = layer.paint.get('model-color').evaluate(evaluationFeature, state!, canonical).toPremultipliedRenderColor(null);
 
                     writePartStyle(nodeInfo.partStyle, i * 16, color,
-                        layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, state, canonical),
-                        layer.paint.get('model-roughness').evaluate(evaluationFeature, state, canonical),
+                        layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, state!, canonical),
+                        layer.paint.get('model-roughness').evaluate(evaluationFeature, state!, canonical),
                         // metallic is not styled; only windows are metallic
                         part === 'window' ? 1 : 0,
-                        layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, state, canonical),
-                        layer.paint.get('model-height-based-emissive-strength-multiplier').evaluate(evaluationFeature, state, canonical));
+                        layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, state!, canonical),
+                        layer.paint.get('model-height-based-emissive-strength-multiplier').evaluate(evaluationFeature, state!, canonical));
 
                     if (color.a < 1) nodeInfo.hasTranslucentParts = true;
                 }
                 delete evaluationFeature.properties['part'];
             } else {
-                nodeInfo.emissiveStrength = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, state, canonical);
+                nodeInfo.emissiveStrength = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, state!, canonical);
             }
 
-            nodeInfo.evaluatedTranslation = layer.paint.get('model-translation').evaluate(evaluationFeature, state, canonical);
-            nodeInfo.evaluatedScale = layer.paint.get('model-scale').evaluate(evaluationFeature, state, canonical);
+            nodeInfo.evaluatedTranslation = layer.paint.get('model-translation').evaluate(evaluationFeature, state!, canonical);
+            nodeInfo.evaluatedScale = layer.paint.get('model-scale').evaluate(evaluationFeature, state!, canonical);
 
             if (hasFeatures) {
                 if (nodeInfo.partStyleUBO) {
@@ -379,9 +383,9 @@ class Tiled3dModelBucket implements Bucket {
                     continue;
                 }
                 const vertices = node.footprint.vertices;
-                let elevation = dem.getElevationAt(vertices[0], vertices[1], true, true);
+                let elevation = dem.getElevationAt(vertices[0]!, vertices[1]!, true, true);
                 for (let i = 2; i < vertices.length; i += 2) {
-                    elevation = Math.min(elevation, dem.getElevationAt(vertices[i], vertices[i + 1], true, true));
+                    elevation = Math.min(elevation, dem.getElevationAt(vertices[i]!, vertices[i + 1]!, true, true));
                 }
                 node.elevation = elevation;
             }
@@ -442,7 +446,7 @@ class Tiled3dModelBucket implements Bucket {
             let maxy = Math.min(maxDem.y + demAtt, demRes - 1);
             for (let y = miny; y <= maxy; ++y) {
                 for (let x = minx; x <= maxx; ++x) {
-                    passLookup[y * demRes + x] = 255;
+                    passLookup![y * demRes + x] = 255;
                 }
             }
 
@@ -461,8 +465,8 @@ class Tiled3dModelBucket implements Bucket {
                     const demPMax = dem.tileCoordToPixel(grid.min.x + (cellx + 1) / grid.xScale, grid.min.y + (celly + 1) / grid.yScale);
                     for (let y = demP.y; y <= Math.min(demPMax.y + 1, demRes - 1); ++y) {
                         for (let x = demP.x; x <= Math.min(demPMax.x + 1, demRes - 1); ++x) {
-                            if (passLookup[y * demRes + x] === 255) {
-                                passLookup[y * demRes + x] = 0;
+                            if (passLookup![y * demRes + x] === 255) {
+                                passLookup![y * demRes + x] = 0;
                                 const height = dem.getElevationAtPixel(x, y);
                                 heightAcc += height;
                                 count++;
@@ -487,7 +491,7 @@ class Tiled3dModelBucket implements Bucket {
             changed = true;
             for (let y = miny; y <= maxy; ++y) {
                 for (let x = minx; x <= maxx; ++x) {
-                    if (passLookup[y * demRes + x] === 0) {
+                    if (passLookup![y * demRes + x] === 0) {
                         lookup[y * demRes + x] = dem._dem.set(x, y, avgHeight);
                     }
                 }
@@ -504,7 +508,7 @@ class Tiled3dModelBucket implements Bucket {
                     for (let x = minx; x <= maxx; ++x) {
                         const indexThis = y * demRes + x;
                         // If DEM pixel is not modified.
-                        if (passLookup[indexThis] === 255) {
+                        if (passLookup![indexThis] === 255) {
                             let maxDiff = 0;
                             let maxDiffAbs = 0;
                             let xoffset = -1;
@@ -512,10 +516,10 @@ class Tiled3dModelBucket implements Bucket {
                             for (let j = -1; j <= 1; ++j) {
                                 for (let i = -1; i <= 1; ++i) {
                                     const index = (y + j) * demRes + x + i;
-                                    if (passLookup[index] >= p) {
+                                    if (passLookup![index]! >= p) {
                                         continue;
                                     }
-                                    const diff = lookup[index];
+                                    const diff = lookup[index]!;
                                     const diffAbs = Math.abs(diff);
                                     if (diffAbs  > maxDiffAbs) {
                                         maxDiff = diff;
@@ -541,7 +545,7 @@ class Tiled3dModelBucket implements Bucket {
                                     next = (parent + child) / 2;
                                 }
                                 lookup[indexThis] = dem._dem.set(x, y, next);
-                                passLookup[indexThis] = p;
+                                passLookup![indexThis] = p;
                             }
                         }
                     }
@@ -561,7 +565,7 @@ class Tiled3dModelBucket implements Bucket {
     getNodesInfo(): Array<Tiled3dModelFeature> {
         if (this.filter) {
             return this.nodesInfo.filter((node) => {
-                return this.filter.filter(new EvaluationParameters(this.id.overscaledZ, {worldview: this.worldview}), node.feature, this.id.canonical);
+                return this.filter!.filter(new EvaluationParameters(this.id.overscaledZ, {worldview: this.worldview}), node.feature, this.id.canonical);
             });
         }
         return this.nodesInfo;
@@ -611,10 +615,9 @@ class Tiled3dModelBucket implements Bucket {
 
         for (const nodeInfo of this.getNodesInfo()) {
             assert(nodeInfo.node.meshes.length > 0);
-            const mesh = nodeInfo.node.meshes[0];
+            const mesh = nodeInfo.node.meshes[0]!;
             const meshAabb = mesh.transformedAabb;
             if (x < meshAabb.min[0] || y < meshAabb.min[1] || x > meshAabb.max[0] || y > meshAabb.max[1]) continue;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             if (nodeInfo.node.hidden === true) return {height: Infinity, maxHeight: nodeInfo.feature.properties["height"], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
 
             if (nodeInfo.node.meshBVH) {
@@ -635,7 +638,7 @@ class Tiled3dModelBucket implements Bucket {
                     nodeInfo.bvhHeightLookup.set(lookupKey, height);
                 }
                 if (height !== null) {
-                    return {height, maxHeight: nodeInfo.feature.properties["height"] as number, hidden: nodeInfo.hiddenByReplacement, verticalScale: nodeInfo.evaluatedScale[2]};
+                    return {height, maxHeight: nodeInfo.feature.properties["height"], hidden: nodeInfo.hiddenByReplacement, verticalScale: nodeInfo.evaluatedScale[2]};
                 }
                 continue;
             }
@@ -649,18 +652,17 @@ class Tiled3dModelBucket implements Bucket {
             const yCell = ((tmpVertex[1] - mesh.aabb.min[1]) / (mesh.aabb.max[1] - mesh.aabb.min[1]) * HEIGHTMAP_DIM) | 0;
             const heightmapIndex = Math.min(HEIGHTMAP_DIM - 1, yCell) * HEIGHTMAP_DIM + Math.min(HEIGHTMAP_DIM - 1, xCell);
             const heightValue = mesh.heightmap[heightmapIndex];
-            if (heightValue < 0 && nodeInfo.node.footprint) {
+            if (heightValue! < 0 && nodeInfo.node.footprint) {
                 // unpopulated cell. If it is in the building footprint, return undefined height
                 const candidates: number[] = [];
                 nodeInfo.node.footprint.grid.query(new Point(x, y), new Point(x, y), candidates);
                 if (candidates.length > 0) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     return {height: undefined, maxHeight: nodeInfo.feature.properties["height"], hidden: nodeInfo.hiddenByReplacement, verticalScale: nodeInfo.evaluatedScale[2]};
                 }
                 continue;
             }
             if (nodeInfo.hiddenByReplacement) return; // better luck with the next source
-            return {height: heightValue, maxHeight: nodeInfo.feature.properties["height"] as number, hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
+            return {height: heightValue, maxHeight: nodeInfo.feature.properties["height"], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
         }
     }
 }
@@ -685,16 +687,16 @@ function expressionRequiresReevaluation<T>(e: PossiblyEvaluatedValue<T>, brightn
 // precision, and requires updating the landmark baselines.
 function quantizeLikeLegacyEncoding(style: Float32Array, o: number) {
     // Roughness and metallic were a nibble each, emissive a byte spanning [0, 2], alpha a byte.
-    style[o + 4] = Math.floor(style[o + 4] * 15) * 16 / 255;
-    style[o + 5] = Math.floor(style[o + 5] * 15) * 16 / 255;
-    style[o + 6] = Math.min(Math.floor(style[o + 6] * 127.5 + 0.5), 255) / 255 * 2;
-    style[o + 7] = Math.floor(style[o + 7] * 255) / 255;
+    style[o + 4] = Math.floor(style[o + 4]! * 15) * 16 / 255;
+    style[o + 5] = Math.floor(style[o + 5]! * 15) * 16 / 255;
+    style[o + 6] = Math.min(Math.floor(style[o + 6]! * 127.5 + 0.5), 255) / 255 * 2;
+    style[o + 7] = Math.floor(style[o + 7]! * 255) / 255;
 
     // The two gradient values were a byte each, but were decoded with a 255/256 scale instead of
     // 255/255, so a styled value of 1 read back as 0.99609. That also reproduces the neutral
     // gradient, whose values were both 0xFF.
-    const valueBegin = Math.floor(style[o + 10] * 255) / 256;
-    const valueFinish = Math.floor((style[o + 10] + style[o + 11]) * 255) / 256;
+    const valueBegin = Math.floor(style[o + 10]! * 255) / 256;
+    const valueFinish = Math.floor((style[o + 10]! + style[o + 11]!) * 255) / 256;
     style[o + 10] = valueBegin;
     style[o + 11] = valueFinish - valueBegin;
 }
@@ -703,8 +705,8 @@ function quantizeLikeLegacyEncoding(style: Float32Array, o: number) {
 // ModelPartStyle.
 function writePartStyle(style: Float32Array, o: number, color: {r: number, g: number, b: number, a: number},
     colorMixIntensity: number, roughness: number, metallic: number, emissive: number, gradient: number[]) {
-    const begin = clamp(gradient[0], 0, 1);
-    const finish = clamp(gradient[1], 0, 1);
+    const begin = clamp(gradient[0]!, 0, 1);
+    const finish = clamp(gradient[1]!, 0, 1);
 
     style[o] = color.r;
     style[o + 1] = color.g;
@@ -719,9 +721,9 @@ function writePartStyle(style: Float32Array, o: number, color: {r: number, g: nu
     if (begin !== finish) {
         style[o + 8] = begin;
         style[o + 9] = finish;
-        style[o + 10] = clamp(gradient[2], 0, 1);
-        style[o + 11] = clamp(gradient[3], 0, 1) - style[o + 10];
-        style[o + 12] = Math.pow(10, clamp(gradient[4], -1, 1));
+        style[o + 10] = clamp(gradient[2]!, 0, 1);
+        style[o + 11] = clamp(gradient[3]!, 0, 1) - style[o + 10]!;
+        style[o + 12] = Math.pow(10, clamp(gradient[4]!, -1, 1));
     } else {
         // Flat multiplier of 1 spanning the full mesh height. A zero span would divide by zero
         // in the shader.

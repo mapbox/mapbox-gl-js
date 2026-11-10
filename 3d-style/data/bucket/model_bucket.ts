@@ -86,56 +86,56 @@ class PerModelAttributes {
         const va = this.instancedDataArray.float32;
 
         // Decompose: Math.round(100.0 * color.a) + color.b / 1.05;
-        let a = Math.floor(va[offset + 2]);
-        const b = (va[offset + 2] - a) * 1.05;
+        let a = Math.floor(va[offset + 2]!);
+        const b = (va[offset + 2]! - a) * 1.05;
         a /= 100.0;
         // 0 & 1: tile coordinates stored in integer part of float, R and G color components,
         // originally in range [0..1], scaled to range [0..0.952(arbitrary, just needs to be
         // under 1)].
-        const r = (va[offset] % 1) * 1.05;
-        const g = (va[offset + 1] % 1) * 1.05;
+        const r = (va[offset]! % 1) * 1.05;
+        const g = (va[offset + 1]! % 1) * 1.05;
         return [r, g, b, a];
     }
 
     tileCoordinatesForInstance(index: number): Point {
         const offset = index * 16;
         const va = this.instancedDataArray.float32;
-        let x_ = va[offset + 0];
+        let x_ = va[offset + 0]!;
         const wasHidden = x_ > EXTENT;
         x_ = wasHidden ? x_ - EXTENT : x_;
         // Position is stored in integer part of value, fractional part is used for color
         const x = Math.trunc(x_);
-        const y = Math.trunc(va[offset + 1]);
+        const y = Math.trunc(va[offset + 1]!);
         return new Point(x, y);
     }
 
     translationForInstance(index: number): vec3 {
         const offset = index * 16;
         const va = this.instancedDataArray.float32;
-        return [va[offset + 4], va[offset + 5], va[offset + 6]];
+        return [va[offset + 4]!, va[offset + 5]!, va[offset + 6]!];
     }
 
     rotationScaleForInstance(index: number): mat3 {
         const offset = index * 16;
         const va = this.instancedDataArray.float32;
-        return [va[offset + 7],
-            va[offset + 8],
-            va[offset + 9],
-            va[offset + 10],
-            va[offset + 11],
-            va[offset + 12],
-            va[offset + 13],
-            va[offset + 14],
-            va[offset + 15]];
+        return [va[offset + 7]!,
+            va[offset + 8]!,
+            va[offset + 9]!,
+            va[offset + 10]!,
+            va[offset + 11]!,
+            va[offset + 12]!,
+            va[offset + 13]!,
+            va[offset + 14]!,
+            va[offset + 15]!];
     }
 
     transformForInstance(index: number): mat4 {
         const offset = index * 16;
         const va = this.instancedDataArray.float32;
         return [
-            va[offset + 7], va[offset + 8], va[offset + 9], va[offset + 4],
-            va[offset + 10], va[offset + 11], va[offset + 12], va[offset + 5],
-            va[offset + 13], va[offset + 14], va[offset + 15], va[offset + 6],
+            va[offset + 7]!, va[offset + 8]!, va[offset + 9]!, va[offset + 4]!,
+            va[offset + 10]!, va[offset + 11]!, va[offset + 12]!, va[offset + 5]!,
+            va[offset + 13]!, va[offset + 14]!, va[offset + 15]!, va[offset + 6]!,
             0, 0, 0, 1.0];
     }
 }
@@ -198,7 +198,7 @@ class ModelBucket implements Bucket {
         this.index = options.index;
         this.worldview = options.worldview;
 
-        this.hasZoomDependentProperties = this.layers[0].isZoomDependent();
+        this.hasZoomDependentProperties = this.layers[0]!.isZoomDependent();
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.hasPattern = false;
@@ -238,11 +238,11 @@ class ModelBucket implements Bucket {
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
         this.tileToMeter = tileToMeter(canonical);
-        const needGeometry = this.layers[0]._featureFilter.needGeometry;
+        const needGeometry = this.layers[0]!._featureFilter.needGeometry;
         this.lookup = new Uint8Array(this.lookupDim * this.lookupDim);
 
         // Only use elevation features when model-elevation-reference is set to hd-road-markup
-        const usesHdRoadMarkupElevation = this.layers[0].paint.get('model-elevation-reference') === 'hd-road-markup';
+        const usesHdRoadMarkupElevation = this.layers[0]!.paint.get('model-elevation-reference') === 'hd-road-markup';
         const elevationFeatures = usesHdRoadMarkupElevation ? options.elevationFeatures : undefined;
 
         const globalProperties = new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors});
@@ -251,7 +251,7 @@ class ModelBucket implements Bucket {
             const featureId = id ?? ((feature.properties && Object.hasOwn(feature.properties, "id")) ? feature.properties["id"] : undefined);
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            if (!this.layers[0]._featureFilter.filter(globalProperties, evaluationFeature, canonical))
+            if (!this.layers[0]!._featureFilter.filter(globalProperties, evaluationFeature, canonical))
                 continue;
 
             const bucketFeature: BucketFeature = {
@@ -275,15 +275,15 @@ class ModelBucket implements Bucket {
                 // Padding is just and estimated suitable for models only covering <= 1/16 of tile EXTENTS.
                 // Actual model bounds are not yet available at this stage. To compensate for larger models,
                 // 'maxFeatureQueryRadius()' is used to query largest model bounds
-                options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, this.instancesPerModel[modelId].instancedDataArray.length, EXTENT / 32);
+                options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, this.instancesPerModel[modelId]!.instancedDataArray.length, EXTENT / 32);
             }
         }
         this.lookup = null;
     }
 
     evaluateQueryRenderedFeaturePadding() {
-        const modelManager = this.layers[0].modelManager;
-        const scope = this.layers[0].scope;
+        const modelManager = this.layers[0]!.modelManager;
+        const scope = this.layers[0]!.scope;
 
         let maxQueryRadius = 0;
 
@@ -308,12 +308,12 @@ class ModelBucket implements Bucket {
     update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions) {
         // called when setFeature state API is used
         for (const modelId in this.instancesPerModel) {
-            const instances: PerModelAttributes = this.instancesPerModel[modelId];
+            const instances: PerModelAttributes = this.instancesPerModel[modelId]!;
             for (const id in states) {
                 if (Object.hasOwn(instances.idToFeaturesIndex, id)) {
-                    const feature = instances.features[instances.idToFeaturesIndex[id]];
+                    const feature = instances.features[instances.idToFeaturesIndex[id]!]!;
                     feature.featureStates = states[id];
-                    this.evaluate(feature, states[id], instances, true);
+                    this.evaluate(feature, states[id]!, instances, true);
                     this.uploaded = false;
                 }
             }
@@ -323,7 +323,7 @@ class ModelBucket implements Bucket {
 
     updateZoomBasedPaintProperties(): boolean {
         // the layer replaces its paint object whenever re-evaluation may change the values
-        const paint = this.layers[0].paint;
+        const paint = this.layers[0]!.paint;
         if (!this.hasZoomDependentProperties || paint === this.evaluatedPaint) return false;
         this.evaluatedPaint = paint;
 
@@ -334,17 +334,17 @@ class ModelBucket implements Bucket {
 
         let reuploadNeeded = false;
         for (const modelId in this.instancesPerModel) {
-            const instances = this.instancesPerModel[modelId];
+            const instances = this.instancesPerModel[modelId]!;
             for (const feature of instances.features) {
                 const {feature: evaluationFeature, featureStates} = feature;
-                const rotation = rotationProp.evaluate(evaluationFeature, featureStates, canonical);
-                const scale = scaleProp.evaluate(evaluationFeature, featureStates, canonical);
-                const translation = translationProp.evaluate(evaluationFeature, featureStates, canonical);
+                const rotation = rotationProp.evaluate(evaluationFeature, featureStates!, canonical);
+                const scale = scaleProp.evaluate(evaluationFeature, featureStates!, canonical);
+                const translation = translationProp.evaluate(evaluationFeature, featureStates!, canonical);
 
                 if (!vec3.exactEquals(feature.rotation, rotation) ||
                     !vec3.exactEquals(feature.scale, scale) ||
                     !vec3.exactEquals(feature.translation, translation)) {
-                    this.evaluate(feature, featureStates, instances, true);
+                    this.evaluate(feature, featureStates!, instances, true);
                     reuploadNeeded = true;
                 }
             }
@@ -369,7 +369,7 @@ class ModelBucket implements Bucket {
 
         let reuploadNeeded = false;
         for (const modelId in this.instancesPerModel) {
-            const perModelVertexArray: PerModelAttributes = this.instancesPerModel[modelId];
+            const perModelVertexArray: PerModelAttributes = this.instancesPerModel[modelId]!;
             const va = perModelVertexArray.instancedDataArray;
 
             for (const feature of perModelVertexArray.features) {
@@ -379,11 +379,11 @@ class ModelBucket implements Bucket {
                 for (let i = 0; i < count; i++) {
                     const i16 = (i + offset) * 16;
 
-                    let x_ = va.float32[i16 + 0];
+                    let x_ = va.float32[i16 + 0]!;
                     const wasHidden = x_ > EXTENT;
                     x_ = wasHidden ? x_ - EXTENT : x_;
                     const x = Math.floor(x_);
-                    const y = Math.floor(va.float32[i16 + 1]);
+                    const y = Math.floor(va.float32[i16 + 1]!);
 
                     let hidden = false;
                     for (const region of this.activeReplacements) {
@@ -411,7 +411,7 @@ class ModelBucket implements Bucket {
     isEmpty(): boolean {
         for (const modelId in this.instancesPerModel) {
             const perModelAttributes = this.instancesPerModel[modelId];
-            if (perModelAttributes.instancedDataArray.length !== 0) return false;
+            if (perModelAttributes!.instancedDataArray.length !== 0) return false;
         }
         return true;
     }
@@ -426,7 +426,7 @@ class ModelBucket implements Bucket {
         const useInstancingThreshold = 0;
         if (!this.uploaded) {
             for (const modelId in this.instancesPerModel) {
-                const perModelAttributes: PerModelAttributes = this.instancesPerModel[modelId];
+                const perModelAttributes: PerModelAttributes = this.instancesPerModel[modelId]!;
                 if (perModelAttributes.instancedDataArray.length < useInstancingThreshold || perModelAttributes.instancedDataArray.length === 0) continue;
                 if (!perModelAttributes.instancedDataBuffer) {
                     perModelAttributes.instancedDataBuffer = context.createVertexBuffer(perModelAttributes.instancedDataArray, instanceAttributes.members, true, undefined, this.instanceCount);
@@ -440,13 +440,13 @@ class ModelBucket implements Bucket {
 
     destroy(reload?: boolean) {
         for (const modelId in this.instancesPerModel) {
-            const perModelAttributes: PerModelAttributes = this.instancesPerModel[modelId];
+            const perModelAttributes: PerModelAttributes = this.instancesPerModel[modelId]!;
             if (perModelAttributes.instancedDataArray.length === 0) continue;
             if (perModelAttributes.instancedDataBuffer) {
                 perModelAttributes.instancedDataBuffer.destroy();
             }
         }
-        const modelManager = this.layers[0].modelManager;
+        const modelManager = this.layers[0]!.modelManager;
         if (reload && modelManager && this.modelUris && this.modelsRequested) {
             for (const modelUri of this.modelUris) {
                 modelManager.removeModel(modelUri, "", true);
@@ -461,7 +461,7 @@ class ModelBucket implements Bucket {
         elevationFeatures?: ElevationFeature[],
         canonical?: CanonicalTileID,
     ): string {
-        const layer = this.layers[0];
+        const layer = this.layers[0]!;
         const modelIdProperty = layer.layout.get('model-id');
         const modelAllowDensityReductionProperty = layer.layout.get('model-allow-density-reduction');
         assert(modelIdProperty);
@@ -538,7 +538,7 @@ class ModelBucket implements Bucket {
     }
 
     evaluate(feature: ModelFeature, featureState: FeatureState, perModelVertexArray: PerModelAttributes, update: boolean) {
-        const paint = this.layers[0].paint;
+        const paint = this.layers[0]!.paint;
         const evaluationFeature = feature.feature;
         const canonical = this.canonical;
 
@@ -571,7 +571,7 @@ class ModelBucket implements Bucket {
             const offset = instanceOffset * 16;
             let terrainElevationContribution = 0;
             if (update) {
-                terrainElevationContribution = va[offset + 6] - perModelVertexArray.instancesEvaluatedElevation[instanceOffset];
+                terrainElevationContribution = va[offset + 6]! - perModelVertexArray.instancesEvaluatedElevation[instanceOffset]!;
             }
 
             // All per-instance attributes are packed to one 4x4 float matrix. Data is not expected
@@ -580,8 +580,8 @@ class ModelBucket implements Bucket {
             // 0 & 1: tile coordinates stored in integer part of float, R and G color components,
             // originally in range [0..1], scaled to range [0..0.952(arbitrary, just needs to be
             // under 1)].
-            const pointY = va[offset + 1] | 0; // point.y stored in integer part
-            va[offset] = (va[offset] | 0) + r / 1.05; // point.x stored in integer part
+            const pointY = va[offset + 1]! | 0; // point.y stored in integer part
+            va[offset] = (va[offset]! | 0) + r / 1.05; // point.x stored in integer part
             va[offset + 1] = pointY + g / 1.05;
             // Element 2: packs color's alpha (as integer part) and blue component in fractional part.
             va[offset + 2] = vaOffset2;
@@ -593,7 +593,7 @@ class ModelBucket implements Bucket {
             va[offset + 4] = translation[0];
             va[offset + 5] = translation[1];
             const roadElevationContribution = perModelVertexArray.instancesRoadElevation ? perModelVertexArray.instancesRoadElevation[instanceOffset] : 0;
-            va[offset + 6] = translation[2] + roadElevationContribution + terrainElevationContribution;
+            va[offset + 6] = translation[2] + roadElevationContribution! + terrainElevationContribution;
             // Elements [7..16] Instance modelMatrix holds combined rotation and scale 3x3,
             va[offset + 7]  = rotationScaleYZFlip[0];
             va[offset + 8]  = rotationScaleYZFlip[1];

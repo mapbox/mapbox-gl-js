@@ -26,8 +26,7 @@ class Var implements Expression {
         return new Var(name, context.scope.get(name));
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    evaluate(ctx: EvaluationContext): any {
+    evaluate(ctx: EvaluationContext): unknown {
         return this.boundExpression.evaluate(ctx);
     }
 

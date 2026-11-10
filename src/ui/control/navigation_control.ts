@@ -243,7 +243,7 @@ class MouseRotateWrapper {
             this.reset();
         } else {
             this._startPos = this._lastPos = DOM.touchPos(this.element, e.targetTouches)[0];
-            this.down(({type: 'mousedown', button: 0, ctrlKey: true, preventDefault: () => e.preventDefault()} as MouseEvent), this._startPos);
+            this.down(({type: 'mousedown', button: 0, ctrlKey: true, preventDefault: () => e.preventDefault()} as MouseEvent), this._startPos!);
         }
     }
 
@@ -252,7 +252,7 @@ class MouseRotateWrapper {
             this.reset();
         } else {
             this._lastPos = DOM.touchPos(this.element, e.targetTouches)[0];
-            this.move(({buttons: 1, preventDefault: () => e.preventDefault()} as MouseEvent), this._lastPos);
+            this.move(({buttons: 1, preventDefault: () => e.preventDefault()} as MouseEvent), this._lastPos!);
         }
     }
 

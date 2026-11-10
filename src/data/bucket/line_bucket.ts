@@ -270,7 +270,7 @@ class LineBucket implements Bucket {
         // options.tessellationStep override is used for testing only.
         this.tessellationStep = options.tessellationStep ? options.tessellationStep : (EXTENT / 64);
 
-        this.worldview = options.worldview;
+        this.worldview = options.worldview!;
         this.hasAppearances = null;
 
         this.maxUniformBlockSizeDwords = options.maxUniformBlockSizeDwords;
@@ -285,7 +285,7 @@ class LineBucket implements Bucket {
         // Pin every layer's binder to the shared (minimum) batch size so a single per-vertex
         // a_feature_index maps consistently across every layer's own UBO batching.
         for (const layer of this.layers) {
-            this.uboBinders[layer.id].maxFeaturesPerBatch = this.maxFeaturesPerBatch;
+            this.uboBinders[layer.id]!.maxFeaturesPerBatch = this.maxFeaturesPerBatch;
         }
 
         this.cachedBatchIndices = null;
@@ -324,7 +324,7 @@ class LineBucket implements Bucket {
             if (!segmentsByBatch.has(batchIndex)) {
                 segmentsByBatch.set(batchIndex, []);
             }
-            segmentsByBatch.get(batchIndex).push(segment);
+            segmentsByBatch.get(batchIndex)!.push(segment);
         }
 
         const batchIndices = Array.from(segmentsByBatch.keys()).sort((a, b) => a - b);
@@ -353,15 +353,15 @@ class LineBucket implements Bucket {
         this.showElevationIdDebug = options.showElevationIdDebug;
         this.terrainEnabled = options.terrainEnabled;
         this.hasPattern = hasPattern('line', this.layers, this.pixelRatio, options);
-        const lineSortKey = this.layers[0].layout.get('line-sort-key');
+        const lineSortKey = this.layers[0]!.layout.get('line-sort-key');
 
         this.tileToMeter = tileToMeter(canonical);
 
-        const elevationReference = this.layers[0].layout.get('line-elevation-reference');
+        const elevationReference = this.layers[0]!.layout.get('line-elevation-reference');
         if (elevationReference === 'hd-road-markup') {
             this.elevationType = 'road';
         } else {
-            const zOffset = this.layers[0].layout.get('line-z-offset');
+            const zOffset = this.layers[0]!.layout.get('line-z-offset');
             const zOffsetZero = zOffset.isConstant() && !zOffset.constantOr(0);
             const seaOrGroundReference = elevationReference === 'sea' || elevationReference === 'ground';
             // The bucket has z-offset if elevationReference is 'sea' or 'ground'
@@ -373,17 +373,17 @@ class LineBucket implements Bucket {
             this.isSeaLevelReference = elevationReference === 'sea';
         }
 
-        const crossSlope = this.layers[0].layout.get('line-cross-slope');
+        const crossSlope = this.layers[0]!.layout.get('line-cross-slope');
         this.hasCrossSlope = this.elevationType === 'offset' && crossSlope !== undefined;
 
         const bucketFeatures: BucketFeature[] = [];
 
         const globalProperties = new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors});
         for (const {feature, id, index, sourceLayerIndex} of features) {
-            const needGeometry = this.layers[0]._featureFilter.needGeometry;
+            const needGeometry = this.layers[0]!._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            const passesFilter = this.layers[0]._featureFilter.filter(globalProperties, evaluationFeature, canonical);
+            const passesFilter = this.layers[0]!._featureFilter.filter(globalProperties, evaluationFeature, canonical);
 
             if (!passesFilter) continue;
 
@@ -408,7 +408,7 @@ class LineBucket implements Bucket {
         if (lineSortKey) {
             bucketFeatures.sort((a, b) => {
                 // a.sortKey is always a number when lineSortKey is defined
-                return a.sortKey - b.sortKey;
+                return a.sortKey! - b.sortKey!;
             });
         }
 
@@ -432,7 +432,7 @@ class LineBucket implements Bucket {
                 this.addFeature(bucketFeature, geometry, index, canonical, lineAtlas.positions, options.availableImages, options.brightness, options.elevationFeatures, options.elevationParams, options.crossSourceElevationEnabled);
             }
 
-            const feature = features[index].feature;
+            const feature = features[index]!.feature;
             featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
 
@@ -448,7 +448,7 @@ class LineBucket implements Bucket {
         // once atlas positions are resolved — finalize() there instead.
         if (!this.hasPattern) {
             for (const layer of this.layers) {
-                this.uboBinders[layer.id].finalize();
+                this.uboBinders[layer.id]!.finalize();
             }
         }
     }
@@ -475,7 +475,7 @@ class LineBucket implements Bucket {
                     const constCap = capPropertyValue.value;
                     const constDash = dashPropertyValue.value;
                     if (!constDash) continue;
-                    lineAtlas.addDash(constDash, constCap);
+                    lineAtlas.addDash(constDash as number[], constCap);
                     continue;
                 }
 
@@ -484,10 +484,10 @@ class LineBucket implements Bucket {
                 // and each stop cover every value they can take.
                 for (const zoom of [0, ...dashStops, ...capStops]) {
                     const parameters = new EvaluationParameters(zoom, {worldview: this.worldview});
-                    const dash = dashStops.length ? dashExpression.evaluate<Array<number>>(parameters) : dashPropertyValue.value;
-                    const cap = capStops.length ? capExpression.evaluate<string>(parameters) : capPropertyValue.value;
+                    const dash = dashStops.length ? dashExpression!.evaluate<Array<number>>(parameters) : dashPropertyValue.value;
+                    const cap = capStops.length ? capExpression!.evaluate<string>(parameters) : capPropertyValue.value;
                     if (!dash) continue;
-                    lineAtlas.addDash(dash, cap);
+                    lineAtlas.addDash(dash as number[], cap);
                 }
             }
         }
@@ -511,7 +511,7 @@ class LineBucket implements Bucket {
             let cap: string;
 
             if (dashPropertyValue.kind === 'constant') {
-                dashArray = dashPropertyValue.value;
+                dashArray = dashPropertyValue.value as number[];
                 if (!dashArray) continue;
 
             } else {
@@ -585,7 +585,7 @@ class LineBucket implements Bucket {
         // Counterpart to the guarded finalize() call in populate() — pattern buckets only reach
         // their final feature set here, once atlas positions are resolved.
         for (const layer of this.layers) {
-            this.uboBinders[layer.id].finalize();
+            this.uboBinders[layer.id]!.finalize();
         }
     }
 
@@ -622,7 +622,7 @@ class LineBucket implements Bucket {
         }
         this.programConfigurations.upload(context);
         for (const layer of this.layers) {
-            this.uboBinders[layer.id].upload(context);
+            this.uboBinders[layer.id]!.upload(context);
         }
         this.uploaded = true;
     }
@@ -642,7 +642,7 @@ class LineBucket implements Bucket {
         this.indexBuffer.destroy();
         this.programConfigurations.destroy();
         for (const layer of this.layers) {
-            this.uboBinders[layer.id].destroy();
+            this.uboBinders[layer.id]!.destroy();
         }
         this.segments.destroy();
     }
@@ -661,8 +661,8 @@ class LineBucket implements Bucket {
             endProp = 'mapbox_clip_end';
         }
         if (!!feature.properties && Object.hasOwn(feature.properties, startProp) && Object.hasOwn(feature.properties, endProp)) {
-            const start = +feature.properties[startProp];
-            const end = +feature.properties[endProp];
+            const start = +(feature.properties[startProp] as number);
+            const end = +(feature.properties[endProp] as number);
             return {start, end};
         }
     }
@@ -670,7 +670,7 @@ class LineBucket implements Bucket {
     // If the bucket doesn't have a pattern we pass the imagePositions as dashPositions,
     // otherwise we separately dashPositions from lineAtlas and imagePositions from the sprite atlas.
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[], brightness?: number | null, elevationFeatures?: ElevationFeature[], elevationParams?: ElevationParams | null, crossSourceElevationEnabled?: boolean, dashPositions: SpritePositions = imagePositions) {
-        const layout = this.layers[0].layout;
+        const layout = this.layers[0]!.layout;
 
         const frc = this.hdExt ? this.hdExt.trackFeatureFrc(feature.properties) : null;
         const triStartIndex = this.indexArray.length;
@@ -686,7 +686,7 @@ class LineBucket implements Bucket {
         const hasMapboxLineMetrics = !!feature.properties && Object.hasOwn(feature.properties, 'mapbox_line_metrics') ? feature.properties['mapbox_line_metrics'] : false;
         this.zOffsetValue = layout.get('line-z-offset').value;
 
-        const paint = this.layers[0].paint;
+        const paint = this.layers[0]!.paint;
         const lineWidth = paint.get('line-width').value;
         if (lineWidth.kind !== 'constant' && lineWidth.isLineProgressConstant === false) {
             this.variableWidthValue = lineWidth;
@@ -731,9 +731,9 @@ class LineBucket implements Bucket {
             // only requires one layer to have a pattern, not this one) — so it must not be read
             // as a dash key unless this layer's own binder actually has dash in its data-driven
             // block; otherwise the image key looks up nothing in dashPositions and misfires below.
-            const binder = this.uboBinders[layer.id];
-            const layerHasDataDrivenDash = (binder.header[HEADER_DATA_DRIVEN_MASK] & DASH_BIT) !== 0;
-            const dashKey = layerHasDataDrivenDash && feature.patterns && feature.patterns[layer.id] && feature.patterns[layer.id][0];
+            const binder = this.uboBinders[layer.id]!;
+            const layerHasDataDrivenDash = (binder.header[HEADER_DATA_DRIVEN_MASK]! & DASH_BIT) !== 0;
+            const dashKey = layerHasDataDrivenDash && feature.patterns && feature.patterns[layer.id] && feature.patterns[layer.id]![0];
             const dashPosition = dashPositions && dashKey ? dashPositions[dashKey] : undefined;
             assert(!dashKey || dashPosition, `Dash key "${dashKey}" has no LineAtlas position — addFeatureDashes() should have created one via lineAtlas.addDash().`);
             // Read the batch index before populateUBO(), which advances featureCount.
@@ -754,7 +754,7 @@ class LineBucket implements Bucket {
             for (let i = 0; i < geometry.length; i++) {
                 const line = geometry[i];
                 const multiLineMetricsIndex = hasMapboxLineMetrics && i > 0 ? i : null;
-                this.addLine(line, feature, canonical, join, cap, miterLimit, roundLimit, undefined, multiLineMetricsIndex);
+                this.addLine(line!, feature, canonical, join, cap, miterLimit, roundLimit, undefined, multiLineMetricsIndex!);
             }
         }
 
@@ -817,8 +817,8 @@ class LineBucket implements Bucket {
                 }
             }
 
-            const featureLen = +feature.properties['mapbox_clip_feature_len'];
-            const segmentLen = +feature.properties['mapbox_clip_seg_len'];
+            const featureLen = +(feature.properties['mapbox_clip_feature_len'] as number);
+            const segmentLen = +(feature.properties['mapbox_clip_seg_len'] as number);
 
             // Check if precomputed feature and segment lengths are available. Computing them manually might
             // result in some precision issues especially with longer lines.
@@ -831,7 +831,7 @@ class LineBucket implements Bucket {
             } else {
                 // Calculate the total distance, in tile units, of this tiled line feature
                 for (let i = 0; i < vertices.length - 1; i++) {
-                    this.totalDistance += vertices[i].dist(vertices[i + 1]);
+                    this.totalDistance += vertices[i]!.dist(vertices[i + 1]!);
                 }
                 const featureLen = this.totalDistance / (range.max - range.min);
                 this.totalFeatureLength = Number.isFinite(featureLen) ? featureLen : 0.0;
@@ -848,11 +848,11 @@ class LineBucket implements Bucket {
 
         // If the line has duplicate vertices at the ends, adjust start/length to remove them.
         let len = vertices.length;
-        while (len >= 2 && vertices[len - 1].equals(vertices[len - 2])) {
+        while (len >= 2 && vertices[len - 1]!.equals(vertices[len - 2]!)) {
             len--;
         }
         let first = 0;
-        while (first < len - 1 && vertices[first].equals(vertices[first + 1])) {
+        while (first < len - 1 && vertices[first]!.equals(vertices[first + 1]!)) {
             first++;
         }
 
@@ -884,8 +884,8 @@ class LineBucket implements Bucket {
         this.e1 = this.e2 = -1;
 
         if (isPolygon) {
-            currentVertex = vertices[len - 2];
-            nextNormal = vertices[first].sub(currentVertex)._unit()._perp();
+            currentVertex = vertices[len - 2]!;
+            nextNormal = vertices[first]!.sub(currentVertex)._unit()._perp();
         }
 
         let lineProgressFeatures: LineProgressFeatures | null;
@@ -895,12 +895,12 @@ class LineBucket implements Bucket {
                 vertices[i + 1]; // just the next vertex
 
             // if two consecutive vertices exist, skip the current one
-            if (nextVertex && vertices[i].equals(nextVertex)) continue;
+            if (nextVertex && vertices[i]!.equals(nextVertex)) continue;
 
             if (nextNormal) prevNormal = nextNormal;
             if (currentVertex) prevVertex = currentVertex;
 
-            currentVertex = vertices[i];
+            currentVertex = vertices[i]!;
             lineProgressFeatures = this.evaluateLineProgressFeatures(prevVertex ? prevVertex.dist(currentVertex) : 0);
 
             // Calculate the normal towards the next vertex in this line. In case
@@ -917,7 +917,7 @@ class LineBucket implements Bucket {
             let currentJoin = middleVertex ? join : (isPolygon || joinNone) ? 'butt' : cap;
 
             // calculate cosines of the angle (and its half) using dot product
-            const cosAngle = prevNormal.x * nextNormal.x + prevNormal.y * nextNormal.y;
+            const cosAngle = prevNormal!.x * nextNormal!.x + prevNormal!.y * nextNormal!.y;
 
             if (joinNone) {
                 const endLineSegment = function (bucket: LineBucket) {
@@ -929,7 +929,7 @@ class LineBucket implements Bucket {
                             const offsetSign = bucket.segmentPoints[idx * 2 + 1];
                             // Integer part contains position in tile units
                             // Fractional part has offset sign 0.25 = -1, 0.5 = 0, 0.75 = 1
-                            const posAndOffset = Math.round(pos) + 0.5 + offsetSign * 0.25;
+                            const posAndOffset = Math.round(pos!) + 0.5 + offsetSign! * 0.25;
                             bucket.patternVertexArray.emplaceBack(posAndOffset, segmentLength, bucket.segmentStart);
                             bucket.patternVertexArray.emplaceBack(posAndOffset, segmentLength, bucket.segmentStart);
                         }
@@ -943,18 +943,18 @@ class LineBucket implements Bucket {
                 };
 
                 if (middleVertex && cosAngle < COS_STRAIGHT_CORNER) { // Not straight corner, create separate line segment
-                    this.updateDistance(prevVertex, currentVertex);
-                    this.addCurrentVertex(currentVertex, prevNormal, 1, 1, segment, lineProgressFeatures);
+                    this.updateDistance(prevVertex!, currentVertex);
+                    this.addCurrentVertex(currentVertex, prevNormal!, 1, 1, segment, lineProgressFeatures);
                     endLineSegment(this);
 
                     // Start new segment
-                    this.addCurrentVertex(currentVertex, nextNormal, -1, -1, segment, lineProgressFeatures);
+                    this.addCurrentVertex(currentVertex, nextNormal!, -1, -1, segment, lineProgressFeatures);
 
                     continue; // Don't apply other geometry generation logic
                 } else if (prevVertex) {
                     if (!nextVertex) { // End line string
                         this.updateDistance(prevVertex, currentVertex);
-                        this.addCurrentVertex(currentVertex, prevNormal, 1, 1, segment, lineProgressFeatures);
+                        this.addCurrentVertex(currentVertex, prevNormal!, 1, 1, segment, lineProgressFeatures);
                         endLineSegment(this);
 
                         continue; // Don't apply other geometry generation logic
@@ -970,7 +970,7 @@ class LineBucket implements Bucket {
             // prevNormal + nextNormal = (0, 0), its magnitude is 0, so the unit vector would be
             // undefined. In that case, we're keeping the joinNormal at (0, 0), so that the cosHalfAngle
             // below will also become 0 and miterLength will become Infinity.
-            let joinNormal = prevNormal.add(nextNormal);
+            let joinNormal = prevNormal!.add(nextNormal!);
             if (joinNormal.x !== 0 || joinNormal.y !== 0) {
                 joinNormal._unit();
             }
@@ -984,7 +984,7 @@ class LineBucket implements Bucket {
              *
              */
 
-            const cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
+            const cosHalfAngle = joinNormal.x * nextNormal!.x + joinNormal.y * nextNormal!.y;
 
             // Calculate the length of the miter (the ratio of the miter to the width)
             // as the inverse of cosine of the angle between next and join normals
@@ -994,7 +994,7 @@ class LineBucket implements Bucket {
             const approxAngle = 2 * Math.sqrt(2 - 2 * cosHalfAngle);
 
             const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
-            const lineTurnsLeft = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0;
+            const lineTurnsLeft = prevNormal!.x * nextNormal!.y - prevNormal!.y * nextNormal!.x > 0;
             // Fixed offset from the corners to straighted up edges (require for pattern, gradient and trim-offset)
             const SHARP_CORNER_OFFSET = 15;
             const sharpCornerOffset = this.overscaling <= 16 ? SHARP_CORNER_OFFSET * EXTENT / (512 * this.overscaling) : 0;
@@ -1033,21 +1033,21 @@ class LineBucket implements Bucket {
 
             if (currentJoin === 'miter') {
                 if (isSharpCorner) {
-                    const prevSegmentLength = currentVertex.dist(prevVertex);
+                    const prevSegmentLength = currentVertex.dist(prevVertex!);
                     if (prevSegmentLength > 2 * sharpCornerOffset) {
-                        const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
-                        this.updateDistance(prevVertex, newPrevVertex);
-                        this.addCurrentVertex(newPrevVertex, prevNormal, 0, 0, segment, lineProgressFeatures);
+                        const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex!)._mult(sharpCornerOffset / prevSegmentLength)._round());
+                        this.updateDistance(prevVertex!, newPrevVertex);
+                        this.addCurrentVertex(newPrevVertex, prevNormal!, 0, 0, segment, lineProgressFeatures);
                         prevVertex = newPrevVertex;
                     }
-                    this.updateDistance(prevVertex, currentVertex);
+                    this.updateDistance(prevVertex!, currentVertex);
                     joinNormal._mult(miterLength);
                     this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment, lineProgressFeatures);
-                    const nextSegmentLength = currentVertex.dist(nextVertex);
+                    const nextSegmentLength = currentVertex.dist(nextVertex!);
                     if (nextSegmentLength > 2 * sharpCornerOffset) {
-                        const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
+                        const newCurrentVertex = currentVertex.add(nextVertex!.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
                         this.updateDistance(currentVertex, newCurrentVertex);
-                        this.addCurrentVertex(newCurrentVertex, nextNormal, 0, 0, segment, lineProgressFeatures);
+                        this.addCurrentVertex(newCurrentVertex, nextNormal!, 0, 0, segment, lineProgressFeatures);
                         currentVertex = newCurrentVertex;
                     }
                 } else {
@@ -1058,17 +1058,17 @@ class LineBucket implements Bucket {
                 // miter is too big, flip the direction to make a beveled join
                 if (miterLength > 100) {
                     // Almost parallel lines
-                    joinNormal = nextNormal.mult(-1);
+                    joinNormal = nextNormal!.mult(-1);
 
                 } else {
-                    const bevelLength = miterLength * prevNormal.add(nextNormal).mag() / prevNormal.sub(nextNormal).mag();
+                    const bevelLength = miterLength * prevNormal!.add(nextNormal!).mag() / prevNormal!.sub(nextNormal!).mag();
                     joinNormal._perp()._mult(bevelLength * (lineTurnsLeft ? -1 : 1));
                 }
                 this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment, lineProgressFeatures);
                 this.addCurrentVertex(currentVertex, joinNormal.mult(-1), 0, 0, segment, lineProgressFeatures);
 
             } else if (currentJoin === 'bevel' || currentJoin === 'fakeround') {
-                const dist = currentVertex.dist(prevVertex);
+                const dist = currentVertex.dist(prevVertex!);
 
                 // Special handling for elevated bevel joins only
                 const isElevatedBevel = this.elevationType === 'offset' &&
@@ -1087,14 +1087,14 @@ class LineBucket implements Bucket {
 
                 if (lineProgressFeatures != null && prevVertex) {
                     // Close previous segment with butt
-                    this.addCurrentVertex(currentVertex, endNormal ? endNormal : prevNormal, -capScale, -capScale, segment, lineProgressFeatures);
+                    this.addCurrentVertex(currentVertex, (endNormal ? endNormal : prevNormal)!, -capScale, -capScale, segment, lineProgressFeatures);
                 }
 
                 const skipStraightEdges = dist <= sharpCornerOffset && currentJoin !== 'bevel';
                 const join = joinNormal.mult(lineTurnsLeft ? 1.0 : -1.0);
                 join._mult(miterLength);
-                const next = nextNormal.mult(lineTurnsLeft ? -1.0 : 1.0);
-                const prev = prevNormal.mult(lineTurnsLeft ? -1.0 : 1.0);
+                const next = nextNormal!.mult(lineTurnsLeft ? -1.0 : 1.0);
+                const prev = prevNormal!.mult(lineTurnsLeft ? -1.0 : 1.0);
                 const lpf = this.evaluateLineProgressFeatures(this.distance);
 
                 if (lineProgressFeatures == null) {
@@ -1139,7 +1139,7 @@ class LineBucket implements Bucket {
 
                 if (lineProgressFeatures != null && nextVertex) {
                     // Start next segment with a butt
-                    this.addCurrentVertex(currentVertex, startNormal ? startNormal : nextNormal, capScale, capScale, segment, lineProgressFeatures);
+                    this.addCurrentVertex(currentVertex, (startNormal ? startNormal : nextNormal)!, capScale, capScale, segment, lineProgressFeatures);
                 }
             } else if (currentJoin === 'butt') {
                 this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment, lineProgressFeatures); // butt cap
@@ -1165,11 +1165,11 @@ class LineBucket implements Bucket {
                     const vertexNormal = !middleVertex && endNormal ? endNormal : prevNormal;
 
                     // Close previous segment with butt
-                    this.addCurrentVertex(currentVertex, vertexNormal, 0, 0, segment, lineProgressFeatures);
+                    this.addCurrentVertex(currentVertex, vertexNormal!, 0, 0, segment, lineProgressFeatures);
 
                     if (middleVertex || !intermediateEndPoint) {
                         // Add round cap or linejoin at end of segment
-                        this.addCurrentVertex(currentVertex, vertexNormal, 1, 1, segment, lineProgressFeatures, true);
+                        this.addCurrentVertex(currentVertex, vertexNormal!, 1, 1, segment, lineProgressFeatures, true);
                     }
 
                     // The segment is done. Unset vertices to disconnect segments.
@@ -1180,11 +1180,11 @@ class LineBucket implements Bucket {
 
                     // Add round cap before first segment
                     if (middleVertex || !intermediateStartPoint) {
-                        this.addCurrentVertex(currentVertex, vertexNormal, -1, -1, segment, lineProgressFeatures, true);
+                        this.addCurrentVertex(currentVertex, vertexNormal!, -1, -1, segment, lineProgressFeatures, true);
                     }
 
                     // Start next segment with a butt
-                    this.addCurrentVertex(currentVertex, vertexNormal, 0, 0, segment, lineProgressFeatures);
+                    this.addCurrentVertex(currentVertex, vertexNormal!, 0, 0, segment, lineProgressFeatures);
                 }
             }
         }

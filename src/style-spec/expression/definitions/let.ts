@@ -16,8 +16,7 @@ class Let implements Expression {
         this.result = result;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    evaluate(ctx: EvaluationContext): any {
+    evaluate(ctx: EvaluationContext): unknown {
         return this.result.evaluate(ctx);
     }
 

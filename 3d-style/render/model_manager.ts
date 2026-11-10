@@ -68,14 +68,14 @@ class ModelManager extends Evented {
         const modelLoads: Promise<Model | null | undefined>[] = [];
         const idsToLoad: (string | number)[] = [];
         for (const modelId of modelIds) {
-            const modelURI = modelUris[modelId];
+            const modelURI = modelUris[modelId]!;
             if (!this.hasURLBeenRequested(modelURI) || options.forceReload) {
                 this.modelByURL[modelURI] = {modelId, scope};
                 modelLoads.push(this.loadModel(modelId, modelURI));
                 idsToLoad.push(modelId);
             }
             if (!this.models[scope][modelId]) {
-                this.models[scope][modelId] = {model: null, numReferences: 1};
+                this.models[scope][modelId] = {model: (null)!, numReferences: 1};
             }
         }
 
@@ -87,19 +87,19 @@ class ModelManager extends Evented {
         Promise.allSettled(modelLoads)
             .then(results => {
                 for (let i = 0; i < results.length; i++) {
-                    const {status} = results[i];
+                    const {status} = results[i]!;
                     if (status === 'rejected') continue;
                     const {value} = results[i] as PromiseFulfilledResult<Model>;
 
-                    if (!this.models[scope][idsToLoad[i]]) {
+                    if (!this.models[scope]![idsToLoad[i]!]) {
                         // Before promises getting resolved, models could have been deleted
 
-                        this.models[scope][idsToLoad[i]] = {model: null, numReferences: 1};
+                        this.models[scope]![idsToLoad[i]!] = {model: (null)!, numReferences: 1};
                     }
 
-                    this.models[scope][idsToLoad[i]].model = value;
+                    this.models[scope]![idsToLoad[i]!]!.model = value;
                 }
-                this.numModelsLoading[scope] -= idsToLoad.length;
+                this.numModelsLoading[scope]! -= idsToLoad.length;
                 this.fire(new Event('data', {dataType: 'style'}));
             })
             .catch((err) => {
@@ -110,13 +110,13 @@ class ModelManager extends Evented {
 
     isLoaded(): boolean {
         for (const scope in this.numModelsLoading) {
-            if (this.numModelsLoading[scope] > 0) return false;
+            if (this.numModelsLoading[scope]! > 0) return false;
         }
         return true;
     }
 
     hasModel(id: string, scope: string, options: {exactIdMatch: boolean} = {exactIdMatch: false}): boolean {
-        return !!(options.exactIdMatch ? this.getModel(id, scope) : this.getModelByURL(this.modelUris[scope][id]));
+        return !!(options.exactIdMatch ? this.getModel(id, scope) : this.getModelByURL(this.modelUris[scope]![id]!));
     }
 
     getModel(id: string, scope: string): Model | null | undefined {
@@ -130,10 +130,10 @@ class ModelManager extends Evented {
         const referencedModel = this.modelByURL[modelURL];
         if (!referencedModel) return null;
 
-        return this.models[referencedModel.scope][referencedModel.modelId].model;
+        return this.models[referencedModel.scope]![referencedModel.modelId]!.model;
     }
 
-    hasModelBeenAdded(id: string, scope: string): boolean {
+    hasModelBeenAdded(id: string, scope: string): boolean | undefined {
         return (this.models[scope] && this.models[scope][id] !== undefined);
     }
 
@@ -148,10 +148,10 @@ class ModelManager extends Evented {
         const normalizedModelURL = this.requestManager.normalizeModelURL(url);
 
         if ((this.hasModel(id, scope, {exactIdMatch: true}) || this.hasModelBeenAdded(id, scope)) && (this.modelUris[scope][id] === normalizedModelURL)) {
-            this.models[scope][id].numReferences++;
+            this.models[scope][id]!.numReferences++;
         } else if (this.hasURLBeenRequested(normalizedModelURL)) {
-            const {scope, modelId} = this.modelByURL[normalizedModelURL];
-            this.models[scope][modelId].numReferences++;
+            const {scope, modelId} = this.modelByURL[normalizedModelURL]!;
+            this.models[scope]![modelId]!.numReferences++;
         } else {
             // If it's the first time we see this URL, we load it
             this.modelUris[scope][id] = normalizedModelURL;
@@ -163,27 +163,25 @@ class ModelManager extends Evented {
         if (!this.models[scope]) this.models[scope] = Object.create(null) as ModelManager['models'][string];
         if (!this.modelUris[scope]) this.modelUris[scope] = Object.create(null) as ModelManager['modelUris'][string];
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const modelUris: Record<string, any> = this.modelUris[scope];
+        const modelUris = this.modelUris[scope];
         for (const modelId of Object.keys(modelsToAdd)) {
             const modelUri = modelsToAdd[modelId];
-            modelUris[modelId] = this.requestManager.normalizeModelURL(modelUri);
+            modelUris[modelId] = this.requestManager.normalizeModelURL(modelUri!);
         }
     }
 
     reloadModels(scope: string) {
-        this.load(this.modelUris[scope], scope, {forceReload: true});
+        this.load(this.modelUris[scope]!, scope, {forceReload: true});
     }
 
     addModelsFromBucket(modelIds: Array<string>, scope: string) {
         if (!this.models[scope]) this.models[scope] = Object.create(null) as ModelManager['models'][string];
         if (!this.modelUris[scope]) this.modelUris[scope] = Object.create(null) as ModelManager['modelUris'][string];
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const modelsRequests = Object.create(null) as Record<string, any>;
+        const modelsRequests = Object.create(null) as Record<string, string>;
         for (const modelId of modelIds) {
             if (this.hasModel(modelId, scope, {exactIdMatch: true}) || this.hasURLBeenRequested(modelId)) {
-                this.models[scope][modelId].numReferences++;
+                this.models[scope][modelId]!.numReferences++;
             } else if (this.modelUris[scope][modelId] && !this.hasURLBeenRequested(modelId)) {
                 modelsRequests[modelId] = this.modelUris[scope][modelId];
             } else if (!this.hasURLBeenRequested(modelId) && isValidUrl(modelId, false)) {
@@ -203,9 +201,9 @@ class ModelManager extends Evented {
         if (!this.models[scope] || !this.models[scope][id]) return;
         this.models[scope][id].numReferences--;
         if (this.models[scope][id].numReferences === 0 || forceRemoval) {
-            const modelURI = this.modelUris[scope][id];
-            if (!keepModelURI) delete this.modelUris[scope][id];
-            delete this.modelByURL[modelURI];
+            const modelURI = this.modelUris[scope]![id];
+            if (!keepModelURI) delete this.modelUris[scope]![id];
+            delete this.modelByURL[modelURI!];
             const model = this.models[scope][id].model;
             if (!model) return;
             delete this.models[scope][id];
@@ -215,9 +213,9 @@ class ModelManager extends Evented {
 
     destroy() {
         for (const scope of Object.keys(this.models)) {
-            for (const modelId of Object.keys(this.models[scope])) {
-                const model = this.models[scope][modelId].model;
-                delete this.models[scope][modelId];
+            for (const modelId of Object.keys(this.models[scope]!)) {
+                const model = this.models[scope]![modelId]!.model;
+                delete this.models[scope]![modelId];
                 if (model) model.destroy();
             }
         }
@@ -238,8 +236,8 @@ class ModelManager extends Evented {
     upload(painter: Painter, scope: string) {
         if (!this.models[scope]) this.models[scope] = Object.create(null) as ModelManager['models'][string];
         for (const modelId in this.models[scope]) {
-            if (this.models[scope][modelId].model) {
-                this.models[scope][modelId].model.upload(painter.context);
+            if (this.models[scope][modelId]!.model) {
+                this.models[scope][modelId]!.model.upload(painter.context);
             }
         }
     }

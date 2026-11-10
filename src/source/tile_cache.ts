@@ -35,7 +35,7 @@ class TileCache {
      */
     reset(): this {
         for (const key in this.data) {
-            for (const removedData of this.data[key]) {
+            for (const removedData of this.data[key]!) {
                 if (removedData.timeout) clearTimeout(removedData.timeout);
                 this.onRemove(removedData.value);
             }
@@ -78,7 +78,7 @@ class TileCache {
         this.order.push(key);
 
         if (this.order.length > this.max) {
-            const removedData = this._getAndRemoveByKey(this.order[0]);
+            const removedData = this._getAndRemoveByKey(this.order[0]!);
             if (removedData) this.onRemove(removedData);
         }
 
@@ -113,10 +113,10 @@ class TileCache {
      * Get and remove the value with the specified key.
      */
     _getAndRemoveByKey(key: number): Tile | null | undefined {
-        const data = this.data[key].shift();
+        const data = this.data[key]!.shift()!;
         if (data.timeout) clearTimeout(data.timeout);
 
-        if (this.data[key].length === 0) {
+        if (this.data[key]!.length === 0) {
             delete this.data[key];
         }
         this.order.splice(this.order.indexOf(key), 1);
@@ -129,7 +129,7 @@ class TileCache {
      */
     getByKey(key: number): Tile | null | undefined {
         const data = this.data[key];
-        return data ? data[0].value : null;
+        return data ? data[0]!.value : null;
     }
 
     /**
@@ -143,8 +143,8 @@ class TileCache {
     get(tileID: OverscaledTileID): Tile | null | undefined {
         if (!this.has(tileID)) { return null; }
 
-        const data = this.data[tileID.wrapped().key][0];
-        return data.value;
+        const data = this.data[tileID.wrapped().key]![0];
+        return data!.value;
     }
 
     /**
@@ -165,11 +165,11 @@ class TileCache {
         if (!this.has(tileID)) { return this; }
         const key = tileID.wrapped().key;
 
-        const dataIndex = value === undefined ? 0 : this.data[key].indexOf(value);
-        const data = this.data[key][dataIndex];
-        this.data[key].splice(dataIndex, 1);
+        const dataIndex = value === undefined ? 0 : this.data[key]!.indexOf(value!);
+        const data = this.data[key]![dataIndex]!;
+        this.data[key]!.splice(dataIndex, 1);
         if (data.timeout) clearTimeout(data.timeout);
-        if (this.data[key].length === 0) {
+        if (this.data[key]!.length === 0) {
             delete this.data[key];
         }
         this.onRemove(data.value);
@@ -189,7 +189,7 @@ class TileCache {
         this.max = max;
 
         while (this.order.length > this.max) {
-            const removedData = this._getAndRemoveByKey(this.order[0]);
+            const removedData = this._getAndRemoveByKey(this.order[0]!);
             if (removedData) this.onRemove(removedData);
         }
 
@@ -206,7 +206,7 @@ class TileCache {
     filter(filterFn: (tile: Tile) => boolean) {
         const removed: Array<{value: Tile; timeout: number | null | undefined}> = [];
         for (const key in this.data) {
-            for (const entry of this.data[key]) {
+            for (const entry of this.data[key]!) {
                 if (!filterFn(entry.value)) {
                     removed.push(entry);
                 }

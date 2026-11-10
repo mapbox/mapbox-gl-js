@@ -124,12 +124,12 @@ class MeshBuilder {
         const normal = vec3.create();
 
         for (let i = 0; i < indices.length; i += 3) {
-            const v0 = vertices[indices[i + 0]];
-            const v1 = vertices[indices[i + 1]];
-            const v2 = vertices[indices[i + 2]];
-            const h0 = heights[indices[i + 0]] + heightOffset;
-            const h1 = heights[indices[i + 1]] + heightOffset;
-            const h2 = heights[indices[i + 2]] + heightOffset;
+            const v0 = vertices[indices[i + 0]!]!;
+            const v1 = vertices[indices[i + 1]!]!;
+            const v2 = vertices[indices[i + 2]!]!;
+            const h0 = heights[indices[i + 0]!]! + heightOffset;
+            const h1 = heights[indices[i + 1]!]! + heightOffset;
+            const h2 = heights[indices[i + 2]!]! + heightOffset;
             vec3.set(tmpVec, v0.x, v0.y, h0);
             const i0 = this.addVertex(tmpVec, normal);
             vec3.set(tmpVec, v1.x, v1.y, h1);
@@ -206,8 +206,8 @@ export class ElevatedStructures {
         const offset = this.unevalVertices.length;
 
         for (let i = 0; i < vertices.length; i++) {
-            this.unevalVertices.push(vertices[i]);
-            this.unevalHeights.push(heights[i]);
+            this.unevalVertices.push(vertices[i]!);
+            this.unevalHeights.push(heights[i]!);
         }
 
         return offset;
@@ -243,8 +243,8 @@ export class ElevatedStructures {
             const bi = ai + 1;
 
             // Both vertices must be inside the provided area bounds
-            const va = this.unevalVertices[ai];
-            const vb = this.unevalVertices[bi];
+            const va = this.unevalVertices[ai]!;
+            const vb = this.unevalVertices[bi]!;
 
             // Check if either of the points is inside
             const insideBounds =
@@ -262,7 +262,7 @@ export class ElevatedStructures {
             // Compute two unique hashes for the edge: "edgeHash" to represent the renderable geometry and
             // "portalHash" which represents the original edge this one originated from. The latter is required
             // as the feature geometry might be split into smaller segments before being used for rendering.
-            const edgeHash = ElevatedStructures.computeEdgeHash(this.unevalVertices[ai], this.unevalVertices[bi]);
+            const edgeHash = ElevatedStructures.computeEdgeHash(this.unevalVertices[ai]!, this.unevalVertices[bi]!);
             let portalHash: number;
 
             let lookup = this.vertexHashLookup.get(ElevatedStructures.computePosHash(va));
@@ -289,14 +289,14 @@ export class ElevatedStructures {
                 continue;
             }
             // Each edge of the exterior ring is a potential portal
-            const exterior = polygon[0];
-            assert(exterior.length > 1 && pointsEqual(exterior[0], exterior.at(-1)));
+            const exterior = polygon[0]!;
+            assert(exterior.length > 1 && pointsEqual(exterior[0]!, exterior.at(-1)!));
 
-            let prevEdgeHash = ElevatedStructures.computeEdgeHash(exterior[exterior.length - 2], exterior.at(-1));
+            let prevEdgeHash = ElevatedStructures.computeEdgeHash(exterior[exterior.length - 2]!, exterior.at(-1)!);
 
             for (let i = 0; i < exterior.length - 1; i++) {
-                const a = exterior[i + 0];
-                const b = exterior[i + 1];
+                const a = exterior[i + 0]!;
+                const b = exterior[i + 1]!;
 
                 const vavb = vec2.fromValues(b.x - a.x, b.y - a.y);
                 const length = vec2.length(vavb);
@@ -445,16 +445,16 @@ export class ElevatedStructures {
     destroy() {
         if (this.vertexBuffer) {
             this.vertexBuffer.destroy();
-            this.vertexBufferNormal.destroy();
-            this.indexBuffer.destroy();
+            this.vertexBufferNormal!.destroy();
+            this.indexBuffer!.destroy();
         }
 
         if (this.maskSegments) {
             this.maskSegments.destroy();
-            this.depthSegments.destroy();
-            this.renderableBridgeSegments.destroy();
-            this.renderableTunnelSegments.destroy();
-            this.shadowCasterSegments.destroy();
+            this.depthSegments!.destroy();
+            this.renderableBridgeSegments!.destroy();
+            this.renderableTunnelSegments!.destroy();
+            this.shadowCasterSegments!.destroy();
         }
 
         this.bridgeProgramConfigurations.destroy();
@@ -464,8 +464,8 @@ export class ElevatedStructures {
     populatePaintArrays(vtLayer: VectorTileLayer, canonical: CanonicalTileID, availableImages: ImageId[], brightness: number, worldview: string | undefined) {
         const populate = (programConfigurations: ProgramConfigurationSet<FillStyleLayer>, sections: FeatureSection[]) => {
             for (let i = 0; i < sections.length - 1; i++) {
-                const featureIndex = sections[i].featureIndex;
-                const length = sections[i + 1].vertexStart;
+                const featureIndex = sections[i]!.featureIndex;
+                const length = sections[i + 1]!.vertexStart;
                 assert(Number.isFinite(featureIndex));
 
                 const feature = vtLayer.feature(featureIndex);
@@ -484,13 +484,13 @@ export class ElevatedStructures {
         const map = new Map<number, VertexConnection>();
 
         for (let i = startEdge; i < endEdge; i++) {
-            const edge = edges[i];
+            const edge = edges[i]!;
             // a = from, b = to
             const a = edge.a;
             const b = edge.b;
 
-            const aHash = ElevatedStructures.computePosHash(vertices[a]);
-            const bHash = ElevatedStructures.computePosHash(vertices[b]);
+            const aHash = ElevatedStructures.computePosHash(vertices[a]!);
+            const bHash = ElevatedStructures.computePosHash(vertices[b]!);
 
             let pA = map.get(aHash);
             if (!pA) {
@@ -505,7 +505,7 @@ export class ElevatedStructures {
 
             // Do not create connectivity to edges that are not supposed
             // to have guard rail geometry
-            if (heights[a] <= 0.0 && heights[b] <= 0.0) {
+            if (heights[a]! <= 0.0 && heights[b]! <= 0.0) {
                 continue;
             }
 
@@ -517,7 +517,7 @@ export class ElevatedStructures {
     }
 
     private isTerminalVertex(vertexIdx: number, connectivity: Map<number, VertexConnection>): boolean {
-        const posHash = ElevatedStructures.computePosHash(this.unevalVertices[vertexIdx]);
+        const posHash = ElevatedStructures.computePosHash(this.unevalVertices[vertexIdx]!);
         const conn = connectivity.get(posHash);
         return !conn || !conn.from || !conn.to;
     }
@@ -531,7 +531,7 @@ export class ElevatedStructures {
         const metersToTile = 1.0 / tileToMeters;
         const scale = 0.5 * metersToTile;
 
-        const toTileVec = (v: vec3, vIdx: number) => vec3.set(v, vertices[vIdx].x, vertices[vIdx].y, heights[vIdx] * metersToTile);
+        const toTileVec = (v: vec3, vIdx: number) => vec3.set(v, vertices[vIdx]!.x, vertices[vIdx]!.y, heights[vIdx]! * metersToTile);
 
         const fromVec = vec3.create();
         const midVec = vec3.create();
@@ -541,7 +541,7 @@ export class ElevatedStructures {
 
         const computeFwd = (out: vec3, vIdx: number): vec3 | undefined => {
             // Use connectivity information to compute the vertex normal vector
-            const connectivity = vertexConnectivity.get(ElevatedStructures.computePosHash(vertices[vIdx]));
+            const connectivity = vertexConnectivity.get(ElevatedStructures.computePosHash(vertices[vIdx]!));
             assert(connectivity);
 
             const from = connectivity.from;
@@ -593,7 +593,7 @@ export class ElevatedStructures {
 
         // Generate bridge "guard rails"
         for (let i = edgeRange.min; i < edgeRange.max; i++) {
-            const edge = edges[i];
+            const edge = edges[i]!;
             if (!edge.featureInfo.guardRailEnabled) continue;
 
             const result = this.prepareEdgePoints(bridgeEdge, vertices, heights, edge, compare);
@@ -627,32 +627,32 @@ export class ElevatedStructures {
 
             // Use metric units for the size in order to have zoom independent sizes.
             // Construct "outer", "top" and "inner" sides of the guard rails
-            vec3.add(aVertices[0], va, vec3.scale(tmpVec1, vec3.sub(tmpVec1, aLeft, aUp), scale));
-            vec3.add(aVertices[1], va, vec3.scale(tmpVec1, vec3.add(tmpVec1, aLeft, aUp), scale));
-            vec3.add(aVertices[2], va, vec3.scale(tmpVec1, aUp, scale));
+            vec3.add(aVertices[0]!, va, vec3.scale(tmpVec1, vec3.sub(tmpVec1, aLeft, aUp), scale));
+            vec3.add(aVertices[1]!, va, vec3.scale(tmpVec1, vec3.add(tmpVec1, aLeft, aUp), scale));
+            vec3.add(aVertices[2]!, va, vec3.scale(tmpVec1, aUp, scale));
             aVertices[3] = va;
 
-            vec3.add(bVertices[0], vb, vec3.scale(tmpVec1, vec3.sub(tmpVec1, bLeft, bUp), scale));
-            vec3.add(bVertices[1], vb, vec3.scale(tmpVec1, vec3.add(tmpVec1, bLeft, bUp), scale));
-            vec3.add(bVertices[2], vb, vec3.scale(tmpVec1, bUp, scale));
+            vec3.add(bVertices[0]!, vb, vec3.scale(tmpVec1, vec3.sub(tmpVec1, bLeft, bUp), scale));
+            vec3.add(bVertices[1]!, vb, vec3.scale(tmpVec1, vec3.add(tmpVec1, bLeft, bUp), scale));
+            vec3.add(bVertices[2]!, vb, vec3.scale(tmpVec1, bUp, scale));
             bVertices[3] = vb;
 
             lastFeatureIndex = this.addFeatureSection(edge.featureInfo.featureIndex, lastFeatureIndex, this.bridgeFeatureSections, builder);
 
             // Outer side
-            const ao0 = builder.addVertex(aVertices[0], aLeft, tileToMeters);
-            const ao1 = builder.addVertex(aVertices[1], aLeft, tileToMeters);
-            const bo0 = builder.addVertex(bVertices[0], bLeft, tileToMeters);
-            const bo1 = builder.addVertex(bVertices[1], bLeft, tileToMeters);
+            const ao0 = builder.addVertex(aVertices[0]!, aLeft, tileToMeters);
+            const ao1 = builder.addVertex(aVertices[1]!, aLeft, tileToMeters);
+            const bo0 = builder.addVertex(bVertices[0]!, bLeft, tileToMeters);
+            const bo1 = builder.addVertex(bVertices[1]!, bLeft, tileToMeters);
 
             builder.addTriangle(ao0, ao1, bo0);
             builder.addTriangle(ao1, bo1, bo0);
 
             // Top side
-            const at0 = builder.addVertex(aVertices[1], aUp, tileToMeters);
-            const at1 = builder.addVertex(aVertices[2], aUp, tileToMeters);
-            const bt0 = builder.addVertex(bVertices[1], bUp, tileToMeters);
-            const bt1 = builder.addVertex(bVertices[2], bUp, tileToMeters);
+            const at0 = builder.addVertex(aVertices[1]!, aUp, tileToMeters);
+            const at1 = builder.addVertex(aVertices[2]!, aUp, tileToMeters);
+            const bt0 = builder.addVertex(bVertices[1]!, bUp, tileToMeters);
+            const bt1 = builder.addVertex(bVertices[2]!, bUp, tileToMeters);
 
             builder.addTriangle(at0, at1, bt0);
             builder.addTriangle(at1, bt1, bt0);
@@ -660,9 +660,9 @@ export class ElevatedStructures {
             // Inner side
             vec3.negate(aLeft, aLeft);
             vec3.negate(bLeft, bLeft);
-            const ai0 = builder.addVertex(aVertices[2], aLeft, tileToMeters);
+            const ai0 = builder.addVertex(aVertices[2]!, aLeft, tileToMeters);
             const ai1 = builder.addVertex(aVertices[3], aLeft, tileToMeters);
-            const bi0 = builder.addVertex(bVertices[2], bLeft, tileToMeters);
+            const bi0 = builder.addVertex(bVertices[2]!, bLeft, tileToMeters);
             const bi1 = builder.addVertex(bVertices[3], bLeft, tileToMeters);
 
             builder.addTriangle(ai0, ai1, bi0);
@@ -673,17 +673,17 @@ export class ElevatedStructures {
             const bIsTerminal = this.isTerminalVertex(edge.b, vertexConnectivity);
 
             if (pa.height < 0.01 && aIsTerminal) {
-                builder.addQuad(aVertices[3], aVertices[2], aVertices[1], aVertices[0], vec3.negate(aFwd, aFwd), tileToMeters);
+                builder.addQuad(aVertices[3], aVertices[2]!, aVertices[1]!, aVertices[0]!, vec3.negate(aFwd, aFwd), tileToMeters);
             }
             if (pb.height < 0.01 && bIsTerminal) {
-                builder.addQuad(bVertices[0], bVertices[1], bVertices[2], bVertices[3], bFwd, tileToMeters);
+                builder.addQuad(bVertices[0]!, bVertices[1]!, bVertices[2]!, bVertices[3], bFwd, tileToMeters);
             }
         }
 
         this.bridgeFeatureSections.push({featureIndex: Number.POSITIVE_INFINITY, vertexStart: builder.getVertexCount()});
 
         assert(this.bridgeFeatureSections.every((sec, i) => {
-            return i === 0 || this.bridgeFeatureSections[i - 1].vertexStart <= sec.vertexStart;
+            return i === 0 || this.bridgeFeatureSections[i - 1]!.vertexStart <= sec.vertexStart;
         }));
     }
 
@@ -711,7 +711,7 @@ export class ElevatedStructures {
 
         // Generate underground walls
         for (let i = wallRange.min; i < wallRange.max; i++) {
-            const result = this.prepareEdgePoints(tunnelEdge, vertices, heights, edges[i], compare);
+            const result = this.prepareEdgePoints(tunnelEdge, vertices, heights, edges[i]!, compare);
 
             if (!result) continue;
 
@@ -720,19 +720,19 @@ export class ElevatedStructures {
             // road polygon)
             const norm = normalize(vec3.set(tmpVec, -(b.coord.y - a.coord.y), b.coord.x - a.coord.x, 0.0));
 
-            lastFeatureIndex = this.addFeatureSection(edges[i].featureInfo.featureIndex, lastFeatureIndex, this.tunnelFeatureSections, builder);
+            lastFeatureIndex = this.addFeatureSection(edges[i]!.featureInfo.featureIndex, lastFeatureIndex, this.tunnelFeatureSections, builder);
 
             builder.addQuad(
                 vec3.set(v1, a.coord.x, a.coord.y, a.height),
                 vec3.set(v2, b.coord.x, b.coord.y, b.height),
-                vec3.set(v3, b.coord.x, b.coord.y, edges[i].isTunnel ? b.height + tunnelEntranceHeight : 0.0),
-                vec3.set(v4, a.coord.x, a.coord.y, edges[i].isTunnel ? a.height + tunnelEntranceHeight : 0.0),
+                vec3.set(v3, b.coord.x, b.coord.y, edges[i]!.isTunnel ? b.height + tunnelEntranceHeight : 0.0),
+                vec3.set(v4, a.coord.x, a.coord.y, edges[i]!.isTunnel ? a.height + tunnelEntranceHeight : 0.0),
                 norm);
         }
 
         // Generate tunnel enterances
         for (let i = entranceRange.min; i < entranceRange.max; i++) {
-            const edge = edges[i];
+            const edge = edges[i]!;
 
             // If the edge is tunnel, it is an edge of tunnel polygon, invert to get the overlapped edge of non-tunnel
             // polygon
@@ -740,8 +740,8 @@ export class ElevatedStructures {
                 [edge.a, edge.b] = [edge.b, edge.a];
             }
 
-            const a = vertices[edge.a];
-            const b = vertices[edge.b];
+            const a = vertices[edge.a]!;
+            const b = vertices[edge.b]!;
             // For tunnel walls, the normal dir points to the inside of the road polygon (left dir points to outside of the
             // road polygon)
             const norm = normalize(vec3.set(tmpVec, -(b.y - a.y), b.x - a.x, 0.0));
@@ -752,22 +752,22 @@ export class ElevatedStructures {
             builder.addQuad(
                 vec3.set(v1, b.x, b.y, 0.0),
                 vec3.set(v2, a.x, a.y, 0.0),
-                vec3.set(v3, a.x, a.y, heights[edge.a] + tunnelEntranceHeight),
-                vec3.set(v4, b.x, b.y, heights[edge.b] + tunnelEntranceHeight),
+                vec3.set(v3, a.x, a.y, heights[edge.a]! + tunnelEntranceHeight),
+                vec3.set(v4, b.x, b.y, heights[edge.b]! + tunnelEntranceHeight),
                 norm);
 
             builder.addQuad(
                 vec3.set(v1, a.x, a.y, 0.0),
                 vec3.set(v2, b.x, b.y, 0.0),
-                vec3.set(v3, b.x, b.y, heights[edge.b] + tunnelEntranceHeight),
-                vec3.set(v4, a.x, a.y, heights[edge.a] + tunnelEntranceHeight),
+                vec3.set(v3, b.x, b.y, heights[edge.b]! + tunnelEntranceHeight),
+                vec3.set(v4, a.x, a.y, heights[edge.a]! + tunnelEntranceHeight),
                 norm);
         }
 
         this.tunnelFeatureSections.push({featureIndex: Number.POSITIVE_INFINITY, vertexStart: builder.getVertexCount()});
 
         assert(this.tunnelFeatureSections.every((sec, i) => {
-            return i === 0 || this.tunnelFeatureSections[i - 1].vertexStart <= sec.vertexStart;
+            return i === 0 || this.tunnelFeatureSections[i - 1]!.vertexStart <= sec.vertexStart;
         }));
     }
 
@@ -782,12 +782,12 @@ export class ElevatedStructures {
         assert(out.length === 2);
         // Prepare the edge by accepting only the segment that
         // passes the comparison function. In practice either the part above or below ground.
-        let vax = vertices[edge.a].x;
-        let vay = vertices[edge.a].y;
-        let vbx = vertices[edge.b].x;
-        let vby = vertices[edge.b].y;
-        let ha = heights[edge.a];
-        let hb = heights[edge.b];
+        let vax = vertices[edge.a]!.x;
+        let vay = vertices[edge.a]!.y;
+        let vbx = vertices[edge.b]!.x;
+        let vby = vertices[edge.b]!.y;
+        let ha = heights[edge.a]!;
+        let hb = heights[edge.b]!;
         const aPass = comp(ha, 0.0);
         const bPass = comp(hb, 0.0);
 
@@ -828,30 +828,30 @@ export class ElevatedStructures {
         let begin = 0;
         let end = 0;
         let out = 0;
-        let polygonIdx = edges[begin].polygonIdx;
+        let polygonIdx = edges[begin]!.polygonIdx;
 
         // Prune edges that do not meet any of the aforementioned criteria.
         do {
             end++;
 
-            if (end === edges.length  || edges[begin].hash !== edges[end].hash) {
+            if (end === edges.length  || edges[begin]!.hash !== edges[end]!.hash) {
                 const occurrences = end - begin;
-                const differentOwner = edges[end - 1].polygonIdx !== polygonIdx;
+                const differentOwner = edges[end - 1]!.polygonIdx !== polygonIdx;
 
                 if (occurrences === 1 || differentOwner) {
                     if (out < begin) {
-                        edges[out] = edges[begin];
-                        edges[begin] = null;
+                        edges[out] = edges[begin]!;
+                        edges[begin] = (null)!;
                     }
 
-                    edges[out].type = 'none';
+                    edges[out]!.type = 'none';
                     out++;
                 }
 
                 begin = end;
 
                 if (begin !== edges.length) {
-                    polygonIdx = edges[begin].polygonIdx;
+                    polygonIdx = edges[begin]!.polygonIdx;
                 }
             }
         } while (begin !== edges.length);
@@ -864,7 +864,7 @@ export class ElevatedStructures {
         // polygon connectivity information across different layers.
         if (edges.length !== 0 && portals.length !== 0) {
             assert(portals.every((portal, index) => {
-                return index === 0 || portals[index - 1].hash >= portal.hash;
+                return index === 0 || portals[index - 1]!.hash >= portal.hash;
             }));
 
             edges.sort((a, b) => a.portalHash < b.portalHash ? 1 : -1);
@@ -873,8 +873,8 @@ export class ElevatedStructures {
             let pIndex = 0;
 
             while (eIndex !== edges.length && pIndex !== portals.length) {
-                const edge = edges[eIndex];
-                const portal = portals[pIndex];
+                const edge = edges[eIndex]!;
+                const portal = portals[pIndex]!;
                 if (edge.portalHash > portal.hash) {
                     eIndex++;
                 } else if (portal.hash > edge.portalHash) {

@@ -54,11 +54,11 @@ class RasterParticleStyleLayer extends StyleLayer {
         }
         if (this.tileFramebuffer) {
             this.tileFramebuffer.destroy();
-            this.tileFramebuffer = null;
+            this.tileFramebuffer = (null)!;
         }
         if (this.particleFramebuffer) {
             this.particleFramebuffer.destroy();
-            this.particleFramebuffer = null;
+            this.particleFramebuffer = (null)!;
         }
     }
 
@@ -77,7 +77,7 @@ class RasterParticleStyleLayer extends StyleLayer {
     }
 
     hasColorMap(): boolean {
-        return !!this.getPaintPropertyValue('raster-particle-color').value;
+        return !!this.getPaintPropertyValue('raster-particle-color')!.value;
     }
 
     override getProgramIds(): ProgramName[] {
@@ -106,8 +106,8 @@ class RasterParticleStyleLayer extends StyleLayer {
     _updateColorRamp() {
         if (!this.hasColorMap()) return;
 
-        const expression = this.getPaintPropertyValue('raster-particle-color').expression;
-        const end: number = this.getPaintPropertyValue('raster-particle-max-speed').expression.evaluate({zoom: 0});
+        const expression = this.getPaintPropertyValue('raster-particle-color')!.expression;
+        const end: number = this.getPaintPropertyValue('raster-particle-max-speed')!.expression.evaluate({zoom: 0});
 
         this.colorRamp = renderColorRamp({
             expression,

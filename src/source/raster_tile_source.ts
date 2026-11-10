@@ -97,7 +97,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
         this.tileSize = 512;
         this._loaded = false;
 
-        this._options = {type: 'raster', ...options};
+        this._options = {type: 'raster', ...(options as Omit<typeof options, 'type'>)};
         Object.assign(this, pick(options, ['url', 'scheme', 'tileSize']));
     }
 
@@ -211,7 +211,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
     reload() {
         this.cancelTileJSONRequest();
         const fqid = makeFQID(this.id, this.scope);
-        this.load(() => this.map.style.clearSource(fqid));
+        this.load(() => this.map.style!.clearSource(fqid));
     }
 
     /**

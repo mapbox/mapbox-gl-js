@@ -22,7 +22,7 @@ export let matchesCoverageSourceLayer: ((entries: string[], source: string, sour
 export let symbolAnchorInFrcCoverage: ((coveragePolygons: FrcCoveragePolygons, properties: Record<string, unknown>, anchor: {x: number; y: number}, canonical: CanonicalTileID, coverageTileZoom: number | null) => boolean) | undefined;
 export let parseActiveFloors: ((data: VectorTile, indoorTileOptions: IndoorTileOptions, actor: WorkerSourceActor, tileID: CanonicalTileID) => Set<string> | undefined) | undefined;
 export let anyDeferredElevationFeatures: ((buckets: Record<string, Bucket>) => boolean) | undefined;
-let waitForBuildingGen: (() => Promise<void> | null) | undefined;
+let waitForBuildingGen: (() => Promise<void>) | undefined;
 export let loaded = false;
 
 let pending: Promise<void> | null = null;

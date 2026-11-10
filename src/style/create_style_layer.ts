@@ -50,6 +50,6 @@ export default function createStyleLayer(
     if (layer.type === 'custom') {
         return new CustomStyleLayer(layer, scope);
     } else {
-        return new subclasses[layer.type](layer, scope, lut, options);
+        return new subclasses[layer.type](layer, scope, lut!, options);
     }
 }

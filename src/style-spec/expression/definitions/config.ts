@@ -102,8 +102,7 @@ class Config implements Expression {
         return new Config(type, configKeyValue, configScopeValue, featureConstant);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    evaluate(ctx: EvaluationContext): any {
+    evaluate(ctx: EvaluationContext): unknown {
         const fqid = makeConfigFQID(this.key, this.scope, ctx.scope);
         const config = ctx.getConfig(fqid);
         if (!config) return null;

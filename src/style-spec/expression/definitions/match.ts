@@ -39,8 +39,7 @@ class Match implements Expression {
         if (context.expectedType && context.expectedType.kind !== 'value') {
             outputType = context.expectedType;
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const cases: Record<string, any> = {};
+        const cases: Cases = {};
         const outputs = [];
         for (let i = 2; i < args.length - 1; i += 2) {
             let labels = args[i];
@@ -97,8 +96,7 @@ class Match implements Expression {
         return new Match(inputType, outputType, input, cases, outputs, otherwise);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    evaluate(ctx: EvaluationContext): any {
+    evaluate(ctx: EvaluationContext): unknown {
         const input = (this.input.evaluate(ctx)) as number | string;
         const output = (typeEquals(typeOf(input), this.inputType) && this.outputs[this.cases[input]!]) || this.otherwise;
         return output.evaluate(ctx);

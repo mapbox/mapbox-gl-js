@@ -104,8 +104,8 @@ export class QueryGeometry {
      */
     bufferedScreenGeometry(buffer: number): Point[] {
         return polygonizeBounds(
-            this.screenBounds[0],
-            this.screenBounds.length === 1 ? this.screenBounds[0] : this.screenBounds[1],
+            this.screenBounds[0]!,
+            (this.screenBounds.length === 1 ? this.screenBounds[0] : this.screenBounds[1])!,
             buffer
         );
     }
@@ -158,8 +158,8 @@ export class QueryGeometry {
      * @returns {Point[]} The buffered query geometry.
      */
     bufferedCameraGeometry(buffer: number): Point[] {
-        const min = this.screenBounds[0];
-        const max = this.screenBounds.length === 1 ? this.screenBounds[0].add(new Point(1, 1)) : this.screenBounds[1];
+        const min = this.screenBounds[0]!;
+        const max = (this.screenBounds.length === 1 ? this.screenBounds[0]!.add(new Point(1, 1)) : this.screenBounds[1])!;
         const cameraPolygon = polygonizeBounds(min, max, 0, false);
 
         // Only need to account for point underneath camera if its behind query volume
@@ -183,8 +183,8 @@ export class QueryGeometry {
     // the camera location at globe's surface. Camera point can be at any side of the query polygon as
     // opposed to `bufferedCameraGeometry` which restricts the location to underneath the polygon.
     bufferedCameraGeometryGlobe(buffer: number): Point[] {
-        const min = this.screenBounds[0];
-        const max = this.screenBounds.length === 1 ? this.screenBounds[0].add(new Point(1, 1)) : this.screenBounds[1];
+        const min = this.screenBounds[0]!;
+        const max = (this.screenBounds.length === 1 ? this.screenBounds[0]!.add(new Point(1, 1)) : this.screenBounds[1])!;
 
         // Padding is added to the query polygon before inclusion of the camera location.
         // Otherwise the buffered (narrow) polygon could penetrate the globe creating a lot of false positives
@@ -359,16 +359,16 @@ export function unwrapQueryPolygon(polygon: Point[], tr: Transform): {
     let startEdge = 0;
 
     for (let e = 0; e < polygon.length - 1; e++) {
-        if (polygon[e].x > maxX) {
-            maxX = polygon[e].x;
+        if (polygon[e]!.x > maxX) {
+            maxX = polygon[e]!.x;
             startEdge = e;
         }
     }
 
     for (let i = 0; i < polygon.length - 1; i++) {
         const edge = (startEdge + i) % (polygon.length - 1);
-        const a = polygon[edge];
-        const b = polygon[edge + 1];
+        const a = polygon[edge]!;
+        const b = polygon[edge + 1]!;
 
         if (Math.abs(a.x - b.x) > 0.5) {
             // A straight line drawn on the globe can't have longer length than 0.5 on the x-axis
@@ -378,13 +378,13 @@ export function unwrapQueryPolygon(polygon: Point[], tr: Transform): {
 
                 if (edge === 0) {
                     // First and last points are duplicate for closed polygons
-                    polygon.at(-1).x += 1;
+                    polygon.at(-1)!.x += 1;
                 }
             } else {
                 b.x += 1;
 
                 if (edge + 1 === polygon.length - 1) {
-                    polygon[0].x += 1;
+                    polygon[0]!.x += 1;
                 }
             }
 
@@ -419,10 +419,10 @@ export function projectPolygonCoveringPoles(polygon: Point[], tr: Transform): Ca
     vec4.transformMat4(southPole, southPole, matrix);
     vec4.transformMat4(center, center, matrix);
 
-    const screenNp = new Point(northPole[0] / northPole[3], northPole[1] / northPole[3]);
-    const screenSp = new Point(southPole[0] / southPole[3], southPole[1] / southPole[3]);
-    const containsNp = polygonContainsPoint(polygon, screenNp) && northPole[3] < center[3];
-    const containsSp = polygonContainsPoint(polygon, screenSp) && southPole[3] < center[3];
+    const screenNp = new Point(northPole[0]! / northPole[3]!, northPole[1]! / northPole[3]!);
+    const screenSp = new Point(southPole[0]! / southPole[3]!, southPole[1]! / southPole[3]!);
+    const containsNp = polygonContainsPoint(polygon, screenNp) && northPole[3]! < center[3]!;
+    const containsSp = polygonContainsPoint(polygon, screenSp) && southPole[3]! < center[3]!;
 
     if (!containsNp && !containsSp) {
         return null;
@@ -448,7 +448,7 @@ export function projectPolygonCoveringPoles(polygon: Point[], tr: Transform): Ca
     const resampled = [...partA];
 
     if (resampled.length === 0) {
-        resampled.push(partB.at(-1));
+        resampled.push(partB.at(-1)!);
     }
 
     // Find location of the crossing by interpolating mercator coordinates.
@@ -456,7 +456,7 @@ export function projectPolygonCoveringPoles(polygon: Point[], tr: Transform): Ca
     // linear on the globe.
     const a = resampled.at(-1);
     const b = partB.length === 0 ? partA[0] : partB[0];
-    const intersectionY = interpolate(a.y, b.y, t);
+    const intersectionY = interpolate(a!.y, b!.y, t);
 
     let mid: Point[];
 
@@ -480,7 +480,7 @@ export function projectPolygonCoveringPoles(polygon: Point[], tr: Transform): Ca
 
     // Resample to the second section of the ring
     if (partB.length === 0) {
-        resampled.push(partA[0]);
+        resampled.push(partA[0]!);
     } else {
         resampled.push(...partB);
     }
@@ -515,8 +515,8 @@ function findEdgeCrossingAntimeridian(polygon: Point[], tr: Transform, direction
     t: number;
 } | null | undefined {
     for (let i = 1; i < polygon.length; i++) {
-        const a = wrap(tr.pointCoordinate3D(polygon[i - 1]).x);
-        const b = wrap(tr.pointCoordinate3D(polygon[i]).x);
+        const a = wrap(tr.pointCoordinate3D(polygon[i - 1]!).x);
+        const b = wrap(tr.pointCoordinate3D(polygon[i]!).x);
 
         // direction < 0: mercator coordinate 0 will be crossed from left
         // direction > 0: mercator coordinate 1 will be crossed from right

@@ -22,12 +22,12 @@ export type Facade = {
 };
 
 export interface MeshBuffer {
-    positions?: Float32Array;
-    normals?: Float32Array;
-    ao?: Float32Array;
-    uv?: Float32Array;
-    isFauxFacade?: Uint8Array;
-    indices?: Int16Array;
+    positions: Float32Array;
+    normals: Float32Array;
+    ao: Float32Array;
+    uv: Float32Array;
+    isFauxFacade: Uint8Array;
+    indices: Int16Array;
     buildingPart?: BuildingPart;
 }
 

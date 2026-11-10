@@ -44,7 +44,7 @@ export function renderStyleImage(image: StyleImage): boolean {
     if (userImage && userImage.render) {
         const updated = userImage.render();
         if (updated) {
-            image.data.replace(new Uint8Array(userImage.data.buffer));
+            image.data!.replace(new Uint8Array(userImage.data.buffer));
             return true;
         }
     }

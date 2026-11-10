@@ -24,7 +24,7 @@ const MODIFIER_KEYS = {
 
 function buttonStillPressed(e: MouseEvent, button: number) {
     const flag = BUTTONS_FLAGS[button];
-    return e.buttons === undefined || (e.buttons & flag) !== flag;
+    return e.buttons === undefined || (e.buttons & flag!) !== flag;
 }
 
 class MouseHandler implements Handler {

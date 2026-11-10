@@ -35,7 +35,7 @@ export class MRTDecodingBatch {
     _onComplete: (err: Error, results: TDecodingResult[]) => void;
     _finalized: boolean;
     cancel(): void;
-    complete(err: Error, result: TDecodingResult[]): void;
+    complete(err?: Error | null, result?: TDecodingResult[] | null): void;
 }
 
 export class MRTError extends Error {

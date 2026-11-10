@@ -36,7 +36,7 @@ export function translate(
     const translated: Point[] = [];
     for (let i = 0; i < queryGeometry.length; i++) {
         const point = queryGeometry[i];
-        translated.push(point.sub(pt));
+        translated.push(point!.sub(pt));
     }
     return translated;
 }

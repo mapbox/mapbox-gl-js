@@ -11,7 +11,6 @@ import {crop, computeOverzoomCoords} from '../data/mrt/overzoom_util';
 import type Painter from '../render/painter';
 import type Framebuffer from '../gl/framebuffer';
 import type {Callback} from '../types/callback';
-import type {Cancelable} from '../types/cancelable';
 import type {TextureImage} from '../render/texture';
 import type {TDecodingResult} from '../data/mrt/types';
 import type {OverscaledTileID} from './tile_id';
@@ -132,11 +131,11 @@ class RasterArrayTile extends Tile implements Tile {
         const fetchQueue = this._fetchQueuePerLayer.get(sourceLayer) || [];
 
         while (workQueue.length) {
-            (workQueue.pop())();
+            (workQueue.pop())!();
         }
 
         while (fetchQueue.length) {
-            (fetchQueue.pop())();
+            (fetchQueue.pop())!();
         }
     }
 
@@ -147,14 +146,14 @@ class RasterArrayTile extends Tile implements Tile {
         for (const sourceLayer of this._workQueuePerLayer.keys()) {
             const workQueue = this._workQueuePerLayer.get(sourceLayer) || [];
             while (workQueue.length) {
-                (workQueue.pop())();
+                (workQueue.pop())!();
             }
         }
 
         for (const sourceLayer of this._fetchQueuePerLayer.keys()) {
             const fetchQueue = this._fetchQueuePerLayer.get(sourceLayer) || [];
             while (fetchQueue.length) {
-                (fetchQueue.pop())();
+                (fetchQueue.pop())!();
             }
         }
     }
@@ -165,7 +164,7 @@ class RasterArrayTile extends Tile implements Tile {
     ): AbortController {
         const mrt = this._mrt = new MapboxRasterTile(MRT_DECODED_BAND_CACHE_SIZE);
 
-        const headerRequestParams = {...this.requestParams, headers: {Range: `bytes=0-${fetchLength - 1}`}};
+        const headerRequestParams = {...this.requestParams!, headers: {Range: `bytes=0-${fetchLength! - 1}`}};
 
         // A buffer, in case range requests were ignored
         this.entireBuffer = null;
@@ -176,7 +175,7 @@ class RasterArrayTile extends Tile implements Tile {
             .then(({data: dataBuffer, headers}) => {
                 try {
                     const headerLength = mrt.getHeaderLength(dataBuffer);
-                    if (headerLength > fetchLength) {
+                    if (headerLength > fetchLength!) {
                         this.request = this.fetchHeader(headerLength, callback);
                         return;
                     }
@@ -189,7 +188,7 @@ class RasterArrayTile extends Tile implements Tile {
                     // ignored by the server), then cache the buffer and neglect range requests.
                     let lastByte = 0;
                     for (const layer of Object.values(mrt.layers)) {
-                        lastByte = Math.max(lastByte, layer.dataIndex.at(-1).lastByte);
+                        lastByte = Math.max(lastByte, layer.dataIndex.at(-1)!.lastByte);
                     }
 
                     if (dataBuffer.byteLength >= lastByte) {
@@ -219,7 +218,7 @@ class RasterArrayTile extends Tile implements Tile {
         });
     }
 
-    fetchBand(sourceLayer: string, layerId: string | null, band: string | number, callback: Callback<TDecodingResult[] | null | undefined>): Cancelable {
+    fetchBand(sourceLayer: string, layerId: string | null, band: string | number, callback: Callback<TDecodingResult[] | null | undefined>): void {
         // If header is not loaded, bail out of rendering.
         // Repaint on reload is handled by appropriate callbacks.
         const mrt = this._mrt;
@@ -297,7 +296,7 @@ class RasterArrayTile extends Tile implements Tile {
                     buffer,
                     task
                 };
-                decodeRequest = actor.sendCancelable('decodeRasterArray', params, {}, onDataDecoded);
+                decodeRequest = actor.sendCancelable('decodeRasterArray', params as typeof params & {source: string; scope: string; buffer: ArrayBuffer}, {}, onDataDecoded);
             };
 
             if (this.workerReady !== undefined) {
@@ -357,7 +356,7 @@ class RasterArrayTile extends Tile implements Tile {
             // TODO: can we decode without slicing and duplicating memory?
             onDataLoaded(null, this.entireBuffer.slice(range.firstByte, range.lastByte + 1));
         } else {
-            const rangeRequestParams = {...this.requestParams, headers: {Range: `bytes=${range.firstByte}-${range.lastByte}`}};
+            const rangeRequestParams = {...this.requestParams!, headers: {Range: `bytes=${range.firstByte}-${range.lastByte}`}};
             const controller = new AbortController();
             getArrayBuffer(rangeRequestParams, controller.signal)
                 .then(({data: buffer}) => onDataLoaded(null, buffer))
@@ -378,7 +377,7 @@ class RasterArrayTile extends Tile implements Tile {
 
     updateNeeded(layerId: string, band: string | number): boolean {
         const textureUpdateNeeded = !this.textureDescriptorPerLayer.get(layerId) ||
-            this.textureDescriptorPerLayer.get(layerId).band !== band ||
+            this.textureDescriptorPerLayer.get(layerId)!.band !== band ||
             this.refreshedUponExpiration;
 
         return textureUpdateNeeded && this.state !== 'errored';

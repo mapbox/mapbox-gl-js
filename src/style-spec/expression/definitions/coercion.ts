@@ -63,8 +63,7 @@ class Coercion implements Expression {
                 return null;
             }
             for (let i = 0; i < arrayLength; i++) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                const member = args[1][i];
+                const member: unknown = args[1][i];
                 let parsedMember: Expression | null | void;
                 if (Array.isArray(member)) {
                     parsedMember = context.parse(member, undefined, type.itemType);
@@ -96,16 +95,13 @@ class Coercion implements Expression {
         return new Coercion(type, parsed);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    evaluate(ctx: EvaluationContext): any {
+    evaluate(ctx: EvaluationContext): unknown {
         if (this.type.kind === 'boolean') {
             return Boolean(this.args[0]!.evaluate(ctx));
         } else if (this.type.kind === 'color') {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            let input: any;
-            let error!: string | null;
+            let input: unknown;
+            let error: string | null = null;
             for (const arg of this.args) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 input = arg.evaluate(ctx);
                 error = null;
                 if (input instanceof Color) {
@@ -127,9 +123,8 @@ class Coercion implements Expression {
             }
             throw new RuntimeError(error || `Could not parse color from value '${typeof input === 'string' ? input : String(JSON.stringify(input))}'`);
         } else if (this.type.kind === 'number') {
-            let value = null;
+            let value: unknown = null;
             for (const arg of this.args) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 value = arg.evaluate(ctx);
                 if (value === null) return 0;
                 const num = Number(value);

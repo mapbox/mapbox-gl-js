@@ -48,7 +48,7 @@ const DASH_BIT_INDEX = PROP_NAMES.indexOf('line-dasharray');
 // for pattern image keys (set by addPatternDependencies) on layers that have a line-pattern
 // instead, so the bit check is needed to avoid misreading one for the other.
 export const DASH_BIT = 1 << DASH_BIT_INDEX;
-const DASH_FLAT_OFFSET = LinePropertiesUBO.EVAL_FLAT_OFFSETS[DASH_BIT_INDEX];
+const DASH_FLAT_OFFSET = LinePropertiesUBO.EVAL_FLAT_OFFSETS[DASH_BIT_INDEX]!;
 
 const MAX_TRACKED_PROPS: readonly number[] = ['line-width', 'line-gap-width', 'line-offset'].map(name => PROP_NAMES.indexOf(name));
 
@@ -104,7 +104,7 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
 
     getMaxValue(property: string): number {
         const i = PROP_NAMES.indexOf(property);
-        return i >= 0 ? this.maxValues[i] : 0;
+        return i >= 0 ? this.maxValues[i]! : 0;
     }
 
     protected _propNames(): readonly string[] {
@@ -183,9 +183,9 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
         const flat = super.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, formattedSection, activeAppearance);
 
         for (let i = 0; i < MAX_TRACKED_PROPS.length; i++) {
-            const prop = MAX_TRACKED_PROPS[i];
-            const offset = LinePropertiesUBO.EVAL_FLAT_OFFSETS[prop];
-            this.maxValues[prop] = Math.max(this.maxValues[prop], Math.abs(flat[offset]), Math.abs(flat[offset + 1]));
+            const prop = MAX_TRACKED_PROPS[i]!;
+            const offset = LinePropertiesUBO.EVAL_FLAT_OFFSETS[prop]!;
+            this.maxValues[prop] = Math.max(this.maxValues[prop]!, Math.abs(flat[offset]!), Math.abs(flat[offset + 1]!));
         }
 
         const pos = this._pendingDashPosition;
@@ -205,7 +205,7 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
      * otherwise leave stale data (or another feature's) in place.
      */
     protected override _immutableAfterPopulateMask(): number {
-        return (this.header[HEADER_DATA_DRIVEN_MASK] & DASH_BIT) !== 0 ? DASH_BIT : 0;
+        return (this.header[HEADER_DATA_DRIVEN_MASK]! & DASH_BIT) !== 0 ? DASH_BIT : 0;
     }
 
     /**
@@ -233,7 +233,7 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
                 continue;
             }
 
-            const name = PROP_NAMES[i];
+            const name = PROP_NAMES[i]!;
             const isColor = i < 2;
             const prop = this._paintGet<unknown>(name);
 
@@ -267,8 +267,8 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
                 // block carries no per-feature zoom slot at all (unlike floats, whose block slot
                 // has room for [zm, zM] alongside [min, max]).
                 if (isColor) {
-                    this.header[LinePropertiesUBO.LINE_HEADER_SHARED_ZOOM + i * 2] = floatToBits(this.sharedZoomRanges[i * 2]);
-                    this.header[LinePropertiesUBO.LINE_HEADER_SHARED_ZOOM + i * 2 + 1] = floatToBits(this.sharedZoomRanges[i * 2 + 1]);
+                    this.header[LinePropertiesUBO.LINE_HEADER_SHARED_ZOOM + i * 2] = floatToBits(this.sharedZoomRanges[i * 2]!);
+                    this.header[LinePropertiesUBO.LINE_HEADER_SHARED_ZOOM + i * 2 + 1] = floatToBits(this.sharedZoomRanges[i * 2 + 1]!);
                 }
             }
         }
@@ -293,16 +293,16 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
             if (i === DASH_BIT_INDEX) continue;
 
             const name = PROP_NAMES[i];
-            const isDataDriven = (this.header[HEADER_DATA_DRIVEN_MASK] & (1 << i)) !== 0;
+            const isDataDriven = (this.header[HEADER_DATA_DRIVEN_MASK]! & (1 << i)) !== 0;
             const isZoomDep = this.zoomDependency[i] === 1;
 
             if (isDataDriven && isZoomDep) {
-                const zoomExpr = this._zoomExprOf(this._layerUnevaluated(name));
+                const zoomExpr = this._zoomExprOf(this._layerUnevaluated(name!));
                 if (zoomExpr) {
                     this._computeZoomRange(zoomExpr, floorZoom, this.sharedZoomRanges, i * 2);
                     if (i < 2) {
-                        this.header[LinePropertiesUBO.LINE_HEADER_SHARED_ZOOM + i * 2] = floatToBits(this.sharedZoomRanges[i * 2]);
-                        this.header[LinePropertiesUBO.LINE_HEADER_SHARED_ZOOM + i * 2 + 1] = floatToBits(this.sharedZoomRanges[i * 2 + 1]);
+                        this.header[LinePropertiesUBO.LINE_HEADER_SHARED_ZOOM + i * 2] = floatToBits(this.sharedZoomRanges[i * 2]!);
+                        this.header[LinePropertiesUBO.LINE_HEADER_SHARED_ZOOM + i * 2 + 1] = floatToBits(this.sharedZoomRanges[i * 2 + 1]!);
                         colorHeaderChanged = true;
                     }
                 }
@@ -348,15 +348,15 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
     protected _evaluatePropertyAt(i: number, ctx: EvaluationContext): void {
         if (i === DASH_BIT_INDEX) return;
 
-        const name = PROP_NAMES[i];
+        const name = PROP_NAMES[i]!;
         const isColor = i < 2;
         const isZoomDep = this.zoomDependency[i] === 1;
-        const flatOffset = LinePropertiesUBO.EVAL_FLAT_OFFSETS[i];
+        const flatOffset = LinePropertiesUBO.EVAL_FLAT_OFFSETS[i]!;
 
         if (isColor) {
             this._evaluateColorValue(name, i, isZoomDep, false, -1, ctx, flatOffset);
         } else {
-            this._evaluateFloatValue(name, i, isZoomDep, false, flatOffset + 2, ctx, flatOffset, PROP_DEFAULTS[i]);
+            this._evaluateFloatValue(name, i, isZoomDep, false, flatOffset + 2, ctx, flatOffset, PROP_DEFAULTS[i]!);
         }
     }
 
@@ -365,16 +365,16 @@ export class LinePropertyBinderUBO extends PaintPropertyBinderUBO<LineStyleLayer
      */
     protected _buildConstantUniforms(brightness: number | null | undefined): LineConstantUniformValues {
         return {
-            'color_np_color': this._constantColor(PROP_NAMES[0], brightness, [0, 0, 0, 1]),
-            'border_np_color': this._constantColor(PROP_NAMES[1], brightness, [0, 0, 0, 0]),
-            opacity: this._constantFloat(PROP_NAMES[2], PROP_DEFAULTS[2]),
-            blur: this._constantFloat(PROP_NAMES[3], PROP_DEFAULTS[3]),
-            width: this._constantFloat(PROP_NAMES[4], PROP_DEFAULTS[4]),
-            'gap_width': this._constantFloat(PROP_NAMES[5], PROP_DEFAULTS[5]),
-            offset: this._constantFloat(PROP_NAMES[6], PROP_DEFAULTS[6]),
-            floorwidth: this._constantFloat(PROP_NAMES[7], PROP_DEFAULTS[7]),
-            'border_width': this._constantFloat(PROP_NAMES[8], PROP_DEFAULTS[8]),
-            'emissive_strength': this._constantFloat(PROP_NAMES[9], PROP_DEFAULTS[9]),
+            'color_np_color': this._constantColor(PROP_NAMES[0]!, brightness, [0, 0, 0, 1]),
+            'border_np_color': this._constantColor(PROP_NAMES[1]!, brightness, [0, 0, 0, 0]),
+            opacity: this._constantFloat(PROP_NAMES[2]!, PROP_DEFAULTS[2]!),
+            blur: this._constantFloat(PROP_NAMES[3]!, PROP_DEFAULTS[3]!),
+            width: this._constantFloat(PROP_NAMES[4]!, PROP_DEFAULTS[4]!),
+            'gap_width': this._constantFloat(PROP_NAMES[5]!, PROP_DEFAULTS[5]!),
+            offset: this._constantFloat(PROP_NAMES[6]!, PROP_DEFAULTS[6]!),
+            floorwidth: this._constantFloat(PROP_NAMES[7]!, PROP_DEFAULTS[7]!),
+            'border_width': this._constantFloat(PROP_NAMES[8]!, PROP_DEFAULTS[8]!),
+            'emissive_strength': this._constantFloat(PROP_NAMES[9]!, PROP_DEFAULTS[9]!),
         };
     }
 }

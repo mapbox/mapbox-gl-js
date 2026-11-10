@@ -42,7 +42,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
             const colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
             const stencilMode = renderingToTexture && painter.terrain ?
                 painter.terrain.stencilModeForRTTOverlap(coord) : stencilModes[coord.overscaledZ];
-            renderHillshade(painter, coord, tile, layer, depthMode, stencilMode, colorMode);
+            renderHillshade(painter, coord, tile, layer, depthMode, stencilMode!, colorMode);
         }
     }
 
@@ -68,7 +68,7 @@ function renderHillshade(painter: Painter, coord: OverscaledTileID, tile: Tile, 
     const program = painter.getOrCreateProgram('hillshade', {overrideFog: affectedByFog, defines: definesValues});
 
     context.activeTexture.set(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment0.get());
+    gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment0!.get()!);
 
     const uniformValues = hillshadeUniformValues(painter, tile, layer, painter.terrain ? coord.projMatrix : null);
 
@@ -123,7 +123,7 @@ function prepareHillshade(painter: Painter, tile: Tile, layer: HillshadeStyleLay
         renderTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
         fbo = tile.hillshadeFBO = context.createFramebuffer(tileSize, tileSize, 1, 'renderbuffer');
-        fbo.colorAttachment0.set(renderTexture.texture);
+        fbo.colorAttachment0!.set(renderTexture.texture);
     }
 
     context.bindFramebuffer.set(fbo.framebuffer);

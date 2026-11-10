@@ -214,14 +214,14 @@ export function dropBufferConnectionLines(polygon: Array<Point>, isPolygon: bool
     } else {
         for (let i = 0; i < polygon.length + 2; i++) {
             const p0 = i === 0 ? polygon.at(-1) : polygon[(i - 1) % polygon.length];
-            const p1 = polygon[i % polygon.length];
+            const p1 = polygon[i % polygon.length]!;
             const p2 = polygon[(i + 1) % polygon.length];
-            const intersectsPrev = edgeIntersectsBox(p0!, p1!, tileCorners);
-            const intersectsNext = edgeIntersectsBox(p1!, p2!, tileCorners);
+            const intersectsPrev = edgeIntersectsBox(p0!, p1, tileCorners);
+            const intersectsNext = edgeIntersectsBox(p1, p2!, tileCorners);
             const addPoint = intersectsPrev || intersectsNext;
 
             if (addPoint) {
-                lineSegment.push(p1!);
+                lineSegment.push(p1);
             }
             if (!addPoint || !intersectsNext) {
                 // Close segment and start new

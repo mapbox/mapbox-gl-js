@@ -46,7 +46,7 @@ class RasterStyleLayer extends StyleLayer {
     }
 
     hasColorMap(): boolean {
-        return !!this.getPaintPropertyValue('raster-color').value;
+        return !!this.getPaintPropertyValue('raster-color')!.value;
     }
 
     // `raster-mask` is implemented in the raster-array module, which is otherwise only loaded
@@ -93,13 +93,13 @@ class RasterStyleLayer extends StyleLayer {
         if (!this.hasColorMap()) return;
         if (!this._curRampRange) return;
 
-        const expression = this.getPaintPropertyValue('raster-color').expression;
-        const [start, end] = overrideRange || this.getPaintPropertyValue('raster-color-range').expression.evaluate({zoom: 0}) || [NaN, NaN];
+        const expression = this.getPaintPropertyValue('raster-color')!.expression;
+        const [start, end] = overrideRange || this.getPaintPropertyValue('raster-color-range')!.expression.evaluate({zoom: 0}) || [NaN, NaN];
 
         if (isNaN(start) && isNaN(end)) return;
         if (start === this._curRampRange[0] && end === this._curRampRange[1]) return;
 
-        const scale = this.getPaintPropertyValue('raster-color-scale').expression.evaluate<undefined | ColorRampScale>({zoom: 0});
+        const scale = this.getPaintPropertyValue('raster-color-scale')!.expression.evaluate<undefined | ColorRampScale>({zoom: 0});
 
         this.colorRamp = renderColorRamp({
             expression,

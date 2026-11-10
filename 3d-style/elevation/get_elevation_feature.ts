@@ -18,10 +18,10 @@ function firstRegistryIndexForId(registry: ElevationTiledFeature[], value: numbe
     let lo = 0, hi = registry.length - 1;
     while (lo <= hi) {
         const mid = (lo + hi) >> 1;
-        if (registry[mid].feature.id < value) lo = mid + 1;
+        if (registry[mid]!.feature.id < value) lo = mid + 1;
         else hi = mid - 1;
     }
-    return (lo < registry.length && registry[lo].feature.id === value) ? lo : -1;
+    return (lo < registry.length && registry[lo]!.feature.id === value) ? lo : -1;
 }
 
 export function getElevationFeature(
@@ -32,7 +32,7 @@ export function getElevationFeature(
 ): ElevationTiledFeature | undefined {
     if (!feature.properties) return undefined;
 
-    const value = +feature.properties[PROPERTY_ELEVATION_ID];
+    const value = Number(feature.properties[PROPERTY_ELEVATION_ID]);
     if (Number.isNaN(value)) return undefined;
 
     if (sameTileFeatures) {
@@ -49,8 +49,8 @@ export function getElevationFeature(
     if (first < 0) return undefined;
 
     if (featureCanonical) {
-        for (let i = first; i < registry.length && registry[i].feature.id === value; i++) {
-            if (registry[i].tileId.key === featureCanonical.key) return registry[i];
+        for (let i = first; i < registry.length && registry[i]!.feature.id === value; i++) {
+            if (registry[i]!.tileId.key === featureCanonical.key) return registry[i]!;
         }
     }
     return registry[first];
@@ -64,15 +64,15 @@ export function getOverlappingElevationParts(
     featureCanonical: CanonicalTileID,
 ): ElevationTiledFeature[] {
     if (!feature.properties || !registry || registry.length === 0) return [];
-    const value = +feature.properties[PROPERTY_ELEVATION_ID];
+    const value = Number(feature.properties[PROPERTY_ELEVATION_ID]);
     if (Number.isNaN(value)) return [];
     // Find the id range, then spatial-filter within it — no intermediate array.
     const first = firstRegistryIndexForId(registry, value);
     if (first < 0) return [];
 
     const result: ElevationTiledFeature[] = [];
-    for (let i = first; i < registry.length && registry[i].feature.id === value; i++) {
-        const e = registry[i];
+    for (let i = first; i < registry.length && registry[i]!.feature.id === value; i++) {
+        const e = registry[i]!;
         if (e.tileId.isChildOf(featureCanonical) ||
             featureCanonical.isChildOf(e.tileId) ||
             e.feature.constantHeight != null) {

@@ -33,7 +33,7 @@ class AttributionControl implements IControl {
     _container!: HTMLElement;
     _innerContainer!: HTMLElement;
     _compactButton!: HTMLButtonElement;
-    _editLink?: HTMLAnchorElement;
+    _editLink?: HTMLAnchorElement | null;
     _attribHTML!: string;
     styleId!: string;
     styleOwner!: string;
@@ -97,8 +97,8 @@ class AttributionControl implements IControl {
         this._map.off('moveend', this._updateEditLink);
         this._map.off('resize', this._updateCompact);
 
-        this._map = undefined;
-        this._attribHTML = undefined;
+        this._map = undefined!;
+        this._attribHTML = undefined!;
     }
 
     _toggleAttribution() {
@@ -114,7 +114,7 @@ class AttributionControl implements IControl {
     _updateEditLink() {
         let editLink = this._editLink;
         if (!editLink) {
-            editLink = this._editLink = (this._container.querySelector('.mapbox-improve-map'));
+            editLink = this._editLink = (this._container.querySelector('.mapbox-improve-map'))!;
         }
 
         const params = [
@@ -148,13 +148,13 @@ class AttributionControl implements IControl {
 
         if (this._map.style.stylesheet) {
             const stylesheet: StyleSpecification & {id?: string; owner?: string} = this._map.style.stylesheet;
-            this.styleOwner = stylesheet.owner;
-            this.styleId = stylesheet.id;
+            this.styleOwner = stylesheet.owner!;
+            this.styleId = stylesheet.id!;
         }
 
         const sourceCaches = this._map.style._mergedSourceCaches;
         for (const id in sourceCaches) {
-            const sourceCache = sourceCaches[id];
+            const sourceCache = sourceCaches[id]!;
             if (sourceCache.used) {
                 const source = sourceCache.getSource();
                 if (source.attribution && !attributions.includes(source.attribution)) {
@@ -168,7 +168,7 @@ class AttributionControl implements IControl {
         attributions.sort((a, b) => a.length - b.length);
         attributions = attributions.filter((attrib, i) => {
             for (let j = i + 1; j < attributions.length; j++) {
-                if (attributions[j].includes(attrib)) { return false; }
+                if (attributions[j]!.includes(attrib)) { return false; }
             }
             return true;
         });

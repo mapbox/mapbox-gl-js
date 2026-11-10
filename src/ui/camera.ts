@@ -214,8 +214,8 @@ class Camera extends Evented<MapEvents> {
     _easeId: string | undefined;
     _respectPrefersReducedMotion: boolean;
 
-    _onEaseFrame!: (_: number) => Transform | void | null | undefined;
-    _onEaseEnd!: (easeId?: string) => void | null | undefined;
+    _onEaseFrame: ((_: number) => Transform | void | null | undefined) | undefined;
+    _onEaseEnd: ((easeId?: string) => void | null | undefined) | undefined;
     _easeFrameId: TaskID | null | undefined;
 
     handlers?: HandlerManager;
@@ -225,7 +225,7 @@ class Camera extends Evented<MapEvents> {
         this._moving = false;
         this._zooming = false;
         this.transform = transform;
-        this._bearingSnap = options.bearingSnap;
+        this._bearingSnap = options.bearingSnap!;
         this._respectPrefersReducedMotion = options.respectPrefersReducedMotion !== false;
 
         bindAll(['_renderFrameCallback'], this);
@@ -785,7 +785,7 @@ class Camera extends Evented<MapEvents> {
 
         const cameraPosition = vec3.add([], center, normal);
 
-        vec3.transformMat4(cameraPosition, cameraPosition, cameraToWorld);
+        vec3.transformMat4(cameraPosition, cameraPosition, cameraToWorld!);
 
         const meterPerECEF = earthRadius / GLOBE_RADIUS;
         const altitudeECEF = vec3.length(cameraPosition);
@@ -959,7 +959,7 @@ class Camera extends Evented<MapEvents> {
         let aabb = Aabb.fromPoints(worldCoords);
 
         const worldToCamera = tr.getWorldToCameraMatrix();
-        const cameraToWorld = mat4.invert(new Float64Array(16), worldToCamera);
+        const cameraToWorld = mat4.invert(new Float64Array(16), worldToCamera)!;
 
         aabb = Aabb.applyTransform(aabb, worldToCamera);
         const extendedAabb = this._extendAABB(aabb, tr, eOptions, bearing);
@@ -1150,7 +1150,7 @@ class Camera extends Evented<MapEvents> {
      * @see [Example: Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
      * @see [Example: Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
-    jumpTo(options: CameraOptions & {preloadOnly?: AnimationOptions['preloadOnly']}, eventData?: EventData): this {
+    jumpTo(options: CameraOptions & {preloadOnly?: AnimationOptions['preloadOnly']}, eventData: EventData = {}): this {
         // a camera setter (setCenter/setPitch/…) called from within a 'drag'/'move' handler
         // must not tear down the gesture the user is still performing.
         this._stop({keepGesture: 'ifPointerDown'});
@@ -1160,38 +1160,38 @@ class Camera extends Evented<MapEvents> {
             bearingChanged = false,
             pitchChanged = false;
 
-        if ('zoom' in options && tr.zoom !== +options.zoom) {
+        if ('zoom' in options && tr.zoom !== +options.zoom!) {
             zoomChanged = true;
-            tr.zoom = +options.zoom;
+            tr.zoom = +options.zoom!;
         }
 
         if (options.center !== undefined) {
             tr.center = LngLat.convert(options.center);
         }
 
-        if ('bearing' in options && tr.bearing !== +options.bearing) {
+        if ('bearing' in options && tr.bearing !== +options.bearing!) {
             bearingChanged = true;
-            tr.bearing = +options.bearing;
+            tr.bearing = +options.bearing!;
         }
 
-        if ('pitch' in options && tr.pitch !== +options.pitch) {
+        if ('pitch' in options && tr.pitch !== +options.pitch!) {
             pitchChanged = true;
-            tr.pitch = +options.pitch;
+            tr.pitch = +options.pitch!;
         }
 
-        if ('fov' in options) tr.fov = +options.fov;
+        if ('fov' in options) tr.fov = +options.fov!;
 
         const padding = typeof options.padding === 'number' ?
             this._extendPadding(options.padding) :
             options.padding;
 
-        if (options.padding != null && !tr.isPaddingEqual(padding)) {
+        if (options.padding != null && !tr.isPaddingEqual(padding!)) {
             if (options.retainPadding === false) {
                 const transformForPadding = tr.clone();
-                transformForPadding.padding = padding;
+                transformForPadding.padding = padding!;
                 tr.setLocationAtPoint(tr.center, transformForPadding.centerPoint);
             } else {
-                tr.padding = padding;
+                tr.padding = padding!;
             }
         }
 
@@ -1284,7 +1284,7 @@ class Camera extends Evented<MapEvents> {
      *
      * map.setFreeCameraOptions(camera);
      */
-    setFreeCameraOptions(options: FreeCameraOptions, eventData?: EventData): this {
+    setFreeCameraOptions(options: FreeCameraOptions, eventData: EventData = {}): this {
         const tr = this.transform;
 
         if (!tr.projection.supportsFreeCamera) {
@@ -1394,13 +1394,13 @@ class Camera extends Evented<MapEvents> {
             startPadding = this.getPadding(),
             startFov = this.getVerticalFieldOfView(),
 
-            zoom = 'zoom' in options ? +options.zoom : startZoom,
-            bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing,
-            pitch = 'pitch' in options ? +options.pitch : startPitch,
-            fov = 'fov' in options ? +options.fov : startFov,
+            zoom = 'zoom' in options ? +options.zoom! : startZoom,
+            bearing = 'bearing' in options ? this._normalizeBearing(options.bearing!, startBearing) : startBearing,
+            pitch = 'pitch' in options ? +options.pitch! : startPitch,
+            fov = 'fov' in options ? +options.fov! : startFov,
             padding = this._extendPadding(options.padding);
 
-        const offsetAsPoint = Point.convert(options.offset);
+        const offsetAsPoint = Point.convert(options.offset!);
 
         let pointAtOffset: Point;
         let from: Point;
@@ -1488,7 +1488,7 @@ class Camera extends Evented<MapEvents> {
         };
 
         if (options.preloadOnly) {
-            const predictedTransforms = this._emulate(frame, options.duration, tr);
+            const predictedTransforms = this._emulate(frame, options.duration!, tr);
             this._preloadTiles(predictedTransforms);
             return this;
         }
@@ -1506,7 +1506,7 @@ class Camera extends Evented<MapEvents> {
         this._padding = paddingChanged;
 
         this._easeId = options.easeId;
-        this._prepareEase(eventData, options.noMoveStart, currently);
+        this._prepareEase(eventData, options.noMoveStart!, currently);
 
         this._ease(frame(tr), (interruptingEaseId?: string) => {
             if (tr.cameraElevationReference === "sea") tr.recenterOnTerrain();
@@ -1516,7 +1516,7 @@ class Camera extends Evented<MapEvents> {
         return this;
     }
 
-    _prepareEase(eventData: EventData | null | undefined, noMoveStart: boolean, currently: MotionState = {}) {
+    _prepareEase(eventData: EventData = {}, noMoveStart: boolean, currently: MotionState = {}) {
         this._moving = true;
         this.transform.cameraElevationReference = "sea";
         if (this.transform._orthographicProjectionAtLowPitch && this.transform.pitch  === 0 && this.transform.projection.name !== 'globe') {
@@ -1539,7 +1539,7 @@ class Camera extends Evented<MapEvents> {
         }
     }
 
-    _fireMoveEvents(eventData?: EventData) {
+    _fireMoveEvents(eventData: EventData = {}) {
         this.fire(new Event('move', eventData));
         if (this._zooming) {
             this.fire(new Event('zoom', eventData));
@@ -1552,7 +1552,7 @@ class Camera extends Evented<MapEvents> {
         }
     }
 
-    _afterEase(eventData?: EventData, easeId?: string) {
+    _afterEase(eventData: EventData = {}, easeId?: string) {
         // if this easing is being stopped to start another easing with
         // the same id then don't fire any events to avoid extra start/stop events
         if (this._easeId && easeId && this._easeId === easeId) {
@@ -1670,15 +1670,15 @@ class Camera extends Evented<MapEvents> {
             startPadding = this.getPadding(),
             startFov = this.getVerticalFieldOfView();
 
-        const zoom = 'zoom' in options ? clamp(+options.zoom, tr.minZoom, tr.maxZoom) : startZoom;
-        const bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
-        const pitch = 'pitch' in options ? +options.pitch : startPitch;
-        const fov = 'fov' in options ? +options.fov : startFov;
+        const zoom = 'zoom' in options ? clamp(+options.zoom!, tr.minZoom, tr.maxZoom) : startZoom;
+        const bearing = 'bearing' in options ? this._normalizeBearing(options.bearing!, startBearing) : startBearing;
+        const pitch = 'pitch' in options ? +options.pitch! : startPitch;
+        const fov = 'fov' in options ? +options.fov! : startFov;
         const fovChanged = fov !== startFov;
         const padding = this._extendPadding(options.padding);
 
         const scale = tr.zoomScale(zoom - startZoom);
-        const offsetAsPoint = Point.convert(options.offset);
+        const offsetAsPoint = Point.convert(options.offset!);
         let pointAtOffset = tr.centerPoint.add(offsetAsPoint);
         const locationAtOffset = tr.pointLocation(pointAtOffset);
         const center = LngLat.convert(options.center || locationAtOffset);
@@ -1687,7 +1687,7 @@ class Camera extends Evented<MapEvents> {
         const from = tr.project(locationAtOffset);
         const delta = tr.project(center).sub(from);
 
-        let rho = options.curve;
+        let rho = options.curve!;
 
         // w₀: Initial visible span, measured in pixels at the initial scale.
         const w0 = Math.max(tr.width, tr.height),
@@ -1698,7 +1698,7 @@ class Camera extends Evented<MapEvents> {
             u1 = delta.mag();
 
         if ('minZoom' in options) {
-            const minZoom = clamp(Math.min(options.minZoom, startZoom, zoom), tr.minZoom, tr.maxZoom);
+            const minZoom = clamp(Math.min(options.minZoom!, startZoom, zoom), tr.minZoom, tr.maxZoom);
             // w<sub>m</sub>: Maximum visible span, measured in pixels with respect to the initial
             // scale.
             const wMax = w0 / tr.zoomScale(minZoom - startZoom);
@@ -1757,9 +1757,9 @@ class Camera extends Evented<MapEvents> {
         }
 
         if ('duration' in options) {
-            options.duration = +options.duration;
+            options.duration = +options.duration!;
         } else {
-            const V = 'screenSpeed' in options ? +options.screenSpeed / rho : +options.speed;
+            const V = 'screenSpeed' in options ? +options.screenSpeed! / rho : +options.speed!;
             options.duration = 1000 * S / V;
         }
 
@@ -1904,9 +1904,9 @@ class Camera extends Evented<MapEvents> {
 
     // Callback for map._requestRenderFrame
     _renderFrameCallback() {
-        const t = Math.min((browser.now() - this._easeStart) / this._easeOptions.duration, 1);
+        const t = Math.min((browser.now() - this._easeStart) / this._easeOptions.duration!, 1);
         const frame = this._onEaseFrame;
-        if (frame) frame(this._easeOptions.easing(t));
+        if (frame) frame(this._easeOptions.easing!(t));
         if (t < 1) {
             this._easeFrameId = this._requestRenderFrame(this._renderFrameCallback);
         } else {

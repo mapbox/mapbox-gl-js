@@ -90,11 +90,11 @@ class Context {
     extTextureFilterAnisotropic!: EXT_texture_filter_anisotropic;
     extTextureFilterAnisotropicMax!: GLfloat;
     // eslint-disable-next-line camelcase
-    extRenderToTextureHalfFloat: EXT_color_buffer_half_float;
+    extRenderToTextureHalfFloat: EXT_color_buffer_half_float | null;
     // eslint-disable-next-line camelcase
-    extColorBufferFloat: EXT_color_buffer_float;
+    extColorBufferFloat: EXT_color_buffer_float | null;
     // eslint-disable-next-line camelcase
-    extDebugRendererInfo: WEBGL_debug_renderer_info;
+    extDebugRendererInfo: WEBGL_debug_renderer_info | null;
     extTimerQuery: {
         /* EXT_disjoint_timer_query is not yet available as a TypeScript type */
         TIME_ELAPSED_EXT: number;
@@ -102,14 +102,14 @@ class Context {
         deleteQueryEXT: (query: WebGLQuery) => void;
     };
     // eslint-disable-next-line camelcase
-    extTextureFloatLinear!: OES_texture_float_linear;
+    extTextureFloatLinear!: OES_texture_float_linear | null;
     options: ContextOptions;
-    maxPointSize: number;
+    maxPointSize!: number;
     extBlendFuncExtended: WebGL2BlendFuncExtended | null;
     // eslint-disable-next-line camelcase
     extParallelShaderCompile: KHR_parallel_shader_compile | null;
 
-    forceManualRenderingForInstanceIDShaders: boolean;
+    forceManualRenderingForInstanceIDShaders: string | boolean | null | undefined;
 
     // Programs whose compile was kicked off but not yet finalized. Swept opportunistically
     // (frame start, idle, precompile batches) so finalize happens off the draw path.

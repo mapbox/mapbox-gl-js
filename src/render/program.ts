@@ -103,7 +103,7 @@ class Program<Us extends UniformBindings> {
     fixedDefines: ReadonlyArray<DynamicDefinesType>;
 
     // Manually handle instancing by issuing draw calls and replacing gl_InstanceID with uniform
-    forceManualRenderingForInstanceIDShaders: boolean;
+    forceManualRenderingForInstanceIDShaders: string | boolean | null | undefined;
     instancingUniforms: InstancingUniformType | undefined;
 
     _pending: boolean;
@@ -158,7 +158,7 @@ class Program<Us extends UniformBindings> {
 
         const fragmentParts = [definesBlock, FRAGMENT_PRELUDE_BLOCK];
         for (const include of source.fragmentIncludes) {
-            fragmentParts.push(includeMap[include]);
+            fragmentParts.push(includeMap[include]!);
         }
 
         fragmentParts.push(source.fragmentSource);
@@ -166,7 +166,7 @@ class Program<Us extends UniformBindings> {
 
         const vertexParts = [definesBlock, VERTEX_PRELUDE_BLOCK];
         for (const include of source.vertexIncludes) {
-            vertexParts.push(includeMap[include]);
+            vertexParts.push(includeMap[include]!);
         }
 
         this.forceManualRenderingForInstanceIDShaders = context.forceManualRenderingForInstanceIDShaders && source.vertexSource.includes('gl_InstanceID');
@@ -182,7 +182,7 @@ class Program<Us extends UniformBindings> {
             vertexSource = vertexSource.replaceAll('gl_InstanceID', 'u_instanceID');
         }
 
-        const fragmentShader = (gl.createShader(gl.FRAGMENT_SHADER));
+        const fragmentShader = (gl.createShader(gl.FRAGMENT_SHADER))!;
         if (gl.isContextLost()) {
             this.failedToCreate = true;
             this._pending = false;
@@ -192,7 +192,7 @@ class Program<Us extends UniformBindings> {
         gl.compileShader(fragmentShader);
         gl.attachShader(this.program, fragmentShader);
 
-        const vertexShader = (gl.createShader(gl.VERTEX_SHADER));
+        const vertexShader = (gl.createShader(gl.VERTEX_SHADER))!;
         if (gl.isContextLost()) {
             this.failedToCreate = true;
             this._pending = false;
@@ -363,8 +363,8 @@ class Program<Us extends UniformBindings> {
         indexBuffer: IndexBuffer, segment: Segment,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         currentProperties: PossiblyEvaluated<any>,
-        zoom?: number,
-        configuration?: ProgramConfiguration,
+        zoom?: number | null,
+        configuration?: ProgramConfiguration | null,
         instanceCount?: number,
         ubo?: PaintPropertiesUBO
     ) {
@@ -431,14 +431,14 @@ class Program<Us extends UniformBindings> {
             if (pSrc[group] && pDst[group]) {
                 for (const name in pSrc[group]) {
                     if (pDst[group][name]) {
-                        pDst[group][name].set(pDst.program, name, pSrc[group][name].current);
+                        pDst[group][name].set(pDst.program, name, pSrc[group][name]!.current);
                     }
                 }
             }
         };
 
         if (configuration) {
-            configuration.setUniforms(debugProgram.program, context, debugProgram.binderUniforms, currentProperties, {zoom});
+            configuration.setUniforms(debugProgram.program, context, debugProgram.binderUniforms, currentProperties, {zoom} as {zoom: number});
         }
 
         copyUniformValues("fixedUniforms", this, debugProgram);
@@ -462,7 +462,7 @@ class Program<Us extends UniformBindings> {
         if (this.forceManualRenderingForInstanceIDShaders) {
             const renderInstanceCount = instanceCount ? instanceCount : 1;
             for (let i = 0; i < renderInstanceCount; ++i) {
-                debugProgram.instancingUniforms["u_instanceID"].set(this.program, "u_instanceID", i);
+                debugProgram.instancingUniforms!["u_instanceID"].set(this.program, "u_instanceID", i);
 
                 gl.drawElements(
                     gl.LINES,
@@ -523,10 +523,10 @@ class Program<Us extends UniformBindings> {
         indexBuffer: IndexBuffer | undefined,
         segments: SegmentVector,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        currentProperties?: PossiblyEvaluated<any>,
-        zoom?: number,
-        configuration?: ProgramConfiguration,
-        dynamicLayoutBuffers?: Array<VertexBuffer | null | undefined>,
+        currentProperties?: PossiblyEvaluated<any> | null,
+        zoom?: number | null,
+        configuration?: ProgramConfiguration | null,
+        dynamicLayoutBuffers?: Array<VertexBuffer | null | undefined> | null,
         instanceCount?: number,
         ubo?: PaintPropertiesUBO
     ) {
@@ -547,7 +547,7 @@ class Program<Us extends UniformBindings> {
         }
 
         if (configuration) {
-            configuration.setUniforms(this.program, context, this.binderUniforms, currentProperties, {zoom});
+            configuration.setUniforms(this.program, context, this.binderUniforms, currentProperties!, {zoom} as {zoom: number});
         }
 
         const primitiveSize = drawMode === gl.TRIANGLES ? 3 : drawMode === gl.LINES ? 2 : 1;
@@ -579,7 +579,7 @@ class Program<Us extends UniformBindings> {
                 const renderInstanceCount = instanceCount ? instanceCount : 1;
 
                 for (let i = 0; i < renderInstanceCount; ++i) {
-                    this.instancingUniforms["u_instanceID"].set(this.program, "u_instanceID", i);
+                    this.instancingUniforms!["u_instanceID"].set(this.program, "u_instanceID", i);
 
                     if (indexBuffer) {
                         gl.drawElements(
@@ -612,7 +612,7 @@ class Program<Us extends UniformBindings> {
             }
             if (shouldDrawWireframe) {
                 this._drawDebugWireframe(painter, depthMode, stencilMode, colorMode, indexBuffer, segment,
-                    currentProperties, zoom, configuration, instanceCount, ubo);
+                    currentProperties!, zoom, configuration, instanceCount, ubo);
             }
         }
     }

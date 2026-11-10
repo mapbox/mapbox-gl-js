@@ -44,7 +44,7 @@ export class BucketSymbolIndex {
 
         // Low nodeSize: optimized for search, not indexing
         this.index = new KDBush(this.indices.length, 16);
-        for (let i = 0; i < points.length; i += 2) this.index.add(points[i], points[i + 1]);
+        for (let i = 0; i < points.length; i += 2) this.index.add(points[i]!, points[i + 1]!);
         this.index.finish();
     }
 
@@ -77,11 +77,11 @@ export class BucketSymbolIndex {
         // result doesn't depend on the tree layout
         let best = -1;
         for (const id of this.index.range(minX, minY, maxX, maxY)) {
-            if (this.keys[id] === key && !matched.has(this.indices[id]) && (best < 0 || id < best)) best = id;
+            if (this.keys[id] === key && !matched.has(this.indices[id]!) && (best < 0 || id < best)) best = id;
         }
         if (best < 0) return -1;
-        matched.add(this.indices[best]);
-        return this.indices[best];
+        matched.add(this.indices[best]!);
+        return this.indices[best]!;
     }
 }
 
@@ -275,7 +275,7 @@ export class TilePlacementRelationsIndex {
             for (let i = 0; i < mask.length; i++) {
                 const match = old ? old.findMatch(bucket, i, canonical, matched) : -1;
                 if (match < 0) mask[i] = 1;
-                else bucket.takePlacementStateFrom(old.bucket, match, i);
+                else bucket.takePlacementStateFrom(old!.bucket, match, i);
             }
             if (mask.includes(1)) unmatched.set(id, mask);
         }

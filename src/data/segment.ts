@@ -32,7 +32,7 @@ class SegmentVector {
         sortKey?: number,
         batchIndex?: number,
     ): Segment {
-        let segment: Segment = this.segments.at(-1);
+        let segment: Segment | undefined = this.segments.at(-1);
         if (numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) warnOnce(`Max vertices per segment is ${SegmentVector.MAX_VERTEX_ARRAY_LENGTH}: bucket requested ${numVertices}`);
         // Force new segment if batch index differs (for UBO batching)
         const batchIndexDiffers = batchIndex !== undefined && segment && segment.batchIndex !== undefined && segment.batchIndex !== batchIndex;
@@ -67,7 +67,7 @@ class SegmentVector {
     destroy() {
         for (const segment of this.segments) {
             for (const k in segment.vaos) {
-                for (const vao of segment.vaos[k].values()) vao.destroy();
+                for (const vao of segment.vaos[k]!.values()) vao.destroy();
             }
         }
     }

@@ -29,7 +29,7 @@ export class ImageRasterizer {
             this.cacheMap.set(mapId, new LRUCache(MAX_CACHE_SIZE));
         }
 
-        return this.cacheMap.get(mapId).get(makeFQID(imageVariant.toString(), scope));
+        return this.cacheMap.get(mapId)!.get(makeFQID(imageVariant.toString(), scope));
     }
 
     setInCache(imageVariant: ImageVariant, image: RGBAImage, scope: string, mapId: number): void {
@@ -41,7 +41,7 @@ export class ImageRasterizer {
             this.cacheMap.set(mapId, new LRUCache(MAX_CACHE_SIZE));
         }
 
-        const cacheDependencies = this.cacheDependenciesMap.get(mapId);
+        const cacheDependencies = this.cacheDependenciesMap.get(mapId)!;
 
         const fqid = makeFQID(imageVariant.id.toString(), scope);
 
@@ -52,8 +52,8 @@ export class ImageRasterizer {
         const cache = this.cacheMap.get(mapId);
         const serializedId = imageVariant.toString();
 
-        cacheDependencies.get(fqid).add(serializedId);
-        cache.put(makeFQID(imageVariant.toString(), scope), image);
+        cacheDependencies.get(fqid)!.add(serializedId);
+        cache!.put(makeFQID(imageVariant.toString(), scope), image);
     }
 
     removeImagesFromCacheByIds(ids: ImageId[], scope: string, mapId: number = 0): void {
@@ -62,12 +62,12 @@ export class ImageRasterizer {
         }
 
         const cache = this.cacheMap.get(mapId);
-        const cacheDependencies = this.cacheDependenciesMap.get(mapId);
+        const cacheDependencies = this.cacheDependenciesMap.get(mapId)!;
         for (const id of ids) {
             const fqid = makeFQID(id.toString(), scope);
             if (cacheDependencies.has(fqid)) {
-                for (const dependency of cacheDependencies.get(fqid)) {
-                    cache.delete(dependency);
+                for (const dependency of cacheDependencies.get(fqid)!) {
+                    cache!.delete(dependency);
                 }
                 cacheDependencies.delete(fqid);
             }
@@ -80,9 +80,9 @@ export class ImageRasterizer {
             return cachedImage.clone();
         }
 
-        decodePendingUsvgTree(image.icon);
+        decodePendingUsvgTree(image.icon!);
 
-        const imageData = renderIcon(image.icon, imageVariant);
+        const imageData = renderIcon(image.icon!, imageVariant);
         const imageResult = ImageRasterizer._getImage(imageData);
 
         this.setInCache(imageVariant, imageResult, scope, mapId);

@@ -175,6 +175,7 @@ class StyleLayer extends Evented {
 
     getLayoutProperty<T extends keyof LayoutSpecification>(name: T): LayoutSpecification[T] | undefined {
         if (name === 'visibility') {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- without the cast the return type is too complex to represent (TS2590)
             return this.visibility as LayoutSpecification[T];
         }
 
@@ -203,7 +204,7 @@ class StyleLayer extends Evented {
     setAppearances(appearances: AppearanceSpecification[]) {
         this.appearances = [];
         appearances.forEach(a => {
-            this.appearances.push(new SymbolAppearance(a.condition, a.name, a.properties, this.scope, this.options, this.iconImageUseTheme));
+            this.appearances.push(new SymbolAppearance(a.condition, a.name, a.properties!, this.scope, this.options!, this.iconImageUseTheme!));
         });
         this.appearancesVersion++;
         this._dirty = true;
@@ -227,6 +228,7 @@ class StyleLayer extends Evented {
 
     getPaintProperty<T extends keyof PaintSpecification>(name: T): PaintSpecification[T] | undefined {
         if (name.endsWith(TRANSITION_SUFFIX)) {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- without the cast the return type is too complex to represent (TS2590)
             return this._paintValues.getTransition(name.slice(0, -TRANSITION_SUFFIX.length)) as PaintSpecification[T];
         } else {
             return this._paintValues.getValue(name) as PaintSpecification[T];
@@ -261,13 +263,13 @@ class StyleLayer extends Evented {
         if (!specProps[name]) return false; // skip unrecognized properties
 
         const transitionable = paint._values[name];
-        const wasDataDriven = transitionable.value.isDataDriven();
-        const oldValue = transitionable.value;
+        const wasDataDriven = transitionable!.value.isDataDriven();
+        const oldValue = transitionable!.value;
 
         paint.setValue(name, value as PropertyValueSpecification<unknown>);
         this._handleSpecialPaintPropertyUpdate(name);
 
-        const newValue = paint._values[name].value;
+        const newValue = paint._values[name]!.value;
         const isDataDriven = newValue.isDataDriven();
         const isPattern = name.endsWith('pattern') || name === 'line-dasharray';
 
@@ -325,7 +327,7 @@ class StyleLayer extends Evented {
     getPropertyDependencies(): number {
         let deps = (this._layoutValues ? this._layoutValues.deps : 0) | (this._paintValues ? this._paintValues.deps : 0);
         for (const {unevaluatedLayout, unevaluatedPaint} of this.appearances) {
-            if (unevaluatedLayout) deps |= unevaluatedLayout.deps | unevaluatedPaint.deps;
+            if (unevaluatedLayout) deps |= unevaluatedLayout.deps | unevaluatedPaint!.deps;
         }
         return deps;
     }
@@ -346,7 +348,7 @@ class StyleLayer extends Evented {
         this._recalcImages = availableImages;
         if (this._layoutValues) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-            (this as any).layout = this._layoutValues.possiblyEvaluate(parameters, undefined, availableImages, this.iconImageUseTheme, changedDeps);
+            (this as any).layout = this._layoutValues.possiblyEvaluate(parameters, undefined, availableImages, this.iconImageUseTheme!, changedDeps);
         }
 
         if (this.hasTransition()) this.paintVersion++;
@@ -382,8 +384,8 @@ class StyleLayer extends Evented {
 
         return filterObject(output, (value, key) => {
             return value !== undefined &&
-                !(key === 'layout' && !Object.keys(value).length) &&
-                !(key === 'paint' && !Object.keys(value).length);
+                !(key === 'layout' && !Object.keys(value!).length) &&
+                !(key === 'paint' && !Object.keys(value!).length);
         });
     }
 
@@ -473,10 +475,8 @@ class StyleLayer extends Evented {
     }
 
     isStateDependent(): boolean {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        for (const property in (this as any).paint._values) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            const value = (this as any).paint.get(property);
+        for (const property in this.paint._values) {
+            const value: unknown = this.paint.get(property);
             if (!(value instanceof PossiblyEvaluatedPropertyValue) || !supportsPropertyExpression(value.property.specification)) {
                 continue;
             }

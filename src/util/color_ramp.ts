@@ -77,8 +77,8 @@ export function renderColorRamp(params: ColorRampParams): RGBAImage {
     };
 
     for (let clip = 0, stride = 0; clip < height; ++clip, stride += width * 4) {
-        const start = clips?.[clip].start ?? 0;
-        const end = clips?.[clip].end ?? 1;
+        const start = clips?.[clip]!.start ?? 0;
+        const end = clips?.[clip]!.end ?? 1;
         for (let i = 0, j = 0; i < width; i++, j += 4) {
             const evaluationValue = mapValueToRange(i / (width - 1), start, end, scale);
             renderTexel(stride, j, evaluationValue);

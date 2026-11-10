@@ -120,7 +120,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
         this._loaded = false;
 
         Object.assign(this, pick(options, ['url', 'scheme', 'tileSize', 'promoteId']));
-        this._options = {type: 'vector', ...options};
+        this._options = {type: 'vector', ...(options as Partial<typeof options> & {collectResourceTiming: boolean})};
         this._stableIdField = getStableIdField(this.url);
 
         this._collectResourceTiming = !!options.collectResourceTiming;
@@ -234,7 +234,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             for (const layer of tileJSON.vector_layers) {
                 this.vectorLayerIds.push(layer.id);
                 // Check if the layer source is localizable
-                if (tileJSON.worldview && tileJSON.worldview[layer.source]) {
+                if (tileJSON.worldview && tileJSON.worldview[layer.source!]) {
                     this.localizableLayerIds.add(layer.id);
                 }
             }
@@ -265,7 +265,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
     reload() {
         this.cancelTileJSONRequest();
         const fqid = makeFQID(this.id, this.scope);
-        this.load(() => this.map.style.clearSource(fqid));
+        this.load(() => this.map.style!.clearSource(fqid));
     }
 
     /**
@@ -447,7 +447,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             elevation: HD.buildElevationRequestParams ?
                 HD.buildElevationRequestParams(this.map, tile, crossSourceElevationActive) : null,
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
-            extraShadowCaster: tile.isExtraShadowCaster,
+            extraShadowCaster: tile.isExtraShadowCaster!,
             tessellationStep: this.map._tessellationStep,
             scaleFactor: this.map.getScaleFactor(),
             worldview: this.map.getWorldview() || this.worldviewDefault,
@@ -461,7 +461,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             params.localizableLayerIds = this.localizableLayerIds;
         }
 
-        params.request.collectResourceTiming = this._collectResourceTiming;
+        params.request!.collectResourceTiming = this._collectResourceTiming;
 
         if (isFresh) {
             // if workers are not ready to receive messages yet, use the idle time to preemptively
@@ -477,11 +477,11 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                         // the worker will skip the network request if the data is already there
                         params.data = {
                             rawData: data.rawData.slice(0),
-                            headers: data.headers,
+                            headers: data.headers!,
                         };
 
                         if (tile.actor) {
-                            tile.request = tile.actor.sendCancelable('loadTile', params, {}, done.bind(this));
+                            tile.request = tile.actor.sendCancelable('loadTile', params, {}, done.bind(this) as Callback<unknown>);
                         }
                     }
                 }, true);
@@ -491,11 +491,11 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
 
             } else {
 
-                tile.request = tile.actor.sendCancelable('loadTile', params, {}, done.bind(this));
+                tile.request = tile.actor!.sendCancelable('loadTile', params, {}, done.bind(this) as Callback<unknown>);
             }
 
         } else {
-            tile.request = tile.actor.sendCancelable('reloadTile', params, {}, done.bind(this));
+            tile.request = tile.actor!.sendCancelable('reloadTile', params, {}, done.bind(this) as Callback<unknown>);
         }
 
         function done(this: VectorTileSource, err?: Error | null, data?: WorkerSourceVectorTileResult | null) {

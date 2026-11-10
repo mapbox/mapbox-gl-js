@@ -42,7 +42,7 @@ class RasterArrayWorkerTile {
         this._isHeaderLoaded = false;
 
         this.uid = params.uid;
-        this.tileID = params.tileID;
+        this.tileID = params.tileID!;
         this.source = params.source;
     }
 
@@ -91,7 +91,7 @@ class RasterArrayTileWorkerSource implements WorkerSource {
         workerTile.abort = () => controller.abort();
 
         try {
-            const {data, headers} = await getArrayBuffer(params.request, controller.signal);
+            const {data, headers} = await getArrayBuffer(params.request!, controller.signal);
             if (!data) {
                 workerTile.status = 'done';
                 this.loaded[uid] = workerTile;

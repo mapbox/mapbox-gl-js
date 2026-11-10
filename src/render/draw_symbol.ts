@@ -55,7 +55,7 @@ type SymbolTileRenderState = {
         atlasTexture: Texture | null;
         atlasTextureIcon: Texture | null;
         atlasInterpolation: WebGLRenderingContextBase["NEAREST"] | WebGLRenderingContextBase["LINEAR"];
-        atlasInterpolationIcon: WebGLRenderingContextBase["NEAREST"] | WebGLRenderingContextBase["LINEAR"];
+        atlasInterpolationIcon: WebGLRenderingContextBase["NEAREST"] | WebGLRenderingContextBase["LINEAR"] | null | undefined;
         isSDF: boolean;
         hasHalo: boolean;
         depthMode: DepthMode;
@@ -221,7 +221,7 @@ function updateVariableAnchorsForBucket(bucket: SymbolBucket, rotateWithMap: boo
                 const anchor = new Point(tileAnchorX, tileAnchorY);
                 let h = 0;
                 if (renderElevatedRoads && bucket.hdExt) {
-                    const symbolInstance = bucket.symbolInstances.get(bucket.text.symbolInstanceIndices[s]);
+                    const symbolInstance = bucket.symbolInstances.get(bucket.text.symbolInstanceIndices[s]!);
                     if (bucket.hdExt.isCrossTileRoadElevation(symbolInstance.elevationFeatureIndex, coord.canonical)) {
                         const roadHeight = bucket.hdExt.getRoadFeatureHeightForPlacedSymbol(
                             bucket, bucket.text, s, anchor, coord.canonical);
@@ -245,7 +245,7 @@ function updateVariableAnchorsForBucket(bucket: SymbolBucket, rotateWithMap: boo
                 symbol.projectedAnchorZ + dz,
                 pitchWithMap ? tileMatrix : labelPlaneMatrix);
 
-            const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.getCameraToCenterDistance(projection), w);
+            const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.getCameraToCenterDistance(projection), w!);
             let renderTextSize = evaluateSizeForFeature(bucket.textSizeData, size, symbol) * perspectiveRatio / ONE_EM;
             if (pitchWithMap) {
                 // Go from size in pixels to equivalent size in tile units
@@ -263,18 +263,18 @@ function updateVariableAnchorsForBucket(bucket: SymbolBucket, rotateWithMap: boo
 
             } else {
                 if (rotateWithMap) shift._rotate(-transform.angle);
-                x += shift.x;
-                y += shift.y;
+                x! += shift.x;
+                y! += shift.y;
                 z = 0;
             }
 
             const angle = (bucket.allowVerticalPlacement && symbol.placedOrientation === WritingMode.vertical) ? Math.PI / 2 : 0;
             for (let g = 0; g < numGlyphs; g++) {
-                addDynamicAttributes(dynamicTextLayoutVertexArray, x, y, z, angle);
+                addDynamicAttributes(dynamicTextLayoutVertexArray, x!, y!, z!, angle);
             }
             //Only offset horizontal text icons
             if (updateTextFitIcon && symbol.associatedIconIndex >= 0) {
-                placedTextShifts[symbol.associatedIconIndex] = {x, y, z, angle};
+                placedTextShifts[symbol.associatedIconIndex] = {x, y, z, angle} as PlacedTextShift;
             }
         }
     }
@@ -506,7 +506,7 @@ function drawLayerSymbols(
             const affectedByFog = iconPitchWithMap && !bucketIsGlobeProjection && painter.isTileAffectedByFog(coord);
             const program = painter.getOrCreateProgram('symbol', {defines: baseDefines, overrideFog: affectedByFog});
 
-            const texSize: [number, number] = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
+            const texSize: [number, number] = (tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0])!;
             const sizeData = bucket.iconSizeData;
             const size = evaluateSizeForZoom(sizeData, tr.zoom);
             const transformed = iconPitchWithMap || !tr.isOrthographic;
@@ -630,14 +630,14 @@ function drawLayerSymbols(
             const sizeData = bucket.textSizeData;
 
             if (bucket.iconsInText) {
-                texSizeIcon = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
+                texSizeIcon = (tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0])!;
                 atlasTextureIcon = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
                 const transformed = textPitchWithMap || !tr.isOrthographic;
                 const zoomDependentSize = sizeData.kind === 'composite' || sizeData.kind === 'camera';
                 atlasInterpolationIcon = transformed || painter.options.rotating || painter.options.zooming || zoomDependentSize ? gl.LINEAR : gl.NEAREST;
             }
 
-            const texSize: [number, number] = tile.glyphAtlasTexture ? tile.glyphAtlasTexture.size : [0, 0];
+            const texSize: [number, number] = (tile.glyphAtlasTexture ? tile.glyphAtlasTexture.size : [0, 0])!;
             const textSizeScaleRange = layer.layout.get('text-size-scale-range');
             const textScaleFactor = clamp(painter.scaleFactor, textSizeScaleRange[0], textSizeScaleRange[1]);
             const size = evaluateSizeForZoom(sizeData, tr.zoom, textScaleFactor);
@@ -715,7 +715,7 @@ function drawLayerSymbols(
             for (const segment of oldIconSegments) {
                 tileRenderState.push({
                     segments: new SegmentVector([segment]),
-                    sortKey: (segment.sortKey),
+                    sortKey: (segment.sortKey)!,
                     state: iconState
                 });
             }
@@ -723,8 +723,8 @@ function drawLayerSymbols(
             for (const segment of oldTextSegments) {
                 tileRenderState.push({
                     segments: new SegmentVector([segment]),
-                    sortKey: (segment.sortKey),
-                    state: textState
+                    sortKey: (segment.sortKey)!,
+                    state: textState!
                 });
             }
         } else {
@@ -740,7 +740,7 @@ function drawLayerSymbols(
                 tileRenderState.push({
                     segments: textOpacity ? bucket.text.segments : new SegmentVector([]),
                     sortKey: 0,
-                    state: textState
+                    state: textState!
                 });
             }
         }
@@ -775,12 +775,12 @@ function drawLayerSymbols(
         if (state.atlasTextureIcon) {
             context.activeTexture.set(gl.TEXTURE1);
             if (state.atlasTextureIcon) {
-                state.atlasTextureIcon.bind(state.atlasInterpolationIcon, gl.CLAMP_TO_EDGE, true);
+                state.atlasTextureIcon.bind(state.atlasInterpolationIcon!, gl.CLAMP_TO_EDGE, true);
             }
         }
 
         if (state.renderWithShadows) {
-            painter.shadowRenderer.setupShadows(state.tile.tileID.toUnwrapped(), state.program, 'vector-tile');
+            painter.shadowRenderer!.setupShadows(state.tile.tileID.toUnwrapped(), state.program, 'vector-tile');
         }
 
         painter.uploadCommonUniforms(painter.context, state.program, state.fogMatrix ? null : state.tile.tileID.toUnwrapped(), state.fogMatrix);
@@ -866,7 +866,7 @@ function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, lay
         }
         program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, buffers.layoutVertexBuffer,
-            buffers.indexBuffer, batchSegmentVector, layer.paint,
+            buffers.indexBuffer, batchSegmentVector!, layer.paint,
             painter.transform.zoom, programConfiguration, dynamicBuffers,
             instanceCount, buffers.uboBinder ? buffers.uboBinder.getUBO(batchIndex) : undefined);
     }

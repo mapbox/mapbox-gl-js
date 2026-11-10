@@ -100,7 +100,7 @@ function getMaskLayers(style: Painter['style'], layer: RasterStyleLayer, maskId:
     }
 
     const layers = new Set<TypedStyleLayer>();
-    for (const selector of featureset.selectors) {
+    for (const selector of featureset.selectors!) {
         const found = fragment.getOwnLayer(selector.layer);
         if (found) layers.add(found);
     }

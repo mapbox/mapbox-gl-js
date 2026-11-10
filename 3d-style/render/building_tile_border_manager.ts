@@ -65,7 +65,7 @@ export class BuildingTileBorderManager {
             for (const featureOnBorder of bucket.featuresOnBorder) {
                 // Buildings disabled due to missing parts are already flagged on their footprint;
                 // skip them so an incomplete instance can't win the cross-tile dedup below.
-                if (bucket.footprints[featureOnBorder.footprintIndex].hiddenFlags & BUILDING_HIDDEN_WITH_INCOMPLETE_PARTS) {
+                if (bucket.footprints[featureOnBorder.footprintIndex]!.hiddenFlags & BUILDING_HIDDEN_WITH_INCOMPLETE_PARTS) {
                     continue;
                 }
                 if (!uniqueFeatureIDInstances.has(featureOnBorder.featureId)) {

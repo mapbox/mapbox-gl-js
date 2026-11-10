@@ -35,8 +35,8 @@ export type InertiaSettings = {
     bearingDelta?: number;
     pitchDelta?: number;
     panDelta?: Point;
-    around?: Point;
-    pinchAround?: Point;
+    around?: Point | null;
+    pinchAround?: Point | null;
 };
 
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
@@ -67,7 +67,7 @@ export default class HandlerInertia {
             now = browser.now(),
             cutoff = 160;   //msec
 
-        while (inertia.length > 0 && now - inertia[0].time > cutoff)
+        while (inertia.length > 0 && now - inertia[0]!.time > cutoff)
             inertia.shift();
     }
 
@@ -102,7 +102,7 @@ export default class HandlerInertia {
         }
 
         const lastEntry = this._inertiaBuffer.at(-1);
-        const duration = (lastEntry.time - this._inertiaBuffer[0].time);
+        const duration = (lastEntry!.time - this._inertiaBuffer[0]!.time);
 
         const easeOptions: EasingOptions & {easeId?: string; noMoveStart?: boolean} = {};
 

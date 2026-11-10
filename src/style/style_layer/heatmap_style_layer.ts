@@ -55,7 +55,7 @@ class HeatmapStyleLayer extends StyleLayer {
     }
 
     _updateColorRamp() {
-        const expression = this.getPaintPropertyValue('heatmap-color').expression;
+        const expression = this.getPaintPropertyValue('heatmap-color')!.expression;
         this.colorRamp = renderColorRamp({
             expression,
             evaluationKey: 'heatmapDensity',

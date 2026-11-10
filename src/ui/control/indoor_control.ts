@@ -44,13 +44,13 @@ class IndoorControl implements IControl {
             const manager = this._map.style.indoorManager;
             manager.off('selector-update', this._onIndoorUpdate);
             manager.on('selector-update', this._onIndoorUpdate);
-            this._onIndoorUpdate(manager.getControlState());
+            this._onIndoorUpdate(manager.getControlState() as IndoorControlModel);
             // Connection established — stop polling on idle, selector-update handles future updates.
             this._map.off('idle', this._onStyleData);
         }
     }
     _createButton(className: string, fn: (e: Event) => unknown): HTMLButtonElement {
-        const a = DOM.create('button', className, this._container);
+        const a = DOM.create('button', className, this._container!);
         a.type = 'button';
         a.addEventListener('click', fn);
         return a;
@@ -78,14 +78,14 @@ class IndoorControl implements IControl {
     _onIndoorUpdate(model: IndoorControlModel | null) {
         if (!model || !model.floors || model.floors.length === 0) {
             this._model = model;
-            this._container.style.display = 'none';
+            this._container!.style.display = 'none';
             return;
         }
         const oldModel = this._model;
         this._model = model;
-        this._container.style.display = 'inline-block';
+        this._container!.style.display = 'inline-block';
 
-        const floorsChanged = !oldModel || oldModel.floors.length !== model.floors.length || oldModel.floors.some((f, i) => f.id !== model.floors[i].id);
+        const floorsChanged = !oldModel || oldModel.floors.length !== model.floors.length || oldModel.floors.some((f, i) => f.id !== model.floors[i]!.id);
 
         if (floorsChanged) {
             this._visibleFloorStart = 0;
@@ -162,7 +162,7 @@ class IndoorControl implements IControl {
 
         // Top Button
         if (isAtTop) {
-            this._createFloorButton(floors[0]);
+            this._createFloorButton(floors[0]!);
         } else {
             const upButton = this._createButton('mapboxgl-ctrl-arrow-up', this._scrollUp);
             DOM.create('span', 'mapboxgl-ctrl-icon', upButton).setAttribute('aria-hidden', 'true');
@@ -183,7 +183,7 @@ class IndoorControl implements IControl {
 
         // Bottom Button
         if (isAtBottom) {
-            this._createFloorButton(floors[totalFloors - 1]);
+            this._createFloorButton(floors[totalFloors - 1]!);
         } else {
             const downButton = this._createButton('mapboxgl-ctrl-arrow-down', this._scrollDown);
             DOM.create('span', 'mapboxgl-ctrl-icon', downButton).setAttribute('aria-hidden', 'true');

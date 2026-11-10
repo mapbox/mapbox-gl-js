@@ -129,7 +129,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
     const [stencilModes, coords] = source instanceof ImageSource || renderingToTexture ? [{}, tileIDs] :
         painter.stencilConfigForOverlap(tileIDs, rasterMask ? STENCIL_MASK_BIT : undefined);
-    const minTileZ = coords.at(-1).overscaledZ;
+    const minTileZ = coords.at(-1)!.overscaledZ;
 
     if (renderingElevatedOnGlobe) {
         rasterConfig.defines.push("PROJECTION_GLOBE_VIEW");
@@ -175,7 +175,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 stencilModes[coord.overscaledZ];
 
             if (rasterMaskActive) {
-                stencilMode = RasterArray.stencilModeWithRasterMask(painter, stencilMode);
+                stencilMode = RasterArray.stencilModeWithRasterMask!(painter, stencilMode);
             }
 
             const rasterFadeDuration = isInitialLoad ? 0 : layer.paint.get('raster-fade-duration');
@@ -195,7 +195,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
             if (painter.terrain) painter.terrain.prepareDrawTile();
 
-            let parentScaleBy: number, parentTL: [number, number];
+            let parentScaleBy!: number, parentTL!: [number, number];
 
             context.activeTexture.set(gl.TEXTURE0);
             texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
@@ -287,7 +287,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
             if (source instanceof ImageSource) {
                 // Image sources don't take part in tile overlap stenciling, so only the mask applies.
-                const imageStencilMode = rasterMaskActive ? RasterArray.stencilModeWithRasterMask(painter, StencilMode.disabled) : StencilMode.disabled;
+                const imageStencilMode = rasterMaskActive ? RasterArray.stencilModeWithRasterMask!(painter, StencilMode.disabled) : StencilMode.disabled;
                 const elevatedGlobeVertexBuffer = source.elevatedGlobeVertexBuffer;
                 const elevatedGlobeIndexBuffer = source.elevatedGlobeIndexBuffer;
                 if (renderingToTexture || !isGlobeProjection) {
@@ -328,7 +328,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                     const attrIndex = program.getAttributeLocation(gl, 'a_texture_pos');
                     if (attrIndex !== -1) gl.vertexAttribI4ui(attrIndex, 0, 0, 0, 0);
 
-                    program.draw(painter, gl.TRIANGLES, depthMode, elevatedStencilMode || stencilMode, painter.colorModeForRenderPass(), cullFaceMode, uniformValues, layer.id, buffer, indexBuffer, segments);
+                    program.draw(painter, gl.TRIANGLES, depthMode, (elevatedStencilMode || stencilMode)!, painter.colorModeForRenderPass(), cullFaceMode, uniformValues, layer.id, buffer, indexBuffer, segments);
                 }
             } else if (renderingElevatedOnTerrain) {
                 depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
@@ -344,13 +344,13 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                         painter.terrain.gridIndexBuffer, painter.terrain.gridSegments);
                 }
 
-                program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
+                program.draw(painter, gl.TRIANGLES, depthMode, stencilMode!, colorMode, CullFaceMode.backCCW,
                     uniformValues, layer.id, painter.terrain.gridBuffer,
                     painter.terrain.gridIndexBuffer, painter.terrain.gridSegments);
             } else {
                 const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
 
-                program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+                program.draw(painter, gl.TRIANGLES, depthMode, stencilMode!, colorMode, CullFaceMode.disabled,
                     uniformValues, layer.id, tileBoundsBuffer,
                     tileBoundsIndexBuffer, tileBoundsSegments);
             }
@@ -382,14 +382,14 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         // Write the mask into the reserved stencil bit last, so that nothing between here and
         // the draw can reallocate or clear the stencil buffer.
         if (rasterMask) {
-            RasterArray.renderRasterMask(painter, rasterMask);
+            RasterArray.renderRasterMask!(painter, rasterMask);
             rasterMaskActive = true;
         }
 
         drawTiles(coords, CullFaceMode.disabled, undefined);
 
         if (rasterMaskActive) {
-            RasterArray.clearRasterMask(painter);
+            RasterArray.clearRasterMask!(painter);
             rasterMaskActive = false;
         }
     }
@@ -402,17 +402,17 @@ function drawPole(rasterElevation: number, isNorth: boolean, coord: OverscaledTi
     const sharedBuffers = painter.globeSharedBuffers;
     if (!sharedBuffers) return;
 
-    let tile: Tile;
+    let tile!: Tile;
     if (coord) {
         tile = sourceCache.getTile(coord);
     }
-    let texture: Texture | UserManagedTexture;
-    let globeMatrix: mat4;
+    let texture!: Texture | UserManagedTexture;
+    let globeMatrix!: mat4;
     if (source instanceof ImageSource) {
-        texture = source.texture;
+        texture = source.texture!;
         globeMatrix = globePoleMatrixForTile(0, 0, painter.transform);
     } else if (tile && coord) {
-        texture = tile.texture;
+        texture = tile.texture!;
         globeMatrix = globePoleMatrixForTile(coord.canonical.z, coord.canonical.x, painter.transform);
     }
     if (!texture || !globeMatrix) return;

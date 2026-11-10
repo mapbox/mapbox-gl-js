@@ -47,8 +47,8 @@ export class ElevationCoverageSnapshot implements IElevationCoverageSnapshot {
     equals(other: ElevationCoverageTile[]): boolean {
         if (this.tiles.length !== other.length) return false;
         for (let i = 0; i < this.tiles.length; ++i) {
-            const a = this.tiles[i];
-            const b = other[i];
+            const a = this.tiles[i]!;
+            const b = other[i]!;
             if (a.sourceFQID !== b.sourceFQID ||
                 a.tileId.z !== b.tileId.z || a.tileId.x !== b.tileId.x || a.tileId.y !== b.tileId.y ||
                 a.generation !== b.generation) {

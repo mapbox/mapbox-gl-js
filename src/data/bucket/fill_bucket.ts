@@ -51,7 +51,7 @@ class FillBucket implements Bucket {
 
     hasPattern: boolean;
 
-    uploaded: boolean;
+    uploaded!: boolean;
     projection: ProjectionSpecification;
 
     sourceLayerIndex: number;
@@ -84,7 +84,7 @@ class FillBucket implements Bucket {
         this.sourceLayerIndex = options.sourceLayerIndex;
         this.sourceLayerName = options.sourceLayerName || '';
 
-        this.worldview = options.worldview;
+        this.worldview = options.worldview!;
         this.hasAppearances = null;
     }
 
@@ -100,15 +100,15 @@ class FillBucket implements Bucket {
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
         this.hasPattern = hasPattern('fill', this.layers, this.pixelRatio, options);
-        const fillSortKey = this.layers[0].layout.get('fill-sort-key');
+        const fillSortKey = this.layers[0]!.layout.get('fill-sort-key');
         const bucketFeatures: BucketFeature[] = [];
 
         const globalProperties = new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors});
         for (const {feature, id, index, sourceLayerIndex} of features) {
-            const needGeometry = this.layers[0]._featureFilter.needGeometry;
+            const needGeometry = this.layers[0]!._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            const passesFilter = this.layers[0]._featureFilter.filter(globalProperties, evaluationFeature, canonical);
+            const passesFilter = this.layers[0]!._featureFilter.filter(globalProperties, evaluationFeature, canonical);
 
             if (!passesFilter) continue;
 
@@ -134,7 +134,7 @@ class FillBucket implements Bucket {
         if (fillSortKey) {
             bucketFeatures.sort((a, b) => {
                 // a.sortKey is always a number when fillSortKey is defined
-                return a.sortKey - b.sortKey;
+                return a.sortKey! - b.sortKey!;
             });
         }
 
@@ -150,7 +150,7 @@ class FillBucket implements Bucket {
                 this.addFeature(bucketFeature, geometry, index, canonical, {}, options.availableImages, options.brightness, options.elevationFeatures);
             }
 
-            const feature = features[index].feature;
+            const feature = features[index]!.feature;
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
 
@@ -237,9 +237,9 @@ class FillBucket implements Bucket {
         let min = Number.POSITIVE_INFINITY;
         let max = Number.NEGATIVE_INFINITY;
 
-        let constantHeight: number = null;
+        let constantHeight: number | null = null;
         if (elevationParams) {
-            constantHeight = elevationParams.elevationSampler.constantElevation(elevationParams.elevation, elevationParams.bias);
+            constantHeight = elevationParams.elevationSampler.constantElevation(elevationParams.elevation, elevationParams.bias)!;
             if (constantHeight != null) {
                 min = constantHeight;
                 max = constantHeight;
@@ -258,11 +258,11 @@ class FillBucket implements Bucket {
 
             // Sample elevation feature to find interpolated heights for each added vertex.
             if (constantHeight != null) {
-                elevatedBufferData.elevatedLayoutVertexArray.emplaceBack(constantHeight);
+                elevatedBufferData!.elevatedLayoutVertexArray.emplaceBack(constantHeight);
                 heights.push(constantHeight);
             } else {
                 const height = elevationParams.elevationSampler.pointElevation(point, elevationParams.elevation, elevationParams.bias);
-                elevatedBufferData.elevatedLayoutVertexArray.emplaceBack(height);
+                elevatedBufferData!.elevatedLayoutVertexArray.emplaceBack(height);
                 heights.push(height);
                 min = Math.min(min, height);
                 max = Math.max(max, height);
@@ -303,18 +303,18 @@ class FillBucket implements Bucket {
                     ringVertexOffsets.push(bufferData.layoutVertexArray.length - vOffset);
                 }
 
-                addElevatedVertex(ring[0], points, heights);
-                bufferData.layoutVertexArray.emplaceBack(ring[0].x, ring[0].y);
+                addElevatedVertex(ring[0]!, points, heights);
+                bufferData.layoutVertexArray.emplaceBack(ring[0]!.x, ring[0]!.y);
                 bufferData.lineIndexArray.emplaceBack(lineIndex + ring.length - 1, lineIndex);
-                flattened.push(ring[0].x);
-                flattened.push(ring[0].y);
+                flattened.push(ring[0]!.x);
+                flattened.push(ring[0]!.y);
 
                 for (let i = 1; i < ring.length; i++) {
-                    addElevatedVertex(ring[i], points, heights);
-                    bufferData.layoutVertexArray.emplaceBack(ring[i].x, ring[i].y);
+                    addElevatedVertex(ring[i]!, points, heights);
+                    bufferData.layoutVertexArray.emplaceBack(ring[i]!.x, ring[i]!.y);
                     bufferData.lineIndexArray.emplaceBack(lineIndex + i - 1, lineIndex + i);
-                    flattened.push(ring[i].x);
-                    flattened.push(ring[i].y);
+                    flattened.push(ring[i]!.x);
+                    flattened.push(ring[i]!.y);
                 }
 
                 lineSegment.vertexLength += ring.length;
@@ -326,9 +326,9 @@ class FillBucket implements Bucket {
 
             for (let i = 0; i < indices.length; i += 3) {
                 bufferData.indexArray.emplaceBack(
-                    triangleIndex + indices[i],
-                    triangleIndex + indices[i + 1],
-                    triangleIndex + indices[i + 2]);
+                    triangleIndex + indices[i]!,
+                    triangleIndex + indices[i + 1]!,
+                    triangleIndex + indices[i + 2]!);
             }
 
             // elevatedStructures is supplied only for hd-road-base features; markup features
@@ -343,11 +343,11 @@ class FillBucket implements Bucket {
                 if (ringCount > 0) {
                     for (let i = 0; i < ringCount - 1; i++) {
                         elevatedStructures.addRenderableRing(
-                            elevationParams.index, ringVertexOffsets[i] + vOffset, ringVertexOffsets[i + 1] - ringVertexOffsets[i], isTunnel, safeArea, elevationParams.featureInfo
+                            elevationParams.index, ringVertexOffsets[i]! + vOffset, ringVertexOffsets[i + 1]! - ringVertexOffsets[i]!, isTunnel, safeArea, elevationParams.featureInfo
                         );
                     }
                     elevatedStructures.addRenderableRing(
-                        elevationParams.index, ringVertexOffsets[ringCount - 1] + vOffset, points.length - ringVertexOffsets[ringCount - 1], isTunnel, safeArea, elevationParams.featureInfo
+                        elevationParams.index, ringVertexOffsets[ringCount - 1]! + vOffset, points.length - ringVertexOffsets[ringCount - 1]!, isTunnel, safeArea, elevationParams.featureInfo
                     );
                 }
             }

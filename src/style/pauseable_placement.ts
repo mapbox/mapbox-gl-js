@@ -43,7 +43,7 @@ class LayerPlacement {
 
         while (this._currentTileIndex < tiles.length) {
             const tile = tiles[this._currentTileIndex];
-            placement.getBucketParts(bucketParts, styleLayer, tile, this._sortAcrossTiles, scaleFactor);
+            placement.getBucketParts(bucketParts, styleLayer, tile!, this._sortAcrossTiles, scaleFactor);
 
             this._currentTileIndex++;
             if (shouldPausePlacement()) {
@@ -53,12 +53,12 @@ class LayerPlacement {
 
         if (this._sortAcrossTiles) {
             this._sortAcrossTiles = false;
-            bucketParts.sort((a, b) => (a.sortKey) - (b.sortKey));
+            bucketParts.sort((a, b) => (a.sortKey)! - (b.sortKey)!);
         }
 
         while (this._currentPartIndex < bucketParts.length) {
             const bucketPart = bucketParts[this._currentPartIndex];
-            placement.placeLayerBucketPart(bucketPart, this._seenCrossTileIDs, showCollisionBoxes, scaleFactor);
+            placement.placeLayerBucketPart(bucketPart!, this._seenCrossTileIDs, showCollisionBoxes, scaleFactor);
             this._currentPartIndex++;
             if (shouldPausePlacement()) {
                 return true;
@@ -132,9 +132,9 @@ class PauseablePlacement {
 
         while (this._currentPlacementIndex >= 0) {
             const layerId = order[this._currentPlacementIndex];
-            const layer = layers[layerId];
+            const layer = layers[layerId!];
             const placementZoom = this.placement.collisionIndex.transform.zoom;
-            if (layer.type === 'symbol' && layer.visibility !== 'none' &&
+            if (layer!.type === 'symbol' && layer.visibility !== 'none' &&
                 (!layer.minzoom || layer.minzoom <= placementZoom) &&
                 (!layer.maxzoom || layer.maxzoom > placementZoom)) {
 
@@ -156,7 +156,7 @@ class PauseablePlacement {
 
                 const sourceId = makeFQID(layer.source, layer.scope);
                 const sortTileByY = zOffset || sortSymbolByViewportY;
-                const pausePlacement = inProgressLayer.continuePlacement(sortTileByY ? layerTilesInYOrder[sourceId] : layerTiles[sourceId], this.placement, this._showCollisionBoxes, layer, shouldPausePlacement, scaleFactor);
+                const pausePlacement = inProgressLayer.continuePlacement((sortTileByY ? layerTilesInYOrder[sourceId] : layerTiles[sourceId])!, this.placement, this._showCollisionBoxes, layer, shouldPausePlacement, scaleFactor);
 
                 if (pausePlacement) {
                     // We didn't finish placing all layers within 2ms,

@@ -48,7 +48,7 @@ export type SymbolQuad = {
     texSecondary: TextureCoordinate | null | undefined;
     pixelOffsetTL: Point;
     pixelOffsetBR: Point;
-    writingMode: Shaping['writingMode'];
+    writingMode: Shaping['writingMode'] | undefined;
     glyphOffset: [number, number];
     sectionIndex: number;
     isSDF: boolean;
@@ -192,7 +192,7 @@ export function getIconQuads(
             for (let yi = 0; yi < yCuts.length - 1; yi++) {
                 const y1 = yCuts[yi];
                 const y2 = yCuts[yi + 1];
-                quads.push(makeBox(x1, y1, x2, y2));
+                quads.push(makeBox(x1!, y1!, x2!, y2!));
             }
         }
     }
@@ -228,7 +228,7 @@ function stretchZonesToCuts(stretchZones: Array<[number, number]>, fixedSize: nu
     const cuts = [{fixed: -border, stretch: 0}];
 
     for (const [c1, c2] of stretchZones) {
-        const last = cuts.at(-1);
+        const last = cuts.at(-1)!;
         cuts.push({
             fixed: c1 - last.stretch,
             stretch: last.stretch
@@ -274,11 +274,11 @@ function getRotateOffset(textOffset: [number, number]) {
 }
 
 function getMidlineOffset(shaping: Shaping, lineHeight: number, previousOffset: number, lineIndex: number) {
-    const currentLineHeight = (lineHeight + shaping.positionedLines[lineIndex].lineOffset);
+    const currentLineHeight = (lineHeight + shaping.positionedLines[lineIndex]!.lineOffset);
     if (lineIndex === 0) {
         return previousOffset + currentLineHeight / 2.0;
     }
-    const aboveLineHeight = (lineHeight + shaping.positionedLines[lineIndex - 1].lineOffset);
+    const aboveLineHeight = (lineHeight + shaping.positionedLines[lineIndex - 1]!.lineOffset);
     return previousOffset + (currentLineHeight + aboveLineHeight) / 2.0;
 }
 
@@ -315,9 +315,9 @@ export function getGlyphQuads(
     for (let lineIndex = 0; lineIndex < lineCounts; ++lineIndex) {
         const line = shaping.positionedLines[lineIndex];
         currentOffset = getMidlineOffset(shaping, lineHeight, currentOffset, lineIndex);
-        for (const positionedGlyph of line.positionedGlyphs) {
+        for (const positionedGlyph of line!.positionedGlyphs) {
             if (!positionedGlyph.rect) continue;
-            const textureRect = (positionedGlyph.rect || {}) as TextureCoordinate;
+            const textureRect = (positionedGlyph.rect || {});
 
             // The rects have an additional buffer that is not included in their size.
             const glyphPadding = 1.0;
@@ -363,7 +363,7 @@ export function getGlyphQuads(
                 // Vertical POI labels that are rotated 90deg CW and whose glyphs must preserve upright orientation
                 // need to be rotated 90deg CCW. After a quad is rotated, it is translated to the original built-in offset.
                     verticalizedLabelOffset =
-                        [positionedGlyph.x + halfAdvance + rotateOffset[0], positionedGlyph.y + rotateOffset[1] - lineOffset];
+                        [positionedGlyph.x + halfAdvance + rotateOffset[0]!, positionedGlyph.y + rotateOffset[1]! - lineOffset];
                     useRotateOffset = true;
                 } else {
                     builtInOffset =  [positionedGlyph.x + halfAdvance + textOffset[0], positionedGlyph.y + textOffset[1] - lineOffset];
@@ -380,8 +380,8 @@ export function getGlyphQuads(
             let bl: Point;
             let br: Point;
             if (!rotateVerticalGlyph) {
-                const x1 = (metrics.left - rectBuffer) * positionedGlyph.scale - halfAdvance + builtInOffset[0];
-                const y1 = (-metrics.top - rectBuffer) * positionedGlyph.scale + builtInOffset[1];
+                const x1 = (metrics.left - rectBuffer) * positionedGlyph.scale - halfAdvance + builtInOffset[0]!;
+                const y1 = (-metrics.top - rectBuffer) * positionedGlyph.scale + builtInOffset[1]!;
                 const x2 = x1 + paddedWidth;
                 const y2 = y1 + paddedHeight;
 
@@ -414,7 +414,7 @@ export function getGlyphQuads(
                 //   |     |
                 //   |     |
                 // bl ----- br
-                tl = new Point(-halfAdvance + builtInOffset[0], builtInOffset[1]);
+                tl = new Point(-halfAdvance + builtInOffset[0]!, builtInOffset[1]!);
 
                 tl._rotateAround(verticalRotation, center)._add(verticalOffsetCorrection);
 
@@ -473,7 +473,7 @@ export function getGlyphQuads(
                 let center: Point;
                 if (!alongLine) {
                     if (useRotateOffset) {
-                        center = new Point(rotateOffset[0], rotateOffset[1]);
+                        center = new Point(rotateOffset[0]!, rotateOffset[1]!);
                     } else {
                         center = new Point(textOffset[0], textOffset[1]);
                     }

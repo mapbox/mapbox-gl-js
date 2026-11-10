@@ -29,36 +29,30 @@ export default function validateExpression(options: ExpressionValidatorOptions):
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const expressionObj = (expression.value as any).expression || (expression.value as any)._styleExpression.expression;
+    const expressionObj: Expression = (expression.value as any).expression || (expression.value as any)._styleExpression.expression;
 
     if (options.expressionContext === 'property' && (options.propertyKey === 'text-font') &&
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         !expressionObj.outputDefined()) {
         return [new ValidationError(options.key, options.value, `Invalid data expression for "${options.propertyKey}". Output values must be contained as literals within the expression.`)];
     }
 
     if (options.expressionContext === 'property' && options.propertyType === 'layout' &&
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         (!isStateConstant(expressionObj))) {
         return [new ValidationError(options.key, options.value, '"feature-state" data expressions are not supported with layout properties.')];
     }
 
     if (options.expressionContext === 'filter') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return disallowedFilterParameters(expressionObj, options);
     }
 
     if (options.expressionContext === 'appearance') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return checkDisallowedAppearancesParameters(expressionObj, options);
     }
 
     if (options.expressionContext && options.expressionContext.indexOf('cluster') === 0) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (!isGlobalPropertyConstant(expressionObj, ['zoom', 'feature-state'])) {
             return [new ValidationError(options.key, options.value, '"zoom" and "feature-state" expressions are not supported with cluster properties.')];
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (options.expressionContext === 'cluster-initial' && !isFeatureConstant(expressionObj)) {
             return [new ValidationError(options.key, options.value, 'Feature data expressions are not supported with initial expression part of cluster properties.')];
         }

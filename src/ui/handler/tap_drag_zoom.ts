@@ -40,7 +40,7 @@ export default class TapDragZoomHandler implements Handler {
             this._tap.touchstart(e, points, mapTouches);
         } else if (mapTouches.length > 0) {
             this._swipePoint = points[0];
-            this._swipeTouch = mapTouches[0].identifier;
+            this._swipeTouch = mapTouches[0]!.identifier;
         }
 
     }
@@ -49,12 +49,12 @@ export default class TapDragZoomHandler implements Handler {
         if (!this._tapTime) {
             this._tap.touchmove(e, points, mapTouches);
         } else if (this._swipePoint) {
-            if (mapTouches[0].identifier !== this._swipeTouch) {
+            if (mapTouches[0]!.identifier !== this._swipeTouch) {
                 return;
             }
 
             const newSwipePoint = points[0];
-            const dist = newSwipePoint.y - this._swipePoint.y;
+            const dist = newSwipePoint!.y - this._swipePoint.y;
             this._swipePoint = newSwipePoint;
 
             e.preventDefault();

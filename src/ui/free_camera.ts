@@ -45,8 +45,8 @@ export function orientationFromFrame(forward: vec3, up: vec3): quat | null | und
         const xyDir = vec3.normalize([], xyForward);
         vec3.scale(xyUp, xyDir, vec3.dot(xyUp, xyDir));
 
-        up[0] = xyUp[0];
-        up[1] = xyUp[1];
+        up[0] = xyUp[0]!;
+        up[1] = xyUp[1]!;
     }
 
     const right = vec3.cross([], up, forward);
@@ -275,7 +275,7 @@ class FreeCamera {
         mat4.translate(matrix, matrix, invPosition);
 
         // Adjust scale on z (3rd column 3rd row)
-        matrix[10] *= pixelsPerMeter;
+        matrix[10]! *= pixelsPerMeter;
 
         return matrix;
     }
@@ -300,16 +300,16 @@ class FreeCamera {
         mat4.translate(matrix, matrix, invPosition);
 
         // Pre-multiply y (2nd row)
-        matrix[1] *= -1.0;
-        matrix[5] *= -1.0;
-        matrix[9] *= -1.0;
-        matrix[13] *= -1.0;
+        matrix[1]! *= -1.0;
+        matrix[5]! *= -1.0;
+        matrix[9]! *= -1.0;
+        matrix[13]! *= -1.0;
 
         // Post-multiply z (3rd column)
-        matrix[8] *= pixelsPerMeter;
-        matrix[9] *= pixelsPerMeter;
-        matrix[10] *= pixelsPerMeter;
-        matrix[11] *= pixelsPerMeter;
+        matrix[8]! *= pixelsPerMeter;
+        matrix[9]! *= pixelsPerMeter;
+        matrix[10]! *= pixelsPerMeter;
+        matrix[11]! *= pixelsPerMeter;
 
         return matrix;
     }

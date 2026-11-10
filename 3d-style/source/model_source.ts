@@ -134,7 +134,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         const loadPromises: Promise<void>[] = [];
 
         for (const modelId in this._options.models) {
-            const modelSpec = this._options.models[modelId];
+            const modelSpec = this._options.models[modelId]!;
 
             const existingInfo = this._modelsInfo.get(modelId);
             if (existingInfo && existingInfo.model) {
@@ -170,7 +170,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         const colorValue = colorSpec as number[] | string | undefined;
         if (colorValue === undefined) return undefined;
         if (Array.isArray(colorValue)) {
-            return [colorValue[0], colorValue[1], colorValue[2]];
+            return [colorValue[0]!, colorValue[1]!, colorValue[2]!];
         }
         const convertedColor = Color.parse(colorValue);
         if (convertedColor) {
@@ -324,7 +324,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
     reload() {
         this.cancelModelRequests();
         const fqid = makeFQID(this.id, this.scope);
-        this.map.style.clearSource(fqid);
+        this.map.style!.clearSource(fqid);
         this.models = [];
         this._modelsInfo.clear();
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -356,7 +356,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         for (const modelId in modelSpecs) {
             const modelSpec = modelSpecs[modelId];
             const entry = this._modelsInfo.get(modelId);
-            if (entry && entry.modelSpec.uri === modelSpec.uri) {
+            if (entry && entry.modelSpec.uri === modelSpec!.uri) {
                 updatedModelsInfo.set(modelId, entry);
             }
         }

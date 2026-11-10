@@ -150,7 +150,7 @@ class ShadowReceivers {
 
                 for (const point of clampedTileAabbPoints) {
                     const p: [number, number, number] = [point[0] * worldSize, point[1] * worldSize, point[2]];
-                    vec3.transformMat4(p, p, cascades[i].matrix);
+                    vec3.transformMat4(p, p, cascades[i]!.matrix);
 
                     if (p[0] < -1.0 || p[0] > 1.0 || p[1] < -1.0 || p[1] > 1.0) {
                         aabbInsideCascade = false;
@@ -290,7 +290,7 @@ export class ShadowRenderer {
 
         let layerIdx = 0;
         for (const layerId of painter.style.order) {
-            const layer = painter.style._mergedLayers[layerId];
+            const layer = painter.style._mergedLayers[layerId]!;
             if (layer.hasShadowPass() && !layer.isHidden(transform.zoom) && this._hasCasterGeometry(layer, casterCoords)) {
                 lastShadowLayer = layerIdx;
             }
@@ -319,7 +319,7 @@ export class ShadowRenderer {
         const width = this._shadowParameters.shadowMapResolution;
         const height = this._shadowParameters.shadowMapResolution;
 
-        if (this._cascades.length === 0 || this._shadowParameters.shadowMapResolution !== this._cascades[0].texture.size[0]) {
+        if (this._cascades.length === 0 || this._shadowParameters.shadowMapResolution !== this._cascades[0]!.texture.size![0]) {
             this._cascades = [];
             for (let i = 0; i < this._shadowParameters.cascadeCount; ++i) {
                 const gl = context.gl;
@@ -345,12 +345,12 @@ export class ShadowRenderer {
             const elevation = transform.elevation;
             const range = [10000, -10000];
             elevation.visibleDemTiles.filter(tile => tile.dem).forEach(tile => {
-                const minMaxTree = tile.dem.tree;
-                range[0] = Math.min(range[0], minMaxTree.minimums[0]);
-                range[1] = Math.max(range[1], minMaxTree.maximums[0]);
+                const minMaxTree = tile.dem!.tree;
+                range[0] = Math.min(range[0]!, minMaxTree.minimums[0]!);
+                range[1] = Math.max(range[1]!, minMaxTree.maximums[0]!);
             });
             if (range[0] !== 10000) {
-                verticalRange = (range[1] - range[0]) * elevation.exaggeration();
+                verticalRange = (range[1]! - range[0]!) * elevation.exaggeration();
             }
         }
 
@@ -358,7 +358,7 @@ export class ShadowRenderer {
         const shadowCutoutDist = cascadeSplitDist * 3.0;
         const cameraInvProj = new Float64Array(16);
         for (let cascadeIndex = 0; cascadeIndex < this._cascades.length; ++cascadeIndex) {
-            const cascade = this._cascades[cascadeIndex];
+            const cascade = this._cascades[cascadeIndex]!;
 
             let near = transform.height / 50.0;
             let far = 1.0;
@@ -384,7 +384,7 @@ export class ShadowRenderer {
             cascade.far = far;
         }
         const fadeRangeIdx = this._cascades.length - 1;
-        this._uniformValues['u_fade_range'] = [this._cascades[fadeRangeIdx].far * 0.75, this._cascades[fadeRangeIdx].far];
+        this._uniformValues['u_fade_range'] = [this._cascades[fadeRangeIdx]!.far * 0.75, this._cascades[fadeRangeIdx]!.far];
         this._uniformValues['u_shadow_intensity'] = shadowIntensity;
         this._uniformValues['u_shadow_direction'] = [this.shadowDirection[0], this.shadowDirection[1], this.shadowDirection[2]];
         this._uniformValues['u_shadow_texel_size'] = 1 / this._shadowParameters.shadowMapResolution;
@@ -442,11 +442,11 @@ export class ShadowRenderer {
         for (let cascade = 0; cascade < this._numCascadesToRender; ++cascade) {
             painter.currentShadowCascade = cascade;
 
-            context.bindFramebuffer.set(this._cascades[cascade].framebuffer.framebuffer);
+            context.bindFramebuffer.set(this._cascades[cascade]!.framebuffer.framebuffer);
             context.clear({color: Color.white, depth: 1});
 
             for (const layerId of style.order) {
-                const layer = style._mergedLayers[layerId];
+                const layer = style._mergedLayers[layerId]!;
                 if (!layer.hasShadowPass() || layer.isHidden(painter.transform.zoom)) continue;
 
                 const sourceCache = style.getLayerSourceCache(layer);
@@ -519,12 +519,12 @@ export class ShadowRenderer {
 
     calculateShadowPassMatrixFromTile(unwrappedId: UnwrappedTileID): mat4 {
         const tr = this.painter.transform;
-        const lightMatrix = this._cascades[this.painter.currentShadowCascade].matrix;
+        const lightMatrix = this._cascades[this.painter.currentShadowCascade]!.matrix;
         return mat4.multiply(new Float32Array(16), lightMatrix, tr.calculatePosMatrix(unwrappedId));
     }
 
     calculateShadowPassMatrixFromMatrix(matrix: mat4): mat4 {
-        const lightMatrix = this._cascades[this.painter.currentShadowCascade].matrix;
+        const lightMatrix = this._cascades[this.painter.currentShadowCascade]!.matrix;
         return mat4.multiply(shadowPassMatrixScratch, lightMatrix, matrix);
     }
 
@@ -542,10 +542,10 @@ export class ShadowRenderer {
 
         for (let i = 0; i < this._cascades.length; i++) {
             const scratch = getLightMatrixScratch(i);
-            mat4.multiply(scratch, this._cascades[i].matrix, tileMatrix);
+            mat4.multiply(scratch, this._cascades[i]!.matrix, tileMatrix);
             uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = scratch;
             context.activeTexture.set(gl.TEXTURE0 + TextureSlots.ShadowMap0 + i);
-            this._cascades[i].texture.bindExtraParam(gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.GREATER);
+            this._cascades[i]!.texture.bindExtraParam(gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.GREATER);
         }
 
         this.useNormalOffset = !!normalOffsetMode;
@@ -553,8 +553,8 @@ export class ShadowRenderer {
         if (this.useNormalOffset) {
             const meterInTiles = tileToMeter(unwrappedTileID.canonical);
             const texelScale = 2.0 / transform.tileSize * EXTENT / this._shadowParameters.shadowMapResolution;
-            const shadowTexelInTileCoords0 = texelScale * this._cascades[0].boundingSphereRadius;
-            const shadowTexelInTileCoords1 = texelScale * this._cascades.at(-1).boundingSphereRadius;
+            const shadowTexelInTileCoords0 = texelScale * this._cascades[0]!.boundingSphereRadius;
+            const shadowTexelInTileCoords1 = texelScale * this._cascades.at(-1)!.boundingSphereRadius;
             // Instanced model tiles could have smoothened (shared among neighbor faces) normals. Normal is not surface normal
             // and this is why it is needed to increase the offset. 3.0 in case of model-tile could be alternatively replaced by
             // 2.0 if normal would not get scaled by dotScale in shadow_normal_offset().
@@ -580,7 +580,7 @@ export class ShadowRenderer {
         const count = this._shadowParameters.cascadeCount;
         for (let i = 0; i < count; i++) {
             const out = cascadeTileMatrixScratches[i] = cascadeTileMatrixScratches[i] || new Float64Array(16);
-            mat4.multiply(out, this._cascades[i].matrix, tileMatrix);
+            mat4.multiply(out, this._cascades[i]!.matrix, tileMatrix);
         }
         cascadeTileMatrixScratches.length = count;
         return cascadeTileMatrixScratches;
@@ -590,7 +590,7 @@ export class ShadowRenderer {
         if (!this.enabled) return;
         const count = this._shadowParameters.cascadeCount;
         for (let i = 0; i < count; i++) {
-            mat4.multiply(getLightMatrixScratch(i), this._cascades[i].matrix, worldMatrix);
+            mat4.multiply(getLightMatrixScratch(i), this._cascades[i]!.matrix, worldMatrix);
         }
         lightMatrixScratches.length = count;
         this.setupShadowsFromCascadeMatrices(lightMatrixScratches, program, normalOffset);
@@ -605,9 +605,9 @@ export class ShadowRenderer {
         const uniforms = this._uniformValues;
 
         for (let i = 0; i < this._shadowParameters.cascadeCount; i++) {
-            uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = perCascadeMatrices[i];
+            uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = perCascadeMatrices[i]!;
             context.activeTexture.set(gl.TEXTURE0 + TextureSlots.ShadowMap0 + i);
-            this._cascades[i].texture.bindExtraParam(gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.GREATER);
+            this._cascades[i]!.texture.bindExtraParam(gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.GREATER);
         }
 
         this.useNormalOffset = normalOffset;
@@ -630,7 +630,7 @@ export class ShadowRenderer {
     }
 
     getCurrentCascadeFrustum(): Frustum {
-        return this._cascades[this.painter.currentShadowCascade].frustum;
+        return this._cascades[this.painter.currentShadowCascade]!.frustum;
     }
 
     computeSimplifiedTileShadowVolume(id: UnwrappedTileID, height: number, worldSize: number, lightDir: vec3): TileShadowVolume {
@@ -641,25 +641,25 @@ export class ShadowRenderer {
         const t = height / -lightDir[2];
         // Project vertices of bottom edges belonging to sides facing away from the light.
         if (lightDir[0] < 0.0) {
-            vec3.add(corners[0], corners[0], [lightDir[0] * t, 0.0, 0.0]);
-            vec3.add(corners[3], corners[3], [lightDir[0] * t, 0.0, 0.0]);
+            vec3.add(corners[0]!, corners[0]!, [lightDir[0] * t, 0.0, 0.0]);
+            vec3.add(corners[3]!, corners[3]!, [lightDir[0] * t, 0.0, 0.0]);
         } else if (lightDir[0] > 0.0) {
-            vec3.add(corners[1], corners[1], [lightDir[0] * t, 0.0, 0.0]);
-            vec3.add(corners[2], corners[2], [lightDir[0] * t, 0.0, 0.0]);
+            vec3.add(corners[1]!, corners[1]!, [lightDir[0] * t, 0.0, 0.0]);
+            vec3.add(corners[2]!, corners[2]!, [lightDir[0] * t, 0.0, 0.0]);
         }
         if (lightDir[1] < 0.0) {
-            vec3.add(corners[0], corners[0], [0.0, lightDir[1] * t, 0.0]);
-            vec3.add(corners[1], corners[1], [0.0, lightDir[1] * t, 0.0]);
+            vec3.add(corners[0]!, corners[0]!, [0.0, lightDir[1] * t, 0.0]);
+            vec3.add(corners[1]!, corners[1]!, [0.0, lightDir[1] * t, 0.0]);
         } else if (lightDir[1] > 0.0) {
-            vec3.add(corners[2], corners[2], [0.0, lightDir[1] * t, 0.0]);
-            vec3.add(corners[3], corners[3], [0.0, lightDir[1] * t, 0.0]);
+            vec3.add(corners[2]!, corners[2]!, [0.0, lightDir[1] * t, 0.0]);
+            vec3.add(corners[3]!, corners[3]!, [0.0, lightDir[1] * t, 0.0]);
         }
         const tileShadowVolume = {} as TileShadowVolume;
         tileShadowVolume.vertices = corners;
-        tileShadowVolume.planes = [computePlane(corners[1], corners[0], corners[4]), // top
-            computePlane(corners[2], corners[1], corners[5]), // right
-            computePlane(corners[3], corners[2], corners[6]), // bottom
-            computePlane(corners[0], corners[3], corners[7])];
+        tileShadowVolume.planes = [computePlane(corners[1]!, corners[0]!, corners[4]!), // top
+            computePlane(corners[2]!, corners[1]!, corners[5]!), // right
+            computePlane(corners[3]!, corners[2]!, corners[6]!), // bottom
+            computePlane(corners[0]!, corners[3]!, corners[7]!)];
         return tileShadowVolume;
     }
 

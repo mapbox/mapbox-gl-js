@@ -141,7 +141,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
     _dotElement!: HTMLElement;
     _circleElement!: HTMLElement;
     _geolocateButton!: HTMLButtonElement;
-    _geolocationWatchID!: number;
+    _geolocationWatchID: number | undefined;
     _timeoutId?: number;
     _requestTimeoutId?: number;
     _watchState!: WatchState;
@@ -151,7 +151,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
     _accuracy!: number;
     _setup!: boolean; // set to true once the control has been setup
     _heading?: number;
-    _updateMarkerRotationThrottled?: () => number;
+    _updateMarkerRotationThrottled?: () => number | null | undefined;
 
     _numberOfWatches: number;
     _noTimeout!: boolean;
@@ -174,7 +174,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             '_onDeviceOrientation'
         ], this);
 
-        this._updateMarkerRotationThrottled = throttle(this._updateMarkerRotation, 20);
+        this._updateMarkerRotationThrottled = throttle(this._updateMarkerRotation, 20)!;
         this._numberOfWatches = 0;
     }
 
@@ -190,7 +190,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
 
         // clear the geolocation watch if exists
         if (this._geolocationWatchID !== undefined) {
-            this.options.geolocation.clearWatch(this._geolocationWatchID);
+            this.options.geolocation!.clearWatch(this._geolocationWatchID);
             this._geolocationWatchID = undefined;
         }
 
@@ -204,7 +204,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
 
         this._container.remove();
         this._map.off('zoom', this._onZoom);
-        this._map = undefined;
+        this._map = undefined!;
         this._numberOfWatches = 0;
         this._noTimeout = false;
     }
@@ -481,7 +481,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
     // Workaround for browsers that fail to call geolocation callbacks (https://github.com/mapbox/mapbox-gl-js/issues/12531)
     _startRequestTimeout() {
         this._clearRequestTimeout();
-        const timeout = this.options.positionOptions.timeout;
+        const timeout = this.options.positionOptions!.timeout;
         if (!timeout) return;
 
         this._requestTimeoutId = window.setTimeout(() => {
@@ -585,9 +585,9 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
                 this._heading = deviceOrientationEvent.webkitCompassHeading;
             } else if (deviceOrientationEvent.absolute === true) {
                 // non-Safari alpha increases counter clockwise around the z axis
-                this._heading = deviceOrientationEvent.alpha * -1;
+                this._heading = deviceOrientationEvent.alpha! * -1;
             }
-            this._updateMarkerRotationThrottled();
+            this._updateMarkerRotationThrottled!();
         }
     }
 
@@ -668,7 +668,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
                     this._noTimeout = false;
                 }
 
-                this._geolocationWatchID = this.options.geolocation.watchPosition(
+                this._geolocationWatchID = this.options.geolocation!.watchPosition(
                     this._onSuccess, this._onError, positionOptions);
 
                 this._startRequestTimeout();
@@ -678,7 +678,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
                 }
             }
         } else {
-            this.options.geolocation.getCurrentPosition(this._onSuccess, this._onError, this.options.positionOptions);
+            this.options.geolocation!.getCurrentPosition(this._onSuccess, this._onError, this.options.positionOptions);
 
             this._startRequestTimeout();
 
@@ -901,7 +901,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
 
     _clearWatch() {
         this._clearRequestTimeout();
-        this.options.geolocation.clearWatch(this._geolocationWatchID);
+        this.options.geolocation!.clearWatch(this._geolocationWatchID!);
 
         this._removeDeviceOrientationListener();
 

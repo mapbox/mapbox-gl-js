@@ -91,14 +91,14 @@ export function getSizeData(
 
         // calculate covering zoom stops for zoom-dependent values
         let lower = 0;
-        while (lower < zoomStops.length && zoomStops[lower] <= tileZoom) lower++;
+        while (lower < zoomStops.length && zoomStops[lower]! <= tileZoom) lower++;
         lower = Math.max(0, lower - 1);
         let upper = lower;
-        while (upper < zoomStops.length && zoomStops[upper] < tileZoom + 1) upper++;
+        while (upper < zoomStops.length && zoomStops[upper]! < tileZoom + 1) upper++;
         upper = Math.min(zoomStops.length - 1, upper);
 
-        const minZoom = zoomStops[lower];
-        const maxZoom = zoomStops[upper];
+        const minZoom = zoomStops[lower]!;
+        const maxZoom = zoomStops[upper]!;
 
         // We'd like to be able to use CameraExpression or CompositeExpression in these
         // return types rather than ExpressionSpecification, but the former are not

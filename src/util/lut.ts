@@ -14,7 +14,7 @@ export type LUT = {
     texture?: Texture3D;
 };
 
-const colorThemeDataProperty = new DataConstantProperty<string>((styleSpec.colorTheme as Record<string, StylePropertySpecification>).data);
+const colorThemeDataProperty = new DataConstantProperty<string>((styleSpec.colorTheme as Record<string, StylePropertySpecification>).data!);
 
 export function evaluateColorThemeData(scope: string, data: ColorThemeSpecification['data'], configOptions?: ConfigOptions | null): string {
     return new PropertyValue(colorThemeDataProperty, data, scope, configOptions).possiblyEvaluate(new EvaluationParameters(0));

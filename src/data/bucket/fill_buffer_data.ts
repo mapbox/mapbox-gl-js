@@ -69,8 +69,8 @@ class FillBufferData {
     destroy() {
         if (!this.layoutVertexBuffer) return;
         this.layoutVertexBuffer.destroy();
-        this.indexBuffer.destroy();
-        this.lineIndexBuffer.destroy();
+        this.indexBuffer!.destroy();
+        this.lineIndexBuffer!.destroy();
         this.programConfigurations.destroy();
         this.triangleSegments.destroy();
         this.lineSegments.destroy();

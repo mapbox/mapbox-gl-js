@@ -54,7 +54,7 @@ let properties: {
 
 const EMPTY_FEATURE_STATES: FeatureStates = {};
 
-function isStateDependent(value: PossiblyEvaluatedPropertyValue<unknown>): boolean {
+function isStateDependent<T>(value: PossiblyEvaluatedPropertyValue<T>): boolean {
     return value.value.kind !== 'constant' && value.value.isStateDependent;
 }
 
@@ -85,11 +85,11 @@ class SymbolStyleLayer extends StyleLayer {
 
     hasOcclusionOpacityProperties: boolean;
     // The overridable paint properties that `text-field` overrides, and the evaluated `text-field` they were found for
-    _overriddenProperties: Array<keyof PaintProps>;
+    _overriddenProperties!: Array<keyof PaintProps>;
     _overridesTextField: PossiblyEvaluatedPropertyValue<Formatted> | null;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
-        super(layer, getProperties(), scope, lut, options, layer.layout ? (layer.layout as SymbolLayerSpecification['layout'])['icon-image-use-theme'] as string : null);
+        super(layer, getProperties(), scope, lut, options, layer.layout ? (layer.layout as SymbolLayerSpecification['layout'])!['icon-image-use-theme'] as string : null);
         this._colorAdjustmentMatrix = mat4.identity([]);
         this.hasOcclusionOpacityProperties = (layer.paint !== undefined) && (('icon-occlusion-opacity' in layer.paint) || ('text-occlusion-opacity' in layer.paint));
         this._overridesTextField = null;
@@ -104,7 +104,7 @@ class SymbolStyleLayer extends StyleLayer {
     override _finalizeEvaluated(parameters: EvaluationParameters, availableImages: ImageId[]) {
         if (this.appearances) {
             this.appearances.forEach(a => {
-                a.recalculate(parameters, availableImages, this.iconImageUseTheme);
+                a.recalculate(parameters, availableImages, this.iconImageUseTheme!);
             });
         }
 
@@ -115,7 +115,7 @@ class SymbolStyleLayer extends StyleLayer {
             // in stored data and placement logic.
             // For now we disable text-variable-anchor when appearances are present.
             // Deleting it here makes it use the default value
-            delete this.layout._values['text-variable-anchor'];
+            delete (this.layout._values as Record<string, unknown>)['text-variable-anchor'];
         }
 
         if (this.layout.get('icon-rotation-alignment') === 'auto') {
@@ -192,7 +192,7 @@ class SymbolStyleLayer extends StyleLayer {
         const property = this.layout.get(name) as unknown as PossiblyEvaluatedPropertyValue<LayoutProps[T]>;
         const value = property.evaluate(feature, {}, canonical, availableImages) as unknown as string;
         const unevaluated = this.getLayoutPropertyValue(name);
-        if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value) && value) {
+        if (!unevaluated!.isDataDriven() && !isExpression(unevaluated!.value) && value) {
             return resolveTokens(feature.properties, value);
         }
 
@@ -276,7 +276,7 @@ class SymbolStyleLayer extends StyleLayer {
                 .filter(name => SymbolStyleLayer.hasPaintOverride(this.layout, name));
         }
         for (const overridable of this._overriddenProperties) {
-            const overriden = this.paint.get(overridable) as unknown as PossiblyEvaluatedPropertyValue<PaintProps>;
+            const overriden = this.paint.get(overridable) as unknown as PossiblyEvaluatedPropertyValue<unknown>;
             const override = new FormatSectionOverride(overriden);
             const styleExpression = new StyleExpression(override, overriden.property.specification, this.scope, this.options, this.layout.get('icon-image-use-theme'));
             const isLightConstant = overriden.value.kind === 'constant' || overriden.value.isLightConstant;
@@ -287,7 +287,7 @@ class SymbolStyleLayer extends StyleLayer {
                 expression = (new ZoomDependentExpression('composite',
                                                           styleExpression,
                                                           overriden.value.zoomStops,
-                                                          overriden.value.interpolationType,
+                                                          overriden.value.interpolationType!,
                                                           isLightConstant) as CompositeExpression);
             }
             (this.paint._values as unknown as Record<string, PossiblyEvaluatedPropertyValue<unknown>>)[overridable] =

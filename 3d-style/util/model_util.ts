@@ -59,9 +59,9 @@ export function getBoxBottomFace(corners: Array<vec3>, meterToMercator: number):
         {corners: [4, 7, 5, 6], dotProductWithUp: 0},
         {corners: [0, 3, 4, 7], dotProductWithUp: 0}];
     for (const face of boxFaces) {
-        const p0 = corners[face.corners[0]];
-        const p1 = corners[face.corners[1]];
-        const p2 = corners[face.corners[2]];
+        const p0 = corners[face.corners[0]]!;
+        const p1 = corners[face.corners[1]]!;
+        const p2 = corners[face.corners[2]]!;
         const a: [number, number, number] = [p1[0] - p0[0], p1[1] - p0[1], meterToMercator * (p1[2] - p0[2])];
         const b: [number, number, number] = [p2[0] - p0[0], p2[1] - p0[1], meterToMercator * (p2[2] - p0[2])];
         const normal = vec3.cross(a, a, b);
@@ -72,7 +72,7 @@ export function getBoxBottomFace(corners: Array<vec3>, meterToMercator: number):
     boxFaces.sort((a, b) => {
         return a.dotProductWithUp - b.dotProductWithUp;
     });
-    return boxFaces[0].corners;
+    return boxFaces[0]!.corners;
 }
 
 export function rotationFor3Points(
@@ -136,8 +136,8 @@ export function convertModelMatrix(matrix: mat4, transform: Transform, scaleWith
     //  5. Multiply the matrix with globe matrix for getting the final pixel space position
     const worldSize = transform.worldSize;
     const position = [matrix[12], matrix[13], matrix[14]];
-    const lat = latFromMercatorY(position[1] / worldSize);
-    const lng = lngFromMercatorX(position[0] / worldSize);
+    const lat = latFromMercatorY(position[1]! / worldSize);
+    const lng = lngFromMercatorX(position[0]! / worldSize);
     // Construct a matrix for scaling the original one to ecef space and removing the translation in mercator space
     const mercToEcef = mat4.identity([]);
     const sourcePixelsPerMeter = mercatorZfromAltitude(1, lat) * worldSize;
@@ -153,10 +153,10 @@ export function convertModelMatrix(matrix: mat4, transform: Transform, scaleWith
     // Construct coordinate space matrix at the provided location in ecef space.
     const ecefCoord = latLngToECEF(lat, lng);
     // add altitude
-    vec3.add(ecefCoord, ecefCoord, vec3.scale([], vec3.normalize([], ecefCoord), sourcePixelsPerMeter * scale * position[2]));
+    vec3.add(ecefCoord, ecefCoord, vec3.scale([], vec3.normalize([], ecefCoord), sourcePixelsPerMeter * scale * position[2]!));
     const ecefFrame = coordinateFrameAtEcef(ecefCoord);
     mat4.scale(mercToEcef, mercToEcef, [scale, scale, scale * sourcePixelsPerMeter]);
-    mat4.translate(mercToEcef, mercToEcef, [-position[0], -position[1], -position[2]]);
+    mat4.translate(mercToEcef, mercToEcef, [-position[0]!, -position[1]!, -position[2]!]);
     const result = mat4.multiply([], transform.globeMatrix, ecefFrame);
     mat4.multiply(result, result, mercToEcef);
     mat4.multiply(result, result, matrix);
@@ -235,8 +235,8 @@ export function convexPolygonFromPoints(points: Array<vec2>): Array<Point> {
     // Find the leftmost and bottommost point first
     let leftmostIdx = 0;
     for (let i = 1; i < points.length; i++) {
-        if (points[i][0] < points[leftmostIdx][0] ||
-            (points[i][0] === points[leftmostIdx][0] && points[i][1] < points[leftmostIdx][1])) {
+        if (points[i]![0] < points[leftmostIdx]![0] ||
+            (points[i]![0] === points[leftmostIdx]![0] && points[i]![1] < points[leftmostIdx]![1])) {
             leftmostIdx = i;
         }
     }
@@ -251,20 +251,20 @@ export function convexPolygonFromPoints(points: Array<vec2>): Array<Point> {
             break;
         }
 
-        ring.push(new Point(points[current][0], points[current][1]));
+        ring.push(new Point(points[current]![0], points[current]![1]));
         visitedMap[current] = 1;
 
         // Find the next most outmost point
         next = (current + 1) % points.length;
         for (let i = 0; i < points.length; i++) {
-            if ((points[i][0] === points[next][0] && points[i][1] === points[next][1]) ||
-                (points[i][0] === points[current][0] && points[i][1] === points[current][1])) {
+            if ((points[i]![0] === points[next]![0] && points[i]![1] === points[next]![1]) ||
+                (points[i]![0] === points[current]![0] && points[i]![1] === points[current]![1])) {
                 continue;
             }
 
             // Sign of the result of the cross product tells the direction
-            const a: vec2 = [points[i][0] - points[current][0], points[i][1] - points[current][1]];
-            const b: vec2 = [points[next][0] - points[current][0], points[next][1] - points[current][1]];
+            const a: vec2 = [points[i]![0] - points[current]![0], points[i]![1] - points[current]![1]];
+            const b: vec2 = [points[next]![0] - points[current]![0], points[next]![1] - points[current]![1]];
             const det = a[0] * b[1] - a[1] * b[0];
             const dir = a[0] * b[0] + a[1] * b[1];
 
@@ -283,7 +283,7 @@ export function convexPolygonFromPoints(points: Array<vec2>): Array<Point> {
 
     // Close the ring by adding the first point
     if (ring.length > 0) {
-        ring.push(ring[0]);
+        ring.push(ring[0]!);
     }
 
     return ring;
@@ -301,7 +301,7 @@ export function queryGeometryIntersectsProjectedAabb(
     // convert to screen points
     let minDepth = Number.MAX_VALUE;
     for (let c = 0; c < corners.length; ++c) {
-        const corner = corners[c];
+        const corner = corners[c]!;
         corner[0] = (0.5 * corner[0] + 0.5) * transform.width;
         corner[1] = (0.5 - 0.5 * corner[1]) * transform.height;
         if (corner[2] < minDepth) {

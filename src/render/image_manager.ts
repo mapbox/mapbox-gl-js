@@ -137,13 +137,13 @@ class ImageManager extends Evented {
             this.imageProviders.set(scope, new Map());
         }
 
-        assert(!this.imageProviders.get(scope).has(imageProvider.id), 'ImageProvider already exists');
-        this.imageProviders.get(scope).set(imageProvider.id, imageProvider);
+        assert(!this.imageProviders.get(scope)!.has(imageProvider.id), 'ImageProvider already exists');
+        this.imageProviders.get(scope)!.set(imageProvider.id, imageProvider);
     }
 
     removeImageProvider(imageProviderId: ImageProvider['id'], scope: string) {
         if (this.imageProviders.has(scope)) {
-            this.imageProviders.get(scope).delete(imageProviderId);
+            this.imageProviders.get(scope)!.delete(imageProviderId);
         }
     }
 
@@ -186,14 +186,14 @@ class ImageManager extends Evented {
     }
 
     getImage(id: ImageId, scope: string): StyleImage | null | undefined {
-        return this.images.get(scope).get(id.toString());
+        return this.images.get(scope)!.get(id.toString());
     }
 
     addImage(id: ImageId, scope: string, image: StyleImage) {
-        assert(!this.images.get(scope).has(id.toString()), `Image "${id.toString()}" already exists in scope "${scope}"`);
+        assert(!this.images.get(scope)!.has(id.toString()), `Image "${id.toString()}" already exists in scope "${scope}"`);
         if (this._validate(id, image)) {
-            this.images.get(scope).set(id.toString(), image);
-            const versions = this.imageVersions.get(scope);
+            this.images.get(scope)!.set(id.toString(), image);
+            const versions = this.imageVersions.get(scope)!;
             const currentVersion = versions.get(id.toString()) || 0;
             versions.set(id.toString(), currentVersion + 1);
         }
@@ -201,11 +201,11 @@ class ImageManager extends Evented {
 
     _validate(id: ImageId, image: StyleImage): boolean {
         let valid = true;
-        if (!this._validateStretch(image.stretchX, image.data && image.data.width)) {
+        if (!this._validateStretch(image.stretchX, (image.data && image.data.width)!)) {
             this.fire(new ErrorEvent(new Error(`Image "${id.name}" has invalid "stretchX" value`)));
             valid = false;
         }
-        if (!this._validateStretch(image.stretchY, image.data && image.data.height)) {
+        if (!this._validateStretch(image.stretchY, (image.data && image.data.height)!)) {
             this.fire(new ErrorEvent(new Error(`Image "${id.name}" has invalid "stretchY" value`)));
             valid = false;
         }
@@ -236,10 +236,10 @@ class ImageManager extends Evented {
         if (!content) return true;
         if (content.length !== 4) return false;
         if (!image.usvg) {
-            if (content[0] < 0 || image.data.width < content[0]) return false;
-            if (content[1] < 0 || image.data.height < content[1]) return false;
-            if (content[2] < 0 || image.data.width < content[2]) return false;
-            if (content[3] < 0 || image.data.height < content[3]) return false;
+            if (content[0] < 0 || image.data!.width < content[0]) return false;
+            if (content[1] < 0 || image.data!.height < content[1]) return false;
+            if (content[2] < 0 || image.data!.width < content[2]) return false;
+            if (content[3] < 0 || image.data!.height < content[3]) return false;
         }
         if (content[2] < content[0]) return false;
         if (content[3] < content[1]) return false;
@@ -247,20 +247,20 @@ class ImageManager extends Evented {
     }
 
     updateImage(id: ImageId, scope: string, image: StyleImage) {
-        const oldImage = this.images.get(scope).get(id.toString());
+        const oldImage = this.images.get(scope)!.get(id.toString());
         assert(oldImage, `Image "${id.toString()}" does not exist in scope "${scope}"`);
-        assert(oldImage.data.width === image.data.width && oldImage.data.height === image.data.height, `Image "${id.toString()}" dimensions mismatch`);
-        image.version = oldImage.version + 1;
-        this.images.get(scope).set(id.toString(), image);
-        this.updatedImages.get(scope).add(id);
-        const versions = this.imageVersions.get(scope);
+        assert(oldImage.data!.width === image.data!.width && oldImage.data!.height === image.data!.height, `Image "${id.toString()}" dimensions mismatch`);
+        image.version = oldImage.version! + 1;
+        this.images.get(scope)!.set(id.toString(), image);
+        this.updatedImages.get(scope)!.add(id);
+        const versions = this.imageVersions.get(scope)!;
         const currentVersion = versions.get(id.toString()) || 0;
         versions.set(id.toString(), currentVersion + 1);
         this.removeFromImageRasterizerCache(id, scope);
     }
 
     clearUpdatedImages(scope: string) {
-        this.updatedImages.get(scope).clear();
+        this.updatedImages.get(scope)!.clear();
     }
 
     removeFromImageRasterizerCache(id: ImageId, scope: string) {
@@ -271,17 +271,17 @@ class ImageManager extends Evented {
     }
 
     removeImage(id: ImageId, scope: string) {
-        const images = this.images.get(scope);
+        const images = this.images.get(scope)!;
         assert(images.has(id.toString()), `Image "${id.toString()}" does not exist in scope "${scope}"`);
-        const image = images.get(id.toString());
+        const image = images.get(id.toString())!;
         images.delete(id.toString());
         // Increment version on removal
         // This ensures that if the same image ID is added again, it gets a new version
         // and won't incorrectly reuse cached atlases from the old image
-        const versions = this.imageVersions.get(scope);
+        const versions = this.imageVersions.get(scope)!;
         const currentVersion = versions.get(id.toString()) || 0;
         versions.set(id.toString(), currentVersion + 1);
-        this.patterns.get(scope).delete(id.toString());
+        this.patterns.get(scope)!.delete(id.toString());
         this.removeFromImageRasterizerCache(id, scope);
         if (image.userImage && image.userImage.onRemove) {
             image.userImage.onRemove();
@@ -289,7 +289,7 @@ class ImageManager extends Evented {
     }
 
     listImages(scope: string): ImageId[] {
-        return Array.from(this.images.get(scope).keys()).map((id) => ImageId.from(id));
+        return Array.from(this.images.get(scope)!.keys()).map((id) => ImageId.from(id));
     }
 
     hasImageProviderForSource(sourceId: string, scope: string): boolean {
@@ -312,7 +312,7 @@ class ImageManager extends Evented {
                 continue;
             }
 
-            const imageProvider = imageProviders.get(id.iconsetId);
+            const imageProvider = imageProviders!.get(id.iconsetId);
             if (!imageProvider) continue;
 
             const image = this.getImage(id, scope);
@@ -339,7 +339,7 @@ class ImageManager extends Evented {
         const imagesInScope = this.images.get(scope);
         if (!isLoaded) {
             for (const id of images) {
-                if (!imagesInScope.has(id.toString())) {
+                if (!imagesInScope!.has(id.toString())) {
                     hasAllDependencies = false;
                 }
             }
@@ -381,7 +381,7 @@ class ImageManager extends Evented {
     }
 
     _notify(ids: ImageId[], scope: string, callback: Callback<{images: StyleImageMap<StringifiedImageId>; versions: Map<string, number>}>) {
-        const imagesInScope = this.images.get(scope);
+        const imagesInScope = this.images.get(scope)!;
         const images: StyleImageMap<StringifiedImageId> = new Map();
         const scopeVersions = this.imageVersions.get(scope);
         // versions for atlas caching; the worker only looks up the images it requested
@@ -404,7 +404,7 @@ class ImageManager extends Evented {
 
             // Clone the image so that our own copy of its ArrayBuffer doesn't get transferred.
             const styleImage = {
-                data: image.usvg ? null : image.data.clone(),
+                data: image.usvg ? null : image.data!.clone(),
                 pixelRatio: image.pixelRatio,
                 sdf: image.sdf,
                 usvg: image.usvg,
@@ -418,13 +418,13 @@ class ImageManager extends Evented {
                 // Since vector images don't have any data, we add the width and height from the source svg
                 // so that we can compute the scale factor later if needed
                 Object.assign(styleImage, {
-                    width: image.icon.usvg_tree.width,
-                    height: image.icon.usvg_tree.height
+                    width: image.icon!.usvg_tree!.width,
+                    height: image.icon!.usvg_tree!.height
                 });
             }
 
             const key = ImageId.toString(id);
-            images.set(key, styleImage);
+            images.set(key, styleImage as StyleImage);
             const version = scopeVersions && scopeVersions.get(key);
             if (version) versions.set(key, version);
         }
@@ -435,13 +435,13 @@ class ImageManager extends Evented {
     // Pattern stuff
 
     getPixelSize(scope: string): Size {
-        const {width, height} = this.atlasImage.get(scope);
+        const {width, height} = this.atlasImage.get(scope)!;
         return {width, height};
     }
 
     getPattern(id: ImageId, scope: string, lut: LUT | null): ImagePosition | null | undefined {
         const strImageId = id.toString();
-        const patternsInScope = this.patterns.get(scope);
+        const patternsInScope = this.patterns.get(scope)!;
         const pattern = patternsInScope.get(strImageId);
 
         const image = this.getImage(id, scope);
@@ -453,7 +453,7 @@ class ImageManager extends Evented {
             if (pattern.position.version === image.version) {
                 return pattern.position;
             } else {
-                pattern.position.version = image.version;
+                pattern.position.version = image.version!;
             }
         } else {
             if (image.usvg && !image.data) {
@@ -466,7 +466,7 @@ class ImageManager extends Evented {
                 const imageVariant = new ImageVariant(id).scaleSelf(browser.devicePixelRatio);
                 const tasks: ImageRasterizationWorkerTasks = new Map([[imageVariant.toString(), {image, imageVariant}]]);
                 const rasterizedImages = this._rasterizeImages(scope, tasks);
-                this.storePatternImage(imageVariant, scope, image, lut, rasterizedImages);
+                this.storePatternImage(imageVariant, scope, image, lut!, rasterizedImages);
                 return null;
             } else {
                 this.storePattern(id, scope, image);
@@ -474,7 +474,7 @@ class ImageManager extends Evented {
         }
 
         this._updatePatternAtlas(scope, lut);
-        return patternsInScope.get(strImageId).position;
+        return patternsInScope.get(strImageId)!.position;
     }
 
     getPatternInFlightId(id: StringifiedImageId, scope: string): FQID<StringifiedImageId> {
@@ -497,11 +497,11 @@ class ImageManager extends Evented {
     }
 
     storePattern(id: ImageId, scope: string, image: StyleImage) {
-        const w = image.data.width + PATTERN_PADDING * 2;
-        const h = image.data.height + PATTERN_PADDING * 2;
+        const w = image.data!.width + PATTERN_PADDING * 2;
+        const h = image.data!.height + PATTERN_PADDING * 2;
         const bin = {w, h, x: 0, y: 0};
         const position = new ImagePosition(bin, image, PATTERN_PADDING);
-        this.patterns.get(scope).set(id.toString(), {bin, position});
+        this.patterns.get(scope)!.set(id.toString(), {bin, position});
     }
 
     destroyAtlasTextures() {
@@ -518,10 +518,10 @@ class ImageManager extends Evented {
         let atlasTexture = this.atlasTexture.get(scope);
 
         if (!atlasTexture) {
-            atlasTexture = new Texture(context, this.atlasImage.get(scope), gl.RGBA8);
+            atlasTexture = new Texture(context, this.atlasImage.get(scope)!, gl.RGBA8);
             this.atlasTexture.set(scope, atlasTexture);
         } else if (this.dirty) {
-            atlasTexture.update(this.atlasImage.get(scope));
+            atlasTexture.update(this.atlasImage.get(scope)!);
             this.dirty = false;
         }
 
@@ -529,19 +529,19 @@ class ImageManager extends Evented {
     }
 
     _updatePatternAtlas(scope: string, lut: LUT | null) {
-        const patternsInScope = this.patterns.get(scope);
+        const patternsInScope = this.patterns.get(scope)!;
         const bins = Array.from(patternsInScope.values()).map(({bin}) => bin);
         const {w, h} = potpack(bins);
 
-        const dst = this.atlasImage.get(scope);
+        const dst = this.atlasImage.get(scope)!;
         dst.resize({width: w || 1, height: h || 1});
 
         const imagesInScope = this.images.get(scope);
         for (const [id, {bin, position}] of patternsInScope.entries()) {
             let padding = position.padding;
-            const x = bin.x + padding;
-            const y = bin.y + padding;
-            const src = imagesInScope.get(id).data;
+            const x = bin.x! + padding;
+            const y = bin.y! + padding;
+            const src = imagesInScope!.get(id)!.data!;
             const w = src.width;
             const h = src.height;
 
@@ -577,10 +577,10 @@ class ImageManager extends Evented {
         const imagesInScope = this.images.get(scope);
         for (const id of ids) {
             // the callback for the image was already dispatched for a different frame
-            if (this.callbackDispatchedThisFrame.get(scope).has(id.toString())) continue;
-            this.callbackDispatchedThisFrame.get(scope).add(id.toString());
+            if (this.callbackDispatchedThisFrame.get(scope)!.has(id.toString())) continue;
+            this.callbackDispatchedThisFrame.get(scope)!.add(id.toString());
 
-            const image = imagesInScope.get(id.toString());
+            const image = imagesInScope!.get(id.toString());
             assert(image, `Image "${id.toString()}" does not exist in scope "${scope}"`);
 
             const updated = renderStyleImage(image);

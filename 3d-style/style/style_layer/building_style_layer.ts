@@ -113,7 +113,7 @@ class BuildingStyleLayer extends StyleLayer {
 
         const screenQuery = queryGeometry.queryGeometry;
         const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
-        return checkIntersection(projectedBase, projectedTop, projectedQueryGeometry);
+        return checkIntersection(projectedBase!, projectedTop!, projectedQueryGeometry);
     }
 }
 

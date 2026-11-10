@@ -70,14 +70,14 @@ export function drawElevatedStructures(params: DrawFillParams) {
             let renderableSegments: SegmentVector;
             let programConfiguration: ProgramConfiguration;
             if (drawBridges) {
-                renderableSegments = elevatedStructures.renderableBridgeSegments;
+                renderableSegments = elevatedStructures.renderableBridgeSegments!;
                 programConfiguration = elevatedStructures.bridgeProgramConfigurations.get(layer.id);
             } else {
-                renderableSegments = elevatedStructures.renderableTunnelSegments;
+                renderableSegments = elevatedStructures.renderableTunnelSegments!;
                 programConfiguration = elevatedStructures.tunnelProgramConfigurations.get(layer.id);
             }
 
-            if (!renderableSegments || renderableSegments.segments[0].primitiveLength === 0) continue;
+            if (!renderableSegments || renderableSegments.segments[0]!.primitiveLength === 0) continue;
 
             assert(elevatedStructures.vertexBuffer && elevatedStructures.vertexBufferNormal && elevatedStructures.indexBuffer);
 
@@ -143,7 +143,7 @@ export function drawElevatedFillShadows(params: DrawFillParams) {
         if (!elevatedStructures) {
             continue;
         }
-        if (!elevatedStructures.shadowCasterSegments || elevatedStructures.shadowCasterSegments.segments[0].primitiveLength === 0) {
+        if (!elevatedStructures.shadowCasterSegments || elevatedStructures.shadowCasterSegments.segments[0]!.primitiveLength === 0) {
             continue;
         }
 
@@ -231,7 +231,7 @@ export function drawDepthPrepass(painter: Painter, sourceCache: SourceCache | un
     // before its HD road tiles arrive, so linking here would block the load window for a pass that
     // draws nothing. `pass` is fixed per call, so one memo holds the single variant this call uses.
     const programName = 'elevatedStructuresDepthReconstruct';
-    let program: Program<ElevatedStructuresDepthReconstructUniformsType>;
+    let program!: Program<ElevatedStructuresDepthReconstructUniformsType>;
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -247,32 +247,32 @@ export function drawDepthPrepass(painter: Painter, sourceCache: SourceCache | un
 
         const heightRange = elevationBufferData.heightRange;
         const unwrappedTileID = coord.toUnwrapped();
-        const cameraTilePos = computeCameraPositionInTile(unwrappedTileID, cameraMercPos);
+        const cameraTilePos = computeCameraPositionInTile(unwrappedTileID, cameraMercPos!);
         const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
             layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
 
-        let uniformValues: UniformValues<ElevatedStructuresDepthReconstructUniformsType>;
-        let depthMode: DepthMode;
-        let segments: SegmentVector;
+        let uniformValues!: UniformValues<ElevatedStructuresDepthReconstructUniformsType>;
+        let depthMode!: DepthMode;
+        let segments!: SegmentVector;
 
         if (pass === 'initialize') {
             // Depth reconstruction is required only for underground models. Use a slight margin
             // to include surface models that might have some outlier vertices below the ground plane.
             const heightMargin = 1.0;
-            if (!heightRange || heightRange.min >= heightMargin || elevatedStructures.depthSegments.segments[0].primitiveLength === 0) continue;
+            if (!heightRange || heightRange.min >= heightMargin || elevatedStructures.depthSegments.segments[0]!.primitiveLength === 0) continue;
             uniformValues = elevatedStructuresDepthReconstructUniformValues(tileMatrix, cameraTilePos, depthBias, 1.0, 0.0);
             depthMode = depthModeFor3D;
             segments = elevatedStructures.depthSegments;
             program = program || painter.getOrCreateProgram(programName, {defines: ['DEPTH_RECONSTRUCTION']});
         } else if (pass === 'reset') {
             // Carve holes for underground polygons only
-            if (!heightRange || heightRange.min >= 0.0 || elevatedStructures.maskSegments.segments[0].primitiveLength === 0) continue;
+            if (!heightRange || heightRange.min >= 0.0 || elevatedStructures.maskSegments!.segments[0]!.primitiveLength === 0) continue;
             uniformValues = elevatedStructuresDepthReconstructUniformValues(tileMatrix, cameraTilePos, 0.0, 0.0, 1.0);
             depthMode = depthModeReset;
-            segments = elevatedStructures.maskSegments;
+            segments = elevatedStructures.maskSegments!;
             program = program || painter.getOrCreateProgram(programName, {defines: ['DEPTH_RECONSTRUCTION']});
         } else if (pass === 'geometry') {
-            if (elevatedStructures.depthSegments.segments[0].primitiveLength === 0) continue;
+            if (elevatedStructures.depthSegments.segments[0]!.primitiveLength === 0) continue;
             uniformValues = elevatedStructuresDepthReconstructUniformValues(tileMatrix, cameraTilePos, depthBias, 1.0, 0.0);
             depthMode = depthModeFor3D;
             segments = elevatedStructures.depthSegments;
@@ -306,7 +306,7 @@ export function drawGroundShadowMask(painter: Painter, sourceCache: SourceCache 
     const stencilMode = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
     const cameraMercPos = painter.transform.getFreeCameraOptions().position;
     // Link lazily (below) and reuse across tiles; stays unlinked while the mask has no geometry to draw.
-    let program: Program<ElevatedStructuresDepthReconstructUniformsType>;
+    let program!: Program<ElevatedStructuresDepthReconstructUniformsType>;
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -314,12 +314,12 @@ export function drawGroundShadowMask(painter: Painter, sourceCache: SourceCache 
         if (!bucket) continue;
 
         const elevatedStructures = bucket.hdExt ? bucket.hdExt.elevatedStructures : undefined;
-        if (!elevatedStructures || !elevatedStructures.depthSegments || elevatedStructures.depthSegments.segments[0].primitiveLength === 0) {
+        if (!elevatedStructures || !elevatedStructures.depthSegments || elevatedStructures.depthSegments.segments[0]!.primitiveLength === 0) {
             continue;
         }
 
         const unwrappedTileID = coord.toUnwrapped();
-        const cameraTilePos = computeCameraPositionInTile(unwrappedTileID, cameraMercPos);
+        const cameraTilePos = computeCameraPositionInTile(unwrappedTileID, cameraMercPos!);
         const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
             layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
 
@@ -327,7 +327,7 @@ export function drawGroundShadowMask(painter: Painter, sourceCache: SourceCache 
         const uniformValues = elevatedStructuresDepthReconstructUniformValues(tileMatrix, cameraTilePos, 0.0, 1.0, 0.0);
         program.draw(painter, gl.TRIANGLES, depthMode,
             stencilMode, ColorMode.disabled, CullFaceMode.disabled, uniformValues,
-            layer.id, elevatedStructures.vertexBuffer, elevatedStructures.indexBuffer, elevatedStructures.depthSegments,
+            layer.id, elevatedStructures.vertexBuffer!, elevatedStructures.indexBuffer, elevatedStructures.depthSegments,
             layer.paint, painter.transform.zoom);
     }
 }

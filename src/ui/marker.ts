@@ -107,7 +107,7 @@ export default class Marker extends Evented<MarkerEvents> {
     _updateMoving: () => void;
     _occludedOpacity: number;
     _altitude: number;
-    _pointerEvents?: string;
+    _pointerEvents?: string | null;
     _svgElement!: Element;
     _shadowElement!: Element;
 
@@ -147,11 +147,11 @@ export default class Marker extends Evented<MarkerEvents> {
         this._scale = scale;
         this._draggable = draggable;
         this._clickTolerance = clickTolerance;
-        this._rotation = rotation;
-        this._rotationAlignment = rotationAlignment;
-        this._pitchAlignment = pitchAlignment;
-        this._occludedOpacity = occludedOpacity;
-        this._altitude = altitude;
+        this._rotation = rotation!;
+        this._rotationAlignment = rotationAlignment!;
+        this._pitchAlignment = pitchAlignment!;
+        this._occludedOpacity = occludedOpacity!;
+        this._altitude = altitude!;
 
         this._state = 'inactive';
         this._isDragging = false;
@@ -360,7 +360,7 @@ export default class Marker extends Evented<MarkerEvents> {
         if (altitude === this._altitude) return this;
 
         const previousAltitude = this._altitude;
-        this._altitude = altitude || defaultOptions.altitude;
+        this._altitude = (altitude || defaultOptions.altitude)!;
 
         // toggle shadow ellipse when altitude crosses zero in either direction
         // (the ground shadow is only visible at altitude 0)
@@ -916,7 +916,7 @@ export default class Marker extends Evented<MarkerEvents> {
      * marker.setRotation(45);
      */
     setRotation(rotation: number): this {
-        this._rotation = rotation || defaultOptions.rotation;
+        this._rotation = (rotation || defaultOptions.rotation)!;
         this._update();
         return this;
     }
@@ -941,7 +941,7 @@ export default class Marker extends Evented<MarkerEvents> {
      * marker.setRotationAlignment('viewport');
      */
     setRotationAlignment(alignment: string): this {
-        this._rotationAlignment = alignment || defaultOptions.rotationAlignment;
+        this._rotationAlignment = (alignment || defaultOptions.rotationAlignment)!;
         this._update();
         return this;
     }
@@ -970,7 +970,7 @@ export default class Marker extends Evented<MarkerEvents> {
      * marker.setPitchAlignment('map');
      */
     setPitchAlignment(alignment: string): this {
-        this._pitchAlignment = alignment || defaultOptions.pitchAlignment;
+        this._pitchAlignment = (alignment || defaultOptions.pitchAlignment)!;
         this._update();
         return this;
     }
@@ -999,7 +999,7 @@ export default class Marker extends Evented<MarkerEvents> {
      * marker.setOccludedOpacity(0.3);
      */
     setOccludedOpacity(opacity: number): this {
-        this._occludedOpacity = opacity || defaultOptions.occludedOpacity;
+        this._occludedOpacity = (opacity || defaultOptions.occludedOpacity)!;
         this._update();
         return this;
     }

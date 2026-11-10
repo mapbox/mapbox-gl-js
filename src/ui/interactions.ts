@@ -11,7 +11,7 @@ import type {FeatureFilter} from '../style-spec/feature_filter/index';
 import type {Map as MapboxMap} from './map';
 import type {FilterSpecification} from '../style-spec/types';
 import type {TargetDescriptor} from '../util/vectortile_to_geojson';
-import type {MapEvents, MapInteractionEventType, MapMouseEvent} from './events';
+import type {MapEventOf, MapEvents, MapInteractionEventType, MapMouseEvent} from './events';
 
 /**
  * `Interaction` is a configuration object used with {@link Map#addInteraction} to handle user events, such as clicks and hovers.
@@ -133,7 +133,7 @@ export class InteractionSet {
         if (type === 'mouseover') type = 'mouseenter';
         if (type === 'mouseout') type = 'mouseleave';
 
-        const interactions = this.interactionsByType.get(type) || new Map();
+        const interactions = this.interactionsByType.get(type) || new Map<string, Interaction>();
 
         // set up delegated map listeners if it's a hover interaction
         if (type === 'mouseenter' || type === 'mouseleave') {
@@ -145,11 +145,10 @@ export class InteractionSet {
 
         // if we didn't have an interaction of this type before, add a map listener for it
         } else if (interactions.size === 0) {
-            this.map.on(type, this.handleType);
+            this.map.on(type, this.handleType as (event: MapEventOf<MapInteractionEventType>) => void);
         }
 
         if (interactions.size === 0) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this.interactionsByType.set(type, interactions);
         }
         interactions.set(id, interaction);
@@ -186,7 +185,7 @@ export class InteractionSet {
                 this.map.off('mouseout', this.handleOut);
             }
         } else if (interactions.size === 0) {
-            this.map.off(type, this.handleType);
+            this.map.off(type, this.handleType as (event: MapEventOf<MapInteractionEventType>) => void);
         }
     }
 
@@ -197,7 +196,7 @@ export class InteractionSet {
                 targets.push({targetId, target: interaction.target, filter: this.filters.get(targetId)});
             }
         }
-        return this.map.style.queryRenderedTargets(point, targets, this.map.transform);
+        return this.map.style!.queryRenderedTargets(point, targets, this.map.transform);
     }
 
     handleMove(event: MapMouseEvent) {
@@ -219,7 +218,7 @@ export class InteractionSet {
         }
         if (featuresLeaving.size) {
             event.type = 'mouseleave';
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             this.handleType(event, Array.from(featuresLeaving.values()));
         }
     }
@@ -243,7 +242,7 @@ export class InteractionSet {
 
         // The interactions are handled in reverse order of addition,
         // so that the last added interaction to the same target handles it first.
-        const interactions = Array.from(this.interactionsByType.get(event.type)).reverse();
+        const interactions = Array.from(this.interactionsByType.get(event.type)!).reverse();
         const delegated = !!features;
         features = features || this.queryTargets(event.point, interactions);
 
@@ -266,7 +265,7 @@ export class InteractionSet {
                     const targetFeatureId = getFeatureTargetKey(variant, feature, id);
 
                     // refresh feature state for features from delegated events (they're cached from previous move event)
-                    if (delegated && targetFeature.id !== undefined) targetFeature.state = this.map.getFeatureState(targetFeature);
+                    if (delegated && targetFeature.id !== undefined) targetFeature.state = this.map.getFeatureState(targetFeature)!;
 
                     const hovered = isMouseEnter ? this.prevHoveredFeatures.get(targetFeatureId) : null;
                     const interactionEvent = new InteractionEvent(event, id, interaction, targetFeature);
@@ -301,7 +300,7 @@ export class InteractionSet {
             const {handler, target} = interaction;
             if (target) continue;
 
-            const stop = handler(new InteractionEvent(event, id, interaction, null));
+            const stop = handler(new InteractionEvent(event, id, interaction, (null)!));
             if (stop !== false) {
                 break;
             }

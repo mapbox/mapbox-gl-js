@@ -134,11 +134,11 @@ export type WorkerSourceTiled3dModelRequest = WorkerSourceTileRequest & {
  */
 export type WorkerSourceVectorTileResult = {
     buckets: Array<Bucket>;
-    imageAtlas: ImageAtlas | ImageAtlasReference;
-    glyphAtlasImage: AlphaImage;
-    lineAtlas: LineAtlas;
+    imageAtlas: ImageAtlas | ImageAtlasReference | null;
+    glyphAtlasImage: AlphaImage | null;
+    lineAtlas: LineAtlas | null;
     featureIndex: FeatureIndex;
-    collisionBoxArray: CollisionBoxArray;
+    collisionBoxArray: CollisionBoxArray | null;
     hasTunnelGeometry?: boolean;
     // True when any transferred bucket carries an HD extension (elevated roads, etc.).
     // Main uses this flag to know whether to await the HD module before deserializing
@@ -152,9 +152,9 @@ export type WorkerSourceVectorTileResult = {
     brightness: number;
     headers?: Headers;
     // Only used for benchmarking:
-    glyphMap?: GlyphMap;
-    iconMap?: StyleImageMap<StringifiedImageVariant>;
-    glyphPositions?: GlyphPositions;
+    glyphMap?: GlyphMap | null;
+    iconMap?: StyleImageMap<StringifiedImageVariant> | null;
+    glyphPositions?: GlyphPositions | null;
     frcCoveragePolygons?: FrcCoveragePolygons;
     hasDeferredRoadStructure?: boolean;
     parsedElevationFeatures?: ElevationFeature[];
@@ -202,12 +202,14 @@ export interface WorkerSource {
      * back to the main thread for rendering. Resolves with:
      * `{ buckets, featureIndex, collisionIndex, rawTileData}`.
      */
-    loadTile: (params: WorkerSourceTileRequest) => Promise<unknown>;
+    // eslint-disable-next-line @typescript-eslint/method-signature-style -- method syntax is bivariant, so each source can narrow the request type
+    loadTile(params: WorkerSourceTileRequest): Promise<unknown>;
     /**
      * Re-parses a tile that has already been loaded. Yields the same data as
      * {@link WorkerSource#loadTile}.
      */
-    reloadTile: (params: WorkerSourceTileRequest) => Promise<unknown>;
+    // eslint-disable-next-line @typescript-eslint/method-signature-style -- see loadTile
+    reloadTile(params: WorkerSourceTileRequest): Promise<unknown>;
     /**
      * Aborts loading a tile that is in progress.
      */

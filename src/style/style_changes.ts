@@ -102,7 +102,7 @@ class StyleChanges {
      */
     getRemovedLayer(layer: TypedStyleLayer): TypedStyleLayer | null | undefined {
         if (!this._removedLayers[layer.scope]) return null;
-        return this._removedLayers[layer.scope][layer.id];
+        return this._removedLayers[layer.scope]![layer.id];
     }
 
     /**
@@ -111,7 +111,7 @@ class StyleChanges {
      */
     discardLayerRemoval(layer: TypedStyleLayer) {
         if (!this._removedLayers[layer.scope]) return;
-        delete this._removedLayers[layer.scope][layer.id];
+        delete this._removedLayers[layer.scope]![layer.id];
     }
 
     /**
@@ -123,12 +123,12 @@ class StyleChanges {
 
         for (const scope in this._updatedLayers) {
             updatesByScope[scope] = updatesByScope[scope] || {};
-            updatesByScope[scope].updatedIds = Array.from(this._updatedLayers[scope].values());
+            updatesByScope[scope].updatedIds = Array.from(this._updatedLayers[scope]!.values());
         }
 
         for (const scope in this._removedLayers) {
             updatesByScope[scope] = updatesByScope[scope] || {};
-            updatesByScope[scope].removedIds = Object.keys(this._removedLayers[scope]);
+            updatesByScope[scope].removedIds = Object.keys(this._removedLayers[scope]!);
         }
 
         return updatesByScope;

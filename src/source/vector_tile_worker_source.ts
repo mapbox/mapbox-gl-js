@@ -73,7 +73,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
      * Loads tile data using the provider if available, otherwise falls back to loadVectorData.
      * @private
      */
-    loadTileData(params: WorkerSourceVectorTileRequest, callback: LoadVectorDataCallback): Cancelable['cancel'] {
+    loadTileData(params: WorkerSourceVectorTileRequest, callback: LoadVectorDataCallback): Cancelable['cancel'] | undefined {
         if (!this.tileProvider) {
             return this.loadVectorData(params, callback);
         }
@@ -85,9 +85,9 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
     }
 
     async loadTileWithProvider(provider: TileProvider<ArrayBuffer | ImageBitmap>, params: WorkerSourceVectorTileRequest, controller: AbortController, callback: LoadVectorDataCallback) {
-        const {z, x, y} = params.tileID.canonical;
+        const {z, x, y} = params.tileID!.canonical;
         try {
-            const response = await provider.loadTile({z, x, y}, {request: params.request, signal: controller.signal});
+            const response = await provider.loadTile({z, x, y}, {request: params.request!, signal: controller.signal});
 
             if (controller.signal.aborted) return;
 
@@ -112,7 +112,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             callback(null, {rawData: response.data, headers});
         } catch (err) {
             if (controller.signal.aborted) return;
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+
             callback(err instanceof Error ? err : new Error(String(err)));
         }
     }
@@ -215,15 +215,13 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             return null;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const resourceTiming: Record<string, any> = {};
+        const resourceTiming: Record<string, unknown> = {};
         if (perf) {
             // Transferring a copy of rawTileData because the worker needs to retain its copy.
             const resourceTimingData = getPerformanceMeasurement(requestParam);
             // it's necessary to eval the result of getEntriesByName() here via parse/stringify
             // late evaluation in the main thread causes TypeError: illegal invocation
             if (resourceTimingData.length > 0) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 resourceTiming.resourceTiming = JSON.parse(JSON.stringify(resourceTimingData));
             }
         }
@@ -245,7 +243,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
         if (loaded && loaded[uid]) {
             return new Promise((resolve, reject) => {
-                const workerTile = loaded[uid];
+                const workerTile = loaded[uid]!;
                 workerTile.updateParameters(params);
                 const done: WorkerSourceVectorTileCallback = (err, data) => {
                     const reloadCallback = workerTile.reloadCallback;

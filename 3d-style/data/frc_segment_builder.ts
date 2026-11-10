@@ -61,15 +61,15 @@ export function buildFrcLevelSegments(
     const frcSegments = new Map<number | null, Array<Segment>>();
 
     let currentSegmentIdx = 0;
-    let currentFrc = data.featureTriSegments[0].frc;
+    let currentFrc = data.featureTriSegments[0]!.frc;
     let sortedSegment: Segment = {
-        vertexOffset: segArray[currentSegmentIdx].vertexOffset,
+        vertexOffset: segArray[currentSegmentIdx]!.vertexOffset,
         primitiveOffset: 0,
-        vertexLength: segArray[currentSegmentIdx].vertexLength,
+        vertexLength: segArray[currentSegmentIdx]!.vertexLength,
         primitiveLength: 0,
         vaos: {},
         sortKey: undefined,
-        batchIndex: segArray[currentSegmentIdx].batchIndex,
+        batchIndex: segArray[currentSegmentIdx]!.batchIndex,
     };
 
     const closeCurrentSegment = () => {
@@ -77,7 +77,7 @@ export function buildFrcLevelSegments(
             if (!frcSegments.has(currentFrc)) {
                 frcSegments.set(currentFrc, []);
             }
-            frcSegments.get(currentFrc).push({...sortedSegment});
+            frcSegments.get(currentFrc)!.push({...sortedSegment});
         }
     };
 
@@ -87,13 +87,13 @@ export function buildFrcLevelSegments(
             currentSegmentIdx = triSegment.segIdx;
             currentFrc = triSegment.frc;
             sortedSegment = {
-                vertexOffset: segArray[currentSegmentIdx].vertexOffset,
+                vertexOffset: segArray[currentSegmentIdx]!.vertexOffset,
                 primitiveOffset: sortedTriangles.length / 3,
-                vertexLength: segArray[currentSegmentIdx].vertexLength,
+                vertexLength: segArray[currentSegmentIdx]!.vertexLength,
                 primitiveLength: 0,
                 vaos: {},
                 sortKey: undefined,
-                batchIndex: segArray[currentSegmentIdx].batchIndex,
+                batchIndex: segArray[currentSegmentIdx]!.batchIndex,
             };
         }
 
@@ -108,14 +108,14 @@ export function buildFrcLevelSegments(
         }
 
         for (let i = triSegment.start; i < triSegment.end; i++) {
-            sortedTriangles.push(triArray[i]);
+            sortedTriangles.push(triArray[i]!);
         }
         sortedSegment.primitiveLength += (triSegment.end - triSegment.start) / 3;
     }
     closeCurrentSegment();
 
     for (let i = 0; i < sortedTriangles.length; i++) {
-        triArray[i] = sortedTriangles[i];
+        triArray[i] = sortedTriangles[i]!;
     }
 
     for (const [key, segs] of frcSegments) {

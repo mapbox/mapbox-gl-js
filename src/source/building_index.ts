@@ -33,7 +33,7 @@ class BuildingIndex {
         this.layers = [];
         const visible = false, visibilityChanged = false;
         for (const layerId in this.style._mergedLayers) {
-            const layer = this.style._mergedLayers[layerId];
+            const layer = this.style._mergedLayers[layerId]!;
             if (layer.type === 'fill-extrusion' || layer.type === 'building') {
                 this.layers.push({layer, visible, visibilityChanged});
             } else if (layer.type === 'model') {
@@ -163,9 +163,9 @@ class BuildingIndex {
         // fill extrusions before landmarks
         for (let i = 0; i < this.layers.length; ++i) {
             const l = this.layers[i];
-            const layer = l.layer;
+            const layer = l!.layer;
             if (layer.type !== 'fill-extrusion' && layer.type !== 'building') continue;
-            const {bucket, tileID, verticalScale} = this.currentBuildingBuckets[i];
+            const {bucket, tileID, verticalScale} = this.currentBuildingBuckets[i]!;
             if (!bucket) continue;
 
             const {tileX, tileY} = this._mapCoordToOverlappingTile(tid, x, y, tileID);
@@ -185,9 +185,9 @@ class BuildingIndex {
 
         for (let i = 0; i < this.layers.length; ++i) {
             const l = this.layers[i];
-            const layer = l.layer;
-            if (layer.type !== 'model' || !l.visible) continue;
-            const {bucket, tileID} = this.currentBuildingBuckets[i];
+            const layer = l!.layer;
+            if (layer.type !== 'model' || !l!.visible) continue;
+            const {bucket, tileID} = this.currentBuildingBuckets[i]!;
             if (!bucket) continue;
 
             const {tileX, tileY} = this._mapCoordToOverlappingTile(tid, x, y, tileID);

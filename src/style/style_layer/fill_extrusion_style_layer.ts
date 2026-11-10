@@ -136,7 +136,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
 
         const screenQuery = queryGeometry.queryGeometry;
         const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
-        return checkIntersection(projectedBase, projectedTop, projectedQueryGeometry);
+        return checkIntersection(projectedBase!, projectedTop!, projectedQueryGeometry);
     }
 }
 
@@ -157,7 +157,7 @@ export function getIntersectionDistance(projectedQueryGeometry: Array<Point>, pr
         //
         // Check whether points are coincident and use other points if they are.
         let i = 0;
-        const a = projectedFace[i++];
+        const a = projectedFace[i++]!;
         let b: Point3D | undefined;
         while (!b || a.equals(b)) {
             b = projectedFace[i++];
@@ -171,8 +171,8 @@ export function getIntersectionDistance(projectedQueryGeometry: Array<Point>, pr
             const p = projectedQueryGeometry[0];
 
             const ab = b.sub(a);
-            const ac = c.sub(a);
-            const ap = p.sub(a);
+            const ac = c!.sub(a);
+            const ap = p!.sub(a);
 
             const dotABAB = dot(ab, ab);
 
@@ -188,7 +188,7 @@ export function getIntersectionDistance(projectedQueryGeometry: Array<Point>, pr
             const u = 1 - v - w;
 
             // Use the barycentric weighting along with the original triangle z coordinates to get the point of intersection.
-            const distance = a.z * u + b.z * v + c.z * w;
+            const distance = a.z * u + b.z * v + c!.z * w;
 
             if (isFinite(distance)) return distance;
         }
@@ -213,17 +213,17 @@ export function checkIntersection(projectedBase: Array<Array<Point3D>>, projecte
     let closestDistance = Infinity;
 
     if (polygonIntersectsMultiPolygon(projectedQueryGeometry, projectedTop)) {
-        closestDistance = getIntersectionDistance(projectedQueryGeometry, projectedTop[0]);
+        closestDistance = getIntersectionDistance(projectedQueryGeometry, projectedTop[0]!);
     }
 
     for (let r = 0; r < projectedTop.length; r++) {
-        const ringTop = projectedTop[r];
+        const ringTop = projectedTop[r]!;
         const ringBase = projectedBase[r];
         for (let p = 0; p < ringTop.length - 1; p++) {
-            const topA = ringTop[p];
-            const topB = ringTop[p + 1];
-            const baseA = ringBase[p];
-            const baseB = ringBase[p + 1];
+            const topA = ringTop[p]!;
+            const topB = ringTop[p + 1]!;
+            const baseA = ringBase![p]!;
+            const baseB = ringBase![p + 1]!;
             const face = [topA, topB, baseB, baseA, topA];
             if (polygonIntersectsPolygon(projectedQueryGeometry, face)) {
                 closestDistance = Math.min(closestDistance, getIntersectionDistance(projectedQueryGeometry, face));
@@ -329,14 +329,14 @@ function projectExtrusion2D(geometry: Array<Array<Point>>, zBase: number, zTop: 
     const projectedBase = [];
     const projectedTop = [];
 
-    const baseXZ = m[8] * zBase;
-    const baseYZ = m[9] * zBase;
-    const baseZZ = m[10] * zBase;
-    const baseWZ = m[11] * zBase;
-    const topXZ = m[8] * zTop;
-    const topYZ = m[9] * zTop;
-    const topZZ = m[10] * zTop;
-    const topWZ = m[11] * zTop;
+    const baseXZ = m[8]! * zBase;
+    const baseYZ = m[9]! * zBase;
+    const baseZZ = m[10]! * zBase;
+    const baseWZ = m[11]! * zBase;
+    const topXZ = m[8]! * zTop;
+    const topYZ = m[9]! * zTop;
+    const topZZ = m[10]! * zTop;
+    const topWZ = m[11]! * zTop;
 
     for (const r of geometry) {
         const ringBase = [];
@@ -345,10 +345,10 @@ function projectExtrusion2D(geometry: Array<Array<Point>>, zBase: number, zTop: 
             const x = p.x + translation.x;
             const y = p.y + translation.y;
 
-            const sX = m[0] * x + m[4] * y + m[12];
-            const sY = m[1] * x + m[5] * y + m[13];
-            const sZ = m[2] * x + m[6] * y + m[14];
-            const sW = m[3] * x + m[7] * y + m[15];
+            const sX = m[0]! * x + m[4]! * y + m[12]!;
+            const sY = m[1]! * x + m[5]! * y + m[13]!;
+            const sZ = m[2]! * x + m[6]! * y + m[14]!;
+            const sW = m[3]! * x + m[7]! * y + m[15]!;
 
             const baseX = sX + baseXZ;
             const baseY = sY + baseYZ;

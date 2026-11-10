@@ -29,7 +29,7 @@ const identity = mat4.identity(new Float32Array(16));
 export default class Projection {
     name: string;
     wrap: boolean;
-    conic: boolean;
+    conic!: boolean;
     requiresDraping: boolean;
     supportsWorldCopies: boolean;
     supportsTerrain: boolean;

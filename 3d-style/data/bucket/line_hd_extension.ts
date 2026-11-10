@@ -19,12 +19,12 @@ import type {Subsegment} from '../../../src/data/bucket/line_bucket';
 
 function computeSegNextDir(info: LineInfo, line: Point[]) {
     assert(line.length > 1);
-    return info.nextPoint.sub(line.at(-2)).unit();
+    return info.nextPoint.sub(line.at(-2)!).unit();
 }
 
 function computeSegPrevDir(info: LineInfo, line: Point[]) {
     assert(line.length > 1);
-    return line[1].sub(info.prevPoint).unit();
+    return line[1]!.sub(info.prevPoint).unit();
 }
 
 /**
@@ -117,7 +117,7 @@ export class LineHDExtension {
             const tiled = getElevationFeature(feature, elevationFeatures, elevationParams ? elevationParams.registry : undefined, canonical);
             const hasId = feature.properties != null &&
                 Object.hasOwn(feature.properties, PROPERTY_ELEVATION_ID) &&
-                !Number.isNaN(+feature.properties[PROPERTY_ELEVATION_ID]);
+                !Number.isNaN(+(feature.properties[PROPERTY_ELEVATION_ID] as number));
 
             // Defer/hide only applies to lines; circle/fill render flat on a miss.
 
@@ -164,7 +164,7 @@ export class LineHDExtension {
                     // with LineLayoutArray's layout (e.g. the a_feature_index field added for line UBOs).
                     const int16Stride = bucket.layoutVertexArray.bytesPerElement / 2;
                     for (let i = vertexOffset; i < bucket.layoutVertexArray.length; i++) {
-                        const point = new Point(bucket.layoutVertexArray.int16[i * int16Stride] >> 1, bucket.layoutVertexArray.int16[i * int16Stride + 1] >> 1);
+                        const point = new Point(bucket.layoutVertexArray.int16[i * int16Stride]! >> 1, bucket.layoutVertexArray.int16[i * int16Stride + 1]! >> 1);
 
                         const height = sampler.pointElevation(point, elevation, MARKUP_ELEVATION_BIAS);
                         this.updateHeightRange(height);
@@ -219,8 +219,8 @@ export class LineHDExtension {
         const linesInfo: LineInfo[] = [];
         const clippedLines = clipLines(geometry, -ELEVATION_CLIP_MARGIN, -ELEVATION_CLIP_MARGIN, EXTENT + ELEVATION_CLIP_MARGIN, EXTENT + ELEVATION_CLIP_MARGIN, linesInfo);
         for (let i = 0; i < clippedLines.length; i++) {
-            const line = clippedLines[i];
-            const info = linesInfo[i];
+            const line = clippedLines[i]!;
+            const info = linesInfo[i]!;
 
             const subseg: Subsegment = {
                 progress: {min: info.progress.min, max: info.progress.max},
@@ -229,7 +229,7 @@ export class LineHDExtension {
             };
 
             const multiLineMetricsIndex = hasMapboxLineMetrics && info.parentIndex > 0 ? info.parentIndex : null;
-            bucket.addLine(line, feature, canonical, join, cap, miterLimit, roundLimit, subseg, multiLineMetricsIndex);
+            bucket.addLine(line, feature, canonical, join, cap, miterLimit, roundLimit, subseg, multiLineMetricsIndex!);
         }
 
         bucket.fillNonElevatedRoadSegment(vertexOffset);
@@ -282,10 +282,10 @@ export class LineHDExtension {
  * @private
  */
 export function maybeAttachLineHDExt(bucket: LineBucket, coverageSourceLayers: string[] | null | undefined): void {
-    const elevationReference = bucket.layers[0].layout.get('line-elevation-reference');
+    const elevationReference = bucket.layers[0]!.layout.get('line-elevation-reference');
     const elevationEnabled = elevationReference === 'hd-road-markup';
     const frcEnabled = !!coverageSourceLayers && coverageSourceLayers.length > 0 &&
-        matchesCoverageSourceLayer(coverageSourceLayers, bucket.layers[0].source, bucket.sourceLayerName);
+        matchesCoverageSourceLayer(coverageSourceLayers, bucket.layers[0]!.source, bucket.sourceLayerName);
     if (!elevationEnabled && !frcEnabled) return;
     bucket.hdExt = new LineHDExtension(elevationEnabled, frcEnabled);
 }

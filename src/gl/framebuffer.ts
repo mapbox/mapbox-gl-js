@@ -12,8 +12,8 @@ class Framebuffer {
     height: number;
     format!: TextureFormat;
     framebuffer: WebGLFramebuffer;
-    colorAttachment0!: ColorAttachment;
-    colorAttachment1!: ColorAttachment;
+    colorAttachment0: ColorAttachment | undefined;
+    colorAttachment1: ColorAttachment | undefined;
     depthAttachment!: DepthRenderbufferAttachment | DepthTextureAttachment;
     depthAttachmentType: DepthBufferType | null | undefined;
     _stencilRbo: WebGLRenderbuffer | null | undefined;
@@ -46,7 +46,7 @@ class Framebuffer {
 
     static createWithTexture(
         context: Context,
-        existingFbo: Framebuffer | null,
+        existingFbo: Framebuffer | null | undefined,
         width: number,
         height: number,
         attachStencil?: boolean
@@ -57,7 +57,7 @@ class Framebuffer {
         context.viewport.set([0, 0, width, height]);
 
         if (existingFbo && existingFbo.width === width && existingFbo.height === height) {
-            gl.bindTexture(gl.TEXTURE_2D, existingFbo.colorAttachment0.get());
+            gl.bindTexture(gl.TEXTURE_2D, existingFbo.colorAttachment0!.get() ?? null);
             context.bindFramebuffer.set(existingFbo.framebuffer);
             return existingFbo;
         }
@@ -72,12 +72,12 @@ class Framebuffer {
 
         const fbo = context.createFramebuffer(width, height, 1, null);
         fbo.format = format;
-        fbo.colorAttachment0.set(texture.texture);
+        fbo.colorAttachment0!.set(texture.texture);
 
         if (attachStencil) {
             const stencilRbo = context.createRenderbuffer(gl.DEPTH24_STENCIL8, width, height);
             context.bindFramebuffer.set(fbo.framebuffer);
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, stencilRbo);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, stencilRbo ?? null);
             fbo._stencilRbo = stencilRbo;
         }
 
@@ -95,12 +95,12 @@ class Framebuffer {
     removeColorAttachment(context: Context, idx: number) {
         const gl = this.context.gl;
 
-        let texture: WebGLTexture;
+        let texture: WebGLTexture | null | undefined;
         if (idx === 0) {
-            texture = this.colorAttachment0.get();
+            texture = this.colorAttachment0!.get();
             this.colorAttachment0 = undefined;
         } else if (idx === 1) {
-            texture = this.colorAttachment1.get();
+            texture = this.colorAttachment1!.get();
             this.colorAttachment1 = undefined;
         }
         if (texture) gl.deleteTexture(texture);

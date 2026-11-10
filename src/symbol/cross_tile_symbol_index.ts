@@ -85,7 +85,7 @@ export class TileLayerIndex {
             // we need to sort them to keep a consistent crossTileID for symbol instances when a collision is found
             const matchedIds = this.index.range(x - tolerance, y - tolerance, x + tolerance, y + tolerance).sort((a, b) => a - b);
             for (const id of matchedIds) {
-                const crossTileID = this.crossTileIDs[id];
+                const crossTileID = this.crossTileIDs[id]!;
                 if (this.keys[id] === key && !zoomCrossTileIDs.has(crossTileID)) {
                     // Once we've marked ourselves duplicate against this parent symbol,
                     // don't let any other symbols at the same zoom level duplicate against
@@ -203,7 +203,7 @@ class CrossTileSymbolLayerIndex {
 
     removeBucketCrossTileIDs(zoom: number, removedBucket: TileLayerIndex) {
         for (const crossTileID of removedBucket.crossTileIDs) {
-            this.usedCrossTileIDs[zoom].delete(crossTileID);
+            this.usedCrossTileIDs[zoom]!.delete(crossTileID);
         }
     }
 

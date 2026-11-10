@@ -10,7 +10,7 @@ export {getAnchors, getCenterAnchor};
 function getLineLength(line: Array<Point>): number {
     let lineLength = 0;
     for (let k = 0; k < line.length - 1; k++) {
-        lineLength += line[k].dist(line[k + 1]);
+        lineLength += line[k]!.dist(line[k + 1]!);
     }
     return lineLength;
 }
@@ -50,15 +50,15 @@ function getCenterAnchor(
         const a = line[i],
             b = line[i + 1];
 
-        const segmentDistance = a.dist(b);
+        const segmentDistance = a!.dist(b!);
 
         if (prevDistance + segmentDistance > centerDistance) {
             // The center is on this segment
             const t = (centerDistance - prevDistance) / segmentDistance,
-                x = interpolate(a.x, b.x, t),
-                y = interpolate(a.y, b.y, t);
+                x = interpolate(a!.x, b!.x, t),
+                y = interpolate(a!.y, b!.y, t);
 
-            const anchor = new Anchor(x, y, 0, b.angleTo(a), i);
+            const anchor = new Anchor(x, y, 0, b!.angleTo(a!), i);
             if (!angleWindowSize || checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {
                 return anchor;
             } else {
@@ -91,7 +91,7 @@ function getAnchors(
     const labelLength = shapedLabelLength * boxScale;
 
     // Is the line continued from outside the tile boundary?
-    const isLineContinued = line[0].x === 0 || line[0].x === tileExtent || line[0].y === 0 || line[0].y === tileExtent;
+    const isLineContinued = line[0]!.x === 0 || line[0]!.x === tileExtent || line[0]!.y === 0 || line[0]!.y === tileExtent;
 
     // Is the label long, relative to the spacing?
     // If so, adjust the spacing so there is always a minimum space of `spacing / 4` between label edges.
@@ -128,15 +128,15 @@ function resample(line: Array<Point>, offset: number, spacing: number, angleWind
         const a = line[i],
             b = line[i + 1];
 
-        const segmentDist = a.dist(b),
-            angle = b.angleTo(a);
+        const segmentDist = a!.dist(b!),
+            angle = b!.angleTo(a!);
 
         while (markedDistance + spacing < distance + segmentDist) {
             markedDistance += spacing;
 
             const t = (markedDistance - distance) / segmentDist,
-                x = interpolate(a.x, b.x, t),
-                y = interpolate(a.y, b.y, t);
+                x = interpolate(a!.x, b!.x, t),
+                y = interpolate(a!.y, b!.y, t);
 
             // Check that the point is within the tile boundaries and that
             // the label would fit before the beginning and end of the line

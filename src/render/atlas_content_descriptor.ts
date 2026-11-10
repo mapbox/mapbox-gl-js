@@ -41,7 +41,7 @@ function combineHash(hash: number, value: number): number {
 function addDescriptors(images: Map<StringifiedImageVariant, StyleImage>, imageVersions: ImageVersionsMap, descriptors: ImageDescriptor[], variantCache?: Map<StringifiedImageVariant, ImageVariant>) {
     for (const [id] of images.entries()) {
         // Use cached variant if available to avoid re-parsing
-        const imageVariant = (variantCache && variantCache.get(id)) || ImageVariant.parse(id);
+        const imageVariant = (variantCache && variantCache.get(id)) || ImageVariant.parse(id)!;
         const imageId = imageVariant.id.toString();
         const version = imageVersions.get(imageId) || 0;
 
@@ -143,7 +143,7 @@ export class AtlasContentDescriptor {
         let j = 0;
         if (subset.length > superset.length) return false;
         while (i < subset.length && j < superset.length) {
-            const cmp = compareFn(subset[i], superset[j]);
+            const cmp = compareFn(subset[i]!, superset[j]!);
             if (cmp === 0) {
                 // Found a match, advance both
                 i++;

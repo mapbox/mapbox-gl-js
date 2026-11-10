@@ -149,19 +149,19 @@ export function localExtremum(arc: Arc, dim: number): number | null | undefined 
     if (arc.a[dim] === 0) {
         t = (1.0 / arc.angle) * 0.5 * Math.PI;
     } else {
-        t = 1.0 / arc.angle * Math.atan(arc.b[dim] / arc.a[dim] / Math.sin(arc.angle) - 1.0 / Math.tan(arc.angle));
+        t = 1.0 / arc.angle * Math.atan(arc.b[dim]! / arc.a[dim]! / Math.sin(arc.angle) - 1.0 / Math.tan(arc.angle));
     }
 
     if (t < 0 || t > 1) {
         return null;
     }
 
-    return slerp(arc.a[dim], arc.b[dim], arc.angle, clamp(t, 0.0, 1.0)) + arc.center[dim];
+    return slerp(arc.a[dim]!, arc.b[dim]!, arc.angle, clamp(t, 0.0, 1.0)) + arc.center[dim]!;
 }
 
 export function globeTileBounds(id: CanonicalTileID): Aabb {
     if (id.z <= 1) {
-        return GLOBE_LOW_ZOOM_TILE_AABBS[id.z + id.y * 2 + id.x];
+        return GLOBE_LOW_ZOOM_TILE_AABBS[id.z + id.y * 2 + id.x]!;
     }
 
     // After zoom 1 surface function is monotonic for all tile patches
@@ -197,16 +197,16 @@ export function transitionTileAABBinECEF(id: CanonicalTileID, tr: Transform): Aa
     const sw: vec3 = [w, s, 0];
     const se: vec3 = [e, s, 0];
     // Transform Mercator globeCorners to ECEF
-    const worldToECEFMatrix = mat4.invert([], tr.globeMatrix);
+    const worldToECEFMatrix = mat4.invert([], tr.globeMatrix)!;
     vec3.transformMat4(nw, nw, worldToECEFMatrix);
     vec3.transformMat4(ne, ne, worldToECEFMatrix);
     vec3.transformMat4(sw, sw, worldToECEFMatrix);
     vec3.transformMat4(se, se, worldToECEFMatrix);
     // Interpolate Mercator corners and globe corners
-    corners[0] = interpolateVec3(corners[0], sw, phase);
-    corners[1] = interpolateVec3(corners[1], se, phase);
-    corners[2] = interpolateVec3(corners[2], ne, phase);
-    corners[3] = interpolateVec3(corners[3], nw, phase);
+    corners[0] = interpolateVec3(corners[0]!, sw, phase);
+    corners[1] = interpolateVec3(corners[1]!, se, phase);
+    corners[2] = interpolateVec3(corners[2]!, ne, phase);
+    corners[3] = interpolateVec3(corners[3]!, nw, phase);
 
     return Aabb.fromPoints(corners);
 }
@@ -320,8 +320,8 @@ export function aabbForTileOnGlobe(
         vec3.scaleAndAdd(arcCenter, arcCenter, yAxis, shift);
     }
 
-    const arcStart = corners[closestArcIdx];
-    const arcEnd = corners[(closestArcIdx + 1) % 4];
+    const arcStart = corners[closestArcIdx]!;
+    const arcEnd = corners[(closestArcIdx + 1) % 4]!;
 
     const closestArc = new Arc(arcStart, arcEnd, arcCenter);
     const arcExtremum: vec3 = [
@@ -334,10 +334,10 @@ export function aabbForTileOnGlobe(
         const mercatorCorners = mercatorTileCornersInCameraSpace(tileId, numTiles, tr._pixelsPerMercatorPixel, camX, camY);
         // Interpolate the four corners towards their world space location in mercator projection during transition.
         for (let i = 0; i < corners.length; i++) {
-            interpolateVec3(corners[i], mercatorCorners[i], phase);
+            interpolateVec3(corners[i]!, mercatorCorners[i]!, phase);
         }
         // Calculate the midpoint of the closest edge midpoint in Mercator
-        const mercatorMidpoint = vec3.add([], mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4]);
+        const mercatorMidpoint = vec3.add([], mercatorCorners[closestArcIdx]!, mercatorCorners[(closestArcIdx + 1) % 4]!);
         vec3.scale(mercatorMidpoint, mercatorMidpoint, .5);
         // Interpolate globe extremum toward Mercator midpoint
         interpolateVec3(arcExtremum, mercatorMidpoint, phase);
@@ -575,7 +575,7 @@ export function getGridMatrix(
     const tileWidth = e - w;
     const tileHeight = n - s;
     const tileToLng = tileWidth / GLOBE_VERTEX_GRID_SIZE;
-    const tileToLat = -tileHeight / GLOBE_LATITUDINAL_GRID_LOD_TABLE[latitudinalLod];
+    const tileToLat = -tileHeight / GLOBE_LATITUDINAL_GRID_LOD_TABLE[latitudinalLod]!;
 
     const matrix: mat3 = [0, tileToLng, 0, tileToLat, 0, 0, n, w, 0];
 
@@ -762,8 +762,8 @@ export class GlobeSharedBuffers {
         const segments: Array<GridLodSegments> = [];
 
         const xVertices = longitudinalCellsCount + 1 + 2 * (EMBED_SKIRTS ? 1 : 0);
-        const yVerticesHighLodNoStrip = latitudinalLods[0] + 1;
-        const yVerticesHighLodWithStrip = latitudinalLods[0] + 1 + (EMBED_SKIRTS ? 1 + latitudinalLods.length : 0);
+        const yVerticesHighLodNoStrip = latitudinalLods[0]! + 1;
+        const yVerticesHighLodWithStrip = latitudinalLods[0]! + 1 + (EMBED_SKIRTS ? 1 + latitudinalLods.length : 0);
 
         // Index adjustment, used to make strip (x, y) vertex input attribute data
         // to match same data on ordinary grid edges
@@ -808,7 +808,7 @@ export class GlobeSharedBuffers {
             for (let lodIdx = 0; lodIdx < latitudinalLods.length; ++lodIdx) {
                 const lastYRowForLod = latitudinalLods[lodIdx];
                 for (let x = 0; x < xVertices; ++x) {
-                    vertices.emplaceBack(...prepareVertex(x, lastYRowForLod, true));
+                    vertices.emplaceBack(...prepareVertex(x, lastYRowForLod!, true));
                 }
             }
         }
@@ -817,7 +817,7 @@ export class GlobeSharedBuffers {
         for (let lodIdx = 0; lodIdx < latitudinalLods.length; ++lodIdx) {
             const indexOffset = indices.length;
 
-            const yVerticesLod = latitudinalLods[lodIdx] + 1 + 2 * (EMBED_SKIRTS ? 1 : 0);
+            const yVerticesLod = latitudinalLods[lodIdx]! + 1 + 2 * (EMBED_SKIRTS ? 1 : 0);
 
             const skirtsOnlyIndices = new TriangleIndexArray();
 
@@ -847,7 +847,7 @@ export class GlobeSharedBuffers {
             const withoutSkirts = SegmentVector.simpleSegment(0, indexOffset, vertices.length, indices.length - indexOffset);
 
             for (let i = 0; i < skirtsOnlyIndices.uint16.length; i += 3) {
-                indices.emplaceBack(skirtsOnlyIndices.uint16[i], skirtsOnlyIndices.uint16[i + 1], skirtsOnlyIndices.uint16[i + 2]);
+                indices.emplaceBack(skirtsOnlyIndices.uint16[i]!, skirtsOnlyIndices.uint16[i + 1]!, skirtsOnlyIndices.uint16[i + 2]!);
             }
 
             // Segments grid + skirts only
@@ -916,7 +916,7 @@ export class GlobeSharedBuffers {
     }
 
     getGridBuffers(latitudinalLod: number, withSkirts: boolean): [VertexBuffer, IndexBuffer, SegmentVector] {
-        return [this._gridBuffer, this._gridIndexBuffer, withSkirts ? this._gridSegments[latitudinalLod].withSkirts : this._gridSegments[latitudinalLod].withoutSkirts];
+        return [this._gridBuffer, this._gridIndexBuffer, withSkirts ? this._gridSegments[latitudinalLod]!.withSkirts : this._gridSegments[latitudinalLod]!.withoutSkirts];
     }
 
     getPoleBuffers(z: number, textured: boolean): [VertexBuffer, VertexBuffer, IndexBuffer, SegmentVector] {
@@ -924,7 +924,7 @@ export class GlobeSharedBuffers {
             textured ? this._texturedPoleNorthVertexBuffer : this._poleNorthVertexBuffer,
             textured ? this._texturedPoleSouthVertexBuffer : this._poleSouthVertexBuffer,
             this._poleIndexBuffer,
-            this._poleSegments[z]
+            this._poleSegments[z]!
         ];
     }
 }

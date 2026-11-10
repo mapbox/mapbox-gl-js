@@ -99,7 +99,7 @@ export function queryRenderedFeatures(
     scope: string | undefined = undefined
 ): QueryResult {
     const sourceCacheTransform = query.sourceCache.transform;
-    const tileResults = query.sourceCache.tilesIn(queryGeometry, query.has3DLayers, visualizeQueryGeometry);
+    const tileResults = query.sourceCache.tilesIn(queryGeometry, query.has3DLayers!, visualizeQueryGeometry);
     tileResults.sort(sortTilesIn);
 
     const renderedFeatureLayers: RenderedFeatureLayers = [];
@@ -121,8 +121,8 @@ export function queryRenderedFeatures(
 
     for (const layerId in query.layers) {
         const layer = query.layers[layerId];
-        if (layer.styleLayer) {
-            const queryResults = layer.styleLayer.queryRenderedFeatures(queryGeometry, query.sourceCache, transform);
+        if (layer!.styleLayer) {
+            const queryResults = layer!.styleLayer.queryRenderedFeatures(queryGeometry, query.sourceCache, transform);
             if (Object.keys(queryResults).length) {
                 renderedFeatureLayers.push({wrappedTileID: 0, queryResults});
             }
@@ -151,13 +151,13 @@ export function queryRenderedSymbols(
     const renderedSymbols = collisionIndex.queryRenderedSymbols(queryGeometry);
     const bucketQueryData: RetainedQueryData[] = [];
     for (const bucketInstanceId of Object.keys(renderedSymbols).map(Number)) {
-        bucketQueryData.push(retainedQueryData[bucketInstanceId]);
+        bucketQueryData.push(retainedQueryData[bucketInstanceId]!);
     }
     bucketQueryData.sort(sortTilesIn);
 
     for (const queryData of bucketQueryData) {
         const bucketSymbols = queryData.featureIndex.lookupSymbolFeatures(
-            renderedSymbols[queryData.bucketInstanceId],
+            renderedSymbols[queryData.bucketInstanceId]!,
             queryData.bucketIndex,
             queryData.sourceLayerIndex,
             query,
@@ -168,7 +168,7 @@ export function queryRenderedSymbols(
         for (const layerID in bucketSymbols) {
             const resultFeatures = result[layerID] = result[layerID] || [];
             const layerSymbols = bucketSymbols[layerID];
-            layerSymbols.sort((a, b) => {
+            layerSymbols!.sort((a, b) => {
                 // Match topDownFeatureComparator from FeatureIndex, but using
                 // most recent sorting of features from bucket.sortFeatures
                 const featureSortOrder = queryData.featureSortOrder;
@@ -188,7 +188,7 @@ export function queryRenderedSymbols(
                     return b.featureIndex - a.featureIndex;
                 }
             });
-            for (const symbolFeature of layerSymbols) {
+            for (const symbolFeature of layerSymbols!) {
                 resultFeatures.push(symbolFeature);
             }
         }
@@ -214,10 +214,10 @@ export function querySourceFeatures(sourceCache: SourceCache, params?: {
     const dataTiles: Record<string, boolean> = {};
     for (let i = 0; i < tiles.length; i++) {
         const tile = tiles[i];
-        const dataID = tile.tileID.canonical.key;
+        const dataID = tile!.tileID.canonical.key;
         if (!dataTiles[dataID]) {
             dataTiles[dataID] = true;
-            tile.querySourceFeatures(result, params);
+            tile!.querySourceFeatures(result, params);
         }
     }
 
@@ -243,7 +243,7 @@ function mergeRenderedFeatureLayers(tiles: RenderedFeatureLayers): QueryResult {
             const tileFeatures = queryResults[layerID];
             const wrappedIDFeatures: Record<number, boolean> = wrappedIDLayers[layerID] = wrappedIDLayers[layerID] || {};
             const resultFeatures = result[layerID] = result[layerID] || [];
-            for (const tileFeature of tileFeatures) {
+            for (const tileFeature of tileFeatures!) {
                 if (!wrappedIDFeatures[tileFeature.featureIndex]) {
                     wrappedIDFeatures[tileFeature.featureIndex] = true;
                     resultFeatures.push(tileFeature);

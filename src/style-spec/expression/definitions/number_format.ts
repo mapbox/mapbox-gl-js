@@ -119,8 +119,7 @@ export default class NumberFormat implements Expression {
     }
 
     serialize(): SerializedExpression {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const options: Record<string, any> = {};
+        const options: Record<string, SerializedExpression> = {};
         if (this.locale) {
             options['locale'] = this.locale.serialize();
         }

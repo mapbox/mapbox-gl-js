@@ -26,7 +26,7 @@ import type {FrcCoveragePolygons, FrcCoverageTile} from '../../src/source/frc_co
 /// runtime when FRC is inactive.
 function polygonsHaveGeometry(polygons: FrcCoveragePolygons): boolean {
     for (const p of polygons) {
-        if (p.rings.length > 0 && p.rings[0].length > 0) return true;
+        if (p.rings.length > 0 && p.rings[0]!.length > 0) return true;
     }
     return false;
 }
@@ -70,7 +70,7 @@ export function drawFillFrcCoverageSecondPass(
         if (opacityMul !== 1.0) info.uniformValues['u_opacity_multiplier'] = opacityMul;
         info.program.draw(painter, drawMode, info.depthMode,
             stencilMode, colorMode, CullFaceMode.disabled, info.uniformValues,
-            layer.id, info.bufferData.layoutVertexBuffer, info.indexBuffer, info.segments,
+            layer.id, info.bufferData.layoutVertexBuffer!, info.indexBuffer, info.segments,
             layer.paint, zoom, info.programConfiguration, info.dynamicBuffers);
         if (opacityMul !== 1.0) info.uniformValues['u_opacity_multiplier'] = 1.0;
     };
@@ -186,13 +186,13 @@ export function drawFillFrcCoverageFirstPass(p: FillFrcCoverageFirstPassParams):
             if (levelSegs.segments.length === 0) continue;
             p.program.draw(painter, p.drawMode, p.depthMode,
                 p.stencilMode, p.colorMode, CullFaceMode.disabled, p.uniformValues,
-                p.layer.id, p.bufferData.layoutVertexBuffer, p.indexBuffer, levelSegs,
+                p.layer.id, p.bufferData.layoutVertexBuffer!, p.indexBuffer, levelSegs,
                 p.layer.paint, zoom, p.programConfiguration, p.dynamicBuffers);
         }
         if (frcData.frcNonRoadSegments.segments.length > 0) {
             p.program.draw(painter, p.drawMode, p.depthMode,
                 p.stencilMode, p.colorMode, CullFaceMode.disabled, p.uniformValues,
-                p.layer.id, p.bufferData.layoutVertexBuffer, p.indexBuffer, frcData.frcNonRoadSegments,
+                p.layer.id, p.bufferData.layoutVertexBuffer!, p.indexBuffer, frcData.frcNonRoadSegments,
                 p.layer.paint, zoom, p.programConfiguration, p.dynamicBuffers);
         }
         return 'drawn';

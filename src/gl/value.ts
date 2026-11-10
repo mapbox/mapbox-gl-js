@@ -346,7 +346,7 @@ export class Program extends BaseValue<WebGLProgram | null | undefined> {
 
     override set(v?: WebGLProgram | null) {
         if (v === this.current && !this.dirty) return;
-        this.gl.useProgram(v);
+        this.gl.useProgram(v ?? null);
         this.current = v;
         this.dirty = false;
     }
@@ -388,7 +388,7 @@ export class BindFramebuffer extends BaseValue<WebGLFramebuffer | null | undefin
     override set(v?: WebGLFramebuffer | null) {
         if (v === this.current && !this.dirty) return;
         const gl = this.gl;
-        gl.bindFramebuffer(gl.FRAMEBUFFER, v);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, v ?? null);
         this.current = v;
         this.dirty = false;
     }
@@ -402,7 +402,7 @@ export class BindRenderbuffer extends BaseValue<WebGLRenderbuffer | null | undef
     override set(v?: WebGLRenderbuffer | null) {
         if (v === this.current && !this.dirty) return;
         const gl = this.gl;
-        gl.bindRenderbuffer(gl.RENDERBUFFER, v);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, (v ?? null));
         this.current = v;
         this.dirty = false;
     }
@@ -416,7 +416,7 @@ export class BindTexture extends BaseValue<WebGLTexture | null | undefined> {
     override set(v?: WebGLTexture | null) {
         if (v === this.current && !this.dirty) return;
         const gl = this.gl;
-        gl.bindTexture(gl.TEXTURE_2D, v);
+        gl.bindTexture(gl.TEXTURE_2D, v ?? null);
         this.current = v;
         this.dirty = false;
     }
@@ -430,7 +430,7 @@ export class BindVertexBuffer extends BaseValue<WebGLBuffer | null | undefined> 
     override set(v?: WebGLBuffer | null) {
         if (v === this.current && !this.dirty) return;
         const gl = this.gl;
-        gl.bindBuffer(gl.ARRAY_BUFFER, v);
+        gl.bindBuffer(gl.ARRAY_BUFFER, v ?? null);
         this.current = v;
         this.dirty = false;
     }
@@ -444,7 +444,7 @@ export class BindElementBuffer extends BaseValue<WebGLBuffer | null | undefined>
     override set(v?: WebGLBuffer | null) {
         // Always rebind
         const gl = this.gl;
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, v);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, v ?? null);
         this.current = v;
         this.dirty = false;
     }
@@ -537,7 +537,7 @@ export class ColorAttachment extends FramebufferAttachment<WebGLTexture> {
         // note: it's possible to attach a renderbuffer to the color
         // attachment point, but thus far MBGL only uses textures for color
         const gl = this.gl;
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, this.attachmentPoint, gl.TEXTURE_2D, v, 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, this.attachmentPoint, gl.TEXTURE_2D, v ?? null, 0);
         this.current = v;
         this.dirty = false;
     }
@@ -549,7 +549,7 @@ export class DepthRenderbufferAttachment extends FramebufferAttachment<WebGLRend
         if (v === this.current && !this.dirty) return;
         this.context.bindFramebuffer.set(this.parent);
         const gl = this.gl;
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, this.attachment(), gl.RENDERBUFFER, v);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, this.attachment(), gl.RENDERBUFFER, (v ?? null));
         this.current = v;
         this.dirty = false;
     }
@@ -561,7 +561,7 @@ export class DepthTextureAttachment extends FramebufferAttachment<WebGLTexture> 
         if (v === this.current && !this.dirty) return;
         this.context.bindFramebuffer.set(this.parent);
         const gl = this.gl;
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, this.attachment(), gl.TEXTURE_2D, v, 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, this.attachment(), gl.TEXTURE_2D, v ?? null, 0);
         this.current = v;
         this.dirty = false;
     }

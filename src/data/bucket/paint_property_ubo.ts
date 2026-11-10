@@ -64,7 +64,7 @@ const _floatBitsScratchF32 = new Float32Array(1);
 const _floatBitsScratchU32 = new Uint32Array(_floatBitsScratchF32.buffer);
 export function floatToBits(value: number): number {
     _floatBitsScratchF32[0] = value;
-    return _floatBitsScratchU32[0];
+    return _floatBitsScratchU32[0]!;
 }
 
 // Block-to-binding-point assignment is program state that lasts for the program's lifetime, so it's
@@ -217,18 +217,18 @@ export abstract class PaintPropertiesUBO {
      */
     writeDataDrivenBlock(flat: Float32Array, featureIndex: number, skipMask: number = 0): void {
         const h = this.headerData;
-        const dataDrivenBlockSizeDwords = h[HEADER_BLOCK_SIZE_VEC4] * 4;
+        const dataDrivenBlockSizeDwords = h[HEADER_BLOCK_SIZE_VEC4]! * 4;
         if (dataDrivenBlockSizeDwords === 0) return;
         const base = featureIndex * dataDrivenBlockSizeDwords;
         if (base + dataDrivenBlockSizeDwords > this.propertiesData.length) {
             throw new Error(`UBO write out of bounds: feature index ${featureIndex} exceeds propertiesData capacity`);
         }
-        const dataDrivenMask = h[HEADER_DATA_DRIVEN_MASK];
+        const dataDrivenMask = h[HEADER_DATA_DRIVEN_MASK]!;
         const propCount = this._propCount();
         for (let i = 0; i < propCount; i++) {
             if ((dataDrivenMask & (1 << i)) === 0) continue;
             if ((skipMask & (1 << i)) !== 0) continue;
-            this._copyFromFlat(base + h[HEADER_OFFSETS + i] * 4, i, flat);
+            this._copyFromFlat(base + h[HEADER_OFFSETS + i]! * 4, i, flat);
         }
         // Track dword range touched so upload() can do a partial bufferSubData.
         if (this._propsDirtyMin === -1 || base < this._propsDirtyMin) this._propsDirtyMin = base;
@@ -315,7 +315,7 @@ export abstract class PaintPropertiesUBO {
             const blockNames = this._blockNames();
             activeBlocks = 0;
             for (let i = 0; i < blockNames.length; i++) {
-                const blockIndex = gl.getUniformBlockIndex(program, blockNames[i]);
+                const blockIndex = gl.getUniformBlockIndex(program, blockNames[i]!);
                 if (blockIndex === (gl.INVALID_INDEX as number)) continue;
                 gl.uniformBlockBinding(program, blockIndex, i);
                 activeBlocks |= 1 << i;

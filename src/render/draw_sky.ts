@@ -92,7 +92,7 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
 
     context.activeTexture.set(gl.TEXTURE0);
 
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, layer.skyboxTexture);
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, layer.skyboxTexture!);
 
     const uniformValues = skyboxUniformValues(transform.skyboxMatrix as Float32Array, layer.getCenter(painter, false), 0, opacity, temporalOffset);
 
@@ -121,7 +121,7 @@ function drawSkyboxFace(painter: Painter, layer: SkyLayer, program: Program<Skyb
     );
 
     const glFace = gl.TEXTURE_CUBE_MAP_POSITIVE_X + i;
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, glFace, layer.skyboxTexture, 0);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, glFace, layer.skyboxTexture!, 0);
 
     program.draw(painter, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled, ColorMode.unblended, CullFaceMode.frontCW,
         uniformValues, 'skyboxCapture', layer.skyboxGeometry.vertexBuffer,

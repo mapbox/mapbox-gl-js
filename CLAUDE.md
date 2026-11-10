@@ -110,7 +110,6 @@ debug/ # served by `npm start`
 
 ## TypeScript
 
-- Configured with `strict: false`, but write code as if strict — no `any`, handle all `null`/`undefined`, use proper type annotations
 - Prefer explicit return types over `// @ts-expect-error` suppressions for functions that may not return a value
 - Prefer literal unions over boolean flags; allows future extension without breaking changes
 

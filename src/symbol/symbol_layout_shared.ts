@@ -170,13 +170,13 @@ export function computeFontScale(textSize: number, textScaleFactor: number) {
 export function packSizeForVertex(layerId: string, sizeData: SizeData, evaluatedTextSize: number,
     scaleFactor: number, minZoomSize: number, maxZoomSize: number
 ) {
-    let effectiveSizeData: number[] = null;
+    let effectiveSizeData: number[] = null!;
 
     if (sizeData.kind === 'source') {
         effectiveSizeData = [
             SIZE_PACK_FACTOR * evaluatedTextSize * scaleFactor
         ];
-        if (effectiveSizeData[0] > MAX_PACKED_SIZE) {
+        if (effectiveSizeData[0]! > MAX_PACKED_SIZE) {
             warnOnce(`${layerId}: Value for "text-size" or "icon-size" is >= ${MAX_GLYPH_ICON_SIZE}. Reduce your "text-size" or "icon-size".`);
         }
     } else if (sizeData.kind === 'composite') {
@@ -184,7 +184,7 @@ export function packSizeForVertex(layerId: string, sizeData: SizeData, evaluated
             SIZE_PACK_FACTOR * minZoomSize * scaleFactor,
             SIZE_PACK_FACTOR * maxZoomSize * scaleFactor
         ];
-        if (effectiveSizeData[0] > MAX_PACKED_SIZE || effectiveSizeData[1] > MAX_PACKED_SIZE) {
+        if (effectiveSizeData[0]! > MAX_PACKED_SIZE || effectiveSizeData[1]! > MAX_PACKED_SIZE) {
             warnOnce(`${layerId}: Value for "text-size" or "icon-size" is >= ${MAX_GLYPH_ICON_SIZE}. Reduce your "text-size" or "icon-size".`);
         }
     }

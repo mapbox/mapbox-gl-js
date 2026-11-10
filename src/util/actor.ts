@@ -187,7 +187,7 @@ class Actor<Outbox extends MessageMap> {
         const data = message.data;
         if (!data) return;
 
-        const id = data.id;
+        const id = data.id!;
         if (data.targetMapId && this.mapId !== data.targetMapId) {
             return;
         }
@@ -246,13 +246,13 @@ class Actor<Outbox extends MessageMap> {
             let result: unknown;
             if (this.parent[task.type]) {
                 // task.type == 'loadTile', 'removeTile', etc.
-                result = await this.parent[task.type](task.sourceMapId, params);
+                result = await this.parent[task.type](task.sourceMapId!, params);
             } else if (this.parent.getWorkerSource) {
                 // task.type == sourcetype.method
                 const keys = task.type.split('.');
                 const {source, scope} = params as {source: string; scope: string};
-                const workerSource = this.parent.getWorkerSource(task.sourceMapId, {type: keys[0] as WorkerSourceType, source, scope});
-                result = await (workerSource as WorkerSource & Record<string, (params: unknown) => unknown>)[keys[1]](params);
+                const workerSource = this.parent.getWorkerSource(task.sourceMapId!, {type: keys[0] as WorkerSourceType, source, scope});
+                result = await (workerSource as WorkerSource & Record<string, (params: unknown) => unknown>)[keys[1]!]!(params);
             } else {
                 throw new Error(`Could not find function ${task.type}`);
             }

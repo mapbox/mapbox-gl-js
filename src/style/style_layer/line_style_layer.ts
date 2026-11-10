@@ -122,8 +122,7 @@ class LineStyleLayer extends StyleLayer {
 
     override _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'line-gradient') {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-            const expression: ZoomConstantExpression<'source'> = ((this.getPaintPropertyValue('line-gradient').expression) as any);
+            const expression = this.getPaintPropertyValue('line-gradient')!.expression as ZoomConstantExpression<'source'>;
             this.stepInterpolant = expression._styleExpression && expression._styleExpression.expression instanceof Step;
             this.gradientVersion = (this.gradientVersion + 1) % Number.MAX_SAFE_INTEGER;
         } else if (name === 'line-gradient-use-theme') {
@@ -131,8 +130,7 @@ class LineStyleLayer extends StyleLayer {
             // use-theme changes the effective LUT and requires regeneration.
             this.gradientVersion = (this.gradientVersion + 1) % Number.MAX_SAFE_INTEGER;
         } else if (name === 'line-border-gradient') {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-            const expression: ZoomConstantExpression<'source'> = ((this.getPaintPropertyValue('line-border-gradient').expression) as any);
+            const expression = this.getPaintPropertyValue('line-border-gradient')!.expression as ZoomConstantExpression<'source'>;
             this.borderStepInterpolant = expression._styleExpression && expression._styleExpression.expression instanceof Step;
             this.borderGradientVersion = (this.borderGradientVersion + 1) % Number.MAX_SAFE_INTEGER;
         } else if (name === 'line-border-gradient-use-theme') {
@@ -141,7 +139,7 @@ class LineStyleLayer extends StyleLayer {
     }
 
     override _finalizeEvaluated(parameters: EvaluationParameters) {
-        (this.paint._values as Record<string, unknown>)['line-floorwidth'] = getLineFloorwidthProperty().possiblyEvaluate(this.getPaintPropertyValue('line-width'), parameters);
+        (this.paint._values as Record<string, unknown>)['line-floorwidth'] = getLineFloorwidthProperty().possiblyEvaluate(this.getPaintPropertyValue('line-width')!, parameters);
     }
 
     override createBucket(parameters: BucketParameters<this>): LineBucket {
@@ -176,7 +174,7 @@ class LineStyleLayer extends StyleLayer {
     }
 
     override queryRadius(bucket: Bucket): number {
-        const uboBinder = (bucket as LineBucket).uboBinders[this.id];
+        const uboBinder = (bucket as LineBucket).uboBinders[this.id]!;
         const width = getLineWidth(
             getMaximumPaintValue('line-width', this, uboBinder),
             getMaximumPaintValue('line-gap-width', this, uboBinder));
@@ -298,14 +296,14 @@ function offsetLine(rings: Array<Array<Point>>, offset: number): Array<Array<Poi
     const newRings: Array<Array<Point>> = [];
     const zero = new Point(0, 0);
     for (let k = 0; k < rings.length; k++) {
-        const ring = rings[k];
+        const ring = rings[k]!;
         const newRing: Array<Point> = [];
         for (let i = 0; i < ring.length; i++) {
             const a = ring[i - 1];
-            const b = ring[i];
+            const b = ring[i]!;
             const c = ring[i + 1];
-            const aToB = i === 0 ? zero : b.sub(a)._unit()._perp();
-            const bToC = i === ring.length - 1 ? zero : c.sub(b)._unit()._perp();
+            const aToB = i === 0 ? zero : b.sub(a!)._unit()._perp();
+            const bToC = i === ring.length - 1 ? zero : c!.sub(b)._unit()._perp();
             const extrude = aToB._add(bToC)._unit();
 
             const cosHalfAngle = extrude.x * bToC.x + extrude.y * bToC.y;

@@ -68,7 +68,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
         this.tileSize = 512;
 
         this._options = options;
-        this.tiles = this._options.tiles;
+        this.tiles = this._options.tiles!;
         this.maxzoom = options.maxzoom || 19;
         this.minzoom = options.minzoom || 0;
         this.roundZoom = true;
@@ -87,7 +87,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     reload() {
         this.cancelTileJSONRequest();
         const fqid = makeFQID(this.id, this.scope);
-        this.load(() => this.map.style.clearSource(fqid));
+        this.load(() => this.map.style!.clearSource(fqid));
     }
 
     cancelTileJSONRequest() {
@@ -148,7 +148,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
         } else {
             if (tile.state === 'loading') {
                 // schedule tile reloading after it has been loaded
-                tile.reloadCallback = callback;
+                tile.reloadCallback = callback as unknown as Callback<WorkerSourceVectorTileResult>;
                 return;
             }
 
@@ -205,7 +205,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
                 promoteId: this.promoteId,
             };
 
-            tile.request = tile.actor.sendCancelable(messageType, params, {}, done);
+            tile.request = tile.actor!.sendCancelable(messageType, params, {}, done as Callback<unknown>);
         } catch (err) {
             if (controller.signal.aborted) return callback(null);
             callback(err as Error);

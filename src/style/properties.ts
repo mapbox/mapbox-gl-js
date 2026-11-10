@@ -303,7 +303,7 @@ export class PropertyValues<Props extends {[Key in keyof Props]: Props[Key]}> {
         }
     }
 
-    setTransitionOrValue<P extends PropertyValueSpecifications<Props>>(properties?: P, options?: ConfigOptions) {
+    setTransitionOrValue<P extends PropertyValueSpecifications<Props>>(properties?: P, options?: ConfigOptions | null) {
         if (options) this._options = options;
 
         const specProperties = this._properties.properties;

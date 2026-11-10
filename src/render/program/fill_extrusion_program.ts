@@ -221,8 +221,8 @@ const fillExtrusionUniformValues = (
         'u_merc_center': [0, 0] as [number, number],
         'u_up_dir': [0, 0, 0] as [number, number, number],
         'u_height_lift': 0,
-        'u_height_type': fillExtrusionAlignmentType[heightAlignment],
-        'u_base_type': fillExtrusionAlignmentType[baseAlignment],
+        'u_height_type': fillExtrusionAlignmentType[heightAlignment]!,
+        'u_base_type': fillExtrusionAlignmentType[baseAlignment]!,
         'u_ao': aoIntensityRadius,
         'u_edge_radius': edgeRadius,
         'u_width_scale': lineWidthScale,
@@ -251,8 +251,8 @@ const fillExtrusionDepthUniformValues = (matrix: mat4, edgeRadius: number, lineW
         'u_edge_radius': edgeRadius,
         'u_width_scale': lineWidthScale,
         'u_vertical_scale': verticalScale,
-        'u_height_type': fillExtrusionAlignmentType[heightAlignment],
-        'u_base_type': fillExtrusionAlignmentType[baseAlignment],
+        'u_height_type': fillExtrusionAlignmentType[heightAlignment]!,
+        'u_base_type': fillExtrusionAlignmentType[baseAlignment]!,
     };
 };
 

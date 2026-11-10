@@ -51,7 +51,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         const mercatorCenter: [number, number] = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
         for (let i = 0; i < coords.length; i++) {
-            const coord = coords[i];
+            const coord = coords[i]!;
 
             // Skip tiles that have uncovered parents to avoid flickering; we don't need
             // to use complex tile masking here because the change between zoom levels is subtle,
@@ -98,7 +98,7 @@ function renderTextureToMap(painter: Painter, layer: HeatmapStyleLayer) {
     const fbo = layer.heatmapFbo;
     if (!fbo) return;
     context.activeTexture.set(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment0.get());
+    gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment0!.get()!);
 
     context.activeTexture.set(gl.TEXTURE1);
     let colorRampTexture = layer.colorRampTexture;

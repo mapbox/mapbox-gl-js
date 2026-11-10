@@ -4,7 +4,7 @@ import {Event, Evented} from '../../src/util/evented';
 import {ViewportIntersectionStrategy} from './indoor_building_detection';
 import {IndoorActiveFloorStrategy} from './indoor_active_floor_strategy';
 
-import type {IndoorBuilding, IndoorData, IndoorEvents, IndoorState, IndoorTileOptions, IndoorFloor} from '../../src/style/indoor_data';
+import type {IndoorBuilding, IndoorControlModel, IndoorData, IndoorEvents, IndoorState, IndoorTileOptions, IndoorFloor} from '../../src/style/indoor_data';
 import type Style from '../../src/style/style';
 
 export function setsEqual(a: Set<string> | null, b: Set<string> | null): boolean {
@@ -85,18 +85,18 @@ export default class IndoorManager extends Evented<IndoorEvents> {
     setIndoorData(indoorData: IndoorData) {
         let changed = false;
         for (const [id, building] of Object.entries(indoorData.buildings)) {
-            if (this._buildings[id]) {
+            if (this._buildings![id]) {
                 for (const floorId of building.floorIds) {
-                    this._buildings[id].floorIds.add(floorId);
-                    if (this._buildings[id].floors[floorId]) {
-                        this._mergeFloors(this._buildings[id].floors[floorId], building.floors[floorId]);
+                    this._buildings![id].floorIds.add(floorId);
+                    if (this._buildings![id].floors[floorId]) {
+                        this._mergeFloors(this._buildings![id].floors[floorId], building.floors[floorId]!);
                     } else {
-                        this._buildings[id].floors[floorId] = building.floors[floorId];
+                        this._buildings![id].floors[floorId] = building.floors[floorId]!;
                         changed = true;
                     }
                 }
             } else {
-                this._buildings[id] = building;
+                this._buildings![id] = building;
                 changed = true;
             }
         }
@@ -135,11 +135,11 @@ export default class IndoorManager extends Evented<IndoorEvents> {
         const floors = Array.from(closestBuilding.floorIds)
             .map((floorId) => ({
                 id: floorId,
-                name: closestBuilding.floors[floorId].name,
-                zIndex: closestBuilding.floors[floorId].zIndex,
+                name: closestBuilding.floors[floorId]!.name,
+                zIndex: closestBuilding.floors[floorId]!.zIndex,
             }))
             .sort((a, b) => b.zIndex - a.zIndex)
-            .filter((floor, idx, arr) => idx === 0 || floor.zIndex !== arr[idx - 1].zIndex);
+            .filter((floor, idx, arr) => idx === 0 || floor.zIndex !== arr[idx - 1]!.zIndex);
         return {
             selectedFloorId: buildingActiveFloorId,
             activeFloorsVisible: this._indoorState ? this._indoorState.activeFloorsVisible : false,
@@ -152,7 +152,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
 
         const transform = this._style.map.transform;
         const closestBuildingId = this._buildingDetectionStrategy.findClosestBuilding(
-            this._buildings,
+            this._buildings!,
             transform.center,
             transform.zoom,
             transform.getBounds(),
@@ -184,11 +184,11 @@ export default class IndoorManager extends Evented<IndoorEvents> {
     }
 
     _updateIndoorSelector() {
-        this.fire(new Event('selector-update', this.getControlState()));
+        this.fire(new Event('selector-update', this.getControlState() as IndoorControlModel));
     }
 
     _updateActiveFloors(visible: boolean) {
-        this._indoorState = {selectedFloorId: this._selectedFloorId, activeFloorsVisible: visible, activeFloors: this._activeFloors};
+        this._indoorState = {selectedFloorId: this._selectedFloorId, activeFloorsVisible: visible, activeFloors: this._activeFloors!};
         if (!this._initialLoadDone) {
             this._indoorState.needsUpdate = true;
             return;

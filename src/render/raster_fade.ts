@@ -20,8 +20,8 @@ function rasterFade(
 ): RasterFade {
     if (fadeDuration > 0) {
         const now = browser.now();
-        const sinceTile = (now - tile.timeAdded) / fadeDuration;
-        const sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
+        const sinceTile = (now - tile.timeAdded!) / fadeDuration;
+        const sinceParent = parentTile ? (now - parentTile.timeAdded!) / fadeDuration : -1;
 
         const source = sourceCache.getSource();
         const idealZ = transform.coveringZoomLevel({

@@ -77,7 +77,7 @@ export class ImagePosition implements SpritePosition {
         this.stretchX = stretchX;
         this.stretchY = stretchY;
         this.content = content;
-        this.version = version;
+        this.version = version!;
         this.padding = padding;
         this.sdf = sdf;
         this.usvg = usvg;
@@ -108,8 +108,8 @@ export class ImagePosition implements SpritePosition {
 
 function getImageBin(image: StyleImage, padding: number, scale: [number, number] = [1, 1]) {
     // If it's a vector image, we set it's size as the natural one scaled
-    const imageWidth = image.data ? image.data.width : image.width * scale[0];
-    const imageHeight = image.data ? image.data.height : image.height * scale[1];
+    const imageWidth = image.data ? image.data.width : image.width! * scale[0];
+    const imageHeight = image.data ? image.data.height : image.height! * scale[1];
     return {
         x: 0,
         y: 0,
@@ -119,7 +119,7 @@ function getImageBin(image: StyleImage, padding: number, scale: [number, number]
 }
 
 export function getImagePosition(id: StringifiedImageVariant, src: StyleImage, padding: number) {
-    const imageVariant = ImageVariant.parse(id);
+    const imageVariant = ImageVariant.parse(id)!;
     const bin = getImageBin(src, padding, [imageVariant.sx, imageVariant.sy]);
     return {bin, imagePosition: new ImagePosition(bin, src, padding, imageVariant), imageVariant};
 }
@@ -214,38 +214,38 @@ export default class ImageAtlas {
         const image = new RGBAImage({width: w || 1, height: h || 1});
 
         for (const [id, src] of sortedIcons.entries()) {
-            const bin = iconPositions.get(id).paddedRect;
+            const bin = iconPositions.get(id)!.paddedRect;
             // For SDF icons, we override the RGB channels with white.
             // This is because we read the red channel in the shader and RGB channels will get alpha-premultiplied on upload.
             const overrideRGB = src.sdf;
             // We don't use the LUT here because it's applied on the GPU
-            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x: bin.x + ICON_PADDING, y: bin.y + ICON_PADDING}, src.data, null, overrideRGB);
+            RGBAImage.copy(src.data!, image, {x: 0, y: 0}, {x: bin.x + ICON_PADDING, y: bin.y + ICON_PADDING}, src.data!, null, overrideRGB);
         }
 
         for (const [id, src] of sortedPatterns.entries()) {
-            const patternPosition = patternPositions.get(id);
+            const patternPosition = patternPositions.get(id)!;
             const bin = patternPosition.paddedRect;
             let padding = patternPosition.padding;
             const x = bin.x + padding,
                 y = bin.y + padding,
-                w = src.data.width,
-                h = src.data.height;
+                w = src.data!.width,
+                h = src.data!.height;
 
             assert(padding > 1);
             padding = padding > 1 ? padding - 1 : padding;
 
-            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x, y}, src.data, lut);
+            RGBAImage.copy(src.data!, image, {x: 0, y: 0}, {x, y}, src.data!, lut);
             // Add wrapped padding on each side of the image.
             // Leave one pixel transparent to avoid bleeding to neighbouring images
-            RGBAImage.copy(src.data, image, {x: 0, y: h - padding}, {x, y: y - padding}, {width: w, height: padding}, lut); // T
-            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x, y: y + h}, {width: w, height: padding}, lut); // B
-            RGBAImage.copy(src.data, image, {x: w - padding, y: 0}, {x: x - padding, y}, {width: padding, height: h}, lut); // L
-            RGBAImage.copy(src.data, image, {x: 0,     y: 0}, {x: x + w, y}, {width: padding, height: h}, lut); // R
+            RGBAImage.copy(src.data!, image, {x: 0, y: h - padding}, {x, y: y - padding}, {width: w, height: padding}, lut); // T
+            RGBAImage.copy(src.data!, image, {x: 0, y: 0}, {x, y: y + h}, {width: w, height: padding}, lut); // B
+            RGBAImage.copy(src.data!, image, {x: w - padding, y: 0}, {x: x - padding, y}, {width: padding, height: h}, lut); // L
+            RGBAImage.copy(src.data!, image, {x: 0,     y: 0}, {x: x + w, y}, {width: padding, height: h}, lut); // R
             // Fill corners
-            RGBAImage.copy(src.data, image, {x: w - padding, y: h - padding}, {x: x - padding, y: y - padding}, {width: padding, height: padding}, lut); // TL
-            RGBAImage.copy(src.data, image, {x: 0, y: h - padding}, {x: x + w, y: y - padding}, {width: padding, height: padding}, lut); // TR
-            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x: x + w, y: y + h}, {width: padding, height: padding}, lut); // BL
-            RGBAImage.copy(src.data, image, {x: w - padding, y: 0}, {x: x - padding, y: y + h}, {width: padding, height: padding}, lut); // BR
+            RGBAImage.copy(src.data!, image, {x: w - padding, y: h - padding}, {x: x - padding, y: y - padding}, {width: padding, height: padding}, lut); // TL
+            RGBAImage.copy(src.data!, image, {x: 0, y: h - padding}, {x: x + w, y: y - padding}, {width: padding, height: padding}, lut); // TR
+            RGBAImage.copy(src.data!, image, {x: 0, y: 0}, {x: x + w, y: y + h}, {width: padding, height: padding}, lut); // BL
+            RGBAImage.copy(src.data!, image, {x: w - padding, y: 0}, {x: x - padding, y: y + h}, {width: padding, height: padding}, lut); // BR
         }
 
         this.lut = lut;
@@ -278,7 +278,7 @@ export default class ImageAtlas {
         for (const imageId of imageManager.getUpdatedImages(scope)) {
             for (const id of this.iconPositions.keys()) {
                 const imageVariant = ImageVariant.parse(id);
-                if (ImageId.isEqual(imageVariant.id, imageId)) {
+                if (ImageId.isEqual(imageVariant!.id, imageId)) {
                     const image = imageManager.getImage(imageId, scope);
                     // We don't use the LUT here because it's applied on the GPU
                     this.patchUpdatedImage(this.iconPositions.get(id), image, texture, null);
@@ -287,7 +287,7 @@ export default class ImageAtlas {
 
             for (const id of this.patternPositions.keys()) {
                 const imageVariant = ImageVariant.parse(id);
-                if (ImageId.isEqual(imageVariant.id, imageId)) {
+                if (ImageId.isEqual(imageVariant!.id, imageId)) {
                     const image = imageManager.getImage(imageId, scope);
                     this.patchUpdatedImage(this.patternPositions.get(id), image, texture, lut || this.lut);
                 }
@@ -300,16 +300,16 @@ export default class ImageAtlas {
 
         if (position.version === image.version) return;
 
-        position.version = image.version;
+        position.version = image.version!;
         const [x, y] = position.tl;
         const overrideRGBWithWhite = position.sdf;
         if (this.lut || overrideRGBWithWhite) {
-            const size = {width: image.data.width, height: image.data.height};
+            const size = {width: image.data!.width, height: image.data!.height};
             const imageToUpload = new RGBAImage(size);
-            RGBAImage.copy(image.data, imageToUpload, {x: 0, y: 0}, {x: 0, y: 0}, size, lut, overrideRGBWithWhite);
+            RGBAImage.copy(image.data!, imageToUpload, {x: 0, y: 0}, {x: 0, y: 0}, size, lut, overrideRGBWithWhite);
             texture.update(imageToUpload, {position: {x, y}, recreateWhenResize: false});
         } else {
-            texture.update(image.data, {position: {x, y}, recreateWhenResize: false});
+            texture.update(image.data!, {position: {x, y}, recreateWhenResize: false});
         }
     }
 
@@ -376,8 +376,8 @@ export class ImageAtlasCache {
     private evictTexture(atlas: ImageAtlas) {
         const texture = this.textures.get(atlas);
         if (texture) {
-            if (this.isAtlasCached(atlas)) this.cache.delete(atlas.contentDescriptor.hash);
-            const memory = this.calculateTextureMemory(atlas, texture.size);
+            if (this.isAtlasCached(atlas)) this.cache.delete(atlas.contentDescriptor!.hash);
+            const memory = this.calculateTextureMemory(atlas, texture.size!);
             texture.destroy();
             this.textures.delete(atlas);
             this.textureAccessTimes.delete(atlas);
@@ -590,7 +590,7 @@ export class ImageAtlasCache {
     removeScope(scope: string) {
         for (const [hash, ref] of this.cache) {
             const atlas = ref.deref();
-            if (!atlas || atlas.contentDescriptor.scope === scope) this.cache.delete(hash);
+            if (!atlas || atlas.contentDescriptor!.scope === scope) this.cache.delete(hash);
         }
         this.clearExpiredTextures();
     }

@@ -71,7 +71,7 @@ export type Material = {
     emissiveFactor: Color;
     alphaMode: string;
     alphaCutoff: number;
-    doubleSided: boolean;
+    doubleSided: boolean | undefined;
     defined: boolean;
 };
 
@@ -194,10 +194,10 @@ function positionModelOnTerrain(
     const meterToMercator = mercatorZfromAltitude(1, position.lat) * transform.worldSize;
     const bottomFace = getBoxBottomFace(corners, meterToMercator);
 
-    const b0 = corners[bottomFace[0]];
-    const b1 = corners[bottomFace[1]];
-    const b2 = corners[bottomFace[2]];
-    const b3 = corners[bottomFace[3]];
+    const b0 = corners[bottomFace[0]]!;
+    const b1 = corners[bottomFace[1]]!;
+    const b2 = corners[bottomFace[2]]!;
+    const b3 = corners[bottomFace[3]]!;
 
     const e0 = elevation.getAtPointOrZero(new MercatorCoordinate(b0[0] / transform.worldSize, b0[1] / transform.worldSize), 0);
     const e1 = elevation.getAtPointOrZero(new MercatorCoordinate(b1[0] / transform.worldSize, b1[1] / transform.worldSize), 0);
@@ -351,7 +351,7 @@ export default class Model {
         // update local matrix
         mat4.multiply(node.globalMatrix, parentMatrix, node.localMatrix);
 
-        const nodeOverride = this.nodeOverrides.get(node.name);
+        const nodeOverride = this.nodeOverrides.get(node.name!);
         if (nodeOverride !== undefined) {
             // Apply orientation override
             if (nodeOverride.orientation) {
@@ -421,7 +421,7 @@ export function uploadTexture(texture: ModelTexture, context: Context, useSingle
         const useMipmap = texture.sampler.minFilter >= context.gl.NEAREST_MIPMAP_NEAREST;
         texture.gfxTexture = new Texture(context, texture.image, textureFormat, {useMipmap});
         texture.uploaded = true;
-        texture.image = null;
+        texture.image = (null)!;
     }
 }
 

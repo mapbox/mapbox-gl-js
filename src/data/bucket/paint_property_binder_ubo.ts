@@ -7,7 +7,7 @@ import {packUint8ToFloat} from '../../shaders/encode_attribute';
 import type {PaintPropertiesUBO} from './paint_property_ubo';
 import type StyleLayer from '../../style/style_layer';
 import type {LUT} from '../../util/lut';
-import type {Feature, FeatureState, CameraExpression, CompositeExpression, StylePropertyExpression} from '../../style-spec/expression';
+import type {Feature, FeatureState, CameraExpression, CompositeExpression, StylePropertyExpression, GlobalProperties} from '../../style-spec/expression';
 import type {CanonicalTileID} from '../../source/tile_id';
 import type {ImageId} from '../../style-spec/expression/types/image_id';
 import type Context from '../../gl/context';
@@ -46,7 +46,7 @@ export function shouldIgnoreLut(
 
     // Data-driven (source/composite) use-theme: evaluate against the feature.
     const value = lutExpression.evaluate(
-        {zoom: 0, brightness, worldview},
+        {zoom: 0, brightness, worldview} as GlobalProperties,
         feature,
         featureState,
         canonical,
@@ -112,8 +112,8 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
     // symbol's appearance updates, which dispatch by vt index rather than featureId — line never
     // reads it, but _ensureRangeMaps builds both maps unconditionally, so it exists on line
     // instances too (empty, unused; omitted from serialization all the same).
-    featureVertexRangesFromId: Map<string | number, number[]>;
-    featureVertexRangesFromVtIndex: Map<number, number[]>;
+    featureVertexRangesFromId: Map<string | number, number[]> | null;
+    featureVertexRangesFromVtIndex: Map<number, number[]> | null;
 
     // UBO batches
     ubos: TUBO[];
@@ -121,12 +121,12 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
 
     // Header (built once in the constructor, describes layout of each UBO batch), shared with
     // every batch's headerData; index it with the HEADER_* constants (and any layer-specific ones).
-    header: Uint32Array;
-    maxFeaturesPerBatch: number; // computed from header
+    header!: Uint32Array;
+    maxFeaturesPerBatch!: number; // computed from header
 
     // True when no paint property is data-driven (dataDrivenMask === 0). Such binders carry no
     // per-feature block — constants go through uniforms — so every feature shares entry 0.
-    isAllConstant: boolean;
+    isAllConstant!: boolean;
 
     // Cached result of getConstantUniformValues (main-thread only, excluded from serialization).
     // Invalidated when the layer paint or brightness changes.
@@ -157,13 +157,13 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
     // evaluateAllProperties computes; the shader only gets the DZR bit through the header.
     // Serialized (see register() calls in the subclasses) so the main-thread instance can read it
     // after worker transfer, since `layer` is omitted there.
-    zoomDependency: Uint8Array;
+    zoomDependency!: Uint8Array;
 
     // [zm, zM] pairs per zoom-dependent property, computed in updateHeader. evaluateAllProperties
     // copies the shared pair into every feature's zoom-ready block slot; symbol's
     // appearance-zoom-stops properties compute their [zm, zM] per feature instead.
-    sharedZoomRanges: Float32Array;
-    _floorZoom: number;
+    sharedZoomRanges!: Float32Array;
+    _floorZoom!: number;
 
     protected abstract _propNames(): readonly string[];
     protected abstract _headerDwords(): number;
@@ -224,7 +224,7 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
 
         // Max features per UBO batch = how many data-driven blocks fit in one buffer.
         // All-constant layers have no per-feature block, so a single batch holds every feature.
-        const blockDwords = this.header[HEADER_BLOCK_SIZE_VEC4] * 4;
+        const blockDwords = this.header[HEADER_BLOCK_SIZE_VEC4]! * 4;
         this.maxFeaturesPerBatch = blockDwords === 0 ? Number.MAX_SAFE_INTEGER : Math.floor(this.uboSizeDwords / blockDwords);
     }
 
@@ -259,7 +259,7 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
 
         // zoomStops are validated to be in strictly ascending order, so stops[0] is the lowest.
         if (stops && stops.length > 0) {
-            if (e.interpolationType == null) {
+            if (e!.interpolationType == null) {
                 // Step expression: the value holds constant across the step (zm == zM == 1.0)
                 // unless a boundary falls strictly inside it, where it jumps at that normalized
                 // position (zm == zM == stop - floorZoom).
@@ -270,13 +270,13 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
                         break;
                     }
                 }
-            } else if (stops[0] > floorZoom && stops[0] < floorZoom + 1) {
+            } else if (stops[0]! > floorZoom && stops[0]! < floorZoom + 1) {
                 // Interpolation whose first stop falls inside this step: the value is clamped
                 // constant until that stop, so delay the transition start to its normalized
                 // position — e.g. ["interpolate", ["linear"], ["zoom"], 1.5, 0, 2, 1] at
                 // floorZoom=1 begins at zm=0.5. Otherwise the transition spans the whole step
                 // from zm=0, matching the plain mix(min, max, u_zoom) path.
-                zm = stops[0] - floorZoom;
+                zm = stops[0]! - floorZoom;
             }
         }
 
@@ -304,11 +304,11 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
      */
     protected _unbakeCamera<T>(pe: PossiblyEvaluatedPropertyValue<T>, source: unknown): PossiblyEvaluatedPropertyValue<T> {
         const expr = source && (source as {expression?: {kind?: string}}).expression;
-        if (!expr || expr.kind !== 'camera') return pe;
-        let wrapped = cameraWrapCache.get(source as object) as PossiblyEvaluatedPropertyValue<T> | undefined;
+        if (!expr || (expr as {kind?: string}).kind !== 'camera') return pe;
+        let wrapped = cameraWrapCache.get(source) as PossiblyEvaluatedPropertyValue<T> | undefined;
         if (!wrapped) {
             wrapped = new PossiblyEvaluatedPropertyValue<T>(pe.property, expr as unknown as never, pe.parameters, pe.iconImageUseTheme);
-            cameraWrapCache.set(source as object, wrapped);
+            cameraWrapCache.set(source, wrapped);
         }
         return wrapped;
     }
@@ -389,8 +389,8 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         if (hasAppearanceZoomStops) {
             this._writeZoomRange(prop, zoomFlatOffset);
         } else if (isZoomDep) {
-            flat[zoomFlatOffset] = this.sharedZoomRanges[i * 2];
-            flat[zoomFlatOffset + 1] = this.sharedZoomRanges[i * 2 + 1];
+            flat[zoomFlatOffset] = this.sharedZoomRanges[i * 2]!;
+            flat[zoomFlatOffset + 1] = this.sharedZoomRanges[i * 2 + 1]!;
         } else {
             flat[zoomFlatOffset] = 0;
             flat[zoomFlatOffset + 1] = 0;
@@ -453,7 +453,7 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
             flat[flatOffset + 3] = packUint8ToFloat(255 * maxNP.b, 255 * maxNP.a);
         } else {
             flat[flatOffset + 2] = flat[flatOffset];
-            flat[flatOffset + 3] = flat[flatOffset + 1];
+            flat[flatOffset + 3] = flat[flatOffset + 1]!;
         }
     }
 
@@ -489,7 +489,7 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         flat[flatOffset] = minVal;
 
         if (isZoomDep) {
-            const max = this._evalAt(prop, ctx.paramsNext, ctx);
+            const max = this._evalAt(prop!, ctx.paramsNext, ctx);
             flat[flatOffset + 1] = max ?? defaultVal;
         } else {
             flat[flatOffset + 1] = minVal;
@@ -510,7 +510,7 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         formattedSection?: FormattedSection,
         activeAppearance?: SymbolAppearance | null
     ): Float32Array {
-        const options = {brightness, worldview: this.worldview};
+        const options = {brightness, worldview: this.worldview} as {brightness?: number; worldview: string};
         const params = new EvaluationParameters(this.zoom, options);
         const paramsNext = new EvaluationParameters(this.zoom + 1, options);
         const ctx: EvaluationContext = {feature, featureState, canonical, availableImages, params, paramsNext, formattedSection, activeAppearance};
@@ -553,7 +553,7 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         const mask = this.header[HEADER_DATA_DRIVEN_MASK];
         const names = this._propNames();
         for (let i = 0; i < names.length; i++) {
-            if ((mask & (1 << i)) && this._dependsOnLight(layer, names[i])) return true;
+            if ((mask! & (1 << i)) && this._dependsOnLight(layer, names[i]!)) return true;
         }
         return false;
     }
@@ -608,7 +608,7 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         brightness?: number | null
     ): void {
         if (!vtLayer) return;
-        const vtFeatureIndex = this.allFeatureVtIndices[i];
+        const vtFeatureIndex = this.allFeatureVtIndices[i]!;
         const vtFeature = vtLayer.feature(vtFeatureIndex);
         if (!vtFeature) return;
 
@@ -643,7 +643,7 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
                 if (!byId) this.featureVertexRangesFromId.set(featureId, byId = []);
                 byId.push(i);
             }
-            const vtFeatureIndex = this.allFeatureVtIndices[i];
+            const vtFeatureIndex = this.allFeatureVtIndices[i]!;
             let byVtIndex = this.featureVertexRangesFromVtIndex.get(vtFeatureIndex);
             if (!byVtIndex) this.featureVertexRangesFromVtIndex.set(vtFeatureIndex, byVtIndex = []);
             byVtIndex.push(i);
@@ -702,7 +702,7 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         // Record the feature in insertion order. Its position is its global index, from which
         // _writeFeatureBlock re-derives batch/local; the lookup maps are built lazily on the main thread.
         this.allFeatureVtIndices.push(vtFeatureIndex);
-        this.allFeatureIds.push(featureId);
+        this.allFeatureIds.push(featureId!);
         if (this.allFormattedSections) this.allFormattedSections.push(formattedSection || null);
 
         return localIndex;
@@ -724,7 +724,7 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
 
         this._ensureRangeMaps();
         for (const featureId of featureIds) {
-            const positions = this.featureVertexRangesFromId.get(featureId);
+            const positions = this.featureVertexRangesFromId!.get(featureId);
             if (!positions) continue;
             for (const i of positions) {
                 this._reevaluateAt(i, vtLayer, canonical, availableImages, featureStates, brightness);

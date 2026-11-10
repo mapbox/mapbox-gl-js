@@ -95,32 +95,23 @@ const expressions: ExpressionRegistry = Object.assign(Object.create(null) as Exp
 });
 
 function rgba(ctx: EvaluationContext, [r, g, b, a]: Expression[]) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    r = r!.evaluate(ctx);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    g = g!.evaluate(ctx);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    b = b!.evaluate(ctx);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const alpha = a ? a.evaluate(ctx) : 1;
-    const error = validateRGBA(r, g, b, alpha);
+    const red: unknown = r!.evaluate(ctx);
+    const green: unknown = g!.evaluate(ctx);
+    const blue: unknown = b!.evaluate(ctx);
+    const alpha: unknown = a ? a.evaluate(ctx) : 1;
+    const error = validateRGBA(red, green, blue, alpha);
     if (error) throw new RuntimeError(error);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    return new Color(r as unknown as number / 255, g as unknown as number / 255, b as unknown as number / 255, alpha);
+    return new Color(red as number / 255, green as number / 255, blue as number / 255, alpha as number);
 }
 
 function hsla(ctx: EvaluationContext, [h, s, l, a]: Expression[]) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    h = h!.evaluate(ctx);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    s = s!.evaluate(ctx);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    l = l!.evaluate(ctx);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const alpha = a ? a.evaluate(ctx) : 1;
-    const error = validateHSLA(h, s, l, alpha);
+    const hValue: unknown = h!.evaluate(ctx);
+    const sValue: unknown = s!.evaluate(ctx);
+    const lValue: unknown = l!.evaluate(ctx);
+    const alpha: unknown = a ? a.evaluate(ctx) : 1;
+    const error = validateHSLA(hValue, sValue, lValue, alpha);
     if (error) throw new RuntimeError(error);
-    const hue = (h as unknown as number) % 360 / 360, sat = (s as unknown as number) / 100, lum = (l as unknown as number) / 100;
+    const hue = (hValue as number) % 360 / 360, sat = (sValue as number) / 100, lum = (lValue as number) / 100;
     const m2 = lum <= 0.5 ? lum * (sat + 1) : lum + sat - lum * sat;
     const m1 = lum * 2 - m2;
     return new Color(hueToByte(m1, m2, hue + 1 / 3), hueToByte(m1, m2, hue), hueToByte(m1, m2, hue - 1 / 3), alpha as number);

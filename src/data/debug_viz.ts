@@ -38,7 +38,7 @@ export class TileSpaceDebugBuffer {
         for (const point of points) {
             this.addPoint(point);
         }
-        this.addPoint(points[0]);
+        this.addPoint(points[0]!);
     }
 
     addPoint(p: Point) {

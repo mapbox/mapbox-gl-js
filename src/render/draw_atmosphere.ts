@@ -130,7 +130,7 @@ class Atmosphere {
             let base = 0;
             for (let i = 0; i < stars.length; ++i) {
 
-                const star = vec3.scale([], stars[i], 200.0);
+                const star = vec3.scale([], stars[i]!, 200.0);
 
                 const size = Math.max(0, 1.0 + 0.01 * sizeRange * (-0.5 + 1.0 * sRand()));
                 const intensity = Math.max(0, 1.0 + 0.01 * intensityRange * (-0.5 + 1.0 * sRand()));
@@ -270,7 +270,7 @@ class Atmosphere {
         const rotationMatrix = mat4.fromQuat(new Float32Array(16), orientation);
         const mvp = mat4.multiply([], tr.starsProjMatrix, rotationMatrix);
         const modelView3 = mat3.fromMat4([], rotationMatrix);
-        const modelviewInv = mat3.invert([], modelView3);
+        const modelviewInv = mat3.invert([], modelView3)!;
 
         let sizeMultiplier = this.params.sizeMultiplier;
         Debug.run(() => {

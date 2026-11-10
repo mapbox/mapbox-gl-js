@@ -48,7 +48,7 @@ function basisToPoints(x1: number, y1: number, x2: number, y2: number, x3: numbe
     const s: vec3 = [x4, y4, 1];
     const ma = mat3.adjoint([], m);
     const [sx, sy, sz] = vec3.transformMat3(s, s, ma);
-    return mat3.multiply(m, m, [sx, 0, 0, 0, sy, 0, 0, 0, sz]);
+    return mat3.multiply(m, m, [sx!, 0, 0, 0, sy!, 0, 0, 0, sz!]);
 }
 
 function getTileToTextureTransformMatrix(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
@@ -104,43 +104,43 @@ function constrain(coords: Coordinates): Coordinates {
         constrainCoordinates(coords[3])];
 }
 
-function calculateMinAndSize(coords: Coordinates) {
+function calculateMinAndSize(coords: Coordinates): [number, number, number, number] {
     let minX = coords[0][0];
     let maxX = minX;
     let minY = coords[0][1];
     let maxY = minY;
 
     for (let i = 1; i < coords.length; i++) {
-        if (coords[i][0] < minX) {
-            minX = coords[i][0];
-        } else if (coords[i][0] > maxX) {
-            maxX = coords[i][0];
+        if (coords[i]![0] < minX) {
+            minX = coords[i]![0];
+        } else if (coords[i]![0] > maxX) {
+            maxX = coords[i]![0];
         }
-        if (coords[i][1] < minY) {
-            minY = coords[i][1];
-        } else if (coords[i][1] > maxY) {
-            maxY = coords[i][1];
+        if (coords[i]![1] < minY) {
+            minY = coords[i]![1];
+        } else if (coords[i]![1] > maxY) {
+            maxY = coords[i]![1];
         }
     }
     return [minX, minY, maxX - minX, maxY - minY];
 }
 
-function calculateMinAndSizeForPoints(coords: ProjectedPoint[]) {
-    let minX = coords[0].x;
+function calculateMinAndSizeForPoints(coords: ProjectedPoint[]): [number, number, number, number] {
+    let minX = coords[0]!.x;
     let maxX = minX;
-    let minY = coords[0].y;
+    let minY = coords[0]!.y;
     let maxY = minY;
 
     for (let i = 1; i < coords.length; i++) {
-        if (coords[i].x < minX) {
-            minX = coords[i].x;
-        } else if (coords[i].x > maxX) {
-            maxX = coords[i].x;
+        if (coords[i]!.x < minX) {
+            minX = coords[i]!.x;
+        } else if (coords[i]!.x > maxX) {
+            maxX = coords[i]!.x;
         }
-        if (coords[i].y < minY) {
-            minY = coords[i].y;
-        } else if (coords[i].y > maxY) {
-            maxY = coords[i].y;
+        if (coords[i]!.y < minY) {
+            minY = coords[i]!.y;
+        } else if (coords[i]!.y > maxY) {
+            maxY = coords[i]!.y;
         }
     }
     return [minX, minY, maxX - minX, maxY - minY];
@@ -154,7 +154,7 @@ function sortTriangles(centerLatitudes: number[], indices: TriangleIndexArray): 
     const triangleIndexes = Array.from({length: triangleCount}, (v, i) => i);
 
     triangleIndexes.sort((idx1: number, idx2: number) => {
-        return centerLatitudes[idx1] - centerLatitudes[idx2];
+        return centerLatitudes[idx1]! - centerLatitudes[idx2]!;
     });
 
     const sortedCenterLatitudes: number[] = [];
@@ -162,11 +162,11 @@ function sortTriangles(centerLatitudes: number[], indices: TriangleIndexArray): 
 
     for (let i = 0; i < triangleIndexes.length; i++) {
         const idx = triangleIndexes[i];
-        sortedCenterLatitudes.push(centerLatitudes[idx]);
-        const i0 = idx * 3;
+        sortedCenterLatitudes.push(centerLatitudes[idx!]!);
+        const i0 = idx! * 3;
         const i1 = i0 + 1;
         const i2 = i1 + 1;
-        sortedIndices.emplaceBack(indices.uint16[i0], indices.uint16[i1], indices.uint16[i2]);
+        sortedIndices.emplaceBack(indices.uint16[i0]!, indices.uint16[i1]!, indices.uint16[i2]!);
     }
 
     return [sortedCenterLatitudes, sortedIndices];
@@ -527,7 +527,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
 
     _prepareData(context: Context) {
         for (const w in this.tiles) {
-            const tile = this.tiles[w];
+            const tile = this.tiles[w]!;
             if (tile.state !== 'loaded') {
                 tile.state = 'loaded';
                 tile.texture = this.texture;
@@ -551,7 +551,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
             return;
         }
 
-        const tileTr = tileTransform(this.tileID, this.map.transform.projection);
+        const tileTr = tileTransform(this.tileID!, this.map.transform.projection);
 
         // Transform the corner coordinates into the coordinate space of our tile.
         const [tl, tr, br, bl] = this.coordinates.map((coord) => {
@@ -559,13 +559,13 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
             return getTilePoint(tileTr, projectedCoord)._round();
         });
 
-        this.perspectiveTransform = getPerspectiveTransform(tl.x, tl.y, tr.x, tr.y, br.x, br.y, bl.x, bl.y);
+        this.perspectiveTransform = getPerspectiveTransform(tl!.x, tl!.y, tr!.x, tr!.y, br!.x, br!.y, bl!.x, bl!.y);
 
         const boundsArray = this._boundsArray = new RasterBoundsArray();
-        boundsArray.emplaceBack(tl.x, tl.y, 0, 0);
-        boundsArray.emplaceBack(tr.x, tr.y, EXTENT, 0);
-        boundsArray.emplaceBack(bl.x, bl.y, 0, EXTENT);
-        boundsArray.emplaceBack(br.x, br.y, EXTENT, EXTENT);
+        boundsArray.emplaceBack(tl!.x, tl!.y, 0, 0);
+        boundsArray.emplaceBack(tr!.x, tr!.y, EXTENT, 0);
+        boundsArray.emplaceBack(bl!.x, bl!.y, 0, EXTENT);
+        boundsArray.emplaceBack(br!.x, br!.y, EXTENT, EXTENT);
 
         if (this.boundsBuffer) {
             this.boundsBuffer.destroy();
@@ -614,12 +614,12 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
 
             const [minX, minY, dx, dy] = calculateMinAndSizeForPoints(globalTileCoords);
 
-            const transformToImagePoint = (coord: ProjectedPoint) => {
+            const transformToImagePoint = (coord: ProjectedPoint): [number, number] => {
                 return [(coord.x - minX) / dx, (coord.y - minY) / dy];
             };
             const [p0, p1, p2, p3] = globalTileCoords.map(transformToImagePoint);
-            const toUV = getTileToTextureTransformMatrix(p0[0], p0[1], p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
-            this.elevatedGlobePerspectiveTransform = getPerspectiveTransform(p0[0], p0[1], p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
+            const toUV = getTileToTextureTransformMatrix(p0![0], p0![1], p1![0], p1![1], p2![0], p2![1], p3![0], p3![1]);
+            this.elevatedGlobePerspectiveTransform = getPerspectiveTransform(p0![0], p0![1], p1![0], p1![1], p2![0], p2![1], p3![0], p3![1]);
 
             const addVertex = (point: LngLat, tilePoint: ProjectedPoint) => {
                 verticesLongitudes.push(point.lng);
@@ -639,8 +639,8 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
 
             for (let i = 0; i < linesCount; i++) {
                 const linesPart = i / cellCount;
-                const startLinePoint = [globalTileCoords[0].x + linesPart * leftDx, globalTileCoords[0].y + linesPart * leftDy];
-                const endLinePoint = [globalTileCoords[1].x + linesPart * rightDx, globalTileCoords[1].y + linesPart * rightDy];
+                const startLinePoint: [number, number] = [globalTileCoords[0].x + linesPart * leftDx, globalTileCoords[0].y + linesPart * leftDy];
+                const endLinePoint: [number, number] = [globalTileCoords[1].x + linesPart * rightDx, globalTileCoords[1].y + linesPart * rightDy];
                 const lineDx = endLinePoint[0] - startLinePoint[0];
                 const lineDy = endLinePoint[1] - startLinePoint[1];
 
@@ -657,7 +657,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
         // Indices
         {
             this.maxLongitudeTriangleSize = 0;
-            let elevatedGlobeTrianglesCenterLongitudes: number[] | null | undefined = [];
+            let elevatedGlobeTrianglesCenterLongitudes: number[] = [];
 
             let indices = new TriangleIndexArray();
 
@@ -667,8 +667,8 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
                 const l0 = verticesLongitudes[i0];
                 const l1 = verticesLongitudes[i1];
                 const l2 = verticesLongitudes[i2];
-                const minLongitude = Math.min(Math.min(l0, l1), l2);
-                const maxLongitude = Math.max(Math.max(l0, l1), l2);
+                const minLongitude = Math.min(Math.min(l0!, l1!), l2!);
+                const maxLongitude = Math.max(Math.max(l0!, l1!), l2!);
                 const diff = maxLongitude - minLongitude;
                 if (diff > this.maxLongitudeTriangleSize) {
                     this.maxLongitudeTriangleSize = diff;
@@ -770,7 +770,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
             return longitude + diff * 360.0;
         };
 
-        let gapLongitude = normalizeLongitudeTo(longitude + 180.0, longitudes[0]);
+        let gapLongitude = normalizeLongitudeTo(longitude + 180.0, longitudes[0]!);
         const ret = new SegmentVector();
 
         const addTriangleRange = (triangleOffset: number, triangleCount: number) => {
@@ -778,7 +778,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
                 {
                     vertexOffset: 0,
                     primitiveOffset: triangleOffset,
-                    vertexLength: segments.segments[0].vertexLength,
+                    vertexLength: segments.segments[0]!.vertexLength,
                     primitiveLength: triangleCount,
                     sortKey: undefined,
                     vaos: {}
@@ -790,7 +790,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
         assert(distanceToDrop > 0);
         assert(distanceToDrop < 180.0);
 
-        if (Math.abs(longitudes[0] - gapLongitude) <= distanceToDrop) {
+        if (Math.abs(longitudes[0]! - gapLongitude) <= distanceToDrop) {
             const minIdx = upperBound(longitudes, 0, longitudes.length, gapLongitude + distanceToDrop);
             if (minIdx === longitudes.length) {
                 // Rotated 90 degrees, and one side is almost zero?
@@ -802,7 +802,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
             return ret;
         }
 
-        if (gapLongitude < longitudes[0]) {
+        if (gapLongitude < longitudes[0]!) {
             gapLongitude += 360.0;
         }
 

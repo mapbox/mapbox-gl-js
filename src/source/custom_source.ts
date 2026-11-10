@@ -254,7 +254,7 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
     hasTile(tileID: OverscaledTileID): boolean {
         if (this._implementation.hasTile) {
             const {x, y, z} = tileID.canonical;
-            return this._implementation.hasTile({x, y, z});
+            return this._implementation.hasTile({x, y, z})!;
         }
 
         return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
@@ -367,7 +367,7 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
 
     _clearTiles() {
         const fqid = makeFQID(this.id, this.scope);
-        this.map.style.clearSource(fqid);
+        this.map.style!.clearSource(fqid);
     }
 
     _update() {

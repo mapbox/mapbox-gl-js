@@ -27,20 +27,20 @@ export class StyleProperties<Props extends {[Key in keyof Props]: Props[Key]}> e
 
     constructor(properties: Properties<Props>, scope?: string, configOptions?: ConfigOptions | null) {
         super();
-        this.scope = scope;
+        this.scope = scope!;
         this._transitionable = new PropertyValues(properties, scope, configOptions);
         this.properties = new PossiblyEvaluated(properties);
     }
 
     _setValues(values: PropertyValueSpecifications<Props> | null | undefined, configOptions?: ConfigOptions | null) {
         this._values = values;
-        this._transitionable.setTransitionOrValue(values, configOptions ? new Map(configOptions) : undefined);
+        this._transitionable.setTransitionOrValue(values!, configOptions ? new Map(configOptions) : undefined);
     }
 
     // Takes a snapshot of `configOptions` rather than holding a live reference to it; the style calls
     // this with its current config on every config change
     updateConfig(configOptions?: ConfigOptions | null) {
-        this._transitionable.setTransitionOrValue(this._values, new Map(configOptions));
+        this._transitionable.setTransitionOrValue(this._values!, new Map(configOptions));
     }
 
     // Like `updateConfig`, but snaps the displayed values to the new ones. Used at initial style load, where
@@ -62,7 +62,7 @@ export class StyleProperties<Props extends {[Key in keyof Props]: Props[Key]}> e
         this.properties = this._transitionable.possiblyEvaluate(parameters);
     }
 
-    _validate(validate: Validator, value: unknown, options?: StyleSetterOptions): boolean {
+    _validate<T>(validate: Validator<(options: T) => unknown>, value: unknown, options?: StyleSetterOptions): boolean {
         if (options && options.validate === false) {
             return false;
         }
@@ -70,6 +70,6 @@ export class StyleProperties<Props extends {[Key in keyof Props]: Props[Key]}> e
         return emitValidationErrors(this, validate.call(validateStyle, {value,
             // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
             style: {glyphs: true, sprite: true},
-            styleSpec}));
+            styleSpec} as T));
     }
 }

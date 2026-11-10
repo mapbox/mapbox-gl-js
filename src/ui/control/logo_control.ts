@@ -64,7 +64,7 @@ class LogoControl implements IControl {
         const sourceCaches = this._map.style._mergedSourceCaches;
         if (Object.entries(sourceCaches).length === 0) return true;
         for (const id in sourceCaches) {
-            const source = sourceCaches[id].getSource();
+            const source = sourceCaches[id]!.getSource();
             if (Object.hasOwn(source, 'mapbox_logo') && !source.mapbox_logo) {
                 return false;
             }
@@ -76,7 +76,7 @@ class LogoControl implements IControl {
     _updateCompact() {
         const containerChildren = this._container.children;
         if (containerChildren.length) {
-            const anchor = containerChildren[0];
+            const anchor = containerChildren[0]!;
             if (this._map.getCanvasContainer().offsetWidth < 250) {
                 anchor.classList.add('mapboxgl-compact');
             } else {

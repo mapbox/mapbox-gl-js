@@ -140,7 +140,7 @@ export default class MapWorker {
         for (const workerSource in this.workerSources[mapId][scope]) {
             const ws = this.workerSources[mapId][scope][workerSource];
             for (const source in ws) {
-                ws[source].availableImages = images;
+                ws[source]!.availableImages = images;
             }
         }
     }
@@ -159,7 +159,7 @@ export default class MapWorker {
         for (const workerSource in this.workerSources[mapId][scope]) {
             const ws = this.workerSources[mapId][scope][workerSource];
             for (const source in ws) {
-                ws[source].availableModels = models;
+                ws[source]!.availableModels = models;
             }
         }
     }
@@ -386,21 +386,21 @@ export default class MapWorker {
                 layerIndex: this.getLayerIndex(mapId, scope),
                 availableImages: this.getAvailableImages(mapId, scope),
                 availableModels: this.getAvailableModels(mapId, scope),
-                isSpriteLoaded: this.isSpriteLoaded[mapId][scope],
+                isSpriteLoaded: this.isSpriteLoaded[mapId][scope]!,
                 tileProvider,
-                brightness: this.brightness,
+                brightness: this.brightness!,
                 worldview: this.worldview,
-                maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords,
+                maxUniformBlockSizeDwords: this.maxUniformBlockSizeDwords!,
                 localGlyphs: this.localGlyphs[mapId],
             });
         } else if (tileProvider) {
             // Reload (e.g. setUrl/setTiles) re-broadcasts loadTileProvider with
             // a fresh provider instance; update the existing worker source so it
             // doesn't keep using the stale provider with stale options.
-            workerSources[mapId][scope][type][source].tileProvider = tileProvider;
+            workerSources[mapId][scope][type][source]!.tileProvider = tileProvider;
         }
 
-        return workerSources[mapId][scope][type][source];
+        return workerSources[mapId][scope][type][source]!;
     }
 
     enforceCacheSizeLimit(_mapId: number, limit: WorkerInbox['enforceCacheSizeLimit']['params']) {

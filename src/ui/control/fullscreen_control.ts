@@ -72,7 +72,7 @@ class FullscreenControl implements IControl {
 
     onRemove() {
         this._controlContainer.remove();
-        this._map = null;
+        this._map = null!;
         document.removeEventListener(this._fullscreenchange, this._changeIcon);
     }
 
@@ -125,13 +125,13 @@ class FullscreenControl implements IControl {
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 document.exitFullscreen();
             } else if ((document as WebkitDocument).webkitCancelFullScreen) {
-                (document as WebkitDocument).webkitCancelFullScreen();
+                (document as WebkitDocument).webkitCancelFullScreen!();
             }
         } else if (this._container.requestFullscreen) {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._container.requestFullscreen();
         } else if ((this._container as WebkitFullscreenElement).webkitRequestFullscreen) {
-            (this._container as WebkitFullscreenElement).webkitRequestFullscreen();
+            (this._container as WebkitFullscreenElement).webkitRequestFullscreen!();
         }
     }
 }

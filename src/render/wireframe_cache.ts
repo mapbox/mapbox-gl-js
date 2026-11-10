@@ -38,9 +38,9 @@ export class WireframeDebugCache {
         const lineIndexArray = new LineIndexArray();
 
         for (let i = 0; i < bufSize / 2; i += 3) {
-            const i0 = intView[i];
-            const i1 = intView[i + 1];
-            const i2 = intView[i + 2];
+            const i0 = intView[i]!;
+            const i1 = intView[i + 1]!;
+            const i2 = intView[i + 2]!;
 
             lineIndexArray.emplaceBack(i0, i1);
             lineIndexArray.emplaceBack(i1, i2);

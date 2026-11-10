@@ -55,8 +55,7 @@ class Case implements Expression {
         return new Case(outputType, branches, otherwise);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    evaluate(ctx: EvaluationContext): any {
+    evaluate(ctx: EvaluationContext): unknown {
         for (const [test, expression] of this.branches) {
             if (test.evaluate(ctx)) {
                 return expression.evaluate(ctx);

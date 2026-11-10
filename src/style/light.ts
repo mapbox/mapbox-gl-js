@@ -5,6 +5,7 @@ import {StyleProperties} from './style_properties';
 
 import type Color from '../style-spec/util/color';
 import type {StyleSetterOptions} from '../style/style';
+import type {PropertyValueSpecifications} from './properties';
 import type {LightSpecification} from '../style-spec/types';
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 
@@ -15,7 +16,7 @@ type Props = {
     ["intensity"]: DataConstantProperty<number>;
 };
 
-const lightReference = styleSpec.light as Record<string, StylePropertySpecification>;
+const lightReference = styleSpec.light as Record<keyof Props, StylePropertySpecification>;
 
 let properties: Properties<Props>;
 const getProperties = (): Properties<Props> => properties || (properties = new Properties({
@@ -46,7 +47,7 @@ class Light extends StyleProperties<Props> {
         if (this._validate(validateLight, light, options)) {
             return;
         }
-        this._setValues(light);
+        this._setValues(light! as PropertyValueSpecifications<Props>);
         this.id = id;
     }
 }

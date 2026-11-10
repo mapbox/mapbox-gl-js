@@ -1,12 +1,11 @@
-import type Program from './program';
 import type VertexBuffer from '../gl/vertex_buffer';
+import type {AttributeLocator} from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type Context from '../gl/context';
-import type {UniformBindings} from './uniform_binding';
 
 class VertexArrayObject {
     context!: Context;
-    boundProgram: Program<UniformBindings> | null | undefined;
+    boundProgram: AttributeLocator | null | undefined;
     boundLayoutVertexBuffer: VertexBuffer | null | undefined;
     boundPaintVertexBuffers: Array<VertexBuffer>;
     boundIndexBuffer: IndexBuffer | null | undefined;
@@ -26,7 +25,7 @@ class VertexArrayObject {
 
     bind(
         context: Context,
-        program: Program<UniformBindings>,
+        program: AttributeLocator,
         layoutVertexBuffer: VertexBuffer,
         paintVertexBuffers: Array<VertexBuffer>,
         indexBuffer: IndexBuffer | null | undefined,
@@ -86,7 +85,7 @@ class VertexArrayObject {
     }
 
     freshBind(
-        program: Program<UniformBindings>,
+        program: AttributeLocator,
         layoutVertexBuffer: VertexBuffer,
         paintVertexBuffers: Array<VertexBuffer>,
         indexBuffer: IndexBuffer | null | undefined,

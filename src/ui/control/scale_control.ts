@@ -111,7 +111,7 @@ class ScaleControl implements IControl {
 
     onAdd(map: Map): HTMLElement {
         this._map = map;
-        this._language = map.getLanguage();
+        this._language = map.getLanguage()!;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-scale', map.getContainer());
         this._container.dir = 'auto';
 
@@ -124,7 +124,7 @@ class ScaleControl implements IControl {
     onRemove() {
         this._container.remove();
         this._map.off('move', this._update);
-        this._map = undefined;
+        this._map = undefined!;
     }
 
     _setLanguage(language?: string | string[]) {

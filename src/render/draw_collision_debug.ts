@@ -50,7 +50,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
     let circleOffset = 0;
 
     for (let i = 0; i < coords.length; i++) {
-        const coord = coords[i];
+        const coord = coords[i]!;
         const tile = sourceCache.getTile(coord);
         const bucket = tile.getBucket(layer) as SymbolBucket;
         if (!bucket) continue;
@@ -134,10 +134,10 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
     for (const batch of tileBatches) {
         for (let i = 0; i < batch.circleArray.length / 4; i++) {
             const circleIdx = i * 4;
-            const x = batch.circleArray[circleIdx + 0];
-            const y = batch.circleArray[circleIdx + 1];
-            const radius = batch.circleArray[circleIdx + 2];
-            const collision = batch.circleArray[circleIdx + 3];
+            const x = batch.circleArray[circleIdx + 0]!;
+            const y = batch.circleArray[circleIdx + 1]!;
+            const radius = batch.circleArray[circleIdx + 2]!;
+            const collision = batch.circleArray[circleIdx + 3]!;
 
             // 4 floats per vertex, 4 vertices per quad
             vertexData.emplace(vertexOffset++, x, y, radius, collision, 0);

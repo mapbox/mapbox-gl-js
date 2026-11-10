@@ -68,7 +68,7 @@ export class LayerExpressionDependencies {
         if (_layoutValues && has(_layoutValues.configDependencies)) return true;
         if (_paintValues && has(_paintValues.configDependencies)) return true;
         for (const {unevaluatedLayout, unevaluatedPaint} of this._layer.appearances) {
-            if (unevaluatedLayout && (has(unevaluatedLayout.configDependencies) || has(unevaluatedPaint.configDependencies))) return true;
+            if (unevaluatedLayout && (has(unevaluatedLayout.configDependencies) || has(unevaluatedPaint!.configDependencies))) return true;
         }
         const filterDeps = this._filterDeps;
         return filterDeps ? has(filterDeps.configDependencies) : false;

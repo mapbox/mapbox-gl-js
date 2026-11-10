@@ -25,13 +25,13 @@ export default function drawDebug(painter: Painter, sourceCache: SourceCache, co
             const radius = 1;
             const darkenFactor = 0.8;
             const colorMiddle = new Color(color.r * darkenFactor, color.g * darkenFactor, color.b * darkenFactor, 1.0);
-            drawDebugTile(painter, sourceCache, coords[i], color, -radius, -radius, showParseStatus);
-            drawDebugTile(painter, sourceCache, coords[i], color, -radius, radius, showParseStatus);
-            drawDebugTile(painter, sourceCache, coords[i], color, radius, radius, showParseStatus);
-            drawDebugTile(painter, sourceCache, coords[i], color, radius, -radius, showParseStatus);
-            drawDebugTile(painter, sourceCache, coords[i], colorMiddle, 0, 0, showParseStatus);
+            drawDebugTile(painter, sourceCache, coords[i]!, color, -radius, -radius, showParseStatus);
+            drawDebugTile(painter, sourceCache, coords[i]!, color, -radius, radius, showParseStatus);
+            drawDebugTile(painter, sourceCache, coords[i]!, color, radius, radius, showParseStatus);
+            drawDebugTile(painter, sourceCache, coords[i]!, color, radius, -radius, showParseStatus);
+            drawDebugTile(painter, sourceCache, coords[i]!, colorMiddle, 0, 0, showParseStatus);
         } else {
-            drawDebugTile(painter, sourceCache, coords[i], color, 0, 0, showParseStatus);
+            drawDebugTile(painter, sourceCache, coords[i]!, color, 0, 0, showParseStatus);
         }
     }
 }
@@ -54,7 +54,7 @@ export function drawDebugPadding(painter: Painter) {
 
 export function drawDebugQueryGeometry(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
     for (let i = 0; i < coords.length; i++) {
-        drawTileQueryGeometry(painter, sourceCache, coords[i]);
+        drawTileQueryGeometry(painter, sourceCache, coords[i]!);
     }
 }
 
@@ -215,7 +215,7 @@ function drawTextToOverlay(painter: Painter, text: string) {
     painter.initDebugOverlayCanvas();
     const canvas = painter.debugOverlayCanvas;
     const gl = painter.context.gl;
-    const ctx2d = painter.debugOverlayCanvas.getContext('2d');
+    const ctx2d = painter.debugOverlayCanvas.getContext('2d')!;
     ctx2d.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx2d.shadowColor = 'white';

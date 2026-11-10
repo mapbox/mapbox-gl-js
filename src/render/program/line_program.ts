@@ -156,7 +156,7 @@ const lineUniformValues = (
     // The values were found experimentally, to make an elevated line look good over a terrain with high elevation differences.
     const zbiasFactor = transform.pitch < 15.0 ? lerp(0.07, 0.7, clamp((14.0 - transform.zoom) / (14.0 - 9.0), 0.0, 1.0)) : 0.07;
     return {
-        'u_matrix': calculateMatrix(painter, tile, layer, matrix),
+        'u_matrix': calculateMatrix(painter, tile, layer, matrix!),
         'u_pixels_to_tile_units': pixelsToTileUnits,
         'u_device_pixel_ratio': pixelRatio,
         'u_width_scale': widthScale,
@@ -171,7 +171,7 @@ const lineUniformValues = (
         'u_gradient_image': 1,
         'u_border_gradient_image': 2,
         'u_image_height': imageHeight,
-        'u_texsize': hasDash(layer) && tile.lineAtlasTexture ? tile.lineAtlasTexture.size : [0, 0],
+        'u_texsize': (hasDash(layer) && tile.lineAtlasTexture ? tile.lineAtlasTexture.size : [0, 0])!,
         'u_tile_units_to_pixels': calculateTileRatio(tile, painter.transform),
         'u_alpha_discard_threshold': 0.0,
         'u_trim_offset': trimOffset,
@@ -219,8 +219,8 @@ const linePatternUniformValues = (
     // Increase zbias factor for low pitch values based on the zoom level. Lower zoom level increases the zbias factor.
     // The values were found experimentally, to make an elevated line look good over a terrain with high elevation differences.
     return {
-        'u_matrix': calculateMatrix(painter, tile, layer, matrix),
-        'u_texsize': tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0],
+        'u_matrix': calculateMatrix(painter, tile, layer, matrix!),
+        'u_texsize': (tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0])!,
         // camera zoom ratio
         'u_pixels_to_tile_units': transform.calculatePixelsToTileUnitsMatrix(tile),
         'u_device_pixel_ratio': pixelRatio,

@@ -84,8 +84,7 @@ export default function validateSource(options: SourceValidatorOptions): Validat
 
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const [operator, mapExpr] = propValue;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                const reduceExpr = typeof operator === 'string' ? [operator, ['accumulated'], ['get', prop]] : operator;
+                const reduceExpr: unknown = typeof operator === 'string' ? [operator, ['accumulated'], ['get', prop]] : operator;
 
                 errors.push(...validateExpression({
                     key: `${key}.${prop}.map`,

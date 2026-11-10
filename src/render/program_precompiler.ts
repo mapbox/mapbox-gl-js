@@ -204,7 +204,7 @@ export class ProgramPrecompiler {
         // (~1–3 ms on mid-range mobile drivers); a slice landing between rAF frames can fit one and
         // push the next frame past vsync. Reschedule and let the queue resume after `moveend`.
         if (style.map && style.map.isMoving()) {
-            this._idleHandle = browser.requestIdleCallback((d) => this._executeBatch(d, painter, style));
+            this._idleHandle = browser.requestIdleCallback((d) => this._executeBatch(d, painter, style))!;
             return;
         }
 
@@ -249,7 +249,7 @@ export class ProgramPrecompiler {
         // No-KHR path: `_pendingPrograms` is always empty (constructor finalizes synchronously),
         // so this reduces to the original `_queue.length > 0` check.
         if (this._queue.length > 0 || painter.context._pendingPrograms.size > 0) {
-            this._idleHandle = browser.requestIdleCallback((d) => this._executeBatch(d, painter, style));
+            this._idleHandle = browser.requestIdleCallback((d) => this._executeBatch(d, painter, style))!;
         } else {
             this._idleHandle = null;
         }
@@ -262,7 +262,7 @@ export class ProgramPrecompiler {
             cancelIdleCallback(this._idleHandle);
         }
 
-        this._idleHandle = browser.requestIdleCallback((d) => this._executeBatch(d, painter, style));
+        this._idleHandle = browser.requestIdleCallback((d) => this._executeBatch(d, painter, style))!;
     }
 
     reset() {

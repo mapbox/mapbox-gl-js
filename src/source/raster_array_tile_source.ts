@@ -54,7 +54,7 @@ export type RasterQueryParameters = {
  * @see [Example: Create a wind particle animation](https://docs.mapbox.com/mapbox-gl-js/example/raster-particle-layer/)
  */
 class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
-    private _loadTilePending: Record<string, Promise<MapboxRasterTile>>;
+    private _loadTilePending: Record<string, Promise<MapboxRasterTile | null | undefined>>;
     private _loadTileLoaded: Record<string, boolean>;
 
     // Resolves once every worker has preloaded the raster-array source (see
@@ -68,7 +68,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
     // and use range requests to load and parse the tile data.
     // Otherwise, the entire tile will be loaded and parsed in the Worker.
     get partial(): boolean {
-        return !this.map.style.imageManager.hasImageProviderForSource(this.id, this.scope);
+        return !this.map.style!.imageManager.hasImageProviderForSource(this.id, this.scope);
     }
 
     /**
@@ -100,7 +100,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         this._loadTilePending = {};
         this._loadTileLoaded = {};
         this._pendingParentWaiters = new Map();
-        this._options = {type: 'raster-array', ...options};
+        this._options = {type: 'raster-array', ...(options as Omit<typeof options, 'type'>)};
     }
 
     override onAdd(map: MapboxMap): void {
@@ -236,7 +236,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
 
     triggerRepaint(tile: RasterArrayTile) {
         const terrain = this.map.painter._terrain;
-        const sourceCache = this.map.style.getSourceCache(this.id);
+        const sourceCache = this.map.style!.getSourceCache(this.id);
         if (terrain && terrain.enabled && sourceCache) {
             terrain._clearRenderCacheForTile(sourceCache.id, tile.tileID);
         }
@@ -248,7 +248,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
 
     private _setupOverzoomTile(tile: RasterArrayTile, callback: Callback<undefined>) {
         const dataMaxzoom = this._dataMaxzoom !== undefined ? this._dataMaxzoom : this.maxzoom;
-        const sourceCache = this.map.style.getSourceCache(this.id);
+        const sourceCache = this.map.style!.getSourceCache(this.id);
 
         if (!sourceCache) {
             callback(new Error('Source cache not found'));
@@ -378,11 +378,11 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
                 });
             } else {
                 // Load and parse the entire tile in Worker
-                tile.request = tile.actor.sendCancelable('loadTile', params, {}, (err, result: RasterArrayTileLoadResult | null | undefined) => {
+                tile.request = tile.actor.sendCancelable('loadTile', params, {}, ((err?: Error | null, result?: RasterArrayTileLoadResult | null) => {
                     if (err) return done(err as AJAXError);
                     if (!result) return done(null, null);
                     done(null, result.mrt, result.headers);
-                });
+                }) as Callback<unknown>);
             }
         } catch (err) {
             if (controller.signal.aborted) return callback(null);
@@ -414,7 +414,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
             // Preserve the textures in the cache
             for (const texture of textures.values()) {
                 // Save the texture to the cache
-                this.map.painter.saveTileTexture(texture);
+                this.map.painter.saveTileTexture(texture!);
             }
         } else {
             tile.destroy();
@@ -464,7 +464,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         const rasterLayer = this.rasterLayers.find(({id}) => id === sourceLayer);
         const fields = rasterLayer && rasterLayer.fields;
         const bands = fields && fields.bands && fields.bands;
-        return bands ? bands[0] : 0;
+        return bands ? bands[0]! : 0;
     }
 
     /**
@@ -500,7 +500,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
 
         if (tile.updateNeeded(layer.id, band) && !fallbackToPrevious) return;
 
-        const textureDescriptor = tile.textureDescriptorPerLayer.get(layer.id);
+        const textureDescriptor = tile.textureDescriptorPerLayer.get(layer.id)!;
 
         return {...textureDescriptor, texture: tile.texturePerLayer.get(layer.id)};
     }
@@ -519,11 +519,11 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         for (const tile of tiles) {
             for (const name of imageNames) {
                 const [layerId, bandId] = name.split('/');
-                const layer = tile.getLayer(layerId);
+                const layer = tile.getLayer(layerId!);
                 if (!layer) continue;
-                if (!layer.hasBand(bandId) || !layer.hasDataForBand(bandId)) continue;
+                if (!layer.hasBand(bandId!) || !layer.hasDataForBand(bandId!)) continue;
 
-                const {bytes, tileSize, buffer} = layer.getBandView(bandId);
+                const {bytes, tileSize, buffer} = layer.getBandView(bandId!);
                 const size = tileSize + 2 * buffer;
 
                 const styleImage: StyleImage = {
@@ -547,7 +547,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
             const queryResult: RasterQueryResult = {};
             const fetchLayerBandsRequests = new Set<string>();
 
-            for (const [layerName, layer] of Object.entries(mrt.layers)) {
+            for (const [layerName, layer] of Object.entries(mrt!.layers)) {
                 if (params.layerName && layerName !== params.layerName) continue;
                 const entry: RasterQueryResultEntry = {};
                 queryResult[layerName] = entry;
@@ -560,7 +560,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
                                 if (err) {
                                     entry[band] = null;
                                 } else {
-                                    entry[band] = getPointLonLat([lngLat.lng, lngLat.lat], mrt, layer.getBandView(band)) as number[];
+                                    entry[band] = getPointLonLat([lngLat.lng, lngLat.lat], mrt!, layer.getBandView(band)) as number[];
                                 }
                                 fetchLayerBandsRequests.delete(makeFQID(layerName, band));
                                 if (fetchLayerBandsRequests.size === 0) {
@@ -578,14 +578,14 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         });
     }
 
-    _loadTileForQuery(tile: RasterArrayTile): Promise<MapboxRasterTile> {
+    _loadTileForQuery(tile: RasterArrayTile): Promise<MapboxRasterTile | null | undefined> {
         if (this._loadTileLoaded[tile.uid]) {
             return Promise.resolve(tile._mrt);
         }
 
         // Concurrent queries on the same tile share one in-flight load.
         if (tile.uid in this._loadTilePending) {
-            return this._loadTilePending[tile.uid];
+            return this._loadTilePending[tile.uid]!;
         }
 
         const promise = this._fetchTileForQuery(tile);
@@ -595,7 +595,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
 
     // No controller: the shared promise must settle (the `finally` drains the dedup entry),
     // or a rejected load would block the tile forever.
-    private async _fetchTileForQuery(tile: RasterArrayTile): Promise<MapboxRasterTile> {
+    private async _fetchTileForQuery(tile: RasterArrayTile): Promise<MapboxRasterTile | null | undefined> {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
 
         try {
@@ -610,7 +610,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
                 partial: false
             };
 
-            const data = await tile.actor.send('loadTile', requestParams);
+            const data = await tile.actor!.send('loadTile', requestParams);
             const result = data as RasterArrayTileLoadResult | null | undefined;
             if (!result) return null;
 
@@ -658,9 +658,9 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         const y = Math.floor(point.y * tiles);
         // Guard for non-Mercator projections that show latitudes beyond the Mercator limit
         if (x < 0 || x >= tiles || y < 0 || y >= tiles) return null;
-        const sourceCache = this.map.style.getSourceCache(this.id);
+        const sourceCache = this.map.style!.getSourceCache(this.id);
         const tileID = new OverscaledTileID(z, wrap, z, x, y);
-        return sourceCache.findLoadedParent(tileID, this.minzoom) as RasterArrayTile | null | undefined;
+        return sourceCache!.findLoadedParent(tileID, this.minzoom) as RasterArrayTile | null | undefined;
     }
 }
 

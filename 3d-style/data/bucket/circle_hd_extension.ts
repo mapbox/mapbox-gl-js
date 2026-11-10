@@ -49,7 +49,7 @@ export class CircleHDExtension {
         const z = this.currentFeatureElevation ? this.currentFeatureElevation.pointElevation(new Point(x, y)) : 0.0;
         this.hasElevation = this.hasElevation || z !== 0.0;
         for (let i = 0; i < 4; i++) {
-            this.elevatedLayoutVertexArray.emplaceBack(z);
+            this.elevatedLayoutVertexArray!.emplaceBack(z);
         }
     }
 
@@ -90,7 +90,7 @@ export class CircleHDExtension {
  * @private
  */
 export function maybeAttachCircleHDExt(bucket: CircleBucket<CircleStyleLayer | HeatmapStyleLayer>): void {
-    const layer = bucket.layers[0];
+    const layer = bucket.layers[0]!;
     if (layer.type !== 'circle') return;
     const mode = layer.layout.get('circle-elevation-reference');
     if (mode === 'hd-road-markup') {

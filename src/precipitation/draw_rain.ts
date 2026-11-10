@@ -191,7 +191,7 @@ export class Rain extends PrecipitationBase {
             const sRand = mulberry32(1323123451230);
             for (let i = 0; i < positions.length; ++i) {
 
-                const p = positions[i];
+                const p = positions[i]!;
 
                 const angularVelocityScale = -1 + 2 * sRand();
                 const velocityScale = sRand();
@@ -297,7 +297,7 @@ export class Rain extends PrecipitationBase {
 
         const tr = painter.transform;
 
-        if (!this.screenTexture || this.screenTexture.size[0] !== painter.width || this.screenTexture.size[1] !== painter.height) {
+        if (!this.screenTexture || this.screenTexture.size![0] !== painter.width || this.screenTexture.size![1] !== painter.height) {
             this.screenTexture = new Texture(context, {width: painter.width, height: painter.height, data: null}, gl.RGBA8);
         }
 
@@ -356,7 +356,7 @@ export class Rain extends PrecipitationBase {
 
             program.draw(painter, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled,
                 ColorMode.alphaBlended, CullFaceMode.disabled, uniforms, "rain_particles",
-                this.particlesVx, this.particlesIdx, particlesSegments);
+                this.particlesVx!, this.particlesIdx!, particlesSegments);
         };
 
         // Distortion only

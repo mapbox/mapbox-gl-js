@@ -40,22 +40,22 @@ type EmptyImage = {
 export type TextureImage = RGBAImage | AlphaImage | Float32Image | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageData | EmptyImage | ImageBitmap;
 
 export type TextureUpdateOptions = {
-    premultiply?: boolean;
+    premultiply?: boolean | null;
     position?: {x: number; y: number;};
     recreateWhenResize?: boolean;
 };
 
 class Texture {
     context: Context;
-    size!: [number, number];
-    texture: WebGLTexture;
+    size!: [number, number] | null;
+    texture: WebGLTexture | null;
     format: TextureFormat;
     minFilter: TextureFilter | null | undefined;
     magFilter: TextureFilter | null | undefined;
     wrapS: TextureWrap | null | undefined;
     wrapT: TextureWrap | null | undefined;
     compareMode: TextureCompareMode | null | undefined;
-    useMipmap: boolean;
+    useMipmap: boolean | null | undefined;
 
     constructor(context: Context, image: TextureImage, format: TextureFormat, options?: {
         useMipmap?: boolean;
@@ -183,7 +183,7 @@ export default Texture;
 export class Texture3D {
     context: Context;
     size: [number, number, number];
-    texture: WebGLTexture;
+    texture: WebGLTexture | null;
     format: TextureFormat;
     minFilter: TextureFilter | null | undefined;
     magFilter: TextureFilter | null | undefined;
@@ -242,7 +242,7 @@ export class Texture3D {
 
 export class UserManagedTexture {
     context: Context;
-    texture: WebGLTexture;
+    texture: WebGLTexture | null;
     minFilter: TextureFilter | null | undefined;
     wrapS: TextureWrap | null | undefined;
 

@@ -26,10 +26,8 @@ export interface Result {
     features: Feature[];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Convert = (value: any) => any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Setter = (value: any) => void;
+type Convert = (value: number) => number;
+type Setter = (value: number) => void;
 
 class PropertyParser {
     feature!: VectorTileFeature;
@@ -49,7 +47,7 @@ class PropertyParser {
         return this;
     }
 
-    geometry(setter: Setter, convert: Convert) {
+    geometry<T>(setter: (value: T) => void, convert: (geometry: Point[][]) => T) {
         if (this._valid) {
             setter(convert(this._geometry));
         }
@@ -113,25 +111,17 @@ class VersionSchema {
 const schemaV100 = new VersionSchema(
     (parser: PropertyParser, feature: VectorTileFeature, out: Feature) => {
         return parser.reset(feature)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .require(PROPERTY_ELEVATION_ID, value => { out.id = value; })
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .optional('fixed_height_relative', value => { out.constantHeight = value; }, ElevationFeatureParser.decodeRelativeHeight)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .geometry(value => { out.bounds = value; }, computeBounds)
             .success();
     },
     (parser: PropertyParser, feature: VectorTileFeature, out: Vertex) => {
         return parser.reset(feature)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .require(PROPERTY_ELEVATION_ID, value => { out.id = value; })
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .require('elevation_idx', value => { out.idx = value; })
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .require('extent', value => { out.extent = value; })
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .require("height_relative", value => { out.height = value; }, ElevationFeatureParser.decodeRelativeHeight)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .geometry(value => { out.position = value; }, ElevationFeatureParser.getPoint)
             .success();
     }
@@ -144,25 +134,17 @@ const schemaV100 = new VersionSchema(
 const schemaV101 = new VersionSchema(
     (parser: PropertyParser, feature: VectorTileFeature, out: Feature) => {
         return parser.reset(feature)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .require(PROPERTY_ELEVATION_ID, value => { out.id = value; })
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .optional('fixed_height', value => { out.constantHeight = value; }, ElevationFeatureParser.decodeMetricHeight)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .geometry(value => { out.bounds = value; }, computeBounds)
             .success();
     },
     (parser: PropertyParser, feature: VectorTileFeature, out: Vertex) => {
         return parser.reset(feature)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .require(PROPERTY_ELEVATION_ID, value => { out.id = value; })
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .require('elevation_idx', value => { out.idx = value; })
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .require('extent', value => { out.extent = value; })
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .require("height", value => { out.height = value; }, ElevationFeatureParser.decodeMetricHeight)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             .geometry(value => { out.position = value; }, ElevationFeatureParser.getPoint)
             .success();
     }

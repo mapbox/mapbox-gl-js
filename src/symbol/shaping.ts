@@ -80,7 +80,7 @@ class TaggedString {
     static fromFeature(text: Formatted, defaultFontStack: string, pixelRatio: number, textSizeFactor: number = 1): TaggedString {
         const result = new TaggedString();
         for (let i = 0; i < text.sections.length; i++) {
-            const section = text.sections[i];
+            const section = text.sections[i]!;
             if (!section.image) {
                 result.addTextSection(section, defaultFontStack);
             } else {
@@ -95,7 +95,7 @@ class TaggedString {
     }
 
     getSection(index: number): SectionOptions {
-        return this.sections[this.sectionIndex[index]];
+        return this.sections[this.sectionIndex[index]!]!;
     }
 
     getSections(): Array<SectionOptions> {
@@ -103,11 +103,11 @@ class TaggedString {
     }
 
     getSectionIndex(index: number): number {
-        return this.sectionIndex[index];
+        return this.sectionIndex[index]!;
     }
 
     getCodePoint(index: number): number {
-        return this.text.codePointAt(index);
+        return this.text.codePointAt(index)!;
     }
 
     verticalizePunctuation(skipContextChecking: boolean) {
@@ -144,7 +144,7 @@ class TaggedString {
     }
 
     getMaxScale(): number {
-        return this.sectionIndex.reduce((max, index) => Math.max(max, this.sections[index].scale), 0);
+        return this.sectionIndex.reduce((max, index) => Math.max(max, this.sections[index]!.scale), 0);
     }
 
     addTextSection(section: FormattedSection, defaultFontStack: string) {
@@ -205,7 +205,7 @@ function dropUnsupportedImages(input: TaggedString, imagePositions: ImagePositio
     const firstDropped = input.sections.findIndex((section) => isUnsupportedImageSection(section, imagePositions));
     if (firstDropped === -1) return;
 
-    warnOnce(`SDF image ${input.sections[firstDropped].image.id.name} is not supported in text-field`);
+    warnOnce(`SDF image ${input.sections[firstDropped]!.image!.id.name} is not supported in text-field`);
 
     const droppedSections = input.sections.map((section) => isUnsupportedImageSection(section, imagePositions));
 
@@ -213,9 +213,9 @@ function dropUnsupportedImages(input: TaggedString, imagePositions: ImagePositio
     const sectionIndex: Array<number> = [];
     for (let index = 0; index < input.length(); index++) {
         const section = input.sectionIndex[index];
-        if (droppedSections[section]) continue;
+        if (droppedSections[section!]) continue;
         text += input.text[index];
-        sectionIndex.push(section);
+        sectionIndex.push(section!);
     }
     input.text = text;
     input.sectionIndex = sectionIndex;
@@ -253,7 +253,7 @@ function shapeText(
     layoutTextSize: number,
     pixelRatio: number = 1,
     textSizeFactor: number = 1
-): Shaping {
+): Shaping | undefined {
     const logicalInput = TaggedString.fromFeature(text, defaultFontStack, pixelRatio, textSizeFactor);
 
     if (writingMode === WritingMode.vertical) {
@@ -377,7 +377,7 @@ function getGlyphAdvance(
 ): number {
     if (!section.image) {
         const positions = glyphMap[section.fontStack];
-        const glyph = positions && positions.glyphs[codePoint];
+        const glyph = positions && positions.glyphs![codePoint];
         if (!glyph) return 0;
         return glyph.metrics.advance * section.scale + spacing;
     } else {
@@ -647,7 +647,7 @@ function shapeLines(shaping: Shaping,
                 }
                 const glyphData = glyphMap[section.fontStack];
                 if (!glyphData) continue;
-                const glyph = glyphData.glyphs[codePoint];
+                const glyph = glyphData.glyphs![codePoint];
                 if (!glyph) continue;
 
                 metrics = glyph.metrics;
@@ -770,13 +770,13 @@ function justifyLine(positionedGlyphs: Array<PositionedGlyph>,
         return;
     }
     const end = positionedGlyphs.length - 1;
-    const lastGlyph = positionedGlyphs[end];
+    const lastGlyph = positionedGlyphs[end]!;
     const lastAdvance = lastGlyph.metrics.advance * lastGlyph.scale;
     const lineIndent = (lastGlyph.x + lastAdvance) * justify;
 
     for (let j = 0; j <= end; j++) {
-        positionedGlyphs[j].x -= lineIndent;
-        positionedGlyphs[j].y += lineOffset + baselineOffset + halfLineHeight;
+        positionedGlyphs[j]!.x -= lineIndent;
+        positionedGlyphs[j]!.y += lineOffset + baselineOffset + halfLineHeight;
     }
 }
 

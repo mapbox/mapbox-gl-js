@@ -135,7 +135,7 @@ export class FillHDExtension {
             return false;
         }
 
-        const constructBridgeGuardRail = bucket.layers[0].layout.get('fill-construct-bridge-guard-rail').evaluate(feature, {}, canonical);
+        const constructBridgeGuardRail = bucket.layers[0]!.layout.get('fill-construct-bridge-guard-rail').evaluate(feature, {}, canonical);
         const featureInfo: FeatureInfo = {guardRailEnabled: constructBridgeGuardRail, featureIndex: index};
 
         for (const elevated of elevatedGeometry) {
@@ -148,7 +148,7 @@ export class FillHDExtension {
                     const isTunnel = elevated.elevationFeature.isTunnel();
                     let zLevel = 0;
                     if (Object.hasOwn(feature.properties, PROPERTY_ELEVATION_ROAD_BASE_Z_LEVEL)) {
-                        zLevel = +feature.properties[PROPERTY_ELEVATION_ROAD_BASE_Z_LEVEL];
+                        zLevel = +(feature.properties[PROPERTY_ELEVATION_ROAD_BASE_Z_LEVEL] as number);
                     }
 
                     // Create "elevated structures" for polygons using "road" elevation mode that
@@ -248,7 +248,7 @@ export class FillHDExtension {
     ): void {
         if (this.elevatedStructures) {
             this.elevatedStructures.construct(graph);
-            this.elevatedStructures.populatePaintArrays(vtLayer, canonical, availableImages, brightness, worldview);
+            this.elevatedStructures.populatePaintArrays(vtLayer, canonical, availableImages, brightness!, worldview);
         }
     }
 
@@ -262,13 +262,13 @@ export class FillHDExtension {
         featureInfo: FeatureInfo,
     ): void {
         const elevationParams: ElevationParams = {elevation, elevationSampler, bias, index, featureInfo};
-        const [min, max] = bucket.addGeometry(polygons, this.elevationBufferData, elevationParams, this.elevatedStructures);
+        const [min, max] = bucket.addGeometry(polygons, this.elevationBufferData!, elevationParams, this.elevatedStructures);
 
-        if (this.elevationBufferData.heightRange == null) {
-            this.elevationBufferData.heightRange = {min, max};
+        if (this.elevationBufferData!.heightRange == null) {
+            this.elevationBufferData!.heightRange = {min, max};
         } else {
-            this.elevationBufferData.heightRange.min = Math.min(this.elevationBufferData.heightRange.min, min);
-            this.elevationBufferData.heightRange.max = Math.max(this.elevationBufferData.heightRange.max, max);
+            this.elevationBufferData!.heightRange.min = Math.min(this.elevationBufferData!.heightRange.min, min);
+            this.elevationBufferData!.heightRange.max = Math.max(this.elevationBufferData!.heightRange.max, max);
         }
     }
 
@@ -297,7 +297,7 @@ export class FillHDExtension {
         const clippingGroup: Point[][][] = [];
 
         for (; clipIdx < polygons.length; clipIdx++) {
-            const polygon = polygons[clipIdx];
+            const polygon = polygons[clipIdx]!;
             assert(polygon.length > 0);
 
             const bounds = computeBounds(polygon);
@@ -335,10 +335,10 @@ export class FillHDExtension {
  * @private
  */
 export function maybeAttachFillHDExt(bucket: FillBucket, coverageSourceLayers: string[] | null | undefined): void {
-    const layoutMode = bucket.layers[0].layout.get('fill-elevation-reference');
+    const layoutMode = bucket.layers[0]!.layout.get('fill-elevation-reference');
     const elevationMode = (layoutMode === 'hd-road-base' || layoutMode === 'hd-road-markup') ? layoutMode : null;
     const frcEnabled = !!coverageSourceLayers && coverageSourceLayers.length > 0 &&
-        matchesCoverageSourceLayer(coverageSourceLayers, bucket.layers[0].source, bucket.sourceLayerName);
+        matchesCoverageSourceLayer(coverageSourceLayers, bucket.layers[0]!.source, bucket.sourceLayerName);
     if (!elevationMode && !frcEnabled) return;
     bucket.hdExt = new FillHDExtension(bucket, elevationMode, frcEnabled);
 }

@@ -45,8 +45,8 @@ class ScrollZoomHandler implements Handler {
     _aroundCoord!: MercatorCoordinate;
     _type!: 'wheel' | 'trackpad' | null;
     _lastValue!: number;
-    _timeout?: number; // used for delayed-handling of a single wheel movement
-    _finishTimeout!: number; // used to delay final '{move,zoom}end' events
+    _timeout?: number | null; // used for delayed-handling of a single wheel movement
+    _finishTimeout?: number; // used to delay final '{move,zoom}end' events
 
     _lastWheelEvent!: WheelEvent | null;
     _lastWheelEventTime!: number;
@@ -55,10 +55,10 @@ class ScrollZoomHandler implements Handler {
     _targetZoom?: number;
     _delta: number;
     _lastDelta: number;
-    _easing?: (arg1: number) => number;
-    _prevEase?: {start: number; duration: number; easing: (_: number) => number};
+    _easing?: ((arg1: number) => number) | null;
+    _prevEase?: {start: number; duration: number; easing: (_: number) => number} | null;
 
-    _frameId?: boolean;
+    _frameId?: boolean | null;
     _handler: HandlerManager;
 
     _defaultZoomRate: number;
@@ -323,7 +323,7 @@ class ScrollZoomHandler implements Handler {
         let finished = false;
         let zoom: number;
         if (this._type === 'wheel' && startZoom && easing) {
-            assert(easing && typeof startZoom === 'number');
+            assert((easing as ((arg1: number) => number) | null | undefined) && typeof startZoom === 'number');
 
             const t = Math.min((browser.now() - this._lastWheelEventTime) / 200, 1);
             const k = easing(t);

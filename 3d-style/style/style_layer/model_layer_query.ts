@@ -86,14 +86,14 @@ export function queryModelLayerRendered(
             modelFeature.properties['uri'] = model.uri;
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
             modelFeature.properties['orientation'] = model.orientation as any;
-            modelFeature.sourceLayer = layer.sourceLayer;
+            modelFeature.sourceLayer = layer.sourceLayer!;
             modelFeature.geometry = {
                 type: 'Point',
                 coordinates: [model.position.lng, model.position.lat]
             };
             modelFeature.state = modelFeatureState;
             modelFeature.source = layer.source;
-            layerResult.push({featureIndex: modelFeatureIndex, feature: modelFeature, intersectionZ: depth});
+            layerResult!.push({featureIndex: modelFeatureIndex, feature: modelFeature, intersectionZ: depth});
         }
 
         ++modelFeatureIndex;
@@ -116,11 +116,11 @@ export function queryModelLayerIntersectsFeature(
     if (!bucket || !(bucket instanceof ModelBucket)) return false;
 
     for (const modelId in bucket.instancesPerModel) {
-        const instances = bucket.instancesPerModel[modelId];
+        const instances = bucket.instancesPerModel[modelId]!;
         const featureId = feature.id !== undefined ? feature.id :
             (feature.properties && Object.hasOwn(feature.properties, "id")) ? (feature.properties["id"] as string | number) : undefined;
-        if (Object.hasOwn(instances.idToFeaturesIndex, featureId)) {
-            const modelFeature = instances.features[instances.idToFeaturesIndex[featureId]];
+        if (Object.hasOwn(instances.idToFeaturesIndex, featureId!)) {
+            const modelFeature = instances.features[instances.idToFeaturesIndex[featureId!]!]!;
             const model = modelManager.getModel(modelId, scope || layer.scope);
             if (!model) return false;
 
@@ -133,9 +133,9 @@ export function queryModelLayerIntersectsFeature(
                 const offset = instanceOffset * 16;
 
                 const va = instances.instancedDataArray.float32;
-                const translation: [number, number, number] = [va[offset + 4], va[offset + 5], va[offset + 6]];
-                const pointX = Math.floor(va[offset]); // point.x stored in integer part
-                const pointY = Math.floor(va[offset + 1]); // point.y stored in integer part
+                const translation: [number, number, number] = [va[offset + 4]!, va[offset + 5]!, va[offset + 6]!];
+                const pointX = Math.floor(va[offset]!); // point.x stored in integer part
+                const pointY = Math.floor(va[offset + 1]!); // point.y stored in integer part
 
                 tileToLngLat(id, position, pointX, pointY);
 
@@ -204,7 +204,7 @@ export function loadMatchingModelFeature(bucket: Tiled3dModelBucket, featureInde
             if (i === n.lightMeshIndex) {
                 continue;
             }
-            const depth = queryGeometryIntersectsProjectedAabb(projectedQueryGeometry, transform, worldViewProjectionForNode, mesh.aabb);
+            const depth = queryGeometryIntersectsProjectedAabb(projectedQueryGeometry, transform, worldViewProjectionForNode, mesh!.aabb);
             if (depth != null) {
                 intersectionZ = Math.min(depth, intersectionZ);
             }

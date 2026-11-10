@@ -23,12 +23,12 @@ export type LoadVectorTileResult = {
  */
 export type LoadVectorDataCallback = Callback<LoadVectorTileResult | null>;
 
-export type LoadVectorData = (params: WorkerSourceVectorTileRequest, callback: LoadVectorDataCallback) => Cancelable['cancel'];
+export type LoadVectorData = (params: WorkerSourceVectorTileRequest, callback: LoadVectorDataCallback) => Cancelable['cancel'] | undefined;
 
 type VectorDataRequest = (callback: LoadVectorDataCallback) => Cancelable['cancel'];
 
 type DedupedRequestEntry = {
-    result?: [Error | null, LoadVectorTileResult | null];
+    result?: [Error | null | undefined, LoadVectorTileResult | null | undefined];
     cancel?: Cancelable['cancel'];
     callbacks?: LoadVectorDataCallback[];
 };
@@ -57,12 +57,12 @@ export class DedupedRequest {
             return () => {};
         }
 
-        entry.callbacks.push(callback);
+        entry.callbacks!.push(callback);
 
         if (!entry.cancel) {
-            entry.cancel = request((err: Error | null, result: LoadVectorTileResult | null) => {
+            entry.cancel = request((err?: Error | null, result?: LoadVectorTileResult | null) => {
                 entry.result = [err, result];
-                for (const cb of entry.callbacks) {
+                for (const cb of entry.callbacks!) {
                     if (this.scheduler) {
                         this.scheduler.add(() => {
                             cb(err, result);
@@ -77,9 +77,9 @@ export class DedupedRequest {
 
         return () => {
             if (entry.result) return;
-            entry.callbacks = entry.callbacks.filter(cb => cb !== callback);
+            entry.callbacks = entry.callbacks!.filter(cb => cb !== callback);
             if (!entry.callbacks.length) {
-                entry.cancel();
+                entry.cancel!();
                 delete this.entries[key];
             }
         };
@@ -99,7 +99,7 @@ export function loadVectorTile(
 
     const makeRequest: VectorDataRequest = (callback: LoadVectorDataCallback) => {
         const controller = new AbortController();
-        getArrayBuffer(params.request, controller.signal)
+        getArrayBuffer(params.request!, controller.signal)
             .then(({data, headers}) => {
                 callback(null, {
                     rawData: data,

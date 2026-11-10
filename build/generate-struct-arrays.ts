@@ -88,15 +88,11 @@ function createStructArrayLayoutType({
 
     // combine consecutive 'members' with same underlying type, summing their
     // component counts
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    if (!alignment || alignment === 1) members = members.reduce((memo, member) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (!alignment || alignment === 1) members = members.reduce<StructArrayMember[]>((memo, member) => {
         if (memo.length > 0 && memo.at(-1).type === member.type) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const last = memo.at(-1);
             return memo.slice(0, -1).concat({
                 ...last,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 components: last.components + member.components,
             });
         }
@@ -124,8 +120,7 @@ function sizeOf(type: ViewType): number {
 }
 
 function camelize(str: string) {
-    return str.replace(/(?:^|[-_])(.)/g, (_, x) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    return str.replace(/(?:^|[-_])(.)/g, (_: string, x: string) => {
         return /^[0-9]$/.test(x) ? _ : x.toUpperCase();
     });
 }

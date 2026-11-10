@@ -165,8 +165,8 @@ export class SymbolHDExtension {
         if (elevationFeatureIndex === 0xffff || elevationFeatureIndex >= this.elevationFeatures.length) {
             return null;
         }
-        const elevationFeature = this.elevationFeatures[elevationFeatureIndex];
-        const providerTileId = this.elevationFeatureTileIds[elevationFeatureIndex];
+        const elevationFeature = this.elevationFeatures[elevationFeatureIndex]!;
+        const providerTileId = this.elevationFeatureTileIds[elevationFeatureIndex]!;
         if (providerTileId.equals(consumerCanonical)) {
             return elevationFeature.pointElevation(anchor);
         }
@@ -288,10 +288,10 @@ export class SymbolHDExtension {
 
         // If there is no orientation data, clear the vertex arrays so vertex buffers won't be created.
         if (!hasTextOrientation) {
-            bucket.text.orientationVertexArray = undefined;
+            bucket.text.orientationVertexArray = (undefined)!;
         }
         if (!hasIconOrientation) {
-            bucket.icon.orientationVertexArray = undefined;
+            bucket.icon.orientationVertexArray = (undefined)!;
         }
 
         if (dataChanged) {
@@ -309,7 +309,7 @@ export class SymbolHDExtension {
     ): number | null {
         assert(buffers.symbolInstanceIndices.length === buffers.placedSymbolArray.length);
         const symbolInstanceIndex = buffers.symbolInstanceIndices[placedSymbolIdx];
-        const symbolInstance = bucket.symbolInstances.get(symbolInstanceIndex);
+        const symbolInstance = bucket.symbolInstances.get(symbolInstanceIndex!);
         assert(symbolInstance);
         return this.getRoadFeatureHeightAtAnchor(
             symbolInstance.elevationFeatureIndex, anchor, consumerCanonical);
@@ -318,7 +318,7 @@ export class SymbolHDExtension {
     getElevationFeatureForPlacedSymbol(bucket: SymbolBucket, buffers: SymbolBuffers, placedSymbolIdx: number): ElevationFeature | undefined {
         assert(buffers.symbolInstanceIndices.length === buffers.placedSymbolArray.length);
         const symbolInstanceIndex = buffers.symbolInstanceIndices[placedSymbolIdx];
-        const symbolInstance = bucket.symbolInstances.get(symbolInstanceIndex);
+        const symbolInstance = bucket.symbolInstances.get(symbolInstanceIndex!);
         assert(symbolInstance);
         const elevationFeatureIndex = symbolInstance.elevationFeatureIndex;
         assert(elevationFeatureIndex === 0xffff || elevationFeatureIndex < this.elevationFeatures.length);
@@ -346,7 +346,7 @@ export class SymbolHDExtension {
     ): ElevationParams {
         const elevationFeature = this.getElevationFeatureForPlacedSymbol(bucket, buffers, placedSymbolIdx);
         const elevationFeatureOrNull = elevationFeature !== undefined ? elevationFeature : null;
-        const symbolInstance = bucket.symbolInstances.get(buffers.symbolInstanceIndices[placedSymbolIdx]);
+        const symbolInstance = bucket.symbolInstances.get(buffers.symbolInstanceIndices[placedSymbolIdx]!);
         if (!this.isCrossTileRoadElevation(symbolInstance.elevationFeatureIndex, tileID.canonical)) {
             return {getElevation, elevation, elevationFeature: elevationFeatureOrNull};
         }
@@ -372,7 +372,7 @@ export class SymbolHDExtension {
  * @private
  */
 export function maybeAttachSymbolHDExt(bucket: SymbolBucket): void {
-    const elevationReference = bucket.layers[0].layout.get('symbol-elevation-reference');
+    const elevationReference = bucket.layers[0]!.layout.get('symbol-elevation-reference');
     if (elevationReference === 'hd-road-markup') {
         bucket.hdExt = new SymbolHDExtension();
     }

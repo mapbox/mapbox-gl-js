@@ -100,7 +100,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             const noShadowCutoff = 0.65;
 
             if (opacity < noShadowCutoff) {
-                const expression = layer.getPaintPropertyValue('fill-extrusion-opacity').expression;
+                const expression = layer.getPaintPropertyValue('fill-extrusion-opacity')!.expression;
                 if (expression instanceof ZoomDependentExpression) {
                     // avoid rendering shadows during fade in / fade out on terrain
                     return;
@@ -192,7 +192,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                     const stencilSdfPass = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
                     const colorSdfPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true], gl.MIN);
 
-                    Standard.drawGroundEffect(groundEffectProps, painter, source, layer, coords, depthMode, stencilSdfPass, colorSdfPass, CullFaceMode.disabled, aoPass, 'sdf', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, false);
+                    Standard.drawGroundEffect!(groundEffectProps, painter, source, layer, coords, depthMode, stencilSdfPass, colorSdfPass, CullFaceMode.disabled, aoPass, 'sdf', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, false);
                 }
 
                 {
@@ -200,7 +200,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                     const stencilColorPass = showOverdraw ? StencilMode.disabled : new StencilMode({func: gl.EQUAL, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.DECR, gl.DECR);
                     const colorColorPass = showOverdraw ? painter.colorModeForRenderPass() : new ColorMode([gl.ONE_MINUS_DST_ALPHA, gl.DST_ALPHA, gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]);
 
-                    Standard.drawGroundEffect(groundEffectProps, painter, source, layer, coords, depthMode, stencilColorPass, colorColorPass, CullFaceMode.disabled, aoPass, 'color', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, false);
+                    Standard.drawGroundEffect!(groundEffectProps, painter, source, layer, coords, depthMode, stencilColorPass, colorColorPass, CullFaceMode.disabled, aoPass, 'color', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, false);
                 }
             };
 
@@ -209,7 +209,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                     const width = terrain.drapeBufferSize[0];
                     const height = terrain.drapeBufferSize[1];
                     let framebufferCopyTexture = terrain.framebufferCopyTexture;
-                    if (!framebufferCopyTexture || (framebufferCopyTexture && (framebufferCopyTexture.size[0] !== width || framebufferCopyTexture.size[1] !== height))) {
+                    if (!framebufferCopyTexture || (framebufferCopyTexture && (framebufferCopyTexture.size![0] !== width || framebufferCopyTexture.size![1] !== height))) {
                         if (framebufferCopyTexture) framebufferCopyTexture.destroy();
                         framebufferCopyTexture = terrain.framebufferCopyTexture = new Texture(context,
                             new RGBAImage({width, height}), gl.RGBA8);
@@ -229,7 +229,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                         // Clear framebuffer's alpha channel to 1 since we're using gl.MIN blend operation in the subsequent steps.
                         const colorMode = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true]);
 
-                        Standard.drawGroundEffect(groundEffectProps, painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled, aoPass, 'clear', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors);
+                        Standard.drawGroundEffect!(groundEffectProps, painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled, aoPass, 'clear', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors);
                     }
 
                     {
@@ -237,7 +237,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                         const stencilSdfPass = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
                         const colorSdfPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true], gl.MIN);
 
-                        Standard.drawGroundEffect(groundEffectProps, painter, source, layer, coords, depthMode, stencilSdfPass, colorSdfPass, CullFaceMode.disabled, aoPass, 'sdf', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors);
+                        Standard.drawGroundEffect!(groundEffectProps, painter, source, layer, coords, depthMode, stencilSdfPass, colorSdfPass, CullFaceMode.disabled, aoPass, 'sdf', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors);
                     }
 
                     if (mrt && !aoPass) {
@@ -252,7 +252,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                         const stencilColorPass = new StencilMode({func: gl.EQUAL, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.DECR, gl.DECR);
                         const colorColorPass = new ColorMode([srcColorFactor, gl.DST_ALPHA, gl.ONE_MINUS_DST_ALPHA, gl.ZERO], Color.transparent, [true, true, true, true]);
 
-                        Standard.drawGroundEffect(groundEffectProps, painter, source, layer, coords, depthMode, stencilColorPass, colorColorPass, CullFaceMode.disabled, aoPass, 'color', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors);
+                        Standard.drawGroundEffect!(groundEffectProps, painter, source, layer, coords, depthMode, stencilColorPass, colorColorPass, CullFaceMode.disabled, aoPass, 'color', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors);
                     }
 
                     if (!mrt || aoPass) {
@@ -264,7 +264,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                         const blendEquation = aoPass ? gl.FUNC_ADD : gl.MAX;
                         const colorMode = new ColorMode([gl.ONE, gl.ONE, gl.ONE, dstAlphaFactor], Color.transparent, [false, false, false, true], blendEquation);
 
-                        Standard.drawGroundEffect(groundEffectProps, painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled, aoPass, 'clear', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors, framebufferCopyTexture);
+                        Standard.drawGroundEffect!(groundEffectProps, painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled, aoPass, 'clear', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors, framebufferCopyTexture);
                     } else {
                         // Write emissive values to the secondary render target. This is a fallback for dual-source blending not being available.
                         // The emissive strength values are read from the 'framebufferCopyTexture' and are blended with the existing emissive values using gl.MAX.
@@ -273,7 +273,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                         const stencilColorPass = new StencilMode({func: gl.EQUAL, mask: 0xFF}, 0xFE, 0xFF, gl.KEEP, gl.DECR, gl.DECR);
                         const colorColorPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [true, false, false, false], gl.MAX);
 
-                        Standard.drawGroundEffect(groundEffectProps, painter, source, layer, coords, depthMode, stencilColorPass, colorColorPass, CullFaceMode.disabled, aoPass, 'emissive', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors, framebufferCopyTexture);
+                        Standard.drawGroundEffect!(groundEffectProps, painter, source, layer, coords, depthMode, stencilColorPass, colorColorPass, CullFaceMode.disabled, aoPass, 'emissive', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors, framebufferCopyTexture);
                         gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
                     }
                 };
@@ -324,7 +324,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const tr = painter.transform;
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
     const patternTransition = layer.paint.get('fill-extrusion-pattern-cross-fade');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     const constantPattern = patternProperty.constantOr(null);
 
     const image = patternProperty.constantOr(1);
@@ -342,8 +342,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const mercatorCenter: [number, number] = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
     const floodLightColorUseTheme = layer.paint.get('fill-extrusion-flood-light-color-use-theme').constantOr('default') === 'none';
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-    const floodLightColor = (layer.paint.get('fill-extrusion-flood-light-color').toNonPremultipliedRenderColor(floodLightColorUseTheme ? null : layer.lut).toArray01().slice(0, 3) as any);
+    const floodLightColor = (layer.paint.get('fill-extrusion-flood-light-color').toNonPremultipliedRenderColor(floodLightColorUseTheme ? null : layer.lut).toArray01().slice(0, 3) as [number, number, number]);
     const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
     const verticalScale = layer.paint.get('fill-extrusion-vertical-scale');
     const wallMode = layer.paint.get('fill-extrusion-line-width').constantOr(1.0) !== 0.0;
@@ -429,7 +428,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         let transitionableConstantPattern = false;
         if (constantPattern && tile.imageAtlas) {
             const atlas = tile.imageAtlas;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             const pattern = ResolvedImage.from(constantPattern);
             const primaryPatternImage = pattern.getPrimary().scaleSelf(browser.devicePixelRatio).toString();
             const secondaryPatternImageVariant = pattern.getSecondary();
@@ -438,7 +437,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
             transitionableConstantPattern = !!primaryPosTo && !!secondaryPosTo;
 
-            if (primaryPosTo) programConfiguration.setConstantPatternPositions(primaryPosTo, secondaryPosTo);
+            if (primaryPosTo) programConfiguration.setConstantPatternPositions(primaryPosTo, secondaryPosTo!);
         }
 
         if (patternTransition > 0 && (transitionableConstantPattern || !!programConfiguration.getPatternTransitionVertexBuffer('fill-extrusion-pattern'))) {
@@ -492,11 +491,9 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             const lighting3DMode = program.fixedDefines.includes('LIGHTING_3D_MODE');
             if (image) {
                 uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineWidthScale, coord,
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     tile, heightLift, heightAlignment, baseAlignment, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, patternTransition, lighting3DMode);
             } else {
                 uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineWidthScale, coord,
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     heightLift, heightAlignment, baseAlignment, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity, groundShadowFactor, frontCutoffParams, lighting3DMode);
             }
         }
@@ -626,10 +623,10 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
     // second edge is parallel (a building wider than a tile), where there is no common corner.
     const cornerCoordAlongBorder = (borderIndex: number, borders: Array<[number, number]>) => {
         const notOnBorder = Number.MAX_VALUE;
-        const onLeft = borders[0][0] !== notOnBorder;
-        const onRight = borders[1][0] !== notOnBorder;
-        const onTop = borders[2][0] !== notOnBorder;
-        const onBottom = borders[3][0] !== notOnBorder;
+        const onLeft = borders[0]![0] !== notOnBorder;
+        const onRight = borders[1]![0] !== notOnBorder;
+        const onTop = borders[2]![0] !== notOnBorder;
+        const onBottom = borders[3]![0] !== notOnBorder;
         if ((onLeft ? 1 : 0) + (onRight ? 1 : 0) + (onTop ? 1 : 0) + (onBottom ? 1 : 0) > 2) {
             return undefined;
         }
@@ -672,7 +669,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
         }
     };
 
-    const projectedToBorder = [0, 0, 0]; // [min, max, maxOffsetFromBorder]
+    const projectedToBorder: [number, number, number] = [0, 0, 0]; // [min, max, maxOffsetFromBorder]
     const xjoin = (a: PartData, b: PartData) => {
         projectedToBorder[0] = Math.min(a.min.y, b.min.y);
         projectedToBorder[1] = Math.max(a.max.y, b.max.y);
@@ -709,19 +706,19 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
             points.push(thirdPoint);
         }
         terrain.getForTilePoints(coord, points, true, demTile);
-        return Math.max(points[0][2], points[1][2], thirdPoint[2]) / terrain.exaggeration();
+        return Math.max(points[0]![2], points[1]![2], thirdPoint[2]) / terrain.exaggeration();
     };
 
     // Process all four borders: get neighboring tile
     for (let i = 0; i < 4; i++) {
         // sorted by border intersection area minimums, ascending.
-        const a = bucket.borderFeatureIndices[i];
+        const a = bucket.borderFeatureIndices[i]!;
         if (a.length === 0) {
             continue;
         }
 
         // Look up the neighbor tile's bucket
-        const nid = neighborCoord[i](coord);
+        const nid = neighborCoord[i]!(coord);
         const nBucket = getLoadedBucket(nid);
         if (!nBucket || !(nBucket instanceof FillExtrusionBucket)) {
             continue;
@@ -751,18 +748,18 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
 
         const j = (i < 2 ? 1 : 5) - i;
         const updateNeighbor = nBucket.borderDoneWithNeighborZ[j] !== bucket.canonical.z;
-        const b = nBucket.borderFeatureIndices[j];
+        const b = nBucket.borderFeatureIndices[j]!;
         let ib = 0;
 
         // If neighbors are of different canonical z, we cannot join parts but show
         // all without flat roofs.
         if (bucket.canonical.z !== nBucket.canonical.z) {
             for (const index of a) {
-                bucket.showCentroid(bucket.featuresOnBorder[index], 'discard');
+                bucket.showCentroid(bucket.featuresOnBorder[index]!, 'discard');
             }
             if (updateNeighbor) {
                 for (const index of b) {
-                    nBucket.showCentroid(nBucket.featuresOnBorder[index], 'discard');
+                    nBucket.showCentroid(nBucket.featuresOnBorder[index]!, 'discard');
                 }
             }
             bucket.borderDoneWithNeighborZ[i] = nBucket.canonical.z;
@@ -775,7 +772,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
         const matchedByBuildingIdA: Set<number> = new Set();
         const matchedByBuildingIdB: Set<number> = new Set();
         for (let bi = 0; bi < b.length; bi++) {
-            const nPartB = nBucket.featuresOnBorder[b[bi]];
+            const nPartB = nBucket.featuresOnBorder[b[bi]!]!;
             if (nPartB.buildingId !== undefined) {
                 neighborBuildingIdMap.set(nPartB.buildingId, bi);
             }
@@ -783,14 +780,14 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
 
         // Match border features by building_id
         for (const ia of a) {
-            const partA = bucket.featuresOnBorder[ia];
+            const partA = bucket.featuresOnBorder[ia]!;
             const centroidA = bucket.centroidData.get(partA.centroidDataIndex);
             if (partA.buildingId === undefined) continue;
 
             const bi = neighborBuildingIdMap.get(partA.buildingId);
             if (bi === undefined) continue;
 
-            const partB = nBucket.featuresOnBorder[b[bi]];
+            const partB = nBucket.featuresOnBorder[b[bi]!]!;
             const centroidB = nBucket.centroidData.get(partB.centroidDataIndex);
 
             matchedByBuildingIdA.add(ia);
@@ -818,7 +815,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
             {
                 let height = 0;
                 if (neighborDEMTile && neighborDEMTile.dem && !moreThanOneBorderIntersected) {
-                    const span = projectCombinedSpanToBorder[i](centroidA, centroidB);
+                    const span = projectCombinedSpanToBorder[i]!(centroidA, centroidB);
                     const edge = (i % 2) ? EXTENT - 1 : 0;
                     height = flatBase(span[0], Math.min(EXTENT - 1, span[1]), edge, neighborDEMTile, nid, i < 2, span[2]);
                 }
@@ -838,10 +835,10 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
         for (const ia of a) {
             if (matchedByBuildingIdA.has(ia)) continue;
 
-            const partA = bucket.featuresOnBorder[ia];
+            const partA = bucket.featuresOnBorder[ia]!;
             const centroidA = bucket.centroidData.get(partA.centroidDataIndex);
             assert(partA.borders);
-            const partABorderRange = partA.borders[i];
+            const partABorderRange = partA.borders[i]!;
 
             // Find all nBucket parts that share the border overlap
             /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any */
@@ -849,7 +846,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
             while (ib < b.length) {
                 if (matchedByBuildingIdB.has(ib)) { ib++; continue; }
                 // Pass all that are before the overlap
-                partB = nBucket.featuresOnBorder[b[ib]];
+                partB = nBucket.featuresOnBorder[b[ib]!];
                 assert(partB.borders);
                 const partBBorderRange = (partB.borders)[j] as [number, number];
                 if (partBBorderRange[1] > partABorderRange[0] + error ||
@@ -865,7 +862,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                 let count = 0;
                 // Collect all overlapping parts on the edge, to make sure it is only one.
                 while (true) {
-                    if (matchedByBuildingIdB.has(ib)) { if (++ib === b.length) break; partB = nBucket.featuresOnBorder[b[ib]]; continue; }
+                    if (matchedByBuildingIdB.has(ib)) { if (++ib === b.length) break; partB = nBucket.featuresOnBorder[b[ib]!]; continue; }
                     assert(partB.borders);
                     const partBBorderRange = (partB.borders)[j] as [number, number];
                     if (partBBorderRange[0] > partABorderRange[1] - error) {
@@ -875,12 +872,12 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                     if (++ib === b.length) {
                         break;
                     }
-                    partB = nBucket.featuresOnBorder[b[ib]];
+                    partB = nBucket.featuresOnBorder[b[ib]!];
                 }
                 // Find first non-matched saveIb
                 while (saveIb < b.length && matchedByBuildingIdB.has(saveIb)) saveIb++;
                 if (saveIb >= b.length) { bucket.showCentroid(partA, 'keep'); continue; }
-                partB = nBucket.featuresOnBorder[b[saveIb]];
+                partB = nBucket.featuresOnBorder[b[saveIb]!];
                 let doReconcile = false;
                 if (count >= 1) {
                     // If it can be concluded that it is the piece of the same feature,
@@ -915,7 +912,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                     // Now we have 1-1 matching of parts in both tiles that share the edge. Calculate flat base
                     // elevation as average of three points: 2 are edge points (combined span projected to border) and
                     // one is point of span that has maximum offset to border.
-                    const span = projectCombinedSpanToBorder[i](centroidA, centroidB);
+                    const span = projectCombinedSpanToBorder[i]!(centroidA, centroidB);
                     const edge = (i % 2) ? EXTENT - 1 : 0;
                     const height = flatBase(span[0], Math.min(EXTENT - 1, span[1]), edge, neighborDEMTile, nid, i < 2, span[2]);
                     centroidA.centroidXY = centroidB.centroidXY = encodeHeightAsCentroid(height);
@@ -978,7 +975,7 @@ export function frustumCullShadowCaster(id: OverscaledTileID, bucketMaxHeight: n
     const cascade = painter.currentShadowCascade;
     let cache = painter._shadowCullCache;
     if (!cache || cache.frame !== frame || cache.cascade !== cascade) {
-        const ws = transform.tileSize * shadowRenderer._cascades[cascade].scale;
+        const ws = transform.tileSize * shadowRenderer._cascades[cascade]!.scale;
         const zoom = transform.scaleZoom(ws);
         const sd = shadowRenderer.shadowDirection;
         const shadowDir: vec3 = [sd[0], sd[1], -sd[2]];

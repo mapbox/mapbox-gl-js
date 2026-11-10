@@ -157,8 +157,8 @@ const exported = {
         return config.ACCESS_TOKEN;
     },
 
-    set accessToken(token: string) {
-        setAccessToken(token);
+    set accessToken(token: string | null | undefined) {
+        setAccessToken(token!);
     },
 
     /**
@@ -173,8 +173,8 @@ const exported = {
         return config.API_URL;
     },
 
-    set baseApiUrl(url: string) {
-        setBaseApiUrl(url);
+    set baseApiUrl(url: string | null | undefined) {
+        setBaseApiUrl(url!);
     },
 
     /**
@@ -272,7 +272,7 @@ const exported = {
      * mapboxgl.workerClass = MapboxGLWorker;
      */
     get workerClass(): Class<Worker> {
-        return WorkerClass.workerClass;
+        return WorkerClass.workerClass!;
     },
 
     set workerClass(klass: Class<Worker>) {

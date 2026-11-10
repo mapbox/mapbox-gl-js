@@ -54,7 +54,7 @@ export interface GeoJSONIndex {
 }
 
 function loadGeoJSONTile(this: GeoJSONWorkerSource, params: WorkerSourceVectorTileRequest, callback: LoadVectorDataCallback): undefined {
-    const canonical = params.tileID.canonical;
+    const canonical = params.tileID!.canonical;
 
     if (!this._geoJSONIndex) {
         callback(null, null); // we couldn't load the file
@@ -100,7 +100,7 @@ function loadGeoJSONTile(this: GeoJSONWorkerSource, params: WorkerSourceVectorTi
  * @private
  */
 class GeoJSONWorkerSource extends VectorTileWorkerSource {
-    _geoJSONIndex!: GeoJSONIndex;
+    _geoJSONIndex!: GeoJSONIndex | null;
     _dynamicIndex: GeoJSONRT;
 
     /**
@@ -133,8 +133,8 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
 
         this._geoJSONIndex = null;
 
-        let data = await new Promise<FeatureCollectionOrFeature | undefined>((resolve, reject) => {
-            this.loadGeoJSON(params, (err?: Error, data?: FeatureCollectionOrFeature) => {
+        let data = await new Promise<FeatureCollectionOrFeature | null | undefined>((resolve, reject) => {
+            this.loadGeoJSON(params, (err?: Error | null, data?: FeatureCollectionOrFeature | null) => {
                 if (err) reject(err);
                 else resolve(data);
             });
@@ -232,7 +232,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
             // delay loading by one tick to hopefully let GC clean up the previous index (if present)
             setTimeout(() => {
                 try {
-                    return callback(null, JSON.parse(params.data) as FeatureCollectionOrFeature);
+                    return callback(null, JSON.parse(params.data!) as FeatureCollectionOrFeature);
                 } catch (e) {
                     return callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
                 }
@@ -245,13 +245,13 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     getClusterExpansionZoom(params: {
         clusterId: number;
     }): number {
-        return this._geoJSONIndex.getClusterExpansionZoom(params.clusterId);
+        return this._geoJSONIndex!.getClusterExpansionZoom!(params.clusterId);
     }
 
     getClusterChildren(params: {
         clusterId: number;
     }): Array<GeoJSON.Feature> {
-        return this._geoJSONIndex.getChildren(params.clusterId);
+        return this._geoJSONIndex!.getChildren!(params.clusterId);
     }
 
     getClusterLeaves(params: {
@@ -259,7 +259,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         limit: number;
         offset: number;
     }): Array<GeoJSON.Feature> {
-        return this._geoJSONIndex.getLeaves(params.clusterId, params.limit, params.offset);
+        return this._geoJSONIndex!.getLeaves!(params.clusterId, params.limit, params.offset);
     }
 }
 

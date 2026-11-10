@@ -18,7 +18,7 @@ type AddPatternResult = {
     secondary: string | null;
 };
 
-function addPattern(pattern: string | ResolvedImage, patterns: ImageDependenciesMap, pixelRatio: number = 1): AddPatternResult {
+function addPattern(pattern: string | ResolvedImage | null, patterns: ImageDependenciesMap, pixelRatio: number = 1): AddPatternResult | null {
     if (!pattern) {
         return null;
     }
@@ -37,7 +37,7 @@ function addPattern(pattern: string | ResolvedImage, patterns: ImageDependencies
         }
 
         pattern.scaleSelf(pixelRatio);
-        patterns.get(id).push(pattern);
+        patterns.get(id)!.push(pattern);
     }
 
     return {
@@ -57,10 +57,8 @@ export function hasPattern(type: string, layers: PatternStyleLayers, pixelRatio:
             hasPattern = true;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const constantPattern = patternProperty.constantOr(null);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (addPattern(constantPattern, patterns, pixelRatio)) {
             hasPattern = true;
         }
@@ -98,7 +96,7 @@ export function addPatternDependencies(
 
             // save for layout
             if (primarySerialized) {
-                patternFeature.patterns[layer.id] = [primarySerialized, secondarySerialized].filter(Boolean);
+                patternFeature.patterns[layer.id] = [primarySerialized, secondarySerialized].filter(Boolean) as string[];
             }
         }
     }

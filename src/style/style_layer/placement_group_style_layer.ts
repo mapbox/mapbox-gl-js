@@ -6,7 +6,7 @@ import type {LUT} from "../../util/lut";
 import type {ConfigOptions} from '../properties';
 
 class PlacementGroupStyleLayer extends StyleLayer {
-    override type: 'placement-group';
+    override type!: 'placement-group';
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {

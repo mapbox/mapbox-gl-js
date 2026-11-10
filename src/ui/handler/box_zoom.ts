@@ -20,7 +20,7 @@ class BoxZoomHandler implements Handler {
     _active!: boolean;
     _startPos: Point | null | undefined;
     _lastPos: Point | null | undefined;
-    _box!: HTMLElement;
+    _box!: HTMLElement | null;
     _clickTolerance: number;
 
     /**

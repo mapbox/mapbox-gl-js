@@ -11,6 +11,9 @@ export type LayerFeatureStates = {
     [layer: string]: FeatureStates;
 };
 
+type FeatureDeletions = {[feature: string]: FeatureState | null};
+type LayerFeatureDeletions = {[layer: string]: FeatureDeletions | null};
+
 /**
  * SourceFeatureState manages the state and pending changes
  * to features in a source, separated by source layer.
@@ -23,7 +26,7 @@ export type LayerFeatureStates = {
 class SourceFeatureState {
     state: LayerFeatureStates;
     stateChanges: LayerFeatureStates;
-    deletedStates: LayerFeatureStates;
+    deletedStates: LayerFeatureDeletions;
 
     constructor() {
         // Feature IDs flow in from public API calls like `map.setFeatureState`
@@ -36,7 +39,7 @@ class SourceFeatureState {
         // lookups produce own properties instead.
         this.state = Object.create(null) as LayerFeatureStates;
         this.stateChanges = Object.create(null) as LayerFeatureStates;
-        this.deletedStates = Object.create(null) as LayerFeatureStates;
+        this.deletedStates = Object.create(null) as LayerFeatureDeletions;
     }
 
     updateState(sourceLayer: string, featureId: number | string, newState: FeatureState) {
@@ -47,7 +50,7 @@ class SourceFeatureState {
 
         const layerDeletions = this.deletedStates[sourceLayer];
         if (layerDeletions === null) {
-            const deletions = this.deletedStates[sourceLayer] = Object.create(null) as FeatureStates;
+            const deletions = this.deletedStates[sourceLayer] = Object.create(null) as FeatureDeletions;
             for (const ft in this.state[sourceLayer]) {
                 if (ft !== feature) deletions[ft] = null;
             }
@@ -58,7 +61,7 @@ class SourceFeatureState {
         const featureDeletions = layerDeletions[feature];
         if (featureDeletions === null) {
             const deletions = layerDeletions[feature] = Object.create(null) as FeatureState;
-            for (const prop in this.state[sourceLayer][feature]) {
+            for (const prop in this.state[sourceLayer]![feature]) {
                 if (!newState[prop]) deletions[prop] = null;
             }
             return;
@@ -76,7 +79,7 @@ class SourceFeatureState {
 
         const feature = String(featureId);
 
-        this.deletedStates[sourceLayer] = this.deletedStates[sourceLayer] || Object.create(null) as FeatureStates;
+        this.deletedStates[sourceLayer] = this.deletedStates[sourceLayer] || Object.create(null) as FeatureDeletions;
 
         if (key && featureId !== undefined) {
             if (this.deletedStates[sourceLayer][feature] !== null) {
@@ -87,7 +90,7 @@ class SourceFeatureState {
             const updateInQueue = this.stateChanges[sourceLayer] && this.stateChanges[sourceLayer][feature];
             if (updateInQueue) {
                 this.deletedStates[sourceLayer][feature] = Object.create(null) as FeatureState;
-                for (key in this.stateChanges[sourceLayer][feature]) this.deletedStates[sourceLayer][feature][key] = null;
+                for (key in this.stateChanges[sourceLayer]![feature]) this.deletedStates[sourceLayer][feature][key] = null;
 
             } else {
                 this.deletedStates[sourceLayer][feature] = null;
@@ -97,7 +100,7 @@ class SourceFeatureState {
         }
     }
 
-    getState(sourceLayer: string): FeatureStates;
+    getState(sourceLayer: string, featureId?: undefined): FeatureStates;
     getState(sourceLayer: string, featureId: number | string): FeatureState;
     getState(sourceLayer: string, featureId?: number | string): FeatureState | FeatureStates {
         const base = this.state[sourceLayer] || (Object.create(null) as FeatureStates);
@@ -135,7 +138,7 @@ class SourceFeatureState {
         tile.refreshFeatureState(painter);
     }
 
-    coalesceChanges(tiles: Map<number, Tile>, painter: Painter) {
+    coalesceChanges(tiles: Map<number, Tile>, painter?: Painter | null) {
         //track changes with full state objects, but only for features that got modified
         const featuresChanged: LayerFeatureStates = Object.create(null) as LayerFeatureStates;
 
@@ -164,11 +167,11 @@ class SourceFeatureState {
                     const deleteWholeFeatureState = this.deletedStates[sourceLayer][feature] === null;
                     if (deleteWholeFeatureState) this.state[sourceLayer][feature] = Object.create(null) as FeatureState;
                     else if (this.state[sourceLayer][feature]) {
-                        for (const key of Object.keys(this.deletedStates[sourceLayer][feature])) {
+                        for (const key of Object.keys(this.deletedStates[sourceLayer][feature]!)) {
                             delete this.state[sourceLayer][feature][key];
                         }
                     }
-                    layerStates[feature] = this.state[sourceLayer][feature];
+                    layerStates[feature] = this.state[sourceLayer][feature]!;
                 }
             }
 

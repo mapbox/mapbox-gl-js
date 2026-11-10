@@ -26,7 +26,7 @@ type TileRenderState = {
     programConfiguration: ProgramConfiguration;
     program: Program<CircleUniformsType>;
     layoutVertexBuffer: VertexBuffer;
-    dynamicBuffers: VertexBuffer[];
+    dynamicBuffers: Array<VertexBuffer | null | undefined>;
     indexBuffer: IndexBuffer;
     uniformValues: UniformValues<CircleUniformsType>;
     tile: Tile;
@@ -73,7 +73,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     const segmentsRenderStates: Array<SegmentsTileRenderState> = [];
 
     for (let i = 0; i < coords.length; i++) {
-        const coord = coords[i];
+        const coord = coords[i]!;
 
         const tile = sourceCache.getTile(coord);
         const bucket = tile.getBucket(layer) as CircleBucket;
@@ -120,7 +120,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
             for (const segment of oldSegments) {
                 segmentsRenderStates.push({
                     segments: new SegmentVector([segment]),
-                    sortKey: segment.sortKey,
+                    sortKey: segment.sortKey!,
                     state
                 });
             }

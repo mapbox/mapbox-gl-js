@@ -8,6 +8,7 @@ import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../types/tile_id';
 import type {GlobalProperties, Feature} from '../expression/index';
 import type {FilterSpecification, ExpressionSpecification} from '../types';
+import type {StylePropertySpecification} from '../style-spec';
 import type {ConfigOptions} from '../types/config_options';
 
 export type FeatureDistanceData = {
@@ -96,9 +97,8 @@ function createFilter(filter?: FilterSpecification, scope: string = "", options:
 
     const filterExp = (filter as string[] | string | boolean);
 
-    let staticFilter = true;
+    let staticFilter: unknown = true;
     try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         staticFilter = extractStaticFilter(filterExp);
     } catch (e) {
         console.warn(
@@ -113,12 +113,11 @@ ${JSON.stringify(filterExp, null, 2)}
 
     // Compile the static component of the filter
     let filterFunc: PropertyDescriptor['value'] = null;
-    let filterSpec = null;
+    let filterSpec: StylePropertySpecification | null = null;
     if (layerType !== 'background' && layerType !== 'sky' && layerType !== 'slot') {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         filterSpec = latest[`filter_${layerType}`];
         assert(filterSpec);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const compiledStaticFilter = createExpression(staticFilter, filterSpec, scope, options);
 
         if (compiledStaticFilter.result === 'error') {
@@ -131,10 +130,9 @@ ${JSON.stringify(filterExp, null, 2)}
 
     // If the static component is not equal to the entire filter then we have a dynamic component
     // Compile the dynamic component separately
-    let dynamicFilterFunc: PropertyDescriptor['value'] = null;
+    let dynamicFilterFunc: FilterExpression | null = null;
     let needFeature = null;
     if (staticFilter !== filterExp) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const compiledDynamicFilter = createExpression(filterExp, filterSpec, scope, options);
 
         if (compiledDynamicFilter.result === 'error') {
@@ -152,15 +150,13 @@ ${JSON.stringify(filterExp, null, 2)}
     return {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         filter: filterFunc,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         dynamicFilter: dynamicFilterFunc ? dynamicFilterFunc : undefined,
         needGeometry,
         needFeature: !!needFeature
     };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractStaticFilter(filter: unknown | unknown[]): any {
+function extractStaticFilter(filter: unknown): unknown {
     if (!isDynamicFilter(filter)) {
         return filter;
     }
@@ -177,18 +173,15 @@ function extractStaticFilter(filter: unknown | unknown[]): any {
     return result;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function collapseDynamicBooleanExpressions(expression: any): any {
+function collapseDynamicBooleanExpressions(expression: unknown): unknown {
     if (!Array.isArray(expression)) {
         return expression;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const collapsed = collapsedExpression(expression);
     if (collapsed === true) {
         return collapsed;
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         return collapsed.map((subExpression: unknown) => collapseDynamicBooleanExpressions(subExpression));
     }
 }
@@ -236,20 +229,17 @@ function unionDynamicBranches(filter: unknown[]) {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isDynamicFilter(filter: any): boolean {
+function isDynamicFilter(filter: unknown): boolean {
     // Base Cases
     if (!Array.isArray(filter)) {
         return false;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (isRootExpressionDynamic(filter[0])) {
         return true;
     }
 
     for (let i = 1; i < filter.length; i++) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const child = filter[i];
+        const child: unknown = filter[i];
         if (isDynamicFilter(child)) {
             return true;
         }
@@ -258,12 +248,12 @@ function isDynamicFilter(filter: any): boolean {
     return false;
 }
 
-function isRootExpressionDynamic(expression: string): boolean {
+function isRootExpressionDynamic(expression: unknown): boolean {
     return expression === 'pitch' ||
         expression === 'distance-from-center';
 }
 
-const dynamicConditionExpressions: ReadonlySet<string> = new Set([
+const dynamicConditionExpressions: ReadonlySet<unknown> = new Set([
     'in',
     '==',
     '!=',
@@ -274,14 +264,10 @@ const dynamicConditionExpressions: ReadonlySet<string> = new Set([
     'to-boolean'
 ]);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function collapsedExpression(expression: any): any {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+function collapsedExpression(expression: unknown[]): true | unknown[] {
     if (dynamicConditionExpressions.has(expression[0])) {
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         for (let i = 1; i < expression.length; i++) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const param = expression[i];
             if (isDynamicFilter(param)) {
                 return true;
@@ -296,12 +282,10 @@ function compare(a: number, b: number) {
     return a < b ? -1 : a > b ? 1 : 0;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function geometryNeeded(filter: Array<any> | boolean) {
+function geometryNeeded(filter: unknown) {
     if (!Array.isArray(filter)) return false;
     if (filter[0] === 'within' || filter[0] === 'distance') return true;
     for (let index = 1; index < filter.length; index++) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (geometryNeeded(filter[index])) return true;
     }
     return false;
@@ -310,8 +294,7 @@ function geometryNeeded(filter: Array<any> | boolean) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertFilter(filter?: Array<any> | null): unknown {
     if (!filter) return true;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const op = filter[0];
+    const op: unknown = filter[0];
     if (filter.length <= 1) return (op !== 'any');
     const converted =
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -339,17 +322,13 @@ function convertFilter(filter?: Array<any> | null): unknown {
     return converted;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function convertComparisonOp(property: string, value: any, op: string) {
+function convertComparisonOp(property: string, value: unknown, op: string) {
     switch (property) {
     case '$type':
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [`filter-type-${op}`, value];
     case '$id':
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [`filter-id-${op}`, value];
     default:
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [`filter-${op}`, property, value];
     }
 }

@@ -9,13 +9,13 @@ import type {WorkerSourceActor} from "../../src/source/worker_source";
 import type {Polygon, MultiPolygon} from "geojson";
 
 export function parseActiveFloors(data: VectorTile, indoorTileOptions: IndoorTileOptions, actor: WorkerSourceActor, tileID: CanonicalTileID): Set<string> | undefined {
-    const activeFloorsVisible = indoorTileOptions.indoorState.activeFloorsVisible;
+    const activeFloorsVisible = indoorTileOptions.indoorState!.activeFloorsVisible;
     if (!indoorTileOptions.sourceLayers) {
-        return activeFloorsVisible ? indoorTileOptions.indoorState.activeFloors : undefined;
+        return activeFloorsVisible ? indoorTileOptions.indoorState!.activeFloors : undefined;
     }
     const sourceLayers = calculateIndoorSourceLayers(indoorTileOptions.sourceLayers, new Set(Object.keys(data.layers)));
-    const indoorState = indoorTileOptions.indoorState;
-    const indoorData = parseData(data, sourceLayers, indoorState.activeFloors, indoorState.selectedFloorId, tileID);
+    const indoorState = indoorTileOptions.indoorState!;
+    const indoorData = parseData(data, sourceLayers, indoorState.activeFloors, indoorState.selectedFloorId!, tileID);
     actor.notify('setIndoorData', indoorData);
     return activeFloorsVisible ? indoorData.activeFloors : undefined;
 }
@@ -84,13 +84,13 @@ function assignFloorToBuildings(
 ): void {
     for (const buildingId of buildingIds) {
         upsertBuilding(buildings, buildingId);
-        buildings[buildingId].floors[floorId] = floor;
-        buildings[buildingId].floorIds.add(floorId);
+        buildings[buildingId]!.floors[floorId] = floor;
+        buildings[buildingId]!.floorIds.add(floorId);
     }
 }
 
 function parseBuilding(feature: VectorTileFeature): {id: string, center: [number, number]} {
-    const id = feature.properties.id.toString();
+    const id = feature.properties.id!.toString();
     const lon = feature.properties.center_lon as number || 0;
     const lat = feature.properties.center_lat as number || 0;
     const center: [number, number] = [lon, lat];
@@ -98,7 +98,7 @@ function parseBuilding(feature: VectorTileFeature): {id: string, center: [number
 }
 
 function parseFloor(feature: VectorTileFeature, tileID: CanonicalTileID): {id: string, isDefault: boolean, connections: Set<string>, conflicts: Set<string>, buildings: Set<string>, zIndex: number, name: string, geometry: Polygon | MultiPolygon | undefined} {
-    const id = feature.properties.id.toString();
+    const id = feature.properties.id!.toString();
     const isDefault = feature.properties.is_default ?
         feature.properties.is_default as boolean :
         false;
@@ -111,7 +111,7 @@ function parseFloor(feature: VectorTileFeature, tileID: CanonicalTileID): {id: s
     const buildings: Set<string> = feature.properties.structure_ids ?
         new Set(feature.properties.structure_ids.toString().split(";")) :
         new Set();
-    const name = feature.properties.name.toString();
+    const name = feature.properties.name!.toString();
     const zIndex = feature.properties.z_index as number;
     const geometry = extractGeometry(feature, tileID);
     return {id, isDefault, connections, conflicts, buildings, name, zIndex, geometry};
@@ -129,7 +129,7 @@ function extractGeometry(feature: VectorTileFeature, tileID: CanonicalTileID): P
     if (coordinates.length === 0) return undefined;
 
     // Just construct a Polygon with the first ring as exterior.
-    return {type: 'Polygon', coordinates: [coordinates[0]]};
+    return {type: 'Polygon', coordinates: [coordinates[0]!]};
 }
 
 function hasRequiredProperties(feature: VectorTileFeature, requiredProps: string[]): boolean {

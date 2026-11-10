@@ -139,7 +139,7 @@ class Tile {
     timeAdded!: number | null;
     fadeEndTime: number | undefined;
     collisionBoxArray: CollisionBoxArray | null | undefined;
-    redoWhenDone: boolean;
+    redoWhenDone!: boolean;
     showCollisionBoxes!: boolean;
     placementSource: unknown;
     actor: Actor<WorkerInbox> | null | undefined;
@@ -246,7 +246,7 @@ class Tile {
     }
 
     registerFadeDuration(duration: number) {
-        const fadeEndTime = duration + this.timeAdded;
+        const fadeEndTime = duration + this.timeAdded!;
         if (fadeEndTime < browser.now()) return;
         if (this.fadeEndTime !== undefined && fadeEndTime < this.fadeEndTime) return;
 
@@ -337,7 +337,7 @@ class Tile {
             }
             const layer = painter.style.getOwnLayer(id);
             if (!layer) continue;
-            const queryRadius = layer.queryRadius(bucket) || 0;
+            const queryRadius = layer.queryRadius(bucket!) || 0;
             this.queryPadding = Math.max(this.queryPadding, queryRadius);
             this._queryPaddingPaintVersions[id] = layer.paintVersion;
         }
@@ -360,7 +360,7 @@ class Tile {
     // it comes back from the tile cache.
     resetPlacementVisibility() {
         for (const id in this.buckets) {
-            this.buckets[id].resetPlacementVisibility?.();
+            this.buckets[id]!.resetPlacementVisibility?.();
         }
     }
 
@@ -373,7 +373,7 @@ class Tile {
         if (!this.hasData()) return;
 
         for (const id in this.buckets) {
-            this.buckets[id].destroy();
+            this.buckets[id]!.destroy();
         }
         this.buckets = {};
 
@@ -463,12 +463,12 @@ class Tile {
     }
 
     getBucket(layer: TypedStyleLayer): Bucket {
-        return this.buckets[layer.fqid];
+        return this.buckets[layer.fqid]!;
     }
 
     upload(context: Context, painter?: Painter) {
         for (const id in this.buckets) {
-            const bucket = this.buckets[id];
+            const bucket = this.buckets[id]!;
             if (bucket.uploadPending()) {
                 let featureStates: FeatureStates = {};
                 let availableImages: ImageId[] = [];
@@ -484,11 +484,11 @@ class Tile {
                         availableImages = painter.style.listImages();
 
                         const bucketLayer = bucket.layers[0];
-                        const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
-                        const sourceCache = painter.style.getLayerSourceCache(bucketLayer);
+                        const sourceLayerId = bucketLayer!['sourceLayer'] || '_geojsonTileLayer';
+                        const sourceCache = painter.style.getLayerSourceCache(bucketLayer!);
 
                         if (sourceCache) {
-                            featureStates = sourceCache._state.getState(sourceLayerId, undefined) as FeatureStates;
+                            featureStates = sourceCache._state.getState(sourceLayerId, undefined);
                         }
                     }
 
@@ -583,7 +583,7 @@ class Tile {
             }
             if (this._queryPaddingPaintVersions[id] !== layer.paintVersion) {
                 this._queryPaddingPaintVersions[id] = layer.paintVersion;
-                this.queryPadding = Math.max(this.queryPadding, layer.queryRadius(bucket) || 0);
+                this.queryPadding = Math.max(this.queryPadding, layer.queryRadius(bucket!) || 0);
             }
         }
     }
@@ -602,11 +602,11 @@ class Tile {
         if (update === 'unchanged' && !hasImageCountChanged) return;
         if (update === 'features' || hasImageCountChanged) {
             const bucketLayer = bucket.layers[0];
-            const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
-            const sourceCache = painter.style.getLayerSourceCache(bucketLayer);
-            const states = sourceCache ? sourceCache._state.getState(sourceLayerId, undefined) as FeatureStates : {};
-            const vtLayer = this.latestFeatureIndex.loadVTLayers()[sourceLayerId];
-            binder.updateDynamicExpressions(layer, vtLayer, this.tileID.canonical, availableImages, states, brightness);
+            const sourceLayerId = bucketLayer!['sourceLayer'] || '_geojsonTileLayer';
+            const sourceCache = painter.style.getLayerSourceCache(bucketLayer!);
+            const states = sourceCache ? sourceCache._state.getState(sourceLayerId, undefined) : {};
+            const vtLayer = this.latestFeatureIndex!.loadVTLayers()[sourceLayerId];
+            binder.updateDynamicExpressions(layer, vtLayer!, this.tileID.canonical, availableImages, states, brightness);
         }
         binder.upload(painter.context);
     }
@@ -616,8 +616,8 @@ class Tile {
         let maxRadius = 0;
         for (const bucketId in this.buckets) {
             const bucket = this.buckets[bucketId];
-            if (bucket.evaluateQueryRenderedFeaturePadding) {
-                maxRadius = Math.max(maxRadius, bucket.evaluateQueryRenderedFeaturePadding());
+            if (bucket!.evaluateQueryRenderedFeaturePadding) {
+                maxRadius = Math.max(maxRadius, bucket!.evaluateQueryRenderedFeaturePadding());
             }
         }
         return maxRadius;
@@ -684,7 +684,7 @@ class Tile {
         const vtLayers = featureIndex.loadVTLayers();
 
         const sourceLayer = params ? params.sourceLayer : '';
-        const layer = vtLayers._geojsonTileLayer || vtLayers[sourceLayer];
+        const layer = vtLayers._geojsonTileLayer || vtLayers[sourceLayer!];
 
         if (!layer) return;
 
@@ -701,7 +701,7 @@ class Tile {
             } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview: this.worldview}), feature)) {
                 continue;
             }
-            const id = featureIndex.getId(feature, sourceLayer);
+            const id = featureIndex.getId(feature, sourceLayer!);
             const geojsonFeature = new Feature(feature, z, x, y, id);
             geojsonFeature.tile = coord;
 
@@ -781,7 +781,7 @@ class Tile {
         }
     }
 
-    refreshFeatureState(painter?: Painter, states?: LayerFeatureStates) {
+    refreshFeatureState(painter?: Painter | null, states?: LayerFeatureStates) {
         if (!this.latestFeatureIndex || !(this.latestFeatureIndex.rawTileData || this.latestFeatureIndex.is3DTile) || !painter) {
             return;
         }
@@ -794,7 +794,7 @@ class Tile {
         for (const id in this.buckets) {
             if (!painter.style.hasLayer(id)) continue;
             const bucket = this.buckets[id];
-            const hasAppearances = bucket.layers.some(layer => layer.appearances && layer.appearances.length > 0);
+            const hasAppearances = bucket!.layers.some(layer => layer.appearances && layer.appearances.length > 0);
             if (hasAppearances) return true;
         }
         return false;
@@ -810,15 +810,15 @@ class Tile {
         for (const id in this.buckets) {
             if (!painter.style.hasLayer(id)) continue;
 
-            const bucket = this.buckets[id];
+            const bucket = this.buckets[id]!;
             const bucketLayer = bucket.layers[0];
             // Buckets are grouped by common source-layer
-            const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
-            const sourceCache = painter.style.getLayerSourceCache(bucketLayer);
+            const sourceLayerId = bucketLayer!['sourceLayer'] || '_geojsonTileLayer';
+            const sourceCache = painter.style.getLayerSourceCache(bucketLayer!);
 
             let sourceLayerStates: FeatureStates = (states && states[sourceLayerId]) || {};
             if (sourceCache && !states) { // only fetch the full state if it's not an incremental state update
-                sourceLayerStates = sourceCache._state.getState(sourceLayerId, undefined) as FeatureStates;
+                sourceLayerStates = sourceCache._state.getState(sourceLayerId, undefined);
             }
 
             const imagePositions: SpritePositions = this.imageAtlas ? Object.fromEntries(this.imageAtlas.patternPositions) : {};
@@ -829,13 +829,13 @@ class Tile {
             if (featureStateChanged || isBrightnessChanged || hasImageCountChanged) {
                 const vtLayers = this.latestFeatureIndex.loadVTLayers();
                 const sourceLayer = vtLayers[sourceLayerId];
-                bucket.update(sourceLayerStates, sourceLayer, images, imagePositions, layers, isBrightnessChanged, brightness, this.tileID.canonical);
+                bucket.update(sourceLayerStates, sourceLayer!, images, imagePositions, layers, isBrightnessChanged!, brightness, this.tileID.canonical);
 
                 if (bucket instanceof SymbolBucket) {
                     if (bucket.text.uboBinder) bucket.text.uboBinder.upload(painter.context);
                     if (bucket.icon.uboBinder) bucket.icon.uboBinder.upload(painter.context);
                 } else if (bucket instanceof LineBucket) {
-                    for (const {id} of bucket.layers) bucket.uboBinders[id].upload(painter.context);
+                    for (const {id} of bucket.layers) bucket.uboBinders[id]!.upload(painter.context);
                 }
             }
             if (featureStateChanged || isBrightnessChanged || bucket.hasAppearances) {
@@ -934,8 +934,8 @@ class Tile {
         const debugVertices = new PosArray();
         const debugIndices = new LineStripIndexArray();
 
-        for (let i = 0; i < boundsLine.length; i++) {
-            const {x, y} = boundsLine[i];
+        for (let i = 0; i < boundsLine!.length; i++) {
+            const {x, y} = boundsLine![i]!;
             debugVertices.emplaceBack(x, y);
             debugIndices.emplaceBack(i);
         }
@@ -965,13 +965,13 @@ class Tile {
             boundsVertices = new TileBoundsArray();
             boundsIndices = new TriangleIndexArray();
 
-            for (const {x, y} of boundsLine) {
+            for (const {x, y} of boundsLine!) {
                 boundsVertices.emplaceBack(x, y, 0, 0);
             }
             const indices = earcut(boundsVertices.int16.subarray(0, boundsVertices.length * 4), undefined, 4);
 
             for (let i = 0; i < indices.length; i += 3) {
-                boundsIndices.emplaceBack(indices[i], indices[i + 1], indices[i + 2]);
+                boundsIndices.emplaceBack(indices[i]!, indices[i + 1]!, indices[i + 2]!);
             }
         }
         this._tileBoundsBuffer = context.createVertexBuffer(boundsVertices, boundsAttributes.members);
@@ -990,7 +990,7 @@ class Tile {
         const phase = globeToMercatorTransition(transform.zoom);
         let worldToECEFMatrix: mat4 | undefined;
         if (phase > 0.0) {
-            worldToECEFMatrix = mat4.invert(new Float64Array(16), transform.globeMatrix);
+            worldToECEFMatrix = mat4.invert(new Float64Array(16), transform.globeMatrix)!;
         }
 
         this._makeGlobeTileDebugBorderBuffer(context, id, transform, normalizationMatrix, worldToECEFMatrix, phase);
@@ -1133,7 +1133,7 @@ class Tile {
      */
     destroy(reload: boolean = true) {
         for (const id in this.buckets) {
-            this.buckets[id].destroy(reload);
+            this.buckets[id]!.destroy(reload);
         }
 
         this.buckets = {};

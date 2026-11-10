@@ -65,7 +65,7 @@ class RasterDEMTileWorkerSource implements WorkerSource {
     }
 
     async loadTileWithProvider(provider: TileProvider<ArrayBuffer | ImageBitmap>, uid: number, params: WorkerSourceDEMTileRequest, controller: AbortController): Promise<WorkerSourceDEMTileResult | null> {
-        const {z, x, y} = params.tileID.canonical;
+        const {z, x, y} = params.tileID!.canonical;
         try {
             const response = await provider.loadTile({z, x, y}, {request: params.request, signal: controller.signal});
 
@@ -118,7 +118,7 @@ class RasterDEMTileWorkerSource implements WorkerSource {
         if (!this.offscreenCanvas || !this.offscreenCanvasContext) {
             // Dem tiles are typically 256x256
             this.offscreenCanvas = new OffscreenCanvas(imgBitmap.width, imgBitmap.height);
-            this.offscreenCanvasContext = this.offscreenCanvas.getContext('2d', {willReadFrequently: true});
+            this.offscreenCanvasContext = this.offscreenCanvas.getContext('2d', {willReadFrequently: true})!;
         }
 
         this.offscreenCanvas.width = imgBitmap.width;

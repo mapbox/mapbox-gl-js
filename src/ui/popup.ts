@@ -7,7 +7,7 @@ import smartWrap from '../util/smart_wrap';
 import {anchorTranslate} from './anchor';
 import {isLngLatBehindGlobe} from '../geo/projection/globe_util';
 
-import type {MapMouseEvent, MapEventOf} from '../ui/events';
+import type {MapEventOf} from '../ui/events';
 import type {Map} from './map';
 import type {Anchor} from './anchor';
 import type {LngLatLike} from '../geo/lng_lat';
@@ -128,7 +128,7 @@ export default class Popup extends Evented<PopupEvents> {
         super();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.options = Object.assign(Object.create(defaultOptions), options);
-        this._altitude = this.options.altitude;
+        this._altitude = this.options.altitude!;
         bindAll(['_update', '_onClose', 'remove', '_onMouseEvent'], this);
         this._classList = new Set(options && options.className ?
             options.className.trim().split(WHITESPACE_RE) : []);
@@ -579,7 +579,7 @@ export default class Popup extends Evented<PopupEvents> {
         return finalState;
     }
 
-    _onMouseEvent(event: MapMouseEvent) {
+    _onMouseEvent(event: {type: string, point?: Point}) {
         this._update(event.point);
     }
 
@@ -679,7 +679,7 @@ export default class Popup extends Evented<PopupEvents> {
     _focusFirstElement() {
         if (!this.options.focusAfterOpen || !this._container) return;
 
-        const firstFocusable: HTMLElement = this._container.querySelector(focusQuerySelector);
+        const firstFocusable = this._container.querySelector<HTMLElement>(focusQuerySelector);
 
         if (firstFocusable) firstFocusable.focus();
     }

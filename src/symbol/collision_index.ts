@@ -60,10 +60,10 @@ type CollisionKey = {bucketInstanceId: number; featureIndex: number; collisionGr
 function populateProjectedGlyphAnchors(first: symbolProjection.PlacedGlyph, last: symbolProjection.PlacedGlyph): vec3[] {
     const result: vec3[] = [];
     for (let i = first.path.length - 1; i >= 1; i--) {
-        result.push(first.path[i]);
+        result.push(first.path[i]!);
     }
     for (let i = 1; i < last.path.length; i++) {
-        result.push(last.path[i]);
+        result.push(last.path[i]!);
     }
     assert(result.length >= 2);
     return result;
@@ -78,7 +78,7 @@ function projectPathToScreen(
 ) {
     const firstLen = first.path.length;
     for (let i = 0; i < projectedPath.length; i++) {
-        const p = projectedPath[i];
+        const p = projectedPath[i]!;
         let z = p[2];
         if (elevationParams) {
             const point = i < firstLen - 1 ? first.tilePath[firstLen - 1 - i] : last.tilePath[i - firstLen + 2];
@@ -282,7 +282,7 @@ class CollisionIndex implements CollisionDetector {
         if (hasElevation) {
             if (renderElevatedRoads && bucket.hdExt) {
                 elevationParams = bucket.hdExt.makeRoadSymbolElevationParams(
-                    bucket, bucket.text, symbolIndex, tileID, getElevation, elevation, projection,
+                    bucket, bucket.text, symbolIndex, tileID, getElevation, elevation!, projection,
                     this.transform.center.lat, this.transform.worldSize);
             } else {
                 elevationParams = {
@@ -304,12 +304,11 @@ class CollisionIndex implements CollisionDetector {
         const labelPlaneFontScale = (pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio) / ONE_EM;
         const labelPlaneAnchorPoint = symbolProjection.project(anchorX, anchorY, anchorZ, labelPlaneMatrix);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const projectionCache: Record<string, any> = {};
+        const projectionCache = {};
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
         const lineOffsetY = symbol.lineOffsetY * labelPlaneFontScale;
 
-        const layout = bucket.layers[0].layout;
+        const layout = bucket.layers[0]!.layout;
         const textMaxAngle = degToRad(layout.get('text-max-angle'));
         const maxAngleCos = Math.cos(textMaxAngle);
 
@@ -481,7 +480,7 @@ class CollisionIndex implements CollisionDetector {
             if (seenFeatures[featureKey.bucketInstanceId] === undefined) {
                 seenFeatures[featureKey.bucketInstanceId] = {};
             }
-            if (seenFeatures[featureKey.bucketInstanceId][featureKey.featureIndex]) {
+            if (seenFeatures[featureKey.bucketInstanceId]![featureKey.featureIndex]) {
                 continue;
             }
 
@@ -506,11 +505,11 @@ class CollisionIndex implements CollisionDetector {
                 continue;
             }
 
-            seenFeatures[featureKey.bucketInstanceId][featureKey.featureIndex] = true;
+            seenFeatures[featureKey.bucketInstanceId]![featureKey.featureIndex] = true;
             if (result[featureKey.bucketInstanceId] === undefined) {
                 result[featureKey.bucketInstanceId] = [];
             }
-            result[featureKey.bucketInstanceId].push(featureKey.featureIndex);
+            result[featureKey.bucketInstanceId]!.push(featureKey.featureIndex);
         }
 
         return result;
@@ -520,7 +519,7 @@ class CollisionIndex implements CollisionDetector {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
         const key = {bucketInstanceId, featureIndex, collisionGroupID};
-        grid.insert(key, collisionBox[0], collisionBox[1], collisionBox[2], collisionBox[3]);
+        grid.insert(key, collisionBox[0]!, collisionBox[1]!, collisionBox[2]!, collisionBox[3]!);
     }
 
     insertCollisionCircles(collisionCircles: Array<number>, ignorePlacement: boolean, bucketInstanceId: number, featureIndex: number, collisionGroupID: number) {
@@ -528,7 +527,7 @@ class CollisionIndex implements CollisionDetector {
 
         const key = {bucketInstanceId, featureIndex, collisionGroupID};
         for (let k = 0; k < collisionCircles.length; k += 4) {
-            grid.insertCircle(key, collisionCircles[k], collisionCircles[k + 1], collisionCircles[k + 2]);
+            grid.insertCircle(key, collisionCircles[k]!, collisionCircles[k + 1]!, collisionCircles[k + 2]!);
         }
     }
 
@@ -554,10 +553,10 @@ class CollisionIndex implements CollisionDetector {
         } else {
             xyTransformMat4(p, p, posMatrix);
         }
-        const w = p[3];
+        const w = p[3]!;
         const a = new Point(
-            (((p[0] / w + 1) / 2) * this.transform.width) + viewportPadding,
-            (((-p[1] / w + 1) / 2) * this.transform.height) + viewportPadding
+            (((p[0]! / w + 1) / 2) * this.transform.width) + viewportPadding,
+            (((-p[1]! / w + 1) / 2) * this.transform.height) + viewportPadding
         );
         return {
             point: a,
@@ -566,7 +565,7 @@ class CollisionIndex implements CollisionDetector {
             // to scale down boxes in the distance
             perspectiveRatio: Math.min(0.5 + 0.5 * (this.transform.getCameraToCenterDistance(bucketProjection) / w), 1.5),
             signedDistanceFromCamera: w,
-            occluded: (checkOcclusion && p[2] > w) || behindFog // Occluded by the far plane
+            occluded: (checkOcclusion && p[2]! > w) || behindFog // Occluded by the far plane
         };
     }
 

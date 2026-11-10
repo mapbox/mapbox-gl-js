@@ -358,8 +358,7 @@ type QueueItem = {
 };
 
 export class TelemetryEvent {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    eventData: any;
+    eventData: {lastSuccess?: number; tokenU?: string | null};
     anonId: string | null | undefined;
     anonIdTimestamp: number | null | undefined;
     queue: Array<QueueItem>;
@@ -440,7 +439,6 @@ export class TelemetryEvent {
         if (isLocalStorageAvailable && anonId) {
             try {
                 localStorage.setItem(uuidKey, anonId);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 if (Object.keys(this.eventData).length >= 1) {
                     localStorage.setItem(storageKey, JSON.stringify(this.eventData));
                 }
@@ -825,7 +823,6 @@ export class TurnstileEvent extends TelemetryEvent {
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (!this.anonId || !this.anonIdTimestamp || !this.eventData.lastSuccess || !this.eventData.tokenU) {
             //Retrieve cached data
             this.fetchEventData();
@@ -834,7 +831,6 @@ export class TurnstileEvent extends TelemetryEvent {
         const tokenData = parseAccessToken(config.ACCESS_TOKEN);
         const tokenU = tokenData ? tokenData['u'] : config.ACCESS_TOKEN;
         //Reset event data cache if the access token owner changed.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         let dueForEvent = tokenU !== this.eventData.tokenU;
 
         if (!validateUuid(this.anonId)) {
@@ -844,12 +840,9 @@ export class TurnstileEvent extends TelemetryEvent {
 
         const {timestamp: nextUpdate, customAccessToken} = this.queue.shift()!;
         // Record turnstile event once per calendar day.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (this.eventData.lastSuccess) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             const lastUpdate = new Date(this.eventData.lastSuccess);
             const nextDate = new Date(nextUpdate);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const daysElapsed = (nextUpdate - this.eventData.lastSuccess) / (24 * 60 * 60 * 1000);
             dueForEvent = dueForEvent || daysElapsed >= 1 || daysElapsed < -1 || lastUpdate.getDate() !== nextDate.getDate();
         } else {
@@ -876,9 +869,7 @@ export class TurnstileEvent extends TelemetryEvent {
 
         this.postEvent(nextUpdate, additionalPayload, (err) => {
             if (!err) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 this.eventData.lastSuccess = nextUpdate;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 this.eventData.tokenU = tokenU;
             }
         }, customAccessToken);

@@ -44,7 +44,7 @@ export function prepare(layer: LineStyleLayer, sourceCache: SourceCache, painter
     layer.hasNonElevatedBuckets = false;
 
     // Prepare() is only needed when there is a possibility that elevated buckets exist
-    if (layer.getLayoutPropertyValue('line-elevation-reference').value === undefined && layer.getLayoutPropertyValue('line-z-offset').value === undefined) {
+    if (layer.getLayoutPropertyValue('line-elevation-reference')!.value === undefined && layer.getLayoutPropertyValue('line-z-offset')!.value === undefined) {
         layer.hasNonElevatedBuckets = true;
         return;
     }
@@ -129,16 +129,14 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
     const dasharray = dasharrayProperty.constantOr(1);
     const capProperty = layer.layout.get('line-cap');
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const constantDash = dasharrayProperty.constantOr(null);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const constantCap = capProperty.constantOr(null);
     const patternProperty = layer.paint.get('line-pattern');
 
     const image = patternProperty.constantOr(1);
     const patternTransition = layer.paint.get('line-pattern-cross-fade');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     const constantPattern = patternProperty.constantOr(null);
 
     const lineOpacity = layer.paint.get('line-opacity').constantOr(1.0);
@@ -253,7 +251,7 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
 
             let transitionableConstantPattern = false;
             if (programConfiguration && constantPattern && tile.imageAtlas) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                 const pattern = ResolvedImage.from(constantPattern);
                 const primaryPatternImage = pattern.getPrimary().scaleSelf(pixelRatio).toString();
                 const primaryPosTo = tile.imageAtlas.patternPositions.get(primaryPatternImage);
@@ -262,7 +260,7 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
 
                 transitionableConstantPattern = !!primaryPosTo && !!secondaryPosTo;
 
-                if (primaryPosTo) programConfiguration.setConstantPatternPositions(primaryPosTo, secondaryPosTo);
+                if (primaryPosTo) programConfiguration.setConstantPatternPositions(primaryPosTo, secondaryPosTo!);
             }
 
             if (programConfiguration && patternTransition > 0 && (transitionableConstantPattern || !!programConfiguration.getPatternTransitionVertexBuffer('line-pattern'))) {
@@ -283,8 +281,8 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
             // data-driven instead, the UBO block handles it and this uniform goes unread.
             let constantDashPosTo: SpritePosition | null = null;
             if (!image && constantDash && constantCap && tile.lineAtlas) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                constantDashPosTo = tile.lineAtlas.getDash(constantDash, constantCap);
+
+                constantDashPosTo = tile.lineAtlas.getDash(constantDash as number[], constantCap);
             }
 
             if (renderWithShadows) {
@@ -328,10 +326,10 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                 dashIdealZ !== tile.tileID.overscaledZ) {
                 const bz = bucket.zoom;
                 if (!(bz in floorwidthByZoom)) {
-                    floorwidthByZoom[bz] = Math.max(0.01, layer.getPaintPropertyValue('line-width').expression.evaluate({zoom: bz}));
+                    floorwidthByZoom[bz] = Math.max(0.01, layer.getPaintPropertyValue('line-width')!.expression.evaluate({zoom: bz}));
                 }
                 savedFloorwidth = widthProperty.value.value;
-                widthProperty.value.value = floorwidthByZoom[bz] * Math.pow(2, dashIdealZ - bz);
+                widthProperty.value.value = floorwidthByZoom[bz]! * Math.pow(2, dashIdealZ - bz);
             }
 
             const uniformValues: UniformValues<LineUniformsType | LinePatternUniformsType> = image ?
@@ -422,26 +420,26 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                 // cover tiles — including pitched LOD rings — must keep camera floorwidth;
                 // applying the same scale there stretches dashes near the horizon.
                 if (dasharray && dashIdealZ !== tile.tileID.overscaledZ &&
-                    (uboBinder.header[HEADER_DATA_DRIVEN_MASK] & FLOORWIDTH_BIT) === 0) {
+                    (uboBinder.header[HEADER_DATA_DRIVEN_MASK]! & FLOORWIDTH_BIT) === 0) {
                     const bz = bucket.zoom;
                     if (!(bz in floorwidthByZoom)) {
-                        floorwidthByZoom[bz] = Math.max(0.01, layer.getPaintPropertyValue('line-width').expression.evaluate({zoom: bz}));
+                        floorwidthByZoom[bz] = Math.max(0.01, layer.getPaintPropertyValue('line-width')!.expression.evaluate({zoom: bz}));
                     }
-                    lineUniformValuesRef['u_lpp_floorwidth'] = floorwidthByZoom[bz] * Math.pow(2, dashIdealZ - bz);
+                    lineUniformValuesRef['u_lpp_floorwidth'] = floorwidthByZoom[bz]! * Math.pow(2, dashIdealZ - bz);
                 }
             }
 
             if (gradient) {
                 updateAndBindGradientTexture(
-                    bucket.gradients[layer.id], layer.gradientVersion, layer.stepInterpolant,
-                    layer.getPaintPropertyValue('line-gradient').expression,
+                    bucket.gradients[layer.id]!, layer.gradientVersion, layer.stepInterpolant,
+                    layer.getPaintPropertyValue('line-gradient')!.expression,
                     layer.paint.get('line-gradient-use-theme').constantOr('default') === 'none',
                     gl.TEXTURE1);
             }
             if (borderGradient) {
                 updateAndBindGradientTexture(
-                    bucket.borderGradients[layer.id], layer.borderGradientVersion, layer.borderStepInterpolant,
-                    layer.getPaintPropertyValue('line-border-gradient').expression,
+                    bucket.borderGradients[layer.id]!, layer.borderGradientVersion, layer.borderStepInterpolant,
+                    layer.getPaintPropertyValue('line-border-gradient')!.expression,
                     layer.paint.get('line-border-gradient-use-theme').constantOr('default') === 'none',
                     gl.TEXTURE2);
             }
@@ -499,7 +497,7 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
                         uboBinder.bind(context, program.program, batchIndex);
                         program.draw(painter, gl.TRIANGLES, depthMode,
                             stencilMode, colorMode, CullFaceMode.disabled, uniformValues,
-                            layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, batchSegments.get(batchIndex),
+                            layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, batchSegments.get(batchIndex)!,
                             layer.paint, painter.transform.zoom, programConfiguration, [bucket.layoutVertexBuffer2, bucket.patternVertexBuffer, bucket.zOffsetVertexBuffer, bucket.elevationIdColVertexBuffer, bucket.elevationGroundScaleVertexBuffer],
                             undefined, uboBinder.getUBO(batchIndex));
                     }
@@ -578,7 +576,7 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
 
             // Restore floorwidth paint property after draw
             if (savedFloorwidth !== undefined) {
-                widthProperty.value.value = savedFloorwidth;
+                widthProperty!.value.value = savedFloorwidth;
             }
         }
     };
@@ -705,7 +703,7 @@ export class LineBlendDensityReadback {
 }
 
 type BlendMode = 'additive' | 'multiply';
-const blendModeSetup: Record<BlendMode, {clearColor: Color, colorMode?: ColorMode, compositeUniformValue: number}> = {
+const blendModeSetup: Record<BlendMode, {clearColor: Color, colorMode: ColorMode, compositeUniformValue: number}> = {
     'additive': {
         clearColor: new Color(0, 0, 0, 0),
         colorMode: ColorMode.additiveAlphaWeighted,
@@ -738,7 +736,7 @@ function scheduleGpuReduceReadback(painter: Painter, layer: LineStyleLayer, sour
     // --- Reduce passes: halve resolution until we reach 1×1 ---
     let srcWidth = sourceFbo.width;
     let srcHeight = sourceFbo.height;
-    let srcTexture = sourceFbo.colorAttachment0.get();
+    let srcTexture = sourceFbo.colorAttachment0!.get();
 
     // Create or reuse the readback object before the reduce loop so the
     // ping-pong FBOs can be stored on it.
@@ -764,7 +762,7 @@ function scheduleGpuReduceReadback(painter: Painter, layer: LineStyleLayer, sour
         context.viewport.set([0, 0, dstWidth, dstHeight]);
 
         context.activeTexture.set(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, srcTexture);
+        gl.bindTexture(gl.TEXTURE_2D, srcTexture!);
 
         painter.getOrCreateProgram('lineBlendReduce').draw(
             painter, gl.TRIANGLES,
@@ -777,7 +775,7 @@ function scheduleGpuReduceReadback(painter: Painter, layer: LineStyleLayer, sour
 
         srcWidth = dstWidth;
         srcHeight = dstHeight;
-        srcTexture = dstFbo.colorAttachment0.get();
+        srcTexture = dstFbo.colorAttachment0!.get();
         slotIndex = 1 - slotIndex;
         firstPass = false;
     }
@@ -827,8 +825,8 @@ function pollAndConsumeReduceReadback(readback: LineBlendDensityReadback, gl: We
         const pixel = new Float32Array(4);
         gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, pixel);
         const densitySum = pixel[0];
-        const count = pixel[1];
-        const meanOccupiedDensity = count > 0 ? densitySum / count : 0;
+        const count = pixel[1]!;
+        const meanOccupiedDensity = count > 0 ? densitySum! / count : 0;
 
         // place the occupied mean in the center of the tone-mapping curve
         const SCALE = 2.0;
@@ -946,7 +944,7 @@ function drawLineBlendComposite(
     }
 
     context.activeTexture.set(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, sourceFbo.colorAttachment0.get());
+    gl.bindTexture(gl.TEXTURE_2D, sourceFbo.colorAttachment0!.get()!);
 
     const colorMode = getColorMode(blendMode, painter.context);
 
@@ -1013,5 +1011,5 @@ function drawLineBlendDraped(painter: Painter, sourceCache: SourceCache, layer: 
         updateDensityReadback(painter, layer, fbo);
     }
 
-    drawLineBlendComposite(painter, layer, blendMode, fbo, drapeFbo, bufferSize);
+    drawLineBlendComposite(painter, layer, blendMode, fbo, drapeFbo!, bufferSize);
 }

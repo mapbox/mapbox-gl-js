@@ -102,7 +102,7 @@ function convertFeature(originalFeature: GeoJSON.Feature): InternalFeature {
     }
     const {type, coordinates} = geometry;
 
-    const feature: InternalFeature = {
+    const feature = {
         id,
         type: 1,
         geometry: [],
@@ -111,7 +111,7 @@ function convertFeature(originalFeature: GeoJSON.Feature): InternalFeature {
         minY: Infinity,
         maxX: -Infinity,
         maxY: -Infinity
-    };
+    } as InternalFeature;
     const geom = feature.geometry;
 
     if (type === 'Point') {
@@ -148,8 +148,8 @@ function convertFeature(originalFeature: GeoJSON.Feature): InternalFeature {
 }
 
 function convertPoint([lng, lat]: GeoJSON.Position, out: number[], bbox: BBox) {
-    const x = mercatorXfromLng(lng);
-    let y = mercatorYfromLat(lat);
+    const x = mercatorXfromLng(lng!);
+    let y = mercatorYfromLat(lat!);
     y = y < 0 ? 0 : y > 1 ? 1 : y;
     out.push(x, y);
 
@@ -170,7 +170,7 @@ function convertLine(ring: GeoJSON.Position[], out: number[][], bbox: BBox, isPo
 
 function convertLines(lines: GeoJSON.Position[][], out: number[][], bbox: BBox, isPolygon: boolean = false) {
     for (let i = 0; i < lines.length; i++) {
-        convertLine(lines[i], out, bbox, isPolygon, i === 0);
+        convertLine(lines[i]!, out, bbox, isPolygon, i === 0);
     }
 }
 
@@ -188,15 +188,15 @@ function outputFeature(feature: InternalFeature, z2: number, tx: number, ty: num
             return {
                 id,
                 type: 4,
-                x: tileCoord(points[0], z2, tx),
-                y: tileCoord(points[1], z2, ty),
+                x: tileCoord(points[0]!, z2, tx),
+                y: tileCoord(points[1]!, z2, ty),
                 tags
             };
         }
         const out = new Int32Array(points.length);
         for (let i = 0; i < points.length; i += 2) {
-            out[i] = tileCoord(points[i], z2, tx);
-            out[i + 1] = tileCoord(points[i + 1], z2, ty);
+            out[i] = tileCoord(points[i]!, z2, tx);
+            out[i + 1] = tileCoord(points[i + 1]!, z2, ty);
         }
         return {id, type: 1, geometry: out, tags};
     }
@@ -217,13 +217,13 @@ function outputFeature(feature: InternalFeature, z2: number, tx: number, ty: num
 function transformAndClipLine(line: number[], z2: number, tx: number, ty: number, out: number[][]) {
     const min = -PAD_PX;
     const max = EXTENT + PAD_PX;
-    let part: number[];
+    let part!: number[];
 
     for (let i = 0; i < line.length - 2; i += 2) {
-        let x0 = tileCoord(line[i + 0], z2, tx);
-        let y0 = tileCoord(line[i + 1], z2, ty);
-        let x1 = tileCoord(line[i + 2], z2, tx);
-        let y1 = tileCoord(line[i + 3], z2, ty);
+        let x0 = tileCoord(line[i + 0]!, z2, tx);
+        let y0 = tileCoord(line[i + 1]!, z2, ty);
+        let x1 = tileCoord(line[i + 2]!, z2, tx);
+        let y1 = tileCoord(line[i + 3]!, z2, ty);
         const dx = x1 - x0;
         const dy = y1 - y0;
 
@@ -298,13 +298,13 @@ function transformAndClipPolygon(input: number[], z2: number, tx: number, ty: nu
 
     // clip against each side of the clip rectangle
     for (let edge = 1; edge <= 8; edge *= 2) {
-        let x0 = input.at(-2);
-        let y0 = input.at(-1);
+        let x0 = input.at(-2)!;
+        let y0 = input.at(-1)!;
         let prevInside = !(bitCode(x0, y0) & edge);
 
         for (let i = 0; i < input.length; i += 2) {
-            const x1 = input[i];
-            const y1 = input[i + 1];
+            const x1 = input[i]!;
+            const y1 = input[i + 1]!;
             const inside = !(bitCode(x1, y1) & edge);
 
             // if segment goes through the clip window, add an intersection
@@ -332,8 +332,8 @@ function transformAndClipPolygon(input: number[], z2: number, tx: number, ty: nu
 
     const ring = new Int32Array(clipped.length);
     for (let i = 0; i < clipped.length; i += 2) {
-        ring[i] = tileCoord(clipped[i], z2, tx);
-        ring[i + 1] = tileCoord(clipped[i + 1], z2, ty);
+        ring[i] = tileCoord(clipped[i]!, z2, tx);
+        ring[i + 1] = tileCoord(clipped[i + 1]!, z2, ty);
     }
     out.push(ring);
 }
@@ -342,16 +342,16 @@ function transformAndClipPolygon(input: number[], z2: number, tx: number, ty: nu
 function rewind(ring: number[], clockwise: boolean) {
     let area = 0;
     for (let i = 0, len = ring.length, j = len - 2; i < len; j = i, i += 2) {
-        area += (ring[i] - ring[j]) * (ring[i + 1] + ring[j + 1]);
+        area += (ring[i]! - ring[j]!) * (ring[i + 1]! + ring[j + 1]!);
     }
     if (area > 0 === clockwise) {
         for (let i = 0, len = ring.length; i < len / 2; i += 2) {
             const x = ring[i];
             const y = ring[i + 1];
-            ring[i] = ring[len - 2 - i];
-            ring[i + 1] = ring[len - 1 - i];
-            ring[len - 2 - i] = x;
-            ring[len - 1 - i] = y;
+            ring[i] = ring[len - 2 - i]!;
+            ring[i + 1] = ring[len - 1 - i]!;
+            ring[len - 2 - i] = x!;
+            ring[len - 1 - i] = y!;
         }
     }
 }

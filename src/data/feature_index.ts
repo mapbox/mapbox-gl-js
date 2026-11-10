@@ -78,7 +78,7 @@ class FeatureIndex {
         this.z = tileID.canonical.z;
         this.grid = new Grid(EXTENT, EXTENT, EXTENT / 16);
         this.featureIndexArray = new FeatureIndexArray();
-        this.promoteId = promoteId;
+        this.promoteId = promoteId!;
         this.is3DTile = false;
         this.serializedLayersCache = new Map();
     }
@@ -90,11 +90,11 @@ class FeatureIndex {
         const grid = this.grid;
 
         for (let r = 0; r < geometry.length; r++) {
-            const ring = geometry[r];
+            const ring = geometry[r]!;
 
-            const bbox = [Infinity, Infinity, -Infinity, -Infinity];
+            const bbox: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
             for (let i = 0; i < ring.length; i++) {
-                const p = ring[i];
+                const p = ring[i]!;
                 bbox[0] = Math.min(bbox[0], p.x);
                 bbox[1] = Math.min(bbox[1], p.y);
                 bbox[2] = Math.max(bbox[2], p.x);
@@ -161,7 +161,7 @@ class FeatureIndex {
             if (index === previousIndex) continue;
             previousIndex = index;
 
-            const match = this.featureIndexArray.get(index);
+            const match = this.featureIndexArray.get(index!);
             let featureGeometry: Point[][] | null = null;
 
             if (this.is3DTile) {
@@ -200,7 +200,7 @@ class FeatureIndex {
     ): void {
         const {featureIndex, bucketIndex, sourceLayerIndex, layoutVertexArrayOffset} = featureIndexData;
 
-        const layerIDs = this.bucketLayerIDs[bucketIndex];
+        const layerIDs = this.bucketLayerIDs[bucketIndex]!;
         const queryLayers = query.layers;
         const queryLayerIDs = Object.keys(queryLayers);
         if (queryLayerIDs.length && !arraysIntersect(queryLayerIDs, layerIDs)) {
@@ -210,11 +210,11 @@ class FeatureIndex {
         const querySourceCache = query.sourceCache;
         const sourceLayerName = this.sourceLayerCoder.decode(sourceLayerIndex);
         const sourceLayer = this.vtLayers[sourceLayerName];
-        const feature = sourceLayer.feature(featureIndex);
+        const feature = sourceLayer!.feature(featureIndex);
 
         const id = this.getId(feature, sourceLayerName);
         for (let l = 0; l < layerIDs.length; l++) {
-            const layerId = layerIDs[l];
+            const layerId = layerIDs[l]!;
 
             if (!queryLayers[layerId]) continue;
             const {styleLayer, targets} = queryLayers[layerId];
@@ -242,17 +242,17 @@ class FeatureIndex {
                 this.serializedLayersCache.set(layerId, serializedLayer);
             }
 
-            geojsonFeature.source = serializedLayer.source;
+            geojsonFeature.source = serializedLayer.source!;
             geojsonFeature.sourceLayer = serializedLayer['source-layer'];
 
-            geojsonFeature.layer = {...serializedLayer};
-            geojsonFeature.layer.paint = evaluateProperties(serializedLayer.paint, styleLayer.paint, feature, featureState, availableImages);
-            geojsonFeature.layer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, feature, featureState, availableImages);
+            geojsonFeature.layer = ({...serializedLayer});
+            geojsonFeature.layer.paint = evaluateProperties(serializedLayer.paint!, styleLayer.paint, feature, featureState, availableImages);
+            geojsonFeature.layer.layout = evaluateProperties(serializedLayer.layout!, styleLayer.layout, feature, featureState, availableImages);
 
             // Iterate over all targets to check if the feature should be included and add feature variants if necessary
             const evaluationParameters = new EvaluationParameters(this.tileID.overscaledZ, {worldview});
             let shouldInclude = false;
-            for (const target of targets) {
+            for (const target of targets!) {
                 this.updateFeatureProperties(geojsonFeature, target);
                 const {filter} = target;
                 if (filter) {
@@ -292,7 +292,7 @@ class FeatureIndex {
     ): void {
         const {featureIndex, bucketIndex} = featureIndexData;
 
-        const layerIDs = this.bucketLayerIDs[bucketIndex];
+        const layerIDs = this.bucketLayerIDs[bucketIndex]!;
         const queryLayers = query.layers;
         const queryLayerIDs = Object.keys(queryLayers);
         if (queryLayerIDs.length && !arraysIntersect(queryLayerIDs, layerIDs)) {
@@ -300,9 +300,9 @@ class FeatureIndex {
         }
 
         for (let l = 0; l < layerIDs.length; l++) {
-            const layerId = layerIDs[l];
+            const layerId = layerIDs[l]!;
 
-            const {styleLayer, targets} = queryLayers[layerId];
+            const {styleLayer, targets} = queryLayers[layerId]!;
             if (styleLayer.type !== 'model') continue;
 
             const tile = tilespaceGeometry.tile;
@@ -338,15 +338,15 @@ class FeatureIndex {
                 this.serializedLayersCache.set(layerId, serializedLayer);
             }
 
-            geojsonFeature.source = serializedLayer.source;
+            geojsonFeature.source = serializedLayer.source!;
             geojsonFeature.sourceLayer = serializedLayer['source-layer'];
 
-            geojsonFeature.layer = {...serializedLayer};
+            geojsonFeature.layer = ({...serializedLayer});
 
             // Iterate over all targets to check if the feature should be included and add feature variants if necessary
             const evaluationParameters = new EvaluationParameters(this.tileID.overscaledZ, {worldview});
             let shouldInclude = false;
-            for (const target of targets) {
+            for (const target of targets!) {
                 this.updateFeatureProperties(geojsonFeature, target);
                 const {filter} = target;
                 if (filter) {
@@ -381,9 +381,9 @@ class FeatureIndex {
             for (const name in target.properties) {
                 const expression = target.properties[name];
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                const value = expression.evaluate(
+                const value = expression!.evaluate(
                     {zoom: this.z},
-                    feature._vectorTileFeature,
+                    feature._vectorTileFeature!,
                     feature.state,
                     feature.tile,
                     availableImages
@@ -404,7 +404,7 @@ class FeatureIndex {
      */
     addFeatureVariant(feature: Feature, target: QrfTarget, availableImages?: ImageId[]) {
         const variant: FeatureVariant = {
-            target: target.target,
+            target: target.target!,
             namespace: target.namespace,
             uniqueFeatureID: target.uniqueFeatureID,
         };
@@ -414,11 +414,11 @@ class FeatureIndex {
         }
 
         feature.variants = feature.variants || {};
-        feature.variants[target.targetId] = feature.variants[target.targetId] || [];
-        feature.variants[target.targetId].push(variant);
+        feature.variants[target.targetId!] = feature.variants[target.targetId!] || [];
+        feature.variants[target.targetId!]!.push(variant);
     }
 
-    appendToResult(result: QueryResult, layerID: string, featureIndex: number, geojsonFeature: Feature, intersectionZ?: number) {
+    appendToResult(result: QueryResult, layerID: string, featureIndex: number, geojsonFeature: Feature, intersectionZ: number) {
         let layerResult = result[layerID];
         if (layerResult === undefined) {
             layerResult = result[layerID] = [];
@@ -454,12 +454,12 @@ class FeatureIndex {
         this.loadVTLayers();
         const sourceLayerName = this.sourceLayerCoder.decode(sourceLayerIndex);
 
-        const featureCache = this.vtFeatures[sourceLayerName];
+        const featureCache = this.vtFeatures[sourceLayerName]!;
         if (featureCache[featureIndex]) {
             return featureCache[featureIndex];
         }
         const sourceLayer = this.vtLayers[sourceLayerName];
-        const feature = sourceLayer.feature(featureIndex);
+        const feature = sourceLayer!.feature(featureIndex);
         featureCache[featureIndex] = feature;
 
         return feature;

@@ -5,7 +5,7 @@ import type Context from '../gl/context';
 import type {PremultipliedRenderColor} from "../style-spec/util/color";
 
 export type UniformValues<Us> = {
-    [Key in keyof Us]: Us[Key] extends IUniform<infer V> ? V : never;
+    [Key in keyof Us]: NonNullable<Us[Key]> extends IUniform<infer V> ? V : never;
 };
 
 export interface IUniform<T> {
@@ -19,7 +19,7 @@ export interface IUniform<T> {
 
 class Uniform<T> implements IUniform<T> {
     gl: WebGL2RenderingContext;
-    location: WebGLUniformLocation | null | undefined;
+    location!: WebGLUniformLocation | null;
     current!: T;
     initialized: boolean;
 

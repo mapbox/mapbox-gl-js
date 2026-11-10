@@ -60,7 +60,7 @@ class VertexMorphing {
         assert(from.tileID.key !== to.tileID.key);
 
         if (key in this.operations) {
-            const op = this.operations[key];
+            const op = this.operations[key]!;
             assert(op.from && op.to);
             // Queue the target tile unless it's being morphed to already
             if (op.to.tileID.key !== to.tileID.key)
@@ -85,7 +85,7 @@ class VertexMorphing {
         if (!(key in this.operations))
             return null;
 
-        const op = this.operations[key];
+        const op = this.operations[key]!;
         const from = op.from;
         const to = op.to;
         assert(from && to);
@@ -95,7 +95,7 @@ class VertexMorphing {
 
     update(now: number) {
         for (const key in this.operations) {
-            const op = this.operations[key];
+            const op = this.operations[key]!;
             assert(op.from && op.to);
 
             op.phase = (now - op.startTime) / op.duration;
@@ -145,7 +145,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const context = painter.context;
     const gl = context.gl;
 
-    let program: Program<GlobeRasterUniformsType>;
+    let program!: Program<GlobeRasterUniformsType>;
     let programMode: number;
     const tr = painter.transform;
     const useCustomAntialiasing = globeUseCustomAntiAliasing(painter, context, tr);
@@ -188,10 +188,10 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const nextDemTile = terrain.terrainTileForTile[coord.key];
 
             if (demTileChanged(prevDemTile, nextDemTile)) {
-                vertexMorphing.newMorphing(coord.key, prevDemTile, nextDemTile, now, defaultDuration);
+                vertexMorphing.newMorphing(coord.key, prevDemTile!, nextDemTile!, now, defaultDuration);
             }
 
-            bindEmissiveTexture(painter, tile.emissiveTexture);
+            bindEmissiveTexture(painter, tile.emissiveTexture!);
 
             // Bind the main draped texture
             context.activeTexture.set(gl.TEXTURE0);
@@ -251,7 +251,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             if (segment && (topCap || bottomCap)) {
                 const tile = sourceCache.getTile(coord);
 
-                bindEmissiveTexture(painter, tile.emissiveTexture);
+                bindEmissiveTexture(painter, tile.emissiveTexture!);
 
                 // Bind the main draped texture
                 context.activeTexture.set(gl.TEXTURE0);
@@ -293,7 +293,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
         const context = painter.context;
         const gl = context.gl;
 
-        let program: Program<TerrainRasterUniformsType>;
+        let program!: Program<TerrainRasterUniformsType>;
         let programMode: number;
         const shadowRenderer = painter.shadowRenderer;
         const cutoffParams = getCutoffParams(painter, painter.longestCutoffRange);
@@ -345,10 +345,10 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                 const nextDemTile = terrain.terrainTileForTile[coord.key];
 
                 if (demTileChanged(prevDemTile, nextDemTile)) {
-                    vertexMorphing.newMorphing(coord.key, prevDemTile, nextDemTile, now, defaultDuration);
+                    vertexMorphing.newMorphing(coord.key, prevDemTile!, nextDemTile!, now, defaultDuration);
                 }
 
-                bindEmissiveTexture(painter, tile.emissiveTexture);
+                bindEmissiveTexture(painter, tile.emissiveTexture!);
 
                 // Bind the main draped texture
                 context.activeTexture.set(gl.TEXTURE0);

@@ -115,7 +115,7 @@ class HandlerManager {
     _handlers: Array<{
         handlerName: string;
         handler: Handler;
-        allowed: Array<string>;
+        allowed?: Array<string>;
     }>;
     _eventsInProgress: EventsInProgress;
     _frameId: number | null | undefined;
@@ -316,7 +316,7 @@ class HandlerManager {
         activeHandlers: {
             [key: string]: Handler;
         },
-        allowed: Array<string>,
+        allowed: Array<string> | undefined,
         myName: string,
     ): boolean {
         for (const name in activeHandlers) {
@@ -409,8 +409,8 @@ class HandlerManager {
 
             } else {
                 if ((handler as Handler & HandlerEventMethods)[eventName || e.type]) {
-                    data = (handler as Handler & HandlerEventMethods)[eventName || e.type](e, points, mapTouches);
-                    this.mergeHandlerResult(mergedHandlerResult, eventsInProgress, data, handlerName, inputEvent);
+                    data = (handler as Handler & HandlerEventMethods)[eventName || e.type]!(e, points, mapTouches);
+                    this.mergeHandlerResult(mergedHandlerResult, eventsInProgress, data!, handlerName, inputEvent);
                     if (data && data.needsRenderFrame) {
                         this._triggerRenderFrame();
                     }
@@ -425,7 +425,7 @@ class HandlerManager {
         const deactivatedHandlers: Record<string, InputEvent | RenderFrameEvent> = {};
         for (const name in this._previousActiveHandlers) {
             if (!activeHandlers[name]) {
-                deactivatedHandlers[name] = inputEvent;
+                deactivatedHandlers[name] = inputEvent!;
             }
         }
         this._previousActiveHandlers = activeHandlers;
@@ -506,7 +506,7 @@ class HandlerManager {
 
         const eventEnded = (type: keyof EventsInProgress) => {
             const event = this._eventsInProgress[type];
-            return event && !this._handlersById[event.handlerName].isActive();
+            return event && !this._handlersById[event.handlerName]!.isActive();
         };
 
         const toVec3 = (p: MercatorCoordinate): vec3 => [p.x, p.y, p.z];
@@ -538,7 +538,7 @@ class HandlerManager {
 
         if (tr._isCameraConstrained) {
             // Catches wheel zoom events when camera is constrained over terrain
-            if (zoomDelta > 0) zoomDelta = 0;
+            if (zoomDelta! > 0) zoomDelta = 0;
             tr._isCameraConstrained = false;
         }
 
@@ -637,9 +637,9 @@ class HandlerManager {
         const startEvents: Record<string, InputEvent> = {};
 
         for (const eventName in newEventsInProgress) {
-            const {originalEvent} = newEventsInProgress[eventName as keyof EventsInProgress];
+            const {originalEvent} = newEventsInProgress[eventName as keyof EventsInProgress]!;
             if (!this._eventsInProgress[eventName as keyof EventsInProgress]) {
-                startEvents[`${eventName}start`] = originalEvent;
+                startEvents[`${eventName}start`] = originalEvent!;
             }
             this._eventsInProgress[eventName as keyof EventsInProgress] = newEventsInProgress[eventName as keyof EventsInProgress];
         }
@@ -658,16 +658,16 @@ class HandlerManager {
         }
 
         for (const eventName in newEventsInProgress) {
-            const {originalEvent} = newEventsInProgress[eventName as keyof EventsInProgress];
+            const {originalEvent} = newEventsInProgress[eventName as keyof EventsInProgress]!;
             this._fireEvent(eventName as keyof MapEvents, originalEvent);
         }
 
         const endEvents: Record<string, InputEvent> = {};
 
-        let originalEndEvent: InputEvent;
+        let originalEndEvent!: InputEvent;
         for (const eventName in this._eventsInProgress) {
-            const {handlerName, originalEvent} = this._eventsInProgress[eventName as keyof EventsInProgress];
-            if (!this._handlersById[handlerName].isActive()) {
+            const {handlerName, originalEvent} = this._eventsInProgress[eventName as keyof EventsInProgress]!;
+            if (!this._handlersById[handlerName]!.isActive()) {
                 delete this._eventsInProgress[eventName as keyof EventsInProgress];
                 originalEndEvent = (deactivatedHandlers[handlerName] || originalEvent) as InputEvent;
                 endEvents[`${eventName}end`] = originalEndEvent;

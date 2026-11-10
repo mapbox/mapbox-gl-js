@@ -164,7 +164,7 @@ export type GLTFNode = {
 };
 
 export type GLTF = {
-    json?: {
+    json: {
         accessors: GLTFAccessor[];
         asset?: {extras: Record<string, boolean>};
         buffers?: Array<{uri: string; byteLength: number}>;
@@ -202,43 +202,43 @@ function loadDracoMesh(primitive: GLTFPrimitive, gltf: GLTF) {
     const config = primitive.extensions && primitive.extensions[DRACO_EXT];
     if (!config) return;
 
-    const decoder = new draco.Decoder();
+    const decoder = new draco!.Decoder();
     const bytes = getGLTFBytes(gltf, config.bufferView);
 
-    const mesh = new draco.Mesh();
+    const mesh = new draco!.Mesh();
     const ok = decoder.DecodeArrayToMesh(bytes, bytes.byteLength, mesh);
     if (!ok) throw new Error('Failed to decode Draco mesh');
 
-    const indexAccessor = gltf.json.accessors[primitive.indices];
+    const indexAccessor = gltf.json.accessors[primitive.indices]!;
     const IndexArrayType = GLTF_TO_ARRAY_TYPE[indexAccessor.componentType];
-    const indicesSize = indexAccessor.count * IndexArrayType.BYTES_PER_ELEMENT;
+    const indicesSize = indexAccessor.count * IndexArrayType!.BYTES_PER_ELEMENT;
 
-    const ptr = draco._malloc(indicesSize);
+    const ptr = draco!._malloc(indicesSize);
     if (IndexArrayType === Uint16Array) {
         decoder.GetTrianglesUInt16Array(mesh, indicesSize, ptr);
     } else {
         decoder.GetTrianglesUInt32Array(mesh, indicesSize, ptr);
     }
-    const indicesBuffer = draco.memory.buffer.slice(ptr, ptr + indicesSize);
+    const indicesBuffer = draco!.memory.buffer.slice(ptr, ptr + indicesSize);
     setAccessorBuffer(indicesBuffer, indexAccessor, gltf);
-    draco._free(ptr);
+    draco!._free(ptr);
 
     for (const attributeId of Object.keys(config.attributes)) {
-        const attribute = decoder.GetAttributeByUniqueId(mesh, config.attributes[attributeId]);
-        const accessor = gltf.json.accessors[primitive.attributes[attributeId]];
+        const attribute = decoder.GetAttributeByUniqueId(mesh, config.attributes[attributeId]!);
+        const accessor = gltf.json.accessors[primitive.attributes[attributeId]!]!;
         const ArrayType = GLTF_TO_ARRAY_TYPE[accessor.componentType];
         const dracoTypeName = GLTF_TO_DRACO_TYPE[accessor.componentType];
 
         const numComponents = GLTF_COMPONENTS[accessor.type];
 
         const numValues = accessor.count * numComponents;
-        const dataSize = numValues * ArrayType.BYTES_PER_ELEMENT;
+        const dataSize = numValues * ArrayType!.BYTES_PER_ELEMENT;
 
-        const ptr = draco._malloc(dataSize);
-        decoder.GetAttributeDataArrayForAllPoints(mesh, attribute, draco[dracoTypeName], dataSize, ptr);
-        const buffer = draco.memory.buffer.slice(ptr, ptr + dataSize);
+        const ptr = draco!._malloc(dataSize);
+        decoder.GetAttributeDataArrayForAllPoints(mesh, attribute, draco![dracoTypeName!], dataSize, ptr);
+        const buffer = draco!.memory.buffer.slice(ptr, ptr + dataSize);
         setAccessorBuffer(buffer, accessor, gltf);
-        draco._free(ptr);
+        draco!._free(ptr);
     }
 
     decoder.destroy();
@@ -258,10 +258,10 @@ function loadMeshoptBuffer(bufferView: GLTFBufferView, gltf: GLTF) {
 
     const buffer = gltf.buffers[config.buffer];
 
-    const source = new Uint8Array(buffer, byteOffset, byteLength);
+    const source = new Uint8Array(buffer!, byteOffset, byteLength);
 
     const target = new Uint8Array(config.count * config.byteStride);
-    meshopt.decodeGltfBuffer(target, config.count, config.byteStride, source, config.mode, config.filter);
+    meshopt!.decodeGltfBuffer(target, config.count, config.byteStride, source, config.mode, config.filter);
 
     bufferView.buffer = gltf.buffers.length;
 
@@ -291,9 +291,9 @@ async function loadBuffer(buffer: {uri: string; byteLength: number}, gltf: GLTF,
 }
 
 function getGLTFBytes(gltf: GLTF, bufferViewIndex: number): Uint8Array<ArrayBuffer> {
-    const bufferView = gltf.json.bufferViews[bufferViewIndex];
+    const bufferView = gltf.json.bufferViews[bufferViewIndex]!;
     const buffer = gltf.buffers[bufferView.buffer];
-    return new Uint8Array<ArrayBuffer>(buffer, bufferView.byteOffset || 0, bufferView.byteLength);
+    return new Uint8Array<ArrayBuffer>(buffer!, bufferView.byteOffset || 0, bufferView.byteLength);
 }
 
 async function loadImage(img: {uri?: string; bufferView?: number; mimeType: string}, gltf: GLTF, index: number, getRequest: GetRequest, signal?: AbortSignal): Promise<void> {
@@ -311,15 +311,15 @@ async function loadImage(img: {uri?: string; bufferView?: number; mimeType: stri
 export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 0, getRequest: GetRequest = (uri) => Promise.resolve({url: resolveUrl(uri)}), signal?: AbortSignal): Promise<GLTF> {
     const startTime = PerformanceUtils.now();
 
-    const gltf: GLTF = {json: null, images: [], buffers: []};
+    const gltf: GLTF = {json: (null)!, images: [], buffers: []};
 
     if (new Uint32Array(arrayBuffer, byteOffset, 1)[0] === MAGIC_GLTF) {
         const view = new Uint32Array(arrayBuffer, byteOffset);
         assert(view[1] === 2);
 
         let pos = 2;
-        const glbLen = (view[pos++] >> 2) - 3;
-        const jsonLen = view[pos++] >> 2;
+        const glbLen = (view[pos++]! >> 2) - 3;
+        const jsonLen = view[pos++]! >> 2;
         const jsonType = view[pos++];
         assert(jsonType === GLB_CHUNK_TYPE_JSON);
 
@@ -331,7 +331,7 @@ export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 
             const binType = view[pos++];
             assert(binType === GLB_CHUNK_TYPE_BIN);
             const start = byteOffset + (pos << 2);
-            gltf.buffers[0] = arrayBuffer.slice(start, start + byteLength);
+            gltf.buffers[0] = arrayBuffer.slice(start, start + byteLength!);
         }
     } else {
         gltf.json = JSON.parse(textDecoder.decode(new Uint8Array(arrayBuffer, byteOffset))) as GLTF['json'];
@@ -342,11 +342,11 @@ export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 
     if (buffers) {
         const bufferLoads: Promise<void>[] = [];
         for (let i = 0; i < buffers.length; i++) {
-            const buffer = buffers[i];
+            const buffer = buffers[i]!;
             if (buffer.uri) {
                 bufferLoads.push(loadBuffer(buffer, gltf, i, getRequest, signal));
             } else if (!gltf.buffers[i]) {
-                gltf.buffers[i] = null;
+                gltf.buffers[i] = (null)!;
             }
         }
         await Promise.all(bufferLoads);
@@ -359,14 +359,14 @@ export async function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 
     const meshoptUsed = extensionsUsed && extensionsUsed.includes(MESHOPT_EXT);
 
     if (dracoUsed) {
-        assetLoads.push(waitForDraco());
+        assetLoads.push(waitForDraco()!);
     }
     if (meshoptUsed) {
-        assetLoads.push(waitForMeshopt());
+        assetLoads.push(waitForMeshopt()!);
     }
     if (images) {
         for (let i = 0; i < images.length; i++) {
-            assetLoads.push(loadImage(images[i], gltf, i, getRequest, signal));
+            assetLoads.push(loadImage(images[i]!, gltf, i, getRequest, signal));
         }
     }
 
@@ -416,7 +416,7 @@ export function load3DTile(data: ArrayBuffer): Promise<GLTF> {
     if (magic !== MAGIC_GLTF) {
         const header = new Uint32Array(data, 0, 7);
         const [/*magic*/, /*version*/, byteLen, featureTableJsonLen, featureTableBinLen, batchTableJsonLen/*, batchTableBinLen*/] = header;
-        gltfOffset = header.byteLength + featureTableJsonLen + featureTableBinLen + batchTableJsonLen + featureTableBinLen;
+        gltfOffset = header.byteLength + featureTableJsonLen! + featureTableBinLen! + batchTableJsonLen! + featureTableBinLen!;
         if (byteLen !== data.byteLength || gltfOffset >= data.byteLength) {
             warnOnce('Invalid b3dm header information.');
         }

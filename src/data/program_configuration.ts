@@ -72,7 +72,7 @@ function shouldIgnoreLut(
     if (!lutExpression) return false;
 
     if (lutExpression.kind === 'composite' || lutExpression.kind === 'source') {
-        const value = lutExpression.evaluate(new EvaluationParameters(0, {brightness, worldview}), feature, featureState, canonical, availableImages, formattedSection);
+        const value = lutExpression.evaluate(new EvaluationParameters(0, {brightness, worldview} as {brightness?: number; worldview?: string}), feature, featureState, canonical, availableImages, formattedSection);
         return value === 'none';
     }
 
@@ -190,8 +190,7 @@ class ConstantBinder implements UniformBinder {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    getBinding(context: Context, _: string): IUniform<any> {
+    getBinding(context: Context, _: string): UniformColor | Uniform1f {
         return (this.type === 'color') ?
             new UniformColor(context) :
             new Uniform1f(context);
@@ -238,8 +237,7 @@ class PatternConstantBinder implements UniformBinder {
         if (pos) uniform.set(program, uniformName, pos);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    getBinding(context: Context, name: string): IUniform<any> {
+    getBinding(context: Context, name: string): Uniform4ui | Uniform1f {
         if (name === 'u_pattern' || name === 'u_pattern_b' || name === 'u_dash') {
             return new Uniform4ui(context);
         } else {
@@ -279,7 +277,7 @@ class SourceExpressionBinder implements AttributeBinder {
         assert(Array.isArray(availableImages));
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const value = (this.expression.kind === 'composite' || this.expression.kind === 'source') ? this.expression.evaluate(new EvaluationParameters(0, {brightness, worldview}), feature, {}, canonical, availableImages, formattedSection) : this.expression.kind === 'constant' && this.expression.value;
+        const value = (this.expression.kind === 'composite' || this.expression.kind === 'source') ? this.expression.evaluate(new EvaluationParameters(0, {brightness, worldview} as {brightness?: number; worldview?: string}), feature, {}, canonical, availableImages, formattedSection) : this.expression.kind === 'constant' && this.expression.value;
         const ignoreLut = shouldIgnoreLut(this.lutExpression, feature, {}, availableImages, canonical, brightness, formattedSection, worldview);
 
         this.paintVertexArray.resize(newLength);
@@ -295,7 +293,7 @@ class SourceExpressionBinder implements AttributeBinder {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _setPaintValue(start: number, end: number, value: any, lut: LUT) {
+    _setPaintValue(start: number, end: number, value: any, lut: LUT | null) {
         if (this.type === 'color') {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const color = packColor(value.toPremultipliedRenderColor(lut));
@@ -361,8 +359,8 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     }
 
     populatePaintArray(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: ImageId[], canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection, worldview?: string) {
-        const min = this.expression.evaluate(new EvaluationParameters(this.context.zoom, {brightness, worldview}), feature, {}, canonical, availableImages, formattedSection);
-        const max = this.expression.evaluate(new EvaluationParameters(this.context.zoom + 1, {brightness, worldview}), feature, {}, canonical, availableImages, formattedSection);
+        const min = this.expression.evaluate(new EvaluationParameters(this.context.zoom, {brightness, worldview} as {brightness?: number; worldview?: string}), feature, {}, canonical, availableImages, formattedSection);
+        const max = this.expression.evaluate(new EvaluationParameters(this.context.zoom + 1, {brightness, worldview} as {brightness?: number; worldview?: string}), feature, {}, canonical, availableImages, formattedSection);
         const ignoreLut = shouldIgnoreLut(this.lutExpression, feature, {}, availableImages, canonical, brightness, formattedSection, worldview);
 
         const start = this.paintVertexArray.length;
@@ -370,7 +368,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         this._setPaintValue(start, newLength, min, max, ignoreLut ? null : this.context.lut);
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: ImageId[], spritePositions: SpritePositions, brightness: number, worldview: string) {
+    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: ImageId[], spritePositions: SpritePositions, brightness: number, worldview: string | undefined) {
         const min = this.expression.evaluate({zoom: this.context.zoom, brightness, worldview}, feature, featureState, undefined, availableImages);
         const max = this.expression.evaluate({zoom: this.context.zoom + 1, brightness, worldview}, feature, featureState, undefined, availableImages);
         const ignoreLut = shouldIgnoreLut(this.lutExpression, feature, featureState, availableImages, undefined, brightness, undefined, worldview);
@@ -379,7 +377,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _setPaintValue(start: number, end: number, min: any, max: any, lut?: LUT) {
+    _setPaintValue(start: number, end: number, min: any, max: any, lut: LUT | null) {
         if (this.type === 'color') {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const minColor = packColor(min.toPremultipliedRenderColor(lut));
@@ -416,11 +414,9 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
 
     setUniform(
         program: WebGLProgram,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        uniform: IUniform<any>,
+        uniform: IUniform<number>,
         globals: GlobalProperties,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        _: PossiblyEvaluatedPropertyValue<any>,
+        _: PossiblyEvaluatedPropertyValue<unknown>,
         uniformName: string,
     ): void {
         const currentZoom = this.useIntegerZoom ? Math.floor(globals.zoom) : globals.zoom;
@@ -452,7 +448,7 @@ class PatternCompositeBinder implements AttributeBinder {
 
         this.paintVertexAttributes = (type === 'array' ? dashAttributes : patternAttributes).members;
         for (let i = 0; i < names.length; ++i) {
-            assert(!this.paintVertexAttributes[i] || `a_${names[i]}` === this.paintVertexAttributes[i].name);
+            assert(!this.paintVertexAttributes[i] || `a_${names[i]}` === this.paintVertexAttributes[i]!.name);
         }
 
         this.paintVertexArray = new PaintVertexArray();
@@ -472,14 +468,14 @@ class PatternCompositeBinder implements AttributeBinder {
     _setPaintValues(start: number, end: number, patterns: string[] | null | undefined, positions: SpritePositions) {
         if (!positions || !patterns) return;
 
-        const primaryPos = positions[patterns[0]];
-        const secondaryPos = positions[patterns[1]];
+        const primaryPos = positions[patterns[0]!];
+        const secondaryPos = positions[patterns[1]!];
         if (!primaryPos) return;
 
         if (primaryPos) {
             const {tl, br, pixelRatio} = primaryPos;
             for (let i = start; i < end; i++) {
-                this.paintVertexArray.emplace(i, tl[0], tl[1], br[0], br[1], pixelRatio);
+                this.paintVertexArray.emplace(i, tl[0], tl[1], br[0], br[1], pixelRatio!);
             }
         }
 
@@ -602,8 +598,7 @@ export default class ProgramConfiguration {
             const binder = this.binders[property] || (this.binders[property] = new ConstantBinder(baseLayer, property));
             binder.context = this.context;
             if (isAttributeBinder(binder)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (binder as {expression: any}).expression = (baseLayer.paint.get(property) as PossiblyEvaluatedPropertyValue<unknown>).value;
+                (binder as {expression: unknown}).expression = (baseLayer.paint.get(property) as PossiblyEvaluatedPropertyValue<unknown>).value;
             }
         }
     }
@@ -616,7 +611,7 @@ export default class ProgramConfiguration {
     populatePaintArrays(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: ImageId[], canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection, worldview?: string) {
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (isAttributeBinder(binder))
+            if (isAttributeBinder(binder!))
                 binder.populatePaintArray(newLength, feature, imagePositions, availableImages, canonical, brightness, formattedSection, worldview);
         }
     }
@@ -658,7 +653,7 @@ export default class ProgramConfiguration {
         this.context.lut = layer.lut;
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (!isAttributeBinder(binder)) continue;
+            if (!isAttributeBinder(binder!)) continue;
             const expression = binder.expression;
             if (expression.kind === 'constant' ||
                 !((expression.isStateDependent && !isBrightnessChanged) || expression.isLightConstant === false)) continue;
@@ -668,7 +663,7 @@ export default class ProgramConfiguration {
             const update = (map: FeaturePositionMap, id: string | number) => {
                 const state = featureStates[id.toString()];
                 return map.eachPosition(id, (index, start, end) => {
-                    binder.updatePaintArray(start, end, vtLayer.feature(index), state, availableImages, imagePositions, brightness, worldview);
+                    binder.updatePaintArray(start, end, vtLayer.feature(index), state!, availableImages, imagePositions, brightness, worldview);
                 });
             };
             // feature state changes are sent to every tile of the source, so only re-upload if this tile has a changed feature
@@ -732,7 +727,7 @@ export default class ProgramConfiguration {
 
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (isAttributeBinder(binder) && binder.paintVertexBuffer) {
+            if (isAttributeBinder(binder!) && binder.paintVertexBuffer) {
                 this._buffers.push(binder.paintVertexBuffer);
             }
 
@@ -745,7 +740,7 @@ export default class ProgramConfiguration {
     upload(context: Context) {
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (isAttributeBinder(binder))
+            if (isAttributeBinder(binder!))
                 binder.upload(context);
         }
         this.updatePaintBuffers();
@@ -754,7 +749,7 @@ export default class ProgramConfiguration {
     destroy() {
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (isAttributeBinder(binder))
+            if (isAttributeBinder(binder!))
                 binder.destroy();
         }
     }
@@ -784,11 +779,11 @@ export class ProgramConfigurationSet<Layer extends TypedStyleLayer> {
 
     populatePaintArrays(length: number, feature: Feature, index: number, imagePositions: SpritePositions, availableImages: ImageId[], canonical: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection, worldview?: string) {
         for (const key in this.programConfigurations) {
-            this.programConfigurations[key].populatePaintArrays(length, feature, imagePositions, availableImages, canonical, brightness, formattedSection, worldview);
+            this.programConfigurations[key]!.populatePaintArrays(length, feature, imagePositions, availableImages, canonical, brightness, formattedSection, worldview);
         }
 
         if (feature.id !== undefined) {
-            this._featureMap.add(feature.id, index, this._bufferOffset, length);
+            this._featureMap.add(feature.id!, index, this._bufferOffset, length);
         } else {
             this._featureMapWithoutIds.add(this._idlessCounter, index, this._bufferOffset, length);
             this._idlessCounter += 1;
@@ -807,20 +802,20 @@ export class ProgramConfigurationSet<Layer extends TypedStyleLayer> {
     }
 
     get(layerId: string): ProgramConfiguration {
-        return this.programConfigurations[layerId];
+        return this.programConfigurations[layerId]!;
     }
 
     upload(context: Context) {
         if (!this.needsUpload) return;
         for (const layerId in this.programConfigurations) {
-            this.programConfigurations[layerId].upload(context);
+            this.programConfigurations[layerId]!.upload(context);
         }
         this.needsUpload = false;
     }
 
     destroy() {
         for (const layerId in this.programConfigurations) {
-            this.programConfigurations[layerId].destroy();
+            this.programConfigurations[layerId]!.destroy();
         }
     }
 

@@ -4,7 +4,7 @@ import {StyleProperties} from './style_properties';
 import EvaluationParameters from './evaluation_parameters';
 import {ZoomDependentExpression} from '../style-spec/expression/index';
 
-import type {ConfigOptions} from './properties';
+import type {ConfigOptions, PropertyValueSpecifications} from './properties';
 import type {TerrainSpecification, TerrainSpecificationUpdate} from '../style-spec/types';
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 
@@ -13,7 +13,7 @@ type Props = {
     ["exaggeration"]: DataConstantProperty<number>;
 };
 
-const terrainSpecification = styleSpec.terrain as Record<string, StylePropertySpecification>;
+const terrainSpecification = styleSpec.terrain as Record<keyof Props, StylePropertySpecification>;
 
 export const DrapeRenderMode = {
     deferred: 0,
@@ -31,7 +31,7 @@ class Terrain extends StyleProperties<Props> {
             "exaggeration": new DataConstantProperty(terrainSpecification.exaggeration),
         }), scope, configOptions);
 
-        this._transitionable.setTransitionOrValue(terrainOptions, configOptions);
+        this._transitionable.setTransitionOrValue(terrainOptions as unknown as PropertyValueSpecifications<Props>, configOptions);
         this._transitionable.snap();
         this.drapeRenderMode = drapeRenderMode;
 
@@ -39,11 +39,11 @@ class Terrain extends StyleProperties<Props> {
     }
 
     get(): TerrainSpecification {
-        return this._transitionable.serialize() as TerrainSpecification;
+        return this._transitionable.serialize() as unknown as TerrainSpecification;
     }
 
     set(terrain: TerrainSpecification | TerrainSpecificationUpdate, configOptions?: ConfigOptions | null) {
-        this._transitionable.setTransitionOrValue(terrain, configOptions);
+        this._transitionable.setTransitionOrValue(terrain as unknown as PropertyValueSpecifications<Props>, configOptions);
     }
 
     getExaggeration(atZoom: number): number {

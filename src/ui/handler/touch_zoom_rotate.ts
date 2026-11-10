@@ -33,12 +33,12 @@ class TwoTouchHandler implements Handler {
         if (this._firstTwoTouches || mapTouches.length < 2) return;
 
         this._firstTwoTouches = [
-            mapTouches[0].identifier,
-            mapTouches[1].identifier
+            mapTouches[0]!.identifier,
+            mapTouches[1]!.identifier
         ];
 
         // implemented by child classes
-        this._start([points[0], points[1]]);
+        this._start([points[0]!, points[1]!]);
     }
 
     touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): HandlerResult | null | undefined {
@@ -96,7 +96,7 @@ class TwoTouchHandler implements Handler {
 
 function getTouchById(mapTouches: Array<Touch>, points: Array<Point>, identifier: number) {
     for (let i = 0; i < mapTouches.length; i++) {
-        if (mapTouches[i].identifier === identifier) return points[i];
+        if (mapTouches[i]!.identifier === identifier) return points[i];
     }
 }
 

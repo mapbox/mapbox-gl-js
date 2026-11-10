@@ -104,7 +104,7 @@ export class LinePropertiesUBO extends PaintPropertiesUBO {
      * block, so this is an unconditional copy — no DZR/isColor branching needed (see class doc).
      */
     protected _copyFromFlat(dwordOffset: number, propIdx: number, flat: Float32Array): void {
-        const flatOffset = LinePropertiesUBO.EVAL_FLAT_OFFSETS[propIdx];
+        const flatOffset = LinePropertiesUBO.EVAL_FLAT_OFFSETS[propIdx]!;
         this.propertiesData.set(flat.subarray(flatOffset, flatOffset + 4), dwordOffset);
     }
 }

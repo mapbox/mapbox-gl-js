@@ -80,7 +80,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
 
             if (painter.transform.projection.name === "globe") {
                 const center = painter.transform.pointMerc;
-                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix() as number[], painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(),  globeToMercatorTransition(painter.transform.zoom), [center.x, center.y], painter.transform.pixelsPerMeterRatio, renderParameters);
+                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix() as number[], painter.transform.getProjection(), painter.transform.globeToMercatorMatrix()!,  globeToMercatorTransition(painter.transform.zoom), [center.x, center.y], painter.transform.pixelsPerMeterRatio, renderParameters);
             } else {
                 prerender.call(implementation, context.gl, painter.transform.customLayerMatrix() as number[], undefined, undefined, undefined, undefined, undefined, renderParameters);
             }
@@ -96,7 +96,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
             assert(coords.length === 1);
             const renderToTile = implementation.renderToTile;
             if (renderToTile) {
-                const c = coords[0].canonical;
+                const c = coords[0]!.canonical;
                 const renderCoords = {
                     /*
                      * We intentionally baked wrap into x coordinate before and
@@ -104,7 +104,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
                      *
                      * https://github.com/mapbox/mapbox-gl-js/pull/12182/commits/8b9071f751b9ed9ae4389dce7fb2e30aae984f9d
                      */
-                    x: c.x + coords[0].wrap * (implementation.wrapTileId ? 0 : (1 << c.z)),
+                    x: c.x + coords[0]!.wrap * (implementation.wrapTileId ? 0 : (1 << c.z)),
                     y: c.y,
                     z: c.z
                 };
@@ -153,7 +153,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
 
         if (painter.transform.projection.name === "globe") {
             const center = painter.transform.pointMerc;
-            implementation.render(context.gl, painter.transform.customLayerMatrix() as number[], painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(), globeToMercatorTransition(painter.transform.zoom), [center.x, center.y], painter.transform.pixelsPerMeterRatio, renderParameters);
+            implementation.render(context.gl, painter.transform.customLayerMatrix() as number[], painter.transform.getProjection(), painter.transform.globeToMercatorMatrix()!, globeToMercatorTransition(painter.transform.zoom), [center.x, center.y], painter.transform.pixelsPerMeterRatio, renderParameters);
         } else {
             implementation.render(context.gl, painter.transform.customLayerMatrix() as number[], undefined, undefined, undefined, undefined, undefined, renderParameters);
         }

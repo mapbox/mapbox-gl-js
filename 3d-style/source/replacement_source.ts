@@ -120,7 +120,7 @@ class ReplacementSource {
             result.push({
                 min: bounds.min,
                 max: bounds.max,
-                sourceId: this._sourceIds[region.priority],
+                sourceId: this._sourceIds[region.priority]!,
                 footprint: region.footprint,
                 footprintTileId: region.tileId,
                 order: region.order,
@@ -215,11 +215,11 @@ class ReplacementSource {
             let idx = 0;
 
             while (!regionsChanged && idx !== this._activeRegions.length) {
-                const curr = this._activeRegions[idx];
-                const prev = this._prevRegions[idx];
+                const curr = this._activeRegions[idx]!;
+                const prev = this._prevRegions[idx]!;
 
                 regionsChanged = curr.priority !== prev.priority || !boundsEquals(curr, prev) || (curr.order !== prev.order) || (curr.clipMask !== prev.clipMask || !deepEqual(curr.clipScope, prev.clipScope));
-                this._activeRegions[idx].hiddenByOverlap = prev.hiddenByOverlap;
+                this._activeRegions[idx]!.hiddenByOverlap = prev.hiddenByOverlap;
                 ++idx;
             }
         }
@@ -243,8 +243,8 @@ class ReplacementSource {
                     return idx;
                 }
 
-                const priority = regs[idx].priority;
-                while (idx < regs.length && regs[idx].priority === priority) {
+                const priority = regs[idx]!.priority;
+                while (idx < regs.length && regs[idx]!.priority === priority) {
                     ++idx;
                 }
 
@@ -265,7 +265,7 @@ class ReplacementSource {
                     const prevRangeEnd = rangeBegin;
 
                     while (idx !== rangeEnd) {
-                        const active = this._activeRegions[idx];
+                        const active = this._activeRegions[idx]!;
 
                         // Go through each footprint in the current priority level
                         // and check whether they've been occluded by any other regions
@@ -273,7 +273,7 @@ class ReplacementSource {
                         active.hiddenByOverlap = false;
 
                         for (let prevIdx = 0; prevIdx < prevRangeEnd; prevIdx++) {
-                            const prev = this._activeRegions[prevIdx];
+                            const prev = this._activeRegions[prevIdx]!;
 
                             if (prev.hiddenByOverlap) {
                                 continue;
@@ -306,7 +306,7 @@ class ReplacementSource {
         this._sourceIds = [];
 
         for (let i = sources.length - 1; i >= 0; i--) {
-            this._addSource(sources[i]);
+            this._addSource(sources[i]!);
         }
 
         this._computeReplacement();
@@ -358,7 +358,7 @@ function regionsEquals(a: Array<Region>, b: Array<Region>): boolean {
     }
 
     for (let i = 0; i < a.length; i++) {
-        if (a[i].sourceId !== b[i].sourceId || !boundsEquals(a[i], b[i]) || a[i].order !== b[i].order || a[i].clipMask !== b[i].clipMask || !deepEqual(a[i].clipScope, b[i].clipScope)) {
+        if (a[i]!.sourceId !== b[i]!.sourceId || !boundsEquals(a[i]!, b[i]!) || a[i]!.order !== b[i]!.order || a[i]!.clipMask !== b[i]!.clipMask || !deepEqual(a[i]!.clipScope, b[i]!.clipScope)) {
             return false;
         }
     }
@@ -409,10 +409,10 @@ const fpTriangle = [fpA, fpB, fpC];
 
 function setFootprintTriangle(footprint: Footprint, triIdx: number) {
     const {vertices, indices} = footprint;
-    const a = indices[triIdx * 3] * 2, b = indices[triIdx * 3 + 1] * 2, c = indices[triIdx * 3 + 2] * 2;
-    fpA.x = vertices[a]; fpA.y = vertices[a + 1];
-    fpB.x = vertices[b]; fpB.y = vertices[b + 1];
-    fpC.x = vertices[c]; fpC.y = vertices[c + 1];
+    const a = indices[triIdx * 3]! * 2, b = indices[triIdx * 3 + 1]! * 2, c = indices[triIdx * 3 + 2]! * 2;
+    fpA.x = vertices[a]!; fpA.y = vertices[a + 1]!;
+    fpB.x = vertices[b]!; fpB.y = vertices[b + 1]!;
+    fpC.x = vertices[c]!; fpC.y = vertices[c + 1]!;
 }
 
 function footprintTrianglesIntersect(
@@ -427,9 +427,9 @@ function footprintTrianglesIntersect(
     const candidateTriangles: number[] = [];
 
     for (let i = indexOffset; i < indexOffset + indexCount; i += 3) {
-        const a = vertices[indices[i + 0] + baseVertex];
-        const b = vertices[indices[i + 1] + baseVertex];
-        const c = vertices[indices[i + 2] + baseVertex];
+        const a = vertices[indices[i + 0]! + baseVertex]!;
+        const b = vertices[indices[i + 1]! + baseVertex]!;
+        const c = vertices[indices[i + 2]! + baseVertex]!;
 
         const mnx = Math.min(a.x, b.x, c.x);
         const mxx = Math.max(a.x, b.x, c.x);
@@ -440,7 +440,7 @@ function footprintTrianglesIntersect(
         footprint.grid.query(new Point(mnx, mny), new Point(mxx, mxy), candidateTriangles);
 
         for (let j = 0; j < candidateTriangles.length; j++) {
-            setFootprintTriangle(footprint, candidateTriangles[j]);
+            setFootprintTriangle(footprint, candidateTriangles[j]!);
 
             if (triangleIntersectsTriangle(fpA, fpB, fpC, a, b, c, padding)) {
                 return true;
@@ -469,9 +469,9 @@ function footprintsIntersect(a: Footprint, aTile: UnwrappedTileID, b: Footprint,
     const queryVertices: Array<Point> = [];
     for (let i = 0; i < a.vertices.length; i += 2) {
         const x = a.vertices[i], y = a.vertices[i + 1];
-        queryVertices.push(sameTile ? new Point(x, y) : new Point(
-            (x + srcId.x * EXTENT) * zDiff - dstId.x * EXTENT,
-            (y + srcId.y * EXTENT) * zDiff - dstId.y * EXTENT));
+        queryVertices.push(sameTile ? new Point(x!, y!) : new Point(
+            (x! + srcId.x * EXTENT) * zDiff - dstId.x * EXTENT,
+            (y! + srcId.y * EXTENT) * zDiff - dstId.y * EXTENT));
     }
 
     return footprintTrianglesIntersect(b, queryVertices, a.indices, 0, a.indices.length, 0, 0);
@@ -492,7 +492,7 @@ function pointInFootprint(p: Point, footprint: Footprint): boolean {
 
     // finally check if the point is in any of the triangles.
     for (let j = 0; j < candidateTriangles.length; j++) {
-        setFootprintTriangle(footprint, candidateTriangles[j]);
+        setFootprintTriangle(footprint, candidateTriangles[j]!);
 
         if (polygonContainsPoint(fpTriangle, p)) {
             return true;

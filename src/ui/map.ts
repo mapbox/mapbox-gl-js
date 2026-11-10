@@ -154,9 +154,9 @@ export type SetStyleOptions = {
 
 type Listener<T extends MapEventType> = (event: MapEventOf<T>) => void;
 
-type DelegatedListener = {
+type DelegatedListener<T extends MapEventType = MapEventType> = {
     targets: string[] | TargetDescriptor;
-    listener: Listener<MapEventType>;
+    listener: Listener<T>;
     delegates: {[T in MapEventType]?: Listener<T>};
 };
 
@@ -291,13 +291,13 @@ const defaultOptions = {
     trackResize: true,
     renderWorldCopies: true,
     refreshExpiredTiles: true,
-    minTileCacheSize: null as number | null,
-    maxTileCacheSize: null as number | null,
+    minTileCacheSize: (null as number | null)!,
+    maxTileCacheSize: (null as number | null)!,
     localIdeographFontFamily: 'sans-serif',
-    localFontFamily: null as string | null,
+    localFontFamily: (null as string | null)!,
     fontstackCompositing: 'client',
-    transformRequest: null as RequestTransformFunction | null,
-    accessToken: null as string | null,
+    transformRequest: (null as RequestTransformFunction | null)!,
+    accessToken: (null as string | null)!,
     fadeDuration: 300,
     respectPrefersReducedMotion: true,
     crossSourceCollisions: true,
@@ -491,7 +491,7 @@ const defaultOptions = {
  */
 export class Map extends Camera {
     style?: Style;
-    painter: Painter;
+    painter!: Painter;
     _container: HTMLElement;
     _missingCSSCanary!: HTMLElement;
     _canvasContainer!: HTMLElement;
@@ -518,8 +518,8 @@ export class Map extends Camera {
     _minTileCacheSize?: number;
     _maxTileCacheSize?: number;
     _animationFrameProvider?: AnimationFrameProvider;
-    _frame?: Cancelable;
-    _renderNextFrame?: boolean;
+    _frame?: Cancelable | null;
+    _renderNextFrame?: boolean | null;
     _styleDirty?: boolean;
     _sourcesDirty?: boolean;
     _placementDirty?: boolean;
@@ -534,7 +534,7 @@ export class Map extends Camera {
     _delegatedListeners!: {[type: string]: DelegatedListener[]};
     _fullscreenchangeEvent: 'fullscreenchange' | 'webkitfullscreenchange';
     _isInitialLoad: boolean;
-    _shouldCheckAccess: boolean;
+    _shouldCheckAccess!: boolean;
     _fadeDuration: number;
     _placementAlgorithm: PlacementAlgorithmName;
     // Test-only. While any source still has incomplete tiles, no placement runs at all,
@@ -549,7 +549,7 @@ export class Map extends Camera {
     _markers: Array<Marker>;
     _popups: Array<Popup>;
     _logoControl: IControl;
-    _indoorControl: IControl;
+    _indoorControl!: IControl;
     _mapId: number;
     _localIdeographFontFamily: string;
     _localFontFamily?: string;
@@ -672,19 +672,19 @@ export class Map extends Camera {
         this._interactive = options.interactive;
         this._minTileCacheSize = options.minTileCacheSize;
         this._maxTileCacheSize = options.maxTileCacheSize;
-        this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
-        this._preserveDrawingBuffer = options.preserveDrawingBuffer;
-        this._antialias = options.antialias;
-        this._trackResize = options.trackResize;
-        this._bearingSnap = options.bearingSnap;
-        this._refreshExpiredTiles = options.refreshExpiredTiles;
-        this._fadeDuration = options.fadeDuration;
+        this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat!;
+        this._preserveDrawingBuffer = options.preserveDrawingBuffer!;
+        this._antialias = options.antialias!;
+        this._trackResize = options.trackResize!;
+        this._bearingSnap = options.bearingSnap!;
+        this._refreshExpiredTiles = options.refreshExpiredTiles!;
+        this._fadeDuration = options.fadeDuration!;
         this._placementAlgorithm = options.placementAlgorithm || 'default';
         this._staticMode = false;
         this._isInitialLoad = true;
-        this._crossSourceCollisions = options.crossSourceCollisions;
-        this._collectResourceTiming = options.collectResourceTiming;
-        this._language = this._parseLanguage(options.language);
+        this._crossSourceCollisions = options.crossSourceCollisions!;
+        this._collectResourceTiming = options.collectResourceTiming!;
+        this._language = this._parseLanguage(options.language)!;
         this._worldview = options.worldview;
         this._renderTaskQueue = new TaskQueue();
         this._domRenderTaskQueue = new TaskQueue();
@@ -693,14 +693,14 @@ export class Map extends Camera {
         this._popups = [];
         this._mapId = uniqueId();
         this._locale = {...defaultLocale, ...options.locale};
-        this._clickTolerance = options.clickTolerance;
-        this._cooperativeGestures = options.cooperativeGestures;
-        this._performanceMetricsCollection = options.performanceMetricsCollection;
+        this._clickTolerance = options.clickTolerance!;
+        this._cooperativeGestures = options.cooperativeGestures!;
+        this._performanceMetricsCollection = options.performanceMetricsCollection!;
         this._tessellationStep = options.tessellationStep;
         this._containerWidth = 0;
         this._containerHeight = 0;
         this._showParseStatus = true;
-        this._precompilePrograms = options.precompilePrograms;
+        this._precompilePrograms = options.precompilePrograms!;
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevationExaggeration = 0;
@@ -712,9 +712,9 @@ export class Map extends Camera {
         this._useExplicitProjection = false; // Fallback to stylesheet by default
 
         this._frameId = 0;
-        this._emissiveColorPrecision = options.emissiveColorPrecision;
+        this._emissiveColorPrecision = options.emissiveColorPrecision!;
 
-        this._scaleFactor = options.scaleFactor;
+        this._scaleFactor = options.scaleFactor!;
 
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
         const tokenData = parseAccessToken(options.accessToken || config.ACCESS_TOKEN);
@@ -783,8 +783,8 @@ export class Map extends Camera {
         this.handlers = new HandlerManager(this, options as MapOptions & typeof defaultOptions);
 
         this._localFontFamily = options.localFontFamily;
-        this._localIdeographFontFamily = options.localIdeographFontFamily;
-        this._fontstackCompositing = options.fontstackCompositing;
+        this._localIdeographFontFamily = options.localIdeographFontFamily!;
+        this._fontstackCompositing = options.fontstackCompositing!;
 
         if (options.style || !options.testMode) {
             const style = options.style || config.DEFAULT_STYLE;
@@ -833,7 +833,7 @@ export class Map extends Camera {
 
         this.on('style.load', () => {
             if (this.transform.unmodified) {
-                this.jumpTo((this.style.stylesheet as unknown));
+                this.jumpTo(((this.style!.stylesheet as unknown)!));
             }
             this._postStyleLoadEvent();
             this._postStyleWithAppearanceEvent();
@@ -924,7 +924,7 @@ export class Map extends Camera {
 
         applyControlOffset(controlElement, position, offset);
 
-        const positionContainer = this._controlPositions[position];
+        const positionContainer = this._controlPositions[position]!;
         if (position.includes('bottom')) {
             positionContainer.insertBefore(controlElement, positionContainer.firstChild);
         } else {
@@ -1039,7 +1039,7 @@ export class Map extends Camera {
      * const mapDiv = document.getElementById('map');
      * if (mapDiv.style.visibility === true) map.resize();
      */
-    resize(eventData?: object): this {
+    resize(eventData: object = {}): this {
         this._updateContainerDimensions();
 
         // do nothing if container remained the same size
@@ -1356,7 +1356,7 @@ export class Map extends Camera {
             this.style._setLabelPlacementStale();
         }
 
-        this.style._updateFilteredLayers((layer) => layer.type === 'symbol');
+        this.style!._updateFilteredLayers((layer) => layer.type === 'symbol');
         this._update(true);
         return this;
     }
@@ -1443,7 +1443,7 @@ export class Map extends Camera {
     setLanguage(language?: 'auto' | (string & NonNullable<unknown>) | string[]): this {
         const newLanguage = this._parseLanguage(language);
         if (!this.style || newLanguage === this._language) return this;
-        this._language = newLanguage;
+        this._language = newLanguage!;
 
         this.style.reloadSources();
 
@@ -1485,7 +1485,7 @@ export class Map extends Camera {
     setWorldview(worldview?: string | null): this {
         if (!this.style || worldview === this._worldview) return this;
 
-        this._worldview = worldview;
+        this._worldview = worldview!;
         this._styleDirty = true;
         this.style.setWorldview(worldview);
 
@@ -1545,7 +1545,7 @@ export class Map extends Camera {
         }
 
         this._useExplicitProjection = !!projection;
-        return this._prioritizeAndUpdateProjection(projection as ProjectionSpecification, this.style.projection);
+        return this._prioritizeAndUpdateProjection(projection, this.style!.projection);
     }
 
     _updateProjectionTransition() {
@@ -1567,8 +1567,8 @@ export class Map extends Camera {
         }
 
         if (projectionHasChanged) {
-            this.style.applyProjectionUpdate();
-            this.style._forceSymbolLayerUpdate();
+            this.style!.applyProjectionUpdate();
+            this.style!._forceSymbolLayerUpdate();
             this._update(true);
         }
     }
@@ -1596,7 +1596,7 @@ export class Map extends Camera {
             projectionHasChanged = this.transform.setProjection(projection);
         }
 
-        this.style.applyProjectionUpdate();
+        this.style!.applyProjectionUpdate();
 
         // If we were in a transition state but the new projection is not globe
         // we need to ensure that we cleaned the globe projection tiles cache
@@ -1604,7 +1604,7 @@ export class Map extends Camera {
 
         if (projectionHasChanged || mercatorWasInTransition) {
             this.painter.clearBackgroundTiles();
-            this.style.clearSources();
+            this.style!.clearSources();
 
             this._update(true);
             this._forceMarkerAndPopupUpdate(true);
@@ -1690,7 +1690,7 @@ export class Map extends Camera {
         return (this.handlers && this.handlers._isDragging()) || false;
     }
 
-    _createDelegatedListener<T extends MapEventType>(type: T, targets: string[] | TargetDescriptor, listener: Listener<T>): DelegatedListener {
+    _createDelegatedListener<T extends MapEventType>(type: T, targets: string[] | TargetDescriptor, listener: Listener<T>): DelegatedListener<T> {
         const queryRenderedFeatures = (point: PointLike | [PointLike, PointLike]) => {
             let features: Array<GeoJSONFeature | TargetFeature> = [];
 
@@ -1888,7 +1888,7 @@ export class Map extends Camera {
             return this;
         }
 
-        const delegatedListener = this._createDelegatedListener(type as MapEventType, targets, listener);
+        const delegatedListener = this._createDelegatedListener(type as MapEventType, targets, listener as Listener<MapEventType>);
 
         this._delegatedListeners = this._delegatedListeners || {};
         this._delegatedListeners[type] = this._delegatedListeners[type] || [];
@@ -1950,11 +1950,11 @@ export class Map extends Camera {
         }
 
         if (typeof targets === 'string') targets = [targets];
-        if (!this._areTargetsValid(targets)) {
+        if (!this._areTargetsValid(targets!)) {
             return this;
         }
 
-        const delegatedListener = this._createDelegatedListener(type as MapEventType, targets, listener);
+        const delegatedListener = this._createDelegatedListener(type as MapEventType, targets!, listener as Listener<MapEventType>);
 
         for (const event in delegatedListener.delegates) {
             this.once(event as T, delegatedListener.delegates[event as MapEventType] as Listener<Extract<T, MapEventType>>);
@@ -2002,7 +2002,7 @@ export class Map extends Camera {
 
         const removeDelegatedListeners = (listeners: Array<DelegatedListener>) => {
             for (let i = 0; i < listeners.length; i++) {
-                const delegatedListener = listeners[i];
+                const delegatedListener = listeners[i]!;
                 if (delegatedListener.listener === listener && areTargetsEqual(delegatedListener.targets, targets)) {
                     for (const event in delegatedListener.delegates) {
                         this.off(event as T, delegatedListener.delegates[event as MapEventType] as Listener<Extract<T, MapEventType>>);
@@ -2154,7 +2154,7 @@ export class Map extends Camera {
         if (options.target) {
             featuresetIsValid = this._isTargetValid(options.target);
             if (featuresetIsValid && !options.layers) {
-                return this.style.queryRenderedFeatureset(geometry, options as QueryRenderedFeaturesetParams, this.transform);
+                return this.style.queryRenderedFeatureset(geometry, options, this.transform);
             }
         }
 
@@ -2168,7 +2168,7 @@ export class Map extends Camera {
                 }
             }
             if (layersAreValid && !options.target) {
-                return this.style.queryRenderedFeatures(geometry, options as QueryRenderedFeaturesParams, this.transform);
+                return this.style.queryRenderedFeatures(geometry, options, this.transform);
             }
         }
 
@@ -2234,7 +2234,7 @@ export class Map extends Camera {
             return [];
         }
 
-        return this.style.querySourceFeatures(sourceId, parameters);
+        return this.style!.querySourceFeatures(sourceId, parameters);
     }
 
     /**
@@ -2258,7 +2258,7 @@ export class Map extends Camera {
             return Promise.resolve(null);
         }
 
-        return this.style.queryRasterValue(sourceId, lnglat, parameters);
+        return this.style!.queryRasterValue(sourceId, lnglat, parameters);
     }
 
     /**
@@ -2432,10 +2432,10 @@ export class Map extends Camera {
                 () => this._postStyleLoadEvent());
             return this;
         } else {
-            this._localIdeographFontFamily = options.localIdeographFontFamily;
-            this._localFontFamily = options.localFontFamily;
-            this._fontstackCompositing = options.fontstackCompositing;
-            return this._updateStyle(style, options);
+            this._localIdeographFontFamily = options.localIdeographFontFamily!;
+            this._localFontFamily = options.localFontFamily!;
+            this._fontstackCompositing = options.fontstackCompositing!;
+            return this._updateStyle(style!, options);
         }
     }
 
@@ -2500,6 +2500,7 @@ export class Map extends Camera {
         if (this.style) {
             return this.style.serialize();
         }
+        return undefined!;
     }
 
     /**
@@ -2614,7 +2615,7 @@ export class Map extends Camera {
         }
 
         this._lazyInitEmptyStyle();
-        this.style.addSource(id, source);
+        this.style!.addSource(id, source);
         return this._update(true);
     }
 
@@ -2644,7 +2645,7 @@ export class Map extends Camera {
      * const tilesLoaded = map.areTilesLoaded();
      */
     areTilesLoaded(): boolean {
-        return this.style.areTilesLoaded();
+        return this.style!.areTilesLoaded();
     }
 
     /**
@@ -2660,7 +2661,7 @@ export class Map extends Camera {
             return this;
         }
 
-        this.style.removeSource(id);
+        this.style!.removeSource(id);
         this._updateTerrain();
         return this._update(true);
     }
@@ -2687,10 +2688,10 @@ export class Map extends Camera {
      */
     getSource<T extends Source>(id: string): T | undefined {
         if (!this._isValidId(id)) {
-            return null;
+            return null!;
         }
 
-        return this.style.getOwnSource(id);
+        return this.style!.getOwnSource(id);
     }
 
     /** @section Images */
@@ -2750,7 +2751,7 @@ export class Map extends Camera {
         const imageId = ImageId.from(id);
         if (image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap)) {
             const {width, height, data} = browser.getImageData(image);
-            this.style.addImage(imageId, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version, usvg: false});
+            this.style!.addImage(imageId, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version, usvg: false});
         } else if (image.width === undefined || image.height === undefined) {
             this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' +
@@ -2760,7 +2761,7 @@ export class Map extends Camera {
             const userImage = (image as StyleImageInterface);
             const data = userImage.data;
 
-            this.style.addImage(imageId, {
+            this.style!.addImage(imageId, {
                 data: new RGBAImage({width, height}, new Uint8Array(data)),
                 pixelRatio,
                 stretchX,
@@ -2806,7 +2807,7 @@ export class Map extends Camera {
         this._lazyInitEmptyStyle();
 
         const imageId = ImageId.from(id);
-        const existingImage = this.style.getImage(imageId);
+        const existingImage = this.style!.getImage(imageId);
         if (!existingImage) {
             this.fire(new ErrorEvent(new Error(
                 'The map has no image with that id. If you are adding a new image use `map.addImage(...)` instead.')));
@@ -2822,14 +2823,14 @@ export class Map extends Camera {
             return;
         }
 
-        const existingImageWidth = existingImage.usvg ? existingImage.icon.usvg_tree.width : existingImage.data.width;
-        const existingImageHeight = existingImage.usvg ? existingImage.icon.usvg_tree.height : existingImage.data.height;
+        const existingImageWidth = existingImage.usvg ? existingImage.icon!.usvg_tree!.width : existingImage.data!.width;
+        const existingImageHeight = existingImage.usvg ? existingImage.icon!.usvg_tree!.height : existingImage.data!.height;
 
         if (width !== existingImageWidth || height !== existingImageHeight) {
             this.fire(new ErrorEvent(new Error(
                 `The width and height of the updated image (${width}, ${height})
                 must be that same as the previous version of the image
-                (${existingImage.data.width}, ${existingImage.data.height})`)));
+                (${existingImage.data!.width}, ${existingImage.data!.height})`)));
             return;
         }
 
@@ -2843,10 +2844,10 @@ export class Map extends Camera {
             existingImage.icon = undefined;
             performSymbolLayout = true;
         } else {
-            existingImage.data.replace(data, copy);
+            existingImage.data!.replace(data, copy);
         }
 
-        this.style.updateImage(imageId, existingImage, performSymbolLayout);
+        this.style!.updateImage(imageId, existingImage, performSymbolLayout);
     }
 
     /**
@@ -2886,7 +2887,7 @@ export class Map extends Camera {
      * if (map.hasImage('cat')) map.removeImage('cat');
      */
     removeImage(id: string) {
-        this.style.removeImage(ImageId.from(id));
+        this.style!.removeImage(ImageId.from(id));
     }
 
     /**
@@ -2926,7 +2927,7 @@ export class Map extends Camera {
      * const allImages = map.listImages();
      */
     listImages(): Array<string> {
-        return this.style.listImages().map((image) => image.name);
+        return this.style!.listImages().map((image) => image.name);
     }
 
     /** @section Models */
@@ -2955,7 +2956,7 @@ export class Map extends Camera {
      */
     addModel(id: string, url: string) {
         this._lazyInitEmptyStyle();
-        this.style.addModel(id, url);
+        this.style!.addModel(id, url);
     }
 
     /**
@@ -2975,7 +2976,7 @@ export class Map extends Camera {
             this.fire(new ErrorEvent(new Error('Missing required model id')));
             return false;
         }
-        return this.style.hasModel(id);
+        return this.style!.hasModel(id);
     }
 
     /**
@@ -2990,7 +2991,7 @@ export class Map extends Camera {
      * if (map.hasModel('tree')) map.removeModel('tree');
      */
     removeModel(id: string) {
-        this.style.removeModel(id);
+        this.style!.removeModel(id);
     }
 
     /**
@@ -3003,7 +3004,7 @@ export class Map extends Camera {
      * const allModels = map.listModels();
      */
     listModels(): Array<string> {
-        return this.style.listModels();
+        return this.style!.listModels();
     }
 
     /** @section Layers */
@@ -3157,7 +3158,7 @@ export class Map extends Camera {
         }
 
         this._lazyInitEmptyStyle();
-        this.style.addLayer(layer, beforeId);
+        this.style!.addLayer(layer, beforeId);
         return this._update(true);
     }
 
@@ -3192,8 +3193,8 @@ export class Map extends Camera {
      * map.setSlot("heatmap", "top");
      */
     setSlot(layerId: string, slot?: string | null): this {
-        this.style.setSlot(layerId, slot);
-        this.style.mergeLayers();
+        this.style!.setSlot(layerId, slot);
+        this.style!.mergeLayers();
         return this._update(true);
     }
 
@@ -3235,7 +3236,7 @@ export class Map extends Camera {
             return this;
         }
 
-        this.style.addImport(importSpecification, beforeId)
+        this.style!.addImport(importSpecification, beforeId)
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             .catch((e) => this.fire(new ErrorEvent(new Error('Failed to add import', e))));
 
@@ -3277,7 +3278,7 @@ export class Map extends Camera {
             return this.addImport(importSpecification);
         }
 
-        this.style.updateImport(importId, importSpecification);
+        this.style!.updateImport(importId, importSpecification);
         return this._update(true);
     }
 
@@ -3292,12 +3293,12 @@ export class Map extends Camera {
      * map.removeImport('basemap');
      */
     removeImport(importId: string): this {
-        const maskUser = this.style._getRasterMaskUser(importId, 'import');
+        const maskUser = this.style!._getRasterMaskUser(importId, 'import');
         if (maskUser) {
             this.fire(new ErrorEvent(new Error(`Import "${importId}" cannot be removed while layer "${maskUser}" uses it in "raster-mask-import".`)));
             return this;
         }
-        this.style.removeImport(importId);
+        this.style!.removeImport(importId);
         return this;
     }
 
@@ -3327,7 +3328,7 @@ export class Map extends Camera {
      * map.moveImport('streets-v12', 'basemap');
      */
     moveImport(importId: string, beforeId: string): this {
-        this.style.moveImport(importId, beforeId);
+        this.style!.moveImport(importId, beforeId);
         return this._update(true);
     }
 
@@ -3359,7 +3360,7 @@ export class Map extends Camera {
             return this;
         }
 
-        this.style.moveLayer(id, beforeId);
+        this.style!.moveLayer(id, beforeId);
         return this._update(true);
     }
 
@@ -3381,13 +3382,13 @@ export class Map extends Camera {
             return this;
         }
 
-        const maskUser = this.style._getRasterMaskUser(id, 'layer');
+        const maskUser = this.style!._getRasterMaskUser(id, 'layer');
         if (maskUser) {
             this.fire(new ErrorEvent(new Error(`Layer "${id}" cannot be removed while layer "${maskUser}" uses it in "raster-mask".`)));
             return this;
         }
 
-        this.style.removeLayer(id);
+        this.style!.removeLayer(id);
         return this._update(true);
     }
 
@@ -3406,10 +3407,10 @@ export class Map extends Camera {
      */
     getLayer<T extends LayerSpecification | CustomLayerInterface>(id: string): T | undefined {
         if (!this._isValidId(id)) {
-            return null;
+            return null!;
         }
 
-        const layer = this.style.getOwnLayer(id);
+        const layer = this.style!.getOwnLayer(id);
         if (!layer) return;
 
         if (layer.type === 'custom') return layer.implementation as T;
@@ -3426,7 +3427,7 @@ export class Map extends Camera {
      * const slots = map.getSlots();
      */
     getSlots(): Array<string> {
-        return this.style.getSlots();
+        return this.style!.getSlots();
     }
 
     /**
@@ -3453,7 +3454,7 @@ export class Map extends Camera {
             return this;
         }
 
-        this.style.setLayerZoomRange(layerId, minzoom, maxzoom);
+        this.style!.setLayerZoomRange(layerId, minzoom, maxzoom);
         return this._update(true);
     }
 
@@ -3499,7 +3500,7 @@ export class Map extends Camera {
             return this;
         }
 
-        this.style.setFilter(layerId, filter, options);
+        this.style!.setFilter(layerId, filter, options);
         return this._update(true);
     }
 
@@ -3516,7 +3517,7 @@ export class Map extends Camera {
             return null;
         }
 
-        return this.style.getFilter(layerId);
+        return this.style!.getFilter(layerId);
     }
 
     /**
@@ -3545,7 +3546,7 @@ export class Map extends Camera {
             return this;
         }
 
-        this.style.setPaintProperty(layerId, name, value, options);
+        this.style!.setPaintProperty(layerId, name, value, options);
         return this._update(true);
     }
 
@@ -3560,10 +3561,10 @@ export class Map extends Camera {
      */
     getPaintProperty<T extends keyof PaintSpecification>(layerId: string, name: T): PaintSpecification[T] | undefined {
         if (!this._isValidId(layerId)) {
-            return null;
+            return null!;
         }
 
-        return this.style.getPaintProperty(layerId, name);
+        return this.style!.getPaintProperty(layerId, name);
     }
 
     /**
@@ -3589,7 +3590,7 @@ export class Map extends Camera {
             return this;
         }
 
-        this.style.setLayoutProperty(layerId, name, value, options);
+        this.style!.setLayoutProperty(layerId, name, value, options);
         return this._update(true);
     }
 
@@ -3604,10 +3605,10 @@ export class Map extends Camera {
      */
     getLayoutProperty<T extends keyof LayoutSpecification>(layerId: string, name: T): LayoutSpecification[T] | undefined {
         if (!this._isValidId(layerId)) {
-            return null;
+            return null!;
         }
 
-        return this.style.getLayoutProperty(layerId, name);
+        return this.style!.getLayoutProperty(layerId, name);
     }
 
     /**
@@ -3624,7 +3625,7 @@ export class Map extends Camera {
             return null;
         }
 
-        return this.style.getLayerProperty(layerId, name);
+        return this.style!.getLayerProperty(layerId, name);
     }
 
     /**
@@ -3653,7 +3654,7 @@ export class Map extends Camera {
             this._postAddingAppearancesToStyleEvent();
         }
 
-        this.style.setLayerProperty(layerId, name, value, options);
+        this.style!.setLayerProperty(layerId, name, value, options);
         return this._update(true);
     }
 
@@ -3667,7 +3668,7 @@ export class Map extends Camera {
      * map.getGlyphsUrl();
      */
     getGlyphsUrl(): string | undefined {
-        return this.style.getGlyphsUrl();
+        return this.style!.getGlyphsUrl();
     }
 
     /**
@@ -3679,7 +3680,7 @@ export class Map extends Camera {
      * map.setGlyphsUrl('mapbox://fonts/mapbox/{fontstack}/{range}.pbf');
      */
     setGlyphsUrl(url: string): this {
-        this.style.setGlyphsUrl(url);
+        this.style!.setGlyphsUrl(url);
         return this._update(true);
     }
 
@@ -3693,7 +3694,7 @@ export class Map extends Camera {
      * map.getSchema('basemap');
      */
     getSchema(importId: string): SchemaSpecification | null | undefined {
-        return this.style.getSchema(importId);
+        return this.style!.getSchema(importId);
     }
 
     /**
@@ -3707,7 +3708,7 @@ export class Map extends Camera {
      * map.setSchema('basemap', {lightPreset: {type: 'string', default: 'night', values: ['day', 'night']}});
      */
     setSchema(importId: string, schema: SchemaSpecification): this {
-        this.style.setSchema(importId, schema);
+        this.style!.setSchema(importId, schema);
         return this._update(true);
     }
 
@@ -3720,7 +3721,7 @@ export class Map extends Camera {
      * map.getConfig('basemap');
      */
     getConfig(importId: string): ConfigSpecification | null | undefined {
-        return this.style.getConfig(importId);
+        return this.style!.getConfig(importId);
     }
 
     /**
@@ -3733,7 +3734,7 @@ export class Map extends Camera {
      * map.setConfig('basemap', {lightPreset: 'night', showPointOfInterestLabels: false});
      */
     setConfig(importId: string, config: ConfigSpecification): this {
-        this.style.setConfig(importId, config);
+        this.style!.setConfig(importId, config);
         return this._update(true);
     }
 
@@ -3748,7 +3749,7 @@ export class Map extends Camera {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getConfigProperty(importId: string, configName: string): any {
-        return this.style.getConfigProperty(importId, configName);
+        return this.style!.getConfigProperty(importId, configName);
     }
 
     /**
@@ -3763,7 +3764,7 @@ export class Map extends Camera {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setConfigProperty(importId: string, configName: string, value: any): this {
-        this.style.setConfigProperty(importId, configName, value);
+        this.style!.setConfigProperty(importId, configName, value);
         return this._update(true);
     }
 
@@ -3778,7 +3779,7 @@ export class Map extends Camera {
      * const featuresetDescriptors = map.getFeaturesetDescriptors('basemap');
      */
     getFeaturesetDescriptors(importId?: string): Array<FeaturesetDescriptor> {
-        return this.style.getFeaturesetDescriptors(importId);
+        return this.style!.getFeaturesetDescriptors(importId);
     }
 
     /**
@@ -3805,15 +3806,15 @@ export class Map extends Camera {
      */
     setLights(lights?: Array<LightsSpecification> | null): this {
         this._lazyInitEmptyStyle();
-        if (lights && lights.length === 1 && lights[0].type === "flat") {
-            const flatLight: FlatLightSpecification = lights[0];
+        if (lights && lights.length === 1 && lights[0]!.type === "flat") {
+            const flatLight: FlatLightSpecification = lights[0]!;
             if (!flatLight.properties) {
-                this.style.setFlatLight({}, "flat");
+                this.style!.setFlatLight({}, "flat");
             } else {
-                this.style.setFlatLight(flatLight.properties, flatLight.id, {});
+                this.style!.setFlatLight(flatLight.properties, flatLight.id, {});
             }
         } else {
-            this.style.setLights(lights);
+            this.style!.setLights(lights);
             if (this.painter.terrain) {
                 this.painter.terrain.invalidateRenderCache = true;
             }
@@ -3829,12 +3830,12 @@ export class Map extends Camera {
      * const lights = map.getLights();
      */
     getLights(): Array<LightsSpecification> | null | undefined {
-        const lights = this.style.getLights() || [];
+        const lights = this.style!.getLights() || [];
         if (lights.length === 0) {
             lights.push({
-                "id": this.style.light.id,
+                "id": this.style!.light.id,
                 "type": "flat",
-                "properties": this.style.getFlatLight()
+                "properties": this.style!.getFlatLight()
             });
         }
         return lights;
@@ -3875,7 +3876,7 @@ export class Map extends Camera {
      */
     getLight(): LightSpecification {
         console.log("The `map.getLight` function is deprecated, prefer using `map.getLights` instead.");
-        return this.style.getFlatLight();
+        return this.style!.getFlatLight();
     }
 
     /**
@@ -3900,9 +3901,9 @@ export class Map extends Camera {
     setTerrain(terrain?: TerrainSpecification | TerrainSpecificationUpdate | null): this {
         this._lazyInitEmptyStyle();
         if (!terrain && this.transform.projection.requiresDraping) {
-            this.style.setTerrainForDraping();
+            this.style!.setTerrainForDraping();
         } else {
-            this.style.setTerrain(terrain);
+            this.style!.setTerrain(terrain);
         }
         this._averageElevationLastSampledAt = -Infinity;
         return this._update(true);
@@ -3938,7 +3939,7 @@ export class Map extends Camera {
      */
     setFog(fog?: FogSpecification | null): this {
         this._lazyInitEmptyStyle();
-        this.style.setFog(fog);
+        this.style!.setFog(fog!);
         return this._update(true);
     }
 
@@ -3969,7 +3970,7 @@ export class Map extends Camera {
      */
     setSnow(snow?: SnowSpecification | null): this {
         this._lazyInitEmptyStyle();
-        this.style.setSnow(snow);
+        this.style!.setSnow(snow!);
         return this._update(true);
     }
 
@@ -4003,7 +4004,7 @@ export class Map extends Camera {
      */
     setRain(rain?: RainSpecification | null): this {
         this._lazyInitEmptyStyle();
-        this.style.setRain(rain);
+        this.style!.setRain(rain!);
         return this._update(true);
     }
 
@@ -4034,7 +4035,7 @@ export class Map extends Camera {
      */
     setColorTheme(colorTheme?: ColorThemeSpecification): this {
         this._lazyInitEmptyStyle();
-        this.style.setColorTheme(colorTheme);
+        this.style!.setColorTheme(colorTheme);
         return this._update(true);
     }
 
@@ -4053,7 +4054,7 @@ export class Map extends Camera {
      */
     setImportColorTheme(importId: string, colorTheme?: ColorThemeSpecification): this {
         this._lazyInitEmptyStyle();
-        this.style.setImportColorTheme(importId, colorTheme);
+        this.style!.setImportColorTheme(importId, colorTheme);
         return this._update(true);
     }
 
@@ -4068,7 +4069,7 @@ export class Map extends Camera {
      * });
      */
     setCamera(camera: CameraSpecification): this {
-        this.style.setCamera(camera);
+        this.style!.setCamera(camera);
         return this._triggerCameraUpdate(camera);
     }
 
@@ -4115,7 +4116,7 @@ export class Map extends Camera {
      * const camera = map.getCamera();
      */
     getCamera(): CameraSpecification {
-        return this.style.camera;
+        return this.style!.camera;
     }
 
     /**
@@ -4180,7 +4181,7 @@ export class Map extends Camera {
             return this;
         }
 
-        this.style.setFeatureState(feature, state);
+        this.style!.setFeatureState(feature, state);
         return this._update();
     }
 
@@ -4235,7 +4236,7 @@ export class Map extends Camera {
             return this;
         }
 
-        this.style.removeFeatureState(feature, key);
+        this.style!.removeFeatureState(feature, key);
         return this._update();
     }
 
@@ -4272,7 +4273,7 @@ export class Map extends Camera {
             return null;
         }
 
-        return this.style.getFeatureState(feature);
+        return this.style!.getFeatureState(feature);
     }
 
     /**
@@ -4289,7 +4290,7 @@ export class Map extends Camera {
      * map.resetFeatureStates({featuresetId: 'poi', importId: 'basemap'});
      */
     resetFeatureStates(target: TargetDescriptor): this {
-        this.style.resetFeatureStates(target);
+        this.style!.resetFeatureStates(target);
         return this._update();
     }
 
@@ -4302,11 +4303,11 @@ export class Map extends Camera {
      * map._selectIndoorFloor('floor-1');
      */
     _selectIndoorFloor(floorId: string) {
-        if (this.style.indoorManager) this.style.indoorManager.selectFloor(floorId);
+        if (this.style!.indoorManager) this.style!.indoorManager.selectFloor(floorId);
     }
 
     _setIndoorActiveFloorsVisibility(activeFloorsVisible: boolean) {
-        if (this.style.indoorManager) this.style.indoorManager.setActiveFloorsVisibility(activeFloorsVisible);
+        if (this.style!.indoorManager) this.style!.indoorManager.setActiveFloorsVisibility(activeFloorsVisible);
     }
 
     getIndoorTileOptions(source: string, scope: string): IndoorTileOptions | null {
@@ -4331,7 +4332,7 @@ export class Map extends Camera {
         while (el && (!transformScaleWidth || !transformScaleHeight)) {
             const transformMatrix = window.getComputedStyle(el).transform;
             if (transformMatrix && transformMatrix !== 'none') {
-                transformValues = transformMatrix.match(CSS_MATRIX_RE)[1].split(', ');
+                transformValues = transformMatrix.match(CSS_MATRIX_RE)![1]!.split(', ');
                 if (transformValues[0] && transformValues[0] !== '0' && transformValues[0] !== '1') transformScaleWidth = transformValues[0];
                 if (transformValues[3] && transformValues[3] !== '0' && transformValues[3] !== '1') transformScaleHeight = transformValues[3];
             }
@@ -4615,7 +4616,7 @@ export class Map extends Camera {
 
         ++this._frameId;
 
-        let gpuTimer: WebGLQuery;
+        let gpuTimer!: WebGLQuery;
         const extTimerQuery = this.painter.context.extTimerQuery;
         const frameStartTime = browser.now();
         const gl = this.painter.context.gl;
@@ -4966,10 +4967,10 @@ export class Map extends Camera {
     }
 
     _authenticate() {
-        getMapSessionAPI(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, (err: AJAXError) => {
+        getMapSessionAPI(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, (err?: Error | null) => {
             if (err) {
                 // throwing an error here will cause the callback to be called again unnecessarily
-                if (err.message === AUTH_ERR_MSG || err.status === 401) {
+                if (err.message === AUTH_ERR_MSG || (err as AJAXError).status === 401) {
                     this._revokeAuth();
                 }
             }
@@ -4984,19 +4985,19 @@ export class Map extends Camera {
     PRECEDING CODE VIOLATES THE MAPBOX TERMS OF SERVICE  ******/
 
     _postStyleLoadEvent() {
-        if (!this.style.globalId) {
+        if (!this.style!.globalId) {
             return;
         }
 
         postStyleLoadEvent(this._requestManager._customAccessToken, {
             map: this,
-            style: this.style.globalId,
-            importedStyles: this.style.getImportGlobalIds()
+            style: this.style!.globalId,
+            importedStyles: this.style!.getImportGlobalIds()
         });
     }
 
     _postStyleWithAppearanceEvent() {
-        if (!this.style.globalId || !this.style.hasAppearances()) {
+        if (!this.style!.globalId || !this.style!.hasAppearances()) {
             return;
         }
 
@@ -5011,7 +5012,7 @@ export class Map extends Camera {
         // Recalculate if enabled/disabled and calculate elevation cover. As camera is using elevation tiles before
         // render (and deferred update after zoom recalculation), this needs to be called when removing terrain source.
         const adaptCameraAltitude = this._isDragging();
-        this.painter.updateTerrain(this.style, adaptCameraAltitude);
+        this.painter.updateTerrain(this.style!, adaptCameraAltitude);
     }
 
     _calculateSpeedIndex(): number {
@@ -5024,7 +5025,7 @@ export class Map extends Camera {
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
 
         function read(texture?: WebGLTexture | null) {
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture!, 0);
             const pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
             gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
             return pixels;
@@ -5034,11 +5035,11 @@ export class Map extends Camera {
     }
 
     _canvasPixelComparison(finalFrame: Uint8Array, allFrames: Uint8Array[], timeStamps: number[]): number {
-        let finalScore = timeStamps[1] - timeStamps[0];
+        let finalScore = timeStamps[1]! - timeStamps[0]!;
         const numPixels = finalFrame.length / 4;
 
         for (let i = 0; i < allFrames.length; i++) {
-            const frame = allFrames[i];
+            const frame = allFrames[i]!;
             let cnt = 0;
             for (let j = 0; j < frame.length; j += 4) {
                 if (frame[j] === finalFrame[j] &&
@@ -5049,7 +5050,7 @@ export class Map extends Camera {
                 }
             }
             //calculate the % visual completeness
-            const interval = timeStamps[i + 2] - timeStamps[i + 1];
+            const interval = timeStamps[i + 2]! - timeStamps[i + 1]!;
             const visualCompletness = cnt / numPixels;
             finalScore +=  interval * (1 - visualCompletness);
         }
@@ -5105,10 +5106,10 @@ export class Map extends Camera {
         this._controlContainer.remove();
         this._missingCSSCanary.remove();
 
-        this._canvas = undefined;
-        this._canvasContainer = undefined;
-        this._controlContainer = undefined;
-        this._missingCSSCanary = undefined;
+        this._canvas = undefined!;
+        this._canvasContainer = undefined!;
+        this._controlContainer = undefined!;
+        this._missingCSSCanary = undefined!;
 
         this._container.classList.remove('mapboxgl-map');
         this._container.removeEventListener('scroll', this._onMapScroll, false);
@@ -5205,7 +5206,7 @@ export class Map extends Camera {
         this._update();
     }
 
-    _onWindowResize(event: UIEvent) {
+    _onWindowResize(event: globalThis.Event) {
         if (this._trackResize) {
             this.resize({originalEvent: event})._update();
         }

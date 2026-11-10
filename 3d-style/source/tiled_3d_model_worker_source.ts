@@ -51,7 +51,7 @@ class Tiled3dWorkerTile {
         this.tileSize = params.tileSize;
         this.source = params.source;
         this.overscaling = this.tileID.overscaleFactor();
-        this.projection = params.projection;
+        this.projection = params.projection!;
         this.brightness = brightness;
         this.worldview = worldview;
     }
@@ -72,21 +72,21 @@ class Tiled3dWorkerTile {
         const gltf = await load3DTile(data);
 
         const hasMapboxMeshFeatures: boolean =
-            (gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('MAPBOX_mesh_features')) ||
-            (gltf.json.asset.extras && gltf.json.asset.extras['MAPBOX_mesh_features']);
+            ((gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('MAPBOX_mesh_features')) ||
+            (gltf.json.asset!.extras && gltf.json.asset!.extras['MAPBOX_mesh_features']))!;
 
         const hasMeshoptCompression = gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('EXT_meshopt_compression');
 
-        const parameters = new EvaluationParameters(this.zoom, {brightness: this.brightness, worldview: this.worldview});
+        const parameters = new EvaluationParameters(this.zoom, {brightness: this.brightness!, worldview: this.worldview});
         for (const sourceLayerId in layerFamilies) {
-            for (const family of layerFamilies[sourceLayerId]) {
+            for (const family of layerFamilies[sourceLayerId]!) {
                 const layer = family[0] as ModelStyleLayer;
                 featureIndex.bucketLayerIDs.push(family.map((l) => makeFQID(l.id, l.scope)));
                 layer.recalculate(parameters, []);
                 // Nodes are created per layer which allows styling when multiple model layers are referencing the same source
                 const nodes = process3DTile(gltf, 1.0 / tileToMeter(params.tileID.canonical));
 
-                const bucket = new Tiled3dModelBucket(family as Array<ModelStyleLayer>, nodes, tileID, hasMapboxMeshFeatures, hasMeshoptCompression, this.brightness, featureIndex, this.worldview);
+                const bucket = new Tiled3dModelBucket(family as Array<ModelStyleLayer>, nodes, tileID, hasMapboxMeshFeatures, hasMeshoptCompression!, this.brightness, featureIndex, this.worldview);
                 buckets.push(bucket);
                 // do the first evaluation in the worker to avoid stuttering
                 bucket.evaluate(layer);
@@ -98,11 +98,11 @@ class Tiled3dWorkerTile {
         return {
             buckets,
             featureIndex,
-            collisionBoxArray: null,
-            glyphAtlasImage: null,
-            lineAtlas: null,
-            imageAtlas: null,
-            brightness: null,
+            collisionBoxArray: (null)!,
+            glyphAtlasImage: (null)!,
+            lineAtlas: (null)!,
+            imageAtlas: (null)!,
+            brightness: (null)!,
         };
     }
 }
@@ -151,7 +151,7 @@ class Tiled3dModelWorkerSource implements WorkerSource {
 
         let data: ArrayBuffer | null | undefined;
         try {
-            const response = await getArrayBuffer(params.request, controller.signal);
+            const response = await getArrayBuffer(params.request!, controller.signal);
             data = response.data;
         } catch (err) {
             delete this.loading[uid];
@@ -190,7 +190,7 @@ class Tiled3dModelWorkerSource implements WorkerSource {
         const workerTile = this.loaded && this.loaded[params.uid];
         if (!workerTile) return;
 
-        workerTile.projection = params.projection;
+        workerTile.projection = params.projection!;
         workerTile.brightness = params.brightness;
 
         if (workerTile.status === 'parsing') {

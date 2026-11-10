@@ -22,7 +22,7 @@ class Dispatcher {
     // exposed to allow stubbing in unit tests
     static Actor: typeof Actor;
 
-    constructor(workerPool: WorkerPool, style: Style, name = 'Worker', count = WorkerPool.workerCount) {
+    constructor(workerPool: WorkerPool, style: Style | undefined, name = 'Worker', count = WorkerPool.workerCount) {
         this.workerPool = workerPool;
         this.actors = [];
         this.currentActor = 0;
@@ -31,7 +31,7 @@ class Dispatcher {
         const workers = this.workerPool.acquire(this.id, count);
         for (let i = 0; i < workers.length; i++) {
             const worker = workers[i];
-            const actor = new Dispatcher.Actor<WorkerInbox>(worker, style, this.id);
+            const actor = new Dispatcher.Actor<WorkerInbox>(worker!, style, this.id);
             actor.name = `${name} ${i}`;
             this.actors.push(actor);
         }
@@ -75,7 +75,7 @@ class Dispatcher {
     getActor(): Actor<WorkerInbox> {
         assert(this.actors.length);
         this.currentActor = (this.currentActor + 1) % this.actors.length;
-        return this.actors[this.currentActor];
+        return this.actors[this.currentActor]!;
     }
 
     remove() {

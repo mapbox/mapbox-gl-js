@@ -134,7 +134,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         this.actor = dispatcher.getActor();
         this.setEventedParent(eventedParent);
 
-        this._data = options.data;
+        this._data = options.data!;
         this._options = {...options};
 
         this._collectResourceTiming = options.collectResourceTiming;
@@ -258,10 +258,9 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         // if there's a pending load, accummulate feature updates
         if (this._coalesce && typeof data !== 'string' && typeof this._data !== 'string' && this._data.type === 'FeatureCollection') {
             // merge features by ID to avoid accummulating duplicate features to update
-            const featuresById = new Map();
+            const featuresById = new Map<GeoJSON.Feature['id'], GeoJSON.Feature>();
             for (const feature of this._data.features) featuresById.set(feature.id, feature);
             for (const feature of data.features) featuresById.set(feature.id, feature);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this._data.features = [...featuresById.values()];
         } else {
             this._data = data;
@@ -461,7 +460,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
 
     reload() {
         const fqid = makeFQID(this.id, this.scope);
-        this.map.style.clearSource(fqid);
+        this.map.style!.clearSource(fqid);
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._updateWorkerData();
     }
@@ -489,7 +488,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             showElevationIdDebug: this.map.painter ? this.map.painter._debugParams.showElevationIdDebug : false,
             promoteId: this.promoteId,
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
-            extraShadowCaster: tile.isExtraShadowCaster,
+            extraShadowCaster: tile.isExtraShadowCaster!,
             scaleFactor: this.map.getScaleFactor(),
             partial,
             worldview: this.map.getWorldview(),
@@ -532,7 +531,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             callback(null);
         };
 
-        tile.request = this.actor.sendCancelable(message, params, {}, done);
+        tile.request = this.actor.sendCancelable(message, params, {}, done as Callback<unknown>);
     }
 
     abortTile(tile: Tile) {

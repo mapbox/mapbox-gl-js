@@ -29,6 +29,11 @@ export class ErrorEvent extends Event<EventRegistry, 'error'> {
  */
 type EventRegistry = Record<string, EventData | void>;
 
+type EventedParent = {
+    fire: (event: Event) => unknown;
+    listens: (type: string) => boolean;
+};
+
 /**
  * Utility type that maps event type to an event object.
  */
@@ -74,7 +79,7 @@ function _removeEventListener<R extends EventRegistry, T extends keyof R>(type: 
 export class Evented<R extends EventRegistry = EventRegistry> {
     _listeners: Listeners<R> = {};
     _oneTimeListeners: Listeners<R> = {};
-    _eventedParent?: Evented;
+    _eventedParent?: EventedParent | null;
     _eventedParentData?: EventData | (() => EventData);
 
     /**
@@ -198,7 +203,7 @@ export class Evented<R extends EventRegistry = EventRegistry> {
      * @returns {Object} `this`
      * @private
      */
-    setEventedParent(parent?: Evented, data?: EventData | (() => EventData)): this {
+    setEventedParent(parent?: EventedParent | null, data?: EventData | (() => EventData)): this {
         this._eventedParent = parent;
         this._eventedParentData = data;
 

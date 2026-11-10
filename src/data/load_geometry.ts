@@ -42,11 +42,11 @@ export default function loadGeometry(
 
         for (let i = 0; i < geometry.length; i++) {
             if (feature.type !== 1) {
-                geometry[i] = resample(geometry[i], reproject, 1); // resample lines and polygons
+                geometry[i] = resample(geometry[i]!, reproject, 1); // resample lines and polygons
 
             } else { // points
                 const line = [];
-                for (const p of geometry[i]) {
+                for (const p of geometry[i]!) {
                     // filter out point features outside tile boundaries now; it'd be harder to do later
                     // when the coords are reprojected and no longer axis-aligned; ideally this would happen
                     // or not depending on how the geometry is used, but we forego the complexity for now

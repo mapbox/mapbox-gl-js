@@ -76,7 +76,7 @@ class SkyLayer extends StyleLayer {
     }
 
     _updateColorRamp() {
-        const expression = this.getPaintPropertyValue('sky-gradient').expression;
+        const expression = this.getPaintPropertyValue('sky-gradient')!.expression;
         this.colorRamp = renderColorRamp({
             expression,
             evaluationKey: 'skyRadialProgress'

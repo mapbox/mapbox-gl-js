@@ -163,7 +163,7 @@ type AppearanceIconUpdateContext = {
     featureState: FeatureState;
     availableImages: Array<ImageId>;
     // Icon-specific fields
-    globalProperties: GlobalProperties;
+    globalProperties: GlobalProperties | undefined;
     iconScaleFactor: number;
     layoutIconOffset: [number, number];
     layoutIconSize: number;
@@ -283,8 +283,8 @@ const shaderOpacityAttributes: ReadonlyArray<StructArrayMember> = [
 ];
 
 function addVertex(array: SymbolLayoutArray, tileAnchorX: number, tileAnchorY: number, ox: number, oy: number, tx: number, ty: number, sizeVertex: number[], isSDF: boolean, pixelOffsetX: number, pixelOffsetY: number, minFontScaleX: number, minFontScaleY: number) {
-    const aSizeX = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[0])) : 0;
-    const aSizeY = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[1])) : 0;
+    const aSizeX = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[0]!)) : 0;
+    const aSizeY = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[1]!)) : 0;
 
     array.emplaceBack(
         // a_pos_offset
@@ -526,7 +526,7 @@ export class SymbolBuffers {
             if (!segmentsByBatch.has(batchIndex)) {
                 segmentsByBatch.set(batchIndex, []);
             }
-            segmentsByBatch.get(batchIndex).push(segment);
+            segmentsByBatch.get(batchIndex)!.push(segment);
         }
 
         // Sort batch indices and create SegmentVectors
@@ -828,7 +828,7 @@ class SymbolBucket implements Bucket, SymbolSource {
     compareText!: {
         [_: string]: Array<Point>;
     };
-    fadeStartTime: number;
+    fadeStartTime!: number;
     sortFeaturesByKey: boolean;
     sortFeaturesByY: boolean;
     canOverlap: boolean;
@@ -866,7 +866,7 @@ class SymbolBucket implements Bucket, SymbolSource {
     replacementUpdateTime: number;
 
     worldview: string;
-    localizable: boolean;
+    localizable: boolean | undefined;
     maxUniformBlockSizeDwords: number | null | undefined;
     iconAtlasPositions: ImagePositionMap | undefined;
     hasAppearances: boolean | null;
@@ -897,17 +897,17 @@ class SymbolBucket implements Bucket, SymbolSource {
         this.placementInvProjMatrix = mat4.identity([]);
         this.placementViewportMatrix = mat4.identity([]);
 
-        const layer = this.layers[0];
+        const layer = this.layers[0]!;
 
-        this.worldview = options.worldview;
+        this.worldview = options.worldview!;
         this.localizable = options.localizable;
         this.maxUniformBlockSizeDwords = options.maxUniformBlockSizeDwords;
 
-        this.textSizeData = getSizeData(this.zoom, layer.getLayoutPropertyValue('text-size'), this.worldview, options.availableImages);
+        this.textSizeData = getSizeData(this.zoom, layer.getLayoutPropertyValue('text-size')!, this.worldview, options.availableImages);
 
-        this.iconSizeData = getSizeData(this.zoom, layer.getLayoutPropertyValue('icon-size'), this.worldview, options.availableImages);
+        this.iconSizeData = getSizeData(this.zoom, layer.getLayoutPropertyValue('icon-size')!, this.worldview, options.availableImages);
 
-        const layout = this.layers[0].layout;
+        const layout = this.layers[0]!.layout;
         const sortKey = layout.get('symbol-sort-key');
         const zOrder = layout.get('symbol-z-order');
 
@@ -945,7 +945,7 @@ class SymbolBucket implements Bucket, SymbolSource {
     }
 
     hasAnyAppearanceLayoutProperty(properties: keyof AppearanceProps | (keyof AppearanceProps)[]): boolean {
-        const layer = this.layers[0];
+        const layer = this.layers[0]!;
         const appearances = layer.getAppearances();
         if (!appearances || appearances.length === 0) {
             return false;
@@ -973,8 +973,8 @@ class SymbolBucket implements Bucket, SymbolSource {
             })
         );
 
-        this.text.uboBinder = new SymbolPropertyBinderUBO(this.layers[0], this.zoom, this.lut, true, '', this.maxUniformBlockSizeDwords);
-        this.icon.uboBinder = new SymbolPropertyBinderUBO(this.layers[0], this.zoom, this.lut, false, '', this.maxUniformBlockSizeDwords);
+        this.text.uboBinder = new SymbolPropertyBinderUBO(this.layers[0]!, this.zoom, this.lut, true, '', this.maxUniformBlockSizeDwords);
+        this.icon.uboBinder = new SymbolPropertyBinderUBO(this.layers[0]!, this.zoom, this.lut, false, '', this.maxUniformBlockSizeDwords);
 
         this.glyphOffsetArray = new GlyphOffsetArray();
         this.lineVertexArray = new SymbolLineVertexArray();
@@ -1068,7 +1068,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         const instance = this.symbolInstances.get(index);
 
         const settled = this.placementFadeRunning[index] === 0;
-        const currentOpacity = evaluateFadeOpacity(this.placementFadeRefTime[index], this.placementVariantVisible[index], settled, now, fadeDuration);
+        const currentOpacity = evaluateFadeOpacity(this.placementFadeRefTime[index]!, this.placementVariantVisible[index]!, settled, now, fadeDuration);
         const refTime = visible ? now - currentOpacity * fadeDuration : now - (1 - currentOpacity) * fadeDuration;
 
         if (this.placementFadeRunning[index] === 0) this._activeFadeCount++;
@@ -1105,10 +1105,10 @@ class SymbolBucket implements Bucket, SymbolSource {
 
     _settleFinishedFade(index: number, instance: SymbolInstance, now: number, fadeDuration: number): void {
         if (this.placementFadeRunning[index] === 0) return;
-        if (now - this.placementFadeRefTime[index] < fadeDuration) return;
+        if (now - this.placementFadeRefTime[index]! < fadeDuration) return;
         this.placementFadeRunning[index] = 0;
         this._activeFadeCount--;
-        this._updateFadeState(index, instance, 0, fadeState(this.placementVariantVisible[index], true));
+        this._updateFadeState(index, instance, 0, fadeState(this.placementVariantVisible[index]!, true));
     }
 
     // Allocates the per-instance placement state (all hidden) on first use: either the first
@@ -1141,10 +1141,10 @@ class SymbolBucket implements Bucket, SymbolSource {
     takePlacementStateFrom(source: SymbolBucket, sourceIndex: number, targetIndex: number): boolean {
         assert(sourceIndex < source.symbolInstances.length && targetIndex < this.symbolInstances.length);
         if (sourceIndex >= source.placementVariantVisible.length) return false;
-        const visible = source.placementVariantVisible[sourceIndex];
-        const running = source.placementFadeRunning[sourceIndex];
+        const visible = source.placementVariantVisible[sourceIndex]!;
+        const running = source.placementFadeRunning[sourceIndex]!;
         if (!visible && running === 0) return false;
-        const refTime = source.placementFadeRefTime[sourceIndex];
+        const refTime = source.placementFadeRefTime[sourceIndex]!;
 
         this.ensurePlacementState();
 
@@ -1211,7 +1211,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         // the symbols they have too, and the rest fade out here, as legacy placement does
         const holdingForFade = tile.holdingForFade();
 
-        const layer = this.layers[0];
+        const layer = this.layers[0]!;
         if (layer.appearances && layer.appearances.length > 0) {
             warnOnce('new placement: symbol appearances are not supported yet; hiding symbols');
             return;
@@ -1250,7 +1250,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         const symbolZOffsetProperty = layer.paint.get('symbol-z-offset');
         const elevationFromSea = layer.layout.get('symbol-elevation-reference') === 'sea';
         const needsFeatureForZOffset = !symbolZOffsetProperty.isConstant();
-        const constantSymbolZOffset: number = needsFeatureForZOffset ? 0 : symbolZOffsetProperty.evaluate(null, {});
+        const constantSymbolZOffset: number = needsFeatureForZOffset ? 0 : symbolZOffsetProperty.evaluate(null!, {});
         const terrainElevation = transform.elevation;
 
         // This layer's implicit group for symbols naming no group or an invalid one
@@ -1267,8 +1267,8 @@ class SymbolBucket implements Bucket, SymbolSource {
         const placementGroupProperty = layer.paint.get('placement-group');
         const needsFeatureForPlacementPriority = !placementPriorityProperty.isConstant();
         const needsFeatureForPlacementGroup = !placementGroupProperty.isConstant();
-        const placementPriorityFallback: number = needsFeatureForPlacementPriority ? 0 : placementPriorityProperty.evaluate(null, {});
-        const placementSubgroupOrderFallback: number = needsFeatureForPlacementGroup ? implicitGroupOrder : resolveGroupOrder(placementGroupProperty.evaluate(null, {}));
+        const placementPriorityFallback: number = needsFeatureForPlacementPriority ? 0 : placementPriorityProperty.evaluate(null!, {});
+        const placementSubgroupOrderFallback: number = needsFeatureForPlacementGroup ? implicitGroupOrder : resolveGroupOrder(placementGroupProperty.evaluate(null!, {}));
         const needsFeatureForPlacementState = needsFeatureForPlacementPriority || needsFeatureForPlacementGroup;
         const collectDebugData = globalPlacement.isCollectingDebugData();
         const needsFeature = needsFeatureForZOffset || needsFeatureForPlacementState || collectDebugData;
@@ -1290,7 +1290,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             } else {
                 const elevationFeature = this.hdExt ? this.hdExt.elevationFeatures[instance.elevationFeatureIndex] : undefined;
                 boxElevation = elevationFromSea ? symbolZOffsetValue :
-                    symbolZOffsetValue + Elevation.getAtTileOffset(tile.tileID, new Point(box.tileAnchorX, box.tileAnchorY), terrainElevation, elevationFeature);
+                    symbolZOffsetValue + Elevation.getAtTileOffset(tile.tileID, new Point(box.tileAnchorX, box.tileAnchorY), terrainElevation, elevationFeature!);
             }
             boxElevation += instance.zOffset;
 
@@ -1459,7 +1459,7 @@ class SymbolBucket implements Bucket, SymbolSource {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
-        const layer = this.layers[0];
+        const layer = this.layers[0]!;
         const layout = layer.layout;
         const isGlobe = this.projection.name === 'globe';
 
@@ -1486,7 +1486,7 @@ class SymbolBucket implements Bucket, SymbolSource {
 
         const hasIcon = iconImage.value.kind !== 'constant' || !!iconImage.value.value || Object.keys(iconImage.parameters).length > 0;
         const hasAppearanceIcons = this.hasAnyAppearanceLayoutProperty('icon-image');
-        const hasAppearances = this.layers[0].getAppearances().length > 0;
+        const hasAppearances = this.layers[0]!.getAppearances().length > 0;
 
         const symbolSortKey = layout.get('symbol-sort-key');
 
@@ -1504,7 +1504,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         const addImageVariantToIcons = (variant: ImageVariant) => {
             const variantId = variant.id.toString();
             if (icons.has(variantId)) {
-                icons.get(variantId).push(variant);
+                icons.get(variantId)!.push(variant);
             } else {
                 icons.set(variantId, [variant]);
             }
@@ -1536,7 +1536,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 };
 
                 for (let i = 0; i < geom.length; i++) {
-                    geom[i] = resamplePred(geom[i], predicate);
+                    geom[i] = resamplePred(geom[i]!, predicate);
                 }
             }
 
@@ -1562,7 +1562,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 icon = this.getResolvedImageFromTokens(resolvedTokens);
             }
 
-            const symbolLayer = this.layers[0];
+            const symbolLayer = this.layers[0]!;
             let usesAppearanceIconAsFallback = false;
             if (!icon && hasAppearanceIcons) {
                 const appearances = symbolLayer.getAppearances();
@@ -1613,8 +1613,8 @@ class SymbolBucket implements Bucket, SymbolSource {
             });
 
             if (icon) {
-                const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, this.iconSizeData, symbolLayer.getLayoutPropertyValue('icon-size'), canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor, this.worldview, availableImages);
-                addImageVariantToIcons(iconPrimary);
+                const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, this.iconSizeData, symbolLayer.getLayoutPropertyValue('icon-size')!, canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor, this.worldview, availableImages);
+                addImageVariantToIcons(iconPrimary!);
 
                 if (iconSecondary) {
                     this.hasAnySecondaryIcon = true;
@@ -1687,7 +1687,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         if (this.sortFeaturesByKey) {
             this.features.sort((a, b) => {
                 // a.sortKey is always a number when sortFeaturesByKey is true
-                return (a.sortKey) - (b.sortKey);
+                return (a.sortKey)! - (b.sortKey)!;
             });
         }
     }
@@ -1695,7 +1695,7 @@ class SymbolBucket implements Bucket, SymbolSource {
     getCombinedIconVariants(appearance: SymbolAppearance, layer: SymbolStyleLayer, evaluationFeature: EvaluationFeature, canonical: CanonicalTileID, availableImages: ImageId[],
         symbolFeature: SymbolFeature, iconScaleFactor: number
     ): {iconPrimary: ImageVariant | undefined; iconSecondary: ImageVariant | undefined} {
-        let icon: ResolvedImage;
+        let icon: ResolvedImage | null;
         if (appearance.hasLayoutProperty('icon-image')) {
             const resolvedTokens = layer.getAppearanceValueAndResolveTokens(appearance, 'icon-image', evaluationFeature, canonical, availableImages);
             icon = this.getResolvedImageFromTokens(resolvedTokens as string);
@@ -1750,7 +1750,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 geometry: [],
                 properties: featureData.properties as Record<string, string | number | boolean>,
                 type: 'Point',
-                id: featureData.id
+                id: featureData.id!
             };
 
             const {iconPrimary, iconSecondary} = this.getCombinedIconVariants(activeAppearance, layer, evaluationFeature, canonical, availableImages, minimalFeature, iconScaleFactor);
@@ -1785,7 +1785,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 // Get appearance-specific icon-size and calculate combined scale factor
                 const effectiveIconSize = this.calculateEffectiveAppearanceIconSize(
                     activeAppearance,
-                    globalProperties.zoom,
+                    globalProperties!.zoom,
                     evaluationFeature,
                     canonical,
                     availableImages,
@@ -1815,13 +1815,13 @@ class SymbolBucket implements Bucket, SymbolSource {
                 let currentVertexOffset = vertexOffset;
                 const transitioningUint16 = hasTransitioning ? this.icon.iconTransitioningVertexArray.uint16 : null;
                 for (let j = 0; j < quadsToUpdate; ++j) {
-                    const quad = iconQuads[j];
+                    const quad = iconQuads[j]!;
 
                     // Since icon-anchor is not supported in appearances we use the first layout quad one
                     // Note that layout quads might not exist, in that case we use the symbolInstance
                     // tileAnchor.
-                    const anchorX = featureData.layoutBasedIconVertexData[0] || symbolInstance.tileAnchorX;
-                    const anchorY = featureData.layoutBasedIconVertexData[1] || symbolInstance.tileAnchorY;
+                    const anchorX = featureData.layoutBasedIconVertexData![0] || symbolInstance.tileAnchorX;
+                    const anchorY = featureData.layoutBasedIconVertexData![1] || symbolInstance.tileAnchorY;
                     const pixelOffsetTLX = quad.pixelOffsetTL.x * 16;
                     const pixelOffsetTLY = quad.pixelOffsetTL.y * 16;
                     const pixelOffsetBRX = quad.pixelOffsetBR.x * 16;
@@ -1871,12 +1871,12 @@ class SymbolBucket implements Bucket, SymbolSource {
             return {vertexOffsetDelta: symbolInstance.numIconVertices, hasChanges: true};
         } else if (featureData.isUsingAppearanceIconVertexData) {
             // No active appearance but vertex buffer still holds appearance data — restore original layout vertices.
-            this.icon.restoreSymbolVertexData(vertexOffset, featureData.layoutBasedIconVertexData);
+            this.icon.restoreSymbolVertexData(vertexOffset, featureData.layoutBasedIconVertexData!);
             if (featureData.layoutBasedIconTransitioningVertexData) {
                 this.icon.restoreIconTransitioningVertexData(vertexOffset, featureData.layoutBasedIconTransitioningVertexData);
             }
             featureData.isUsingAppearanceIconVertexData = false;
-            return {vertexOffsetDelta: featureData.layoutBasedIconVertexData.length / SYMBOL_VERTEX_STRIDE, hasChanges: true};
+            return {vertexOffsetDelta: featureData.layoutBasedIconVertexData!.length / SYMBOL_VERTEX_STRIDE, hasChanges: true};
         }
         return {vertexOffsetDelta: symbolInstance.numIconVertices, hasChanges: false};
     }
@@ -1911,7 +1911,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 getNorthOffset(this.getTileTransform(canonical), symbolInstance.tileAnchorX, symbolInstance.tileAnchorY) : 0);
 
             // Recompute fontScale with appearance data so it will be correctly used during icon update later
-            featureData.fontScale = computeFontScale(textSizeValue, featureData.textScaleFactor);
+            featureData.fontScale = computeFontScale(textSizeValue, featureData.textScaleFactor!);
             const unevaluatedTextSize = activeAppearance.getUnevaluatedLayoutProperty('text-size') as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
             let textSizeData = this.textSizeData;
             let minZoom = layoutTextSizeMinZoom;
@@ -1955,10 +1955,10 @@ class SymbolBucket implements Bucket, SymbolSource {
             // Calculate size vertex data with appearance text-size
             const minZoomSize = textSizeValue && textSizeData.kind === 'composite' ? unevaluatedTextSize.possiblyEvaluate(new EvaluationParameters(minZoom, {}), canonical).evaluate(evaluationFeature, featureState, canonical) : layoutMinZoomSize;
             const maxZoomSize = textSizeValue && textSizeData.kind === 'composite' ? unevaluatedTextSize.possiblyEvaluate(new EvaluationParameters(maxZoom, {}), canonical).evaluate(evaluationFeature, featureState, canonical) : layoutMaxZoomSize;
-            const textSizeDataKind = packSizeForVertex(activeAppearance.name, textSizeData, textSizeValue, textScaleFactor, minZoomSize, maxZoomSize);
+            const textSizeDataKind = packSizeForVertex(activeAppearance.name!, textSizeData, textSizeValue, textScaleFactor, minZoomSize, maxZoomSize);
             const textSizeY = Array.isArray(textSizeDataKind) ? textSizeDataKind[1] : textSizeValue;
             const symbolSizeX = 0; // Not used in appearances
-            const symbolSizeY = (Math.min(MAX_PACKED_SIZE, Math.round(textSizeY * SIZE_PACK_FACTOR)) << 1) + 1; // Appearance flag
+            const symbolSizeY = (Math.min(MAX_PACKED_SIZE, Math.round(textSizeY! * SIZE_PACK_FACTOR)) << 1) + 1; // Appearance flag
 
             // Store the layout-based vertex data to restore it later if it's the first time we use an appearance for this feature
             if (!featureData.isUsingAppearanceTextVertexData) {
@@ -1968,7 +1968,7 @@ class SymbolBucket implements Bucket, SymbolSource {
 
             // Update vertex data for text quads
             for (let j = 0; j < textQuads.length && j < (symbolInstance.numHorizontalGlyphVertices + symbolInstance.numVerticalGlyphVertices) / 4; ++j) {
-                const quad = textQuads[j];
+                const quad = textQuads[j]!;
                 const y = quad.glyphOffset[1];
 
                 const anchorX = symbolInstance.tileAnchorX;
@@ -1985,9 +1985,9 @@ class SymbolBucket implements Bucket, SymbolSource {
             return {vertexOffsetDelta: symbolInstance.numHorizontalGlyphVertices + symbolInstance.numVerticalGlyphVertices, hasChanges: true};
         } else if (featureData.isUsingAppearanceTextVertexData) {
             // No active appearance but vertex buffer still holds appearance data — restore original layout vertices.
-            this.text.restoreSymbolVertexData(vertexOffset, featureData.layoutBasedTextVertexData);
+            this.text.restoreSymbolVertexData(vertexOffset, featureData.layoutBasedTextVertexData!);
             featureData.isUsingAppearanceTextVertexData = false;
-            return {vertexOffsetDelta: featureData.layoutBasedTextVertexData.length / SYMBOL_VERTEX_STRIDE, hasChanges: true};
+            return {vertexOffsetDelta: featureData.layoutBasedTextVertexData!.length / SYMBOL_VERTEX_STRIDE, hasChanges: true};
         } else {
             return {vertexOffsetDelta: symbolInstance.numHorizontalGlyphVertices + symbolInstance.numVerticalGlyphVertices, hasChanges: false};
         }
@@ -2037,7 +2037,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                     }));
 
                     for (const binder of binders) {
-                        binder.updateFeatures(featureIds, symbolLayer, vtLayer, canonical, availableImages, states, brightness);
+                        binder!.updateFeatures(featureIds, symbolLayer, vtLayer, canonical, availableImages, states, brightness);
                     }
                 }
             }
@@ -2093,7 +2093,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             this.iconCollisionBox.upload(context);
         }
 
-        this.text.upload(context, this.sortFeaturesByY, !this.uploaded, this.text.programConfigurations.needsUpload, this.zOffsetBuffersNeedUpload, this.hasAppearances);
+        this.text.upload(context, this.sortFeaturesByY, !this.uploaded, this.text.programConfigurations.needsUpload, this.zOffsetBuffersNeedUpload, this.hasAppearances!);
 
         if (this.hasAppearances === null) {
             this.hasAppearances = this.layers.some(layer => layer.appearances && layer.appearances.length > 0);
@@ -2119,7 +2119,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             return noChanges;
         }
 
-        const layer = this.layers[0];
+        const layer = this.layers[0]!;
         const layout = layer.layout;
 
         // Create or recreate FeatureAppearances when the layer's appearances change structurally.
@@ -2129,7 +2129,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         }
 
         const appearanceUpdateResult: AppearanceUpdateResult = this.featureAppearances.update(
-            globalProperties, featureStateChanged
+            globalProperties!, featureStateChanged
         );
         if (appearanceUpdateResult.kind === 'no-changes') return noChanges;
 
@@ -2190,7 +2190,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 activeAppearanceIndex = appearanceUpdateResult.appearanceIndex;
             } else {
                 // 'per-feature': evaluate conditions with feature context
-                const found = layer.appearances ? layer.appearances.findIndex(a => a.isActive({globals: globalProperties, feature: evaluationFeature, canonical, featureState: featureStateForThis})) : -1;
+                const found = layer.appearances ? layer.appearances.findIndex(a => a.isActive({globals: globalProperties!, feature: evaluationFeature, canonical, featureState: featureStateForThis})) : -1;
                 activeAppearanceIndex = found >= 0 ? found : -1;
             }
             const appearanceChanged = featureData.activeAppearanceIndex !== activeAppearanceIndex;
@@ -2202,13 +2202,13 @@ class SymbolBucket implements Bucket, SymbolSource {
                 const textCtx: AppearanceTextUpdateContext = {
                     canonical,
                     layer,
-                    featureState: featureStateForThis,
+                    featureState: featureStateForThis!,
                     availableImages,
                     textScaleFactor,
                     imageMap,
-                    layoutTextOffset: layout.get('text-offset').evaluate(evaluationFeature, featureStateForThis, canonical).map((v): number => v * ONE_EM) as [number, number],
-                    layoutTextSize: layoutTextSizeExpression.evaluate(evaluationFeature, featureStateForThis, canonical),
-                    layoutTextRotate: layout.get('text-rotate').evaluate(evaluationFeature, featureStateForThis, canonical),
+                    layoutTextOffset: layout.get('text-offset').evaluate(evaluationFeature, featureStateForThis!, canonical).map((v): number => v * ONE_EM) as [number, number],
+                    layoutTextSize: layoutTextSizeExpression.evaluate(evaluationFeature, featureStateForThis!, canonical),
+                    layoutTextRotate: layout.get('text-rotate').evaluate(evaluationFeature, featureStateForThis!, canonical),
                     textRotatesInTileSpace,
                     layoutMinZoomSize: layoutTextSizeExpression.evaluate(evaluationFeature, {zoom: textSizeDataMinZoom}, canonical),
                     layoutMaxZoomSize: layoutTextSizeExpression.evaluate(evaluationFeature, {zoom: textSizeDataMaxZoom}, canonical),
@@ -2226,13 +2226,13 @@ class SymbolBucket implements Bucket, SymbolSource {
                 const iconCtx: AppearanceIconUpdateContext = {
                     canonical,
                     layer,
-                    featureState: featureStateForThis,
+                    featureState: featureStateForThis!,
                     availableImages,
                     globalProperties,
                     iconScaleFactor,
-                    layoutIconOffset: layout.get('icon-offset').evaluate(evaluationFeature, featureStateForThis, canonical),
-                    layoutIconSize: layout.get('icon-size').evaluate(evaluationFeature, featureStateForThis, canonical, availableImages),
-                    layoutIconRotate: layout.get('icon-rotate').evaluate(evaluationFeature, featureStateForThis, canonical),
+                    layoutIconOffset: layout.get('icon-offset').evaluate(evaluationFeature, featureStateForThis!, canonical),
+                    layoutIconSize: layout.get('icon-size').evaluate(evaluationFeature, featureStateForThis!, canonical, availableImages),
+                    layoutIconRotate: layout.get('icon-rotate').evaluate(evaluationFeature, featureStateForThis!, canonical),
                     iconRotatesInTileSpace,
                 };
                 const iconResult = this.updateSymbolInstanceIconVertices(
@@ -2365,7 +2365,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         let lastUboIndex = -1; // Track the last UBO index for null vertex padding
 
         for (let i = 0; i < quads.length; i++) {
-            const {tl, tr, bl, br, texPrimary, texSecondary, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY, glyphOffset, isSDF, sectionIndex} = quads[i];
+            const {tl, tr, bl, br, texPrimary, texSecondary, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY, glyphOffset, isSDF, sectionIndex} = quads[i]!;
             const index = segment.vertexLength;
 
             const y = glyphOffset[1];
@@ -2377,10 +2377,10 @@ class SymbolBucket implements Bucket, SymbolSource {
             if (globe) {
                 const {x, y, z} = globe.anchor;
                 const [ux, uy, uz] = globe.up;
-                addGlobeVertex(globeExtVertexArray, x, y, z, ux, uy, uz);
-                addGlobeVertex(globeExtVertexArray, x, y, z, ux, uy, uz);
-                addGlobeVertex(globeExtVertexArray, x, y, z, ux, uy, uz);
-                addGlobeVertex(globeExtVertexArray, x, y, z, ux, uy, uz);
+                addGlobeVertex(globeExtVertexArray, x, y, z, ux!, uy!, uz!);
+                addGlobeVertex(globeExtVertexArray, x, y, z, ux!, uy!, uz!);
+                addGlobeVertex(globeExtVertexArray, x, y, z, ux!, uy!, uz!);
+                addGlobeVertex(globeExtVertexArray, x, y, z, ux!, uy!, uz!);
 
                 addDynamicAttributes(arrays.dynamicLayoutVertexArray, x, y, z, angle);
             } else {
@@ -2405,7 +2405,7 @@ class SymbolBucket implements Bucket, SymbolSource {
 
             this.glyphOffsetArray.emplaceBack(glyphOffset[0]);
 
-            if (i === quads.length - 1 || sectionIndex !== quads[i + 1].sectionIndex) {
+            if (i === quads.length - 1 || sectionIndex !== quads[i + 1]!.sectionIndex) {
                 if (!arrays.uboBinder) {
                     arrays.programConfigurations.populatePaintArrays(layoutVertexArray.length, feature, feature.index, {}, availableImages, canonical, brightness, sections && sections[sectionIndex], this.worldview);
                 }
@@ -2434,7 +2434,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         // Add zero-padding for unused vertices to ensure consistent buffer structure for appearance variants
         const remainingQuads = maxQuadCount - quads.length;
         if (remainingQuads !== 0) {
-            this._addNullVertices(remainingQuads, layoutVertexArray, sizeVertex, globe, globeExtVertexArray, arrays, hasAnySecondaryIcon, segment, indexArray);
+            this._addNullVertices(remainingQuads, layoutVertexArray, sizeVertex, globe!, globeExtVertexArray, arrays, hasAnySecondaryIcon, segment, indexArray);
 
             // Add feature IDs for null vertices so they share the last section's UBO entry
             if (arrays.uboBinder && lastUboIndex >= 0) {
@@ -2449,10 +2449,10 @@ class SymbolBucket implements Bucket, SymbolSource {
 
         arrays.placedSymbolArray.emplaceBack(projectedAnchor.x, projectedAnchor.y, projectedAnchor.z, tileAnchor.x, tileAnchor.y,
             glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart, vertexStartIndex,
-            lineStartIndex, lineLength, tileAnchor.segment,
-            sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
+            lineStartIndex, lineLength, tileAnchor.segment!,
+            (sizeVertex ? sizeVertex[0] : 0)!, (sizeVertex ? sizeVertex[1] : 0)!,
             lineOffset[0], lineOffset[1],
-            writingMode,
+            writingMode!,
             // placedOrientation is null initially; will be updated to horizontal(1)/vertical(2) if placed
             0,
             0,
@@ -2726,7 +2726,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             featureIndexes.push(symbolInstance.featureIndex);
         }
 
-        result.sort((aIndex, bIndex) => (rotatedYs[aIndex] - rotatedYs[bIndex]) || (featureIndexes[bIndex] - featureIndexes[aIndex]));
+        result.sort((aIndex, bIndex) => (rotatedYs[aIndex]! - rotatedYs[bIndex]!) || (featureIndexes[bIndex]! - featureIndexes[aIndex]!));
 
         return result;
     }

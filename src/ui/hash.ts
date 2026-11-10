@@ -52,7 +52,7 @@ export default class Hash {
 
         this._map.off('moveend', this._updateHash);
         window.removeEventListener('hashchange', this._onHashChange, false);
-        clearTimeout(this._updateHash());
+        clearTimeout(this._updateHash()!);
 
         this._map = undefined;
         return this;
@@ -89,7 +89,7 @@ export default class Hash {
         const hash = location.hash.replace('#', '');
         if (this._hashName) {
             // Split the parameter-styled hash into parts and find the value we need
-            let keyval: string[];
+            let keyval!: string[];
             hash.split('&').map(
                 part => part.split('=')
             ).forEach(part => {
@@ -109,8 +109,8 @@ export default class Hash {
         if (loc.length >= 3 && !loc.some(v => isNaN(Number(v)))) {
             const bearing = map.dragRotate.isEnabled() && map.touchZoomRotate.isEnabled() ? +(loc[3] || 0) : map.getBearing();
             map.jumpTo({
-                center: [+loc[2], +loc[1]],
-                zoom: +loc[0],
+                center: [+loc[2]!, +loc[1]!],
+                zoom: +loc[0]!,
                 bearing,
                 pitch: +(loc[4] || 0)
             });

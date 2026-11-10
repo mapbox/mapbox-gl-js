@@ -26,11 +26,11 @@ import type {Elevation} from '../terrain/elevation';
 
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrixForRendering, getLabelPlaneMatrixForPlacement, getGlCoordMatrix, project, projectClamped, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine};
 
-export type GetElevation = (p: Point, elevation: Elevation | null, elevationFeature: ElevationFeature | null) => [number, number, number];
+export type GetElevation = (p: Point, elevation: Elevation | null | undefined, elevationFeature: ElevationFeature | null) => [number, number, number];
 
 export type ElevationParams = {
     getElevation: GetElevation;
-    elevation: Elevation | null,
+    elevation: Elevation | null | undefined,
     elevationFeature: ElevationFeature | null;
 };
 
@@ -133,7 +133,7 @@ function getLabelPlaneMatrixForRendering(
             const lm = calculateGlobeLabelMatrix(transform, tileID);
             mat4.multiply(m, m, lm);
         } else {
-            const s = mat2.invert([], pixelsToTileUnits);
+            const s = mat2.invert([], pixelsToTileUnits)!;
             m[0] = s[0];
             m[1] = s[1];
             m[4] = s[2];
@@ -201,8 +201,8 @@ function getGlCoordMatrix(
             // (equivalent to mat4.multiply with a near-identity matrix, but ~16x fewer ops).
             const [p0, p1, p2, p3] = pixelsToTileUnits;
             const [a0, a1, a2, a3, b0, b1, b2, b3] = m;
-            m[0] = p0 * a0 + p1 * b0; m[1] = p0 * a1 + p1 * b1; m[2] = p0 * a2 + p1 * b2; m[3] = p0 * a3 + p1 * b3;
-            m[4] = p2 * a0 + p3 * b0; m[5] = p2 * a1 + p3 * b1; m[6] = p2 * a2 + p3 * b2; m[7] = p2 * a3 + p3 * b3;
+            m[0] = p0! * a0! + p1! * b0!; m[1] = p0! * a1! + p1! * b1!; m[2] = p0! * a2! + p1! * b2!; m[3] = p0! * a3! + p1! * b3!;
+            m[4] = p2! * a0! + p3! * b0!; m[5] = p2! * a1! + p3! * b1!; m[6] = p2! * a2! + p3! * b2!; m[7] = p2! * a3! + p3! * b3!;
             if (!rotateWithMap) {
                 mat4.rotateZ(m, m, -transform.angle);
             }
@@ -228,7 +228,7 @@ function project(x: number, y: number, z: number, matrix: mat4): vec4 {
 }
 
 function projectClamped([x, y, z]: vec3, matrix: mat4): vec4 {
-    const pos: vec4 = [x, y, z, 1];
+    const pos: vec4 = [x!, y!, z!, 1];
     vec4.transformMat4(pos, pos, matrix);
 
     // Clamp distance to a positive value so we can avoid screen coordinate
@@ -268,7 +268,7 @@ function updateLineLabels(bucket: SymbolBucket,
     glCoordMatrix: mat4,
     pitchWithMap: boolean,
     keepUpright: boolean,
-    getElevation: GetElevation | null | undefined,
+    getElevation: GetElevation,
     tileID: OverscaledTileID,
     scaleFactor: number = 1) {
 
@@ -310,7 +310,7 @@ function updateLineLabels(bucket: SymbolBucket,
     const aspectRatio = painter.transform.width / painter.transform.height;
 
     let useVertical: boolean | null | undefined = false;
-    let prevWritingMode: number;
+    let prevWritingMode!: number;
 
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol = placedSymbols.get(s);
@@ -355,11 +355,11 @@ function updateLineLabels(bucket: SymbolBucket,
             if (renderElevatedRoads && bucket.hdExt) {
                 const symbolBuffers = isText ? bucket.text : bucket.icon;
                 elevationParams = bucket.hdExt.makeRoadSymbolElevationParams(
-                    bucket, symbolBuffers, s, tileID, getElevation, tr.elevation, tr.projection, tr.center.lat, tr.worldSize);
+                    bucket, symbolBuffers, s, tileID, getElevation, tr.elevation!, tr.projection, tr.center.lat, tr.worldSize);
             } else {
                 elevationParams = {
                     getElevation,
-                    elevation: tr.elevation,
+                    elevation: tr.elevation!,
                     elevationFeature: null,
                 };
             }
@@ -392,7 +392,7 @@ function updateLineLabels(bucket: SymbolBucket,
         }
 
         let projectionCache: ProjectionCache = {};
-        const layout = bucket.layers[0].layout;
+        const layout = bucket.layers[0]!.layout;
         const textMaxAngle = degToRad(layout.get('text-max-angle'));
         const textMaxAngleThreshold = Math.cos(textMaxAngle);
 
@@ -532,13 +532,13 @@ function placeGlyphsAlongLine(
         if (globeExtVertexArray) {
             const [ux, uy, uz] = glyph.up;
             const offset = dynamicLayoutVertexArray.length;
-            updateGlobeVertexNormal(globeExtVertexArray, offset + 0, ux, uy, uz);
-            updateGlobeVertexNormal(globeExtVertexArray, offset + 1, ux, uy, uz);
-            updateGlobeVertexNormal(globeExtVertexArray, offset + 2, ux, uy, uz);
-            updateGlobeVertexNormal(globeExtVertexArray, offset + 3, ux, uy, uz);
+            updateGlobeVertexNormal(globeExtVertexArray, offset + 0, ux!, uy!, uz!);
+            updateGlobeVertexNormal(globeExtVertexArray, offset + 1, ux!, uy!, uz!);
+            updateGlobeVertexNormal(globeExtVertexArray, offset + 2, ux!, uy!, uz!);
+            updateGlobeVertexNormal(globeExtVertexArray, offset + 3, ux!, uy!, uz!);
         }
         const [x, y, z] = glyph.point;
-        addDynamicAttributes(dynamicLayoutVertexArray, x, y, z, glyph.angle);
+        addDynamicAttributes(dynamicLayoutVertexArray, x!, y!, z!, glyph.angle);
     };
 
     if (numGlyphs > 1) {
@@ -552,9 +552,9 @@ function placeGlyphsAlongLine(
         if (keepUpright && !flip) {
             let [x0, y0, z0] = firstAndLastGlyph.first.point;
             let [x1, y1, z1] = firstAndLastGlyph.last.point;
-            [x0, y0] = project(x0, y0, z0, glCoordMatrix);
-            [x1, y1] = project(x1, y1, z1, glCoordMatrix);
-            const orientationChange = requiresOrientationChange(writingMode, flipState, (x1 - x0) * aspectRatio, y1 - y0);
+            [x0, y0] = project(x0!, y0!, z0!, glCoordMatrix);
+            [x1, y1] = project(x1!, y1!, z1!, glCoordMatrix);
+            const orientationChange = requiresOrientationChange(writingMode, flipState, (x1! - x0!) * aspectRatio, y1! - y0!);
             symbol.flipState = orientationChange && orientationChange.needsFlipping ? FlipState.flipRequired : FlipState.flipNotRequired;
             if (orientationChange) {
                 return orientationChange;
@@ -587,7 +587,7 @@ function placeGlyphsAlongLine(
             // point on the segment.
             const b = (projectedVertex[3] > 0) ?
                 projectedVertex :
-                projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a, 1, posMatrix, undefined, projection, tileID.canonical);
+                projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a, 1, posMatrix, undefined!, projection, tileID.canonical);
 
             const orientationChange = requiresOrientationChange(writingMode, flipState, (b[0] - a[0]) * aspectRatio, b[1] - a[1]);
             symbol.flipState = orientationChange && orientationChange.needsFlipping ? FlipState.flipRequired : FlipState.flipNotRequired;
@@ -684,14 +684,14 @@ function projectLinePoint(
     const cached = projectionCache[index];
     if (cached) return cached;
 
-    const projected = elevatePointAndProject(tilePoint, tileID, labelPlaneMatrix, projection, elevationParams, blend);
+    const projected = elevatePointAndProject(tilePoint, tileID, labelPlaneMatrix, projection, elevationParams!, blend);
     if (projected[3] > 0) {
         return (projectionCache[index] = projected as unknown as [number, number, number]);
     }
     // The vertex is behind the plane of the camera, so we can't project it
     // Instead, we'll create a vertex along the line that's far enough to include the glyph
     // Don't cache because the new vertex might not be far enough out for future glyphs on the same segment
-    return projectTruncatedLineSegment(previousTilePoint, tilePoint, previousProjectedPoint, truncationLength, labelPlaneMatrix, elevationParams, projection, tileID, blend);
+    return projectTruncatedLineSegment(previousTilePoint, tilePoint, previousProjectedPoint, truncationLength, labelPlaneMatrix, elevationParams!, projection, tileID, blend);
 }
 
 function placeGlyphAlongLine(
