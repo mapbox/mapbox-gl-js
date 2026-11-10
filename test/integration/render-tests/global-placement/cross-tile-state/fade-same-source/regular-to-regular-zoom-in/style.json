@@ -1,0 +1,56 @@
+{
+  "description": "On zoom in, the label of the held parent tile fades out while the label of the new child tile fades in, as its different text keeps it from continuing the parent label's state.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "collisionDebug": true,
+      "mapMode": "continuous",
+      "width": 64,
+      "height": 64,
+      "fadeDuration": 100,
+      "globalPlacement": true,
+      "operations": [
+        ["setSourceProperty", "point", "enable-symbols-fade-out", true],
+        ["setTimer", 0],
+        ["wait"],
+        ["setTimer", 100],
+        ["wait"],
+        ["setZoom", 6],
+        ["wait"],
+        ["setTimer", 150],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [2.5, -2.5],
+  "zoom": 5,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [2.5, -2.5]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "label",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": ["step", ["zoom"], "z5", 6, "z6"],
+        "text-offset": ["step", ["zoom"], ["literal", [0, -0.4]], 6, ["literal", [0, 0.4]]],
+        "text-size": 24,
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      },
+      "paint": {"text-color": "black"}
+    }
+  ]
+}
