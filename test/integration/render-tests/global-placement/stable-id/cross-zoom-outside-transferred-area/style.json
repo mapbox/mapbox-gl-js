@@ -1,0 +1,47 @@
+{
+  "description": "On Mapbox tiles, symbols are matched across zoom levels by feature id. Zooms in from a z13 tile to two of its z15 grandchildren: one is empty, the other has the label. The z13 copy of the label is anchored in the empty grandchild, so no tile owns it after zoom in. Checks that the other grandchild starts a new fade instead of taking the fade of the z13 copy: the label is at half opacity, not full.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "mapMode": "continuous",
+      "width": 128,
+      "height": 40,
+      "fadeDuration": 100,
+      "globalPlacement": true,
+      "collisionDebug": true,
+      "operations": [
+        ["setTimer", 0],
+        ["wait"],
+        ["setTimer", 50],
+        ["wait"],
+        ["setZoom", 15.69],
+        ["wait"],
+        ["setTimer", 100],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [24.840088, 60.215002],
+  "zoom": 13.69,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v8-lite"
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {"id": "background", "type": "background", "paint": {"background-color": "white"}},
+    {
+      "id": "poi",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "poi_label",
+      "layout": {
+        "text-field": ["coalesce", ["get", "name_en"], ["get", "name"]],
+        "text-size": 13,
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      }
+    }
+  ]
+}
