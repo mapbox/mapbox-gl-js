@@ -1,22 +1,26 @@
 ## Unreleased
 
-- Apply fog to symbols with `icon-pitch-alignment` or `text-pitch-alignment` set to `map`.
+## 3.35.0
 
-## 3.35.0-rc.1
+### Features and improvements ✨
 
 - Improve map load performance on lower zooms via faster polygon triangulation.
-- Fix zero-length cap in SVG not drawn in various browsers.
+- Add `setMinzoom` and `setMaxzoom` methods to vector and raster tile sources, which change the zoom range of a source after it is added.
+- Apply fog to symbols with `icon-pitch-alignment` or `text-pitch-alignment` set to `map`.
+- Introduce cross-tile fade state support for global placement.
+- Release tiles after fade completes for sources from imported styles.
+
+### Bug fixes 🐞
+
 - Fix `transformRequest` headers missing from requests for glTF buffers and textures.
 - Fix `Map#setGlyphsUrl` not changing the glyphs of labels that are already loaded.
-- Revert fix line geometry: clamp fake-round join anchor on short segments.
-- Fix thin lines fading and flickering at high pitch.
-- Fix visibility of the logo control based on imported source.
-- Fix a thin unlit line in the fill-extrusion flood light at very sharp polygon corners.
-- Introduce cross-tile fade state support for global placement.
-- Add `setMinzoom` and `setMaxzoom` methods to vector and raster tile sources, which change the zoom range of a source after it is added.
 - Fix the setters of `raster-array` and `model` sources that throw an error before a layer uses the source.
-- Release tiles after fade completes for sources from imported styles.
 - Fix zoom-step `line-dasharray` disappearing on some tiles.
+- Fix zero-length cap in SVG not being drawn in various browsers.
+- Fix thin lines fading and flickering at high pitch.
+- Revert fix line geometry: clamp fake-round join anchor on short segments.
+- Fix a thin unlit line in the fill-extrusion flood light at very sharp polygon corners.
+- Fix visibility of the logo control based on imported source.
 
 ## 3.34.1
 
