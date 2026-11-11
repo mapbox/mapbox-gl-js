@@ -1,10 +1,12 @@
-import {describe, test, expect, beforeEach} from '../../util/vitest';
+import {describe, test, expect, beforeEach, vi} from '../../util/vitest';
 import ImageAtlas, {ImageAtlasCache, ImageAtlasReference, sortImagesMap} from '../../../src/render/image_atlas';
 import {AtlasContentDescriptor} from '../../../src/render/atlas_content_descriptor';
 import {RGBAImage} from '../../../src/util/image';
 import {ImageVariant} from '../../../src/style-spec/expression/types/image_variant';
 import Color from '../../../src/style-spec/util/color';
 import Context from '../../../src/gl/context';
+import ImageManager from '../../../src/render/image_manager';
+import {ImageId} from '../../../src/style-spec/expression/types/image_id';
 
 import type {StyleImage, StyleImageMap} from '../../../src/style/style_image';
 import type {StringifiedImageVariant} from '../../../src/style-spec/expression/types/image_variant';
@@ -399,6 +401,37 @@ describe('ImageAtlasCache', () => {
         const result = cache.findCachedAtlas(descriptor);
 
         expect(result).toBeUndefined(); // Should NOT find it
+    });
+
+    test('an atlas with mipmaps does not displace one without mipmaps for the same images', () => {
+        const icons: StyleImageMap<StringifiedImageVariant> = new Map([[createImageVariantId('icon'), createMockImage('icon')]]);
+        const versions: Map<string, number> = new Map([['icon', 1]]);
+        const atlas = cache.getOrCache(new ImageAtlas(icons, new Map(), null, versions));
+        const texture = cache.getTextureForAtlas(atlas, context, context.gl.RGBA8);
+        const mipmappedAtlas = cache.getOrCache(new ImageAtlas(icons, new Map(), null, versions, '', true));
+        cache.getTextureForAtlas(mipmappedAtlas, context, context.gl.RGBA8);
+
+        cache.removeScope('other');
+
+        expect(cache.getTextureForAtlas(atlas, context, context.gl.RGBA8)).toBe(texture);
+    });
+
+    test('patchUpdatedImages generates mipmaps once for several updated icons', () => {
+        const imageManager = new ImageManager('raster');
+        imageManager.addScope('');
+        const icons: StyleImageMap<StringifiedImageVariant> = new Map();
+        for (const id of ['a', 'b']) {
+            imageManager.addImage(ImageId.from(id), '', createMockImage(id));
+            icons.set(createImageVariantId(id), createMockImage(id));
+        }
+        const atlas = new ImageAtlas(icons, new Map(), null, new Map([['a', 1], ['b', 1]]), '', true);
+        const texture = cache.getTextureForAtlas(cache.getOrCache(atlas), context, context.gl.RGBA8);
+        for (const id of ['a', 'b']) imageManager.updateImage(ImageId.from(id), '', createMockImage(id));
+        const generateMipmap = vi.spyOn(context.gl, 'generateMipmap');
+
+        atlas.patchUpdatedImages(imageManager, texture, '');
+
+        expect(generateMipmap).toHaveBeenCalledTimes(1);
     });
 
     test('getTextureForAtlas creates texture on first call', () => {

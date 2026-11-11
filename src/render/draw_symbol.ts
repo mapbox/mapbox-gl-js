@@ -56,6 +56,7 @@ type SymbolTileRenderState = {
         atlasTextureIcon: Texture | null;
         atlasInterpolation: WebGLRenderingContextBase["NEAREST"] | WebGLRenderingContextBase["LINEAR"];
         atlasInterpolationIcon: WebGLRenderingContextBase["NEAREST"] | WebGLRenderingContextBase["LINEAR"] | null | undefined;
+        atlasMipmaps: boolean;
         isSDF: boolean;
         hasHalo: boolean;
         depthMode: DepthMode;
@@ -536,6 +537,7 @@ function drawLayerSymbols(
             const atlasTexture = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
 
             const iconScaled = layer.layout.get('icon-size').constantOr(0) !== 1 || bucket.iconsNeedLinear;
+            const atlasMipmaps = iconPitchWithMap && !bucket.sdfIcons && !!atlasTexture && !!atlasTexture.useMipmap;
             const atlasInterpolation = bucket.sdfIcons || painter.options.rotating || painter.options.zooming || iconScaled || transformed ? gl.LINEAR : gl.NEAREST;
 
             const hasHalo = bucket.sdfIcons && layer.paint.get('icon-halo-width').constantOr(1) !== 0;
@@ -563,6 +565,7 @@ function drawLayerSymbols(
                 atlasTextureIcon: null,
                 atlasInterpolation,
                 atlasInterpolationIcon: null,
+                atlasMipmaps,
                 isSDF: bucket.sdfIcons,
                 hasHalo,
                 depthMode,
@@ -688,6 +691,7 @@ function drawLayerSymbols(
                 atlasTextureIcon,
                 atlasInterpolation,
                 atlasInterpolationIcon,
+                atlasMipmaps: false,
                 isSDF: true,
                 hasHalo,
                 depthMode,
@@ -770,7 +774,7 @@ function drawLayerSymbols(
 
         context.activeTexture.set(gl.TEXTURE0);
         if (state.atlasTexture) {
-            state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE, true);
+            state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE, !state.atlasMipmaps, state.atlasMipmaps);
         }
         if (state.atlasTextureIcon) {
             context.activeTexture.set(gl.TEXTURE1);

@@ -2,6 +2,7 @@
     "version": 8,
     "metadata": {
       "test": {
+        "anisotropicTextureFiltering": true,
         "height": 512,
         "width": 512,
         "image-threshold": [

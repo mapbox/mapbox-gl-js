@@ -3,6 +3,7 @@
   "version": 8,
   "metadata": {
     "test": {
+      "anisotropicTextureFiltering": true,
       "height": 256,
       "width": 256,
       "operations": [

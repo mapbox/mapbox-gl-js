@@ -2,6 +2,7 @@
     "version": 8,
     "metadata": {
         "test": {
+            "anisotropicTextureFiltering": true,
             "width": 512,
             "height": 512,
             "spriteFormat": "raster",
