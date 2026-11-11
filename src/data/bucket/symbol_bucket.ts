@@ -31,7 +31,6 @@ import {SymbolPropertyBinderUBO} from './symbol_property_binder_ubo';
 import ONE_EM from '../../symbol/one_em';
 import Point from '@mapbox/point-geometry';
 import SegmentVector, {type Segment} from '../segment';
-import {ProgramConfigurationSet} from '../program_configuration';
 import {TriangleIndexArray, LineIndexArray} from '../index_array_type';
 import transformText from '../../symbol/transform_text';
 import mergeLines from '../../symbol/mergelines';
@@ -428,7 +427,6 @@ export class SymbolBuffers {
     indexArray: TriangleIndexArray;
     indexBuffer!: IndexBuffer;
 
-    programConfigurations: ProgramConfigurationSet<SymbolStyleLayer>;
     segments: SegmentVector;
 
     dynamicLayoutVertexArray: SymbolDynamicLayoutArray;
@@ -460,17 +458,16 @@ export class SymbolBuffers {
 
     symbolInstanceIndices: number[];
 
-    uboBinder: SymbolPropertyBinderUBO | null;
+    uboBinder: SymbolPropertyBinderUBO;
     featureIdArray: StructArrayLayout1f4;
     featureIdBuffer: VertexBuffer | null;
 
     cachedBatchIndices: number[] | null;
     cachedBatchSegments: Map<number, SegmentVector> | null;
 
-    constructor(programConfigurations: ProgramConfigurationSet<SymbolStyleLayer>) {
+    constructor(uboBinder: SymbolPropertyBinderUBO) {
         this.layoutVertexArray = new SymbolLayoutArray();
         this.indexArray = new TriangleIndexArray();
-        this.programConfigurations = programConfigurations;
         this.segments = new SegmentVector();
         this.dynamicLayoutVertexArray = new SymbolDynamicLayoutArray();
         this.opacityVertexArray = new SymbolOpacityArray();
@@ -483,7 +480,7 @@ export class SymbolBuffers {
         this.zOffsetVertexArray = new ZOffsetVertexArray();
         this.orientationVertexArray = new SymbolOrientationArray();
         this.symbolInstanceIndices = [];
-        this.uboBinder = null;
+        this.uboBinder = uboBinder;
         this.featureIdArray = new StructArrayLayout1f4();
         this.featureIdBuffer = null;
         this.cachedBatchIndices = null;
@@ -591,7 +588,7 @@ export class SymbolBuffers {
         uint16Array[baseOffset + 11] = minFontScaleY;
     }
 
-    upload(context: Context, dynamicIndexBuffer: boolean, upload?: boolean, update?: boolean, createZOffsetBuffer?: boolean, hasAppearances?: boolean) {
+    upload(context: Context, dynamicIndexBuffer: boolean, upload?: boolean, createZOffsetBuffer?: boolean, hasAppearances?: boolean) {
         if (this.isEmpty()) {
             return;
         }
@@ -629,16 +626,10 @@ export class SymbolBuffers {
             if (this.featureIdArray.length > 0) {
                 this.featureIdBuffer = context.createVertexBuffer(this.featureIdArray, featureIdAttributes.members, false);
             }
+
+            this.uboBinder.upload(context);
         }
         this._uploadFadeState(context);
-
-        if (upload || update) {
-            this.programConfigurations.upload(context);
-
-            if (this.uboBinder) {
-                this.uboBinder.upload(context);
-            }
-        }
     }
 
     _uploadFadeState(context: Context) {
@@ -663,7 +654,6 @@ export class SymbolBuffers {
 
         this.layoutVertexBuffer.destroy();
         this.indexBuffer.destroy();
-        this.programConfigurations.destroy();
         this.segments.destroy();
         this.dynamicLayoutVertexBuffer.destroy();
         this.opacityVertexBuffer.destroy();
@@ -686,9 +676,7 @@ export class SymbolBuffers {
         if (this.featureIdBuffer) {
             this.featureIdBuffer.destroy();
         }
-        if (this.uboBinder) {
-            this.uboBinder.destroy();
-        }
+        this.uboBinder.destroy();
     }
 }
 
@@ -962,19 +950,8 @@ class SymbolBucket implements Bucket, SymbolSource {
     }
 
     createArrays() {
-        this.text = new SymbolBuffers(
-            new ProgramConfigurationSet(this.layers, {zoom: this.zoom, lut: this.lut}, (property) => {
-                return property.startsWith('text') || property.startsWith('symbol');
-            })
-        );
-        this.icon = new SymbolBuffers(
-            new ProgramConfigurationSet(this.layers, {zoom: this.zoom, lut: this.lut}, (property) => {
-                return property.startsWith('icon') || property.startsWith('symbol');
-            })
-        );
-
-        this.text.uboBinder = new SymbolPropertyBinderUBO(this.layers[0]!, this.zoom, this.lut, true, '', this.maxUniformBlockSizeDwords);
-        this.icon.uboBinder = new SymbolPropertyBinderUBO(this.layers[0]!, this.zoom, this.lut, false, '', this.maxUniformBlockSizeDwords);
+        this.text = new SymbolBuffers(new SymbolPropertyBinderUBO(this.layers[0]!, this.zoom, this.lut, true, '', this.maxUniformBlockSizeDwords));
+        this.icon = new SymbolBuffers(new SymbolPropertyBinderUBO(this.layers[0]!, this.zoom, this.lut, false, '', this.maxUniformBlockSizeDwords));
 
         this.glyphOffsetArray = new GlyphOffsetArray();
         this.lineVertexArray = new SymbolLineVertexArray();
@@ -1993,27 +1970,13 @@ class SymbolBucket implements Bucket, SymbolSource {
         }
     }
 
-    updateExpressions(layers: ReadonlyArray<TypedStyleLayer>) {
-        if (this.text) this.text.programConfigurations.updateExpressions(layers);
-        if (this.icon) this.icon.programConfigurations.updateExpressions(layers);
-    }
-
     update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null, canonical?: CanonicalTileID) {
-        // Traditional attribute-based updates, skipped when UBO is active
-        if (!this.text.uboBinder) {
-            this.text.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, this.worldview);
-        }
-        if (!this.icon.uboBinder) {
-            this.icon.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, this.worldview);
-        }
-
-        // UBO-based updates
         if (canonical) {
             // Update all features when brightness changes and a property stored per feature depends on it.
             // Brightness changes of constant uniforms are applied at draw time.
             if (isBrightnessChanged) {
                 for (const binder of [this.text.uboBinder, this.icon.uboBinder]) {
-                    if (binder && binder.hasLightDependentBlocks(layers[0] as SymbolStyleLayer)) {
+                    if (binder.hasLightDependentBlocks(layers[0] as SymbolStyleLayer)) {
                         binder.updateDynamicExpressions(layers[0] as SymbolStyleLayer, vtLayer, canonical, availableImages, states, brightness);
                     }
                 }
@@ -2024,7 +1987,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 // updateFeaturePaintForAppearance below, so updateFeatures would only
                 // re-evaluate values that are about to be overwritten with the same data.
                 const symbolLayer = layers[0] as SymbolStyleLayer;
-                const binders = [this.text.uboBinder, this.icon.uboBinder].filter(b => b && b.hasStateDependentPaint(symbolLayer));
+                const binders = [this.text.uboBinder, this.icon.uboBinder].filter(b => b.hasStateDependentPaint(symbolLayer));
 
                 if (binders.length > 0) {
                     const featureIds = new Set<string | number>(Object.keys(states).map(id => {
@@ -2037,7 +2000,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                     }));
 
                     for (const binder of binders) {
-                        binder!.updateFeatures(featureIds, symbolLayer, vtLayer, canonical, availableImages, states, brightness);
+                        binder.updateFeatures(featureIds, symbolLayer, vtLayer, canonical, availableImages, states, brightness);
                     }
                 }
             }
@@ -2083,8 +2046,7 @@ class SymbolBucket implements Bucket, SymbolSource {
     }
 
     uploadPending(): boolean {
-        return !this.uploaded || this.text.programConfigurations.needsUpload || this.icon.programConfigurations.needsUpload ||
-            this.text.fadeUploadPending() || this.icon.fadeUploadPending();
+        return !this.uploaded || this.text.fadeUploadPending() || this.icon.fadeUploadPending();
     }
 
     upload(context: Context, canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties) {
@@ -2093,12 +2055,12 @@ class SymbolBucket implements Bucket, SymbolSource {
             this.iconCollisionBox.upload(context);
         }
 
-        this.text.upload(context, this.sortFeaturesByY, !this.uploaded, this.text.programConfigurations.needsUpload, this.zOffsetBuffersNeedUpload, this.hasAppearances!);
+        this.text.upload(context, this.sortFeaturesByY, !this.uploaded, this.zOffsetBuffersNeedUpload, this.hasAppearances!);
 
         if (this.hasAppearances === null) {
             this.hasAppearances = this.layers.some(layer => layer.appearances && layer.appearances.length > 0);
         }
-        this.icon.upload(context, this.sortFeaturesByY, !this.uploaded, this.icon.programConfigurations.needsUpload, this.zOffsetBuffersNeedUpload, this.hasAppearances);
+        this.icon.upload(context, this.sortFeaturesByY, !this.uploaded, this.zOffsetBuffersNeedUpload, this.hasAppearances);
         this.uploaded = true;
     }
 
@@ -2248,7 +2210,6 @@ class SymbolBucket implements Bucket, SymbolSource {
                 const fState = featureStateForThis || {};
                 const activeAppearance = activeAppearanceIndex >= 0 ? layer.appearances[activeAppearanceIndex] : null;
                 for (const binder of uboBinders) {
-                    if (!binder) continue;
                     // updateDynamicExpressions/updateFeatures, which set the layer, may not have
                     // been called for zoom/pitch-only condition changes so we do it here
                     binder.layer = layer;
@@ -2350,7 +2311,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         const quadCountForSegment = maxQuadCount;
 
         // Get batch index before calling prepareSegment so it can force segment boundaries
-        const batchIndex = arrays.uboBinder ? arrays.uboBinder.getCurrentBatchIndex() : undefined;
+        const batchIndex = arrays.uboBinder.getCurrentBatchIndex();
         const segment = arrays.segments.prepareSegment(4 * quadCountForSegment, layoutVertexArray, indexArray, this.canOverlap ? feature.sortKey : undefined, batchIndex);
 
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;
@@ -2406,28 +2367,22 @@ class SymbolBucket implements Bucket, SymbolSource {
             this.glyphOffsetArray.emplaceBack(glyphOffset[0]);
 
             if (i === quads.length - 1 || sectionIndex !== quads[i + 1]!.sectionIndex) {
-                if (!arrays.uboBinder) {
-                    arrays.programConfigurations.populatePaintArrays(layoutVertexArray.length, feature, feature.index, {}, availableImages, canonical, brightness, sections && sections[sectionIndex], this.worldview);
+                const uboIndex = arrays.uboBinder.populateUBO(
+                    feature,
+                    feature.index,
+                    canonical,
+                    availableImages,
+                    brightness,
+                    sections && sections[sectionIndex]
+                );
+                lastUboIndex = uboIndex; // Track for null vertex padding
+                // Add feature ID for each vertex in this section
+                const sectionVertexCount = layoutVertexArray.length - lastPopulatedVertexCount;
+                for (let v = 0; v < sectionVertexCount; v++) {
+                    arrays.featureIdArray.emplaceBack(uboIndex);
                 }
-
-                if (arrays.uboBinder) {
-                    const uboIndex = arrays.uboBinder.populateUBO(
-                        feature,
-                        feature.index,
-                        canonical,
-                        availableImages,
-                        brightness,
-                        sections && sections[sectionIndex]
-                    );
-                    lastUboIndex = uboIndex; // Track for null vertex padding
-                    // Add feature ID for each vertex in this section
-                    const sectionVertexCount = layoutVertexArray.length - lastPopulatedVertexCount;
-                    for (let v = 0; v < sectionVertexCount; v++) {
-                        arrays.featureIdArray.emplaceBack(uboIndex);
-                    }
-                    // Update tracking for next section
-                    lastPopulatedVertexCount = layoutVertexArray.length;
-                }
+                // Update tracking for next section
+                lastPopulatedVertexCount = layoutVertexArray.length;
             }
         }
 
@@ -2437,7 +2392,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             this._addNullVertices(remainingQuads, layoutVertexArray, sizeVertex, globe!, globeExtVertexArray, arrays, hasAnySecondaryIcon, segment, indexArray);
 
             // Add feature IDs for null vertices so they share the last section's UBO entry
-            if (arrays.uboBinder && lastUboIndex >= 0) {
+            if (lastUboIndex >= 0) {
                 const nullVertexCount = remainingQuads * 4; // 4 vertices per quad
                 for (let v = 0; v < nullVertexCount; v++) {
                     arrays.featureIdArray.emplaceBack(lastUboIndex);

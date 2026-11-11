@@ -832,8 +832,8 @@ class Tile {
                 bucket.update(sourceLayerStates, sourceLayer!, images, imagePositions, layers, isBrightnessChanged!, brightness, this.tileID.canonical);
 
                 if (bucket instanceof SymbolBucket) {
-                    if (bucket.text.uboBinder) bucket.text.uboBinder.upload(painter.context);
-                    if (bucket.icon.uboBinder) bucket.icon.uboBinder.upload(painter.context);
+                    bucket.text.uboBinder.upload(painter.context);
+                    bucket.icon.uboBinder.upload(painter.context);
                 } else if (bucket instanceof LineBucket) {
                     for (const {id} of bucket.layers) bucket.uboBinders[id]!.upload(painter.context);
                 }
@@ -847,8 +847,8 @@ class Tile {
                 };
                 const result = bucket.updateAppearances(this.tileID.canonical, sourceLayerStates, images, globalProperties, painter.imageManager, featureStateChanged);
                 if (result && result.hasUboChanges && bucket instanceof SymbolBucket) {
-                    if (bucket.text.uboBinder) bucket.text.uboBinder.upload(painter.context);
-                    if (bucket.icon.uboBinder) bucket.icon.uboBinder.upload(painter.context);
+                    bucket.text.uboBinder.upload(painter.context);
+                    bucket.icon.uboBinder.upload(painter.context);
                 }
             }
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {

@@ -78,8 +78,6 @@ function propStats(bucket) {
 }
 
 function symbolStats(bucketKey, bucket) {
-    propStats(bucket);
-
     stats[bucketKey] = (stats[bucketKey] || 0) +
         bucket.dynamicLayoutVertexArray.arrayBuffer.byteLength +
         bucket.layoutVertexArray.arrayBuffer.byteLength +

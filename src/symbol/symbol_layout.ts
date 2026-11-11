@@ -836,8 +836,8 @@ export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: 
     if (bucket.layers[0]!.getAppearances().length === 0) bucket.iconAtlasPositions = undefined;
 
     // All features are populated now — trim the UBO staging arrays before the bucket is transferred.
-    if (bucket.text.uboBinder) bucket.text.uboBinder.finalize();
-    if (bucket.icon.uboBinder) bucket.icon.uboBinder.finalize();
+    bucket.text.uboBinder.finalize();
+    bucket.icon.uboBinder.finalize();
 }
 
 function reconcileImagePosition(shapedIcon: PositionedIcon | undefined, atlasIconPositions: ImagePositionMap, iconPrimary: ImageVariant, iconSecondary: ImageVariant) {

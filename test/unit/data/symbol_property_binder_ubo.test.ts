@@ -3,7 +3,6 @@ import {SymbolPropertiesUBO} from '../../../src/data/bucket/symbol_properties_ub
 import {HEADER_DATA_DRIVEN_MASK, HEADER_DZR_MASK, HEADER_BLOCK_SIZE_VEC4, HEADER_OFFSETS} from '../../../src/data/bucket/paint_property_ubo';
 import {SymbolPropertyBinderUBO} from '../../../src/data/bucket/symbol_property_binder_ubo';
 import {SymbolBuffers} from '../../../src/data/bucket/symbol_bucket';
-import {ProgramConfigurationSet} from '../../../src/data/program_configuration';
 import SegmentVector from '../../../src/data/segment';
 import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
 import {CanonicalTileID} from '../../../src/source/tile_id';
@@ -563,9 +562,7 @@ describe('SymbolPropertyBinderUBO', () => {
 
     describe('getBatchGrouping', () => {
         function makeBuffers(layer: SymbolStyleLayer): SymbolBuffers {
-            return new SymbolBuffers(
-                new ProgramConfigurationSet([layer], {zoom: 10, lut: null}, (p) => p.startsWith('text') || p.startsWith('symbol'))
-            );
+            return new SymbolBuffers(new SymbolPropertyBinderUBO(layer, 10, null, true));
         }
 
         function makeSegment(batchIndex: number) {

@@ -518,7 +518,7 @@ function drawLayerSymbols(
 
             // When icon-translate is per-feature (appearances define it), the translate is stored
             // in the UBO and applied per-vertex in the shader. The matrix must have no translate.
-            const iconTranslateDataDriven = !!(bucket.icon.uboBinder && bucket.icon.uboBinder.hasPerFeatureTranslate());
+            const iconTranslateDataDriven = bucket.icon.uboBinder.hasPerFeatureTranslate();
             const effectiveIconTranslate: [number, number] = iconTranslateDataDriven ? [0, 0] : iconTranslate;
 
             const uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, effectiveIconTranslate, iconTranslateAnchor, true);
@@ -650,7 +650,7 @@ function drawLayerSymbols(
 
             // When text-translate is per-feature (appearances define it), the translate is stored
             // in the UBO and applied per-vertex in the shader. The matrix must have no translate.
-            const textTranslateDataDriven = !!(bucket.text.uboBinder && bucket.text.uboBinder.hasPerFeatureTranslate());
+            const textTranslateDataDriven = bucket.text.uboBinder.hasPerFeatureTranslate();
             const effectiveTextTranslate: [number, number] = textTranslateDataDriven ? [0, 0] : textTranslate;
 
             const uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, effectiveTextTranslate, textTranslateAnchor, true);
@@ -820,58 +820,52 @@ function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, lay
         dynamicBuffers.push(buffers.fadeVertexBuffer);
     }
 
-    const programConfiguration = buffers.uboBinder ? null : buffers.programConfigurations.get(layer.id);
-
-    // Set constant paint property uniforms (u_spp_*) for UBO mode.
-    if (buffers.uboBinder) {
-        // 'layer' is omitted from worker→main serialization (see register() in symbol_property_binder_ubo.ts).
-        // Reassign the current style layer before any evaluation so paint values are up-to-date.
-        buffers.uboBinder.layer = layer;
-        const renderZoom = painter.transform.zoom;
-        const brightness = painter.style.getBrightness ? painter.style.getBrightness() : null;
-        const cv = buffers.uboBinder.getConstantUniformValues(brightness);
-        uniformValues['u_spp_fill_np_color']     = cv.fill_np_color;
-        uniformValues['u_spp_halo_np_color']     = cv.halo_np_color;
-        uniformValues['u_spp_opacity']           = cv.opacity;
-        uniformValues['u_spp_halo_width']        = cv.halo_width;
-        uniformValues['u_spp_halo_blur']         = cv.halo_blur;
-        uniformValues['u_spp_emissive_strength'] = cv.emissive_strength;
-        uniformValues['u_spp_occlusion_opacity'] = cv.occlusion_opacity;
-        uniformValues['u_spp_z_offset']          = cv.z_offset;
-        // Render zoom's offset from the bucket's own floor zoom (the floor captured at bucket
-        // construction, against which every stored [zm, zM] range is relative — see
-        // SymbolPropertyBinderUBO._floorZoom / _computeZoomRange). Using Math.floor(renderZoom)
-        // here instead would desync from that baked floor whenever the two floors differ (e.g. a
-        // tile whose bucket was built at zoom 10 still rendering while the camera is at zoom 9.x),
-        // and at the exact integer-zoom crossing would snap the fraction from ~0 to ~1
-        // (or vice versa) even though nothing about the underlying property changed — visible as
-        // an icon jump when crossing a floor zoom downward.
-        uniformValues['u_spp_zoom_fraction'] = renderZoom - buffers.uboBinder._floorZoom;
-        // Compute translate-anchor rotation for per-feature translate (appearances).
-        // When translate is data-driven (bit 8 of dataDrivenMask), u_coord_matrix has no translate
-        // baked in (set to [0,0] in drawLayerSymbols). The shader applies per-feature translate
-        // from the UBO rotated by this uniform.
-        const isText = buffers.uboBinder.isText;
-        const translateAnchor = isText ?
-            layer.paint.get('text-translate-anchor') :
-            layer.paint.get('icon-translate-anchor');
-        const hasPerFeatureTranslate = buffers.uboBinder.hasPerFeatureTranslate();
-        const rotAngle = hasPerFeatureTranslate && translateAnchor === 'map' ?
-            painter.transform.angle : 0;
-        uniformValues['u_spp_translate_rotation'] = [Math.cos(rotAngle), Math.sin(rotAngle)];
-    }
+    // Set constant paint property uniforms (u_spp_*).
+    // 'layer' is omitted from worker→main serialization (see register() in symbol_property_binder_ubo.ts).
+    // Reassign the current style layer before any evaluation so paint values are up-to-date.
+    buffers.uboBinder.layer = layer;
+    const renderZoom = painter.transform.zoom;
+    const brightness = painter.style.getBrightness ? painter.style.getBrightness() : null;
+    const cv = buffers.uboBinder.getConstantUniformValues(brightness);
+    uniformValues['u_spp_fill_np_color']     = cv.fill_np_color;
+    uniformValues['u_spp_halo_np_color']     = cv.halo_np_color;
+    uniformValues['u_spp_opacity']           = cv.opacity;
+    uniformValues['u_spp_halo_width']        = cv.halo_width;
+    uniformValues['u_spp_halo_blur']         = cv.halo_blur;
+    uniformValues['u_spp_emissive_strength'] = cv.emissive_strength;
+    uniformValues['u_spp_occlusion_opacity'] = cv.occlusion_opacity;
+    uniformValues['u_spp_z_offset']          = cv.z_offset;
+    // Render zoom's offset from the bucket's own floor zoom (the floor captured at bucket
+    // construction, against which every stored [zm, zM] range is relative — see
+    // SymbolPropertyBinderUBO._floorZoom / _computeZoomRange). Using Math.floor(renderZoom)
+    // here instead would desync from that baked floor whenever the two floors differ (e.g. a
+    // tile whose bucket was built at zoom 10 still rendering while the camera is at zoom 9.x),
+    // and at the exact integer-zoom crossing would snap the fraction from ~0 to ~1
+    // (or vice versa) even though nothing about the underlying property changed — visible as
+    // an icon jump when crossing a floor zoom downward.
+    uniformValues['u_spp_zoom_fraction'] = renderZoom - buffers.uboBinder._floorZoom;
+    // Compute translate-anchor rotation for per-feature translate (appearances).
+    // When translate is data-driven (bit 8 of dataDrivenMask), u_coord_matrix has no translate
+    // baked in (set to [0,0] in drawLayerSymbols). The shader applies per-feature translate
+    // from the UBO rotated by this uniform.
+    const isText = buffers.uboBinder.isText;
+    const translateAnchor = isText ?
+        layer.paint.get('text-translate-anchor') :
+        layer.paint.get('icon-translate-anchor');
+    const hasPerFeatureTranslate = buffers.uboBinder.hasPerFeatureTranslate();
+    const rotAngle = hasPerFeatureTranslate && translateAnchor === 'map' ?
+        painter.transform.angle : 0;
+    uniformValues['u_spp_translate_rotation'] = [Math.cos(rotAngle), Math.sin(rotAngle)];
 
     const {batchIndices, batchSegments} = buffers.getBatchGrouping(segments);
 
     for (const batchIndex of batchIndices) {
         const batchSegmentVector = batchSegments.get(batchIndex);
-        if (buffers.uboBinder) {
-            buffers.uboBinder.bind(context, program.program, batchIndex);
-        }
+        buffers.uboBinder.bind(context, program.program, batchIndex);
         program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, buffers.layoutVertexBuffer,
             buffers.indexBuffer, batchSegmentVector!, layer.paint,
-            painter.transform.zoom, programConfiguration, dynamicBuffers,
-            instanceCount, buffers.uboBinder ? buffers.uboBinder.getUBO(batchIndex) : undefined);
+            painter.transform.zoom, null, dynamicBuffers,
+            instanceCount, buffers.uboBinder.getUBO(batchIndex));
     }
 }
