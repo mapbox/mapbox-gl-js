@@ -1,0 +1,157 @@
+{
+  "description": "Icon with constant, zoom and zoom-and-feature icon-size between zoom stops at scale factor 2 draws at the same size.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 184,
+      "height": 64,
+      "scaleFactor": 2
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 5,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "constant"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -1.32,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "zoom"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0.0,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "composite",
+              "iconSize": 1
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                1.32,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "constant",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": [
+        "==",
+        [
+          "get",
+          "kind"
+        ],
+        "constant"
+      ],
+      "layout": {
+        "icon-image": "fire-station",
+        "icon-allow-overlap": true,
+        "icon-size": 1.5
+      }
+    },
+    {
+      "id": "zoom",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": [
+        "==",
+        [
+          "get",
+          "kind"
+        ],
+        "zoom"
+      ],
+      "layout": {
+        "icon-image": "fire-station",
+        "icon-allow-overlap": true,
+        "icon-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          1,
+          10,
+          2
+        ]
+      }
+    },
+    {
+      "id": "composite",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": [
+        "==",
+        [
+          "get",
+          "kind"
+        ],
+        "composite"
+      ],
+      "layout": {
+        "icon-image": "fire-station",
+        "icon-allow-overlap": true,
+        "icon-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          [
+            "get",
+            "iconSize"
+          ],
+          10,
+          2
+        ]
+      }
+    }
+  ],
+  "sprite": "local://sprites/standard"
+}

@@ -1,0 +1,169 @@
+{
+  "description": "Text with constant, zoom and zoom-and-feature text-size between zoom stops at scale factor 2 draws at the same size.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 112,
+      "height": 40,
+      "scaleFactor": 2
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 5,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "constant"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -0.8,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "zoom"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0.0,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "kind": "composite",
+              "textSize": 8
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0.8,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "constant",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": [
+        "==",
+        [
+          "get",
+          "kind"
+        ],
+        "constant"
+      ],
+      "layout": {
+        "text-field": "A",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-allow-overlap": true,
+        "text-size": 12
+      }
+    },
+    {
+      "id": "zoom",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": [
+        "==",
+        [
+          "get",
+          "kind"
+        ],
+        "zoom"
+      ],
+      "layout": {
+        "text-field": "A",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-allow-overlap": true,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          8,
+          10,
+          16
+        ]
+      }
+    },
+    {
+      "id": "composite",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": [
+        "==",
+        [
+          "get",
+          "kind"
+        ],
+        "composite"
+      ],
+      "layout": {
+        "text-field": "A",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-allow-overlap": true,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          [
+            "get",
+            "textSize"
+          ],
+          10,
+          16
+        ]
+      }
+    }
+  ],
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf"
+}
