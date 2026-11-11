@@ -7,6 +7,7 @@
 - Fix raster array sampling on Android.
 - Fix HD road rendering in vector tiles with an extent other than 8192.
 - Fix a line-dasharray of [] to consistently draw a solid line.
+- Fix order-dependent symbol and fill-extrusion border rendering.
 
 ## 3.35.0-rc.1
 

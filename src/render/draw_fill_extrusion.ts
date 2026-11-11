@@ -797,6 +797,15 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                 reconcileReplacement(centroidA, centroidB);
             }
 
+            // A flat base is written only when both DEMs are loaded, so a building's elevation doesn't
+            // depend on which of its borders is joined last. Until then the parts stay visible and keep
+            // any elevation an earlier join gave them.
+            if (terrain && !(demTile && demTile.dem && neighborDEMTile && neighborDEMTile.dem)) {
+                bucket.showCentroid(partA, 'keep');
+                nBucket.showCentroid(partB, 'keep');
+                continue;
+            }
+
             // Average both tiles' centroid positions along the border for consistent front cutoff.
             // Fall back to BorderCentroidData's own centroid when groupCentroidPos is unset
             // (features without building_id property that are stitched by feature ID).
@@ -907,7 +916,9 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                 if (count > 1) {
                     ib = saveIb; // rewind unprocessed ib so that it is processed again for the next ia
                     centroidA.centroidXY = centroidB.centroidXY = new Point(0, 0);
-                } else if (neighborDEMTile && neighborDEMTile.dem && !moreThanOneBorderIntersected) {
+                } else if (demTile && demTile.dem && neighborDEMTile && neighborDEMTile.dem && !moreThanOneBorderIntersected) {
+                    // Both DEMs are required: flatBase samples both tiles, and checking only the neighbour's
+                    // would make the result depend on which side of the border is processed first.
                     // If any of a or b crosses more than one tile edge, don't support flat roof.
                     // Now we have 1-1 matching of parts in both tiles that share the edge. Calculate flat base
                     // elevation as average of three points: 2 are edge points (combined span projected to border) and

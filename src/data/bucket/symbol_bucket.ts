@@ -2743,7 +2743,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             }
         }
         this.zOffsetSortDirty = false;
-        return this.symbolInstanceIndexesSortedZOffset.sort((aIndex, bIndex) => this.symbolInstances.get(bIndex).zOffset - this.symbolInstances.get(aIndex).zOffset);
+        return this.symbolInstanceIndexesSortedZOffset.sort((aIndex, bIndex) => (this.symbolInstances.get(bIndex).zOffset - this.symbolInstances.get(aIndex).zOffset) || (aIndex - bIndex));
     }
 
     addToSortKeyRanges(symbolInstanceIndex: number, sortKey: number) {

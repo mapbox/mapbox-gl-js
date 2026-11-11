@@ -2,17 +2,12 @@
   "version": 8,
    "metadata": {
     "test": {
-      
       "width": 1024,
       "height": 1024,
       "pixelRatio": 0.5,
       "operations": [
         ["wait"],
         ["wait"]
-      ],
-      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2112"],
-      "skip-test": [
-        {"platform-tag-contains": "web-macos-safari", "reason": "bug: label placement depends on which tests ran before in the same browser session (checked oct-2026) - GLJS-2112"}
       ],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0012},
