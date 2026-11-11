@@ -21,6 +21,6 @@
     "./src/style-spec/rollup.config.js",
     "./internal/scripts/**/*",
     "./plugins/**/rollup.config.ts",
-    "./plugins/mapbox-gl-pmtiles-provider/dist"
+    "./plugins/*/dist"
   ]
 }
