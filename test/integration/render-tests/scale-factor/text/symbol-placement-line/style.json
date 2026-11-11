@@ -1,4 +1,5 @@
 {
+  "description": "Line-placed text with zoom-and-feature text-size between zoom stops at scale factor 2, with collision boxes.",
   "version": 8,
   "metadata": {
     "test": {

@@ -159,7 +159,7 @@ export function evaluateSizeForZoom(sizeData: SizeData, zoom: number, scaleFacto
         if (sizeData.kind === 'camera') {
             uSize = interpolate(sizeData.minSize, sizeData.maxSize, t) * scaleFactor;
         } else {
-            uSizeT = t * scaleFactor;
+            uSizeT = t;
         }
     }
 
