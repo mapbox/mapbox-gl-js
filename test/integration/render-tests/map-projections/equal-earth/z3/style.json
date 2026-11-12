@@ -7,10 +7,6 @@
       "operations": [
         ["setProjection", "equalEarth"],
         ["wait"]
-      ],
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"],
-      "skip-test": [
-        {"platform-tag-contains": "native", "reason": "not-implemented: non-Mercator projections - mapbox/mapbox-gl-native-internal#2534"}
       ]
     }
   },
