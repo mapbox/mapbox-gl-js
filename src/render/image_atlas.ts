@@ -189,9 +189,10 @@ export default class ImageAtlas {
     patternPositions: ImagePositionMap;
     haveRenderCallbacks: ImageId[];
     lut: LUT | null;
+    requiresMipMaps: boolean;
     contentDescriptor: AtlasContentDescriptor | null | undefined;
 
-    constructor(icons: StyleImageMap<StringifiedImageVariant>, patterns: StyleImageMap<StringifiedImageVariant>, lut: LUT | null, imageVersions?: ImageVersionsMap, scope: string = '') {
+    constructor(icons: StyleImageMap<StringifiedImageVariant>, patterns: StyleImageMap<StringifiedImageVariant>, lut: LUT | null, imageVersions?: ImageVersionsMap, scope: string = '', mapAlignedIcons: boolean = false) {
         const iconPositions: ImagePositionMap = new Map();
         const patternPositions: ImagePositionMap = new Map();
         this.haveRenderCallbacks = [];
@@ -255,10 +256,11 @@ export default class ImageAtlas {
         this.image = image;
         this.iconPositions = iconPositions;
         this.patternPositions = patternPositions;
+        this.requiresMipMaps = patternPositions.size > 0 || (mapAlignedIcons && iconPositions.size > 0);
 
         // Create content descriptor if atlas caching is enabled
         if (enableAtlasCaching) {
-            this.contentDescriptor = new AtlasContentDescriptor(sortedIcons, sortedPatterns, imageVersions, lut, scope, variantCache);
+            this.contentDescriptor = new AtlasContentDescriptor(sortedIcons, sortedPatterns, imageVersions, lut, scope, variantCache, mapAlignedIcons);
         }
     }
 
@@ -278,13 +280,14 @@ export default class ImageAtlas {
         this.haveRenderCallbacks = this.haveRenderCallbacks.filter(id => imageManager.hasImage(id, scope));
         imageManager.dispatchRenderCallbacks(this.haveRenderCallbacks, scope);
 
+        let patched = false;
         for (const imageId of imageManager.getUpdatedImages(scope)) {
             for (const id of this.iconPositions.keys()) {
                 const imageVariant = ImageVariant.parse(id);
                 if (ImageId.isEqual(imageVariant.id, imageId)) {
                     const image = imageManager.getImage(imageId, scope);
                     // We don't use the LUT here because it's applied on the GPU
-                    this.patchUpdatedImage(this.iconPositions.get(id), image, texture, null);
+                    patched = this.patchUpdatedImage(this.iconPositions.get(id), image, texture, null) || patched;
                 }
             }
 
@@ -292,16 +295,18 @@ export default class ImageAtlas {
                 const imageVariant = ImageVariant.parse(id);
                 if (ImageId.isEqual(imageVariant.id, imageId)) {
                     const image = imageManager.getImage(imageId, scope);
-                    this.patchUpdatedImage(this.patternPositions.get(id), image, texture, lut || this.lut);
+                    patched = this.patchUpdatedImage(this.patternPositions.get(id), image, texture, lut || this.lut) || patched;
                 }
             }
         }
+
+        if (patched && texture.useMipmap) texture.generateMipmap();
     }
 
-    patchUpdatedImage(position: ImagePosition | null | undefined, image: StyleImage | null | undefined, texture: Texture, lut: LUT | null = null) {
-        if (!position || !image) return;
+    patchUpdatedImage(position: ImagePosition | null | undefined, image: StyleImage | null | undefined, texture: Texture, lut: LUT | null = null): boolean {
+        if (!position || !image) return false;
 
-        if (position.version === image.version) return;
+        if (position.version === image.version) return false;
 
         position.version = image.version;
         const [x, y] = position.tl;
@@ -310,10 +315,11 @@ export default class ImageAtlas {
             const size = {width: image.data.width, height: image.data.height};
             const imageToUpload = new RGBAImage(size);
             RGBAImage.copy(image.data, imageToUpload, {x: 0, y: 0}, {x: 0, y: 0}, size, lut, overrideRGBWithWhite);
-            texture.update(imageToUpload, {position: {x, y}, recreateWhenResize: false});
+            texture.update(imageToUpload, {position: {x, y}, recreateWhenResize: false, generateMipmap: false});
         } else {
-            texture.update(image.data, {position: {x, y}, recreateWhenResize: false});
+            texture.update(image.data, {position: {x, y}, recreateWhenResize: false, generateMipmap: false});
         }
+        return true;
     }
 
 }
@@ -366,8 +372,7 @@ export class ImageAtlasCache {
         const baseMemory = width * height * bytesPerPixel;
 
         // If mipmaps are used, they add ~33% more memory (geometric series: 1 + 1/4 + 1/16 + ... ≈ 1.33)
-        const hasMipmaps = atlas.patternPositions.size > 0;
-        const mipmapMultiplier = hasMipmaps ? 1.33 : 1;
+        const mipmapMultiplier = atlas.requiresMipMaps ? 1.33 : 1;
 
         return Math.ceil(baseMemory * mipmapMultiplier);
     }
@@ -474,8 +479,7 @@ export class ImageAtlasCache {
             // Evict LRU textures if needed to stay within budget
             this.evictTexturesIfNeeded(textureMemory);
 
-            const hasPattern = !!atlas.patternPositions.size;
-            texture = new Texture(context, atlas.image, format, {useMipmap: hasPattern});
+            texture = new Texture(context, atlas.image, format, {useMipmap: atlas.requiresMipMaps});
             this.textures.set(atlas, texture);
             this.textureMemoryUsed += textureMemory;
 

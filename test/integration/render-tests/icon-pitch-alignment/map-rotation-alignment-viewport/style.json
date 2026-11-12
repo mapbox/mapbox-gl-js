@@ -2,6 +2,7 @@
     "version": 8,
     "metadata": {
         "test": {
+            "anisotropicTextureFiltering": true,
             "width": 64,
             "height": 64,
             "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-2780"],

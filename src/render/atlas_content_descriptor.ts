@@ -77,13 +77,13 @@ export class AtlasContentDescriptor {
         imageVersions: ImageVersionsMap,
         lut: LUT | null,
         scope: string = '',
-        variantCache?: Map<StringifiedImageVariant, ImageVariant>
+        variantCache?: Map<StringifiedImageVariant, ImageVariant>,
+        mapAlignedIcons: boolean = false
     ) {
         this.scope = scope;
         this.iconDescriptors = [];
         this.patternDescriptors = [];
-        // Mipmaps are required when patterns are present
-        this.requiresMipMaps = patterns.size > 0;
+        this.requiresMipMaps = patterns.size > 0 || (mapAlignedIcons && icons.size > 0);
 
         // Process icon images
         addDescriptors(icons, imageVersions, this.iconDescriptors, variantCache);
@@ -118,6 +118,7 @@ export class AtlasContentDescriptor {
             seed = combineHash(seed, descriptor.sx);
             seed = combineHash(seed, descriptor.sy);
         }
+        seed = combineHash(seed, this.requiresMipMaps ? 1 : 0);
         this.hash = seed;
     }
 

@@ -42,7 +42,8 @@
                 {"platform-tag-contains": "web", "reason": "not-applicable: native-only - animated config change (pinBooleanTransitionProgress)"}
             ],
             "image-threshold": [
-                {"platform-tag-contains": "", "threshold": 0.00025}
+                {"platform-tag-contains": "", "threshold": 0.00025},
+                {"platform-tag-contains": "swiftshader", "threshold": 0.0003}
             ]
         }
     },

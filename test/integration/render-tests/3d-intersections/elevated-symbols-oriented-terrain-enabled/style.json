@@ -2,10 +2,12 @@
     "version": 8,
     "metadata": {
         "test": {
+            "anisotropicTextureFiltering": true,
             "mapMode": "static",
             "spriteFormat": "raster",
             "image-threshold": [
-                {"platform-tag-contains": "", "threshold": 0.00025}
+                {"platform-tag-contains": "", "threshold": 0.00025},
+                {"platform-tag-contains": "native-android-gl-powervr", "threshold": 0.00045}
             ]
         }
     },

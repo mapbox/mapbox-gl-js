@@ -633,7 +633,11 @@ class WorkerTile {
                     const variantCache = new Map<StringifiedImageVariant, ImageVariant>();
                     const sortedIcons = sortImagesMap(iconMap, variantCache);
                     const sortedPatterns = sortImagesMap(patternMap, variantCache);
-                    const descriptor = new AtlasContentDescriptor(sortedIcons, sortedPatterns, imageVersions, this.lut, this.scope, variantCache);
+                    const mapAlignedIcons = Object.keys(symbolLayoutData).some((key) => {
+                        const layer = (buckets[key] as SymbolBucket).layers[0];
+                        return layer.layout.get('icon-pitch-alignment') === 'map' && symbolLayoutData[key].featureData.some((data) => !!data.iconPrimary);
+                    });
+                    const descriptor = new AtlasContentDescriptor(sortedIcons, sortedPatterns, imageVersions, this.lut, this.scope, variantCache, mapAlignedIcons);
 
                     actor.send('checkAtlasCache', {descriptor, scope: this.scope})
                         .then((cachedPositions) => {
@@ -644,7 +648,7 @@ class WorkerTile {
                                 imageAtlasForTransfer = new ImageAtlasReference(cachedPositions.sourceHash);
                                 positions = cachedPositions;
                             } else {
-                                const imageAtlas = new ImageAtlas(iconMap, patternMap, this.lut, imageVersions, this.scope);
+                                const imageAtlas = new ImageAtlas(iconMap, patternMap, this.lut, imageVersions, this.scope, mapAlignedIcons);
                                 imageAtlasForTransfer = imageAtlas;
                                 positions = imageAtlas;
                             }
@@ -653,7 +657,7 @@ class WorkerTile {
                         })
                         .catch((err: Error) => {
                             if (err.name !== 'AbortError') warnOnce(`[Worker] Error checking atlas cache: ${err.message}`);
-                            const imageAtlas = new ImageAtlas(iconMap, patternMap, this.lut, imageVersions, this.scope);
+                            const imageAtlas = new ImageAtlas(iconMap, patternMap, this.lut, imageVersions, this.scope, mapAlignedIcons);
                             completeBucketProcessing(imageAtlas, imageAtlas);
                         });
                 } else {

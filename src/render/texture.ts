@@ -43,6 +43,7 @@ export type TextureUpdateOptions = {
     premultiply?: boolean;
     position?: {x: number; y: number;};
     recreateWhenResize?: boolean;
+    generateMipmap?: boolean;
 };
 
 class Texture {
@@ -56,6 +57,8 @@ class Texture {
     wrapT: TextureWrap | null | undefined;
     compareMode: TextureCompareMode | null | undefined;
     useMipmap: boolean;
+    sampleMipmap: boolean | undefined;
+    maxAnisotropy: number;
 
     constructor(context: Context, image: TextureImage, format: TextureFormat, options?: {
         useMipmap?: boolean;
@@ -64,6 +67,7 @@ class Texture {
         this.context = context;
         this.format = format;
         this.useMipmap = options && options.useMipmap;
+        this.maxAnisotropy = 1;
         this.texture = context.gl.createTexture();
         this.update(image, {premultiply: options && options.premultiply});
     }
@@ -109,23 +113,39 @@ class Texture {
             }
         }
 
-        if (this.useMipmap) {
+        if (this.useMipmap && (!options || options.generateMipmap !== false)) {
             gl.generateMipmap(gl.TEXTURE_2D);
         }
     }
 
-    bind(filter: TextureFilter, wrap: TextureWrap, ignoreMipMap: boolean = false) {
+    generateMipmap() {
+        const {gl} = this.context;
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.generateMipmap(gl.TEXTURE_2D);
+    }
+
+    bind(filter: TextureFilter, wrap: TextureWrap, ignoreMipMap: boolean = false, anisotropic: boolean = false) {
         const {context} = this;
         const {gl} = context;
         assert(this.texture, 'Texture.bind called after destroy — caller is holding a stale reference');
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-        if (filter !== this.minFilter) {
+        const sampleMipmap = !!this.useMipmap && !ignoreMipMap;
+        if (filter !== this.minFilter || sampleMipmap !== this.sampleMipmap) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER,
-                (this.useMipmap && !ignoreMipMap) ? (filter === gl.NEAREST ? gl.NEAREST_MIPMAP_NEAREST : gl.LINEAR_MIPMAP_LINEAR) : filter
+                sampleMipmap ? (filter === gl.NEAREST ? gl.NEAREST_MIPMAP_NEAREST : gl.LINEAR_MIPMAP_LINEAR) : filter
             );
             this.minFilter = filter;
+            this.sampleMipmap = sampleMipmap;
+        }
+
+        if (context.extTextureFilterAnisotropic) {
+            const maxAnisotropy = anisotropic ? context.extTextureFilterAnisotropicMax : 1;
+            if (maxAnisotropy !== this.maxAnisotropy) {
+                gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
+                this.maxAnisotropy = maxAnisotropy;
+            }
         }
 
         if (wrap !== this.wrapS) {

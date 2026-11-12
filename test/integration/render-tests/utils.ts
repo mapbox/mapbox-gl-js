@@ -140,8 +140,8 @@ export async function renderMap(style, options, currentTestName) {
         performanceMetricsCollection: false,
         tessellationStep: options.tessellationStep,
         contextCreateOptions: {
-            // Anisotropic filtering is disabled
-            extTextureFilterAnisotropicForceOff: true,
+            // Anisotropic filtering is disabled by default
+            extTextureFilterAnisotropicForceOff: !options.anisotropicTextureFiltering,
             // OES_texture_float_linear is enabled by default
             extTextureFloatLinearForceOff: options.textureFloatLinear === undefined ? false : !options.textureFloatLinear,
             // ordinary instancing is enabled by default, manual is disabled
