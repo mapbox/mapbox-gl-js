@@ -11,6 +11,7 @@
 - Fix order-dependent symbol and fill-extrusion border rendering.
 - Fix a performance regression where fill layers re-uploaded every frame, which was especially slow with many feature states.
 - Add experimental `Map#startPerformanceStatisticsCollection` and `Map#stopPerformanceStatisticsCollection` to collect render time, render pass and layer timings, and draw call counters.
+- Fix fill extrusion ground effect vertex & fragment shaders attribute mismatch.
 
 ## 3.35.0-rc.1
 
