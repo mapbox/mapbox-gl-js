@@ -1,3 +1,4 @@
+import assert from '../style-spec/util/assert';
 import {uniqueId, parseCacheControl} from '../util/util';
 import {deserialize as deserializeBucket} from '../data/bucket';
 import Feature from '../util/vectortile_to_geojson';
@@ -470,37 +471,8 @@ class Tile {
         for (const id in this.buckets) {
             const bucket = this.buckets[id]!;
             if (bucket.uploadPending()) {
-                let featureStates: FeatureStates = {};
-                let availableImages: ImageId[] = [];
-                let globalProperties = {
-                    zoom: 0,
-                    pitch: 0,
-                    brightness: 0,
-                    worldview: ""
-                };
-
-                if (painter) {
-                    if (painter.style) {
-                        availableImages = painter.style.listImages();
-
-                        const bucketLayer = bucket.layers[0];
-                        const sourceLayerId = bucketLayer!['sourceLayer'] || '_geojsonTileLayer';
-                        const sourceCache = painter.style.getLayerSourceCache(bucketLayer!);
-
-                        if (sourceCache) {
-                            featureStates = sourceCache._state.getState(sourceLayerId, undefined);
-                        }
-                    }
-
-                    globalProperties = {
-                        zoom: painter.transform.zoom || 0,
-                        pitch: painter.transform.pitch || 0,
-                        brightness: painter.style.getBrightness() || 0,
-                        worldview: painter.worldview || ""
-                    };
-                }
-
-                bucket.upload(context, this.tileID.canonical, featureStates, availableImages, globalProperties);
+                bucket.upload(context);
+                assert(!bucket.uploadPending(), 'bucket still pending upload after upload()');
             }
         }
 

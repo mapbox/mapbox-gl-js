@@ -2049,7 +2049,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         return !this.uploaded || this.text.fadeUploadPending() || this.icon.fadeUploadPending();
     }
 
-    upload(context: Context, canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties) {
+    upload(context: Context) {
         if (!this.uploaded && this.hasDebugData()) {
             this.textCollisionBox.upload(context);
             this.iconCollisionBox.upload(context);

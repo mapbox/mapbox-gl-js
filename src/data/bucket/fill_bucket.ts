@@ -51,7 +51,6 @@ class FillBucket implements Bucket {
 
     hasPattern: boolean;
 
-    uploaded!: boolean;
     projection: ProjectionSpecification;
 
     sourceLayerIndex: number;
@@ -190,7 +189,7 @@ class FillBucket implements Bucket {
     }
 
     uploadPending(): boolean {
-        return !this.uploaded || this.bufferData.needsUpload() || (this.hdExt != null && this.hdExt.needsUpload());
+        return !this.bufferData.uploaded || this.bufferData.needsUpload() || (this.hdExt != null && this.hdExt.needsUpload());
     }
 
     upload(context: Context) {
