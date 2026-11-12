@@ -456,6 +456,9 @@ class Program<Us extends UniformBindings> {
         context.setDepthMode(new DepthMode(depthMode.func === gl.LESS ? gl.LEQUAL : depthMode.func, DepthMode.ReadOnly, depthMode.range));
         context.setStencilMode(StencilMode.disabled);
 
+        const stats = context.performanceStatistics;
+        if (stats) stats.drawCalls += this.forceManualRenderingForInstanceIDShaders ? (instanceCount || 1) : 1;
+
         const count = segment.primitiveLength * 3 * 2; // One triangle corresponds to 3 lines (each has 2 indices)
         const offset = segment.primitiveOffset * 3 * 2 * 2; // One triangles corresponds to 3 lines (2 indices * 2 bytes per index)
 
@@ -559,7 +562,9 @@ class Program<Us extends UniformBindings> {
         const shouldDrawWireframe = drawMode === gl.TRIANGLES && indexBuffer;
 
         const vertexAttribDivisorValue = instanceCount && instanceCount > 0 ? 1 : undefined;
+        const stats = context.performanceStatistics;
         for (const segment of segments.get()) {
+            if (stats) stats.drawCalls += this.forceManualRenderingForInstanceIDShaders ? (instanceCount || 1) : 1;
             const vaos = segment.vaos || (segment.vaos = {});
             const layerVaos = vaos[layerID] || (vaos[layerID] = new Map<WebGLProgram, VertexArrayObject>());
             let vao = layerVaos.get(this.program);

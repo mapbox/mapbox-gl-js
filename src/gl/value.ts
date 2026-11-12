@@ -381,6 +381,13 @@ export class Viewport extends BaseValue<ViewportType> {
 }
 
 export class BindFramebuffer extends BaseValue<WebGLFramebuffer | null | undefined> {
+    context: Context;
+
+    constructor(context: Context) {
+        super(context);
+        this.context = context;
+    }
+
     override getDefault(): WebGLFramebuffer | null {
         return null;
     }
@@ -389,6 +396,8 @@ export class BindFramebuffer extends BaseValue<WebGLFramebuffer | null | undefin
         if (v === this.current && !this.dirty) return;
         const gl = this.gl;
         gl.bindFramebuffer(gl.FRAMEBUFFER, v ?? null);
+        const stats = this.context.performanceStatistics;
+        if (stats) stats.fboSwitchCount++;
         this.current = v;
         this.dirty = false;
     }

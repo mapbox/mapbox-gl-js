@@ -77,7 +77,7 @@ export type ZoomExpression = CameraExpression | CompositeExpression;
 // Keys are the live unevaluated-expression objects a camera expression was un-baked from
 // (disjoint per layer, since each layer owns its own transitionable-paint / appearance objects),
 // so a single cache safely serves every binder instance.
-const cameraWrapCache = new WeakMap<object, PossiblyEvaluatedPropertyValue<unknown>>();
+const cameraWrapCache = new WeakMap<object, object>();
 
 const EMPTY_FEATURE: Feature = {type: 1, id: undefined, properties: {}, geometry: []};
 

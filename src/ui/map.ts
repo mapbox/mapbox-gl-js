@@ -37,6 +37,7 @@ import {MapMouseEvent} from './events';
 import TaskQueue from '../util/task_queue';
 import {PerformanceUtils, PerformanceMarkers} from '../util/performance';
 import {LivePerformanceMarkers, LivePerformanceUtils} from '../util/live_performance';
+import {PerformanceStatisticsCollector} from '../util/performance_statistics';
 import EasedVariable from '../util/eased_variable';
 import {prepareDebug} from '../../modules/debug';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_constants';
@@ -49,6 +50,7 @@ import {DevTools} from './control/devtools';
 import {InteractionSet} from './interactions';
 import {ImageId} from '../style-spec/expression/types/image_id';
 
+import type {PerformanceStatistics, PerformanceStatisticsOptions} from '../util/performance_statistics';
 import type {EmissiveColorPrecision} from '../render/painter';
 import type Marker from '../ui/marker';
 import type {AnimationFrameProvider} from './animation_frame_provider';
@@ -4477,7 +4479,9 @@ export class Map extends Camera {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _contextRestored(event: any) {
+        const performanceStatistics = this.painter.context.performanceStatistics;
         this._setupPainter();
+        this.painter.context.performanceStatistics = performanceStatistics;
         this.painter.resize(Math.ceil(this._containerWidth), Math.ceil(this._containerHeight));
         this._updateTerrain();
         if (this.style) {
@@ -4613,6 +4617,8 @@ export class Map extends Camera {
     _render(paintStartTimeStamp: number) {
         const m = PerformanceUtils.beginMeasure('render');
         this.fire(new Event('renderstart'));
+        const performanceStatistics = this.painter.context.performanceStatistics;
+        if (performanceStatistics) performanceStatistics.beginFrame();
 
         ++this._frameId;
 
@@ -4723,6 +4729,8 @@ export class Map extends Camera {
                 paintStartTimeStamp,
             });
         }
+
+        if (performanceStatistics) performanceStatistics.endFrame();
 
         this.fire(new Event('render'));
 
@@ -5085,6 +5093,7 @@ export class Map extends Camera {
         if (this.style) {
             this.style.destroy();
         }
+        this.stopPerformanceStatisticsCollection();
         this.painter.destroy();
         if (this.handlers) this.handlers.destroy();
         this.handlers = undefined;
@@ -5122,6 +5131,51 @@ export class Map extends Camera {
 
         this._removed = true;
         this.fire(new Event('remove'));
+    }
+
+    /**
+     * Starts the collection of render performance statistics, for development purposes.
+     * The map calls `callback` at the end of the first rendered frame after each sampling window
+     * of `options.samplingDurationMillis`. A map that does not render does not call `callback`.
+     * Collection is off by default and adds no work to the render loop until it starts.
+     *
+     * A call while collection runs stops that collection and starts a new one.
+     * A call with invalid options throws an error and does not change the collection that runs.
+     *
+     * This API is experimental and may change in future releases.
+     *
+     * @experimental
+     * @param {PerformanceStatisticsOptions} options The samplers to enable and the sampling duration.
+     * @param {Function} callback Called with the {@link PerformanceStatistics} of each sampling window.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @example
+     * map.startPerformanceStatisticsCollection({samplers: ['per-frame'], samplingDurationMillis: 1000}, (statistics) => {
+     *     console.log(statistics.mapRenderDurationStatistics.medianMillis);
+     * });
+     */
+    startPerformanceStatisticsCollection(options: PerformanceStatisticsOptions, callback: (statistics: PerformanceStatistics) => void): this {
+        const collector = new PerformanceStatisticsCollector(options, this.painter.cache.size, callback);
+        this.stopPerformanceStatisticsCollection();
+        this.painter.context.performanceStatistics = collector;
+        return this;
+    }
+
+    /**
+     * Stops the collection of render performance statistics started by {@link Map#startPerformanceStatisticsCollection}.
+     * A call when collection does not run has no effect.
+     *
+     * This API is experimental and may change in future releases.
+     *
+     * @experimental
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @example
+     * map.stopPerformanceStatisticsCollection();
+     */
+    stopPerformanceStatisticsCollection(): this {
+        const stats = this.painter.context.performanceStatistics;
+        if (stats) stats.stop();
+        this.painter.context.performanceStatistics = null;
+        return this;
     }
 
     /**

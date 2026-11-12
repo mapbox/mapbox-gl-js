@@ -1078,7 +1078,7 @@ class Painter {
 
         this.imageManager.beginFrame();
 
-        const prepareStartTime = PerformanceUtils.now();
+        const prepareStartTime = this._sectionStartTime();
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id]!;
             if (sourceCache.used) {
@@ -1092,6 +1092,7 @@ class Painter {
             }
         }
         PerformanceUtils.measureLowOverhead(PerformanceUtils.GROUP_RENDERING, 'sourceCaches: prepare', prepareStartTime, undefined);
+        this.context.performanceStatistics?.recordGroup('upload', prepareStartTime);
 
         let clippingActiveThisFrame = false;
         for (const layer of orderedLayers) {
@@ -1386,10 +1387,11 @@ class Painter {
 
         // Shadow pass ==================================================
         if (this._shadowRenderer) {
-            const shadowPassStartTime = PerformanceUtils.now();
+            const shadowPassStartTime = this._sectionStartTime();
             this.renderPass = 'shadow';
             this._shadowRenderer.drawShadowPass(this.style, coordsShadowCasters);
             PerformanceUtils.measureLowOverhead(PerformanceUtils.GROUP_RENDERING, 'Shadow Pass', shadowPassStartTime);
+            this.context.performanceStatistics?.recordGroup('shadowmap', shadowPassStartTime);
         }
 
         // Rebind the main framebuffer now that all offscreen layers have been rendered:
@@ -1435,7 +1437,7 @@ class Painter {
         // Opaque pass ===============================================
         // Draw opaque layers top-to-bottom first.
         this.renderPass = 'opaque';
-        const opaquePassStartTime = PerformanceUtils.now();
+        const opaquePassStartTime = this._sectionStartTime();
         if (this.style.fog && this.transform.projection.supportsFog && this._atmosphere && !this._showOverdrawInspector && shouldRenderAtmosphere) {
             this._atmosphere.drawStars(this, this.style.fog);
         }
@@ -1455,6 +1457,7 @@ class Painter {
             this._atmosphere.drawAtmosphereGlow(this, this.style.fog);
         }
         PerformanceUtils.measureLowOverhead(PerformanceUtils.GROUP_RENDERING, 'Opaque Pass', opaquePassStartTime);
+        this.context.performanceStatistics?.recordGroup('opaque', opaquePassStartTime);
 
         // Sky pass ======================================================
         // Draw all sky layers bottom to top.
@@ -1476,7 +1479,7 @@ class Painter {
         // Translucent pass ===============================================
         // Draw all other layers bottom-to-top.
         this.renderPass = 'translucent';
-        const translucentPassStartTime = PerformanceUtils.now();
+        const translucentPassStartTime = this._sectionStartTime();
         function coordsForTranslucentLayer(layer: TypedStyleLayer, sourceCache?: SourceCache) {
             // For symbol layers in the translucent pass, we add extra tiles to the renderable set
             // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
@@ -1677,6 +1680,7 @@ class Painter {
             this._rain.draw(this);
         }
         PerformanceUtils.measureLowOverhead(PerformanceUtils.GROUP_RENDERING, 'Translucent Pass', translucentPassStartTime);
+        this.context.performanceStatistics?.recordGroup('translucent', translucentPassStartTime);
 
         if (this.options.showTileBoundaries || this.options.showQueryGeometry || this.options.showTileAABBs) {
             // Use source with highest maxzoom
@@ -1758,7 +1762,7 @@ class Painter {
 
         this.id = layer.id;
 
-        const startTime = PerformanceUtils.now();
+        const startTime = this._sectionStartTime();
         this.gpuTimingStart(layer);
         if ((!painter.transform.projection.unsupportedLayers || !painter.transform.projection.unsupportedLayers.includes(layer.type) ||
             (painter.terrain && layer.type === 'custom')) && layer.type !== 'clip' && layer.type !== 'slot' && layer.type !== 'placement-group' && draw[layer.type]) {
@@ -1773,6 +1777,15 @@ class Painter {
         }
         this.gpuTimingEnd();
         PerformanceUtils.measureLowOverhead(PerformanceUtils.GROUP_RENDERING_DETAILED, `renderLayer: ${layer.type.toString()}`, startTime, undefined);
+        this.context.performanceStatistics?.recordLayer(layer.id, startTime);
+    }
+
+    /**
+     * Returns the start time of a measured render section. Production builds strip `PerformanceUtils`,
+     * so the time comes from `performance.now()` while performance statistics collection runs.
+     */
+    _sectionStartTime(): number {
+        return this.context.performanceStatistics ? performance.now() : PerformanceUtils.now();
     }
 
     gpuTimingStart(layer: TypedStyleLayer) {
@@ -1987,7 +2000,9 @@ class Painter {
                 (hdUniforms && hdUniforms[name]) ||
                 (standardUniforms && standardUniforms[name]);
             const allDefines = defines ? globalDefines.concat(defines) : globalDefines;
+            const creationStartTime = this._sectionStartTime();
             program = new Program(this.context, name, shaderSource, config, uniforms!, allDefines, precompiled);
+            this.context.performanceStatistics?.recordProgramCreation(creationStartTime);
             this.cache.set(key, program);
         }
 

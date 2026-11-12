@@ -14,6 +14,7 @@ import type {
     StructArrayMember
 } from '../util/struct_array';
 import type Color from '../style-spec/util/color';
+import type {PerformanceStatisticsCollector} from '../util/performance_statistics';
 
 type ClearArgs = {
     color?: Color;
@@ -75,6 +76,7 @@ class Context {
     activeTexture: ActiveTextureUnit;
     viewport: Viewport;
     bindFramebuffer: BindFramebuffer;
+    performanceStatistics: PerformanceStatisticsCollector | null;
     bindRenderbuffer: BindRenderbuffer;
     bindTexture: BindTexture;
     bindVertexBuffer: BindVertexBuffer;
@@ -145,6 +147,7 @@ class Context {
         this.activeTexture = new ActiveTextureUnit(this);
         this.viewport = new Viewport(this);
         this.bindFramebuffer = new BindFramebuffer(this);
+        this.performanceStatistics = null;
         this.bindRenderbuffer = new BindRenderbuffer(this);
         this.bindTexture = new BindTexture(this);
         this.bindVertexBuffer = new BindVertexBuffer(this);

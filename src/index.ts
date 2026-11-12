@@ -47,6 +47,7 @@ export type {GeoJSONFeature, TargetFeature} from './util/vectortile_to_geojson';
 export type {InteractionEvent} from './ui/interactions';
 export type {PaddingOptions} from './geo/edge_insets';
 export type {RequestParameters, RequestTransformFunction, ResourceType} from './util/ajax';
+export type {PerformanceStatisticsOptions, PerformanceStatistics} from './util/performance_statistics';
 export type {LngLatLike, LngLatBoundsLike} from './geo/lng_lat';
 
 export type {FeatureSelector} from './style/style';
