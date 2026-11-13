@@ -37,9 +37,8 @@ import {MapMouseEvent} from './events';
 import TaskQueue from '../util/task_queue';
 import {PerformanceUtils, PerformanceMarkers} from '../util/performance';
 import {LivePerformanceMarkers, LivePerformanceUtils} from '../util/live_performance';
-import {PerformanceStatisticsCollector} from '../util/performance_statistics';
 import EasedVariable from '../util/eased_variable';
-import {prepareDebug} from '../../modules/debug';
+import {DebugModule, prepareDebug} from '../../modules/debug';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_constants';
 import {setCacheLimits} from '../util/tile_request_cache';
 import {Debug} from '../util/debug';
@@ -559,6 +558,7 @@ export class Map extends Camera {
     _requestManager: RequestManager;
     _locale: Partial<typeof defaultLocale>;
     _removed!: boolean;
+    _performanceStatisticsRequest: object | undefined;
     _speedIndexTiming!: boolean;
     _clickTolerance: number;
     _cooperativeGestures: boolean;
@@ -5141,6 +5141,7 @@ export class Map extends Camera {
      *
      * A call while collection runs stops that collection and starts a new one.
      * A call with invalid options throws an error and does not change the collection that runs.
+     * Collection can start a few frames after the call, while the map loads the code that collects the statistics.
      *
      * This API is experimental and may change in future releases.
      *
@@ -5154,9 +5155,30 @@ export class Map extends Camera {
      * });
      */
     startPerformanceStatisticsCollection(options: PerformanceStatisticsOptions, callback: (statistics: PerformanceStatistics) => void): this {
-        const collector = new PerformanceStatisticsCollector(options, this.painter.cache.size, callback);
+        const {samplers, samplingDurationMillis} = options;
+        if (!Array.isArray(samplers) || !samplers.every(sampler => sampler === 'cumulative' || sampler === 'per-frame')) {
+            throw new Error(`samplers must be an array of 'cumulative', 'per-frame'.`);
+        }
+        if (!(samplingDurationMillis >= 0)) {
+            throw new Error(`samplingDurationMillis must be zero or positive, got ${samplingDurationMillis}.`);
+        }
         this.stopPerformanceStatisticsCollection();
-        this.painter.context.performanceStatistics = collector;
+
+        // The collector lives in the lazy-loaded Debug module; a stop or a restart before it loads cancels this start.
+        const request = this._performanceStatisticsRequest = {};
+        const start = () => {
+            const Collector = DebugModule.PerformanceStatisticsCollector;
+            if (!Collector || this._performanceStatisticsRequest !== request) return false;
+            this.painter.context.performanceStatistics = new Collector(options, this.painter.cache.size, callback);
+            return true;
+        };
+        if (DebugModule.loaded) {
+            start();
+        } else {
+            // A repaint requested right after this call has already rendered without the collector, so render again.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            prepareDebug().then(() => { if (start()) this.triggerRepaint(); });
+        }
         return this;
     }
 
@@ -5175,6 +5197,7 @@ export class Map extends Camera {
         const stats = this.painter.context.performanceStatistics;
         if (stats) stats.stop();
         this.painter.context.performanceStatistics = null;
+        this._performanceStatisticsRequest = undefined;
         return this;
     }
 

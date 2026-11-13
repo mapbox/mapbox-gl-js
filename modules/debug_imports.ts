@@ -1,8 +1,8 @@
 // Non-production code paths: style-spec validators, the style-diff algorithm,
-// and the debug-overlay draw functions. Lifted out of `core.js` so consumers
-// that disable validation (`{validate: false}`), never call
-// `setStyle(..., {diff: true})` after initial load, and never toggle any
-// `map.show*` debug flag never download these ~25KB gz.
+// the debug-overlay draw functions and the performance statistics collector.
+// Lifted out of `core.js` so consumers that disable validation (`{validate: false}`),
+// never call `setStyle(..., {diff: true})` after initial load, never toggle any
+// `map.show*` debug flag and never collect performance statistics never download these.
 //
 // Importing this file is what causes Rollup to emit the `debug.js` chunk
 // (see chunkFileNames in rollup.config.esm.ts).
@@ -25,6 +25,7 @@ import diffStyles from '../src/style-spec/diff';
 import drawDebug, {drawDebugPadding, drawDebugQueryGeometry} from '../src/render/draw_debug';
 import drawCollisionDebug from '../src/render/draw_collision_debug';
 import drawPlacementDebug from '../src/render/draw_placement_debug';
+import {PerformanceStatisticsCollector} from '../src/util/performance_statistics';
 
 // Named `DebugModule` (not `Debug`) so call sites aren't stripped out by the
 // Rollup config for prod builds.
@@ -49,4 +50,5 @@ export const DebugModule = {
     drawDebugQueryGeometry,
     drawCollisionDebug,
     drawPlacementDebug,
+    PerformanceStatisticsCollector,
 };

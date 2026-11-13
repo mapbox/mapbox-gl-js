@@ -89,7 +89,6 @@ export type PerformanceStatistics = {
 
 export type RenderPassGroup = 'upload' | 'shadowmap' | 'opaque' | 'translucent';
 
-const SAMPLERS: Array<PerformanceSampler> = ['cumulative', 'per-frame'];
 const TOP_COUNT = 10;
 
 function durationStatistics(durations: Array<number>): DurationStatistics {
@@ -102,11 +101,9 @@ function durationStatistics(durations: Array<number>): DurationStatistics {
 /**
  * Collects render statistics over sampling windows, with the same semantics as the native Maps SDKs.
  * The map creates it only while collection runs, so the render loop does no extra work otherwise.
+ * It lives in the lazy-loaded Debug module; `Map#startPerformanceStatisticsCollection` validates the options.
  * Times come from `performance.now()`: `PerformanceUtils` calls are stripped from production builds,
  * and `browser.now()` can be frozen with `setNow`.
- *
- * Like the native collector, it gives each group and layer name an index, and keeps durations in arrays
- * by index. This prevents allocations in each frame.
  *
  * @private
  */
@@ -122,36 +119,27 @@ export class PerformanceStatisticsCollector {
     _samplingDuration: number;
     _windowStart: number;
     _frameStart: number;
+    // Durations by render pass or layer name: in the current frame (zeroed rather than cleared each frame to
+    // avoid allocations), and the largest frame duration in the sampling window. Per-frame loops use forEach
+    // because for...of over Map entries allocates an array per entry.
+    _frameGroups: Map<string, number>;
+    _frameLayers: Map<string, number>;
+    _maxGroups!: Map<string, number>;
+    _maxLayers!: Map<string, number>;
     _frameDurations!: Array<number>;
-    _nameIndices: Map<string, number>;
-    _names: Array<string>;
-    // Render durations, indexed by name index. The frame arrays hold the current frame;
-    // the max arrays hold the largest frame duration in the sampling window.
-    _frameGroups: Array<number>;
-    _frameLayers: Array<number>;
-    _maxGroups!: Array<number>;
-    _maxLayers!: Array<number>;
     _shadowMapDurations!: Array<number>;
     _uploadDurations!: Array<number>;
 
     constructor(options: PerformanceStatisticsOptions, programCount: number, callback: (statistics: PerformanceStatistics) => void) {
         const {samplers, samplingDurationMillis} = options;
-        if (!Array.isArray(samplers) || !samplers.every(sampler => SAMPLERS.includes(sampler))) {
-            throw new Error(`samplers must be an array of ${SAMPLERS.map(sampler => `'${sampler}'`).join(', ')}.`);
-        }
-        if (!(samplingDurationMillis >= 0)) {
-            throw new Error(`samplingDurationMillis must be zero or positive, got ${samplingDurationMillis}.`);
-        }
         this._callback = callback;
         this._cumulative = samplers.includes('cumulative');
         this._perFrame = samplers.includes('per-frame');
         this._samplingDuration = Math.trunc(samplingDurationMillis);
         this._windowStart = performance.now();
         this._frameStart = -1;
-        this._nameIndices = new Map();
-        this._names = [];
-        this._frameGroups = [];
-        this._frameLayers = [];
+        this._frameGroups = new Map();
+        this._frameLayers = new Map();
         this._resetWindow();
         this.drawCalls = 0;
         this.graphicsPrograms = programCount;
@@ -169,16 +157,16 @@ export class PerformanceStatisticsCollector {
     beginFrame() {
         this._frameStart = performance.now();
         this.drawCalls = 0;
-        this._frameGroups.fill(0);
-        this._frameLayers.fill(0);
+        this._frameGroups.forEach(zero);
+        this._frameLayers.forEach(zero);
     }
 
     recordGroup(name: RenderPassGroup, startTime: number) {
-        if (this._perFrame && this._frameStart >= 0) this._addDuration(this._frameGroups, name, startTime);
+        if (this._perFrame && this._frameStart >= 0) addDuration(this._frameGroups, name, startTime);
     }
 
     recordLayer(id: string, startTime: number) {
-        if (this._perFrame && this._frameStart >= 0) this._addDuration(this._frameLayers, id, startTime);
+        if (this._perFrame && this._frameStart >= 0) addDuration(this._frameLayers, id, startTime);
     }
 
     recordProgramCreation(startTime: number) {
@@ -197,7 +185,12 @@ export class PerformanceStatisticsCollector {
         const now = performance.now();
         this._frameDurations.push(now - this._frameStart);
         this._frameStart = -1;
-        if (this._perFrame) this._endFrameDurations();
+        if (this._perFrame) {
+            keepMax(this._frameGroups, this._maxGroups);
+            keepMax(this._frameLayers, this._maxLayers);
+            this._shadowMapDurations.push(this._frameGroups.get('shadowmap') || 0);
+            this._uploadDurations.push(this._frameGroups.get('upload') || 0);
+        }
 
         const elapsed = now - this._windowStart;
         if (elapsed < this._samplingDuration) return;
@@ -215,10 +208,12 @@ export class PerformanceStatisticsCollector {
             };
         }
         if (this._perFrame) {
-            const maxGroups = this._maxGroups.map((duration, i) => Math.max(duration, this._maxLayers[i] || 0));
+            // Like the native collector, a render pass and a layer with the same name are one render group.
+            const groups = new Map(this._maxLayers);
+            keepMax(this._maxGroups, groups);
             statistics.perFrameStatistics = {
-                topRenderGroups: this._top(maxGroups.concat(this._maxLayers.slice(maxGroups.length))),
-                topRenderLayers: this._top(this._maxLayers),
+                topRenderGroups: top(groups),
+                topRenderLayers: top(this._maxLayers),
                 shadowMapDurationStatistics: durationStatistics(this._shadowMapDurations),
                 uploadDurationStatistics: durationStatistics(this._uploadDurations)
             };
@@ -232,53 +227,31 @@ export class PerformanceStatisticsCollector {
     }
 
     _resetWindow() {
+        this._maxGroups = new Map();
+        this._maxLayers = new Map();
         this._frameDurations = [];
-        this._maxGroups = [];
-        this._maxLayers = [];
         this._shadowMapDurations = [];
         this._uploadDurations = [];
     }
+}
 
-    /**
-     * Adds the time since `startTime` to the duration of `name` in the current frame.
-     * A name can occur more than once in a frame.
-     */
-    _addDuration(durations: Array<number>, name: string, startTime: number) {
-        let index = this._nameIndices.get(name);
-        if (index === undefined) {
-            index = this._names.push(name) - 1;
-            this._nameIndices.set(name, index);
-        }
-        durations[index] = (durations[index] || 0) + performance.now() - startTime;
-    }
+function addDuration(durations: Map<string, number>, name: string, startTime: number) {
+    durations.set(name, (durations.get(name) || 0) + performance.now() - startTime);
+}
 
-    _endFrameDurations() {
-        const groups = this._frameGroups;
-        const layers = this._frameLayers;
-        for (let i = 0; i < groups.length; i++) this._maxGroups[i] = Math.max(this._maxGroups[i] || 0, groups[i] || 0);
-        for (let i = 0; i < layers.length; i++) this._maxLayers[i] = Math.max(this._maxLayers[i] || 0, layers[i] || 0);
-        this._shadowMapDurations.push(this._frameDuration('shadowmap'));
-        this._uploadDurations.push(this._frameDuration('upload'));
-    }
+function zero(_: number, name: string, durations: Map<string, number>) {
+    durations.set(name, 0);
+}
 
-    /**
-     * Returns the duration of `name` in the current frame. Like the native collector, adds the group
-     * and the layer durations of the name.
-     */
-    _frameDuration(name: string): number {
-        const index = this._nameIndices.get(name);
-        if (index === undefined) return 0;
-        return (this._frameGroups[index] || 0) + (this._frameLayers[index] || 0);
-    }
+function keepMax(source: Map<string, number>, target: Map<string, number>) {
+    source.forEach((duration, name) => {
+        if (duration > (target.get(name) || 0)) target.set(name, duration);
+    });
+}
 
-    /**
-     * Returns the `TOP_COUNT` names with the longest durations, slowest first. Names without a duration are not included.
-     */
-    _top(durations: Array<number>): Array<GroupPerformanceStatistics> {
-        const result: Array<GroupPerformanceStatistics> = [];
-        durations.forEach((durationMillis, index) => {
-            if (durationMillis > 0) result.push({name: this._names[index]!, durationMillis});
-        });
-        return result.sort((a, b) => b.durationMillis - a.durationMillis).slice(0, TOP_COUNT);
-    }
+// The TOP_COUNT longest durations, slowest first.
+function top(durations: Map<string, number>): Array<GroupPerformanceStatistics> {
+    return Array.from(durations, ([name, durationMillis]) => ({name, durationMillis}))
+        .sort((a, b) => b.durationMillis - a.durationMillis)
+        .slice(0, TOP_COUNT);
 }

@@ -15,7 +15,7 @@ export function prepareDebug(): Promise<void> {
     pending = import('./debug_imports').then(({DebugModule: loaded}) => {
         Object.assign(DebugModule, loaded);
     }).catch(() => {
-        warnOnce('Could not load Debug module; style validation is disabled.');
+        warnOnce('Could not load Debug module; style validation and performance statistics are disabled.');
     });
     return pending;
 }

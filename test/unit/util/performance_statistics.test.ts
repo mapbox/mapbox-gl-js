@@ -1,7 +1,7 @@
 import {describe, test, expect, vi} from '../../util/vitest';
 import {PerformanceStatisticsCollector} from '../../../src/util/performance_statistics';
 
-import type {PerformanceSampler, PerformanceStatistics, PerformanceStatisticsOptions} from '../../../src/util/performance_statistics';
+import type {PerformanceStatistics, PerformanceStatisticsOptions} from '../../../src/util/performance_statistics';
 
 type Collection = {
     stats: PerformanceStatisticsCollector;
@@ -198,10 +198,6 @@ describe('PerformanceStatisticsCollector', () => {
         renderFrame(collection, 10, 10, () => timeLayer(collection, 'roads', 10, 12));
         await deliveries();
         expect(collection.results[1].perFrameStatistics.topRenderLayers).toEqual([{name: 'roads', durationMillis: 2}]);
-    });
-
-    test('throws for an unknown sampler', () => {
-        expect(() => startCollection({samplers: ['unknown' as PerformanceSampler]})).toThrowError();
     });
 
     test('does not return timings without the per-frame sampler', async () => {
