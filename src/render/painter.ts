@@ -110,6 +110,25 @@ export type CreateProgramParams = {
     precompiled?: boolean;
 };
 
+/**
+ * Recording of programs during a load.
+ * @private
+ */
+export type ProgramRecordingDuringLoad = {
+    /** map creation time; the other times are ms from it. */
+    start: number;
+    /** Program cache key, when a draw first asked for it. */
+    firstUse: Map<string, number>;
+    /** When the map fired load */
+    loadTime: number | null;
+    /** zoom when the map fired load. */
+    zoom: number | null;
+};
+
+export function createProgramRecordingDuringLoad(start: number): ProgramRecordingDuringLoad {
+    return {start, firstUse: new Map(), zoom: null, loadTime: null};
+}
+
 type WireframeOptions = {
     terrain: boolean;
     layers2D: boolean;
@@ -366,6 +385,7 @@ class Painter {
     emissiveMode: EmissiveMode;
 
     _forceFullRgbaEmissive: boolean = false;
+    _programRecordingDuringLoad: ProgramRecordingDuringLoad | null = null;
 
     constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, scaleFactor: number, worldview: string | undefined, emissiveColorPrecision?: EmissiveColorPrecision) {
         this.context = new Context(gl, contextCreateOptions);
@@ -2004,6 +2024,12 @@ class Painter {
             program = new Program(this.context, name, shaderSource, config, uniforms!, allDefines, precompiled);
             this.context.performanceStatistics?.recordProgramCreation(creationStartTime);
             this.cache.set(key, program);
+        }
+
+        const recording = this._programRecordingDuringLoad;
+        // Skips ProgramPrecompiler's requests; those are guesses, not what actually needs.
+        if (recording && !precompiled && !recording.firstUse.has(key)) {
+            recording.firstUse.set(key, browser.now() - recording.start);
         }
 
         return program as Program<ProgramUniformsType[T]>;

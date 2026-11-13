@@ -37,6 +37,7 @@ import type {TerrainRasterUniformsType} from '../../terrain/terrain_raster_progr
 
 export type FogDefinesType = 'FOG';
 export type TerrainDepthAccessDefinesType = 'DEPTH_D24' | 'DEPTH_OCCLUSION';
+export const MAX_UBO_SIZE_VEC4 = 'MAX_UBO_SIZE_VEC4';
 
 type GlobalDefinesType =
     | 'DEBUG_WIREFRAME'
@@ -71,7 +72,7 @@ export type DynamicDefinesType =
     | TerrainDepthAccessDefinesType
     | ModelDefinesType
     | BuildingDefinesType
-    | `MAX_UBO_SIZE_VEC4 ${number}u`;
+    | `${typeof MAX_UBO_SIZE_VEC4} ${number}u`;
 
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,

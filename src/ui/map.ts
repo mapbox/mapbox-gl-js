@@ -20,7 +20,7 @@ import {
 } from '../util/mapbox';
 import Style from '../style/style';
 import EvaluationParameters from '../style/evaluation_parameters';
-import Painter from '../render/painter';
+import Painter, {createProgramRecordingDuringLoad} from '../render/painter';
 import {Lite} from '../../modules/lite_main';
 import Transform from '../geo/transform';
 import Hash from './hash';
@@ -50,7 +50,7 @@ import {InteractionSet} from './interactions';
 import {ImageId} from '../style-spec/expression/types/image_id';
 
 import type {PerformanceStatistics, PerformanceStatisticsOptions} from '../util/performance_statistics';
-import type {EmissiveColorPrecision} from '../render/painter';
+import type {EmissiveColorPrecision, ProgramRecordingDuringLoad} from '../render/painter';
 import type Marker from '../ui/marker';
 import type {AnimationFrameProvider} from './animation_frame_provider';
 import type Popup from '../ui/popup';
@@ -232,6 +232,8 @@ export type MapOptions = {
     contextCreateOptions?: ContextOptions;
     devtools?: boolean;
     precompilePrograms?: boolean;
+    // Whether to record programs during a load.
+    recordProgramsDuringLoad?: boolean;
     repaint?: boolean;
     fadeDuration?: number;
     placementAlgorithm?: PlacementAlgorithmName;
@@ -575,6 +577,8 @@ export class Map extends Camera {
     _performanceMetricsCollection: boolean;
     _tessellationStep?: number;
     _precompilePrograms: boolean;
+    // Recording of programs during a load.
+    _programRecordingDuringLoad: ProgramRecordingDuringLoad | null;
     _interactions: InteractionSet;
     _scaleFactor: number;
     _tokenExpiration?: number;
@@ -703,6 +707,7 @@ export class Map extends Camera {
         this._containerHeight = 0;
         this._showParseStatus = true;
         this._precompilePrograms = options.precompilePrograms!;
+        this._programRecordingDuringLoad = options.recordProgramsDuringLoad ? createProgramRecordingDuringLoad(browser.now()) : null;
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevationExaggeration = 0;
@@ -4437,6 +4442,7 @@ export class Map extends Camera {
         storeAuthState(gl, true);
 
         this.painter = new Painter(gl, this._contextCreateOptions, this.transform, this._scaleFactor, this._worldview, this._emissiveColorPrecision);
+        this.painter._programRecordingDuringLoad = this._programRecordingDuringLoad;
         this.on('data', (event) => {
             if (event.dataType === 'source') {
                 const elevationSource = this.transform.elevation ? this.transform.elevation._source() : null;
@@ -4737,6 +4743,11 @@ export class Map extends Camera {
         if (this.loaded() && !this._loaded) {
             this._loaded = true;
             LivePerformanceUtils.mark(LivePerformanceMarkers.load);
+            const recording = this._programRecordingDuringLoad;
+            if (recording) {
+                recording.zoom = this.getZoom();
+                recording.loadTime = browser.now() - recording.start;
+            }
             this.fire(new Event('load'));
         }
 
@@ -5529,6 +5540,30 @@ export class Map extends Camera {
     // for cache browser tests
     _setCacheLimits(limit: number, checkThreshold: number) {
         setCacheLimits(limit, checkThreshold);
+    }
+
+    /** Get recorded programs during a load.
+     * @private
+     */
+    _getRecordedProgramsDuringLoad(): {
+        style: string | null;
+        zoom: number | null;
+        loadTime: number;
+        renderer: string | null | undefined;
+        blendFuncExtended: boolean;
+        programs: Array<{key: string; firstUse: number}>;
+    } | null {
+        const recording = this._programRecordingDuringLoad;
+        if (!recording || recording.loadTime === null) return null;
+        const {renderer, extBlendFuncExtended} = this.painter.context;
+        return {
+            style: this.style!.globalId,
+            zoom: recording.zoom,
+            loadTime: recording.loadTime,
+            renderer,
+            blendFuncExtended: !!extBlendFuncExtended,
+            programs: Array.from(recording.firstUse, ([key, firstUse]) => ({key, firstUse})),
+        };
     }
 
     /**

@@ -1,0 +1,122 @@
+// Generated from cold loads; do not edit.
+export type PrecompileZoomGroup = {name: string; min: number; max: number};
+export type PrecompileStyleLists = {zoomGroups: Array<PrecompileZoomGroup>; lists: Record<string, Array<string>>};
+
+// Recorded on ANGLE (Imagination Technologies, PowerVR Rogue GE8320, OpenGL ES 3.2).
+const STANDARD: Record<string, Array<string>> = {
+    flat: [
+        'clippingMask',
+        'background/LIGHTING_3D_MODE',
+        'fill//u_fill-bridge-guard-rail-color/u_fill-opacity/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/z_fill-color/z_fill-outline-color/LIGHTING_3D_MODE',
+        'fill//u_fill-bridge-guard-rail-color/u_fill-color/u_fill-opacity/u_fill-outline-color/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/LIGHTING_3D_MODE',
+        'fill//a_fill-color/a_fill-outline-color/u_fill-bridge-guard-rail-color/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/z_fill-opacity/LIGHTING_3D_MODE',
+        'fill//a_fill-color/a_fill-outline-color/u_fill-bridge-guard-rail-color/u_fill-opacity/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/LIGHTING_3D_MODE',
+        'line/LIGHTING_3D_MODE/MAX_UBO_SIZE_VEC4',
+        'groundShadow/RENDER_SHADOWS',
+        'symbol/LIGHTING_3D_MODE/LEGACY_PLACEMENT_FADE/MAX_UBO_SIZE_VEC4',
+        'symbol/LIGHTING_3D_MODE/Z_OFFSET/LEGACY_PLACEMENT_FADE/MAX_UBO_SIZE_VEC4',
+    ],
+    globe: [
+        'clippingMask',
+        'stars',
+        'globeAtmosphere/FOG/PROJECTION_GLOBE_VIEW/FOG',
+        'globeAtmosphere/FOG/PROJECTION_GLOBE_VIEW/FOG/ALPHA_PASS',
+        'background/USE_MRT1',
+        'globeRaster/LIGHTING_3D_MODE/LIGHTING_3D_ALPHA_EMISSIVENESS/TERRAIN/FOG/PROJECTION_GLOBE_VIEW',
+        'globeRaster/LIGHTING_3D_MODE/LIGHTING_3D_ALPHA_EMISSIVENESS/TERRAIN/FOG/GLOBE_POLES/PROJECTION_GLOBE_VIEW',
+        'fill//a_fill-color/a_fill-outline-color/u_fill-bridge-guard-rail-color/u_fill-opacity/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/USE_MRT1',
+        'fill//u_fill-bridge-guard-rail-color/u_fill-color/u_fill-opacity/u_fill-outline-color/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/USE_MRT1',
+        'fill//u_fill-bridge-guard-rail-color/u_fill-opacity/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/z_fill-color/z_fill-outline-color/USE_MRT1',
+        'line/RENDER_TO_TEXTURE/MAX_UBO_SIZE_VEC4/USE_MRT1',
+        'symbol/LIGHTING_3D_MODE/TERRAIN/PROJECTION_GLOBE_VIEW/LEGACY_PLACEMENT_FADE/MAX_UBO_SIZE_VEC4',
+        'symbol/LIGHTING_3D_MODE/TERRAIN/PROJECTION_GLOBE_VIEW/PROJECTED_POS_ON_VIEWPORT/LEGACY_PLACEMENT_FADE/MAX_UBO_SIZE_VEC4',
+    ],
+    terrain: [
+        'clippingMask',
+        'background/LIGHTING_3D_MODE',
+        'background/USE_MRT1',
+        'terrainRaster/LIGHTING_3D_MODE/LIGHTING_3D_ALPHA_EMISSIVENESS/TERRAIN',
+        'fill//a_fill-color/a_fill-outline-color/u_fill-bridge-guard-rail-color/u_fill-opacity/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/USE_MRT1',
+        'fill//u_fill-bridge-guard-rail-color/u_fill-color/u_fill-opacity/u_fill-outline-color/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/USE_MRT1',
+        'fill//a_fill-color/a_fill-outline-color/u_fill-bridge-guard-rail-color/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/z_fill-opacity/USE_MRT1',
+        'line/RENDER_TO_TEXTURE/MAX_UBO_SIZE_VEC4/USE_MRT1',
+        'fill//u_fill-bridge-guard-rail-color/u_fill-opacity/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/z_fill-color/z_fill-outline-color/USE_MRT1',
+        'symbol/LIGHTING_3D_MODE/TERRAIN/LEGACY_PLACEMENT_FADE/MAX_UBO_SIZE_VEC4',
+        'symbol/LIGHTING_3D_MODE/TERRAIN/Z_OFFSET/LEGACY_PLACEMENT_FADE/MAX_UBO_SIZE_VEC4',
+    ],
+    landmarks: [
+        'clippingMask',
+        'background/LIGHTING_3D_MODE',
+        'fill//u_fill-bridge-guard-rail-color/u_fill-color/u_fill-opacity/u_fill-outline-color/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/LIGHTING_3D_MODE',
+        'fill//a_fill-color/a_fill-outline-color/u_fill-bridge-guard-rail-color/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/z_fill-opacity/LIGHTING_3D_MODE',
+        'fill//a_fill-color/a_fill-outline-color/u_fill-bridge-guard-rail-color/u_fill-opacity/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/LIGHTING_3D_MODE',
+        'groundShadow/RENDER_SHADOWS/NORMAL_OFFSET',
+        'line/LIGHTING_3D_MODE/MAX_UBO_SIZE_VEC4',
+        'modelDepth',
+        'circle//u_circle-blur/u_circle-color/u_circle-opacity/u_circle-radius/u_circle-stroke-color/u_circle-stroke-opacity/u_circle-stroke-width/LIGHTING_3D_MODE/PITCH_WITH_MAP/SCALE_WITH_MAP/DEPTH_D24',
+        'model/LIGHTING_3D_MODE/HAS_TEXTURE_u_occlusionTexture/HAS_ATTRIBUTE_a_uv_2f/HAS_ATTRIBUTE_a_normal_4n/HAS_ATTRIBUTE_a_feature/UNPREMULT_TEXTURE_IN_SHADER/RENDER_SHADOWS/NORMAL_OFFSET/SHADOWS_SINGLE_CASCADE/OCCLUSION_TEXTURE_TRANSFORM',
+        'model/LIGHTING_3D_MODE/HAS_ATTRIBUTE_a_color_4f/HAS_ATTRIBUTE_a_feature/RENDER_SHADOWS/SHADOWS_SINGLE_CASCADE',
+        'model/LIGHTING_3D_MODE/HAS_TEXTURE_u_occlusionTexture/HAS_ATTRIBUTE_a_normal_4n/HAS_ATTRIBUTE_a_feature/UNPREMULT_TEXTURE_IN_SHADER/RENDER_SHADOWS/NORMAL_OFFSET/SHADOWS_SINGLE_CASCADE/OCCLUSION_TEXTURE_TRANSFORM',
+        'symbol/LIGHTING_3D_MODE/LEGACY_PLACEMENT_FADE/MAX_UBO_SIZE_VEC4',
+        'symbol/LIGHTING_3D_MODE/Z_OFFSET/LEGACY_PLACEMENT_FADE/MAX_UBO_SIZE_VEC4',
+    ],
+    threeD: [
+        'clippingMask',
+        'background/LIGHTING_3D_MODE',
+        'fillExtrusionDepth//a_fill-extrusion-base/a_fill-extrusion-color/a_fill-extrusion-emissive-strength/a_fill-extrusion-flood-light-wall-radius/a_fill-extrusion-height/u_fill-extrusion-line-width/u_fill-extrusion-pattern/HAS_CENTROID',
+        'fillExtrusion//a_fill-extrusion-base/a_fill-extrusion-color/a_fill-extrusion-emissive-strength/a_fill-extrusion-flood-light-wall-radius/a_fill-extrusion-height/u_fill-extrusion-line-width/u_fill-extrusion-pattern/LIGHTING_3D_MODE/FAUX_AO/HAS_CENTROID/RENDER_SHADOWS/NORMAL_OFFSET/SHADOWS_SINGLE_CASCADE',
+        'fillExtrusionGroundEffect//a_fill-extrusion-flood-light-ground-radius/SDF_SUBPASS/HAS_CENTROID',
+        'groundShadow/RENDER_SHADOWS',
+        'fillExtrusionGroundEffect//a_fill-extrusion-flood-light-ground-radius/HAS_CENTROID',
+        'fill//u_fill-bridge-guard-rail-color/u_fill-color/u_fill-opacity/u_fill-outline-color/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/LIGHTING_3D_MODE',
+        'fill//a_fill-color/a_fill-outline-color/u_fill-bridge-guard-rail-color/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/z_fill-opacity/LIGHTING_3D_MODE',
+        'fill//a_fill-color/a_fill-outline-color/u_fill-bridge-guard-rail-color/u_fill-opacity/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset/LIGHTING_3D_MODE',
+        'line/LIGHTING_3D_MODE/MAX_UBO_SIZE_VEC4',
+        'circle//u_circle-blur/u_circle-color/u_circle-opacity/u_circle-radius/u_circle-stroke-color/u_circle-stroke-opacity/u_circle-stroke-width/LIGHTING_3D_MODE/PITCH_WITH_MAP/SCALE_WITH_MAP/DEPTH_D24',
+        'line/LIGHTING_3D_MODE/TERRAIN/MAX_UBO_SIZE_VEC4/ELEVATED',
+        'modelDepth',
+        'groundShadow/RENDER_SHADOWS/NORMAL_OFFSET',
+        'model/LIGHTING_3D_MODE/HAS_TEXTURE_u_occlusionTexture/HAS_ATTRIBUTE_a_uv_2f/HAS_ATTRIBUTE_a_normal_4n/HAS_ATTRIBUTE_a_feature/UNPREMULT_TEXTURE_IN_SHADER/RENDER_SHADOWS/NORMAL_OFFSET/SHADOWS_SINGLE_CASCADE/OCCLUSION_TEXTURE_TRANSFORM',
+        'model/LIGHTING_3D_MODE/HAS_ATTRIBUTE_a_color_4f/HAS_ATTRIBUTE_a_feature/RENDER_SHADOWS/SHADOWS_SINGLE_CASCADE',
+        'modelDepth/MODEL_POSITION_ON_GPU',
+        'modelDepth/MODEL_POSITION_ON_GPU/INSTANCED_ARRAYS',
+        'model/LIGHTING_3D_MODE/MODEL_POSITION_ON_GPU/HAS_ATTRIBUTE_a_color_3f/HAS_ATTRIBUTE_a_normal_4n/UNPREMULT_TEXTURE_IN_SHADER/RENDER_SHADOWS/NORMAL_OFFSET',
+        'model/LIGHTING_3D_MODE/MODEL_POSITION_ON_GPU/INSTANCED_ARRAYS/HAS_ATTRIBUTE_a_color_3f/HAS_ATTRIBUTE_a_normal_4n/UNPREMULT_TEXTURE_IN_SHADER/RENDER_SHADOWS/NORMAL_OFFSET',
+        'symbol/LIGHTING_3D_MODE/LEGACY_PLACEMENT_FADE/MAX_UBO_SIZE_VEC4',
+        'symbol/LIGHTING_3D_MODE/Z_OFFSET/LEGACY_PLACEMENT_FADE/MAX_UBO_SIZE_VEC4',
+    ],
+};
+
+// Recorded on ANGLE (Imagination Technologies, PowerVR Rogue GE8320, OpenGL ES 3.2).
+const CLASSIC: Record<string, Array<string>> = {
+    globe: [
+        'clippingMask',
+        'globeAtmosphere/FOG/PROJECTION_GLOBE_VIEW/FOG',
+        'globeAtmosphere/FOG/PROJECTION_GLOBE_VIEW/FOG/ALPHA_PASS',
+        'background',
+        'globeRaster/FOG/PROJECTION_GLOBE_VIEW',
+        'globeRaster/FOG/GLOBE_POLES/PROJECTION_GLOBE_VIEW',
+        'fill//u_fill-bridge-guard-rail-color/u_fill-color/u_fill-opacity/u_fill-outline-color/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset',
+        'fillOutline//u_fill-bridge-guard-rail-color/u_fill-color/u_fill-opacity/u_fill-outline-color/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset',
+        'line/RENDER_TO_TEXTURE/MAX_UBO_SIZE_VEC4',
+        'symbol/PROJECTION_GLOBE_VIEW/LEGACY_PLACEMENT_FADE/MAX_UBO_SIZE_VEC4',
+    ],
+    flat: [
+        'clippingMask',
+        'background',
+        'fill//u_fill-bridge-guard-rail-color/u_fill-color/u_fill-opacity/u_fill-outline-color/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset',
+        'fillOutline//u_fill-bridge-guard-rail-color/u_fill-color/u_fill-opacity/u_fill-outline-color/u_fill-pattern/u_fill-tunnel-structure-color/u_fill-z-offset',
+        'line/MAX_UBO_SIZE_VEC4',
+        'symbol/LEGACY_PLACEMENT_FADE/MAX_UBO_SIZE_VEC4',
+    ],
+};
+
+// By the style URL the map is given, without its query.
+export const PRECOMPILE_LISTS: Record<string, PrecompileStyleLists> = {
+    'mapbox://styles/mapbox/standard': {zoomGroups: [{name: 'flat', min: 6, max: 6}, {name: 'flat', min: 13.7, max: 14.2}, {name: 'globe', min: 0, max: 6}, {name: 'terrain', min: 6, max: 13.7}, {name: 'landmarks', min: 15, max: 15}, {name: 'landmarks', min: 14.2, max: 15}, {name: 'threeD', min: 15, max: 100}], lists: STANDARD},
+    'mapbox://styles/mapbox/streets-v12': {zoomGroups: [{name: 'globe', min: 0, max: 6}, {name: 'flat', min: 6, max: 100}], lists: CLASSIC},
+    'mapbox://styles/mapbox/light-v11': {zoomGroups: [{name: 'globe', min: 0, max: 6}, {name: 'flat', min: 6, max: 100}], lists: CLASSIC},
+    'mapbox://styles/mapbox/dark-v11': {zoomGroups: [{name: 'globe', min: 0, max: 6}, {name: 'flat', min: 6, max: 100}], lists: CLASSIC},
+    // No projection in its style JSON: flat at every zoom.
+    'mapbox://styles/mapbox/streets-v11': {zoomGroups: [{name: 'flat', min: 0, max: 100}], lists: CLASSIC},
+};
