@@ -156,6 +156,8 @@ export function drawFillFrcCoverageFirstPass(p: FillFrcCoverageFirstPassParams):
     const isStructureLayer = bucket.sourceLayerName === 'structure';
     if (!isRoadLayer && !isStructureLayer) return 'fallthrough';
     if (!painter.frcCoverageSnapshot || elevatedGeometry) return 'fallthrough';
+    const fadeRange = painter.frcCoverageFadeRange;
+    if (fadeRange == null || painter.transform.zoom < fadeRange[0]) return 'fallthrough';
     const coverageTile = painter.frcCoverageSnapshot.getTileOrParent(coord.canonical);
     if (!coverageTile || coverageTile.frcMask === 0) return 'fallthrough';
 

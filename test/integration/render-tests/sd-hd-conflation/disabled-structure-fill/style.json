@@ -1,0 +1,89 @@
+{
+  "description": "Conflation disabled (sdCoverageFadeRange [0,0]) with HD coverage tiles loaded: SD structure fills under the coverage area must render at full opacity rather than being skipped or faded out.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256,
+      "operations": [
+        ["wait"],
+        ["wait"],
+        ["wait"]
+      ],
+      "image-threshold": [
+        {"platform-tag-contains": "", "threshold": 0.001}
+      ]
+    }
+  },
+  "center": [13.27969, 52.50241],
+  "zoom": 15,
+  "sources": {},
+  "layers": [],
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "",
+      "data": {
+        "version": 8,
+        "sources": {
+          "composite": {
+            "tiles": ["local://tiles/hd/composite-{z}-{x}-{y}.mvt"],
+            "type": "vector",
+            "maxzoom": 14
+          }
+        },
+        "layers": [
+          {
+            "id": "background",
+            "type": "background",
+            "paint": {"background-color": "white"}
+          },
+          {
+            "id": "land-structure-polygon",
+            "type": "fill",
+            "source": "composite",
+            "source-layer": "structure",
+            "filter": ["all", ["==", ["get", "class"], "land"], ["==", ["geometry-type"], "Polygon"]],
+            "paint": {"fill-color": "black"}
+          }
+        ]
+      }
+    },
+    {
+      "id": "hd-roads-config",
+      "url": "",
+      "data": {
+        "version": 8,
+        "schema": {
+          "sdCoverageFadeRange": {"default": [0, 0], "type": "number", "array": true},
+          "sdCoverageSourceLayers": {"default": ["none"], "type": "string", "array": true}
+        },
+        "sources": {
+          "hd-roads": {
+            "tiles": ["local://tiles/hd/hd-road-{z}-{x}-{y}.mvt"],
+            "type": "vector",
+            "maxzoom": 14
+          }
+        },
+        "layers": [
+          {
+            "id": "hd-coverage",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_coverage",
+            "paint": {"fill-opacity": 0}
+          },
+          {
+            "id": "hd-area",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_polygon",
+            "filter": ["match", ["get", "class"], ["bridge", "road"], true, false],
+            "layout": {"fill-elevation-reference": "hd-road-base"},
+            "paint": {"fill-color": "red"}
+          }
+        ]
+      }
+    }
+  ]
+}
