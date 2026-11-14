@@ -60,6 +60,23 @@ describe('LngLat', () => {
         expect(d < 3935752).toBeTruthy();
     });
 
+    test('#distanceTo preserves short distances', () => {
+        const start = new LngLat(5.1, 52.1);
+        const end = new LngLat(5.100001, 52.1);
+        expect(start.distanceTo(end)).toBeCloseTo(0.06830549, 7);
+    });
+
+    test('#distanceTo returns zero for identical coordinates', () => {
+        const point = new LngLat(5.1, 10);
+        expect(point.distanceTo(point)).toBe(0);
+    });
+
+    test('#distanceTo returns a finite distance for antipodal coordinates', () => {
+        const start = new LngLat(0, -89.9926);
+        const end = new LngLat(180, 89.9926);
+        expect(start.distanceTo(end)).toBeCloseTo(Math.PI * 6371008.8, 0);
+    });
+
     test('#distanceTo to pole', () => {
         const newYork = new LngLat(-74.0060, 40.7128);
         const northPole = new LngLat(-135, 90);
