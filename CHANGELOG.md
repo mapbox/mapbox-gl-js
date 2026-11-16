@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 3.36.0-rc.1
+
 - Remove unreachable shader code from the bundle.
 - Fix clean-up of telemetry classes.
 - Apply fog to symbols with `icon-pitch-alignment` or `text-pitch-alignment` set to `map`.
