@@ -2,6 +2,7 @@ in highp vec2 uv;
 in highp float particleRandomValue;
 
 uniform sampler2D u_texScreen;
+uniform vec2 u_screenSize;
 
 uniform float u_distortionStrength;
 
@@ -33,13 +34,9 @@ void main() {
 
     float alpha = abs(shape) * u_color.a;
 
+    vec2 deltaScreen = fragcoord_to_bottom_left_uv(u_thinningCenterPos, u_screenSize) - fragcoord_to_bottom_left_uv(gl_FragCoord.xy, u_screenSize);
 
-    vec2 screenSize = vec2(textureSize(u_texScreen, 0));
-
-    vec2 thinningCenterPos = u_thinningCenterPos.xy;
-    thinningCenterPos.y = screenSize.y - thinningCenterPos.y;
-
-    float screenDist = length((thinningCenterPos - gl_FragCoord.xy) / (0.5 * screenSize));
+    float screenDist = 2.0 * length(deltaScreen);
     screenDist += (0.5 + 0.5 * particleRandomValue) * u_thinningParticleOffset;
 
     float thinningShapeDist = u_thinningShape.x + u_thinningShape.y;
@@ -51,7 +48,7 @@ void main() {
     }
 
     vec2 offsetXY = normalize(uvm) * abs(shape);
-    vec2 stScreen = (gl_FragCoord.xy + offsetXY * u_distortionStrength * thinningAlpha) / screenSize;
+    vec2 stScreen = fragcoord_to_bottom_left_uv(gl_FragCoord.xy + offsetXY * u_distortionStrength * thinningAlpha, u_screenSize);
     vec3 colorScreen = texture(u_texScreen, stScreen).rgb;
 
     alpha *= thinningAlpha;

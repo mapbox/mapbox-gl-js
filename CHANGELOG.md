@@ -4,6 +4,8 @@
 
 - Fix devtools serialization for duplicate entries.
 
+- Optimize rain fragment shader.
+
 ## 3.36.0-rc.1
 
 - Remove unreachable shader code from the bundle.

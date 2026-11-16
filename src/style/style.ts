@@ -1777,6 +1777,10 @@ class Style extends Evented<MapEvents> {
         if (this._drapingLoaded === false)
             return false;
 
+        // Precipitation is drawn by the lazily loaded HD module in ESM builds.
+        if ((this.rain || this.snow) && !HD.loaded)
+            return false;
+
         if (this._rasterArrayLoaded === false)
             return false;
 
