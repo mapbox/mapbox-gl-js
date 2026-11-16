@@ -677,13 +677,15 @@ export class StyleLoadEvent extends TelemetryEvent {
     }
 }
 
+type MetricName = `maps/js/${string}/${string}`;
+
 type MetricsEventAttribute = {
-    name: string,
+    name: MetricName,
     value?: string
 };
 
 type MetricsEventCounter = {
-    name: string,
+    name: MetricName,
     value?: number
 };
 
@@ -692,13 +694,11 @@ type MetricsEventPayload = {
     counters?: MetricsEventCounter[]
 };
 class MetricsEvent extends TelemetryEvent {
-    data!: MetricsEventPayload;
-    constructor(data?: MetricsEventPayload) {
+    constructor() {
         super('metrics');
-        if (data) this.data = data;
     }
 
-    postMetricsEvent(customAccessToken: string | null | undefined) {
+    postMetricsEvent(customAccessToken: string | null | undefined, data: MetricsEventPayload & {event?: TelemetryEventData['eventType']}) {
         if (!isTelemetryEnabled(customAccessToken)) return;
 
         if (!this.anonId) {
@@ -709,7 +709,7 @@ class MetricsEvent extends TelemetryEvent {
             this.refreshUUID();
         }
 
-        const payload = {...this.data, sessionId: this.anonId} as MetricsEventPayload;
+        const payload = {...data, sessionId: this.anonId} as MetricsEventPayload;
 
         this.queueRequest({
             timestamp: Date.now(),
@@ -893,13 +893,10 @@ export const styleLoadEvent: StyleLoadEvent = new StyleLoadEvent();
 
 export const postStyleLoadEvent: (arg1: string | null | undefined, arg2: StyleLoadEventInput) => void = styleLoadEvent.postStyleLoadEvent.bind(styleLoadEvent);
 
-export const styleWithAppearanceEvent = new MetricsEvent({attributes: [{name: 'maps/js/layer-animations/style-with-appearances'}]});
+export const metricsEvent: MetricsEvent = new MetricsEvent();
 
-export const postStyleWithAppearanceEvent: (arg1: string | null | undefined) => void = styleWithAppearanceEvent.postMetricsEvent.bind(styleWithAppearanceEvent);
-
-export const addedAppearanceEvent = new MetricsEvent({attributes: [{name: 'maps/js/layer-animations/runtime-appearances'}]});
-
-export const postAddedAppearanceEvent: (arg1: string | null | undefined) => void = addedAppearanceEvent.postMetricsEvent.bind(addedAppearanceEvent);
+export type TelemetryEventData =
+    | {eventType: 'metrics'} & MetricsEventPayload;
 
 export const performanceEvent_: PerformanceEvent = new PerformanceEvent();
 

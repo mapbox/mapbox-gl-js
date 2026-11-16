@@ -15,8 +15,7 @@ import {
     AUTH_ERR_MSG,
     storeAuthState,
     removeAuthState,
-    postStyleWithAppearanceEvent,
-    postAddedAppearanceEvent
+    metricsEvent
 } from '../util/mapbox';
 import Style from '../style/style';
 import EvaluationParameters from '../style/evaluation_parameters';
@@ -773,6 +772,7 @@ export class Map extends Camera {
             throw new Error(`Failed to initialize WebGL.`);
         }
 
+        this.on('telemetry', ({type, target, eventType, ...data}) => metricsEvent.postMetricsEvent(this._requestManager._customAccessToken, {...data, event: eventType}));
         this.on('move', () => this._update(false));
         this.on('moveend', () => this._update(false));
         this.on('zoom', () => this._update(true));
@@ -5020,11 +5020,11 @@ export class Map extends Camera {
             return;
         }
 
-        postStyleWithAppearanceEvent(this._requestManager._customAccessToken);
+        this.fire('telemetry', {eventType: 'metrics', attributes: [{name: 'maps/js/layer-animations/style-with-appearances'}]});
     }
 
     _postAddingAppearancesToStyleEvent() {
-        postAddedAppearanceEvent(this._requestManager._customAccessToken);
+        this.fire('telemetry', {eventType: 'metrics', attributes: [{name: 'maps/js/layer-animations/runtime-appearances'}]});
     }
 
     _updateTerrain() {

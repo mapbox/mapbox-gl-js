@@ -152,6 +152,16 @@ expectType<mapboxgl.MapboxOptions>({
     cooperativeGestures: true,
 });
 
+map.fire('telemetry', {eventType: 'metrics', attributes: [{name: 'maps/js/my-area/my-metric', value: 'on'}], counters: [{name: 'maps/js/my-area/count', value: 1}]});
+// @ts-expect-error Only metrics events can be sent.
+map.fire('telemetry', {eventType: 'map.load'});
+// @ts-expect-error The event type is required.
+map.fire('telemetry', {attributes: [{name: 'maps/js/my-area/my-metric'}]});
+// @ts-expect-error Metric names must look like maps/js/<area>/<metric>.
+map.fire('telemetry', {eventType: 'metrics', attributes: [{name: 'draw/mode'}]});
+// @ts-expect-error Counter values must be numbers.
+map.fire('telemetry', {eventType: 'metrics', counters: [{name: 'maps/js/draw/features', value: 'many'}]});
+
 /**
  * Create and style marker clusters
  */

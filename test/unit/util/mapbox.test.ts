@@ -663,8 +663,8 @@ describe("mapbox", () => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             window.useFakeXMLHttpRequest();
             config.API_URL = 'http://localhost:8080';
-            mapbox.postStyleWithAppearanceEvent(makeExpirationToken(1774345201000));
-            expect(mapbox.styleWithAppearanceEvent.queue.length).toEqual(0);
+            mapbox.metricsEvent.postMetricsEvent(makeExpirationToken(1774345201000), {attributes: [{name: 'maps/js/layer-animations/style-with-appearances'}]});
+            expect(mapbox.metricsEvent.queue.length).toEqual(0);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(window.server.requests.length).toEqual(0);
         });

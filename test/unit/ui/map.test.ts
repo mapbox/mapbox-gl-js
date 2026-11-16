@@ -1508,9 +1508,44 @@ test('Disallow usage of FQID separator in the public APIs', async () => {
     }
 });
 
+describe('Map telemetry event', () => {
+    test('sends the metrics with the map access token', async () => {
+        const map = createMap({accessToken: 'pk.custom'});
+        const fetch = vi.spyOn(window, 'fetch').mockImplementation(() => Promise.resolve(new window.Response()));
+        map.fire('telemetry', {eventType: 'metrics', attributes: [{name: 'maps/js/draw/mode', value: 'polygon'}]});
+        await new Promise(r => { setTimeout(r, 0); });
+        const request = fetch.mock.calls.map(([r]) => r as Request).find(r => r.url.startsWith('https://events.mapbox.com/'));
+        expect(new URL(request.url).searchParams.get('access_token')).toEqual('pk.custom');
+        const body = await request.text();
+        expect(body).toContain('"event":"metrics"');
+        expect(body).toContain('"attributes":[{"name":"maps/js/draw/mode","value":"polygon"}]');
+    });
+
+    test('sends any payload unchanged', async () => {
+        const map = createMap({accessToken: 'pk.custom'});
+        const fetch = vi.spyOn(window, 'fetch').mockImplementation(() => Promise.resolve(new window.Response()));
+        const payload = {
+            eventType: 'any.event',
+            attributes: [{name: 'any/name', value: 1, extra: {nested: [true, null]}}],
+            counters: ['not an object'],
+            custom: {field: 1}
+        };
+        // @ts-expect-error The types accept only metrics events, but GL JS sends any payload.
+        map.fire('telemetry', payload);
+        await new Promise(r => { setTimeout(r, 0); });
+        const request = fetch.mock.calls.map(([r]) => r as Request).find(r => r.url.startsWith('https://events.mapbox.com/'));
+        const [{created, sessionId, ...sent}] = JSON.parse(await request.text()) as Array<Record<string, unknown>>;
+        const {eventType, ...rest} = payload;
+        expect(sent).toEqual({...rest, event: eventType});
+        expect(typeof created).toEqual('string');
+        expect(typeof sessionId).toEqual('string');
+    });
+});
+
 describe('Map#setLayerProperty', () => {
     test('fires the appearances telemetry event', async () => {
         const map = createMap({
+            accessToken: 'pk.custom',
             style: {
                 version: 8,
                 sources: {},
@@ -1518,9 +1553,11 @@ describe('Map#setLayerProperty', () => {
             }
         });
         await waitFor(map, 'style.load');
-        const telemetrySpy = vi.spyOn(map, '_postAddingAppearancesToStyleEvent').mockImplementation(() => {});
+        const fetch = vi.spyOn(window, 'fetch').mockImplementation(() => Promise.resolve(new window.Response()));
         map.setLayerProperty('bg', 'appearances', []);
-        expect(telemetrySpy).toHaveBeenCalledTimes(1);
+        await new Promise(r => { setTimeout(r, 0); });
+        const request = fetch.mock.calls.map(([r]) => r as Request).find(r => r.url.startsWith('https://events.mapbox.com/'));
+        expect(await request.text()).toContain('"attributes":[{"name":"maps/js/layer-animations/runtime-appearances"}]');
     });
 });
 

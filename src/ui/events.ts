@@ -8,6 +8,7 @@ import type {Map as MapboxMap} from './map';
 import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {EventData, EventOf} from '../util/evented';
 import type {SourceSpecification} from '../style-spec/types';
+import type {TelemetryEventData} from '../util/mapbox';
 
 export type MapMouseEventType =
     | 'mousedown'
@@ -1541,6 +1542,17 @@ export type MapEvents = {
      * });
      */
     'style.import.load': void;
+
+    /**
+     * Fire this event to send a metrics event to Mapbox telemetry with the map's access token.
+     * Metric names must look like `maps/js/<area>/<metric>`. Nothing is sent when telemetry is disabled.
+     *
+     * @private
+     * @experimental
+     * @example
+     * map.fire('telemetry', {eventType: 'metrics', attributes: [{name: 'maps/js/draw/mode', value: 'polygon'}]});
+     */
+    'telemetry': TelemetryEventData;
 
     /**
      * Fired after speed index calculation is completed if `speedIndexTiming` option has been set to `true`.
