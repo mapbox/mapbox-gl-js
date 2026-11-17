@@ -8,7 +8,7 @@
         ["setProjection", "albers"],
         ["wait"]
       ],
-      "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/2534", "https://mapbox.atlassian.net/browse/GLJS-2151"],
+      "tickets": ["https://mapbox.atlassian.net/browse/GLJS-2151"],
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00035}
       ]

@@ -10,8 +10,7 @@
           ["wait"],
           ["setProjection", {"name": "albers", "parallels": [30, -30]}],
           ["wait"]
-        ],
-        "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"]
+        ]
       }
     },
     "center": [-122.414, 37.776],

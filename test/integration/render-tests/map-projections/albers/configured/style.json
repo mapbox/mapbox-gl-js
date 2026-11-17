@@ -14,8 +14,7 @@
             "parallels": [70, 60]
           }],
           ["wait"]
-        ],
-        "tickets": ["https://github.com/mapbox/mapbox-gl-native-internal/issues/2534"]
+        ]
       }
     },
     "center": [-154, 63],
