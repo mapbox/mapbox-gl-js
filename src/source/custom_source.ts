@@ -176,6 +176,8 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
     _dispatcher: Dispatcher;
     _dataType: DataType | null | undefined;
     _implementation: CustomSourceInterface<T>;
+    _tileRequestSeq: number = 0;
+    _tileAppliedSeq: WeakMap<Tile, number> = new WeakMap();
 
     reload: undefined;
     prepare: undefined;
@@ -263,17 +265,27 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     async loadTile(tile: Tile, callback: Callback<undefined>): Promise<void> {
         const {x, y, z} = tile.tileID.canonical;
+
+        // `update()` can reload a tile whose previous load is still in flight, and the loads may resolve
+        // out of order. Each load is numbered so a result older than the one already applied is dropped.
+        // The previous load isn't aborted: when updates come faster than loads, that would abort every
+        // load and the tile would never finish.
+        const seq = ++this._tileRequestSeq;
+        const superseded = () => (this._tileAppliedSeq.get(tile) || 0) > seq;
         const controller = new AbortController();
         tile.request = controller;
 
         try {
             const data = await this._implementation.loadTile({x, y, z}, {signal: controller.signal});
-            delete tile.request;
+            if (tile.request === controller) delete tile.request;
 
             if (tile.aborted) {
                 tile.state = 'unloaded';
                 return callback(null);
             }
+
+            if (superseded()) return;
+            this._tileAppliedSeq.set(tile, seq);
 
             // If the implementation returned `undefined` as tile data,
             // mark the tile as `errored` to indicate that we have no data for it.
@@ -302,7 +314,8 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
             tile.state = 'loaded';
             callback(null);
         } catch (error) {
-            if (controller.signal.aborted) return;
+            if (controller.signal.aborted || superseded()) return;
+            this._tileAppliedSeq.set(tile, seq);
             tile.state = 'errored';
             callback(error as Error);
         }

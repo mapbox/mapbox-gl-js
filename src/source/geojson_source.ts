@@ -98,11 +98,14 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     map!: MapboxMap;
     actor: Actor<WorkerInbox>;
     _loaded: boolean;
-    _coalesce: boolean | null | undefined;
+    // Updates requested while a worker load is in flight, sent in order once it finishes
+    _queuedUpdates: Array<{data: GeoJSON.GeoJSON | string; append: boolean}> = [];
     _metadataFired: boolean | null | undefined;
     _collectResourceTiming: boolean;
     _pendingLoad: AbortController | null | undefined;
     _partialReload!: boolean;
+    _tileRequestSeq: number = 0;
+    _tileAppliedSeq: WeakMap<Tile, number> = new WeakMap();
 
     hasTile: undefined;
     prepare: undefined;
@@ -255,16 +258,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
                 return this.fire(new ErrorEvent(new Error("Data to update should be a feature or a feature collection.")));
             }
         }
-        // if there's a pending load, accummulate feature updates
-        if (this._coalesce && typeof data !== 'string' && typeof this._data !== 'string' && this._data.type === 'FeatureCollection') {
-            // merge features by ID to avoid accummulating duplicate features to update
-            const featuresById = new Map<GeoJSON.Feature['id'], GeoJSON.Feature>();
-            for (const feature of this._data.features) featuresById.set(feature.id, feature);
-            for (const feature of data.features) featuresById.set(feature.id, feature);
-            this._data.features = [...featuresById.values()];
-        } else {
-            this._data = data;
-        }
+        this._data = data;
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._updateWorkerData(true);
         return this;
@@ -387,10 +381,23 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
      * handles loading the geojson data and preparing to serve it up as tiles,
      * using geojson-vt or supercluster as appropriate.
      */
-    async _updateWorkerData(append: boolean = false) {
-        // if there's an earlier loadData to finish, wait until it finishes and then do another update
+    async _updateWorkerData(append: boolean = false, data: GeoJSON.GeoJSON | string = this._data) {
+        // if there's an earlier loadData to finish, queue this update to be sent once it finishes
         if (this._pendingLoad) {
-            this._coalesce = true;
+            const last = this._queuedUpdates.at(-1);
+            if (!append) {
+                // replacing the data makes any update queued before it redundant
+                this._queuedUpdates = [{data, append}];
+            } else if (last && last.append && typeof last.data !== 'string' && typeof data !== 'string' &&
+                last.data.type === 'FeatureCollection' && data.type === 'FeatureCollection') {
+                // merge features by ID to avoid accumulating duplicate features to update
+                const featuresById = new Map<GeoJSON.Feature['id'], GeoJSON.Feature>();
+                for (const feature of last.data.features) featuresById.set(feature.id, feature);
+                for (const feature of data.features) featuresById.set(feature.id, feature);
+                last.data = {type: 'FeatureCollection', features: [...featuresById.values()]};
+            } else {
+                this._queuedUpdates.push({data, append});
+            }
             return;
         }
 
@@ -400,9 +407,8 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         const options: LoadGeoJSONRequest = {append, ...this.workerOptions};
 
         options.scope = this.scope;
-        const data = this._data;
 
-        // Register _pendingLoad before any await, so a same-tick _updateWorkerData hits the coalesce guard.
+        // Register _pendingLoad before any await, so a same-tick _updateWorkerData is queued.
         const controller = new AbortController();
         this._pendingLoad = controller;
 
@@ -411,7 +417,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
                 options.request = await this.map._requestManager.transformRequest(browser.resolveURL(data), ResourceType.Source, controller.signal);
                 if (controller.signal.aborted) {
                     this._pendingLoad = null;
-                    this._coalesce = false;
+                    this._queuedUpdates = [];
                     return;
                 }
                 options.request.collectResourceTiming = this._collectResourceTiming;
@@ -423,7 +429,6 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             // this path, but every variant returns a LoadGeoJSONResult-shaped reply.
             const result = await this.actor.send(`${this.type}.loadData`, options, {signal: controller.signal});
             this._loaded = true;
-            this._pendingLoad = null;
             // although GeoJSON sources contain no metadata, we fire this event at first
             // to let the SourceCache know its ok to start requesting tiles.
             const dataEvent: MapSourceDataEvent = {dataType: 'source', sourceDataType: this._metadataFired ? 'content' : 'metadata'};
@@ -438,19 +443,26 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         } catch (err) {
             if (controller.signal.aborted) {
                 this._pendingLoad = null;
-                // the load was cancelled (e.g. source removed); drop any queued coalesced update
-                this._coalesce = false;
+                // the load was cancelled (e.g. source removed); drop any queued updates
+                this._queuedUpdates = [];
                 return;
             }
             this._loaded = true;
-            this._pendingLoad = null;
             this.fire(new ErrorEvent(err as Error));
-        }
-
-        if (this._coalesce) {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this._updateWorkerData(append);
-            this._coalesce = false;
+        } finally {
+            // The source stays busy until its events have fired, so a setData/updateData made by a listener
+            // is queued behind the updates already waiting rather than overtaking them.
+            if (this._pendingLoad === controller) {
+                this._pendingLoad = null;
+                const next = this._queuedUpdates.shift();
+                if (controller.signal.aborted) {
+                    // the source was removed by a listener; drop the queued updates
+                    this._queuedUpdates = [];
+                } else if (next) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    this._updateWorkerData(next.append, next.data);
+                }
+            }
         }
     }
 
@@ -461,6 +473,10 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     reload() {
         const fqid = makeFQID(this.id, this.scope);
         this.map.style!.clearSource(fqid);
+        // A load in flight already ends with a 'data' event that reloads the tiles. Resending `_data` as
+        // a replacement would also clear any queued updates, and on a dynamic source `_data` may only be
+        // the latest updateData delta.
+        if (this._pendingLoad) return;
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._updateWorkerData();
     }
@@ -495,6 +511,12 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             indoor: this.map.getIndoorTileOptions(this.id, this.scope)
         };
 
+        // A setData/updateData can reload a tile while an earlier request for it is still in flight,
+        // and the worker may reply out of order. Each request is numbered so a reply older than the
+        // one already applied to the tile is dropped instead of overwriting newer data.
+        const seq = ++this._tileRequestSeq;
+        const superseded = () => (this._tileAppliedSeq.get(tile) || 0) > seq;
+
         const done = (err: Error | null | undefined, data?: WorkerSourceVectorTileResult) => {
             if (partial && !data) {
                 // if we did a partial reload and the tile didn't change, do nothing and treat the tile as loaded
@@ -502,7 +524,8 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
                 return callback(null);
             }
 
-            delete tile.request;
+            if (superseded()) return;
+            if (tile.request === request) delete tile.request;
             tile.destroy(false);
 
             if (tile.aborted) {
@@ -513,12 +536,14 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
                 return callback(err);
             }
 
+            this._tileAppliedSeq.set(tile, seq);
+
             // Same HD gate as vector_tile_source.done(): await the HD module before
             // deserializing a tile that carries extension classes (elevated roads etc.),
             // otherwise `loadVectorData` would hit the unregistered-class throw.
             if (data && data.containsHdExt && !HD.loaded) {
                 const finishLoad = () => {
-                    if (tile.aborted) return callback(null);
+                    if (tile.aborted || superseded()) return callback(null);
                     if (!HD.loaded) return callback(new Error('HD module failed to load'));
                     tile.loadVectorData(data, this.map.painter, message === 'reloadTile');
                     callback(null);
@@ -531,7 +556,10 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             callback(null);
         };
 
-        tile.request = this.actor.sendCancelable(message, params, {}, done as Callback<unknown>);
+        // An in-flight request isn't cancelled here: when reloads come faster than replies (e.g. setData
+        // every frame), cancelling would drop every reply and the tile would never update.
+        const request = this.actor.sendCancelable(message, params, {}, done as Callback<unknown>);
+        tile.request = request;
     }
 
     abortTile(tile: Tile) {

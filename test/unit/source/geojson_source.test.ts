@@ -306,6 +306,177 @@ describe('GeoJSONSource#update', () => {
     });
 });
 
+describe('GeoJSONSource#loadTile', () => {
+    // Tile requests resolve only when the test says so, and reject on abort like the real Actor.
+    function createSource() {
+        const responses: Array<(data?: object) => void> = [];
+        const dispatcher = wrapDispatcher({
+            send(type: string, data: unknown, {signal}: {signal: AbortSignal}) {
+                return new Promise<object | undefined>((resolve, reject) => {
+                    signal.addEventListener('abort', () => reject(signal.reason as Error), {once: true});
+                    responses.push(resolve);
+                });
+            },
+            sendCancelable: Actor.prototype.sendCancelable
+        });
+        const source = new GeoJSONSource('id', {data: {}}, dispatcher);
+        source.map = {
+            getScaleFactor: () => 1,
+            getWorldview: () => undefined,
+            getIndoorTileOptions: () => null
+        };
+        return {source, responses};
+    }
+
+    test('drops a superseded response that arrives after a full reload', async () => {
+        const {source, responses} = createSource();
+        const tile = new Tile(new OverscaledTileID(0, 0, 0, 0, 0), 512);
+        const loaded = [];
+
+        source.loadTile(tile, () => loaded.push('first'));
+        source.loadTile(tile, () => loaded.push('second'));
+
+        responses[1]();
+        responses[0]();
+        await new Promise(resolve => { setTimeout(resolve, 0); });
+
+        expect(loaded).toEqual(['second']);
+    });
+
+    test('applies an earlier response that arrives before a newer full reload completes', async () => {
+        const {source, responses} = createSource();
+        const tile = new Tile(new OverscaledTileID(0, 0, 0, 0, 0), 512);
+        const loaded = [];
+
+        source.loadTile(tile, () => loaded.push('first'));
+        source.loadTile(tile, () => loaded.push('second'));
+
+        responses[0]();
+        await new Promise(resolve => { setTimeout(resolve, 0); });
+
+        expect(loaded).toEqual(['first']);
+    });
+
+    test('keeps an in-flight response when a partial reload is requested', async () => {
+        const {source, responses} = createSource();
+        const tile = new Tile(new OverscaledTileID(0, 0, 0, 0, 0), 512);
+        const loaded = [];
+
+        source.loadTile(tile, () => loaded.push('first'));
+        source._partialReload = true;
+        source.loadTile(tile, () => loaded.push('partial'));
+
+        responses[1]();
+        responses[0]();
+        await new Promise(resolve => { setTimeout(resolve, 0); });
+
+        expect(loaded).toEqual(['partial', 'first']);
+    });
+
+    test('drops a superseded response that arrives after a partial reload with data', async () => {
+        const {source, responses} = createSource();
+        const tile = new Tile(new OverscaledTileID(0, 0, 0, 0, 0), 512);
+        const loaded = [];
+
+        source.loadTile(tile, () => loaded.push('first'));
+        source._partialReload = true;
+        source.loadTile(tile, () => loaded.push('partial'));
+
+        responses[1]({});
+        responses[0]({});
+        await new Promise(resolve => { setTimeout(resolve, 0); });
+
+        expect(loaded).toEqual(['partial']);
+    });
+});
+
+describe('GeoJSONSource queued updates', () => {
+    const point = (id: number) => ({type: 'Feature', id, properties: {}, geometry: {type: 'Point', coordinates: [0, 0]}});
+    const collection = (...ids: number[]) => ({type: 'FeatureCollection', features: ids.map(point)});
+
+    // Records every loadData sent to the worker; each one takes a task to finish, like a real worker.
+    function createSource() {
+        const sent: Array<{append: boolean; ids: Array<number | string>}> = [];
+        const dispatcher = wrapDispatcher({
+            send(type: string, params: {append: boolean; data: string}) {
+                const data = JSON.parse(params.data) as GeoJSON.FeatureCollection;
+                sent.push({append: params.append, ids: data.features.map(f => f.id)});
+                return new Promise((resolve) => { setTimeout(resolve, 0); });
+            }
+        });
+        const source = new GeoJSONSource('id', {dynamic: true, data: {}}, dispatcher);
+        const settled = () => new Promise((resolve) => { setTimeout(resolve, 20); });
+        return {source, sent, settled};
+    }
+
+    test('sends an updateData queued behind setData as an update', async () => {
+        const {source, sent, settled} = createSource();
+
+        source.setData(collection(1, 2));
+        source.updateData(point(3));
+        await settled();
+
+        expect(sent).toEqual([{append: false, ids: [1, 2]}, {append: true, ids: [3]}]);
+    });
+
+    test('sends a setData queued behind updateData as a replacement', async () => {
+        const {source, sent, settled} = createSource();
+
+        source.updateData(point(1));
+        source.setData(collection(2));
+        await settled();
+
+        expect(sent).toEqual([{append: true, ids: [1]}, {append: false, ids: [2]}]);
+    });
+
+    test('sends an updateData queued behind a queued setData after it, unmerged', async () => {
+        const {source, sent, settled} = createSource();
+
+        source.setData(collection(1));
+        source.setData(collection(2, 3));
+        source.updateData(point(3));
+        await settled();
+
+        expect(sent).toEqual([{append: false, ids: [1]}, {append: false, ids: [2, 3]}, {append: true, ids: [3]}]);
+    });
+
+    test('queues an update made from a "data" listener behind updates already waiting', async () => {
+        const {source, sent, settled} = createSource();
+
+        source.setData(collection(1));
+        source.setData(collection(2));
+        source.once('data', () => source.updateData(point(3)));
+        await settled();
+
+        expect(sent).toEqual([{append: false, ids: [1]}, {append: false, ids: [2]}, {append: true, ids: [3]}]);
+    });
+
+    test('keeps queued updates when the source is reloaded during a load', async () => {
+        const {source, sent, settled} = createSource();
+        source.map = {style: {clearSource() {}}};
+
+        source.setData(collection(1));
+        source.setData(collection(2));
+        source.updateData(point(3));
+        source.reload();
+        await settled();
+
+        expect(sent).toEqual([{append: false, ids: [1]}, {append: false, ids: [2]}, {append: true, ids: [3]}]);
+    });
+
+    test('does not modify the data passed to updateData when merging queued updates', async () => {
+        const {source, settled} = createSource();
+        const first = collection(2);
+
+        source.setData(collection(1));
+        source.updateData(first);
+        source.updateData(point(3));
+        await settled();
+
+        expect(first.features.map(f => f.id)).toEqual([2]);
+    });
+});
+
 describe('GeoJSONSource#serialize', () => {
     const mapStub = {
         _requestManager: {

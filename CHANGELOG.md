@@ -11,6 +11,9 @@
 - Fix HD road rendering in vector tiles with an extent other than 8192.
 - Fix a line-dasharray of [] to consistently draw a solid line.
 - Fix order-dependent symbol and fill-extrusion border rendering.
+- Fix GeoJSON sources occasionally showing outdated features after `setData` or `updateData` is called several times in quick succession.
+- Fix `setData` and `updateData` calls made while a GeoJSON source is still loading data being applied as the wrong kind of update, which could discard or wrongly merge features.
+- Fix custom sources occasionally showing an outdated tile image after `update()` is called several times in quick succession.
 - Fix a performance regression where fill layers re-uploaded every frame, which was especially slow with many feature states.
 - Add experimental `Map#startPerformanceStatisticsCollection` and `Map#stopPerformanceStatisticsCollection` to collect render time, render pass and layer timings, and draw call counters.
 - Fix fill extrusion ground effect vertex & fragment shaders attribute mismatch.

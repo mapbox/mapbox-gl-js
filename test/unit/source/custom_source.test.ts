@@ -267,6 +267,53 @@ describe('CustomSource', () => {
         expect(source.loadTileData).not.toHaveBeenCalled();
     });
 
+    test('does not overwrite a newer reload with a superseded loadTile result', async () => {
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+        const flush = () => new Promise((resolve) => { setTimeout(resolve, 0); });
+        const staleData = new window.ImageData(512, 512);
+        const freshData = new window.ImageData(512, 512);
+
+        // Every request waits until the test releases it, like a slow network
+        const pending: Array<(data: ImageData) => void> = [];
+        const loadTile = vi.fn(() => new Promise((resolve) => { pending.push(resolve); }));
+
+        const {source, sourceCache} = createSource({loadTile});
+        sourceCache.onAdd();
+
+        sourceCache._addTile(tileID);
+        pending.shift()(new window.ImageData(512, 512));
+        await flush();
+
+        sourceCache._reloadTile(tileID.key, 'reloading');
+        const staleResponse = pending.shift();
+        sourceCache._reloadTile(tileID.key, 'reloading');
+        pending.shift()(freshData);
+        await flush();
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        source.loadTileData.mockClear();
+        staleResponse(staleData);
+        await flush();
+
+        expect(source.loadTileData).not.toHaveBeenCalled();
+    });
+
+    test('applies a loadTile result while a newer reload is still in flight', async () => {
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+        const pending: Array<(data: ImageData) => void> = [];
+        const loadTile = vi.fn(() => new Promise((resolve) => { pending.push(resolve); }));
+
+        const {source, sourceCache} = createSource({loadTile});
+        sourceCache.onAdd();
+
+        sourceCache._addTile(tileID);
+        sourceCache._reloadTile(tileID.key, 'reloading');
+        pending.shift()(new window.ImageData(512, 512));
+        await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+        expect(source.loadTileData).toHaveBeenCalledTimes(1);
+    });
+
     test('hasTile', async () => {
         const {sourceCache, eventedParent} = createSource({
             loadTile: async () => {},
