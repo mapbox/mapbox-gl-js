@@ -338,21 +338,19 @@ void main() {
 #ifdef VARIABLE_LINE_WIDTH
     float left_width = a_z_offset_width.y;
     float right_width = a_z_offset_width.z;
-    bool zero_right_width = border_width == 0.0 && right_width == 0.0;
+    bool zero_right_width = right_width == 0.0;
     side_widths = u_width_scale * (zero_right_width ? vec2(left_width + u_width_addition) : vec2(left_width, right_width) + 0.5 * u_width_addition);
     halfwidth = left ? side_widths.x : (zero_right_width ? 0.0 : side_widths.y);
 
     // Variable width is used as an offset for non-zero border_widths case.
     // Then the width of the visible part is defined by border_width.
-    offset = border_width > 0.0 ? (left_width + right_width + u_width_addition) * u_width_scale : offset;
+    offset = border_width > 0.0 ? (left_width + right_width + u_width_addition + border_width * 0.5) * u_width_scale : offset;
     halfwidth = border_width > 0.0 ? border_width * u_width_scale * 0.5 : halfwidth;
-
     side_widths = border_width > 0.0 ? vec2(halfwidth) : side_widths;
 
     // If the right width is 0, we are rendering an asymmetric line with a stub side
     // We should disable antialiasing and blur on this side to be able to stich two lines together
     stub_side = zero_right_width ? -normal.y : 0.0;
-    v_normal = !left && zero_right_width ? vec2(0.0) : v_normal;
     ANTIALIASING = !left && zero_right_width ? 0.0 : ANTIALIASING;
 #else
     halfwidth = (u_width_scale * width) / 2.0;
