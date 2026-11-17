@@ -139,14 +139,15 @@ float elevation(vec2 apos) {
 #ifdef TERRAIN
     #ifdef ZERO_EXAGGERATION
         return 0.0;
+    #else // ZERO_EXAGGERATION
+        #ifdef TERRAIN_VERTEX_MORPHING
+            float nextElevation = currentElevation(apos);
+            float prevElevation = prevElevation(apos);
+            return mix(prevElevation, nextElevation, u_dem_lerp);
+        #else // TERRAIN_VERTEX_MORPHING
+            return currentElevation(apos);
+        #endif // TERRAIN_VERTEX_MORPHING
     #endif // ZERO_EXAGGERATION
-    #ifdef TERRAIN_VERTEX_MORPHING
-        float nextElevation = currentElevation(apos);
-        float prevElevation = prevElevation(apos);
-        return mix(prevElevation, nextElevation, u_dem_lerp);
-    #else // TERRAIN_VERTEX_MORPHING
-        return currentElevation(apos);
-    #endif // TERRAIN_VERTEX_MORPHING
 #else // TERRAIN
     return 0.0;
 #endif // TERRAIN

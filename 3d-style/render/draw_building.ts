@@ -74,6 +74,8 @@ function drawTiles(params: DrawParams) {
         defines = defines.concat('FLOOD_LIGHT');
     }
 
+    const receiveShadows = defines.includes('RENDER_SHADOWS');
+
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket = tile.getBucket(layer) as BuildingBucket;
@@ -81,10 +83,11 @@ function drawTiles(params: DrawParams) {
             continue;
         }
 
-        if (shadowRenderer) {
+        let tileDefines = defines;
+        if (shadowRenderer && receiveShadows) {
             const singleCascade = shadowRenderer.getMaxCascadeForTile(coord.toUnwrapped()) === 0;
             if (singleCascade) {
-                defines = defines.concat('SHADOWS_SINGLE_CASCADE');
+                tileDefines = defines.concat('SHADOWS_SINGLE_CASCADE');
             }
         }
 
@@ -114,7 +117,7 @@ function drawTiles(params: DrawParams) {
             uniformValues = buildingDepthUniformValues(tileShadowPassMatrix);
 
             programWithFacades = programWithoutFacades = painter.getOrCreateProgram('buildingDepth',
-                {config: programConfiguration, defines, overrideFog: false});
+                {config: programConfiguration, defines: tileDefines, overrideFog: false});
         } else if (!isBloomPass) {
 
             const tileMatrix = mat4.scale(new Float64Array(16), painter.transform.calculatePosMatrix(coord.toUnwrapped()), [1, 1, params.verticalScale]);
@@ -138,13 +141,13 @@ function drawTiles(params: DrawParams) {
             uniformValues = buildingUniformValues(matrix, normalMatrix, params.opacity, params.facadeAOIntensity, cameraPos, bucket.tileToMeter, params.facadeEmissiveChance, params.floodLightColor, params.floodLightIntensity, frontCutoffParams);
 
             programWithoutFacades =  painter.getOrCreateProgram('building',
-                {config: programConfiguration, defines, overrideFog: false});
+                {config: programConfiguration, defines: tileDefines, overrideFog: false});
 
             // Use cheaper non-facade shader for depth-only pass (used by two pass translucent rendering)
             if (params.depthOnly === true) {
                 programWithFacades = programWithoutFacades;
             } else {
-                const facadeDefines = defines.concat(["BUILDING_FAUX_FACADE", "HAS_ATTRIBUTE_a_faux_facade_color_emissive"]);
+                const facadeDefines = tileDefines.concat(["BUILDING_FAUX_FACADE", "HAS_ATTRIBUTE_a_faux_facade_color_emissive"]);
                 programWithFacades =  painter.getOrCreateProgram('building',
                 {config: programConfiguration, defines: facadeDefines, overrideFog: false});
             }
@@ -159,7 +162,7 @@ function drawTiles(params: DrawParams) {
             }
         } else {
             programWithFacades = programWithoutFacades =  painter.getOrCreateProgram('buildingBloom',
-            {config: programConfiguration, defines, overrideFog: false});
+            {config: programConfiguration, defines: tileDefines, overrideFog: false});
 
             uniformValues = buildingBloomUniformValues(matrix);
         }
@@ -286,7 +289,7 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
         drawLayer = drawLayer && painter._debugParams.buildingsDrawTranslucentPass;
     });
 
-    if (!painter.shadowRenderer) {
+    if (!painter.shadowRenderer || !painter.shadowRenderer.enabled) {
         receiveShadowsEnabled = false;
     }
 

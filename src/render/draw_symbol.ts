@@ -473,9 +473,6 @@ function drawLayerSymbols(
             }
             if (bucketIsGlobeProjection) {
                 baseDefines.push('PROJECTION_GLOBE_VIEW');
-                if (projectedPosOnLabelSpace) {
-                    baseDefines.push('PROJECTED_POS_ON_VIEWPORT');
-                }
             }
             if (transitionProgress > 0.0 && bucket.hasAnySecondaryIcon) {
                 baseDefines.push('ICON_TRANSITION');
@@ -533,6 +530,7 @@ function drawLayerSymbols(
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter,
                 matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, false, bucket.sdfIcons, texSize, [0, 0], true, coord, globeToMercator, mercatorCenter, invMatrix,
                 cameraUpVector, bucket.getProjection(), groundShadowFactor, orientationNormalScale, colorAdjustmentMatrix, transitionProgress, null);
+            uniformValues['u_projected_pos_on_viewport'] = +(bucketIsGlobeProjection && projectedPosOnLabelSpace);
 
             const atlasTexture = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
 
@@ -593,9 +591,6 @@ function drawLayerSymbols(
             }
             if (bucketIsGlobeProjection) {
                 baseDefines.push('PROJECTION_GLOBE_VIEW');
-                if (projectedPosOnLabelSpace) {
-                    baseDefines.push('PROJECTED_POS_ON_VIEWPORT');
-                }
             }
             if (bucket.text.zOffsetVertexBuffer && (!renderElevatedRoads || !painter.terrain)) {
                 baseDefines.push('Z_OFFSET');
@@ -668,6 +663,7 @@ function drawLayerSymbols(
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, textPitchWithMap, painter,
                 matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, true, true, texSize, texSizeIcon, true, coord, globeToMercator, mercatorCenter, invMatrix,
                 cameraUpVector, bucket.getProjection(), groundShadowFactor, orientationNormalScale, null, null, textScaleFactor);
+            uniformValues['u_projected_pos_on_viewport'] = +(bucketIsGlobeProjection && projectedPosOnLabelSpace);
 
             const atlasTexture = tile.glyphAtlasTexture ? tile.glyphAtlasTexture : null;
             const atlasInterpolation = gl.LINEAR;

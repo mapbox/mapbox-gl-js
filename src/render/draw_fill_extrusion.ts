@@ -400,12 +400,12 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         if (directionalLight && ambientLight) {
             groundShadowFactor = calculateGroundShadowFactor(painter.style, directionalLight, ambientLight);
         }
+    }
 
-        if (!isShadowPass) {
-            baseDefines.push('RENDER_SHADOWS');
-            if (shadowRenderer.useNormalOffset) {
-                baseDefines.push('NORMAL_OFFSET');
-            }
+    if (shadowRenderer && shadowRenderer.enabled && !isShadowPass) {
+        baseDefines.push('RENDER_SHADOWS');
+        if (shadowRenderer.useNormalOffset) {
+            baseDefines.push('NORMAL_OFFSET');
         }
         singleCascadeDefines = baseDefines.concat(['SHADOWS_SINGLE_CASCADE']);
     }
@@ -418,7 +418,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
 
         let singleCascade = false;
-        if (shadowRenderer) {
+        if (singleCascadeDefines && shadowRenderer) {
             singleCascade = shadowRenderer.getMaxCascadeForTile(coord.toUnwrapped()) === 0;
         }
 

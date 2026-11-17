@@ -43,6 +43,7 @@ export type SymbolUniformsType = {
     ['u_tile_matrix']: UniformMatrix4f;
     ['u_up_vector']: Uniform3f;
     ['u_ecef_origin']: Uniform3f;
+    ['u_projected_pos_on_viewport']: Uniform1i;
     ['u_is_halo']: Uniform1i;
     ['u_icon_transition']: Uniform1f;
     ['u_color_adj_mat']: UniformMatrix4f;
@@ -74,7 +75,6 @@ export type SymbolDefinesType =
     | 'COLOR_ADJUSTMENT'
     | 'ICON_TRANSITION'
     | 'PITCH_WITH_MAP_TERRAIN'
-    | 'PROJECTED_POS_ON_VIEWPORT'
     | 'RENDER_TEXT_AND_SYMBOL'
     | 'Z_OFFSET'
     | 'APPLY_LUT_ON_GPU'
@@ -113,6 +113,7 @@ const symbolUniforms = (context: Context): SymbolUniformsType => ({
     'u_tile_matrix': new UniformMatrix4f(context),
     'u_up_vector': new Uniform3f(context),
     'u_ecef_origin': new Uniform3f(context),
+    'u_projected_pos_on_viewport': new Uniform1i(context),
     'u_is_halo': new Uniform1i(context),
     'u_icon_transition': new Uniform1f(context),
     'u_color_adj_mat': new UniformMatrix4f(context),
@@ -195,6 +196,7 @@ const symbolUniformValues = (
         'u_ecef_origin': [0, 0, 0] as [number, number, number],
         'u_tile_matrix': identityMatrix,
         'u_up_vector': [0, -1, 0] as [number, number, number],
+        'u_projected_pos_on_viewport': 0,
         'u_color_adj_mat': colorAdjustmentMatrix!,
         'u_icon_transition': transition ? transition : 0.0,
         'u_gamma_scale': isSDF ? (pitchWithMap ? painter.transform.getCameraToCenterDistance(projection) * Math.cos(painter.terrain ? 0 : painter.transform._pitch) : 1) : 0,

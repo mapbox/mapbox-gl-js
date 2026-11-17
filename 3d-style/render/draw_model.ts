@@ -245,7 +245,7 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
     }
 
     const shadowRenderer = painter.shadowRenderer;
-    if (shadowRenderer) {
+    if (shadowRenderer && shadowRenderer.enabled) {
         definesValues.push('RENDER_SHADOWS');
         if (shadowRenderer.useNormalOffset) {
             definesValues.push('NORMAL_OFFSET');
@@ -326,7 +326,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
 
     const isShadowPass = painter.renderPass === 'shadow';
 
-    if (!isShadowPass && shadowRenderer) {
+    if (!isShadowPass && shadowRenderer && shadowRenderer.enabled) {
         shadowRenderer.setupShadowsFromMatrix(sortedMesh.nodeModelMatrix, program);
     }
 
@@ -1043,7 +1043,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, layerValues
                     emissiveStrength,
                     cameraPos
                 );
-                if (shadowRenderer) {
+                if (shadowRenderer && shadowRenderer.enabled) {
                     if (!renderData.shadowUniformsInitialized) {
                         shadowRenderer.setupShadows(coord.toUnwrapped(), program, 'model-tile');
                         renderData.shadowUniformsInitialized = true;
@@ -1196,7 +1196,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
             if (!bucket || !bucket.uploaded) continue;
 
             let singleCascade = false;
-            if (shadowRenderer) {
+            if (!isShadowPass && shadowRenderer && shadowRenderer.enabled) {
                 singleCascade = shadowRenderer.getMaxCascadeForTile(coord.toUnwrapped()) === 0;
             }
             const tileMatrix = tr.calculatePosMatrix(coord.toUnwrapped());

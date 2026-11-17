@@ -1,0 +1,94 @@
+{
+  "description": "Line-placed labels on the globe in the middle of the globe-to-mercator transition (zoom 5.5). Their glyphs are positioned on the CPU, and the shader picks that path with the u_projected_pos_on_viewport uniform. The anchor position used for perspective size scaling and back-of-globe fading blends towards mercator here, unlike at the globe and mercator zoom ranges covered by the other globe symbol tests.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256
+    }
+  },
+  "center": [
+    10,
+    45
+  ],
+  "zoom": 5.5,
+  "pitch": 50,
+  "projection": {
+    "name": "globe"
+  },
+  "sources": {
+    "lines": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "text": "Line label"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  7,
+                  44
+                ],
+                [
+                  13,
+                  44
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "text": "Far line label"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  7,
+                  47.5
+                ],
+                [
+                  13,
+                  47.5
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "line-labels",
+      "type": "symbol",
+      "source": "lines",
+      "layout": {
+        "text-field": [
+          "get",
+          "text"
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "symbol-placement": "line-center",
+        "text-pitch-alignment": "viewport"
+      }
+    }
+  ]
+}

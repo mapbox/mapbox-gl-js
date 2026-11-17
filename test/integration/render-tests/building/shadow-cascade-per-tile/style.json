@@ -1,0 +1,204 @@
+{
+  "description": "Each building tile picks its own shadow cascade count. At this pitch the near tiles fit in the first cascade and are drawn before the far tiles, which need both. The far low building must stay in the far tall building's shadow; it lost the shadow when the near tiles' single-cascade define carried over to later tiles. The 512 px viewport is needed for a whole tile to fit in the first cascade.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.6,
+        "cast-shadows": true,
+        "shadow-intensity": 1.0,
+        "direction": [
+          270,
+          60
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "height": 40.0
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    3e-05,
+                    0.0
+                  ],
+                  [
+                    0.00015000000000000001,
+                    0.0
+                  ],
+                  [
+                    0.00015000000000000001,
+                    0.00012
+                  ],
+                  [
+                    3e-05,
+                    0.00012
+                  ],
+                  [
+                    3e-05,
+                    0.0
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "height": 5.0
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.00017,
+                    -4e-05
+                  ],
+                  [
+                    0.00047,
+                    -4e-05
+                  ],
+                  [
+                    0.00047,
+                    0.00016
+                  ],
+                  [
+                    0.00017,
+                    0.00016
+                  ],
+                  [
+                    0.00017,
+                    -4e-05
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "height": 160.0
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.00012,
+                    0.006
+                  ],
+                  [
+                    0.0006000000000000001,
+                    0.006
+                  ],
+                  [
+                    0.0006000000000000001,
+                    0.0064800000000000005
+                  ],
+                  [
+                    0.00012,
+                    0.0064800000000000005
+                  ],
+                  [
+                    0.00012,
+                    0.006
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "height": 20.0
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.00068,
+                    0.00584
+                  ],
+                  [
+                    0.00188,
+                    0.00584
+                  ],
+                  [
+                    0.00188,
+                    0.00664
+                  ],
+                  [
+                    0.00068,
+                    0.00664
+                  ],
+                  [
+                    0.00068,
+                    0.00584
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "pitch": 80.0,
+  "zoom": 17.0,
+  "center": [
+    0,
+    0.0008
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "building",
+      "type": "building",
+      "source": "geojson",
+      "layout": {
+        "building-base": 0,
+        "building-height": [
+          "get",
+          "height"
+        ]
+      },
+      "paint": {
+        "building-color": "hsl(41, 90%, 90%)"
+      }
+    }
+  ]
+}

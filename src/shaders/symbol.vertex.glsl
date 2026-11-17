@@ -104,6 +104,9 @@ uniform vec3 u_camera_forward;
 uniform float u_zoom_transition;
 uniform vec3 u_ecef_origin;
 uniform mat4 u_tile_matrix;
+// Set when the CPU has already projected a_projected_pos (line labels, variable anchors), including the
+// globe-to-mercator blend. A uniform rather than a define so these draws share the globe shader variant.
+uniform bool u_projected_pos_on_viewport;
 #endif
 
 out vec2 v_tex_a;
@@ -349,7 +352,7 @@ void main() {
     vec3 mercator_pos;
     vec3 world_pos_globe;
 #ifdef PROJECTION_GLOBE_VIEW
-    mercator_pos = mercator_tile_position(u_inv_rot_matrix, tile_anchor, u_tile_id, u_merc_center);
+    mercator_pos = u_projected_pos_on_viewport ? vec3(0.0) : mercator_tile_position(u_inv_rot_matrix, tile_anchor, u_tile_id, u_merc_center);
     world_pos_globe = vec3(a_globe_anchor) + h;
     world_pos = mix_globe_mercator(world_pos_globe, mercator_pos, u_zoom_transition);
 
@@ -408,12 +411,12 @@ void main() {
 
     vec4 projected_pos;
 #ifdef PROJECTION_GLOBE_VIEW
-#ifdef PROJECTED_POS_ON_VIEWPORT
-    projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xyz + h, 1.0);
-#else
-    vec3 proj_pos = mix_globe_mercator(a_projected_pos.xyz, mercator_pos, u_zoom_transition) + h;
-    projected_pos = u_label_plane_matrix * vec4(proj_pos, 1.0);
-#endif
+    if (u_projected_pos_on_viewport) {
+        projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xyz + h, 1.0);
+    } else {
+        vec3 proj_pos = mix_globe_mercator(a_projected_pos.xyz, mercator_pos, u_zoom_transition) + h;
+        projected_pos = u_label_plane_matrix * vec4(proj_pos, 1.0);
+    }
 #else
     projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, h.z, 1.0);
 #endif
