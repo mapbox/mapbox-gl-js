@@ -33,6 +33,7 @@ in highp float v_road_z_offset;
 #ifdef VARIABLE_LINE_WIDTH
 in float stub_side;
 in highp vec2 v_distance;
+uniform highp float u_width_addition;
 #endif
 
 uniform bool u_has_dash;
