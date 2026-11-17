@@ -21,9 +21,7 @@
         ["wait"],
         ["setTimer", 80],
         ["wait"]
-      ],
-      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4347"],
-      "skip-test": [{"platform-tag-contains": "native", "reason": "bug: wrong symbol fade with overscaled tiles - MAPSNAT-4347"}]
+      ]
     }
   },
   "center": [2.5, -2.5],
