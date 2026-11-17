@@ -8,7 +8,8 @@
       "showLayers3DWireframe": true,
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.0055},
-        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.0025}
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.0025},
+        {"platform-tag-contains": "native-android-vulkan", "threshold": 0.0065}
       ]
     }
   },

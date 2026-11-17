@@ -123,7 +123,7 @@ ModelPartStyle readModelPartStyle(uint partId) {
 // the baked ambient occlusion that only LOD meshes carry in their vertex color alpha.
 vec3 modelAlbedo(ModelPartStyle style, vec4 vertexColor) {
     float ambientOcclusion = mix(1.0, vertexColor.a, u_model_mesh_params.z);
-    return ambientOcclusion * mix(vertexColor.rgb, style.color_mix.rgb, style.color_mix.a);
+    return ambientOcclusion * mix(vertexColor.rgb, sRGBToLinear(style.color_mix.rgb), style.color_mix.a);
 }
 
 // Emissive strength height gradient resolved against the z range of the mesh being drawn, packed

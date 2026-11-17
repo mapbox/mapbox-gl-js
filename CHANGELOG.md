@@ -1,4 +1,5 @@
 ## Unreleased
+- Fix model-color not matching how color is applied elsewhere.
 
 ## 3.36.0-rc.1
 

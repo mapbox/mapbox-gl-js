@@ -8,7 +8,8 @@
       "pixelRatio": 0.5,
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00055},
-        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.0025}
+        {"platform-tag-contains": "native-android-gl-mali", "threshold": 0.0025},
+        {"platform-tag-contains": "native-linux", "threshold": 0.00065}
       ]
     }
   },
