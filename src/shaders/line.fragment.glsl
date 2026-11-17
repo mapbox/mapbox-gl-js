@@ -172,7 +172,8 @@ void main() {
     // the line in case of an offset line (v_width2_dilute.y) or when fading out
     // (v_width2_dilute.x)
 #ifdef VARIABLE_LINE_WIDTH
-    blur = mix(blur, 0.0, stub_side);
+    float opposite_blur = border_width > 0.0 ? abs(u_width_addition) : 0.0;
+    blur = mix(blur, opposite_blur, stub_side);
 #endif
 
     float diluted_opacity = opacity * v_width2_dilute.z;
