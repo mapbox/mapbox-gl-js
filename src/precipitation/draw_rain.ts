@@ -120,11 +120,6 @@ export class Rain extends PrecipitationBase {
             if (painter._devtools && !this._devtoolsFolder) {
                 const precipFolder = painter._devtools.addFolder('Precipitation');
 
-                // Register shared binding only if we're the first to create the folder
-                if (precipFolder.folder.children.length === 0) {
-                    precipFolder.addBinding(painter._debugParams, 'forceEnablePrecipitation', {}, () => painter.style.map.triggerRepaint());
-                }
-
                 precipFolder.addBinding(painter._debugParams, 'overrideRainParams', {}, () => {
                     painter.style.map.triggerRepaint();
                     rainFolder.folder.expanded = painter._debugParams.overrideRainParams;

@@ -229,6 +229,13 @@ export class DevTools implements IControl {
     _createFolderHandle(folder: FolderApi): DevToolsFolder {
         return {
             addBinding: <T extends object>(target: T, key: keyof T, params?: BindingParams, callback?: Callback) => {
+                // Reuse an existing binding: owners re-register into shared folders after being recreated
+                const existing = this._folders.get(folder)?.bindings.get(key);
+                if (existing && existing.target === target) {
+                    existing.callback = callback;
+                    return;
+                }
+
                 this._addParameter(folder, target, key, params, callback);
                 // Capture default immediately — _captureDefaults() only runs once in onAdd
                 const entry = this._folders.get(folder);
@@ -302,6 +309,8 @@ export class DevTools implements IControl {
         this._pane.refresh();
         this._map.triggerRepaint();
         this._loaded = true;
+        // Drop saved values of currently unregistered folders too, so they come back with defaults
+        this._savedState = null;
         this._exportState();
     }
 
@@ -323,7 +332,9 @@ export class DevTools implements IControl {
 
         binding.on('change', (event) => {
             this._updateBindingLabel(folder, key);
-            if (callback) callback(event.value);
+            // Look up the callback at call time, since a reused binding gets its owner's new callback
+            const meta = this._folders.get(folder)?.bindings.get(key);
+            if (meta && meta.callback) meta.callback(event.value);
             if (this._loaded) {
                 this._updateFolderLabels();
                 this._exportState();
@@ -459,20 +470,20 @@ export class DevTools implements IControl {
 
     _exportState(): void {
         if (!this._pane) return;
-        const state: SavedState = {
-            paneExpanded: this._pane.expanded,
-            folders: {}
-        };
+        // Merge into the saved state rather than rebuilding it: lazily registered features
+        // (e.g. Rain, Snow) may not have registered their folders or their bindings in shared
+        // folders (e.g. 'Precipitation') yet, and their saved values must survive until they do
+        const state: SavedState = this._savedState || {paneExpanded: false, folders: {}};
+        state.paneExpanded = this._pane.expanded;
+        this._savedState = state;
 
         for (const [folder, entry] of this._folders) {
-            const bindings: Record<string, unknown> = {};
+            const stateKey = this._stateKey(entry);
+            const saved = state.folders[stateKey] || (state.folders[stateKey] = {expanded: folder.expanded, bindings: {}});
+            saved.expanded = folder.expanded;
             for (const [key, meta] of entry.bindings) {
-                bindings[key as string] = structuredClone(meta.target[key as string]);
+                saved.bindings[key as string] = structuredClone(meta.target[key as string]);
             }
-            state.folders[this._stateKey(entry)] = {
-                expanded: folder.expanded,
-                bindings
-            };
         }
 
         try {
@@ -484,6 +495,8 @@ export class DevTools implements IControl {
 
     _applyState(state: SavedState): void {
         this._loaded = false;
+        // Keep the whole loaded state so folders registered later restore from it
+        this._savedState = structuredClone(state);
 
         if (state.paneExpanded !== undefined) {
             this._pane.expanded = state.paneExpanded;
@@ -568,6 +581,7 @@ export class DevTools implements IControl {
         this._addParameter(folder, map, '_scaleFactor', {label: 'scaleFactor', min: 0.1, max: 10.0, step: 0.1}, () => map.setScaleFactor(map._scaleFactor));
         this._addParameter(folder, map.painter._debugParams, 'lodSwitchDistance', {min: -1, max: 10000, step: 100}, () => map.triggerRepaint());
         this._addParameter(folder, map.painter._debugParams, 'lodSwitchFadeDuration', {min: 0, max: 5, step: 0.1}, () => map.triggerRepaint());
+        this._addParameter(folder, map.painter._debugParams, 'forceEnablePrecipitation', {}, () => map.triggerRepaint());
 
         const layersFolder = this._addFolder(folder, {title: 'Enabled Layers'});
 

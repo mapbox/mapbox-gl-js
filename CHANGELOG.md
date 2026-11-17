@@ -1,6 +1,8 @@
 ## Unreleased
 - Fix model-color not matching how color is applied elsewhere.
 
+- Fix devtools serialization for duplicate entries.
+
 ## 3.36.0-rc.1
 
 - Remove unreachable shader code from the bundle.
