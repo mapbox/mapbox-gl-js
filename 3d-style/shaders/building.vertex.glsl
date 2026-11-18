@@ -4,15 +4,21 @@
 
 in ivec2 a_pos_packed;
 in vec4 a_normal_4n;
+#ifndef PAINT_TABLE
 in ivec4 a_centroid_3;
+#endif
 
+#ifndef PAINT_TABLE
 #ifdef FLOOD_LIGHT
 in int a_flood_light_wall_radius_1i16;
+#endif
+#ifdef BUILDING_FAUX_FACADE
+in uvec2 a_faux_facade_vertical_range;
+#endif
 #endif
 
 #ifdef BUILDING_FAUX_FACADE
 in uvec4 a_faux_facade_data;
-in uvec2 a_faux_facade_vertical_range;
 #endif
 
 uniform mat4 u_matrix;
@@ -74,6 +80,31 @@ mat3 get_tbn(in vec3 normal) {
     return mat3(tangent, bitangent, normal);
 }
 #endif
+#ifdef PAINT_TABLE
+// Per-footprint styling, see BuildingPaintRow for the layout. a_paint_row is (row << 2) | part and
+// a_normal_4n.w holds the ambient occlusion.
+#define PAINT_TABLE_UBO_VEC4 4096
+
+in highp uint a_paint_row;
+uniform float u_building_ao_intensity;
+
+layout(std140) uniform PaintTableUniform {
+    uvec4 rows[PAINT_TABLE_UBO_VEC4];
+} u_paint_table;
+
+// Explicit swizzles instead of dynamic vector indexing (old Adreno driver bugs).
+uint paint_table_dword(uvec4 v, uint index) {
+    return (index == 0u) ? v.x : (index == 1u) ? v.y : (index == 2u) ? v.z : v.w;
+}
+
+vec4 paint_table_unpack_rgba8(uint packed) {
+    return vec4(uvec4(packed >> 24u, (packed >> 16u) & 255u, (packed >> 8u) & 255u, packed & 255u)) / 255.0;
+}
+
+ivec4 paint_table_unpack_int16x4(uvec4 v) {
+    return ivec4(int(v.x << 16u) >> 16, int(v.x) >> 16, int(v.y << 16u) >> 16, int(v.y) >> 16);
+}
+#endif
 #pragma mapbox: define-attribute-vertex-shader-only highp uvec2 part_color_emissive
 #pragma mapbox: define-attribute-vertex-shader-only highp uvec2 faux_facade_color_emissive
 
@@ -82,13 +113,29 @@ void main() {
     #pragma mapbox: initialize-attribute-custom highp uvec2 part_color_emissive
     #pragma mapbox: initialize-attribute-custom highp uvec2 faux_facade_color_emissive
 
+#ifdef PAINT_TABLE
+    uint paint_row = a_paint_row >> 2u;
+    uvec4 paint_parts = u_paint_table.rows[paint_row * 2u];
+    uvec4 paint_misc = u_paint_table.rows[paint_row * 2u + 1u];
+    ivec4 centroid_3 = paint_table_unpack_int16x4(paint_misc);
+    vec4 color_emissive = paint_table_unpack_rgba8(paint_table_dword(paint_parts, a_paint_row & 3u));
+    color_emissive.rgb *= mix(1.0, a_normal_4n.w, u_building_ao_intensity);
+#else
+    ivec4 centroid_3 = a_centroid_3;
+    vec4 color_emissive = decode_color(vec2(part_color_emissive));
+#endif
+    v_color = vec4(sRGBToLinear(color_emissive.rgb), color_emissive.a);
+
 #ifdef FLOOD_LIGHT
-    v_flood_radius = (float(a_flood_light_wall_radius_1i16) / MAX_INT_16 * FLOOD_LIGHT_MAX_RADIUS_METER);
+#ifdef PAINT_TABLE
+    // Only walls are flood lit (part 0).
+    float flood_light_wall_radius = (a_paint_row & 3u) == 0u ? float(int(paint_misc.z << 16u) >> 16) : -1.0;
+#else
+    float flood_light_wall_radius = float(a_flood_light_wall_radius_1i16);
+#endif
+    v_flood_radius = (flood_light_wall_radius / MAX_INT_16 * FLOOD_LIGHT_MAX_RADIUS_METER);
     v_has_flood_light = step(0.0, v_flood_radius);
 #endif
-
-    vec4 color_emissive = decode_color(vec2(part_color_emissive));
-    v_color = vec4(sRGBToLinear(color_emissive.rgb), color_emissive.a);
 
     v_normal = vec3(u_normal_matrix * vec4(a_normal_4n.xyz, 0.0));
 
@@ -100,8 +147,8 @@ void main() {
 
     // Decode centroid position and span from packed attribute.
     // Encoding: cx_encoded = clamp(cx, 0, 8191) * 4 + spanXbits (2 bits per axis)
-    vec2 centroid_xy = vec2(a_centroid_3.xy >> 2);
-    vec2 spanBits = vec2(a_centroid_3.xy & 3);
+    vec2 centroid_xy = vec2(centroid_3.xy >> 2);
+    vec2 spanBits = vec2(centroid_3.xy & 3);
 
 #ifdef BUILDING_FAUX_FACADE
     vec4 faux_facade_data = vec4(a_faux_facade_data);
@@ -116,7 +163,12 @@ void main() {
         v_faux_facade_floor = (faux_facade_data.zw / MAX_UINT_16 * EXTENT) * u_tile_to_meter;
         v_faux_facade_window = window_perc * v_faux_facade_floor;
 
-        v_faux_facade_range = (vec2(a_faux_facade_vertical_range) / MAX_UINT_16 * EXTENT) * u_tile_to_meter;
+#ifdef PAINT_TABLE
+        vec2 faux_facade_range = vec2(paint_misc.w & 0xFFFFu, paint_misc.w >> 16u);
+#else
+        vec2 faux_facade_range = vec2(a_faux_facade_vertical_range);
+#endif
+        v_faux_facade_range = (faux_facade_range / MAX_UINT_16 * EXTENT) * u_tile_to_meter;
 
         v_aspect = v_faux_facade_window.x / v_faux_facade_window.y;
 
@@ -125,10 +177,14 @@ void main() {
         v_tbn_1 = tbn[1];
         v_tbn_2 = tbn[2];
 
+#ifdef PAINT_TABLE
+        v_faux_color_emissive = paint_table_unpack_rgba8(paint_parts.z); // window part, no ambient occlusion
+#else
         v_faux_color_emissive = decode_color(vec2(faux_facade_color_emissive));
+#endif
         v_faux_color_emissive.rgb = sRGBToLinear(v_faux_color_emissive.rgb);
 
-        depth_offset = min(1000.0, float(a_centroid_3.z)) * 0.0000002;
+        depth_offset = min(1000.0, float(centroid_3.z)) * 0.0000002;
     }
 #endif
     v_pos = vec3(float(a_pos_packed.x >> 16), float((a_pos_packed.x << 16) >> 16), intBitsToFloat(a_pos_packed.y));
@@ -182,10 +238,10 @@ void main() {
 #ifdef ROUTE_CORRIDOR
     float tileUnitsPerMeter = floor(u_route_corridor[3].w);
     // a_centroid_3.w: packed AABB half-meters (high byte X, low byte Y).
-    uint packedSpan = uint(a_centroid_3.w) & 0xFFFFu;
+    uint packedSpan = uint(centroid_3.w) & 0xFFFFu;
     float sxHalf = float((packedSpan >> 8u) & 255u) * tileUnitsPerMeter;
     float syHalf = float(packedSpan & 255u) * tileUnitsPerMeter;
-    float roofZ = float(a_centroid_3.z);
+    float roofZ = float(centroid_3.z);
     routeFade = computeRouteCorridorCentroidFade(centroid_xy, roofZ, sxHalf, syHalf);
 #endif
     v_dither_opacity = 1.0;

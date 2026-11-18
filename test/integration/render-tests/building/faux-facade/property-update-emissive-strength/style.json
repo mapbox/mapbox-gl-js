@@ -1,0 +1,241 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setPaintProperty",
+          "building",
+          "building-emissive-strength",
+          [
+            "match",
+            [
+              "get",
+              "building-part"
+            ],
+            "window",
+            1,
+            "door",
+            2.5,
+            "roof",
+            0.6,
+            0
+          ]
+        ],
+        [
+          "wait"
+        ]
+      ],
+      "image-threshold": [
+        {
+          "platform-tag-contains": "",
+          "threshold": 0.0018
+        }
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "cast-shadows": true,
+        "intensity": 0.2,
+        "direction": [
+          125,
+          30
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "id": 1,
+            "type": "Feature",
+            "properties": {
+              "source_id": 1
+            },
+            "geometry": {
+              "coordinates": [
+                [
+                  [
+                    11.568937291974436,
+                    48.13246952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.13246952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.13246952281412
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "min_height": 0,
+              "cross_perc": 0,
+              "source_id": 1,
+              "entrances": "[0.35]",
+              "distance_to_road": 33.34
+            },
+            "id": 1,
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  11.568937291974436,
+                  48.132286810394845
+                ],
+                [
+                  11.56931009612731,
+                  48.132286810394845
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "min_height": 0,
+              "cross_perc": 0,
+              "source_id": 1,
+              "entrances": "[0.35]",
+              "distance_to_road": 33.34
+            },
+            "id": 2,
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  11.56931009612731,
+                  48.132286810394845
+                ],
+                [
+                  11.56931009612731,
+                  48.13246952281412
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "bearing": -45,
+  "pitch": 60,
+  "zoom": 18,
+  "center": [
+    11.5690308,
+    48.1324576
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "grey"
+      }
+    },
+    {
+      "id": "building",
+      "type": "building",
+      "source": "geojson",
+      "minzoom": 17,
+      "layout": {
+        "building-facade": true,
+        "building-roof-shape": "parapet",
+        "building-facade-floors": 4,
+        "building-facade-window": [
+          0.9,
+          0.8
+        ],
+        "building-base": 0,
+        "building-height": 20
+      },
+      "paint": {
+        "building-color": [
+          "match",
+          [
+            "get",
+            "building-part"
+          ],
+          "wall",
+          [
+            "hsl",
+            41,
+            90,
+            90
+          ],
+          "roof",
+          [
+            "hsl",
+            25,
+            43,
+            80
+          ],
+          "window",
+          [
+            "hsl",
+            186,
+            35.3,
+            67.3
+          ],
+          "door",
+          [
+            "hsl",
+            0,
+            100,
+            100
+          ],
+          [
+            "hsl",
+            41,
+            90,
+            90
+          ]
+        ],
+        "building-emissive-strength": [
+          "match",
+          [
+            "get",
+            "building-part"
+          ],
+          "door",
+          0.5,
+          0
+        ]
+      }
+    }
+  ]
+}

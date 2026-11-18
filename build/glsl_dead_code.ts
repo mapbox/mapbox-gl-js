@@ -40,6 +40,7 @@ export const GL_NATIVE_ONLY_DEFINES: ReadonlyArray<string> = Object.freeze([
     'ZERO_EXAGGERATION',
     // Native-only indicator cutout.
     'INDICATOR_CUTOUT',
+    'PAINT_TABLE',
     // Guards native-specific code paths in shared GLSL.
     'NATIVE'
 ]);
