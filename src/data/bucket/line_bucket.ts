@@ -218,6 +218,10 @@ class LineBucket implements Bucket {
     // One UBO paint-property binder per style layer sharing this bucket (see class doc on
     // LinePropertyBinderUBO). Populated in the constructor, one entry per this.layers[i].id.
     uboBinders: {[_: string]: LinePropertyBinderUBO};
+    // UBO counterpart of programConfigurations.needsUpload: set when a feature-state or brightness update
+    // changed the stored values of a feature in this bucket, so uploadPending() lets the terrain redrape
+    // only those tiles.
+    uboUpdated: boolean;
     // Shared across every layer's binder so a single per-vertex a_feature_index consistently
     // indexes each layer's own UBO batching — the minimum maxFeaturesPerBatch across all layers.
     maxFeaturesPerBatch: number;
@@ -276,6 +280,7 @@ class LineBucket implements Bucket {
         this.maxUniformBlockSizeDwords = options.maxUniformBlockSizeDwords;
 
         this.uboBinders = {};
+        this.uboUpdated = false;
         this.maxFeaturesPerBatch = Number.MAX_SAFE_INTEGER;
         for (const layer of this.layers) {
             const binder = new LinePropertyBinderUBO(layer, options.zoom, options.lut, this.worldview, this.maxUniformBlockSizeDwords);
@@ -543,8 +548,9 @@ class LineBucket implements Bucket {
             if (isBrightnessChanged) {
                 for (const layer of layers as ReadonlyArray<LineStyleLayer>) {
                     const binder = this.uboBinders[layer.id];
-                    if (binder && binder.hasLightDependentBlocks(layer)) {
-                        binder.updateDynamicExpressions(layer, vtLayer, canonical, availableImages, states, brightness);
+                    if (binder && binder.hasLightDependentBlocks(layer) &&
+                        binder.updateDynamicExpressions(layer, vtLayer, canonical, availableImages, states, brightness)) {
+                        this.uboUpdated = true;
                     }
                 }
             } else if (Object.keys(states).length > 0) {
@@ -559,7 +565,9 @@ class LineBucket implements Bucket {
                 for (const layer of layers as ReadonlyArray<LineStyleLayer>) {
                     const binder = this.uboBinders[layer.id];
                     if (binder && binder.hasStateDependentPaint(layer)) {
-                        binder.updateFeatures(featureIds, layer, vtLayer, canonical, availableImages, states, brightness);
+                        if (binder.updateFeatures(featureIds, layer, vtLayer, canonical, availableImages, states, brightness)) {
+                            this.uboUpdated = true;
+                        }
                     }
                 }
             }
@@ -594,7 +602,7 @@ class LineBucket implements Bucket {
     }
 
     uploadPending(): boolean {
-        return !this.uploaded || this.programConfigurations.needsUpload;
+        return !this.uploaded || this.programConfigurations.needsUpload || this.uboUpdated;
     }
 
     upload(context: Context) {
@@ -624,6 +632,7 @@ class LineBucket implements Bucket {
         for (const layer of this.layers) {
             this.uboBinders[layer.id]!.upload(context);
         }
+        this.uboUpdated = false;
         this.uploaded = true;
     }
 

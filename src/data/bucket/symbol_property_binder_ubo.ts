@@ -438,7 +438,7 @@ export class SymbolPropertyBinderUBO extends PaintPropertyBinderUBO<SymbolStyleL
         for (const i of positions) {
             const formattedSection = this.allFormattedSections ? this.allFormattedSections[i] : undefined;
             const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, formattedSection || undefined, activeAppearance);
-            wrote = this._writeFeatureBlock(i, allValues) || wrote;
+            wrote = this._writeFeatureBlock(i, allValues) !== 'missing' || wrote;
         }
         return wrote;
     }

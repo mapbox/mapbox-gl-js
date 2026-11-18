@@ -1,0 +1,62 @@
+{
+  "description": "Brightness changes on a draped line layer with a light-dependent data-driven color invalidate the terrain render cache.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4268"],
+      "height": 64,
+      "width": 64,
+      "operations": [
+        ["forceRenderCached", true],
+        ["wait"],
+        ["setZoom", 11.4],
+        ["wait"]
+      ],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "bug: draped tiles are not invalidated on UBO paint updates - MAPSNAT-4268"}
+      ]
+    }
+  },
+  "center": [-113.26903, 35.9654],
+  "zoom": 11,
+  "pitch": 45,
+  "lights": [
+    {"type": "ambient", "id": "environment", "properties": {"intensity": ["step", ["zoom"], 0, 11.2, 1]}},
+    {"type": "directional", "id": "sun", "properties": {"intensity": ["step", ["zoom"], 0, 11.2, 1]}}
+  ],
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 15,
+      "tileSize": 256
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {"k": 1},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [[-113.29, 35.9654], [-113.25, 35.9654]]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": 8,
+        "line-color": ["case", [">", ["*", ["get", "k"], ["measure-light", "brightness"]], 0.5], "red", "blue"]
+      }
+    }
+  ]
+}

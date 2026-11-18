@@ -1,5 +1,6 @@
 ## Unreleased
 - Fix model-color not matching how color is applied elsewhere.
+- Fix feature state changes on line layers draped over terrain not being rendered until the camera moves.
 
 - Fix devtools serialization for duplicate entries.
 

@@ -15,6 +15,9 @@ import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {FormattedSection} from '../../style-spec/expression/types/formatted';
 import type SymbolAppearance from '../../style/appearance';
 
+// Previous contents of the feature block being rewritten by _writeFeatureBlock; grown on demand.
+let blockScratch = new Float32Array(64);
+
 /**
  * True if `prop` is a data-driven paint property whose expression reads feature-state.
  * Constants and camera-only expressions return false.
@@ -582,14 +585,26 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
      * (every feature deduplicates to entry 0). batch/local then follow from maxFeaturesPerBatch, as
      * in populateUBO — so this reproduces the slot populateUBO chose without storing it per feature.
      */
-    protected _writeFeatureBlock(i: number, allValues: Float32Array): boolean {
+    protected _writeFeatureBlock(i: number, allValues: Float32Array): 'missing' | 'unchanged' | 'changed' {
         const globalFeatureIndex = this.isAllConstant ? 0 : i;
         const batchIndex = Math.floor(globalFeatureIndex / this.maxFeaturesPerBatch);
         const localFeatureIndex = globalFeatureIndex % this.maxFeaturesPerBatch;
         const ubo = this.ubos[batchIndex];
-        if (!ubo) return false;
+        if (!ubo) return 'missing';
+
+        // Compare against the previous block so callers can tell a real change from a re-evaluation
+        // to the same values: tiles with appearances re-apply the full feature state every frame.
+        const size = ubo.headerData[HEADER_BLOCK_SIZE_VEC4]! * 4;
+        const base = localFeatureIndex * size;
+        if (blockScratch.length < size) blockScratch = new Float32Array(size);
+        for (let k = 0; k < size; k++) blockScratch[k] = ubo.propertiesData[base + k]!;
+
         ubo.writeDataDrivenBlock(allValues, localFeatureIndex, this._immutableAfterPopulateMask());
-        return true;
+
+        for (let k = 0; k < size; k++) {
+            if (!Object.is(blockScratch[k], ubo.propertiesData[base + k])) return 'changed';
+        }
+        return 'unchanged';
     }
 
     /**
@@ -597,7 +612,7 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
      * its paint properties (honoring feature-state and, for symbol, the current active appearance),
      * and write the result into its UBO slot. Shared by the feature-state and dynamic-expression
      * update paths. Symbol's appearance/formatted-section reads degrade to line's plain behavior
-     * (undefined) when those fields aren't populated.
+     * (undefined) when those fields aren't populated. Returns whether the stored block changed.
      */
     protected _reevaluateAt(
         i: number,
@@ -606,11 +621,11 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         availableImages: ImageId[],
         featureStates: {[key: string | number]: FeatureState},
         brightness?: number | null
-    ): void {
-        if (!vtLayer) return;
+    ): boolean {
+        if (!vtLayer) return false;
         const vtFeatureIndex = this.allFeatureVtIndices[i]!;
         const vtFeature = vtLayer.feature(vtFeatureIndex);
-        if (!vtFeature) return;
+        if (!vtFeature) return false;
 
         const featureId = this.allFeatureIds[i];
         const featureState = featureId != null ? (featureStates[featureId] || {}) : {};
@@ -625,7 +640,7 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         const activeAppearance = this.activeAppearanceByVtIndex ? this.activeAppearanceByVtIndex.get(vtFeatureIndex) : undefined;
         const formattedSection = this.allFormattedSections ? this.allFormattedSections[i] : undefined;
         const allValues = this.evaluateAllProperties(feature, featureState, canonical, availableImages, brightness, formattedSection || undefined, activeAppearance);
-        this._writeFeatureBlock(i, allValues);
+        return this._writeFeatureBlock(i, allValues) === 'changed';
     }
 
     /**
@@ -710,6 +725,9 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
 
     /**
      * Update specific features when feature-state changes.
+     * Returns whether the stored values of any feature changed. Feature-state changes are sent to
+     * every tile of the source, and tiles with appearances re-apply the full state every frame, so
+     * most calls touch no feature of this binder or rewrite identical values.
      */
     updateFeatures(
         featureIds: Set<string | number>,
@@ -719,24 +737,27 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         availableImages: ImageId[],
         featureStates: {[key: string | number]: FeatureState},
         brightness?: number | null
-    ): void {
+    ): boolean {
         this.layer = styleLayer;
 
         this._ensureRangeMaps();
+        let changed = false;
         for (const featureId of featureIds) {
             const positions = this.featureVertexRangesFromId!.get(featureId);
             if (!positions) continue;
             for (const i of positions) {
-                this._reevaluateAt(i, vtLayer, canonical, availableImages, featureStates, brightness);
+                changed = this._reevaluateAt(i, vtLayer, canonical, availableImages, featureStates, brightness) || changed;
             }
         }
+        return changed;
     }
 
     /**
      * Update all features when dynamic expressions change (brightness, config, images, paint props).
      *
      * Constant property changes are reflected through getConstantUniformValues() at draw time,
-     * so only data-driven blocks need to be rewritten here.
+     * so only data-driven blocks need to be rewritten here. Returns whether the stored values of
+     * any feature changed.
      */
     updateDynamicExpressions(
         styleLayer: TLayer,
@@ -745,17 +766,19 @@ export abstract class PaintPropertyBinderUBO<TLayer extends StyleLayer, TConstan
         availableImages: ImageId[],
         featureStates: {[key: string | number]: FeatureState},
         brightness?: number | null
-    ): void {
+    ): boolean {
         this.layer = styleLayer;
         // Zoom stop values may have changed
         this._recomputeSharedRanges();
         // Skip per-feature re-evaluation when no data-driven properties: constant properties
         // are read from this.layer at draw time via getConstantUniformValues().
-        if (this.header[HEADER_DATA_DRIVEN_MASK] === 0) return;
+        if (this.header[HEADER_DATA_DRIVEN_MASK] === 0) return false;
 
+        let changed = false;
         for (let i = 0; i < this.allFeatureVtIndices.length; i++) {
-            this._reevaluateAt(i, vtLayer, canonical, availableImages, featureStates, brightness);
+            changed = this._reevaluateAt(i, vtLayer, canonical, availableImages, featureStates, brightness) || changed;
         }
+        return changed;
     }
 
     /**

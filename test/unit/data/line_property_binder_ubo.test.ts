@@ -7,6 +7,7 @@ import {CanonicalTileID} from '../../../src/source/tile_id';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
 
 import type {Feature} from '../../../src/style-spec/expression';
+import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {LayerSpecification} from '../../../src/style-spec/types';
 
 describe('LinePropertyBinderUBO', () => {
@@ -154,6 +155,57 @@ describe('LinePropertyBinderUBO', () => {
             const cv = binder.getConstantUniformValues(null);
             expect(cv.width).toEqual(3);
             expect(cv.opacity).toEqual(0.5);
+        });
+    });
+
+    describe('updateFeatures', () => {
+        function createStateBinder() {
+            const layer = createTestLayer({'line-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 1, 0.5]});
+            const binder = new LinePropertyBinderUBO(layer, 10, null);
+            const feature = createTestFeature({}, 1);
+            binder.populateUBO(feature, 0, new CanonicalTileID(0, 0, 0), []);
+            binder.finalize();
+            const vtLayer = {feature: () => feature} as unknown as VectorTileLayer;
+            return {layer, binder, vtLayer};
+        }
+
+        test('returns true when a changed feature belongs to the binder', () => {
+            const {layer, binder, vtLayer} = createStateBinder();
+            expect(binder.updateFeatures(new Set([1]), layer, vtLayer, new CanonicalTileID(0, 0, 0), [], {1: {hover: true}})).toBe(true);
+        });
+
+        test('returns false when no changed feature belongs to the binder', () => {
+            const {layer, binder, vtLayer} = createStateBinder();
+            expect(binder.updateFeatures(new Set([2]), layer, vtLayer, new CanonicalTileID(0, 0, 0), [], {2: {hover: true}})).toBe(false);
+        });
+
+        test('returns false when re-applying a state that does not change the stored values', () => {
+            const {layer, binder, vtLayer} = createStateBinder();
+            binder.updateFeatures(new Set([1]), layer, vtLayer, new CanonicalTileID(0, 0, 0), [], {1: {hover: true}});
+            expect(binder.updateFeatures(new Set([1]), layer, vtLayer, new CanonicalTileID(0, 0, 0), [], {1: {hover: true}})).toBe(false);
+        });
+    });
+
+    describe('updateDynamicExpressions', () => {
+        function createLightBinder() {
+            const layer = createTestLayer({'line-opacity': ['*', ['get', 'opacity'], ['measure-light', 'brightness']]});
+            const binder = new LinePropertyBinderUBO(layer, 10, null);
+            const feature = createTestFeature({opacity: 1}, 1);
+            binder.populateUBO(feature, 0, new CanonicalTileID(0, 0, 0), [], 0);
+            binder.finalize();
+            const vtLayer = {feature: () => feature} as unknown as VectorTileLayer;
+            return {layer, binder, vtLayer};
+        }
+
+        test('returns true when the brightness changes the stored values', () => {
+            const {layer, binder, vtLayer} = createLightBinder();
+            expect(binder.updateDynamicExpressions(layer, vtLayer, new CanonicalTileID(0, 0, 0), [], {}, 1)).toBe(true);
+        });
+
+        test('returns false when the brightness does not change the stored values', () => {
+            const {layer, binder, vtLayer} = createLightBinder();
+            binder.updateDynamicExpressions(layer, vtLayer, new CanonicalTileID(0, 0, 0), [], {}, 1);
+            expect(binder.updateDynamicExpressions(layer, vtLayer, new CanonicalTileID(0, 0, 0), [], {}, 1)).toBe(false);
         });
     });
 
