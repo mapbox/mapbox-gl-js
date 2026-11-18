@@ -1,7 +1,7 @@
 {
   "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "3.37.0-SNAPSHOT-11-18--01-23.git-cb103df",
+  "version": "3.37.0-SNAPSHOT-11-18--11-09.git-412e07d",
   "main": "dist/mapbox-gl.js",
   "style": "dist/mapbox-gl.css",
   "types": "dist/mapbox-gl.d.ts",
