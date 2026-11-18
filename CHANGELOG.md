@@ -5,6 +5,7 @@
 - Fix devtools serialization for duplicate entries.
 
 - Optimize rain fragment shader.
+- Add the experimental `@mapbox/mapbox-gl-webmcp` plugin for exposing a live Map to browser agents through WebMCP.
 
 ## 3.36.0-rc.1
 

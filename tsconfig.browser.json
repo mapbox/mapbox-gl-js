@@ -21,6 +21,7 @@
     "./src/style-spec/rollup.config.js",
     "./internal/scripts/**/*",
     "./plugins/**/rollup.config.ts",
-    "./plugins/*/dist"
+    "./plugins/*/dist",
+    "./plugins/mapbox-gl-webmcp"
   ]
 }

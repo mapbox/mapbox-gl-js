@@ -26,6 +26,7 @@
   },
   "workspaces": [
     "src/style-spec",
+    "plugins/mapbox-gl-webmcp",
     "plugins/mapbox-gl-pmtiles-provider",
     "test/bundlers/*",
     "test/build/typings"
@@ -120,9 +121,9 @@
     "start-server": "node build/start-server.js",
     "start": "run-p build-token watch-css watch-esm start-server",
     "start-all": "run-p build-token watch-css watch-dev watch-esm start-server",
-    "prepare-release-pages": "ln -sfn $PWD/dist test/release/dist && ln -sfn $PWD/debug test/release/debug && cp debug/access_token_generated.js test/release/",
+    "prepare-release-pages": "ln -sfn $PWD/dist test/release/dist && ln -sfn $PWD/debug test/release/debug && ln -sfn $PWD/plugins test/release/plugins && cp debug/access_token_generated.js test/release/",
     "start-release": "run-s build-token build-all build-css print-release-url prepare-release-pages start-server",
-    "lint": "eslint --cache .",
+    "lint": "npm run build-dts && eslint --cache .",
     "lint-css": "stylelint 'src/css/mapbox-gl.css'",
     "test": "run-s lint lint-css test-typings test-unit",
     "test-suite": "run-s test-render test-query test-expressions",

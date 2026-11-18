@@ -1,0 +1,48 @@
+{
+  "name": "@mapbox/mapbox-gl-webmcp",
+  "version": "0.1.0-alpha.1",
+  "description": "Experimental WebMCP integration for Mapbox GL JS",
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mapbox/mapbox-gl-js.git"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/mapbox-gl-webmcp.js",
+      "require": "./dist/mapbox-gl-webmcp.cjs"
+    },
+    "./tools": {
+      "types": "./dist/tools/index.d.ts",
+      "import": "./dist/tools.js",
+      "require": "./dist/tools.cjs"
+    }
+  },
+  "publishConfig": {
+    "tag": "experimental"
+  },
+  "scripts": {
+    "build": "rollup -c rollup.config.ts && npm run tsc",
+    "tsc": "npm run build-dts --prefix ../.. && tsc --noEmit",
+    "eslint": "eslint src test",
+    "watch": "rollup -c rollup.config.ts --watch",
+    "test": "npm run build-esm-dev --prefix ../.. && npm run build && vitest --run",
+    "check:fast": "npm run tsc && npm run eslint",
+    "check:task": "npm run check:fast && npm test"
+  },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "mapbox-gl": "*"
+  },
+  "peerDependenciesMeta": {
+    "mapbox-gl": {
+      "optional": true
+    }
+  }
+}

@@ -19,7 +19,8 @@
     "./src/style-spec/test.js",
     "./src/style-spec/rollup.config.js",
     "./internal/scripts/**/*",
-    "./plugins/**/rollup.config.ts"
+    "./plugins/**/rollup.config.ts",
+    "./plugins/*/vitest.config.ts"
   ],
   "exclude": [
     "./test/release/**/*",

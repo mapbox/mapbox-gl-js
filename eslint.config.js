@@ -34,7 +34,8 @@ const DEV_FILES = [
     'eslint.config.js',
     'src/style-spec/test.js',
     'src/style-spec/rollup.config.js',
-    'plugins/mapbox-gl-pmtiles-provider/rollup.config.ts',
+    'plugins/*/rollup.config.ts',
+    'plugins/*/vitest.config.ts',
 ];
 
 const UNTYPED_FILES = [
@@ -87,7 +88,7 @@ export default tseslint.config(
 
         languageOptions: {
             parserOptions: {
-                project: ['./tsconfig.browser.json', './tsconfig.node.json'],
+                project: ['./tsconfig.browser.json', './tsconfig.node.json', './plugins/mapbox-gl-webmcp/tsconfig.json'],
                 tsconfigRootDir: import.meta.dirname,
             },
         },

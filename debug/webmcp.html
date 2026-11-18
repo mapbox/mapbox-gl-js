@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Mapbox GL JS WebMCP</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="The WebMCP plugin's tools registered on a Standard map, for a browser agent to call.">
+    <meta name="mapbox:role" content="feature">
+    <link rel="stylesheet" href="../dist/mapbox-gl.css">
+    <style>
+        body { margin: 0; }
+        html, body, #map { width: 100%; height: 100%; }
+        #note { position: absolute; top: 10px; left: 10px; max-width: 360px; padding: 8px; background: white; font: 13px sans-serif; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <p id="note">To call the map tools, open this page in Chrome with <code>chrome://flags/#enable-webmcp-testing</code> turned on, then use a WebMCP agent or the Model Context Tool Inspector extension. Chrome 149 to 156 also has WebMCP on sites with an origin trial token.</p>
+    <script type="importmap">
+        {"imports": {"mapbox-gl": "../dist/esm-dev/mapbox-gl.js"}}
+    </script>
+    <script type="module">
+        import * as mapboxgl from 'mapbox-gl';
+        import {tools} from '../plugins/mapbox-gl-webmcp/dist/tools.js';
+        import {MapboxWebMCP} from '../plugins/mapbox-gl-webmcp/dist/mapbox-gl-webmcp.js';
+        import {getAccessToken} from './access_token_generated.js';
+
+        const map = window.map = new mapboxgl.Map({
+            accessToken: getAccessToken(),
+            container: 'map',
+            style: 'mapbox://styles/mapbox/standard',
+            center: [24.947, 60.169],
+            zoom: 12.6
+        });
+        map.addControl(window.control = new MapboxWebMCP({mapboxgl, tools}));
+    </script>
+</body>
+</html>
