@@ -2,17 +2,22 @@
 
 ## 3.36.0-rc.1
 
-- Remove unreachable shader code from the bundle.
-- Fix clean-up of telemetry classes.
+### Features and improvements ✨
+
 - Apply fog to symbols with `icon-pitch-alignment` or `text-pitch-alignment` set to `map`.
-- Fix map-aligned icons (such as road and oneway arrows) shimmering at high pitch.
-- Fix the docs and the warning of `Map#getFreeCameraOptions` and `Map#setFreeCameraOptions`, which said that free camera does not support the globe projection.
+- Add experimental `Map#startPerformanceStatisticsCollection` and `Map#stopPerformanceStatisticsCollection` to collect render time, render pass and layer timings, and draw call counters.
+- Remove unreachable shader code from the bundle.
+
+### Bug fixes 🐞
+
+- Fix clean-up of telemetry classes.
+- Fix map-aligned icons (such as road and one-way arrows) shimmering at high pitch.
+- Fix the docs and the warning for `Map#getFreeCameraOptions` and `Map#setFreeCameraOptions`, which said that free camera does not support the globe projection.
 - Fix raster array sampling on Android.
 - Fix HD road rendering in vector tiles with an extent other than 8192.
 - Fix a line-dasharray of [] to consistently draw a solid line.
 - Fix order-dependent symbol and fill-extrusion border rendering.
-- Fix a performance regression where fill layers re-uploaded every frame, which was especially slow with many feature states.
-- Add experimental `Map#startPerformanceStatisticsCollection` and `Map#stopPerformanceStatisticsCollection` to collect render time, render pass and layer timings, and draw call counters.
+- Fix a performance regression where fill layers were re-uploaded every frame, which was especially slow with many feature states.
 - Fix fill extrusion ground effect vertex & fragment shaders attribute mismatch.
 - Fix scale factor being applied twice to symbols with zoom- and data-dependent `text-size` or `icon-size` between zoom stops.
 
