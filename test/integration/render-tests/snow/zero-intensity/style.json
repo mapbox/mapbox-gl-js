@@ -1,0 +1,33 @@
+{
+  "description": "Snow with zero intensity is frozen in time and renders deterministic static particles.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        ["wait"]
+      ]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 16,
+  "pitch": 60,
+  "snow": {
+    "intensity": 0,
+    "density": 1,
+    "opacity": 1,
+    "color": "#0000ff",
+    "vignette": 0
+  },
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    }
+  ]
+}
