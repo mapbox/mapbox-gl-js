@@ -709,6 +709,41 @@ describe('VectorTileSource', () => {
         }
     });
 
+    function captureStableIdField(placementAlgorithm) {
+        mockFetch({
+            'mapbox.mapbox-streets-v8.json': () => new Response(JSON.stringify({
+                minzoom: 0,
+                maxzoom: 22,
+                tiles: ["http://example.com/{z}/{x}/{y}.png"]
+            }))
+        });
+        const source = createSource({url: "mapbox://mapbox.mapbox-streets-v8"}, {customAccessToken: 'key'});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        source.map._placementAlgorithm = placementAlgorithm;
+        return new Promise((resolve) => {
+            source.dispatcher = wrapDispatcher({
+                send(type, params) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    if (type === 'loadTile') resolve(params.stableIdField);
+                    return new Promise(() => {});
+                }
+            });
+            source.on('data', (e) => {
+                if (e.sourceDataType === 'metadata') {
+                    source.loadTile({tileID: new OverscaledTileID(10, 0, 10, 5, 5), uid: 0, renderSourceType: RenderSourceType.Other}, () => {});
+                }
+            });
+        });
+    }
+
+    test('sends the stable id field of a Mapbox source to the worker with global placement', async () => {
+        expect(await captureStableIdField('global')).toEqual('id');
+    });
+
+    test('does not send the stable id field of a Mapbox source to the worker with default placement', async () => {
+        expect(await captureStableIdField('default')).toBeNull();
+    });
+
     test('respects collectResourceTiming parameter on source', async () => {
         const source = createSource({
             tiles: ["http://example.com/{z}/{x}/{y}.png"],

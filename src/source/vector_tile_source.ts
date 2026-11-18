@@ -420,7 +420,8 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             showCollisionBoxes: this.map.showCollisionBoxes,
             showElevationIdDebug: this.map.painter ? this.map.painter._debugParams.showElevationIdDebug : false,
             promoteId: this.promoteId,
-            stableIdField: this._stableIdField,
+            // Only global placement matches symbols across tiles by stable id
+            stableIdField: this.map._placementAlgorithm === 'global' ? this._stableIdField : null,
             renderSourceType: tile.renderSourceType,
             frcCoverage: (() => {
                 const painter = this.map.painter;
