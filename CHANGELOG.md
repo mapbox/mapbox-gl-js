@@ -25,6 +25,10 @@
 - Fix scale factor being applied twice to symbols with zoom- and data-dependent `text-size` or `icon-size` between zoom stops.
 - Compile fewer shader variants when shadows are disabled and for symbols on the globe.
 
+## 3.35.1
+
+- Fix map-aligned icons (such as road and oneway arrows) shimmering at high pitch.
+
 ## 3.35.0
 
 ### Features and improvements ✨
