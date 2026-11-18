@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 3.34.3
+
 - Apply fog to symbols with `icon-pitch-alignment` or `text-pitch-alignment` set to `map`.
 
 ## 3.34.2
