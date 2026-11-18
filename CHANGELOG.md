@@ -47,6 +47,10 @@
 - Fix a thin unlit line in the fill-extrusion flood light at very sharp polygon corners.
 - Fix visibility of the logo control based on imported source.
 
+## 3.34.3
+
+- Apply fog to symbols with `icon-pitch-alignment` or `text-pitch-alignment` set to `map`.
+
 ## 3.34.2
 
 ## 3.34.1
