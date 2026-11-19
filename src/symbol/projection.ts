@@ -7,7 +7,7 @@ import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
 import EXTENT from '../style-spec/data/extent';
 import {degToRad} from '../util/util';
 import {xyTransformMat4} from '../util/mat4';
-import {evaluateSizeForFeature, evaluateSizeForZoom} from './symbol_size';
+import {evaluateSizeForFeature} from './symbol_size';
 
 import type {CanonicalTileID, OverscaledTileID} from '../source/tile_id';
 import type {ElevationFeature} from '../../3d-style/elevation/elevation_feature';
@@ -269,12 +269,11 @@ function updateLineLabels(bucket: SymbolBucket,
     pitchWithMap: boolean,
     keepUpright: boolean,
     getElevation: GetElevation,
-    tileID: OverscaledTileID,
-    scaleFactor: number = 1) {
+    tileID: OverscaledTileID) {
 
     const tr = painter.transform;
     const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
-    const partiallyEvaluatedSize = evaluateSizeForZoom(sizeData, painter.transform.zoom, scaleFactor);
+    const partiallyEvaluatedSize = isText ? bucket.evaluateTextSizeForZoom(painter.transform.zoom) : bucket.evaluateIconSizeForZoom(painter.transform.zoom);
     const isGlobe = tr.projection.name === 'globe';
 
     // Pre-compute the globe-to-mercator blend args once per tile so that the per-vertex

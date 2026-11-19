@@ -786,6 +786,8 @@ class SymbolBucket implements Bucket, SymbolSource {
 
     textSizeData: SizeData;
     iconSizeData: SizeData;
+    textScaleFactor = 1;
+    iconScaleFactor = 1;
 
     glyphOffsetArray!: GlyphOffsetArray;
     lineVertexArray!: SymbolLineVertexArray;
@@ -1444,9 +1446,9 @@ class SymbolBucket implements Bucket, SymbolSource {
         const textField = layout.get('text-field');
         const iconImage = layout.get('icon-image');
         const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
-        const iconScaleFactor = clamp(options.scaleFactor || 1, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
+        this.iconScaleFactor = clamp(options.scaleFactor ?? 1, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
         const [textSizeScaleRangeMin, textSizeScaleRangeMax] = layout.get('text-size-scale-range');
-        const textScaleFactor = clamp(options.scaleFactor || 1, textSizeScaleRangeMin, textSizeScaleRangeMax);
+        this.textScaleFactor = clamp(options.scaleFactor ?? 1, textSizeScaleRangeMin, textSizeScaleRangeMax);
         const hasText =
 
             (textField.value.kind !== 'constant' ||
@@ -1590,7 +1592,7 @@ class SymbolBucket implements Bucket, SymbolSource {
             });
 
             if (icon) {
-                const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, this.iconSizeData, symbolLayer.getLayoutPropertyValue('icon-size')!, canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor, this.worldview, availableImages);
+                const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, this.iconSizeData, symbolLayer.getLayoutPropertyValue('icon-size')!, canonical, this.zoom, symbolFeature, this.pixelRatio, this.iconScaleFactor, this.worldview, availableImages);
                 addImageVariantToIcons(iconPrimary!);
 
                 if (iconSecondary) {
@@ -1604,7 +1606,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 appearances.forEach(a => {
                     const iconImage = a.getLayoutProperty('icon-image');
                     if (!iconImage) return;
-                    const {iconPrimary, iconSecondary} = this.getCombinedIconVariants(a, symbolLayer, evaluationFeature, canonical, availableImages, symbolFeature, iconScaleFactor);
+                    const {iconPrimary, iconSecondary} = this.getCombinedIconVariants(a, symbolLayer, evaluationFeature, canonical, availableImages, symbolFeature, this.iconScaleFactor);
                     if (!iconPrimary) return;
                     addImageVariantToIcons(iconPrimary);
                     if (iconSecondary) {
@@ -1625,7 +1627,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                         const sectionStack: Record<number, boolean> = stacks[sectionFont] = stacks[sectionFont] || {};
                         this.calculateGlyphDependencies(section.text, sectionStack, textAlongLine, this.allowVerticalPlacement, doesAllowVerticalWritingMode);
                     } else {
-                        const imagePrimary = section.image.getPrimary().scaleSelf(this.pixelRatio * textScaleFactor);
+                        const imagePrimary = section.image.getPrimary().scaleSelf(this.pixelRatio * this.textScaleFactor);
                         const imagePrimaryId = imagePrimary.id.toString();
                         const primaryIcons = icons.get(imagePrimaryId) || [];
                         primaryIcons.push(imagePrimary);
@@ -2513,7 +2515,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         }
     }
 
-    generateCollisionDebugBuffers(zoom: number, collisionBoxArray: CollisionBoxArray, textScaleFactor: number) {
+    generateCollisionDebugBuffers(zoom: number, collisionBoxArray: CollisionBoxArray) {
         if (this.hasDebugData()) {
             this.destroyDebugData();
         }
@@ -2522,7 +2524,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         this.iconCollisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
 
         const iconSize = evaluateSizeForZoom(this.iconSizeData, zoom);
-        const textSize = evaluateSizeForZoom(this.textSizeData, zoom, textScaleFactor);
+        const textSize = this.evaluateTextSizeForZoom(zoom);
 
         for (let i = 0; i < this.symbolInstances.length; i++) {
             const symbolInstance = this.symbolInstances.get(i);
@@ -2541,6 +2543,16 @@ class SymbolBucket implements Bucket, SymbolSource {
                 instance.centerJustifiedTextSymbolIndex : instance.leftJustifiedTextSymbolIndex >= 0 ?
                     instance.leftJustifiedTextSymbolIndex : instance.verticalPlacedTextSymbolIndex >= 0 ?
                         instance.verticalPlacedTextSymbolIndex : -1;
+    }
+
+    evaluateTextSizeForZoom(zoom: number): InterpolatedSize {
+        const {uSizeT, uSize} = evaluateSizeForZoom(this.textSizeData, zoom);
+        return {uSizeT, uSize: uSize * this.textScaleFactor};
+    }
+
+    evaluateIconSizeForZoom(zoom: number): InterpolatedSize {
+        const {uSizeT, uSize} = evaluateSizeForZoom(this.iconSizeData, zoom);
+        return {uSizeT, uSize: uSize * this.iconScaleFactor};
     }
 
     getSymbolInstanceTextSize(textSize: InterpolatedSize, instance: SymbolInstance, zoom: number, boxIndex: number): number {
@@ -2566,7 +2578,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         array.emplaceBack(scale, -padding,  padding, zOffset);
     }
 
-    _updateTextDebugCollisionBoxes(size: InterpolatedSize, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance, scaleFactor: number) {
+    _updateTextDebugCollisionBoxes(size: InterpolatedSize, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance) {
         for (let b = startIndex; b < endIndex; b++) {
             const box: CollisionBox = collisionBoxArray.get(b);
             const scale = this.getSymbolInstanceTextSize(size, instance, zoom, b);
@@ -2575,7 +2587,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         }
     }
 
-    _updateIconDebugCollisionBoxes(size: InterpolatedSize, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance, iconScaleFactor: number) {
+    _updateIconDebugCollisionBoxes(size: InterpolatedSize, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance) {
         for (let b = startIndex; b < endIndex; b++) {
             const box = (collisionBoxArray.get(b));
             const scale = this.getSymbolInstanceIconSize(size, zoom, instance.placedIconSymbolIndex);
@@ -2584,7 +2596,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         }
     }
 
-    updateCollisionDebugBuffers(zoom: number, collisionBoxArray: CollisionBoxArray, textScaleFactor: number, iconScaleFactor: number) {
+    updateCollisionDebugBuffers(zoom: number, collisionBoxArray: CollisionBoxArray) {
         if (!this.hasDebugData()) {
             return;
         }
@@ -2592,15 +2604,15 @@ class SymbolBucket implements Bucket, SymbolSource {
         if (this.hasTextCollisionBoxData()) this.textCollisionBox.collisionVertexArrayExt.clear();
         if (this.hasIconCollisionBoxData()) this.iconCollisionBox.collisionVertexArrayExt.clear();
 
-        const iconSize = evaluateSizeForZoom(this.iconSizeData, zoom, iconScaleFactor);
-        const textSize = evaluateSizeForZoom(this.textSizeData, zoom, textScaleFactor);
+        const iconSize = this.evaluateIconSizeForZoom(zoom);
+        const textSize = this.evaluateTextSizeForZoom(zoom);
 
         for (let i = 0; i < this.symbolInstances.length; i++) {
             const symbolInstance = this.symbolInstances.get(i);
-            this._updateTextDebugCollisionBoxes(textSize, zoom, collisionBoxArray, symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance, textScaleFactor);
-            this._updateTextDebugCollisionBoxes(textSize, zoom, collisionBoxArray, symbolInstance.verticalTextBoxStartIndex, symbolInstance.verticalTextBoxEndIndex, symbolInstance, textScaleFactor);
-            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex, symbolInstance, iconScaleFactor);
-            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.verticalIconBoxStartIndex, symbolInstance.verticalIconBoxEndIndex, symbolInstance, iconScaleFactor);
+            this._updateTextDebugCollisionBoxes(textSize, zoom, collisionBoxArray, symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance);
+            this._updateTextDebugCollisionBoxes(textSize, zoom, collisionBoxArray, symbolInstance.verticalTextBoxStartIndex, symbolInstance.verticalTextBoxEndIndex, symbolInstance);
+            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex, symbolInstance);
+            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.verticalIconBoxStartIndex, symbolInstance.verticalIconBoxEndIndex, symbolInstance);
         }
 
         if (this.hasTextCollisionBoxData() && this.textCollisionBox.collisionVertexBufferExt) {

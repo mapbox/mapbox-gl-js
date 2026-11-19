@@ -59,6 +59,19 @@ function bucketSetup(text = 'abcde') {
     return bucket;
 }
 
+test('SymbolBucket clamps the scale factor to the size scale ranges', () => {
+    const sizeAt = (scaleFactor?: number) => {
+        const bucket = bucketSetup();
+        bucket.populate([{feature}], {iconDependencies: {}, glyphDependencies: {}, scaleFactor});
+        return [bucket.evaluateTextSizeForZoom(0).uSize, bucket.evaluateIconSizeForZoom(0).uSize];
+    };
+
+    expect(sizeAt()).toEqual([16, 1]);
+    expect(sizeAt(1.5)).toEqual([24, 1.5]);
+    expect(sizeAt(0)).toEqual([16 * 0.8, 0.8]);
+    expect(sizeAt(5)).toEqual([32, 2]);
+});
+
 test('SymbolBucket', () => {
     const bucketA = bucketSetup();
     const bucketB = bucketSetup();
@@ -71,7 +84,7 @@ test('SymbolBucket', () => {
 
     // add feature from bucket A
     bucketA.populate([{feature}], options);
-    const bucketAData = performSymbolLayout(bucketA, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    const bucketAData = performSymbolLayout(bucketA, stacks, glyphPositions, null, null, null, null, null, projection);
 
     postRasterizationSymbolLayout(bucketA, bucketAData, null, null, null, null, projection, null, null, {});
 
@@ -82,7 +95,7 @@ test('SymbolBucket', () => {
 
     // add same feature from bucket B
     bucketB.populate([{feature}], options);
-    const bucketBData = performSymbolLayout(bucketB, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    const bucketBData = performSymbolLayout(bucketB, stacks, glyphPositions, null, null, null, null, null, projection);
 
     postRasterizationSymbolLayout(bucketB, bucketBData, null, null, null, null, projection, null, null, {});
     const tileB = new Tile(tileID, 512, 0, painter);
@@ -117,7 +130,7 @@ test('SymbolBucket#addToPlacement places a real symbol via the new placement pip
     const options = {iconDependencies: {}, glyphDependencies: {}};
 
     bucket.populate([{feature}], options);
-    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, projection);
     postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
 
     const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
@@ -263,7 +276,7 @@ test('SymbolBucket#addToPlacement wraps a fade reference time past the 32-bit ra
     const options = {iconDependencies: {}, glyphDependencies: {}};
 
     bucket.populate([{feature}], options);
-    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, projection);
     postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
 
     const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
@@ -301,7 +314,7 @@ test('SymbolBucket#addToPlacement hides a symbol clipped by a 3D-object/clip-lay
     const options = {iconDependencies: {}, glyphDependencies: {}};
 
     bucket.populate([{feature}], options);
-    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, projection);
     postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
 
     const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
@@ -341,7 +354,7 @@ function setUpForChildCoverageTest() {
     const options = {iconDependencies: {}, glyphDependencies: {}};
 
     bucket.populate([{feature}], options);
-    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, projection);
     postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
 
     const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
@@ -446,7 +459,7 @@ function placeAndCapturePriority(bucket: SymbolBucket, groupOrders: Map<string, 
     const projection = getProjection({name: 'mercator'});
     const options = {iconDependencies: {}, glyphDependencies: {}};
     bucket.populate([{feature, index: PLACE_LABEL_FEATURE_INDEX, sourceLayerIndex: PLACE_LABEL_SOURCE_LAYER_INDEX}], options);
-    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, projection);
     postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
 
     const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
@@ -591,7 +604,7 @@ test('SymbolBucket#resetPlacementVisibility is a no-op before the bucket has eve
     const projection = getProjection({name: 'mercator'});
 
     bucket.populate([{feature}], options);
-    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, projection);
     postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
 
     expect(() => bucket.resetPlacementVisibility()).not.toThrow();
@@ -602,7 +615,7 @@ function laidOutBucket(): SymbolBucket {
     const bucket = bucketSetup();
     const projection = getProjection({name: 'mercator'});
     bucket.populate([{feature}], {iconDependencies: {}, glyphDependencies: {}});
-    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    const bucketData = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, projection);
     postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
     return bucket;
 }

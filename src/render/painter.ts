@@ -376,7 +376,6 @@ class Painter {
 
     _clippingActiveLastFrame: boolean;
 
-    scaleFactor: number;
     maxFrontCutoffRawStart: number;
 
     worldview: string;
@@ -387,7 +386,7 @@ class Painter {
     _forceFullRgbaEmissive: boolean = false;
     _programRecordingDuringLoad: ProgramRecordingDuringLoad | null = null;
 
-    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, scaleFactor: number, worldview: string | undefined, emissiveColorPrecision?: EmissiveColorPrecision) {
+    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, worldview: string | undefined, emissiveColorPrecision?: EmissiveColorPrecision) {
         this.context = new Context(gl, contextCreateOptions);
         this._forceFullRgbaEmissive = emissiveColorPrecision === 'exact';
 
@@ -492,7 +491,6 @@ class Painter {
 
         this._clippingActiveLastFrame = false;
 
-        this.scaleFactor = scaleFactor;
         this.maxFrontCutoffRawStart = 0;
 
         this.worldview = worldview!;

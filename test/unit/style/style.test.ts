@@ -3324,7 +3324,7 @@ describe('Style#_updatePlacement', () => {
             const collisionBoxArray = new CollisionBoxArray();
             const bucket = createSymbolBucket('symbol', 'Test', 'abcde', collisionBoxArray);
             bucket.populate([{feature: symbolPlacementFeature}], {iconDependencies: {}, glyphDependencies: {}});
-            const bucketData = performSymbolLayout(bucket, symbolPlacementStacks, symbolPlacementGlyphPositions, null, null, null, null, null, null, projection);
+            const bucketData = performSymbolLayout(bucket, symbolPlacementStacks, symbolPlacementGlyphPositions, null, null, null, null, null, projection);
             postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
             bucket.bucketInstanceId = SymbolBucket.maxBucketInstanceId++;
 

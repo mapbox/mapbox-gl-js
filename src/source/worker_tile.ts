@@ -528,7 +528,6 @@ class WorkerTile {
                                 iconPositions,
                                 this.tileID.canonical,
                                 this.tileZoom,
-                                this.scaleFactor,
                                 this.pixelRatio,
                                 iconRasterizationTasks,
                                 this.worldview!,

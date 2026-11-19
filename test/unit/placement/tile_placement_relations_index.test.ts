@@ -43,7 +43,7 @@ function makeBucketAt(anchors: Array<[number, number]>, text = 'abcde', stableId
     bucket.bucketInstanceId = ++SymbolBucket.maxBucketInstanceId;
     const projection = getProjection({name: 'mercator'});
     bucket.populate(anchors.map(() => ({feature, id: stableId})), {iconDependencies: {}, glyphDependencies: {}});
-    const data = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    const data = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, projection);
     postRasterizationSymbolLayout(bucket, data, null, null, null, null, projection, null, null, {}, stableId !== undefined ? 'id' : null);
     // SymbolInstanceArray elements are 80 bytes, starting with tileAnchorX and tileAnchorY
     anchors.forEach(([x, y], i) => {
@@ -494,7 +494,7 @@ test('TilePlacementRelationsIndex does not give a polygon feature\'s symbol a st
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const polygon = new VectorTile(new PbfReader(vectorStub)).layers.water.feature(1);
     bucket.populate([{feature: polygon, id: 7}], {iconDependencies: {}, glyphDependencies: {}});
-    const data = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    const data = performSymbolLayout(bucket, stacks, glyphPositions, null, null, null, null, null, projection);
     postRasterizationSymbolLayout(bucket, data, null, null, null, null, projection, null, null, {}, 'id');
     expect(bucket.symbolInstances.length).toEqual(1);
     expect(bucket.stableIdFor(0)).toEqual(undefined);

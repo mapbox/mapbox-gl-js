@@ -4759,7 +4759,7 @@ class Style extends Evented<MapEvents> {
         }
 
         if (!this.pauseablePlacement.isDone()) {
-            this.pauseablePlacement.continuePlacement(layerOrder, this._mergedLayers, layerTiles, layerTilesInYOrder, this.map.painter.scaleFactor);
+            this.pauseablePlacement.continuePlacement(layerOrder, this._mergedLayers, layerTiles, layerTilesInYOrder);
 
             if (this.pauseablePlacement.isDone()) {
                 this.placement = this.pauseablePlacement.commit(browser.now());
@@ -4784,7 +4784,7 @@ class Style extends Evented<MapEvents> {
                 if (styleLayer!.type !== 'symbol') continue;
                 if (styleLayer.visibility === 'none') continue;
                 const isLayerClipped = this.isLayerClipped(styleLayer);
-                this.placement.updateLayerOpacities(styleLayer, layerTiles[makeFQID(styleLayer.source, styleLayer.scope)]!, i, isLayerClipped ? replacementSource : null, showCollisionBoxes, this.map.painter.scaleFactor);
+                this.placement.updateLayerOpacities(styleLayer, layerTiles[makeFQID(styleLayer.source, styleLayer.scope)]!, i, isLayerClipped ? replacementSource : null, showCollisionBoxes);
             }
         }
 

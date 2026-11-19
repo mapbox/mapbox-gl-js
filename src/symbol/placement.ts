@@ -6,11 +6,11 @@ import {LayerTypeMask} from '../../3d-style/util/conflation';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
 import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projection_util';
 import EXTENT from '../style-spec/data/extent';
-import {clamp, warnOnce} from '../util/util';
+import {warnOnce} from '../util/util';
 import * as projection from './projection';
 import {getAnchorAlignment, WritingMode} from './shaping_shared';
 import {evaluateVariableOffset, getAnchorJustification} from './symbol_layout_shared';
-import {evaluateSizeForZoom, evaluateSizeForFeature} from './symbol_size';
+import {evaluateSizeForFeature} from './symbol_size';
 import CollisionIndex from './collision_index';
 import ONE_EM from './one_em';
 import {Elevation} from '../terrain/elevation';
@@ -334,7 +334,7 @@ export class Placement {
         this.lastReplacementSourceUpdateTime = 0;
     }
 
-    getBucketParts(results: Array<BucketPart>, styleLayer: TypedStyleLayer, tile: Tile, sortAcrossTiles: boolean, scaleFactor: number = 1) {
+    getBucketParts(results: Array<BucketPart>, styleLayer: TypedStyleLayer, tile: Tile, sortAcrossTiles: boolean) {
         const symbolBucket = tile.getBucket(styleLayer) as SymbolBucket;
         const bucketFeatureIndex = tile.latestFeatureIndex;
 
@@ -412,10 +412,6 @@ export class Placement {
             tile.tileID
         );
 
-        const [textSizeScaleRangeMin, textSizeScaleRangeMax] = symbolBucket.layers[0]!.layout.get('text-size-scale-range');
-        const textScaleFactor = clamp(scaleFactor, textSizeScaleRangeMin, textSizeScaleRangeMax);
-        const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
-        const iconScaleFactor = clamp(scaleFactor, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
         const mercatorCenter: [number, number] = [
             mercatorXfromLng(this.transform.center.lng),
             mercatorYfromLat(this.transform.center.lat)
@@ -435,8 +431,8 @@ export class Placement {
             textPixelRatio,
             holdingForFade: tile.holdingForFade(),
             collisionBoxArray,
-            partiallyEvaluatedTextSize: evaluateSizeForZoom(symbolBucket.textSizeData, this.transform.zoom, textScaleFactor),
-            partiallyEvaluatedIconSize: evaluateSizeForZoom(symbolBucket.iconSizeData, this.transform.zoom, iconScaleFactor),
+            partiallyEvaluatedTextSize: symbolBucket.evaluateTextSizeForZoom(this.transform.zoom),
+            partiallyEvaluatedIconSize: symbolBucket.evaluateIconSizeForZoom(this.transform.zoom),
             collisionGroup: this.collisionGroups.get(symbolBucket.sourceID),
             latestFeatureIndex: tile.latestFeatureIndex
         };
@@ -459,7 +455,6 @@ export class Placement {
         bucketPart: BucketPart,
         seenCrossTileIDs: Set<number>,
         showCollisionBoxes: boolean,
-        scaleFactor: number = 1,
     ): void {
         const {
             bucket,
@@ -1067,7 +1062,7 @@ export class Placement {
         }
     }
 
-    updateLayerOpacities(styleLayer: TypedStyleLayer, tiles: Array<Tile>, layerIndex: number, replacementSource?: ReplacementSource | null, showCollisionBoxes: boolean = false, scaleFactor: number = 1) {
+    updateLayerOpacities(styleLayer: TypedStyleLayer, tiles: Array<Tile>, layerIndex: number, replacementSource?: ReplacementSource | null, showCollisionBoxes: boolean = false) {
         if (replacementSource) {
             this.lastReplacementSourceUpdateTime = replacementSource.updateTime;
         }
@@ -1089,12 +1084,7 @@ export class Placement {
                 // rebuilt here (after zOffset is refreshed above) rather than during placement, otherwise
                 // they'd render one placement cycle behind the actual symbol quads whenever elevation changes.
                 if (showCollisionBoxes && tile.collisionBoxArray) {
-                    const layout = symbolBucket.layers[0]!.layout;
-                    const [textSizeScaleRangeMin, textSizeScaleRangeMax] = layout.get('text-size-scale-range');
-                    const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
-                    const textScaleFactor = clamp(scaleFactor, textSizeScaleRangeMin, textSizeScaleRangeMax);
-                    const iconScaleFactor = clamp(scaleFactor, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
-                    symbolBucket.updateCollisionDebugBuffers(this.transform.zoom, tile.collisionBoxArray, textScaleFactor, iconScaleFactor);
+                    symbolBucket.updateCollisionDebugBuffers(this.transform.zoom, tile.collisionBoxArray);
                 }
             }
         }

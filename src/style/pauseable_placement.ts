@@ -36,14 +36,13 @@ class LayerPlacement {
         placement: Placement,
         showCollisionBoxes: boolean,
         styleLayer: TypedStyleLayer,
-        shouldPausePlacement: () => boolean,
-        scaleFactor: number
+        shouldPausePlacement: () => boolean
     ): boolean {
         const bucketParts = this._bucketParts;
 
         while (this._currentTileIndex < tiles.length) {
             const tile = tiles[this._currentTileIndex];
-            placement.getBucketParts(bucketParts, styleLayer, tile!, this._sortAcrossTiles, scaleFactor);
+            placement.getBucketParts(bucketParts, styleLayer, tile!, this._sortAcrossTiles);
 
             this._currentTileIndex++;
             if (shouldPausePlacement()) {
@@ -58,7 +57,7 @@ class LayerPlacement {
 
         while (this._currentPartIndex < bucketParts.length) {
             const bucketPart = bucketParts[this._currentPartIndex];
-            placement.placeLayerBucketPart(bucketPart!, this._seenCrossTileIDs, showCollisionBoxes, scaleFactor);
+            placement.placeLayerBucketPart(bucketPart!, this._seenCrossTileIDs, showCollisionBoxes);
             this._currentPartIndex++;
             if (shouldPausePlacement()) {
                 return true;
@@ -122,7 +121,7 @@ class PauseablePlacement {
         return this._done;
     }
 
-    continuePlacement(order: Array<string>, layers: Record<string, TypedStyleLayer>, layerTiles: Record<string, Array<Tile>>, layerTilesInYOrder: Record<string, Array<Tile>>, scaleFactor: number) {
+    continuePlacement(order: Array<string>, layers: Record<string, TypedStyleLayer>, layerTiles: Record<string, Array<Tile>>, layerTilesInYOrder: Record<string, Array<Tile>>) {
         const startTime = browser.now();
 
         const shouldPausePlacement = () => {
@@ -156,7 +155,7 @@ class PauseablePlacement {
 
                 const sourceId = makeFQID(layer.source, layer.scope);
                 const sortTileByY = zOffset || sortSymbolByViewportY;
-                const pausePlacement = inProgressLayer.continuePlacement((sortTileByY ? layerTilesInYOrder[sourceId] : layerTiles[sourceId])!, this.placement, this._showCollisionBoxes, layer, shouldPausePlacement, scaleFactor);
+                const pausePlacement = inProgressLayer.continuePlacement((sortTileByY ? layerTilesInYOrder[sourceId] : layerTiles[sourceId])!, this.placement, this._showCollisionBoxes, layer, shouldPausePlacement);
 
                 if (pausePlacement) {
                     // We didn't finish placing all layers within 2ms,

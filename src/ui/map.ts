@@ -1357,7 +1357,6 @@ export class Map extends Camera {
      */
     setScaleFactor(scaleFactor: number): this {
         this._scaleFactor = scaleFactor;
-        this.painter.scaleFactor = scaleFactor;
 
         if (this.style) {
             this.style._setLabelPlacementStale();
@@ -4441,7 +4440,7 @@ export class Map extends Camera {
 
         storeAuthState(gl, true);
 
-        this.painter = new Painter(gl, this._contextCreateOptions, this.transform, this._scaleFactor, this._worldview, this._emissiveColorPrecision);
+        this.painter = new Painter(gl, this._contextCreateOptions, this.transform, this._worldview, this._emissiveColorPrecision);
         this.painter._programRecordingDuringLoad = this._programRecordingDuringLoad;
         this.on('data', (event) => {
             if (event.dataType === 'source') {
