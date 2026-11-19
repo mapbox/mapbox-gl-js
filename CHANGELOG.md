@@ -1,9 +1,7 @@
 ## Unreleased
-- Fix model-color not matching how color is applied elsewhere.
+- Fix `model-color` so `model` layer that uses the property looks slightly different.
 - Fix feature state changes on line layers draped over terrain not being rendered until the camera moves.
-
 - Fix devtools serialization for duplicate entries.
-
 - Optimize rain fragment shader.
 - Add the experimental `@mapbox/mapbox-gl-webmcp` plugin for exposing a live Map to browser agents through WebMCP.
 
