@@ -6935,7 +6935,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "2.6.0"
+          "js": "2.6.0",
+          "android": "11.37.0",
+          "ios": "11.37.0"
         }
       }
     },
@@ -6962,7 +6964,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "2.6.0"
+          "js": "2.6.0",
+          "android": "11.37.0",
+          "ios": "11.37.0"
         }
       }
     }
