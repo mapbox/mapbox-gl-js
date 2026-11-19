@@ -1,0 +1,66 @@
+{
+  "description": "A layer with zoom-dependent paint properties leaves its zoom range (zoom 3 to 1) and re-enters it (zoom 5). After re-entering, it must render with the radius and color for zoom 5, not values from before it left the range.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 32,
+      "height": 32,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setZoom",
+          1
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setZoom",
+          5
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "zoom": 3,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "minzoom": 2,
+      "paint": {
+        "circle-radius": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          2, 4,
+          6, 12
+        ],
+        "circle-color": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          2, "red",
+          6, "blue"
+        ]
+      }
+    }
+  ]
+}
