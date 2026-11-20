@@ -1774,7 +1774,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 const newSizeX = 0; // Unused in appearances
                 const newSizeY = (Math.min(MAX_PACKED_SIZE, Math.round(effectiveIconSize * SIZE_PACK_FACTOR)) << 1) + 1; // pack isAppearance flag in lowest bit
                 // Generate new icon quads with updated texture coordinates and size
-                const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, iconTextFit !== 'none', iconScaleFactor);
+                const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, iconTextFit !== 'none');
 
                 const hasTransitioning = this.icon.iconTransitioningVertexArray.length > 0;
 

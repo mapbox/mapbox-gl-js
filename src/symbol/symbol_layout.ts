@@ -1330,8 +1330,8 @@ function addSymbol(bucket: SymbolBucket,
     // For more info check `updateVariableAnchors` in `draw_symbol.js` .
 
     if (shapedIcon) {
-        const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit, bucket.iconScaleFactor);
-        const verticalIconQuads = verticallyShapedIcon ? getIconQuads(verticallyShapedIcon, iconRotate, isSDFIcon, hasIconTextFit, bucket.iconScaleFactor) : undefined;
+        const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit);
+        const verticalIconQuads = verticallyShapedIcon ? getIconQuads(verticallyShapedIcon, iconRotate, isSDFIcon, hasIconTextFit) : undefined;
         iconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconPadding, iconCollisionRotate, null, iconCollisionBounds!);
         // Calculate maximum quads needed across layout icon and all appearance variants
         // to prevent vertex buffer overflow during appearance updates
@@ -1343,9 +1343,7 @@ function addSymbol(bucket: SymbolBucket,
         const evaluatedIconSize = layer.layout.get('icon-size').evaluate(feature, {}, canonical, availableImages);
         const minZoomSize = sizes.compositeIconSizes ? sizes.compositeIconSizes[0].evaluate(feature, {}, canonical, availableImages) : 0;
         const maxZoomSize = sizes.compositeIconSizes ? sizes.compositeIconSizes[1].evaluate(feature, {}, canonical, availableImages) : 0;
-        // Vector image is already rasterized at iconScaleFactor, pass scaleFactor=1 to avoid double scaling in shader.
-        const iconScaleFactor = shapedIcon.imagePrimary.usvg ? 1 : bucket.iconScaleFactor;
-        const iconSizeData = packSizeForVertex(bucket.layerIds[0]!, bucket.iconSizeData, evaluatedIconSize, iconScaleFactor, minZoomSize, maxZoomSize);
+        const iconSizeData = packSizeForVertex(bucket.layerIds[0]!, bucket.iconSizeData, evaluatedIconSize, bucket.iconScaleFactor, minZoomSize, maxZoomSize);
 
         bucket.addSymbols(
             bucket.icon,

@@ -1,0 +1,72 @@
+{
+  "description": [
+    "Vector icon with constant, zoom, feature and zoom-and-feature",
+    "icon-size at scale factor 2 draws at the same size."
+  ],
+  "version": 8,
+  "metadata": {
+    "test": {"width": 188, "height": 48, "scaleFactor": 2, "spriteFormat": "icon_set"}
+  },
+  "zoom": 1,
+  "sprite": "local://sprites/standard",
+  "sources": {
+    "constant": {
+      "type": "geojson",
+      "data": {"type": "Point", "coordinates": [-24.25781, 0.0]}
+    },
+    "zoom": {
+      "type": "geojson",
+      "data": {"type": "Point", "coordinates": [-8.08594, 0.0]}
+    },
+    "source": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {"s": 1},
+        "geometry": {"type": "Point", "coordinates": [8.08594, 0.0]}
+      }
+    },
+    "composite": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {"s": 0.5},
+        "geometry": {"type": "Point", "coordinates": [24.25781, 0.0]}
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "constant",
+      "type": "symbol",
+      "source": "constant",
+      "layout": {"icon-image": "fire-station", "icon-allow-overlap": true, "icon-size": 1}
+    },
+    {
+      "id": "zoom",
+      "type": "symbol",
+      "source": "zoom",
+      "layout": {
+        "icon-image": "fire-station",
+        "icon-allow-overlap": true,
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 0, 0.5, 2, 1.5]
+      }
+    },
+    {
+      "id": "source",
+      "type": "symbol",
+      "source": "source",
+      "layout": {"icon-image": "fire-station", "icon-allow-overlap": true, "icon-size": ["get", "s"]}
+    },
+    {
+      "id": "composite",
+      "type": "symbol",
+      "source": "composite",
+      "layout": {
+        "icon-image": "fire-station",
+        "icon-allow-overlap": true,
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 0, ["get", "s"], 2, 1.5]
+      }
+    }
+  ]
+}

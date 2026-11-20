@@ -21,7 +21,7 @@ import {
 } from './program/symbol_program';
 import {maxUBOSizeVec4Define} from './program';
 import {getSymbolTileProjectionMatrix} from '../geo/projection/projection_util';
-import {evaluateSizeForFeature, evaluateSizeForZoom, type InterpolatedSize} from '../symbol/symbol_size';
+import {evaluateSizeForFeature, type InterpolatedSize} from '../symbol/symbol_size';
 import EXTENT from '../style-spec/data/extent';
 import {Texture3D} from '../render/texture';
 import TextureSlots from '../../3d-style/render/texture_slots';
@@ -499,7 +499,7 @@ function drawLayerSymbols(
 
             const texSize: [number, number] = (tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0])!;
             const sizeData = bucket.iconSizeData;
-            const size = evaluateSizeForZoom(sizeData, tr.zoom);
+            const size = bucket.evaluateIconSizeForZoom(tr.zoom);
             const transformed = iconPitchWithMap || !tr.isOrthographic;
 
             const labelPlaneMatrixRendering = symbolProjection.getLabelPlaneMatrixForRendering(tileMatrix, tile.tileID.canonical, iconPitchWithMap, iconRotateWithMap, tr, bucket.getProjection(), s);
@@ -522,7 +522,7 @@ function drawLayerSymbols(
             const colorAdjustmentMatrix = layer.getColorAdjustmentMatrix(iconSaturation, iconContrast, iconBrightnessMin, iconBrightnessMax);
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter,
                 matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, false, bucket.sdfIcons, texSize, [0, 0], true, coord, globeToMercator, mercatorCenter, invMatrix,
-                cameraUpVector, bucket.getProjection(), groundShadowFactor, orientationNormalScale, colorAdjustmentMatrix, transitionProgress, null);
+                cameraUpVector, bucket.getProjection(), groundShadowFactor, orientationNormalScale, colorAdjustmentMatrix, transitionProgress, bucket.iconScaleFactor);
             uniformValues['u_projected_pos_on_viewport'] = +(bucketIsGlobeProjection && projectedPosOnLabelSpace);
 
             const atlasTexture = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;

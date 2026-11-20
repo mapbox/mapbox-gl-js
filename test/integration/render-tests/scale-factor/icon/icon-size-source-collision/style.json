@@ -1,0 +1,45 @@
+{
+  "description": [
+    "Icons with feature icon-size at scale factor 2 collide using the scaled size:",
+    "one of the two icons is hidden.",
+    "Anchors are on pixel centres: box edges on pixel boundaries round differently",
+    "in GL JS and GL Native because their framebuffer y axes are flipped."
+  ],
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 96,
+      "height": 56,
+      "scaleFactor": 2,
+      "collisionDebug": true,
+      "spriteFormat": "icon_set",
+      "image-threshold": [
+        {"platform-tag-contains": "native-android-vulkan", "threshold": 0.00075},
+        {"platform-tag-contains": "swiftshader", "threshold": 0.00075}
+      ]
+    }
+  },
+  "zoom": 0,
+  "sprite": "local://sprites/standard",
+  "sources": {
+    "symbol": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {"s": 1},
+        "geometry": {
+          "type": "MultiPoint",
+          "coordinates": [[-13.00781, -0.35156], [12.30469, -0.35156]]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "symbol",
+      "layout": {"icon-image": "fire-station", "icon-size": ["get", "s"]}
+    }
+  ]
+}
