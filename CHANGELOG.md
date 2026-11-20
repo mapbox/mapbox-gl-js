@@ -6,8 +6,6 @@
 - Add the experimental `@mapbox/mapbox-gl-webmcp` plugin for exposing a live Map to browser agents through WebMCP.
 - Fix UMD bundle compatibility with bundlers lowering spread or async syntax (e.g., Angular's esbuild).
 
-## 3.34.5
-
 ## 3.36.0-rc.1
 
 - Remove unreachable shader code from the bundle.
@@ -27,6 +25,8 @@
 - Fix fill extrusion ground effect vertex & fragment shaders attribute mismatch.
 - Fix scale factor being applied twice to symbols with zoom- and data-dependent `text-size` or `icon-size` between zoom stops.
 - Compile fewer shader variants when shadows are disabled and for symbols on the globe.
+
+## 3.35.2
 
 ## 3.35.1
 
@@ -53,6 +53,8 @@
 - Revert fix line geometry: clamp fake-round join anchor on short segments.
 - Fix a thin unlit line in the fill-extrusion flood light at very sharp polygon corners.
 - Fix visibility of the logo control based on imported source.
+
+## 3.34.4
 
 ## 3.34.3
 
