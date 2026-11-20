@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 3.35.2
+
 ## 3.35.1
 
 - Fix map-aligned icons (such as road and oneway arrows) shimmering at high pitch.
