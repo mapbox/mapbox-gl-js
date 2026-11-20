@@ -330,6 +330,12 @@ function transformAndClipPolygon(input: number[], z2: number, tx: number, ty: nu
 
     if (!clipped.length) return;
 
+    // close the ring: clipping can drop the closing point, and polygon rings are expected to be closed downstream
+    // (the vector tile writer drops the last point, and querying uses the closing segment)
+    if (clipped[0] !== clipped[clipped.length - 2] || clipped[1] !== clipped.at(-1)) {
+        clipped.push(clipped[0], clipped[1]);
+    }
+
     const ring = new Int32Array(clipped.length);
     for (let i = 0; i < clipped.length; i += 2) {
         ring[i] = tileCoord(clipped[i]!, z2, tx);
