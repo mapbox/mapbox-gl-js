@@ -1,0 +1,39 @@
+{
+  "description": [
+    "Labels with constant text-size at scale factor 2 collide using the scaled size",
+    "with global placement: one of the two labels is hidden."
+  ],
+  "version": 8,
+  "metadata": {
+    "test": {"width": 72, "height": 40, "scaleFactor": 2, "collisionDebug": true, "globalPlacement": true}
+  },
+  "zoom": 0,
+  "sprite": "local://sprites/standard",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "symbol": {
+      "type": "geojson",
+      "data": {
+        "type": "MultiPoint",
+        "coordinates": [[-8.78906, -0.35156], [8.08594, -0.35156]]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "symbol",
+      "layout": {
+        "text-field": "Aa",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": 10
+      }
+    }
+  ]
+}

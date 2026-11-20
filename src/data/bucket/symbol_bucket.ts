@@ -1219,8 +1219,8 @@ class SymbolBucket implements Bucket, SymbolSource {
         // Size is evaluated once per run for the current zoom (mirroring the shader's per-frame size
         // interpolation); the per-feature value is read below via getSymbolInstance{Icon,Text}Size.
         const zoom = transform.zoom;
-        const iconZoomSize = evaluateSizeForZoom(this.iconSizeData, zoom);
-        const textZoomSize = evaluateSizeForZoom(this.textSizeData, zoom);
+        const iconZoomSize = this.evaluateIconSizeForZoom(zoom);
+        const textZoomSize = this.evaluateTextSizeForZoom(zoom);
 
         // `symbol-elevation-reference` only decides what a box's z offset is measured from: `sea` from
         // sea level, `ground`/`hd-road-markup` from the terrain under the anchor.
@@ -2523,7 +2523,7 @@ class SymbolBucket implements Bucket, SymbolSource {
         this.textCollisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
         this.iconCollisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
 
-        const iconSize = evaluateSizeForZoom(this.iconSizeData, zoom);
+        const iconSize = this.evaluateIconSizeForZoom(zoom);
         const textSize = this.evaluateTextSizeForZoom(zoom);
 
         for (let i = 0; i < this.symbolInstances.length; i++) {

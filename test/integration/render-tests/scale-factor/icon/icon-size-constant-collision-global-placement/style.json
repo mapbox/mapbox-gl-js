@@ -1,0 +1,29 @@
+{
+  "description": [
+    "Icons with constant icon-size at scale factor 2 collide using the scaled size",
+    "with global placement: one of the two icons is hidden."
+  ],
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 96,
+      "height": 56,
+      "scaleFactor": 2,
+      "collisionDebug": true,
+      "spriteFormat": "icon_set",
+      "globalPlacement": true
+    }
+  },
+  "zoom": 0,
+  "sprite": "local://sprites/standard",
+  "sources": {
+    "symbol": {
+      "type": "geojson",
+      "data": {
+        "type": "MultiPoint",
+        "coordinates": [[-13.00781, -0.35156], [12.30469, -0.35156]]
+      }
+    }
+  },
+  "layers": [{"id": "symbol", "type": "symbol", "source": "symbol", "layout": {"icon-image": "fire-station"}}]
+}
