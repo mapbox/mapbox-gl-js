@@ -5,6 +5,8 @@
 - Optimize rain fragment shader.
 - Add the experimental `@mapbox/mapbox-gl-webmcp` plugin for exposing a live Map to browser agents through WebMCP.
 
+## 3.34.5
+
 ## 3.36.0-rc.1
 
 - Remove unreachable shader code from the bundle.
