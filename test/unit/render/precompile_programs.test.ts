@@ -31,7 +31,7 @@ function listEntries(): string[] {
     const entries = new Set<string>();
     for (const {lists} of Object.values(PRECOMPILE_LISTS)) {
         for (const list of Object.values(lists)) {
-            for (const entry of list) entries.add(entry);
+            for (const entry of list) entries.add(entry.key);
         }
     }
     return [...entries];

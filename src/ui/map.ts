@@ -20,6 +20,7 @@ import {
 import Style from '../style/style';
 import EvaluationParameters from '../style/evaluation_parameters';
 import Painter, {createProgramRecordingDuringLoad} from '../render/painter';
+import {createProgramStepsMeasurement, measureProgramSteps} from '../render/precompile_step_costs';
 import {Lite} from '../../modules/lite_main';
 import Transform from '../geo/transform';
 import Hash from './hash';
@@ -50,6 +51,7 @@ import {ImageId} from '../style-spec/expression/types/image_id';
 
 import type {PerformanceStatistics, PerformanceStatisticsOptions} from '../util/performance_statistics';
 import type {EmissiveColorPrecision, ProgramRecordingDuringLoad} from '../render/painter';
+import type {ProgramSteps, ProgramStepsMeasurement} from '../render/precompile_step_costs';
 import type Marker from '../ui/marker';
 import type {AnimationFrameProvider} from './animation_frame_provider';
 import type Popup from '../ui/popup';
@@ -233,6 +235,8 @@ export type MapOptions = {
     precompilePrograms?: boolean;
     // Whether to record programs during a load.
     recordProgramsDuringLoad?: boolean;
+    // Precompile list entries whose programs' build steps to measure, in this order.
+    measureProgramSteps?: Array<string>;
     repaint?: boolean;
     fadeDuration?: number;
     placementAlgorithm?: PlacementAlgorithmName;
@@ -578,6 +582,7 @@ export class Map extends Camera {
     _precompilePrograms: boolean;
     // Recording of programs during a load.
     _programRecordingDuringLoad: ProgramRecordingDuringLoad | null;
+    _programStepsMeasurement: ProgramStepsMeasurement | null;
     _interactions: InteractionSet;
     _scaleFactor: number;
     _tokenExpiration?: number;
@@ -707,6 +712,7 @@ export class Map extends Camera {
         this._showParseStatus = true;
         this._precompilePrograms = options.precompilePrograms!;
         this._programRecordingDuringLoad = options.recordProgramsDuringLoad ? createProgramRecordingDuringLoad(browser.now()) : null;
+        this._programStepsMeasurement = options.measureProgramSteps ? createProgramStepsMeasurement(options.measureProgramSteps) : null;
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevationExaggeration = 0;
@@ -4733,6 +4739,7 @@ export class Map extends Camera {
                 speedIndexTiming: this.speedIndexTiming,
                 paintStartTimeStamp,
             });
+            if (this._programStepsMeasurement) measureProgramSteps(this.painter, this._programStepsMeasurement);
         }
 
         if (performanceStatistics) performanceStatistics.endFrame();
@@ -4822,7 +4829,10 @@ export class Map extends Camera {
         // change with zoom, light or transitions, which already dirty the style
         const precipitating = !!(this.style && (this.style.snow || this.style.rain));
 
-        if (somethingDirty || this._repaint || precipitating) {
+        // The measurement runs after a frame; the map stays busy until it's done
+        const measuring = !!this._programStepsMeasurement && this._programStepsMeasurement.state !== 'done';
+
+        if (somethingDirty || this._repaint || precipitating || measuring) {
             this.triggerRepaint();
         } else {
             const willIdle = this.idle();
@@ -5550,19 +5560,39 @@ export class Map extends Camera {
         loadTime: number;
         renderer: string | null | undefined;
         blendFuncExtended: boolean;
+        parallelShaderCompile: boolean;
         programs: Array<{key: string; firstUse: number}>;
     } | null {
         const recording = this._programRecordingDuringLoad;
         if (!recording || recording.loadTime === null) return null;
-        const {renderer, extBlendFuncExtended} = this.painter.context;
+        const {renderer, extBlendFuncExtended, extParallelShaderCompile} = this.painter.context;
         return {
             style: this.style!.globalId,
             zoom: recording.zoom,
             loadTime: recording.loadTime,
             renderer,
             blendFuncExtended: !!extBlendFuncExtended,
+            parallelShaderCompile: !!extParallelShaderCompile,
             programs: Array.from(recording.firstUse, ([key, firstUse]) => ({key, firstUse})),
         };
+    }
+
+    /** Get the measured build steps of the measureProgramSteps entries' programs, or null until they're measured.
+     * @private
+     */
+    _getMeasuredProgramSteps(): {
+        renderer: string | null | undefined;
+        blendFuncExtended: boolean;
+        parallelShaderCompile: boolean;
+        entries: Array<string>;
+        programs: Array<{entry: string; steps: ProgramSteps}>;
+        missing: Array<string>;
+    } | null {
+        const measurement = this._programStepsMeasurement;
+        if (!measurement || measurement.state !== 'done') return null;
+        const {renderer, extBlendFuncExtended, extParallelShaderCompile} = this.painter.context;
+        const {entries, programs, missing} = measurement;
+        return {renderer, blendFuncExtended: !!extBlendFuncExtended, parallelShaderCompile: !!extParallelShaderCompile, entries, programs, missing};
     }
 
     /**
