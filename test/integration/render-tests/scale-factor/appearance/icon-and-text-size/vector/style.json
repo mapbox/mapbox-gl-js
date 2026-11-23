@@ -1,0 +1,55 @@
+{
+  "description": [
+    "Vector icon and text sized by an appearance at scale factor 2 (left)",
+    "match the same sizes set in layout (right)."
+  ],
+  "version": 8,
+  "metadata": {
+    "test": {"width": 96, "height": 68, "scaleFactor": 2, "spriteFormat": "icon_set"}
+  },
+  "sprite": "local://sprites/standard",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "appearance": {
+      "type": "geojson",
+      "data": {"type": "Point", "coordinates": [-16.875, -7.01367]}
+    },
+    "layout": {
+      "type": "geojson",
+      "data": {"type": "Point", "coordinates": [16.875, -7.01367]}
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "appearance",
+      "type": "symbol",
+      "source": "appearance",
+      "layout": {
+        "icon-image": "bank",
+        "text-field": "Aa",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "icon-anchor": "bottom",
+        "text-anchor": "top"
+      },
+      "appearances": [{"name": "always", "condition": true, "properties": {"icon-size": 1, "text-size": 10}}]
+    },
+    {
+      "id": "layout",
+      "type": "symbol",
+      "source": "layout",
+      "layout": {
+        "icon-image": "bank",
+        "text-field": "Aa",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "icon-anchor": "bottom",
+        "text-anchor": "top",
+        "text-size": 10
+      }
+    }
+  ]
+}

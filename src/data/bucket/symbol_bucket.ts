@@ -42,7 +42,7 @@ import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
 import {evaluateSizeForFeature, evaluateSizeForZoom, getSizeData, SIZE_PACK_FACTOR} from '../../symbol/symbol_size';
-import {computeFontScale, getAppearanceIconValues, getAppearanceTextValues, getScaledImageVariant, packSizeForVertex, rotatesInTileSpace, MAX_PACKED_SIZE} from '../../symbol/symbol_layout_shared';
+import {computeFontScale, getAppearanceIconValues, getAppearanceTextValues, getScaledImageVariant, rotatesInTileSpace, MAX_PACKED_SIZE} from '../../symbol/symbol_layout_shared';
 import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Formatted from '../../style-spec/expression/types/formatted';
@@ -163,7 +163,6 @@ type AppearanceIconUpdateContext = {
     availableImages: Array<ImageId>;
     // Icon-specific fields
     globalProperties: GlobalProperties | undefined;
-    iconScaleFactor: number;
     layoutIconOffset: [number, number];
     layoutIconSize: number;
     layoutIconRotate: number;
@@ -178,16 +177,11 @@ type AppearanceTextUpdateContext = {
     featureState: FeatureState;
     availableImages: Array<ImageId>;
     // Text-specific fields
-    textScaleFactor: number;
     imageMap: Map<StringifiedImageVariant, StyleImage>;
     layoutTextOffset: [number, number];
     layoutTextSize: number;
     layoutTextRotate: number;
     textRotatesInTileSpace: boolean;
-    layoutMinZoomSize: number;
-    layoutMaxZoomSize: number;
-    layoutTextSizeMinZoom: number;
-    layoutTextSizeMaxZoom: number;
 };
 
 export type SingleCollisionBox = {
@@ -980,9 +974,9 @@ class SymbolBucket implements Bucket, SymbolSource {
         evaluationFeature: EvaluationFeature,
         canonical: CanonicalTileID,
         availableImages: Array<ImageId>,
-        iconScaleFactor: number,
         layoutIconSize: number
     ): number {
+        const {iconScaleFactor} = this;
         // If appearance doesn't define icon-size, use layout value
         if (!activeAppearance.hasLayoutProperty('icon-size')) {
             return layoutIconSize * iconScaleFactor;
@@ -1606,7 +1600,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 appearances.forEach(a => {
                     const iconImage = a.getLayoutProperty('icon-image');
                     if (!iconImage) return;
-                    const {iconPrimary, iconSecondary} = this.getCombinedIconVariants(a, symbolLayer, evaluationFeature, canonical, availableImages, symbolFeature, this.iconScaleFactor);
+                    const {iconPrimary, iconSecondary} = this.getCombinedIconVariants(a, symbolLayer, evaluationFeature, canonical, availableImages, symbolFeature);
                     if (!iconPrimary) return;
                     addImageVariantToIcons(iconPrimary);
                     if (iconSecondary) {
@@ -1672,7 +1666,7 @@ class SymbolBucket implements Bucket, SymbolSource {
     }
 
     getCombinedIconVariants(appearance: SymbolAppearance, layer: SymbolStyleLayer, evaluationFeature: EvaluationFeature, canonical: CanonicalTileID, availableImages: ImageId[],
-        symbolFeature: SymbolFeature, iconScaleFactor: number
+        symbolFeature: SymbolFeature
     ): {iconPrimary: ImageVariant | undefined; iconSecondary: ImageVariant | undefined} {
         let icon: ResolvedImage | null;
         if (appearance.hasLayoutProperty('icon-image')) {
@@ -1688,7 +1682,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 appearance.getUnevaluatedLayoutProperty('icon-size') :
                 layer.getLayoutPropertyValue('icon-size')) as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
             const iconSizeData = getSizeData(this.zoom, unevaluatedIconSize, this.worldview, availableImages);
-            const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor, this.worldview, availableImages);
+            const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, this.zoom, symbolFeature, this.pixelRatio, this.iconScaleFactor, this.worldview, availableImages);
             return {iconPrimary, iconSecondary};
         }
 
@@ -1696,9 +1690,9 @@ class SymbolBucket implements Bucket, SymbolSource {
     }
 
     getCombinedIconPrimary(appearance: SymbolAppearance, layer: SymbolStyleLayer, evaluationFeature: EvaluationFeature, canonical: CanonicalTileID, availableImages: ImageId[],
-        symbolFeature: SymbolFeature, iconScaleFactor: number
+        symbolFeature: SymbolFeature
     ): ImageVariant | undefined {
-        return this.getCombinedIconVariants(appearance, layer, evaluationFeature, canonical, availableImages, symbolFeature, iconScaleFactor).iconPrimary;
+        return this.getCombinedIconVariants(appearance, layer, evaluationFeature, canonical, availableImages, symbolFeature).iconPrimary;
     }
 
     private updateSymbolInstanceIconVertices(
@@ -1709,7 +1703,8 @@ class SymbolBucket implements Bucket, SymbolSource {
         vertexOffset: number,
         ctx: AppearanceIconUpdateContext,
     ): {vertexOffsetDelta: number; hasChanges: boolean} {
-        const {canonical, availableImages, globalProperties, layer, iconScaleFactor, featureState, layoutIconOffset, layoutIconSize, layoutIconRotate, iconRotatesInTileSpace} = ctx;
+        const {iconScaleFactor} = this;
+        const {canonical, availableImages, globalProperties, layer, featureState, layoutIconOffset, layoutIconSize, layoutIconRotate, iconRotatesInTileSpace} = ctx;
         if (symbolInstance.placedIconSymbolIndex < 0) {
             return {vertexOffsetDelta: 0, hasChanges: false};
         }
@@ -1732,7 +1727,7 @@ class SymbolBucket implements Bucket, SymbolSource {
                 id: featureData.id!
             };
 
-            const {iconPrimary, iconSecondary} = this.getCombinedIconVariants(activeAppearance, layer, evaluationFeature, canonical, availableImages, minimalFeature, iconScaleFactor);
+            const {iconPrimary, iconSecondary} = this.getCombinedIconVariants(activeAppearance, layer, evaluationFeature, canonical, availableImages, minimalFeature);
             if (!iconPrimary) return {vertexOffsetDelta: 0, hasChanges: false};
 
             const primaryImageSerialized = iconPrimary.toString();
@@ -1768,7 +1763,6 @@ class SymbolBucket implements Bucket, SymbolSource {
                     evaluationFeature,
                     canonical,
                     availableImages,
-                    iconScaleFactor,
                     layoutIconSize
                 );
                 const newSizeX = 0; // Unused in appearances
@@ -1868,7 +1862,8 @@ class SymbolBucket implements Bucket, SymbolSource {
         vertexOffset: number,
         ctx: AppearanceTextUpdateContext,
     ): {vertexOffsetDelta: number; hasChanges: boolean} {
-        const {canonical, layer, textScaleFactor, imageMap, featureState, layoutTextOffset, layoutTextSize, layoutTextRotate, textRotatesInTileSpace, layoutMinZoomSize, layoutMaxZoomSize, layoutTextSizeMinZoom, layoutTextSizeMaxZoom, availableImages} = ctx;
+        const {textScaleFactor} = this;
+        const {canonical, layer, imageMap, layoutTextOffset, layoutTextSize, layoutTextRotate, textRotatesInTileSpace} = ctx;
         const hasHorizontalText = symbolInstance.numHorizontalGlyphVertices > 0;
         const hasVerticalText = symbolInstance.numVerticalGlyphVertices > 0;
         const hasText = hasHorizontalText || hasVerticalText;
@@ -1891,15 +1886,6 @@ class SymbolBucket implements Bucket, SymbolSource {
 
             // Recompute fontScale with appearance data so it will be correctly used during icon update later
             featureData.fontScale = computeFontScale(textSizeValue, featureData.textScaleFactor!);
-            const unevaluatedTextSize = activeAppearance.getUnevaluatedLayoutProperty('text-size') as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
-            let textSizeData = this.textSizeData;
-            let minZoom = layoutTextSizeMinZoom;
-            let maxZoom = layoutTextSizeMaxZoom;
-            if (activeAppearance.hasLayoutProperty('text-size')) {
-                textSizeData = getSizeData(this.zoom, unevaluatedTextSize, this.worldview, availableImages);
-                minZoom = this.textSizeData.kind === 'composite' ? this.textSizeData.minZoom : 0;
-                maxZoom = this.textSizeData.kind === 'composite' ? this.textSizeData.maxZoom : 0;
-            }
 
             // Update the shaped text offset
             // When the text is not on lines, top/bottom/left/right are basically
@@ -1931,13 +1917,8 @@ class SymbolBucket implements Bucket, SymbolSource {
                 textRotate
             );
 
-            // Calculate size vertex data with appearance text-size
-            const minZoomSize = textSizeValue && textSizeData.kind === 'composite' ? unevaluatedTextSize.possiblyEvaluate(new EvaluationParameters(minZoom, {}), canonical).evaluate(evaluationFeature, featureState, canonical) : layoutMinZoomSize;
-            const maxZoomSize = textSizeValue && textSizeData.kind === 'composite' ? unevaluatedTextSize.possiblyEvaluate(new EvaluationParameters(maxZoom, {}), canonical).evaluate(evaluationFeature, featureState, canonical) : layoutMaxZoomSize;
-            const textSizeDataKind = packSizeForVertex(activeAppearance.name!, textSizeData, textSizeValue, textScaleFactor, minZoomSize, maxZoomSize);
-            const textSizeY = Array.isArray(textSizeDataKind) ? textSizeDataKind[1] : textSizeValue;
             const symbolSizeX = 0; // Not used in appearances
-            const symbolSizeY = (Math.min(MAX_PACKED_SIZE, Math.round(textSizeY! * SIZE_PACK_FACTOR)) << 1) + 1; // Appearance flag
+            const symbolSizeY = (Math.min(MAX_PACKED_SIZE, Math.round(textSizeValue * textScaleFactor * SIZE_PACK_FACTOR)) << 1) + 1; // Appearance flag
 
             // Store the layout-based vertex data to restore it later if it's the first time we use an appearance for this feature
             if (!featureData.isUsingAppearanceTextVertexData) {
@@ -2098,24 +2079,14 @@ class SymbolBucket implements Bucket, SymbolSource {
         if (appearanceUpdateResult.kind === 'no-changes') return noChanges;
 
         // Prepare icon parameters
-        let iconScaleFactor = 1;
         let iconVertexOffset = 0;
         let hasIconChanges = false;
         let hasUboChanges = false;
-        if (hasIconData) {
-            const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
-            iconScaleFactor = clamp(1, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
-        }
         const iconRotatesInTileSpace = hasIconData && rotatesInTileSpace(layer, 'icon');
 
         // Prepare text parameters
-        let textScaleFactor = 1;
         let textVertexOffset = 0;
         let hasTextChanges = false;
-        if (hasTextData) {
-            const [textSizeScaleRangeMin, textSizeScaleRangeMax] = layout.get('text-size-scale-range');
-            textScaleFactor = clamp(1, textSizeScaleRangeMin, textSizeScaleRangeMax);
-        }
         const textRotatesInTileSpace = hasTextData && rotatesInTileSpace(layer, 'text');
 
         // Construct imageMap from imageManager for inline images in formatted text
@@ -2160,24 +2131,16 @@ class SymbolBucket implements Bucket, SymbolSource {
             const appearanceChanged = featureData.activeAppearanceIndex !== activeAppearanceIndex;
 
             if (hasTextData) {
-                const layoutTextSizeExpression = layout.get('text-size');
-                const textSizeDataMinZoom = this.textSizeData.kind === 'composite' ? this.textSizeData.minZoom : 0;
-                const textSizeDataMaxZoom = this.textSizeData.kind === 'composite' ? this.textSizeData.maxZoom : 0;
                 const textCtx: AppearanceTextUpdateContext = {
                     canonical,
                     layer,
                     featureState: featureStateForThis!,
                     availableImages,
-                    textScaleFactor,
                     imageMap,
                     layoutTextOffset: layout.get('text-offset').evaluate(evaluationFeature, featureStateForThis!, canonical).map((v): number => v * ONE_EM) as [number, number],
-                    layoutTextSize: layoutTextSizeExpression.evaluate(evaluationFeature, featureStateForThis!, canonical),
+                    layoutTextSize: layout.get('text-size').evaluate(evaluationFeature, featureStateForThis!, canonical),
                     layoutTextRotate: layout.get('text-rotate').evaluate(evaluationFeature, featureStateForThis!, canonical),
                     textRotatesInTileSpace,
-                    layoutMinZoomSize: layoutTextSizeExpression.evaluate(evaluationFeature, {zoom: textSizeDataMinZoom}, canonical),
-                    layoutMaxZoomSize: layoutTextSizeExpression.evaluate(evaluationFeature, {zoom: textSizeDataMaxZoom}, canonical),
-                    layoutTextSizeMinZoom: textSizeDataMinZoom,
-                    layoutTextSizeMaxZoom: textSizeDataMaxZoom,
                 };
                 const textResult = this.updateSymbolInstanceTextVertices(
                     symbolInstance, featureData, activeAppearanceIndex, evaluationFeature, textVertexOffset, textCtx
@@ -2193,7 +2156,6 @@ class SymbolBucket implements Bucket, SymbolSource {
                     featureState: featureStateForThis!,
                     availableImages,
                     globalProperties,
-                    iconScaleFactor,
                     layoutIconOffset: layout.get('icon-offset').evaluate(evaluationFeature, featureStateForThis!, canonical),
                     layoutIconSize: layout.get('icon-size').evaluate(evaluationFeature, featureStateForThis!, canonical, availableImages),
                     layoutIconRotate: layout.get('icon-rotate').evaluate(evaluationFeature, featureStateForThis!, canonical),

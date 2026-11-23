@@ -1,0 +1,93 @@
+{
+  "description": [
+    "Text sized by an appearance with constant, feature and zoom-and-feature text-size",
+    "at scale factor 2 matches the same size set in layout (right)."
+  ],
+  "version": 8,
+  "metadata": {
+    "test": {"width": 192, "height": 32, "scaleFactor": 2}
+  },
+  "sprite": "local://sprites/standard",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "constant": {
+      "type": "geojson",
+      "data": {"type": "Point", "coordinates": [-50.625, 0.0]}
+    },
+    "source": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {"s": 10},
+        "geometry": {"type": "Point", "coordinates": [-16.875, 0.0]}
+      }
+    },
+    "composite": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {"s": 10},
+        "geometry": {"type": "Point", "coordinates": [16.875, 0.0]}
+      }
+    },
+    "layout": {
+      "type": "geojson",
+      "data": {"type": "Point", "coordinates": [50.625, 0.0]}
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "white"}
+    },
+    {
+      "id": "constant",
+      "type": "symbol",
+      "source": "constant",
+      "layout": {
+        "text-field": "Aa",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      },
+      "appearances": [{"name": "always", "condition": true, "properties": {"text-size": 10}}]
+    },
+    {
+      "id": "source",
+      "type": "symbol",
+      "source": "source",
+      "layout": {
+        "text-field": "Aa",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      },
+      "appearances": [{"name": "always", "condition": true, "properties": {"text-size": ["get", "s"]}}]
+    },
+    {
+      "id": "composite",
+      "type": "symbol",
+      "source": "composite",
+      "layout": {
+        "text-field": "Aa",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      },
+      "appearances": [
+        {
+          "name": "always",
+          "condition": true,
+          "properties": {
+            "text-size": ["interpolate", ["linear"], ["zoom"], 0, ["get", "s"], 2, 20]
+          }
+        }
+      ]
+    },
+    {
+      "id": "layout",
+      "type": "symbol",
+      "source": "layout",
+      "layout": {
+        "text-field": "Aa",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": 10
+      }
+    }
+  ]
+}

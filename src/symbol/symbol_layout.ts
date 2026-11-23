@@ -5,7 +5,7 @@ import {shapeIcon, WritingMode, fitIconToText} from './shaping_shared';
 import {getNorthOffset} from '../geo/projection/tile_transform';
 import {rotatesInTileSpace, evaluateVariableOffset, getAppearanceIconValues, getAppearanceTextValues, getScaledImageVariant, getAnchorJustification, packSizeForVertex} from './symbol_layout_shared';
 import {getGlyphQuads, getIconQuads, getIconQuadsNumber, type SymbolQuad} from './quads';
-import {warnOnce, degToRad, clamp} from '../util/util';
+import {warnOnce, degToRad} from '../util/util';
 import {
     allowsVerticalWritingMode,
     allowsLetterSpacing
@@ -555,9 +555,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
 function getLayoutProperties(layout: PossiblyEvaluated<LayoutProps>, feature: SymbolFeature, canonical: CanonicalTileID) {
     const baseIconRotate = layout.get('icon-rotate').evaluate(feature, {}, canonical);
     const baseTextRotate = layout.get('text-rotate').evaluate(feature, {}, canonical);
-    const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
-    const iconScaleFactor = clamp(1, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
-    return {baseIconRotate, baseTextRotate, iconScaleFactor};
+    return {baseIconRotate, baseTextRotate};
 }
 
 function mergeAppearancesBboxes(bucket: SymbolBucket, shapedIcon: PositionedIcon, verticallyShapedIcon: PositionedIcon, layout: PossiblyEvaluated<LayoutProps>,
@@ -585,7 +583,7 @@ function mergeAppearancesBboxes(bucket: SymbolBucket, shapedIcon: PositionedIcon
         textBBox: null,
         textVerticalBBox: null
     };
-    const {baseIconRotate, baseTextRotate, iconScaleFactor} = getLayoutProperties(layout, feature, canonical);
+    const {baseIconRotate, baseTextRotate} = getLayoutProperties(layout, feature, canonical);
 
     // Compute the base bbox using layout properties.
     // Icons: no pre-scaling — keep coordinates in displaySize units so the placement system
@@ -615,7 +613,7 @@ function mergeAppearancesBboxes(bucket: SymbolBucket, shapedIcon: PositionedIcon
 
         if (appearance.hasIconLayoutProperties()) {
             updateIconBoundingBoxes(iconBBoxes, bucket, symbolLayer!, appearance, feature, canonical, iconOffset, baseIconRotate,
-                layoutIconSize, sizes, shapedIcon, imagePositions, iconScaleFactor, iconAnchor, availableImages);
+                layoutIconSize, sizes, shapedIcon, imagePositions, iconAnchor, availableImages);
         }
 
         if (appearance.hasTextLayoutProperties()) {
@@ -629,7 +627,7 @@ function mergeAppearancesBboxes(bucket: SymbolBucket, shapedIcon: PositionedIcon
 
 // Updates the icon bounding boxes with the appearance ones
 function updateIconBoundingBoxes(input : {iconBBox: SymbolBoundingBox | null, iconVerticalBBox: SymbolBoundingBox | null}, bucket: SymbolBucket, symbolLayer: SymbolStyleLayer, appearance: SymbolAppearance, feature: SymbolFeature, canonical: CanonicalTileID,
-    iconOffset: [number, number], baseIconRotate: number, layoutIconSize: number, sizes: Sizes, shapedIcon: PositionedIcon, imagePositions: ImagePositionMap, iconScaleFactor: number,
+    iconOffset: [number, number], baseIconRotate: number, layoutIconSize: number, sizes: Sizes, shapedIcon: PositionedIcon, imagePositions: ImagePositionMap,
     iconAnchor: SymbolAnchor, availableImages: ImageId[]) {
 
     const {appearanceIconOffset, appearanceIconRotate, appearanceIconSize} = getAppearanceIconValues(appearance, symbolLayer, feature, canonical, iconOffset, baseIconRotate, layoutIconSize, bucket.iconScaleFactor);
@@ -639,7 +637,7 @@ function updateIconBoundingBoxes(input : {iconBBox: SymbolBoundingBox | null, ic
 
     let imagePositionToUse: ImagePosition | null = null;
     if (appearance.hasLayoutProperty('icon-image')) {
-        imagePositionToUse = getAppearanceImagePosition(bucket, symbolLayer, appearance, feature, canonical, imagePositions, iconScaleFactor, availableImages);
+        imagePositionToUse = getAppearanceImagePosition(bucket, symbolLayer, appearance, feature, canonical, imagePositions, availableImages);
     } else if (shapedIcon) {
         imagePositionToUse = shapedIcon.imagePrimary;
     }
@@ -673,7 +671,7 @@ function updateIconBoundingBoxes(input : {iconBBox: SymbolBoundingBox | null, ic
 // which would create a circular import.
 
 function getAppearanceImagePosition(bucket: SymbolBucket, symbolLayer: SymbolStyleLayer, appearance: SymbolAppearance, feature: SymbolFeature, canonical: CanonicalTileID,
-    imagePositions: ImagePositionMap, iconScaleFactor: number, availableImages: ImageId[]) {
+    imagePositions: ImagePositionMap, availableImages: ImageId[]) {
     let imagePositionToUse: ImagePosition | null = null;
     const appearanceIconImage = symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-image', feature, canonical, availableImages);
     if (appearanceIconImage) {
@@ -685,7 +683,7 @@ function getAppearanceImagePosition(bucket: SymbolBucket, symbolLayer: SymbolSty
             appearance.getUnevaluatedLayoutProperty('icon-size') :
             symbolLayer.getLayoutPropertyValue('icon-size')) as PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>;
         const iconSizeData = getSizeData(bucket.zoom, unevaluatedIconSize, bucket.worldview, availableImages);
-        const imageVariant = getScaledImageVariant(icon!, iconSizeData, unevaluatedIconSize, canonical, bucket.zoom, feature, bucket.pixelRatio, iconScaleFactor, bucket.worldview, availableImages);
+        const imageVariant = getScaledImageVariant(icon!, iconSizeData, unevaluatedIconSize, canonical, bucket.zoom, feature, bucket.pixelRatio, bucket.iconScaleFactor, bucket.worldview, availableImages);
         imagePositionToUse = imagePositions.get(imageVariant.iconPrimary!.toString())!;
     }
     return imagePositionToUse;
@@ -1336,7 +1334,7 @@ function addSymbol(bucket: SymbolBucket,
         // Calculate maximum quads needed across layout icon and all appearance variants
         // to prevent vertex buffer overflow during appearance updates
         const maxQuadCount = calculateMaxIconQuadCount(bucket, iconQuads, verticalIconQuads,
-            layer.layout, feature, canonical, bucket.iconAtlasPositions!,
+            feature, canonical, bucket.iconAtlasPositions!,
             hasIconTextFit, availableImages);
         numIconVertices = maxQuadCount * 4;
 
@@ -1513,7 +1511,6 @@ function calculateMaxIconQuadCount(
     bucket: SymbolBucket,
     iconQuads: Array<SymbolQuad>,
     verticalIconQuads: Array<SymbolQuad> | undefined,
-    layout: PossiblyEvaluated<LayoutProps>,
     feature: SymbolFeature,
     canonical: CanonicalTileID,
     imagePositions: ImagePositionMap,
@@ -1535,15 +1532,12 @@ function calculateMaxIconQuadCount(
         return maxQuadCount;
     }
 
-    const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
-    const iconScaleFactor = clamp(1, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
-
     // Check each appearance that has an icon to find maximum quad count needed.
     // The image variant is recomputed (rather than reused) because imagePositions is keyed by the
     // stringified sized icon, so we need getAppearanceImagePosition's exact same resolution here.
     for (const appearance of appearances) {
         if (appearance.hasLayoutProperty('icon-image')) {
-            const imagePosition = getAppearanceImagePosition(bucket, symbolLayer!, appearance, feature, canonical, imagePositions, iconScaleFactor, availableImages);
+            const imagePosition = getAppearanceImagePosition(bucket, symbolLayer!, appearance, feature, canonical, imagePositions, availableImages);
             if (imagePosition) {
                 maxQuadCount = Math.max(maxQuadCount, getIconQuadsNumber(imagePosition, hasIconTextFit));
             }
