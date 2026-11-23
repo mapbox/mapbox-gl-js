@@ -11,6 +11,7 @@ import posAttributes from '../data/pos_attributes';
 import boundsAttributes from '../data/bounds_attributes';
 import shaders from '../shaders/shaders';
 import Program from './program';
+import {assertRebuildsFromDeviceNeutralKey} from './precompile_programs';
 import {programUniforms} from './program/program_uniforms';
 import Context from '../gl/context';
 import {fogUniformValues} from '../render/fog';
@@ -2018,6 +2019,8 @@ class Painter {
                 (hdUniforms && hdUniforms[name]) ||
                 (standardUniforms && standardUniforms[name]);
             const allDefines = defines ? globalDefines.concat(defines) : globalDefines;
+            // Skips ProgramPrecompiler's requests: its guesses include variants the current state doesn't produce.
+            Debug.run(() => !precompiled && assertRebuildsFromDeviceNeutralKey(this, key, shaderSource, config ? config.defines() : [], allDefines));
             const creationStartTime = this._sectionStartTime();
             program = new Program(this.context, name, shaderSource, config, uniforms!, allDefines, precompiled);
             this.context.performanceStatistics?.recordProgramCreation(creationStartTime);

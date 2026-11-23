@@ -12,6 +12,10 @@ describe('deviceNeutralProgramKey', () => {
         expect(deviceNeutralProgramKey('raster/CUSTOM_ANTIALIASING')).toEqual('raster/CUSTOM_ANTIALIASING');
     });
 
+    test('drops USE_MRT1_RGBA', () => {
+        expect(deviceNeutralProgramKey('fill//u_fill-color/USE_MRT1/USE_MRT1_RGBA')).toEqual('fill//u_fill-color/USE_MRT1');
+    });
+
     test('keeps the empty part of a paint configuration', () => {
         expect(deviceNeutralProgramKey('fill//u_fill-color/u_fill-opacity/USE_MRT1')).toEqual('fill//u_fill-color/u_fill-opacity/USE_MRT1');
     });

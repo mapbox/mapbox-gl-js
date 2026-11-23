@@ -1,19 +1,33 @@
 import {test, expect} from '../../util/vitest';
-import shaders, {compile, includeMap, parseUsedPreprocessorDefines} from '../../../src/shaders/shaders';
+import shaders, {compile, includeMap, parseUsedPreprocessorDefines, FRAGMENT_PRELUDE_BLOCK, VERTEX_PRELUDE_BLOCK} from '../../../src/shaders/shaders';
 import liteShaders from '../../../3d-style/shaders/shaders_lite';
 import standardShaders from '../../../3d-style/shaders/shaders_standard';
 import hdShaders from '../../../3d-style/shaders/shaders_hd';
 
 import type {DynamicDefinesType} from '../../../src/render/program/program_uniforms';
 
-test('pragma expansion only introduces GL JS runtime defines', () => {
+// The names on the preprocessor lines of a GLSL text, except #define lines, preprocessor keywords and GL_* names.
+// Deliberately broader than parseUsedPreprocessorDefines, so the test still catches a line that parser misses.
+function namesOnPreprocessorLines(glsl: string): string[] {
+    const keywords = new Set(['if', 'ifdef', 'ifndef', 'elif', 'else', 'endif', 'defined', 'extension', 'require']);
+    return glsl.split('\n')
+        .map(line => line.split('//')[0].trim())
+        .filter(line => line.startsWith('#') && !line.startsWith('#define'))
+        .flatMap((line): string[] => line.match(/\b[A-Za-z_]\w*\b/g) || [])
+        // GL_* names are the compiler's own.
+        .filter(name => !keywords.has(name) && !name.startsWith('GL_'));
+}
+
+// programSources writes only the defines in usedDefines, so every define the compiled GLSL tests must be there.
+test('usedDefines covers every define the compiled GLSL tests', () => {
     for (const [name, source] of Object.entries({...shaders, ...liteShaders, ...standardShaders, ...hdShaders})) {
-        const defines = new Set<DynamicDefinesType>();
-        parseUsedPreprocessorDefines(source.vertexSource, defines);
-        parseUsedPreprocessorDefines(source.fragmentSource, defines);
-        const unknown = [...defines].filter((define) => !source.usedDefines.has(define) &&
-            !define.startsWith('HAS_UNIFORM_') && !define.startsWith('HAS_ATTRIBUTE_'));
-        expect(unknown, name).toEqual([]);
+        // The GLSL as programSources assembles it, after the defines block.
+        const glsl = [
+            FRAGMENT_PRELUDE_BLOCK, ...source.fragmentIncludes.map(include => includeMap[include]), source.fragmentSource,
+            VERTEX_PRELUDE_BLOCK, ...source.vertexIncludes.map(include => includeMap[include]), source.vertexSource,
+        ].join('\n');
+        const missing = new Set(namesOnPreprocessorLines(glsl).filter(define => !source.usedDefines.has(define as DynamicDefinesType)));
+        expect([...missing], name).toEqual([]);
     }
 });
 
@@ -117,6 +131,11 @@ test('compile accepts a registered but empty include', () => {
     } finally {
         delete includeMap[name];
     }
+});
+
+test('attribute pragmas count their HAS_ATTRIBUTE define as used', () => {
+    const source = compile('void main() {}', '#pragma mapbox: define-attribute-vertex-shader-only highp uvec2 part_color\nvoid main() {}');
+    expect(source.usedDefines.has('HAS_ATTRIBUTE_a_part_color' as DynamicDefinesType)).toBe(true);
 });
 
 test('compile still rejects a genuinely unregistered include', () => {

@@ -862,7 +862,7 @@ const attributeNameExceptions: Record<string, string[]> = {
     'fill-tunnel-structure-color': ['structure_color']
 };
 
-function paintAttributeNames(property: string, type: string): string[] {
+export function paintAttributeNames(property: string, type: string): string[] {
     return attributeNameExceptions[property] || [property.replace(`${type}-`, '').replace(/-/g, '_')];
 }
 

@@ -18,6 +18,8 @@ export function deviceNeutralProgramKey(key: string): string {
         if (part === ('TERRAIN_DEM_FLOAT_FORMAT' satisfies DynamicDefinesType)) continue;
         // Only without the map's antialias option, at zooms where the whole globe shows.
         if (name === ('globeRaster' satisfies ProgramName) && part === ('CUSTOM_ANTIALIASING' satisfies DynamicDefinesType)) continue;
+        // Only with the map's `emissiveColorPrecision: 'exact'`.
+        if (part === ('USE_MRT1_RGBA' satisfies DynamicDefinesType)) continue;
         neutral.push(part);
     }
     return neutral.join('/');

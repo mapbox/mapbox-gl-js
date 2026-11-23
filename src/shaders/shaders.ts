@@ -224,8 +224,6 @@ export function compile(fragmentSource: string, vertexSource: string): ShaderSou
     assert(!vertexSource.includes('flat out'), 'The usage of "flat" qualifier is disallowed, see: https://bugs.webkit.org/show_bug.cgi?id=268071');
 
     let usedDefines: Set<DynamicDefinesType> = new Set(commonDefines);
-    parseUsedPreprocessorDefines(fragmentSource, usedDefines);
-    parseUsedPreprocessorDefines(vertexSource, usedDefines);
 
     for (const includePath of [...vertexIncludes, ...fragmentIncludes]) {
         // Check for *registration*, not truthiness: a prelude can legitimately be empty. The
@@ -388,6 +386,10 @@ uniform ${precision} ${type} u_${name};
             }
         }
     }) as (substring: string, ...args: string[]) => string);
+
+    // Parsed after the pragmas expand, as they add `#ifdef`s of their own (e.g. `HAS_ATTRIBUTE_a_<name>`).
+    parseUsedPreprocessorDefines(fragmentSource, usedDefines);
+    parseUsedPreprocessorDefines(vertexSource, usedDefines);
 
     return {fragmentSource, vertexSource, usedDefines, vertexIncludes, fragmentIncludes};
 }

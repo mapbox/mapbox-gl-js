@@ -19,6 +19,7 @@ import {globeToMercatorTransition} from '../geo/projection/globe_util';
 import {
     symbolUniformValues
 } from './program/symbol_program';
+import {maxUBOSizeVec4Define} from './program';
 import {getSymbolTileProjectionMatrix} from '../geo/projection/projection_util';
 import {evaluateSizeForFeature, evaluateSizeForZoom, type InterpolatedSize} from '../symbol/symbol_size';
 import EXTENT from '../style-spec/data/extent';
@@ -404,10 +405,7 @@ function drawLayerSymbols(
         };
 
         const setUBODefines = (defines: DynamicDefinesType[]) => {
-            // MAX_UBO_SIZE_VEC4: number of vec4 slots available for u_properties / u_block_indices.
-            const uboSizeDwords = Math.floor(painter.context.maxUniformBlockSize / 4);
-            const maxUBOSizeVec4 = Math.floor(uboSizeDwords / 4);
-            defines.push(`MAX_UBO_SIZE_VEC4 ${maxUBOSizeVec4}u`);
+            defines.push(maxUBOSizeVec4Define(painter.context));
         };
 
         const setOcclusionDefines = (defines: DynamicDefinesType[]) => {

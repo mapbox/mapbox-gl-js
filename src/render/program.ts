@@ -17,6 +17,7 @@ import Color from '../style-spec/util/color';
 import {Uniform1i} from './uniform_binding';
 import {warnOnce} from '../util/util';
 import browser from '../util/browser';
+import {MAX_UBO_SIZE_VEC4} from './program/program_uniforms';
 
 import type ProgramConfiguration from '../data/program_configuration';
 import type Context from '../gl/context';
@@ -75,12 +76,61 @@ const instancingUniforms = (context: Context): InstancingUniformType => ({
 
 type UniformGroupKey = 'terrainUniforms' | 'globeUniforms' | 'fogUniforms' | 'cutoffUniforms' | 'lightsUniforms' | 'shadowUniforms';
 
-function appendUsedDefines(key: string, source: ShaderSource, defines: DynamicDefinesType[]): string {
-    for (const define of defines) {
-        // Custom value defines (e.g. "MAX_SYMBOL_FEATURES 128") are always included
-        if (define.includes(' ') || source.usedDefines.has(define)) key += `/${define}`;
-    }
+// The defines that can change a program: those its source uses, plus value defines (e.g. "MAX_SYMBOL_FEATURES 128").
+function effectiveDefines(source: ShaderSource, defines: ReadonlyArray<DynamicDefinesType>): DynamicDefinesType[] {
+    return defines.filter(define => define.includes(' ') || source.usedDefines.has(define));
+}
+
+export function appendUsedDefines(key: string, source: ShaderSource, defines: DynamicDefinesType[]): string {
+    for (const define of effectiveDefines(source, defines)) key += `/${define}`;
     return key;
+}
+
+// Number of vec4 slots available for the paint-property UBOs of line and symbol programs.
+export function maxUBOSizeVec4Define(context: Context): DynamicDefinesType {
+    const uboSizeDwords = Math.floor(context.maxUniformBlockSize / 4);
+    const maxUBOSizeVec4 = Math.floor(uboSizeDwords / 4);
+    return `${MAX_UBO_SIZE_VEC4} ${maxUBOSizeVec4}u`;
+}
+
+// The GLSL a program is compiled from.
+export function programSources(
+    context: Context,
+    source: ShaderSource,
+    configDefines: ReadonlyArray<string>,
+    fixedDefines: ReadonlyArray<DynamicDefinesType>
+): {vertexSource: string; fragmentSource: string; manualInstanceID: boolean} {
+    // Only the defines the key keeps, and the configuration's in a fixed order, so programs with the same key get the same GLSL.
+    const defines = [...configDefines].sort().concat(effectiveDefines(source, fixedDefines).map((define) => `#define ${define}`)).join('\n');
+    const definesBlock = `#version 300 es\n${defines}`;
+
+    const fragmentParts = [definesBlock, FRAGMENT_PRELUDE_BLOCK];
+    for (const include of source.fragmentIncludes) {
+        fragmentParts.push(includeMap[include]!);
+    }
+
+    fragmentParts.push(source.fragmentSource);
+    const fragmentSource = fragmentParts.join('\n');
+
+    const vertexParts = [definesBlock, VERTEX_PRELUDE_BLOCK];
+    for (const include of source.vertexIncludes) {
+        vertexParts.push(includeMap[include]!);
+    }
+
+    const manualInstanceID = !!context.forceManualRenderingForInstanceIDShaders && source.vertexSource.includes('gl_InstanceID');
+
+    if (manualInstanceID) {
+        vertexParts.push('uniform int u_instanceID;');
+    }
+
+    vertexParts.push(source.vertexSource);
+    let vertexSource = vertexParts.join('\n');
+
+    if (manualInstanceID) {
+        vertexSource = vertexSource.replaceAll('gl_InstanceID', 'u_instanceID');
+    }
+
+    return {vertexSource, fragmentSource, manualInstanceID};
 }
 
 class Program<Us extends UniformBindings> {
@@ -153,34 +203,8 @@ class Program<Us extends UniformBindings> {
         else context._compileStats.onDemand++;
 
         const configDefines = configuration ? configuration.defines() : [];
-        const defines = configDefines.concat(fixedDefines.map((define) => `#define ${define}`)).join('\n');
-        const definesBlock = `#version 300 es\n${defines}`;
-
-        const fragmentParts = [definesBlock, FRAGMENT_PRELUDE_BLOCK];
-        for (const include of source.fragmentIncludes) {
-            fragmentParts.push(includeMap[include]!);
-        }
-
-        fragmentParts.push(source.fragmentSource);
-        const fragmentSource = fragmentParts.join('\n');
-
-        const vertexParts = [definesBlock, VERTEX_PRELUDE_BLOCK];
-        for (const include of source.vertexIncludes) {
-            vertexParts.push(includeMap[include]!);
-        }
-
-        this.forceManualRenderingForInstanceIDShaders = context.forceManualRenderingForInstanceIDShaders && source.vertexSource.includes('gl_InstanceID');
-
-        if (this.forceManualRenderingForInstanceIDShaders) {
-            vertexParts.push('uniform int u_instanceID;');
-        }
-
-        vertexParts.push(source.vertexSource);
-        let vertexSource = vertexParts.join('\n');
-
-        if (this.forceManualRenderingForInstanceIDShaders) {
-            vertexSource = vertexSource.replaceAll('gl_InstanceID', 'u_instanceID');
-        }
+        const {vertexSource, fragmentSource, manualInstanceID} = programSources(context, source, configDefines, fixedDefines);
+        this.forceManualRenderingForInstanceIDShaders = manualInstanceID;
 
         const fragmentShader = (gl.createShader(gl.FRAGMENT_SHADER))!;
         if (gl.isContextLost()) {

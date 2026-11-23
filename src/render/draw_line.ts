@@ -11,6 +11,7 @@ import {
 } from './program/line_program';
 import {lineBlendCompositeUniformValues, LINE_BLEND_MODE_MULTIPLY, LINE_BLEND_MODE_ADDITIVE} from './program/line_blend_composite_program';
 import {lineBlendReduceUniformValues} from './program/line_blend_reduce_program';
+import {maxUBOSizeVec4Define} from './program';
 import browser from '../util/browser';
 import {clamp, nextPowerOfTwo, warnOnce} from '../util/util';
 import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_utils';
@@ -153,12 +154,8 @@ function drawLineTiles(painter: Painter, sourceCache: SourceCache, layer: LineSt
 
     const definesValues = (lineDefinesValues(layer) as DynamicDefinesType[]);
     if (!image) {
-        // MAX_UBO_SIZE_VEC4: number of vec4 slots available for u_lpp_properties (mirrors
-        // draw_symbol.ts's setUBODefines). Not needed for the linePattern program, which doesn't
-        // read line paint properties from a UBO.
-        const uboSizeDwords = Math.floor(painter.context.maxUniformBlockSize / 4);
-        const maxUBOSizeVec4 = Math.floor(uboSizeDwords / 4);
-        definesValues.push(`MAX_UBO_SIZE_VEC4 ${maxUBOSizeVec4}u`);
+        // Not needed for the linePattern program, which doesn't read line paint properties from a UBO.
+        definesValues.push(maxUBOSizeVec4Define(painter.context));
     }
     if (isDraping && painter.terrain && painter.terrain.clipOrMaskOverlapStencilType()) {
         useStencilMaskRenderPass = false;
