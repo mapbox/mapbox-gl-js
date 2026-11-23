@@ -1,5 +1,5 @@
 import {version} from '../../package.json';
-import {asyncAll, deepEqual, bindAll, warnOnce, uniqueId} from '../util/util';
+import {asyncAll, clone, deepEqual, bindAll, warnOnce, uniqueId} from '../util/util';
 import browser from '../util/browser';
 import * as DOM from '../util/dom';
 import {getImage, ResourceType} from '../util/ajax';
@@ -2510,7 +2510,7 @@ export class Map extends Camera {
      */
     getStyle(): StyleSpecification {
         if (this.style) {
-            return this.style.serialize();
+            return clone(this.style.serialize());
         }
         return undefined!;
     }

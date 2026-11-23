@@ -170,6 +170,39 @@ describe('Map#getStyle', () => {
         expect(map.style && map.style !== previousStyle).toBeTruthy();
     });
 
+    test('returns a copy that editing does not change the map', async () => {
+        const style = createStyle();
+        style['metadata'] = {a: {b: 1}};
+        style['sources'] = {geo: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}};
+        style['layers'] = [{id: 'circle', type: 'circle', source: 'geo', filter: ['==', ['get', 'a'], 1]}];
+        const map = createMap({style});
+
+        await waitFor(map, 'load');
+        const before = JSON.stringify(map.getStyle());
+        const copy = map.getStyle();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        copy.metadata.a.b = 2;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        copy.sources.geo.data.features.push({});
+        copy.layers[0].filter.push('edited');
+
+        expect(JSON.stringify(map.getStyle())).toEqual(before);
+    });
+
+    test('updateImport applies an import edited in place', async () => {
+        const style = createStyle();
+        const data = {version: 8, sources: {}, layers: [{id: 'bg', type: 'background', paint: {'background-color': 'red'}}]};
+        style['imports'] = [{id: 'basemap', url: '', data}];
+        const map = createMap({style});
+
+        await waitFor(map, 'load');
+        const basemap = map.getStyle().imports[0];
+        basemap.data.layers[0].paint['background-color'] = 'blue';
+        map.updateImport('basemap', basemap);
+
+        expect(map.getStyle().imports[0].data.layers[0].paint['background-color']).toEqual('blue');
+    });
+
     test('returns the style with featuresets', async () => {
         const style = createStyle();
         style['featuresets'] = {
