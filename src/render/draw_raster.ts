@@ -127,7 +127,14 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     if (rasterMask === 'unavailable') return;
     let rasterMaskActive = false;
 
+    // The painter has already drawn the clip masks for these tiles, see `Painter#isLayerTileClipped`.
+    // An image source draws a single image, so its tiles have no neighbors to overlap.
+    // A `raster-mask` keeps the overlap stencil, because it needs its own stencil bit next to it, and the
+    // clip masks use the whole stencil value per tile. Where tiles are reprojected, a seam can therefore
+    // still show along shared tile edges of a masked raster layer.
+    const clipToTileBounds = painter.isLayerTileClipped(layer) && !(source instanceof ImageSource) && !renderingToTexture && !rasterMask;
     const [stencilModes, coords] = source instanceof ImageSource || renderingToTexture ? [{}, tileIDs] :
+        clipToTileBounds ? [{}, tileIDs.sort((a, b) => b.overscaledZ - a.overscaledZ)] :
         painter.stencilConfigForOverlap(tileIDs, rasterMask ? STENCIL_MASK_BIT : undefined);
     const minTileZ = coords.at(-1)!.overscaledZ;
 
@@ -170,9 +177,11 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 projMatrix = painter.transform.calculateProjMatrix(unwrappedTileID, align);
             }
 
+            // With `clipToTileBounds`, each tile draws only inside its own clip mask. A parent tile is masked
+            // out where its children are drawn, so it does not show through along the edges of the children.
             let stencilMode = painter.terrain && renderingToTexture ?
                 painter.terrain.stencilModeForRTTOverlap(coord) :
-                stencilModes[coord.overscaledZ];
+                clipToTileBounds ? painter.stencilModeForClipping(coord) : stencilModes[coord.overscaledZ];
 
             if (rasterMaskActive) {
                 stencilMode = RasterArray.stencilModeWithRasterMask!(painter, stencilMode);

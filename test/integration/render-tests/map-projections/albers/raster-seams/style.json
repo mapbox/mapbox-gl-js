@@ -1,0 +1,46 @@
+{
+  "description": "Satellite raster at 50% opacity over white under Albers, centered on the edges shared by six tiles. Neighboring tiles must not both draw along their shared edges. Where they do, the edge is blended twice and shows as a darker line.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 256
+    }
+  },
+  "center": [
+    13.418427,
+    52.499504
+  ],
+  "zoom": 17,
+  "projection": {
+    "name": "albers"
+  },
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-opacity": 0.5
+      }
+    }
+  ]
+}

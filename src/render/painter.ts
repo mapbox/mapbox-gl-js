@@ -708,7 +708,7 @@ class Painter {
     }
 
     _renderTileClippingMasks(layer: TypedStyleLayer, sourceCache?: SourceCache, tileIDs?: Array<OverscaledTileID>) {
-        if (!sourceCache || this.currentStencilSource === sourceCache.id || !layer.isTileClipped() || !tileIDs || tileIDs.length === 0) {
+        if (!sourceCache || this.currentStencilSource === sourceCache.id || !this.isLayerTileClipped(layer) || !tileIDs || tileIDs.length === 0) {
             return;
         }
 
@@ -843,6 +843,21 @@ class Painter {
         // stencilModeFor3D() invalidates the tile clipping masks. Do the same for the shared id.
         this.currentStencilSource = undefined;
         return this._grouped3DStencil;
+    }
+
+    /**
+     * Whether the tiles of `layer` are drawn with `stencilModeForClipping`.
+     * Raster and hillshade tiles are drawn on meshes that overlap their neighbors slightly to hide seams.
+     * Where the projection reprojects tiles, they are clipped to their tile bounds in the translucent pass,
+     * so that no pixel is drawn by two tiles of the same zoom.
+     *
+     * @private
+     */
+    isLayerTileClipped(layer: TypedStyleLayer): boolean {
+        if (layer.isTileClipped()) return true;
+        return this.renderPass === 'translucent' &&
+            this.transform.projection.isReprojectedInTileSpace &&
+            (layer.type === 'raster' || layer.type === 'hillshade');
     }
 
     stencilModeForClipping(tileID: OverscaledTileID): Readonly<StencilMode> {

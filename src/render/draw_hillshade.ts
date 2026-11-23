@@ -28,7 +28,9 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     // When rendering to texture, coordinates are already sorted: primary by
     // proxy id and secondary sort is by Z.
     const renderingToTexture = painter.terrain && painter.terrain.renderingToTexture;
-    const [stencilModes, coords] = painter.renderPass === 'translucent' && !renderingToTexture ?
+    // The painter has already drawn the clip masks for these tiles, see `Painter#isLayerTileClipped`.
+    const clipToTileBounds = painter.isLayerTileClipped(layer) && !renderingToTexture;
+    const [stencilModes, coords] = painter.renderPass === 'translucent' && !renderingToTexture && !clipToTileBounds ?
         painter.stencilConfigForOverlap(tileIDs) : [{}, tileIDs];
 
     for (const coord of coords) {
@@ -41,7 +43,8 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
 
             const colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
             const stencilMode = renderingToTexture && painter.terrain ?
-                painter.terrain.stencilModeForRTTOverlap(coord) : stencilModes[coord.overscaledZ];
+                painter.terrain.stencilModeForRTTOverlap(coord) :
+                clipToTileBounds ? painter.stencilModeForClipping(coord) : stencilModes[coord.overscaledZ];
             renderHillshade(painter, coord, tile, layer, depthMode, stencilMode!, colorMode);
         }
     }
