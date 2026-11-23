@@ -4,6 +4,7 @@
 - Fix devtools serialization for duplicate entries.
 - Optimize rain fragment shader.
 - Add the experimental `@mapbox/mapbox-gl-webmcp` plugin for exposing a live Map to browser agents through WebMCP.
+- Fix UMD bundle compatibility with bundlers lowering spread or async syntax (e.g., Angular's esbuild).
 
 ## 3.34.5
 

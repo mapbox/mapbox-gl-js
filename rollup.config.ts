@@ -64,7 +64,7 @@ export default ({watch}: {watch: boolean}): RollupOptions[] => {
         },
         onwarn: production ? onwarn : undefined,
         treeshake: production ? {preset: 'recommended', moduleSideEffects: (id) => !id.endsWith('devtools.ts')} : false,
-        plugins: [preserveDynamicImport(), ...plugins({minified, production, test: false, keepClassNames: false, format: 'umd'})]
+        plugins: [preserveDynamicImport(), lowerStringifiedChunks(), ...plugins({minified, production, test: false, keepClassNames: false, format: 'umd'})]
     }, {
         // Next, bundle together the three "chunks" produced in the previous pass
         // into a single, final bundle. See rollup/bundle_prelude.js and
@@ -88,6 +88,32 @@ export default ({watch}: {watch: boolean}): RollupOptions[] => {
         ]
     }];
 };
+
+// The UMD worker is built by stringifying the shared and worker chunk factories (see rollup/bundle_prelude.js), so a
+// downstream bundler that lowers syntax into top-level helpers (e.g. Angular's esbuild builder) breaks the worker.
+// Lowering the factory bodies here, before minification, puts one copy of each helper inside the stringified code.
+// esbuild hoists helpers to the top of its input, so it gets only the body, with a blank line standing in for the
+// `define(..., (function (...) {` header to keep source lines aligned. https://github.com/mapbox/mapbox-gl-js/issues/13756
+function lowerStringifiedChunks(): Plugin {
+    return {
+        name: 'lower-stringified-chunks',
+        renderChunk(code, chunk) {
+            if (chunk.name === 'index') return null;
+            const bodyStart = code.indexOf('\n') + 1;
+            const bodyEnd = code.lastIndexOf('}));');
+            if (!code.startsWith('define(') || bodyEnd < bodyStart) throw new Error(`Unexpected AMD chunk shape in ${chunk.fileName}`);
+
+            const {code: body, map} = transformSync(`\n${code.slice(bodyStart, bodyEnd)}`, {
+                supported: {'object-rest-spread': false, 'async-await': false},
+                sourcemap: true,
+                sourcefile: chunk.fileName
+            });
+            const parsedMap = JSON.parse(map) as {mappings: string};
+            parsedMap.mappings = `;${parsedMap.mappings}`;
+            return {code: code.slice(0, bodyStart) + body + code.slice(bodyEnd), map: parsedMap as SourceMapInput};
+        }
+    };
+}
 
 function sourcemaps({watch}: {watch: boolean}): Plugin {
     const base64SourceMapRegExp = /\/\/# sourceMappingURL=data:[^,]+,([^ ]+)/;

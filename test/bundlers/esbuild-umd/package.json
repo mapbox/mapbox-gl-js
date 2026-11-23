@@ -1,0 +1,12 @@
+{
+  "name": "bundler-esbuild-umd",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild index.js --bundle --minify --format=esm --supported:object-rest-spread=false --supported:async-await=false --outdir=dist && cp index.html dist/"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
+}
