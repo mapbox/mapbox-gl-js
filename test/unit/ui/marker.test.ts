@@ -633,6 +633,27 @@ test('Marker with draggable:true fires dragstart, drag, and dragend events at ap
     map.remove();
 });
 
+test('Marker with draggable:true completes drag when the pointer is released outside the map canvas', () => {
+    const map = createMap();
+    const marker = new Marker({draggable: true})
+        .setLngLat([0, 0])
+        .addTo(map);
+    const el = marker.getElement();
+
+    const dragend = vi.fn();
+    marker.on('dragend', dragend);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    simulate.mousedown(el, {clientX: 0, clientY: 0});
+    document.dispatchEvent(new MouseEvent('mousemove', {bubbles: true, clientX: 10, clientY: 0}));
+    document.dispatchEvent(new MouseEvent('mouseup', {bubbles: true, clientX: 10, clientY: 0}));
+
+    expect(dragend).toHaveBeenCalledTimes(1);
+    expect(el.style.pointerEvents).toEqual('auto');
+
+    map.remove();
+});
+
 test('Marker with draggable:true fires dragstart, drag, and dragend events at appropriate times in response to mouse-triggered drag with marker-specific clickTolerance', () => {
     const map = createMap();
     const marker = new Marker({draggable: true, clickTolerance: 4})
