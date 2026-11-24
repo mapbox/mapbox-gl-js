@@ -11,30 +11,30 @@ const inputSchema = {
         action: {type: 'string', enum: ['get', 'jumpTo', 'easeTo', 'flyTo', 'fitBounds']},
         center: lngLatSchema,
         zoom: {type: 'number'},
-        bearing: {type: 'number', description: 'Degrees clockwise from north.'},
-        pitch: {type: 'number', description: 'Degrees away from straight down, 0 looks straight down.'},
-        around: {...lngLatSchema, description: 'The LngLat that stays in place while the zoom changes.'},
+        bearing: {type: 'number'},
+        pitch: {type: 'number'},
+        around: lngLatSchema,
         padding: {
             type: ['number', 'object'],
             properties: {top: {type: 'number'}, bottom: {type: 'number'}, left: {type: 'number'}, right: {type: 'number'}},
             additionalProperties: false,
-            description: 'Pixels on each side, or {top, bottom, left, right}.'
+            description: 'Padding in pixels. A number applies to all four sides.'
         },
-        retainPadding: {type: 'boolean'},
-        minZoom: {type: 'number', description: 'flyTo: the zoom at the top of the flight.'},
-        maxZoom: {type: 'number', description: 'fitBounds: the highest zoom.'},
+        retainPadding: {type: 'boolean', description: 'Set false to keep padding from carrying over to later moves.'},
+        minZoom: {type: 'number', description: '"flyTo": requested zoom at the peak of the flight. This overrides curve.'},
+        maxZoom: {type: 'number', description: '"fitBounds": highest zoom allowed when fitting the bounds.'},
         animate: {type: 'boolean'},
-        duration: {type: 'number', description: 'Milliseconds.'},
-        essential: {type: 'boolean', description: 'When the user prefers reduced motion, a move does not animate. true animates it anyway, against the user\'s choice. Set it only when the user asks to see the motion.'},
+        duration: {type: 'number', description: 'Animation duration in milliseconds.'},
+        essential: {type: 'boolean', description: 'Set true only when the user asks to see the motion. This animates even when the user prefers reduced motion.'},
         curve: {type: 'number'},
         speed: {type: 'number'},
         screenSpeed: {type: 'number'},
-        maxDuration: {type: 'number', description: 'Milliseconds.'},
-        linear: {type: 'boolean', description: 'fitBounds: ease instead of fly.'},
-        offset: {type: 'array', items: {type: 'number'}, description: '[x, y] pixels of the new center from the map center.'},
-        preloadOnly: {type: 'boolean', description: 'Load the tiles on the way without moving. The call returns before the tiles load.'},
-        features: {type: 'array', items: featureRefSchema, default: [], description: 'Features to fit on screen, by target and id.'},
-        lngLats: {type: 'array', items: lngLatSchema, default: [], description: 'Locations to fit on screen.'}
+        maxDuration: {type: 'number'},
+        linear: {type: 'boolean'},
+        offset: {type: 'array', items: {type: 'number'}},
+        preloadOnly: {type: 'boolean', description: 'Use true with "jumpTo" to preload tiles at the destination without moving the camera.'},
+        features: {type: 'array', items: featureRefSchema, default: []},
+        lngLats: {type: 'array', items: lngLatSchema, default: []}
     },
     required: ['action'],
     additionalProperties: false
@@ -69,7 +69,8 @@ async function fitBounds(map: MapboxMap, mapboxgl: MapboxGLModule, {action, feat
 }
 
 export const camera: MapboxWebMCPTool<typeof inputSchema> = {
-    description: 'Read or move the camera, with the options of GL JS. "get" returns center, zoom, bearing and pitch. "jumpTo" moves the camera at once, "easeTo" animates the move, and "flyTo" animates it along a flight that zooms out and in. Use "easeTo" or "flyTo" when the user follows the move, such as from one place to the next, and "jumpTo" when the move only prepares a query. A field left out keeps its current value. "fitBounds" moves the camera so the given features and LngLats fit on screen. It flies as "flyTo" does, eases with linear, and moves at once with animate false. It sets bearing and pitch to 0 unless given, so pass the bearing and pitch from "get" to keep them. It frames only the source features or the rendered features, as query says. Each move returns when the camera stops and the map finishes rendering.',
+    title: 'Camera',
+    description: 'Read or move the camera. "get" returns center, zoom, bearing and pitch. Use "jumpTo" for an instant move before a query, "easeTo" to animate a camera change, or "flyTo" for a flight. "fitBounds" fits at least one feature or LngLat in the viewport. Pass both current values to preserve bearing and pitch. Moves return the camera after waiting for rendering.',
     inputSchema,
     execute(input, map, mapboxgl) {
         const actions = {

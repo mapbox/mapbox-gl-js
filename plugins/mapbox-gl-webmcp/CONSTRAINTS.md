@@ -44,6 +44,12 @@ A reviewer checks these rules, because no tool can tell an assumption or a copy 
 - GL JS ids only: the plugin names a feature only by the id that GL JS gives it. It never builds an identity from properties or geometry.
 - Data as GL JS returns it: the plugin keeps feature properties, values and types as GL JS returns them. It matches, filters and measures features only with GL JS expressions, such as a filter, `within` or `distance`. It can sort a result and cut it to its first features.
 
+### Behave the same everywhere
+
+- One way to size a result: `properties` chooses the keys of each item in every action that returns a list or an item, and the agent sizes the result with it. A list of what the style or the app defines, such as layers, sources, targets, markers and popups, is complete: it has no `limit`, and by default each item has only the keys that do not grow with the content. A query of features cuts its list with `limit`, returns `total` and selects keys inside each feature's `properties` with `featureProperties`. The plugin never cuts a result on its own.
+- Every action that returns a list takes `properties`.
+- One response to one mistake: a call that lacks a target or an id that another call returns throws an error that starts with `Give` and ends with the call that returns it, such as `List the layers to see them.` A tool never answers such a call with a different result.
+
 ### Serve the user
 
 - Respect reduced motion: the plugin follows the user's `prefers-reduced-motion` setting. Only the agent can animate a move against it, with `essential: true`. The plugin never sets `essential: true` itself. If the user prefers reduced motion, the plugin's own motion stops. The tool description tells the agent to set `essential: true` only at the user's request to see the motion.

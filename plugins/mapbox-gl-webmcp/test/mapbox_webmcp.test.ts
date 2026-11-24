@@ -43,13 +43,13 @@ const tool = (execute: MapboxWebMCPTool<typeof testSchema>['execute']) => ({test
 describe('MapboxWebMCP', () => {
     test('a renamed tool runs under its new name', async () => {
         const {run} = await addControl({pins: marker});
-        const {id} = await run('pins', {action: 'add', lng: 10, lat: 20});
-        expect(await run('pins', {action: 'list'})).toEqual([expect.objectContaining({id, lng: 10, lat: 20})]);
+        const [{id}] = await run('pins', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}}]}) as unknown as {id: string}[];
+        expect(await run('pins', {action: 'list'})).toEqual([expect.objectContaining({id, lngLat: {lng: 10, lat: 20}})]);
     });
 
     test('a built-in tool result with unset optional fields has no note', async () => {
         const {registered} = await addControl({pins: marker});
-        const result = await registered.get('pins')!.execute({action: 'add', lng: 10, lat: 20});
+        const result = await registered.get('pins')!.execute({action: 'add', markers: [{lngLat: {lng: 10, lat: 20}}]});
         expect(result).not.toHaveProperty('note');
     });
 
@@ -86,19 +86,6 @@ describe('MapboxWebMCP', () => {
         const second = await addControl({camera}, undefined, first.registered);
         await second.run('camera_2', {action: 'jumpTo', zoom: 5});
         expect({names: [...first.registered.keys()], zooms: [first.map.getZoom(), second.map.getZoom()]}).toEqual({names: ['camera', 'camera_2'], zooms: [3, 5]});
-    });
-
-    test('the control registers on navigator.modelContext when the document has none, as in Chrome 149', async () => {
-        const {map, control} = await addControl({});
-        map.removeControl(control);
-        Reflect.deleteProperty(document, 'modelContext');
-        const names: string[] = [];
-        Object.defineProperty(navigator, 'modelContext', {configurable: true, value: {registerTool: ({name}: RegisteredTool) => names.push(name)}});
-        onTestFinished(() => {
-            Reflect.deleteProperty(navigator, 'modelContext');
-        });
-        map.addControl(new MapboxWebMCP({mapboxgl, tools: {camera}}));
-        expect(names).toEqual(['camera']);
     });
 
     test('without a WebMCP API the control warns once with what to do', async () => {
@@ -193,9 +180,9 @@ describe.each([
         return {registered, drawn};
     }
 
-    test('setFilter shows only the matching features', async () => {
+    test('set with a filter shows only the matching features', async () => {
         const {registered, drawn} = await addPoints();
-        await registered.get('layer')!.execute({action: 'setFilter', layerId: 'l', filter: ['==', ['get', 'name'], 'b']});
+        await registered.get('layer')!.execute({action: 'set', layerId: 'l', filter: ['==', ['get', 'name'], 'b']});
         expect(drawn().map((f) => f.name)).toEqual(['b']);
     });
 
@@ -234,13 +221,13 @@ test('feature query within keeps a cluster, also when a feature outside the poly
     expect(features.map((f) => f.id)).toEqual([19]);
 });
 
-test('setFilter sets a filter on a layer of a clustered source, as GL JS does', async () => {
+test('set with a filter sets a filter on a layer of a clustered source, as GL JS does', async () => {
     const {map, registered} = await addControl(tools);
     map.addSource('s', {type: 'geojson', cluster: true, data: {type: 'FeatureCollection', features: [
         {type: 'Feature', id: 100, properties: {name: 'a'}, geometry: {type: 'Point', coordinates: [0, 0]}}
     ]}});
     map.addLayer({id: 'l', type: 'circle', source: 's'});
-    const {type} = await registered.get('layer')!.execute({action: 'setFilter', layerId: 'l', filter: ['==', ['get', 'name'], 'a']});
+    const {type} = await registered.get('layer')!.execute({action: 'set', layerId: 'l', filter: ['==', ['get', 'name'], 'a']});
     expect({type, filter: (map.getFilter('l') as unknown[])[2]}).toEqual({type: 'success', filter: ['==', ['get', 'name'], 'a']});
 });
 
@@ -276,13 +263,13 @@ test('setFeatureState changes only the given features, and query returns the fea
     const {features} = await run('feature', {action: 'query', target: {layerId: 'l'}}) as {features: {id: unknown; state?: object}[]};
     expect({states: states(), query: features.map((f) => [f.id, f.state])}).toEqual({
         states: [{highlight: true}, {highlight: true}, {}, {}],
-        query: [[100, {highlight: true}], [101, {highlight: true}], [102, undefined], [103, undefined]]
+        query: [[100, {highlight: true}], [101, {highlight: true}], [102, {}], [103, {}]]
     });
 });
 
 test.each([
     {input: {ids: [100], state: {selected: true}}, message: 'The feature state "selected" isn\'t read by layer "l", so it wouldn\'t show. It reads "highlight".'},
-    {input: {ids: [], state: {highlight: true}}, message: 'Give the ids of the features to change.'}
+    {input: {ids: [], state: {highlight: true}}, message: 'Give the ids of the features to change. Query the target to see them.'}
 ])('setFeatureState refuses $input and changes nothing', async ({input, message}) => {
     const {map, registered, states} = await addStatePoints();
     map.setFeatureState({source: 's', id: 101}, {highlight: true});
@@ -319,20 +306,20 @@ test('removeFeatureState refuses a key that the layer does not read, and changes
 
 const drawnStates = (map: mapboxgl.Map, layer: string) => Object.fromEntries(map.queryRenderedFeatures({layers: [layer]}).map((f) => [f.properties!.name as string, f.state]));
 
-test('listTargets returns the feature-state keys that paint and appearances read, and setFeatureState refuses a layer that reads none', async () => {
+test('the style read returns the feature-state keys that paint and appearances read, and setFeatureState refuses a layer that reads none', async () => {
     const {map, run, registered} = await addControl(tools);
     map.addSource('s', {type: 'geojson', data: {type: 'Feature', id: 100, properties: {}, geometry: {type: 'Point', coordinates: [0, 10]}}});
     map.addLayer({id: 'plain', type: 'circle', source: 's', paint: {'circle-color': ['case', ['in', 'x', ['literal', ['feature-state', 'hidden']]], 'red', 'black']}});
     map.addLayer({id: 'styled', type: 'circle', source: 's', paint: highlightPaint});
     map.addLayer({id: 'appears', type: 'symbol', source: 's', appearances: [{condition: ['boolean', ['feature-state', 'hover'], false], properties: {'icon-size': 2}}]});
     await loaded(map);
-    const list = await run('layer', {action: 'listTargets'}) as unknown as {target: object; featureStateKeys: string[]}[];
+    const list = (await run('style', {action: 'get'})).targets as {target: object; featureStateKeys?: string[]}[];
     expect({
         list: list.map(({target, featureStateKeys}) => [target, featureStateKeys]),
         state: await registered.get('feature')!.execute({action: 'setFeatureState', target: {layerId: 'plain'}, ids: [100], state: {highlight: true}}),
         stored: map.getFeatureState({source: 's', id: 100})
     }).toEqual({
-        list: [[{layerId: 'plain'}, []], [{layerId: 'styled'}, ['highlight']], [{layerId: 'appears'}, ['hover']]],
+        list: [[{layerId: 'plain'}, undefined], [{layerId: 'styled'}, ['highlight']], [{layerId: 'appears'}, ['hover']]],
         state: {type: 'error', error: {message: 'The feature state "highlight" isn\'t read by layer "plain", so it wouldn\'t show. It reads no feature state.'}},
         stored: {}
     });
@@ -343,8 +330,8 @@ test('feature query returns a feature without an id once per copy GL JS returns'
     map.addSource('s', {type: 'geojson', data: {type: 'Feature', properties: {name: 'road'}, geometry: {type: 'LineString', coordinates: [[-10, 10], [10, 10]]}}});
     map.addLayer({id: 'l', type: 'line', source: 's', paint: {'line-color': ['case', ['boolean', ['feature-state', 'highlight'], false], 'red', 'black']}});
     await loaded(map);
-    const {total, features} = await run('feature', {action: 'query', target: {layerId: 'l'}}) as {total: number; features: {id?: string}[]};
-    expect({total, ids: features.map((f) => f.id)}).toEqual({total: 4, ids: [undefined, undefined, undefined, undefined]});
+    const {total, features} = await run('feature', {action: 'query', target: {layerId: 'l'}}) as {total: number; features: {id: string | null}[]};
+    expect({total, ids: features.map((f) => f.id)}).toEqual({total: 4, ids: [null, null, null, null]});
 });
 
 test('feature query returns each copy GL JS returns for a feature with an id, and total counts them', async () => {
@@ -391,17 +378,17 @@ test('feature query keeps the type of each id, and setFeatureState on 1 also cha
     });
 });
 
-test('setFilter with no filter clears its filter after the app replaces the data', async () => {
+test('set with filter null removes its filter after the app replaces the data', async () => {
     const {map, run} = await addControl(tools);
     map.addSource('s', {type: 'geojson', data: {type: 'FeatureCollection', features: [
         {type: 'Feature', id: 100, properties: {name: 'a'}, geometry: {type: 'Point', coordinates: [0, 0]}}
     ]}});
     map.addLayer({id: 'l', type: 'circle', source: 's'});
-    await run('layer', {action: 'setFilter', layerId: 'l', filter: ['==', ['get', 'name'], 'a']});
+    await run('layer', {action: 'set', layerId: 'l', filter: ['==', ['get', 'name'], 'a']});
     map.getSource<mapboxgl.GeoJSONSource>('s')!.setData({type: 'FeatureCollection', features: [
         {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [0, 0]}}
     ]});
-    expect(await run('layer', {action: 'setFilter', layerId: 'l'})).toEqual({layerId: 'l', matched: 4, query: 'source'});
+    expect(await run('layer', {action: 'set', layerId: 'l', filter: null})).toEqual({layerId: 'l', filter: null, matched: 4});
 });
 
 async function addPlaces() {
@@ -534,43 +521,84 @@ test('camera fitBounds keeps the given bearing and pitch', async () => {
     expect({bearing, pitch}).toEqual({bearing: 30, pitch: 40});
 });
 
-test('listTargets returns the layers with features in the loaded tiles', async () => {
+test('feature list returns each layer with the names of the properties that its features have', async () => {
     const {run} = await addPlaces();
-    expect(await run('layer', {action: 'listTargets'})).toEqual([
-        {target: {layerId: 'places'}, type: 'circle', featureCount: 3, query: 'source', properties: ['name', 'rating'], filtered: false, featureStateKeys: []},
-        {target: {layerId: 'areas'}, type: 'fill', featureCount: 1, query: 'source', properties: [], filtered: false, featureStateKeys: []}
+    expect(await run('feature', {action: 'list'})).toEqual([
+        {target: {layerId: 'places'}, featureProperties: ['name', 'rating']},
+        {target: {layerId: 'areas'}, featureProperties: []}
     ]);
 });
 
-test('listTargets returns a layer whose filter GL JS can\'t evaluate off screen with the error, and a layer without a source with no features', async () => {
+test('feature list returns the property names of a featureset and no values', async () => {
+    const {map, run} = await addControl(tools, {
+        version: 8,
+        sources: {pois: {type: 'geojson', data: {type: 'FeatureCollection', features: [
+            {type: 'Feature', id: 7, properties: {name: 'c', kind: 'x'}, geometry: {type: 'Point', coordinates: [5, 10]}},
+            {type: 'Feature', id: 8, properties: {name: 'd', kind: 'y'}, geometry: {type: 'Point', coordinates: [6, 10]}}
+        ]}}},
+        layers: [{id: 'poi', type: 'circle', source: 'pois'}],
+        featuresets: {poi: {selectors: [{layer: 'poi', properties: {name: ['get', 'name']}}]}}
+    }, undefined, {zoom: 0});
+    await loaded(map);
+    expect(await run('feature', {action: 'list'})).toEqual([
+        {target: {layerId: 'poi'}, featureProperties: ['name', 'kind']},
+        {target: {featuresetId: 'poi'}, featureProperties: ['name']}
+    ]);
+});
+
+test('feature list returns only the target and the GL JS error for a layer whose filter GL JS can\'t evaluate off screen, and a layer without a source with no features', async () => {
     const {map, run} = await addPlaces();
     map.addLayer({id: 'labels', type: 'symbol', source: 'places', filter: ['>', ['pitch'], 30]});
     map.addLayer({id: 'sky', type: 'background'});
-    expect((await run('layer', {action: 'listTargets'}) as unknown as {target: object; featureCount?: number}[]).map((l) => [l.target, 'error' in l, l.featureCount])).toEqual([
-        [{layerId: 'places'}, false, 3], [{layerId: 'areas'}, false, 1], [{layerId: 'labels'}, true, undefined], [{layerId: 'sky'}, false, 0]
+    expect(await run('feature', {action: 'list'})).toEqual([
+        {target: {layerId: 'places'}, featureProperties: ['name', 'rating']},
+        {target: {layerId: 'areas'}, featureProperties: []},
+        {target: {layerId: 'labels'}, error: expect.any(String) as string},
+        {target: {layerId: 'sky'}, featureProperties: []}
     ]);
 });
 
-test('setFilter on a layer without a source returns the GL JS error of a filter that GL JS refuses, and leaves the layer without a filter', async () => {
+test('feature list returns the target and the GL JS error of a failed read, also when properties leaves out error', async () => {
+    const {map, run} = await addPlaces();
+    map.addLayer({id: 'labels', type: 'symbol', source: 'places', filter: ['>', ['pitch'], 30]});
+    expect((await run('feature', {action: 'list', properties: ['featureProperties']}) as unknown as object[]).at(-1)).toEqual({target: {layerId: 'labels'}, error: expect.any(String) as string});
+});
+
+test('feature list returns only the keys of properties', async () => {
+    const {run} = await addPlaces();
+    expect(await run('feature', {action: 'list', properties: ['target']})).toEqual([{target: {layerId: 'places'}}, {target: {layerId: 'areas'}}]);
+});
+
+test('feature query without a target refuses the call and points to list', async () => {
+    const {registered} = await addPlaces();
+    expect(await registered.get('feature')!.execute({action: 'query', limit: 1})).toEqual({
+        type: 'error', error: {message: 'Give a target. Run the feature tool with the action "list" to see the targets.'}
+    });
+});
+
+test('layer, source, marker and popup list take no limit', async () => {
+    const {registered} = await addPlaces();
+    const refused = await Promise.all(['layer', 'source', 'marker', 'popup'].map((name) => registered.get(name)!.execute({action: 'list', limit: 1})));
+    expect(refused.map((result) => result.type)).toEqual(['error', 'error', 'error', 'error']);
+});
+
+test('feature query returns only the properties in featureProperties, and null for a name that the feature lacks', async () => {
+    const {run} = await addPlaces();
+    const {features} = await run('feature', {action: 'query', target: {layerId: 'places'}, filter: ['==', ['get', 'name'], 'b'], featureProperties: ['name', 'missing']}) as {features: {properties: object}[]};
+    expect(features.map((f) => f.properties)).toEqual([{name: 'b', missing: null}]);
+});
+
+test('set with a filter on a layer without a source returns the GL JS error of a filter that GL JS refuses, and leaves the layer without a filter', async () => {
     const {map, registered} = await addPlaces();
     map.addLayer({id: 'sky', type: 'background'});
-    expect({result: await registered.get('layer')!.execute({action: 'setFilter', layerId: 'sky', filter: ['==', ['get', 'rating']]}), filter: map.getFilter('sky')}).toEqual({
+    expect({result: await registered.get('layer')!.execute({action: 'set', layerId: 'sky', filter: ['==', ['get', 'rating']]}), filter: map.getFilter('sky')}).toEqual({
         result: {type: 'error', error: {message: expect.stringContaining('Expected two or three arguments.') as string}}, filter: undefined
     });
 });
 
-test('listTargets says filtered only while the tool filter is on', async () => {
-    const {map, run} = await addPlaces();
-    await run('layer', {action: 'setFilter', layerId: 'places', filter: ['==', ['get', 'name'], 'a']});
-    const before = (await run('layer', {action: 'listTargets'}) as unknown as {filtered: boolean}[])[0].filtered;
-    map.setFilter('places', null);
-    const after = (await run('layer', {action: 'listTargets'}) as unknown as {filtered: boolean}[])[0].filtered;
-    expect([before, after]).toEqual([true, false]);
-});
-
 test.each([
     {input: {filter: ['>', ['get', 'rating'], 3]}, names: ['b', 'c'], total: 2},
-    {input: {distance: {lng: 0, lat: 0, meters: 500000}}, names: ['b'], total: 1},
+    {input: {distance: {lngLat: {lng: 0, lat: 0}, meters: 500000}}, names: ['b'], total: 1},
     {input: {within: {target: {layerId: 'areas'}, id: 1}}, names: ['a', 'b'], total: 2},
     {input: {sort: {property: 'rating', order: 'desc'}, limit: 2}, names: ['b', 'c'], total: 3}
 ])('feature query with $input', async ({input, names, total}) => {
@@ -595,28 +623,28 @@ test('feature query matches text inside a property, and within refuses a feature
 });
 
 test.each([
-    {filter: ['==', ['get', 'rating']], message: 'layers.places.filter[2]: Expected two or three arguments.'},
-    {filter: {property: 'rating', op: 'eq', value: '5'}, message: 'filter: expected array, received object'}
-])('setFilter refuses filter $filter and keeps the filter on', async ({filter: refused, message}) => {
+    {filter: ['==', ['get', 'rating']], message: 'filter: layers.places.filter[2]: Expected two or three arguments.'},
+    {filter: {property: 'rating', op: 'eq', value: '5'}, message: 'filter: expected array or null, received object'}
+])('set refuses filter $filter and keeps the filter on', async ({filter: refused, message}) => {
     const {map, run, registered} = await addPlaces();
-    await run('layer', {action: 'setFilter', layerId: 'places', filter: ['==', ['get', 'name'], 'a']});
+    await run('layer', {action: 'set', layerId: 'places', filter: ['==', ['get', 'name'], 'a']});
     const filter = map.getFilter('places');
-    const result = await registered.get('layer')!.execute({action: 'setFilter', layerId: 'places', filter: refused});
+    const result = await registered.get('layer')!.execute({action: 'set', layerId: 'places', filter: refused});
     expect({result, filter: map.getFilter('places')}).toEqual({result: {type: 'error', error: {message}}, filter});
 });
 
-test('a new setFilter replaces the tool\'s filter before and counts what it shows', async () => {
+test('a new set with a filter replaces the tool\'s filter before and counts what it shows', async () => {
     const {run} = await addPlaces();
-    await run('layer', {action: 'setFilter', layerId: 'places', filter: ['==', ['get', 'name'], 'a']});
-    expect(await run('layer', {action: 'setFilter', layerId: 'places', filter: ['>=', ['get', 'rating'], 4]})).toEqual({layerId: 'places', matched: 2, query: 'source'});
+    await run('layer', {action: 'set', layerId: 'places', filter: ['==', ['get', 'name'], 'a']});
+    expect(await run('layer', {action: 'set', layerId: 'places', filter: ['>=', ['get', 'rating'], 4]})).toEqual({layerId: 'places', filter: ['>=', ['get', 'rating'], 4], matched: 2});
 });
 
-test('setFilter sets a filter that GL JS can\'t evaluate off screen, and returns the GL JS error in place of the count', async () => {
+test('set with a filter sets a filter that GL JS can\'t evaluate off screen, and returns the GL JS error in place of the count', async () => {
     const {map, run} = await addPlaces();
     map.addLayer({id: 'labels', type: 'symbol', source: 'places'});
-    const result = await run('layer', {action: 'setFilter', layerId: 'labels', filter: ['>', ['pitch'], 30]});
+    const result = await run('layer', {action: 'set', layerId: 'labels', filter: ['>', ['pitch'], 30]});
     expect({result, filter: map.getFilter('labels')}).toEqual({
-        result: {layerId: 'labels', error: expect.any(String) as string, query: 'source'},
+        result: {layerId: 'labels', filter: ['>', ['pitch'], 30], error: expect.any(String) as string},
         filter: ['all', ['to-boolean', 'mapbox-webmcp-filter'], ['>', ['pitch'], 30]]
     });
 });
@@ -628,46 +656,108 @@ test('query refuses a filter that GL JS can\'t evaluate', async () => {
     });
 });
 
-test('setFilter combines with an app filter and counts the features that match both, which query returns', async () => {
+test('set with a filter combines with an app filter and counts the features that match both, which query returns', async () => {
     const {map, run} = await addPlaces();
     map.setFilter('places', ['>=', ['get', 'rating'], 4]);
-    expect(await run('layer', {action: 'setFilter', layerId: 'places', filter: ['!=', ['get', 'name'], 'b']})).toEqual({layerId: 'places', matched: 1, query: 'source'});
+    expect(await run('layer', {action: 'set', layerId: 'places', filter: ['!=', ['get', 'name'], 'b']})).toEqual({layerId: 'places', filter: ['!=', ['get', 'name'], 'b'], matched: 1});
     expect((await run('feature', {action: 'query', target: {layerId: 'places'}})).features).toMatchObject([{id: 3}]);
 });
 
-test('setFilter clears to the app filter after the app replaces the control', async () => {
+test('set with a filter clears to the app filter after the app replaces the control', async () => {
     const {map, control, run} = await addPlaces();
     map.setFilter('places', ['>=', ['get', 'rating'], 4]);
-    await run('layer', {action: 'setFilter', layerId: 'places', filter: ['!=', ['get', 'name'], 'b']});
+    await run('layer', {action: 'set', layerId: 'places', filter: ['!=', ['get', 'name'], 'b']});
     map.removeControl(control);
     map.addControl(new MapboxWebMCP({mapboxgl, tools}));
-    await run('layer', {action: 'setFilter', layerId: 'places'});
+    await run('layer', {action: 'set', layerId: 'places', filter: null});
     expect(map.getFilter('places')).toEqual(['>=', ['get', 'rating'], 4]);
 });
 
-test('setFilter keeps an app filter of false and clears back to it', async () => {
+test('set with a filter keeps an app filter of false and clears back to it', async () => {
     const {map, run} = await addPlaces();
     map.setFilter('places', false as unknown as FilterSpecification);
-    expect(await run('layer', {action: 'setFilter', layerId: 'places', filter: ['!=', ['get', 'name'], 'b']})).toEqual({layerId: 'places', matched: 0, query: 'source'});
-    await run('layer', {action: 'setFilter', layerId: 'places'});
+    expect(await run('layer', {action: 'set', layerId: 'places', filter: ['!=', ['get', 'name'], 'b']})).toEqual({layerId: 'places', filter: ['!=', ['get', 'name'], 'b'], matched: 0});
+    await run('layer', {action: 'set', layerId: 'places', filter: null});
     expect(map.getFilter('places')).toBe(false);
 });
 
-test('setFilter with no filter returns how many features the layer shows', async () => {
+test('set with filter null returns how many features the layer shows', async () => {
     const {map, run} = await addPlaces();
     map.setFilter('places', ['>=', ['get', 'rating'], 4]);
-    await run('layer', {action: 'setFilter', layerId: 'places', filter: ['==', ['get', 'name'], 'b']});
-    expect(await run('layer', {action: 'setFilter', layerId: 'places'})).toEqual({layerId: 'places', matched: 2, query: 'source'});
+    await run('layer', {action: 'set', layerId: 'places', filter: ['==', ['get', 'name'], 'b']});
+    expect(await run('layer', {action: 'set', layerId: 'places', filter: null})).toEqual({layerId: 'places', filter: null, matched: 2});
 });
 
-test('setFilter refuses a layer whose app filter is in the legacy syntax, and keeps that filter', async () => {
+test('set with a filter refuses a layer whose app filter is in the legacy syntax, and keeps that filter', async () => {
     const {map, registered} = await addPlaces();
     map.setFilter('places', ['>=', 'rating', 4]);
-    const result = await registered.get('layer')!.execute({action: 'setFilter', layerId: 'places', filter: ['!=', ['get', 'name'], 'b']});
+    const result = await registered.get('layer')!.execute({action: 'set', layerId: 'places', filter: ['!=', ['get', 'name'], 'b']});
     expect({result, filter: map.getFilter('places')}).toEqual({
-        result: {type: 'error', error: {message: 'layers.places.filter[1][0]: expected one of [==, !=, >, >=, <, <=, in, !in, all, any, none, has, !has], "to-boolean" found'}},
+        result: {type: 'error', error: {message: 'filter: layers.places.filter[1][0]: expected one of [==, !=, >, >=, <, <=, in, !in, all, any, none, has, !has], "to-boolean" found'}},
         filter: ['>=', 'rating', 4]
     });
+});
+
+test('layer set sets layout and paint properties, resets one with null, and returns what GL JS reads back', async () => {
+    const {map, run} = await addPlaces();
+    map.addLayer({id: 'labels', type: 'symbol', source: 'places', layout: {'text-size': 10}});
+    expect(await run('layer', {action: 'set', layerId: 'labels', layout: {'text-size': null, 'symbol-sort-key': ['get', 'rating']}, paint: {'text-opacity': 0.5}})).toEqual({
+        layerId: 'labels', layout: {'text-size': null, 'symbol-sort-key': ['get', 'rating']}, paint: {'text-opacity': 0.5}
+    });
+});
+
+test('layer set applies the other properties when GL JS refuses one, and returns the GL JS error', async () => {
+    const {map, registered} = await addPlaces();
+    const result = await registered.get('layer')!.execute({action: 'set', layerId: 'places', paint: {'circle-color': 'nope', 'circle-opacity': 0.5}});
+    expect({result, opacity: map.getPaintProperty('places', 'circle-opacity')}).toEqual({
+        result: {type: 'error', error: {message: 'circle-color: layers.places.paint.circle-color: color expected, "nope" found\nThe other parts changed. Get the layer to see it.'}}, opacity: 0.5
+    });
+});
+
+test('the layer tool gets and sets a layer of an import, which style get names under its featureset', async () => {
+    const {map, run, registered} = await addControl(tools, {version: 8, sources: {}, layers: [], imports: [{id: 'basemap', url: '', data: {
+        version: 8,
+        sources: {pois: {type: 'geojson', data: {type: 'Feature', id: 7, properties: {name: 'c'}, geometry: {type: 'Point', coordinates: [5, 10]}}}},
+        layers: [{id: 'poi', type: 'circle', source: 'pois', filter: ['has', 'name']}],
+        featuresets: {poi: {selectors: [{layer: 'poi', properties: {name: ['get', 'name']}}]}}
+    }}]}, undefined, {zoom: 0});
+    await loaded(map);
+    const poi = {featuresetId: 'poi', importId: 'basemap'};
+    const {targets} = await run('style', {action: 'get'});
+    const got = await run('layer', {action: 'get', layerId: 'poi', importId: 'basemap'});
+    const result = await registered.get('layer')!.execute({action: 'set', layerId: 'poi', importId: 'basemap', filter: ['!=', ['get', 'name'], 'c'], layout: {'circle-sort-key': 1}, paint: {'circle-color': 'nope'}});
+    expect({targets, got, result, now: await run('layer', {action: 'get', layerId: 'poi', importId: 'basemap'})}).toEqual({
+        targets: [{target: poi, layers: ['poi']}],
+        got: {id: 'poi', type: 'circle', source: 'pois', filter: ['has', 'name']},
+        result: {type: 'error', error: {message: expect.stringContaining('circle-color: ') as string}},
+        now: {id: 'poi', type: 'circle', source: 'pois', filter: ['all', ['to-boolean', 'mapbox-webmcp-filter'], ['!=', ['get', 'name'], 'c'], ['has', 'name']], layout: {'circle-sort-key': 1}}
+    });
+});
+
+test('layer list returns the layers of the root style or of an import by id, type, source and source-layer, or the keys in properties', async () => {
+    const {map, run} = await addControl(tools, {version: 8, sources: {}, layers: [], imports: [{id: 'basemap', url: '', data: {
+        version: 8,
+        sources: {pois: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}},
+        layers: [{id: 'land', type: 'background'}, {id: 'poi', type: 'circle', source: 'pois', paint: {'circle-radius': 3}}]
+    }}]});
+    await loaded(map);
+    expect({
+        imported: await run('layer', {action: 'list', importId: 'basemap'}),
+        picked: await run('layer', {action: 'list', importId: 'basemap', properties: ['id', 'paint']}),
+        root: await run('layer', {action: 'list'})
+    }).toEqual({
+        imported: [{id: 'land', type: 'background', source: null, 'source-layer': null}, {id: 'poi', type: 'circle', source: 'pois', 'source-layer': null}],
+        picked: [{id: 'land', paint: null}, {id: 'poi', paint: {'circle-radius': 3}}],
+        root: []
+    });
+});
+
+test('layer tools read an empty import id as the root style', async () => {
+    const {map, run} = await addControl(tools);
+    map.addLayer({id: 'bg', type: 'background'});
+    await loaded(map);
+    await expect(run('layer', {action: 'get', layerId: 'nope', importId: ''})).rejects.toThrow('No layer "nope" in the root style.');
+    expect(await run('layer', {action: 'list', importId: ''})).toEqual([{id: 'bg', type: 'background', source: null, 'source-layer': null}]);
 });
 
 test('the tools read GeoJSON by URL and featuresets of style imports through GL JS', async () => {
@@ -687,8 +777,8 @@ test('the tools read GeoJSON by URL and featuresets of style imports through GL 
     await loaded(map);
     const poi = {featuresetId: 'poi', importId: 'basemap'};
     const names = async (target: object) => ((await run('feature', {action: 'query', target})).features as {properties: {name: string}}[]).map((f) => f.properties.name);
-    const list = await run('layer', {action: 'listTargets'}) as unknown as {target: object; featureStateKeys: string[]}[];
-    expect(list.map(({target, featureStateKeys}) => [target, featureStateKeys])).toEqual([[{layerId: 'url'}, []], [poi, ['highlight']]]);
+    const list = (await run('style', {action: 'get'})).targets as {target: object; featureStateKeys?: string[]}[];
+    expect(list.map(({target, featureStateKeys}) => [target, featureStateKeys])).toEqual([[{layerId: 'url'}, undefined], [poi, ['highlight']]]);
     expect([await names({layerId: 'url'}), await names(poi)]).toEqual([['a', 'b'], ['c']]);
     await run('feature', {action: 'setFeatureState', target: poi, ids: [7], state: {highlight: true}});
     expect(map.queryRenderedFeatures({target: {featuresetId: 'poi', importId: 'basemap'}})[0].state).toEqual({highlight: true});
@@ -702,7 +792,7 @@ test('the tools list, query and frame a featureset of the root style', async () 
         featuresets: {poi: {selectors: [{layer: 'poi', properties: {name: ['get', 'name']}}]}}
     });
     await loaded(map);
-    const list = (await run('layer', {action: 'listTargets'}) as unknown as {target: object}[]).map((l) => l.target);
+    const list = ((await run('style', {action: 'get'})).targets as {target: object}[]).map((l) => l.target);
     const {features, query} = await run('feature', {action: 'query', target: {featuresetId: 'poi'}}) as {features: {id: unknown; properties: {name: string}}[]; query: string};
     const fit = await run('camera', {action: 'fitBounds', features: [{target: {featuresetId: 'poi'}, id: 7}, {target: {layerId: 'poi'}, id: 7}]}) as {center: {lng: number; lat: number}; query: string};
     expect({list, features: features.map((f) => [f.id, f.properties.name]), query, center: [fit.center.lng, fit.center.lat].map((v) => +v.toFixed(2)), fitQuery: fit.query}).toEqual({
@@ -746,8 +836,8 @@ test('feature query returns features without an id when GL JS has no id for thei
     ]}});
     map.addLayer({id: 'l', type: 'circle', source: 's'});
     await loaded(map);
-    const {features} = await run('feature', {action: 'query', target: {layerId: 'l'}}) as {features: {id?: string; properties: {name: string}}[]};
-    expect(features.map((f) => [f.properties.name, f.id])).toEqual(Array.from({length: 4}, () => [['a', undefined], ['b', undefined]]).flat());
+    const {features} = await run('feature', {action: 'query', target: {layerId: 'l'}}) as {features: {id: string | null; properties: {name: string}}[]};
+    expect(features.map((f) => [f.properties.name, f.id])).toEqual(Array.from({length: 4}, () => [['a', null], ['b', null]]).flat());
 });
 
 test('feature query distance keeps points, lines and polygons within the distance', async () => {
@@ -759,7 +849,7 @@ test('feature query distance keeps points, lines and polygons within the distanc
     ]}});
     map.addLayer({id: 'l', type: 'line', source: 's'});
     await loaded(map);
-    const {features} = await run('feature', {action: 'query', target: {layerId: 'l'}, distance: {lng: 0.5, lat: 1.5, meters: 120000}, sort: {property: 'name', order: 'asc'}}) as {features: {properties: {name: string}}[]};
+    const {features} = await run('feature', {action: 'query', target: {layerId: 'l'}, distance: {lngLat: {lng: 0.5, lat: 1.5}, meters: 120000}, sort: {property: 'name', order: 'asc'}}) as {features: {properties: {name: string}}[]};
     expect(features.map((f) => f.properties.name)).toEqual(['park', 'road']);
 });
 
@@ -849,11 +939,20 @@ test('feature query keeps properties named like its own fields, and sorts and ma
     const matched = await run('feature', {action: 'query', target: {layerId: 'l'}, filter: ['==', ['get', 'id'], 'A-7']});
     expect({sorted, matched}).toEqual({
         sorted: {total: 2, query: 'source', features: [
-            {target: {layerId: 'l'}, id: 4, geometry: 'Point', lng: 5.625, lat: 0, properties: {id: 'A-7', lat: 'south'}},
-            {target: {layerId: 'l'}, id: 3, geometry: 'Point', lng: 0, lat: 0, properties: {id: 'B-1', lat: 'north'}}
+            {id: 4, properties: {id: 'A-7', lat: 'south'}, state: {}},
+            {id: 3, properties: {id: 'B-1', lat: 'north'}, state: {}}
         ]},
-        matched: {total: 1, query: 'source', features: [{target: {layerId: 'l'}, id: 4, geometry: 'Point', lng: 5.625, lat: 0, properties: {id: 'A-7', lat: 'south'}}]}
+        matched: {total: 1, query: 'source', features: [{id: 4, properties: {id: 'A-7', lat: 'south'}, state: {}}]}
     });
+});
+
+test('feature query returns the geometry of a feature only when properties lists it, and null for a key that the feature lacks', async () => {
+    const {map, run} = await addControl(tools, undefined, undefined, {zoom: 0});
+    map.addSource('s', {type: 'geojson', data: {type: 'FeatureCollection', features: [{type: 'Feature', id: 3, properties: {name: 'a'}, geometry: {type: 'Point', coordinates: [5.625, 0]}}]}});
+    map.addLayer({id: 'l', type: 'circle', source: 's'});
+    await loaded(map);
+    const {features} = await run('feature', {action: 'query', target: {layerId: 'l'}, properties: ['id', 'geometry', 'missing']}) as {features: unknown[]};
+    expect(features).toEqual([{id: 3, geometry: {type: 'Point', coordinates: [5.625, 0]}, missing: null}]);
 });
 
 test('feature query at a LngLat returns only the rendered features under it, and with a filter only those that match', async () => {
@@ -863,7 +962,7 @@ test('feature query at a LngLat returns only the rendered features under it, and
     map.addLayer({id: 'l', type: 'circle', source: 's'});
     await loaded(map);
     const query = async (input: object) => {
-        const {query: type, features} = await run('feature', {action: 'query', target: {layerId: 'l'}, at: {lng: 0, lat: 0}, ...input}) as {query: string; features: {id: unknown}[]};
+        const {query: type, features} = await run('feature', {action: 'query', target: {layerId: 'l'}, lngLat: {lng: 0, lat: 0}, ...input}) as {query: string; features: {id: unknown}[]};
         return [type, features.map((f) => f.id).sort()];
     };
     expect([await query({}), await query({filter: ['==', ['get', 'name'], 'b']})]).toEqual([['rendered', [1, 2]], ['rendered', [2]]]);
@@ -874,23 +973,49 @@ const collection = (...features: ReturnType<typeof point>[]) => ({type: 'Feature
 
 test('source list returns the app\'s sources and the tool\'s sources with their types', async () => {
     const {run} = await addPlaces();
-    await run('source', {action: 'add', id: 'mapbox-webmcp-s', source: {type: 'geojson', data: collection(point(1, 0))}});
+    await run('source', {action: 'addSource', id: 'mapbox-webmcp-s', source: {type: 'geojson', data: collection(point(1, 0))}});
     expect(await run('source', {action: 'list'})).toEqual([
         {id: 'places', type: 'geojson'}, {id: 'areas', type: 'geojson'}, {id: 'mapbox-webmcp-s', type: 'geojson'}
+    ]);
+});
+
+test('source list returns the keys in properties of each source, also data, and source get returns one source in full', async () => {
+    const {run} = await addPlaces();
+    const data = collection(point(1, 0));
+    await run('source', {action: 'addSource', id: 'mapbox-webmcp-s', source: {type: 'geojson', data}});
+    expect({
+        picked: await run('source', {action: 'list', properties: ['id', 'data']}),
+        got: await run('source', {action: 'get', id: 'mapbox-webmcp-s'}),
+        gotKeys: await run('source', {action: 'get', id: 'mapbox-webmcp-s', properties: ['type', 'missing']})
+    }).toMatchObject({
+        picked: [{id: 'places', data: expect.any(Object) as unknown}, {id: 'areas', data: expect.any(Object) as unknown}, {id: 'mapbox-webmcp-s', data}],
+        got: {id: 'mapbox-webmcp-s', type: 'geojson', data},
+        gotKeys: {type: 'geojson', missing: null}
+    });
+});
+
+test('source get refuses a call without an id or with an id that the style lacks, and points to list', async () => {
+    const {registered} = await addPlaces();
+    expect([
+        await registered.get('source')!.execute({action: 'get'}),
+        await registered.get('source')!.execute({action: 'get', id: 'nope'})
+    ]).toEqual([
+        {type: 'error', error: {message: 'Give an id. List the sources to see them.'}},
+        {type: 'error', error: {message: 'No source "nope" in the root style. List the sources to see them.'}}
     ]);
 });
 
 test('source add returns the source as the style holds it', async () => {
     const {run} = await addControl(tools);
     const data = collection(point(1, 0));
-    expect(await run('source', {action: 'add', id: 'mapbox-webmcp-s', source: {type: 'geojson', data, generateId: true}})).toEqual({
+    expect(await run('source', {action: 'addSource', id: 'mapbox-webmcp-s', source: {type: 'geojson', data, generateId: true}})).toEqual({
         id: 'mapbox-webmcp-s', source: {type: 'geojson', data, generateId: true}
     });
 });
 
 test.each([
-    {input: {action: 'add', id: 'places-2', source: {type: 'geojson', data: collection()}}},
-    {input: {action: 'remove', id: 'places'}},
+    {input: {action: 'addSource', id: 'places-2', source: {type: 'geojson', data: collection()}}},
+    {input: {action: 'removeSource', id: 'places'}},
     {input: {action: 'setData', id: 'places', data: collection()}}
 ])('source $input.action refuses an id without the prefix, and changes no source', async ({input}) => {
     const {map, registered} = await addPlaces();
@@ -903,19 +1028,19 @@ test.each([
 
 test('source add refuses a source that GL JS refuses, and adds nothing', async () => {
     const {map, registered} = await addControl(tools);
-    expect({result: await registered.get('source')!.execute({action: 'add', id: 'mapbox-webmcp-s', source: {type: 'geojson', data: collection(), cluster: 'yes'}}), sources: map.getStyle().sources}).toEqual({
+    expect({result: await registered.get('source')!.execute({action: 'addSource', id: 'mapbox-webmcp-s', source: {type: 'geojson', data: collection(), cluster: 'yes'}}), sources: map.getStyle().sources}).toEqual({
         result: {type: 'error', error: {message: 'sources.mapbox-webmcp-s.cluster: boolean expected, string found'}}, sources: {}
     });
 });
 
 test('source remove keeps a source that a layer uses and returns the GL JS error, and removes it when no layer uses it', async () => {
     const {map, run, registered} = await addControl(tools);
-    await run('source', {action: 'add', id: 'mapbox-webmcp-s', source: {type: 'geojson', data: collection()}});
+    await run('source', {action: 'addSource', id: 'mapbox-webmcp-s', source: {type: 'geojson', data: collection()}});
     map.addLayer({id: 'l', type: 'circle', source: 'mapbox-webmcp-s'});
-    const refused = await registered.get('source')!.execute({action: 'remove', id: 'mapbox-webmcp-s'});
+    const refused = await registered.get('source')!.execute({action: 'removeSource', id: 'mapbox-webmcp-s'});
     const kept = Object.keys(map.getStyle().sources);
     map.removeLayer('l');
-    expect({refused, kept, removed: await run('source', {action: 'remove', id: 'mapbox-webmcp-s'})}).toEqual({
+    expect({refused, kept, removed: await run('source', {action: 'removeSource', id: 'mapbox-webmcp-s'})}).toEqual({
         refused: {type: 'error', error: {message: 'Source "mapbox-webmcp-s" cannot be removed while layer "l" is using it.'}},
         kept: ['mapbox-webmcp-s'],
         removed: []
@@ -924,7 +1049,7 @@ test('source remove keeps a source that a layer uses and returns the GL JS error
 
 test('source setData changes the features that feature query returns for a layer on that source', async () => {
     const {map, run} = await addControl(tools, undefined, undefined, {zoom: 0});
-    await run('source', {action: 'add', id: 'mapbox-webmcp-s', source: {type: 'geojson', data: collection(point(1, 0))}});
+    await run('source', {action: 'addSource', id: 'mapbox-webmcp-s', source: {type: 'geojson', data: collection(point(1, 0))}});
     map.addLayer({id: 'l', type: 'circle', source: 'mapbox-webmcp-s'});
     await loaded(map);
     const data = collection(point(2, 10), point(3, 20));
@@ -936,7 +1061,7 @@ test('source setData changes the features that feature query returns for a layer
 test('source setData returns the GL JS error for data that GL JS fails to load, and the source holds that data, as GL JS keeps it', async () => {
     const {map, run, registered} = await addControl(tools, undefined, undefined, {zoom: 0});
     const data = collection(point(1, 0));
-    await run('source', {action: 'add', id: 'mapbox-webmcp-s', source: {type: 'geojson', data}});
+    await run('source', {action: 'addSource', id: 'mapbox-webmcp-s', source: {type: 'geojson', data}});
     map.addLayer({id: 'l', type: 'circle', source: 'mapbox-webmcp-s'});
     await loaded(map);
     const result = await registered.get('source')!.execute({action: 'setData', id: 'mapbox-webmcp-s', data: {type: 'Foo'}});
@@ -946,17 +1071,17 @@ test('source setData returns the GL JS error for data that GL JS fails to load, 
     });
 });
 
-test('layer addLayer adds a layer on an app source that listTargets lists and that feature query and setFilter read', async () => {
+test('layer addLayer adds a layer on an app source that a feature query lists and that feature query and set read', async () => {
     const {map, run} = await addPlaces();
     const added = await run('layer', {action: 'addLayer', layer: {id: 'mapbox-webmcp-l', type: 'circle', source: 'places', filter: ['>=', ['get', 'rating'], 4]}});
-    const listed = (await run('layer', {action: 'listTargets'}) as unknown as {target: {layerId: string}; featureCount: number}[]).find((t) => t.target.layerId === 'mapbox-webmcp-l');
+    const listed = (await run('feature', {action: 'list'}) as unknown as {target: {layerId: string}; featureProperties: string[]}[]).find((t) => t.target.layerId === 'mapbox-webmcp-l');
     const {features} = await run('feature', {action: 'query', target: {layerId: 'mapbox-webmcp-l'}}) as {features: {id: unknown}[]};
-    const filtered = await run('layer', {action: 'setFilter', layerId: 'mapbox-webmcp-l', filter: ['==', ['get', 'name'], 'c']});
+    const filtered = await run('layer', {action: 'set', layerId: 'mapbox-webmcp-l', filter: ['==', ['get', 'name'], 'c']});
     expect({added, listed, ids: features.map((f) => f.id), filtered, drawn: map.queryRenderedFeatures({layers: ['mapbox-webmcp-l']}).map((f) => f.id)}).toEqual({
         added: {layer: {id: 'mapbox-webmcp-l', type: 'circle', source: 'places', filter: ['>=', ['get', 'rating'], 4]}},
-        listed: expect.objectContaining({featureCount: 2}) as unknown,
+        listed: {target: {layerId: 'mapbox-webmcp-l'}, featureProperties: ['name', 'rating']},
         ids: [2, 3],
-        filtered: {layerId: 'mapbox-webmcp-l', matched: 1, query: 'source'},
+        filtered: {layerId: 'mapbox-webmcp-l', filter: ['==', ['get', 'name'], 'c'], matched: 1},
         drawn: [3]
     });
 });
@@ -984,9 +1109,43 @@ test.each([
     });
 });
 
+test('layer addLayer and removeLayer refuse an importId, and change no layer', async () => {
+    const {map, registered} = await addPlaces();
+    const message = () => ({type: 'error', error: {message: 'You can add and remove layers only in the root style. Leave out importId.'}});
+    expect({
+        added: await registered.get('layer')!.execute({action: 'addLayer', importId: 'basemap', layer: {id: 'mapbox-webmcp-l', type: 'circle', source: 'places'}}),
+        removed: await registered.get('layer')!.execute({action: 'removeLayer', importId: 'basemap', layerId: 'mapbox-webmcp-l'}),
+        layers: map.getStyle().layers.map((l) => l.id)
+    }).toEqual({added: message(), removed: message(), layers: ['places', 'areas']});
+});
+
+test('feature query with no features returns the config that hides the layer, from the import that the expression reads', async () => {
+    const {run} = await addControl(tools, {version: 8, sources: {s: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}}, layers: [
+        {id: 'l', type: 'circle', source: 's', layout: {visibility: ['case', ['config', 'showPlaces', 'basemap'], 'visible', 'none']}}
+    ], imports: [
+        {id: 'basemap', url: '', data: {version: 8, sources: {}, layers: [], schema: {showPlaces: {type: 'boolean', default: false}}}}
+    ]});
+    expect((await run('feature', {action: 'query', target: {layerId: 'l'}})).config).toEqual({basemap: {showPlaces: false}});
+});
+
+test('feature query with no features returns no config that a layer of an import reads from an import of that import', async () => {
+    const {run} = await addControl(tools, {version: 8, sources: {}, layers: [], imports: [
+        {id: 'basemap', url: '', data: {version: 8, schema: {showPoi: {type: 'boolean', default: false}}, sources: {s: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}}, layers: [
+            {id: 'poi', type: 'circle', source: 's', filter: ['config', 'showPoi'], layout: {visibility: ['case', ['config', 'showPlaces', 'places'], 'visible', 'none']}}
+        ], featuresets: {poi: {selectors: [{layer: 'poi'}]}}}}
+    ]});
+    expect((await run('feature', {action: 'query', target: {featuresetId: 'poi', importId: 'basemap'}})).config).toEqual({basemap: {showPoi: false}});
+});
+
+test('style set with an import id of "__proto__" leaves Object.prototype alone', async () => {
+    const {run} = await addControl(tools);
+    await run('style', {action: 'set', config: JSON.parse('{"__proto__": {"polluted": 1}}') as object});
+    expect('polluted' in {}).toBe(false);
+});
+
 test('source add refuses data that GL JS fails to load, and adds nothing', async () => {
     const {map, registered} = await addControl(tools);
-    expect({result: await registered.get('source')!.execute({action: 'add', id: 'mapbox-webmcp-s', source: {type: 'geojson', data: {type: 'Foo'}}}), sources: map.getStyle().sources}).toEqual({
+    expect({result: await registered.get('source')!.execute({action: 'addSource', id: 'mapbox-webmcp-s', source: {type: 'geojson', data: {type: 'Foo'}}}), sources: map.getStyle().sources}).toEqual({
         result: {type: 'error', error: {message: 'Input data is not a valid GeoJSON object.'}}, sources: {}
     });
 });
@@ -994,7 +1153,7 @@ test('source add refuses data that GL JS fails to load, and adds nothing', async
 test('source add takes data that loads while another source fails to load', async () => {
     const {map, run} = await addControl(tools);
     map.addSource('other', {type: 'geojson', data: {type: 'Foo'} as unknown as GeoJSON.GeoJSON});
-    expect(await run('source', {action: 'add', id: 'mapbox-webmcp-s', source: {type: 'geojson', data: collection()}})).toMatchObject({id: 'mapbox-webmcp-s'});
+    expect(await run('source', {action: 'addSource', id: 'mapbox-webmcp-s', source: {type: 'geojson', data: collection()}})).toMatchObject({id: 'mapbox-webmcp-s'});
 });
 
 test('layer addLayer with an inline source and a layer that GL JS refuses adds no layer and no source', async () => {
@@ -1017,7 +1176,7 @@ const MARKER_ID = /^mapbox-webmcp-marker-\d+$/;
 
 test('marker add shows a GL JS marker with its popup, both with the plugin id, and list returns it', async () => {
     const {map, run} = await addPlaces();
-    const {id} = await run('marker', {action: 'add', lng: 10, lat: 20, popup: {text: 'Home'}});
+    const [{id}] = await run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}, popup: {text: 'Home'}}]}) as unknown as {id: string}[];
     const markers = map.getContainer().querySelectorAll('.mapboxgl-marker');
     markers[0].dispatchEvent(new KeyboardEvent('keypress', {code: 'Enter'}));
     const popup = map.getContainer().querySelector('.mapboxgl-popup');
@@ -1034,21 +1193,21 @@ test('marker add shows a GL JS marker with its popup, both with the plugin id, a
         markers: 1,
         markerId: id,
         pin: true,
-        popupId: `${id as string}-popup`,
+        popupId: `${id}-popup`,
         popup: true,
-        list: [expect.objectContaining({id, lng: 10, lat: 20, popup: {isOpen: true}})]
+        list: [expect.objectContaining({id, lngLat: {lng: 10, lat: 20}, popup: {isOpen: true}})]
     });
 });
 
 test('marker add draws the default marker in the given color', async () => {
     const {map, run} = await addControl({marker});
-    await run('marker', {action: 'add', lng: 0, lat: 0, color: '#ff0000'});
+    await run('marker', {action: 'add', markers: [{lngLat: {lng: 0, lat: 0}, color: '#ff0000'}]});
     expect(map.getContainer().querySelector('.mapboxgl-marker path')!.getAttribute('fill')).toBe('#ff0000');
 });
 
 test('marker add gives GL JS an element with the given html in place of the default marker', async () => {
     const {map, run} = await addControl({marker});
-    await run('marker', {action: 'add', lng: 0, lat: 0, html: '<b>8</b>'});
+    await run('marker', {action: 'add', markers: [{lngLat: {lng: 0, lat: 0}, html: '<b>8</b>'}]});
     const element = map.getContainer().querySelector('.mapboxgl-marker')!;
     expect({label: element.querySelector('b')?.textContent, pin: element.querySelector('svg')}).toEqual({label: '8', pin: null});
 });
@@ -1056,12 +1215,12 @@ test('marker add gives GL JS an element with the given html in place of the defa
 test('marker add gives the marker options to GL JS and returns what the Marker getters read back', async () => {
     const {run} = await addControl({marker});
     const options = {offset: [1, 2], rotation: 45, rotationAlignment: 'map', pitchAlignment: 'viewport', occludedOpacity: 0.5, altitude: 10, draggable: true};
-    expect(await run('marker', {action: 'add', lng: 10, lat: 20, ...options})).toEqual({id: expect.stringMatching(MARKER_ID) as unknown, lng: 10, lat: 20, ...options});
+    expect(await run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}, ...options}]})).toEqual([{id: expect.stringMatching(MARKER_ID) as unknown, lngLat: {lng: 10, lat: 20}, ...options}]);
 });
 
 const openPopup = async (input: object) => {
     const {map, run} = await addControl({marker});
-    await run('marker', {action: 'add', lng: 0, lat: 0, popup: input});
+    await run('marker', {action: 'add', markers: [{lngLat: {lng: 0, lat: 0}, popup: input}]});
     map.getContainer().querySelector('.mapboxgl-marker')!.dispatchEvent(new KeyboardEvent('keypress', {code: 'Enter'}));
     return map;
 };
@@ -1097,8 +1256,8 @@ test.each([
     {input: {action: 'remove', ids: []}}
 ])('marker $input removes no marker', async ({input}) => {
     const {map, run, registered} = await addPlaces();
-    await run('marker', {action: 'add', lng: 10, lat: 20, popup: {text: 'Home'}});
-    await run('marker', {action: 'add', lng: 0, lat: 0});
+    await run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}, popup: {text: 'Home'}}]});
+    await run('marker', {action: 'add', markers: [{lngLat: {lng: 0, lat: 0}}]});
     expect({result: await registered.get('marker')!.execute(input), markers: map.getContainer().querySelectorAll('.mapboxgl-marker').length}).toEqual({
         result: {type: 'error', error: {message: 'Give the ids of the markers to remove. List the markers to see them.'}}, markers: 2
     });
@@ -1106,36 +1265,47 @@ test.each([
 
 test('marker update moves a marker, changes its rotation, draggable and popup, and list returns the new values', async () => {
     const {map, run} = await addControl({marker});
-    const {id} = await run('marker', {action: 'add', lng: 10, lat: 20, popup: {text: 'Home'}});
-    const updated = await run('marker', {action: 'update', ids: [id], lng: 30, lat: 40, rotation: 90, draggable: true, popup: {text: 'Work'}});
+    const [{id}] = await run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}, popup: {text: 'Home'}}]}) as unknown as {id: string}[];
+    const updated = await run('marker', {action: 'update', markers: [{id, lngLat: {lng: 30, lat: 40}, rotation: 90, draggable: true, popup: {text: 'Work'}}]});
     map.getContainer().querySelector('.mapboxgl-marker')!.dispatchEvent(new KeyboardEvent('keypress', {code: 'Enter'}));
     const popup = map.getContainer().querySelector('.mapboxgl-popup');
     expect({updated, list: await run('marker', {action: 'list'}), popup: [popup?.id, popup?.textContent?.includes('Work')]}).toEqual({
-        updated: [expect.objectContaining({id, lng: 30, lat: 40, rotation: 90, draggable: true})],
-        list: [expect.objectContaining({id, lng: 30, lat: 40, rotation: 90, draggable: true, popup: {isOpen: true}})],
-        popup: [`${id as string}-popup`, true]
+        updated: [expect.objectContaining({id, lngLat: {lng: 30, lat: 40}, rotation: 90, draggable: true})],
+        list: [expect.objectContaining({id, lngLat: {lng: 30, lat: 40}, rotation: 90, draggable: true, popup: {isOpen: true}})],
+        popup: [`${id}-popup`, true]
     });
 });
 
 test('marker update with an id that the tool did not add changes the other markers, and returns an error that names the id', async () => {
     const {run, registered} = await addControl({marker});
-    const {id} = await run('marker', {action: 'add', lng: 10, lat: 20});
-    const result = await registered.get('marker')!.execute({action: 'update', ids: [id, 'mapbox-webmcp-marker-0'], lng: 30, lat: 40});
+    const [{id}] = await run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}}]}) as unknown as {id: string}[];
+    const result = await registered.get('marker')!.execute({action: 'update', markers: [{id, lngLat: {lng: 30, lat: 40}}, {id: 'mapbox-webmcp-marker-0', lngLat: {lng: 30, lat: 40}}]});
     expect({result, list: await run('marker', {action: 'list'})}).toEqual({
         result: {type: 'error', error: {message: 'Marker "mapbox-webmcp-marker-0": No marker with this id.\nThe other changes applied. List the markers to see them.'}},
-        list: [expect.objectContaining({id, lng: 30, lat: 40})]
+        list: [expect.objectContaining({id, lngLat: {lng: 30, lat: 40}})]
     });
 });
 
 test('marker update applies the other changes to each marker when GL JS refuses one, and returns an error that names each refused change', async () => {
     const {run, registered} = await addControl({marker});
-    const {id: a} = await run('marker', {action: 'add', lng: 10, lat: 20});
-    const {id: b} = await run('marker', {action: 'add', lng: 10, lat: 20});
-    const result = await registered.get('marker')!.execute({action: 'update', ids: [a, b], lng: 0, lat: 100, rotation: 45});
+    const [{id: a}] = await run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}}]}) as unknown as {id: string}[];
+    const [{id: b}] = await run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}}]}) as unknown as {id: string}[];
+    const result = await registered.get('marker')!.execute({action: 'update', markers: [{id: a, lngLat: {lng: 0, lat: 100}, rotation: 45}, {id: b, lngLat: {lng: 0, lat: 100}, rotation: 45}]});
     const refused = 'Invalid LngLat latitude value: must be between -90 and 90';
     expect({result, list: await run('marker', {action: 'list'})}).toEqual({
-        result: {type: 'error', error: {message: `Marker "${a as string}" lng and lat: ${refused}\nMarker "${b as string}" lng and lat: ${refused}\nThe other changes applied. List the markers to see them.`}},
-        list: [expect.objectContaining({id: a, lng: 10, lat: 20, rotation: 45}), expect.objectContaining({id: b, lng: 10, lat: 20, rotation: 45})]
+        result: {type: 'error', error: {message: `Marker "${a}" lngLat: ${refused}\nMarker "${b}" lngLat: ${refused}\nThe other changes applied. List the markers to see them.`}},
+        list: [expect.objectContaining({id: a, lngLat: {lng: 10, lat: 20}, rotation: 45}), expect.objectContaining({id: b, lngLat: {lng: 10, lat: 20}, rotation: 45})]
+    });
+});
+
+test('marker update with a lngLat that has no lat is refused, and moves no marker', async () => {
+    const {run, registered} = await addControl({marker});
+    const [{id: a}] = await run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}}]}) as unknown as {id: string}[];
+    const [{id: b}] = await run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}}]}) as unknown as {id: string}[];
+    const result = await registered.get('marker')!.execute({action: 'update', markers: [{id: a, lngLat: {lng: 30}}, {id: b, lngLat: {lng: 30, lat: 40}}]});
+    expect({result, list: await run('marker', {action: 'list'})}).toEqual({
+        result: {type: 'error', error: {message: expect.stringContaining('markers[0].lngLat.lat') as string}},
+        list: [expect.objectContaining({id: a, lngLat: {lng: 10, lat: 20}}), expect.objectContaining({id: b, lngLat: {lng: 10, lat: 20}})]
     });
 });
 
@@ -1143,10 +1313,10 @@ test('marker list leaves out a marker that the app removed, and update has no ma
     const addTo = vi.spyOn(mapboxgl.Marker.prototype, 'addTo');
     onTestFinished(() => addTo.mockRestore());
     const {run, registered} = await addControl({marker});
-    const {id} = await run('marker', {action: 'add', lng: 10, lat: 20});
+    const [{id}] = await run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}}]}) as unknown as {id: string}[];
     (addTo.mock.contexts[0] as mapboxgl.Marker).remove();
-    expect({list: await run('marker', {action: 'list'}), update: await registered.get('marker')!.execute({action: 'update', ids: [id], rotation: 90})}).toEqual({
-        list: [], update: {type: 'error', error: {message: `Marker "${id as string}": No marker with this id.`}}
+    expect({list: await run('marker', {action: 'list'}), update: await registered.get('marker')!.execute({action: 'update', markers: [{id, rotation: 90}]})}).toEqual({
+        list: [], update: {type: 'error', error: {message: `Marker "${id}": No marker with this id.`}}
     });
 });
 
@@ -1154,36 +1324,36 @@ test('marker list returns where GL JS shows a marker after the app moves it', as
     const addTo = vi.spyOn(mapboxgl.Marker.prototype, 'addTo');
     onTestFinished(() => addTo.mockRestore());
     const {run} = await addControl({marker});
-    const {id} = await run('marker', {action: 'add', lng: 10, lat: 20});
+    const [{id}] = await run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}}]}) as unknown as {id: string}[];
     (addTo.mock.contexts[0] as mapboxgl.Marker).setLngLat([30, 40]);
-    expect(await run('marker', {action: 'list'})).toEqual([expect.objectContaining({id, lng: 30, lat: 40})]);
+    expect(await run('marker', {action: 'list'})).toEqual([expect.objectContaining({id, lngLat: {lng: 30, lat: 40}})]);
 });
 
 test('marker add with popupOpen opens the popup with no click, and list returns it open', async () => {
     const {map, run} = await addControl({marker});
-    const {id} = await run('marker', {action: 'add', lng: 10, lat: 20, popup: {text: 'Home'}, popupOpen: true});
+    const [{id}] = await run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}, popup: {text: 'Home'}, popupOpen: true}]}) as unknown as {id: string}[];
     expect({popupId: map.getContainer().querySelector('.mapboxgl-popup')?.id, list: await run('marker', {action: 'list'})}).toEqual({
-        popupId: `${id as string}-popup`, list: [expect.objectContaining({id, popup: {isOpen: true}})]
+        popupId: `${id}-popup`, list: [expect.objectContaining({id, popup: {isOpen: true}})]
     });
 });
 
 test('marker add with popupOpen and no popup adds the marker, and returns an error that names popupOpen', async () => {
     const {run, registered} = await addControl({marker});
-    const result = await registered.get('marker')!.execute({action: 'add', lng: 10, lat: 20, popupOpen: true});
+    const result = await registered.get('marker')!.execute({action: 'add', markers: [{lngLat: {lng: 10, lat: 20}, popupOpen: true}]});
     const list = await run('marker', {action: 'list'}) as unknown as {id: string}[];
     expect({result, list}).toEqual({
-        result: {type: 'error', error: {message: `Marker "${list[0]?.id}" popupOpen: The marker has no popup.\nThe other changes applied. List the markers to see them.`}},
-        list: [expect.objectContaining({lng: 10, lat: 20})]
+        result: {type: 'error', error: {message: 'markers[0] popupOpen: The marker has no popup.\nThe other changes applied. List the markers to see them.'}},
+        list: [expect.objectContaining({lngLat: {lng: 10, lat: 20}})]
     });
 });
 
 test('marker update with popupOpen false closes the popup of each marker, and returns an error that names a marker with no popup', async () => {
     const {map, run, registered} = await addControl({marker});
-    const {id: a} = await run('marker', {action: 'add', lng: 10, lat: 20, popup: {text: 'Home'}, popupOpen: true});
-    const {id: b} = await run('marker', {action: 'add', lng: 0, lat: 0});
-    const result = await registered.get('marker')!.execute({action: 'update', ids: [a, b], popupOpen: false});
+    const [{id: a}] = await run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}, popup: {text: 'Home'}, popupOpen: true}]}) as unknown as {id: string}[];
+    const [{id: b}] = await run('marker', {action: 'add', markers: [{lngLat: {lng: 0, lat: 0}}]}) as unknown as {id: string}[];
+    const result = await registered.get('marker')!.execute({action: 'update', markers: [{id: a, popupOpen: false}, {id: b, popupOpen: false}]});
     expect({result, popups: map.getContainer().querySelectorAll('.mapboxgl-popup').length, list: await run('marker', {action: 'list'})}).toEqual({
-        result: {type: 'error', error: {message: `Marker "${b as string}" popupOpen: The marker has no popup.\nThe other changes applied. List the markers to see them.`}},
+        result: {type: 'error', error: {message: `Marker "${b}" popupOpen: The marker has no popup.\nThe other changes applied. List the markers to see them.`}},
         popups: 0,
         list: [expect.objectContaining({id: a, popup: {isOpen: false}}), expect.not.objectContaining({popup: expect.anything() as unknown})]
     });
@@ -1191,19 +1361,19 @@ test('marker update with popupOpen false closes the popup of each marker, and re
 
 test('marker update with a new popup and popupOpen opens the new popup', async () => {
     const {map, run} = await addControl({marker});
-    const {id} = await run('marker', {action: 'add', lng: 10, lat: 20, popup: {text: 'Home'}, popupOpen: true});
-    await run('marker', {action: 'update', ids: [id], popup: {text: 'Work'}, popupOpen: true});
-    expect(Array.from(map.getContainer().querySelectorAll('.mapboxgl-popup'), (p) => [p.id, p.textContent?.includes('Work')])).toEqual([[`${id as string}-popup`, true]]);
+    const [{id}] = await run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}, popup: {text: 'Home'}, popupOpen: true}]}) as unknown as {id: string}[];
+    await run('marker', {action: 'update', markers: [{id, popup: {text: 'Work'}, popupOpen: true}]});
+    expect(Array.from(map.getContainer().querySelectorAll('.mapboxgl-popup'), (p) => [p.id, p.textContent?.includes('Work')])).toEqual([[`${id}-popup`, true]]);
 });
 
 const POPUP_ID = /^mapbox-webmcp-popup-\d+$/;
 
 test('popup add shows a GL JS popup with the plugin id at the LngLat, and list returns it', async () => {
     const {map, run} = await addControl({popup});
-    const added = await run('popup', {action: 'add', lng: 10, lat: 20, text: 'Home', maxWidth: '100px'});
+    const added = await run('popup', {action: 'add', lngLat: {lng: 10, lat: 20}, text: 'Home', maxWidth: '100px'});
     const element = map.getContainer().querySelector('.mapboxgl-popup');
     expect({added, element: [element?.id, element?.textContent?.includes('Home')], list: await run('popup', {action: 'list'})}).toEqual({
-        added: {id: expect.stringMatching(POPUP_ID) as unknown, lng: 10, lat: 20, maxWidth: '100px'},
+        added: {id: expect.stringMatching(POPUP_ID) as unknown, lngLat: {lng: 10, lat: 20}, maxWidth: '100px'},
         element: [added.id, true],
         list: [added]
     });
@@ -1211,26 +1381,26 @@ test('popup add shows a GL JS popup with the plugin id at the LngLat, and list r
 
 test('popup list leaves out a popup that a map click closed', async () => {
     const {map, run} = await addControl({popup});
-    await run('popup', {action: 'add', lng: 10, lat: 20, text: 'Home'});
+    await run('popup', {action: 'add', lngLat: {lng: 10, lat: 20}, text: 'Home'});
     map.fire('preclick');
     expect(await run('popup', {action: 'list'})).toEqual([]);
 });
 
 test('popup update moves a popup and changes its text, and returns an error that names an id with no popup', async () => {
     const {map, run, registered} = await addControl({popup});
-    const {id} = await run('popup', {action: 'add', lng: 10, lat: 20, text: 'Home'});
-    const result = await registered.get('popup')!.execute({action: 'update', ids: [id, 'mapbox-webmcp-popup-0'], lng: 30, lat: 40, text: 'Work'});
+    const {id} = await run('popup', {action: 'add', lngLat: {lng: 10, lat: 20}, text: 'Home'});
+    const result = await registered.get('popup')!.execute({action: 'update', ids: [id, 'mapbox-webmcp-popup-0'], lngLat: {lng: 30, lat: 40}, text: 'Work'});
     expect({result, text: map.getContainer().querySelector('.mapboxgl-popup')?.textContent?.includes('Work'), list: await run('popup', {action: 'list'})}).toEqual({
         result: {type: 'error', error: {message: 'Popup "mapbox-webmcp-popup-0": No popup with this id.\nThe other changes applied. List the popups to see them.'}},
         text: true,
-        list: [expect.objectContaining({id, lng: 30, lat: 40})]
+        list: [expect.objectContaining({id, lngLat: {lng: 30, lat: 40}})]
     });
 });
 
 test('popup remove removes the popups with the given ids, and returns an error that names an id with no popup', async () => {
     const {map, run, registered} = await addControl({popup});
-    const {id: a} = await run('popup', {action: 'add', lng: 10, lat: 20, text: 'Home'});
-    const {id: b} = await run('popup', {action: 'add', lng: 0, lat: 0, text: 'Work'});
+    const {id: a} = await run('popup', {action: 'add', lngLat: {lng: 10, lat: 20}, text: 'Home'});
+    const {id: b} = await run('popup', {action: 'add', lngLat: {lng: 0, lat: 0}, text: 'Work'});
     const result = await registered.get('popup')!.execute({action: 'remove', ids: [a, 'mapbox-webmcp-popup-0']});
     expect({result, popups: map.getContainer().querySelectorAll('.mapboxgl-popup').length, list: await run('popup', {action: 'list'})}).toEqual({
         result: {type: 'error', error: {message: 'Popup "mapbox-webmcp-popup-0": No popup with this id.\nThe other changes applied. List the popups to see them.'}},
@@ -1242,7 +1412,7 @@ test('popup remove removes the popups with the given ids, and returns an error t
 test('two maps on a page share no markers', async () => {
     const first = await addControl({marker});
     const second = await addControl({marker});
-    await first.run('marker', {action: 'add', lng: 10, lat: 20});
+    await first.run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}}]});
     expect(await second.run('marker_2', {action: 'list'})).toEqual([]);
 });
 
@@ -1258,12 +1428,12 @@ test('each control on a page has its own container id, and a control keeps tool 
 test('marker list and remove leave the app\'s own markers alone', async () => {
     const {map, run} = await addPlaces();
     new mapboxgl.Marker().setLngLat([0, 0]).addTo(map);
-    const {id} = await run('marker', {action: 'add', lng: 10, lat: 20});
+    const [{id}] = await run('marker', {action: 'add', markers: [{lngLat: {lng: 10, lat: 20}}]}) as unknown as {id: string}[];
     expect({
         list: await run('marker', {action: 'list'}),
         remove: await run('marker', {action: 'remove', ids: [id]}),
         markers: map.getContainer().querySelectorAll('.mapboxgl-marker').length
-    }).toEqual({list: [expect.objectContaining({id, lng: 10, lat: 20})], remove: [], markers: 1});
+    }).toEqual({list: [expect.objectContaining({id, lngLat: {lng: 10, lat: 20}})], remove: [], markers: 1});
 });
 
 const flatLight = {id: 'flat', type: 'flat', properties: {}};
@@ -1274,14 +1444,14 @@ const atmosphereOf = (map: mapboxgl.Map) => ({fog: map.getFog(), lights: map.get
 test('style set changes the fog, lights, rain, snow and worldview, and get returns them', async () => {
     const {run} = await addControl(tools);
     await run('style', {action: 'set', ...atmosphere, worldview: 'JP'});
-    expect(await run('style', {action: 'get'})).toMatchObject({...atmosphere, worldview: 'JP'});
+    expect(await run('style', {action: 'get', properties: ['fog', 'lights', 'rain', 'snow', 'worldview']})).toMatchObject({...atmosphere, worldview: 'JP'});
 });
 
 test('style set with null removes the fog, 3D lights, rain and snow', async () => {
     const {map, run} = await addControl(tools, {version: 8, sources: {}, layers: [], ...atmosphere});
     const got = await run('style', {action: 'set', fog: null, lights: null, rain: null, snow: null});
     expect({got: [got.fog, got.lights, got.rain, got.snow], map: atmosphereOf(map)}).toEqual({
-        got: [undefined, [flatLight], undefined, undefined], map: {fog: null, lights: [flatLight], light: undefined, rain: null, snow: null, worldview: undefined}
+        got: [null, [flatLight], null, null], map: {fog: null, lights: [flatLight], light: undefined, rain: null, snow: null, worldview: undefined}
     });
 });
 
@@ -1314,7 +1484,7 @@ const lightSchema: mapboxgl.SchemaSpecification = {lightPreset: {type: 'string',
 test('style set leaves the config as it is for a configuration property GL JS does not know', async () => {
     const {map, run} = await addControl(tools, {version: 8, sources: {}, layers: [], schema: lightSchema});
     const set = await run('style', {action: 'set', config: {basemap: {theme: 'faded'}}});
-    expect({config: set.config, held: map.getConfig('basemap')}).toEqual({config: {basemap: {lightPreset: 'day'}}, held: {lightPreset: 'day'}});
+    expect({config: set.config, held: map.getConfig('basemap')}).toEqual({config: {basemap: {theme: null}}, held: {lightPreset: 'day'}});
 });
 
 test('style set refuses a config entry that is not an object, and changes nothing', async () => {
@@ -1337,22 +1507,69 @@ test('style set changes the basemap config, projection and language', async () =
         showPlaceLabels: {type: 'boolean', default: true}
     }});
     await run('style', {action: 'set', config: {basemap: {lightPreset: 'night', showPlaceLabels: false}}, projection: 'globe', language: 'fr'});
-    expect(await run('style', {action: 'get'})).toEqual({
+    expect(await run('style', {action: 'get', properties: ['config', 'schema', 'targets', 'projection', 'language', 'terrain']})).toEqual({
         config: {basemap: {lightPreset: 'night', showPlaceLabels: false}},
         schema: {basemap: {lightPreset: {type: 'string', default: 'day'}, showPlaceLabels: {type: 'boolean', default: true}}},
+        targets: [],
         projection: 'globe',
         language: 'fr',
-        terrain: null,
-        rasterDemSources: [],
-        lights: [flatLight]
+        terrain: null
     });
+});
+
+test('style get without properties returns the root level properties and the keys that the tool adds, and leaves out layers, sources, color-theme and metadata', async () => {
+    const {run} = await addControl(tools, {version: 8, fragment: false, sources: {s: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}}, layers: [], metadata: {a: 1}, 'color-theme': {data: 'x'}, schema: lightSchema, imports: [
+        {id: 'basemap', url: '', data: {version: 8, sources: {}, layers: [], schema: {showLabels: {type: 'boolean', default: true}}}}
+    ]});
+    const got = await run('style', {action: 'get'});
+    expect({keys: Object.keys(got).sort(), imports: got.imports, config: got.config, schema: got.schema}).toEqual({
+        keys: ['config', 'fragment', 'imports', 'lights', 'projection', 'schema', 'targets', 'version'],
+        imports: [{id: 'basemap', url: ''}],
+        config: {'': {lightPreset: 'day'}, basemap: {showLabels: true}},
+        schema: {'': lightSchema, basemap: {showLabels: {type: 'boolean', default: true}}}
+    });
+});
+
+test('style get with properties returns those keys, also layers and sources, and null for a key that the style lacks', async () => {
+    const {run} = await addControl(tools, {version: 8, sources: {s: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}}, layers: []});
+    expect(await run('style', {action: 'get', properties: ['sources', 'fog', 'misspelled']})).toEqual({
+        sources: {s: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}}, fog: null, misspelled: null
+    });
+});
+
+test('style get with an import id returns the style that the import loaded, with its config, schema and targets only', async () => {
+    const {run} = await addControl(tools, {version: 8, sources: {}, layers: [], imports: [
+        {id: 'basemap', url: '', data: {
+            version: 8,
+            sources: {pois: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}},
+            layers: [{id: 'poi', type: 'circle', source: 'pois'}],
+            featuresets: {poi: {selectors: [{layer: 'poi'}]}},
+            schema: {showLabels: {type: 'boolean', default: true}}
+        }},
+        {id: 'other', url: '', data: {version: 8, sources: {}, layers: [], featuresets: {stop: {selectors: []}}}}
+    ]});
+    expect({
+        imported: await run('style', {action: 'get', importId: 'basemap', properties: ['featuresets', 'sources', 'config', 'schema', 'targets', 'language']}),
+        root: await run('style', {action: 'get', importId: ''}).then(({version}) => version)
+    }).toEqual({
+        imported: {
+            featuresets: {poi: {selectors: [{layer: 'poi'}]}},
+            sources: {pois: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}},
+            config: {basemap: {showLabels: true}},
+            schema: {basemap: {showLabels: {type: 'boolean', default: true}}},
+            targets: [{target: {featuresetId: 'poi', importId: 'basemap'}, layers: ['poi']}],
+            language: null
+        },
+        root: 8
+    });
+    await expect(run('style', {action: 'get', importId: 'nope'})).rejects.toThrow('No import "nope" with loaded data.');
 });
 
 test('style get and set reach the config of the root style', async () => {
     const {map, run} = await addControl(tools, {version: 8, fragment: false, sources: {}, layers: [], schema: lightSchema});
     const set = await run('style', {action: 'set', config: {'': {lightPreset: 'night'}}});
-    expect({config: set.config, schema: set.schema, root: map.getConfig('')}).toEqual({
-        config: {'': {lightPreset: 'night'}}, schema: {'': lightSchema}, root: {lightPreset: 'night'}
+    expect({config: set.config, root: map.getConfig('')}).toEqual({
+        config: {'': {lightPreset: 'night'}}, root: {lightPreset: 'night'}
     });
 });
 
@@ -1372,12 +1589,14 @@ test('style set takes back what get returns', async () => {
     const {run} = await addControl(tools, {version: 8, sources: {}, layers: [], projection: {name: 'equalEarth'}, imports: [
         {id: 'basemap', url: '', config: {theme: 'custom'}, data: {version: 8, sources: {}, layers: [], schema: {theme: {type: 'string', default: 'default'}}}}
     ]});
-    const {schema, rasterDemSources, ...got} = await run('style', {action: 'get'});
-    expect({got, schema, rasterDemSources, set: await run('style', {...got, action: 'set'})}).toEqual({
-        got: {config: {basemap: {theme: 'custom'}}, projection: 'equalEarth', terrain: null, lights: [flatLight]},
+    const got = await run('style', {action: 'get', properties: ['config', 'projection', 'terrain']});
+    const {schema, targets, imports} = await run('style', {action: 'get', properties: ['schema', 'targets', 'imports']});
+    expect({got, schema, targets, imports, set: await run('style', {...got, action: 'set'})}).toEqual({
+        got: {config: {basemap: {theme: 'custom'}}, projection: 'equalEarth', terrain: null},
         schema: {basemap: {theme: {type: 'string', default: 'default'}}},
-        rasterDemSources: [],
-        set: {config: {basemap: {theme: 'custom'}}, schema: {basemap: {theme: {type: 'string', default: 'default'}}}, projection: 'equalEarth', terrain: null, rasterDemSources: [], lights: [flatLight]}
+        targets: [],
+        imports: [{id: 'basemap', url: ''}],
+        set: {config: {basemap: {theme: 'custom'}}, projection: 'equalEarth', terrain: null}
     });
 });
 

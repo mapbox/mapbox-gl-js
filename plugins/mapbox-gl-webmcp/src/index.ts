@@ -19,6 +19,7 @@ export type MapboxWebMCPToolResult =
     | {type: 'success'; value: JsonValue; note?: string}
     | {type: 'error'; error: {message: string}};
 export type MapboxWebMCPTool<Schema extends ObjectSchema> = {
+    title?: string;
     description: string;
     inputSchema: Schema;
     execute: (input: Infer<Schema>, map: MapboxMap, mapboxgl: MapboxGLModule) => unknown;
@@ -28,6 +29,7 @@ type ModelContext = {
     registerTool: (
         tool: {
             name: string;
+            title?: string;
             description: string;
             inputSchema: ObjectSchema;
             execute: (input?: unknown) => Promise<MapboxWebMCPToolResult>;
@@ -84,8 +86,7 @@ export class MapboxWebMCP<const T extends Record<string, ObjectSchema> = Record<
         container.id = `mapbox-webmcp-control${suffix(containerNumber)}`;
         container.style.display = 'none';
         this._container = container;
-        // Chrome 149 has the API only on navigator.
-        const modelContext = (ownerDocument as {modelContext?: ModelContext}).modelContext ?? (ownerDocument.defaultView?.navigator as {modelContext?: ModelContext} | undefined)?.modelContext;
+        const modelContext = (ownerDocument as {modelContext?: ModelContext}).modelContext;
         if (!modelContext) {
             if (!warnedNoModelContext) console.warn('MapboxWebMCP registered no tools, because this browser has no WebMCP API. In Chrome, add a WebMCP origin trial token to the page, or turn on chrome://flags/#enable-webmcp-testing to test locally.');
             warnedNoModelContext = true;

@@ -46,8 +46,8 @@ Without a bundler, load the GL JS ESM build and the plugin from the Mapbox CDN w
     {
         "imports": {
             "mapbox-gl": "https://api.mapbox.com/mapbox-gl-js/v3.35.0/esm/mapbox-gl.js",
-            "@mapbox/mapbox-gl-webmcp": "https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-webmcp/v0.1.0-alpha.1/mapbox-gl-webmcp.js",
-            "@mapbox/mapbox-gl-webmcp/tools": "https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-webmcp/v0.1.0-alpha.1/tools.js"
+            "@mapbox/mapbox-gl-webmcp": "https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-webmcp/v0.1.0-beta.1/mapbox-gl-webmcp.js",
+            "@mapbox/mapbox-gl-webmcp/tools": "https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-webmcp/v0.1.0-beta.1/tools.js"
         }
     }
 </script>

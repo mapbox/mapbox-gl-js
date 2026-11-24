@@ -15,14 +15,34 @@ export const targetSchema = {
     type: 'object',
     properties: {layerId: {type: 'string'}, featuresetId: {type: 'string'}, importId: {type: 'string'}},
     additionalProperties: false,
-    description: 'A target as listTargets returns it: {layerId} for a layer, or {featuresetId, importId} for a featureset, without importId in the root style.'
+    description: 'Use {layerId} for a root style layer, {featuresetId} for a root style featureset, or {featuresetId, importId} for an imported featureset. Discover targets with style "get" and properties ["targets"].'
 } as const;
-export const featureIdSchema = {type: ['string', 'number'], description: 'A feature id, as a feature query returns it, with its type. An id that several features share means all of them.'} as const;
+export const featureIdSchema = {type: ['string', 'number']} as const;
 export const featureRefSchema = {type: 'object', properties: {target: targetSchema, id: featureIdSchema}, required: ['target', 'id'], additionalProperties: false} as const;
 export const lngLatSchema = {type: 'object', properties: {lng: {type: 'number'}, lat: {type: 'number'}}, required: ['lng', 'lat'], additionalProperties: false} as const;
+export const propertiesSchema = {type: 'array', items: {type: 'string'}} as const;
+export const limitSchema = {type: 'integer', minimum: 1} as const;
+
+export function pick(value: object, properties: string[] | undefined): object {
+    if (!properties) return value;
+    return Object.fromEntries(properties.map((key) => [key, (value as Record<string, unknown>)[key] ?? null]));
+}
+
+export function importStyle(map: MapboxMap, importId: string) {
+    const spec = map.getStyle().imports?.find(({id}) => id === importId);
+    if (!spec?.data) throw new Error(`No import "${importId}" with loaded data. Read the style to see the imports.`);
+    return spec;
+}
+
+export const TOOL_FILTER = ['to-boolean', 'mapbox-webmcp-filter'];
+
+export function isToolFilter(filter: FilterSpecification | null | undefined): boolean {
+    return Array.isArray(filter) && filter[0] === 'all' && JSON.stringify(filter[1]) === JSON.stringify(TOOL_FILTER);
+}
+
 export const filterSchema = {
     type: 'array',
-    description: 'A GL JS filter expression that features must match, such as ["==", ["get", NAME], VALUE] or ["all", [">", ["get", NAME], VALUE], ["in", VALUE, ["get", NAME]]], with property names that listTargets gives.'
+    description: 'A filter expression, such as ["==", ["get", NAME], VALUE].'
 } as const;
 
 type Coordinates = Position | Coordinates[];
@@ -83,6 +103,10 @@ export function featuresets(map: MapboxMap): FeaturesetTarget[] {
     })));
 }
 
+export function targetInputs(map: MapboxMap): TargetInput[] {
+    return [...map.getStyle().layers.map((l) => ({layerId: l.id})), ...featuresets(map).map((f) => f.target)];
+}
+
 export function queryType(t: Target): 'rendered' | 'source' {
     return isFeatureset(t) ? 'rendered' : 'source';
 }
@@ -94,19 +118,23 @@ export function targetName(t: Target): string {
 }
 
 export function target(map: MapboxMap, input?: TargetInput): Target {
-    if (input === undefined) throw new Error('Give a target. List the targets to see them.');
+    if (input === undefined) throw new Error('Give a target. Run the feature tool with the action "list" to see the targets.');
     const {layerId, featuresetId, importId} = input;
-    if ((layerId === undefined) === (featuresetId === undefined) || (layerId !== undefined && importId !== undefined)) {
-        throw new Error('A target is {layerId} or {featuresetId, importId}. List the targets to see them.');
+    if ((layerId === undefined) === (featuresetId === undefined)) {
+        throw new Error('A target is {layerId} or {featuresetId, importId}. Run the feature tool with the action "list" to see the targets.');
+    }
+    if (layerId !== undefined && importId !== undefined) {
+        const using = featuresets(map).filter((f) => f.target.importId === importId && layers(map, f).some((l) => l?.id === layerId));
+        throw new Error(`GL JS queries only the layers of the root style, so it can't query layer "${layerId}" of import "${importId}". ${using.length ? `Use a featureset that draws it: ${using.map((f) => JSON.stringify(f.target)).join(', ')}.` : `No featureset of import "${importId}" draws it.`}`);
     }
     if (layerId !== undefined) {
         const layer = map.getLayer(layerId);
-        if (!layer) throw new Error(`No layer "${layerId}". List the targets to see them.`);
+        if (!layer) throw new Error(`No layer "${layerId}". Run the feature tool with the action "list" to see the targets.`);
         const source = 'source' in layer && typeof layer.source === 'string' ? layer.source : '';
         return {target: {layerId}, type: layer.type, source, sourceLayer: (layer as {'source-layer'?: string})['source-layer']};
     }
     const found = featuresets(map).find((f) => f.target.featuresetId === featuresetId && (f.target.importId ?? '') === (importId ?? ''));
-    if (!found) throw new Error(`No featureset "${featuresetId}" ${importId ? `in import "${importId}"` : 'in the root style'}. List the targets to see them.`);
+    if (!found) throw new Error(`No featureset "${featuresetId}" ${importId ? `in import "${importId}"` : 'in the root style'}. Run the feature tool with the action "list" to see the targets.`);
     return found;
 }
 
@@ -207,21 +235,34 @@ export function featureByRef(map: MapboxMap, ref: Infer<typeof featureRefSchema>
     return byId(features(map, t), t, ref.id);
 }
 
-export function stateKeys(map: MapboxMap, t: Target): string[] {
-    const keys = new Set<string>();
-    const walk = (value: unknown): void => {
-        if (Array.isArray(value)) {
-            if (value[0] === 'literal') return;
-            if (value[0] === 'feature-state' && typeof value[1] === 'string') keys.add(value[1]);
-            value.forEach(walk);
-        } else if (typeof value === 'object' && value !== null) {
-            Object.values(value).forEach(walk);
-        }
-    };
-    if (!isFeatureset(t)) {
-        walk(map.getLayer(t.target.layerId));
-    } else {
-        for (const {layer} of t.style.featuresets?.[t.target.featuresetId]?.selectors ?? []) walk(t.style.layers.find((l) => l.id === layer));
+export function layers(map: MapboxMap, t: Target) {
+    if (!isFeatureset(t)) return [map.getLayer(t.target.layerId)];
+    return (t.style.featuresets?.[t.target.featuresetId]?.selectors ?? []).map(({layer}) => t.style.layers.find((l) => l.id === layer));
+}
+
+function reads(operator: 'feature-state' | 'config', value: unknown, found: [string, string][] = []): [string, string][] {
+    if (Array.isArray(value)) {
+        if (value[0] === 'literal') return found;
+        if (value[0] === operator && typeof value[1] === 'string') found.push([value[1], typeof value[2] === 'string' ? value[2] : '']);
+        for (const item of value) reads(operator, item, found);
+    } else if (typeof value === 'object' && value !== null) {
+        for (const item of Object.values(value)) reads(operator, item, found);
     }
-    return [...keys];
+    return found;
+}
+
+export function stateKeys(map: MapboxMap, t: Target): string[] {
+    return [...new Set(reads('feature-state', layers(map, t)).map(([name]) => name))];
+}
+
+export function hidingConfig(map: MapboxMap, t: Target): Record<string, Record<string, unknown>> {
+    const importId = isFeatureset(t) ? t.target.importId ?? '' : '';
+    const config: Record<string, Record<string, unknown>> = {};
+    for (const [name, scope] of reads('config', layers(map, t).map((l) => [l && 'filter' in l && l.filter, l?.layout?.visibility]))) {
+        const scopeOfNestedImport = scope && importId;
+        if (scopeOfNestedImport) continue;
+        const id = scope || importId;
+        (config[id] ??= {})[name] = map.getConfigProperty(id, name);
+    }
+    return config;
 }

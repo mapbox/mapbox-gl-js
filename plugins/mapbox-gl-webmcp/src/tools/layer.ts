@@ -1,67 +1,100 @@
-import {featuresets, features, filterSchema, idle, isFeatureset, ownId, OWN_PREFIX, queryType, stateKeys, target, throwingGLErrors, watched} from './utils';
+import {applyEach, features, filterSchema, idle, importStyle, isToolFilter, ownId, OWN_PREFIX, pick, propertiesSchema, target, throwingGLErrors, TOOL_FILTER, watched} from './utils';
 
 import type {FilterSpecification, LayerSpecification, Map as MapboxMap} from 'mapbox-gl';
 import type {MapboxWebMCPTool} from '../index';
 import type {Infer, ObjectSchema} from '../schema';
-import type {Found, Target} from './utils';
 
 const inputSchema = {
     type: 'object',
     properties: {
-        action: {type: 'string', enum: ['listTargets', 'setFilter', 'addLayer', 'removeLayer']},
-        layerId: {type: 'string', description: 'A layer id, as listTargets returns it in target.layerId.'},
-        filter: filterSchema,
-        layer: {type: 'object', description: `A layer as GL JS addLayer takes it, with an id that starts with "${OWN_PREFIX}". The source can be any source that the source tool lists.`},
-        beforeId: {type: 'string', description: 'The id of the layer to put the new layer under, as GL JS addLayer takes it.'}
+        action: {type: 'string', enum: ['list', 'get', 'set', 'addLayer', 'removeLayer']},
+        layerId: {type: 'string'},
+        importId: {type: 'string'},
+        properties: {...propertiesSchema, description: '"list" and "get": select layer fields such as ["id", "paint"]. Missing fields return null. "list" defaults to id, type, source and source-layer. "get" defaults to the whole layer.'},
+        filter: {...filterSchema, type: ['array', 'null'], description: `${filterSchema.description} "set" combines this filter with the style's filter. Use null to remove the tool's filter. For a root style layer, matched counts source features that pass the resulting filter, or error explains why GL JS could not count them.`},
+        layout: {type: 'object'},
+        paint: {type: 'object'},
+        layer: {type: 'object', description: 'A GL JS layer specification for "addLayer".'},
+        beforeId: {type: 'string', description: '"addLayer": insert before this existing layer id in the same slot.'}
     },
     required: ['action'],
     additionalProperties: false
 } as const satisfies ObjectSchema;
 type Input = Infer<typeof inputSchema>;
-const TOOL_FILTER = ['to-boolean', 'mapbox-webmcp-filter'];
+type Group = 'filter' | 'layout' | 'paint';
+type Layer = {id: string; filter?: FilterSpecification} & Partial<Record<'layout' | 'paint', Record<string, unknown>>>;
 
-function isToolFilter(filter: FilterSpecification | null | undefined): boolean {
-    return Array.isArray(filter) && filter[0] === 'all' && JSON.stringify(filter[1]) === JSON.stringify(TOOL_FILTER);
+function styleIn(map: MapboxMap, importId: string | undefined) {
+    const spec = importId ? importStyle(map, importId) : undefined;
+    return {spec, layers: (spec?.data ?? map.getStyle()).layers};
 }
 
-function listTargets(map: MapboxMap) {
-    const descriptors = [...map.getStyle().layers.map((l) => ({layerId: l.id})), ...featuresets(map).map((f) => f.target)];
-    return descriptors.map((descriptor) => {
-        let t: Target;
-        let found: Found[];
-        try {
-            t = target(map, descriptor);
-            found = features(map, t);
-        } catch (e) {
-            return {target: descriptor, error: e instanceof Error ? e.message : String(e)};
-        }
-        return {
-            target: t.target,
-            type: t.type,
-            featureCount: found.length,
-            query: queryType(t),
-            properties: [...new Set(found.flatMap((f) => Object.keys(f.properties)))],
-            ...(!isFeatureset(t) && {filtered: isToolFilter(map.getFilter(t.target.layerId))}),
-            featureStateKeys: stateKeys(map, t)
-        };
-    });
+function layerIn(map: MapboxMap, layerId: string | undefined, importId: string | undefined) {
+    if (layerId === undefined) throw new Error('Give a layerId. List the layers to see them.');
+    const {spec, layers} = styleIn(map, importId);
+    const layer = layers.find(({id}) => id === layerId) as Layer | undefined;
+    if (!layer) throw new Error(`No layer "${layerId}" ${importId ? `in import "${importId}"` : 'in the root style'}. List the layers to see them.`);
+    return {spec, layer};
 }
 
-async function setFilter(map: MapboxMap, {layerId, filter}: Input) {
-    if (layerId === undefined) throw new Error('Give a layerId. List the targets to see them.');
-    const t = target(map, {layerId});
-    const current = map.getFilter(layerId);
-    const app = (isToolFilter(current) ? (current as unknown[])[3] as FilterSpecification | undefined : current) ?? null;
-    const next = filter === undefined ? app : ['all', TOOL_FILTER, filter, ...(app !== null ? [app] : [])] as FilterSpecification;
-    throwingGLErrors(map, () => map.setFilter(layerId, next));
-    const rendered = await idle(map);
-    let count: {matched: number} | {error: string};
-    try {
-        count = {matched: features(map, t).length};
-    } catch (e) {
-        count = {error: e instanceof Error ? e.message : String(e)};
+function setPart(map: MapboxMap, {layerId, importId}: Input, group: Group, name: string, value: unknown) {
+    const {spec, layer} = layerIn(map, layerId, importId);
+    const id = layer.id;
+    if (group === 'filter') {
+        const app = (isToolFilter(layer.filter) ? (layer.filter as unknown[])[3] as FilterSpecification | undefined : layer.filter) ?? null;
+        value = value === null ? app : ['all', TOOL_FILTER, value, ...(app !== null ? [app] : [])];
     }
-    return {layerId, ...count, query: queryType(t), ...rendered};
+    if (!spec) {
+        if (group === 'filter') map.setFilter(id, value as FilterSpecification | null);
+        else if (group === 'layout') map.setLayoutProperty(id, name as never, value as never);
+        else map.setPaintProperty(id, name as never, value as never);
+        return;
+    }
+    const next = structuredClone(spec);
+    const copy = next.data!.layers.find((l) => l.id === id) as Layer;
+    const values = group === 'filter' ? copy as Record<string, unknown> : (copy[group] ??= {});
+    if (value === null) delete values[name];
+    else values[name] = value;
+    map.updateImport(next.id, next);
+}
+
+async function setLayer(map: MapboxMap, input: Input) {
+    const {layerId, importId, filter} = input;
+    const [layout, paint] = [input.layout, input.paint] as (Record<string, unknown> | undefined)[];
+    const parts = [
+        ...(filter !== undefined ? [['filter', 'filter', filter]] : []),
+        ...Object.entries(layout ?? {}).map(([name, value]) => ['layout', name, value]),
+        ...Object.entries(paint ?? {}).map(([name, value]) => ['paint', name, value])
+    ] as [Group, string, unknown][];
+    if (!parts.length) throw new Error('Give filter, layout or paint.');
+    applyEach(map, parts.map(([group, name, value]) => [name, () => setPart(map, input, group, name, value)]), 'The other parts changed. Get the layer to see it.');
+    const rendered = await idle(map);
+    const {layer} = layerIn(map, layerId, importId);
+    const read = (group: 'layout' | 'paint', given?: object) => given && {[group]: Object.fromEntries(Object.keys(given).map((name) => [name, layer[group]?.[name] ?? null]))};
+    let count = {};
+    if (filter !== undefined && !importId) {
+        try {
+            count = {matched: features(map, target(map, {layerId})).length};
+        } catch (e) {
+            count = {error: e instanceof Error ? e.message : String(e)};
+        }
+    }
+    return {
+        layerId,
+        ...(filter !== undefined && {filter: isToolFilter(layer.filter) ? (layer.filter as unknown[])[2] : null}),
+        ...read('layout', layout),
+        ...read('paint', paint),
+        ...count,
+        ...rendered
+    };
+}
+
+function getLayer(map: MapboxMap, {layerId, importId, properties}: Input) {
+    return pick(layerIn(map, layerId, importId).layer, properties);
+}
+
+function listLayers(map: MapboxMap, {importId, properties}: Input) {
+    return styleIn(map, importId).layers.map((l) => pick(l, properties ?? ['id', 'type', 'source', 'source-layer']));
 }
 
 async function addLayer(map: MapboxMap, {layer: spec, beforeId}: Input) {
@@ -89,12 +122,19 @@ async function removeLayer(map: MapboxMap, {layerId}: Input) {
 }
 
 export const layer: MapboxWebMCPTool<typeof inputSchema> = {
-    description: `The targets of the map, which the feature and camera tools take: the layers of the root style, and featuresets of the style and its imports. A layer whose source holds no features, such as a raster layer, has a feature count of 0. "listTargets" returns each target with its type, feature count, property names, whether "setFilter" is on for a layer, and under featureStateKeys the feature-state keys that its style reads. "setFilter" shows only the layer's features that match filter, on top of the app's own filter. Without filter it shows the features of the app's filter again. It returns how many features the layer shows after the change. When GL JS can't count them off screen, such as for a filter on ["pitch"], it returns the GL JS error in place of the count, and the filter stays on. "addLayer" adds a layer as GL JS addLayer takes it, under the layer beforeId when given, and returns the layer as the style holds it. "removeLayer" removes a layer and returns the layers that the tool added and that are left. The tool adds and removes only layers with an id that starts with "${OWN_PREFIX}", so give each new layer such an id. To change such a layer, remove it and add it again with the same beforeId. A target with features that the tool can't read comes back with the error. Counts and property names cover the source features in the loaded tiles that match the layer's filter, also off screen, and for featuresets the rendered features, as query says. GL JS can split or duplicate a feature across tile boundaries, and each copy counts as a feature.`,
+    title: 'Layers',
+    description: `Read or edit style layers.
+"list", "get" and "set" work on the root style by default. Pass importId for an imported style.
+"get" and "set" require layerId.
+"set" changes filter, layout or paint and reads back the changes. For layout and paint, map property names to values. Use null to reset a property.
+"addLayer" requires layer.id. "removeLayer" requires layerId. Both work on the root style and require ids that start with "${OWN_PREFIX}".`,
     inputSchema,
     execute(input, map) {
+        if (input.importId && (input.action === 'addLayer' || input.action === 'removeLayer')) throw new Error('You can add and remove layers only in the root style. Leave out importId.');
         const actions = {
-            listTargets: () => listTargets(map),
-            setFilter: () => setFilter(map, input),
+            list: () => listLayers(map, input),
+            get: () => getLayer(map, input),
+            set: () => setLayer(map, input),
             addLayer: () => addLayer(map, input),
             removeLayer: () => removeLayer(map, input)
         };

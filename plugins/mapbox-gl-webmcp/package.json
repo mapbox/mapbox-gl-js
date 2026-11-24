@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/mapbox-gl-webmcp",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-beta.1",
   "description": "Experimental WebMCP integration for Mapbox GL JS",
   "license": "SEE LICENSE IN LICENSE.txt",
   "repository": {

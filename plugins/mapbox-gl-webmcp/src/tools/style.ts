@@ -1,33 +1,33 @@
-import {applyEach, idle, ownId, OWN_PREFIX, throwingGLErrors} from './utils';
+import {applyEach, featuresets, idle, importStyle, isFeatureset, layers, ownId, OWN_PREFIX, pick, propertiesSchema, stateKeys, target, targetInputs, throwingGLErrors} from './utils';
 
 import type {ExpressionSpecification, ImportSpecification, LightsSpecification, Map as MapboxMap} from 'mapbox-gl';
 import type {MapboxWebMCPTool} from '../index';
 import type {Infer, ObjectSchema} from '../schema';
 
+const LEFT_OUT = ['layers', 'sources', 'color-theme', 'metadata'];
+
 const inputSchema = {
     type: 'object',
     properties: {
         action: {type: 'string', enum: ['get', 'set', 'addImport', 'removeImport']},
-        config: {type: 'object', description: 'Configuration property values by import id and then by property name, as "get" returns them. The id "" is the root style. A configuration property left out stays as it is.'},
-        projection: {type: 'string', description: 'A GL JS projection name, such as "globe".'},
-        language: {type: 'string', description: 'A language code such as "fr". "get" leaves it out while labels show in the language the style picks.'},
+        properties: {...propertiesSchema, description: `"get": select root level properties or derived fields. Request ${LEFT_OUT.join(', ')} explicitly. Missing fields return null.`},
+        config: {type: 'object', description: '"set": configuration property values by import id, then property name. Use "" for the root style.'},
+        projection: {type: 'string', description: 'Such as "globe".'},
+        language: {type: 'string', description: 'Such as "fr".'},
         terrain: {
             type: ['object', 'null'],
-            description: '3D terrain as GL JS setTerrain takes it, or null to turn it off. Without a source, terrain that is on keeps its raster-dem source. Terrain that is off needs a source. To add one, use the source tool, for example with a raster-dem source with the url "mapbox://mapbox.mapbox-terrain-dem-v1".',
-            properties: {
-                source: {type: 'string', description: 'A raster-dem source id, as "get" lists them in rasterDemSources.'},
-                exaggeration: {type: ['number', 'array'], description: 'Relief height, 1 is natural, or a GL JS expression.'}
-            },
+            description: 'To enable terrain, supply the id of a raster-dem source. Use the source tool to find or add one, for example with url "mapbox://mapbox.mapbox-terrain-dem-v1". Omit source to adjust exaggeration on active terrain. Use null to turn off terrain.',
+            properties: {source: {type: 'string'}, exaggeration: {type: ['number', 'array']}},
             additionalProperties: false
         },
-        fog: {type: ['object', 'null'], description: 'Fog as GL JS setFog takes it, or null to remove it.'},
-        lights: {type: ['array', 'null'], description: 'Lights as GL JS setLights takes them, or null to remove the 3D lights.'},
-        rain: {type: ['object', 'null'], description: 'Rain as GL JS setRain takes it, or null to remove it. Rain is experimental in GL JS.'},
-        snow: {type: ['object', 'null'], description: 'Snow as GL JS setSnow takes it, or null to remove it. Snow is experimental in GL JS.'},
-        worldview: {type: ['string', 'null'], description: 'A worldview as GL JS setWorldview takes it.'},
-        import: {type: 'object', description: `An import as GL JS addImport takes it, such as {id, url}, with an id that starts with "${OWN_PREFIX}".`},
-        importId: {type: 'string', description: `The id of an import to remove, one that starts with "${OWN_PREFIX}".`},
-        beforeId: {type: 'string', description: 'The id of the import to put the new import before, as GL JS addImport takes it.'}
+        fog: {type: ['object', 'null']},
+        lights: {type: ['array', 'null']},
+        rain: {type: ['object', 'null']},
+        snow: {type: ['object', 'null']},
+        worldview: {type: ['string', 'null']},
+        import: {type: 'object', description: 'A GL JS import specification for "addImport".'},
+        importId: {type: 'string', description: '"get": read the imported style. Omit importId to read the root style. "removeImport": the id to remove.'},
+        beforeId: {type: 'string', description: '"addImport": insert before this existing import id. With an unknown id, the call can add the import and still return an error.'}
     },
     required: ['action'],
     additionalProperties: false
@@ -35,31 +35,42 @@ const inputSchema = {
 type Input = Infer<typeof inputSchema>;
 type Terrain = {source?: string; exaggeration?: number | ExpressionSpecification};
 
-function configIds(map: MapboxMap): string[] {
-    return ['', ...(map.getStyle().imports ?? []).map(({id}) => id)].filter((id) => Object.keys(map.getSchema(id) ?? {}).length);
+function configOf(map: MapboxMap, ids: string[]) {
+    const config: Record<string, Record<string, unknown>> = {};
+    const schema: Record<string, object> = {};
+    for (const id of ids) {
+        const options = map.getSchema(id) ?? {};
+        if (!Object.keys(options).length) continue;
+        const values = map.getConfig(id) ?? {};
+        config[id] = Object.fromEntries(Object.keys(options).map((name) => [name, values[name]]));
+        schema[id] = options;
+    }
+    return {config, schema};
 }
 
-function rasterDemSources(map: MapboxMap): string[] {
-    return Object.entries(map.getStyle().sources).filter(([, source]) => source.type === 'raster-dem').map(([id]) => id);
+function targets(map: MapboxMap, descriptors: ReturnType<typeof targetInputs>) {
+    return descriptors.map((descriptor) => {
+        const t = target(map, descriptor);
+        const keys = stateKeys(map, t);
+        return {target: t.target, ...(isFeatureset(t) ? {layers: layers(map, t).flatMap((l) => (l ? [l.id] : []))} : {type: t.type}), ...(keys.length && {featureStateKeys: keys})};
+    });
 }
 
-function getStyle(map: MapboxMap) {
-    const ids = configIds(map);
+function getStyle(map: MapboxMap, {properties, importId}: Pick<Input, 'properties' | 'importId'>) {
+    const spec = importId ? importStyle(map, importId) : undefined;
+    const style = (spec?.data ?? map.getStyle()) as Record<string, unknown> & {imports?: {id: string; url?: string}[]};
     const [language] = [map.getLanguage()].flat();
-    const [fog, rain, snow, worldview] = [map.getFog(), map.getRain(), map.getSnow(), map.getWorldview()];
-    return {
-        config: Object.fromEntries(ids.map((id) => [id, map.getConfig(id)])),
-        schema: Object.fromEntries(ids.map((id) => [id, map.getSchema(id)])),
-        projection: map.getProjection().name,
-        ...(language !== undefined && {language}),
-        terrain: map.getTerrain() ?? null,
-        rasterDemSources: rasterDemSources(map),
-        ...(fog && {fog}),
-        lights: map.getLights(),
-        ...(rain && {rain}),
-        ...(snow && {snow}),
-        ...(worldview != null && {worldview})
+    const worldview = map.getWorldview();
+    const wanted = (key: string) => !properties || properties.includes(key);
+    const fromGetters = {terrain: map.getTerrain(), fog: map.getFog(), lights: map.getLights(), rain: map.getRain(), snow: map.getSnow()};
+    const result = {
+        ...style,
+        ...((wanted('config') || wanted('schema')) && configOf(map, spec ? [spec.id] : ['', ...(style.imports ?? []).map(({id}) => id)])),
+        ...(wanted('targets') && {targets: targets(map, spec ? featuresets(map).filter(({target: t}) => t.importId === spec.id).map(({target: t}) => t) : targetInputs(map))}),
+        ...(style.imports && {imports: style.imports.map(({id, url}) => ({id, url}))}),
+        ...(!spec && {...Object.fromEntries(Object.entries(fromGetters).filter(([, value]) => value != null)), projection: map.getProjection().name, ...(language !== undefined && {language}), ...(worldview != null && {worldview})})
     };
+    return properties ? pick(result, properties) : Object.fromEntries(Object.entries(result).filter(([key]) => !LEFT_OUT.includes(key)));
 }
 
 async function setStyle(map: MapboxMap, input: Input) {
@@ -81,7 +92,19 @@ async function setStyle(map: MapboxMap, input: Input) {
     if (worldview !== undefined) changes.push(['worldview', () => map.setWorldview(worldview)]);
     applyEach(map, changes, 'The other fields changed. Read the style with "get" to see it.');
     const rendered = await idle(map);
-    return {...getStyle(map), ...rendered};
+    const read = Object.fromEntries(Array.from(new Set(config.map(([id]) => id)), (id) => [id, Object.fromEntries(config.filter(([of]) => of === id).map(([, name]) => [name, map.getConfigProperty(id, name) as unknown]))]));
+    const readBack: Record<string, () => unknown> = {
+        projection: () => map.getProjection().name,
+        language: () => map.getLanguage(),
+        terrain: () => map.getTerrain(),
+        fog: () => map.getFog(),
+        lights: () => map.getLights(),
+        rain: () => map.getRain(),
+        snow: () => map.getSnow(),
+        worldview: () => map.getWorldview()
+    };
+    const given = Object.keys(input).filter((key) => key in readBack);
+    return {...(config.length && {config: read}), ...Object.fromEntries(given.map((key) => [key, readBack[key]() ?? null])), ...rendered};
 }
 
 function importIds(map: MapboxMap): string[] {
@@ -138,11 +161,15 @@ async function removeImport(map: MapboxMap, {importId}: Input) {
 }
 
 export const style: MapboxWebMCPTool<typeof inputSchema> = {
-    description: `The style of the map. "get" returns its configuration, projection, language, terrain, raster-dem sources, fog, lights, rain, snow and worldview, with the fields "set" takes, and leaves out what the map does not have. It also returns the schema of the root style and of each import: its configuration properties with their type, default and allowed values. "set" changes them. A field left out stays as it is. When GL JS refuses a field, "set" still changes the other fields and returns the GL JS error of each refused field. "addImport" adds an import, before the import beforeId when given, and "removeImport" removes one. When GL JS reports an error and the new import has not loaded at the end of the wait, "addImport" removes the import and returns the GL JS error. Both return the imports of the style with their ids and URLs, and "get" returns the configuration properties of a new import that has a schema. The tool adds and removes only imports with an id that starts with "${OWN_PREFIX}", so give each new import such an id.`,
+    title: 'Style',
+    description: `Read or change the map style and its imports.
+"get" can select fields with properties. For configuration, request ["config", "schema"] for values and allowed inputs by import id. For feature queries or feature state, request ["targets"] for layers, featuresets and the feature-state keys they read. For author metadata, request ["metadata", "featuresets"]. For an imported featureset, also pass its importId.
+"set" applies each change separately. It returns the changed fields on success, or GL JS errors for failed changes.
+"addImport" requires import.id. "removeImport" requires importId. Both require ids that start with "${OWN_PREFIX}" and return the imports.`,
     inputSchema,
     execute(input, map) {
         const actions = {
-            get: () => getStyle(map),
+            get: () => getStyle(map, input),
             set: () => setStyle(map, input),
             addImport: () => addImport(map, input),
             removeImport: () => removeImport(map, input)

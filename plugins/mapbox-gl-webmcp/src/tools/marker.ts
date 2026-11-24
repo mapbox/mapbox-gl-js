@@ -1,37 +1,46 @@
-import {newPopup, popupOptionsSchema, popupTextDescription} from './popup';
-import {applyEach, each} from './utils';
+import {newPopup, popupOptionsSchema} from './popup';
+import {applyEach, each, lngLatSchema, pick, propertiesSchema} from './utils';
 
 import type {Map as MapboxMap, Marker, MarkerOptions} from 'mapbox-gl';
 import type {MapboxGLModule, MapboxWebMCPTool} from '../index';
 import type {Infer, ObjectSchema} from '../schema';
 
+const markerSchema = {
+    type: 'object',
+    properties: {
+        id: {type: 'string', description: '"update": a marker id from "add" or "list".'},
+        lngLat: lngLatSchema,
+        html: {type: 'string', description: 'An element in place of the default marker.'},
+        color: {type: 'string'},
+        scale: {type: 'number'},
+        anchor: {type: 'string'},
+        offset: {type: 'array', items: {type: 'number'}, description: '[x, y] in pixels. Negative x moves left and negative y moves up.'},
+        rotation: {type: 'number'},
+        rotationAlignment: {type: 'string'},
+        pitchAlignment: {type: 'string'},
+        occludedOpacity: {type: 'number'},
+        className: {type: 'string'},
+        altitude: {type: 'number'},
+        draggable: {type: 'boolean'},
+        clickTolerance: {type: 'number'},
+        popup: {...popupOptionsSchema, description: 'The popup that a click on the marker opens.'},
+        popupOpen: {type: 'boolean', description: 'Open or close the marker popup. The marker needs a popup.'}
+    },
+    additionalProperties: false
+} as const;
 const inputSchema = {
     type: 'object',
     properties: {
         action: {type: 'string', enum: ['list', 'add', 'update', 'remove']},
-        lng: {type: 'number'},
-        lat: {type: 'number'},
-        html: {type: 'string', description: 'HTML of the marker element, which GL JS shows as it is in place of the default marker.'},
-        color: {type: 'string', description: 'A CSS color of the default marker.'},
-        scale: {type: 'number', description: 'The size of the default marker, 1 is its natural size.'},
-        anchor: {type: 'string', description: 'The part of the marker at its LngLat, such as "bottom".'},
-        offset: {type: 'array', items: {type: 'number'}, description: '[x, y] in pixels.'},
-        rotation: {type: 'number', description: 'Degrees clockwise.'},
-        rotationAlignment: {type: 'string'},
-        pitchAlignment: {type: 'string'},
-        occludedOpacity: {type: 'number', description: 'The opacity of the marker behind 3D terrain.'},
-        className: {type: 'string'},
-        altitude: {type: 'number', description: 'Meters above the map.'},
-        draggable: {type: 'boolean'},
-        clickTolerance: {type: 'number', description: 'Pixels that the pointer can move in a click.'},
-        popup: {...popupOptionsSchema, description: `The popup that the marker opens on click, with the options of a GL JS Popup. ${popupTextDescription}`},
-        popupOpen: {type: 'boolean', description: 'Opens or closes the popup of the marker, as a click on the marker does.'},
-        ids: {type: 'array', items: {type: 'string'}, description: 'Marker ids, as adding or listing markers returns them.'}
+        markers: {type: 'array', items: markerSchema, default: []},
+        ids: {type: 'array', items: {type: 'string'}},
+        properties: {...propertiesSchema, description: '"list": select marker fields such as ["id", "lngLat"]. Missing fields return null.'}
     },
     required: ['action'],
     additionalProperties: false
 } as const satisfies ObjectSchema;
 type Input = Infer<typeof inputSchema>;
+type MarkerInput = Infer<typeof markerSchema>;
 type Markers = Map<string, Marker>;
 
 const mapMarkers = new WeakMap<MapboxMap, Markers>();
@@ -47,7 +56,7 @@ function listMarkers(markers: Markers) {
         const {x, y} = marker.getOffset();
         const popup = marker.getPopup();
         return {
-            id, lng, lat,
+            id, lngLat: {lng, lat},
             offset: [x, y],
             rotation: marker.getRotation(),
             rotationAlignment: marker.getRotationAlignment(),
@@ -66,35 +75,44 @@ function setPopupOpen(marker: Marker, open: boolean): void {
     if (popup.isOpen() !== open) marker.togglePopup();
 }
 
-function addMarker(map: MapboxMap, mapboxgl: MapboxGLModule, markers: Markers, {action, ids, lng, lat, html, popup: popupInput, popupOpen, ...options}: Input) {
-    if (typeof lng !== 'number' || typeof lat !== 'number') throw new Error('A marker needs lng and lat.');
+function addMarker(map: MapboxMap, mapboxgl: MapboxGLModule, markers: Markers, {id: _, lngLat, html, popup: popupInput, popupOpen: __, ...options}: MarkerInput): string {
+    if (!lngLat) throw new Error('A marker needs a lngLat.');
     const id = `mapbox-webmcp-marker-${++markersOnPage}`;
     let element: HTMLElement | undefined;
     if (html !== undefined) {
         element = map.getContainer().ownerDocument.createElement('div');
         element.innerHTML = html;
     }
-    const marker = new mapboxgl.Marker({...options, element} as MarkerOptions).setLngLat([lng, lat]);
+    const marker = new mapboxgl.Marker({...options, element} as MarkerOptions).setLngLat([lngLat.lng, lngLat.lat]);
     marker.getElement().id = id;
     if (popupInput) marker.setPopup(newPopup(mapboxgl, `${id}-popup`, popupInput));
     markers.set(id, marker);
-    const parts: [string, () => unknown][] = [[`Marker "${id}"`, () => marker.addTo(map)]];
-    if (popupOpen !== undefined) parts.push([`Marker "${id}" popupOpen`, () => setPopupOpen(marker, popupOpen)]);
-    applyEach(map, parts, 'The other changes applied. List the markers to see them.');
-    return listMarkers(shown(map, markers)).find((m) => m.id === id);
+    marker.addTo(map);
+    return id;
 }
 
-function updateMarkers(map: MapboxMap, mapboxgl: MapboxGLModule, markers: Markers, {ids, lng, lat, rotation, draggable, popup, popupOpen}: Input) {
-    if ((lng === undefined) !== (lat === undefined)) throw new Error('Give lng and lat together.');
-    const unique = each(map, shown(map, markers), 'Marker', ids, 'update', (marker, id) => {
+function addMarkers(map: MapboxMap, mapboxgl: MapboxGLModule, markers: Markers, {markers: given}: Input) {
+    if (!given.length) throw new Error('Give the markers to add.');
+    const added: string[] = [];
+    applyEach(map, given.flatMap((input, i): [string, () => unknown][] => {
+        const add: [string, () => unknown] = [`markers[${i}]`, () => { added[i] = addMarker(map, mapboxgl, markers, input); }];
+        const {popupOpen} = input;
+        return popupOpen === undefined ? [add] : [add, [`markers[${i}] popupOpen`, () => added[i] && setPopupOpen(markers.get(added[i])!, popupOpen)]];
+    }), 'The other changes applied. List the markers to see them.');
+    return listMarkers(shown(map, markers)).filter((m) => added.includes(m.id));
+}
+
+function updateMarkers(map: MapboxMap, mapboxgl: MapboxGLModule, markers: Markers, {markers: given}: Input) {
+    if (!given.length) throw new Error('Give the markers to update, each with its id.');
+    const unique = each(map, shown(map, markers), 'Marker', given.map(({id}) => id ?? ''), 'update', (marker, id) => given.filter((input) => input.id === id).flatMap(({lngLat, rotation, draggable, popup, popupOpen}) => {
         const parts: [string, () => unknown][] = [];
-        if (lng !== undefined && lat !== undefined) parts.push([`Marker "${id}" lng and lat`, () => marker.setLngLat([lng, lat])]);
+        if (lngLat) parts.push([`Marker "${id}" lngLat`, () => marker.setLngLat([lngLat.lng, lngLat.lat])]);
         if (rotation !== undefined) parts.push([`Marker "${id}" rotation`, () => marker.setRotation(rotation)]);
         if (draggable !== undefined) parts.push([`Marker "${id}" draggable`, () => marker.setDraggable(draggable)]);
         if (popup) parts.push([`Marker "${id}" popup`, () => marker.setPopup(newPopup(mapboxgl, `${id}-popup`, popup))]);
         if (popupOpen !== undefined) parts.push([`Marker "${id}" popupOpen`, () => setPopupOpen(marker, popupOpen)]);
         return parts;
-    });
+    }));
     return listMarkers(shown(map, markers)).filter((m) => unique.includes(m.id));
 }
 
@@ -107,14 +125,18 @@ function removeMarkers(map: MapboxMap, markers: Markers, {ids}: Input) {
 }
 
 export const marker: MapboxWebMCPTool<typeof inputSchema> = {
-    description: 'Markers this tool adds to the map, with the options of a GL JS Marker and an optional popup. "list" and "remove" cover only these markers, never the app\'s own markers. GL JS has no list of the markers of a map, so the tool keeps the markers it added and covers those whose element the map container still holds. A marker that the app removed from the map is not listed. "list" returns the markers with their ids. "add" adds a marker and returns it with its id. "update" changes lng and lat, rotation, draggable, popup and popupOpen of the markers with the given ids, and returns them. For any other option, remove the marker and add it again. "remove" removes the markers with the given ids and returns the markers that are left. "update" and "remove" apply each change to each marker on its own, so when an id names no marker or GL JS refuses a change, the other changes still apply and the error names each failed one. Each marker comes back with the LngLat and the options that GL JS reads back.',
+    title: 'Markers',
+    description: `Manage markers this tool adds. For a popup that opens on marker click, set the marker's popup.
+"add" requires lngLat for each marker and returns each marker with its id.
+"update" needs an id for each marker and can change lngLat, rotation, draggable, popup and popupOpen.
+"list" finds markers still on the map. "remove" removes the given ids and returns the remaining markers.`,
     inputSchema,
     execute(input, map, mapboxgl) {
         const markers: Markers = mapMarkers.get(map) ?? new Map<string, Marker>();
         mapMarkers.set(map, markers);
         const actions = {
-            list: () => listMarkers(shown(map, markers)),
-            add: () => addMarker(map, mapboxgl, markers, input),
+            list: () => listMarkers(shown(map, markers)).map((m) => pick(m, input.properties)),
+            add: () => addMarkers(map, mapboxgl, markers, input),
             update: () => updateMarkers(map, mapboxgl, markers, input),
             remove: () => removeMarkers(map, markers, input)
         };

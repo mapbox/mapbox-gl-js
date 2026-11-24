@@ -1,6 +1,6 @@
 # Glossary
 
-The plugin uses the terms of the public GL JS API. Each term links to the page that defines it.
+The plugin uses the terms of the public GL JS API. Each term links to the page that defines it, except the terms under Results, which describe what a tool returns.
 
 ## Camera
 
@@ -29,9 +29,18 @@ _Avoid_: point
 The document that defines how the map looks: its sources, layers, imports, terrain and projection. See the [Style Specification](https://docs.mapbox.com/style-spec/reference/).
 _Avoid_: settings, look
 
+### Metadata
+
+Free-form data that the author of a style writes on the style, on a layer or on a featureset. It has no set format, and it does not change how the map looks. See [Root](https://docs.mapbox.com/style-spec/reference/root/).
+
 ### Import
 
-A style that another style includes by an import id. The root style is the style that the map loads. See [Imports](https://docs.mapbox.com/style-spec/reference/imports/).
+A style that another style includes by an import id. The root style is the style that the map loads, and its import id is `""`. See [Imports](https://docs.mapbox.com/style-spec/reference/imports/).
+
+### Root level property
+
+A top-level key of a style, such as `terrain`, `fog` or `imports`. See [Root](https://docs.mapbox.com/style-spec/reference/root/).
+_Avoid_: section, part
 
 ### Configuration property
 
@@ -72,7 +81,7 @@ A layer or a featureset that a query reads. A target is `{layerId}` or `{feature
 
 ### Feature
 
-A GeoJSON feature that a query returns, with an id, a geometry and properties. GL JS can split or duplicate a feature across tile boundaries, so a query can return it more than once.
+A GeoJSON feature that a query returns, with an id, a geometry and properties, and its feature state. A tool can also refer to a feature as `{target, id}`. GL JS can split or duplicate a feature across tile boundaries, so a query can return it more than once.
 _Avoid_: piece
 
 ### Rendered features
@@ -110,3 +119,17 @@ _Avoid_: pin, drop
 
 A box of text or HTML at a LngLat, which a marker can open on click.
 _Avoid_: label
+
+## Results
+
+### Result
+
+What a tool call returns to the agent.
+
+### Essentials
+
+The part of a result that is of high value to the agent for its cost in context.
+
+### Details
+
+The part of a result that is not essentials.
