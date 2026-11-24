@@ -1,0 +1,45 @@
+{
+  "version": 8,
+  "description": "queryRenderedFeatures with a point returns the feature under it when the style has a model layer that is never drawn.",
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64,
+      "queryGeometry": [32, 32]
+    }
+  },
+  "zoom": 10,
+  "center": [0, 0],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {"type": "Feature", "geometry": {"type": "Point", "coordinates": [0, 0]}}
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 5
+      }
+    },
+    {
+      "id": "model",
+      "type": "model",
+      "source": "geojson",
+      "layout": {
+        "model-id": "local://models/Box.glb"
+      },
+      "paint": {
+        "model-opacity": 0
+      }
+    }
+  ]
+}

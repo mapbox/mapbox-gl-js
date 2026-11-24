@@ -283,6 +283,7 @@ class ModelBucket implements Bucket {
 
     evaluateQueryRenderedFeaturePadding() {
         const modelManager = this.layers[0]!.modelManager;
+        if (!modelManager) return 0;
         const scope = this.layers[0]!.scope;
 
         let maxQueryRadius = 0;

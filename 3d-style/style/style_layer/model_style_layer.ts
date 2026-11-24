@@ -29,7 +29,7 @@ class ModelStyleLayer extends StyleLayer {
     override layout!: PossiblyEvaluated<LayoutProps>;
     override paint!: PossiblyEvaluated<PaintProps>;
 
-    modelManager!: ModelManager;
+    modelManager?: ModelManager;
     layer: ModelLayerSpecification;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
