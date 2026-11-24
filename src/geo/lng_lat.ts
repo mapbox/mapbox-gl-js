@@ -134,10 +134,11 @@ class LngLat {
         const rad = Math.PI / 180;
         const lat1 = this.lat * rad;
         const lat2 = lngLat.lat * rad;
-        const a = Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos((lngLat.lng - this.lng) * rad);
-
-        const maxMeters = earthRadius * Math.acos(Math.min(a, 1));
-        return maxMeters;
+        const dLat = (lngLat.lat - this.lat) * rad;
+        const dLng = (lngLat.lng - this.lng) * rad;
+        const a = Math.pow(Math.sin(dLat / 2), 2) +
+            Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dLng / 2), 2);
+        return 2 * earthRadius * Math.asin(Math.sqrt(Math.min(a, 1)));
     }
 
     /**
