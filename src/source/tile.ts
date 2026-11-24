@@ -135,6 +135,7 @@ class Tile {
     glyphAtlasImage: AlphaImage | null | undefined;
     glyphAtlasTexture: Texture | null | undefined;
     expirationTime: number | null;
+    lastModifiedTime: number | null;
     expiredRequestCount: number;
     state: TileState;
     timeAdded!: number | null;
@@ -218,6 +219,7 @@ class Tile {
         this.dashIdealZ = tileID.overscaledZ;
         this.buckets = {};
         this.expirationTime = null;
+        this.lastModifiedTime = null;
         this.queryPadding = 0;
         this.hasSymbolBuckets = false;
         this.hasTunnelGeometry = false;
@@ -695,6 +697,12 @@ class Tile {
 
     setExpiryData(data: ExpiryData) {
         const prior = this.expirationTime;
+
+        // A reload without a response has no headers. Keep the time from the last response.
+        if (data.lastModified !== undefined) {
+            const lastModified = data.lastModified ? new Date(data.lastModified).getTime() : NaN;
+            this.lastModifiedTime = isNaN(lastModified) ? null : lastModified;
+        }
 
         if (data.cacheControl) {
             const parsedCC = parseCacheControl(data.cacheControl);

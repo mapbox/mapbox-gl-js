@@ -370,7 +370,8 @@ describe('util', () => {
         test('returns undefined values when responseHeaders is undefined', () => {
             expect(parseExpiryData(undefined)).toEqual({
                 cacheControl: undefined,
-                expires: undefined
+                expires: undefined,
+                lastModified: undefined
             });
         });
 
@@ -382,6 +383,13 @@ describe('util', () => {
             const result = parseExpiryData(headers);
             expect(result.cacheControl).toBe('max-age=60');
             expect(result.expires).toBe('Thu, 01 Jan 2099 00:00:00 GMT');
+        });
+
+        test('reads the Last-Modified header', () => {
+            const headers = new Headers();
+            headers.set('Last-Modified', 'Wed, 21 Oct 2015 07:28:00 GMT');
+
+            expect(parseExpiryData(headers).lastModified).toBe('Wed, 21 Oct 2015 07:28:00 GMT');
         });
 
         test('returns null values for a Headers missing both keys (downstream guards tolerate)', () => {

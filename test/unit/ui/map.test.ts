@@ -12,6 +12,7 @@ import {ErrorEvent} from '../../../src/util/evented';
 import simulate, {constructTouch} from '../../util/simulate_interaction';
 import {fixedNum} from '../../util/fixed';
 import {makeFQID} from '../../../src/util/fqid';
+import {prepareDebug} from '../../../modules/debug';
 import {ImageId} from '../../../src/style-spec/expression/types/image_id';
 import {createConstElevationDEM, setMockElevationTerrain} from '../../util/dem_mock';
 import {getGlobalWorkerPool} from '../../../src/util/worker_pool_factory';
@@ -387,6 +388,60 @@ describe('Map', () => {
 
             expect(map._update).toHaveBeenCalled();
             expect(map.resize).toHaveBeenCalled();
+        });
+    });
+
+    describe('debug overlay flags', () => {
+        for (const flag of ['showTimestamps', 'showCameraDebug', 'showLightDebug', 'showModelBounds'] as const) {
+            test(`${flag} is false by default`, () => {
+                const map = createMap();
+                expect(map[flag]).toEqual(false);
+            });
+
+            test(`${flag} setter stores the value`, () => {
+                const map = createMap();
+                map[flag] = true;
+                expect(map[flag]).toEqual(true);
+                map[flag] = false;
+                expect(map[flag]).toEqual(false);
+            });
+        }
+
+        test('showCameraDebug shows the camera state', async () => {
+            const map = createMap({center: [13.4, 52.5], zoom: 14.5, bearing: 45, pitch: 30});
+            map.showCameraDebug = true;
+            await prepareDebug();
+            map._render(0);
+            const element = map.getContainer().querySelector('.mapboxgl-camera-debug');
+            expect(element && element.textContent).toEqual('lat: 52.5000\nlon: 13.4000\nzoom: 14.50\nbearing: 45.00\npitch: 30.00');
+        });
+
+        test('showCameraDebug leaves out a zero bearing and pitch', async () => {
+            const map = createMap({center: [13.4, 52.5], zoom: 14.5});
+            map.showCameraDebug = true;
+            await prepareDebug();
+            map._render(0);
+            const element = map.getContainer().querySelector('.mapboxgl-camera-debug');
+            expect(element && element.textContent).toEqual('lat: 52.5000\nlon: 13.4000\nzoom: 14.50');
+        });
+
+        test('Map#remove removes the camera state', async () => {
+            const map = createMap();
+            const container = map.getContainer();
+            map.showCameraDebug = true;
+            await prepareDebug();
+            map._render(0);
+            map.remove();
+            expect(container.querySelector('.mapboxgl-camera-debug')).toEqual(null);
+        });
+
+        test('showCameraDebug set to false removes the camera state', async () => {
+            const map = createMap();
+            map.showCameraDebug = true;
+            await prepareDebug();
+            map._render(0);
+            map.showCameraDebug = false;
+            expect(map.getContainer().querySelector('.mapboxgl-camera-debug')).toEqual(null);
         });
     });
 

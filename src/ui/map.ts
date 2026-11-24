@@ -516,6 +516,11 @@ export class Map extends Camera {
     _showQueryGeometry?: boolean;
     _showCollisionBoxes?: boolean;
     _showPadding?: boolean;
+    _showTimestamps?: boolean;
+    _showCameraDebug?: boolean;
+    _cameraDebugElement?: HTMLElement | null;
+    _showLightDebug?: boolean;
+    _showModelBounds?: boolean;
     _showTileAABBs?: boolean;
     _showOverdrawInspector!: boolean;
     _repaint?: boolean;
@@ -4734,12 +4739,19 @@ export class Map extends Camera {
                 fadeDuration,
                 isInitialLoad: this._isInitialLoad,
                 showPadding: this.showPadding,
+                showTimestamps: this.showTimestamps,
+                showLightDebug: this.showLightDebug,
+                showModelBounds: this.showModelBounds,
                 gpuTiming: !!this.listens('gpu-timing-layer'),
                 gpuTimingDeferredRender: !!this.listens('gpu-timing-deferred-render'),
                 speedIndexTiming: this.speedIndexTiming,
                 paintStartTimeStamp,
             });
             if (this._programStepsMeasurement) measureProgramSteps(this.painter, this._programStepsMeasurement);
+        }
+
+        if (this._showCameraDebug && DebugModule.updateCameraDebug) {
+            this._cameraDebugElement = DebugModule.updateCameraDebug(this._cameraDebugElement || null, this._controlContainer, this.transform);
         }
 
         if (performanceStatistics) performanceStatistics.endFrame();
@@ -5460,6 +5472,101 @@ export class Map extends Camera {
     set showPadding(value: boolean) {
         if (this._showPadding === value) return;
         this._showPadding = value;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        if (value) prepareDebug();
+        this._update();
+    }
+
+    /**
+     * Gets and sets a Boolean indicating whether the map will render the tile
+     * timestamps.
+     *
+     * Each tile label shows the `Last-Modified` and expiration times of the tile.
+     * The label shows `n/a` when the tile response has no such header.
+     *
+     * @name showTimestamps
+     * @type {boolean}
+     * @instance
+     * @memberof Map
+     * @private
+     * @example
+     * map.showTimestamps = true;
+     */
+    get showTimestamps(): boolean { return !!this._showTimestamps; }
+    set showTimestamps(value: boolean) {
+        if (this._showTimestamps === value) return;
+        this._showTimestamps = value;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        if (value) prepareDebug();
+        this._update();
+    }
+
+    /**
+     * Gets and sets a Boolean indicating whether the map will render the camera
+     * center, zoom, pitch and bearing in the top left corner of the map.
+     *
+     * @name showCameraDebug
+     * @type {boolean}
+     * @instance
+     * @memberof Map
+     * @private
+     * @example
+     * map.showCameraDebug = true;
+     */
+    get showCameraDebug(): boolean { return !!this._showCameraDebug; }
+    set showCameraDebug(value: boolean) {
+        if (this._showCameraDebug === value) return;
+        this._showCameraDebug = value;
+        if (!value && this._cameraDebugElement) {
+            this._cameraDebugElement.remove();
+            this._cameraDebugElement = null;
+        }
+        // The camera state is not part of the frame, so render again when the debug module is ready.
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        if (value) prepareDebug().then(() => this._update());
+        this._update();
+    }
+
+    /**
+     * Gets and sets a Boolean indicating whether the map will render the light
+     * brightness of the style.
+     *
+     * Each tile label shows the brightness that the style lights give.
+     *
+     * @name showLightDebug
+     * @type {boolean}
+     * @instance
+     * @memberof Map
+     * @private
+     * @example
+     * map.showLightDebug = true;
+     */
+    get showLightDebug(): boolean { return !!this._showLightDebug; }
+    set showLightDebug(value: boolean) {
+        if (this._showLightDebug === value) return;
+        this._showLightDebug = value;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        if (value) prepareDebug();
+        this._update();
+    }
+
+    /**
+     * Gets and sets a Boolean indicating whether the map will render an outline
+     * around the bounding box of each 3D model.
+     * This information is useful for debugging.
+     *
+     * @name showModelBounds
+     * @type {boolean}
+     * @instance
+     * @memberof Map
+     * @private
+     * @example
+     * map.showModelBounds = true;
+     */
+    get showModelBounds(): boolean { return !!this._showModelBounds; }
+    set showModelBounds(value: boolean) {
+        if (this._showModelBounds === value) return;
+        this._showModelBounds = value;
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         if (value) prepareDebug();
         this._update();

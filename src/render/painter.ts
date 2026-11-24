@@ -143,6 +143,9 @@ type PainterOptions = {
     showQueryGeometry: boolean;
     showTileAABBs: boolean;
     showPadding: boolean;
+    showTimestamps: boolean;
+    showLightDebug: boolean;
+    showModelBounds: boolean;
     rotating: boolean;
     zooming: boolean;
     moving: boolean;
@@ -1716,7 +1719,8 @@ class Painter {
         PerformanceUtils.measureLowOverhead(PerformanceUtils.GROUP_RENDERING, 'Translucent Pass', translucentPassStartTime);
         this.context.performanceStatistics?.recordGroup('translucent', translucentPassStartTime);
 
-        if (this.options.showTileBoundaries || this.options.showQueryGeometry || this.options.showTileAABBs) {
+        const showTileLabels = this.options.showTimestamps || this.options.showLightDebug;
+        if (this.options.showTileBoundaries || showTileLabels || this.options.showQueryGeometry || this.options.showTileAABBs) {
             // Use source with highest maxzoom
             let selectedSource = null as SourceCache | null;
             orderedLayers.forEach((layer) => {
@@ -1728,8 +1732,8 @@ class Painter {
                 }
             });
             if (selectedSource) {
-                if (this.options.showTileBoundaries && DebugModule.drawDebug) {
-                    DebugModule.drawDebug(this, selectedSource, selectedSource.getVisibleCoordinates(), Color.red, false, this.options.showParseStatus);
+                if ((this.options.showTileBoundaries || showTileLabels) && DebugModule.drawDebug) {
+                    DebugModule.drawDebug(this, selectedSource, selectedSource.getVisibleCoordinates(), Color.red, false, this.options.showTileBoundaries);
                 }
 
                 Debug.run(() => {
@@ -1746,7 +1750,7 @@ class Painter {
 
         Debug.run(() => {
             if (this.terrain && this._debugParams.showTerrainProxyTiles && DebugModule.drawDebug) {
-                DebugModule.drawDebug(this, this.terrain.proxySourceCache, this.terrain.proxyCoords, new Color(1.0, 0.8, 0.1, 1.0), true, this.options.showParseStatus);
+                DebugModule.drawDebug(this, this.terrain.proxySourceCache, this.terrain.proxyCoords, new Color(1.0, 0.8, 0.1, 1.0), true);
             }
         });
 

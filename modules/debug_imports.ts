@@ -22,9 +22,10 @@ import {
     validateModel,
 } from '../src/style-spec/validate_style.min';
 import diffStyles from '../src/style-spec/diff';
-import drawDebug, {drawDebugPadding, drawDebugQueryGeometry} from '../src/render/draw_debug';
+import drawDebug, {drawDebugPadding, drawDebugQueryGeometry, drawModelBounds, drawInstancedModelBounds} from '../src/render/draw_debug';
 import drawCollisionDebug from '../src/render/draw_collision_debug';
 import drawPlacementDebug from '../src/render/draw_placement_debug';
+import {updateCameraDebug} from '../src/ui/camera_debug';
 import {PerformanceStatisticsCollector} from '../src/util/performance_statistics';
 
 // Named `DebugModule` (not `Debug`) so call sites aren't stripped out by the
@@ -48,7 +49,10 @@ export const DebugModule = {
     drawDebug,
     drawDebugPadding,
     drawDebugQueryGeometry,
+    drawModelBounds,
+    drawInstancedModelBounds,
     drawCollisionDebug,
     drawPlacementDebug,
     PerformanceStatisticsCollector,
+    updateCameraDebug,
 };

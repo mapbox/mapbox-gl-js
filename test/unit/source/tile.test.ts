@@ -256,6 +256,32 @@ describe('expiring tiles', () => {
         });
         expect(tile.getExpiryTimeout()).toEqual(8000);
     });
+
+    test('sets lastModifiedTime from the Last-Modified value', () => {
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1), 512, 22);
+        tile.setExpiryData({lastModified: 'Wed, 21 Oct 2015 07:28:00 GMT'});
+        expect(tile.lastModifiedTime).toEqual(Date.UTC(2015, 9, 21, 7, 28));
+    });
+
+    test('clears lastModifiedTime when a response has no Last-Modified value', () => {
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1), 512, 22);
+        tile.setExpiryData({lastModified: 'Wed, 21 Oct 2015 07:28:00 GMT'});
+        tile.setExpiryData({lastModified: null});
+        expect(tile.lastModifiedTime).toBeNull();
+    });
+
+    test('keeps lastModifiedTime when the data has no headers', () => {
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1), 512, 22);
+        tile.setExpiryData({lastModified: 'Wed, 21 Oct 2015 07:28:00 GMT'});
+        tile.setExpiryData({});
+        expect(tile.lastModifiedTime).toEqual(Date.UTC(2015, 9, 21, 7, 28));
+    });
+
+    test('ignores an invalid Last-Modified value', () => {
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1), 512, 22);
+        tile.setExpiryData({lastModified: 'not a date'});
+        expect(tile.lastModifiedTime).toBeNull();
+    });
 });
 
 function createVectorData(options?: {buckets?: Bucket[]; rawTileData?: ArrayBuffer}): WorkerSourceVectorTileResult {

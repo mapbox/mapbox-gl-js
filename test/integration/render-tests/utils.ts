@@ -200,6 +200,7 @@ export async function renderMap(style, options, currentTestName) {
     if (options.showLayers3DWireframe) mapRef.current.showLayers3DWireframe = true;
     if (options.showElevationIdDebug) mapRef.current.showElevationIdDebug = true;
     if (options.showPadding) mapRef.current.showPadding = true;
+    if (options.showModelBounds) mapRef.current.showModelBounds = true;
     if (options.collisionDebug) mapRef.current.showCollisionBoxes = true;
     if (options.fadeDuration) mapRef.current._isInitialLoad = false;
 

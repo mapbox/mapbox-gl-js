@@ -884,3 +884,18 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 .mapboxgl-ctrl button.mapboxgl-ctrl-level-button-selected:hover {
     background-color: #ccc;
 }
+
+.mapboxgl-camera-debug {
+    position: absolute;
+    top: 48px;
+    left: 8px;
+    padding: 4px;
+    border-radius: 5px;
+    background-color: rgb(255 255 255 / 75%);
+    box-shadow: 0 0.7px 1.4px rgb(0 0 0 / 30%);
+    backdrop-filter: blur(10px);
+    color: #000;
+    font: 13px/1.2 ui-monospace, Menlo, Consolas, monospace;
+    white-space: pre;
+    pointer-events: none;
+}

@@ -7,31 +7,45 @@ import ColorMode from '../gl/color_mode';
 import browser from '../util/browser';
 import {globeDenormalizeECEF, transitionTileAABBinECEF, globeToMercatorTransition} from '../geo/projection/globe_util';
 import {mat4} from 'gl-matrix';
+import EXTENT from '../style-spec/data/extent';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type {OverscaledTileID} from '../source/tile_id';
+import type Tile from '../source/tile';
 import type {DynamicDefinesType} from './program/program_uniforms';
+import type {Aabb} from '../util/primitives';
+import type {InstanceVertexArray} from '../data/array_types';
 
 const topColor = new Color(1, 0, 0, 1);
 const btmColor = new Color(0, 1, 0, 1);
 const leftColor = new Color(0, 0, 1, 1);
 const rightColor = new Color(1, 0, 1, 1);
 const centerColor = new Color(0, 1, 1, 1);
+const MILLISECONDS_RE = /\.\d{3}Z$/;
+const FONT_SIZE = 36;
+const LINE_HEIGHT = FONT_SIZE + 4;
+const TEXT_MARGIN = 5;
+const boundsFaceMatrixScratch = mat4.create();
+const boundsMvpScratch = mat4.create();
+const instanceMatrixScratch = mat4.create();
+const instanceMvpScratch = mat4.create();
 
-export default function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>, color: Color, silhouette: boolean, showParseStatus: boolean) {
+export default function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>, color: Color, silhouette: boolean, showBorders: boolean = true) {
+    // The brightness is the same for every tile, so calculate it once.
+    const brightness = painter.options.showLightDebug ? (painter.style && painter.style.calculateLightsBrightness()) || 0 : null;
     for (let i = 0; i < coords.length; i++) {
         if (silhouette) {
             const radius = 1;
             const darkenFactor = 0.8;
             const colorMiddle = new Color(color.r * darkenFactor, color.g * darkenFactor, color.b * darkenFactor, 1.0);
-            drawDebugTile(painter, sourceCache, coords[i]!, color, -radius, -radius, showParseStatus);
-            drawDebugTile(painter, sourceCache, coords[i]!, color, -radius, radius, showParseStatus);
-            drawDebugTile(painter, sourceCache, coords[i]!, color, radius, radius, showParseStatus);
-            drawDebugTile(painter, sourceCache, coords[i]!, color, radius, -radius, showParseStatus);
-            drawDebugTile(painter, sourceCache, coords[i]!, colorMiddle, 0, 0, showParseStatus);
+            drawDebugTile(painter, sourceCache, coords[i]!, color, -radius, -radius, showBorders, brightness);
+            drawDebugTile(painter, sourceCache, coords[i]!, color, -radius, radius, showBorders, brightness);
+            drawDebugTile(painter, sourceCache, coords[i]!, color, radius, radius, showBorders, brightness);
+            drawDebugTile(painter, sourceCache, coords[i]!, color, radius, -radius, showBorders, brightness);
+            drawDebugTile(painter, sourceCache, coords[i]!, colorMiddle, 0, 0, showBorders, brightness);
         } else {
-            drawDebugTile(painter, sourceCache, coords[i]!, color, 0, 0, showParseStatus);
+            drawDebugTile(painter, sourceCache, coords[i]!, color, 0, 0, showBorders, brightness);
         }
     }
 }
@@ -52,13 +66,67 @@ export function drawDebugPadding(painter: Painter) {
     drawCrosshair(painter, center.x, painter.transform.height - center.y, centerColor);
 }
 
+function formatTimestamp(time: number | null): string {
+    return time ? new Date(time).toISOString().replace(MILLISECONDS_RE, 'Z') : 'n/a';
+}
+
+// Draws the 12 edges of an AABB as the tile outline square mapped onto the four side faces of the box.
+export function drawModelBounds(painter: Painter, aabb: Aabb, mvp: mat4) {
+    const {min, max} = aabb;
+    const scaleX = (max[0] - min[0]) / EXTENT;
+    const scaleY = (max[1] - min[1]) / EXTENT;
+    const scaleZ = (max[2] - min[2]) / EXTENT;
+    const context = painter.context;
+    const gl = context.gl;
+    const program = painter.getOrCreateProgram('debug');
+    const color = Color.red.toPremultipliedRenderColor(null);
+
+    context.activeTexture.set(gl.TEXTURE0);
+    painter.emptyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+
+    for (let face = 0; face < 4; face++) {
+        // Faces 0 and 1 lie in the XZ plane at min and max Y, faces 2 and 3 in the YZ plane at min and max X.
+        const inXZ = face < 2;
+        const isMaxSide = face % 2 === 1;
+        mat4.set(boundsFaceMatrixScratch,
+            inXZ ? scaleX : 0, inXZ ? 0 : scaleY, 0, 0,
+            0, 0, scaleZ, 0,
+            // The debug shader puts terrain elevation in z. Ignore it, because the box already has its height.
+            0, 0, 0, 0,
+            !inXZ && isMaxSide ? max[0] : min[0], inXZ && isMaxSide ? max[1] : min[1], min[2], 1);
+        mat4.multiply(boundsMvpScratch, mvp, boundsFaceMatrixScratch);
+        program.draw(painter, gl.LINE_STRIP, DepthMode.disabled, StencilMode.disabled, ColorMode.alphaBlended, CullFaceMode.disabled,
+            debugUniformValues(boundsMvpScratch, color), '$debug',
+            painter.debugBuffer, painter.debugIndexBuffer, painter.debugSegments);
+    }
+}
+
+// Instanced models get their positions on the GPU. This mirrors the MODEL_POSITION_ON_GPU path of the model vertex shader.
+export function drawInstancedModelBounds(painter: Painter, aabb: Aabb, instances: InstanceVertexArray, coord: OverscaledTileID) {
+    const va = instances.float32;
+    const m = instanceMatrixScratch;
+    for (let i = 0; i < instances.length; ++i) {
+        const o = i * 16;
+        const x = Math.floor(va[o]!);
+        if (x > EXTENT) continue;
+        const meterToTile = va[o + 3]!;
+        mat4.set(m,
+            va[o + 7]! * meterToTile, va[o + 8]! * meterToTile, va[o + 9]!, 0,
+            va[o + 10]! * meterToTile, va[o + 11]! * meterToTile, va[o + 12]!, 0,
+            va[o + 13]! * meterToTile, va[o + 14]! * meterToTile, va[o + 15]!, 0,
+            x + va[o + 4]! * meterToTile, Math.floor(va[o + 1]!) + va[o + 5]! * meterToTile, va[o + 6]!, 1);
+        mat4.multiply(instanceMvpScratch, coord.expandedProjMatrix, m);
+        drawModelBounds(painter, aabb, instanceMvpScratch);
+    }
+}
+
 export function drawDebugQueryGeometry(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
     for (let i = 0; i < coords.length; i++) {
         drawTileQueryGeometry(painter, sourceCache, coords[i]!);
     }
 }
 
-function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: OverscaledTileID, color: Color, offsetX: number, offsetY: number, showParseStatus: boolean) {
+function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: OverscaledTileID, color: Color, offsetX: number, offsetY: number, showBorders: boolean, brightness: number | null) {
     const context = painter.context;
     const tr = painter.transform;
     const gl = context.gl;
@@ -108,23 +176,18 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     const debugIndexBuffer = tile._tileDebugIndexBuffer || painter.debugIndexBuffer;
     const debugSegments = tile._tileDebugSegments || painter.debugSegments;
 
-    program.draw(painter, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-        debugUniformValues(posMatrix, color.toPremultipliedRenderColor(null)), id,
-        debugBuffer, debugIndexBuffer, debugSegments,
-        null, null, null, [tile._globeTileDebugBorderBuffer]);
-
-    if (showParseStatus) {
-        const tileRawData = tile.latestRawTileData;
-        const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;
-        const tileSizeKb = Math.floor(tileByteLength / 1024);
-        let tileLabel = coord.canonical.toString();
-        if (coord.overscaledZ !== coord.canonical.z) {
-            tileLabel += ` => ${coord.overscaledZ}`;
-        }
-        tileLabel += ` ${tile.state}`;
-        tileLabel += ` ${tileSizeKb}kb`;
-        drawTextToOverlay(painter, tileLabel);
+    if (showBorders) {
+        program.draw(painter, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+            debugUniformValues(posMatrix, color.toPremultipliedRenderColor(null)), id,
+            debugBuffer, debugIndexBuffer, debugSegments,
+            null, null, null, [tile._globeTileDebugBorderBuffer]);
     }
+
+    // Like gl-native, parse status shows only together with the tile borders.
+    const showParseStatus = painter.options.showParseStatus && showBorders;
+    const lines = getDebugTileLabel(tile, coord, showParseStatus, painter.options.showTimestamps, brightness);
+    if (!lines) return;
+    drawTextToOverlay(painter, lines);
 
     const tileSize = sourceCache.getTile(coord).tileSize;
     const scaleRatio = (512 / Math.min(tileSize, 512) * (coord.overscaledZ / tr.zoom)) * 0.5;
@@ -211,7 +274,32 @@ function drawTileQueryGeometry(painter: Painter, sourceCache: SourceCache, coord
     }
 }
 
-function drawTextToOverlay(painter: Painter, text: string) {
+export function getDebugTileLabel(tile: Tile, coord: OverscaledTileID, showParseStatus: boolean, showTimestamps: boolean, brightness: number | null): Array<string> | null {
+    if (!showParseStatus && !showTimestamps && brightness === null) return null;
+
+    let tileLabel = coord.canonical.toString();
+    if (coord.overscaledZ !== coord.canonical.z) {
+        tileLabel += ` => ${coord.overscaledZ}`;
+    }
+    if (showParseStatus) {
+        const tileRawData = tile.latestRawTileData;
+        const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;
+        const tileSizeKb = Math.floor(tileByteLength / 1024);
+        tileLabel += ` ${tile.state}`;
+        tileLabel += ` ${tileSizeKb}kb`;
+    }
+    const lines = [tileLabel];
+    if (showTimestamps) {
+        lines.push(`modified: ${formatTimestamp(tile.lastModifiedTime)}`);
+        lines.push(`expires: ${formatTimestamp(tile.expirationTime)}`);
+    }
+    if (brightness !== null) {
+        lines.push(`brightness: ${brightness.toFixed(2)}`);
+    }
+    return lines;
+}
+
+function drawTextToOverlay(painter: Painter, lines: Array<string>) {
     painter.initDebugOverlayCanvas();
     const canvas = painter.debugOverlayCanvas;
     const gl = painter.context.gl;
@@ -223,9 +311,13 @@ function drawTextToOverlay(painter: Painter, text: string) {
     ctx2d.lineWidth = 1.5;
     ctx2d.strokeStyle = 'white';
     ctx2d.textBaseline = 'top';
-    ctx2d.font = `bold ${36}px Open Sans, sans-serif`;
-    ctx2d.fillText(text, 5, 5);
-    ctx2d.strokeText(text, 5, 5);
+    ctx2d.font = `bold ${FONT_SIZE}px Open Sans, sans-serif`;
+    // A long line is narrowed to fit the canvas width.
+    const maxWidth = canvas.width - 2 * TEXT_MARGIN;
+    for (let i = 0; i < lines.length; i++) {
+        ctx2d.fillText(lines[i]!, TEXT_MARGIN, TEXT_MARGIN + i * LINE_HEIGHT, maxWidth);
+        ctx2d.strokeText(lines[i]!, TEXT_MARGIN, TEXT_MARGIN + i * LINE_HEIGHT, maxWidth);
+    }
 
     painter.debugOverlayTexture.update(canvas);
     painter.debugOverlayTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);

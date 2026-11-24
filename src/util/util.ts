@@ -15,6 +15,7 @@ export interface Range {
 export type ExpiryData = {
     cacheControl?: string | null;
     expires?: Date | string | null;
+    lastModified?: Date | string | null;
 };
 
 const DEG_TO_RAD = Math.PI / 180;
@@ -625,10 +626,11 @@ export function parseCacheControl(cacheControl: string): Record<string, number> 
 }
 
 export function parseExpiryData(responseHeaders: Headers | undefined): ExpiryData {
-    if (!responseHeaders) return {cacheControl: undefined, expires: undefined};
+    if (!responseHeaders) return {cacheControl: undefined, expires: undefined, lastModified: undefined};
     const cacheControl = responseHeaders.get('cache-control');
     const expires = responseHeaders.get('expires');
-    return {cacheControl, expires};
+    const lastModified = responseHeaders.get('last-modified');
+    return {cacheControl, expires, lastModified};
 }
 
 export function isFullscreen(): boolean {

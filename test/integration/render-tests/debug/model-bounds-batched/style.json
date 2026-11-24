@@ -1,0 +1,10 @@
+{
+  "description": "Outlines the bounding box of each landmark model from a batched-model source when showModelBounds is on.",
+  "version": 8,
+  "metadata": {"test": {"showModelBounds": true, "width": 256, "height": 256, "skip-test": [{"platform-tag-contains": "native", "reason": "not-implemented: GL JS debug overlay test"}]}},
+  "center": [11.582243, 48.130199],
+  "zoom": 15.6,
+  "pitch": 40,
+  "sources": {"landmarks": {"type": "batched-model", "maxzoom": 14, "tiles": ["local://models/landmark/mbx/{x}-{y}-{z}.glb"]}},
+  "layers": [{"id": "landmark-layer", "type": "model", "source": "landmarks"}]
+}

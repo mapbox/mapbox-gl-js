@@ -1,0 +1,12 @@
+{
+  "description": "Outlines the bounding box of each model instance from a vector source when showModelBounds is on.",
+  "version": 8,
+  "metadata": {"test": {"showModelBounds": true, "width": 256, "height": 256, "skip-test": [{"platform-tag-contains": "native", "reason": "not-implemented: GL JS debug overlay test"}]}},
+  "center": [-122.42, 37.7796],
+  "zoom": 18.5,
+  "pitch": 50,
+  "bearing": 199,
+  "sources": {"trees": {"type": "vector", "maxzoom": 15, "tiles": ["local://tiles/trees/{z}-{x}-{y}.pbf"]}},
+  "layers": [{"id": "tree-layer", "type": "model", "source": "trees", "source-layer": "trees", "layout": {"model-id": "oak"}}],
+  "models": {"oak": "local://models/oak1.glb"}
+}

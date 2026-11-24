@@ -1,6 +1,7 @@
 import {modelLayerUniformValues, modelUniformValues, modelDepthUniformValues} from './program/model_program';
 import {ModelTraits, DefaultModelScale, calculateModelMatrix} from '../data/model';
 import EXTENT from '../../src/style-spec/data/extent';
+import {DebugModule} from '../../modules/debug';
 import StencilMode from '../../src/gl/stencil_mode';
 import ColorMode from '../../src/gl/color_mode';
 import DepthMode from '../../src/gl/depth_mode';
@@ -743,6 +744,11 @@ function drawSortedMeshes(painter: Painter, layer: ModelStyleLayer, transparentM
     for (const transparentMesh of transparentMeshes) {
         drawMesh(transparentMesh, painter, layer, layerValues, modelParametersVector[transparentMesh.modelIndex]!, StencilMode.disabled, transparentMesh.isLightMesh ? additiveBlending : painter.colorModeForRenderPass());
     }
+
+    if (painter.options.showModelBounds && painter.renderPass === 'translucent' && DebugModule.drawModelBounds) {
+        for (const sortedMesh of opaqueMeshes) DebugModule.drawModelBounds(painter, sortedMesh.mesh.aabb, sortedMesh.worldViewProjection);
+        for (const sortedMesh of transparentMeshes) DebugModule.drawModelBounds(painter, sortedMesh.mesh.aabb, sortedMesh.worldViewProjection);
+    }
 }
 
 // If terrain changes, update elevations (baked in translation).
@@ -968,6 +974,9 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
             } else {
                 for (const node of model.nodes) {
                     drawInstancedNode(painter, layer, layerValues, node, modelInstances, cameraPos, coord, renderData);
+                }
+                if (painter.options.showModelBounds && painter.renderPass === 'translucent' && DebugModule.drawInstancedModelBounds) {
+                    DebugModule.drawInstancedModelBounds(painter, model.aabb, modelInstances.instancedDataArray, coord);
                 }
             }
         }
@@ -1543,6 +1552,13 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
 
                             undefined, dynamicBuffers);
+                    }
+                }
+
+                if (painter.options.showModelBounds && !isShadowPass && !isLightBeamPass && DebugModule.drawModelBounds) {
+                    // Like gl-native, outline each mesh of the most detailed level.
+                    for (let i = 0; i < node.meshes.length; ++i) {
+                        if (i !== node.lightMeshIndex) DebugModule.drawModelBounds(painter, node.meshes[i]!.aabb, wvpNodeScratch);
                     }
                 }
             }

@@ -1,0 +1,11 @@
+{
+  "description": "Outlines the bounding box of each 3D model mesh when showModelBounds is on.",
+  "version": 8,
+  "metadata": {"test": {"showModelBounds": true, "width": 128, "height": 128, "skip-test": [{"platform-tag-contains": "native", "reason": "not-implemented: GL JS debug overlay test"}]}},
+  "center": [0, 0],
+  "zoom": 18.3,
+  "pitch": 45,
+  "bearing": 30,
+  "sources": {"model": {"type": "model", "models": {"model-1": {"uri": "local://models/oak1.glb", "position": [0, 0], "orientation": [0, 0, 0]}}}},
+  "layers": [{"id": "model", "type": "model", "source": "model"}]
+}
