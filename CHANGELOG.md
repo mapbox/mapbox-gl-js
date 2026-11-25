@@ -8,6 +8,7 @@
 - Fix icon sizes, symbol appearances, SDF icon halos and global placement with scale factor being ignored or applied twice.
 - Improve initial load performance for maps using Mapbox Standard, `streets-v12`, `streets-v11`, `light-v11` or `dark-v11` style by precompiling the shaders.
 - Fix light/camera/zoom-dependent config re-evaluation.
+- Fix fill-extrusion layers being hidden behind elevated raster layers at low pitch when terrain is disabled.
 
 ## 3.36.0-rc.1
 

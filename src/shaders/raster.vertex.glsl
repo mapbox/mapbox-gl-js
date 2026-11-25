@@ -15,7 +15,8 @@ uniform float u_zoom_transition;
 uniform vec2 u_merc_center;
 
 #ifdef ELEVATED
-uniform lowp float u_zbias_factor;
+// x: z-bias factor, y: 1.0 when the z-bias is applied, 0.0 otherwise
+uniform lowp vec2 u_zbias_params;
 #endif
 
 #define GLOBE_UPSCALE GLOBE_RADIUS / 6371008.8
@@ -135,8 +136,8 @@ vec4 world_pos;
 
 #ifdef ELEVATED
     float z = clamp(gl_Position.z / gl_Position.w, 0.5, 1.0);
-    float zbias = max(0.00005, (pow(z, 0.8) - z) * u_zbias_factor);
-    gl_Position.z -= (gl_Position.w * zbias);
+    float zbias = max(0.00005, (pow(z, 0.8) - z) * u_zbias_params.x);
+    gl_Position.z -= (gl_Position.w * zbias * u_zbias_params.y);
 #endif
 
 #ifdef RENDER_CUTOFF

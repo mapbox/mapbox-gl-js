@@ -1,0 +1,51 @@
+{
+  "description": "A fill-extrusion whose top is above an elevated image raster stays visible at pitch 0 without terrain (raster depth must not be biased past it).",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "center": [0, 0],
+  "zoom": 13,
+  "sources": {
+    "image": {
+      "type": "image",
+      "coordinates": [
+        [-0.004, 0.003],
+        [0.004, 0.003],
+        [0.004, -0.003],
+        [-0.004, -0.003]
+      ],
+      "url": "local://image/1.png"
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [[[-0.00085, -0.00085], [0.00085, -0.00085], [0.00085, 0.00085], [-0.00085, 0.00085], [-0.00085, -0.00085]]]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "image",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-elevation": 1
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-color": "#f00",
+        "fill-extrusion-height": 2
+      }
+    }
+  ]
+}
