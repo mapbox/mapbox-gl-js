@@ -89,6 +89,7 @@ import type {
     LightsSpecification,
     TerrainSpecification,
     FogSpecification,
+    TransitionSpecification,
     SnowSpecification,
     RainSpecification,
     SourceSpecification,
@@ -433,7 +434,7 @@ const defaultOptions = {
  * Expected to return a {@link RequestParameters} object with a `url` property and optionally `headers` and `credentials` properties, or a `Promise` resolving to one. Returning a `Promise` lets the callback resolve values asynchronously before each request, for example to refresh an auth token.
  * The callback receives a third `options` argument with an optional `signal` ({@link AbortSignal}) that aborts when the request is cancelled.
  * @param {boolean} [options.collectResourceTiming=false] If `true`, Resource Timing API information will be collected for requests made by GeoJSON and Vector Tile web workers (this information is normally inaccessible from the main Javascript thread). Information will be returned in a `resourceTiming` property of relevant `data` events.
- * @param {number} [options.fadeDuration=300] Controls the duration of the fade-in/fade-out animation for label collisions, in milliseconds. This setting affects all symbol layers. This setting does not affect the duration of runtime styling transitions or raster tile cross-fading.
+ * @param {number} [options.fadeDuration=300] Controls the duration of the fade-in/fade-out animation of labels when symbol placement changes, in milliseconds. This setting affects all symbol layers. This setting does not affect the duration of runtime styling transitions or raster tile cross-fading.
  * @param {boolean} [options.respectPrefersReducedMotion=true] If set to `true`, the map will respect the user's `prefers-reduced-motion` browser setting and apply a reduced motion mode, minimizing animations and transitions. When set to `false`, the map will always ignore the `prefers-reduced-motion` settings, regardless of the user's preference, making all animations essential.
  * @param {boolean} [options.crossSourceCollisions=true] If `true`, symbols from multiple sources can collide with each other during collision detection. If `false`, collision detection is run separately for the symbols in each source.
  * @param {string} [options.accessToken=null] If specified, map will use this [token](https://docs.mapbox.com/help/glossary/access-token/) instead of the one defined in `mapboxgl.accessToken`.
@@ -3979,6 +3980,60 @@ export class Map extends Camera {
      */
     getFog(): FogSpecification | null | undefined {
         return this.style ? this.style.getFog() : null;
+    }
+
+    /**
+     * Sets the transition of the style. Changes to paint properties, light, fog and terrain
+     * use this transition, unless the property has its own `*-transition` value.
+     * A new style replaces the transition.
+     *
+     * @param {TransitionSpecification} transition The transition properties to set. Must conform to the [Transition Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/transition/).
+     * A property that is not provided keeps its value.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @example
+     * map.setTransition({duration: 1000, delay: 0});
+     */
+    setTransition(transition: TransitionSpecification): this {
+        this._lazyInitEmptyStyle();
+        this.style!.setTransition(transition);
+        return this._update(true);
+    }
+
+    /**
+     * Returns the transition of the style. If the style does not specify a duration or a delay,
+     * the result contains the default value: a duration of 300 milliseconds and a delay of 0 milliseconds.
+     *
+     * @returns {TransitionSpecification | null} The transition properties of the style, or `null` if the map has no style.
+     * @example
+     * const {duration, delay} = map.getTransition();
+     */
+    getTransition(): TransitionSpecification | null {
+        return this.style ? {...this.style.transition} : null;
+    }
+
+    /**
+     * Sets the duration of the fade-in/fade-out animation of labels when symbol placement changes.
+     * This is the runtime equivalent of the `fadeDuration` map option.
+     *
+     * @param {number} duration The duration of the animation, in milliseconds. A value of 0 disables the animation.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @example
+     * map.setFadeDuration(0);
+     */
+    setFadeDuration(duration: number): this {
+        this._fadeDuration = duration;
+        return this._update(true);
+    }
+
+    /**
+     * Returns the duration of the fade-in/fade-out animation of labels when symbol placement changes, in milliseconds.
+     *
+     * @returns {number} The duration of the animation.
+     * @example
+     * const fadeDuration = map.getFadeDuration();
+     */
+    getFadeDuration(): number {
+        return this._fadeDuration;
     }
 
     /**

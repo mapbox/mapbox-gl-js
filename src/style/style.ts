@@ -3708,8 +3708,14 @@ class Style extends Evented<MapEvents> {
     }
 
     setTransition(transition?: TransitionSpecification | null): Style {
-        this.stylesheet.transition = {...this.stylesheet.transition, ...transition};
-        this.transition = this.stylesheet.transition;
+        // Before the style loads there is no stylesheet. The loaded style then replaces the transition.
+        if (!this.stylesheet) {
+            this.transition = {...this.transition, ...transition};
+            return this;
+        }
+        // Start from the current transition, which can come from an import, to keep the values that are not provided.
+        this.stylesheet.transition = {...this.transition, ...transition};
+        this.transition = {...defaultTransition, ...this.stylesheet.transition};
         return this;
     }
 
@@ -4457,7 +4463,7 @@ class Style extends Evented<MapEvents> {
     _getTransitionParameters(transition?: TransitionSpecification | null): TransitionParameters {
         return {
             now: browser.now(),
-            transition: Object.assign(this.transition, transition)
+            transition: {...this.transition, ...transition}
         };
     }
 

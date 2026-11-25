@@ -1,4 +1,6 @@
 ## Unreleased
+- Add `Map#setTransition` and `Map#getTransition` to change the style transition at runtime, and `Map#setFadeDuration` and `Map#getFadeDuration` to change the label fade duration at runtime.
+- Fix `setFog`, `setTerrain`, `setRain` and `setSnow` resetting the style transition duration to zero.
 - Fix `model-color` so `model` layer that uses the property looks slightly different.
 - Fix feature state changes on line layers draped over terrain not being rendered until the camera moves.
 - Fix devtools serialization for duplicate entries.
