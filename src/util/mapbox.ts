@@ -364,6 +364,7 @@ export class TelemetryEvent {
     queue: Array<QueueItem>;
     type: TelemetryEventType;
     pendingRequest: boolean;
+    keepalive: boolean;
     _customAccessToken: string | null | undefined;
 
     constructor(type: TelemetryEventType) {
@@ -373,6 +374,7 @@ export class TelemetryEvent {
         this.eventData = {};
         this.queue = [];
         this.pendingRequest = false;
+        this.keepalive = false;
     }
 
     getStorageKey(domain?: string | null): string {
@@ -476,7 +478,8 @@ export class TelemetryEvent {
             headers: {
                 'Content-Type': 'text/plain' //Skip the pre-flight OPTIONS request
             },
-            body: JSON.stringify([finalPayload])
+            body: JSON.stringify([finalPayload]),
+            keepalive: this.keepalive
         };
 
         this.pendingRequest = true;
@@ -696,6 +699,7 @@ type MetricsEventPayload = {
 class MetricsEvent extends TelemetryEvent {
     constructor() {
         super('metrics');
+        this.keepalive = true;
     }
 
     postMetricsEvent(customAccessToken: string | null | undefined, data: MetricsEventPayload & {event?: TelemetryEventData['eventType']}) {

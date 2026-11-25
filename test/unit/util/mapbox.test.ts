@@ -809,6 +809,12 @@ describe("mapbox", () => {
         });
     });
 
+    test('MetricsEvent sends its request with keepalive', () => {
+        const fetchSpy = vi.spyOn(window, 'fetch').mockImplementation(() => Promise.resolve(new window.Response()));
+        mapbox.metricsEvent.postMetricsEvent('token', {attributes: [{name: 'maps/js/layer-animations/style-with-appearances'}]});
+        expect(fetchSpy.mock.calls[0][0].keepalive).toEqual(true);
+    });
+
     describe('TurnstileEvent', () => {
         const ms25Hours = (25 * 60 * 60 * 1000);
         let event: any;

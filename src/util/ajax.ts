@@ -53,6 +53,7 @@ export type ResourceType = keyof typeof ResourceType;
  * @property {string} [type='string'] Response body type to be returned, one of `'string' | 'json' | 'arrayBuffer'`.
  * @property {string} [credentials] Cross-origin credentials mode, one of `'same-origin' | 'include'`. Use `'include'` to send cookies with cross-origin requests.
  * @property {boolean} [collectResourceTiming=false] If `true`, Resource Timing API information will be collected for these transformed requests and returned in a `resourceTiming` property of relevant `data` events.
+ * @property {boolean} [keepalive=false] If `true`, the request continues after the page is closed or navigated away.
  * @property {string} [referrerPolicy] A string representing the request's referrerPolicy. For more information and possible values, see the [Referrer-Policy HTTP header page](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy).
  * @see {@link RequestTransformFunction}
  * @see {@link ResourceType}
@@ -65,6 +66,7 @@ export type RequestParameters = {
     type?: 'string' | 'json' | 'arrayBuffer';
     credentials?: 'same-origin' | 'include';
     collectResourceTiming?: boolean;
+    keepalive?: boolean;
     referrerPolicy?: ReferrerPolicy;
 };
 
@@ -187,6 +189,7 @@ async function makeFetchRequest<T>(requestParameters: RequestParameters, signal?
         headers: requestParameters.headers,
         referrer: getReferrer(),
         referrerPolicy: requestParameters.referrerPolicy,
+        keepalive: requestParameters.keepalive,
         signal
     });
 
