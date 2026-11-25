@@ -814,6 +814,10 @@ export class Map extends Camera {
             });
         }
 
+        if (this._precompilePrograms && !options.recordProgramsDuringLoad && !options.measureProgramSteps) {
+            this.painter.initListPrecompiler(() => !!this._frame);
+        }
+
         if (options.projection) {
             this.setProjection(options.projection);
         }
@@ -1553,6 +1557,9 @@ export class Map extends Camera {
      * @see [Example: Use different map projections for web maps](https://docs.mapbox.com/mapbox-gl-js/example/projections/)
      */
     setProjection(projection?: ProjectionSpecification | null | string): this {
+        // The precompile lists are recorded with the style's own projection,
+        // different projections result in largely different programs needed.
+        if (this.painter) this.painter.stopListPrecompiler('contextAlive');
         this._lazyInitEmptyStyle();
 
         if (!projection) {
@@ -2421,6 +2428,8 @@ export class Map extends Camera {
      * });
      */
     setStyle(style: StyleSpecification | string | null, options?: SetStyleOptions): this {
+        // The list precompile serves the current style's load only.
+        if (this.painter) this.painter.stopListPrecompiler('contextAlive');
         options = {localIdeographFontFamily: this._localIdeographFontFamily, localFontFamily: this._localFontFamily, fontstackCompositing: this._fontstackCompositing, ...options};
 
         const diffNeeded =
@@ -4489,6 +4498,7 @@ export class Map extends Camera {
         if (this.style) {
             this.style.handleContextLost();
         }
+        this.painter.stopListPrecompiler('contextLost');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.fire(new Event('webglcontextlost', {originalEvent: event}));
     }
@@ -4722,6 +4732,10 @@ export class Map extends Camera {
 
         // Actually draw - unless we're waiting on draping to load
         if (this.style && !(this.transform.projection.requiresDraping && !Lite.loaded)) {
+            const recording = this._programRecordingDuringLoad;
+            const renderStart = recording ? browser.now() : NaN;
+            const programsAsked = recording ? recording.firstUse.size : NaN;
+
             this.painter.render(this.style, {
                 showTileBoundaries: this.showTileBoundaries,
                 showParseStatus: this.showParseStatus,
@@ -4747,6 +4761,15 @@ export class Map extends Camera {
                 speedIndexTiming: this.speedIndexTiming,
                 paintStartTimeStamp,
             });
+
+            if (recording && recording.firstFrameEnd === null) {
+                recording.firstFrameEnd = browser.now() - recording.start;
+            } else if (recording && recording.newProgramFrameStart === null && recording.firstUse.size > programsAsked) {
+                // firstUse grows only when a program is asked for the first time. The first frame comes before the
+                // style and only clears the stencil, so the next frame that grows it is the first to draw the style.
+                recording.newProgramFrameStart = renderStart - recording.start;
+            }
+
             if (this._programStepsMeasurement) measureProgramSteps(this.painter, this._programStepsMeasurement);
         }
 
@@ -4870,6 +4893,8 @@ export class Map extends Camera {
                 }
 
                 if (willIdle && this.style) {
+                    // Once the map is idle the load is over, stop the list precompile.
+                    this.painter.stopListPrecompiler('contextAlive');
                     this.style.handleIdle();
                 }
             }
@@ -5669,6 +5694,9 @@ export class Map extends Camera {
         blendFuncExtended: boolean;
         parallelShaderCompile: boolean;
         programs: Array<{key: string; firstUse: number}>;
+        firstFrameEnd: number | null;
+        newProgramFrameStart: number | null;
+        styleZoom: number;
     } | null {
         const recording = this._programRecordingDuringLoad;
         if (!recording || recording.loadTime === null) return null;
@@ -5681,6 +5709,10 @@ export class Map extends Camera {
             blendFuncExtended: !!extBlendFuncExtended,
             parallelShaderCompile: !!extParallelShaderCompile,
             programs: Array.from(recording.firstUse, ([key, firstUse]) => ({key, firstUse})),
+            firstFrameEnd: recording.firstFrameEnd,
+            newProgramFrameStart: recording.newProgramFrameStart,
+            // Where a map that sets no camera opens.
+            styleZoom: this.style!.stylesheet.zoom ?? 0,
         };
     }
 

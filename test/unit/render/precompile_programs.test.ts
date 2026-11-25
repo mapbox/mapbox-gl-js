@@ -1,7 +1,7 @@
 import {describe, test, expect, waitFor, createMap} from '../../util/vitest';
 import {programsForDeviceNeutralKey} from '../../../src/render/precompile_programs';
 import {deviceNeutralProgramKey} from '../../../src/render/precompile_keys';
-import {PRECOMPILE_LISTS} from '../../../src/render/precompile_lists';
+import shaders, {compile} from '../../../src/shaders/shaders';
 import ProgramConfiguration from '../../../src/data/program_configuration';
 import createStyleLayer from '../../../src/style/create_style_layer';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
@@ -12,10 +12,11 @@ import styleSpec from '../../../src/style-spec/reference/latest';
 import type {Map} from '../../../src/ui/map';
 import type {LayerSpecification} from '../../../src/style-spec/types';
 import type {ProgramToPrecompile} from '../../../src/render/precompile_programs';
+import type {ShaderSource} from '../../../src/render/program';
 import type {WebGL2BlendFuncExtended} from '../../../src/gl/types';
 import type FillStyleLayer from '../../../src/style/style_layer/fill_style_layer';
 
-// Some list entries' shaders come with the lazy Standard and Lite modules.
+// Some programs' shaders come with the lazy Standard and Lite modules.
 async function loadedMap(options: Record<string, unknown> = {}): Promise<Map> {
     await Promise.all([prepareStandard(), prepareLite()]);
     const map = createMap({zoom: 12, ...options});
@@ -27,14 +28,16 @@ function keysFor(map: Map, entry: string): string[] {
     return programsForDeviceNeutralKey(map.painter, entry).map(program => program.key);
 }
 
-function listEntries(): string[] {
-    const entries = new Set<string>();
-    for (const {lists} of Object.values(PRECOMPILE_LISTS)) {
-        for (const list of Object.values(lists)) {
-            for (const entry of list) entries.add(entry.key);
-        }
+// Runs with a test shader, which reads TEST_READ, added to the shaders while it runs, so a list entry of it
+// doesn't depend on real programs.
+function withTestShader<T>(run: () => T): T {
+    const registry = shaders as Record<string, ShaderSource>;
+    registry.test = compile('#ifdef TEST_READ\n#endif\nvoid main() {}', 'void main() {}');
+    try {
+        return run();
+    } finally {
+        delete registry.test;
     }
-    return [...entries];
 }
 
 function links(gl: WebGL2RenderingContext, {vertexSource, fragmentSource}: ProgramToPrecompile): boolean {
@@ -57,7 +60,7 @@ function hasUniformDefines(glsl: string): string[] {
 }
 
 describe('programsForDeviceNeutralKey', () => {
-    test('rebuilds the keys gl-js used during a load', async () => {
+    test('rebuilds the keys recorded during a load', async () => {
         const features = [
             {type: 'Feature', properties: {color: 'blue', opacity: 0.5}, geometry: {type: 'Polygon', coordinates: [[[0, 0], [0.01, 0], [0.01, 0.01], [0, 0]]]}},
             {type: 'Feature', properties: {}, geometry: {type: 'LineString', coordinates: [[0, 0], [0.01, 0.01]]}},
@@ -87,16 +90,18 @@ describe('programsForDeviceNeutralKey', () => {
         map.remove();
     });
 
-    test('builds every list entry', async () => {
-        const map = await loadedMap();
-        expect(listEntries().filter(entry => !programsForDeviceNeutralKey(map.painter, entry))).toEqual([]);
+    test('builds a list entry once its shader source is loaded', () => {
+        const map = createMap();
+        const before = programsForDeviceNeutralKey(map.painter, 'test/TEST_READ');
+        const after = withTestShader(() => keysFor(map, 'test/TEST_READ'));
+        expect({before, after}).toEqual({before: null, after: ['test/TEST_READ']});
         map.remove();
     });
 
-    test('every program built from a list entry links', async () => {
-        const map = await loadedMap();
-        const programs = listEntries().flatMap(entry => programsForDeviceNeutralKey(map.painter, entry));
-        expect(programs.filter(program => !links(map.painter.context.gl, program)).map(program => program.key)).toEqual([]);
+    test('a program built from a list entry links', () => {
+        const map = createMap();
+        const programs = withTestShader(() => programsForDeviceNeutralKey(map.painter, 'test/TEST_READ'));
+        expect(programs.map(program => links(map.painter.context.gl, program))).toEqual([true]);
         map.remove();
     });
 

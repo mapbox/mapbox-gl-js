@@ -57,6 +57,8 @@ import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers';
 import Framebuffer from '../gl/framebuffer';
 import {OcclusionParams} from './occlusion_params';
 import {PerformanceUtils} from '../util/performance';
+import {ListPrecompiler, precompileListFor} from './list_precompiler';
+import {PRECOMPILE_LISTS} from './precompile_lists';
 
 import type {FrcCoverageSnapshot} from '../source/frc_coverage_snapshot';
 import type {ElevationCoverageSnapshot} from '../source/elevation_coverage_snapshot';
@@ -124,10 +126,14 @@ export type ProgramRecordingDuringLoad = {
     loadTime: number | null;
     /** zoom when the map fired load. */
     zoom: number | null;
+    /** When the first frame's render ended. */
+    firstFrameEnd: number | null;
+    /** When the first frame after the first that asks for a new program started. */
+    newProgramFrameStart: number | null;
 };
 
 export function createProgramRecordingDuringLoad(start: number): ProgramRecordingDuringLoad {
-    return {start, firstUse: new Map(), zoom: null, loadTime: null};
+    return {start, firstUse: new Map(), zoom: null, loadTime: null, firstFrameEnd: null, newProgramFrameStart: null};
 }
 
 type WireframeOptions = {
@@ -389,6 +395,12 @@ class Painter {
 
     _forceFullRgbaEmissive: boolean = false;
     _programRecordingDuringLoad: ProgramRecordingDuringLoad | null = null;
+
+    // The list precompiler to create at the end of the first frame.
+    _listPrecompilerToCreate: {framePending: () => boolean} | null = null;
+    // Set at the end of the first frame when the style has a recorded list; cleared when the map is first idle, the
+    // style or projection changes, the context is lost or the map is removed. Drawing takes over the programs it linked.
+    _listPrecompiler: ListPrecompiler | null = null;
 
     constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, worldview: string | undefined, emissiveColorPrecision?: EmissiveColorPrecision) {
         this.context = new Context(gl, contextCreateOptions);
@@ -1777,6 +1789,7 @@ class Painter {
         }
 
         PerformanceUtils.measureLowOverhead(PerformanceUtils.GROUP_RENDERING, 'Painter.render', renderStartTime);
+        this._updateListPrecompiler(style.globalId);
     }
 
     prepareLayer(layer: TypedStyleLayer) {
@@ -2041,7 +2054,8 @@ class Painter {
             // Skips ProgramPrecompiler's requests: its guesses include variants the current state doesn't produce.
             Debug.run(() => !precompiled && assertRebuildsFromDeviceNeutralKey(this, key, shaderSource, config ? config.defines() : [], allDefines));
             const creationStartTime = this._sectionStartTime();
-            program = new Program(this.context, name, shaderSource, config, uniforms!, allDefines, precompiled);
+            const linked = this._listPrecompiler ? this._listPrecompiler.take(key) : null;
+            program = new Program(this.context, name, shaderSource, config, uniforms!, allDefines, precompiled, linked);
             this.context.performanceStatistics?.recordProgramCreation(creationStartTime);
             this.cache.set(key, program);
         }
@@ -2105,7 +2119,32 @@ class Painter {
         }
     }
 
+    initListPrecompiler(framePending: () => boolean) {
+        this._listPrecompilerToCreate = {framePending};
+    }
+
+    // After each frame: the first one creates the list precompiler, the later ones feed it.
+    _updateListPrecompiler(styleId: string | null) {
+        if (this._listPrecompilerToCreate) {
+            const {framePending} = this._listPrecompilerToCreate;
+            this._listPrecompilerToCreate = null;
+            const list = precompileListFor(PRECOMPILE_LISTS, styleId, this.transform);
+            if (list) this._listPrecompiler = new ListPrecompiler(this, list, framePending);
+        } else if (this._listPrecompiler) {
+            this._listPrecompiler.afterFrame();
+        }
+    }
+
+    // Stops the list precompiler, or keeps it from being created.
+    stopListPrecompiler(context: 'contextLost' | 'contextAlive') {
+        this._listPrecompilerToCreate = null;
+        if (!this._listPrecompiler) return;
+        this._listPrecompiler.stop(context);
+        this._listPrecompiler = null;
+    }
+
     destroy() {
+        this.stopListPrecompiler('contextAlive');
         if (this._terrain) {
             this._terrain.destroy();
         }

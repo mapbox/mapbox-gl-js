@@ -133,6 +133,9 @@ export function programSources(
     return {vertexSource, fragmentSource, manualInstanceID};
 }
 
+// A program already compiled and linked from this GLSL, before drawing needs it.
+export type LinkedProgram = {program: WebGLProgram; vertexSource: string; fragmentSource: string};
+
 class Program<Us extends UniformBindings> {
     program: WebGLProgram;
     attributes: Record<string, number>;
@@ -184,10 +187,10 @@ class Program<Us extends UniformBindings> {
         configuration: ProgramConfiguration | null | undefined,
         fixedUniforms: (arg1: Context) => Us,
         fixedDefines: DynamicDefinesType[],
-        precompiled: boolean = false
+        precompiled: boolean = false,
+        linked?: LinkedProgram | null
     ) {
         const gl = context.gl;
-        this.program = gl.createProgram();
 
         this._context = context;
         this._fixedUniformsFn = fixedUniforms;
@@ -205,6 +208,18 @@ class Program<Us extends UniformBindings> {
         const configDefines = configuration ? configuration.defines() : [];
         const {vertexSource, fragmentSource, manualInstanceID} = programSources(context, source, configDefines, fixedDefines);
         this.forceManualRenderingForInstanceIDShaders = manualInstanceID;
+
+        // a program linked ahead from the same GLSL needs no build
+        if (linked && linked.vertexSource === vertexSource && linked.fragmentSource === fragmentSource && !gl.isContextLost()) {
+            this.program = linked.program;
+            this._fragmentShader = null;
+            this._vertexShader = null;
+            this._finalizeWhenReady();
+            return;
+        }
+        // build program from start when source differs
+        if (linked) gl.deleteProgram(linked.program);
+        this.program = gl.createProgram();
 
         const fragmentShader = (gl.createShader(gl.FRAGMENT_SHADER))!;
         if (gl.isContextLost()) {
@@ -231,12 +246,16 @@ class Program<Us extends UniformBindings> {
         this._fragmentShader = fragmentShader;
         this._vertexShader = vertexShader;
 
+        this._finalizeWhenReady();
+    }
+
+    _finalizeWhenReady() {
         // When KHR_parallel_shader_compile isn't available, all sync paths
         // (getShaderParameter / getProgramParameter) would stall anyway — just finalize now.
-        if (!context.extParallelShaderCompile) {
+        if (!this._context.extParallelShaderCompile) {
             this._finalize();
         } else {
-            context._pendingPrograms.add(this);
+            this._context._pendingPrograms.add(this);
         }
     }
 
