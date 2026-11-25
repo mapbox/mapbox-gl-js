@@ -61,7 +61,10 @@ function isGlobalPropertyConstant(e: Expression, properties: Array<string>): boo
 // Bitmask so that one walk answers all three: `createPropertyExpression` used to call
 // `isGlobalPropertyConstant` once per group, traversing every expression of every property in
 // full each time, since those calls only exit early on the rare dependent branch.
-export const GlobalDependency = {Zoom: 1, Light: 2, LineProgress: 4};
+// `ConfigLight` and `ConfigZoom` are a `measure-light` and a zoom/pitch/distance-from-center reached through a `config`
+// value: they make the result depend on that input for re-evaluation, but unlike `Light` and `Zoom` they aren't subject
+// to the property's support checks, and `ConfigZoom` doesn't require a top-level zoom curve.
+export const GlobalDependency = {Zoom: 1, Light: 2, LineProgress: 4, ConfigLight: 8, ConfigZoom: 16};
 
 const globalDependencyFlags: Record<string, number> = {
     'zoom': GlobalDependency.Zoom,
@@ -72,7 +75,8 @@ const globalDependencyFlags: Record<string, number> = {
 };
 
 function getGlobalDependencies(e: Expression): number {
-    let flags = e instanceof CompoundExpression ? globalDependencyFlags[e.name] || 0 : 0;
+    let flags = e.globalDependencies !== undefined ? e.globalDependencies :
+        e instanceof CompoundExpression ? globalDependencyFlags[e.name] || 0 : 0;
     e.eachChild(arg => { flags |= getGlobalDependencies(arg); });
     return flags;
 }

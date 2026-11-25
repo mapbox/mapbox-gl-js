@@ -1,0 +1,30 @@
+{
+  "description": "A config value whose schema default depends on zoom is re-evaluated when the zoom changes, so the background turns from red to blue.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 16,
+      "height": 16,
+      "operations": [
+        ["wait"],
+        ["setZoom", 2],
+        ["wait"]
+      ]
+    }
+  },
+  "zoom": 0,
+  "schema": {
+    "color": {
+      "type": "color",
+      "default": ["step", ["zoom"], "red", 1, "blue"]
+    }
+  },
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": ["config", "color"]}
+    }
+  ]
+}

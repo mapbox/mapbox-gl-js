@@ -1,0 +1,40 @@
+{
+  "description": "A config value whose schema default uses measure-light is re-evaluated when the lights change, so the background turns from red to blue.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 16,
+      "height": 16,
+      "operations": [
+        ["wait"],
+        [
+          "setLights",
+          [
+            {"id": "environment", "type": "ambient", "properties": {"intensity": 1}},
+            {"id": "sun", "type": "directional", "properties": {"intensity": 1}}
+          ]
+        ],
+        ["wait"]
+      ]
+    }
+  },
+  "transition": {"duration": 0},
+  "schema": {
+    "color": {
+      "type": "color",
+      "default": ["step", ["measure-light", "brightness"], "red", 0.1, "blue"]
+    }
+  },
+  "lights": [
+    {"id": "environment", "type": "ambient", "properties": {"intensity": 0}},
+    {"id": "sun", "type": "directional", "properties": {"intensity": 0}}
+  ],
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": ["config", "color"]}
+    }
+  ]
+}

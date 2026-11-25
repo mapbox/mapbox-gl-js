@@ -332,6 +332,18 @@ class StyleLayer extends Evented {
         return deps;
     }
 
+    // Adds `*_DEPENDENCY` flags to the layout, paint and appearance values that read the config option `key`
+    addConfigDeps(key: string, deps: number) {
+        if (this._layoutValues) this._layoutValues.addConfigDeps(key, deps);
+        if (this._paintValues) this._paintValues.addConfigDeps(key, deps);
+        for (const {unevaluatedLayout, unevaluatedPaint} of this.appearances) {
+            if (unevaluatedLayout) {
+                unevaluatedLayout.addConfigDeps(key, deps);
+                unevaluatedPaint!.addConfigDeps(key, deps);
+            }
+        }
+    }
+
     // Re-evaluates the values that depend on parameters changed since the last recalculation, or all of them if the
     // layer is dirty; layers are shared across tiles on the worker, so tiles of the same zoom mostly reuse values.
     recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {

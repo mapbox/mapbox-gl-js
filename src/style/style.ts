@@ -25,6 +25,9 @@ import Lights from '../../3d-style/style/lights';
 import {getProperties as getAmbientProps} from '../../3d-style/style/ambient_light_properties';
 import {getProperties as getDirectionalProps} from '../../3d-style/style/directional_light_properties';
 import {createExpression, createConfigExpression} from '../style-spec/expression/index';
+import {GlobalDependency} from '../style-spec/expression/is_constant';
+import {getConfigGlobalDependencies} from '../style-spec/expression/definitions/config';
+import {ZOOM_DEPENDENCY, LIGHT_DEPENDENCY} from './properties';
 import {HD, prepareHD as prepareHDMain} from '../../modules/hd_main';
 import {prepareStandard as prepareStandardMain} from '../../modules/standard_main';
 import {Lite, prepareLite as prepareLiteMain} from '../../modules/lite_main';
@@ -328,6 +331,8 @@ class Style extends Evented<MapEvents> {
     resolvedImports: Set<string>;
 
     options: ConfigOptions;
+    // Cached result of `hasCameraDependentConfig`, reset whenever config options change
+    _hasCameraDependentConfig: boolean | undefined;
 
     // Merged layers and sources
     _mergedOrder: Array<string>;
@@ -1119,6 +1124,7 @@ class Style extends Evented<MapEvents> {
     }
 
     mergeAll() {
+        this._hasCameraDependentConfig = undefined;
         let light: Light | undefined;
         let ambientLight: Lights<Ambient> | null | undefined;
         let directionalLight: Lights<Directional> | null | undefined;
@@ -2983,6 +2989,7 @@ class Style extends Evented<MapEvents> {
 
     updateConfig(config?: ConfigSpecification | null, schema?: SchemaSpecification | null) {
         this._config = config;
+        this._hasCameraDependentConfig = undefined;
 
         if (!config && !schema) return;
 
@@ -3074,7 +3081,38 @@ class Style extends Evented<MapEvents> {
         }
     }
 
+    // Whether any config option depends on zoom or pitch, so a pitch-only camera change must re-evaluate the style
+    hasCameraDependentConfig(): boolean {
+        if (this._hasCameraDependentConfig === undefined) {
+            const {Zoom, ConfigZoom} = GlobalDependency;
+            this._hasCameraDependentConfig = false;
+            for (const fqid of this.options.keys()) {
+                if (getConfigGlobalDependencies(this.options, fqid, getOuterScopeFromFQID(fqid)) & (Zoom | ConfigZoom)) {
+                    this._hasCameraDependentConfig = true;
+                    break;
+                }
+            }
+        }
+        return this._hasCameraDependentConfig;
+    }
+
     updateConfigDependencies(configKey?: string) {
+        this._hasCameraDependentConfig = undefined;
+        // Values are parsed against the options of that time, so a changed option that now depends on zoom, pitch
+        // or light adds those dependencies to the values that read it, for re-evaluation on camera or light changes
+        const {Zoom, Light, ConfigZoom, ConfigLight} = GlobalDependency;
+        for (const fqid of this.options.keys()) {
+            const key = getNameFromFQID(fqid);
+            if (configKey !== undefined && key !== configKey) continue;
+            const global = getConfigGlobalDependencies(this.options, fqid, getOuterScopeFromFQID(fqid));
+            const deps = (global & (Zoom | ConfigZoom) ? ZOOM_DEPENDENCY : 0) | (global & (Light | ConfigLight) ? LIGHT_DEPENDENCY : 0);
+            if (!deps) continue;
+            for (const id of this._dependentLayerIds((d) => d.hasConfigDependency(key))) {
+                const layer = this.getLayer(id);
+                if (layer) layer.addConfigDeps(key, deps);
+            }
+        }
+
         this._updateLayers(this._dependentLayerIds((deps) => deps.hasConfigDependency(configKey)));
 
         this._updateEnvConfig();

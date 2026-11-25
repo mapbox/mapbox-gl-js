@@ -230,12 +230,17 @@ export class ZoomConstantExpression<Kind extends EvaluationKind> {
     _styleExpression: StyleExpression;
     isLightConstant: boolean | null | undefined;
     isLineProgressConstant: boolean | null | undefined;
+    // Depends on zoom or pitch through a `config` value, which needs re-evaluation on camera changes. Only set for
+    // feature-constant values: data-driven ones are evaluated per feature at the tile's zoom, like any `zoom` outside
+    // a top-level curve, since refreshing their paint arrays on every camera change would be too costly.
+    isConfigZoomDependent: boolean;
 
-    constructor(kind: Kind, expression: StyleExpression, isLightConstant?: boolean | null, isLineProgressConstant?: boolean | null) {
+    constructor(kind: Kind, expression: StyleExpression, isLightConstant?: boolean | null, isLineProgressConstant?: boolean | null, isConfigZoomDependent: boolean = false) {
         this.kind = kind;
         this._styleExpression = expression;
         this.isLightConstant = isLightConstant;
         this.isLineProgressConstant = isLineProgressConstant;
+        this.isConfigZoomDependent = isConfigZoomDependent;
         this.isStateDependent = kind !== ('constant' as EvaluationKind) && !isConstant.isStateConstant(expression.expression);
         // Already walked by the wrapped `StyleExpression` over the same parsed expression
         this.configDependencies = expression.configDependencies;
@@ -328,6 +333,7 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
 
 export type ConstantExpression = {
     kind: 'constant';
+    isConfigZoomDependent?: boolean;
     configDependencies: Set<string>;
     isIndoorDependent: boolean;
     readonly evaluate: <T = unknown>(
@@ -424,10 +430,10 @@ export function createPropertyExpression(
         return error([new ParsingError('', 'zoom expressions not supported')]);
     }
 
-    const isLightConstant = (globalDependencies & isConstant.GlobalDependency.Light) === 0;
-    if (!isLightConstant && !supportsLightExpression(propertySpec)) {
+    if ((globalDependencies & isConstant.GlobalDependency.Light) && !supportsLightExpression(propertySpec)) {
         return error([new ParsingError('', 'measure-light expression not supported')]);
     }
+    const isLightConstant = (globalDependencies & (isConstant.GlobalDependency.Light | isConstant.GlobalDependency.ConfigLight)) === 0;
 
     const isLineProgressConstant = (globalDependencies & isConstant.GlobalDependency.LineProgress) === 0;
     if (!isLineProgressConstant && !supportsLineProgressExpression(propertySpec)) {
@@ -445,8 +451,9 @@ export function createPropertyExpression(
     }
 
     if (!zoomCurve) {
+        const isConfigZoomDependent = (globalDependencies & isConstant.GlobalDependency.ConfigZoom) !== 0;
         return success((isFeatureConstant && isLineProgressConstant) ?
-            (new ZoomConstantExpression('constant', styleExpression.value, isLightConstant, isLineProgressConstant) as ConstantExpression) :
+            (new ZoomConstantExpression('constant', styleExpression.value, isLightConstant, isLineProgressConstant, isConfigZoomDependent) as ConstantExpression) :
             (new ZoomConstantExpression('source', styleExpression.value, isLightConstant, isLineProgressConstant) as SourceExpression));
     }
 

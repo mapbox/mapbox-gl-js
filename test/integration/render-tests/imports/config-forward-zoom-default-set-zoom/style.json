@@ -1,0 +1,51 @@
+{
+  "description": "An imported config value forwarded from a parent option whose default depends on zoom is re-evaluated when the zoom changes, so the background turns from red to blue.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 16,
+      "height": 16,
+      "operations": [
+        ["wait"],
+        ["setZoom", 2],
+        ["wait"]
+      ]
+    }
+  },
+  "zoom": 0,
+  "fragment": false,
+  "schema": {
+    "color": {
+      "type": "color",
+      "default": ["step", ["zoom"], "red", 1, "blue"]
+    }
+  },
+  "sources": {},
+  "layers": [],
+  "imports": [
+    {
+      "id": "fragment",
+      "url": "",
+      "config": {
+        "color": ["config", "color"]
+      },
+      "data": {
+        "version": 8,
+        "schema": {
+          "color": {
+            "type": "color",
+            "default": "green"
+          }
+        },
+        "sources": {},
+        "layers": [
+          {
+            "id": "background",
+            "type": "background",
+            "paint": {"background-color": ["config", "color"]}
+          }
+        ]
+      }
+    }
+  ]
+}

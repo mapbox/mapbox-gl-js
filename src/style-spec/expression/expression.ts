@@ -13,6 +13,11 @@ export interface Expression {
      * (e.g. `within`, `distance`, `config`); `isFeatureConstant` returns it without recursing.
      */
     readonly featureConstant?: boolean;
+    /**
+     * Set by expressions whose global dependencies can't be derived from their children (e.g. `config`);
+     * a `GlobalDependency` bitmask that `getGlobalDependencies` uses in place of the expression's own flags.
+     */
+    readonly globalDependencies?: number;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate: (ctx: EvaluationContext) => any;
     eachChild: (fn: (arg1: Expression) => void) => void;

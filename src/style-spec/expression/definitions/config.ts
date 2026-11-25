@@ -9,6 +9,7 @@ import type {Type} from '../types';
 import type {Expression, SerializedExpression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
+import type {ConfigOptions} from '../../types/config_options';
 
 const FQIDSeparator = '\u001F';
 
@@ -17,6 +18,31 @@ export function makeConfigFQID(id: string, ownScope?: string | null, contextScop
     if (ownScope) fqid = fqid ? fqid + FQIDSeparator + ownScope : ownScope;
     if (contextScope) fqid = fqid ? fqid + FQIDSeparator + contextScope : contextScope;
     return fqid;
+}
+
+function getParentScope(scope: string): string {
+    const sep = scope.indexOf(FQIDSeparator);
+    return sep >= 0 ? scope.slice(sep + 1) : '';
+}
+
+// `GlobalDependency` flags of the config option `fqid`, following the `config` references in its default (resolved in
+// `scope`) and in its value (resolved in the parent scope), as `evaluate` does; `visited` guards against cycles
+export function getConfigGlobalDependencies(options: ConfigOptions, fqid: string, scope: string, visited: Set<string> = new Set()): number {
+    const config = options.get(fqid);
+    if (!config || visited.has(fqid)) return 0;
+    visited.add(fqid);
+
+    const getDeps = (e: Expression, s: string) => {
+        let flags = isConstant.getGlobalDependencies(e);
+        const visit = (node: Expression) => {
+            if (node instanceof Config) flags |= getConfigGlobalDependencies(options, makeConfigFQID(node.key, node.scope, s), s, visited);
+            node.eachChild(visit);
+        };
+        visit(e);
+        return flags;
+    };
+
+    return getDeps(config.default, scope) | (config.value ? getDeps(config.value, getParentScope(scope)) : 0);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,12 +84,14 @@ class Config implements Expression {
     key: string;
     scope: string | null | undefined;
     featureConstant: boolean;
+    globalDependencies: number;
 
-    constructor(type: Type, key: string, scope?: string, featureConstant: boolean = false) {
+    constructor(type: Type, key: string, scope?: string, featureConstant: boolean = false, globalDependencies: number = 0) {
         this.type = type;
         this.key = key;
         this.scope = scope;
         this.featureConstant = featureConstant;
+        this.globalDependencies = globalDependencies;
     }
 
     static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Config | null | void {
@@ -79,6 +107,7 @@ class Config implements Expression {
         }
 
         let featureConstant = true;
+        let globalDependencies = 0;
         let configScopeValue: string | undefined;
         const configKeyValue = valueToString(configKey.value);
 
@@ -96,10 +125,17 @@ class Config implements Expression {
             const config = context.options.get(fqid);
             if (config) {
                 featureConstant = isConstant.isFeatureConstant(config.value || config.default);
+                // `evaluate` runs both the default and the value, so a light or zoom input in either, or in an option they
+                // reference (e.g. one forwarded from a parent style), makes the result depend on it; reported as
+                // `ConfigLight` / `ConfigZoom` so properties still parse as before
+                const {Light, Zoom, ConfigLight, ConfigZoom} = isConstant.GlobalDependency;
+                const deps = getConfigGlobalDependencies(context.options, fqid, context._scope || '');
+                if (deps & (Light | ConfigLight)) globalDependencies |= ConfigLight;
+                if (deps & (Zoom | ConfigZoom)) globalDependencies |= ConfigZoom;
             }
         }
 
-        return new Config(type, configKeyValue, configScopeValue, featureConstant);
+        return new Config(type, configKeyValue, configScopeValue, featureConstant, globalDependencies);
     }
 
     evaluate(ctx: EvaluationContext): unknown {
@@ -117,9 +153,7 @@ class Config implements Expression {
         if (value) {
             // temporarily override scope to parent to evaluate config expressions passed from the parent
             const originalScope = ctx.scope;
-            const scope = originalScope || '';
-            const sep = scope.indexOf(FQIDSeparator);
-            ctx.scope = sep >= 0 ? scope.slice(sep + 1) : '';
+            ctx.scope = getParentScope(originalScope || '');
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             result = value.evaluate(ctx);
             ctx.scope = originalScope;

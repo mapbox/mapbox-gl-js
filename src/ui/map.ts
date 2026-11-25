@@ -787,6 +787,7 @@ export class Map extends Camera {
         this.on('move', () => this._update(false));
         this.on('moveend', () => this._update(false));
         this.on('zoom', () => this._update(true));
+        this.on('pitch', () => this._update(!!this.style && this.style.hasCameraDependentConfig()));
 
         this._fullscreenchangeEvent = 'onfullscreenchange' in document ?
             'fullscreenchange' :

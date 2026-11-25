@@ -121,7 +121,7 @@ export class PropertyValue<T, R> {
         const type = property.specification.type;
         const styleExpression = (this.expression as {_styleExpression?: StyleExpression})._styleExpression;
         this.deps =
-            (kind === 'camera' || kind === 'composite' ? ZOOM_DEPENDENCY : 0)
+            (kind === 'camera' || kind === 'composite' || (this.expression as {isConfigZoomDependent?: boolean}).isConfigZoomDependent ? ZOOM_DEPENDENCY : 0)
             | ((this.expression as {isLightConstant?: boolean}).isLightConstant === false ? LIGHT_DEPENDENCY : 0)
             | ((kind === 'constant' || kind === 'camera') &&
                 (type === 'resolvedImage' || type === 'formatted' || (styleExpression && styleExpression.isImageDependent)) ? IMAGE_DEPENDENCY : 0);
@@ -300,6 +300,21 @@ export class PropertyValues<Props extends {[Key in keyof Props]: Props[Key]}> {
         if (propertyValue.expression.configDependencies) {
             for (const key of propertyValue.expression.configDependencies) this.configDependencies.add(key);
             this._isIndoorDependent = this._isIndoorDependent || propertyValue.isIndoorDependent();
+        }
+    }
+
+    // Adds `*_DEPENDENCY` flags to the values that read the config option `key`, when the option changes at runtime
+    // to one that depends on more inputs than it did when the values were parsed. Prior transition states need none,
+    // since they're re-evaluated on every update until the transition ends.
+    addConfigDeps(key: string, deps: number) {
+        for (const name of Object.keys(this._values) as Array<keyof Props>) {
+            const entry: PropertyValueEntry<unknown, unknown> = this._values[name];
+            for (const value of [entry.value, entry.state.value]) {
+                if (value.expression.configDependencies.has(key)) {
+                    value.deps |= deps;
+                    this.deps |= deps;
+                }
+            }
         }
     }
 

@@ -1,0 +1,34 @@
+{
+  "description": "A config value whose schema default depends on pitch is re-evaluated when only the pitch changes, so the background turns from red to blue.",
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 16,
+      "height": 16,
+      "operations": [
+        ["wait"],
+        ["setPitch", 60],
+        ["wait"]
+      ],
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSNAT-4478"],
+      "skip-test": [
+        {"platform-tag-contains": "native", "reason": "bug: config value whose schema default depends on pitch is not re-evaluated on native"}
+      ]
+    }
+  },
+  "pitch": 0,
+  "schema": {
+    "color": {
+      "type": "color",
+      "default": ["step", ["pitch"], "red", 30, "blue"]
+    }
+  },
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": ["config", "color"]}
+    }
+  ]
+}

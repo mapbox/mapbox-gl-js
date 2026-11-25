@@ -28,6 +28,24 @@ function paintValue(style, layerId, name) {
     return value && value.constantOr ? value.constantOr(null) : value;
 }
 
+// A `basemap` import whose line opacity comes from an `opacity` config option with a constant default
+function loadConfigOpacityStyle(json = {}) {
+    return loadStyle({...json, imports: [{id: 'basemap', url: '', data: {
+        version: 8,
+        sources: {geojson},
+        schema: {opacity: {default: 0.5}},
+        layers: [{id: 'line', type: 'line', source: 'geojson', paint: {'line-opacity': ['config', 'opacity']}}]
+    }}]});
+}
+
+// The `basemap` line opacity after updating the style with each of the given zoom and parameters
+function opacityAt(style, steps) {
+    return steps.map(([zoom, options]) => {
+        update(style, zoom, options);
+        return paintValue(style, makeFQID('line', 'basemap'), 'line-opacity');
+    });
+}
+
 describe('Style#update re-evaluation', () => {
     test('applies a paint property change', async () => {
         const style = await loadStyle({layers: [{id: 'bg', type: 'background', paint: {'background-opacity': 0.5}}]});
@@ -167,6 +185,151 @@ describe('Style#update re-evaluation', () => {
         update(style, 0);
 
         expect([before, paintValue(style, 'line', 'line-opacity')]).toEqual([0, 1]);
+    });
+
+    test('re-evaluates properties whose config default depends on brightness', async () => {
+        const style = await loadStyle({
+            transition: {duration: 0},
+            lights: [
+                {id: 'sun', type: 'directional', properties: {intensity: 0}},
+                {id: 'env', type: 'ambient', properties: {intensity: 0}}
+            ],
+            imports: [{id: 'basemap', url: '', data: {
+                version: 8,
+                sources: {geojson},
+                schema: {opacity: {default: ['step', ['measure-light', 'brightness'], 0, 0.1, 1]}},
+                layers: [{id: 'line', type: 'line', source: 'geojson', paint: {
+                    'line-opacity': ['config', 'opacity']
+                }}]
+            }}]
+        });
+        const lineId = makeFQID('line', 'basemap');
+        update(style, 0);
+        const before = paintValue(style, lineId, 'line-opacity');
+        style.setLights([
+            {id: 'sun', type: 'directional', properties: {intensity: 1}},
+            {id: 'env', type: 'ambient', properties: {intensity: 1}}
+        ]);
+        update(style, 0);
+
+        expect([before, paintValue(style, lineId, 'line-opacity')]).toEqual([0, 1]);
+    });
+
+    test('re-evaluates properties whose config default depends on zoom', async () => {
+        const style = await loadStyle({imports: [{id: 'basemap', url: '', data: {
+            version: 8,
+            sources: {geojson},
+            schema: {opacity: {default: zoomOpacity}},
+            layers: [{id: 'line', type: 'line', source: 'geojson', paint: {'line-opacity': ['config', 'opacity']}}]
+        }}]});
+        const lineId = makeFQID('line', 'basemap');
+
+        const values = [5, 7].map(zoom => {
+            update(style, zoom);
+            return paintValue(style, lineId, 'line-opacity');
+        });
+        expect(values).toEqual([0.5, 0.7]);
+    });
+
+    test('re-evaluates properties whose config default depends on pitch', async () => {
+        const style = await loadStyle({imports: [{id: 'basemap', url: '', data: {
+            version: 8,
+            sources: {geojson},
+            schema: {opacity: {default: ['interpolate', ['linear'], ['pitch'], 0, 0, 60, 1]}},
+            layers: [{id: 'line', type: 'line', source: 'geojson', paint: {'line-opacity': ['config', 'opacity']}}]
+        }}]});
+        const lineId = makeFQID('line', 'basemap');
+
+        const values = [0, 60].map(pitch => {
+            update(style, 0, {pitch});
+            return paintValue(style, lineId, 'line-opacity');
+        });
+        expect(values).toEqual([0, 1]);
+    });
+
+    test('re-evaluates properties after a config value is set to depend on zoom', async () => {
+        const style = await loadConfigOpacityStyle();
+        style.setConfigProperty('basemap', 'opacity', zoomOpacity);
+
+        expect(opacityAt(style, [5, 7].map(zoom => [zoom, {}]))).toEqual([0.5, 0.7]);
+    });
+
+    test('re-evaluates properties after a config is set to depend on zoom', async () => {
+        const style = await loadConfigOpacityStyle();
+        style.setConfig('basemap', {opacity: zoomOpacity});
+
+        expect(opacityAt(style, [5, 7].map(zoom => [zoom, {}]))).toEqual([0.5, 0.7]);
+    });
+
+    test('re-evaluates properties after a config value is set to depend on pitch', async () => {
+        const style = await loadConfigOpacityStyle();
+        style.setConfigProperty('basemap', 'opacity', ['interpolate', ['linear'], ['pitch'], 0, 0, 60, 1]);
+
+        expect(opacityAt(style, [0, 60].map(pitch => [0, {pitch}]))).toEqual([0, 1]);
+    });
+
+    test('re-evaluates properties after a config value is set to depend on brightness', async () => {
+        const style = await loadConfigOpacityStyle({
+            transition: {duration: 0},
+            lights: [
+                {id: 'sun', type: 'directional', properties: {intensity: 0}},
+                {id: 'env', type: 'ambient', properties: {intensity: 0}}
+            ]
+        });
+        const lineId = makeFQID('line', 'basemap');
+        style.setConfigProperty('basemap', 'opacity', ['step', ['measure-light', 'brightness'], 0, 0.1, 1]);
+        update(style, 0);
+        const before = paintValue(style, lineId, 'line-opacity');
+        style.setLights([
+            {id: 'sun', type: 'directional', properties: {intensity: 1}},
+            {id: 'env', type: 'ambient', properties: {intensity: 1}}
+        ]);
+        update(style, 0);
+
+        expect([before, paintValue(style, lineId, 'line-opacity')]).toEqual([0, 1]);
+    });
+
+    test('re-evaluates properties whose imported config is forwarded from a parent default depending on zoom', async () => {
+        const style = await loadStyle({
+            fragment: false,
+            schema: {opacity: {default: zoomOpacity}},
+            imports: [{id: 'basemap', url: '', config: {opacity: ['config', 'opacity']}, data: {
+                version: 8,
+                sources: {geojson},
+                schema: {opacity: {default: 0.5}},
+                layers: [{id: 'line', type: 'line', source: 'geojson', paint: {'line-opacity': ['config', 'opacity']}}]
+            }}]
+        });
+
+        expect(opacityAt(style, [5, 7].map(zoom => [zoom, {}]))).toEqual([0.5, 0.7]);
+    });
+
+    test('re-evaluates properties whose imported config is forwarded from a parent default depending on brightness', async () => {
+        const style = await loadStyle({
+            transition: {duration: 0},
+            lights: [
+                {id: 'sun', type: 'directional', properties: {intensity: 0}},
+                {id: 'env', type: 'ambient', properties: {intensity: 0}}
+            ],
+            fragment: false,
+            schema: {opacity: {default: ['step', ['measure-light', 'brightness'], 0, 0.1, 1]}},
+            imports: [{id: 'basemap', url: '', config: {opacity: ['config', 'opacity']}, data: {
+                version: 8,
+                sources: {geojson},
+                schema: {opacity: {default: 0.5}},
+                layers: [{id: 'line', type: 'line', source: 'geojson', paint: {'line-opacity': ['config', 'opacity']}}]
+            }}]
+        });
+        const lineId = makeFQID('line', 'basemap');
+        update(style, 0);
+        const before = paintValue(style, lineId, 'line-opacity');
+        style.setLights([
+            {id: 'sun', type: 'directional', properties: {intensity: 1}},
+            {id: 'env', type: 'ambient', properties: {intensity: 1}}
+        ]);
+        update(style, 0);
+
+        expect([before, paintValue(style, lineId, 'line-opacity')]).toEqual([0, 1]);
     });
 
     test('re-evaluates image properties when an image is added', async () => {
