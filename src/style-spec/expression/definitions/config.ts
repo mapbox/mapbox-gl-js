@@ -11,7 +11,7 @@ import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 import type {ConfigOptions} from '../../types/config_options';
 
-const FQIDSeparator = '\u001F';
+export const FQIDSeparator = '\u001F';
 
 export function makeConfigFQID(id: string, ownScope?: string | null, contextScope?: string | null): string {
     let fqid = id || '';
@@ -20,9 +20,10 @@ export function makeConfigFQID(id: string, ownScope?: string | null, contextScop
     return fqid;
 }
 
-function getParentScope(scope: string): string {
-    const sep = scope.indexOf(FQIDSeparator);
-    return sep >= 0 ? scope.slice(sep + 1) : '';
+/** The scope that configures `scope`: everything after its own id. */
+export function getConfigParentScope(scope: string): string {
+    const separator = scope.indexOf(FQIDSeparator);
+    return separator >= 0 ? scope.slice(separator + 1) : '';
 }
 
 // `GlobalDependency` flags of the config option `fqid`, following the `config` references in its default (resolved in
@@ -42,7 +43,7 @@ export function getConfigGlobalDependencies(options: ConfigOptions, fqid: string
         return flags;
     };
 
-    return getDeps(config.default, scope) | (config.value ? getDeps(config.value, getParentScope(scope)) : 0);
+    return getDeps(config.default, scope) | (config.value ? getDeps(config.value, getConfigParentScope(scope)) : 0);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -153,7 +154,7 @@ class Config implements Expression {
         if (value) {
             // temporarily override scope to parent to evaluate config expressions passed from the parent
             const originalScope = ctx.scope;
-            ctx.scope = getParentScope(originalScope || '');
+            ctx.scope = getConfigParentScope(originalScope || '');
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             result = value.evaluate(ctx);
             ctx.scope = originalScope;

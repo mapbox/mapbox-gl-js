@@ -8,9 +8,12 @@ import type {StyleSpecification} from '../types';
 
 type StyleValidatorOptions = {
     key?: string;
+    /** Validate as a fragment, which may omit the properties its parent defines. */
+    fragment?: boolean;
 };
 
 export default function validateStyle(style: unknown, styleSpec: StyleReference = latestStyleSpec, options: StyleValidatorOptions = {}): ValidationError[] {
+    const root = style as Partial<StyleSpecification>;
     const errors = validateObject({
         key: options.key || '',
         value: style,
@@ -21,7 +24,7 @@ export default function validateStyle(style: unknown, styleSpec: StyleReference 
             '*': {type: '*'},
         },
         styleSpec,
-        style: style as Partial<StyleSpecification>,
+        style: options.fragment ? {...root, fragment: true} : root,
         objectElementValidators: {
             glyphs: validateGlyphsURL
         }

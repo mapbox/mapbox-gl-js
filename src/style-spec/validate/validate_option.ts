@@ -4,6 +4,7 @@ import {unbundle} from '../util/unbundle_jsonlint';
 import {isObject} from '../util/get_type';
 
 import type ValidationError from '../error/validation_error';
+import type {StylePropertySpecification} from '../style-spec';
 import type {ValidatorOptions} from './validate';
 import type {ObjectElementValidator} from './validate_object';
 
@@ -13,6 +14,7 @@ import type {ObjectElementValidator} from './validate_object';
 // the option's expected type instead of `*` (any).
 export default function validateOption(options: ValidatorOptions): ValidationError[] {
     const styleSpec = options.styleSpec;
+    const optionSpec = styleSpec.option as Record<string, Partial<StylePropertySpecification>>;
     const optionValue = options.value as {type?: unknown; array?: unknown} | null | undefined;
     // Don't propagate the declared type for array options: `getExpectedType`
     // doesn't model the schema's `array: true` flag, so forcing a scalar type
@@ -42,10 +44,9 @@ export default function validateOption(options: ValidatorOptions): ValidationErr
 
     return validateObject({
         ...options,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        valueSpec: styleSpec.option,
+        valueSpec: optionSpec,
         objectElementValidators: {
-            default: validateDefault,
+            default: validateDefault
         } as Record<string, ObjectElementValidator>,
     });
 }

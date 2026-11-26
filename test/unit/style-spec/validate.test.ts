@@ -45,6 +45,73 @@ test('validate accepts a bare-object default for an object-typed schema option',
     expect(validate(style, reference)).toEqual([]);
 });
 
+test('validate accepts text without glyphs in a fragment', () => {
+    const fragment = {
+        version: 8,
+        fragment: true,
+        sources: {
+            vector: {type: 'vector', url: 'mapbox://mapbox.mapbox-streets-v8'}
+        },
+        layers: [{
+            id: 'labels',
+            type: 'symbol',
+            source: 'vector',
+            'source-layer': 'labels',
+            layout: {'text-field': 'label'}
+        }]
+    };
+
+    expect(validate(fragment, reference)).toEqual([]);
+    expect(validate({...fragment, fragment: undefined}, reference).map((error) => error.message)).toContain(
+        'layers[0].layout.text-field: use of "text-field" requires a style "glyphs" property'
+    );
+});
+
+test('validate accepts text without glyphs in an imported style', () => {
+    const style = {
+        version: 8,
+        glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
+        imports: [{
+            id: 'labels',
+            url: '',
+            data: {
+                version: 8,
+                sources: {
+                    vector: {type: 'vector', url: 'mapbox://mapbox.mapbox-streets-v8'}
+                },
+                layers: [{
+                    id: 'labels',
+                    type: 'symbol',
+                    source: 'vector',
+                    'source-layer': 'labels',
+                    layout: {'text-field': 'label'}
+                }]
+            }
+        }],
+        sources: {},
+        layers: []
+    };
+
+    expect(validate(style, reference)).toEqual([]);
+});
+
+test('validate rejects an undocumented schema option value', () => {
+    const style = {
+        version: 8,
+        schema: {
+            enabled: {
+                default: true,
+                value: false
+            }
+        },
+        sources: {},
+        layers: []
+    };
+    expect(validate(style, reference).map((error) => error.message)).toContain(
+        'schema.enabled: unknown property "value"'
+    );
+});
+
 test('validate accepts a UTF-8 encoded Uint8Array', () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     const bytes = new TextEncoder().encode(fixtures['bad-color']);

@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="../types/csscolorparser.d.ts" />
 import {parseCSSColor} from 'csscolorparser';
 import {lerp} from './lerp';
 

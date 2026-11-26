@@ -52,7 +52,7 @@ export default function validateImport(options: ImportValidatorOptions): Validat
 
     if (data) {
         const key = `${options.key}.data`;
-        errors = errors.concat(validateStyle(data, styleSpec, {key}));
+        errors = errors.concat(validateStyle(data, styleSpec, {key, fragment: true}));
     }
 
     return errors;

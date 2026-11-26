@@ -11,6 +11,7 @@
 - Improve initial load performance for maps using Mapbox Standard, `streets-v12`, `streets-v11`, `light-v11` or `dark-v11` style by precompiling the shaders.
 - Fix light/camera/zoom-dependent config re-evaluation.
 - Fix fill-extrusion layers being hidden behind elevated raster layers at low pitch when terrain is disabled.
+- Fix style validation reporting a missing `glyphs` property for text in fragment styles and in the embedded `data` of imports.
 
 ## 3.36.0-rc.1
 
