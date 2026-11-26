@@ -5,7 +5,7 @@
       "height": 300,
       "width": 512,
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.0021}
+        {"platform-tag-contains": "", "threshold": 0.0023}
       ]
     }
   },

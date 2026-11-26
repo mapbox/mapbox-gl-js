@@ -17,6 +17,7 @@
 - Fix `setData` and `updateData` calls made while a GeoJSON source is still loading data being applied as the wrong kind of update, which could discard or wrongly merge features.
 - Fix custom sources occasionally showing an outdated tile image after `update()` is called several times in quick succession.
 - Compile fewer shader variants when shadows are disabled and for symbols on the globe.
+- Fix a faint seam between repeats of a `line-pattern` image, and pattern images being slightly squeezed along the line.
 
 ## 3.36.0
 

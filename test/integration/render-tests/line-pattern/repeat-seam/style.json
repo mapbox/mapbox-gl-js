@@ -1,0 +1,43 @@
+{
+  "version": 8,
+  "description": "An opaque tileable pattern renders without a lighter seam where one repeat meets the next.",
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 32,
+      "operations": [
+        ["addImage", "pattern", "./image/solid-8x8.png"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 4.3,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [[-20, 0], [20, 0]]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#fff"
+      }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": 16,
+        "line-pattern": "pattern"
+      }
+    }
+  ]
+}

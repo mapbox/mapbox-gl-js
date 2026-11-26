@@ -95,8 +95,8 @@ void main() {
 
     vec2 texel_size = 1.0 / u_texsize;
 
-    highp vec2 pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(x, y));
-    highp vec2 lod_pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(pattern_x, y));
+    highp vec2 pos = mix(pattern_tl * texel_size, pattern_br * texel_size, vec2(x, y));
+    highp vec2 lod_pos = mix(pattern_tl * texel_size, pattern_br * texel_size, vec2(pattern_x, y));
     vec4 color = textureLodCustom(u_image, pos, lod_pos);
 
 #ifdef APPLY_LUT_ON_GPU
@@ -106,7 +106,7 @@ void main() {
 #ifdef LINE_PATTERN_TRANSITION
     vec2 pattern_b_tl = vec2(pattern_b.xy);
     vec2 pattern_b_br = vec2(pattern_b.zw);
-    highp vec2 pos_b = mix(pattern_b_tl * texel_size - texel_size, pattern_b_br * texel_size + texel_size, vec2(x, y));
+    highp vec2 pos_b = mix(pattern_b_tl * texel_size, pattern_b_br * texel_size, vec2(x, y));
     vec4 color_b = textureLodCustom(u_image, pos_b, lod_pos);
     color = color * (1.0 - u_pattern_transition) + color_b * u_pattern_transition;
 #endif

@@ -7,7 +7,7 @@
       "height": 120,
       "image-threshold": [
         {"platform-tag-contains": "", "threshold": 0.00955},
-        {"platform-tag-contains": "native-android", "threshold": 0.029}
+        {"platform-tag-contains": "native-android", "threshold": 0.032}
       ]
     }
   },

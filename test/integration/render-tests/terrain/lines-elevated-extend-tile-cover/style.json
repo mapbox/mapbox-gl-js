@@ -4,8 +4,9 @@
     "test": {
       "height": 300,
       "width": 512,
+      "tickets": ["https://mapbox.atlassian.net/browse/MAPSPERF-391"],
       "image-threshold": [
-        {"platform-tag-contains": "", "threshold": 0.00224}
+        {"platform-tag-contains": "", "threshold": 0.0025}
       ]
     }
   },
