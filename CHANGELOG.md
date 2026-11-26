@@ -12,6 +12,7 @@
 - Fix light/camera/zoom-dependent config re-evaluation.
 - Fix fill-extrusion layers being hidden behind elevated raster layers at low pitch when terrain is disabled.
 - Fix style validation reporting a missing `glyphs` property for text in fragment styles and in the embedded `data` of imports.
+- Fix terrain and hillshade tiles occasionally rendering flat when a raster source with tiles of the same size is also on the map.
 
 ## 3.36.0-rc.1
 

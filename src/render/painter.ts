@@ -60,6 +60,7 @@ import {PerformanceUtils} from '../util/performance';
 import {ListPrecompiler, precompileListFor} from './list_precompiler';
 import {PRECOMPILE_LISTS} from './precompile_lists';
 
+import type {TextureFormat} from './texture';
 import type {FrcCoverageSnapshot} from '../source/frc_coverage_snapshot';
 import type {ElevationCoverageSnapshot} from '../source/elevation_coverage_snapshot';
 import type {FrcCoverageRenderer} from '../../3d-style/render/frc_coverage_renderer';
@@ -245,7 +246,7 @@ async function setupStandard(painter?: Painter) {
 class Painter {
     context: Context;
     transform: Transform;
-    _tileTextures: Record<number, Array<Texture>>;
+    _tileTextures: Record<string, Array<Texture>>;
     numSublayers: number;
     depthEpsilon: number;
     emptyProgramConfiguration!: ProgramConfiguration;
@@ -1970,17 +1971,17 @@ class Painter {
         if (texture.context !== this.context) {
             return; // Texture is not from this context, cannot cache it.
         }
-        const tileSize = texture.size![0];
-        const textures = this._tileTextures[tileSize];
+        const key = `${texture.format}:${texture.size![0]}`;
+        const textures = this._tileTextures[key];
         if (!textures) {
-            this._tileTextures[tileSize] = [texture];
+            this._tileTextures[key] = [texture];
         } else {
             textures.push(texture);
         }
     }
 
-    getTileTexture(size: number): null | Texture {
-        const textures = this._tileTextures[size];
+    getTileTexture(size: number, format: TextureFormat = WebGL2RenderingContext['RGBA8']): null | Texture {
+        const textures = this._tileTextures[`${format}:${size}`];
         return textures && textures.length > 0 ? textures.pop()! : null;
     }
 
@@ -2156,6 +2157,12 @@ class Painter {
             this.globeSharedBuffers.destroy();
         }
         this.emptyTexture.destroy();
+        for (const textures of Object.values(this._tileTextures)) {
+            for (const texture of textures) {
+                texture.destroy();
+            }
+        }
+        this._tileTextures = {};
         if (this.debugOverlayTexture) {
             this.debugOverlayTexture.destroy();
         }

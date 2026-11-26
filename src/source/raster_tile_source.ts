@@ -415,7 +415,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
 
     unloadTile(tile: Tile, callback?: Callback<undefined>) {
         // Cache the tile texture to avoid re-allocating Textures if they'll just be reloaded
-        if (tile.texture && tile.texture instanceof Texture) {
+        if ((tile.texture && tile.texture instanceof Texture) || tile.demTexture) {
             // Clean everything else up owned by the tile, but preserve the texture.
             // Destroy first to prevent racing with the texture cache being popped.
             tile.destroy(false);
@@ -423,6 +423,9 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
             // Save the texture to the cache
             if (tile.texture && tile.texture instanceof Texture) {
                 this.map.painter.saveTileTexture(tile.texture);
+            }
+            if (tile.demTexture) {
+                this.map.painter.saveTileTexture(tile.demTexture);
             }
         } else {
             tile.destroy();

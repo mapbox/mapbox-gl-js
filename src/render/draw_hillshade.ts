@@ -92,7 +92,7 @@ export function prepareDEMTexture(painter: Painter, tile: Tile, dem: DEMData) {
 
     context.pixelStoreUnpackPremultiplyAlpha.set(false);
     const textureStride = dem.stride;
-    tile.demTexture = tile.demTexture || painter.getTileTexture(textureStride);
+    tile.demTexture = tile.demTexture || painter.getTileTexture(textureStride, gl.R32F);
     const demImage = dem.getPixels();
 
     // Dem encoding should match painters expectations about floating point DEM usage

@@ -1200,7 +1200,7 @@ class Tile {
             delete this.neighboringTiles;
         }
 
-        if (this.demTexture) {
+        if (reload && this.demTexture) {
             this.demTexture.destroy();
             delete this.demTexture;
         }
