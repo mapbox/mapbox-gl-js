@@ -13,26 +13,31 @@
 - Fix fill-extrusion layers being hidden behind elevated raster layers at low pitch when terrain is disabled.
 - Fix style validation reporting a missing `glyphs` property for text in fragment styles and in the embedded `data` of imports.
 - Fix terrain and hillshade tiles occasionally rendering flat when a raster source with tiles of the same size is also on the map.
+- Fix GeoJSON sources occasionally showing outdated features after `setData` or `updateData` is called several times in quick succession.
+- Fix `setData` and `updateData` calls made while a GeoJSON source is still loading data being applied as the wrong kind of update, which could discard or wrongly merge features.
+- Fix custom sources occasionally showing an outdated tile image after `update()` is called several times in quick succession.
+- Compile fewer shader variants when shadows are disabled and for symbols on the globe.
 
-## 3.36.0-rc.1
+## 3.36.0
 
-- Remove unreachable shader code from the bundle.
-- Fix clean-up of telemetry classes.
+### Features and improvements ✨
+
 - Apply fog to symbols with `icon-pitch-alignment` or `text-pitch-alignment` set to `map`.
-- Fix map-aligned icons (such as road and oneway arrows) shimmering at high pitch.
-- Fix the docs and the warning of `Map#getFreeCameraOptions` and `Map#setFreeCameraOptions`, which said that free camera does not support the globe projection.
+- Add experimental `Map#startPerformanceStatisticsCollection` and `Map#stopPerformanceStatisticsCollection` to collect render time, render pass and layer timings, and draw call counters.
+- Remove unreachable shader code from the bundle.
+
+### Bug fixes 🐞
+
+- Fix clean-up of telemetry classes.
+- Fix map-aligned icons (such as road and one-way arrows) shimmering at high pitch.
+- Fix the docs and the warning for `Map#getFreeCameraOptions` and `Map#setFreeCameraOptions`, which said that free camera does not support the globe projection.
 - Fix raster array sampling on Android.
 - Fix HD road rendering in vector tiles with an extent other than 8192.
 - Fix a line-dasharray of [] to consistently draw a solid line.
 - Fix order-dependent symbol and fill-extrusion border rendering.
-- Fix GeoJSON sources occasionally showing outdated features after `setData` or `updateData` is called several times in quick succession.
-- Fix `setData` and `updateData` calls made while a GeoJSON source is still loading data being applied as the wrong kind of update, which could discard or wrongly merge features.
-- Fix custom sources occasionally showing an outdated tile image after `update()` is called several times in quick succession.
-- Fix a performance regression where fill layers re-uploaded every frame, which was especially slow with many feature states.
-- Add experimental `Map#startPerformanceStatisticsCollection` and `Map#stopPerformanceStatisticsCollection` to collect render time, render pass and layer timings, and draw call counters.
+- Fix a performance regression where fill layers were re-uploaded every frame, which was especially slow with many feature states.
 - Fix fill extrusion ground effect vertex & fragment shaders attribute mismatch.
 - Fix scale factor being applied twice to symbols with zoom- and data-dependent `text-size` or `icon-size` between zoom stops.
-- Compile fewer shader variants when shadows are disabled and for symbols on the globe.
 
 ## 3.35.2
 
