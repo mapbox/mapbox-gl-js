@@ -32,4 +32,5 @@ export interface ElevationCoverageSnapshot {
     equals: (other: ElevationCoverageTile[]) => boolean;
     getTilesIntersecting: (featureTile: CanonicalTileID) => ElevationCoverageTile[];
     empty: () => boolean;
+    hasTunnels: () => boolean;
 }

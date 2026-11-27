@@ -373,6 +373,11 @@ class SourceCache extends Evented {
         return false;
     }
 
+    _hasTunnelsInElevationSnapshot(): boolean {
+        const snapshot = this.map && this.map.painter ? this.map.painter.elevationCoverageSnapshot : null;
+        return !!snapshot && snapshot.hasTunnels();
+    }
+
     /**
     * For raster terrain source, backfill DEM to eliminate visible tile boundaries
     * @private
@@ -696,10 +701,11 @@ class SourceCache extends Evented {
                 }
 
                 // Extend tile cover beyond the ground-level horizon for underground tunnel geometry.
-                // Only extend if zoom >= 18 and any already-loaded tile contains tunnel features.
-                if (idealZoom >= 18 && this._hasTunnelGeometry()) {
+                // Only extend if zoom >= 18 and tunnel features are loaded. Sources that take road
+                // elevation from other sources (e.g. GeoJSON, traffic) learn about tunnels from the snapshot.
+                if (coveringZoom >= 18 && (this._hasTunnelGeometry() || this._hasTunnelsInElevationSnapshot())) {
                     const TUNNEL_TILE_COVER_DEPTH = 20.0; // meters
-                    const tunnelTileIDs = transform.extendTileCoverForTunnels(idealTileIDs, frustum, idealZoom, TUNNEL_TILE_COVER_DEPTH);
+                    const tunnelTileIDs = transform.extendTileCoverForTunnels(idealTileIDs, frustum, idealZoom, coveringZoom, TUNNEL_TILE_COVER_DEPTH);
                     for (const id of tunnelTileIDs) {
                         idealTileIDs.push(id);
                     }

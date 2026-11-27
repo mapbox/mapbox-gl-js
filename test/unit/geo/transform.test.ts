@@ -710,7 +710,7 @@ describe('transform', () => {
             expect(frustum.points[FAR_TL][2]).toBeLessThan(0);
             expect(frustum.points[FAR_TR][2]).toBeLessThan(0);
 
-            const tunnelTiles = transform.extendTileCoverForTunnels(visibleTiles, frustum, 20, 20.0);
+            const tunnelTiles = transform.extendTileCoverForTunnels(visibleTiles, frustum, 20, 20, 20.0);
             expect(tunnelTiles.length).toBeGreaterThan(0);
             expect(tunnelTiles.length).toBeLessThanOrEqual(3);
 
@@ -741,7 +741,7 @@ describe('transform', () => {
             ];
             const frustum = transform.getFrustum(18);
 
-            const tunnelTiles = transform.extendTileCoverForTunnels(visibleTiles, frustum, 18, 20.0);
+            const tunnelTiles = transform.extendTileCoverForTunnels(visibleTiles, frustum, 18, 18, 20.0);
             expect(tunnelTiles.length).toBeLessThanOrEqual(3);
 
             expect(tunnelTiles).toStrictEqual([
@@ -763,9 +763,27 @@ describe('transform', () => {
                 new OverscaledTileID(17, 0, 17, 30280, 52756)
             ];
             const frustum = transform.getFrustum(17);
-            const tunnelTiles = transform.extendTileCoverForTunnels(visibleTiles, frustum, 17, 20.0);
+            const tunnelTiles = transform.extendTileCoverForTunnels(visibleTiles, frustum, 17, 17, 20.0);
 
             expect(tunnelTiles).toStrictEqual([]);
+        });
+
+        test('Extend tile coverage for tunnels of a source below minimum zoom viewed above it', () => {
+            transform.resize(1024, 1024);
+            transform.zoom = 20.0;
+            transform.pitch = 65.0;
+            transform.bearing = 0.0;
+            transform.center = new LngLat(-96.830256, 33.08995);
+
+            const visibleTiles = [
+                new OverscaledTileID(20, 0, 16, 15140, 26378)
+            ];
+            const frustum = transform.getFrustum(16);
+            const tunnelTiles = transform.extendTileCoverForTunnels(visibleTiles, frustum, 16, 20, 20.0);
+
+            expect(tunnelTiles).toStrictEqual([
+                new OverscaledTileID(20, 0, 16, 15140, 26377)
+            ]);
         });
     });
 

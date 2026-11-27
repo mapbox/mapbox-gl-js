@@ -1166,12 +1166,13 @@ class Transform {
      * @param {Array<OverscaledTileID>} tiles tile cover that is extended
      * @param {Frustum} frustum view frustum
      * @param {number} maxZoom maximum zoom level
+     * @param {number} overscaledZoom camera zoom; the extension applies at 18 and above, even for sources whose maxZoom is lower
      * @param {number} tunnelDepth maximum tunnel depth in meters
      * @returns {Array<OverscaledTileID>} a set of extension tiles
      */
-    extendTileCoverForTunnels(tiles: Array<OverscaledTileID>, frustum: Frustum, maxZoom: number, tunnelDepth: number): Array<OverscaledTileID> {
+    extendTileCoverForTunnels(tiles: Array<OverscaledTileID>, frustum: Frustum, maxZoom: number, overscaledZoom: number, tunnelDepth: number): Array<OverscaledTileID> {
         const TUNNEL_TILE_COVER_MIN_ZOOM = 18;
-        if (maxZoom < TUNNEL_TILE_COVER_MIN_ZOOM) {
+        if (overscaledZoom < TUNNEL_TILE_COVER_MIN_ZOOM) {
             return [];
         }
 

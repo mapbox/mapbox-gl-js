@@ -1,0 +1,78 @@
+{
+    "description": "Traffic from a z16 source, elevated on a tunnel that continues past the ground horizon into the next z16 tile, must load that tile when viewed at z20.",
+    "version": 8,
+    "metadata": {
+        "test": {
+            "mapMode": "static",
+            "width": 256,
+            "height": 128
+        }
+    },
+    "center": [
+        -123.3028564,
+        -48.872211
+    ],
+    "zoom": 20,
+    "pitch": 65,
+    "bearing": 0,
+    "sources": {
+        "hd-roads": {
+            "type": "vector",
+            "tileSize": 512,
+            "maxzoom": 18,
+            "tiles": [
+                "local://tiles/hd/hd-road-{z}-{x}-{y}.mvt"
+            ],
+            "vector_layers": [
+                {
+                    "id": "hd_road_polygon"
+                },
+                {
+                    "id": "hd_road_elevation"
+                }
+            ]
+        },
+        "hd-traffic": {
+            "type": "vector",
+            "tileSize": 512,
+            "maxzoom": 16,
+            "tiles": [
+                "local://tiles/traffic/traffic-hd-{z}-{x}-{y}.mvt"
+            ]
+        }
+    },
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "rgb(234, 243, 240)"
+            }
+        },
+        {
+            "id": "road-base",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_polygon",
+            "layout": {
+                "fill-elevation-reference": "hd-road-base"
+            },
+            "paint": {
+                "fill-color": "hsl(212, 25%, 71%)"
+            }
+        },
+        {
+            "id": "elevated-traffic",
+            "type": "line",
+            "source": "hd-traffic",
+            "source-layer": "traffic",
+            "layout": {
+                "line-elevation-reference": "hd-road-markup"
+            },
+            "paint": {
+                "line-width": 40,
+                "line-color": "#cc1100"
+            }
+        }
+    ]
+}

@@ -29,6 +29,7 @@ export function compareCoverageTiles(a: ElevationCoverageTile, b: ElevationCover
 
 export class ElevationCoverageSnapshot implements IElevationCoverageSnapshot {
     tiles: ElevationCoverageTile[];
+    _hasTunnels: boolean | undefined;
 
     constructor(tiles: ElevationCoverageTile[] = []) {
         this.tiles = tiles;
@@ -60,6 +61,13 @@ export class ElevationCoverageSnapshot implements IElevationCoverageSnapshot {
 
     empty(): boolean {
         return this.tiles.length === 0;
+    }
+
+    hasTunnels(): boolean {
+        if (this._hasTunnels === undefined) {
+            this._hasTunnels = this.tiles.some((tile) => tile.features.some((feature) => feature.heightRange.min < 0.0));
+        }
+        return this._hasTunnels;
     }
 }
 
