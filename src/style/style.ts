@@ -408,8 +408,6 @@ class Style extends Evented<MapEvents> {
     z!: number;
 
     _has3DLayers: boolean;
-    _hasCircleLayers: boolean;
-    _hasSymbolLayers: boolean;
 
     _worldview: string | undefined;
     _hasAppearances: boolean;
@@ -462,8 +460,6 @@ class Style extends Evented<MapEvents> {
         this._hasAppearances = false;
 
         this._has3DLayers = false;
-        this._hasCircleLayers = false;
-        this._hasSymbolLayers = false;
 
         this._importedAsBasemap = false;
 
@@ -1424,8 +1420,6 @@ class Style extends Evented<MapEvents> {
 
         this._mergedSlots = [];
         this._has3DLayers = false;
-        this._hasCircleLayers = false;
-        this._hasSymbolLayers = false;
 
         this.forEachFragmentStyle((style: Style) => {
             for (const layerId of style._order) {
@@ -1465,8 +1459,6 @@ class Style extends Evented<MapEvents> {
                         this._has3DLayers = true;
                         last3DLayerIdx = this._mergedOrder.length - 1;
                     }
-                    if (layer.type === 'circle') this._hasCircleLayers = true;
-                    if (layer.type === 'symbol') this._hasSymbolLayers = true;
                     if (layer.type === 'clip') this._clipLayerPresent = true;
                 }
             }
@@ -2644,15 +2636,6 @@ class Style extends Evented<MapEvents> {
         return sourceCache && sourceCache.getSource();
     }
 
-    getOwnSources(): Source[] {
-        const sources: Source[] = [];
-        for (const id in this._otherSourceCaches) {
-            const sourceCache = this.getOwnSourceCache(id);
-            if (sourceCache) sources.push(sourceCache.getSource());
-        }
-        return sources;
-    }
-
     areTilesLoaded(): boolean {
         const sources = this._mergedSourceCaches;
         for (const id in sources) {
@@ -3339,22 +3322,6 @@ class Style extends Evented<MapEvents> {
      */
     hasLayer(id: string): boolean {
         return id in this._mergedLayers;
-    }
-
-    /**
-     * Checks if a specific layer type is present within the style.
-     *
-     * @param {string} type Type of the desired layer.
-     * @returns {boolean} A boolean specifying if the given layer type is present.
-     */
-    hasLayerType(type: string): boolean {
-        for (const layerId in this._layers) {
-            const layer = this._layers[layerId];
-            if (layer!.type === type) {
-                return true;
-            }
-        }
-        return false;
     }
 
     setLayerZoomRange(layerId: string, minzoom?: number | null, maxzoom?: number | null) {
@@ -5257,14 +5224,6 @@ class Style extends Evented<MapEvents> {
 
     has3DLayers(): boolean {
         return this._has3DLayers;
-    }
-
-    hasSymbolLayers(): boolean {
-        return this._hasSymbolLayers;
-    }
-
-    hasCircleLayers(): boolean {
-        return this._hasCircleLayers;
     }
 
     isLayerClipped(layer: TypedStyleLayer, source?: Source | null): boolean {

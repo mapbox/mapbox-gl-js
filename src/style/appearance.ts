@@ -137,24 +137,6 @@ class SymbolAppearance {
         return (textSizeProperty || textOffsetProperty || textRotateProperty);
     }
 
-    hasIconPaintProperties() {
-        if (!this.unevaluatedPaint) return false;
-        // Iterate appearance-only paint keys (excludes -use-theme secondaries).
-        // symbol-z-offset is shared between icon and text — included in both checks intentionally.
-        return (Object.keys(this.unevaluatedPaint._values) as Array<keyof AppearancePaintProps>)
-            .filter(k => !k.endsWith('-use-theme'))
-            .some(k => (k.startsWith('icon-') || k === 'symbol-z-offset') && this.hasPaintProperty(k));
-    }
-
-    hasTextPaintProperties() {
-        if (!this.unevaluatedPaint) return false;
-        // Iterate appearance-only paint keys (excludes -use-theme secondaries).
-        // symbol-z-offset is shared between icon and text — included in both checks intentionally.
-        return (Object.keys(this.unevaluatedPaint._values) as Array<keyof AppearancePaintProps>)
-            .filter(k => !k.endsWith('-use-theme'))
-            .some(k => (k.startsWith('text-') || k === 'symbol-z-offset') && this.hasPaintProperty(k));
-    }
-
     hasLayoutProperty(name: keyof AppearanceLayoutProps) {
         return this.unevaluatedLayout && this.unevaluatedLayout._values[name].value.value !== undefined;
     }

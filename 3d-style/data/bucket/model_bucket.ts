@@ -20,7 +20,7 @@ import type {ElevationFeature} from '../../elevation/elevation_feature';
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
 import type {ReplacementSource, Region} from '../../../3d-style/source/replacement_source';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
-import type {mat3, mat4} from 'gl-matrix';
+import type {mat4} from 'gl-matrix';
 import type {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../../src/source/tile_id';
 import type {
     Bucket,
@@ -113,20 +113,6 @@ class PerModelAttributes {
         const offset = index * 16;
         const va = this.instancedDataArray.float32;
         return [va[offset + 4]!, va[offset + 5]!, va[offset + 6]!];
-    }
-
-    rotationScaleForInstance(index: number): mat3 {
-        const offset = index * 16;
-        const va = this.instancedDataArray.float32;
-        return [va[offset + 7]!,
-            va[offset + 8]!,
-            va[offset + 9]!,
-            va[offset + 10]!,
-            va[offset + 11]!,
-            va[offset + 12]!,
-            va[offset + 13]!,
-            va[offset + 14]!,
-            va[offset + 15]!];
     }
 
     transformForInstance(index: number): mat4 {

@@ -97,7 +97,7 @@ export function drawModelBounds(painter: Painter, aabb: Aabb, mvp: mat4) {
         mat4.multiply(boundsMvpScratch, mvp, boundsFaceMatrixScratch);
         program.draw(painter, gl.LINE_STRIP, DepthMode.disabled, StencilMode.disabled, ColorMode.alphaBlended, CullFaceMode.disabled,
             debugUniformValues(boundsMvpScratch, color), '$debug',
-            painter.debugBuffer, painter.debugIndexBuffer, painter.debugSegments);
+            painter.tileExtentBuffer, painter.debugIndexBuffer, painter.debugSegments);
     }
 }
 
@@ -172,7 +172,7 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
         tile._makeDebugTileBoundsBuffers(painter.context, tr.projection);
     }
 
-    const debugBuffer = tile._tileDebugBuffer || painter.debugBuffer;
+    const debugBuffer = tile._tileDebugBuffer || painter.tileExtentBuffer;
     const debugIndexBuffer = tile._tileDebugIndexBuffer || painter.debugIndexBuffer;
     const debugSegments = tile._tileDebugSegments || painter.debugSegments;
 
@@ -191,7 +191,7 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
 
     const tileSize = sourceCache.getTile(coord).tileSize;
     const scaleRatio = (512 / Math.min(tileSize, 512) * (coord.overscaledZ / tr.zoom)) * 0.5;
-    const debugTextBuffer = tile._tileDebugTextBuffer || painter.debugBuffer;
+    const debugTextBuffer = tile._tileDebugTextBuffer || painter.tileExtentBuffer;
     const debugTextIndexBuffer = tile._tileDebugTextIndexBuffer || painter.quadTriangleIndexBuffer;
     const debugTextSegments = tile._tileDebugTextSegments || painter.debugSegments;
 

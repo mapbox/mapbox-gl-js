@@ -677,7 +677,7 @@ function getAppearanceImagePosition(bucket: SymbolBucket, symbolLayer: SymbolSty
     if (appearanceIconImage) {
         const icon = bucket.getResolvedImageFromTokens(appearanceIconImage as string);
         // Use the appearance's icon-size if defined, otherwise fall back to the layout's icon-size.
-        // This must match getCombinedIconPrimary's logic (used when building iconDependencies),
+        // This must match getCombinedIconVariants's logic (used when building iconDependencies),
         // so that the image variant key matches what was stored in iconPositions.
         const unevaluatedIconSize = (appearance.hasLayoutProperty('icon-size') ?
             appearance.getUnevaluatedLayoutProperty('icon-size') :

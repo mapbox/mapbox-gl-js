@@ -1555,25 +1555,6 @@ export type MapEvents = {
     'telemetry': TelemetryEventData;
 
     /**
-     * Fired after speed index calculation is completed if `speedIndexTiming` option has been set to `true`.
-     *
-     * @private
-     * @event speedindexcompleted
-     * @memberof Map
-     * @instance
-     * @example
-     * // Initialize the map
-     * var map = new mapboxgl.Map({});
-     * map.speedIndexTiming = true;
-     * // Set an event listener that fires
-     * // after speed index calculation is completed.
-     * map.on('speedindexcompleted', function() {
-     *   console.log(`speed index is ${map.speedIndexNumber}`);
-     * });
-     */
-    'speedindexcompleted': {speedIndex: number};
-
-    /**
      * Fired in worker.js after sprite loaded.
      *
      * @event pluginStateChange
@@ -1597,21 +1578,6 @@ export type MapEvents = {
      * @private
      */
     'colorthemeset': void;
-
-    /**
-     * @private
-     */
-    'gpu-timing-frame': {cpuTime: number, gpuTime: number};
-
-    /**
-     * @private
-     */
-    'gpu-timing-layer': {layerTimes: {[layerId: string]: number}};
-
-    /**
-     * @private
-     */
-    'gpu-timing-deferred-render': {gpuTime: number};
 };
 
 /**

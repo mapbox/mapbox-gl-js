@@ -1325,6 +1325,21 @@ describe('Vertex morphing', () => {
     });
 });
 
+function isLayerOrderingCorrect(map: Map): boolean {
+    const style = map.painter.style;
+    const layerCount = style.order.length;
+    let drapedMax = -1;
+    let immediateMin = layerCount;
+    for (let i = 0; i < layerCount; ++i) {
+        if (style.isLayerDraped(style._mergedLayers[style.order[i]])) {
+            drapedMax = Math.max(drapedMax, i);
+        } else {
+            immediateMin = Math.min(immediateMin, i);
+        }
+    }
+    return immediateMin > drapedMax;
+}
+
 describe('Render cache efficiency', () => {
     describe('Optimized for terrain, various efficiency', () => {
         let map: any;
@@ -1398,8 +1413,8 @@ describe('Render cache efficiency', () => {
                 'type': 'symbol',
                 'source': 'geojson'
             });
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            expect(isLayerOrderingCorrect(map)).toBeTruthy();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('undraped1');
         });
@@ -1423,8 +1438,8 @@ describe('Render cache efficiency', () => {
                 'type': 'symbol',
                 'source': 'geojson'
             });
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            expect(isLayerOrderingCorrect(map)).toBeTruthy();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped1');
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -1458,8 +1473,8 @@ describe('Render cache efficiency', () => {
                 'type': 'fill',
                 'source': 'geojson'
             });
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            expect(isLayerOrderingCorrect(map)).toBeTruthy();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped1');
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -1495,8 +1510,8 @@ describe('Render cache efficiency', () => {
                 'type': 'fill',
                 'source': 'geojson'
             });
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            expect(isLayerOrderingCorrect(map)).toBeTruthy();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped1');
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -1580,8 +1595,8 @@ describe('Render cache efficiency', () => {
                 'type': 'symbol',
                 'source': 'geojson'
             });
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            expect(isLayerOrderingCorrect(map)).toBeTruthy();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('undraped1');
         });
@@ -1605,8 +1620,8 @@ describe('Render cache efficiency', () => {
                 'type': 'symbol',
                 'source': 'geojson'
             });
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            expect(isLayerOrderingCorrect(map)).toBeTruthy();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped1');
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -1640,8 +1655,8 @@ describe('Render cache efficiency', () => {
                 'type': 'fill',
                 'source': 'geojson'
             });
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            expect(isLayerOrderingCorrect(map)).toBeTruthy();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped1');
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -1677,8 +1692,8 @@ describe('Render cache efficiency', () => {
                 'type': 'fill',
                 'source': 'geojson'
             });
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            expect(isLayerOrderingCorrect(map)).toBeTruthy();
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped1');
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access

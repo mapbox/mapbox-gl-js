@@ -81,7 +81,6 @@ describe('IndoorControl', () => {
     test('renders all floors if <= 5 floors (no arrows)', () => {
         const indoorManager = createMockIndoorManager();
         const map = createMockMap(indoorManager);
-        map._setIndoorActiveFloorsVisibility = vi.fn();
         map._selectIndoorFloor = vi.fn();
 
         const control = new IndoorControl();
@@ -265,7 +264,6 @@ describe('IndoorControl', () => {
     test('clicking selected floor does not trigger update (blink fix)', () => {
         const indoorManager = createMockIndoorManager();
         const map = createMockMap(indoorManager);
-        map._setIndoorActiveFloorsVisibility = vi.fn();
         map._selectIndoorFloor = vi.fn();
 
         const control = new IndoorControl();
@@ -289,7 +287,6 @@ describe('IndoorControl', () => {
     test('clicking unselected floor triggers update', () => {
         const indoorManager = createMockIndoorManager();
         const map = createMockMap(indoorManager);
-        map._setIndoorActiveFloorsVisibility = vi.fn();
         map._selectIndoorFloor = vi.fn();
 
         const control = new IndoorControl();

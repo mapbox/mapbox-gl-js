@@ -132,6 +132,8 @@ export class ElevationFeature {
     id: number;
     constantHeight: number | undefined;
     heightRange: Range;
+    // Original tile boundaries of the elevation curve scaled to the current zoom level. Useful when e.g. a
+    // continuous bridge split into adjacent tiles (two elevation features) is joined into one on a lower zoom tile.
     safeArea: Bounds;
     vertices = new Array<Vertex>();
     vertexProps = new Array<VertexProps>();
@@ -234,13 +236,6 @@ export class ElevationFeature {
         const len = vec3.length(norm);
 
         return len > 0.0 ? vec3.scale(norm, norm, 1.0 / len) : vec3.set(norm, 0, 0, 1);
-    }
-
-    // Safe area describes original tile boundaries of the elevation curve scaled to the current zoom level.
-    // This is useful in cases where e.g. a continuous bridge that's been initially split into adjacent tiles,
-    // and hence into two different elevation features, is cojoined into one on a lower zoom level tile.
-    getSafeArea() {
-        return this.safeArea;
     }
 
     // Returns true whether this elevation feature describes a tunnel

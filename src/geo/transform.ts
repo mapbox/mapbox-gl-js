@@ -576,28 +576,26 @@ class Transform {
     }
 
     _updateCameraOnTerrain() {
-        const elevationAtCenter = this.elevation ? this.elevation.getAtPoint(this.locationCoordinate(this.center), Number.NEGATIVE_INFINITY) : Number.NEGATIVE_INFINITY;
-        const usePreviousCenter = this.elevation && elevationAtCenter === Number.NEGATIVE_INFINITY && this.elevation.visibleDemTiles.length > 0 && this.elevation.exaggeration() > 0 &&
-            this._centerAltitudeValidForExaggeration;
-        if (!this._elevation || (elevationAtCenter === Number.NEGATIVE_INFINITY && !(usePreviousCenter && this._centerAltitude))) {
+        const elevation = this._elevation;
+        const elevationAtCenter = elevation ? elevation.getAtPoint(this.locationCoordinate(this.center), Number.NEGATIVE_INFINITY) : Number.NEGATIVE_INFINITY;
+        const exaggeration = elevation ? elevation.exaggeration() : 0;
+        const prevExaggeration = this._centerAltitudeValidForExaggeration;
+        const usePreviousCenter = elevation && elevationAtCenter === Number.NEGATIVE_INFINITY && elevation.visibleDemTiles.length > 0 && exaggeration > 0 && prevExaggeration;
+        if (!elevation || (elevationAtCenter === Number.NEGATIVE_INFINITY && !(usePreviousCenter && this._centerAltitude))) {
             // Elevation data not loaded yet, reset
             this._centerAltitude = 0;
             this._seaLevelZoom = null;
             this._centerAltitudeValidForExaggeration = undefined;
             return;
         }
-        const elevation: Elevation = this._elevation;
-        if (usePreviousCenter || (this._centerAltitude && this._centerAltitudeValidForExaggeration &&
-                                  elevation.exaggeration() && this._centerAltitudeValidForExaggeration !== elevation.exaggeration())) {
-            assert(this._centerAltitudeValidForExaggeration);
-            const previousExaggeration = this._centerAltitudeValidForExaggeration;
+        if (usePreviousCenter || (this._centerAltitude && prevExaggeration && exaggeration && prevExaggeration !== exaggeration)) {
+            assert(prevExaggeration);
             // scale down the centerAltitude
-            this._centerAltitude = this._centerAltitude / previousExaggeration * elevation.exaggeration();
-            this._centerAltitudeValidForExaggeration = elevation.exaggeration();
+            this._centerAltitude = this._centerAltitude / prevExaggeration * exaggeration;
         } else {
             this._centerAltitude = elevationAtCenter || 0;
-            this._centerAltitudeValidForExaggeration = elevation.exaggeration();
         }
+        this._centerAltitudeValidForExaggeration = exaggeration;
         this._updateSeaLevelZoom();
     }
 

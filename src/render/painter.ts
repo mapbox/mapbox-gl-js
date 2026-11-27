@@ -99,11 +99,6 @@ export type DepthPrePass = 'initialize' | 'reset' | 'geometry';
 export type EmissiveMode = 'constant' | 'dual-source-blending' | 'mrt-fallback' | 'mrt-full-rgba';
 export type EmissiveColorPrecision = 'approximate' | 'exact';
 
-export type CanvasCopyInstances = {
-    canvasCopies: WebGLTexture[];
-    timeStamps: number[];
-};
-
 export type CreateProgramParams = {
     config?: ProgramConfiguration | null;
     defines?: DynamicDefinesType[];
@@ -156,11 +151,8 @@ type PainterOptions = {
     rotating: boolean;
     zooming: boolean;
     moving: boolean;
-    gpuTiming: boolean;
-    gpuTimingDeferredRender: boolean;
     fadeDuration: number;
     isInitialLoad: boolean;
-    speedIndexTiming: boolean;
     wireframe: WireframeOptions;
     paintStartTimeStamp: number;
 };
@@ -170,9 +162,6 @@ type TileBoundsBuffers = {
     tileBoundsIndexBuffer: IndexBuffer;
     tileBoundsSegments: SegmentVector;
 };
-
-type GPUTimer = {calls: number; cpuTime: number; query: WebGLQuery};
-type GPUTimers = Record<string, GPUTimer>;
 
 type DrawStyleLayer = (
     painter: Painter,
@@ -254,7 +243,6 @@ class Painter {
     height!: number;
     tileExtentBuffer!: VertexBuffer;
     tileExtentSegments!: SegmentVector;
-    debugBuffer!: VertexBuffer;
     debugIndexBuffer!: IndexBuffer;
     debugSegments!: SegmentVector;
     viewportBuffer!: VertexBuffer;
@@ -303,8 +291,6 @@ class Painter {
     symbolFadeChange!: number;
     // This frame's timestamp, reused by the symbol program's GLOBAL_PLACEMENT_FADE uniforms
     now!: number;
-    gpuTimers: GPUTimers;
-    deferredRenderGpuTimeQueries: WebGLQuery[];
     emptyTexture!: Texture;
     identityMat!: mat4;
     debugOverlayTexture!: Texture;
@@ -313,9 +299,6 @@ class Painter {
     _terrainRendererRetryPending!: boolean;
     _forceTerrainMode!: boolean;
     globeSharedBuffers: GlobeSharedBuffers | null | undefined;
-    tileLoaded!: boolean;
-    frameCopies: Array<WebGLTexture>;
-    loadTimeStamps: Array<number>;
     _backgroundTiles: Record<number, Tile>;
     _atmosphere: Atmosphere | null | undefined;
     _rain?: InstanceType<NonNullable<typeof HD.Rain>>;
@@ -410,8 +393,6 @@ class Painter {
         this.transform = transform;
         this.cache = new Map();
         this._tileTextures = {};
-        this.frameCopies = [];
-        this.loadTimeStamps = [];
         this.frcCoverageSnapshot = null;
         this.elevationCoverageSnapshot = null;
         this.elevationProvidersReady = undefined;
@@ -479,8 +460,6 @@ class Painter {
         this.numSublayers = SourceCache.maxUnderzooming + SourceCache.maxOverzooming + 1;
         this.depthEpsilon = 1 / Math.pow(2, 16);
 
-        this.deferredRenderGpuTimeQueries = [];
-        this.gpuTimers = {};
         this.frameCounter = 0;
         this.frameTimeDelta = 0;
         this.lastPaintStartTimeStamp = 0;
@@ -629,12 +608,6 @@ class Painter {
         this.tileExtentBuffer = context.createVertexBuffer(tileExtentArray, posAttributes.members);
         this.tileExtentSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
 
-        const debugArray = new PosArray();
-        debugArray.emplaceBack(0, 0);
-        debugArray.emplaceBack(EXTENT, 0);
-        debugArray.emplaceBack(0, EXTENT);
-        debugArray.emplaceBack(EXTENT, EXTENT);
-        this.debugBuffer = context.createVertexBuffer(debugArray, posAttributes.members);
         this.debugSegments = SegmentVector.simpleSegment(0, 0, 4, 5);
 
         const viewportArray = new PosArray();
@@ -669,7 +642,6 @@ class Painter {
 
         const gl = this.context.gl;
         this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
-        this.loadTimeStamps.push(performance.now());
     }
 
     getMercatorTileBoundsBuffers(): TileBoundsBuffers {
@@ -1780,11 +1752,6 @@ class Painter {
         this.context.setDefault();
         this.frameCounter = (this.frameCounter + 1) % Number.MAX_SAFE_INTEGER;
 
-        if (this.tileLoaded && this.options.speedIndexTiming) {
-            this.loadTimeStamps.push(performance.now());
-            this.saveCanvasCopy();
-        }
-
         if (!conflationActiveThisFrame) {
             this.conflationActive = false;
         }
@@ -1794,8 +1761,6 @@ class Painter {
     }
 
     prepareLayer(layer: TypedStyleLayer) {
-        this.gpuTimingStart(layer);
-
         const {unsupportedLayers} = this.transform.projection;
         const isLayerSupported = unsupportedLayers ? !unsupportedLayers.includes(layer.type) : true;
         const isCustomLayerWithTerrain = this.terrain && layer.type === 'custom';
@@ -1804,8 +1769,6 @@ class Painter {
             const sourceCache = this.style.getLayerSourceCache(layer);
             prepare[layer.type as keyof typeof prepare]!(layer, sourceCache!, this);
         }
-
-        this.gpuTimingEnd();
     }
 
     renderLayer(painter: Painter, sourceCache: SourceCache | undefined, layer: TypedStyleLayer, coords?: Array<OverscaledTileID>) {
@@ -1815,7 +1778,6 @@ class Painter {
         this.id = layer.id;
 
         const startTime = this._sectionStartTime();
-        this.gpuTimingStart(layer);
         if ((!painter.transform.projection.unsupportedLayers || !painter.transform.projection.unsupportedLayers.includes(layer.type) ||
             (painter.terrain && layer.type === 'custom')) && layer.type !== 'clip' && layer.type !== 'slot' && layer.type !== 'placement-group' && draw[layer.type]) {
             draw[layer.type]!(painter, sourceCache!, layer, coords!, this.style.placement ? this.style.placement.variableOffsets : {}, this.options.isInitialLoad);
@@ -1827,7 +1789,6 @@ class Painter {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             if (layer.mayUse('Standard')) setupStandard(painter);
         }
-        this.gpuTimingEnd();
         PerformanceUtils.measureLowOverhead(PerformanceUtils.GROUP_RENDERING_DETAILED, `renderLayer: ${layer.type.toString()}`, startTime, undefined);
         this.context.performanceStatistics?.recordLayer(layer.id, startTime);
     }
@@ -1838,88 +1799,6 @@ class Painter {
      */
     _sectionStartTime(): number {
         return this.context.performanceStatistics ? performance.now() : PerformanceUtils.now();
-    }
-
-    gpuTimingStart(layer: TypedStyleLayer) {
-        if (!this.options.gpuTiming) return;
-        const ext = this.context.extTimerQuery;
-        const gl = this.context.gl;
-        // This tries to time the draw call itself, but note that the cost for drawing a layer
-        // may be dominated by the cost of uploading vertices to the GPU.
-        // To instrument that, we'd need to pass the layerTimers object down into the bucket
-        // uploading logic.
-        let layerTimer = this.gpuTimers[layer.id];
-        if (!layerTimer) {
-            layerTimer = this.gpuTimers[layer.id] = {
-                calls: 0,
-                cpuTime: 0,
-                query: gl.createQuery()
-            };
-        }
-        layerTimer.calls++;
-        gl.beginQuery(ext.TIME_ELAPSED_EXT, layerTimer.query);
-    }
-
-    gpuTimingDeferredRenderStart() {
-        if (this.options.gpuTimingDeferredRender) {
-            const ext = this.context.extTimerQuery;
-            const gl = this.context.gl;
-            const query = gl.createQuery();
-            this.deferredRenderGpuTimeQueries.push(query);
-            gl.beginQuery(ext.TIME_ELAPSED_EXT, query);
-        }
-    }
-
-    gpuTimingDeferredRenderEnd() {
-        if (!this.options.gpuTimingDeferredRender) return;
-        const ext = this.context.extTimerQuery;
-        const gl = this.context.gl;
-        gl.endQuery(ext.TIME_ELAPSED_EXT);
-    }
-
-    gpuTimingEnd() {
-        if (!this.options.gpuTiming) return;
-        const ext = this.context.extTimerQuery;
-        const gl = this.context.gl;
-        gl.endQuery(ext.TIME_ELAPSED_EXT);
-    }
-
-    collectGpuTimers(): GPUTimers {
-        const currentLayerTimers = this.gpuTimers;
-        this.gpuTimers = {};
-        return currentLayerTimers;
-    }
-
-    collectDeferredRenderGpuQueries(): WebGLQuery[] {
-        const currentQueries = this.deferredRenderGpuTimeQueries;
-        this.deferredRenderGpuTimeQueries = [];
-        return currentQueries;
-    }
-
-    queryGpuTimers(gpuTimers: GPUTimers): {[layerId: string]: number} {
-        const layers: Record<string, number> = {};
-        for (const layerId in gpuTimers) {
-            const gpuTimer = gpuTimers[layerId]!;
-            const ext = this.context.extTimerQuery;
-            const gl = this.context.gl;
-            const gpuTime = ext.getQueryParameter(gpuTimer.query, gl.QUERY_RESULT) / (1000 * 1000);
-            ext.deleteQueryEXT(gpuTimer.query);
-            layers[layerId] = gpuTime;
-        }
-        return layers;
-    }
-
-    queryGpuTimeDeferredRender(gpuQueries: WebGLQuery[]): number {
-        if (!this.options.gpuTimingDeferredRender) return 0;
-        const gl = this.context.gl;
-
-        let gpuTime = 0;
-        for (const query of gpuQueries) {
-            gpuTime += gl.getQueryParameter(query, gl.QUERY_RESULT) / (1000 * 1000);
-            gl.deleteQuery(query);
-        }
-
-        return gpuTime;
     }
 
     /**
@@ -2212,32 +2091,6 @@ class Painter {
         if (cutoffParams) {
             program.setCutoffUniformValues(context, cutoffParams.uniformValues);
         }
-    }
-
-    setTileLoadedFlag(flag: boolean) {
-        this.tileLoaded = flag;
-    }
-
-    saveCanvasCopy() {
-        const canvas = this.canvasCopy();
-        if (!canvas) return;
-        this.frameCopies.push(canvas);
-        this.tileLoaded = false;
-    }
-
-    canvasCopy(): WebGLTexture | null | undefined {
-        const gl = this.context.gl;
-        const texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, 0);
-        return texture;
-    }
-
-    getCanvasCopiesAndTimestamps(): CanvasCopyInstances {
-        return {
-            canvasCopies: this.frameCopies,
-            timeStamps: this.loadTimeStamps
-        };
     }
 
     averageElevationNeedsEasing(): boolean {

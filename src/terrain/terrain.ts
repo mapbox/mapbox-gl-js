@@ -291,7 +291,6 @@ export class Terrain extends Elevation {
     _mockSourceCache: MockSourceCache;
     orthoMatrix: Float32Array;
     enabled!: boolean;
-    renderMode!: number;
 
     _visibleDemTiles: Array<Tile>;
     _sourceTilesOverlap: {
@@ -901,13 +900,9 @@ export class Terrain extends Elevation {
         context.bindFramebuffer.set(null);
         context.viewport.set([0, 0, painter.width, painter.height]);
 
-        painter.gpuTimingDeferredRenderStart();
-
         this.renderingToTexture = false;
         drawTerrainRaster(painter, this, this.proxySourceCache, accumulatedDrapes, this._updateTimestamp);
         this.renderingToTexture = true;
-
-        painter.gpuTimingDeferredRenderEnd();
 
         accumulatedDrapes.splice(0, accumulatedDrapes.length);
     }
@@ -1048,23 +1043,6 @@ export class Terrain extends Elevation {
     postRender() {
         // Make sure we consumed all the draped terrain batches at this point
         assert(this._drapedRenderBatches.length === 0);
-    }
-
-    isLayerOrderingCorrect(style: Style): boolean {
-        const layerCount = style.order.length;
-
-        let drapedMax = -1;
-        let immediateMin = layerCount;
-        for (let i = 0; i < layerCount; ++i) {
-            const layer = style._mergedLayers[style.order[i]!];
-            if (this._style.isLayerDraped(layer!)) {
-                drapedMax = Math.max(drapedMax, i);
-            } else {
-                immediateMin = Math.min(immediateMin, i);
-            }
-        }
-
-        return immediateMin > drapedMax;
     }
 
     override getMinElevationBelowMSL(): number {

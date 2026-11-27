@@ -3,7 +3,6 @@ import {LivePerformanceMarkers} from '../util/live_performance';
 
 export const PerformanceMarkers = {
     libraryEvaluate: 'library-evaluate',
-    frameGPU: 'frame-gpu',
     frame: 'frame'
 } as const;
 
@@ -17,8 +16,6 @@ export type PerformanceMark = {
 };
 
 export type PerformanceMarkDetail = {
-    gpuTime?: number;
-    cpuTime?: number;
     timestamp?: number
     isRenderFrame?: boolean;
 };
@@ -75,19 +72,6 @@ export const PerformanceUtils = {
                 color
             }
         }});
-    },
-
-    markWithDetails(grpMask: number, name: string, properties?: unknown[][], color?: PerformanceMeasureDevToolsColor) {
-        if ((grpMask & performanceUtilsGroupsMask) === 0) return;
-        performance.mark(name, {
-            detail: {
-                devtools: {
-                    dataType: "marker",
-                    color,
-                    properties,
-                }
-            }
-        });
     },
 
     // Based on console.timeStamp()

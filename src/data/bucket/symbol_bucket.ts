@@ -812,7 +812,6 @@ class SymbolBucket implements Bucket, SymbolSource {
     compareText!: {
         [_: string]: Array<Point>;
     };
-    fadeStartTime!: number;
     sortFeaturesByKey: boolean;
     sortFeaturesByY: boolean;
     canOverlap: boolean;
@@ -1687,12 +1686,6 @@ class SymbolBucket implements Bucket, SymbolSource {
         }
 
         return {iconPrimary: undefined, iconSecondary: undefined};
-    }
-
-    getCombinedIconPrimary(appearance: SymbolAppearance, layer: SymbolStyleLayer, evaluationFeature: EvaluationFeature, canonical: CanonicalTileID, availableImages: ImageId[],
-        symbolFeature: SymbolFeature
-    ): ImageVariant | undefined {
-        return this.getCombinedIconVariants(appearance, layer, evaluationFeature, canonical, availableImages, symbolFeature).iconPrimary;
     }
 
     private updateSymbolInstanceIconVertices(

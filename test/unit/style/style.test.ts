@@ -2287,16 +2287,12 @@ test('Style#hasLayer, Style#has*Layers()', () => {
         expect(style.hasLayer('non_existing_fill_id')).toBeFalsy();
         expect(style.hasLayer('non_existing_line_id')).toBeFalsy();
 
-        expect(style.hasSymbolLayers()).toBeTruthy();
         expect(style.has3DLayers()).toBeFalsy();
-        expect(style.hasCircleLayers()).toBeFalsy();
 
         style.addLayer({id: 'first', source: 'geojson', type: 'fill-extrusion'});
         style.removeLayer('symbol_id');
 
-        expect(style.hasSymbolLayers()).toBeFalsy();
         expect(style.has3DLayers()).toBeTruthy();
-        expect(style.hasCircleLayers()).toBeFalsy();
     });
 });
 

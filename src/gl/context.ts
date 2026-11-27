@@ -26,7 +26,6 @@ type ClearArgs = {
 export type ContextOptions = {
     extTextureFilterAnisotropicForceOff?: boolean;
     extTextureFloatLinearForceOff?: boolean;
-    extStandardDerivativesForceOff?: boolean;
     forceManualRenderingForInstanceIDShaders?: boolean;
 };
 
@@ -97,16 +96,9 @@ class Context {
     extColorBufferFloat: EXT_color_buffer_float | null;
     // eslint-disable-next-line camelcase
     extDebugRendererInfo: WEBGL_debug_renderer_info | null;
-    extTimerQuery: {
-        /* EXT_disjoint_timer_query is not yet available as a TypeScript type */
-        TIME_ELAPSED_EXT: number;
-        getQueryParameter: (query: WebGLQuery, pname: GLenum) => GLuint;
-        deleteQueryEXT: (query: WebGLQuery) => void;
-    };
     // eslint-disable-next-line camelcase
     extTextureFloatLinear!: OES_texture_float_linear | null;
     options: ContextOptions;
-    maxPointSize!: number;
     extBlendFuncExtended: WebGL2BlendFuncExtended | null;
     // eslint-disable-next-line camelcase
     extParallelShaderCompile: KHR_parallel_shader_compile | null;
@@ -188,8 +180,6 @@ class Context {
         this.extRenderToTextureHalfFloat = gl.getExtension('EXT_color_buffer_half_float');
         this.extColorBufferFloat = gl.getExtension('EXT_color_buffer_float');
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query_webgl2');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
         // Query UBO limits for dynamic sizing (WebGL2 minimum: 16KB, 36 binding points)

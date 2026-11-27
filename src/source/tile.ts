@@ -141,9 +141,7 @@ class Tile {
     timeAdded!: number | null;
     fadeEndTime: number | undefined;
     collisionBoxArray: CollisionBoxArray | null | undefined;
-    redoWhenDone!: boolean;
     showCollisionBoxes!: boolean;
-    placementSource: unknown;
     actor: Actor<WorkerInbox> | null | undefined;
     vtLayers!: {
         [_: string]: VectorTileLayer;

@@ -549,27 +549,10 @@ class Aabb {
         return true;
     }
 
-    intersectsAabbXY(aabb: Aabb): boolean {
-        if (this.min[0] > aabb.max[0] || aabb.min[0] > this.max[0]) {
-            return false;
-        }
-        if (this.min[1] > aabb.max[1] || aabb.min[1] > this.max[1]) {
-            return false;
-        }
-        return true;
-    }
-
     encapsulate(aabb: Aabb) {
         for (let i = 0; i < 3; i++) {
             this.min[i] = Math.min(this.min[i]!, aabb.min[i]!);
             this.max[i] = Math.max(this.max[i]!, aabb.max[i]!);
-        }
-    }
-
-    encapsulatePoint(point: vec3) {
-        for (let i = 0; i < 3; i++) {
-            this.min[i] = Math.min(this.min[i]!, point[i]!);
-            this.max[i] = Math.max(this.max[i]!, point[i]!);
         }
     }
 

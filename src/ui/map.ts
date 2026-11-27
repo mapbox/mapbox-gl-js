@@ -35,7 +35,7 @@ import {RGBAImage} from '../util/image';
 import {Event, ErrorEvent} from '../util/evented';
 import {MapMouseEvent} from './events';
 import TaskQueue from '../util/task_queue';
-import {PerformanceUtils, PerformanceMarkers} from '../util/performance';
+import {PerformanceUtils} from '../util/performance';
 import {LivePerformanceMarkers, LivePerformanceUtils} from '../util/live_performance';
 import EasedVariable from '../util/eased_variable';
 import {DebugModule, prepareDebug} from '../../modules/debug';
@@ -525,7 +525,6 @@ export class Map extends Camera {
     _showTileAABBs?: boolean;
     _showOverdrawInspector!: boolean;
     _repaint?: boolean;
-    _vertices?: boolean;
     _canvas!: HTMLCanvasElement;
     _minTileCacheSize?: number;
     _maxTileCacheSize?: number;
@@ -570,7 +569,6 @@ export class Map extends Camera {
     _locale: Partial<typeof defaultLocale>;
     _removed!: boolean;
     _performanceStatisticsRequest: object | undefined;
-    _speedIndexTiming!: boolean;
     _clickTolerance: number;
     _cooperativeGestures: boolean;
     _silenceAuthErrors: boolean;
@@ -1248,7 +1246,7 @@ export class Map extends Camera {
             throw new Error(`minPitch must be greater than or equal to ${defaultMinPitch}`);
         }
 
-        if (minPitch >= defaultMinPitch && minPitch <= this.transform.maxPitch) {
+        if (minPitch <= this.transform.maxPitch) {
             this.transform.minPitch = minPitch;
             this._update();
 
@@ -2774,37 +2772,26 @@ export class Map extends Camera {
         {pixelRatio = 1, sdf = false, stretchX, stretchY, content}: Partial<StyleImageMetadata> = {}
     ) {
         this._lazyInitEmptyStyle();
-        const version = 0;
 
-        const imageId = ImageId.from(id);
+        let data: RGBAImage;
+        let userImage: StyleImageInterface | undefined;
+
         if (image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap)) {
-            const {width, height, data} = browser.getImageData(image);
-            this.style!.addImage(imageId, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version, usvg: false});
+            const {width, height, data: pixels} = browser.getImageData(image);
+            data = new RGBAImage({width, height}, pixels);
         } else if (image.width === undefined || image.height === undefined) {
             this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' +
                 'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')));
+            return;
         } else {
-            const {width, height} = image;
-            const userImage = (image as StyleImageInterface);
-            const data = userImage.data;
-
-            this.style!.addImage(imageId, {
-                data: new RGBAImage({width, height}, new Uint8Array(data)),
-                pixelRatio,
-                stretchX,
-                stretchY,
-                content,
-                sdf,
-                usvg: false,
-                version,
-                userImage
-            });
-
-            if (userImage.onAdd) {
-                userImage.onAdd(this, id);
-            }
+            userImage = image as StyleImageInterface;
+            data = new RGBAImage({width: image.width, height: image.height}, new Uint8Array(userImage.data));
         }
+
+        this.style!.addImage(ImageId.from(id), {data, pixelRatio, stretchX, stretchY, content, sdf, usvg: false, version: 0, userImage});
+
+        if (userImage && userImage.onAdd) userImage.onAdd(this, id);
     }
 
     /**
@@ -2856,9 +2843,8 @@ export class Map extends Camera {
 
         if (width !== existingImageWidth || height !== existingImageHeight) {
             this.fire(new ErrorEvent(new Error(
-                `The width and height of the updated image (${width}, ${height})
-                must be that same as the previous version of the image
-                (${existingImage.data!.width}, ${existingImage.data!.height})`)));
+                `The width and height of the updated image (${width}, ${height}) must be the same as the previous version ` +
+                `of the image (${existingImageWidth}, ${existingImageHeight})`)));
             return;
         }
 
@@ -4388,10 +4374,6 @@ export class Map extends Camera {
         if (this.style!.indoorManager) this.style!.indoorManager.selectFloor(floorId);
     }
 
-    _setIndoorActiveFloorsVisibility(activeFloorsVisible: boolean) {
-        if (this.style!.indoorManager) this.style!.indoorManager.setActiveFloorsVisibility(activeFloorsVisible);
-    }
-
     getIndoorTileOptions(source: string, scope: string): IndoorTileOptions | null {
         if (!this.style || !this.style.isIndoorEnabled() || !this.style.indoorManager) {
             return null;
@@ -4538,7 +4520,6 @@ export class Map extends Camera {
                         this.style._buildingIndex.hasLayerForSourceCache(event.sourceCacheId)) {
                     this.style._requestFullLabelPlacement();
                 }
-                this.painter.setTileLoadedFlag(true);
             }
         });
     }
@@ -4704,14 +4685,7 @@ export class Map extends Camera {
 
         ++this._frameId;
 
-        let gpuTimer!: WebGLQuery;
-        const extTimerQuery = this.painter.context.extTimerQuery;
         const frameStartTime = browser.now();
-        const gl = this.painter.context.gl;
-        if (this.listens('gpu-timing-frame')) {
-            gpuTimer = gl.createQuery();
-            gl.beginQuery(extTimerQuery.TIME_ELAPSED_EXT, gpuTimer);
-        }
 
         // A custom layer may have used the context asynchronously. Mark the state as dirty.
         this.painter.context.setDirty();
@@ -4812,9 +4786,6 @@ export class Map extends Camera {
                 showTimestamps: this.showTimestamps,
                 showLightDebug: this.showLightDebug,
                 showModelBounds: this.showModelBounds,
-                gpuTiming: !!this.listens('gpu-timing-layer'),
-                gpuTimingDeferredRender: !!this.listens('gpu-timing-deferred-render'),
-                speedIndexTiming: this.speedIndexTiming,
                 paintStartTimeStamp,
             });
 
@@ -4865,49 +4836,7 @@ export class Map extends Camera {
             this.style._releaseSymbolFadeTiles();
         }
 
-        if (gpuTimer) {
-            const renderCPUTime = browser.now() - frameStartTime;
-            gl.endQuery(extTimerQuery.TIME_ELAPSED_EXT);
-            setTimeout(() => {
-                const renderGPUTime = gl.getQueryParameter(gpuTimer, gl.QUERY_RESULT) / (1000 * 1000);
-                gl.deleteQuery(gpuTimer);
-                this.fire(new Event('gpu-timing-frame', {
-                    cpuTime: renderCPUTime,
-                    gpuTime: renderGPUTime
-                }));
-                PerformanceUtils.mark(PerformanceMarkers.frameGPU, {
-                    startTime: frameStartTime,
-                    detail: {
-                        gpuTime: renderGPUTime
-                    }
-                });
-            }, 50); // Wait 50ms to give time for all GPU calls to finish before querying
-        }
-
         PerformanceUtils.endMeasure(m);
-
-        if (this.listens('gpu-timing-layer')) {
-            // Resetting the Painter's per-layer timing queries here allows us to isolate
-            // the queries to individual frames.
-            const frameLayerQueries = this.painter.collectGpuTimers();
-
-            setTimeout(() => {
-                const renderedLayerTimes = this.painter.queryGpuTimers(frameLayerQueries);
-
-                this.fire(new Event('gpu-timing-layer', {
-                    layerTimes: renderedLayerTimes
-                }));
-            }, 50); // Wait 50ms to give time for all GPU calls to finish before querying
-        }
-
-        if (this.listens('gpu-timing-deferred-render')) {
-            const deferredRenderQueries = this.painter.collectDeferredRenderGpuQueries();
-
-            setTimeout(() => {
-                const gpuTime = this.painter.queryGpuTimeDeferredRender(deferredRenderQueries);
-                this.fire(new Event('gpu-timing-deferred-render', {gpuTime}));
-            }, 50); // Wait 50ms to give time for all GPU calls to finish before querying
-        }
 
         // Schedule another render frame if it's needed.
         //
@@ -4940,12 +4869,6 @@ export class Map extends Camera {
                 if (willIdle) {
                     this.fire(new Event('idle'));
                     this._isInitialLoad = false;
-                    // check the options to see if need to calculate the speed index
-                    if (this.speedIndexTiming) {
-                        const speedIndexNumber = this._calculateSpeedIndex();
-                        this.fire(new Event('speedindexcompleted', {speedIndex: speedIndexNumber}));
-                        this.speedIndexTiming = false;
-                    }
                 }
 
                 if (willIdle && this.style) {
@@ -5134,48 +5057,6 @@ export class Map extends Camera {
         // render (and deferred update after zoom recalculation), this needs to be called when removing terrain source.
         const adaptCameraAltitude = this._isDragging();
         this.painter.updateTerrain(this.style!, adaptCameraAltitude);
-    }
-
-    _calculateSpeedIndex(): number {
-        const finalFrame = this.painter.canvasCopy();
-        const canvasCopyInstances = this.painter.getCanvasCopiesAndTimestamps();
-        canvasCopyInstances.timeStamps.push(performance.now());
-
-        const gl = this.painter.context.gl;
-        const framebuffer = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-
-        function read(texture?: WebGLTexture | null) {
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture!, 0);
-            const pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
-            gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-            return pixels;
-        }
-
-        return this._canvasPixelComparison(read(finalFrame), canvasCopyInstances.canvasCopies.map(read), canvasCopyInstances.timeStamps);
-    }
-
-    _canvasPixelComparison(finalFrame: Uint8Array, allFrames: Uint8Array[], timeStamps: number[]): number {
-        let finalScore = timeStamps[1]! - timeStamps[0]!;
-        const numPixels = finalFrame.length / 4;
-
-        for (let i = 0; i < allFrames.length; i++) {
-            const frame = allFrames[i]!;
-            let cnt = 0;
-            for (let j = 0; j < frame.length; j += 4) {
-                if (frame[j] === finalFrame[j] &&
-                    frame[j + 1] === finalFrame[j + 1] &&
-                    frame[j + 2] === finalFrame[j + 2] &&
-                    frame[j + 3] === finalFrame[j + 3]) {
-                    cnt = cnt + 1;
-                }
-            }
-            //calculate the % visual completeness
-            const interval = timeStamps[i + 2]! - timeStamps[i + 1]!;
-            const visualCompletness = cnt / numPixels;
-            finalScore +=  interval * (1 - visualCompletness);
-        }
-        return finalScore;
     }
 
     /**
@@ -5523,24 +5404,6 @@ export class Map extends Camera {
     }
 
     /**
-     * Gets and sets a Boolean indicating whether the speedindex metric calculation is on or off
-     *
-     * @private
-     * @name speedIndexTiming
-     * @type {boolean}
-     * @instance
-     * @memberof Map
-     * @example
-     * map.speedIndexTiming = true;
-     */
-    get speedIndexTiming(): boolean { return !!this._speedIndexTiming; }
-    set speedIndexTiming(value: boolean) {
-        if (this._speedIndexTiming === value) return;
-        this._speedIndexTiming = value;
-        this._update();
-    }
-
-    /**
      * Gets and sets a Boolean indicating whether the map will visualize
      * the padding offsets.
      *
@@ -5716,9 +5579,6 @@ export class Map extends Camera {
             this.triggerRepaint();
         }
     }
-    // show vertices
-    get vertices(): boolean { return !!this._vertices; }
-    set vertices(value: boolean) { this._vertices = value; this._update(); }
 
     /**
     * Display tile AABBs for debugging

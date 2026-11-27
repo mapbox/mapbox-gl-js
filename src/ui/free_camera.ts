@@ -256,12 +256,6 @@ class FreeCamera {
         return [col[0], col[1], col[2]];
     }
 
-    getCameraToWorld(worldSize: number, pixelsPerMeter: number): mat4 {
-        const cameraToWorld = new Float64Array(16);
-        mat4.invert(cameraToWorld, this.getWorldToCamera(worldSize, pixelsPerMeter));
-        return cameraToWorld;
-    }
-
     getCameraToWorldMercator(): mat4 {
         return this._transform;
     }
