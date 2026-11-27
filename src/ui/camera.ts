@@ -1156,6 +1156,43 @@ class Camera extends Evented<MapEvents> {
         this._stop({keepGesture: 'ifPointerDown'});
 
         const tr = options.preloadOnly ? this.transform.clone() : this.transform;
+        const {zoomChanged, bearingChanged, pitchChanged} = this._applyCameraOptions(tr, options);
+
+        if (options.preloadOnly) {
+            this._preloadTiles(tr);
+            return this;
+        }
+
+        this.fire(new Event('movestart', eventData))
+            .fire(new Event('move', eventData));
+
+        if (zoomChanged) {
+            this.fire(new Event('zoomstart', eventData))
+                .fire(new Event('zoom', eventData))
+                .fire(new Event('zoomend', eventData));
+        }
+
+        if (bearingChanged) {
+            this.fire(new Event('rotatestart', eventData))
+                .fire(new Event('rotate', eventData))
+                .fire(new Event('rotateend', eventData));
+        }
+
+        if (pitchChanged) {
+            this.fire(new Event('pitchstart', eventData))
+                .fire(new Event('pitch', eventData))
+                .fire(new Event('pitchend', eventData));
+        }
+
+        return this.fire(new Event('moveend', eventData));
+    }
+
+    /**
+     * Applies camera options to the given transform with the same constraints as `jumpTo`.
+     *
+     * @private
+     */
+    _applyCameraOptions(tr: Transform, options: CameraOptions): {zoomChanged: boolean, bearingChanged: boolean, pitchChanged: boolean} {
         let zoomChanged = false,
             bearingChanged = false,
             pitchChanged = false;
@@ -1195,33 +1232,24 @@ class Camera extends Evented<MapEvents> {
             }
         }
 
-        if (options.preloadOnly) {
-            this._preloadTiles(tr);
-            return this;
-        }
+        return {zoomChanged, bearingChanged, pitchChanged};
+    }
 
-        this.fire(new Event('movestart', eventData))
-            .fire(new Event('move', eventData));
-
-        if (zoomChanged) {
-            this.fire(new Event('zoomstart', eventData))
-                .fire(new Event('zoom', eventData))
-                .fire(new Event('zoomend', eventData));
-        }
-
-        if (bearingChanged) {
-            this.fire(new Event('rotatestart', eventData))
-                .fire(new Event('rotate', eventData))
-                .fire(new Event('rotateend', eventData));
-        }
-
-        if (pitchChanged) {
-            this.fire(new Event('pitchstart', eventData))
-                .fire(new Event('pitch', eventData))
-                .fire(new Event('pitchend', eventData));
-        }
-
-        return this.fire(new Event('moveend', eventData));
+    /**
+     * Returns the geographical bounds the map would show for the given camera, without moving the map.
+     * The camera is constrained the same way as in `jumpTo`. Options not specified in `camera` keep their current values.
+     * Padding and terrain are ignored: the bounds cover the full map canvas as if terrain were disabled.
+     * Returns the bounds together with the zoom level after constraints are applied.
+     *
+     * @private
+     */
+    getBoundsForCamera(camera: CameraOptions): {bounds: LngLatBounds, zoom: number} {
+        const tr = this.transform.clone();
+        // Disabling elevation also resets the center altitude, matching the camera placement with terrain off.
+        tr.elevation = null;
+        this._applyCameraOptions(tr, camera);
+        tr.updateProjectionTransition();
+        return {bounds: tr.getBounds({top: 0, bottom: 0, left: 0, right: 0}), zoom: tr.zoom};
     }
 
     /**

@@ -2007,6 +2007,18 @@ describe('terrain getBounds', () => {
         expect(toFixed(sBounds.toArray())).toStrictEqual(toFixed([[-23.3484820899, -85.0511287798], [23.3484820899, -77.6464759596]]));
     });
 
+    test('getBoundsForCamera ignores terrain', async () => {
+        const style = createStyle();
+        const map = createMap({style, center: [10, 45], zoom: 10, pitch: 45});
+        await waitFor(map, 'style.load');
+        const {bounds: expected} = map.getBoundsForCamera({});
+
+        setMockElevationTerrain(map, createGradientDEM(), TILE_SIZE);
+        await waitFor(map, 'idle');
+
+        expect(map.getBoundsForCamera({}).bounds.toArray()).toEqual(expected.toArray());
+    });
+
     test("Does not break with no visible DEM tiles (#10610)", async () => {
         const style = createStyle();
         const map = createMap({style, zoom: 1, bearing: 45});

@@ -399,6 +399,20 @@ class Transform {
         return projectionHasChanged;
     }
 
+    // Switches between globe and mercator when zoom crosses GLOBE_ZOOM_THRESHOLD_MAX on a globe map.
+    // Returns whether the projection changed.
+    updateProjectionTransition(): boolean {
+        if (this.projection.name === 'globe' && this.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
+            this.setMercatorFromTransition();
+            return true;
+        }
+        if (this.mercatorFromTransition && this.zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
+            this.setProjection({name: 'globe'});
+            return true;
+        }
+        return false;
+    }
+
     get minZoom(): number { return this._minZoom; }
     set minZoom(zoom: number) {
         if (this._minZoom === zoom) return;
@@ -2015,11 +2029,11 @@ class Transform {
     // In Globe, conic and thematic projections, Lng/Lat extremes are not always at corners.
     // This function additionally checks each screen edge midpoint.
     // While midpoints continue to be extremes, it recursively checks midpoints of smaller segments.
-    _getBoundsNonRectangular(): LngLatBounds {
+    _getBoundsNonRectangular(insets: Required<PaddingOptions> = this._edgeInsets): LngLatBounds {
         assert(!this.projection.supportsWorldCopies, "Rectangular projections should use the simpler _getBoundsRectangular");
-        const {top, left} = this._edgeInsets;
-        const bottom = this.height - this._edgeInsets.bottom;
-        const right = this.width - this._edgeInsets.right;
+        const {top, left} = insets;
+        const bottom = this.height - insets.bottom;
+        const right = this.width - insets.right;
 
         const tl = this.pointLocation3D(new Point(left, top));
         const tr = this.pointLocation3D(new Point(right, top));
@@ -2084,12 +2098,12 @@ class Transform {
         return new LngLatBounds(new LngLat(west, south), new LngLat(east, north));
     }
 
-    _getBoundsRectangular(min: number, max: number): LngLatBounds {
+    _getBoundsRectangular(min: number, max: number, insets: Required<PaddingOptions> = this._edgeInsets): LngLatBounds {
         assert(this.projection.supportsWorldCopies, "_getBoundsRectangular only checks corners and works only on rectangular projections. Other projections should use _getBoundsNonRectangular");
 
-        const {top, left} = this._edgeInsets;
-        const bottom = this.height - this._edgeInsets.bottom;
-        const right = this.width - this._edgeInsets.right;
+        const {top, left} = insets;
+        const bottom = this.height - insets.bottom;
+        const right = this.width - insets.right;
 
         const topLeft = new Point(left, top);
         const topRight = new Point(right, top);
@@ -2120,10 +2134,10 @@ class Transform {
             .extend(this.coordinateLocation(br));
     }
 
-    _getBoundsRectangularTerrain(): LngLatBounds {
+    _getBoundsRectangularTerrain(insets: Required<PaddingOptions> = this._edgeInsets): LngLatBounds {
         assert(this.elevation);
         const elevation = (this.elevation);
-        if (!elevation.visibleDemTiles.length || elevation.isUsingMockSource()) { return this._getBoundsRectangular(0, 0); }
+        if (!elevation.visibleDemTiles.length || elevation.isUsingMockSource()) { return this._getBoundsRectangular(0, 0, insets); }
         const minmax = elevation.visibleDemTiles.reduce((acc, t) => {
             if (t.dem) {
                 const tree = t.dem.tree;
@@ -2133,21 +2147,22 @@ class Transform {
             return acc;
         }, {min: Number.MAX_VALUE, max: 0});
         assert(minmax.min !== Number.MAX_VALUE);
-        return this._getBoundsRectangular(minmax.min * elevation.exaggeration(), minmax.max * elevation.exaggeration());
+        return this._getBoundsRectangular(minmax.min * elevation.exaggeration(), minmax.max * elevation.exaggeration(), insets);
     }
 
     /**
      * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
      * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
      *
+     * @param {PaddingOptions} [insets] Screen insets to exclude from the bounds. Defaults to the current padding.
      * @returns {LngLatBounds} Returns a {@link LngLatBounds} object describing the map's geographical bounds.
      */
-    getBounds(): LngLatBounds {
+    getBounds(insets: Required<PaddingOptions> = this._edgeInsets): LngLatBounds {
         if (this.projection.name === 'mercator' || this.projection.name === 'equirectangular') {
-            if (this._terrainEnabled()) return this._getBoundsRectangularTerrain();
-            return this._getBoundsRectangular(0, 0);
+            if (this._terrainEnabled()) return this._getBoundsRectangularTerrain(insets);
+            return this._getBoundsRectangular(0, 0, insets);
         }
-        return this._getBoundsNonRectangular();
+        return this._getBoundsNonRectangular(insets);
     }
 
     /**

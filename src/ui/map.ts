@@ -1573,24 +1573,7 @@ export class Map extends Camera {
     }
 
     _updateProjectionTransition() {
-        // The projection isn't globe, we can skip updating the transition
-        if (this.getProjection().name !== 'globe') {
-            return;
-        }
-
-        const tr = this.transform;
-        const projection = tr.projection.name;
-        let projectionHasChanged: boolean | undefined;
-
-        if (projection === 'globe' && tr.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
-            tr.setMercatorFromTransition();
-            projectionHasChanged = true;
-        } else if (projection === 'mercator' && tr.zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
-            tr.setProjection({name: 'globe'});
-            projectionHasChanged = true;
-        }
-
-        if (projectionHasChanged) {
+        if (this.transform.updateProjectionTransition()) {
             this.style!.applyProjectionUpdate();
             this.style!._forceSymbolLayerUpdate();
             this._update(true);

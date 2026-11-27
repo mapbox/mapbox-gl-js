@@ -6,6 +6,9 @@ import browser from '../../../src/util/browser';
 import {fixedLngLat, fixedNum} from '../../util/fixed';
 import {LngLatBounds} from '../../../src/geo/lng_lat';
 
+import type Camera from '../../../src/ui/camera';
+import type {CameraOptions} from '../../../src/ui/camera';
+
 describe('camera', () => {
     describe('#jumpTo', () => {
         // Choose initial zoom to avoid center being constrained by mercator latitude limits.
@@ -1066,6 +1069,80 @@ describe('camera', () => {
                     camera.simulateFrame();
                 }, 0);
             });
+        });
+    });
+
+    describe('#getBoundsForCamera', () => {
+        function fullCanvasBounds(camera: Camera) {
+            return camera.transform.getBounds({top: 0, bottom: 0, left: 0, right: 0}).toArray();
+        }
+
+        test('returns the full canvas bounds the map shows after jumpTo', () => {
+            const camera = createCamera({zoom: 3}) as Camera;
+            const options: CameraOptions = {center: [10, 45], zoom: 5, bearing: 30, pitch: 40, padding: {top: 50, bottom: 0, left: 20, right: 0}};
+
+            const {bounds} = camera.getBoundsForCamera(options);
+            camera.jumpTo(options);
+
+            expect(bounds.toArray()).toEqual(fullCanvasBounds(camera));
+        });
+
+        test('does not move the map', () => {
+            const camera = createCamera({center: [1, 2], zoom: 3}) as Camera;
+
+            camera.getBoundsForCamera({center: [10, 45], zoom: 5, pitch: 40});
+
+            expect(camera.getCenter()).toEqual({lng: 1, lat: 2});
+        });
+
+        test('applies the jumpTo constraints to the bounds', () => {
+            const camera = createCamera({zoom: 3}) as Camera;
+
+            const {bounds} = camera.getBoundsForCamera({zoom: 25});
+            camera.jumpTo({zoom: 20});
+
+            expect(bounds.toArray()).toEqual(fullCanvasBounds(camera));
+        });
+
+        test('returns the constrained zoom', () => {
+            const camera = createCamera({zoom: 3}) as Camera;
+
+            const {zoom} = camera.getBoundsForCamera({zoom: 25});
+
+            expect(zoom).toEqual(20);
+        });
+
+        test('works with globe', () => {
+            const camera = createCamera({projection: {name: 'globe'}, zoom: 2}) as Camera;
+            const options: CameraOptions = {center: [10, 45], zoom: 4, pitch: 30};
+
+            const {bounds} = camera.getBoundsForCamera(options);
+            camera.jumpTo(options);
+
+            expect(bounds.toArray()).toEqual(fullCanvasBounds(camera));
+        });
+
+        test('switches from globe to mercator above the globe zoom threshold', () => {
+            const camera = createCamera({projection: {name: 'globe'}, zoom: 2}) as Camera;
+            const options: CameraOptions = {center: [10, 45], zoom: 10, pitch: 30};
+
+            const {bounds} = camera.getBoundsForCamera(options);
+            camera.jumpTo(options);
+            camera.transform.setMercatorFromTransition();
+
+            expect(bounds.toArray()).toEqual(fullCanvasBounds(camera));
+        });
+
+        test('switches from mercator back to globe below the globe zoom threshold', () => {
+            const camera = createCamera({projection: {name: 'globe'}, zoom: 10}) as Camera;
+            camera.transform.setMercatorFromTransition();
+            const options: CameraOptions = {center: [10, 45], zoom: 2, pitch: 30};
+
+            const {bounds} = camera.getBoundsForCamera(options);
+            camera.jumpTo(options);
+            camera.transform.setProjection({name: 'globe'});
+
+            expect(bounds.toArray()).toEqual(fullCanvasBounds(camera));
         });
     });
 

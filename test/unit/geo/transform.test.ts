@@ -386,6 +386,47 @@ describe('transform', () => {
         }
     });
 
+    describe('getBounds insets', () => {
+        function createTransform(projection: string) {
+            const transform = new Transform();
+            transform.setProjection({name: projection});
+            transform.resize(500, 500);
+            transform.zoom = projection === 'globe' ? 4 : 10;
+            transform.center = new LngLat(10, 45);
+            transform.padding = {top: 100, bottom: 100, left: 100, right: 100};
+            return transform;
+        }
+
+        function lngLatAtCorners(transform: Transform) {
+            return [
+                transform.pointLocation(new Point(0, 0)),
+                transform.pointLocation(new Point(transform.width, transform.height))
+            ];
+        }
+
+        for (const projection of ['mercator', 'globe']) {
+            test(`${projection}: zero insets cover the full canvas`, () => {
+                const transform = createTransform(projection);
+
+                const bounds = transform.getBounds({top: 0, bottom: 0, left: 0, right: 0});
+
+                for (const corner of lngLatAtCorners(transform)) {
+                    expect(bounds.contains(corner)).toBe(true);
+                }
+            });
+
+            test(`${projection}: default bounds exclude the padding`, () => {
+                const transform = createTransform(projection);
+
+                const bounds = transform.getBounds();
+
+                for (const corner of lngLatAtCorners(transform)) {
+                    expect(bounds.contains(corner)).toBe(false);
+                }
+            });
+        }
+    });
+
     describe('coveringTiles', () => {
         const options = {
             minzoom: 1,
